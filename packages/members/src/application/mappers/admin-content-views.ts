@@ -1,4 +1,5 @@
 import type { CourseModality } from '@sistemazero/core/course/modality'
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type {
   Course,
   Lesson,
@@ -106,7 +107,7 @@ export interface ModuleView {
   courseId: string
   title: string
   summary: string | null
-  riveUrl: string | null
+  animation?: ModuleAnimation | null
   sortOrder: number
 }
 
@@ -116,7 +117,7 @@ export function toModuleView(m: Module): ModuleView {
     courseId: m.courseId,
     title: m.title,
     summary: m.summary,
-    riveUrl: m.riveUrl ?? null,
+    animation: m.animation ?? null,
     sortOrder: m.sortOrder,
   }
 }

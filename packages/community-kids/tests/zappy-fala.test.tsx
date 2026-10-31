@@ -21,8 +21,8 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
  * sozinho e nenhum outro teste reclama.
  *
  * ⚠️ A sonda entra no lugar do mascote de propósito: assim o teste lê o contexto direto, sem
- * depender do falso global do `mascot-rive-canvas`. O elo kids (a régua `tocandoDoZappy` e a prop
- * que chega ao canvas) é cobrado em `mascot-rive.test.tsx`.
+ * depender de um renderer falso. O elo kids (a régua `tocandoDoZappy` e a prop
+ * que chega ao player) é cobrado em `mascot-animated.test.tsx`.
  */
 function Sonda() {
   const fala = useZappyFala()

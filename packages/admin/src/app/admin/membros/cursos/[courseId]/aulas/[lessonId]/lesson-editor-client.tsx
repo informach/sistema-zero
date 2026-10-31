@@ -26,6 +26,7 @@ import {
   PYTHON_LEARNING_LEVELS,
   resolvePythonLearningLevel,
 } from '@sistemazero/core/studio/python-learning'
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import {
   createLessonAsset,
   PINTA_LESSON_ASSET_OPTIONS,
@@ -1878,8 +1879,9 @@ function LessonEditorSession({
                               onChange={() => setBlockForm((f) => ({ ...f, dialoguePose: pose }))}
                               className="peer sr-only"
                             />
+                            {/* biome-ignore lint/performance/noImgElement: Immutable preoptimized local WebP thumbnails preserve the exact exported artwork. */}
                             <img
-                              src={`/zappy/${pose}.webp`}
+                              src={BUILTIN_ART[pose].poster.url}
                               alt={DIALOGUE_POSE_LABELS[pose]}
                               width={64}
                               height={64}

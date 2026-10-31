@@ -1,0 +1,26 @@
+{
+  "name": "@sistemazero/edisvg",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./data": "./src/data.ts",
+    "./builtins": "./src/builtins.generated.ts",
+    "./react": "./src/animation.tsx",
+    "./types": "./vendor/edi-web-types.d.ts"
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "check": "biome check src tests"
+  },
+  "peerDependencies": {
+    "react": "^19",
+    "react-dom": "^19"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23",
+    "@types/react": "^19",
+    "typescript": "^5.7.0"
+  }
+}

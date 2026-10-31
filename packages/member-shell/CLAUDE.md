@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Reservas de arte compartilhadas, 31/10/2026
+
+As poses do Pensa e da porta do Arquipélago vêm de `@sistemazero/edisvg/builtins`.
+São imagens estáticas exportadas do mesmo projeto que a animação, sem carregar o player.
+Quem hospeda (Kids, comunidade ou Admin) sincroniza os assets antes de dev/build. O shell
+não importa o jogo nem o editor ediSVG. A referência de animação do módulo é o contrato neutro
+ModuleAnimation do core, não um campo de URL ligado a um fornecedor de animação.
+
+
 ## Visitas adultas do Arquipélago (L12, 30/10/2026)
 
 O host reconhece apenas `/visitas-adultas/convite`, `/abrir` e `/conferir`. O host Kids recusa

@@ -18,10 +18,10 @@ describe('CORS do bucket R2 público', () => {
   })
 
   it('mantém um objeto-prova público estável para o gate sem credenciais', () => {
-    expect(PUBLIC_CORS_PROBE_KEY).toBe('admin/module-rive/cors-probes/public-read-v1.riv')
+    expect(PUBLIC_CORS_PROBE_KEY).toBe('admin/media/cors-probes/public-read-v1.txt')
     expect(PUBLIC_CORS_PROBE_BODY).toBe('sistema-zero-public-cors-probe:v1')
     expect(buildPublicObjectUrl('https://pub.example.r2.dev', PUBLIC_CORS_PROBE_KEY)).toBe(
-      'https://pub.example.r2.dev/admin/module-rive/cors-probes/public-read-v1.riv',
+      'https://pub.example.r2.dev/admin/media/cors-probes/public-read-v1.txt',
     )
   })
 

@@ -1,3 +1,4 @@
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type {
   LessonRequirement,
   SectionCompletionView,
@@ -695,7 +696,7 @@ export interface ModuleOutlineView {
   id: string
   title: string
   summary: string | null
-  riveUrl: string | null
+  animation?: ModuleAnimation | null
   sortOrder: number
   lessons: LessonOutlineView[]
   chest: ModuleChestView | null
@@ -767,7 +768,7 @@ export function toCourseDetailView(
       id: m.id,
       title: m.title,
       summary: m.summary,
-      riveUrl: m.riveUrl ?? null,
+      animation: m.animation ?? null,
       sortOrder: m.sortOrder,
       chest: claimedUnitIds
         ? {

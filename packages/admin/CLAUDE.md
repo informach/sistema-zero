@@ -1891,62 +1891,33 @@ adapter `listConversions`/`markConversionPaid`/`matureConversionNow`; shims
 `app/api/admin/referrals/conversions/{route,[id]/mark-paid/route,[id]/mature-now/route}.ts`
 (cabem nos wildcards `referrals-admin-*` do gateway — nenhuma rota nova lá).
 
-## Animação Rive por módulo (trilha Kids) — 21/09/2026
+## Animação ediSVG por módulo, 31/10/2026
 
-Substituiu o upload de SVG animado de 20/09, e a troca ENCOLHEU o problema de
-segurança em vez de mover: um SVG público EXECUTA se aberto direto pela URL, e o que
-segurava isso era o `module-illustration-svg.ts` — 249 linhas de allowlist XML à mão,
-exposto a divergência entre o parser do `@xmldom/xmldom` e o do navegador. Um `.riv`
-é binário opaco servido como `application/octet-stream`. Foram deletados o validador,
-o teste dele, a rota `/api/media/module-illustrations` e a dependência
-`@xmldom/xmldom` (o `packages/fiscal` ainda usa — removida SÓ daqui).
+O Admin recebe **Animação para web** (`.edi-animation.json`), não o projeto editável.
+O fluxo é exportar no ediSVG, enviar em Editar módulo, conferir a prévia e salvar.
+O JSON é declarativo: o servidor não executa SVG, HTML, JSX nem scripts enviados.
 
-- **Validação** (`lib/riv-file.ts`, puro): extensão `.riv` + assinatura `RIVE` nos 4
-  primeiros bytes + major de formato. ⚠️ **Não olhamos `file.type`**: não há MIME
-  registrado para `.riv`, então o navegador manda `application/octet-stream` ou string
-  vazia, e checar o tipo só recusaria arquivo bom. ⚠️ O **MINOR** não pode ser preso
-  (os `.riv` do Zappy são `07 03` e `07 04`, mesmo editor, datas diferentes); o
-  **MAJOR** é preso de propósito — major diferente é formato que o runtime não lê, e o
-  sintoma seria canvas vazio no navegador da criança, sem erro nenhum.
-- **Armazenamento**: bucket PÚBLICO, `admin/module-rive/<uuid>.riv`, 5 MB.
-  UUID novo por upload é o que torna seguro o `immutable` do `r2PutObject`.
-- **Prévia RODANDO no diálogo de módulo, e ela não é enfeite.** Nenhum teste prova que
-  um `.riv` anima (happy-dom não tem WebGL; o guarda de bytes só vê nomes). Ver a
-  animação aqui, antes de salvar, é a ÚNICA verificação de que ela não vai chegar
-  congelada na tela da criança — por isso a prévia escolhe a timeline pela mesma regra
-  do app do aluno.
-- ⚠️ A prévia recebe `buffer`, e os bytes vêm da rota-proxy
-  `/api/media/module-rive/preview` — nunca do CDN direto. Isso mantém o `connect-src`
-  estreito (`'self'` + três hosts nomeados, sem `https:`) e dispensa CORS. Derivar o
-  host de `R2_PUBLIC_URL` no `next.config.ts` NÃO serviria: o `headers()` é serializado
-  no `routes-manifest.json` em BUILD TIME. O guarda anti-SSRF da rota é o prefixo
-  exato contra `R2_PUBLIC_URL`.
-- ⚠️ A CSP ganhou `'wasm-unsafe-eval'` no `script-src` — KEYWORD à parte, que nem
-  `https:` nem `'unsafe-inline'` cobrem, e cuja recusa no Chrome é SILENCIOSA.
-  `tests/csp-wasm.test.ts` trava isso. O WASM é servido da nossa origem
-  (`scripts/sync-rive-wasm.ts` no `dev` e no `build`, `public/rive/` no gitignore).
-- ⚠️ **O CORS público do Rive é uma BARREIRA automática do `deploy-staging`.** O job executa
-  `r2:cors:public:ensure` via Railway CLI com as envs do Admin ANTES de disparar qualquer serviço.
-  `scripts/r2-cors-public.ts` faz GET→MESCLA→PUT apenas quando necessário, relê a regra inteira e
-  prova o data plane: cria um objeto temporário, faz GET no `R2_PUBLIC_URL` com o `Origin` do Kids e
-  exige `Access-Control-Allow-Origin` correto; remove o objeto em seguida. Falha nessa prova deixa o
-  deploy vermelho. `--check` não altera a configuração, mas repete a prova pública. O `<img>` de antes
-  não fazia CORS; o runtime do Rive faz.
-- **Subir um `.riv` solto ao bucket público** (01/10/2026, o `.riv` do baú da trilha do kids, que
-  não passa pelo Admin): `bun run r2:put:public <arquivo> --prefix=kids/chest` grava em
-  `<prefixo>/<nome>-<sha256>.riv` (chave ENDEREÇADA PELO CONTEÚDO: arquivo novo = objeto novo e
-  URL nova, com `Cache-Control` longo e `immutable`; o script recusa sobrescrever), confere o
-  cabeçalho do `.riv`, e PROVA a leitura pelo `R2_PUBLIC_URL` com o `Origin` do Kids. Imprime a
-  URL, que vai para `NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` do kids (Railway, por ambiente). ⚠️ Sem
-  `s3:ListBucket` o HEAD de chave inexistente volta 403, e o script confere a existência pelo
-  endereço público. ⚠️ O `.env` local pode ter as credenciais do R2 VENCIDAS (rotação de 09/2026):
-  o sintoma é `SignatureDoesNotMatch` até no `r2:cors:public:check`; pegue as vigentes do serviço
-  no Railway (`railway variables --service admin --environment staging --json`) só para a execução.
-- ⚠️ **Testes:** os mocks parciais de `@/server/media`/`@/server/r2` em
-  `zappy-backfill` e `hub-route-handlers` passaram a ESPALHAR o módulo real. O
-  `mock.module` do bun é global ao run, e manter à mão "a superfície que as outras
-  suítes importam" não escala — foi assim que este trabalho quebrou o
-  `user-deletion.test.ts`, num arquivo distante e só na suíte completa.
+- `lib/animation-file.ts` usa o parser canônico de `@sistemazero/edisvg/data`: até
+  10.000.000 bytes, UTF-8 válido, versão e recursos seguros, reserva PNG verificada.
+- `POST /api/media/module-animation`: sessão da equipe, Content-Length antes de materializar
+  multipart, validação real dos bytes, duas chaves novas por revisão no R2 público:
+  `admin/module-animation/<uuid>/poster.png` e `animation.edi-animation.json`.
+  O JSON do runtime não duplica o PNG. Falha de envio tenta remover somente as chaves novas.
+- O valor salvo é `ModuleAnimation`: URL, SHA-256, tamanho, título e reserva com dimensões/hash.
+  Omitir o campo preserva; null remove. Não persistir só a URL de um editor ou um projeto .edisvg.
+- `ModuleAnimationUploader` monta o mesmo `EdiAnimation` que o app do aluno. A prévia passa por
+  `GET /api/media/module-animation/preview`: sessão obrigatória, prefixo/UUID/arquivo exatos,
+  nenhum redirect, leitura limitada e prazo de 15 s. Fetch same-origin mantém o cookie local.
+  Isso preserva o connect-src estreito. Os recursos do arquivo são embutidos e validados.
+- O layout do player compartilhado usa Yoga WASM empacotado. Manter wasm-unsafe-eval na CSP;
+  isso não habilita eval de JavaScript. Não baixar runtime de CDN de terceiros.
+- Dev/build sincronizam os 14 recursos hashados de `packages/edisvg/assets` para public/edisvg.
+  `sync-assets.ts` verifica os hashes; URLs hashadas usam cache immutable.
+- O teste público de CORS do deploy continua obrigatório para a leitura JSON das comunidades.
+  O probe temporário é texto em `admin/media/cors-probes`, não uma animação falsa.
+- Migração operacional e ordem de deploy estão em
+  `docs/plans/2026-10-31-migracao-rive-edisvg.md`. A coluna nova precede a troca do backend;
+  dados são mapeados e conferidos antes de retirar o armazenamento antigo.
 
 ## Checklist antes de finalizar
 

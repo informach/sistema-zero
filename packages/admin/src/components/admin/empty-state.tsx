@@ -1,3 +1,4 @@
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import type * as React from 'react'
 import { cn } from '@/lib/cn'
 
@@ -7,9 +8,9 @@ import { cn } from '@/lib/cn'
  * carregou (nunca finge que está vazia). Sem emoji: o Zappy faz esse papel.
  */
 const ZAPPY = {
-  celebrating: '/zappy/celebrating.webp',
-  happy: '/zappy/happy.webp',
-  thinking: '/zappy/thinking.webp',
+  celebrating: BUILTIN_ART.celebrating.poster.url,
+  happy: BUILTIN_ART.happy.poster.url,
+  thinking: BUILTIN_ART.thinking.poster.url,
 } as const
 
 export function EmptyState({

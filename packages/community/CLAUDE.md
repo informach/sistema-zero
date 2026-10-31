@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/community
 
+## Reservas ediSVG do Zappy, 31/10/2026
+
+`lesson-zappy.tsx` usa as reservas de `@sistemazero/edisvg/builtins`, exportadas das artes
+editáveis. Continua estático por desempenho, com a fala e o botão Ouvir acessíveis. Não baixar
+o motor para uma imagem parada. Dev/build sincronizam e conferem os recursos hashados do pacote
+edisvg em public/edisvg. O app não importa imagens de outra aplicação.
+
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Next.js, React, Tailwind,
 > jose, Zod, etc.) — não confie só na memória; APIs mudam (ex.: `middleware`→`proxy` no Next 16). Para

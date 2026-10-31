@@ -17,7 +17,7 @@ import { KidsBand } from '@/components/kids/kids-band'
 import { KidsEmptyState } from '@/components/kids/kids-empty-state'
 import { KidsSectionHeader } from '@/components/kids/kids-section-header'
 import { LiveTodayCard } from '@/components/kids/live-today-card'
-import { KidsMascotAnimated } from '@/components/kids/mascot-rive'
+import { KidsMascotAnimated } from '@/components/kids/mascot-animated'
 import { MissionsPanel } from '@/components/kids/missions-panel'
 import {
   checkChallengeAccessReadonly,

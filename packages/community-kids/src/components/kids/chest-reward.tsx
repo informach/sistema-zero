@@ -3,7 +3,7 @@
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Sparkles } from 'lucide-react'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 import { ZappyCoin } from './zappy-coin'
 
 /**

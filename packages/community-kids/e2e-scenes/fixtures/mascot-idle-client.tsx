@@ -1,9 +1,9 @@
 import { ZappyFalaProvider } from '@sistemazero/member-shell/components/zappy-fala-context'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { KidsMascotAnimated } from '../../src/components/kids/mascot-rive'
+import { KidsMascotAnimated } from '../../src/components/kids/mascot-animated'
 
-/** Rive real, no mesmo regime de voz do balão, sem depender de áudio ou login. */
+/** Player ediSVG real, no mesmo regime de voz do balão, sem depender de áudio ou login. */
 function Fixture() {
   const [falando, setFalando] = useState(false)
   return (

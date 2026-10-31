@@ -1,0 +1,407 @@
+{
+  "format": "sistema-zero-edisvg-art",
+  "version": 1,
+  "sourceRevision": "2fcead2b1bf72c5d6c37fa304a2483a11d9cc8a7",
+  "runtimeSha256": "0d23ccb8138252537d1d50d738305b741d4ddddd7466e82f62003b239a85860e",
+  "artifacts": [
+    {
+      "collection": "sources",
+      "key": "alivio-b1-a1",
+      "source": "alivio.edisvg",
+      "sourceSha256": "8160812974e63792d322f619f41936866a694384c0d84b1f1808bd5390297037",
+      "boardId": "artboard-0e816b39-0f2e-44d5-9c50-e219568b415f",
+      "animationId": "anim-pose-coracao",
+      "file": "alivio-b1-a1.d3cbe782c801.edi-animation.json",
+      "sha256": "d3cbe782c8018060a624cfd23461bcc4e6587f27b22ae16295ebab4e5069cbcf",
+      "bytes": 145674,
+      "poster": {
+        "file": "alivio-b1-a1.5be671d72d5f.png",
+        "sha256": "5be671d72d5f2bcb0cccf6f2a5ef765f28022a3d0d664038019a46ac9d507a3e",
+        "bytes": 40462,
+        "width": 512,
+        "height": 512
+      },
+      "title": "alivio · Pose coração",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "bau-b1-a1",
+      "source": "baú.edisvg",
+      "sourceSha256": "2b25b2103e64620d9d57fc2c6adab9ed002dc9ba68fb68d5213d9713493aaa3d",
+      "boardId": "artboard-64e3f175-1e5c-41d3-af8c-f5f498912d1f",
+      "animationId": null,
+      "file": "bau-b1-a1.ce33943f7d41.edi-animation.json",
+      "sha256": "ce33943f7d41ecfa7e8e414b64e0fce8297f6a560107903fef2985f8cba88ca4",
+      "bytes": 206184,
+      "poster": {
+        "file": "bau-b1-a1.fc7313e4a75f.png",
+        "sha256": "fc7313e4a75f19e213720aa58b4877de825eacb32165a96f22bd053be6e1b17e",
+        "bytes": 13396,
+        "width": 512,
+        "height": 512
+      },
+      "title": "baú · Baú",
+      "inputs": [
+        {
+          "name": "aberto",
+          "kind": "boolean"
+        }
+      ],
+      "machines": [
+        "Baú"
+      ]
+    },
+    {
+      "collection": "sources",
+      "key": "cadetodomundo-b1-a1",
+      "source": "cadetodomundo.edisvg",
+      "sourceSha256": "f09e3a71530eb476f6786337d74b27def63c50cf93006421d4c60beeb38e51c1",
+      "boardId": "artboard-d756b70e-0fb1-4559-8fb8-fb69f75ca4d0",
+      "animationId": "anim-esconde-esconde",
+      "file": "cadetodomundo-b1-a1.041c824c73eb.edi-animation.json",
+      "sha256": "041c824c73eb97a4d8c98a5c1d33a5a3b07be518ca1d872a60874fa53f859a06",
+      "bytes": 127907,
+      "poster": {
+        "file": "cadetodomundo-b1-a1.d50fc7040699.png",
+        "sha256": "d50fc7040699022fdebdf8a353127925f4025940d1e39e7f1c2e0a4a38fd2843",
+        "bytes": 30247,
+        "width": 512,
+        "height": 391
+      },
+      "title": "cadetodomundo · Esconde-esconde",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "celebrando-copia-b1-a1",
+      "source": "celebrando - Copia.edisvg",
+      "sourceSha256": "866de53234c6e69a388e610e623760df418b88549c421f38013a2268aea59c71",
+      "boardId": "artboard-20245246-dd67-4d6b-9a5e-ea7bab514a3d",
+      "animationId": "anim-celebrar",
+      "file": "celebrando-copia-b1-a1.613f62f294e2.edi-animation.json",
+      "sha256": "613f62f294e2da9fd794249be365acfe834152d0a1d4cd2251d30a045d061ce8",
+      "bytes": 122965,
+      "poster": {
+        "file": "celebrando-copia-b1-a1.3e422f592a88.png",
+        "sha256": "3e422f592a88c0c5101dbf8f3011cf2520a553170e30847d6f721f783b771abc",
+        "bytes": 40450,
+        "width": 512,
+        "height": 512
+      },
+      "title": "celebrando - Copia · Celebrar",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "celebrando-b1-a1",
+      "source": "celebrando.edisvg",
+      "sourceSha256": "866de53234c6e69a388e610e623760df418b88549c421f38013a2268aea59c71",
+      "boardId": "artboard-20245246-dd67-4d6b-9a5e-ea7bab514a3d",
+      "animationId": "anim-celebrar",
+      "file": "celebrando-b1-a1.7026127b779a.edi-animation.json",
+      "sha256": "7026127b779a1e6e45e5e0500dc174507619593b32db9c136b3b534fa6fd9cd4",
+      "bytes": 122957,
+      "poster": {
+        "file": "celebrando-b1-a1.3e422f592a88.png",
+        "sha256": "3e422f592a88c0c5101dbf8f3011cf2520a553170e30847d6f721f783b771abc",
+        "bytes": 40450,
+        "width": 512,
+        "height": 512
+      },
+      "title": "celebrando · Celebrar",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "dormindo-b1-a1",
+      "source": "dormindo.edisvg",
+      "sourceSha256": "1e7ec24ce03a48b62a673ba3f7240dcefc32cd5739d491cd179e7a657538161f",
+      "boardId": "artboard-b48bb723-66bf-4129-9e20-60e0eee021fb",
+      "animationId": "anim-adormecer",
+      "file": "dormindo-b1-a1.19234acb8e23.edi-animation.json",
+      "sha256": "19234acb8e2306a2242af4220c7a8445097d455754beb744074c3ce95056cc76",
+      "bytes": 168144,
+      "poster": {
+        "file": "dormindo-b1-a1.6c0edced13b3.png",
+        "sha256": "6c0edced13b3da4ab474ce017636b57b1fc43a95a77db03d4bea869213c515ed",
+        "bytes": 55398,
+        "width": 512,
+        "height": 512
+      },
+      "title": "dormindo · Adormecer",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "dormindo-b1-a2",
+      "source": "dormindo.edisvg",
+      "sourceSha256": "1e7ec24ce03a48b62a673ba3f7240dcefc32cd5739d491cd179e7a657538161f",
+      "boardId": "artboard-b48bb723-66bf-4129-9e20-60e0eee021fb",
+      "animationId": "anim-dormindo",
+      "file": "dormindo-b1-a2.bf612c8c62d6.edi-animation.json",
+      "sha256": "bf612c8c62d65faa0081e43adcca0929d74ec999c8a16e6785d29ebe429b603d",
+      "bytes": 168378,
+      "poster": {
+        "file": "dormindo-b1-a2.c06dc4bd18f8.png",
+        "sha256": "c06dc4bd18f83858a27644df8bca990e650e1d962ac98074bc6a2b135ffadc8f",
+        "bytes": 55575,
+        "width": 512,
+        "height": 512
+      },
+      "title": "dormindo · Dormindo",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "dpj-01-b1-a1",
+      "source": "dpj-01.edisvg",
+      "sourceSha256": "be4149362cf9abee1fa78994d0dd55898ac2cf29b959e45b3e995c1cb776568c",
+      "boardId": "artboard-88351f01-9359-4c59-8027-1098d6c507dc",
+      "animationId": "anim-cena",
+      "file": "dpj-01-b1-a1.2ce7655aec29.edi-animation.json",
+      "sha256": "2ce7655aec29abbf4bbbb68c9fd24a983fcb6336e41b9cd4edd02efd3b970db4",
+      "bytes": 365101,
+      "poster": {
+        "file": "dpj-01-b1-a1.5ed5d82a269a.png",
+        "sha256": "5ed5d82a269a82f65242901a8e897631214d15489aa8dc9b70cbc2822eda7ed6",
+        "bytes": 21829,
+        "width": 512,
+        "height": 512
+      },
+      "title": "dpj-01 · Nave",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "dpj-02-b1-a1",
+      "source": "dpj-02.edisvg",
+      "sourceSha256": "310229ed6a80445d44fec1d72b1447f932414913779a0664e860e267756df5b6",
+      "boardId": "artboard-88351f01-9359-4c59-8027-1098d6c507dc",
+      "animationId": "anim-cena",
+      "file": "dpj-02-b1-a1.abc9c60fe12e.edi-animation.json",
+      "sha256": "abc9c60fe12edcc304585fd9625b1c38e208ecd38c9364fb7ed0ff344516643a",
+      "bytes": 409761,
+      "poster": {
+        "file": "dpj-02-b1-a1.25926d06a3ce.png",
+        "sha256": "25926d06a3cecc1c94b7fc3c00ddc7778f0715c795de1f621cd15157ca1cf12e",
+        "bytes": 28072,
+        "width": 512,
+        "height": 512
+      },
+      "title": "dpj-02 · Cena espacial",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "dpj-03-b1-a1",
+      "source": "dpj-03.edisvg",
+      "sourceSha256": "713f9082018e954792436234b6bf99edacf6aeb8847d4f8ff7ac18435b2e8fcc",
+      "boardId": "artboard-88351f01-9359-4c59-8027-1098d6c507dc",
+      "animationId": "anim-cena",
+      "file": "dpj-03-b1-a1.ea0173fa7eb1.edi-animation.json",
+      "sha256": "ea0173fa7eb15d8ca922c65e96e275ced9bf91e2cc74b2fbed5049fabc046668",
+      "bytes": 423928,
+      "poster": {
+        "file": "dpj-03-b1-a1.5a80d2a648b7.png",
+        "sha256": "5a80d2a648b71d104419d26c5a8962799e315ccef5d57661c66dbcd95e6a37ce",
+        "bytes": 25836,
+        "width": 512,
+        "height": 512
+      },
+      "title": "dpj-03 · Cena espacial",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "farol-b1-a1",
+      "source": "farol.edisvg",
+      "sourceSha256": "8dc412e0d78c86e497c97a6d0583d37cc20bc97fd8491d62970c911c546525b4",
+      "boardId": "artboard-72452b19-e64a-4a6a-b9d2-ae9761a5be29",
+      "animationId": "anim-idle-personagem",
+      "file": "farol-b1-a1.c5c5cf1d5ef6.edi-animation.json",
+      "sha256": "c5c5cf1d5ef6a8d2f7532a5285ad9484a6e6e5a34020233f6b2e250607a71f75",
+      "bytes": 238227,
+      "poster": {
+        "file": "farol-b1-a1.6ea6dfba22c6.png",
+        "sha256": "6ea6dfba22c64525fe126266f4f3ebbda6d12bf9d64ab1243a3ee81f214404ae",
+        "bytes": 90095,
+        "width": 512,
+        "height": 512
+      },
+      "title": "farol · Idle",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "pensando-b1-a1",
+      "source": "pensando.edisvg",
+      "sourceSha256": "57987df42f07cf606378b25d916e2c549ebfeb2e7f08aace893d30ccf73eae7d",
+      "boardId": "artboard-929f47b1-4ec1-4514-9faa-be0079de1416",
+      "animationId": "anim-pensando",
+      "file": "pensando-b1-a1.4b482ff7f707.edi-animation.json",
+      "sha256": "4b482ff7f707c0ec0842439a071643afa654a6e8716f994df2efa3e641840f63",
+      "bytes": 225813,
+      "poster": {
+        "file": "pensando-b1-a1.b3eb4c4eb601.png",
+        "sha256": "b3eb4c4eb6011771908632750e40ca57c0f7f59fa890480c9ae0da09e2cc3bb8",
+        "bytes": 51065,
+        "width": 512,
+        "height": 512
+      },
+      "title": "pensando · Pensando",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "pensando-b1-a2",
+      "source": "pensando.edisvg",
+      "sourceSha256": "57987df42f07cf606378b25d916e2c549ebfeb2e7f08aace893d30ccf73eae7d",
+      "boardId": "artboard-929f47b1-4ec1-4514-9faa-be0079de1416",
+      "animationId": "anim-voo-pensativo",
+      "file": "pensando-b1-a2.889f1aff3d75.edi-animation.json",
+      "sha256": "889f1aff3d759c3affd82a134d592162dc28f229636de0ed4ba0c8a2c1b28990",
+      "bytes": 248483,
+      "poster": {
+        "file": "pensando-b1-a2.c9136e76235b.png",
+        "sha256": "c9136e76235b62b3485d0271a2ffb5a900a681d51d630cd45a0a0873956c0cb5",
+        "bytes": 68060,
+        "width": 512,
+        "height": 512
+      },
+      "title": "pensando · Voo pensativo",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "saudacao-b1-a1",
+      "source": "saudacao.edisvg",
+      "sourceSha256": "54957d1e3b451afd6d7e8b7f5e3554ee12f224ba2db0530a17d0c019c7065a15",
+      "boardId": "artboard-f6066e33-20ca-4f89-b78d-31aa3f0149af",
+      "animationId": "anim-voar-acenar",
+      "file": "saudacao-b1-a1.74ddc648b93e.edi-animation.json",
+      "sha256": "74ddc648b93e09335dac8628609401dc86b6412ea9bfbde67d30197a9911e769",
+      "bytes": 165396,
+      "poster": {
+        "file": "saudacao-b1-a1.f9c899ba543a.png",
+        "sha256": "f9c899ba543af0d1974397ad82474bf40861ebc806d240179eb0d06bfb06c17f",
+        "bytes": 40894,
+        "width": 512,
+        "height": 512
+      },
+      "title": "saudacao · Voar e acenar",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "sources",
+      "key": "saudacao-b2-a1",
+      "source": "saudacao.edisvg",
+      "sourceSha256": "54957d1e3b451afd6d7e8b7f5e3554ee12f224ba2db0530a17d0c019c7065a15",
+      "boardId": "artboard-0e9c4809-fe40-48ba-a38d-369c9084bb39",
+      "animationId": "anim-voar-acenar",
+      "file": "saudacao-b2-a1.9d13309892e7.edi-animation.json",
+      "sha256": "9d13309892e7d545b06151b03f5f99d9fd391a5c5176b67074ed1f66d4a5b819",
+      "bytes": 112720,
+      "poster": {
+        "file": "saudacao-b2-a1.ddd93b2ad087.png",
+        "sha256": "ddd93b2ad08743fdcefc24633f8054ffa085b39bd00e2a45d363cdb89d5adfcc",
+        "bytes": 45736,
+        "width": 512,
+        "height": 512
+      },
+      "title": "saudacao · Voar e acenar",
+      "inputs": [],
+      "machines": []
+    },
+    {
+      "collection": "derived",
+      "key": "bau-aberto-b1-a1",
+      "source": "bau-aberto.edisvg",
+      "sourceSha256": "11115ae2c4e5eea08c27e4c8e6284a21c2bd10fdb812b2ab6978ace75dcee118",
+      "boardId": "artboard-64e3f175-1e5c-41d3-af8c-f5f498912d1f",
+      "animationId": null,
+      "file": "bau-aberto-b1-a1.ec8a0d4e5c0e.edi-animation.json",
+      "sha256": "ec8a0d4e5c0e0cbed77a214a0690f82e135cecacb64f4d1edc7fd915131915bd",
+      "bytes": 248224,
+      "poster": {
+        "file": "bau-aberto-b1-a1.ea20c2228d53.png",
+        "sha256": "ea20c2228d53c01ab289f314b1c7fdcc7e7e2c081a6a9a57ed5c0119feb5ff66",
+        "bytes": 44925,
+        "width": 512,
+        "height": 512
+      },
+      "title": "bau-aberto · Baú",
+      "inputs": [
+        {
+          "name": "aberto",
+          "kind": "boolean"
+        }
+      ],
+      "machines": [
+        "Baú"
+      ]
+    },
+    {
+      "collection": "derived",
+      "key": "zappy-falando-b1-a1",
+      "source": "zappy-falando.edisvg",
+      "sourceSha256": "ab7aba0473a5d3e40736f3f181c5a198904f6b5da46f94db1191d74d1df70aeb",
+      "boardId": "artboard-f6066e33-20ca-4f89-b78d-31aa3f0149af",
+      "animationId": null,
+      "file": "zappy-falando-b1-a1.676fc8cf754f.edi-animation.json",
+      "sha256": "676fc8cf754f828a7bcafc21966a46bbfe174d29c903cb999ca1796d0ffc1f77",
+      "bytes": 167637,
+      "poster": {
+        "file": "zappy-falando-b1-a1.0edee7526d49.png",
+        "sha256": "0edee7526d49ec189d02da5e0d573960f3fa4033b34d1b84112f251663f4cc4d",
+        "bytes": 39846,
+        "width": 512,
+        "height": 512
+      },
+      "title": "zappy-falando · Fala",
+      "inputs": [
+        {
+          "name": "falando",
+          "kind": "boolean"
+        }
+      ],
+      "machines": [
+        "Fala"
+      ]
+    },
+    {
+      "collection": "derived",
+      "key": "zappy-falando-b2-a1",
+      "source": "zappy-falando.edisvg",
+      "sourceSha256": "ab7aba0473a5d3e40736f3f181c5a198904f6b5da46f94db1191d74d1df70aeb",
+      "boardId": "artboard-0e9c4809-fe40-48ba-a38d-369c9084bb39",
+      "animationId": "anim-voar-acenar",
+      "file": "zappy-falando-b2-a1.19581fad9aac.edi-animation.json",
+      "sha256": "19581fad9aacb7cf61dfd5fd1bb6e2b4ab6e4d7265bc2fd259d52a643ec7f5cb",
+      "bytes": 112933,
+      "poster": {
+        "file": "zappy-falando-b2-a1.ddd93b2ad087.png",
+        "sha256": "ddd93b2ad08743fdcefc24633f8054ffa085b39bd00e2a45d363cdb89d5adfcc",
+        "bytes": 45736,
+        "width": 512,
+        "height": 512
+      },
+      "title": "zappy-falando · Voar e acenar",
+      "inputs": [],
+      "machines": []
+    }
+  ]
+}

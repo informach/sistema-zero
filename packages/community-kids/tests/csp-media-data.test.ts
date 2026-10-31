@@ -55,7 +55,7 @@ describe('CSP: o som embutido do Estúdio precisa poder tocar', () => {
 })
 
 /**
- * O mascote Zappy animado é Rive, ou seja, WebAssembly — e `'wasm-unsafe-eval'` é
+ * O layout do player ediSVG usa Yoga em WebAssembly — e `'wasm-unsafe-eval'` é
  * uma KEYWORD à parte: nem `https:` nem `'unsafe-inline'` no `script-src` liberam a
  * compilação de um módulo WASM. Sem ela o Chrome recusa, e a recusa é do mesmo
  * feitio do defeito do som acima: **silenciosa**. O Zappy simplesmente nunca sai do
@@ -71,10 +71,10 @@ describe('CSP: o mascote animado precisa poder compilar WASM', () => {
   })
 
   /**
-   * ⚠️ Desde 09/2026 a ARTE DA TRILHA também é Rive, e ela mora no R2 público
+   * ⚠️ Desde 09/2026 a ARTE DA TRILHA também é ediSVG, e ela mora no R2 público
    * (outra origem). O `<img>` que ela substituiu dispensava `connect-src`; o
-   * runtime lê o `.riv` por `fetch().arrayBuffer()`, que NÃO dispensa. Apertar
-   * esta diretiva apagaria a arte de toda trilha — e, como o `TrailRive` não tem
+   * player lê o JSON declarativo por fetch, que NÃO dispensa. Apertar
+   * esta diretiva apagaria a arte de toda trilha — e, como o `TrailUnitBody` não tem
    * fallback, o sintoma seria "a arte sumiu", sem erro na UI.
    */
   it('kids: TODA diretiva connect-src emitida alcança o R2 público', async () => {

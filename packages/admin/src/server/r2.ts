@@ -163,6 +163,12 @@ export interface R2PutObjectPrivateInput {
   contentType: string
 }
 
+/** Removes an object from the public bucket, for rolling back this upload's own new keys. */
+export async function r2DeletePublicObject(key: string): Promise<void> {
+  const cfg = requireR2Config()
+  await getClient(cfg).send(new DeleteObjectCommand({ Bucket: cfg.bucket, Key: normalizeKey(key) }))
+}
+
 /**
  * Sobe um objeto no bucket PRIVADO (materiais didáticos). Devolve só a key —
  * NUNCA existe URL pública; o download é servido pelo community (com marca d'água).

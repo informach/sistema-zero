@@ -34,6 +34,7 @@ tmp
 # Acervo editorial, planos e provas ficam no Git/local, nunca no contexto das imagens.
 # Regras ancoradas na raiz: os assets, manuais e fontes dos pacotes continuam disponíveis.
 /docs
+/art
 /.agents
 /.compozy
 /experiments
@@ -68,3 +69,6 @@ tmp
 **/*.pyc
 **/*.pyo
 **/.astro
+
+# Legacy generated animation binaries must not leak from a developer cache into a clean image.
+**/public/rive

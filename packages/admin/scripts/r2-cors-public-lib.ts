@@ -3,7 +3,7 @@ import { STUDENT_APP_ORIGINS } from './student-app-origins'
 
 export const PUBLIC_READ_RULE_ID = 'public-direct-read'
 export const KIDS_STAGING_ORIGIN = 'https://community-kids-staging.up.railway.app'
-export const PUBLIC_CORS_PROBE_KEY = 'admin/module-rive/cors-probes/public-read-v1.riv'
+export const PUBLIC_CORS_PROBE_KEY = 'admin/media/cors-probes/public-read-v1.txt'
 export const PUBLIC_CORS_PROBE_BODY = 'sistema-zero-public-cors-probe:v1'
 
 /**

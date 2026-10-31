@@ -18,6 +18,7 @@ import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/pro
 import { t } from 'elysia'
 import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
 import { InteractiveBlockSchema } from './learning.dtos'
+import { moduleAnimationInputSchema } from './module-animation.schema'
 
 // Ids que vão a colunas `uuid` validam o FORMATO na borda — um id lixo chegaria
 // ao Postgres como 22P02 e viraria 500 INTERNAL_ERROR (padrão do catalog).
@@ -824,8 +825,6 @@ const HTTP_URL_PATTERN = '^https?://'
 const LESSON_LINK_URL_PATTERN = '^(?:https?://|/como-fazer/[a-z0-9]+(?:-[a-z0-9]+)*(?:[?#].*)?$)'
 // Mídia que pode viver no bucket R2 PRIVADO: URL http(s) OU `r2priv:<key>`.
 const MEDIA_REF_PATTERN = '^(?:https?://|r2priv:).'
-// Só `.riv`: ver o comentário em `ModuleBody.riveUrl`.
-const RIVE_URL_PATTERN = '^https?://.+\\.riv$'
 const NULLABLE_URL = t.Optional(
   t.Union([t.String({ maxLength: 2000, pattern: HTTP_URL_PATTERN }), t.Null()]),
 )
@@ -905,18 +904,7 @@ export const ListCoursesQuery = t.Object({
 export const ModuleBody = t.Object({
   title: TITLE,
   summary: NULLABLE_TEXT,
-  // Animação Rive (.riv) da unidade na trilha Kids. Ausente preserva a escolha ao
-  // editar com um Admin antigo; null remove. Quem confere os BYTES (assinatura
-  // `RIVE`) e o teto é o Admin, antes de publicar no R2 público.
-  // ⚠️ Aqui o padrão é mais estreito que o `NULLABLE_URL` dos outros campos de
-  // mídia, e de propósito: capa e afins vão para um `<img>`, que tolera qualquer
-  // URL, enquanto esta é lida pelo runtime do Rive. Uma URL que não termina em
-  // `.riv` é DESCARTADA no render (`moduleRiveSrc`), então guardá-la produziria um
-  // módulo sem arte indistinguível de "ninguém subiu nada". Recusar na borda deixa
-  // "sem arte" com um significado só.
-  riveUrl: t.Optional(
-    t.Union([t.String({ minLength: 1, maxLength: 2000, pattern: RIVE_URL_PATTERN }), t.Null()]),
-  ),
+  animation: t.Optional(moduleAnimationInputSchema()),
 })
 
 export const LessonBody = t.Object({

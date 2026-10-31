@@ -1227,10 +1227,8 @@ a.kid-pop:has(> .kids-carta):hover {
     /* O `top` considera os limites reais dos nós, medidos pelo TrailUnitBody. */
     z-index: 0;
     width: min(250px, 100%);
-    /* ⚠️ O <canvas> do Rive NÃO tem proporção intrínseca: com `height: auto` o
-       navegador cai nos 150px de fábrica dos elementos substituíveis. Quem manda
-       na altura é a caixa. A proporção 9/8 acompanha a largura; Fit.Contain
-       preserva o artboard inteiro dentro dela. */
+    /* A caixa reserva espaço antes da carga. O player absoluto contém o desenho
+       inteiro sem deixar a proporção intrínseca do PNG ampliar esta caixa. */
     aspect-ratio: 9 / 8;
     pointer-events: none;
     user-select: none;
@@ -1301,9 +1299,11 @@ a.kid-pop:has(> .kids-carta):hover {
   /* A arte do Rive aproveita quase todo o artboard; deixá-la preencher o nó
      esconderia a borda e o degrau 3D. O botão e sua área de toque continuam
      com `--trail-node`; só a ilustração fica mais confortável dentro dele. */
-  .kids-chest-rive {
+  .kids-chest-artwork {
     width: 72%;
     height: 72%;
+    display: grid;
+    place-items: center;
   }
   .kids-node--chest-closed {
     background-color: var(--card);

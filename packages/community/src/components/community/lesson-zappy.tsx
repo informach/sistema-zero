@@ -1,19 +1,18 @@
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import type { DialoguePose } from '@sistemazero/member-shell/lib/types'
-import celebrating from '../../../../community-kids/public/zappy/celebrating.webp'
-import happy from '../../../../community-kids/public/zappy/happy.webp'
-import speaking from '../../../../community-kids/public/zappy/speaking.webp'
-import thinking from '../../../../community-kids/public/zappy/thinking.webp'
 
 // As ilustrações são as mesmas da comunidade Kids, empacotadas pelo Next para esta aplicação.
-const poses = { celebrating, happy, speaking, thinking } satisfies Record<
-  DialoguePose,
-  { src: string }
->
+const poses = {
+  celebrating: BUILTIN_ART.celebrating.poster,
+  happy: BUILTIN_ART.happy.poster,
+  speaking: BUILTIN_ART.speaking.poster,
+  thinking: BUILTIN_ART.thinking.poster,
+} satisfies Record<DialoguePose, { url: string }>
 
 export function lessonZappy(pose: DialoguePose) {
   return (
     <img
-      src={(poses[pose] ?? speaking).src}
+      src={(poses[pose] ?? poses.speaking).url}
       alt=""
       aria-hidden="true"
       draggable={false}
