@@ -1287,7 +1287,15 @@ escondida (a terceira estrela), cronômetro, resultado, fantasma e o melhor no s
   Vale, de 0° a 105° em volta da ilha (o trecho de areia sem nada no caminho; o teste confere cada
   trecho contra os colisores e o chão), e cinco fósseis brilhantes. Descer do dino no meio para a
   corrida. Estrela do tempo: 8 s.
-- O barco ganha a regata das boias (L3b).
+- **Volta das boias** (`barco-regata`, `sistemas/regata.ts`, `mundo/regata-das-boias.tsx`): no cais
+  da sua ilha (com a rede do barco aberta), o painel do barco oferece "Volta das boias". O barco
+  sai pelo canal de sempre, dá a volta inteira em volta do arquipélago por fora do anel
+  (`criarRotaDaRegata`, uns 1.200 m) e volta ao mesmo cais. Na viagem da regata, o direcional
+  para a frente rema (até 40% mais rápido) e para os lados leva o barco até 3 m da linha da rota,
+  longe dos cais (perto deles a manobra de atracar continua a mesma). Oito boias de presente
+  ficam alternando para os lados, longe da linha (reto pelo meio não pega nenhuma), uma
+  escondida. Estrela do tempo: 90 s (sem remar são uns 100 s). "Parar" termina a regata e o barco
+  volta ao cais.
 
 ### 6.13.2 Os patins (fase2-05)
 

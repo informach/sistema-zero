@@ -100,6 +100,7 @@ export const PERCURSOS = [
   // corrida da montaria pela praia do Vale). Sem versão nova: o registro é parcial.
   'pico-treno',
   'vale-montaria',
+  'barco-regata',
 ] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
