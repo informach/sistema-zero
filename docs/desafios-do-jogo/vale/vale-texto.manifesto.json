@@ -223,9 +223,7 @@
                 {
                   "type": "funcDecl",
                   "name": "criarOnda",
-                  "params": [
-                    "numero"
-                  ],
+                  "params": ["numero"],
                   "body": [
                     {
                       "type": "return",
@@ -242,9 +240,7 @@
                 {
                   "type": "funcDecl",
                   "name": "quantasNaOnda",
-                  "params": [
-                    "numero"
-                  ],
+                  "params": ["numero"],
                   "body": [
                     {
                       "type": "return",
@@ -273,10 +269,7 @@
                 {
                   "type": "funcDecl",
                   "name": "dentroDoAlcance",
-                  "params": [
-                    "t",
-                    "cinza"
-                  ],
+                  "params": ["t", "cinza"],
                   "body": [
                     {
                       "type": "return",
@@ -293,10 +286,7 @@
                 {
                   "type": "funcDecl",
                   "name": "escolherAlvo",
-                  "params": [
-                    "t",
-                    "lista"
-                  ],
+                  "params": ["t", "lista"],
                   "body": [
                     {
                       "type": "return",
@@ -312,9 +302,7 @@
                 {
                   "type": "funcDecl",
                   "name": "andar",
-                  "params": [
-                    "cinza"
-                  ],
+                  "params": ["cinza"],
                   "body": [
                     {
                       "type": "var",
@@ -4433,9 +4421,7 @@
                 {
                   "type": "funcDecl",
                   "name": "criarOnda",
-                  "params": [
-                    "numero"
-                  ],
+                  "params": ["numero"],
                   "body": [
                     {
                       "type": "var",
@@ -4566,9 +4552,7 @@
                 {
                   "type": "funcDecl",
                   "name": "quantasNaOnda",
-                  "params": [
-                    "numero"
-                  ],
+                  "params": ["numero"],
                   "body": [
                     {
                       "type": "return",
@@ -4597,10 +4581,7 @@
                 {
                   "type": "funcDecl",
                   "name": "dentroDoAlcance",
-                  "params": [
-                    "t",
-                    "cinza"
-                  ],
+                  "params": ["t", "cinza"],
                   "body": [
                     {
                       "type": "return",
@@ -4641,10 +4622,7 @@
                 {
                   "type": "funcDecl",
                   "name": "escolherAlvo",
-                  "params": [
-                    "t",
-                    "lista"
-                  ],
+                  "params": ["t", "lista"],
                   "body": [
                     {
                       "type": "var",
@@ -4760,9 +4738,7 @@
                 {
                   "type": "funcDecl",
                   "name": "andar",
-                  "params": [
-                    "cinza"
-                  ],
+                  "params": ["cinza"],
                   "body": [
                     {
                       "type": "var",
@@ -9325,21 +9301,15 @@
               "name": "quantasNaOnda",
               "cases": [
                 {
-                  "args": [
-                    1
-                  ],
+                  "args": [1],
                   "expected": 3
                 },
                 {
-                  "args": [
-                    2
-                  ],
+                  "args": [2],
                   "expected": 4
                 },
                 {
-                  "args": [
-                    5
-                  ],
+                  "args": [5],
                   "expected": 7
                 }
               ]

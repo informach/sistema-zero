@@ -17,7 +17,6 @@ import {
   key,
   left,
   n,
-  opacity,
   restart,
   right,
   set,

@@ -11,9 +11,8 @@ test('C02 Recife em Python: JSON corresponde à fonte e cumpre as réguas comuns
   for (const publico of ['kids', 'adulto'] as const) {
     const manifesto = criarManifestoPython(publico)
     const arquivo = `./recife-python${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`
-    expect(await Bun.file(new URL(arquivo, import.meta.url)).text()).toBe(
-      `${JSON.stringify(manifesto, null, 2)}\n`,
-    )
+    // O arquivo sai do gerador já formatado pelo Biome (`gravar-manifesto.ts`): vale o conteúdo.
+    expect(await Bun.file(new URL(arquivo, import.meta.url)).json()).toEqual(manifesto)
     for (const d of manifesto.desafios) {
       expect(d.ilha).toBe('recife')
       conferirDesafioC02(d)

@@ -112,54 +112,15 @@
               "name": "ler_fase",
               "cases": [
                 {
-                  "args": [
-                    [
-                      "##.",
-                      "..#"
-                    ],
-                    "#"
-                  ],
-                  "expected": [
-                    [
-                      0,
-                      0
-                    ],
-                    [
-                      1,
-                      0
-                    ],
-                    [
-                      2,
-                      1
-                    ]
-                  ]
+                  "args": [["##.", "..#"], "#"],
+                  "expected": [[0, 0], [1, 0], [2, 1]]
                 },
                 {
-                  "args": [
-                    [
-                      "..C",
-                      "C.."
-                    ],
-                    "C"
-                  ],
-                  "expected": [
-                    [
-                      2,
-                      0
-                    ],
-                    [
-                      0,
-                      1
-                    ]
-                  ]
+                  "args": [["..C", "C.."], "C"],
+                  "expected": [[2, 0], [0, 1]]
                 },
                 {
-                  "args": [
-                    [
-                      "...."
-                    ],
-                    "#"
-                  ],
+                  "args": [["...."], "#"],
                   "expected": []
                 }
               ]
@@ -176,52 +137,20 @@
               "name": "pousar",
               "cases": [
                 {
-                  "args": [
-                    100,
-                    112,
-                    5,
-                    110
-                  ],
-                  "expected": [
-                    110,
-                    0
-                  ]
+                  "args": [100, 112, 5, 110],
+                  "expected": [110, 0]
                 },
                 {
-                  "args": [
-                    100,
-                    105,
-                    5,
-                    110
-                  ],
-                  "expected": [
-                    105,
-                    5
-                  ]
+                  "args": [100, 105, 5, 110],
+                  "expected": [105, 5]
                 },
                 {
-                  "args": [
-                    115,
-                    120,
-                    5,
-                    110
-                  ],
-                  "expected": [
-                    120,
-                    5
-                  ]
+                  "args": [115, 120, 5, 110],
+                  "expected": [120, 5]
                 },
                 {
-                  "args": [
-                    112,
-                    108,
-                    -4,
-                    110
-                  ],
-                  "expected": [
-                    108,
-                    -4
-                  ]
+                  "args": [112, 108, -4, 110],
+                  "expected": [108, -4]
                 }
               ]
             },
@@ -237,27 +166,15 @@
               "name": "proxima_fase",
               "cases": [
                 {
-                  "args": [
-                    0,
-                    true,
-                    true
-                  ],
+                  "args": [0, true, true],
                   "expected": 1
                 },
                 {
-                  "args": [
-                    0,
-                    false,
-                    true
-                  ],
+                  "args": [0, false, true],
                   "expected": 0
                 },
                 {
-                  "args": [
-                    1,
-                    true,
-                    false
-                  ],
+                  "args": [1, true, false],
                   "expected": 1
                 }
               ]
