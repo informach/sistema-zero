@@ -4,9 +4,12 @@ import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { memo, useMemo } from 'react'
 import { Box3, Vector3 } from 'three'
 import banheiroGlb from '../assets/casa/casa-banheiro.glb'
+import cafeGlb from '../assets/casa/casa-cafe.glb'
 import cozinhaGlb from '../assets/casa/casa-cozinha.glb'
+import festasGlb from '../assets/casa/casa-festas.glb'
 import salaGlb from '../assets/casa/casa-sala.glb'
 import { useJogo } from '../estado/contexto'
+import { useFesta } from '../estado/festas'
 import {
   areaDoMovel,
   type CategoriaDoMovel,
@@ -16,21 +19,32 @@ import {
   FUNDO_DO_GIRO,
   type MovelPosto,
   moveisDaObra,
+  movelAparece,
 } from '../sistemas/construcao/moveis'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ComReserva, copiarNo, materiaisDe, useModelo } from './modelos'
 
-/** Os móveis de cada cômodo (`arte/casa/comodos.py`): um nó por móvel, com o nome do id. */
+/**
+ * Os móveis de cada cômodo (`arte/casa/comodos.py`), do café (`cafe.py`) e da festa (`festas.py`):
+ * um nó por móvel, com o nome do id.
+ */
 const ARQUIVO_DOS_MOVEIS: Readonly<Record<CategoriaDoMovel, string>> = {
   cozinha: new URL(cozinhaGlb, import.meta.url).href,
   sala: new URL(salaGlb, import.meta.url).href,
   banheiro: new URL(banheiroGlb, import.meta.url).href,
+  cafe: new URL(cafeGlb, import.meta.url).href,
+  festa: new URL(festasGlb, import.meta.url).href,
 }
 
+/** Os dos cômodos carregam antes; o café e a festa, só quando há uma peça deles na casa. */
 export function carregarMoveis() {
-  for (const url of Object.values(ARQUIVO_DOS_MOVEIS)) useGLTF.preload(url, false, false)
+  for (const c of ['cozinha', 'sala', 'banheiro'] as const)
+    useGLTF.preload(ARQUIVO_DOS_MOVEIS[c], false, false)
 }
+
+/** O que acende na decoração de festa (README de `arte/casa`), aceso à noite como a luminária. */
+const ACENDE_NA_FESTA = ['luz', 'lanternaAmarela', 'lanternaRosa', 'fogo', 'brasa', 'estrela']
 
 /** A peça de parede fica com a origem a 0,20 da linha da grade (README de `arte/casa`). */
 const DA_LINHA_DA_PAREDE = 0.2
@@ -59,6 +73,20 @@ function LuzDosMoveis() {
   const luzes = useMemo(() => materiaisDe(sala, 'luz'), [sala])
   useFrame(() => {
     for (const m of luzes) m.emissiveIntensity = ambiente.noite ? 1.4 : 0.1
+  })
+  return null
+}
+
+/** As luzes, as lanternas, a fogueira e a estrela da decoração de festa acendem à noite. */
+function LuzDaFesta() {
+  const { ambiente } = useJogo()
+  const festas = useModelo(ARQUIVO_DOS_MOVEIS.festa)
+  const luzes = useMemo(
+    () => ACENDE_NA_FESTA.flatMap((nome) => materiaisDe(festas, nome)),
+    [festas],
+  )
+  useFrame(() => {
+    for (const m of luzes) m.emissiveIntensity = ambiente.noite ? 1.4 : 0.3
   })
   return null
 }
@@ -112,7 +140,13 @@ const MovelNaObra = memo(function MovelNaObra({
 
 /** Os móveis postos na obra da casa (os da sua, ou os do irmão na visita). */
 export function MoveisDaObra({ obra, base }: { obra: Obra; base: [number, number, number] }) {
-  const moveis = useMemo(() => moveisDaObra(obra), [obra])
+  const festa = useFesta()
+  // A decoração de festa fica guardada fora da festa dela, sem aparecer nem colidir.
+  const moveis = useMemo(
+    () => moveisDaObra(obra).filter((m) => movelAparece(m.id, festa)),
+    [obra, festa],
+  )
+  const temFesta = moveis.some((m) => DADOS_DO_MOVEL[m.id].categoria === 'festa')
   if (moveis.length === 0) return null
   return (
     <ComReserva reserva={null}>
@@ -121,6 +155,7 @@ export function MoveisDaObra({ obra, base }: { obra: Obra; base: [number, number
         <MovelNaObra key={`${m.id}@${m.x},${m.z},${m.giro}`} m={m} base={base} />
       ))}
       <LuzDosMoveis />
+      {temFesta ? <LuzDaFesta /> : null}
     </ComReserva>
   )
 }

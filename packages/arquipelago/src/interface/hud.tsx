@@ -45,6 +45,7 @@ import { Album, PAINEL_DO_ALBUM } from './album'
 import { PainelDoBarco } from './barco'
 import { PainelDoBento } from './bento'
 import { PainelDoBicho } from './bicho'
+import { PainelDoBrinquedo } from './brinquedo-de-minijogo'
 import { CadernoDosLumis } from './caderno-dos-lumis'
 import { PainelDaCapi } from './capi'
 import { LegendaDaChegada } from './chegada'
@@ -1003,6 +1004,7 @@ export function Hud() {
       <PainelDoBarco />
       <PainelDoQuadro />
       <PainelDaFeira />
+      <PainelDoBrinquedo />
       <PainelDosConvidados />
       <PainelDaCapi />
       <PainelDoBento />

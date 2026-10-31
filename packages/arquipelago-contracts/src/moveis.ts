@@ -3,7 +3,8 @@ import { z } from 'zod'
 /**
  * Os móveis da cozinha, da sala e do banheiro (`arte/casa/comodos.py`), postos pelo modo Construir
  * nos cômodos novos da casa (V20, 30/10/2026). O salvamento guarda cada um pelo índice nesta
- * lista: ela só cresce no fim, e a ordem nunca muda (`tests/salvamento-v20.test.ts` trava).
+ * lista: ela só cresce no fim, e a ordem nunca muda (`tests/salvamento-v20.test.ts` trava). Desde
+ * 31/10/2026 vêm também o café, a banca de feira e a decoração de festa.
  */
 export const MOVEIS = [
   // Cozinha
@@ -30,6 +31,26 @@ export const MOVEIS = [
   'box-chuveiro',
   'tapetinho',
   'toalheiro',
+  // Café e banca de feira (B7, 31/10/2026; `arte/casa/cafe.py`)
+  'cafe-mesa-redonda',
+  'cafe-cadeira',
+  'cafe-balcao',
+  'cafe-vitrine-doces',
+  'cafe-lousa-cardapio',
+  'cafe-banca-feira',
+  'cafe-caixote',
+  // Decoração de festa (B9, 31/10/2026; `arte/casa/festas.py`)
+  'festa-junina-bandeirinhas',
+  'festa-junina-lanterna-papel',
+  'festa-junina-fogueira',
+  'festa-carnaval-serpentina',
+  'festa-carnaval-mascara',
+  'festa-carnaval-confete',
+  'festa-fim-de-ano-arvore',
+  'festa-fim-de-ano-guirlanda',
+  'festa-fim-de-ano-estrela-janela',
+  'festa-lanternas-lanterna-chao',
+  'festa-lanternas-varal-de-luz',
 ] as const
 export type Movel = (typeof MOVEIS)[number]
 

@@ -92,7 +92,7 @@ describe('gato e cachorro andam e correm sem escorregar (31/10/2026)', () => {
       join(import.meta.dir, '..', 'src', 'mundo', 'pet-que-acompanha.tsx'),
       'utf8',
     )
-    expect(fonte).toContain('<RoomGlbModel itemId={petId}')
+    expect(fonte).toMatch(/<RoomGlbModel\s+itemId=\{petId\}/)
     expect(fonte).not.toMatch(/scale/)
   })
 

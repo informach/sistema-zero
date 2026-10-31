@@ -7,6 +7,7 @@ import { BancosDaVila } from './bancos-da-vila'
 import { BandaDoPico } from './banda-do-pico'
 import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
+import { BrinquedoDeMinijogo } from './brinquedo-de-minijogo'
 import { ColecoesDaIlha } from './colecoes-das-ilhas'
 import { CorrenteDoPico } from './corrente-de-ar'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
@@ -32,7 +33,8 @@ const CORES_DO_FLOCO: CoresDoColetavel = {
  * O Pico Gelado vivo (fase3-06): só existe com a ilha ativa. O Floco no palco, a subida ao cume
  * contra o relógio pela trilha em espiral, o trenó que desce por ela e o cristal raro da caverna
  * (fase3-07); a banda do festival de inverno, o fogareiro e os bancos do iglu (fase3-08); o vento
- * que sobe na frente da parede de gelo, para o planador (fase3-09).
+ * que sobe na frente da parede de gelo, para o planador (fase3-09); o quiosque do festival com os
+ * minijogos da ilha (B10).
  */
 export function PicoVivo({
   ilha,
@@ -73,6 +75,7 @@ export function PicoVivo({
       <CristalDoPico modelo={preparada.modelo} meio={meio} giro={giro} />
       <BandaDoPico modelo={preparada.modelo} meio={meio} giro={giro} troca={troca} />
       <BancosDaVila colisores={preparada.colisores} meio={meio} />
+      <BrinquedoDeMinijogo ilha="pico" modelo={preparada.modelo} meio={meio} giro={giro} />
       <CorrenteDoPico modelo={preparada.modelo} meio={meio} giro={giro} />
       {subida ? (
         <CorridaNaIlha

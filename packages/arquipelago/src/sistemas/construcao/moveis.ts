@@ -1,4 +1,11 @@
-import { MOVEIS, type Movel, type MovelNaObra, type Obra } from '@sistemazero/arquipelago-contracts'
+import {
+  type Festa,
+  ilhaAberta,
+  MOVEIS,
+  type Movel,
+  type MovelNaObra,
+  type Obra,
+} from '@sistemazero/arquipelago-contracts'
 import { type Planta, planta } from './comodos'
 import { type Aresta, arestasDaAbertura, chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
@@ -10,9 +17,19 @@ import { celulasDoObjeto } from './projeto-azul'
  * `arte/casa/comodos.py` (contrato no README de lá). Eles vão nos cômodos novos da casa (o quarto é
  * o da plataforma), quantos couberem, e não têm função: deixam o cômodo com cara de cozinha, de
  * sala ou de banheiro e somam aconchego. O salvamento guarda cada um em tupla (`MovelNaObra`).
+ *
+ * Desde 31/10/2026: o café e a banca de feira (B7) abrem com a Vila Doce, e a decoração de festa
+ * (B9) só aparece, no catálogo e na casa, durante a festa dela (`festa`). Fora da festa a peça
+ * continua guardada onde estava e volta na próxima.
  */
-export type CategoriaDoMovel = 'cozinha' | 'sala' | 'banheiro'
-export const CATEGORIAS_DOS_MOVEIS: readonly CategoriaDoMovel[] = ['cozinha', 'sala', 'banheiro']
+export type CategoriaDoMovel = 'cozinha' | 'sala' | 'banheiro' | 'cafe' | 'festa'
+export const CATEGORIAS_DOS_MOVEIS: readonly CategoriaDoMovel[] = [
+  'cozinha',
+  'sala',
+  'banheiro',
+  'cafe',
+  'festa',
+]
 
 export interface DadosDoMovel {
   nome: string
@@ -27,6 +44,8 @@ export interface DadosDoMovel {
   planta?: true
   /** Peça de parede: a altura do meio dela acima do piso (as cenas de `arte/casa/cenas.py`). */
   altura?: number
+  /** Decoração de festa: só aparece durante esta festa. */
+  festa?: Festa
 }
 
 export const DADOS_DO_MOVEL: Readonly<Record<Movel, DadosDoMovel>> = {
@@ -78,6 +97,132 @@ export const DADOS_DO_MOVEL: Readonly<Record<Movel, DadosDoMovel>> = {
     tapete: true,
   },
   toalheiro: { nome: 'Toalheiro', categoria: 'banheiro', area: null, altura: 1.2 },
+  'cafe-mesa-redonda': {
+    nome: 'Mesa redonda',
+    categoria: 'cafe',
+    area: { largura: 1, fundo: 1 },
+  },
+  'cafe-cadeira': { nome: 'Cadeira do café', categoria: 'cafe', area: { largura: 1, fundo: 1 } },
+  'cafe-balcao': { nome: 'Balcão do café', categoria: 'cafe', area: { largura: 2, fundo: 1 } },
+  'cafe-vitrine-doces': {
+    nome: 'Vitrine de doces',
+    categoria: 'cafe',
+    area: { largura: 1, fundo: 1 },
+  },
+  'cafe-lousa-cardapio': {
+    nome: 'Lousa do cardápio',
+    categoria: 'cafe',
+    area: null,
+    altura: 1.6,
+  },
+  'cafe-banca-feira': {
+    nome: 'Banca de feira',
+    categoria: 'cafe',
+    area: { largura: 2, fundo: 1 },
+  },
+  'cafe-caixote': { nome: 'Caixote', categoria: 'cafe', area: { largura: 1, fundo: 1 } },
+  'festa-junina-bandeirinhas': {
+    nome: 'Bandeirinhas',
+    categoria: 'festa',
+    area: null,
+    altura: 2.6,
+    festa: 'junina',
+  },
+  'festa-junina-lanterna-papel': {
+    nome: 'Lanterna de papel',
+    categoria: 'festa',
+    area: null,
+    altura: 2.2,
+    festa: 'junina',
+  },
+  'festa-junina-fogueira': {
+    nome: 'Fogueira de enfeite',
+    categoria: 'festa',
+    area: { largura: 1, fundo: 1 },
+    festa: 'junina',
+  },
+  'festa-carnaval-serpentina': {
+    nome: 'Serpentina',
+    categoria: 'festa',
+    area: null,
+    altura: 2.5,
+    festa: 'carnaval',
+  },
+  'festa-carnaval-mascara': {
+    nome: 'Máscara de parede',
+    categoria: 'festa',
+    area: null,
+    altura: 1.8,
+    festa: 'carnaval',
+  },
+  'festa-carnaval-confete': {
+    nome: 'Confete no chão',
+    categoria: 'festa',
+    area: { largura: 1, fundo: 1 },
+    tapete: true,
+    festa: 'carnaval',
+  },
+  'festa-fim-de-ano-arvore': {
+    nome: 'Árvore de fim de ano',
+    categoria: 'festa',
+    area: { largura: 1, fundo: 1 },
+    festa: 'fim-de-ano',
+  },
+  'festa-fim-de-ano-guirlanda': {
+    nome: 'Guirlanda',
+    categoria: 'festa',
+    area: null,
+    altura: 2,
+    festa: 'fim-de-ano',
+  },
+  'festa-fim-de-ano-estrela-janela': {
+    nome: 'Estrela de pendurar',
+    categoria: 'festa',
+    area: null,
+    altura: 1.7,
+    festa: 'fim-de-ano',
+  },
+  'festa-lanternas-lanterna-chao': {
+    nome: 'Lanterna de chão',
+    categoria: 'festa',
+    area: { largura: 1, fundo: 1 },
+    festa: 'lanternas',
+  },
+  'festa-lanternas-varal-de-luz': {
+    nome: 'Varal de luz',
+    categoria: 'festa',
+    area: null,
+    altura: 2.6,
+    festa: 'lanternas',
+  },
+}
+
+/**
+ * As categorias que a criança vê no Construir agora: o café e a banca com a Vila Doce aberta, e a
+ * decoração só durante uma festa.
+ */
+export function categoriasDisponiveis(
+  jornada: number,
+  festa: Festa | null,
+): readonly CategoriaDoMovel[] {
+  return CATEGORIAS_DOS_MOVEIS.filter(
+    (c) => (c !== 'cafe' || ilhaAberta('vila-doce', jornada)) && (c !== 'festa' || festa !== null),
+  )
+}
+
+/** Os móveis de uma categoria no catálogo agora (da festa, só os da festa em vigor). */
+export function moveisDoCatalogo(categoria: CategoriaDoMovel, festa: Festa | null): Movel[] {
+  return MOVEIS.filter(
+    (id) =>
+      DADOS_DO_MOVEL[id].categoria === categoria &&
+      (DADOS_DO_MOVEL[id].festa === undefined || DADOS_DO_MOVEL[id].festa === festa),
+  )
+}
+
+/** O móvel aparece na casa agora? (a decoração de festa, só na festa dela) */
+export function movelAparece(id: Movel, festa: Festa | null): boolean {
+  const daFesta = DADOS_DO_MOVEL[id].festa
+  return daFesta === undefined || daFesta === festa
 }
 
 /** Um móvel lido da tupla do salvamento. */

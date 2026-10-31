@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## A ilha do minijogo (B10, 31/10/2026)
+
+- `GET /minijogos` (e a lista da família) traz `ilha` em cada minijogo quando o desafio existe no
+  banco: a ilha publicada (`metadados_publicados->>'ilha'`), senão a do rascunho. Sem migração (é
+  uma junção com `desafios`). A barraca da Vila Doce e o quiosque do Pico mostram os da ilha.
+- **Ordem de implantação:** o member-shell (e o Kids) antes do serviço, porque a lista dos
+  minijogos da família é conferida com o esquema estrito lá; o campo novo é opcional no contrato.
+
 ## Desafios na plataforma: curso, "Aprenda isso em", medição e pedido de morador (lote 8, 31/10/2026)
 
 - **A3:** `situacaoDoDesafio` ganhou `falta-curso` (depois da ilha, antes dos blocos): o desafio

@@ -1,7 +1,9 @@
 /**
  * Os móveis da cozinha, da sala e do banheiro no modo Construir, no navegador de verdade: a obra
  * de exemplo do playground (`?obra=exemplo`), a ferramenta Móveis com as abas, toques na grade,
- * a peça de parede achando a parede, a recusa no quarto e o Desfazer. Plataforma falsa, sem
+ * a peça de parede achando a parede, a recusa no quarto e o Desfazer. Desde 31/10/2026, com a
+ * Vila Doce aberta e a Festa Junina do playground (`posicao=3&festa=junina`), também as abas do
+ * café (B7) e da festa (B9), pondo peças no cômodo da direita. Plataforma falsa, sem
  * persistência. Compilar para Node como os outros:
  *
  *   bun build playground/verificar-moveis-browser.ts --target=node --external playwright-core \
@@ -168,6 +170,57 @@ try {
     console.log(
       `PASS ${tela.width}: abas, miniaturas${celular ? ' e fileira rolável' : ', recusa no quarto, pôr, aconchego e desfazer'}`,
     )
+    await contexto.close()
+  }
+  {
+    // O café e a festa (B7 e B9): só aparecem com a Vila Doce aberta e durante a festa.
+    const tela = { width: 1280, height: 800 }
+    const contexto = await browser.newContext({ viewport: tela })
+    await contexto.addInitScript(() => localStorage.setItem('arquipelago:medir', '1'))
+    const p = await contexto.newPage()
+    p.setDefaultTimeout(45_000)
+    const erros: string[] = []
+    p.on('pageerror', (e) => erros.push(e.message))
+    await p.goto(`${base}/?novo=1&persistir=0&obra=exemplo&posicao=3&festa=junina`, {
+      waitUntil: 'networkidle',
+    })
+    await p.getByRole('button', { name: 'Construir', exact: true }).click()
+    await p.getByRole('button', { name: 'Móveis', exact: true }).click()
+    await p.waitForTimeout(1800)
+    const pos = await p.evaluate(() => (globalThis as Janela).__arquipelagoDesenho?.camera)
+    assert(pos)
+    const cam = new PerspectiveCamera(55, tela.width / tela.height, 0.1, 1000)
+    cam.position.set(pos.x, pos.y, pos.z)
+    cam.lookAt(0, PISO, -3)
+    cam.updateMatrixWorld()
+    const tocar = async (x: number, z: number) => {
+      const v = new Vector3(x, PISO, z).project(cam)
+      await p.mouse.click(((v.x + 1) * tela.width) / 2, ((1 - v.y) * tela.height) / 2)
+      await p.waitForTimeout(250)
+    }
+    const abas = p.getByRole('group', { name: 'Cômodo dos móveis' })
+    const moveis = p.getByRole('group', { name: 'Móvel' })
+    const desfazer = p.getByRole('button', { name: '↶ Desfazer', exact: true })
+    await abas.getByRole('button', { name: 'Café e feira', exact: true }).click()
+    assert.equal(await moveis.getByRole('button').count(), 7)
+    await p.screenshot({ path: path.join(prints, 'moveis-cafe-1280.png') })
+    // No cômodo da direita (x 6 a 7, z -6 a -3; a planta fica em 7, -3): a banca no fundo.
+    await moveis.getByRole('button', { name: 'Banca de feira', exact: true }).click()
+    await tocar(6.5, -5.5)
+    assert(await desfazer.isEnabled())
+    await abas.getByRole('button', { name: 'Festa', exact: true }).click()
+    assert.equal(await moveis.getByRole('button').count(), 3)
+    await moveis.getByRole('button', { name: 'Fogueira de enfeite', exact: true }).click()
+    await tocar(6.5, -4.5)
+    await moveis.getByRole('button', { name: /^Bandeirinhas/ }).click()
+    await tocar(6.5, -5.9)
+    await p.waitForTimeout(1200)
+    await p.screenshot({ path: path.join(prints, 'moveis-festa-1280.png') })
+    await p.getByRole('button', { name: 'Pronto', exact: true }).click()
+    await p.waitForTimeout(1500)
+    await p.screenshot({ path: path.join(prints, 'moveis-cafe-festa-viver-1280.png') })
+    assert.deepEqual(erros, [])
+    console.log('PASS 1280: abas do café e da festa, banca, fogueira e bandeirinhas')
     await contexto.close()
   }
   console.log(`Prints: ${prints}`)

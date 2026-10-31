@@ -31,7 +31,8 @@ const obraAntiga = (): ObraAteV19 => ({
 
 test('a lista dos móveis só cresce no fim: a ordem dos 21 primeiros nunca muda', () => {
   expect(VERSAO_SALVAMENTO).toBe(21)
-  expect(MOVEIS).toEqual([
+  // Desde 31/10/2026 o café, a banca e a festa vêm depois deles (B7 e B9).
+  expect(MOVEIS.slice(0, 21)).toEqual([
     'balcao-pia',
     'balcao',
     'armario-alto',

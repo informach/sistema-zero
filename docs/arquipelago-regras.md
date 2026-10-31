@@ -2480,10 +2480,34 @@ faz o que as seções acima descrevem.
     pisam (torre de doces, coral, ponta de gelo, vulcão, torres de nuvem); a largura e tudo o que se
     pisa não mudam, e a silhueta copia a ilha completa. Revisto em 30/10/2026 depois de medir: só na
     silhueta, a ilha encolheria na troca da ponte. Alvos no documento de pedidos de arte.
-14. **Lumis raros (B12):** primeiro como variação de cor e brilho no código, sem modelo novo.
-    Nunca sorteados em troca de moeda.
-15. **Bolsa do Nico (B15):** não por enquanto; a conversa e os pedidos (A19) dão o papel de carteiro.
-16. **Roupas de festa (B16):** não por enquanto; as peças existentes passam a ser conquistadas (A21).
+14. **Lumis raros (B12):** revisto em 31/10/2026: com arte, os Lumis de luz, uma terceira versão de
+    cada família (a forma da rara, coroa de luz e brilho), que só se acha nos baús dos segredos.
+    Nunca sorteados em troca de moeda. Pedido no documento de pedidos de arte.
+15. **Bolsa do Nico (B15):** a bolsa a tiracolo já existe no `nico.glb`; nada a pedir.
+16. **Roupas de festa (B16):** revisto em 31/10/2026: uma peça de cabeça e uma de corpo por festa,
+    novas, conquistadas na própria festa (A21), além das sugestões de peças existentes. Pedido no
+    documento de pedidos de arte.
+
+### 6.29 A lista B da proposta v3: a arte de 31/10 ligada no jogo
+
+Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-lista-b.md`.
+
+- **O pet que acompanha anda (B3):** o gato e o cachorro do quarto tocam `andar` e `correr` no
+  ritmo da velocidade de verdade (o clipe foi feito para 1,5 e 3,5 m/s; a 2,2 m/s ele toca 1,47
+  vez mais rápido, `ritmoDoPasso`), para os pés não escorregarem. Parados, tocam o parado do
+  quarto, que o menos movimento desliga; na pausa o modelo congela.
+- **Silhuetas e marcos (B1 e B2):** a arte carrega pelo código de sempre; os colisores dos marcos
+  que ficam dentro do teto do balão vêm do GLB (`col-*`).
+- **O minijogo fica na ilha (B10):** a proposta diz "o minijogo aprovado vira barraca na feira,
+  fliperama em casa ou brinquedo no festival" e "quando passa, o minijogo fica na ilha". A barraca
+  do jogo na feira da Vila Doce e o quiosque do festival no Pico mostram na tela a capa do minijogo
+  mais recente da própria ilha e abrem a lista dos minijogos aprovados da ilha. O fliperama de casa
+  continua com todos. A ilha vem do serviço (a ilha publicada do desafio). Na visita, só enfeite.
+- **Café, banca de feira e festa no Construir (B7 e B9):** a aba "Café e feira" abre com a Vila
+  Doce; a aba "Festa" só aparece durante uma festa, com as peças dela. Fora da festa, a decoração
+  posta continua guardada, sem aparecer nem colidir, e volta na festa seguinte. O que acende
+  (luzes, lanternas, fogueira, estrela) brilha à noite. A Noite das Lanternas continua sem data,
+  então as peças dela ainda não aparecem.
 
 ## 7. Desafios
 

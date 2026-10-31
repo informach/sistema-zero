@@ -44,3 +44,15 @@ test('teto conta a serialização JSON e recusa valor sem cópia', () => {
   ).toBe(false)
   expect(ProjetoDoMinijogoSchema.safeParse({ files: {} }).success).toBe(true)
 })
+test('a ilha do minijogo é opcional na lista (B10), para a barraca e o quiosque', () => {
+  const item = {
+    desafioId: 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+    titulo: 'Corrida',
+    aprovadoEm: '2026-10-29T12:00:00.000Z',
+    atualizadoEm: '2026-10-29T12:00:00.000Z',
+    capa: null,
+  }
+  expect(MinijogoSchema.safeParse(item).success).toBe(true)
+  expect(MinijogoSchema.safeParse({ ...item, ilha: 'vila-doce' }).success).toBe(true)
+  expect(MinijogoSchema.safeParse({ ...item, ilha: '' }).success).toBe(false)
+})

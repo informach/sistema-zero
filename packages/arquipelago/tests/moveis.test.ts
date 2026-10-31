@@ -16,12 +16,15 @@ import { LOTE_DA_CASA, loteDaCabana } from '../src/sistemas/construcao/lote'
 import {
   arestaAtras,
   CATEGORIAS_DOS_MOVEIS,
+  categoriasDisponiveis,
   celulasDoMovel,
   DADOS_DO_MOVEL,
   ehDeParede,
   giroDaParedeNoToque,
   type MovelPosto,
   moveisDaObra,
+  moveisDoCatalogo,
+  movelAparece,
   porMovel,
   tirarMovel,
   tuplaDoMovel,
@@ -75,6 +78,14 @@ describe('o catálogo dos móveis', () => {
       'quadro',
       'espelho',
       'toalheiro',
+      'cafe-lousa-cardapio',
+      'festa-junina-bandeirinhas',
+      'festa-junina-lanterna-papel',
+      'festa-carnaval-serpentina',
+      'festa-carnaval-mascara',
+      'festa-fim-de-ano-guirlanda',
+      'festa-fim-de-ano-estrela-janela',
+      'festa-lanternas-varal-de-luz',
     ])
     // A tupla do salvamento volta igual.
     const m: MovelPosto = { id: 'sofa', x: -5, z: 2, giro: 2 }
@@ -83,7 +94,8 @@ describe('o catálogo dos móveis', () => {
 
   test('cada móvel é um nó do GLB do cômodo dele e cabe na área (o de encostar até o fundo)', async () => {
     for (const categoria of CATEGORIAS_DOS_MOVEIS) {
-      const modelo = await carregarGlb(`src/assets/casa/casa-${categoria}.glb`)
+      const arquivo = categoria === 'festa' ? 'festas' : categoria
+      const modelo = await carregarGlb(`src/assets/casa/casa-${arquivo}.glb`)
       for (const id of MOVEIS.filter((m) => DADOS_DO_MOVEL[m].categoria === categoria)) {
         const no = modelo.getObjectByName(id)
         expect([id, Boolean(no)]).toEqual([id, true])
@@ -93,7 +105,10 @@ describe('o catálogo dos móveis', () => {
         if (area === null) {
           // Peça de parede: o fundo em 0,10 atrás da origem (README de arte/casa), fina.
           expect([id, caixa.min.z]).toEqual([id, expect.closeTo(-0.1, 1)])
-          expect(caixa.max.z - caixa.min.z).toBeLessThan(0.35)
+          // A lanterna de papel da festa junina pende de um braço de ferro (0,45 da parede).
+          expect(caixa.max.z - caixa.min.z).toBeLessThan(
+            id === 'festa-junina-lanterna-papel' ? 0.5 : 0.35,
+          )
           continue
         }
         // A origem no meio da área; nada passa dela.
@@ -284,5 +299,37 @@ describe('os móveis no aconchego e no mundo', () => {
       expect(fala).not.toMatch(/[—!]/)
       expect(fala.split('.')[0]).not.toContain('?')
     }
+  })
+})
+
+describe('o café, a banca de feira e a decoração de festa (B7 e B9, 31/10/2026)', () => {
+  test('o café e a banca abrem com a Vila Doce; a festa, só durante uma festa', () => {
+    expect(categoriasDisponiveis(2, null)).toEqual(['cozinha', 'sala', 'banheiro'])
+    expect(categoriasDisponiveis(3, null)).toEqual(['cozinha', 'sala', 'banheiro', 'cafe'])
+    expect(categoriasDisponiveis(3, 'junina')).toEqual(CATEGORIAS_DOS_MOVEIS)
+  })
+
+  test('o catálogo da festa mostra só as peças da festa em vigor', () => {
+    expect(moveisDoCatalogo('festa', 'junina')).toEqual([
+      'festa-junina-bandeirinhas',
+      'festa-junina-lanterna-papel',
+      'festa-junina-fogueira',
+    ])
+    expect(moveisDoCatalogo('festa', 'fim-de-ano')).toHaveLength(3)
+    expect(moveisDoCatalogo('festa', null)).toEqual([])
+    expect(moveisDoCatalogo('cafe', null)).toHaveLength(7)
+  })
+
+  test('fora da festa a decoração fica guardada sem aparecer; os outros móveis sempre aparecem', () => {
+    expect(movelAparece('festa-carnaval-mascara', 'carnaval')).toBe(true)
+    expect(movelAparece('festa-carnaval-mascara', 'junina')).toBe(false)
+    expect(movelAparece('festa-carnaval-mascara', null)).toBe(false)
+    expect(movelAparece('cafe-balcao', null)).toBe(true)
+    expect(movelAparece('sofa', 'junina')).toBe(true)
+  })
+
+  test('toda festa do calendário tem decoração', () => {
+    for (const festa of ['carnaval', 'junina', 'lanternas', 'fim-de-ano'] as const)
+      expect(moveisDoCatalogo('festa', festa).length).toBeGreaterThan(1)
   })
 })

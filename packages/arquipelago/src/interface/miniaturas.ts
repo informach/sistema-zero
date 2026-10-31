@@ -15,8 +15,26 @@ import movelBalcaoPia from '../assets/casa/miniaturas/movel-balcao-pia.png'
 import movelBanheira from '../assets/casa/miniaturas/movel-banheira.png'
 import movelBoxChuveiro from '../assets/casa/miniaturas/movel-box-chuveiro.png'
 import movelCadeiraCozinha from '../assets/casa/miniaturas/movel-cadeira-cozinha.png'
+import movelCafeBalcao from '../assets/casa/miniaturas/movel-cafe-balcao.png'
+import movelCafeBancaFeira from '../assets/casa/miniaturas/movel-cafe-banca-feira.png'
+import movelCafeCadeira from '../assets/casa/miniaturas/movel-cafe-cadeira.png'
+import movelCafeCaixote from '../assets/casa/miniaturas/movel-cafe-caixote.png'
+import movelCafeLousaCardapio from '../assets/casa/miniaturas/movel-cafe-lousa-cardapio.png'
+import movelCafeMesaRedonda from '../assets/casa/miniaturas/movel-cafe-mesa-redonda.png'
+import movelCafeVitrineDoces from '../assets/casa/miniaturas/movel-cafe-vitrine-doces.png'
 import movelEspelho from '../assets/casa/miniaturas/movel-espelho.png'
 import movelEstanteBaixa from '../assets/casa/miniaturas/movel-estante-baixa.png'
+import movelFestaCarnavalConfete from '../assets/casa/miniaturas/movel-festa-carnaval-confete.png'
+import movelFestaCarnavalMascara from '../assets/casa/miniaturas/movel-festa-carnaval-mascara.png'
+import movelFestaCarnavalSerpentina from '../assets/casa/miniaturas/movel-festa-carnaval-serpentina.png'
+import movelFestaFimDeAnoArvore from '../assets/casa/miniaturas/movel-festa-fim-de-ano-arvore.png'
+import movelFestaFimDeAnoEstrelaJanela from '../assets/casa/miniaturas/movel-festa-fim-de-ano-estrela-janela.png'
+import movelFestaFimDeAnoGuirlanda from '../assets/casa/miniaturas/movel-festa-fim-de-ano-guirlanda.png'
+import movelFestaJuninaBandeirinhas from '../assets/casa/miniaturas/movel-festa-junina-bandeirinhas.png'
+import movelFestaJuninaFogueira from '../assets/casa/miniaturas/movel-festa-junina-fogueira.png'
+import movelFestaJuninaLanternaPapel from '../assets/casa/miniaturas/movel-festa-junina-lanterna-papel.png'
+import movelFestaLanternasLanternaChao from '../assets/casa/miniaturas/movel-festa-lanternas-lanterna-chao.png'
+import movelFestaLanternasVaralDeLuz from '../assets/casa/miniaturas/movel-festa-lanternas-varal-de-luz.png'
 import movelLuminariaPe from '../assets/casa/miniaturas/movel-luminaria-pe.png'
 import movelMesaCozinha from '../assets/casa/miniaturas/movel-mesa-cozinha.png'
 import movelMesinhaCentro from '../assets/casa/miniaturas/movel-mesinha-centro.png'
@@ -101,4 +119,22 @@ export const MINIATURA_DO_MOVEL: Record<Movel, string> = {
   'box-chuveiro': url(movelBoxChuveiro),
   tapetinho: url(movelTapetinho),
   toalheiro: url(movelToalheiro),
+  'cafe-mesa-redonda': url(movelCafeMesaRedonda),
+  'cafe-cadeira': url(movelCafeCadeira),
+  'cafe-balcao': url(movelCafeBalcao),
+  'cafe-vitrine-doces': url(movelCafeVitrineDoces),
+  'cafe-lousa-cardapio': url(movelCafeLousaCardapio),
+  'cafe-banca-feira': url(movelCafeBancaFeira),
+  'cafe-caixote': url(movelCafeCaixote),
+  'festa-junina-bandeirinhas': url(movelFestaJuninaBandeirinhas),
+  'festa-junina-lanterna-papel': url(movelFestaJuninaLanternaPapel),
+  'festa-junina-fogueira': url(movelFestaJuninaFogueira),
+  'festa-carnaval-serpentina': url(movelFestaCarnavalSerpentina),
+  'festa-carnaval-mascara': url(movelFestaCarnavalMascara),
+  'festa-carnaval-confete': url(movelFestaCarnavalConfete),
+  'festa-fim-de-ano-arvore': url(movelFestaFimDeAnoArvore),
+  'festa-fim-de-ano-guirlanda': url(movelFestaFimDeAnoGuirlanda),
+  'festa-fim-de-ano-estrela-janela': url(movelFestaFimDeAnoEstrelaJanela),
+  'festa-lanternas-lanterna-chao': url(movelFestaLanternasLanternaChao),
+  'festa-lanternas-varal-de-luz': url(movelFestaLanternasVaralDeLuz),
 }
