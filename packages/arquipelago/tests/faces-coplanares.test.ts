@@ -73,6 +73,10 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'ilhas/pico.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vale-dos-dinos.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/nuvens.glb', juntos: TODOS_JUNTOS },
+  // Casa (31/10/2026): o segundo andar, o café e a decoração de festa, uma peça por nó.
+  { caminho: 'casa/casa-andar.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-cafe.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-festas.glb', juntos: CADA_NO_SOZINHO },
   // As versões retro e moderna da galeria (31/10/2026; na banda e no museu cada nó é uma peça solta).
   ...[
     'geladeira',

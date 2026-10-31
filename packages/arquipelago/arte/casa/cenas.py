@@ -2,7 +2,7 @@
 GLB temporário (para o `faces-coplanares.ts` sem `--separados` conferir as emendas entre vizinhas) e
 renderiza prévias em Cycles. Nada daqui vai para o jogo.
 
-  python -B cenas.py kit [cozinha sala banheiro]      # todas as cenas pedidas
+  python -B cenas.py kit [cozinha sala banheiro moveis andar cafe-festas]      # as cenas pedidas
 
 Variáveis: DIR_PREVIAS (pasta das imagens e dos GLBs temporários; padrão: `arte-casa` no diretório
 temporário), RES (padrão 560), AMOSTRAS (padrão 28),
@@ -371,7 +371,70 @@ def cena_moveis():
     return c
 
 
-CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro}
+def cena_andar():
+    """Segundo andar (31/10/2026): sala 4 × 6 com a escada no meio da coluna x = 1..2 (pé em y = 1,
+    chegada em y = 5), o piso de cima de tábua em volta do vão, o pé-direito duplo na coluna
+    x = 3..4 com o guarda-corpo na beira (linha x = 3) e as paredes de lambri dos dois andares."""
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb'])
+    w, d, h = 4, 6, 4.1
+    c.piso('piso-tabua', 0, 0, w, d)
+    # O fundo e a esquerda em pé; a frente e a direita cortadas (o corte para ver dentro), nos dois
+    # andares, com as quinas do `sala_de`.
+    for z in (0.0, h):
+        for i in range(w):
+            c.por('parede-lambri-baixa', i + 0.5, 0, z, 0)
+            c.por('parede-lambri', i + 0.5, d, z, 180)
+        for j in range(d):
+            c.por('parede-lambri', 0, j + 0.5, z, -90)
+            c.por('parede-lambri-baixa', w, j + 0.5, z, 90)
+        for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri-baixa'), (0, d, 'quina-lambri'),
+                        (w, d, 'quina-lambri')):
+            c.por(q, x, y, z)
+    for i in range(3):
+        for j in range(d):
+            if i == 1 and 1 <= j < 5:
+                continue
+            c.por('piso-andar-tabua', i + 0.5, j + 0.5)
+    c.por('escada-interna', 1.5, 1.0)
+    c.por('piso-andar-vao', 1.5, 1.0)
+    # O guarda-corpo na beira do piso de cima (o piso fica em -x: giro +90).
+    for j in range(d):
+        c.por('guarda-corpo-andar', 3.0, j + 0.5, 0, 90)
+    return c
+
+
+def cena_cafe_festas():
+    """Vitrine do café e das festas: as peças de chão no piso de tábua e as de parede numa parede
+    lisa (a 0,20 da linha, como a prateleira), as que se emendam lado a lado."""
+    c = Cena(KIT + ['casa-cafe.glb', 'casa-festas.glb'])
+    c.piso('piso-tabua', 0, 0, 12, 4)
+    c.corrida('x', 4, 0, [('parede-lisa', 1)] * 12, -1)
+    c.por('quina-lisa', 0, 4)
+    c.por('quina-lisa', 12, 4)
+    for nome, x in (('cafe-vitrine-doces', 0.5), ('cafe-balcao', 2.0), ('cafe-banca-feira', 4.0),
+                    ('festa-fim-de-ano-arvore', 5.5), ('festa-lanternas-lanterna-chao', 6.5)):
+        c.por(nome, x, 3.5)
+    for nome, x, z in (('cafe-lousa-cardapio', 1.0, 1.7), ('festa-junina-lanterna-papel', 6.0, 2.0),
+                       ('festa-carnaval-mascara', 7.5, 1.6), ('festa-fim-de-ano-guirlanda', 8.5, 1.6),
+                       ('festa-fim-de-ano-estrela-janela', 11.0, 1.8)):
+        c.por(nome, x, 3.8, z)
+    # As que se emendam: dois trechos de cada, ponta com ponta (longe do canto: na célula do canto a
+    # quina passa na frente da ponta do fio).
+    for nome, z in (('festa-junina-bandeirinhas', 3.2), ('festa-lanternas-varal-de-luz', 2.7),
+                    ('festa-carnaval-serpentina', 2.3)):
+        for x in (9.5, 10.5):
+            c.por(nome, x, 3.8, z)
+    for nome, x, y in (('cafe-mesa-redonda', 1.5, 1.5), ('cafe-cadeira', 0.5, 1.5), ('cafe-caixote', 3.5, 1.5),
+                       ('festa-junina-fogueira', 5.5, 1.5), ('festa-carnaval-confete', 7.5, 1.5)):
+        c.por(nome, x, y)
+    # Dois caixotes empilhados (0,32 um do outro).
+    c.por('cafe-caixote', 3.5, 0.5)
+    c.por('cafe-caixote', 3.5, 0.5, 0.32)
+    return c
+
+
+CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro,
+         'andar': cena_andar, 'cafe-festas': cena_cafe_festas}
 
 
 def main():
@@ -406,6 +469,9 @@ VISTAS = {
     'banheiro': [((2.0, 2.0, 1.0), (0.75, -1.0, 0.95), 7.6), ((2.0, 2.2, 0.9), (0.12, -1.0, 0.62), 6.8)],
     'moveis': [((6.0, 2.2, 0.9), (0.35, -1.0, 0.55), 12.5), ((3.0, 2.4, 0.9), (0.2, -1.0, 0.5), 6.2),
                ((9.5, 2.4, 0.9), (-0.2, -1.0, 0.5), 6.2)],
+    'andar': [((2.0, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((1.6, 3.0, 2.6), (0.9, -0.35, 0.45), 7.0)],
+    'cafe-festas': [((6.0, 2.2, 1.0), (0.35, -1.0, 0.55), 12.5), ((2.5, 2.4, 1.0), (0.2, -1.0, 0.5), 5.5),
+                    ((9.5, 2.6, 1.6), (-0.2, -1.0, 0.4), 5.5)],
 }
 # Na prévia, cada cômodo ganha a cor de parede que o jogo daria (no GLB a `paredeDentro` é creme).
 PINTURA = {

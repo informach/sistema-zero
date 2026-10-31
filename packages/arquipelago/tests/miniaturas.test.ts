@@ -8,17 +8,45 @@ import { MOVEIS, OBJETOS_DA_CASA } from '@sistemazero/arquipelago-contracts'
  * caminho, objeto e móvel da casa, em 160 px e leves (paleta de 128 cores).
  */
 const PASTA = join(import.meta.dir, '..', 'src', 'assets', 'casa', 'miniaturas')
+/**
+ * Café, banca de feira e decoração de festa (`casa-cafe.glb`, `casa-festas.glb`, 31/10/2026): as
+ * miniaturas já existem, antes de as peças entrarem no catálogo de móveis do jogo.
+ */
+const CAFE_E_FESTAS = [
+  'cafe-mesa-redonda',
+  'cafe-cadeira',
+  'cafe-balcao',
+  'cafe-vitrine-doces',
+  'cafe-lousa-cardapio',
+  'cafe-banca-feira',
+  'cafe-caixote',
+  'festa-junina-bandeirinhas',
+  'festa-junina-lanterna-papel',
+  'festa-junina-fogueira',
+  'festa-carnaval-serpentina',
+  'festa-carnaval-mascara',
+  'festa-carnaval-confete',
+  'festa-fim-de-ano-arvore',
+  'festa-fim-de-ano-guirlanda',
+  'festa-fim-de-ano-estrela-janela',
+  'festa-lanternas-lanterna-chao',
+  'festa-lanternas-varal-de-luz',
+]
 const ESPERADAS = [
-  'janela-grande',
-  'janela-arco',
-  'janela-redonda',
-  'piso-tabua',
-  'piso-ladrilho',
-  'piso-azulejo',
-  'caminho-pedra',
-  'caminho-grama',
-  ...OBJETOS_DA_CASA.map((id) => `objeto-${id}`),
-  ...MOVEIS.map((id) => `movel-${id}`),
+  ...new Set([
+    'janela-grande',
+    'janela-arco',
+    'janela-redonda',
+    'piso-tabua',
+    'piso-ladrilho',
+    'piso-azulejo',
+    'caminho-pedra',
+    'caminho-grama',
+    ...OBJETOS_DA_CASA.map((id) => `objeto-${id}`),
+    ...MOVEIS.map((id) => `movel-${id}`),
+    // Sem repetir quando o catálogo de móveis passar a ter estas peças.
+    ...CAFE_E_FESTAS.map((id) => `movel-${id}`),
+  ]),
 ]
 
 describe('as miniaturas do Construir', () => {

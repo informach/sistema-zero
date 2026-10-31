@@ -10,6 +10,11 @@ Contrato de cada nó, medidas e regras de montagem no README desta pasta.
   `abrir` e `abrir-interna`.
 - `casa-pisos.glb`: pisos de 1 × 1 (tábua, ladrilho, azulejo, grama e grama com pedras).
 - `casa-telhado.glb`: água, meia água, beiral com calha, cumeeira, oitões, testeiras e a vigia.
+- `casa-andar.glb` (pedido E04, 31/10/2026): o segundo andar. Pisos de cima (`piso-andar-*`, topo em
+  4,10 e a face de baixo de forro), a `escada-interna` de 14 degraus (colisores `col-escada-reta-*`
+  e âncoras `escada-1-*`), o `piso-andar-vao` (o guarda-corpo em volta do vão da escada, com
+  `col-guarda-vao-*`) e o `guarda-corpo-andar` (com `col-guarda-andar-1`). Colisores e âncoras vão
+  como nós de primeiro nível no referencial da peça (como nas ilhas).
 
 Sem pisca-pisca (README de arte/mundo): as peças que se repetem não têm tampa onde encostam na
 vizinha, toda superfície com vão é uma malha em grade, e todas as paredes usam as mesmas linhas
@@ -668,6 +673,228 @@ def telhado():
     return nos
 
 
+# ---------------------------------------------------------------- segundo andar (pedido E04)
+# Tudo no referencial do térreo: z = 0 é o piso de baixo. O piso de cima tem o topo em 4,10 e 10 cm
+# de espessura (de 4,00, o topo das paredes de baixo, a 4,10); as paredes de cima são as de sempre
+# deslocadas 4,10.
+ANDAR = 4.1
+DEGRAUS = 14
+PISO_ESCADA = 4.0 / DEGRAUS          # 0,286 de piso por degrau (a escada tem 4 de comprimento)
+ESPELHO = ANDAR / DEGRAUS            # 0,293 de espelho (o corpo sobe sozinho até 0,45)
+LARGURA_ESCADA = 0.78                # de -0,39 a 0,39: não encosta no plano da parede (0,40)
+SAIDA_DA_ESCADA = 0.7                # a âncora de saída fica 0,7 dentro do piso de cima (a do Bosque)
+
+
+def piso_andar(montar):
+    """O piso de cima: o mesmo piso do térreo subido 4,10, fechado por baixo com o forro (o teto de
+    baixo), uma face só no plano de 4,00 (as tábuas e ladrilhos não têm fundo)."""
+    p = montar()
+    lib_ilha.place(p, loc=(0, 0, ANDAR))
+    bm = bmesh.new()
+    vs = [bm.verts.new((x, y, ANDAR + Z0)) for x, y in ((-0.5, -0.5), (0.5, -0.5), (0.5, 0.5), (-0.5, 0.5))]
+    f = bm.faces.new(vs)
+    _orientar(f, (0, 0, -1))
+    p.append(_objeto('forro', bm, ['telhadoForro']))
+    return p
+
+
+def escada_interna():
+    """1 × 4: 14 degraus de 0,293 de 0 a 4,10, com corrimão do lado -x. Origem no meio do pé da escada
+    (na linha da grade), subindo para +Y; o último degrau é o próprio piso de cima (topo em 4,10,
+    de y = 3,71 a 4,00), e o piso de cima continua de y = 4 em diante. Por baixo, uma laje inclinada
+    de forro (20 cm de espessura). Os lados ficam a 0,39 do meio: encostada numa parede do kit,
+    sobra 1 cm até a face dela.
+
+    Uma malha só: o perfil (degraus em cima, a laje embaixo, com um vértice embaixo de cada quina
+    de degrau) puxado em x, e cada lado feito de uma faixa e um triângulo por degrau (os cantos de
+    dentro dos degraus ficam numa reta: um polígono inteiro daria emenda em T)."""
+    s = ESPELHO / PISO_ESCADA
+    d = 0.2 * math.hypot(1, s)          # a laje de baixo, medida na vertical
+
+    def laje(y):
+        return s * y - d
+    # Perfil (y, z), na ordem: pé, TL0, TR0, TL1, TR1, …, TR13 (a ponta de cima), as quinas de baixo
+    # B14 … B1 e o ponto em que a laje encosta no piso.
+    P = [(0.0, 0.0)]
+    mats = []
+    for k in range(DEGRAUS):
+        P += [(k * PISO_ESCADA, (k + 1) * ESPELHO), ((k + 1) * PISO_ESCADA, (k + 1) * ESPELHO)]
+        mats += ['acabamento', 'tabua' if k % 2 else 'tabuaClara']
+    mats.append('acabamento')                        # a ponta de cima (de costas para o piso de cima)
+    for k in range(DEGRAUS, 0, -1):
+        P.append((k * PISO_ESCADA, laje(k * PISO_ESCADA)))
+        mats.append('telhadoForro')
+    P.append((d / s, 0.0))
+    mats[-1] = 'telhadoForro'
+    mats.append(None)                                # o pé, deitado no piso, sem face
+    n = len(P)
+    TL = [1 + 2 * k for k in range(DEGRAUS)]
+    TR = [2 + 2 * k for k in range(DEGRAUS)]
+    B = {k: 2 * DEGRAUS + 1 + (DEGRAUS - k) for k in range(1, DEGRAUS + 1)}
+    Z = n - 1
+    x = LARGURA_ESCADA / 2
+    nomes = ['acabamento', 'tabua', 'tabuaClara', 'telhadoForro', 'tabuaEscura']
+    bm = bmesh.new()
+    lados = [[bm.verts.new((sx * x, y, z)) for y, z in P] for sx in (-1, 1)]
+    for i in range(n):
+        if not mats[i]:
+            continue
+        j = (i + 1) % n
+        A, C = lados
+        f = bm.faces.new((A[i], A[j], C[j], C[i]))
+        dy, dz = P[j][0] - P[i][0], P[j][1] - P[i][1]
+        _orientar(f, (0, -dz, dy))
+        f.material_index = nomes.index(mats[i])
+    for sx, L in zip((-1, 1), lados):
+        pecas = [(0, Z, B[1], TR[0]), (0, TR[0], TL[0])]
+        for k in range(1, DEGRAUS):
+            pecas += [(B[k], B[k + 1], TR[k], TR[k - 1]), (TR[k - 1], TR[k], TL[k])]
+        for idx in pecas:
+            f = bm.faces.new([L[i] for i in idx])
+            _orientar(f, (sx, 0, 0))
+            f.material_index = nomes.index('tabuaEscura')
+    p = [_objeto('escada', bm, nomes)]
+    # Corrimão do lado -x: pilar no primeiro e no último degrau, balaústres no meio de cada piso e o
+    # corrimão 0,9 acima dos degraus, na inclinação da escada.
+    xc = -x + 0.035     # o corrimão (com a bola do pilar) não passa de 0,395 do meio
+    for k in (1, DEGRAUS):
+        yk, zk = (k - 0.5) * PISO_ESCADA, k * ESPELHO
+        p.append(caixa(xc - 0.03, xc + 0.03, yk - 0.03, yk + 0.03, zk - 0.02, zk + 1.0, 'batente', bevel=0.008))
+        p.append(uvball(0.04, (xc, yk, zk + 1.03), 'batente', seg=10, ring=6))
+    for k in range(2, DEGRAUS):
+        yk, zk = (k - 0.5) * PISO_ESCADA, k * ESPELHO
+        p.append(cyl(0.012, 0.92, (xc, yk, zk - 0.01 + 0.46), 'acabamento', verts=6))
+    y0, y1 = 0.5 * PISO_ESCADA, (DEGRAUS - 0.5) * PISO_ESCADA
+    p.append(tube([(xc, y0 + 0.03, ESPELHO + 0.9 + 0.03 * s), (xc, y1 - 0.03, ANDAR + 0.9 - 0.03 * s)],
+                  [0.025, 0.025], 'batente', seg=8))
+    return p
+
+
+RAMPA_ACIMA = 0.1   # a rampa de colisão passa 0,1 acima da reta dos cantos de dentro dos degraus
+
+
+def colisores_da_escada():
+    """A escada se sobe andando: degrau de 0,286 de piso é estreito demais para o degrau automático do
+    controlador (pede 0,25 livre em cima, além do corpo), então os degraus colidem como uma RAMPA de
+    45,7° (o corpo sobe até 52°), 0,1 acima da reta dos cantos de dentro dos degraus: o pé fica entre
+    0,1 abaixo do focinho e 0,19 acima do canto. Embaixo da rampa, uma caixa por degrau (sempre
+    5 cm abaixo dela, sem encostar no corpo) fecha o vão de baixo da escada; no alto, a faixa do
+    último degrau em 4,10 emenda a rampa no piso de cima. `col-escada-reta-*` só seguram o corpo
+    (a câmera passa), como a escada do Bosque.
+
+    `col-escada-reta-1` é a rampa; `-2` a `-14`, as caixas de baixo (degraus 2 a 14); `-15`, a faixa
+    de cima."""
+    s = ESPELHO / PISO_ESCADA
+    th = math.atan(s)
+    x = LARGURA_ESCADA / 2
+    y_alto = (ANDAR - RAMPA_ACIMA) / s
+    esp = 0.1
+    comp = y_alto * math.hypot(1, s)
+    ym, zm = y_alto / 2, s * y_alto / 2 + RAMPA_ACIMA
+    cols = [col_girada('col-escada-reta-1', (LARGURA_ESCADA, comp, esp),
+                       (0.0, ym + math.sin(th) * esp / 2, zm - math.cos(th) * esp / 2), (th, 0, 0))]
+    for k in range(2, DEGRAUS + 1):
+        cols.append(col_caixa(f'col-escada-reta-{k}', -x, x, (k - 1) * PISO_ESCADA, k * PISO_ESCADA, 0.0,
+                              (k - 1) * ESPELHO + RAMPA_ACIMA - 0.05))
+    cols.append(col_caixa(f'col-escada-reta-{DEGRAUS + 1}', -x, x, y_alto, 4.0, ANDAR - 0.3, ANDAR))
+    return cols
+
+
+def ancoras_da_escada():
+    """As âncoras do modo escada (`escada.ts`), como as do Bosque: a base no pé e o topo na beira do
+    piso de cima, no eixo da escada; a saída 0,7 dentro do piso de cima. No modo, o corpo vai pela
+    reta da base ao topo, `ESCADA.afastamento` (0,47) para trás dela: passa uns 0,19 acima dos
+    focinhos dos degraus, longe da rampa de colisão."""
+    return [ancora('escada-1-base', 0.0, 0.0, 0.0), ancora('escada-1-topo', 0.0, 4.0, ANDAR),
+            ancora('escada-1-saida', 0.0, 4.0 + SAIDA_DA_ESCADA, ANDAR)]
+
+
+def balaustrada(u0, u1, v0, v1, ao_longo_de_x, fascia=None, postes=(), nome='guarda'):
+    """Guarda-corpo sobre o piso de cima, ao longo de x (ou de y), com o corrimão de cima em 0,99
+    (1 cm abaixo do topo da parede cortada, 1,0, para os dois não ficarem no mesmo plano onde o
+    guarda-corpo encosta numa parede cortada; o colisor vai até 1,0): corrimão de cima, postes,
+    balaústres a cada 0,125 e, se pedido, a faixa de acabamento que cobre a beira do vão.
+    `u` vai ao longo do guarda-corpo e `v` na espessura dele."""
+    def cx(a0, a1, b0, b1, z0, z1, m, bevel=0.0):
+        if ao_longo_de_x:
+            return caixa(a0, a1, b0, b1, z0, z1, m, bevel=bevel)
+        return caixa(b0, b1, a0, a1, z0, z1, m, bevel=bevel)
+
+    vm = (v0 + v1) / 2
+    p = [cx(u0, u1, v0, v1, ANDAR + 0.91, ANDAR + 0.99, 'batente', bevel=0.012)]
+    if fascia:
+        f0, f1 = fascia
+        p.append(cx(u0, u1, f0, f1, ANDAR - 0.15, ANDAR + 0.03, 'acabamento'))
+        zb = ANDAR + 0.03
+    else:
+        p.append(cx(u0, u1, vm - 0.03, vm + 0.03, ANDAR + 0.02, ANDAR + 0.08, 'batente', bevel=0.008))
+        zb = ANDAR + 0.08
+    for u in postes:
+        p.append(cx(u - 0.025, u + 0.025, vm - 0.025, vm + 0.025, ANDAR - 0.01, ANDAR + 0.93, 'batente'))
+    n = int(round((u1 - u0) / 0.125))
+    for i in range(n):
+        u = u0 + (i + 0.5) * (u1 - u0) / n
+        if any(abs(u - q) < 0.05 for q in postes):
+            continue
+        zm = (zb - 0.005 + ANDAR + 0.915) / 2
+        p.append(cyl(0.011, ANDAR + 0.915 - zb + 0.005, (u, vm, zm) if ao_longo_de_x else (vm, u, zm), 'acabamento',
+                     verts=6))
+    return p
+
+
+def piso_andar_vao():
+    """O vão da escada no piso de cima (1 × 4, a mesma posição e giro da `escada-interna`): nenhum
+    piso, a faixa de acabamento que cobre a beira dos pisos vizinhos e o guarda-corpo de 1,0 nos três
+    lados abertos (os dois compridos e o do pé da escada; o quarto é onde a escada chega)."""
+    p = []
+    for s in (-1, 1):
+        v0, v1 = sorted((s * 0.43, s * 0.495))
+        f0, f1 = sorted((s * 0.465, s * 0.495))
+        p += balaustrada(0.0, 4.0, v0, v1, False, fascia=(f0, f1), postes=(0.04, 1.0, 2.0, 3.0, 3.96))
+    # O lado do pé encaixa entre os dois compridos (pontas de costas para eles).
+    p += balaustrada(-0.43, 0.43, 0.005, 0.07, True, fascia=(0.005, 0.035), postes=(0.0,))
+    return p
+
+
+def colisores_do_vao():
+    zt = ANDAR + 1.0
+    return [col_caixa('col-guarda-vao-1', -0.5, -0.42, 0.0, 4.0, ANDAR - 0.1, zt),
+            col_caixa('col-guarda-vao-2', 0.42, 0.5, 0.0, 4.0, ANDAR - 0.1, zt),
+            col_caixa('col-guarda-vao-3', -0.5, 0.5, 0.0, 0.08, ANDAR - 0.1, zt)]
+
+
+def guarda_corpo_andar():
+    """1 de largura, 1,0 de altura, para a beira do piso de cima sem parede. Como a parede: origem no
+    meio da base, na linha da grade, e o +Y local é o lado do piso (o guarda-corpo fica de 0,02 a
+    0,10 da linha, em cima do piso). Peças vizinhas encostam as pontas de costas uma para a outra."""
+    return balaustrada(-0.5, 0.5, 0.02, 0.10, True, postes=(-0.46, 0.46))
+
+
+def andar():
+    nos = {
+        'piso-andar-tabua': piso_andar(piso_tabua),
+        'piso-andar-ladrilho': piso_andar(piso_ladrilho),
+        'piso-andar-azulejo': piso_andar(piso_azulejo),
+        'escada-interna': escada_interna(),
+        'piso-andar-vao': piso_andar_vao(),
+        'guarda-corpo-andar': guarda_corpo_andar(),
+    }
+    junto = {
+        'escada-interna': colisores_da_escada() + ancoras_da_escada(),
+        'piso-andar-vao': colisores_do_vao(),
+        'guarda-corpo-andar': [col_caixa('col-guarda-andar-1', -0.5, 0.5, 0.0, 0.12, ANDAR, ANDAR + 1.0)],
+    }
+    notas = {
+        'piso-andar-tabua': '1 × 1; topo em 4,10; origem no meio da célula',
+        'piso-andar-ladrilho': '1 × 1; topo em 4,10; origem no meio da célula',
+        'piso-andar-azulejo': '1 × 1; topo em 4,10; origem no meio da célula',
+        'escada-interna': '1 × 4; origem no meio do pé, sobe para +Y',
+        'piso-andar-vao': '1 × 4; mesma posição e giro da escada',
+        'guarda-corpo-andar': '1 célula; origem no meio da base, na linha da grade',
+    }
+    return nos, junto, notas
+
+
 def main():
     so = os.environ.get('GLB')
     if not so or 'paredes' in so:
@@ -684,6 +911,10 @@ def main():
     if not so or 'telhado' in so:
         novo()
         exportar_casa('casa-telhado', telhado(), grupo='kit')
+    if not so or 'andar' in so:
+        novo()
+        nos, junto, notas = andar()
+        exportar_casa('casa-andar', nos, grupo='kit', notas=notas, junto=junto)
 
 
 if __name__ == '__main__':
