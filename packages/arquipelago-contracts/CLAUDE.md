@@ -1,9 +1,28 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
 Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md).
-`SalvamentoSchema` recebe versões anteriores e devolve V18; teto de 65.536 bytes UTF-8.
-Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
+`SalvamentoSchema` recebe versões anteriores e devolve V22; teto de 65.536 bytes UTF-8.
+Schemas históricos continuam imutáveis. Menções a V11, V18 e outras versões nas seções datadas
 explicam sua introdução, não a versão atual da resposta.
+
+## Revisão dos lotes de 31/10/2026
+
+- **V22** (lista B): percursos em tupla (`ResultadoCompacto`), `vale.fosseis` (B4), `ceu` e
+  `florada` (B6). `migrarDaV21` começa sem fóssil novo e sem flor.
+- **Obra estendida** (`obra-estendida.ts`, versão 1, fora do salvamento): `AndarDeCimaSchema` aceita
+  `moveis` opcional (até 24, C3); documentos antigos continuam válidos.
+- **`versaoCompativel`** (A35, `plataforma.ts`): `VERSOES_COMPATIVEIS_DA_PLATAFORMA` é a atual e a
+  anterior, para jogo e plataforma subirem em dias diferentes.
+- **`postoDoCursoBase`/`POSTO_DA_LINGUAGEM`** (9g, `desafios.ts`): o curso-base que o desafio fora
+  dos blocos pede; no Farol, o da linguagem.
+- **Festas** (`festas.ts`): Noite das Lanternas de 1 a 12/10 (aprovada em 31/10), com a cocada em
+  `receitas-moradores.ts`. As roupas da `conquista` são exclusivas da festa (B16): o Members as
+  tem na faixa `festa`, sem compra.
+- **A28** (`tests/nada-pago-e-sorteado.test.ts`): nenhum `Math.random` nem bytes aleatórios em
+  `src`, preços fixos na galeria, nos insumos e na feira, e os Lumis de luz fora de todo catálogo
+  com preço, contados só pelo bit do baú.
+- **Família** (A33, `familia.ts`): `objetos` agora são as criações do Pinta e do Molda postas no
+  jogo na semana, cada uma uma vez (o formato não mudou).
 
 ## Festas e roupas no contrato (31/10/2026, §6.28 A21)
 

@@ -1535,9 +1535,10 @@ Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-ilha
 `personagem/lanterna-na-mao.tsx` (a lanterna acesa na mão). Salvamento V9: `lumis`, quantos de
 cada espécie ela já prendeu.
 
-- **A lanterna:** o Bento dá do segundo encontro em diante, por último na conversa
-  (`receberLanterna`; o primeiro encontro fica só com a apresentação e o pedido). Se ela sumir da
-  mochila, ele dá de novo. Na mochila é um equipamento (não se come nem se dá de presente); o botão
+- **A lanterna:** desde a lista A v3 (30/10/2026) quem dá é o Zappy, na primeira noite, a quem
+  ainda não tem (`lanternaDoZappy`, `FALA_DA_LANTERNA_DO_ZAPPY`). O Bento ficou como a reposição: do
+  segundo encontro em diante, por último na conversa, ele dá de novo a quem não tem
+  (`receberLanterna`), por exemplo se ela sumir da mochila. Na mochila é um equipamento (não se come nem se dá de presente); o botão
   dela acende e apaga (`FALA_DE_ACENDER`, `FALA_DE_APAGAR`). Acesa, ela aparece pendurada na mão
   direita, com o papel brilhando (sem luz de verdade na cena). Acesa não é salvo: ao abrir o jogo
   ela começa apagada.
@@ -2039,8 +2040,8 @@ Uma aparência comprada não é cobrada novamente. O projeto azul precisa estar 
 de oferecer sua aparência; o projeto já funciona sem comprar. Visita, suporte, tempo bloqueado
 ou conflito de salvamento não permitem compra. Sair da ilha fecha a feira.
 
-A vitrine não cria carteira, inventário ou prêmio. A unificação da propriedade com o inventário
-do Members continua em L04. Insumos e peças sazonais são entregas distintas, ainda abertas.
+A vitrine não cria carteira, inventário ou prêmio. A posse única com o inventário do Members
+(L04), os insumos (L07) e as roupas das festas (B16) entraram depois; ver §9.9 e §6.29.
 
 ### 6.17 O diário e as pegadas
 
@@ -2183,8 +2184,9 @@ prolongada em celular, tablet e Chromebook reais, incluindo aquecimento e bateri
 ### 6.19 Festas da estação na Vila Doce (fase2-10, 29/10/2026)
 
 As festas voltam todo ano. Faltar não tira itens, progresso ou oportunidades futuras.
-A pipoca já feita continua no inventário depois da festa. Esta entrega liga decoração
-e receita; não acrescenta roupas nem prêmios de presença.
+A pipoca já feita continua no inventário depois da festa. Esta entrega (29/10/2026) ligou
+decoração e receita; as roupas de cada festa vieram no B8 e são exclusivas dela desde o B16
+(§6.29). Prêmio de presença continua não existindo.
 
 O calendário usa o dia real de São Paulo, separado do relógio acelerado do jogo.
 `CALENDARIO_DAS_FESTAS` concentra as datas e seus motivos:
@@ -2193,7 +2195,9 @@ O calendário usa o dia real de São Paulo, separado do relógio acelerado do jo
 - Festa Junina: de 1 a 30 de junho, inclusive.
 - Fim de ano: de 20/12 a 06/01, atravessando a virada. Janela aprovada pela dona em 30/10/2026.
 - Noite das Lanternas: de 1 a 12 de outubro, terminando no Dia das Crianças. Janela aprovada pela
-  dona em 31/10/2026.
+  dona em 31/10/2026, com a cocada na bancada (receita da festa).
+
+Todas as quatro janelas estão aprovadas; nenhuma data de festa está pendente.
 
 A data é relida a cada 30 segundos e ao voltar à aba. Abrir a fogueira e fazer a receita
 também conferem a festa atual, sem esperar essa atualização visual.
@@ -2619,8 +2623,11 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   caixotes até a casinha 2 (arte de 31/10). A entrega não pede as paradas em ordem: pelo atalho se
   chega mais rápido, e os confeitos do trecho pulado ficam para trás (a terceira estrela pede o
   confeito escondido). "Olhar o atalho" explica cada um.
-- **A subida por fora do Farol** chegou na arte de 31/10 e fica escondida, sem colisão, até virar
-  o percurso da Lenda (B7).
+- **A subida por fora do Farol** chegou na arte de 31/10 e virou o percurso da Lenda no B7
+  (`6ee28cb35`): escada, quinas, equilíbrio, vento e varanda. Desde a revisão de 31/10 (N4,
+  `c94c34139`) ela leva ao final: no resultado, "Entrar na sala do alto" abre a sala com a mesa da
+  última página; depois do final, a chegada é a galeria. A porta de baixo continua como a
+  alternativa direta ("Subir pela escada de dentro").
 - **Os Lumis de luz (B12):** sete espécies novas, uma por família (Búzio, Ipê, Brigadeiro, Pérola,
   Cristal, Brotinho e Pluma de Luz), com a forma da rara, a coroa acesa e o rastro de faíscas.
   Nunca saem de um borrão e nunca se compram: cada um mora num baú da Íris. Os quatro do vento
@@ -2631,13 +2638,24 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   `arquipelago-contracts/src/lumis-de-luz.ts`). Ele mora com a família na ilha dela, no primeiro
   lugar, ganha rotina como os outros (trabalha como a rara) e tem seção própria no álbum ("Lumis
   de luz", com a ilha do baú para os que faltam). Entraram no fim de `LUMIS`, sem versão nova.
+  Quem abriu um baú antes do B8 já tem o Lumi dele (decisão da dona, 31/10/2026): é retroativo
+  sozinho, porque ter o Lumi é ter o bit do baú. Nenhum Lumi de luz aparece num catálogo com preço,
+  e nada pago é sorteado (A28, `tests/nada-pago-e-sorteado.test.ts` dos contratos).
 - **As roupas das festas (B16):** uma peça de cabeça e uma de corpo novas por festa, conquistadas
   na festa em vigor (o serviço concede no avatar, como as da amizade): Carnaval, cartolinha
   (`hat-08`) e colete de franjas (`top-07`); Festa Junina, chapéu de palha (`hat-09`) e vestido de
   chita (`outfit-07`); Noite das Lanternas, tiara de lanterninhas (`enfeite-06`) e capa de estrelas
   (`top-08`); fim de ano, gorro (`hat-10`) e suéter de estrela (`top-09`). As peças de antes
   continuam como sugestões no vestuário da festa (`VESTUARIO_DAS_FESTAS`: `conquista` e `pecas`).
-  No catálogo do Members elas são pagas (como as da amizade): fora da festa, quem quiser compra.
+  **Só conquistadas na festa (decisão da dona, 31/10/2026):** no catálogo do Members elas são da
+  faixa `festa` (preço 0), não se compram (409 `AVATAR_PART_FESTA`) e só a concessão do jogo as
+  entrega. Na loja do avatar, trancadas, dizem "Da festa" sem preço, e a prévia explica de onde
+  vêm. Quem já tinha comprado alguma antes continua com ela. Um teste do Members confere que a
+  faixa é exatamente a `conquista` das quatro festas.
+- **Móveis no andar de cima (C3, revisão de 31/10):** a ferramenta Móveis também vale lá em cima,
+  só dentro dos cômodos (como no térreo), até 24, fora do vão e da chegada da escada; a escada não
+  sai com móvel em cima. "Meu quarto" e os objetos com função (geladeira, aquário etc.) ficam no
+  térreo: escopo reduzido por decisão da dona. O aconchego de cima conta os móveis de cima.
 
 ## 7. Desafios
 
@@ -2707,11 +2725,22 @@ O Members confere de novo os 20 objetivos e os 8 que rodam o jogo
 `core/src/learning/project-execution.ts`). As esperas somadas dos objetivos que rodam o jogo vão
 até 40 segundos (`maxSectionWaitMs`).
 
-### 7.3 Só JavaScript
+### 7.3 As linguagens: blocos, Python, Ponte e Pro
 
-O objetivo aceita só `programmingLanguage: 'javascript'` (`ObjetivoDoDesafioSchema`). A análise
-do Members recusa projeto ou objetivo em Python (`PROJETO_PYTHON`, `OBJETIVO_PYTHON`) e projeto do
-Pro (`PROJETO_PRO`).
+Até o C02 (30/10/2026) o objetivo aceitava só JavaScript. Hoje:
+
+- **Objetivo** (`ObjetivoDoDesafioSchema`): a união do JavaScript de sempre e do Python
+  (`programmingLanguage: 'python'`, `profileId` e até 4 linhas de `stdin`, o mesmo das aulas).
+  Python Pro é recusado (`PROJETO_PYTHON_PRO`). O Members confere com o mesmo verificador das aulas.
+- **No jogo** (C02b): Python e Pro abrem no diálogo do desafio, com o ambiente autorizado pelo
+  próprio desafio (Python) e a compilação Pro pelo executor; nenhum depende do Estúdio Completo.
+- **Curso-base** (`e99575ab2`, `postoDoCursoBase` em `desafios.ts`): o desafio fora dos blocos pede
+  o curso-base do posto da ilha. No Farol, cada linguagem pede o curso-base de onde ela começa
+  (`POSTO_DA_LINGUAGEM`: Python no Explorador de Mundos, texto no Arquiteto de Mundos, Pro no Gênio
+  da Criação; revisão de 31/10, 9g).
+- **Farol** (9g): o projeto autoral tem uma variante por linguagem (quadros 2 a 4 em Python, na
+  Ponte e no Pro, além dos blocos) com os mesmos critérios de encontro, recomeço e outra partida; o
+  Quadro das Cores sugere a da linguagem aprendida por último.
 
 ### 7.4 Blocos exigidos
 
@@ -3302,8 +3331,8 @@ Arquivo: `arquipelago-api/src/application/servico-dos-desafios.ts`, método `cob
 
 ### 9.9 Gastar na galeria (fase1-13, 29/10/2026)
 
-O único gasto de moedas do jogo. A função do objeto já vale no projeto azul; a galeria só compra o
-visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
+O primeiro gasto de moedas do jogo (hoje não é o único: abaixo, "Os outros gastos"). A função do
+objeto já vale no projeto azul; a galeria só compra o visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 
 | Aparência | Objeto | Preço |
 |---|---|---|
@@ -3354,6 +3383,19 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 - **O saldo** vem do Members pela leitura interna `GET /members/internal/arquipelago/saldo` (token
   de leitura do jogo); fora do ar, o cartão diz que o saldo não carregou e a compra segue (quem
   confere é o débito).
+- **Três versões por objeto (B8):** a clássica, a retrô e a moderna, com o preço da clássica (27
+  aparências ao todo; §6.29).
+- **Posse única (L04):** a compra da galeria e o inventário do Members são uma posse só
+  (`posse-da-galeria.ts`). Aquário, fliperama e planta valem no quarto e no jogo; os outros seis só
+  no jogo. Compras antigas passam pela adoção operacional (`adocao-da-galeria.ts`,
+  `docs/operations/arquipelago-galeria-unica.md`).
+- **Os outros gastos**, todos pela mesma porta de moedas, com chave e preço do catálogo (nunca do
+  corpo), e nada pago é sorteado (A28):
+  - **Insumos** (L07, `insumos.ts`): onze sementes e ingredientes e duas iscas, de duas ou três
+    moedas, de 1 a 10 unidades por compra, entregues inteiras no salvamento.
+  - **Roupas no vestuário da festa** (L09): o configurador do avatar do Members, com o preço dele;
+    as roupas de cada festa não se vendem (§6.29).
+  Vender pratos na feira e os pedidos remunerados são ganhos, contados no teto semanal de 100.
 
 ## 10. Onde mudar cada número
 

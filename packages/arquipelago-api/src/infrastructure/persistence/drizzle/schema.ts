@@ -309,7 +309,7 @@ export const perfisDaConta = arquipelagoSchema.table(
 
 /**
  * As permissões de visita da família (ECA Digital, art. 21; sem linha = o padrão restrito do
- * contrato, `PERMISSOES_PADRAO`). As visitas são da Fase 3: hoje só se grava e se lê.
+ * contrato, `PERMISSOES_PADRAO`). Conferidas nas visitas de irmãos e de amigos e nas fotos.
  */
 export const permissoesDaFamilia = arquipelagoSchema.table('permissoes_da_familia', {
   contaId: uuid().primaryKey(),

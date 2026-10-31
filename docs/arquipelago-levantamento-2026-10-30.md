@@ -47,6 +47,10 @@ ilhas, não há resumo do dia e dois interruptores dos pais não fazem nada.
 
 ## 3. Por lote do programa L01 a L14
 
+> **Atualização de 31/10/2026:** os lotes abertos aqui foram fechados nas listas A e B da proposta
+> v3 e na revisão de 31/10; o estado de cada um está em [estado atual](arquipelago-estado-atual.md).
+> A tabela abaixo é a leitura de 30/10.
+
 Estado em código local. Implantação e aceite autenticado ficam todos em L14/Q01.
 
 | Lote | Situação | O que ainda falta | Lotes da auditoria ligados |
@@ -162,6 +166,11 @@ Também confirmados, já conhecidos: a Íris aparece numa ilustração da abertu
   do Gênio e as Nuvens.
 
 ## 8. Decisões que são da dona
+
+> **Atualização de 31/10/2026:** as decisões abaixo foram tomadas. Fim de ano de 20/12 a 06/01
+> (30/10) e Noite das Lanternas de 1 a 12/10 (31/10); horta, clima, subida de posto, rótulos, posto
+> do Pinta e do Molda e os interruptores na revisão da proposta v3 (30/10, §6.28 das
+> [regras](arquipelago-regras.md)). Mantida como registro do que se perguntou.
 
 - Datas da Noite das Lanternas e da festa de fim de ano (hoje só Carnaval e Junina ligam; a
   próxima festa no jogo é em fevereiro).
