@@ -13,6 +13,7 @@ import {
   novosFeitos,
   ondeAprender,
   oQueFalta,
+  quadroSugeridoNoFarol,
   quadrosDaIlha,
 } from '../src/sistemas/quadro-das-cores'
 
@@ -111,6 +112,48 @@ describe('quadrosDaIlha', () => {
     expect(motivoDoErro(403, { error: { code: 'DESAFIOS_DESLIGADOS' } })).toBe('desligado')
     expect(motivoDoErro(403, { error: { code: 'ACESSO_BLOQUEADO' } })).toBe('desligado')
     expect(motivoDoErro(424, null)).toBe('fora-do-ar')
+  })
+})
+
+describe('o Farol sugere a linguagem mais nova (A29)', () => {
+  const farol = (quadro: number, situacao: DesafioNaLista['situacao']) =>
+    d({ ilha: 'farol', quadro, situacao, recompensa: { cor: false, moedas: 20, moedasExtra: 10 } })
+  test('com blocos e Python abertos e a Ponte e o Pro esperando o curso, sugere o Python', () => {
+    const q = quadrosDaIlha(
+      [
+        farol(1, 'disponivel'),
+        farol(2, 'disponivel'),
+        farol(3, 'falta-curso'),
+        farol(4, 'falta-curso'),
+      ],
+      'farol',
+    )
+    expect(q.slice(0, 4).map((x) => x.estado)).toEqual([
+      'disponivel',
+      'disponivel',
+      'trancado',
+      'trancado',
+    ])
+    expect(quadroSugeridoNoFarol(q)).toBe(2)
+  })
+  test('só uma aberta não precisa de sugestão; depois de feito, nenhuma', () => {
+    expect(quadroSugeridoNoFarol(quadrosDaIlha([farol(1, 'disponivel')], 'farol'))).toBeNull()
+    expect(
+      quadroSugeridoNoFarol(
+        quadrosDaIlha(
+          [farol(1, 'concluido'), farol(2, 'disponivel'), farol(4, 'disponivel')],
+          'farol',
+        ),
+      ),
+    ).toBeNull()
+    expect(
+      quadroSugeridoNoFarol(
+        quadrosDaIlha(
+          [farol(1, 'disponivel'), farol(2, 'disponivel'), farol(4, 'disponivel')],
+          'farol',
+        ),
+      ),
+    ).toBe(4)
   })
 })
 

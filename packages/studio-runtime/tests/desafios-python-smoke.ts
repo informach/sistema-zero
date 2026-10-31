@@ -19,6 +19,7 @@ import {
   AMBIENTE_PYTHON_C02,
   EXTENSOES_DA_RELEASE_C02,
 } from '../../../docs/desafios-do-jogo/ambiente-python'
+import { CENARIOS_DO_FAROL_PYTHON } from '../../../docs/desafios-do-jogo/farol/linguagens'
 import { CENARIOS_DO_PICO } from '../../../docs/desafios-do-jogo/pico/python-projetos'
 import { CENARIOS_DO_RECIFE } from '../../../docs/desafios-do-jogo/recife/python-projetos'
 import { ManifestoDeDesafiosSchema } from '../../arquipelago-contracts/src/desafios'
@@ -33,7 +34,7 @@ import { preparePythonExecutionSnapshot } from '../../studio/src/runtime/python/
  * `preparePythonExecutionSnapshot`, o mesmo que o Members usa. Mesmo molde do
  * `python-mission-smoke.ts`.
  *
- *   bun packages/studio-runtime/tests/desafios-python-smoke.ts [--ilha=recife|pico]
+ *   bun packages/studio-runtime/tests/desafios-python-smoke.ts [--ilha=recife|pico|farol]
  *     [--cenario=<nome>]
  *
  * Variáveis: `STUDIO_PYTHON_TEST_CACHE` (distribuições baixadas e evidências),
@@ -137,6 +138,8 @@ type Cenario = { nome: string; projeto: unknown; ids?: readonly string[]; passa:
 const ilhas = [
   { ilha: 'recife', arquivo: 'recife/recife-python', erros: CENARIOS_DO_RECIFE },
   { ilha: 'pico', arquivo: 'pico/pico-python', erros: CENARIOS_DO_PICO },
+  // A29: o projeto autoral do Farol em Python.
+  { ilha: 'farol', arquivo: 'farol/farol-python', erros: CENARIOS_DO_FAROL_PYTHON },
 ].filter(({ ilha }) => !argumento('ilha') || ilha === argumento('ilha'))
 const evidencia = path.join(cache, 'desafios-python', crypto.randomUUID())
 await mkdir(evidencia, { recursive: true })

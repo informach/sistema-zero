@@ -1,0 +1,297 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "farol-meu-jogo-do-arquipelago-pro-adulto",
+      "publico": "adulto",
+      "ilha": "farol",
+      "tipo": "quadro-das-cores",
+      "quadro": 4,
+      "ordem": 40,
+      "publicar": true,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "Projeto autoral no Pro",
+        "enunciado": "Projeto livre em TypeScript com Vite. src/main.ts exporta o estado jogo (guia, estrela, pontos) e chama passo(teclas) a cada quadro e tecla(nome) a cada tecla. Critérios: pontuação única na colisão com a estrela e reinício completo com R. O movimento já vem pronto.",
+        "dicas": [
+          "Mantenha o estado em jogo para os critérios lerem.",
+          "Use uma flag de coleta fora das funções."
+        ],
+        "projetoInicial": {
+          "id": "farol-meu-jogo-pro",
+          "formatVersion": 2,
+          "projectTools": [],
+          "name": "Meu jogo do Arquipélago",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "code",
+          "kind": "pro",
+          "tree": {
+            "package.json": {
+              "kind": "file",
+              "content": "{\n  \"name\": \"sz-app\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --host 0.0.0.0 --strictPort false\",\n    \"build\": \"vite build\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"vite\": \"8.1.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            "vite.config.ts": {
+              "kind": "file",
+              "content": "import { defineConfig } from 'vite'\n\nexport default defineConfig({\n  base: './',\n  server: {\n    host: '0.0.0.0',\n    strictPort: false,\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n})\n"
+            },
+            "tsconfig.json": {
+              "kind": "file",
+              "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"jsx\": \"react-jsx\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\",\n      \"DOM.Iterable\"\n    ],\n    \"skipLibCheck\": true,\n    \"types\": [\n      \"vite/client\"\n    ],\n    \"noEmit\": true\n  },\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+            },
+            "index.html": {
+              "kind": "file",
+              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jogo\" width=\"640\" height=\"480\"></canvas>\n    <p id=\"placar\"></p>\n    <p>Setas andam. R recomeça.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+            },
+            "src": {
+              "kind": "dir"
+            },
+            "src/main.ts": {
+              "kind": "file",
+              "content": "import './style.css'\n\nconst LADO = 40\n\n/** O estado do jogo: o guia, a estrela e os pontos. */\nexport const jogo = {\n  guia: { x: 60, y: 220 },\n  estrela: { x: 420, y: 220 },\n  pontos: 0,\n}\n\nfunction passo(teclas: Set<string>) {\n  if (teclas.has('ArrowRight')) jogo.guia.x += 4\n  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4\n  // As regras do seu jogo: encontrar, lembrar e decidir.\n}\n\nfunction tecla(nome: string) {\n  // O que cada tecla faz, além de andar.\n}\n\nconst tela = document.getElementById('jogo') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst placar = document.getElementById('placar') as HTMLElement\nconst teclas = new Set<string>()\ndocument.addEventListener('keydown', (evento) => {\n  teclas.add(evento.key)\n  tecla(evento.key.toLowerCase())\n})\ndocument.addEventListener('keyup', (evento) => teclas.delete(evento.key))\n\nfunction desenhar() {\n  ctx.fillStyle = '#1a2854'\n  ctx.fillRect(0, 0, tela.width, tela.height)\n  ctx.fillStyle = '#ffdc5a'\n  ctx.beginPath()\n  ctx.arc(jogo.estrela.x + LADO / 2, jogo.estrela.y + LADO / 2, 18, 0, Math.PI * 2)\n  ctx.fill()\n  ctx.fillStyle = '#78dcc8'\n  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)\n  placar.textContent = 'Pontos: ' + jogo.pontos\n}\n\nfunction quadro() {\n  passo(teclas)\n  desenhar()\n  requestAnimationFrame(quadro)\n}\nrequestAnimationFrame(quadro)\n"
+            },
+            "src/style.css": {
+              "kind": "file",
+              "content": "body { margin: 0; font-family: system-ui; background: #10183a; color: #f2f4ff; }\ncanvas { display: block; }\np { margin: 8px 12px; }\n"
+            }
+          },
+          "proMeta": {
+            "devScript": "dev",
+            "templateId": "vanilla-vite"
+          },
+          "files": {
+            "index.html": "",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "ir": null,
+          "blocksState": null,
+          "installedExtensions": []
+        },
+        "gabarito": {
+          "id": "farol-meu-jogo-pro",
+          "formatVersion": 2,
+          "projectTools": [],
+          "name": "Meu jogo do Arquipélago",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "code",
+          "kind": "pro",
+          "tree": {
+            "package.json": {
+              "kind": "file",
+              "content": "{\n  \"name\": \"sz-app\",\n  \"private\": true,\n  \"type\": \"module\",\n  \"scripts\": {\n    \"dev\": \"vite --host 0.0.0.0 --strictPort false\",\n    \"build\": \"vite build\"\n  },\n  \"dependencies\": {},\n  \"devDependencies\": {\n    \"vite\": \"8.1.6\",\n    \"typescript\": \"5.9.3\"\n  }\n}\n"
+            },
+            "vite.config.ts": {
+              "kind": "file",
+              "content": "import { defineConfig } from 'vite'\n\nexport default defineConfig({\n  base: './',\n  server: {\n    host: '0.0.0.0',\n    strictPort: false,\n    headers: {\n      'Cross-Origin-Opener-Policy': 'same-origin',\n      'Cross-Origin-Embedder-Policy': 'require-corp',\n    },\n  },\n})\n"
+            },
+            "tsconfig.json": {
+              "kind": "file",
+              "content": "{\n  \"compilerOptions\": {\n    \"target\": \"ESNext\",\n    \"module\": \"ESNext\",\n    \"moduleResolution\": \"bundler\",\n    \"strict\": true,\n    \"jsx\": \"react-jsx\",\n    \"lib\": [\n      \"ESNext\",\n      \"DOM\",\n      \"DOM.Iterable\"\n    ],\n    \"skipLibCheck\": true,\n    \"types\": [\n      \"vite/client\"\n    ],\n    \"noEmit\": true\n  },\n  \"include\": [\n    \"src\"\n  ]\n}\n"
+            },
+            "index.html": {
+              "kind": "file",
+              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jogo\" width=\"640\" height=\"480\"></canvas>\n    <p id=\"placar\"></p>\n    <p>Setas andam. R recomeça.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+            },
+            "src": {
+              "kind": "dir"
+            },
+            "src/main.ts": {
+              "kind": "file",
+              "content": "import './style.css'\n\nconst LADO = 40\n\n/** O estado do jogo: o guia, a estrela e os pontos. */\nexport const jogo = {\n  guia: { x: 60, y: 220 },\n  estrela: { x: 420, y: 220 },\n  pontos: 0,\n}\n\nlet pegou = false\n\nfunction passo(teclas: Set<string>) {\n  if (teclas.has('ArrowRight')) jogo.guia.x += 4\n  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4\n  const encostou =\n    Math.abs(jogo.guia.x - jogo.estrela.x) < LADO && Math.abs(jogo.guia.y - jogo.estrela.y) < LADO\n  if (encostou && !pegou) {\n    pegou = true\n    jogo.pontos += 1\n    jogo.estrela.x = 700\n  }\n}\n\nfunction tecla(nome: string) {\n  if (nome === 'r') {\n    jogo.pontos = 0\n    pegou = false\n    jogo.guia.x = 60\n    jogo.estrela.x = 420\n  }\n}\n\nconst tela = document.getElementById('jogo') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst placar = document.getElementById('placar') as HTMLElement\nconst teclas = new Set<string>()\ndocument.addEventListener('keydown', (evento) => {\n  teclas.add(evento.key)\n  tecla(evento.key.toLowerCase())\n})\ndocument.addEventListener('keyup', (evento) => teclas.delete(evento.key))\n\nfunction desenhar() {\n  ctx.fillStyle = '#1a2854'\n  ctx.fillRect(0, 0, tela.width, tela.height)\n  ctx.fillStyle = '#ffdc5a'\n  ctx.beginPath()\n  ctx.arc(jogo.estrela.x + LADO / 2, jogo.estrela.y + LADO / 2, 18, 0, Math.PI * 2)\n  ctx.fill()\n  ctx.fillStyle = '#78dcc8'\n  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)\n  placar.textContent = 'Pontos: ' + jogo.pontos\n}\n\nfunction quadro() {\n  passo(teclas)\n  desenhar()\n  requestAnimationFrame(quadro)\n}\nrequestAnimationFrame(quadro)\n"
+            },
+            "src/style.css": {
+              "kind": "file",
+              "content": "body { margin: 0; font-family: system-ui; background: #10183a; color: #f2f4ff; }\ncanvas { display: block; }\np { margin: 8px 12px; }\n"
+            }
+          },
+          "proMeta": {
+            "devScript": "dev",
+            "templateId": "vanilla-vite"
+          },
+          "files": {
+            "index.html": "",
+            "style.css": "",
+            "script.js": ""
+          },
+          "extraFiles": [],
+          "ir": null,
+          "blocksState": null,
+          "installedExtensions": []
+        },
+        "objetivos": [
+          {
+            "id": "encontro",
+            "label": "A colisão com a estrela soma um ponto uma única vez.",
+            "hint": "Mantenha uma flag de coleta e teste-a antes de pontuar.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "moduleValue",
+                  "module": "src/main.ts",
+                  "path": "jogo.pontos"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "recomeca",
+            "label": "R devolve o guia à posição inicial.",
+            "hint": "Restaure guia.x em R.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "press",
+                  "key": "r",
+                  "holdMs": 80
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "moduleValue",
+                  "module": "src/main.ts",
+                  "path": "jogo.guia.x"
+                },
+                "compare": "lessThan",
+                "value": 100
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "outra-partida",
+            "label": "Após R, a estrela pode ser coletada de novo, com a pontuação recomeçando em zero.",
+            "hint": "Reinicie pontos, a flag de coleta e a posição da estrela.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "press",
+                  "key": "r",
+                  "holdMs": 80
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "moduleValue",
+                  "module": "src/main.ts",
+                  "path": "jogo.pontos"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "some",
+            "label": "Extra: a estrela sai da área visível quando é coletada.",
+            "hint": "Mova a estrela para fora da tela (x 700).",
+            "optional": true,
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 2500
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "moduleValue",
+                  "module": "src/main.ts",
+                  "path": "jogo.estrela.x"
+                },
+                "compare": "atLeast",
+                "value": 640
+              }
+            },
+            "programmingLanguage": "javascript"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Mais um desafio",
+          "texto": "Ao coletar, mova a estrela para fora da tela."
+        },
+        "recompensa": {
+          "cor": false,
+          "atracao": "meu-jogo-do-arquipelago",
+          "moedas": 20,
+          "moedasExtra": 10
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

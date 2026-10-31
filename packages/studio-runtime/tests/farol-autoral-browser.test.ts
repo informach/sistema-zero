@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve, sep } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { criarManifesto } from '../../../docs/desafios-do-jogo/farol/gerar-manifesto'
+import { criarManifestoDaLinguagem } from '../../../docs/desafios-do-jogo/farol/gerar-manifesto-linguagens'
 import {
   type ExecutionObservation,
   executionObservationUnavailableReason,
@@ -18,7 +19,11 @@ import { gameTwoDRuntime } from '../../studio/src/official-extensions/game-2d/ru
 import { buildPreviewDoc } from '../../studio/src/preview/bootstrap'
 
 const nativeTest = process.env.SZ_CHECK_CHROMIUM ? test : test.skip
-for (const d of criarManifesto('kids').desafios)
+// A29: a Ponte em JavaScript é o mesmo projeto autoral, lido do código: roda junto.
+for (const d of [
+  ...criarManifesto('kids').desafios,
+  ...criarManifestoDaLinguagem('ponte', 'kids').desafios,
+])
   nativeTest(
     `${d.slug}: gabarito executável, inicial incompleto e erros causais`,
     async () => {
