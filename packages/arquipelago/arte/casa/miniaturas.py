@@ -8,7 +8,11 @@ células), as janelas (no meio de uma parede de lambri, de fora) e os objetos da
 
 Saem em `src/assets/casa/miniaturas/<id>.png`, 160 px com fundo transparente. O enquadramento e a
 luz são os dos ícones dos itens (`arte/itens/render.py`). Os móveis dos cômodos, do café e as
-decorações de festa saem como `movel-<nó>.png`.
+decorações de festa saem como `movel-<nó>.png`; cada GLB de `src/assets/objetos` (menos o
+holograma), inclusive as versões `<id>-retro` e `<id>-moderna` da galeria, como `objeto-<arquivo>.png`.
+Para gerar só algumas sem regravar as outras, use ITEM (por exemplo
+`ITEM=objeto-forno-retro,objeto-forno-moderna`) e depois a paleta, que só reduz as que ainda não
+foram reduzidas.
 """
 import os
 import sys

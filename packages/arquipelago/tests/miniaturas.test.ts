@@ -32,6 +32,22 @@ const CAFE_E_FESTAS = [
   'festa-lanternas-lanterna-chao',
   'festa-lanternas-varal-de-luz',
 ]
+/**
+ * As versões retro e moderna dos nove objetos da galeria (`src/assets/objetos/<id>-retro.glb` e
+ * `<id>-moderna.glb`, 31/10/2026), com o mesmo enquadramento dos clássicos.
+ */
+const OBJETOS_COM_VERSOES = [
+  'geladeira',
+  'forno',
+  'aquario',
+  'lareira',
+  'banda',
+  'fliperama',
+  'museu',
+  'casinha',
+  'planta-interior',
+]
+const VERSOES = OBJETOS_COM_VERSOES.flatMap((id) => [`objeto-${id}-retro`, `objeto-${id}-moderna`])
 const ESPERADAS = [
   ...new Set([
     'janela-grande',
@@ -46,10 +62,23 @@ const ESPERADAS = [
     ...MOVEIS.map((id) => `movel-${id}`),
     // Sem repetir quando o catálogo de móveis passar a ter estas peças.
     ...CAFE_E_FESTAS.map((id) => `movel-${id}`),
+    ...VERSOES,
   ]),
 ]
 
 describe('as miniaturas do Construir', () => {
+  test('os nove objetos da galeria têm a retro e a moderna, em 160 px', () => {
+    expect(VERSOES).toHaveLength(18)
+    for (const id of VERSOES) {
+      const png = readFileSync(join(PASTA, `${id}.png`))
+      expect({ id, largura: png.readUInt32BE(16), altura: png.readUInt32BE(20) }).toEqual({
+        id,
+        largura: 160,
+        altura: 160,
+      })
+    }
+  })
+
   test('há uma para cada escolha, e nenhuma sobrando', () => {
     const arquivos = readdirSync(PASTA)
       .filter((n) => n.endsWith('.png'))
