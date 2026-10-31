@@ -476,7 +476,7 @@ async function dicas() {
   // A primeira noite, na sua ilha; e desligar as dicas.
   {
     const c = await novoContexto(tela)
-    // O adiantar do playground vale com o ponto de partida (o em): o quintal, perto da horta.
+    // O adiantar do playground vale com o ponto de partida (o em): a grama do lote, na frente da casa.
     const { page, erros } = await abrir(c, '/?novo=1&persistir=0&adiantar=12&dicas=1&em=8,4,2.4')
     await cartao(page, 'Anoiteceu').waitFor({ timeout: 180_000 })
     await anel(page, 'relogio')

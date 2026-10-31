@@ -177,15 +177,18 @@ RAIO_DO_RASO = 36
 CENTRO_DA_CASA = (0, -4)
 QUARTO = dict(largura=12, fundo=8, altura=4)
 PORTA = dict(x=2.5, largura=2.2, altura=3)
-HORTA = dict(x=10.5, z=1, colunas=3, linhas=2, passo=1.7)
-BANCADA = (10, -7)
+# O chão do lote da casa: plano, sem árvore, moita nem horta (31/10/2026). Igual a `CHAO_DO_LOTE`.
+CHAO_DO_LOTE = (-15, -14, 16, 10)
+HORTA = dict(x=10.5, z=15, colunas=3, linhas=2, passo=1.7)
+BANCADA = (15, 14)
 FAROL = (-12, -13)
 PIER = dict(x=-5, z=27, comprimento=10)
 RAIO_DO_ANEL = 82
 RAIO_DA_ILHA_DO_ANEL = 13
 # As árvores da ilha central: (x, z, escala), as mesmas de ilha-central.tsx.
-ARVORES = [(-9, 4, 1.2), (-14, -3, 1), (-16, 6, 1.3), (-6, 12, 1.1), (6, 14, 1.2), (15, 10, 1),
-           (17, -10, 1.3), (4, -16, 1.1), (-4, -17, 1), (-19, -6, 1.2), (12, 16, 0.9), (-12, 15, 1)]
+ARVORES = [(-18.5, 2, 1.2), (18.5, 4.5, 1), (-13.5, 14, 1.3), (-8.5, 15.5, 1.1), (3, 17.5, 1.2),
+           (18.5, 9.5, 1), (17, -10, 1.3), (2, -18.5, 1.1), (-4, -17, 1), (-19, -6, 1.2), (16, 17, 0.9),
+           (-17.6, 10, 1)]
 
 
 def suave(a, b, t):
@@ -202,7 +205,8 @@ def raio_efetivo(x, z):
 
 
 def peso_do_plano(x, z):
-    casa = max(abs(x - CENTRO_DA_CASA[0]) - 9, abs(z - CENTRO_DA_CASA[1]) - 8, 0)
+    x0, z0, x1, z1 = CHAO_DO_LOTE
+    casa = max(x0 - x, x - x1, z0 - z, z - z1, 0)
     horta = math.hypot(x - HORTA['x'], z - HORTA['z']) - 5
     bancada = math.hypot(x - BANCADA[0], z - BANCADA[1]) - 3
     d = min(casa, max(horta, 0), max(bancada, 0))

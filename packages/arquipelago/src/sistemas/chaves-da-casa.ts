@@ -49,8 +49,8 @@ export const CHAVES_DA_CASA: readonly ChaveDaCasa[] = [
     nome: 'chave do banheiro',
     libera: 'o piso de azulejo',
     plural: false,
-    x: -16.5,
-    z: 2.1,
+    x: -11.5,
+    z: 17.2,
   },
   {
     comodo: 'quintal',

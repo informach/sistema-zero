@@ -27,6 +27,10 @@ BORDA_DO_GRAMADO = 23.5
 LINHA_MOLHADA = 29.96
 LINHA_DAGUA = 30.08
 ANGULOS_DAS_PONTES = [20, -40, -100, -160, 140, 80]
+# O retângulo do lote grande da casa (`LOTE_DA_CASA_GRANDE` em `src/sistemas/construcao/lote.ts`):
+# fica só grama, para a criança crescer a casa para qualquer lado.
+LOTE_GRANDE = (-17, -15, 16, 12)
+CATA_VENTO = (6.8, 15)
 
 
 def mistura(a, b, t):
@@ -175,9 +179,12 @@ def espuma():
 
 # ------------------------------------------------------------------ enfeites
 def livre(x, z, folga=0.0):
-    """Lugar onde dá para enfeitar (longe da casa, da horta, da bancada, do farol, do píer e das
-    pontes)."""
-    if -7.6 - folga < x < 7.6 + folga and -9.6 - folga < z < 3.2 + folga:
+    """Lugar onde dá para enfeitar (fora do lote da casa, longe da horta, da bancada, do cata-vento,
+    do farol, do píer e das pontes)."""
+    x0, z0, x1, z1 = LOTE_GRANDE
+    if x0 - folga < x < x1 + folga and z0 - folga < z < z1 + folga:
+        return False
+    if math.hypot(x - CATA_VENTO[0], z - CATA_VENTO[1]) < 1.6 + folga:
         return False
     if math.hypot(x - HORTA['x'], z - HORTA['z']) < 3.6 + folga:
         return False
@@ -251,6 +258,12 @@ def estrela_do_mar(x, z, rot, m):
     return o
 
 
+MOITAS = [(-20, 6, 1.0), (-19.5, -10.5, 1.1), (20, 0.5, 1.1), (-9.5, -17.5, 1.0), (-1, -17, 1.0),
+          (17.5, 1.5, 0.9), (-6, 20, 1.0), (8, -18, 1.1), (21, -8, 0.9), (10.5, -17.2, 0.9)]
+TRILHA_DO_PIER = [(-0.5, 12.8), (-2, 15), (-4, 18), (-5, 24.5)]
+TRILHA_DA_HORTA = [(-0.5, 12.8), (3, 13.3), (5.4, 13.4)]
+
+
 # Colisão das moitas: um pouco menor que a folhagem (o corpo encosta nas folhas, mas não entra) e
 # no mínimo 0,7 de alto (o personagem sobe sozinho até uns 0,58: degrau mais a curva do pé).
 MOITA_RAIO = 0.68
@@ -282,7 +295,7 @@ def enfeites(col):
         n += 1
     # Flores em canteirinhos (grupos de 4 a 6 da mesma cor).
     cores = ['petalaBranca', 'petalaRosa', 'petalaAmarela', 'petalaLilas']
-    grupos = [(-11, 9), (-17, 1), (-2, 18), (9, 12), (18, -4), (14, -14), (-8, -19), (-18, -11), (2, 21),
+    grupos = [(-6, 17.5), (-17, 1), (-2, 18), (6, -17), (18, -4), (14, -14), (-8, -19), (-18, -11), (2, 21),
               (-13, 19)]
     for gi, (gx, gz) in enumerate(grupos):
         for k in range(5):
@@ -290,10 +303,8 @@ def enfeites(col):
             if not livre(x, z) or perto_de_arvore(x, z, 0.6) or raio_efetivo(x, z) > BORDA_DO_GRAMADO - 0.6:
                 continue
             p += flor(no_chao(x, z), cores[gi % 4], seed=gi * 10 + k, r=0.15 + 0.04 * rnd.random())
-    # Moitas: perto da casa (sem tapar a porta) e soltas pela ilha.
-    for i, (x, z, s) in enumerate([(-8.4, -1.5, 1.0), (-8.6, -6.5, 1.1), (8.5, -9.6, 0.9), (-3.5, -10.6, 1.0),
-                                   (3.8, -10.7, 0.85), (-20, 3, 1.2), (19, 3, 1.1), (-6, 20, 1.0),
-                                   (8, -18, 1.1), (21, -8, 0.9)]):
+    # Moitas: soltas pela ilha, fora do lote da casa (o lugar de construir fica livre).
+    for i, (x, z, s) in enumerate(MOITAS):
         p += moita(x, z, s, i)
         col.append(col_no_chao('moita', x, z, MOITA_RAIO * s, max(MOITA_ALTO * s, MOITA_ALTO_MINIMO)))
     # Pedras: grupinhos no gramado e na praia.
@@ -307,10 +318,10 @@ def enfeites(col):
         p.append(rock((bx, by, bz), (1.3 * s, 1.1 * s, 0.8 * s), 'pedra', seed=i, subdiv=1, rough=0.2,
                       top_m='musgo' if raio_efetivo(x, z) < BORDA_DO_GRAMADO else 'pedraClara'))
         col.append(col_no_chao('pedra', x, z, PEDRA_RAIO * s, PEDRA_ALTO * s))
-    # Caminho de pedras: da porta até o píer, e da porta até a horta e a bancada.
-    p += caminho([(2.5, 1.6), (1.5, 6), (-1.5, 12), (-4, 18), (-5, 24.5)], seed=1)
-    p += caminho([(4.5, 1.4), (7.4, 1.2)], seed=2)
-    p += caminho([(8.2, -1.2), (9.6, -4.4)], seed=3)
+    # Caminho de pedras: da beira do lote até o píer, e da beira do lote até o cata-vento e a horta.
+    # Dentro do lote não há pedra: o chão fica para a obra.
+    p += caminho(TRILHA_DO_PIER, seed=1)
+    p += caminho(TRILHA_DA_HORTA, seed=2)
     # Estrelas do mar na areia.
     for i, (x, z) in enumerate([(-12, 26.5), (22, 15), (24, -12.5), (-26.4, -6)]):
         if livre(x, z):

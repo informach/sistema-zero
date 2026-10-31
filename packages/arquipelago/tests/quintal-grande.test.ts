@@ -124,8 +124,8 @@ describe('o quintal grande do Vale (E04)', () => {
     const tentar = (jornada: number) => {
       const { loja } = montar(jornada)
       const obra = loja.getState().salvamento.construcao.casa as Obra
-      // Uma parede no anel novo, ao sul do lote de antes (z -14 a -12), longe do farol.
-      return esticarParede(obra, loteDaCasa(jornada), { x: 2, z: -13 }, { x: 6, z: -13 }).ok
+      // Uma parede no anel novo, a oeste do lote de antes (x -17 a -15), longe do farol.
+      return esticarParede(obra, loteDaCasa(jornada), { x: -16, z: -5 }, { x: -16, z: -1 }).ok
     }
     expect(tentar(POSICAO_DO_QUINTAL_GRANDE - 1)).toBe(false)
     expect(tentar(POSICAO_DO_QUINTAL_GRANDE)).toBe(true)

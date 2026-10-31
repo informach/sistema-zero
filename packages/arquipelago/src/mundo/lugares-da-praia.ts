@@ -1,5 +1,5 @@
 import { ALTURA_DO_PIER } from './colisao-da-ilha-central'
-import { alturaDaIlha, PIER } from './medidas'
+import { alturaDaIlha, HORTA, PIER } from './medidas'
 
 /** Entre estacas, oposto ao embarque; o tampo tem 6 cm acima do centro do colisor. */
 export const PONTO_DA_PESCA = {
@@ -21,9 +21,9 @@ export const LUGAR_DA_PENA = {
 
 /** A latinha de minhocas de graça, no canto da horta do lado do cata-vento, na grama livre. */
 export const LUGAR_DA_MINHOCA = {
-  x: 12.8,
-  y: alturaDaIlha(12.8, -1.3),
-  z: -1.3,
+  x: HORTA.x - 3,
+  y: alturaDaIlha(HORTA.x - 3, HORTA.z - 2),
+  z: HORTA.z - 2,
   escala: 3,
 } as const
 
