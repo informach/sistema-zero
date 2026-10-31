@@ -13,8 +13,10 @@ import type { Ferramenta } from './construcao/ferramentas'
  * As chaves dos cômodos (N11, levantamento de 30/10). A proposta: na sua ilha, a aventura é
  * "achar a chave de cada cômodo"; a casa da Íris só tem cor no quarto, e a criança desenha o resto
  * (cozinha, sala, banheiro, quintal). Cada chave fica escondida num canto da sua ilha, entre as
- * pontes, e dá cor ao cômodo dela no Construir: o acabamento que é dele fica liberado. Sem chave nenhuma, a
- * casa já cresce com parede, porta, janela redonda, piso de tábua e os objetos dos pedidos.
+ * pontes. Desde 01/11/2026 (lacunas, pela proposta) a chave abre o cômodo: cada chave da cozinha,
+ * da sala e do banheiro deixa fechar mais um cômodo além do quarto, e a do quintal abre a cerca,
+ * o caminho e o canteiro. Pisos e janelas ficam livres. Quem já tinha mais cômodos que chaves não
+ * perde nenhum: só fechar um novo pede a chave.
  */
 export interface ChaveDaCasa {
   comodo: ComodoDaIris
@@ -31,7 +33,7 @@ export const CHAVES_DA_CASA: readonly ChaveDaCasa[] = [
   {
     comodo: 'cozinha',
     nome: 'chave da cozinha',
-    libera: 'o piso de ladrilho',
+    libera: 'mais um cômodo',
     plural: false,
     x: 20.5,
     z: -3.6,
@@ -39,15 +41,15 @@ export const CHAVES_DA_CASA: readonly ChaveDaCasa[] = [
   {
     comodo: 'sala',
     nome: 'chave da sala',
-    libera: 'as janelas grande e em arco',
-    plural: true,
+    libera: 'mais um cômodo',
+    plural: false,
     x: 6.8,
     z: -18.8,
   },
   {
     comodo: 'banheiro',
     nome: 'chave do banheiro',
-    libera: 'o piso de azulejo',
+    libera: 'mais um cômodo',
     plural: false,
     x: -11.5,
     z: 17.2,
@@ -69,14 +71,9 @@ export function chaveDoComodo(comodo: ComodoDaIris): ChaveDaCasa {
 }
 
 /** O cômodo dono de cada acabamento ou ferramenta (sem dono: livre desde o começo). */
-const DONO_DO_PISO: Readonly<Partial<Record<PisoDaCasa, ComodoDaIris>>> = {
-  ladrilho: 'cozinha',
-  azulejo: 'banheiro',
-}
-const DONO_DA_JANELA: Readonly<Partial<Record<TipoDeAbertura, ComodoDaIris>>> = {
-  'janela-grande': 'sala',
-  'janela-arco': 'sala',
-}
+// Pisos e janelas são livres desde 01/11/2026: a chave abre o cômodo, não o acabamento.
+const DONO_DO_PISO: Readonly<Partial<Record<PisoDaCasa, ComodoDaIris>>> = {}
+const DONO_DA_JANELA: Readonly<Partial<Record<TipoDeAbertura, ComodoDaIris>>> = {}
 const DONO_DA_FERRAMENTA: Readonly<Partial<Record<Ferramenta, ComodoDaIris>>> = {
   cerca: 'quintal',
   caminho: 'quintal',
@@ -111,7 +108,35 @@ export function falaDaChave(comodo: ComodoDaIris, chavesDepois: number): string 
     falta === 0
       ? 'Agora a casa da Íris tem todas as chaves.'
       : `Ainda ${falta === 1 ? 'falta uma chave' : `faltam ${falta} chaves`} pela ilha.`
+  if (CHAVES_DE_COMODO.includes(comodo))
+    return `Você achou a ${c.nome}. No Construir, a casa já pode ganhar mais um cômodo. ${fim}`
   return `Você achou a ${c.nome}. No Construir, ${c.libera} já ${c.plural ? 'podem' : 'pode'} ir para a casa. ${fim}`
+}
+
+/** As chaves que abrem um cômodo novo da casa (a do quintal abre a cerca, o caminho e o canteiro). */
+export const CHAVES_DE_COMODO: readonly ComodoDaIris[] = ['cozinha', 'sala', 'banheiro']
+
+/** Quantos cômodos além do quarto a casa pode ter com as chaves achadas. */
+export function comodosAbertos(chaves: number): number {
+  return CHAVES_DE_COMODO.filter((c) => chaveAchada(chaves, c)).length
+}
+
+/**
+ * A obra nova fecha um cômodo a mais do que as chaves abrem? (Só conta subir: quem já tinha mais
+ * cômodos continua com eles.) Devolve a chave que falta, ou `null`.
+ */
+export function chaveQueFaltaParaOComodo(
+  chaves: number,
+  comodosAntes: number,
+  comodosDepois: number,
+): ComodoDaIris | null {
+  if (comodosDepois <= comodosAntes || comodosDepois <= comodosAbertos(chaves)) return null
+  return CHAVES_DE_COMODO.find((c) => !chaveAchada(chaves, c)) ?? null
+}
+
+/** O recado de um cômodo novo sem a chave dele. */
+export function recadoDoComodoTrancado(comodo: ComodoDaIris): string {
+  return `Para fechar mais um cômodo, precisa da ${chaveDoComodo(comodo).nome}. Ela está escondida em algum canto da sua ilha.`
 }
 
 /** O recado de uma escolha trancada no Construir. */

@@ -121,6 +121,8 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
 
 /** O que vale lá em cima (o resto é do térreo e do quintal). */
 const FERRAMENTAS_DE_CIMA: ReadonlySet<Ferramenta> = new Set([
+  // Os objetos com função também vão lá em cima (lacunas, 01/11/2026).
+  'objeto',
   'parede',
   'porta',
   'janela',

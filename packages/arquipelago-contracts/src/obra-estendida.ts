@@ -1,6 +1,13 @@
 import { z } from 'zod'
 import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
-import { AberturaSchema, ObraDaCabanaSchema, PisoDoComodoSchema, TrechoSchema } from './salvamento'
+import { OBJETOS_DA_CASA } from './objetos'
+import {
+  AberturaSchema,
+  ObjetoNaObraSchema,
+  ObraDaCabanaSchema,
+  PisoDoComodoSchema,
+  TrechoSchema,
+} from './salvamento'
 
 /**
  * A obra estendida (E04 e B14, 31/10/2026): o que a criação avançada constrói e não cabe no
@@ -32,6 +39,15 @@ export const AndarDeCimaSchema = z.strictObject({
    * os andares gravados antes não têm o campo, e o andar sem móvel não o grava.
    */
   moveis: z.array(MovelNaObraSchema).max(MOVEIS_NA_CASA_MAXIMO).optional(),
+  /**
+   * Os objetos com função lá em cima (lacunas, 01/11/2026: a geladeira, o forno, o aquário... num
+   * cômodo de cima). Opcional, como os móveis; um objeto fica num andar só (o Construir confere).
+   */
+  objetos: z
+    .array(ObjetoNaObraSchema)
+    .max(OBJETOS_DA_CASA.length)
+    .refine((l) => new Set(l.map((o) => o.id)).size === l.length, 'objeto repetido')
+    .optional(),
 })
 export type AndarDeCima = z.infer<typeof AndarDeCimaSchema>
 

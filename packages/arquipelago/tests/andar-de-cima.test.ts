@@ -359,6 +359,8 @@ describe('o andar de cima da casa (E04, Pico)', () => {
       salvamento: {
         ...criarSalvamentoInicial(new Date('2026-10-31T12:00:00Z')),
         casa: { portaNova: true },
+        // Com as chaves: os cômodos novos destes testes não esbarram na tranca (lacunas, 01/11/2026).
+        chaves: 15,
         construcao: {
           ...criarSalvamentoInicial(new Date('2026-10-31T12:00:00Z')).construcao,
           casa: obra,
@@ -445,6 +447,8 @@ describe('o andar de cima da casa (E04, Pico)', () => {
       salvamento: {
         ...inicial,
         casa: { portaNova: true },
+        // Com as chaves: os cômodos novos destes testes não esbarram na tranca (lacunas, 01/11/2026).
+        chaves: 15,
         construcao: { ...inicial.construcao, casa: structuredClone(LOTE.obraInicial) as Obra },
       },
       jornada: POSICAO_DO_ANDAR,
@@ -556,6 +560,24 @@ describe('o andar de cima da casa (E04, Pico)', () => {
       expect('moveis' in andarDaObra(cima, andar.escada)).toBe(false)
     })
 
+    test('objeto com função vai num cômodo de cima, e não no vão (lacunas, 01/11/2026)', () => {
+      const { obra, andar, cima } = comComodosEmCima()
+      const comGeladeira = andarDaObra(
+        { ...cima, objetos: [{ id: 'geladeira', x: -3, z: -4, giro: 0 }] },
+        andar.escada,
+      )
+      expect(comGeladeira.objetos).toHaveLength(1)
+      expect(conferirAndar(comGeladeira, obra, LOTE)).toBeNull()
+      const noVao = andarDaObra(
+        { ...cima, objetos: [{ id: 'geladeira', x: -10, z: -3, giro: 0 }] },
+        andar.escada,
+      )
+      expect(conferirAndar(noVao, obra, LOTE)).toBe('movel-fora')
+      // Sem objeto, o campo não vai.
+      expect('objetos' in andarDaObra(cima, andar.escada)).toBe(false)
+      expect(obraDeCima(comGeladeira).objetos.map((o) => o.id)).toEqual(['geladeira'])
+    })
+
     test('móvel fora de cômodo ou no vão da escada é recusado; a escada não sai com móvel', () => {
       const { obra, andar, cima } = comComodosEmCima()
       const indice = MOVEIS.indexOf('poltrona')
@@ -572,6 +594,8 @@ describe('o andar de cima da casa (E04, Pico)', () => {
         salvamento: {
           ...inicial,
           casa: { portaNova: true },
+          // Com as chaves: os cômodos novos destes testes não esbarram na tranca (lacunas, 01/11/2026).
+          chaves: 15,
           construcao: { ...inicial.construcao, casa: obra },
         },
         jornada: POSICAO_DO_ANDAR,

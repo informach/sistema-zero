@@ -438,6 +438,8 @@ function CascaDeAntes({ dentro, construida }: { dentro: boolean; construida: boo
 
 /** Onde fica o ponto (0, 0) da grade da casa: o mundo, na altura do topo do piso. */
 const BASE_DA_OBRA: [number, number, number] = [0, BASE, 0]
+/** O piso do andar de cima, para os objetos com função de lá. */
+const BASE_DO_ANDAR: [number, number, number] = [0, BASE + ALTURA_DO_ANDAR, 0]
 
 export function Casa() {
   const { loja } = useJogo()
@@ -498,6 +500,10 @@ export function Casa() {
         </ComReserva>
       ) : null}
       {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
+      {/* Os objetos com função de cima (lacunas, 01/11/2026), no piso do andar. */}
+      {obra && andar?.objetos?.length ? (
+        <ObjetosDaObra obra={obraDeCima(andar)} base={BASE_DO_ANDAR} />
+      ) : null}
       {obra ? <MoveisDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
       {obra && construindo && !(emCima && doAndar) ? (
         <ModoConstruir lote={lote} obra={obra} base={BASE} />
