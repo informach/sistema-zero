@@ -89,7 +89,8 @@ laço em grupo seguem sem pedido, porque nesses postos a aplicação de listas �
 (C02). A importação e a barreira C01a continuam com a equipe. C01a impede publicar cobertura impossível. Os blocos de extras e os apoios sem
 fonte continuam visíveis como pendências, sem concessão manual.
 
-A Vila (A15, 31/10/2026) é a corrida do entregador sobre o Corre, Dino!: pulo com gravidade e só
+O Bosque (A42, 31/10/2026) tem nos quadros 1 a 5 a chuva de pinhas com o repertório da Nave:
+grupos, encontro de grupos, vidas, derrota e partida que recomeça. A Vila (A15, 31/10/2026) é a corrida do entregador sobre o Corre, Dino!: pulo com gravidade e só
 no chão, pedras num relógio, começar e recomeçar, a batida com área justa, o sorteio com limites e
 a dificuldade com teto, um passo por quadro, todos pedindo publicação. Os quadros do Recife e do Pico são retomadas
 em blocos e os do Vale e das Nuvens não trabalham no ambiente textual nem no Pro. C02 acrescenta

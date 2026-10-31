@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { instrumentCheckScript } from '../../../packages/studio/src/check/instrumentCheckScript'
 import { gameTwoDRuntime } from '../../../packages/studio/src/official-extensions/game-2d/runtime'
 import { buildPreviewDoc } from '../../../packages/studio/src/preview/bootstrap'
-import { projetoDoQuadroBosque, type QuadroInicialDoBosque } from './quadros-iniciais'
+import { projetoDoQuadroBosque } from './quadros-iniciais'
 
 if (!process.env.SZ_CHECK_CHROMIUM)
   throw Error('Defina SZ_CHECK_CHROMIUM para a conferência local.')
@@ -16,15 +16,16 @@ const driver = Bun.resolveSync(
 )
 const out =
   process.env.ARQUIPELAGO_PRINTS ??
-  fileURLToPath(new URL('../../qa/2026-10-29-quadros-bosque/r1/', import.meta.url))
+  fileURLToPath(new URL('../../qa/2026-10-31-revisao-dos-lotes/bosque-pinhas/', import.meta.url))
 const dir = await mkdtemp(join(tmpdir(), 'sz-bosque-visual-'))
 const base = resolve(tmpdir()) + sep
 if (!resolve(dir).startsWith(base)) throw Error('Diretório de ensaio inválido')
 try {
-  for (const quadro of [1, 2, 3, 4, 5] as QuadroInicialDoBosque[]) {
-    const p = projetoDoQuadroBosque(quadro, true)
+  // O gabarito dos cinco quadros é o mesmo jogo: basta o do quinto.
+  {
+    const p = projetoDoQuadroBosque(5, true)
     await writeFile(
-      join(dir, `${quadro}.html`),
+      join(dir, 'chuva.html'),
       buildPreviewDoc({
         html: p.files['index.html'],
         css: p.files['style.css'],

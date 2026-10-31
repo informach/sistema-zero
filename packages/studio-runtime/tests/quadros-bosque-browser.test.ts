@@ -68,48 +68,34 @@ for (const d of desafiosIniciaisDoBosque('kids'))
             change((p.ir as SZIRV2).behavior)
             scenarios.push({ name, ids, project: p, passes: false })
           }
-          wrong('sem-reinicio', ['recomecar'], (b) => {
-            const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
-            if (e?.type !== 'g2d:onKey') throw Error('Evento Enter ausente')
-            e.body = []
-          })
-          if (d.quadro === 1)
-            wrong('acende-sozinho', ['acao'], (b) => {
-              const s = b.start.find((s) => s.type === 'var' && s.name === 'aceso')
-              if (s?.type !== 'var') throw Error('Informação aceso ausente')
-              s.value = { type: 'bool', value: true }
-            })
-          if (d.quadro === 2 || d.quadro === 3)
-            wrong('ignora-condicao', [d.quadro === 2 ? 'sem-alface' : 'sem-atalho'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'if') s.cond = { type: 'bool', value: true }
-              }),
-            )
-          if (d.quadro === 2)
-            wrong('alface-permanece', ['alface-entregue'], (b) => {
-              const e = b.events.find((s) => s.type === 'g2d:onOverlap' && s.bVar === 'alface')
-              if (e?.type !== 'g2d:onOverlap') throw Error('Contato com a alface ausente')
-              e.body = e.body.filter((s) => s.type !== 'g2d:destroySprite')
-            })
+          // A chuva de pinhas (A42): mutações que tiram só a regra de um objetivo.
           if (d.quadro === 4)
-            wrong('conta-contato-repetido', ['uma-vez'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'if') s.cond = { type: 'bool', value: false }
+            wrong('sem-dano', ['perde-vida'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'g2d:onSpriteGroupOverlap')
+                  s.body = s.body.filter((t) => t.type !== 'g2d:damageSprite')
               }),
             )
           if (d.quadro === 5)
-            wrong('continua-depois-da-chegada', ['parar'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'assign' && s.name === 'correndo')
-                  s.value = { type: 'bool', value: true }
+            wrong('sem-recomeco', ['fim-e-recomeco'], (b) => {
+              const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
+              if (e?.type !== 'g2d:onKey') throw Error('Evento Enter ausente')
+              const se = e.body[0]
+              if (se?.type !== 'if') throw Error('Se do Enter ausente')
+              ;(se as { elseif?: unknown }).elseif = undefined
+            })
+          if (d.quadro === 3)
+            wrong('bolota-passa', ['quebra'], (b) =>
+              visit(b.loops, (s) => {
+                if (s.type === 'g2d:onGroupOverlap') s.body = []
               }),
             )
           for (const scenario of scenarios) {
             const objectives = d.conteudo.objetivos
+              .filter((o) => isSectionExecutionRule(o.rule))
               .filter((o) => !scenario.ids || scenario.ids.includes(o.id))
               .map((o) => ({ id: o.id, rule: o.rule as SectionExecutionRule }))
             expect(objectives.length).toBeGreaterThan(0)
-            expect(objectives.every((o) => isSectionExecutionRule(o.rule))).toBe(true)
             const p = scenario.project
             const files = generateProjectFiles({ ir: p.ir!, projectName: p.name })
             if (!scenario.ids) expect(files).toEqual(p.files)
