@@ -45,8 +45,11 @@ no primeiro degrau (o piso de 0,286 é estreito para o degrau automático).
 
 - Bichinhos: no jogo o pet anda a 2,2 m/s e corre a 5,4 m/s; o código vai precisar acelerar o
   clipe na proporção (ou baixar as velocidades) para os pés não escorregarem.
-- Segredo dos patins: quem já tem o planador atravessa o vão saindo da própria pista (as duas
-  bordas na mesma altura, como pedido). De qualquer outro lugar o planador não chega.
+- Segredo dos patins (ajustado em f19a37450): o toco ficou 0,45 m acima da pista, e o vão de 3,80 m
+  só se vence de patins (a pé não chega mais). O planador ainda chega saindo da pista, do deque da
+  T3 e da ponte ao lado; nenhuma altura impede, porque ele abre no alto do mesmo pulo. Aceito pela
+  dona em 31/10: o planador vem do Pico, depois dos patins da Vila, e o jogo não trava o planador
+  perto do toco. `segredo-dos-patins.test.ts` reprova se aparecer outro lugar de onde ele chegue.
 - Retro da geladeira, do forno e do aquário: as faces do Pinta têm tamanho fixo, então o
   arredondado vem dos acessórios; nos outros seis a forma mudou de fato.
 - Segundo andar: o vão da escada não pode encostar o lado comprido numa parede (fica a uma célula
