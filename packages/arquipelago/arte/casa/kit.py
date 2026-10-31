@@ -104,8 +104,9 @@ def parede(largura, familia, altura=H, vaos=(), paradas_frisos=None, paradas_bai
                       cortes_y=cortes, cortes_u=list(meias_celulas(largura)) + list(extras_u))]
     p += faixa(rodape_dentro(1), u0, u1, paradas_rodape, 'rodape')
     if lambri and _SEM_BASE:
-        # Parede do andar: sem alicerce nem rodapé de fora; a cinta cobre a linha do piso de cima.
-        p += faixa(CINTA, u0, u1, (), 'cinta')
+        # Parede do andar: sem alicerce nem rodapé de fora; a cinta cobre a linha do piso de cima. Na
+        # porta de lambri do andar ela para no vão, como o alicerce (as outras não têm `paradas_baixo`).
+        p += faixa(CINTA, u0, u1, paradas_baixo, 'cinta')
     elif lambri:
         p += faixa(ALICERCE, u0, u1, paradas_baixo, 'alicerce')
         p += faixa(RODAPE_FORA, u0, u1, paradas_baixo, 'rodape-fora')
@@ -131,7 +132,9 @@ BATENTE = [(-0.06, -0.17), (0.14, -0.17), (0.16, -0.15), (0.16, 0.15), (0.14, 0.
 def parede_porta(familia, altura=H):
     """Três células com o vão da porta (2,2 × 3,0, o da casa) no meio, batente, soleira e, no lambri,
     o degrau de pedra e a cornija por fora. A folha é o nó `porta` (ou `porta-interna`) do
-    `casa-portas.glb`, posta com a mesma posição e giro desta parede."""
+    `casa-portas.glb`, posta com a mesma posição e giro desta parede. No andar (`no_andar`), a de
+    lambri fica sem o degrau de pedra (ela dá para o piso aberto de cima, e não para o chão de fora):
+    a cinta para no vão, e o batente, a soleira e a cornija são os mesmos."""
     lambri = familia == 'lambri'
     m_bat = 'batente' if lambri else 'acabamento'
     meio = PORTA_L / 2
@@ -153,7 +156,8 @@ def parede_porta(familia, altura=H):
         # piso: a 5 cm ficava no plano do tampo do deque da varanda da casa (`arte/mundo/casa.py`), que
         # continua na casa construída, e a porta principal piscava embaixo. A 3,5 fica 1,5 cm abaixo
         # do deque e 5 mm longe das duas soleiras (a do kit a 3 cm, a da casa a 4 cm).
-        p.append(sem_fundo(caixa(-1.25, 1.25, -0.5, -0.13, -0.3, 0.035, 'alicerce', bevel=0.03)))
+        if not _SEM_BASE:
+            p.append(sem_fundo(caixa(-1.25, 1.25, -0.5, -0.13, -0.3, 0.035, 'alicerce', bevel=0.03)))
         if altura == H:
             p.append(caixa(-1.38, 1.38, -0.22, -0.08, 3.12, 3.3, 'acabamento', bevel=0.02))
     return p
@@ -1068,9 +1072,10 @@ def quina_andar(familia, altura=H):
 
 
 def paredes_do_andar():
-    """As paredes do andar de cima: as mesmas de baixo com o sufixo `-andar`, menos a porta de lambri
-    (não há porta para fora no andar). Cada uma no referencial do térreo (z = 0), com o pé no topo do
-    piso de cima (4,10) e a mesma posição e giro da parede de baixo."""
+    """As paredes do andar de cima: as mesmas de baixo com o sufixo `-andar`. Cada uma no referencial
+    do térreo (z = 0), com o pé no topo do piso de cima (4,10) e a mesma posição e giro da parede de
+    baixo. A porta de lambri do andar (31/10/2026, B7c) é a do cômodo de cima para o piso aberto: sem
+    alicerce nem degrau de pedra, com a cinta, o batente, a soleira e a folha `porta`."""
     nos, notas = {}, {}
     with no_andar():
         for fam in ('lambri', 'lisa'):
@@ -1084,6 +1089,9 @@ def paredes_do_andar():
             nos[f'parede-janela-redonda-{fam}-andar'] = janela_redonda(fam)
             nos[f'quina-{fam}-andar'] = quina_andar(fam)
             nos[f'quina-{fam}-baixa-andar'] = quina_andar(fam, HB)
+        # A porta de lambri do andar (B7c), no fim para não mexer na ordem dos nós de antes.
+        nos['parede-porta-lambri-andar'] = parede_porta('lambri')
+        nos['parede-porta-lambri-baixa-andar'] = parede_porta('lambri', HB)
     for nome, objs in nos.items():
         lib_ilha.place(objs, loc=(0, 0, ANDAR))
         if nome.startswith('parede-'):

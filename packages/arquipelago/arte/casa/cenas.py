@@ -2,7 +2,7 @@
 GLB temporário (para o `faces-coplanares.ts` sem `--separados` conferir as emendas entre vizinhas) e
 renderiza prévias em Cycles. Nada daqui vai para o jogo.
 
-  python -B cenas.py kit [cozinha sala banheiro moveis andar cafe-festas janela-baixa varanda]   # as cenas pedidas
+  python -B cenas.py kit [cozinha sala banheiro moveis andar andar-porta cafe-festas janela-baixa varanda]   # as cenas pedidas
 
 Variáveis: DIR_PREVIAS (pasta das imagens e dos GLBs temporários; padrão: `arte-casa` no diretório
 temporário), RES (padrão 560), AMOSTRAS (padrão 28),
@@ -439,6 +439,46 @@ def cena_andar_parede():
     return andar_na_parede(Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb']))
 
 
+def andar_porta(c, x0, cortada=False):
+    """A porta de lambri do andar (B7c): casa 4 × 6 de dois andares e, em cima, um cômodo de y = 3 a 6
+    com a parede da frente dele (linha y = 3) dando para o piso aberto: a `parede-porta-lambri-andar`
+    (células x = 0..3, a folha `porta` com z = 4,10) e uma `parede-lambri-andar`, com o lambri (-Y)
+    para o piso aberto e o verso para o cômodo, as pontas em T nas paredes de fora (sem quina, como
+    o jogo). Embaixo dela, no térreo, uma parede lisa (a cinta passa por cima do topo dela). Com
+    `cortada`, as do cômodo de cima são as cortadas (`-baixa-andar`, sem a folha, como no Construir)
+    e o térreo fica sem a parede do meio."""
+    w, d = 4, 6
+    c.piso('piso-tabua', x0, 0, w, d)
+    fora = {'fundo': [('parede-lambri', 1)] * w, 'esquerda': [('parede-lambri', 1)] * d,
+            'direita': [('parede-lambri', 1)] * d, 'frente': [('parede-lambri-baixa', 1)] * w}
+    for sufixo in ('', '-andar'):
+        f = {k: [(n + sufixo, n_) for n, n_ in v] for k, v in fora.items()}
+        c.corrida('x', d, x0, f['fundo'], -1)
+        c.corrida('y', x0, 0, f['esquerda'], +1)
+        c.corrida('y', x0 + w, 0, f['direita'], -1)
+        c.corrida('x', 0, x0, f['frente'], +1)
+        for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri'), (0, d, 'quina-lambri'),
+                        (w, d, 'quina-lambri')):
+            c.por(q + sufixo, x0 + x, y)
+    for i in range(w):
+        for j in range(d):
+            c.por('piso-andar-tabua', x0 + i + 0.5, j + 0.5)
+    baixa = '-baixa' if cortada else ''
+    c.corrida('x', 3, x0, [(f'parede-porta-lambri{baixa}-andar', 3), (f'parede-lambri{baixa}-andar', 1)], +1)
+    if not cortada:
+        c.por('porta', x0 + 1.5, 3, 4.1, 0)
+        c.corrida('x', 3, x0, [('parede-lisa', 1)] * w, +1)
+    return c
+
+
+def cena_andar_porta():
+    """A porta de lambri do andar em pé (x 0) e cortada (x 8)."""
+    c = Cena(['casa-paredes.glb', 'casa-portas.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb'])
+    andar_porta(c, 0.0)
+    andar_porta(c, 8.0, cortada=True)
+    return c
+
+
 def cena_fachada_andar():
     """Só para a prévia (não entra na conferência das emendas): duas fachadas de lambri de 3 células
     com dois andares lado a lado. À esquerda, como era antes (a parede de baixo subida 4,10, com o
@@ -551,7 +591,8 @@ def cena_varanda():
 
 
 CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro,
-         'andar': cena_andar, 'andar-parede': cena_andar_parede, 'cafe-festas': cena_cafe_festas,
+         'andar': cena_andar, 'andar-parede': cena_andar_parede, 'andar-porta': cena_andar_porta,
+         'cafe-festas': cena_cafe_festas,
          'fachada-andar': cena_fachada_andar, 'janela-baixa': cena_janela_baixa, 'varanda': cena_varanda}
 
 
@@ -590,6 +631,9 @@ VISTAS = {
     'andar': [((2.0, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((1.6, 3.0, 2.6), (0.9, -0.35, 0.45), 7.0)],
     'andar-parede': [((1.5, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((2.0, 3.0, 4.0), (-0.6, -1.0, 0.5), 8.0),
                      ((2.4, 3.0, 4.1), (-0.6, -0.4, 1.0), 5.5)],
+    # De frente para o piso aberto de cima (a porta de lambri do andar), em pé e cortada, e de cima.
+    'andar-porta': [((1.5, 3.0, 5.9), (0.3, -1.0, 0.9), 7.0), ((10.0, 3.0, 4.6), (0.0, -0.6, 1.0), 6.0),
+                    ((0.25, 3.0, 4.35), (0.6, -1.0, 0.55), 1.6)],
     'fachada-andar': [((3.5, 0.0, 4.0), (0.35, -1.0, 0.25), 9.0), ((1.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2),
                       ((5.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2)],
     # De cima e um pouco de lado, como a câmera do Construir: os cômodos e as fileiras de comparar.

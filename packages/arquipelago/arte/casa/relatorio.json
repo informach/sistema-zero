@@ -1061,8 +1061,8 @@
   },
   "casa-paredes-andar": {
     "grupo": "kit",
-    "triangulos": 6970,
-    "kb": 290.4,
+    "triangulos": 7518,
+    "kb": 322.8,
     "nos": {
       "parede-lambri-andar": 110,
       "parede-lambri-baixa-andar": 32,
@@ -1079,7 +1079,9 @@
       "parede-janela-arco-lisa-andar": 548,
       "parede-janela-redonda-lisa-andar": 632,
       "quina-lisa-andar": 106,
-      "quina-lisa-baixa-andar": 106
+      "quina-lisa-baixa-andar": 106,
+      "parede-porta-lambri-andar": 394,
+      "parede-porta-lambri-baixa-andar": 154
     },
     "vazios": [],
     "clipes": [],
@@ -1300,6 +1302,36 @@
         "caixa": [[-0.15, -0.15, 4.05], [0.15, 0.15, 5.13]],
         "materiais": ["acabamento"],
         "nota": "origem no ponto da grade"
+      },
+      "parede-porta-lambri-andar": {
+        "triangulos": 394,
+        "tamanho": [3.0, 4.145, 0.39],
+        "caixa": [[-1.5, -0.22, 3.955], [1.5, 0.17, 8.1]],
+        "materiais": [
+          "acabamento",
+          "batente",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade; pé em 4,10"
+      },
+      "parede-porta-lambri-baixa-andar": {
+        "triangulos": 154,
+        "tamanho": [3.0, 1.165, 0.34],
+        "caixa": [[-1.5, -0.17, 3.955], [1.5, 0.17, 5.12]],
+        "materiais": [
+          "acabamento",
+          "batente",
+          "parede",
+          "paredeDentro",
+          "paredeSombra",
+          "paredeTopo",
+          "rodape"
+        ],
+        "nota": "3 célula(s); origem no meio da base, na linha da grade; pé em 4,10"
       }
     }
   },

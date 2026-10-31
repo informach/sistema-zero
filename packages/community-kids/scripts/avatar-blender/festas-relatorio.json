@@ -1,9 +1,9 @@
 {
-  "criterio": "chapéu, nas seis cabeças, atravessa zero; folga_min de no máximo 3 cm (não flutua: o boné hat-02, o mais folgado dos antigos que encostam no crânio, tem 2,7 cm; o pirata hat-07 flutua a 7,3 cm e fica só registrado); frente, lado, nuca e folga_oco no máximo o maior valor dos antigos que cobrem o crânio (hat-02, hat-03 e hat-07), então o chapéu não desce mais que eles na testa (fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles; rosto de pelo menos 6 mm (não encosta nas sobrancelhas nem nos olhos). Vale para os chapéus novos e para a hat-04 ajustada. Tiara, com as cabeças, zero; com cada cabelo, zero, a não ser que TODOS os enfeites que já existem (enfeite-01 a enfeite-05) também o atravessem: esses cabelos ficam registrados com os números dos antigos ao lado.",
+  "criterio": "chapéu, nas seis cabeças, atravessa zero; folga_min de no máximo 3 cm (não flutua: o boné hat-02, o mais folgado dos antigos que encostam no crânio, tem 2,7 cm; o pirata hat-07 flutua a 7,3 cm e fica só registrado); frente, lado, nuca e folga_oco no máximo o maior valor dos antigos que cobrem o crânio (hat-02, hat-03 e hat-07), então o chapéu não desce mais que eles na testa (fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles; rosto de pelo menos 6 mm (não encosta nas sobrancelhas nem nos olhos). Vale para os chapéus novos e para a hat-04 ajustada; um limite só deixa de valer para a peça listada em EXCECOES_REGUA, com o motivo (hoje, a folga_oco da hat-08, decisão da dona). Tiara, com as cabeças, zero; com cada cabelo, zero, a não ser que TODOS os enfeites que já existem (enfeite-01 a enfeite-05) também o atravessem: esses cabelos ficam registrados com os números dos antigos ao lado.",
   "pecas": {
     "hat-08": {
-      "triangulos": 3600,
-      "kb": 173.9,
+      "triangulos": 3656,
+      "kb": 178.7,
       "materiais": ["Color_", "Fita", "Pluma", "Serpentina", "Serpentina.001"],
       "ossos": ["Head"],
       "cabecas": {
@@ -40,65 +40,72 @@
       },
       "encaixe": {
         "head-01": {
-          "folga_min": 0.012,
-          "topo": 0.159,
+          "folga_min": 0.011,
+          "topo": 0.128,
           "frente": 0.176,
-          "lado": 0.271,
+          "lado": 0.289,
           "nuca": 0.289,
-          "folga_oco": 0.097
+          "folga_oco": 0.11
         },
         "head-02": {
-          "folga_min": 0.012,
-          "topo": 0.159,
+          "folga_min": 0.011,
+          "topo": 0.128,
           "frente": 0.176,
-          "lado": 0.271,
+          "lado": 0.289,
           "nuca": 0.289,
-          "folga_oco": 0.097
+          "folga_oco": 0.11
         },
         "head-03": {
-          "folga_min": 0.012,
-          "topo": 0.159,
+          "folga_min": 0.011,
+          "topo": 0.128,
           "frente": 0.176,
-          "lado": 0.271,
+          "lado": 0.289,
           "nuca": 0.289,
-          "folga_oco": 0.097
+          "folga_oco": 0.11
         },
         "head-04": {
-          "folga_min": 0.012,
-          "topo": 0.159,
+          "folga_min": 0.011,
+          "topo": 0.128,
           "frente": 0.176,
-          "lado": 0.271,
+          "lado": 0.289,
           "nuca": 0.289,
-          "folga_oco": 0.097
+          "folga_oco": 0.11
         },
         "head-05": {
-          "folga_min": 0.012,
-          "topo": 0.159,
+          "folga_min": 0.011,
+          "topo": 0.128,
           "frente": 0.176,
-          "lado": 0.271,
+          "lado": 0.289,
           "nuca": 0.289,
-          "folga_oco": 0.097
+          "folga_oco": 0.11
         },
         "head-06": {
-          "folga_min": 0.012,
-          "topo": 0.159,
+          "folga_min": 0.011,
+          "topo": 0.128,
           "frente": 0.176,
-          "lado": 0.271,
+          "lado": 0.289,
           "nuca": 0.289,
-          "folga_oco": 0.097
+          "folga_oco": 0.11
         }
       },
       "pior": {
-        "folga_min": 0.012,
-        "topo": 0.159,
+        "folga_min": 0.011,
+        "topo": 0.128,
         "frente": 0.176,
-        "lado": 0.271,
+        "lado": 0.289,
         "nuca": 0.289,
-        "folga_oco": 0.097
+        "folga_oco": 0.11
       },
       "rosto": {
-        "distancia": 0.104,
+        "distancia": 0.081,
         "mais_perto": "eyebrow-05"
+      },
+      "excecoes_regua": {
+        "folga_oco": {
+          "valor": 0.11,
+          "limite": 0.103,
+          "motivo": "decisão da dona, 31/10/2026: a cartolinha afunda até a aba ficar na altura da aba da cartola hat-04 ajustada, e a boca aberta da copa passa da folga dos chapéus antigos"
+        }
       },
       "reprovados": []
     },
@@ -209,6 +216,7 @@
         "distancia": 0.061,
         "mais_perto": "eyebrow-05"
       },
+      "excecoes_regua": {},
       "reprovados": []
     },
     "hat-10": {
@@ -310,6 +318,7 @@
         "distancia": 0.083,
         "mais_perto": "eyebrow-05"
       },
+      "excecoes_regua": {},
       "reprovados": []
     },
     "enfeite-06": {
@@ -829,6 +838,7 @@
         "distancia": 0.131,
         "mais_perto": "eyebrow-05"
       },
+      "excecoes_regua": {},
       "reprovados": []
     }
   },

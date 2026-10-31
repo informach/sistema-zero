@@ -34,7 +34,7 @@ FORA_TIARA = {'hair-15'}
 Q_OVAL, P_OVAL = 1.13, 2.25
 # Altura (no eixo da cabeça) do centro da boca de cada chapéu; ver a régua em conferir_festas.py.
 Z_CARTOLA, Z_PALHA, Z_GORRO = 2.05, 1.90, 1.88
-AFUNDA_CARTOLA = 0.085  # a cartolinha desce do alto da cabeça até a aba ficar no alto da testa
+AFUNDA_CARTOLA = 0.115  # a cartolinha desce do alto da cabeça até a aba ficar no alto da testa
 
 
 # ── ajudantes ───────────────────────────────────────────────────────────────────────────────
@@ -281,7 +281,10 @@ def cartolinha():
     arm, head = load('head-01')
     # Tamanho de referência (o de 31/10, feito para caber sobre os cabelos); `menor_escala` encolhe.
     R_IN, H_IN = 0.385, 0.40          # oco: cilindro um pouco mais largo em cima
-    R_CO, R_BO, T_B, H = 0.405, 0.58, 0.022, 0.43
+    # A aba é grossa, perto da aba da cartola hat-04 (pedido da dona, 31/10/2026: era 0.022), com a
+    # borda arredondada; a copa sobe o mesmo tanto, para não ficar mais baixa.
+    R_CO, R_BO, T_B = 0.405, 0.58, 0.06
+    H = 0.43 + (T_B - 0.022)
     # O tamanho sai da boca no alto da cabeça, como a cartola antiga (hat-04), inclinada para trás e
     # de lado. Depois a cartolinha afunda AFUNDA_CARTOLA no eixo dela (a aba no alto da testa, a copa
     # envolvendo o cocuruto) e, em vez de crescer inteira, abre só a boca no formato do crânio: a
@@ -296,7 +299,8 @@ def cartolinha():
     print('cartolinha: escala', round(s, 3), 'boca', round(boca[0], 3))
     # Copa de lantejoula: anéis com os vértices tremidos e sombra chapada (cada face brilha de um jeito).
     rings = 9
-    loop = [(0.0, H_IN), (R_IN + 0.02, H_IN), (R_IN, 0.0), (R_BO, 0.0), (R_BO, T_B)]
+    R_BORDA = R_BO + 0.012
+    loop = [(0.0, H_IN), (R_IN + 0.02, H_IN), (R_IN, 0.0), (R_BO, 0.0), (R_BORDA, T_B / 2), (R_BO, T_B)]
     loop += [(R_CO + 0.02 * i / rings, T_B + (H - T_B) * i / rings) for i in range(rings + 1)]
     loop += [(0.0, H)]
     copa = revolve(loop, seg=28)
@@ -307,6 +311,11 @@ def cartolinha():
             v.co.x *= f
             v.co.y *= f
             v.co.z += random.uniform(-0.006, 0.006)
+        elif r > R_BORDA - 1e-4:  # a borda da aba também é de lantejoula
+            f = 1 + random.uniform(-0.01, 0.01)
+            v.co.x *= f
+            v.co.y *= f
+            v.co.z += random.uniform(-0.004, 0.004)
     colocar(copa, M, s, boca=boca)
     shade(copa, False)
     set_material(copa, metal(mat('Color_', hexrgb('#8e44ad'), 0.3)))
@@ -333,8 +342,8 @@ def cartolinha():
             t = i / (n - 1)
             u = 2 * math.pi * (u0 + (u1 - u0) * t)
             v = fase + 2 * math.pi * 22 * (u1 - u0) * t
-            re, a = R_BO - 0.035, 0.032
-            pts_s.append(Vector(((re + a * math.cos(v)) * math.cos(u), (re + a * math.cos(v)) * math.sin(u), T_B / 2 + a * math.sin(v))))
+            re, a, av = R_BO - 0.02, 0.04, T_B / 2 + 0.008  # enrolada por fora da aba grossa
+            pts_s.append(Vector(((re + a * math.cos(v)) * math.cos(u), (re + a * math.cos(v)) * math.sin(u), T_B / 2 + av * math.sin(v))))
         sp = tube(pts_s, [0.0065] * n, seg=4)
         colocar(sp, M, s, boca=boca)
         set_material(sp, mat('Serpentina', hexrgb(cor), 0.5))

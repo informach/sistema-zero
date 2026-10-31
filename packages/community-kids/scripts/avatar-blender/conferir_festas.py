@@ -34,7 +34,8 @@ hat-02, o mais folgado dos antigos que encostam no crânio, tem 2,7 cm; o pirata
 que cobrem o crânio (hat-02, hat-03 e hat-07), então o chapéu não desce mais que eles na testa
 (fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles; rosto de pelo
 menos 6 mm (não encosta nas sobrancelhas nem nos olhos). Vale para os chapéus novos e para a hat-04
-ajustada. Tiara,
+ajustada; um limite só deixa de valer para a peça listada em EXCECOES_REGUA, com o motivo (hoje, a
+folga_oco da hat-08, decisão da dona). Tiara,
 com as cabeças, zero; com cada cabelo, zero, a não ser que TODOS os enfeites que já existem
 (enfeite-01 a enfeite-05) também o atravessem: esses cabelos ficam registrados com os números dos
 antigos ao lado.
@@ -54,6 +55,12 @@ NOVAS = {'hat-08': 'hat', 'hat-09': 'hat', 'hat-10': 'hat', 'enfeite-06': 'enfei
 REFERENCIAS = {'hat': ['hat-01', 'hat-02', 'hat-03', 'hat-04', 'hat-06', 'hat-07'],
                'enfeite': ['enfeite-01', 'enfeite-02', 'enfeite-03', 'enfeite-04', 'enfeite-05']}
 COBREM = ['hat-02', 'hat-03', 'hat-07']  # antigos que cobrem o crânio: a régua da descida
+# Limites da régua que uma peça pode passar, com o motivo (fica no relatório ao lado do número).
+EXCECOES_REGUA = {
+    'hat-08': {'folga_oco': 'decisão da dona, 31/10/2026: a cartolinha afunda até a aba ficar na '
+                            'altura da aba da cartola hat-04 ajustada, e a boca aberta da copa passa da '
+                            'folga dos chapéus antigos'},
+}
 AJUSTADAS = ['hat-04']  # peças do pacote ajustadas por ajustes.py, conferidas como os chapéus novos
 FOLGA_MAX = 0.03
 DESCIDA = ['frente', 'lado', 'nuca', 'folga_oco']
@@ -198,15 +205,19 @@ def conferir_chapeu(pid, malha, cabecas, faces, limites):
     p = pior(enc)
     dist, perto = rosto(malha, faces)
     ruins = [f'atravessa {h}' for h, r in cruz.items() if total(r) > 0]
-    ruins += [f'{k} {p[k]} > {lim}' for k, lim in limites.items() if p[k] is not None and p[k] > lim]
+    aceitas = EXCECOES_REGUA.get(pid, {})
+    passa = {k: lim for k, lim in limites.items() if p[k] is not None and p[k] > lim}
+    ruins += [f'{k} {p[k]} > {lim}' for k, lim in passa.items() if k not in aceitas]
+    excecoes = {k: dict(valor=p[k], limite=passa.get(k), motivo=m) for k, m in aceitas.items()}
     if p['folga_min'] is None or p['frente'] is None:
         ruins.append('não cobre o crânio')
     if dist < EPS:
         ruins.append(f'encosta em {perto}')
     print(f'{pid}: atravessa {sum(total(r) for r in cruz.values())} vértices das cabeças;', p,
-          f'rosto {dist} ({perto})', '| REPROVADO: ' + '; '.join(ruins) if ruins else '| ok')
+          f'rosto {dist} ({perto})', '| REPROVADO: ' + '; '.join(ruins) if ruins else '| ok',
+          f'(exceção aceita: {", ".join(excecoes)})' if excecoes else '')
     return dict(cabecas=cruz, encaixe=enc, pior=p, rosto=dict(distancia=dist, mais_perto=perto),
-                reprovados=ruins)
+                excecoes_regua=excecoes, reprovados=ruins)
 
 
 def main():
