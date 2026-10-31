@@ -74,9 +74,7 @@ function Fixture() {
           showActivityRequirement: false,
           learningProgress: learning.progress,
           onLearningProgress: learning.onProgress,
-          videoGateMascot: (
-            <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" sound={false} />
-          ),
+          videoGateMascot: <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" />,
           videoGateAudioUrl: videoGateVoice.url,
         }}
       >

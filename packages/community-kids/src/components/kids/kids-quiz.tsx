@@ -383,7 +383,7 @@ function ClassicKidsQuiz({ blockId, content, quizState }: Props) {
         }
         mascot={
           /* Mudo, como o balão de instrução: a fala é o "Ouvir", não um chime a cada pergunta. */
-          <KidsMascotAnimated expression="speaking" className="size-16 sm:size-20" sound={false} />
+          <KidsMascotAnimated expression="speaking" className="size-16 sm:size-20" />
         }
       >
         {/* Enunciado em markdown (negrito/títulos/listas/imagens); sz-display dá a fonte da marca. */}

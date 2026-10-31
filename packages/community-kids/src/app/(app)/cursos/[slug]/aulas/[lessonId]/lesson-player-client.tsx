@@ -235,9 +235,7 @@ export function LessonPlayer({
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
       // O Zappy do aviso "Primeiro, assista ao vídeo" (curso com a opção ligada). Mudo: é um
       // estado que fica na tela, não um acontecimento.
-      videoGateMascot: (
-        <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" sound={false} />
-      ),
+      videoGateMascot: <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" />,
       videoGateAudioUrl: videoGateVoice.url,
       renderInstruction: (text, pose = 'speaking', speech) => (
         <DialogueBlockView
@@ -246,7 +244,7 @@ export function LessonPlayer({
           mascot={
             /* Mudo pelo mesmo motivo do bloco `dialogue` (ver kids-lesson-blocks):
                instrução de seção é estado, e há uma por seção. */
-            <KidsMascotAnimated expression={pose} className="size-16 sm:size-20" sound={false} />
+            <KidsMascotAnimated expression={pose} className="size-16 sm:size-20" />
           }
         />
       ),

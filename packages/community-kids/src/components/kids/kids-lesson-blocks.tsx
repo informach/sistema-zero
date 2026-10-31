@@ -117,7 +117,6 @@ function BlockRenderer({ block }: { block: LessonBlockView }) {
               <KidsMascotAnimated
                 expression={content.pose ?? 'speaking'}
                 className="size-16 sm:size-24"
-                sound={false}
               />
             }
           />
