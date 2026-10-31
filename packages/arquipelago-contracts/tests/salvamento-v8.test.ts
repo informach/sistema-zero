@@ -103,7 +103,7 @@ test('as versões antigas chegam até a V8', () => {
       ),
     ),
   )
-  expect(migrarSalvamento(v6)?.versao).toBe(21)
+  expect(migrarSalvamento(v6)?.versao).toBe(22)
 })
 
 test('os três turnos cabem no teto do salvamento', () => {

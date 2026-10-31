@@ -58,7 +58,7 @@ function salvamento(onde: P): Salvamento {
   return {
     ...s,
     posicao: { x: onde.x, y: onde.y + 1.2, z: onde.z },
-    vale: { pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE], filhote: null },
+    vale: { ...s.vale, pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE], filhote: null },
   }
 }
 

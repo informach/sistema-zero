@@ -1,8 +1,11 @@
 import {
   type AparenciaDoObjeto,
   CATALOGO_DE_OBJETOS,
+  FOSSEIS_DO_VALE,
+  type FossilDoVale,
   ILHAS,
   type IlhaId,
+  ilhaVisitada,
   LUMIS,
   type LumiId,
   OBJETOS_DA_CASA,
@@ -22,6 +25,8 @@ import {
   type EstadoDaReceita,
   type EstadoDoBicho,
 } from './diario'
+import { cresceu } from './filhote-do-vale'
+import { achouFossil, NOME_DO_FOSSIL, TEXTOS_DOS_FOSSEIS } from './fosseis'
 import { ESPECIES_DE_LUMI } from './lumis'
 import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
 import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS } from './segredos'
@@ -255,6 +260,86 @@ export function peixesDoRecifeDoAlbum(s: Salvamento): {
   return { conta: contar(itens.filter((p) => p.encontrado).length, itens.length), itens }
 }
 
+// ── Os fósseis do museu e as pegadas (B4 e B5, 31/10/2026) ──────────────────────────────────────
+
+export interface FossilDoAlbum {
+  id: FossilDoVale
+  nome: string
+  encontrado: boolean
+  dica: string
+}
+
+/** Os seis fósseis do museu de casa, achados um por dia na escavação do Vale. */
+export function fosseisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: FossilDoAlbum[] } {
+  const itens = FOSSEIS_DO_VALE.map((id) => ({
+    id,
+    nome: NOME_DO_FOSSIL[id],
+    encontrado: achouFossil(s, id),
+    dica: TEXTOS_DOS_FOSSEIS.naAreia,
+  }))
+  return { conta: contar(itens.filter((f) => f.encontrado).length, itens.length), itens }
+}
+
+export const PEGADAS_DO_ALBUM = [
+  'pegada-rex',
+  'pegada-triceratopo',
+  'pegada-capivara',
+  'pegada-passaro',
+] as const
+export type PegadaDoAlbum = (typeof PEGADAS_DO_ALBUM)[number]
+
+export interface PegadaNoAlbum {
+  id: PegadaDoAlbum
+  nome: string
+  encontrado: boolean
+  texto: string
+}
+
+/**
+ * As pegadas do álbum: o rastro de três dedos do Vale, a do tricerátopo que ela criou, a da Capi
+ * no Bosque e a dos pássaros que pousam nas Nuvens. Tudo sai do que o salvamento já guarda.
+ */
+export function pegadasDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: PegadaNoAlbum[] } {
+  const tricera = cresceu(s.vale.filhote)
+  const capi = s.moradores.capi.amizade > 0
+  const nuvens = ilhaVisitada(s.ilhasVisitadas, 'nuvens')
+  const itens: PegadaNoAlbum[] = [
+    {
+      id: 'pegada-rex',
+      nome: 'Pegada de três dedos',
+      encontrado: s.vale.pegadas,
+      texto: s.vale.pegadas
+        ? 'Você seguiu o rastro até a escavação do Vale.'
+        : 'Siga o rastro perto da chegada do Vale dos Dinos.',
+    },
+    {
+      id: 'pegada-triceratopo',
+      nome: 'Pegada de tricerátopo',
+      encontrado: tricera,
+      texto: tricera
+        ? 'O tricerátopo que você criou já deixa pegadas grandes.'
+        : 'Cuide do ovo da Jade até o filhote crescer.',
+    },
+    {
+      id: 'pegada-capivara',
+      nome: 'Pegada de capivara',
+      encontrado: capi,
+      texto: capi
+        ? 'A Capi deixa pegadas na beira do lago do Bosque.'
+        : 'Converse com a Capi no Bosque dos Bichos.',
+    },
+    {
+      id: 'pegada-passaro',
+      nome: 'Pegada de pássaro',
+      encontrado: nuvens,
+      texto: nuvens
+        ? 'Os pássaros pousam nas nuvens e deixam pegadas leves.'
+        : 'Visite a Ilha das Nuvens.',
+    },
+  ]
+  return { conta: contar(itens.filter((p) => p.encontrado).length, itens.length), itens }
+}
+
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
 
 export function albumDoSalvamento(s: Salvamento) {
@@ -293,6 +378,8 @@ export function albumDoSalvamento(s: Salvamento) {
     },
     peixesDoRecife: peixesDoRecifeDoAlbum(s),
     segredos: segredosDoAlbum(s),
+    fosseis: fosseisDoAlbum(s),
+    pegadas: pegadasDoAlbum(s),
     bichos: bichosDoAlbum(s),
     receitas: receitasDoAlbum(s),
     percursos: percursosDoAlbum(s),
