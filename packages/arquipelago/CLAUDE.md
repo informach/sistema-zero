@@ -263,7 +263,7 @@ Junina, junto da pipoca existente. São pratos com ícones do inventário, sem m
 `receitaEmEpoca` recebe a festa explicitamente. Diário conserva as receitas; bancada automática
 e painel conferem a época novamente ao agir. `fazerReceita` recusa prato de outra festa e save
 acima de 65.536 bytes sem consumir ingredientes. Pratos prontos não expiram nem somem.
-`festaAtual` aceita override apenas da plataforma falsa; as datas não aprovadas continuam desligadas.
+`festaAtual` aceita override apenas da plataforma falsa. As quatro festas têm janela aprovada.
 
 ## Compra de insumos (L07, 30/10/2026)
 
@@ -1542,8 +1542,8 @@ plataforma, nunca no jogo. Plano: `docs/superpowers/plans/2026-10-29-arquipelago
 ## Festas da estação na Vila (fase2-10, 29/10/2026)
 
 `sistemas/festas.ts` concentra o calendário puro pelo dia de São Paulo. Carnaval vai do sábado à
-terça (Páscoa menos 47 dias, aprovado em 29/10/2026); Junina ocupa junho. Fim de ano tem proposta desativada de 20/12 a 06/01;
-Lanternas não tem data. As duas decisões pertencem à dona. Não ativar por inferência.
+terça (Páscoa menos 47 dias, aprovado em 29/10/2026); Junina ocupa junho. Fim de ano vai de 20/12 a 06/01 (aprovado em 30/10/2026);
+Lanternas, de 1 a 12 de outubro (aprovado em 31/10/2026, com a cocada na bancada). Data nova de festa é decisão da dona.
 `estado/festas.ts` relê a data a cada 30 segundos e ao voltar à aba. O override de QA
 fica em WeakMap da plataforma falsa, registrado só pelo playground, nunca pela URL de produção.
 

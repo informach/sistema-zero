@@ -78,7 +78,15 @@ describe('calendário civil de São Paulo', () => {
     for (const data of ['2026-12-19', '2027-01-07', '2026-08-15'])
       expect(festaDoDia(new Date(`${data}T12:00:00Z`))).toBeNull()
     expect(CALENDARIO_DAS_FESTAS['fim-de-ano'].motivo).toContain('aprovou')
-    expect(CALENDARIO_DAS_FESTAS.lanternas.data).toBeNull()
+    // A Noite das Lanternas foi aprovada em 31/10/2026: de 1 a 12 de outubro, até o Dia das Crianças.
+    for (const data of ['2026-10-01', '2026-10-12', '2027-10-05'])
+      expect(festaDoDia(new Date(`${data}T12:00:00Z`))).toBe('lanternas')
+    for (const data of ['2026-09-30', '2026-10-13'])
+      expect(festaDoDia(new Date(`${data}T12:00:00Z`))).toBeNull()
+    // O dia é o de São Paulo: 13/10 às 02:59 UTC ainda é 12/10 lá.
+    expect(festaDoDia(new Date('2026-10-13T02:59:59Z'))).toBe('lanternas')
+    expect(festaDoDia(new Date('2026-10-13T03:00:00Z'))).toBeNull()
+    expect(CALENDARIO_DAS_FESTAS.lanternas.motivo).toContain('aprovou')
   })
   test('override só aceita os quatro nomes e avisos separam perfis e festas', () => {
     expect(lerFesta('toString')).toBeNull()

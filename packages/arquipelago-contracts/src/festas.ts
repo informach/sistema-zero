@@ -18,7 +18,11 @@ export const CALENDARIO_DAS_FESTAS = {
     ate: '01-06',
     motivo: 'De 20 de dezembro a 6 de janeiro (a dona aprovou em 30/10/2026).',
   },
-  lanternas: { data: null, motivo: 'A proposta não define a data; aguarda a dona.' },
+  lanternas: {
+    de: '10-01',
+    ate: '10-12',
+    motivo: 'De 1 a 12 de outubro, até o Dia das Crianças (a dona aprovou em 31/10/2026).',
+  },
 } as const
 
 /** Computus gregoriano, devolve o dia civil sem depender do fuso da máquina. */
@@ -63,6 +67,8 @@ export function festaDoDia(data: Date): Festa | null {
   if (ano >= 1583 && dia >= sabadoDeCarnaval(ano) && dia <= carnavalDoAno(ano)) return 'carnaval'
   const junina = CALENDARIO_DAS_FESTAS.junina
   if (mesDia >= junina.de && mesDia <= junina.ate) return 'junina'
+  const lanternas = CALENDARIO_DAS_FESTAS.lanternas
+  if (mesDia >= lanternas.de && mesDia <= lanternas.ate) return 'lanternas'
   // O fim de ano atravessa a virada: do fim de dezembro ao começo de janeiro.
   const fim = CALENDARIO_DAS_FESTAS['fim-de-ano']
   return mesDia >= fim.de || mesDia <= fim.ate ? 'fim-de-ano' : null
