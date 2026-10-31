@@ -1,6 +1,6 @@
+import { descricaoDoTrabalhoLumi } from '@sistemazero/arquipelago-contracts'
 import { type ReactNode, useEffect, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
-import { ACHADOS_DO_RECIFE } from '../sistemas/achados-do-recife'
 import {
   albumDoSalvamento,
   type ContaDaSecao,
@@ -10,8 +10,20 @@ import {
   type PercursoDoAlbum,
   tituloDaSecao,
 } from '../sistemas/album'
+import { type LembrancaDasIlhas, NOME_DO_GRUPO } from '../sistemas/colecoes-das-ilhas'
 import { Bicho, Receita } from './diario'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
+import { MINIATURA_DA_PRAIA } from './miniaturas-da-praia'
+import { MINIATURA_DAS_ILHAS } from './miniaturas-das-ilhas'
+
+/** O que cada coleção das ilhas pede, dito no topo da seção. */
+const EXPLICA_DO_GRUPO = {
+  notas: 'O festival perdeu quatro notas na neve do Pico Gelado.',
+  cristais: 'A caverna de cristal guarda quatro pedras que brilham.',
+  estrelas: 'À noite, quatro estrelas caem na Ilha das Nuvens.',
+} as const
+
+import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 /** O valor de `painelAberto` do álbum. */
 export const PAINEL_DO_ALBUM = 'album'
@@ -104,7 +116,7 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
   if (l.estado === 'nao-encontrado')
     return (
       <li className="arq-diario-bicho arq-album-item escondido">
-        <span className="arq-album-lumi silhueta" aria-hidden="true" />
+        <img className="arq-album-lumi foto silhueta" src={MINIATURA_DO_LUMI[l.id]} alt="" />
         <div className="arq-quadro-corpo">
           <b>Ainda não encontrado</b>
           <span className="arq-quadro-estado">{l.ilha}</span>
@@ -114,15 +126,17 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
     )
   return (
     <li className="arq-diario-bicho arq-album-item">
-      <span
-        className={`arq-album-lumi${l.raro ? ' raro' : ''}`}
+      <img
+        className={`arq-album-lumi foto${l.raro ? ' raro' : ''}`}
         style={{ ['--cor' as string]: l.cor }}
-        aria-hidden="true"
+        src={MINIATURA_DO_LUMI[l.id]}
+        alt=""
       />
       <div className="arq-quadro-corpo">
         <b>{l.nome}</b>
         <span className="arq-quadro-estado">{l.ilha}</span>
         <span className="arq-caderno-efeito">{`${especie}. Presos: ${l.quantos}.`}</span>
+        <span className="arq-caderno-efeito">{descricaoDoTrabalhoLumi(l.id)}</span>
       </div>
     </li>
   )
@@ -158,20 +172,85 @@ export function Album() {
         <p className="arq-caderno-explica">
           O que falta não se perde: continua esperando por você nas ilhas.
         </p>
+        {(['conchas', 'peixes'] as const).map((grupo) => (
+          <Secao
+            key={grupo}
+            id={grupo}
+            nome={grupo === 'conchas' ? 'Conchas e estrela-do-mar' : 'Peixes da praia'}
+            conta={a[grupo].conta}
+            explica={
+              grupo === 'conchas'
+                ? 'Explore a areia. A estrela-do-mar fica onde vive.'
+                : 'Pesque no píer. Depois do registro, os peixes voltam ao mar.'
+            }
+          >
+            {a[grupo].itens.map((p) => (
+              <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+                <img
+                  className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                  src={MINIATURA_DA_PRAIA[p.id]}
+                  alt=""
+                  draggable={false}
+                />
+                <div className="arq-quadro-corpo">
+                  <b>{p.nome}</b>
+                  <span className="arq-quadro-estado">
+                    {p.encontrado ? 'Descoberta registrada.' : p.dica}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </Secao>
+        ))}
+        {(['notas', 'cristais', 'estrelas'] as const).map((grupo) => (
+          <Secao
+            key={grupo}
+            id={grupo}
+            nome={NOME_DO_GRUPO[grupo]}
+            conta={a[grupo].conta}
+            explica={EXPLICA_DO_GRUPO[grupo]}
+          >
+            {a[grupo].itens.map((p) => (
+              <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+                <img
+                  className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                  src={MINIATURA_DAS_ILHAS[p.id as LembrancaDasIlhas]}
+                  alt=""
+                  draggable={false}
+                />
+                <div className="arq-quadro-corpo">
+                  <b>{p.nome}</b>
+                  <span className="arq-quadro-estado">
+                    {p.encontrado ? 'Descoberta registrada.' : p.dica}
+                  </span>
+                </div>
+              </li>
+            ))}
+          </Secao>
+        ))}
         <Secao
           id="recife"
           nome="Achados do Recife"
-          conta={{
-            tem: Object.values(salvamento.recife).filter(Boolean).length,
-            total: 3,
-            faltam: 3 - Object.values(salvamento.recife).filter(Boolean).length,
-          }}
+          conta={a.recife.conta}
           explica="Os achados do mergulho ficam guardados aqui."
         >
-          {(Object.keys(ACHADOS_DO_RECIFE) as (keyof typeof ACHADOS_DO_RECIFE)[]).map((id) => (
-            <li key={id} className="arq-quadro-corpo">
-              <b>{ACHADOS_DO_RECIFE[id].nome}</b>
-              <span>{salvamento.recife[id] ? 'Encontrado.' : ACHADOS_DO_RECIFE[id].dica}</span>
+          {a.recife.itens.map((item) => (
+            <li key={item.id} className="arq-quadro-corpo">
+              <b>{item.nome}</b>
+              <span>{item.achado ? 'Encontrado.' : item.dica}</span>
+            </li>
+          ))}
+        </Secao>
+        <Secao
+          id="segredos"
+          nome="Segredos das ilhas"
+          conta={a.segredos.conta}
+          explica="Baús da Íris no alto do vento, nas ilhas antes do Pico Gelado."
+        >
+          {a.segredos.itens.map((g) => (
+            <li key={g.id} className="arq-quadro-corpo">
+              <b>{g.ilha}</b>
+              <span>{g.texto}</span>
             </li>
           ))}
         </Secao>
@@ -189,7 +268,7 @@ export function Album() {
           id="receitas"
           nome="Receitas"
           conta={a.receitas.conta}
-          explica="O Bento, da Vila Doce, lembra mais uma a cada coração de amizade."
+          explica="Novas receitas chegam com amizades, coleções e festas. Cada pista mostra onde aprender."
         >
           {a.receitas.itens.map((r) => (
             <Receita key={r.id} r={r} />

@@ -1,0 +1,251 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "pico-fase-de-plataforma-python",
+      "publico": "kids",
+      "ilha": "pico",
+      "tipo": "desafio-do-dia",
+      "quadro": null,
+      "ordem": 70,
+      "publicar": false,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "Subida das fases: o mapa é dado",
+        "enunciado": "No Pico, cada fase é uma lista de linhas de texto. Cada letra é uma célula de 40 pontos: # é plataforma, C é o cristal, S é a saída e J é onde o herói começa. Este desafio é em Python, com Pygame Zero. O jogo já anda, pula e desenha usando quatro funções; complete três delas. ler_fase(linhas, letra) devolve uma lista com [coluna, linha] de cada lugar onde a letra aparece. pousar(pe_antes, pe_depois, vy, topo) faz o herói parar em cima da plataforma quando ele está caindo e cruza o topo; nos outros casos, nada muda. proxima_fase(numero, tem_cristal, na_saida) avança para a fase seguinte só com o cristal e na saída. Setas andam e Espaço pula. Criar uma terceira fase fica para o extra.",
+        "dicas": [
+          "enumerate(lista) dá a posição e o valor de cada item. Use um enumerate para as linhas e outro para as letras de cada linha.",
+          "pousar devolve uma lista com dois valores: o pé novo e a velocidade nova. Pousar é devolver [topo, 0].",
+          "Teste uma função de cada vez com casos pequenos, como uma fase de duas linhas."
+        ],
+        "projetoInicial": {
+          "formatVersion": 3,
+          "id": "pico-fases-python",
+          "name": "Subida das fases",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "programmingLanguage": "python",
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-25-integrated-games-2",
+            "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+          },
+          "kind": "classic",
+          "mode": "bridge",
+          "projectTools": [],
+          "installedExtensions": [
+            {
+              "id": "python-pgzero",
+              "version": "1.0.0",
+              "installedAt": 0
+            }
+          ],
+          "assets": [],
+          "python": {
+            "entrypoint": "main.py",
+            "dependencyLock": {
+              "lockVersion": 1,
+              "target": "browser",
+              "pythonVersion": "3.14.2",
+              "runtimeManifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+              "requirementsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "packages": []
+            }
+          },
+          "ir": null,
+          "blocksState": null,
+          "files": {
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Subida das fases\"\n\nLADO = 40\nGRAVIDADE = 0.5\nPULO = -12\nPASSO = 4\n\nFASES = [\n    [\n        \"................\",\n        \"................\",\n        \"................\",\n        \"..............S.\",\n        \"...........#####\",\n        \"................\",\n        \"......####......\",\n        \".C..............\",\n        \"####............\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"..S.............\",\n        \"#####...........\",\n        \"................\",\n        \".......####.....\",\n        \"................\",\n        \"............####\",\n        \"..........C.....\",\n        \"......#####.....\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n]\n\n\ndef ler_fase(linhas, letra):\n    return []\n\n\ndef pousar(pe_antes, pe_depois, vy, topo):\n    return [pe_depois, vy]\n\n\ndef proxima_fase(numero, tem_cristal, na_saida):\n    return numero\n\n\ndef montar(numero):\n    global plataformas, cristais, saida, tem_cristal, vy, no_chao\n    linhas = FASES[numero]\n    plataformas = []\n    for coluna, linha in ler_fase(linhas, \"#\"):\n        plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))\n    cristais = ler_fase(linhas, \"C\")\n    saidas = ler_fase(linhas, \"S\")\n    saida = saidas[0] if saidas else [15, 10]\n    inicio = ler_fase(linhas, \"J\")\n    comeco = inicio[0] if inicio else [1, 10]\n    heroi.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)\n    tem_cristal = False\n    vy = 0\n    no_chao = False\n\n\nheroi = Rect((48, 408), (24, 32))\nfase_atual = 0\nvenceu = False\nplataformas = []\ncristais = []\nsaida = [15, 10]\ntem_cristal = False\nvy = 0\nno_chao = False\ntotal_de_fases = len(FASES)\nmontar(fase_atual)\ntotal_de_plataformas = len(plataformas)\n\n\ndef celula(rect):\n    return [int(rect.centerx // LADO), int(rect.centery // LADO)]\n\n\ndef update():\n    global vy, no_chao, tem_cristal, fase_atual, venceu\n    if venceu:\n        return\n    if keyboard.left:\n        heroi.x = heroi.x - PASSO\n    if keyboard.right:\n        heroi.x = heroi.x + PASSO\n    for plataforma in plataformas:\n        if heroi.colliderect(plataforma):\n            if heroi.centerx < plataforma.centerx:\n                heroi.right = plataforma.left\n            else:\n                heroi.left = plataforma.right\n    heroi.x = max(0, min(WIDTH - heroi.width, heroi.x))\n    if keyboard.space and no_chao:\n        vy = PULO\n    vy = vy + GRAVIDADE\n    pe_antes = heroi.bottom\n    pe_depois = pe_antes + vy\n    no_chao = False\n    for plataforma in plataformas:\n        if heroi.right > plataforma.left and heroi.left < plataforma.right:\n            pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)\n            if nova_vy == 0 and vy > 0:\n                pe_depois = pe\n                no_chao = True\n    vy = 0 if no_chao else vy\n    heroi.bottom = int(pe_depois)\n    if heroi.bottom > HEIGHT:\n        montar(fase_atual)\n    if celula(heroi) in cristais:\n        tem_cristal = True\n    if celula(heroi) == saida:\n        nova = proxima_fase(fase_atual, tem_cristal, True)\n        if nova != fase_atual:\n            if nova >= len(FASES):\n                venceu = True\n            else:\n                fase_atual = nova\n                montar(fase_atual)\n\n\ndef draw():\n    screen.fill((200, 226, 245))\n    for plataforma in plataformas:\n        screen.draw.filled_rect(plataforma, (236, 244, 250))\n        screen.draw.rect(plataforma, (120, 160, 190))\n    if not tem_cristal:\n        for coluna, linha in cristais:\n            screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 10, (110, 200, 255))\n    screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))\n    screen.draw.filled_rect(heroi, (70, 90, 160))\n    screen.draw.text(\"Fase \" + str(fase_atual + 1) + \" de \" + str(len(FASES)), (16, 12), fontsize=30)\n    if venceu:\n        screen.draw.text(\"Você chegou ao cume.\", center=(320, 240), fontsize=44)\n",
+            "requirements.txt": ""
+          }
+        },
+        "gabarito": {
+          "formatVersion": 3,
+          "id": "pico-fases-python",
+          "name": "Subida das fases",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "programmingLanguage": "python",
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-25-integrated-games-2",
+            "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+          },
+          "kind": "classic",
+          "mode": "bridge",
+          "projectTools": [],
+          "installedExtensions": [
+            {
+              "id": "python-pgzero",
+              "version": "1.0.0",
+              "installedAt": 0
+            }
+          ],
+          "assets": [],
+          "python": {
+            "entrypoint": "main.py",
+            "dependencyLock": {
+              "lockVersion": 1,
+              "target": "browser",
+              "pythonVersion": "3.14.2",
+              "runtimeManifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+              "requirementsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "packages": []
+            }
+          },
+          "ir": null,
+          "blocksState": null,
+          "files": {
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Subida das fases\"\n\nLADO = 40\nGRAVIDADE = 0.5\nPULO = -12\nPASSO = 4\n\nFASES = [\n    [\n        \"................\",\n        \"................\",\n        \"................\",\n        \"..............S.\",\n        \"...........#####\",\n        \"................\",\n        \"......####......\",\n        \".C..............\",\n        \"####............\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"..S.............\",\n        \"#####...........\",\n        \"................\",\n        \".......####.....\",\n        \"................\",\n        \"............####\",\n        \"..........C.....\",\n        \"......#####.....\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n    [\n        \"................\",\n        \"......S.........\",\n        \".....####.......\",\n        \"................\",\n        \"####............\",\n        \"................\",\n        \".....####.......\",\n        \"............C...\",\n        \"..........####..\",\n        \"................\",\n        \".J..............\",\n        \"################\",\n    ],\n]\n\n\ndef ler_fase(linhas, letra):\n    achados = []\n    for linha, texto in enumerate(linhas):\n        for coluna, celula in enumerate(texto):\n            if celula == letra:\n                achados.append([coluna, linha])\n    return achados\n\n\ndef pousar(pe_antes, pe_depois, vy, topo):\n    if vy > 0 and pe_antes <= topo and pe_depois >= topo:\n        return [topo, 0]\n    return [pe_depois, vy]\n\n\ndef proxima_fase(numero, tem_cristal, na_saida):\n    if tem_cristal and na_saida:\n        return numero + 1\n    return numero\n\n\ndef montar(numero):\n    global plataformas, cristais, saida, tem_cristal, vy, no_chao\n    linhas = FASES[numero]\n    plataformas = []\n    for coluna, linha in ler_fase(linhas, \"#\"):\n        plataformas.append(Rect((coluna * LADO, linha * LADO), (LADO, LADO)))\n    cristais = ler_fase(linhas, \"C\")\n    saidas = ler_fase(linhas, \"S\")\n    saida = saidas[0] if saidas else [15, 10]\n    inicio = ler_fase(linhas, \"J\")\n    comeco = inicio[0] if inicio else [1, 10]\n    heroi.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)\n    tem_cristal = False\n    vy = 0\n    no_chao = False\n\n\nheroi = Rect((48, 408), (24, 32))\nfase_atual = 0\nvenceu = False\nplataformas = []\ncristais = []\nsaida = [15, 10]\ntem_cristal = False\nvy = 0\nno_chao = False\ntotal_de_fases = len(FASES)\nmontar(fase_atual)\ntotal_de_plataformas = len(plataformas)\n\n\ndef celula(rect):\n    return [int(rect.centerx // LADO), int(rect.centery // LADO)]\n\n\ndef update():\n    global vy, no_chao, tem_cristal, fase_atual, venceu\n    if venceu:\n        return\n    if keyboard.left:\n        heroi.x = heroi.x - PASSO\n    if keyboard.right:\n        heroi.x = heroi.x + PASSO\n    for plataforma in plataformas:\n        if heroi.colliderect(plataforma):\n            if heroi.centerx < plataforma.centerx:\n                heroi.right = plataforma.left\n            else:\n                heroi.left = plataforma.right\n    heroi.x = max(0, min(WIDTH - heroi.width, heroi.x))\n    if keyboard.space and no_chao:\n        vy = PULO\n    vy = vy + GRAVIDADE\n    pe_antes = heroi.bottom\n    pe_depois = pe_antes + vy\n    no_chao = False\n    for plataforma in plataformas:\n        if heroi.right > plataforma.left and heroi.left < plataforma.right:\n            pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)\n            if nova_vy == 0 and vy > 0:\n                pe_depois = pe\n                no_chao = True\n    vy = 0 if no_chao else vy\n    heroi.bottom = int(pe_depois)\n    if heroi.bottom > HEIGHT:\n        montar(fase_atual)\n    if celula(heroi) in cristais:\n        tem_cristal = True\n    if celula(heroi) == saida:\n        nova = proxima_fase(fase_atual, tem_cristal, True)\n        if nova != fase_atual:\n            if nova >= len(FASES):\n                venceu = True\n            else:\n                fase_atual = nova\n                montar(fase_atual)\n\n\ndef draw():\n    screen.fill((200, 226, 245))\n    for plataforma in plataformas:\n        screen.draw.filled_rect(plataforma, (236, 244, 250))\n        screen.draw.rect(plataforma, (120, 160, 190))\n    if not tem_cristal:\n        for coluna, linha in cristais:\n            screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 10, (110, 200, 255))\n    screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))\n    screen.draw.filled_rect(heroi, (70, 90, 160))\n    screen.draw.text(\"Fase \" + str(fase_atual + 1) + \" de \" + str(len(FASES)), (16, 12), fontsize=30)\n    if venceu:\n        screen.draw.text(\"Você chegou ao cume.\", center=(320, 240), fontsize=44)\n",
+            "requirements.txt": ""
+          }
+        },
+        "objetivos": [
+          {
+            "id": "ler",
+            "label": "ler_fase devolve a coluna e a linha de cada letra procurada.",
+            "hint": "Percorra as linhas e, dentro de cada linha, as colunas. Guarde [coluna, linha] numa lista.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "ler_fase",
+              "cases": [
+                {
+                  "args": [["##.", "..#"], "#"],
+                  "expected": [[0, 0], [1, 0], [2, 1]]
+                },
+                {
+                  "args": [["..C", "C.."], "C"],
+                  "expected": [[2, 0], [0, 1]]
+                },
+                {
+                  "args": [["...."], "#"],
+                  "expected": []
+                }
+              ]
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "pousar",
+            "label": "pousar faz o herói parar em cima da plataforma só quando ele cai e cruza o topo.",
+            "hint": "Teste os casos pequenos: caindo e cruzando, caindo sem chegar, já abaixo do topo e subindo.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "pousar",
+              "cases": [
+                {
+                  "args": [100, 112, 5, 110],
+                  "expected": [110, 0]
+                },
+                {
+                  "args": [100, 105, 5, 110],
+                  "expected": [105, 5]
+                },
+                {
+                  "args": [115, 120, 5, 110],
+                  "expected": [120, 5]
+                },
+                {
+                  "args": [112, 108, -4, 110],
+                  "expected": [108, -4]
+                }
+              ]
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "proxima",
+            "label": "A saída leva para a próxima fase só com o cristal na mochila.",
+            "hint": "Os dois precisam ser verdade ao mesmo tempo: tem_cristal e na_saida.",
+            "rule": {
+              "type": "functionReturns",
+              "name": "proxima_fase",
+              "cases": [
+                {
+                  "args": [0, true, true],
+                  "expected": 1
+                },
+                {
+                  "args": [0, false, true],
+                  "expected": 0
+                },
+                {
+                  "args": [1, true, false],
+                  "expected": 1
+                }
+              ]
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "montada",
+            "label": "A fase 1 é montada com todas as plataformas que os dados descrevem.",
+            "hint": "O jogo chama ler_fase(linhas, \"#\") para criar uma plataforma em cada célula.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 500
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "total_de_plataformas"
+                },
+                "compare": "equals",
+                "value": 29
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "terceira",
+            "label": "Extra: acrescente uma terceira fase à lista FASES.",
+            "hint": "Uma fase nova é só mais uma lista de linhas, com J, C, S e plataformas que levem à saída.",
+            "optional": true,
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "total_de_fases"
+                },
+                "compare": "atLeast",
+                "value": 3
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Mais um desafio",
+          "texto": "Acrescente uma terceira fase à lista FASES, com J, C, S e plataformas que levem até a saída."
+        },
+        "recompensa": {
+          "cor": false,
+          "moedas": 10,
+          "moedasExtra": 5
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

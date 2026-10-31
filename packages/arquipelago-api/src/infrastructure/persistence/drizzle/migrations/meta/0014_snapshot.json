@@ -1,0 +1,1766 @@
+{
+  "id": "fce4c7c5-36c5-4128-ac6e-4b6c92867e2c",
+  "prevId": "dfcc4a7f-82d0-4026-a131-9eeb99b162c0",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "arquipelago.compras_da_galeria": {
+      "name": "compras_da_galeria",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "aparencia_id": {
+          "name": "aparencia_id",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "objeto": {
+          "name": "objeto",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas": {
+          "name": "moedas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "chave": {
+          "name": "chave",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "paga_em": {
+          "name": "paga_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "compras_da_galeria_chave_idx": {
+          "name": "compras_da_galeria_chave_idx",
+          "columns": [
+            {
+              "expression": "chave",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "compras_da_galeria_jogador_id_aparencia_id_pk": {
+          "name": "compras_da_galeria_jogador_id_aparencia_id_pk",
+          "columns": [
+            "jogador_id",
+            "aparencia_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "compras_da_galeria_situacao_check": {
+          "name": "compras_da_galeria_situacao_check",
+          "value": "\"arquipelago\".\"compras_da_galeria\".\"situacao\" in ('pendente', 'paga')"
+        },
+        "compras_da_galeria_moedas_check": {
+          "name": "compras_da_galeria_moedas_check",
+          "value": "\"arquipelago\".\"compras_da_galeria\".\"moedas\" >= 0"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.compras_de_insumos": {
+      "name": "compras_de_insumos",
+      "schema": "arquipelago",
+      "columns": {
+        "chave": {
+          "name": "chave",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao_base": {
+          "name": "revisao_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "item": {
+          "name": "item",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quantidade": {
+          "name": "quantidade",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas": {
+          "name": "moedas",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "saldo": {
+          "name": "saldo",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "criada_em": {
+          "name": "criada_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "concluida_em": {
+          "name": "concluida_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "compras_de_insumos_pendente": {
+          "name": "compras_de_insumos_pendente",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "\"arquipelago\".\"compras_de_insumos\".\"situacao\" = 'pendente'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "compras_de_insumos_jogador": {
+          "name": "compras_de_insumos_jogador",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "publico",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criada_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "compras_de_insumos_jogador_id_salvamentos_jogador_id_fk": {
+          "name": "compras_de_insumos_jogador_id_salvamentos_jogador_id_fk",
+          "tableFrom": "compras_de_insumos",
+          "tableTo": "salvamentos",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "jogador_id"
+          ],
+          "columnsTo": [
+            "jogador_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "compras_de_insumos_publico": {
+          "name": "compras_de_insumos_publico",
+          "value": "\"arquipelago\".\"compras_de_insumos\".\"publico\" in ('kids','adulto')"
+        },
+        "compras_de_insumos_valores": {
+          "name": "compras_de_insumos_valores",
+          "value": "\"arquipelago\".\"compras_de_insumos\".\"versao\" = 1 and \"arquipelago\".\"compras_de_insumos\".\"revisao_base\" between 1 and 2147483646 and \"arquipelago\".\"compras_de_insumos\".\"quantidade\" between 1 and 10 and \"arquipelago\".\"compras_de_insumos\".\"moedas\" between 1 and 30"
+        },
+        "compras_de_insumos_estado": {
+          "name": "compras_de_insumos_estado",
+          "value": "(\"arquipelago\".\"compras_de_insumos\".\"situacao\" = 'pendente' and \"arquipelago\".\"compras_de_insumos\".\"concluida_em\" is null and \"arquipelago\".\"compras_de_insumos\".\"saldo\" is null) or (\"arquipelago\".\"compras_de_insumos\".\"situacao\" = 'entregue' and \"arquipelago\".\"compras_de_insumos\".\"concluida_em\" is not null and \"arquipelago\".\"compras_de_insumos\".\"saldo\" is not null and \"arquipelago\".\"compras_de_insumos\".\"saldo\" >= 0) or (\"arquipelago\".\"compras_de_insumos\".\"situacao\" in ('saldo-insuficiente','recusada') and \"arquipelago\".\"compras_de_insumos\".\"concluida_em\" is not null and \"arquipelago\".\"compras_de_insumos\".\"saldo\" is null)"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.controle_de_tempo": {
+      "name": "controle_de_tempo",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "sessao_atual": {
+          "name": "sessao_atual",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arquipelago.desafio_do_dia": {
+      "name": "desafio_do_dia",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desafio_id": {
+          "name": "desafio_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "escolhido_em": {
+          "name": "escolhido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "feito_em": {
+          "name": "feito_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desafio_do_dia_desafio_id_desafios_id_fk": {
+          "name": "desafio_do_dia_desafio_id_desafios_id_fk",
+          "tableFrom": "desafio_do_dia",
+          "tableTo": "desafios",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "desafio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "desafio_do_dia_jogador_id_dia_pk": {
+          "name": "desafio_do_dia_jogador_id_dia_pk",
+          "columns": [
+            "jogador_id",
+            "dia"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arquipelago.desafio_progresso": {
+      "name": "desafio_progresso",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desafio_id": {
+          "name": "desafio_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ultimos_resultados": {
+          "name": "ultimos_resultados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desafio_progresso_desafio_id_desafios_id_fk": {
+          "name": "desafio_progresso_desafio_id_desafios_id_fk",
+          "tableFrom": "desafio_progresso",
+          "tableTo": "desafios",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "desafio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "desafio_progresso_jogador_id_desafio_id_pk": {
+          "name": "desafio_progresso_jogador_id_desafio_id_pk",
+          "columns": [
+            "jogador_id",
+            "desafio_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arquipelago.desafio_publicacoes": {
+      "name": "desafio_publicacoes",
+      "schema": "arquipelago",
+      "columns": {
+        "desafio_id": {
+          "name": "desafio_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "metadados": {
+          "name": "metadados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conteudo": {
+          "name": "conteudo",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blocos_derivados": {
+          "name": "blocos_derivados",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "blocos_exigidos": {
+          "name": "blocos_exigidos",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vista": {
+          "name": "vista",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "analise": {
+          "name": "analise",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publicado_em": {
+          "name": "publicado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publicado_por": {
+          "name": "publicado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "desafio_publicacoes_desafio_id_desafios_id_fk": {
+          "name": "desafio_publicacoes_desafio_id_desafios_id_fk",
+          "tableFrom": "desafio_publicacoes",
+          "tableTo": "desafios",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "desafio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "desafio_publicacoes_desafio_id_revisao_pk": {
+          "name": "desafio_publicacoes_desafio_id_revisao_pk",
+          "columns": [
+            "desafio_id",
+            "revisao"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arquipelago.desafios": {
+      "name": "desafios",
+      "schema": "arquipelago",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug": {
+          "name": "slug",
+          "type": "varchar(80)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ilha": {
+          "name": "ilha",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "tipo": {
+          "name": "tipo",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "quadro": {
+          "name": "quadro",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "ordem": {
+          "name": "ordem",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "situacao": {
+          "name": "situacao",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao_publicada": {
+          "name": "revisao_publicada",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "metadados_publicados": {
+          "name": "metadados_publicados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "conteudo": {
+          "name": "conteudo",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_por": {
+          "name": "atualizado_por",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "desafios_slug_unico": {
+          "name": "desafios_slug_unico",
+          "columns": [
+            {
+              "expression": "slug",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "desafios_quadro_unico": {
+          "name": "desafios_quadro_unico",
+          "columns": [
+            {
+              "expression": "coalesce(\"metadados_publicados\"->>'publico', \"publico\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "coalesce(\"metadados_publicados\"->>'ilha', \"ilha\")",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "(case when \"metadados_publicados\" is null then \"quadro\" else (\"metadados_publicados\"->>'quadro')::int end)",
+              "asc": true,
+              "isExpression": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "where": "coalesce(\"arquipelago\".\"desafios\".\"metadados_publicados\"->>'tipo', \"arquipelago\".\"desafios\".\"tipo\") = 'quadro-das-cores' and \"arquipelago\".\"desafios\".\"situacao\" <> 'arquivado'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "desafios_lista": {
+          "name": "desafios_lista",
+          "columns": [
+            {
+              "expression": "publico",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ilha",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "ordem",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "desafios_publico_check": {
+          "name": "desafios_publico_check",
+          "value": "\"arquipelago\".\"desafios\".\"publico\" in ('kids', 'adulto')"
+        },
+        "desafios_tipo_check": {
+          "name": "desafios_tipo_check",
+          "value": "\"arquipelago\".\"desafios\".\"tipo\" in ('quadro-das-cores', 'desafio-do-dia', 'pedido-de-morador')"
+        },
+        "desafios_situacao_check": {
+          "name": "desafios_situacao_check",
+          "value": "\"arquipelago\".\"desafios\".\"situacao\" in ('rascunho', 'publicado', 'arquivado')"
+        },
+        "desafios_quadro_check": {
+          "name": "desafios_quadro_check",
+          "value": "(\"arquipelago\".\"desafios\".\"tipo\" = 'quadro-das-cores') = (\"arquipelago\".\"desafios\".\"quadro\" is not null) and (\"arquipelago\".\"desafios\".\"quadro\" is null or \"arquipelago\".\"desafios\".\"quadro\" between 1 and 6)"
+        },
+        "desafios_revisao_check": {
+          "name": "desafios_revisao_check",
+          "value": "\"arquipelago\".\"desafios\".\"revisao\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.desafios_concluidos": {
+      "name": "desafios_concluidos",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desafio_id": {
+          "name": "desafio_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "concluido_em": {
+          "name": "concluido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "extra_concluido_em": {
+          "name": "extra_concluido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "recompensa_vista_em": {
+          "name": "recompensa_vista_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "moedas": {
+          "name": "moedas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas_situacao": {
+          "name": "moedas_situacao",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas_extra": {
+          "name": "moedas_extra",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas_extra_situacao": {
+          "name": "moedas_extra_situacao",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas_teto_semana": {
+          "name": "moedas_teto_semana",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "moedas_extra_teto_semana": {
+          "name": "moedas_extra_teto_semana",
+          "type": "varchar(10)",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "desafios_concluidos_jogador": {
+          "name": "desafios_concluidos_jogador",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "desafios_concluidos_desafio_id_desafios_id_fk": {
+          "name": "desafios_concluidos_desafio_id_desafios_id_fk",
+          "tableFrom": "desafios_concluidos",
+          "tableTo": "desafios",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "desafio_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "desafios_concluidos_jogador_id_desafio_id_pk": {
+          "name": "desafios_concluidos_jogador_id_desafio_id_pk",
+          "columns": [
+            "jogador_id",
+            "desafio_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "desafios_concluidos_publico_check": {
+          "name": "desafios_concluidos_publico_check",
+          "value": "\"arquipelago\".\"desafios_concluidos\".\"publico\" in ('kids', 'adulto')"
+        },
+        "desafios_concluidos_moedas_check": {
+          "name": "desafios_concluidos_moedas_check",
+          "value": "\"arquipelago\".\"desafios_concluidos\".\"moedas_situacao\" in ('nenhuma', 'pendente', 'creditado', 'teto') and \"arquipelago\".\"desafios_concluidos\".\"moedas_extra_situacao\" in ('nenhuma', 'pendente', 'creditado', 'teto')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.eventos_tempo": {
+      "name": "eventos_tempo",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "evento_id": {
+          "name": "evento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "segundos": {
+          "name": "segundos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "eventos_tempo_jogador_id_evento_id_pk": {
+          "name": "eventos_tempo_jogador_id_evento_id_pk",
+          "columns": [
+            "jogador_id",
+            "evento_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "eventos_tempo_segundos_check": {
+          "name": "eventos_tempo_segundos_check",
+          "value": "\"arquipelago\".\"eventos_tempo\".\"segundos\" between 1 and 120"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.fantasmas": {
+      "name": "fantasmas",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "percurso": {
+          "name": "percurso",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "fantasmas_jogador_id_salvamentos_jogador_id_fk": {
+          "name": "fantasmas_jogador_id_salvamentos_jogador_id_fk",
+          "tableFrom": "fantasmas",
+          "tableTo": "salvamentos",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "jogador_id"
+          ],
+          "columnsTo": [
+            "jogador_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "fantasmas_jogador_id_percurso_pk": {
+          "name": "fantasmas_jogador_id_percurso_pk",
+          "columns": [
+            "jogador_id",
+            "percurso"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "fantasmas_publico_check": {
+          "name": "fantasmas_publico_check",
+          "value": "\"arquipelago\".\"fantasmas\".\"publico\" in ('kids', 'adulto')"
+        },
+        "fantasmas_percurso_check": {
+          "name": "fantasmas_percurso_check",
+          "value": "\"arquipelago\".\"fantasmas\".\"percurso\" in ('bosque-copas', 'vila-telhados', 'pico-cume', 'nuvens-saltos', 'nuvens-balao')"
+        },
+        "fantasmas_tamanho_check": {
+          "name": "fantasmas_tamanho_check",
+          "value": "octet_length(\"arquipelago\".\"fantasmas\".\"dados\"::text) <= 131072"
+        },
+        "fantasmas_versao_check": {
+          "name": "fantasmas_versao_check",
+          "value": "\"arquipelago\".\"fantasmas\".\"dados\"->>'versao' = '1' and \"arquipelago\".\"fantasmas\".\"dados\"->>'percurso' = \"arquipelago\".\"fantasmas\".\"percurso\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.limites_da_familia": {
+      "name": "limites_da_familia",
+      "schema": "arquipelago",
+      "columns": {
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "minutos": {
+          "name": "minutos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "limites_da_familia_minutos_check": {
+          "name": "limites_da_familia_minutos_check",
+          "value": "\"arquipelago\".\"limites_da_familia\".\"minutos\" between 10 and 240"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.minijogos": {
+      "name": "minijogos",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "desafio_id": {
+          "name": "desafio_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo": {
+          "name": "titulo",
+          "type": "varchar(200)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "projeto": {
+          "name": "projeto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capa": {
+          "name": "capa",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "aprovado_em": {
+          "name": "aprovado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "minijogos_jogador_id_desafio_id_pk": {
+          "name": "minijogos_jogador_id_desafio_id_pk",
+          "columns": [
+            "jogador_id",
+            "desafio_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "minijogos_publico_check": {
+          "name": "minijogos_publico_check",
+          "value": "\"arquipelago\".\"minijogos\".\"publico\" in ('kids', 'adulto')"
+        },
+        "minijogos_tamanho_check": {
+          "name": "minijogos_tamanho_check",
+          "value": "length(\"arquipelago\".\"minijogos\".\"projeto\") <= 1500000"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.pedidos_remunerados": {
+      "name": "pedidos_remunerados",
+      "schema": "arquipelago",
+      "columns": {
+        "chave": {
+          "name": "chave",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "pagamento_id": {
+          "name": "pagamento_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao_base": {
+          "name": "revisao_base",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "morador": {
+          "name": "morador",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pedido": {
+          "name": "pedido",
+          "type": "varchar(40)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas": {
+          "name": "moedas",
+          "type": "smallint",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "pagamento": {
+          "name": "pagamento",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "entregue_em": {
+          "name": "entregue_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "pedidos_remunerados_dia": {
+          "name": "pedidos_remunerados_dia",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "publico",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "morador",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dia",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "pedidos_remunerados_pendente": {
+          "name": "pedidos_remunerados_pendente",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "publico",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "entregue_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "where": "\"arquipelago\".\"pedidos_remunerados\".\"pagamento\" = 'pendente'",
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "pedidos_remunerados_jogador_id_salvamentos_jogador_id_fk": {
+          "name": "pedidos_remunerados_jogador_id_salvamentos_jogador_id_fk",
+          "tableFrom": "pedidos_remunerados",
+          "tableTo": "salvamentos",
+          "schemaTo": "arquipelago",
+          "columnsFrom": [
+            "jogador_id"
+          ],
+          "columnsTo": [
+            "jogador_id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "pedidos_remunerados_pagamentoId_unique": {
+          "name": "pedidos_remunerados_pagamentoId_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "pagamento_id"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {
+        "pedidos_remunerados_publico": {
+          "name": "pedidos_remunerados_publico",
+          "value": "\"arquipelago\".\"pedidos_remunerados\".\"publico\" in ('kids','adulto')"
+        },
+        "pedidos_remunerados_morador": {
+          "name": "pedidos_remunerados_morador",
+          "value": "\"arquipelago\".\"pedidos_remunerados\".\"morador\" in ('capi','bento','mare','floco','jade','irie')"
+        },
+        "pedidos_remunerados_valores": {
+          "name": "pedidos_remunerados_valores",
+          "value": "\"arquipelago\".\"pedidos_remunerados\".\"versao\" = 1 and \"arquipelago\".\"pedidos_remunerados\".\"revisao_base\" between 1 and 2147483646 and \"arquipelago\".\"pedidos_remunerados\".\"moedas\" in (3,4)"
+        },
+        "pedidos_remunerados_pagamento": {
+          "name": "pedidos_remunerados_pagamento",
+          "value": "\"arquipelago\".\"pedidos_remunerados\".\"pagamento\" in ('pendente','creditado','teto','recusado')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.perfis_da_conta": {
+      "name": "perfis_da_conta",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {
+        "perfis_da_conta_conta_idx": {
+          "name": "perfis_da_conta_conta_idx",
+          "columns": [
+            {
+              "expression": "conta_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arquipelago.permissoes_da_familia": {
+      "name": "permissoes_da_familia",
+      "schema": "arquipelago",
+      "columns": {
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "visitas_de_irmaos": {
+          "name": "visitas_de_irmaos",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "visitas_de_outras_criancas": {
+          "name": "visitas_de_outras_criancas",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "fotos_no_clube": {
+          "name": "fotos_no_clube",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "arquipelago.salvamentos": {
+      "name": "salvamentos",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "revisao": {
+          "name": "revisao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dados": {
+          "name": "dados",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "salvamentos_publico_check": {
+          "name": "salvamentos_publico_check",
+          "value": "\"arquipelago\".\"salvamentos\".\"publico\" in ('kids', 'adulto')"
+        },
+        "salvamentos_revisao_check": {
+          "name": "salvamentos_revisao_check",
+          "value": "\"arquipelago\".\"salvamentos\".\"revisao\" >= 1"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.sessoes_de_tempo": {
+      "name": "sessoes_de_tempo",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "sessao_id": {
+          "name": "sessao_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "cursor": {
+          "name": "cursor",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "vencimento": {
+          "name": "vencimento",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "estado": {
+          "name": "estado",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ultima_sequencia": {
+          "name": "ultima_sequencia",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ultima_acao": {
+          "name": "ultima_acao",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "sessoes_de_tempo_jogador_id_sessao_id_pk": {
+          "name": "sessoes_de_tempo_jogador_id_sessao_id_pk",
+          "columns": [
+            "jogador_id",
+            "sessao_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "sessoes_de_tempo_estado_check": {
+          "name": "sessoes_de_tempo_estado_check",
+          "value": "\"arquipelago\".\"sessoes_de_tempo\".\"estado\" in ('ativa', 'encerrada', 'expirada')"
+        },
+        "sessoes_de_tempo_sequencia_check": {
+          "name": "sessoes_de_tempo_sequencia_check",
+          "value": "\"arquipelago\".\"sessoes_de_tempo\".\"ultima_sequencia\" >= 0"
+        },
+        "sessoes_de_tempo_acao_check": {
+          "name": "sessoes_de_tempo_acao_check",
+          "value": "\"arquipelago\".\"sessoes_de_tempo\".\"ultima_acao\" in ('iniciar', 'pulsar', 'pausar')"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.tempo_diario": {
+      "name": "tempo_diario",
+      "schema": "arquipelago",
+      "columns": {
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "segundos": {
+          "name": "segundos",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "atualizado_em": {
+          "name": "atualizado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "tempo_diario_jogador_id_dia_pk": {
+          "name": "tempo_diario_jogador_id_dia_pk",
+          "columns": [
+            "jogador_id",
+            "dia"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "tempo_diario_segundos_check": {
+          "name": "tempo_diario_segundos_check",
+          "value": "\"arquipelago\".\"tempo_diario\".\"segundos\" between 0 and 86400"
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "arquipelago.turnos_remunerados": {
+      "name": "turnos_remunerados",
+      "schema": "arquipelago",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "jogador_id": {
+          "name": "jogador_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "conta_id": {
+          "name": "conta_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "publico": {
+          "name": "publico",
+          "type": "varchar(8)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "posto": {
+          "name": "posto",
+          "type": "varchar(20)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "dia": {
+          "name": "dia",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "versao": {
+          "name": "versao",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "moedas": {
+          "name": "moedas",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "criado_em": {
+          "name": "criado_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "concluido_em": {
+          "name": "concluido_em",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "pagamento": {
+          "name": "pagamento",
+          "type": "varchar(12)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "teto_semana": {
+          "name": "teto_semana",
+          "type": "date",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "turnos_remunerados_dia": {
+          "name": "turnos_remunerados_dia",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "publico",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "posto",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "dia",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "turnos_remunerados_pendentes": {
+          "name": "turnos_remunerados_pendentes",
+          "columns": [
+            {
+              "expression": "jogador_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "publico",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "pagamento",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "criado_em",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "turnos_remunerados_publico": {
+          "name": "turnos_remunerados_publico",
+          "value": "\"arquipelago\".\"turnos_remunerados\".\"publico\" in ('kids','adulto')"
+        },
+        "turnos_remunerados_posto": {
+          "name": "turnos_remunerados_posto",
+          "value": "\"arquipelago\".\"turnos_remunerados\".\"posto\" in ('padaria','sorveteria','sucos')"
+        },
+        "turnos_remunerados_valores": {
+          "name": "turnos_remunerados_valores",
+          "value": "\"arquipelago\".\"turnos_remunerados\".\"versao\" = 1 and \"arquipelago\".\"turnos_remunerados\".\"moedas\" between 1 and 100"
+        },
+        "turnos_remunerados_pagamento": {
+          "name": "turnos_remunerados_pagamento",
+          "value": "(\"arquipelago\".\"turnos_remunerados\".\"concluido_em\" is null and \"arquipelago\".\"turnos_remunerados\".\"pagamento\" = 'aguardando' and \"arquipelago\".\"turnos_remunerados\".\"teto_semana\" is null) or (\"arquipelago\".\"turnos_remunerados\".\"concluido_em\" is not null and ((\"arquipelago\".\"turnos_remunerados\".\"pagamento\" in ('pendente','creditado') and \"arquipelago\".\"turnos_remunerados\".\"teto_semana\" is null) or (\"arquipelago\".\"turnos_remunerados\".\"pagamento\" = 'teto' and \"arquipelago\".\"turnos_remunerados\".\"teto_semana\" is not null)))"
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {
+    "arquipelago": "arquipelago"
+  },
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

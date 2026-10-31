@@ -19,13 +19,17 @@ SAIDA = os.environ.get('ILHAS_OUT', os.path.join(HERE, '..', '..', 'src', 'asset
 ILHAS = ['bosque', 'vila_doce', 'recife', 'recife_navio', 'recife_labirinto']
 
 COMUNS = ['chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4']
+# O ponto de embarque do barco (`arte/mundo/lib_cais.py`, deque de praia): nó, âncoras e colisores.
+PORTO = {'nos': ['porto'], 'ancoras': ['barco', 'cais'], 'colisores': ['col-cais-beira', 'col-cais-deque',
+                                                                      'col-cil-estaca-cais']}
 CONTRATO = {
     'bosque': {
         # copa-1…copa-11 (a copa de cada árvore: 4 do percurso, a do galho e 6 de enfeite), tronco-1…5 (os
         # troncos das árvores grandes) e telhado-casa-na-arvore ficam à parte para o jogo esmaecer o que
         # estiver entre a câmera e o personagem.
         'nos': ['terreno', 'agua', 'construcoes', 'vegetacao', 'cipo-1', 'cipo-2', 'cipo-3']
-        + [f'copa-{i}' for i in range(1, 12)] + [f'tronco-{i}' for i in range(1, 6)] + ['telhado-casa-na-arvore'],
+        + [f'copa-{i}' for i in range(1, 12)] + [f'tronco-{i}' for i in range(1, 6)] + ['telhado-casa-na-arvore']
+        + PORTO['nos'],
         'ancoras': COMUNS + ['escada', 'casa-na-arvore', 'cabana', 'cercado', 'lago', 'escorregador-fim',
                              'copas-1', 'copas-2', 'copas-3', 'copas-4']
         + [f'esconderijo-{i}' for i in range(1, 5)] + ['equilibrio-1-a', 'equilibrio-1-b']
@@ -33,7 +37,7 @@ CONTRATO = {
         + [f'mecanismos-{n}' for n in ('casa', 'rumo', 'placa', 'caixote', 'alcapao')]
         + ['lote-cabana-a', 'lote-cabana-b']
         + [f'borda-{i}-{p}' for i in range(1, 5) for p in ('a', 'b', 'fora')]
-        + [f'escorregador-curva-{i}' for i in range(1, 14)],
+        + [f'escorregador-curva-{i}' for i in range(1, 14)] + PORTO['ancoras'],
         'clipes': [],
         # Grupos de nós de colisão (o nome sem o número do fim): o percurso nas copas inteiro, a casa na
         # árvore, o escorregador, a cabana, o cercadinho, os troncos, o chão e os enfeites que seguram o
@@ -43,17 +47,17 @@ CONTRATO = {
                       'col-cerca', 'col-cil-tronco', 'col-cil-tora', 'col-cil-toco', 'col-cil-moita',
                       'col-cil-pedra', 'col-cil-pedra-lago', 'col-cil-cogumelo', 'col-cil-toca', 'col-floreira',
                       'col-cil-perna-escorregador', 'col-escada-reta',
-                      'col-pedra-de-agarrar'],
+                      'col-pedra-de-agarrar'] + PORTO['colisores'],
     },
     'vila-doce': {
-        'nos': ['terreno', 'fonte', 'construcoes', 'telhados', 'feira', 'enfeites'],
+        'nos': ['terreno', 'fonte', 'construcoes', 'telhados', 'feira', 'enfeites'] + PORTO['nos'],
         'ancoras': COMUNS + ['fonte', 'padaria', 'sorveteria', 'telhados-inicio', 'telhados-1', 'telhados-2',
-                             'telhados-3', 'telhados-fim'] + [f'barraca-{i}' for i in range(1, 7)],
+                             'telhados-3', 'telhados-fim'] + [f'barraca-{i}' for i in range(1, 7)] + PORTO['ancoras'],
         'clipes': [],
         'colisores': ['col-terreno', 'col-cil-fonte', 'col-casinha', 'col-cil-morango', 'col-caixote',
                       'col-sorveteria', 'col-mureta', 'col-balcao', 'col-cil-casquinha', 'col-padaria',
                       'col-telhado-padaria', 'col-chamine', 'col-barraca', 'col-cil-poste', 'col-cil-jujuba',
-                      'col-banco', 'col-cil-vaso', 'col-cil-moita'],
+                      'col-banco', 'col-cil-vaso', 'col-cil-moita'] + PORTO['colisores'],
     },
     'recife': {
         'nos': ['terreno', 'lagoa', 'construcoes', 'corais', 'enfeites', 'caverna'] + [f'alga-{i}' for i in range(1, 11)],

@@ -4,6 +4,7 @@ import {
   ILHA_IDS,
   type IlhaId,
   ilha as ilhaDoContrato,
+  QUADROS_POR_ILHA,
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -34,28 +35,37 @@ function Premio({ d }: { d: DesafioNaLista | null }) {
 
 function CartaoDoQuadro({
   q,
+  corConquistada,
   ocupado,
   aoJogar,
 }: {
   q: Quadro
+  corConquistada: boolean
   ocupado: boolean
   aoJogar: (q: Quadro) => void
 }) {
   const d = q.desafio
-  const titulo = d ? d.titulo : 'Ainda sem desafio'
+  const titulo = d ? d.titulo : corConquistada ? 'Cor conquistada' : 'Ainda sem desafio'
   return (
-    <li className={`arq-quadro-cartao ${q.estado}`}>
+    <li className={`arq-quadro-cartao ${corConquistada ? 'feito' : q.estado}`}>
       <span className="arq-quadro-numero" aria-hidden="true">
-        {q.estado === 'feito' ? '✓' : q.numero}
+        {corConquistada ? '✓' : q.numero}
       </span>
       <div className="arq-quadro-corpo">
         <b>{titulo}</b>
-        {q.estado === 'feito' ? <span className="arq-quadro-estado">Cor de volta</span> : null}
+        {corConquistada ? <span className="arq-quadro-estado">Cor de volta</span> : null}
+        {q.estado === 'feito' && !corConquistada ? (
+          <span className="arq-quadro-estado">Desafio concluído</span>
+        ) : null}
         {q.estado === 'disponivel' ? (
           <span className="arq-quadro-estado">Pronto para fazer</span>
         ) : null}
         {q.estado === 'vazio' ? (
-          <span className="arq-quadro-estado">A equipe ainda vai pendurar este desafio</span>
+          <span className="arq-quadro-estado">
+            {corConquistada
+              ? 'Esta cor continua aqui.'
+              : 'A equipe ainda vai pendurar este desafio'}
+          </span>
         ) : null}
         {q.estado === 'trancado' && d ? <Falta d={d} /> : null}
         {q.estado === 'disponivel' || q.estado === 'feito' ? <Premio d={d} /> : null}
@@ -148,6 +158,7 @@ export function PainelDoQuadro() {
   const painel = useEstado((s) => s.painelAberto)
   const ilhaId = ilhaDoPainel(painel)
   const dados = useDesafios(desafios, (s) => s.dados)
+  const cores = useDesafios(desafios, (s) => s.cores)
   const carregando = useDesafios(desafios, (s) => s.carregando)
   const fechado = useDesafios(desafios, (s) => s.fechado)
   const festa = useDesafios(desafios, (s) => s.festa)
@@ -164,12 +175,17 @@ export function PainelDoQuadro() {
   useEffect(() => {
     if (!festa) return
     const nome = ilhaDoContrato(festa.ilha).nome
+    // A sua ilha e o Farol não pintam (C03): a festa é do desafio, não da cor.
     loja
       .getState()
       .dizer(
-        festa.quadros.length > 1
-          ? `Mais cores voltaram para o ${nome}.`
-          : `Mais uma cor voltou para o ${nome}. Olhe o quadro.`,
+        festa.ilha === 'farol'
+          ? 'Seu jogo ficou pronto. Ele vai para o fliperama da sua casa.'
+          : festa.ilha === 'sua-ilha'
+            ? 'Desafio feito. Olhe a mancha nova no quadro da praia.'
+            : festa.quadros.length > 1
+              ? `Mais cores voltaram para o ${nome}.`
+              : `Mais uma cor voltou para o ${nome}. Olhe o quadro.`,
       )
     const t = setTimeout(() => desafios.getState().festaVista(), FESTA_MS)
     return () => clearTimeout(t)
@@ -178,7 +194,10 @@ export function PainelDoQuadro() {
   if (!ilhaId) return null
   const nome = ilhaDoContrato(ilhaId).nome
   const quadros = dados ? quadrosDaIlha(dados.desafios, ilhaId) : null
-  const feitos = quadros?.filter((q) => q.estado === 'feito').length ?? 0
+  const feitos =
+    ilhaId === 'sua-ilha'
+      ? (quadros?.filter((q) => q.estado === 'feito').length ?? 0)
+      : (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.length ?? 0)
 
   async function jogar(d: DesafioNaLista | null) {
     if (!d) return
@@ -200,9 +219,13 @@ export function PainelDoQuadro() {
       >
         <h2 id="arq-quadro-titulo">Quadro das Cores</h2>
         <p className="arq-quadro-sub">
-          {quadros
-            ? `${nome}: ${feitos} de ${quadros.length} cores de volta.`
-            : `Cada desafio feito devolve um pedaço da cor do ${nome}.`}
+          {ilhaId === 'farol'
+            ? 'Um jogo todo seu, com os critérios na lista. Faça quando quiser.'
+            : ilhaId === 'sua-ilha'
+              ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} desafios feitos.`
+              : quadros || feitos > 0
+                ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} cores de volta.`
+                : `Cada desafio feito devolve um pedaço da cor do ${nome}.`}
         </p>
         {dados && quadros ? (
           <CartaoDeHoje
@@ -213,18 +236,29 @@ export function PainelDoQuadro() {
         ) : null}
         {quadros ? (
           <ol className="arq-quadro-lista">
-            {quadros.map((q) => (
-              <CartaoDoQuadro
-                key={q.numero}
-                q={q}
-                ocupado={ferramentaAberta || carregando}
-                aoJogar={(x) => void jogar(x.desafio)}
-              />
-            ))}
+            {/* O Farol tem um projeto autoral só (C03b): os quadros vazios não aparecem. */}
+            {quadros
+              .filter((q) => ilhaId !== 'farol' || q.estado !== 'vazio')
+              .map((q) => (
+                <CartaoDoQuadro
+                  key={q.numero}
+                  q={q}
+                  // A sua ilha e o Farol não pintam (C03): o quadro feito é só "Desafio concluído".
+                  corConquistada={
+                    ilhaId !== 'sua-ilha' &&
+                    ilhaId !== 'farol' &&
+                    (cores.ilhas.find((i) => i.id === ilhaId)?.quadros.includes(q.numero) ?? false)
+                  }
+                  ocupado={ferramentaAberta || carregando}
+                  aoJogar={(x) => void jogar(x.desafio)}
+                />
+              ))}
           </ol>
         ) : fechado === 'desligado' ? (
           <p className="arq-aviso atencao">
-            Os desafios desta ilha ainda não abriram. O Zappy avisa quando chegarem.
+            {feitos > 0
+              ? 'Os desafios não estão disponíveis agora. Suas cores continuam aqui.'
+              : 'Os desafios desta ilha ainda não abriram. O Zappy avisa quando chegarem.'}
           </p>
         ) : fechado === 'fora-do-ar' ? (
           <div className="arq-quadro-erro">

@@ -1,0 +1,5 @@
+{
+  "erro": "TimeoutError: locator.click: Timeout 45000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('dialog', { name: 'Roupas da festa' }).getByRole('button', { name: /^Salvar$/ })\u001b[22m\n",
+  "erros": [],
+  "texto": "Meu avatar\n70\nIdeias para o Carnaval\n\nSão sugestões. Você pode escolher outras peças. Comprar e salvar continuam sendo escolhas suas.\n\nMáscara\nCoroa de flores · 15 moedas\n🎨 Personalizar\n📸 Cabine de fotos\nRosto\nCabeça\nRoupa\nRosto\nOlhos\nSobrancelhas\nNariz\nPintura de Rosto\nBarba"
+}

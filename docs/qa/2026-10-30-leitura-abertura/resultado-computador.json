@@ -1,0 +1,33 @@
+{
+  "leituras": 9,
+  "leituraVisual": {
+    "opacidade": "1",
+    "cor": "rgb(255, 255, 255)",
+    "baixo": 586.40625,
+    "controles": 602.40625
+  },
+  "medidas": [
+    {
+      "texto": "Anterior",
+      "x": 430,
+      "y": 602.40625,
+      "width": 177.296875,
+      "height": 44
+    },
+    {
+      "texto": "Começar",
+      "x": 672.6875,
+      "y": 602.40625,
+      "width": 177.3125,
+      "height": 44
+    },
+    {
+      "texto": "Passar sozinho",
+      "x": 573.484375,
+      "y": 654.40625,
+      "width": 133.03125,
+      "height": 44
+    }
+  ],
+  "erros": []
+}

@@ -1,0 +1,18 @@
+[
+  {
+    "publico": "kids",
+    "celular": false,
+    "salvar": false,
+    "compras": 0,
+    "saldo": 80,
+    "erros": []
+  },
+  {
+    "publico": "kids",
+    "celular": true,
+    "salvar": true,
+    "compras": 1,
+    "saldo": 70,
+    "erros": []
+  }
+]

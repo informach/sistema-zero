@@ -4,6 +4,7 @@ import {
   type CartaoDaRotina,
   CONDICOES_DA_ROTINA,
   type CondicaoDaRotina,
+  descricaoDoTrabalhoLumi,
   LIMITES_DA_ROTINA,
   LUGARES_DA_ROTINA,
   LUMIS,
@@ -38,6 +39,7 @@ import {
   tirarCartao,
   validarRotina,
 } from '../sistemas/rotina'
+import { MINIATURA_DO_LUMI } from './miniaturas-dos-lumis'
 
 const ICONE: Record<TipoDeCarta, string> = { quando: '🌅', acao: '✨', controle: '🔁' }
 const TIPO = Object.fromEntries(CARTAS_LUMI.map((c) => [c.id, c.tipo])) as Record<
@@ -340,6 +342,7 @@ export function PainelDaRotina() {
     try {
       const r = await editarRotinaNaPlataforma({
         plataforma,
+        jornada: loja.getState().jornada,
         lumi,
         rascunho,
         ler: () => loja.getState().salvamento,
@@ -419,11 +422,7 @@ export function PainelDaRotina() {
                   aria-pressed={id === lumi}
                   onClick={() => rotina.getState().escolher(id)}
                 >
-                  <span
-                    className="arq-album-lumi"
-                    style={{ ['--cor' as string]: ESPECIES_DE_LUMI[id].cor }}
-                    aria-hidden="true"
-                  />
+                  <img className="arq-album-lumi foto" src={MINIATURA_DO_LUMI[id]} alt="" />
                   {ESPECIES_DE_LUMI[id].nome}
                   {guardadas[id] ? <small> (com rotina)</small> : null}
                 </button>
@@ -434,6 +433,7 @@ export function PainelDaRotina() {
                 <h3 id="arq-rotina-montada" className="arq-menu-titulo">
                   {`A rotina ${daRotinaDo(lumi)}`}
                 </h3>
+                <p>{descricaoDoTrabalhoLumi(lumi)}</p>
                 <ListaDeCartoes lista={rascunho} alvo={[]} edicao={edicao} rotulo="a rotina" />
               </section>
             ) : null}

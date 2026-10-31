@@ -1,5 +1,6 @@
 import { compareContentFingerprints } from '../creations/content-fingerprint'
 import type { ChangedGamePositionRule, CollectionMemoryRule } from './collection-memory'
+import { type GameCausalityRule, isGameCausalityRule } from './game-causality'
 import { isInteractiveBlock, type LessonSection } from './index'
 import { isPlatformAction, type PlatformAction } from './platform-action'
 import {
@@ -64,6 +65,7 @@ export interface ProjectBlockPattern {
 export type SectionStructureRule =
   | CollectionMemoryRule
   | ChangedGamePositionRule
+  | GameCausalityRule
   | { type: 'usesLoop' }
   | { type: 'declaresVariable'; name: string }
   | { type: 'definesFunction'; name: string }
@@ -511,6 +513,8 @@ export function isSectionCompletion(v: unknown): v is SectionCompletion {
               (v) => typeof v === 'string' && /^[A-Za-z_$][A-Za-z0-9_$]{0,99}$/.test(v),
             )
           )
+        case 'gameCausality':
+          return isGameCausalityRule(c.rule)
         case 'usesLoop':
           return true
         case 'usesBlock':
@@ -693,6 +697,7 @@ export function sectionCompletionIssues(
               ? hasBlankBlockType(check.rule)
               : check.rule.type === 'collectionMemory' ||
                   check.rule.type === 'changedGamePosition' ||
+                  check.rule.type === 'gameCausality' ||
                   check.rule.type === 'usesLoop' ||
                   check.rule.type === 'behavior' ||
                   check.rule.type === 'script'

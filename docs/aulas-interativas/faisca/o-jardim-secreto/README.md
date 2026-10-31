@@ -45,6 +45,6 @@ bun test docs/aulas-interativas-tecnico/qa/jardim-secreto.test.ts
 bun test packages/members/tests/integration/jardim-missao-import.test.ts
 ```
 
-O navegador de QA usa Chrome local (`SZ_CHECK_CHROMIUM` permite outro caminho). `qa/jardim-browser.ts` roda os objetivos no executor real; aceita dimensão e cenário (`correto`, `sem-memoria`, `sem-decisao`, `sem-movimento`, `renomeada`). `qa/jardim-preview/build.ts` e `verify.mjs` conferem o quiz com os componentes reais em 1280 e 390 pixels.
+O navegador de QA usa Chrome local (`SZ_CHECK_CHROMIUM` permite outro caminho). `qa/jardim-browser.ts` roda os objetivos no executor real; aceita dimensão e cenário (`correto`, `sem-memoria`, `sem-decisao`, `sem-movimento`, `renomeada` e, só no 3D, `sem-guarda`: sem o `Se não ganhou`, apenas o objetivo `uma-vez` reprova). `qa/jardim-preview/build.ts` e `verify.mjs` conferem o quiz com os componentes reais em 1280 e 390 pixels.
 
 Identidades reservadas pelo seed: `jornada-faisca-missao` e `jornada-faisca-missao-adulto`. A autoria deve preservar os UUIDs e as duas aulas planejadas; não cadastrar um curso duplicado nem alterar o outline histórico do seed para mudar títulos de apresentação.

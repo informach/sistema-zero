@@ -15,6 +15,7 @@ import {
   RAIOS_DOS_DEQUES,
   TOPO_DO_BOSQUE,
   TRONCO_DOS_CIPOS,
+  troncoDoNo,
 } from '../src/mundo/bosque'
 import { type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE } from '../src/mundo/medidas'
@@ -249,6 +250,18 @@ describe('tronco de escalar (a árvore do galho dos cipós)', () => {
     (doGrupo('col-cil-tronco') as Cilindro[]).filter(
       (c) => Math.hypot(c.posicao[0] - t.base.x, c.posicao[2] - t.base.z) < 1,
     )
+
+  test('o nó escalada-cil-tronco-dos-cipos do arquivo é o tronco que o jogo usa', () => {
+    const doArquivo = troncoDoNo(raiz)
+    expect(doArquivo).not.toBeNull()
+    if (!doArquivo) return
+    for (const ponta of ['base', 'topo'] as const)
+      for (const eixo of ['x', 'y', 'z'] as const)
+        expect(doArquivo[ponta][eixo]).toBeCloseTo(t[ponta][eixo], 2)
+    // Os anéis têm 12 lados: o raio medido nos vértices é o do círculo (a média fica no 2º dígito).
+    expect(doArquivo.raioBase).toBeCloseTo(t.raioBase, 2)
+    expect(doArquivo.raioTopo).toBeCloseTo(t.raioTopo, 2)
+  })
 
   test('segue os colisores do tronco: casca por fora deles, eixo junto', () => {
     const pedacos = troncoDaArvore()

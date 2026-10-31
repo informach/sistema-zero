@@ -1,5 +1,22 @@
 # @sistemazero/studio
 
+## Teclas dos controles de toque do Jogo 2D (29/10/2026)
+
+Os botões do pad também entregam a borda à tecla canônica: direções para setas, A para
+Espaço, B para x, selecionar para Backspace, começar para Enter e pausa para Escape.
+`_dispatchGameKeyInput` é compartilhado com o teclado real; não despachar KeyboardEvent
+sintético, que duplicaria a ação semântica. Os atalhos alternativos z/Shift/p continuam
+atalhos físicos, sem disparos extras no toque. `onKey` recebe a borda; `actionDown` continua
+sendo a leitura de ação mantida pelo dedo. Reinício durante a ação cancela o restante da
+geração antiga. Provas em classicPlatformer.test.ts e no navegador dos quadros do Bosque.
+
+## Desafio do Arquipélago (C02b, 30/10/2026)
+
+`challenge-runtime` (`createArquipelagoChallengeRuntimeEnvironment`) é o núcleo contextual com o
+contexto `arquipelago` (`audience`, `desafioId`, `revisao`, `projectId`) e SEM análise remota:
+o Python clássico na Ponte usa o quadro de análise do próprio runtime. Recusa o REPL antes de
+pedir; a decisão só aceita editar, executar e pausar. Teste: `src/runtime/challengeEnvironment.test.ts`.
+
 ## Revisão imutável de Maestria (25/10/2026)
 
 `mastery-review-runtime` cria um ambiente Python de execução vinculado ao UUID da entrega e à
@@ -10,6 +27,30 @@ hashes. `contextEnvironmentCore` verifica identidade, contexto, digest e validad
 apenas o parser da representação em blocos, sem conceder edição, LSP, assistência, exportação ou REPL. `PythonRuntimePreview` é
 exportado para esse host: no Admin, executar a entrega e inspecionar seu código em `observer`
 são superfícies separadas. Não usar `authoring` com um rascunho inventado para revisar entregas.
+
+## O desenho da vaga de arte: `source: 'lesson-art'` (29/10/2026)
+
+Etapa 4 de `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. `ProjectAsset.source`
+ganhou `lesson-art`: o desenho que a criança fez no bloco de Pinta da aula, posto pelo HOST
+(member-shell) nos materiais do jogo com o nome da vaga. `sanitizeProjectAssets` o preserva (origem
+desconhecida segue virando `upload`; `libId` continua só da biblioteca); a impressão do conteúdo do
+core (`content-fingerprint.ts`) o ignora como ignora a biblioteca do curso, senão toda abertura
+marcaria o projeto como mudado. Na aba Imagens ele aparece com o selo "Seu desenho da aula", sem
+renomear nem apagar (o nome é o da vaga; o desenho volta a cada abertura) e sem as ações de peças.
+O `addAsset` da store aceita o tipo mas grava como `upload`: só o host cria `lesson-art`. Testes:
+`core/__tests__/projectAssets.test.ts`, `components/assets/AssetsPanel.test.tsx` (a aba) e
+`core/tests/submission-up-to-date.test.ts` (a impressão, com anti-vácuo).
+
+## Jogo 2D: o sprite guarda o nome da imagem (`imageName`, 29/10/2026)
+
+O objetivo de execução da Chave do Farol passou a aceitar qualquer farol (os de fábrica ou um
+desenho da criança, `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`, etapa 7) e
+confere que a imagem do farol MUDA ao vencer. O endereço da imagem (`sprite.image.url`) é um data
+URL que pode passar dos 20 mil caracteres que o leitor do executor aceita, então o runtime agora
+guarda o NOME curto: `sprite.imageName` (`runtime/sprites.ts`; `createSprite` com `image`,
+`setImage`, e `null` em figura, animação, texto e ao destruir). Tipado em
+`runtimeContract.ts`. Prova no executor de verdade: `docs/aulas-interativas-tecnico/qa/desafio-farol-browser.ts`
+(correto, farol que não muda reprova, farol desenhado passa).
 
 ## A luz do Jogo 3D é a cor escolhida (27/10/2026)
 
@@ -89,6 +130,16 @@ teclado", logo depois de "Andar só dentro da área".
   trechos curtos em volta da pedra estourava os 7,5 s da ida ao farol (agora são três curvas). O
   teto de retângulos de chão da ida 3D subiu para `MAX_WALKABLE_RECTS` (32) no core.
 - Testes: `game-3d/__tests__/beginner.test.ts` §sólido (parar, deslizar, sair, um pedaço por caixa).
+- ⚠️⚠️ **O cubo de reserva do modelo não conta (29/10/2026).** `createModelFile` nasce como um cubo
+  do tamanho do lado MAIOR e o `.glb` entra como filho; carregado, o cubo só perdia a tinta. Ele
+  seguia medido: a área de toque do farol da Ilha (5,3 de altura, 1,8 de largura) virou um cubo de
+  5,3 que cobria o cais, e o cubo do cenário (140) envolvia o personagem, que por começar "dentro
+  de um sólido" NUNCA era barrado pela pedra (o sólido acima estava desligado na prática, e os
+  testes não pegavam porque usavam cubo de reserva do tamanho do modelo). Hoje `isModelReserve`
+  (o nó com `sz.modelRoot`) tira a forma dele de `boxOf`, `expandWithoutEffects` e `solidParts`,
+  e `quietReserve` (`runtimeModelAssets.ts`) zera o `raycast` dele e das cópias: mira e clique
+  só no modelo. Sem modelo carregado, o cubo segue valendo inteiro. Testes com cubo MAIOR que o
+  modelo, provados por mutação: `gameRules.test.ts` (toque) e `beginner.test.ts` (sólido).
 
 ## O executor espera os modelos do Jogo 3D (28/10/2026)
 

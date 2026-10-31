@@ -17,7 +17,7 @@ const recife = ilhasEmVolta().find((i) => i.ilha.id === 'recife')!
 describe('travessia guiada, com as âncoras reais', () => {
   test('a ida e a volta acabam no cais, sem derivar o giro da arte', () => {
     const v = viagemReal()
-    v.recifePronto = true
+    v.prontos[1] = true
     for (const porto of [0, 1] as const) {
       embarcar(v, porto, v.portos[porto].embarque)
       let passos = 0
@@ -64,7 +64,7 @@ describe('travessia guiada, com as âncoras reais', () => {
       const distancia = v.distancia
       for (let i = 0; i < 60; i++) passoDaTravessia(v, 1 / 60, false)
       expect(v.distancia).toBe(distancia)
-      v.recifePronto = carregou
+      v.prontos[1] = carregou
       while (v.fase !== 'atracado' && n++ < 18000) passoDaTravessia(v, 1 / 60, false)
       expect(v.fase).toBe('atracado')
       expect(v.devolvendo).toBe(!carregou)

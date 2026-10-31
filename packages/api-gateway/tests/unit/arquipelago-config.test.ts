@@ -11,6 +11,39 @@ const transforms = [
 ]
 
 describe('Arquipélago Vagalume no gateway', () => {
+  test('convites adultos exigem JWT, não usam código na URL e têm corpo e frequência limitados', () => {
+    const jogo = arquipelagoGateway({
+      url: 'http://jogo.local',
+      transforms,
+      resilience: { timeoutMs: 15000 },
+    })
+    const r = jogo.routes.filter(
+      (r) => r.id.startsWith('arquipelago-visita-adulta-') || r.id === 'arquipelago-convite-adulto',
+    )
+    expect(r).toHaveLength(3)
+    for (const rota of r) {
+      expect(rota.maxBodyBytes).toBe(1024)
+      expect(rota.auth).toMatchObject({ required: true, strategies: ['jwt'] })
+      expect(rota.rateLimit?.by).toBe('principal')
+      expect(rota.pathPattern).not.toContain(':')
+    }
+    expect(r.find((r) => r.id === 'arquipelago-convite-adulto')?.methods).toEqual([
+      'GET',
+      'POST',
+      'DELETE',
+    ])
+    expect(r.find((r) => r.id === 'arquipelago-visita-adulta-abrir')?.methods).toEqual(['POST'])
+  })
+  test('Mural próprio exige JWT ativo e limite por identidade', () => {
+    expect(realConfig.routes.find((r) => r.id === 'hub-my-playable-showcase')).toMatchObject({
+      methods: ['GET'],
+      pathPattern: '/hub/my-playable-showcase',
+      service: 'hub',
+      auth: { required: true, strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    })
+  })
   test('sem ARQUIPELAGO_URL o gateway não ganha serviço nem rota do jogo', () => {
     expect(process.env.ARQUIPELAGO_URL).toBeUndefined()
     expect(realConfig.services.arquipelago).toBeUndefined()
@@ -36,7 +69,54 @@ describe('Arquipélago Vagalume no gateway', () => {
     const registry = new RouteRegistry(
       [...realConfig.routes, ...jogo.routes].map((r) => routeConfigSchema.parse(r)),
     )
+    for (const acao of ['iniciar', 'concluir']) {
+      expect(
+        registry.resolve('POST', `/arquipelago/profissoes/${acao}`, 'v1')?.route,
+      ).toMatchObject({
+        auth: { strategies: ['jwt'] },
+        authorize: { statuses: ['active'] },
+        maxBodyBytes: 4096,
+        rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+      })
+      expect(registry.resolve('GET', `/arquipelago/profissoes/${acao}`, 'v1')).toBeUndefined()
+    }
     const salvar = registry.resolve('PUT', '/arquipelago/salvamento', 'v1')?.route
+    expect(registry.resolve('PUT', '/arquipelago/fantasmas', 'v1')?.route).toMatchObject({
+      maxBodyBytes: 129 * 1024,
+      auth: { strategies: ['jwt'] },
+      rateLimit: { max: 12, windowMs: 60000, by: 'principal' },
+    })
+    expect(registry.resolve('GET', '/arquipelago/fantasmas/bosque-copas', 'v1')?.route.id).toBe(
+      'arquipelago-fantasma-ler-0',
+    )
+    expect(
+      registry.resolve(
+        'GET',
+        '/arquipelago/irmaos/11111111-1111-4111-8111-111111111111/fantasmas/bosque-copas',
+        'v1',
+      )?.route.id,
+    ).toBe('arquipelago-fantasma-ler-1')
+    expect(registry.resolve('POST', '/arquipelago/fantasmas', 'v1')).toBeUndefined()
+    expect(registry.resolve('POST', '/arquipelago/insumos/comprar', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 1024,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('GET', '/arquipelago/insumos/pendente', 'v1')?.route.id).toBe(
+      'arquipelago-insumos-pendente',
+    )
+    expect(registry.resolve('GET', '/arquipelago/insumos/comprar', 'v1')).toBeUndefined()
+    expect(registry.resolve('POST', '/arquipelago/pedidos/entregar', 'v1')?.route).toMatchObject({
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      maxBodyBytes: 1024,
+      rateLimit: { max: 20, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('GET', '/arquipelago/pedidos/pendentes', 'v1')?.route.id).toBe(
+      'arquipelago-pedidos-pendentes',
+    )
+    expect(registry.resolve('GET', '/arquipelago/pedidos/entregar', 'v1')).toBeUndefined()
     expect(salvar).toMatchObject({
       id: 'arquipelago-salvamento-put',
       service: 'arquipelago',
@@ -62,6 +142,13 @@ describe('Arquipélago Vagalume no gateway', () => {
       'arquipelago-cartas',
     )
     // Desafios de quem joga: o literal `desafios` e o `:id`; conferir com corpo e prazo das aulas.
+    expect(registry.resolve('GET', '/arquipelago/desafios/cores', 'v1')?.route).toMatchObject({
+      id: 'arquipelago-cores-conquistadas',
+      auth: { strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    })
+    expect(registry.resolve('POST', '/arquipelago/desafios/cores', 'v1')).toBeUndefined()
     const desafio = '22222222-2222-4222-8222-222222222222'
     expect(registry.resolve('GET', '/arquipelago/desafios', 'v1')?.route.id).toBe(
       'arquipelago-desafios',
@@ -81,6 +168,16 @@ describe('Arquipélago Vagalume no gateway', () => {
     expect(
       registry.resolve('POST', `/arquipelago/desafios/${desafio}/recompensa-vista`, 'v1')?.route.id,
     ).toBe('arquipelago-desafio-recompensa-vista')
+    // O ambiente Python do Estúdio de desafio (C02b): só POST, com o retrato do ambiente.
+    expect(
+      registry.resolve('POST', `/arquipelago/desafios/${desafio}/ambiente`, 'v1')?.route,
+    ).toMatchObject({
+      id: 'arquipelago-desafio-ambiente',
+      maxBodyBytes: 2 * 1024 * 1024,
+    })
+    expect(
+      registry.resolve('GET', `/arquipelago/desafios/${desafio}/ambiente`, 'v1'),
+    ).toBeUndefined()
     expect(registry.resolve('DELETE', `/arquipelago/desafios/${desafio}`, 'v1')).toBeUndefined()
     expect(registry.resolve('PUT', '/arquipelago/familia/limite', 'v1')?.route.id).toBe(
       'arquipelago-familia-limite',
@@ -106,6 +203,27 @@ describe('Arquipélago Vagalume no gateway', () => {
       'arquipelago-familia-semana',
     )
     expect(registry.resolve('PUT', '/arquipelago/familia/semana', 'v1')).toBeUndefined()
+    // Visitas de outras crianças (N08a).
+    expect(registry.resolve('GET', '/arquipelago/familia/amigos', 'v1')?.route.id).toBe(
+      'arquipelago-familia-amigos',
+    )
+    expect(
+      registry.resolve('POST', '/arquipelago/familia/amigos/aceitar', 'v1')?.route,
+    ).toMatchObject({ id: 'arquipelago-familia-amigos-aceitar', maxBodyBytes: 1024 })
+    expect(
+      registry.resolve(
+        'DELETE',
+        '/arquipelago/familia/amigos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+        'v1',
+      )?.route.id,
+    ).toBe('arquipelago-familia-amigos-apagar-1')
+    expect(
+      registry.resolve('GET', '/arquipelago/amigos/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/casa', 'v1')
+        ?.route.id,
+    ).toBe('arquipelago-amigos-1')
+    // Fotos no Clube (N08b): só leitura.
+    expect(registry.resolve('GET', '/arquipelago/clube', 'v1')?.route.id).toBe('arquipelago-clube')
+    expect(registry.resolve('PUT', '/arquipelago/clube', 'v1')).toBeUndefined()
     for (const metodo of ['GET', 'PUT']) {
       expect(
         registry.resolve(metodo, '/arquipelago/familia/permissoes', 'v1')?.route,

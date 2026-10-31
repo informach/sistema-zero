@@ -70,15 +70,31 @@ def areia():
     return o
 
 
+# As faces que o Pinta pinta (fase3-11): os lados do móvel e as duas portinhas, na cor de cada um
+# sem pintura. O vidro, a água e os peixes ficam como estão.
+lib_q.PALETTE['pintaFrente'] = lib_q.PALETTE['aquarioMovelClaro']
+lib_q.PALETTE['pintaLadoEsq'] = lib_q.PALETTE['aquarioMovel']
+lib_q.PALETTE['pintaLadoDir'] = lib_q.PALETTE['aquarioMovel']
+
+
 def movel():
-    p = [caixa_redonda((LM, FM, AM - 0.11), (0, 0, 0.08 + (AM - 0.11) / 2), 'aquarioMovel', raio=0.035, segs=3)]
+    corpo = caixa_redonda((LM, FM, AM - 0.11), (0, 0, 0.08 + (AM - 0.11) / 2), 'aquarioMovel', raio=0.035, segs=3)
+    pintar_por(corpo, lambda ct, n: 'pintaLadoEsq' if n.x < -0.999 and ct.x < -LM / 2 + 0.01
+               else 'pintaLadoDir' if n.x > 0.999 and ct.x > LM / 2 - 0.01 else None)
+    uv_plano(corpo, {'pintaLadoEsq'}, (0, -1, 0), (0, 0, 1))
+    uv_plano(corpo, {'pintaLadoDir'}, (0, 1, 0), (0, 0, 1))
+    p = [corpo]
     p.append(caixa_redonda((LM - 0.06, FM - 0.06, 0.09), (0, 0, 0.045), 'aquarioAro', raio=0.02, segs=2))
     p.append(caixa_redonda((LM + 0.03, FM + 0.03, 0.045), (0, 0, AM - 0.0225), 'madeiraClara', raio=0.015, segs=2))
-    # Duas portinhas com puxador redondo e um friso no meio.
+    # Duas portinhas com puxador redondo e um friso no meio. A frente das duas é uma face só do Pinta
+    # (a imagem passa de uma para a outra).
+    portas = []
     for s in (-1, 1):
         x = s * (LM / 4 + 0.005)
-        p.append(caixa_redonda((LM / 2 - 0.08, 0.025, AM - 0.24), (x, -FM / 2 - 0.006, 0.08 + (AM - 0.12) / 2 + 0.005),
-                               'aquarioMovelClaro', raio=0.02, segs=2))
+        portinha = caixa_redonda((LM / 2 - 0.08, 0.025, AM - 0.24), (x, -FM / 2 - 0.006, 0.08 + (AM - 0.12) / 2 + 0.005),
+                                 'aquarioMovelClaro', raio=0.02, segs=2)
+        pintar_por(portinha, lambda ct, n: 'pintaFrente' if n.y < -0.999 else None)
+        portas.append(portinha)
         p.append(lib_q.sphere(0.022, (x - s * (LM / 4 - 0.1), -FM / 2 - 0.03, 0.36), 'madeiraClara', subdiv=2,
                               scale=(1, 0.7, 1)))
         # Um peixinho recortado em cada porta.
@@ -87,6 +103,8 @@ def movel():
         if s > 0:
             pts = [(-x2, z2) for x2, z2 in pts][::-1]
         p.append(prism(pts, 0.008, (x, -FM / 2 - 0.022, 0.33), 'aquarioAro', bevel=0.002))
+    uv_plano_juntos(portas, {'pintaFrente'}, (1, 0, 0), (0, 0, 1))
+    p += portas
     return p
 
 
@@ -285,7 +303,7 @@ def aquario():
         nome = f'bolha-{i + 1}'
         nos[nome] = (b, pos)
         clipe[nome] = ch
-    return {'nos': nos, 'clipes': {'nadar': clipe}, 'grupo': 'aquario'}
+    return {'nos': nos, 'clipes': {'nadar': clipe}, 'grupo': 'aquario', 'uv': True}
 
 
 ITENS = [('aquario', aquario)]

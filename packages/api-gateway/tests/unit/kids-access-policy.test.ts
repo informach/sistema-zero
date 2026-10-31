@@ -14,6 +14,27 @@ const student: KidsSessionClaim = {
   grantId: crypto.randomUUID(),
 }
 describe('áreas separadas no servidor', () => {
+  test('visitas de outras crianças (N08a): convites e aceites só do responsável; a casa, da criança', () => {
+    const perfil = '11111111-1111-4111-8111-111111111111'
+    const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+    for (const rota of [
+      '/arquipelago/familia/amigos',
+      '/arquipelago/familia/amigos/convite',
+      '/arquipelago/familia/amigos/aceitar',
+      `/arquipelago/familia/amigos/convite/${perfil}`,
+      `/arquipelago/familia/amigos/${id}`,
+    ]) {
+      expect(kidsMayAccess(parent, rota, 'POST', 'pai')).toBe(true)
+      expect(kidsMayAccess(student, rota, 'GET', 'crianca')).toBe(false)
+    }
+    expect(kidsMayAccess(parent, '/arquipelago/familia/amigos/qualquer/coisa', 'GET', 'pai')).toBe(
+      false,
+    )
+    for (const rota of ['/arquipelago/amigos', `/arquipelago/amigos/${id}/casa`]) {
+      expect(kidsMayAccess(student, rota, 'GET', 'crianca')).toBe(true)
+      expect(kidsMayAccess(parent, rota, 'GET', 'pai')).toBe(false)
+    }
+  })
   test('minijogos da família só abrem em leitura pelo responsável', () => {
     const perfil = '11111111-1111-4111-8111-111111111111'
     const id = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'

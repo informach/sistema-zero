@@ -1,0 +1,25 @@
+TimeoutError: page.waitForFunction: Timeout 180000ms exceeded.
+Lenda
+Fome: 74 de 100
+Energia: 96 de 100
+Diversão: 67 de 100
+80
+moedas
+Sua ilha
+09:01
+Dia 1 · Sol
+Hoje: 27 min
+AGORA
+Fazer o desafio de hoje no Quadro das Cores
+🌱
+Semente de alface
+3
+🌱
+Semente de tomate
+2
+🌱
+Semente de milho
+1
+Modo do jogo
+Viver
+Construir

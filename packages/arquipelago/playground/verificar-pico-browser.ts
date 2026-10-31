@@ -1,6 +1,6 @@
 /**
  * Pico Gelado real no playground (fase3-06, com a subida, o trenó e o cristal da fase3-07, e o
- * iglu por dentro, a banda e o festival de inverno da fase3-08).
+ * iglu por dentro, a banda e o festival de inverno da fase3-08, e o planador da fase3-09).
  * Executar no pacote:
  * bun build playground/verificar-pico-browser.ts --target=node --external playwright-core --outfile .cache/verificar-pico-browser.mjs
  * node .cache/verificar-pico-browser.mjs
@@ -359,10 +359,123 @@ try {
     await festa
       .getByText('A banda voltou a tocar. É o festival de inverno do Pico Gelado.')
       .waitFor()
-    await festa.getByRole('button', { name: 'Continuar' }).click()
-    await festa.getByRole('button', { name: 'Tchau, Floco' }).click()
+    // No festival, a primeira conversa dá o planador (fase3-09) e fala do vento da parede de gelo.
+    const presente = festa.getByText('este planador é seu')
+    const tchau = festa.getByRole('button', { name: 'Tchau, Floco' })
+    let viuOPresente = false
+    while (!(await tchau.isVisible())) {
+      if (await presente.isVisible()) viuOPresente = true
+      await festa.getByRole('button', { name: 'Continuar' }).click()
+    }
+    await festa.getByText('o vento na frente da parede de gelo').waitFor()
+    if (!viuOPresente) throw new Error('O Floco não deu o planador no festival')
+    await tchau.click()
     await festa.waitFor({ state: 'detached' })
-    console.log(`${tipo}: festival de inverno no palco, guardado no salvamento`)
+    await page.waitForFunction(
+      () => {
+        const bruto = localStorage.getItem('arquipelago-playground')
+        const g = bruto
+          ? (JSON.parse(bruto) as { salvamento?: { inventario?: Record<string, number> } })
+          : null
+        return (g?.salvamento?.inventario?.planador ?? 0) > 0
+      },
+      undefined,
+      { timeout: 60_000 },
+    )
+    console.log(
+      `${tipo}: festival de inverno no palco, guardado no salvamento, planador na mochila`,
+    )
+
+    // O planador (fase3-09): no ar, dentro do vento da parede de gelo, pular abre o planador; o
+    // vento leva para cima do alto da parede e, guiando para ela, a criança pousa lá em cima.
+    const corrente = mundo(local('corrente-de-ar'))
+    const topoDaParede = mundo(local('topo-da-parede'))
+    const lerModo = async () => (await ler())?.modo
+    // No celular, o toque vai direto na posição do botão Pular: o `tap()` espera o botão parar por
+    // alguns quadros e, a poucos quadros por segundo, o corpo pousa antes.
+    const botaoPular = celular
+      ? await page.getByRole('button', { name: 'Pular', exact: true }).boundingBox()
+      : null
+    const pular = () =>
+      botaoPular
+        ? page.touchscreen.tap(
+            botaoPular.x + botaoPular.width / 2,
+            botaoPular.y + botaoPular.height / 2,
+          )
+        : page.keyboard.press('Space')
+    // O corpo é posto bem alto, acima do vento, e o pulo vai quando ele já está caindo (um pouco
+    // abaixo de onde foi posto, longe do chão): com o SwiftShader a poucos quadros por segundo,
+    // um tempo fixo não serve, e a queda longa dá tempo ao toque do celular. Planando, ele desce
+    // até o vento, que o segura lá no alto. Pousou antes, tenta de novo.
+    const noAlto = { ...corrente, y: corrente.y + 20 }
+    for (let tentativa = 0; tentativa < 6 && (await lerModo()) !== 'planar'; tentativa++) {
+      await levar(noAlto, rumo(corrente, topoDaParede))
+      const caindo = await page
+        .waitForFunction(
+          ({ alto, chao, pe }) => {
+            const d = (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho
+            const y = (d?.posicao.y ?? 0) - pe
+            return d?.noChao === false && y < alto - 0.3 && y > chao + 1.5
+          },
+          { alto: noAlto.y, chao: corrente.y, pe: PE },
+          { timeout: 20_000, polling: 'raf' },
+        )
+        .then(() => true)
+        .catch(() => false)
+      if (!caindo) continue
+      await pular()
+      await page.waitForTimeout(1500)
+    }
+    if ((await lerModo()) !== 'planar') throw new Error('O planador não abriu no ar')
+    if (celular) await page.getByRole('button', { name: 'Fechar', exact: true }).waitFor()
+    await page.waitForFunction(
+      ({ y, pe, c }) => {
+        const d = (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho
+        const pes = (d?.posicao.y ?? 0) - pe
+        return (
+          d?.modo === 'planar' &&
+          pes > y + 0.2 &&
+          pes < c.y + 5.5 &&
+          Math.hypot(d.posicao.x - c.x, d.posicao.z - c.z) < 1.2
+        )
+      },
+      { y: topoDaParede.y, pe: PE, c: corrente },
+      { timeout: 120_000 },
+    )
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-planador.png`) })
+    console.log(`${tipo}: o planador abriu e o vento subiu acima da parede de gelo`)
+    // No vento o planador fica no lugar; pedindo a frente (virada para a parede pelo transporte),
+    // ele sai do vento, desce planando e pousa. Onde pousa depende do quanto se guia: a regra de
+    // que, guiando para a parede, ele pousa no alto dela é do teste dos colisores, porque a poucos
+    // quadros por segundo o navegador não solta o controle na hora certa.
+    // O toque no Pular deixa o foco no botão, e o teclado do jogo não vale com o foco num botão.
+    await page.evaluate(() => (document.activeElement as HTMLElement | null)?.blur())
+    // O W segue a câmera: recentralizar (C) a põe atrás do avatar, virado para a parede.
+    await page.keyboard.press('KeyC')
+    await page.waitForTimeout(2500)
+    await page.keyboard.down('KeyW')
+    try {
+      await page.waitForFunction(
+        ({ c }) => {
+          const d = (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho
+          return Boolean(d && Math.hypot(d.posicao.x - c.x, d.posicao.z - c.z) > 1.5)
+        },
+        { c: corrente },
+        { timeout: 60_000, polling: 'raf' },
+      )
+    } finally {
+      await page.keyboard.up('KeyW')
+    }
+    await page.waitForFunction(
+      () => {
+        const d = (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho
+        return d?.modo !== 'planar' && d?.noChao === true
+      },
+      undefined,
+      { timeout: 60_000 },
+    )
+    await page.screenshot({ path: path.join(prints, `pico-${tipo}-pouso.png`) })
+    console.log(`${tipo}: saiu do vento planando e pousou`)
 
     // Afastar solta a ilha; voltar monta de novo e o palco segura o Floco.
     await levar({ x: 0, y: 1, z: 20 }, 0)

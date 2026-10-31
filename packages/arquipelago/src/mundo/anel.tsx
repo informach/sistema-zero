@@ -15,14 +15,15 @@ import {
   Quaternion,
   Vector3,
 } from 'three'
+import { useChegada as useChegadaDaPonte } from '../estado/chegada'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { andarPedacos, corMedia, pedacosPintados } from '../sistemas/cor-da-ilha'
 import { BOIAS_DA_ILHA_DO_ANEL, RODA_DA_ILHA_CENTRAL } from '../sistemas/correnteza'
 import { completaColide, completaNaCena, type EstadoDaIlha } from '../sistemas/ilhas-completas'
-import { quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { Boias } from './boias'
 import { BosqueVivo } from './bosque-vivo'
+import { progressoDaChegada } from './chegada-da-ponte'
 import {
   ALTURA_DA_CORDA,
   corrimaosDaPonte,
@@ -31,6 +32,7 @@ import {
   tabuasDaPonte,
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { DescobertaDaIlha } from './descoberta-da-ilha'
 import {
   aplicarOpacidade,
   IlhaCompleta,
@@ -38,7 +40,6 @@ import {
   type Troca,
   useIlhaCompleta,
 } from './ilha-completa'
-import { useInterativo } from './interativos'
 import {
   ALTURA_DA_TERRA,
   ALTURA_DAS_NUVENS,
@@ -59,8 +60,6 @@ import { QuadroDasCores } from './quadro-das-cores'
 import { RecifeVivo } from './recife-vivo'
 import { ValeVivo } from './vale-vivo'
 import { VilaViva } from './vila-viva'
-
-const DURACAO_DA_CHEGADA_MS = 4500
 
 /** Cor da ilha: cinza antes do posto; a cor volta conforme `cor` (0 a 1). */
 function tinta(hex: string, cor: number): string {
@@ -258,6 +257,10 @@ function IlhaDoAnel({
   const flutua = ilha.id === 'nuvens'
   const Viva = ILHAS_VIVAS[ilha.id]
   const y = flutua ? ALTURA_DAS_NUVENS : 0
+  const areaDaDescoberta = useMemo(
+    () => ({ ilha: ilha.id, ...centro, raio: 12, alturaMinima: y + ALTURA_DA_TERRA }),
+    [ilha.id, centro, y],
+  )
   // O chão de antes, girado como o modelo (o grupo fica sem giro; a cópia do modelo é que gira).
   const apoios = useMemo(() => {
     const g = giroDaIlha(ilha)
@@ -296,6 +299,7 @@ function IlhaDoAnel({
         )}
       </group>
       {/* O que mexe na ilha (no Bosque: cipós, escalada, lago, percurso): só com a completa ativa. */}
+      {preparada && completaColide(estado) ? <DescobertaDaIlha area={areaDaDescoberta} /> : null}
       {preparada && completaColide(estado) && Viva ? (
         <Viva ilha={ilha} centro={centro} preparada={preparada} troca={troca} />
       ) : null}
@@ -584,62 +588,40 @@ function PonteDoModelo({
 function usePinturaDaIlha(ilha: Ilha, chegada: number): number {
   const { loja, plataforma } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
-  const dados = useDesafios(desafios, (s) => s.dados)
-  const fechado = useDesafios(desafios, (s) => s.fechado)
+  const cores = useDesafios(desafios, (s) => s.cores)
   const pintura = pinturaDaIlha(ilha)
-  // Sem lista ainda (carregando): espera, sem mexer; fechada (desligada ou fora): toda colorida.
+  // O catálogo pode faltar; a pintura usa somente posições confirmadas desta pessoa.
   const alvo = useMemo(
-    () =>
-      dados
-        ? pedacosPintados(quadrosDaIlha(dados.desafios, ilha.id))
-        : fechado
-          ? pedacosPintados(null)
-          : null,
-    [dados, fechado, ilha.id],
+    () => pedacosPintados(null, cores.ilhas.find((i) => i.id === ilha.id)?.quadros),
+    [cores, ilha.id],
   )
   const primeira = useRef(true)
   useFrame((_, dt) => {
     pintura.uniforms.uArqChegada.value = chegada
-    if (!alvo) return
     andarPedacos(pintura.uniforms.uArqPedacos.value, alvo, Math.min(dt, 0.1), primeira.current)
     primeira.current = false
   })
-  return corMedia(chegada, alvo ?? pedacosPintados(null))
+  return corMedia(chegada, alvo)
 }
 
-/** Quando a ponte acabou de abrir: a cor escorre pela ilha e as tábuas aparecem uma a uma. */
+/**
+ * Quanto a ponte nova já se montou e a cor já escorreu (0 a 1). A ponte que a pessoa ainda não viu
+ * chegar espera a cena da subida de posto (`mundo/cena-da-chegada.tsx`): fechada e cinza até lá,
+ * e se monta durante ela. Depois de vista, fica inteira.
+ */
 function useChegada(ilha: Ilha, aberta: boolean): number {
   const { loja } = useJogo()
   const jaViu = useEstado((s) => s.salvamento.pontesVistas.includes(ilha.id))
-  const [progresso, setProgresso] = useState(aberta && !jaViu ? 0 : 1)
-  const inicio = useRef<number | null>(null)
-  useEffect(() => {
-    if (aberta && !jaViu && progresso === 0) {
-      loja
-        .getState()
-        .dizer(`A ponte para o ${ilha.nome} ficou pronta. A cor começou a voltar para lá.`)
-    }
-  }, [aberta, jaViu, progresso, ilha.nome, loja])
-  useFrame(() => {
-    if (progresso >= 1) return
-    if (inicio.current === null) inicio.current = performance.now()
-    const p = Math.min(1, (performance.now() - inicio.current) / DURACAO_DA_CHEGADA_MS)
-    setProgresso(p)
-    if (p >= 1) {
-      loja
-        .getState()
-        .mudar((s) =>
-          s.pontesVistas.includes(ilha.id)
-            ? s
-            : { ...s, pontesVistas: [...s.pontesVistas, ilha.id] },
-        )
-    }
-  })
-  return progresso
+  const naCena = useChegadaDaPonte(loja, (c) => c.ilha === ilha.id)
+  const tempo = useChegadaDaPonte(loja, (c) => (c.ilha === ilha.id ? c.tempo : 0))
+  const menos = useChegadaDaPonte(loja, (c) => c.menosMovimento)
+  if (!aberta) return 0
+  if (jaViu) return 1
+  return naCena ? progressoDaChegada(tempo, menos) : 0
 }
 
 function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: number } }) {
-  const { loja, movimento } = useJogo()
+  const { movimento } = useJogo()
   const jornada = useEstado((s) => s.jornada)
   const aberta = ilhaAberta(ilha.id, jornada)
   const chegada = useChegada(ilha, aberta)
@@ -668,20 +650,6 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
       }
     }
   }, [temRoda, rodas, movimento])
-  // Na ilha aberta que ainda não tem nada vivo (só a silhueta), o Zappy explica o que vem. No
-  // Bosque já moram a Capi e os bichos: lá o "E" é dela, dos cipós e da placa.
-  useInterativo(`ilha-${ilha.id}`, {
-    x: centro.x,
-    z: centro.z,
-    raio: aberta && !ILHAS_VIVAS[ilha.id] ? RAIO_DA_ILHA_DO_ANEL : 0,
-    rotulo: () => 'Olhar em volta',
-    agir: () =>
-      loja
-        .getState()
-        .dizer(
-          `Este é o ${ilha.nome}. Os moradores e os bichos chegam aqui na próxima fase do jogo.`,
-        ),
-  })
   return (
     <>
       <IlhaDoAnel

@@ -11,15 +11,22 @@ import { Component, type ReactNode, useCallback, useEffect, useMemo, useRef, use
 import { useStore } from 'zustand'
 import { criarControle, ligarTeclado } from './controles/controle'
 import { ligarGamepad } from './controles/gamepad'
+import { abrirAbertura, lerAberturaVista } from './estado/abertura'
 import { Contexto, type ContextoDoJogo, criarMovimento } from './estado/contexto'
 import { criarLoja } from './estado/loja'
+import { lojaDosPassos } from './estado/primeiros-passos'
 import { Relogios } from './estado/relogios'
+import { EfeitoDosFantasmas } from './interface/fantasmas'
 import { Hud } from './interface/hud'
+import { comecarPassosSozinho } from './interface/primeiros-passos'
+import { ListaDoResumo, useFotoDoDia } from './interface/resumo-do-dia'
 import { SalvamentoDoJogo } from './interface/salvamento'
 import { TelaBloqueado, TelaCarregando, TelaDescanso, TelaErro } from './interface/telas'
+import { EfeitoDasVisitasAdultas } from './interface/visitas-adultas'
 import { VOZ_KIDS, VozContexto, type VozDoJogo } from './interface/voz'
 import { Cena } from './mundo/cena'
 import { criarRegistro } from './mundo/interativos'
+import { boasVindas, deveMostrarAbertura, PAINEL_DA_ABERTURA } from './sistemas/abertura'
 import { criarArmazemDeSalvamento, JogoAbertoEmOutraAbaError } from './sistemas/armazem-salvamento'
 import { criarFilaDeTempo } from './sistemas/fila-tempo'
 import { criarGerenteTempo } from './sistemas/gerente-tempo'
@@ -85,6 +92,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       throw erro
     }
     fila = criarFilaDeSalvamento({
+      conferirOperacoes: true,
       servico: plataforma.servico,
       guardadoInicial: guardado,
       rascunhoInicial,
@@ -95,6 +103,12 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
       aoSituacao: (s) => loja.getState().definirSituacaoSalvamento(s),
       aoErro: (e) => plataforma.relatarErro(e, 'salvamento'),
     })
+    try {
+      await fila.retomarOperacoes()
+    } catch (erro) {
+      await fila.parar()
+      throw erro
+    }
   }
   let gerenteTempo: ReturnType<typeof criarGerenteTempo> | null = null
   if (plataforma.publico === 'kids' && acesso.contabilizaTempo !== false) {
@@ -145,6 +159,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
   // Um jogo novo só entra na fila depois que a recuperação do tempo termina.
   if (guardado.revisao === 0 && !fila?.temPendente()) fila?.guardar(salvamento)
   const contexto: ContextoDoJogo = {
+    fila,
     loja,
     gerenteTempo,
     plataforma,
@@ -164,6 +179,18 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     pedidos: { teleporte: null, chaoChegando: new Set(), olharPara: null, conversa: null },
     movimento: criarMovimento(),
   }
+  // A abertura na primeira vez (uma vez por perfil no aparelho) já abre antes do primeiro quadro:
+  // o HUD nem pisca por baixo dela.
+  if (
+    deveMostrarAbertura({
+      vista: lerAberturaVista(plataforma.publico, plataforma.perfil.id),
+      jogoNovo: guardado.revisao === 0,
+      somenteLeitura: acesso.somenteLeitura === true,
+    })
+  )
+    abrirAbertura(loja, 'primeira')
+  // Sem a abertura, os primeiros passos começam já (com ela, começam quando ela fecha).
+  else comecarPassosSozinho(contexto, guardado.revisao === 0)
   return { tipo: 'pronto', contexto, fila }
 }
 
@@ -253,6 +280,7 @@ function JogoPronto({
   const tempoAcabou = useStore(contexto.loja, (s) => s.tempoAcabou)
   const tempoPausado = useStore(contexto.loja, (s) => s.tempoPausado)
   const tempoSincronizando = useStore(contexto.loja, (s) => s.tempoSincronizando)
+  const naAbertura = useStore(contexto.loja, (s) => s.painelAberto === PAINEL_DA_ABERTURA)
   useEffect(() => ligarTeclado(contexto.controle), [contexto])
   // O Start do controle faz o que o Esc faz: fecha o painel aberto, senão abre ou fecha o menu.
   useEffect(
@@ -277,14 +305,13 @@ function JogoPronto({
       void fila.parar()
     }
   }, [fila])
-  // A primeira fala do Zappy.
+  // A primeira fala do Zappy: depois da abertura (`interface/abertura.tsx`) ou, sem ela, ao abrir.
+  // Com os primeiros passos andando, a boas-vindas é a primeira fala deles.
   useEffect(() => {
     const s = contexto.loja.getState()
-    if (!s.salvamento.casa.portaNova) {
-      s.dizer(
-        `Oi, ${contexto.plataforma.perfil.primeiroNome}. Só o seu quarto ainda tem cor. Vamos abrir a porta nova e acender o resto?`,
-      )
-    }
+    if (s.painelAberto === PAINEL_DA_ABERTURA) return
+    if (lojaDosPassos(contexto.loja, contexto.plataforma).getState().situacao === 'andando') return
+    if (!s.salvamento.casa.portaNova) s.dizer(boasVindas(contexto.plataforma.perfil.primeiroNome))
   }, [contexto])
 
   return (
@@ -293,9 +320,11 @@ function JogoPronto({
         <Cena aoFalhar={aoFalhar} />
       </Barreira>
       <Relogios />
+      <EfeitoDosFantasmas />
+      <EfeitoDasVisitasAdultas />
       <Hud />
       {fila ? <SalvamentoDoJogo fila={fila} /> : null}
-      {tempoSincronizando && !tempoPausado && !tempoAcabou ? (
+      {tempoSincronizando && !tempoPausado && !tempoAcabou && !naAbertura ? (
         <div className="arq-dica" role="status" aria-live="polite">
           Preparando o jogo…
         </div>
@@ -303,7 +332,7 @@ function JogoPronto({
       {tempoPausado && !tempoAcabou ? <TelaTempoPausado contexto={contexto} /> : null}
       {tempoAcabou ? (
         <div style={{ position: 'absolute', inset: 0 }}>
-          <TelaDescanso aoVoltar={() => contexto.plataforma.voltarParaPlataforma()} />
+          <DescansoComResumo aoVoltar={() => contexto.plataforma.voltarParaPlataforma()} />
         </div>
       ) : null}
     </Contexto.Provider>
@@ -404,4 +433,14 @@ function JogoNaPele({ plataforma }: { plataforma: Plataforma }) {
     case 'pronto':
       return <JogoPronto contexto={situacao.contexto} fila={situacao.fila} aoFalhar={aoFalhar} />
   }
+}
+
+/** A tela de descanso do fim do tempo, com o resumo do dia (N06). */
+function DescansoComResumo({ aoVoltar }: { aoVoltar: () => void }) {
+  const foto = useFotoDoDia()
+  return (
+    <TelaDescanso aoVoltar={aoVoltar}>
+      <ListaDoResumo foto={foto} />
+    </TelaDescanso>
+  )
 }

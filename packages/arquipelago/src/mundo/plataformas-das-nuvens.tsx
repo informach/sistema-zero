@@ -23,6 +23,11 @@ export interface PlataformaDasNuvens {
   yDesenho: number
   yTopo: number
   colisor: Cilindro
+  /**
+   * Quanto o tampo está acima da posição de baixo agora (escrito a cada passo da física): a volta
+   * de uma queda nos saltos entre nuvens (fase4-07) vai para onde ele está.
+   */
+  elevacao: number
 }
 
 /** Antes da troca: recusa arte incompleta em vez de deixar um piso imóvel invisível. */
@@ -37,7 +42,15 @@ export function prepararPlataformasDasNuvens(
     const colisor = colisores.find((c) => c.nome === `col-cil-plataforma-${numero}`)
     if (!desenho || !topo || colisor?.forma !== 'cilindro')
       throw new Error(`Plataforma ${numero} incompleta`)
-    return { indice, desenho, topo, yDesenho: desenho.position.y, yTopo: topo.position.y, colisor }
+    return {
+      indice,
+      desenho,
+      topo,
+      yDesenho: desenho.position.y,
+      yTopo: topo.position.y,
+      colisor,
+      elevacao: 0,
+    }
   })
 }
 
@@ -72,12 +85,15 @@ export function PlataformasDasNuvens({
       jogoPausado(loja.getState()) || troca.opacidade < 0.99,
     )
     modelo.getWorldPosition(centro)
-    for (const p of pecas) {
+    for (const [i, p] of pecas.entries()) {
       if (!p.corpo) continue
       const c = p.colisor
+      const elevacao = elevacaoDaPlataforma(p.indice, tempo.current)
+      const original = plataformas[i]
+      if (original) original.elevacao = elevacao
       p.alvo.set(
         centro.x + c.posicao[0],
-        centro.y + c.posicao[1] + elevacaoDaPlataforma(p.indice, tempo.current),
+        centro.y + c.posicao[1] + elevacao,
         centro.z + c.posicao[2],
       )
       p.corpo.setNextKinematicTranslation(p.alvo)

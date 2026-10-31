@@ -14,6 +14,8 @@ export interface Interativo {
   agir(): void
   /** Pode ser usado no modo mergulho. */
   submerso?: boolean
+  /** Pode ser usado planando (o baú no alto do vento, N12); planando, só estes valem. */
+  noAr?: boolean
   /**
    * Só vale quando nenhum outro está ao alcance: o bicho adotado anda sempre perto da criança e
    * não pode tomar o E da Capi, do "Achar" ou da porta.
@@ -33,11 +35,13 @@ export function maisPerto(
   x: number,
   z: number,
   submerso = false,
+  planando = false,
 ): { id: string; rotulo: string } | null {
   let melhor: { id: string; rotulo: string; d: number } | null = null
   let fundo: { id: string; rotulo: string; d: number } | null = null
   for (const [id, it] of r) {
     if (submerso && !it.submerso) continue
+    if (planando && !it.noAr) continue
     const d = (it.x - x) ** 2 + (it.z - z) ** 2
     if (d > it.raio ** 2) continue
     const rotulo = it.rotulo()
@@ -67,6 +71,9 @@ export function useInterativo(id: string, it: Interativo): void {
       },
       get submerso() {
         return ultimo.current.submerso
+      },
+      get noAr() {
+        return ultimo.current.noAr
       },
       get deFundo() {
         return ultimo.current.deFundo

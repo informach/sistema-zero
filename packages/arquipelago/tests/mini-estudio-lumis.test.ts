@@ -38,7 +38,7 @@ function inicial(): Salvamento {
 }
 function molde(rotina: CartaoDaRotina[] | null = null): MoldeDaRotina {
   return MoldeDaRotinaSchema.parse({
-    versao: 1,
+    versao: 2,
     abertura: crypto.randomUUID(),
     lumi: 'quindim',
     rotina,
@@ -76,7 +76,7 @@ test('prévia passo a passo é a execução do jogo, sem mudar o salvamento orig
   const real = rodarRotina('quindim', rotina, s, agora, new Set(m.cartas?.cartas.map((c) => c.id)))
   expect(registro).toEqual(real.registro)
   expect(passos).toEqual(real.passos)
-  expect(mundoDaRotina(real.salvamento)).toEqual(mundo)
+  expect(mundo).toEqual(mundoDaRotina(real.salvamento))
   expect(s).toEqual(antes)
 })
 
@@ -150,7 +150,7 @@ test('permissão revogada durante a edição e teto conjunto recusam o retorno',
   const r = await abrirRotinaNaPlataforma(
     { ferramenta: 'rotina-lumi', proposito: 'rotina', molde: m },
     async () => (++n === 1 ? cartas : respostaDasCartas('algumas', 'kids')),
-    async (x) => ({ versao: 1, abertura: x.abertura, lumi: x.lumi, rotina }),
+    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina }),
   )
   expect(n).toBe(2)
   expect(r.situacao).toBe('indisponivel')
@@ -159,7 +159,7 @@ test('permissão revogada durante a edição e teto conjunto recusam o retorno',
       conferirResultadoDaRotina(
         { ...m, outrosCartoes: 31 },
         {
-          versao: 1,
+          versao: m.versao,
           abertura: m.abertura,
           lumi: m.lumi,
           rotina,
@@ -181,7 +181,7 @@ test('retorno não sobrescreve outra edição nem aplica após fechar; preserva 
         if (caso === 'outra-rotina') s = { ...s, rotinas: { quindim: outra } }
         if (caso === 'fechou') ativo = false
         if (caso === 'mundo') s = { ...s, inventario: { ...s.inventario, milho: 7 } }
-        return { versao: 1, abertura: m.abertura, lumi: m.lumi, rotina }
+        return { versao: m.versao, abertura: m.abertura, lumi: m.lumi, rotina }
       },
     })
     const r = await editarRotinaNaPlataforma({
@@ -216,14 +216,14 @@ test('ponte relê serviço, ignora conquistas forjadas e valida versão e abertu
       leituras++
       return cartas
     },
-    async (x) => ({ versao: 1, abertura: x.abertura, lumi: x.lumi, rotina }),
+    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina }),
   )
   expect(sucesso.situacao).toBe('rotina-pronta')
   expect(leituras).toBe(2)
   const bloqueado = await abrirRotinaNaPlataforma(
     pedido,
     async () => respostaDasCartas('algumas', 'kids'),
-    async (x) => ({ versao: 1, abertura: x.abertura, lumi: x.lumi, rotina }),
+    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina }),
   )
   expect(bloqueado.situacao).toBe('indisponivel')
   expect(
@@ -231,13 +231,13 @@ test('ponte relê serviço, ignora conquistas forjadas e valida versão e abertu
       await abrirRotinaNaPlataforma(
         pedido,
         async () => cartas,
-        async (x) => ({ versao: 1, abertura: crypto.randomUUID(), lumi: x.lumi, rotina }),
+        async (x) => ({ versao: x.versao, abertura: crypto.randomUUID(), lumi: x.lumi, rotina }),
       )
     ).situacao,
   ).toBe('indisponivel')
   expect(
     ResultadoDaFerramentaRotinaSchema.safeParse({
-      versao: 2,
+      versao: 3,
       abertura: m.abertura,
       lumi: m.lumi,
       rotina,
@@ -246,7 +246,7 @@ test('ponte relê serviço, ignora conquistas forjadas e valida versão e abertu
   expect(
     (
       await abrirRotinaNaPlataforma(
-        { ...pedido, molde: { ...m, versao: 2 } },
+        { ...pedido, molde: { ...m, versao: 3 } },
         async () => cartas,
         async () => null,
       )
@@ -270,7 +270,7 @@ test('a falsa tem o mesmo contrato e guardar usa o estado atual; cancelar não m
   const plataforma = criarPlataformaFalsa({
     cartas: 'todas',
     rotina: 'editor',
-    editarRotina: async (m) => ({ versao: 1, abertura: m.abertura, lumi: m.lumi, rotina }),
+    editarRotina: async (m) => ({ versao: m.versao, abertura: m.abertura, lumi: m.lumi, rotina }),
   })
   const r = await editarRotinaNaPlataforma({
     plataforma,

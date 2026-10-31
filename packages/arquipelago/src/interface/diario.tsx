@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { abrirAbertura } from '../estado/abertura'
 import { useEstado, useJogo } from '../estado/contexto'
 import { EMOJI_DO_BICHO } from '../sistemas/bichos'
 import {
@@ -10,6 +11,11 @@ import {
   paginasDoDiario,
 } from '../sistemas/diario'
 import { Pegada } from './pegadas'
+import { PedidoDaIlha } from './primeiro-pedido'
+import { ReverOsPrimeirosPassos } from './primeiros-passos'
+import { ConviteDaSemana } from './tema-da-semana'
+
+export const ICONE_DO_VALE: Record<string, string> = { pegadas: '🐾', fossil: '🦴', filhote: '🦕' }
 
 /** O valor de `painelAberto` do diário. */
 export const PAINEL_DO_DIARIO = 'diario'
@@ -59,6 +65,7 @@ export function Receita({ r }: { r: EstadoDaReceita }) {
           <b>{r.nome}</b>
           <span className="arq-quadro-estado">{r.onde}</span>
           <span className="arq-caderno-efeito">{`Precisa de ${r.precisa}.`}</span>
+          <span className="arq-caderno-efeito">{r.fonte}</span>
         </div>
       </li>
     )
@@ -107,6 +114,8 @@ export function Diario() {
         aria-labelledby="arq-diario-titulo"
       >
         <h2 id="arq-diario-titulo">Diário</h2>
+        <PedidoDaIlha />
+        <ConviteDaSemana />
         <section className="arq-caderno-secao" aria-labelledby="arq-diario-paginas">
           <h3 id="arq-diario-paginas" className="arq-menu-titulo">
             {`Páginas do diário da Íris: ${abertas} de ${paginas.length}`}
@@ -114,6 +123,14 @@ export function Diario() {
           <p className="arq-caderno-explica">
             A Íris deixou uma página em cada ilha. Juntas, elas contam por que ela foi embora.
           </p>
+          <button
+            type="button"
+            className="arq-botao leve arq-diario-abertura"
+            onClick={() => abrirAbertura(loja, 'rever')}
+          >
+            Rever a abertura: O Cinza
+          </button>
+          <ReverOsPrimeirosPassos />
           <ol className="arq-diario-paginas">
             {paginas.map((p) =>
               p.aberta ? (
@@ -152,8 +169,8 @@ export function Diario() {
             {`Receitas: ${sabidas} de ${receitas.length}`}
           </h3>
           <p className="arq-caderno-explica">
-            As receitas que você já sabe fazer. O Bento, da Vila Doce, lembra mais uma a cada
-            coração de amizade.
+            As receitas que você já sabe fazer. Novas receitas chegam com amizades, coleções e
+            festas. Cada pista mostra onde aprender.
           </p>
           <ul className="arq-quadro-lista arq-diario-bichos">
             {receitas.map((r) => (
@@ -169,7 +186,7 @@ export function Diario() {
             {colecaoDoVale(salvamento).map((item) => (
               <li key={item.id} className="arq-diario-bicho">
                 <span className="arq-caderno-icone" aria-hidden="true">
-                  {item.id === 'pegadas' ? '🐾' : item.id === 'fossil' ? '🦴' : '🥚'}
+                  {ICONE_DO_VALE[item.id] ?? '🥚'}
                 </span>
                 <div className="arq-quadro-corpo">
                   <b>{item.nome}</b>

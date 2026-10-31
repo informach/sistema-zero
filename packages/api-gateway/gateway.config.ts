@@ -3185,6 +3185,19 @@ const config: GatewayConfigInput = {
       transforms: membersInternalTransforms,
       rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
     },
+    // Os desenhos das vagas de arte que o bloco de Estúdio importa (a entrega do PRÓPRIO perfil
+    // no bloco de Pinta de cada vaga). GET lazy ao montar o projeto do bloco; a resposta pode
+    // trazer até 8 desenhos (em streaming, sem teto de corpo de requisição).
+    {
+      id: 'members-art-slots',
+      methods: ['GET'],
+      pathPattern: '/members/lessons/:lessonId/blocks/:blockId/art-slots',
+      service: 'members',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: membersInternalTransforms,
+      rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+    },
     // Payload autoritativo da vitrine (Mural): o BFF chama no clique "Publicar no
     // Mural" p/ montar o post (título/resumo do admin) sem confiar no cliente.
     {
@@ -4402,6 +4415,16 @@ const config: GatewayConfigInput = {
       rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
     },
     // Jornada do aluno: agregado dos próprios jogos no Mural (publicados + jogadas).
+    {
+      id: 'hub-my-playable-showcase',
+      methods: ['GET'],
+      pathPattern: '/hub/my-playable-showcase',
+      service: 'hub',
+      auth: { required: true, mode: 'any', strategies: ['jwt'] },
+      authorize: { statuses: ['active'] },
+      transforms: hubInternalTransforms,
+      rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
+    },
     {
       id: 'hub-my-showcase-stats',
       methods: ['GET'],

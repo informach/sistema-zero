@@ -17,9 +17,9 @@ const semFonte: Record<RelatorioDaMedicao['semFonte'][number], string> = {
   'volta-adulto':
     'Volta dos adultos: o histórico de dias de jogo ainda não é registrado para esta comunidade.',
   compras:
-    'Objetos comprados: a origem galeria não comprova compra. Falta um histórico de aquisições.',
+    'Objetos comprados: a origem galeria não comprova compra. O histórico de aquisições não está integrado a esta medição.',
   minijogos:
-    'Minijogos aprovados: os desafios ainda não têm uma classificação que identifique quais são minijogos.',
+    'Minijogos aprovados: a fonte de aprovações não está disponível nesta versão do serviço.',
   'curso-24h':
     'Volta ao curso em 24 horas: a leitura das aulas concluídas no Members não respondeu agora, ou o período pediria leituras demais.',
   'conclusoes-curso':
@@ -84,7 +84,7 @@ export function GameMeasurement({
       <div className="rounded-xl border border-border bg-card p-4 sm:p-5">
         <h2 className="text-lg font-semibold">Medição do Arquipélago</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Acompanhe a volta ao jogo e as criações da comunidade. Os dias seguem o horário de São
+          Acompanhe a volta ao jogo, as aparências e as aprovações. Os dias seguem o horário de São
           Paulo.
         </p>
         <form
@@ -163,31 +163,96 @@ export function GameMeasurement({
             Período: {dateLabel(report.periodo.de)} a {dateLabel(report.periodo.ate)} ·{' '}
             {publico === 'kids' ? 'Kids' : 'Adultos'}
           </p>
-          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-            {(
-              [
-                ['Aparências do Pinta e Molda', report.criacao.pintaMolda],
-                ['Criações guardadas', report.criacao.criacaoGuardada],
-                ['Aparências da galeria', report.criacao.galeria],
-                ['Desafios do Estúdio aprovados', report.desafiosAprovados],
-                ...(report.minijogos ? [['Minijogos aprovados', report.minijogos] as const] : []),
-              ] as const
-            ).map(([titulo, numero]) => (
-              <article key={titulo} className="min-w-0 rounded-xl border border-border bg-card p-4">
-                <h3 className="text-sm text-muted-foreground">{titulo}</h3>
-                <p
-                  className={`mt-2 break-words font-semibold tabular-nums ${numero.situacao === 'disponivel' ? 'text-2xl' : 'text-lg text-muted-foreground'}`}
+          <section aria-label="Fotografia atual das aparências" className="space-y-3">
+            <h3 className="font-semibold">Fotografia atual das aparências</h3>
+            <p className="text-sm text-muted-foreground">
+              Aparências guardadas hoje nos projetos azuis recebidos no período escolhido. Uma troca
+              feita hoje pode mudar esta fotografia de um período antigo.
+            </p>
+            <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+              {(
+                [
+                  ['Aparências do Pinta e Molda', report.criacao.pintaMolda],
+                  ['Aparências de criações guardadas', report.criacao.criacaoGuardada],
+                  ['Aparências da galeria', report.criacao.galeria],
+                ] as const
+              ).map(([titulo, numero]) => (
+                <article
+                  key={titulo}
+                  className="min-w-0 rounded-xl border border-border bg-card p-4"
                 >
-                  {measurementNumber(numero)}
-                </p>
-              </article>
-            ))}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            As aparências são as que estão guardadas hoje nos projetos azuis ganhos no período, não
-            um histórico de criação ou compra. As aprovações contam a primeira conclusão de cada
-            desafio por pessoa no período.
-          </p>
+                  <h4 className="text-sm text-muted-foreground">{titulo}</h4>
+                  <p
+                    className={`mt-2 break-words font-semibold tabular-nums ${numero.situacao === 'disponivel' ? 'text-2xl' : 'text-lg text-muted-foreground'}`}
+                  >
+                    {measurementNumber(numero)}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
+          <section aria-label="Mudanças de aparência no período" className="space-y-3">
+            <h3 className="font-semibold">Mudanças de aparência no período</h3>
+            <p className="text-sm text-muted-foreground">
+              Aplicações e trocas confirmadas pelo salvamento, na data em que o servidor as recebeu.
+              A coleta começa com a atualização do serviço. O primeiro salvamento é apenas a base, e
+              o passado não é reconstruído. Reaplicar uma aparência pode contar outra mudança.
+            </p>
+            {report.mudancasDeAparencia ? (
+              <div className="grid grid-cols-2 gap-3 xl:grid-cols-3">
+                {(
+                  [
+                    ['Com origem Pinta ou Molda', report.mudancasDeAparencia.pintaMolda],
+                    ['Com origem criação guardada', report.mudancasDeAparencia.criacaoGuardada],
+                    ['Com origem galeria', report.mudancasDeAparencia.galeria],
+                  ] as const
+                ).map(([titulo, numero]) => (
+                  <article
+                    key={titulo}
+                    className="min-w-0 rounded-xl border border-border bg-card p-4"
+                  >
+                    <h4 className="text-sm text-muted-foreground">{titulo}</h4>
+                    <p className="mt-2 break-words text-lg font-semibold tabular-nums">
+                      {measurementNumber(numero)}
+                    </p>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm">
+                O histórico de mudanças ainda não está disponível neste serviço.
+              </p>
+            )}
+            <p className="text-xs text-muted-foreground">
+              As origens são as declaradas nos projetos. Mudança de aparência não comprova criação,
+              compra ou aprendizado. As datas de criação e compra não estão integradas a esta
+              medição.
+            </p>
+          </section>
+          <section aria-label="Aprovações no período" className="space-y-3">
+            <h3 className="font-semibold">Aprovações no período</h3>
+            <p className="text-sm text-muted-foreground">
+              Primeira aprovação de cada desafio por pessoa no período.
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              {(
+                [
+                  ['Desafios do Estúdio aprovados', report.desafiosAprovados],
+                  ...(report.minijogos ? [['Minijogos aprovados', report.minijogos] as const] : []),
+                ] as const
+              ).map(([titulo, numero]) => (
+                <article
+                  key={titulo}
+                  className="min-w-0 rounded-xl border border-border bg-card p-4"
+                >
+                  <h4 className="text-sm text-muted-foreground">{titulo}</h4>
+                  <p className="mt-2 break-words text-lg font-semibold tabular-nums">
+                    {measurementNumber(numero)}
+                  </p>
+                </article>
+              ))}
+            </div>
+          </section>
           <div className="min-w-0 space-y-3 rounded-xl border border-border bg-card p-3 sm:p-5">
             <h3 className="font-semibold">Volta ao jogo</h3>
             <p className="text-sm text-muted-foreground">

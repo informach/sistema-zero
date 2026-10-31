@@ -12,6 +12,7 @@ export const NIVEL_DA_AGUA = 0
  * O movimento do personagem e do bicho é calculado em cada passo (`useBeforePhysicsStep`).
  */
 export const PASSO_DA_FISICA = 1 / 60
+export const PRIORIDADE_DA_FISICA = -1
 /** A gravidade do jogo (m/s², para baixo): mais forte que a de verdade, para o pulo ser ágil. */
 export const GRAVIDADE = 24
 export const ALTURA_DA_TERRA = 1
@@ -27,8 +28,24 @@ export const QUARTO = { largura: 12, fundo: 8, altura: 4 } as const
 /** A porta nova fica na parede da frente do quarto (a que a plataforma não desenha). */
 export const PORTA = { x: 2.5, largura: 2.2, altura: 3 } as const
 
-export const HORTA = { x: 10.5, z: 1, colunas: 3, linhas: 2, passo: 1.7 } as const
-export const BANCADA = { x: 10, z: -7 } as const
+/**
+ * O chão do lote da casa (31/10/2026, pedido dela: o lugar de construir mais livre): o retângulo
+ * de células de x −15 a 16 e z −14 a 10 é plano e é a área do `LOTE_DA_CASA`. Árvores, moitas,
+ * pedras, flores e trilhas ficam fora do lote grande (`LOTE_GRANDE` em `arte/mundo/terreno.py`).
+ */
+export const CHAO_DO_LOTE = { x0: -15, z0: -14, x1: 16, z1: 10 } as const
+/**
+ * A horta, a bancada e o cata-vento ficam fora do lote, na frente e à direita da casa (antes
+ * ficavam colados na parede do quarto e travavam o lado de crescer). Uma trilha de pedras sai da
+ * beira do lote até eles.
+ */
+export const HORTA = { x: 10.5, z: 15, colunas: 3, linhas: 2, passo: 1.7 } as const
+export const BANCADA = { x: 15, z: 14 } as const
+/**
+ * O cata-vento ao lado da horta (pedido da fase4-08, `arte/mundo/cata_vento.py`): onde se escolhe
+ * o clima da sua ilha. A hélice olha para a horta (`giro`, o +z do modelo virado para +x).
+ */
+export const CATA_VENTO = { x: 6.8, z: 15, giro: Math.PI / 2 } as const
 export const FAROL = { x: -12, z: -13 } as const
 export const PIER = { x: -5, z: 27, comprimento: 10 } as const
 
@@ -57,12 +74,34 @@ export function naDirecaoDaCavernaDoPico(x: number, z: number): boolean {
   return x < 0 && Math.abs(Math.atan2(z, -x)) < CAVERNA_DO_PICO.meiaAbertura
 }
 
-/** Até onde esperar os colisores ao abrir o jogo, incluindo a caverna fora da ilha leve. */
+/**
+ * Limites dos portos medidos nos GLBs de 30/10, com 0,5 m de folga para o corpo.
+ * Só ampliam a espera no setor do deque, sem transformar o mar dos outros lados em ilha.
+ * Os testes percorrem os vértices reais, incluindo a torre das Nuvens.
+ */
+const ESPERA_DOS_PORTOS: Partial<Record<Ilha['id'], { rumo: number; raio: number }>> = {
+  bosque: { rumo: Math.PI, raio: 26.7 },
+  'vila-doce': { rumo: Math.PI, raio: 19.2 },
+  pico: { rumo: Math.atan2(-15, -5), raio: 19.6 },
+  'vale-dos-dinos': { rumo: Math.PI, raio: 19.1 },
+  nuvens: { rumo: (-3 * Math.PI) / 4, raio: 25.9 },
+}
+const MEIA_ABERTURA_DO_PORTO = (35 * Math.PI) / 180
+
+/** Até onde esperar os colisores ao abrir o jogo, incluindo caverna e portos fora da ilha leve. */
 export function raioDaEsperaDaIlha(ilha: Ilha, x: number, z: number): number {
-  if (ilha.id === 'vale-dos-dinos') return RAIO_VISITAVEL_DO_VALE
-  if (ilha.id === 'nuvens') return RAIO_VISITAVEL_DAS_NUVENS
-  if (ilha.id === 'pico' && naDirecaoDaCavernaDoPico(x, z)) return CAVERNA_DO_PICO.raio
-  return ilha.id === 'recife' ? RAIO_VISITAVEL_DO_RECIFE : raioDoChaoDaIlha(ilha, x, z)
+  let raio = raioDoChaoDaIlha(ilha, x, z)
+  if (ilha.id === 'vale-dos-dinos') raio = RAIO_VISITAVEL_DO_VALE
+  if (ilha.id === 'nuvens') raio = RAIO_VISITAVEL_DAS_NUVENS
+  if (ilha.id === 'pico' && naDirecaoDaCavernaDoPico(x, z)) raio = CAVERNA_DO_PICO.raio
+  if (ilha.id === 'recife') raio = RAIO_VISITAVEL_DO_RECIFE
+  const porto = ESPERA_DOS_PORTOS[ilha.id]
+  if (porto) {
+    const d = Math.atan2(z, x) - porto.rumo
+    if (Math.abs(Math.atan2(Math.sin(d), Math.cos(d))) <= MEIA_ABERTURA_DO_PORTO)
+      raio = Math.max(raio, porto.raio)
+  }
+  return raio
 }
 
 /**
@@ -240,7 +279,8 @@ function raioEfetivo(x: number, z: number): number {
 
 /** Perto da casa, da horta e da bancada o chão é plano (dá para construir e andar sem tropeço). */
 function pesoDoPlano(x: number, z: number): number {
-  const casa = Math.max(Math.abs(x - CENTRO_DA_CASA.x) - 9, Math.abs(z - CENTRO_DA_CASA.z) - 8, 0)
+  const l = CHAO_DO_LOTE
+  const casa = Math.max(l.x0 - x, x - l.x1, l.z0 - z, z - l.z1, 0)
   const horta = Math.hypot(x - HORTA.x, z - HORTA.z) - 5
   const bancada = Math.hypot(x - BANCADA.x, z - BANCADA.z) - 3
   const d = Math.min(casa, Math.max(horta, 0), Math.max(bancada, 0))

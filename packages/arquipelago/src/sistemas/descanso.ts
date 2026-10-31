@@ -42,12 +42,12 @@ export const FALA_DA_SONECA_CHEIA = 'Que soneca boa. A energia voltou toda.'
 /**
  * O banco do `lib_ilhas.py` (`banco`): assento a 0,53 do chão, 0,5 de fundo, encosto atrás. A
  * frente é o −Z do colisor `col-banco-N` (girado com ele). Os números do desenho sentado são os do
- * `arte/avatar/locomocao.py` (`SENTADO`: a bacia 18 cm atrás da origem do desenho).
+ * `arte/avatar/mixamo.py` (`ASSENTO` e `BACIA_ATRAS`: a bacia 18 cm atrás da origem do desenho).
  */
 export const BANCO = {
   /** O assento fica um pouco à frente do meio do colisor (o encosto ocupa o fundo). */
   assentoAFrente: 0.05,
-  /** O clipe "Sentar" põe a bacia este tanto atrás dos pés (`SENTADO.atras`). */
+  /** O clipe "Sentar" põe a bacia este tanto atrás dos pés (`BACIA_ATRAS` do script). */
   baciaAtras: 0.18,
   /** Meia profundidade do colisor do banco. */
   meioFundo: 0.275,

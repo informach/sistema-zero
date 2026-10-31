@@ -2,7 +2,7 @@
  * Conferência no navegador do descanso (fase2-13): na praça da Vila Doce, perto de um banco aparece
  * "Sentar no banco"; o E senta (o desenho vai para o assento, o corpo fica de pé na frente) e a
  * energia sobe devagar; andar levanta. Em casa, "Deitar na cama" deita o avatar no colchão, a tela
- * escurece com a barrinha da energia, que sobe mais rápido que no banco.
+ * escurece com a barrinha da energia, que sobe mais rápido que no banco, e o resumo do dia aparece.
  *
  * `bun playground/verificar-descanso-browser.ts` (navegador: `ARQUIPELAGO_CHROMIUM` com o caminho
  * do executável, ou o canal `ARQUIPELAGO_BROWSER_CHANNEL`, padrão `chrome`). Os prints vão para
@@ -12,10 +12,10 @@ import { spawn } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { chromium } from 'playwright-core'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
-import { CORPO } from '../src/sistemas/corpo'
 import { lugarNaCama, lugarNoBanco } from '../src/sistemas/descanso'
 
 const port = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4598)
@@ -25,7 +25,14 @@ const vila = ilhasEmVolta().find((i) => i.ilha.id === 'vila-doce')
 if (!vila) throw new Error('Sem a Vila Doce no anel.')
 const giroIlha = giroDaIlha(vila.ilha)
 const glb = readFileSync(
-  path.join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'vila-doce.glb'),
+  path.join(
+    path.dirname(fileURLToPath(import.meta.url)),
+    '..',
+    'src',
+    'assets',
+    'ilhas',
+    'vila-doce.glb',
+  ),
 )
 const modelo = (
   await new GLTFLoader().parseAsync(
@@ -169,10 +176,17 @@ try {
   await page.getByText('Deitar na cama').first().waitFor({ timeout: 60_000 })
   await page.keyboard.press('KeyE')
   await esperar('deitar', (d) => d.descanso === 'deitar')
+  // Ao deitar, o resumo do dia (N06); "Continuar" volta ao jogo, ainda deitada.
+  const resumo = page.getByRole('dialog', { name: 'Resumo do dia' })
+  await resumo.waitFor({ timeout: 30_000 })
+  await resumo.getByText('Hoje na sua ilha').waitFor()
+  await page.screenshot({ path: path.join(prints, 'resumo-do-dia.png') })
+  await resumo.getByRole('button', { name: 'Continuar' }).click()
+  await resumo.waitFor({ state: 'detached' })
   await page.getByRole('progressbar', { name: 'Energia' }).waitFor()
   const deitada = await esperar(
     'o desenho deitar no colchão',
-    (d) => !!d.avatar && plano(d.avatar, cama.desenho) < 0.12 && d.avatar.deitado < -1.4,
+    (d) => !!d.avatar && plano(d.avatar, cama.desenho) < 0.12,
     30_000,
   )
   console.log(

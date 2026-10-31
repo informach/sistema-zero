@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { CATALOGO_DE_OBJETOS, type Obra, ObraSchema } from '@sistemazero/arquipelago-contracts'
+import {
+  CATALOGO_DE_OBJETOS,
+  type Obra,
+  ObraDaCasaSchema,
+} from '@sistemazero/arquipelago-contracts'
 import { falaDaRecusa } from '../src/sistemas/construcao/falas'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
 import { esticarParede, type Resultado, trocarPiso } from '../src/sistemas/construcao/obra'
@@ -47,7 +51,7 @@ describe('o salvamento nunca recebe obra fora do contrato', () => {
       }
     expect(parou).toMatchObject({ motivo: 'limite' })
     expect(o.paredes.length).toBeLessThanOrEqual(L.limites.trechosDeParede)
-    expect(ObraSchema.safeParse(o).success).toBe(true)
+    expect(ObraDaCasaSchema.safeParse(o).success).toBe(true)
   })
 
   test('cercas soltas: o mesmo teto de trechos', () => {
@@ -60,7 +64,7 @@ describe('o salvamento nunca recebe obra fora do contrato', () => {
         else if (r.motivo === 'limite') parou = true
       }
     expect(o.cercas.length).toBeLessThanOrEqual(L.limites.trechosDeCerca)
-    expect(ObraSchema.safeParse(o).success).toBe(true)
+    expect(ObraDaCasaSchema.safeParse(o).success).toBe(true)
   })
 
   test('o piso tem teto; voltar para a tábua tira o registro', () => {
@@ -133,6 +137,7 @@ describe('textos', () => {
       'A frente, os lados e o topo',
     )
     expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.fliperama.molde.faces)).toBe('A tela')
-    expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.forno.molde.faces)).toBeNull()
+    expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.forno.molde.faces)).toBe('A frente e os lados')
+    expect(oQueOPintaPinta(CATALOGO_DE_OBJETOS.lareira.molde.faces)).toBeNull()
   })
 })

@@ -44,6 +44,7 @@ import { ListRankingService } from '../src/application/gamification/list-ranking
 import { RecordStudioActivityDayService } from '../src/application/gamification/record-studio-activity-day.service'
 import { RecordStudioRemixService } from '../src/application/gamification/record-studio-remix.service'
 import { SetVacationService } from '../src/application/gamification/set-vacation.service'
+import { GetArtSlotsService } from '../src/application/get-art-slots/get-art-slots.service'
 import { GetAttachmentDownloadService } from '../src/application/get-attachment-download/get-attachment-download.service'
 import { RecordMaterialDownloadService } from '../src/application/get-attachment-download/record-material-download.service'
 import { GetCertificateService } from '../src/application/get-certificate/get-certificate.service'
@@ -604,6 +605,13 @@ export function buildApp(
         studioSubmissions,
         sectionProgression,
         studioBindings,
+      ),
+      getArtSlots: new GetArtSlotsService(
+        checkAccess,
+        courses,
+        progress,
+        studioSubmissions,
+        sectionProgression,
       ),
       getOwnStudioSubmission: new GetOwnStudioSubmissionService(
         checkAccess,

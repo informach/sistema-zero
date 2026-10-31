@@ -6,10 +6,8 @@ import type {
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import type { Variacao } from './projetos'
 
-export const disparar: ExecutionStep = {
-  action: 'clickTarget',
-  target: { kind: 'sprite', path: 'soltar', groupPath: 'botoesSoltar' },
-}
+/** Espaço solta a bolha (no toque, A), uma tecla da trilha (C01b). */
+export const disparar: ExecutionStep = { action: 'press', key: 'Space', holdMs: 30 }
 const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
 const press = (key: 'ArrowRight' | 'ArrowLeft' | 'Enter', holdMs: number): ExecutionStep => ({
   action: 'press',
@@ -65,7 +63,7 @@ const extra = (pontos: number, novo = false) => {
       point(fim, 'novoPreso', 'equals', false),
       point(fim, 'emVoo', 'equals', false),
       point(fim, 'bolha.vy', 'equals', 0),
-      point(fim, 'bolha.opacity', 'equals', 0),
+      point(fim, 'bolhaVisivel', 'equals', false),
     ],
     true,
   )
@@ -86,13 +84,15 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'soltar',
-      'Soltar bolha lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe.',
+      'Espaço lança a bolha da posição da mira para cima, sem lançar outra enquanto ela sobe.',
       [press('ArrowRight', 650), disparar, wait(150), disparar, wait(100)],
       val('emVoo', 'equals', true),
       [
         point(3, 'bolha.x', 'greaterThan', 150),
         point(3, 'bolha.y', 'lessThan', 320),
-        point(5, 'bolha.y', 'lessThan', 240),
+        // Do primeiro Espaço ao passo 5 passam uns 310 ms: a 5 px por passo (60 por segundo)
+        // a bolha está perto de y 247. Uma bolha relançada pelo segundo Espaço fica perto de 300.
+        point(5, 'bolha.y', 'lessThan', 270),
         point(5, 'bolha.vy', 'lessThan', 0),
         point(5, 'pontos', 'equals', 0),
       ],

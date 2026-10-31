@@ -11,6 +11,8 @@ import {
   SpriteMaterial,
 } from 'three'
 import { useJogo } from '../estado/contexto'
+import { lojaDosFantasmas } from '../estado/fantasmas'
+import type { LojaDoJogo } from '../estado/loja'
 import type { Ponto } from '../sistemas/cipo'
 import { CORPO } from '../sistemas/corpo'
 import { jogoPausado } from '../sistemas/pausa'
@@ -73,7 +75,8 @@ export function CorridaNaIlha({
   alturaDoChao: number
   cores: CoresDoColetavel
 }) {
-  const { loja, movimento, rastro, pedidos } = useJogo()
+  const { loja, movimento, rastro, pedidos, plataforma, fila } = useJogo()
+  const fantasmas = lojaDosFantasmas(loja, plataforma, fila)
   const menosMovimento = useReducedMotion()
   const q = useRef<Quadro>({
     corpo: { x: 0, y: 0, z: 0, pes: 0, noChaoDaIlha: false },
@@ -87,12 +90,13 @@ export function CorridaNaIlha({
   // Uma corrida não continua numa ilha que não está mais ali.
   useEffect(
     () => () => {
+      fantasmas.cancelar(config.id)
       if (movimento.corrida) {
         movimento.corrida = null
         loja.getState().definirCorrida(null)
       }
     },
-    [movimento, loja],
+    [movimento, loja, fantasmas, config.id],
   )
 
   /** Escurece, leva o corpo e clareia (a volta à parada e o "Correr de novo"). */
@@ -129,41 +133,6 @@ export function CorridaNaIlha({
     agir: comecar,
   })
 
-  const terminar = (c: Corrida) => {
-    const s = loja.getState()
-    const antes = s.salvamento.percursos[config.id]
-    const melhor = juntarResultado(antes, c, config)
-    if (!melhor) return
-    /** A fala do prêmio, se a chegada trouxe um (escrita dentro do `mudar`). */
-    const premio = { fala: '' }
-    s.mudar((sv) => {
-      const comResultado = { ...sv, percursos: { ...sv.percursos, [config.id]: melhor } }
-      const p = config.premio?.(comResultado)
-      if (!p) return comResultado
-      premio.fala = p.fala
-      return p.salvamento
-    })
-    const estrelas = estrelasDaCorrida(c, config)
-    const recorde = antes !== undefined && c.tempoMs < antes.melhorTempoMs
-    s.definirCorrida(null)
-    s.mostrarResultado({
-      percurso: config.id,
-      tempoMs: c.tempoMs,
-      estrelas,
-      melhor,
-      recorde,
-      vagalumes: vagalumesPegos(c),
-      totalDeVagalumes: c.pegos.length,
-    })
-    const n = quantasEstrelas(estrelas)
-    const fala = recorde
-      ? `Recorde novo: ${formatarTempo(c.tempoMs)}.`
-      : n === 3
-        ? config.falaDasTresEstrelas
-        : `Você chegou ao fim em ${formatarTempo(c.tempoMs)}.`
-    s.dizer(premio.fala ? `${fala} ${premio.fala}` : fala)
-  }
-
   useFrame((_, dtBruto) => {
     const dt = Math.min(dtBruto, 0.1)
     tempo.current += dt
@@ -184,19 +153,23 @@ export function CorridaNaIlha({
       if (corte.ms >= config.corteVoltaMs) corte.fase = 'nada'
     }
 
-    // Pedidos da tela: correr de novo ou parar (só uma ilha completa está ativa por vez).
-    const pedido = movimento.pedidoDoPercurso
-    movimento.pedidoDoPercurso = null
+    // Pedidos da tela para este percurso: correr de novo ou parar (só uma ilha completa está
+    // ativa por vez, mas as Nuvens têm duas corridas).
+    const pedido =
+      movimento.pedidoDoPercurso?.percurso === config.id ? movimento.pedidoDoPercurso.acao : null
+    if (pedido) movimento.pedidoDoPercurso = null
     if (pedido === 'recomecar' && pontos && corte.fase === 'nada') {
       loja.getState().mostrarResultado(null)
       cortarPara(pontos.largada, pontos.rumoDaLargada, true)
     } else if (pedido === 'parar' && movimento.corrida) {
+      fantasmas.cancelar(config.id)
       movimento.corrida = null
       loja.getState().definirCorrida(null)
       loja.getState().dizer(config.falaDoFim)
     }
 
-    const c = movimento.corrida
+    // Só a corrida deste percurso (as Nuvens têm duas: os saltos e a de balão).
+    const c = loja.getState().corrida?.percurso === config.id ? movimento.corrida : null
     const mostrar = c?.situacao === 'correndo'
     for (let i = 0; i < coletaveis.current.length; i++) {
       const g = coletaveis.current[i]
@@ -221,8 +194,12 @@ export function CorridaNaIlha({
     q.corpo.y = rastro.y
     q.corpo.z = rastro.z
     q.corpo.pes = rastro.y - CORPO.doCentroAoPe
-    q.corpo.noChaoDaIlha = movimento.noChao && q.corpo.pes < alturaDoChao
+    // Cair na água (a lagoa dos corais, o mar da praia) também volta à última parada.
+    q.corpo.noChaoDaIlha = (movimento.noChao && q.corpo.pes < alturaDoChao) || s.nadando
+    // Só iniciar depois do corte e do teleporte: o relógio ativo ainda está em zero.
+    if (c.tempoMs === 0) fantasmas.comecar(config.id, rastro)
     const ev = passoDaCorrida(c, q.corpo, pontos, dt * 1000, config)
+    fantasmas.quadro(c.tempoMs, rastro)
     if (!ev) return
     if (ev.tipo === 'vagalume') {
       s.definirCorrida({
@@ -235,8 +212,10 @@ export function CorridaNaIlha({
       if (d) cortarPara(d.volta, d.rumoDaVolta, false)
     } else if (ev.tipo === 'chegou') {
       movimento.corrida = null
-      terminar(c)
+      terminarCorrida(loja, config, c)
+      fantasmas.terminar(config.id, c.tempoMs, rastro)
     } else if (ev.tipo === 'desistiu') {
+      fantasmas.cancelar(config.id)
       movimento.corrida = null
       s.definirCorrida(null)
       s.dizer(config.falaDoFim)
@@ -260,6 +239,46 @@ export function CorridaNaIlha({
       ))}
     </>
   )
+}
+
+/**
+ * A chegada de uma corrida: junta ao melhor de antes no salvamento, mostra o resultado e o Zappy fala. A corrida de balão
+ * das Nuvens usa a mesma.
+ */
+export function terminarCorrida(loja: LojaDoJogo, config: ConfigDoPercurso, c: Corrida): void {
+  const s = loja.getState()
+  const id = config.id
+  const antes = s.salvamento.percursos[id]
+  const melhor = juntarResultado(antes, c, config)
+  if (!melhor) return
+  /** A fala do prêmio, se a chegada trouxe um (escrita dentro do `mudar`). */
+  const premio = { fala: '' }
+  s.mudar((sv) => {
+    const comResultado = { ...sv, percursos: { ...sv.percursos, [id]: melhor } }
+    const p = config.premio?.(comResultado)
+    if (!p) return comResultado
+    premio.fala = p.fala
+    return p.salvamento
+  })
+  const estrelas = estrelasDaCorrida(c, config)
+  const recorde = antes !== undefined && c.tempoMs < antes.melhorTempoMs
+  s.definirCorrida(null)
+  s.mostrarResultado({
+    percurso: id,
+    tempoMs: c.tempoMs,
+    estrelas,
+    melhor,
+    recorde,
+    vagalumes: vagalumesPegos(c),
+    totalDeVagalumes: c.pegos.length,
+  })
+  const n = quantasEstrelas(estrelas)
+  const fala = recorde
+    ? `Recorde novo: ${formatarTempo(c.tempoMs)}.`
+    : n === 3
+      ? config.falaDasTresEstrelas
+      : `Você chegou ao fim em ${formatarTempo(c.tempoMs)}.`
+  s.dizer(premio.fala ? `${fala} ${premio.fala}` : fala)
 }
 
 // ------------------------------------------------------------------ peças desenhadas no código
@@ -300,7 +319,7 @@ function texturaDoBrilho(degrade: CoresDoColetavel['degrade']): CanvasTexture | 
 }
 
 /** O pontinho aceso e o brilho em volta (sempre virado para a câmera). */
-function Coletavel({ cores }: { cores: CoresDoColetavel }) {
+export function Coletavel({ cores }: { cores: CoresDoColetavel }) {
   const material = useMemo(
     () =>
       new SpriteMaterial({

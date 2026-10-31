@@ -38,6 +38,37 @@ Admin lista os desafios do cadastro que o arquivo não traz. Se quiser tirá-los
 
 ## Publicar
 
+Desde C01a (30/10/2026), a cobertura é requisito de publicação, não só aviso. Cada bloco exigido
+precisa existir e ter curso publicado naquela comunidade até o posto da ilha. No Quadro das
+Cores, ao menos uma fonte deve ser base 2D, base 3D ou missão. Poder, extra e Maestria podem
+ensinar o mesmo bloco, mas não podem ser a única opção de quem quer completar os quadros.
+Uma atividade que depende de Poder escolhido pode ser desafio opcional, com o curso indicado.
+Não use ajustes manuais de blocos para esconder uma lacuna de ensino.
+Desde C01e, retirar um bloco derivado impede publicar e não o remove da cobertura mostrada.
+Retiradas só podem cancelar acréscimos manuais que não participam das regras a completar.
+Respostas antigas do Members que apenas listem blocos desconhecidos também impedem publicar.
+
+Desde C01c, o Members exige também os tipos de blocos cujo conteúdo, ordem, área de execução
+ou quantidade muda entre inicial e gabarito. Completar o corpo de um laço já preparado conta;
+apoio idêntico e mudanças só de apresentação do editor não. Blocos desconhecidos em qualquer
+dos dois projetos impedem a análise. Essa comparação não substitui as provas de comportamento.
+Para conferir os arquivos locais com a mesma regra, rode
+`bun docs/desafios-do-jogo/regras-a-completar.ts`. O JSON ao lado registra fontes locais e
+recusas do leitor do Estúdio, sem afirmar que cursos estejam publicados ou concluídos.
+
+Os geradores devem criar uma instância própria de IR para cada peça: reutilizar o mesmo
+objeto em dois pontos pode duplicar seu ID, mesmo depois de `structuredClone`. Rode
+`bun test docs/desafios-do-jogo/projetos-validos.test.ts` antes de entregar manifestos.
+O teste usa o leitor canônico do Estúdio em todos os projetos, além do schema externo.
+Não confiar apenas na importação Blockly, que pode normalizar esses IDs.
+
+Chegar ao posto abre a ilha, não concede os blocos de seus cursos. A pessoa continua precisando
+do repertório realmente conquistado para abrir o desafio. A reativação de uma publicação
+arquivada confere sua cobertura e refaz a análise do conteúdo da revisão publicada, nunca
+do rascunho posterior. Se a análise exigir uma ferramenta ausente da lista congelada,
+revise e publique uma nova versão. Falha no gabarito ou na leitura da publicação também
+impede reativar. Não remove conquistas anteriores nem reescreve publicações históricas.
+
 Com `"publicar": true`, o desafio sai publicado quando a análise não acusa problema. Com problema,
 ele é gravado e fica em rascunho, e a linha mostra o motivo. Sem `publicar` (ou com `false`), o
 desafio fica em rascunho. Um desafio que já estava publicado continua publicado na versão

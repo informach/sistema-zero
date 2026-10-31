@@ -6,6 +6,8 @@ import {
   type Mesh,
   MeshStandardMaterial,
   type Object3D,
+  type Skeleton,
+  type SkinnedMesh,
 } from 'three'
 import { clone } from 'three/examples/jsm/utils/SkeletonUtils.js'
 import {
@@ -27,10 +29,13 @@ export function prepararLuzesNoturnas(materiais: readonly Material[]) {
 export function copiarArteAnimada(original: Object3D) {
   const cena = clone(original)
   const materiais = new Map<Material, MeshStandardMaterial>()
+  const esqueletos = new Set<Skeleton>()
   const bocas: Mesh[] = []
   cena.traverse((o) => {
     const malha = o as Mesh
     if (!malha.isMesh) return
+    const animada = malha as SkinnedMesh
+    if (animada.isSkinnedMesh) esqueletos.add(animada.skeleton)
     if (malha.name.startsWith('iris-cabeca') && malha.morphTargetDictionary) bocas.push(malha)
     const copiar = (m: Material) => {
       if (!(m instanceof MeshStandardMaterial) || !luzNoturna(m.name)) return m
@@ -51,13 +56,21 @@ export function copiarArteAnimada(original: Object3D) {
     bocas,
     luzes,
     soltar: () => {
+      // SkeletonUtils cria esqueletos próprios; as texturas de ossos nascem ao desenhar.
+      // dispose é seguro sem textura e também depois de um efeito montar de novo a cópia.
+      for (const s of esqueletos) s.dispose()
       for (const m of materiais.values()) m.dispose()
     },
   }
 }
 
-export function iluminarArte(luzes: ReturnType<typeof copiarArteAnimada>['luzes'], noite: boolean) {
-  for (const { material, forca } of luzes) material.emissiveIntensity = noite ? forca : 0
+export function iluminarArte(
+  luzes: ReturnType<typeof copiarArteAnimada>['luzes'],
+  noite: boolean,
+  multiplicador = 1,
+) {
+  for (const { material, forca } of luzes)
+    material.emissiveIntensity = noite ? forca * multiplicador : 0
 }
 
 export function configurarAcao(acao: AnimationAction, umaVez: readonly string[]) {

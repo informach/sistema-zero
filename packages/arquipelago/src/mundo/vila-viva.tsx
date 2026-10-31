@@ -4,16 +4,19 @@ import { useMemo, useRef } from 'react'
 import type { Group } from 'three'
 import type { PontosDoPercurso } from '../sistemas/percurso'
 import { PERCURSO_DOS_TELHADOS } from '../sistemas/percurso'
+import { segredoObrigatorio } from '../sistemas/segredos'
 import { BalcoesDaVila } from './balcoes-da-vila'
 import { BancosDaVila } from './bancos-da-vila'
 import { Bento } from './bento'
-import { BorroesDaVila } from './borroes-da-vila'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
+import { FeiraDaVila } from './feira'
 import { FestaNaVila } from './festa-na-vila'
 import type { IlhaPreparada, Troca } from './ilha-completa'
 import { giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
+import { SegredoNoAlto } from './segredos-das-ilhas'
 import {
   type AncorasDosTelhados,
   NOMES_DAS_ANCORAS_DOS_TELHADOS,
@@ -36,6 +39,9 @@ const CORES_DO_CONFEITO: CoresDoColetavel = {
  * telhados (fase2-05), a festa da estação (fase2-10), os borrões da noite e os Lumis da Vila
  * (fase2-06) e os bancos de sentar (fase2-13).
  */
+/** O segredo desta ilha (N12): o baú no alto do vento. */
+const SEGREDO_VILA_DOCE = segredoObrigatorio('vila-doce')
+
 export function VilaViva({
   ilha,
   centro,
@@ -50,6 +56,10 @@ export function VilaViva({
 }) {
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ x: centro.x, y: 0, z: centro.z }), [centro.x, centro.z])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
   const pecas = useRef<Group>(null)
   const telhados = useMemo<PontosDoPercurso | null>(() => {
     const ancoras: Partial<AncorasDosTelhados> = {}
@@ -70,8 +80,10 @@ export function VilaViva({
       </ComReserva>
       <BalcoesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <BancosDaVila colisores={preparada.colisores} meio={meio} />
+      <FeiraDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <FestaNaVila meio={meio} giro={giro} />
-      <BorroesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
+      <BorroesDaIlha ilha="vila-doce" ancoras={lugaresDosLumis} meio={meio} />
+      <SegredoNoAlto segredo={SEGREDO_VILA_DOCE} meio={meio} giro={giro} />
       {telhados ? (
         <CorridaNaIlha
           ilhaId={ilha.id}

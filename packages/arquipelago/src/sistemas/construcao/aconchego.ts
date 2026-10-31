@@ -8,6 +8,7 @@ import { ROOM_ITEM_INFO } from '@sistemazero/avatar-quarto/quarto/catalog'
 import { type Comodo, planta } from './comodos'
 import { arestasDaAbertura, chaveDaAresta, ladosDaAresta } from './grade'
 import { type Celula, chaveDaCelula, type Lote } from './lote'
+import { DADOS_DO_MOVEL, moveisDaObra } from './moveis'
 
 /** Balanceamento inicial: somas positivas, com tetos para não pedir acúmulo de coisas. */
 export const PONTOS_DE_ACONCHEGO = {
@@ -26,7 +27,7 @@ export const ESPACO_ACONCHEGANTE = {
   semMobiliarAte: 36, // Até 6 × 6 o espaço sozinho recebe o bônus.
   celulasPorTipo: 12, // Cômodo maior recebe o mesmo bônus se tiver variedade proporcional.
 } as const
-/** Preparados para outra fase. Não chamam moradores nem iniciam festas nesta entrega. */
+/** Limites usados por visitas-dos-moradores; sempre por cômodo, nunca somados entre salas. */
 export const ACONCHEGO_QUE_CHAMA_VISITA = 12
 export const ACONCHEGO_DA_FESTA = 22
 export const NIVEIS_DE_ACONCHEGO = [
@@ -116,6 +117,17 @@ export function aconchegoDosComodos(
     // da galeria nunca tira o ponto de quem já fez a dela (29/10/2026).
     if (projetos[o.id]?.aparencias.some((a) => a.origem !== 'galeria')) d.proprios.add(o.id)
   }
+  // Os móveis da cozinha, da sala e do banheiro (V20): cada tipo soma variedade como um objeto; a
+  // luminária de pé é luz e a planta é planta. O cômodo é o da célula guardada.
+  for (const m of moveisDaObra(obra)) {
+    const i = p.comodoDe.get(chaveDaCelula(m))
+    const d = i === undefined ? undefined : dados[i]
+    if (!d) continue
+    const tipo = `movel:${m.id}`
+    d.tipos.add(tipo)
+    if (DADOS_DO_MOVEL[m.id].luz) d.luzes.add(tipo)
+    if (DADOS_DO_MOVEL[m.id].planta) d.plantas.add(tipo)
+  }
   return p.comodos.map((comodo, i) => {
     const d = dados[i]!
     if (comodo.quarto && quarto)
@@ -156,7 +168,7 @@ export function aconchegoDosComodos(
             : !comodo.quarto && !d.plantas.size && projetos['planta-interior']
               ? 'A planta de interior traz mais aconchego a este cômodo.'
               : !comodo.quarto && lote.id === 'casa' && d.tipos.size < r.variedade.tipos
-                ? 'Objetos diferentes somam variedade, mesmo em holograma.'
+                ? 'Móveis e objetos diferentes somam variedade, mesmo em holograma.'
                 : d.proprios.size < r.proprio.tipos &&
                     d.tipos.size > 0 &&
                     !comodo.quarto &&

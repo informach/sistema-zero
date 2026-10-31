@@ -9,12 +9,15 @@ import type {
   ModoDoCorpo,
   TroncoVivo,
 } from '../../estado/contexto'
+import type { Voo } from '../balao'
 import type { Travessia } from '../barco'
 import type { Ponto } from '../cipo'
 import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
 import type { VolumeDeMergulho } from '../mergulho'
+import type { BeiraDaMontaria, MontariaViva } from '../montaria'
 import { criarPulo, type EstadoDoPulo } from '../movimento'
+import type { CorrenteDeAr } from '../planador'
 
 /**
  * O contrato dos modos de movimento (controlador universal, parte 6;
@@ -28,7 +31,12 @@ import { criarPulo, type EstadoDoPulo } from '../movimento'
 /** O corpo como os modos o veem e mexem (objetos fixos: o laço da física não aloca). */
 export interface EstadoDoCorpo {
   mergulho: VolumeDeMergulho | null
+  /** O dino em que vai montada (`modos/montar.ts`), ou nada. */
+  montaria: MontariaViva | null
+  /** Montada, onde o último passo parou: na beira da água, no limite do Vale ou em nada. */
+  beira: BeiraDaMontaria
   barco: Travessia | null
+  balao: Voo | null
   modo: ModoDoCorpo
   cipo: CipoVivo | null
   tronco: TroncoVivo | null
@@ -97,7 +105,10 @@ export interface EstadoDoCorpo {
 export function criarEstadoDoCorpo(): EstadoDoCorpo {
   return {
     barco: null,
+    balao: null,
     mergulho: null,
+    montaria: null,
+    beira: null,
     modo: 'chao',
     cipo: null,
     tronco: null,
@@ -166,10 +177,12 @@ export interface EntradaDoPasso {
   pulou: boolean
   usou: boolean
   correr: boolean
-  /** O ritmo do humor (`ritmo`, 0,8 a 1,1). */
+  /** O ritmo do humor (`ritmo`, 1 a 1,1): básico ou bônus de cuidado. */
   ritmo: number
   /** De patins calçados (`sistemas/patins.ts`): no chão desliza, nadando não muda nada. */
   patins: boolean
+  /** Com o planador na mochila (`sistemas/planador.ts`): no ar, pular de novo abre. */
+  planador?: boolean
   /** Com quem a criança conversa (parada, vira para lá). */
   conversa: { x: number; z: number } | null
   gravidade: number
@@ -187,6 +200,10 @@ export interface MundoDoMovimento {
   escorregadores: Escorregador[]
   bordas: BordaViva[]
   rodasDeNado: RodaDeNado[]
+  /** As correntes de vento que sobem (o planador sobe nelas). */
+  correntes?: CorrenteDeAr[]
+  /** O dino de montaria do Vale, com a ilha ativa. */
+  montaria?: MontariaViva | null
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

@@ -32,7 +32,7 @@ export function pinturaDaIlha(ilha: Ilha): PinturaDaIlha {
   const centro = centroNoAnel(ilha)
   const nova: PinturaDaIlha = {
     uniforms: {
-      uArqPedacos: { value: Array.from({ length: QUADROS_POR_ILHA }, () => 1) },
+      uArqPedacos: { value: Array.from({ length: QUADROS_POR_ILHA }, () => 0) },
       uArqChegada: { value: 0 },
       uArqBase: { value: COR_AO_ABRIR },
       uArqCentro: { value: new Vector2(centro.x, centro.z) },

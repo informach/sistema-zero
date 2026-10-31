@@ -50,6 +50,7 @@ import type {
 } from '../../../domain/ports/content-admin-repository.port'
 import type { StudioAuthoringPolicy } from '../../../domain/studio/authoring-policy'
 import type { StudioChainCandidate } from '../../../domain/studio/chain-environment'
+import { listArtSlotBlocks } from './art-slots.repository'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
 import { lockLessonStructure, syncLessonStructure } from './lesson-structure'
@@ -1285,6 +1286,10 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       )
       return operation(new DrizzleContentAdminRepository(tx, this.studioPolicy))
     })
+  }
+
+  listArtSlotBlocks(courseId: string) {
+    return listArtSlotBlocks(this.db, courseId)
   }
 
   async withStudioAuthoringLock<T>(

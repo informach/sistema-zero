@@ -15,6 +15,15 @@
  */
 export type EstadoDaIlha = 'longe' | 'carregando' | 'pronta' | 'ativa' | 'descarregando'
 
+/** A proteção do chão é publicada antes de o Rapier avançar o primeiro quadro. */
+export const PRIORIDADE_DA_CARGA_DA_ILHA = -2
+
+export function esperandoPeloChao(proximo: EstadoDaIlha, colisoresNaCena: boolean): boolean {
+  return (
+    proximo === 'carregando' || proximo === 'pronta' || (proximo === 'ativa' && !colisoresNaCena)
+  )
+}
+
 export interface SinaisDaIlha {
   /** Perto o bastante para buscar o arquivo (na ponte ou chegando nela). */
   perto: boolean

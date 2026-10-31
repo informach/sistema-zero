@@ -16,7 +16,6 @@ import {
   lugarNoBanco,
   sonecaAcabou,
 } from '../src/sistemas/descanso'
-import { DURACAO_DO_DESCANSO } from '../src/sistemas/locomocao'
 import {
   atenderPedido,
   criarEstadoDoCorpo,
@@ -102,10 +101,6 @@ describe('a energia volta aos poucos', () => {
     expect(sonecaAcabou({ ...N, energia: 100 }, 'deitar')).toBe(true)
     expect(sonecaAcabou({ ...N, energia: 99 }, 'deitar')).toBe(false)
     expect(sonecaAcabou({ ...N, energia: 100 }, 'sentar')).toBe(false)
-  })
-
-  test('os laços duram o mesmo que no script do Blender (SENTADO e DEITADO: 4 s)', () => {
-    expect(DURACAO_DO_DESCANSO).toBe(4)
   })
 })
 

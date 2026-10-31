@@ -35,7 +35,8 @@ describe('Pico completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('pico.glb')))
     const preparada = prepararIlha(cena, pico)
-    expect(preparada.colisores.length).toBe(173)
+    // 173 da ilha e 7 do porto do barco (deque, tábuas da beira e estacas).
+    expect(preparada.colisores.length).toBe(180)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, pico)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -118,7 +119,7 @@ describe('o Floco no palco', () => {
     expect(malhasDosOlhos(gltf.scene).length).toBeGreaterThan(0)
   })
 
-  test('a conversa não muda o salvamento nem compartilha falas mutáveis', () => {
+  test('antes do festival, a conversa não muda o salvamento nem compartilha falas mutáveis', () => {
     const s = criarSalvamentoInicial(new Date('2026-10-29T12:00:00Z'))
     const antes = JSON.stringify(s)
     const a = comecarConversaComOFloco(s)

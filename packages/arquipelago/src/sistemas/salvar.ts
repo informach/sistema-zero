@@ -1,5 +1,20 @@
 import {
+  type CompraDeInsumos,
+  CompraDeInsumosPendenteSchema,
+  CompraDeInsumosSchema,
   ConflitoDeSalvamentoSchema,
+  diaDeSaoPaulo,
+  type EntregarPedido,
+  EntregarPedidoSchema,
+  type Insumo,
+  type MoradorDoPedido,
+  PedidosPendentesSchema,
+  prepararEntregaDeInsumos,
+  prepararEntregaDoPedido,
+  type ResultadoDaCompraDeInsumos,
+  ResultadoDaCompraDeInsumosSchema,
+  type ResultadoDoPedido,
+  ResultadoDoPedidoSchema,
   type Salvamento,
   type SalvamentoGuardado,
   SalvamentoGuardadoSchema,
@@ -8,7 +23,13 @@ import {
 import type { ArmazemDeSalvamento, RascunhoDoJogo } from './armazem-salvamento'
 import { conciliarSalvamento, mesmosDados } from './conciliar-salvamento'
 
-export type SituacaoDoSalvamento = 'ok' | 'offline' | 'conflito' | 'erro-local' | 'recusado'
+export type SituacaoDoSalvamento =
+  | 'ok'
+  | 'offline'
+  | 'conflito'
+  | 'erro-local'
+  | 'recusado'
+  | 'confirmando'
 
 class RespostaDeSalvamentoError extends Error {
   constructor(readonly status: number) {
@@ -22,6 +43,9 @@ export interface FilaDeSalvamento {
   temPendente(): boolean
   resolver(escolha: 'local' | 'remoto'): Promise<void>
   copiaLocal(): string
+  comprarInsumos(item: Insumo, quantidade: number): Promise<ResultadoDaCompraDeInsumos>
+  entregarPedido(morador: MoradorDoPedido): Promise<ResultadoDoPedido>
+  retomarOperacoes(): Promise<void>
 }
 export interface OpcoesDaFila {
   servico: ServicoDoJogo
@@ -32,8 +56,11 @@ export interface OpcoesDaFila {
   aoSituacao(situacao: SituacaoDoSalvamento): void
   aoErro(erro: unknown): void
   intervaloMs?: number
+  agora?: () => Date
   agendar?: (fn: () => void, ms: number) => unknown
   cancelar?: (id: unknown) => void
+  /** O jogo verifica a reserva do servidor antes de armar qualquer PUT da abertura. */
+  conferirOperacoes?: boolean
 }
 
 /**
@@ -56,12 +83,28 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
   let parado = false
   let encerramento: Promise<void> | null = null
   let requisicao: AbortController | null = null
+  let compra = o.rascunhoInicial?.compra ?? null
+  let entrega = o.rascunhoInicial?.entrega ?? null
+  let operacoesProntas = !o.conferirOperacoes
+  let operacaoEmVoo: Promise<ResultadoDaCompraDeInsumos | ResultadoDoPedido | null> | null = null
+  let requisicaoOperacao: AbortController | null = null
+  let ultimaSituacao: SituacaoDoSalvamento = 'ok'
 
+  const avisar = (s: SituacaoDoSalvamento) => {
+    if (s !== 'confirmando') ultimaSituacao = s
+    o.aoSituacao(operacaoEmVoo && s === 'ok' ? 'confirmando' : s)
+  }
   const pendente = () => local !== null && !mesmosDados(base.salvamento, local)
   function persistir(): Promise<void> {
     const dado =
-      local && (pendente() || remotoEmConflito || enviado)
-        ? structuredClone({ base, local, enviado })
+      local && (pendente() || remotoEmConflito || enviado || compra || entrega)
+        ? structuredClone({
+            base,
+            local,
+            enviado,
+            ...(compra ? { compra } : {}),
+            ...(entrega ? { entrega } : {}),
+          })
         : null
     gravacao = gravacao.then(async () => {
       try {
@@ -70,13 +113,24 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       } catch (erro) {
         falhaLocal = true
         o.aoErro(erro)
-        o.aoSituacao('erro-local')
+        avisar('erro-local')
       }
     })
     return gravacao
   }
   function armar() {
-    if (timer !== null || parado || remotoEmConflito || falhaLocal || recusado || !pendente())
+    if (
+      timer !== null ||
+      parado ||
+      remotoEmConflito ||
+      falhaLocal ||
+      recusado ||
+      !pendente() ||
+      !operacoesProntas ||
+      compra ||
+      entrega ||
+      operacaoEmVoo
+    )
       return
     timer = agendar(() => {
       timer = null
@@ -94,7 +148,7 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
     const junto = conciliarSalvamento(origem, local, atual.salvamento)
     if (!junto) {
       remotoEmConflito = atual
-      o.aoSituacao('conflito')
+      avisar('conflito')
       return
     }
     base = atual
@@ -102,10 +156,10 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
     enviado = null
     remotoEmConflito = null
     o.aoAdotar({ ...atual, salvamento: junto })
-    o.aoSituacao('ok')
+    avisar('ok')
   }
   async function enviar(): Promise<void> {
-    if (!local || remotoEmConflito || parado) return
+    if (!local || remotoEmConflito || parado || compra || entrega || !operacoesProntas) return
     const controller = new AbortController()
     requisicao = controller
     const prazo = setTimeout(() => controller.abort(), 15_000)
@@ -136,7 +190,7 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
         base = confirmado
         enviado = null
         await persistir()
-        if (!falhaLocal) o.aoSituacao('ok')
+        if (!falhaLocal) avisar('ok')
         return
       }
       if (r.status === 409) {
@@ -157,7 +211,10 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
           erro.status < 500 &&
           erro.status !== 408 &&
           erro.status !== 429
-        o.aoSituacao(recusado ? 'recusado' : 'offline')
+        if (erro instanceof RespostaDeSalvamentoError && erro.status === 423) {
+          operacoesProntas = false
+          avisar('confirmando')
+        } else avisar(recusado ? 'recusado' : 'offline')
       }
     } finally {
       clearTimeout(prazo)
@@ -170,10 +227,11 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       timer = null
     }
     if (emVoo) return emVoo
+    if (compra || entrega || !operacoesProntas) return retomarOperacoes()
     if (!parado && falhaLocal)
       return persistir().then(async () => {
         if (falhaLocal) return
-        o.aoSituacao(remotoEmConflito ? 'conflito' : 'ok')
+        avisar(remotoEmConflito ? 'conflito' : 'ok')
         if (!remotoEmConflito) await salvarAgora()
       })
     if (parado || remotoEmConflito || !pendente()) return gravacao
@@ -183,6 +241,272 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       armar()
     })
     return emVoo
+  }
+
+  async function enviarCompra(pedido: CompraDeInsumos): Promise<ResultadoDaCompraDeInsumos> {
+    if (parado) throw new Error('Esta sessão já foi encerrada.')
+    const controller = new AbortController()
+    requisicaoOperacao = controller
+    const prazo = setTimeout(() => controller.abort(), 15_000)
+    try {
+      const r = await o.servico.buscar('/insumos/comprar', {
+        metodo: 'POST',
+        corpo: pedido,
+        sinal: controller.signal,
+      })
+      if (r.status !== 200) {
+        const erro = r.corpo as { error?: { code?: unknown } } | null
+        if (
+          (r.status === 409 && erro?.error?.code === 'COMPRA_BASE_DESATUALIZADA') ||
+          (r.status === 422 && erro?.error?.code === 'COMPRA_BASE_SEM_ESPACO') ||
+          (r.status === 423 && erro?.error?.code === 'COMPRA_PENDENTE')
+        ) {
+          // Estes códigos provam que esta chave não foi reservada nem enviada à carteira.
+          compra = null
+          operacoesProntas = false
+          await persistir()
+        }
+        throw new RespostaDeSalvamentoError(r.status)
+      }
+      const resultado = ResultadoDaCompraDeInsumosSchema.parse(r.corpo)
+      if (
+        !mesmosDados(resultado.pedido, pedido) ||
+        resultado.situacao === 'pendente' ||
+        resultado.guardado.revisao < base.revisao
+      )
+        throw new Error('A confirmação da compra não corresponde ao pedido.')
+      adotarConfirmacao(
+        resultado.guardado,
+        pedido.revisaoBase,
+        resultado.situacao === 'entregue'
+          ? (s) => {
+              const r = prepararEntregaDeInsumos(s, pedido)
+              return r.ok ? r.salvamento : null
+            }
+          : undefined,
+      )
+      compra = null
+      await persistir()
+      if (falhaLocal) throw new Error('Não foi possível guardar a confirmação neste aparelho.')
+      return resultado
+    } finally {
+      clearTimeout(prazo)
+      requisicaoOperacao = null
+    }
+  }
+
+  /** Só reaplica uma transição conhecida se revisão e snapshot inteiro forem exatos. */
+  function adotarConfirmacao(
+    atual: SalvamentoGuardado,
+    revisaoBase: number,
+    preparar?: (s: Salvamento) => Salvamento | null,
+  ) {
+    const esperado = base.salvamento && preparar?.(base.salvamento)
+    const rascunho = local && preparar?.(local)
+    if (
+      revisaoBase === base.revisao &&
+      atual.revisao === base.revisao + 1 &&
+      esperado &&
+      rascunho &&
+      mesmosDados(atual.salvamento, esperado)
+    ) {
+      base = atual
+      local = rascunho
+      enviado = null
+      remotoEmConflito = null
+      o.aoAdotar({ ...atual, salvamento: local })
+    } else conciliar(atual)
+  }
+
+  async function enviarEntrega(pedido: EntregarPedido): Promise<ResultadoDoPedido> {
+    if (parado) throw new Error('Esta sessão já foi encerrada.')
+    const controller = new AbortController()
+    requisicaoOperacao = controller
+    const prazo = setTimeout(() => controller.abort(), 15_000)
+    try {
+      const r = await o.servico.buscar('/pedidos/entregar', {
+        metodo: 'POST',
+        corpo: pedido,
+        sinal: controller.signal,
+      })
+      if (r.status !== 200) {
+        const erro = r.corpo as { error?: { code?: unknown } } | null
+        if (
+          (r.status === 409 && erro?.error?.code === 'PEDIDO_BASE_RECUSADO') ||
+          (r.status === 423 && erro?.error?.code === 'COMPRA_PENDENTE')
+        ) {
+          entrega = null
+          operacoesProntas = false
+          await persistir()
+        }
+        throw new RespostaDeSalvamentoError(r.status)
+      }
+      const resultado = ResultadoDoPedidoSchema.parse(r.corpo)
+      if (!mesmosDados(resultado.pedido, pedido) || resultado.guardado.revisao < base.revisao)
+        throw new Error('A confirmação não corresponde à entrega do pedido.')
+      adotarConfirmacao(resultado.guardado, pedido.revisaoBase, (s) => {
+        if (s.moradores[pedido.morador].pedido?.id !== pedido.pedido) return null
+        const r = prepararEntregaDoPedido(s, pedido.morador, pedido.dia)
+        return r.ok ? r.salvamento : null
+      })
+      entrega = null
+      await persistir()
+      if (falhaLocal) throw new Error('Não foi possível guardar a confirmação neste aparelho.')
+      return resultado
+    } finally {
+      clearTimeout(prazo)
+      requisicaoOperacao = null
+    }
+  }
+
+  function executarOperacao(
+    nova?: { item: Insumo; quantidade: number } | { morador: MoradorDoPedido },
+  ): Promise<ResultadoDaCompraDeInsumos | ResultadoDoPedido | null> {
+    if (operacaoEmVoo) {
+      if (nova) return Promise.reject(new Error('Aguarde a confirmação anterior.'))
+      return operacaoEmVoo
+    }
+    if (parado) return Promise.reject(new Error('Esta sessão já foi encerrada.'))
+    const executar = async () => {
+      if (parado) throw new Error('Esta sessão já foi encerrada.')
+      avisar('confirmando')
+      if (nova) {
+        if (!operacoesProntas || compra || entrega || remotoEmConflito || falhaLocal || recusado)
+          throw new Error('Confirme seu progresso antes de continuar.')
+        // O estado da loja já está pausado. Uma gravação anterior pode estar em voo.
+        await salvarAgora()
+        if (pendente() && !falhaLocal && !recusado && !remotoEmConflito) await salvarAgora()
+        if (
+          parado ||
+          pendente() ||
+          enviado ||
+          !local ||
+          base.revisao < 1 ||
+          falhaLocal ||
+          recusado ||
+          remotoEmConflito
+        )
+          throw new Error('Seu progresso precisa chegar ao serviço antes de continuar.')
+        if ('morador' in nova) {
+          const dia = diaDeSaoPaulo(o.agora?.() ?? new Date())
+          const p = local.moradores[nova.morador].pedido
+          if (!p || p.dia !== dia || !prepararEntregaDoPedido(local, nova.morador, dia).ok)
+            throw new Error('Confira os itens e o pedido de hoje antes de entregar.')
+          entrega = EntregarPedidoSchema.parse({
+            versao: 1,
+            chave: crypto.randomUUID(),
+            revisaoBase: base.revisao,
+            morador: nova.morador,
+            dia,
+            pedido: p.id,
+          })
+          await persistir()
+          if (falhaLocal || parado)
+            throw new Error('Não foi possível guardar o pedido neste aparelho.')
+          return enviarEntrega(entrega)
+        }
+        const pedido = CompraDeInsumosSchema.parse({
+          versao: 1,
+          chave: crypto.randomUUID(),
+          revisaoBase: base.revisao,
+          ...nova,
+        })
+        if (!prepararEntregaDeInsumos(local, pedido).ok)
+          throw new Error('Não há espaço para guardar a compra inteira.')
+        compra = pedido
+        await persistir()
+        if (falhaLocal || parado)
+          throw new Error('Não foi possível guardar o pedido neste aparelho.')
+        return enviarCompra(compra)
+      }
+      // Resolve primeiro a confirmação que este aparelho pode ter perdido. Em seguida,
+      // procura a reserva feita em outro aparelho antes de permitir novas alterações.
+      let resultado: ResultadoDaCompraDeInsumos | ResultadoDoPedido | null = null
+      if (compra) resultado = await enviarCompra(compra)
+      if (entrega) resultado = await enviarEntrega(entrega)
+      if (parado) throw new Error('Esta sessão já foi encerrada.')
+      const controller = new AbortController()
+      requisicaoOperacao = controller
+      const prazo = setTimeout(() => controller.abort(), 15_000)
+      let remoto: CompraDeInsumos | null
+      try {
+        const r = await o.servico.buscar('/insumos/pendente', { sinal: controller.signal })
+        if (parado) throw new Error('Esta sessão já foi encerrada.')
+        if (r.status !== 200) throw new RespostaDeSalvamentoError(r.status)
+        remoto = CompraDeInsumosPendenteSchema.parse(r.corpo).pedido
+        if (!remoto) {
+          const salvo = await o.servico.buscar('/salvamento', { sinal: controller.signal })
+          if (salvo.status !== 200) throw new RespostaDeSalvamentoError(salvo.status)
+          conciliar(SalvamentoGuardadoSchema.parse(salvo.corpo))
+          await persistir()
+        }
+      } finally {
+        clearTimeout(prazo)
+        requisicaoOperacao = null
+      }
+      if (parado) throw new Error('Esta sessão já foi encerrada.')
+      if (remoto) {
+        compra = remoto
+        await persistir()
+        if (falhaLocal) throw new Error('Não foi possível guardar a retomada neste aparelho.')
+        resultado = await enviarCompra(remoto)
+      }
+      // Crédito pendente não bloqueia o save: o consumo já foi confirmado no serviço.
+      // Retoma no máximo um por abertura, usando a mesma chave, sem encadear várias esperas.
+      const controllerPedido = new AbortController()
+      requisicaoOperacao = controllerPedido
+      const prazoPedido = setTimeout(() => controllerPedido.abort(), 15_000)
+      let pendenteDoMorador: EntregarPedido | undefined
+      try {
+        if (parado) throw new Error('Esta sessão já foi encerrada.')
+        const r = await o.servico.buscar('/pedidos/pendentes', { sinal: controllerPedido.signal })
+        if (parado) throw new Error('Esta sessão já foi encerrada.')
+        if (r.status !== 200) throw new RespostaDeSalvamentoError(r.status)
+        pendenteDoMorador = PedidosPendentesSchema.parse(r.corpo).pedidos[0]
+      } finally {
+        clearTimeout(prazoPedido)
+        requisicaoOperacao = null
+      }
+      if (pendenteDoMorador && pendenteDoMorador.chave !== resultado?.pedido.chave) {
+        entrega = pendenteDoMorador
+        await persistir()
+        if (falhaLocal) throw new Error('Não foi possível guardar a retomada neste aparelho.')
+        resultado = await enviarEntrega(pendenteDoMorador)
+      }
+      operacoesProntas = true
+      recusado = false
+      return resultado
+    }
+    // O microtask publica a exclusão antes de qualquer chamada assíncrona.
+    operacaoEmVoo = Promise.resolve()
+      .then(executar)
+      .catch((erro) => {
+        o.aoErro(erro)
+        throw erro
+      })
+      .finally(() => {
+        operacaoEmVoo = null
+        if (!parado) {
+          avisar(
+            falhaLocal
+              ? 'erro-local'
+              : remotoEmConflito
+                ? 'conflito'
+                : compra || entrega || !operacoesProntas
+                  ? 'confirmando'
+                  : recusado
+                    ? 'recusado'
+                    : ultimaSituacao === 'offline'
+                      ? 'offline'
+                      : 'ok',
+          )
+          armar()
+        }
+      })
+    return operacaoEmVoo
+  }
+  async function retomarOperacoes(): Promise<void> {
+    await executarOperacao()
   }
 
   if (o.rascunhoInicial) {
@@ -198,20 +522,37 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       armar()
     },
     salvarAgora,
+    async comprarInsumos(item, quantidade) {
+      const resultado = await executarOperacao({ item, quantidade })
+      if (!resultado || !('situacao' in resultado)) throw new Error('Compra sem confirmação.')
+      return resultado
+    },
+    async entregarPedido(morador) {
+      const resultado = await executarOperacao({ morador })
+      if (!resultado || !('pagamento' in resultado)) throw new Error('Pedido sem confirmação.')
+      return resultado
+    },
+    retomarOperacoes,
     parar() {
       if (encerramento) return encerramento
       parado = true
       if (timer !== null) cancelar(timer)
       timer = null
       requisicao?.abort()
+      requisicaoOperacao?.abort()
       encerramento = (async () => {
+        try {
+          await operacaoEmVoo
+        } catch {
+          /* O comando durável é retomado na próxima abertura. */
+        }
         await emVoo
         await gravacao
         o.armazem.fechar()
       })()
       return encerramento
     },
-    temPendente: pendente,
+    temPendente: () => pendente() || compra !== null || entrega !== null,
     async resolver(escolha) {
       if (!remotoEmConflito || parado) return
       // Se outro aparelho avançar de novo, o CAS produzirá outro conflito; escolher a cópia
@@ -223,9 +564,21 @@ export function criarFilaDeSalvamento(o: OpcoesDaFila): FilaDeSalvamento {
       await persistir()
       if (falhaLocal) return
       o.aoAdotar({ ...base, salvamento: local })
-      o.aoSituacao('ok')
+      avisar('ok')
       await salvarAgora()
     },
-    copiaLocal: () => JSON.stringify({ versao: 1, base, local, enviado }, null, 2),
+    copiaLocal: () =>
+      JSON.stringify(
+        {
+          versao: 1,
+          base,
+          local,
+          enviado,
+          ...(compra ? { compra } : {}),
+          ...(entrega ? { entrega } : {}),
+        },
+        null,
+        2,
+      ),
   }
 }

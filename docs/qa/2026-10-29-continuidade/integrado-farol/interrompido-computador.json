@@ -1,0 +1,232 @@
+{
+  "finalDoFarol": {
+    "etapa": "fora",
+    "tempo": 0,
+    "fachos": 0,
+    "leu": false,
+    "voltou": false
+  },
+  "plataformasDasNuvens": [],
+  "mergulho": {
+    "pronto": false,
+    "achados": {
+      "bau": false,
+      "pagina": false,
+      "tesouro": false,
+      "corais": 0
+    }
+  },
+  "corrida": null,
+  "mira": null,
+  "constelacoes": 0,
+  "clima": {
+    "escolhido": "sol",
+    "luz": 1,
+    "cinza": 0,
+    "gotas": false
+  },
+  "horta": [
+    {
+      "semente": null,
+      "regado": false,
+      "progresso": 0
+    },
+    {
+      "semente": null,
+      "regado": false,
+      "progresso": 0
+    },
+    {
+      "semente": null,
+      "regado": false,
+      "progresso": 0
+    },
+    {
+      "semente": null,
+      "regado": false,
+      "progresso": 0
+    },
+    {
+      "semente": null,
+      "regado": false,
+      "progresso": 0
+    },
+    {
+      "semente": null,
+      "regado": false,
+      "progresso": 0
+    }
+  ],
+  "balao": null,
+  "barco": {
+    "fase": "atracado",
+    "distancia": 0,
+    "comprimento": 524.4392964251467,
+    "recifePronto": false,
+    "devolvendo": false,
+    "visual": {
+      "x": -2.369906005077513,
+      "y": 0.47458021814034484,
+      "z": 34.58739847052345
+    },
+    "pose": {
+      "x": -2.4000000953674316,
+      "y": 0,
+      "z": 33.59999990463257,
+      "giro": -1.570796461153735
+    }
+  },
+  "festa": {
+    "nome": null,
+    "pecas": 0,
+    "emissao": [],
+    "escalaDoFogo": []
+  },
+  "luzesDosLumis": {
+    "estrelinha": [0],
+    "buzio": [0]
+  },
+  "qualidade": "leve",
+  "metaDeQuadros": 60,
+  "dpr": 0.75,
+  "amplitudeDoVento": 0,
+  "ondas": {
+    "ativas": 0,
+    "emitidas": 0,
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "ligadas": false
+  },
+  "reativos": {
+    "montado": false,
+    "pecas": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "dormindo": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "dormindo": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "dormindo": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "dormindo": false
+      }
+    ],
+    "galhoQuebrado": false,
+    "galhoX": 0,
+    "galhoY": 0,
+    "galhoZ": 0
+  },
+  "folhas": {
+    "pecas": [
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "dormindo": false
+      },
+      {
+        "x": 0,
+        "y": 0,
+        "z": 0,
+        "dormindo": false
+      }
+    ]
+  },
+  "fogo": {
+    "montado": false,
+    "acesas": 0,
+    "molhadas": 0,
+    "queimadas": 0,
+    "x": 0,
+    "y": 0,
+    "z": 0
+  },
+  "vento": {
+    "tempo": 0,
+    "forca": 0,
+    "materiais": 0,
+    "escalaVisual": 1,
+    "qualidadeAplicada": 1
+  },
+  "mecanismos": {
+    "montado": false,
+    "placa": false,
+    "porta": 0,
+    "alcapao": 0,
+    "caixaX": 0,
+    "caixaY": 0,
+    "caixaZ": 0
+  },
+  "pontes": {
+    "montadas": 0,
+    "maiorAfundamento": 0,
+    "sobCarga": 0
+  },
+  "fisica": {
+    "corposAtivos": 1,
+    "passoMs": 0.07666666905085245
+  },
+  "chamadas": 188,
+  "triangulos": 404026,
+  "geometrias": 186,
+  "texturas": 7,
+  "programas": 18,
+  "quadrosPorSegundo": 1,
+  "ilhasCompletas": 0,
+  "posicao": {
+    "x": -9.19970152664185,
+    "y": 1.9634731667045362,
+    "z": -10.899850954055788
+  },
+  "giro": 0,
+  "camera": {
+    "x": -9.199701581660545,
+    "y": 7.178290195110542,
+    "z": -3.00163161878504
+  },
+  "liberadas": {
+    "geometrias": 0,
+    "materiais": 0,
+    "texturas": 0
+  },
+  "esmaecidas": [],
+  "geometriasNaCena": 367,
+  "tronco": {
+    "x": 0,
+    "y": 0,
+    "z": 0,
+    "submersa": 0,
+    "dormindo": false,
+    "montado": false
+  },
+  "modo": "chao",
+  "noChao": true,
+  "patins": [],
+  "borroes": [],
+  "lumisDaVila": [],
+  "lanternaNaMao": null,
+  "lumiDaRotina": null,
+  "descanso": null,
+  "energia": 99.51999999999992,
+  "avatar": {
+    "x": -9.19970152664185,
+    "y": 1.0034731667045362,
+    "z": -10.899850954055788,
+    "deitado": 0
+  }
+}

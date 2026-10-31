@@ -71,6 +71,12 @@ const choice = (yes: string, no: string) =>
     'sz_js_if_else',
     `Se ${value('sz_val_variable', 'temChave')}<div class="branch-label">então</div><div class="event-body">${yes}</div><div class="branch-label">senão</div><div class="event-body">${no}</div>`,
   )
+/** A guarda da partida: o Se temChave inteiro mora no então do Se não ganhou. */
+const notWon = (inner: string) =>
+  block(
+    'sz_js_if_else',
+    `Se <span class="value-block" ${attrs('sz_val_not')}>não ${value('sz_val_variable', 'ganhou')}</span><div class="branch-label">então</div><div class="event-body">${inner}</div>`,
+  )
 const model = (name: string, file: string, size: string) =>
   block(
     'sz_g3d_create_model_file',
@@ -143,6 +149,15 @@ const drawings: Record<string, string> = {
         assign('ganhou', bool('verdadeiro')) +
         message('Você acendeu o farol! O barco pode chegar.'),
       message('Falta a chave. Procure na ilha antes de voltar.'),
+    ),
+  ),
+  'uma-vez': encounter(
+    'farol',
+    notWon(
+      choice(
+        '<div class="prepared">Acender, ganhou e aviso</div>',
+        '<div class="prepared">Aviso da chave que falta</div>',
+      ),
     ),
   ),
 }

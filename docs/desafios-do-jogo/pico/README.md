@@ -1,12 +1,27 @@
-# Fase de plataforma do Pico Gelado
+# Quadros e fase de plataforma do Pico Gelado
 
-Pacote da fase3-10, formato `arquipelago-desafios` v1, escopo `ilha`, público `kids`.
-O arquivo de entrega é [pico.manifesto.json](pico.manifesto.json). Plano e decisões:
+C01d corrigiu as ocorrências compartilhadas de posição e movimento em Pulo com apoio.
+Cada peça tem ID próprio no inicial e no gabarito. Código, comportamento e recompensas
+não mudaram. O teste `../projetos-validos.test.ts` confere o leitor canônico do Members
+nos dois públicos; a importação Blockly é uma prova complementar.
+
+Revisão C01b1 de 30/10/2026: [inventário por atividade](../repertorio-local.md) e
+[fontes por bloco](../repertorio-local.json). Intenção editorial não comprova concessão de
+blocos. As lacunas de fontes obrigatórias continuam explícitas; não usar opcionais como
+repertório universal nem contar estruturas prontas como aprendizagem.
+
+Pacote da fase3-10 e complemento L03, formato `arquipelago-desafios` v1, escopo `ilha`.
+Arquivos: [Kids](pico.manifesto.json) e [adulto](pico-adulto.manifesto.json). Plano e decisões:
 [2026-10-29-pico-fase-de-plataforma.md](../../superpowers/plans/2026-10-29-pico-fase-de-plataforma.md).
 A importação e a publicação no Admin ficam para outra etapa.
 
 | Desafio | Tipo | Quadro | Moedas | Extra |
 | --- | --- | --- | --- | --- |
+| Pulo com apoio | Quadro das Cores | 1 | 20 | 10 |
+| Freio no gelo | Quadro das Cores | 2 | 20 | 10 |
+| Floco recolhido | Quadro das Cores | 3 | 20 | 10 |
+| Mochila de neve | Quadro das Cores | 4 | 20 | 10 |
+| Passagem segura | Quadro das Cores | 5 | 20 | 10 |
 | Fase de plataforma | Quadro das Cores | 6 | 20 | 10 |
 | Pulo alto | Desafio do dia | Nenhum | 10 | 5 |
 | Floco de neve | Desafio do dia | Nenhum | 10 | 5 |
@@ -14,24 +29,50 @@ A importação e a publicação no Admin ficam para outra etapa.
 
 Os valores vêm de `MOEDAS_PADRAO_POR_TIPO`. Quadro 6 e ordens 60 a 63 seguem a convenção do
 Bosque, da Vila e do Recife. O quadro deve estar livre quando o pacote for importado. O principal
-dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. `publicar: true` é uma
-instrução para a futura aplicação do arquivo, não uma publicação feita por esta entrega.
+dá cor, as variações não. `recompensa.atracao` é `fase-de-plataforma`. Revisão C01b de 30/10:
+sem grupo com sprites avulsos, clique em grupo nem opacidade (só apareciam em cursos extras), os
+seis quadros, Kids e adulto, têm todas as fontes na trilha e voltam a pedir publicação
+(`publicar: true`); as três variações seguem com `publicar: false`. A importação e a barreira
+C01a ficam com a equipe. Cada complementar indica a própria atração pelo slug.
 
-## O que se completa
+## Os cinco complementares
 
-Cenário de neve, o pinguim, os dois blocos de gelo com o buraco, a água, a bandeira, os botões e
-o Recomeçar estão prontos. No principal, a pessoa completa:
+Reaplicam o repertório de blocos já aprendido até Inventor. Não exigem um bloco novo por entrar
+no Mestre e não são uma substituição dos cursos Python. O serviço continua conferindo as
+conquistas individuais. O cenário, a gravidade, o chão e o desenho já vêm prontos; só o evento
+indicado é completado. Enter é o extra de nova rodada.
 
-- o laço: aplicar a gravidade, andar com as setas, aplicar a velocidade, manter na tela e, para
-  cada gelo que o pinguim encostar vindo de cima, colocá-lo de pé no topo e marcar `noChao`;
-- o Pular: velocidade y -12, só com `noChao` verdadeiro (nada de pular no ar);
+| Quadro | Evento | Comportamento avaliado |
+| --- | --- | --- |
+| Pulo com apoio | Espaço | Subir, impedir outro pulo no ar e liberar após pousar |
+| Freio no gelo | Espaço | Parar estado e velocidade sem reiniciar nem deslocar |
+| Floco recolhido | Contato | Coletar, esconder e contar uma vez, somente após tocar |
+| Mochila de neve | Esquerda e direita | Aceitar cargas de 1 ou 2 até o peso 4, sem aceitar parte |
+| Passagem segura | Espaço | Esperar a neve ceder e atravessar uma única vez |
+
+A arte reutiliza os SVGs do principal. O pulo ensina -10 como exemplo, mas a verificação não
+exige essa força: um pulo menor coerente também passa. O solo preparado está em y 300 para o
+pinguim, e sua correção usa a diferença até o solo, sem teleporte por borda. O contador de
+neve diminui de 120 a zero por atualização, não representa segundos. O tempo de 2,4 s do
+ensaio dá margem à liberação a 60 atualizações por segundo.
+
+## O que se completa no principal
+
+Cenário de neve, o pinguim, os dois blocos de gelo com o buraco, a água, a bandeira, a
+gravidade, o pouso no gelo e Enter (+ no toque) para recomeçar estão prontos. O pouso compara a
+posição do pinguim com a faixa e o topo de cada gelo, com blocos da trilha; a colisão por eixo
+em código é matéria do Mestre, em Python. No principal, a pessoa completa:
+
+- o laço: andar com as setas antes de aplicar a velocidade e manter na tela depois;
+- o pulo com Espaço (A no toque): velocidade y -12, só com `noChao` verdadeiro;
 - a água: cair nela devolve o pinguim ao começo;
 - a bandeira: encostar nela marca `chegou` e mostra o recado de fim, uma vez só.
 
 As variações começam com o jogo funcionando e mudam somente uma regra principal:
 
-- Pulo alto: um gelo flutuante com a bandeira em cima; o Pular passa de -9 para -13.
-- Floco de neve: completar o contato com o floco já desenhado (`pegouFloco`, esconder, somar um).
+- Pulo alto: um gelo flutuante com a bandeira em cima; o pulo passa de -9 para -13.
+- Floco de neve: completar o contato com o floco já desenhado (`pegouFloco` e somar um; o
+  floco só é desenhado enquanto `pegouFloco` é falso).
 - Quedas: somar um em `quedas` no contato com a água, que já devolve ao começo.
 
 O extra, separado da regra principal, é a seta para cima também pular, só no gelo.
@@ -39,7 +80,7 @@ O extra, separado da regra principal, é a seta para cima também pular, só no 
 ## Blocos e arte
 
 `ilhas.ts` abre o Pico em `elite`, Mestre dos Jogos, cuja recompensa de blocos é
-`intermediario-2d`. O teste do contrato confere os oito projetos contra a união das listas de
+`intermediario-2d`. O teste do contrato confere os dezoito projetos por público contra a união das listas de
 blocos dos cursos dos postos até o Mestre, lidas das pastas de `docs/aulas-interativas`
 (Faísca, Construtor, Inventor, Explorador e Mestre). O teste da pasta confere que nenhum bloco
 passa de `intermediario-2d`; o único acima do `iniciante-2d` é a conta usada no pouso.
@@ -49,7 +90,7 @@ O pulo não usa o kit do dino: ele pousa só no chão do palco e desenharia um d
 pinguim. Pousar no gelo é a regra que a criança monta, e vale também para o gelo flutuante.
 
 Os SVGs em `projetos.ts` desenham o céu com as montanhas, a água, o pinguim de gorro, o gelo,
-a bandeira, o floco e os botões. Não há imagem externa, modelo novo ou dependência do Blender.
+a bandeira e o floco. Não há imagem externa, modelo novo ou dependência do Blender.
 
 ## Medidas
 
@@ -74,8 +115,9 @@ bun test docs/desafios-do-jogo/pico/pico.test.ts packages/arquipelago-contracts/
 cd packages/studio; bun test src/blockly/__tests__/picoManifest.test.ts; cd ../..
 bun test packages/arquipelago-api/tests/integration/manifestos.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
-bun test packages/studio-runtime/tests/pico-browser.test.ts
+bun test packages/studio-runtime/tests/pico-browser.test.ts packages/studio-runtime/tests/quadros-pico-browser.test.ts
 bun docs/desafios-do-jogo/pico/conferir-browser.ts
+bun docs/desafios-do-jogo/pico/conferir-quadros-browser.ts
 node --max-old-space-size=8192 packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/pico/tsconfig.json
 ```
 
@@ -88,3 +130,46 @@ controla o Chrome com Node e SwiftShader, sem servidor da plataforma, credenciai
 
 Relatório e prints: [conferência do Pico](../../qa/2026-10-29-pico-manifesto.md). Celular físico
 continua pendente. Nenhum desafio foi cadastrado e nenhum progresso foi alterado.
+
+Complemento L03: [testes e capturas dos cinco quadros](../../qa/2026-10-30-quadros-pico/README.md).
+
+## C02: Fase de plataforma em Python, com fases como dados (30/10/2026)
+
+Aplicação na linguagem do Mestre: Python com Pygame Zero. Arquivos:
+[Kids](pico-python.manifesto.json) e [adulto](pico-python-adulto.manifesto.json), um desafio do
+dia cada (`publicar: false`, ordem 70, 10 e 5 moedas, sem cor). Fontes: `python-projetos.ts` (o
+`main.py` e as três fases), `python-objetivos.ts` e `gerar-manifesto-python.ts`; o ambiente fica em
+`../ambiente-python.ts`. Plano: [C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
+
+`FASES` é uma lista de fases; cada fase é uma lista de 12 linhas de 16 letras (células de 40
+pontos): `#` plataforma, `C` cristal, `S` saída, `J` começo. O laço do jogo (andar, pular, gravidade,
+empurrão lateral, cristal, saída e troca de fase) e o desenho estão prontos e usam as funções que a
+pessoa completa: `ler_fase` (listas e laços), `pousar` (colisão no eixo y, só caindo e cruzando o
+topo) e `proxima_fase` (saída condicionada ao cristal). O extra é acrescentar a terceira fase, só
+dados. Sem classes. As três fases do gabarito foram vencidas por um robô simples numa simulação em
+CPython com um Pygame Zero de mentira (andar, pular, pegar o cristal e chegar à saída); a fase 3
+foi redesenhada depois que essa simulação mostrou uma plataforma tampando o pulo.
+
+| Objetivo | Como confere | Erro causal recusado |
+| --- | --- | --- |
+| `ler_fase` devolve [coluna, linha] | três casos pequenos | linha e coluna trocadas |
+| `pousar` só ao cair cruzando o topo | quatro casos (pousa, ainda não, já abaixo, subindo) | pousa por baixo; pousa ao subir |
+| A saída exige o cristal | três casos | sai sem o cristal |
+| A fase 1 é montada dos dados | `total_de_plataformas` igual a 29 | (inicial) |
+| Extra: a terceira fase | `total_de_fases` pelo menos 3 | (inicial) |
+
+Executor real (`packages/studio-runtime/tests/desafios-python-smoke.ts`, mesmo caminho do Recife:
+imagem de produção, `python-mission.mjs`, retrato e julgamento do Members). Em 30/10: 8 execuções
+e 24 objetivos, todas com o programa saudável. O gabarito passa nos 5 (Kids e adulto), o inicial
+reprova os 5 (Kids e adulto) e cada um dos quatro erros reprova o objetivo que quebra.
+
+```powershell
+bun docs/desafios-do-jogo/pico/gerar-manifesto-python.ts
+bun test docs/desafios-do-jogo/pico/pico-python.test.ts
+bun packages/studio-runtime/tests/desafios-python-smoke.ts --ilha=pico
+```
+
+A prova roda na release Python ativa em staging e produção (`2026-10-25-integrated-games-2`),
+com a distribuição baixada do runtime de staging (`STUDIO_PYTHON_RUNTIME_HOST` troca o host) e a
+imagem publicada do executor em `STUDIO_PYTHON_TEST_IMAGE` (a tag local do deploy de staging, por
+exemplo). Ver `../conteudo-por-posto.md`, seção C02.

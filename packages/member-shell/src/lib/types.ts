@@ -556,6 +556,12 @@ export interface StudioBlock {
     summary?: string
     defaultCoverUrl?: string
   }
+  /**
+   * Vagas de arte que este jogo importa (29/10/2026): o desenho que a criança fez no bloco de
+   * Pinta da vaga entra nos materiais do jogo (`add`) ou toma o lugar de uma imagem (`replace`).
+   * A criança recebe só os nomes; o desenho vem de `GET …/art-slots`.
+   */
+  artSlots?: import('@sistemazero/core/learning').StudioArtSlotImport[]
 }
 /**
  * Bloco PINTA: o ateliê de desenho embarcado na aula, com o desenho JÁ criado pelo professor
@@ -575,6 +581,8 @@ export interface PintaBlock {
   allowTools?: string[]
   /** Nome do desenho contínuo (cadeia entre aulas). */
   chain?: string
+  /** A vaga de arte que este desenho preenche (o jogo de um bloco de Estúdio o importa). */
+  artSlot?: import('@sistemazero/core/learning').PintaArtSlot
 }
 /**
  * "Em breve": a aula está EM PRODUÇÃO. Quando este bloco existe, o members devolve
@@ -674,6 +682,20 @@ export interface PintaSubmissionResultView {
 /** `GET` do mesmo path: o desenho que a criança já enviou. `null` = nunca enviou. */
 export interface OwnPintaSubmissionView {
   asset: unknown | null
+}
+
+/** Uma vaga que o bloco de Estúdio importa, com o desenho que a criança entregou para ela. */
+export interface ArtSlotView {
+  name: string
+  mode: import('@sistemazero/core/learning').ArtSlotImportMode
+  /** A imagem do jogo que o desenho substitui (o `replaces` da vaga no bloco de Pinta). */
+  replaces: string | null
+  /** O `PintaAsset` (formato de arquivo) da última entrega do perfil; `null` sem desenho. */
+  asset: unknown | null
+}
+
+export interface ArtSlotsView {
+  slots: ArtSlotView[]
 }
 
 // ── "Guardado na sua conta": criações do Estúdio Completo e do Pinta (18/08/2026) ──

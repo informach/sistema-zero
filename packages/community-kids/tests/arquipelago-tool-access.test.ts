@@ -15,7 +15,7 @@ test('as ferramentas do jogo respeitam os acessos do perfil Kids', async () => {
       new Response(child.stderr).text(),
     ])
     expect(code, stdout + stderr).toBe(0)
-    expect(stdout + stderr).toMatch(/\b2 pass\b/)
+    expect(stdout + stderr).toMatch(/\b3 pass\b/)
   } finally {
     clearTimeout(deadline)
     if (child.exitCode === null) child.kill()

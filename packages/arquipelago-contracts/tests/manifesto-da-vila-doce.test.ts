@@ -8,12 +8,10 @@ const manifesto = ManifestoDeDesafiosSchema.parse(
   ).json(),
 )
 const cursos = [
-  'faisca/cade-todo-mundo',
   'faisca/desafio-primeiro-jogo',
   'faisca/a-ilha-do-farol',
   'faisca/o-jardim-secreto',
   'construtor/nave-contra-asteroides',
-  'construtor/o-jogo-do-meu-jeito',
   'inventor/corre-dino',
 ]
 const blocos = new Set<string>()
@@ -32,10 +30,15 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('a Vila Doce é do Inventor e o pacote tem um quadro e três desafios do dia', () => {
+test('a Vila Doce é do Inventor e o pacote tem seis quadros e três desafios do dia', () => {
   expect(ilha('vila-doce').posto).toBe('hacker')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
+    'vila-doce-forno-da-vez',
+    'vila-doce-caixa-de-paes',
+    'vila-doce-suco-na-ordem',
+    'vila-doce-doce-esfriou',
+    'vila-doce-bandejas-da-padaria',
     'vila-doce-corrida-do-entregador',
     'vila-doce-corrida-do-entregador-entregas',
     'vila-doce-corrida-do-entregador-tempo',
@@ -44,20 +47,21 @@ test('a Vila Doce é do Inventor e o pacote tem um quadro e três desafios do di
   for (const [i, d] of manifesto.desafios.entries()) {
     expect(d.ilha).toBe('vila-doce')
     expect(d.publico).toBe('kids')
-    expect(d.tipo).toBe(i === 0 ? 'quadro-das-cores' : 'desafio-do-dia')
-    expect(d.quadro).toBe(i === 0 ? 6 : null)
+    expect(d.tipo).toBe(i <= 5 ? 'quadro-das-cores' : 'desafio-do-dia')
+    expect(d.quadro).toBe(i <= 5 ? i + 1 : null)
+    expect(d.publicar).toBe(false)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i === 0,
-      atracao: 'corrida-do-entregador',
-      moedas: i === 0 ? 20 : 10,
-      moedasExtra: i === 0 ? 10 : 5,
+      cor: i <= 5,
+      atracao: i >= 5 ? 'corrida-do-entregador' : d.slug,
+      moedas: i <= 5 ? 20 : 10,
+      moedasExtra: i <= 5 ? 10 : 5,
     })
     expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
     expect(d.conteudo.objetivos.some((o) => !o.optional)).toBe(true)
     expect(d.conteudo.objetivos.some((o) => o.optional)).toBe(true)
   }
 })
-test('os oito projetos só usam blocos ensinados até Inventor e arte embutida', () => {
+test('os dezoito projetos só usam blocos ensinados até Inventor e arte embutida', () => {
   for (const d of manifesto.desafios)
     for (const raw of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
       const p = raw as { blocksState: unknown; assets: { dataUrl: string }[] }

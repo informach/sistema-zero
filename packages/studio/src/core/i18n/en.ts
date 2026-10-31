@@ -219,6 +219,9 @@ export const en: Record<string, string> = {
   'assets.cover.useAria': 'Use {name} as the game cover',
   'assets.cover.useHint': 'This image becomes the cover of your game in the list',
   'assets.cover.current': 'Game cover',
+  'assets.lessonArt.badge': 'Your lesson drawing',
+  'assets.lessonArt.hint':
+    'This drawing comes from the lesson Pinta. To change it, draw it again there and send it: it comes back here on its own.',
   'assets.cover.reset': 'Back to the automatic photo',
   'assets.cover.resetAria': 'Back to the automatic cover photo',
   'assets.cover.resetHint': 'The cover goes back to a photo of the game running',

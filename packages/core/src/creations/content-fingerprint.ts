@@ -74,8 +74,13 @@ function canHash(): boolean {
 const record = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
-/** Imagem da biblioteca do CURSO (não a pessoal, que vem do Pinta como `personal:<id>`). */
+/**
+ * Imagem que o HOST põe no projeto a cada abertura: a da biblioteca do CURSO (não a pessoal,
+ * que vem do Pinta como `personal:<id>`) e o desenho da vaga de arte (`lesson-art`, 29/10/2026).
+ * Contá-las marcaria o projeto como mudado toda vez que a criança abre a aula.
+ */
 function isCourseLibraryAsset(asset: Record<string, unknown>): boolean {
+  if (asset.source === 'lesson-art') return true
   return (
     asset.source === 'library' &&
     !(typeof asset.libId === 'string' && asset.libId.startsWith('personal:'))

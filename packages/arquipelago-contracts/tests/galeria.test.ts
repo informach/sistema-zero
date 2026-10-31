@@ -20,7 +20,13 @@ import {
   SaldoDosMembrosSchema,
   type SalvamentoV5,
 } from '../src'
-import { migrarDaV10, migrarDaV11, migrarDaV12, migrarDaV13 } from '../src/salvamento'
+import {
+  migrarDaV10,
+  migrarDaV11,
+  migrarDaV12,
+  migrarDaV13,
+  migrarDaV14ParaAtual,
+} from '../src/salvamento'
 
 describe('o catálogo da galeria', () => {
   test('uma aparência por objeto, com o id estável que começa pelo objeto', () => {
@@ -99,11 +105,20 @@ describe('salvamento V6: as aparências guardadas', () => {
       recife: _recife,
       vale: _vale,
       pico: _pico,
+      nuvens: _nuvens,
+      farol: _farol,
+      clima: _clima,
+      ilhasVisitadas: _visitas,
+      chaves: _chaves,
+      segredos: _segredos,
+      mapa: _mapa,
+      companhia: _companhia,
       ...resto
     } = criarSalvamentoInicial(AGORA)
     const v5: SalvamentoV5 = {
       ...resto,
       versao: 5,
+      percursos: {},
       moradores: { capi: resto.moradores.capi },
       projetos: {
         geladeira: { ganhoEm: ganho, aparencia: { origem: 'pinta', id: 'c1' } },
@@ -115,8 +130,10 @@ describe('salvamento V6: as aparências guardadas', () => {
     expect(v6.projetos.geladeira?.aparencias).toEqual([{ origem: 'pinta', id: 'c1' }])
     expect(v6.projetos.forno?.aparencias).toEqual([])
     expect(migrarSalvamento(v5)).toEqual(
-      migrarDaV13(
-        migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))))),
+      migrarDaV14ParaAtual(
+        migrarDaV13(
+          migrarDaV12(migrarDaV11(migrarDaV10(migrarDaV9(migrarDaV8(migrarDaV7(migrarDaV6(v6))))))),
+        ),
       ),
     )
   })

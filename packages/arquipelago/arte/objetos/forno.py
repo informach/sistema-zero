@@ -22,6 +22,12 @@ ABRIR = {'porta': {'rotation_euler': [(0, (0, 0, 0)), (6, (R(30), 0, 0)), (14, (
                                       (18, (R(88), 0, 0))]}}
 
 
+# As faces que o Pinta pinta (fase3-11): os dois lados do corpo e a frente da porta, na cor do forno
+# sem pintura (com a imagem no `map`, o jogo põe a cor em branco). O topo é a mesa das bocas.
+for _face in ('pintaFrente', 'pintaLadoEsq', 'pintaLadoDir'):
+    lib_q.PALETTE[_face] = lib_q.PALETTE['forno']
+
+
 def corpo():
     c = caixa_redonda((L, F, A - PE), (0, YC, PE + (A - PE) / 2), 'forno', raio=0.045, segs=3)
     fm = F - 0.06 + 0.2
@@ -33,8 +39,16 @@ def corpo():
     def regra(ct, n):
         if abs(ct.x) < lim and Z_MIOLO - 0.002 < ct.z < Z_MIOLO + A_MIOLO + 0.002 and ct.y > Y_FRENTE + 0.002:
             return 'fornoDentro'
+        # Os lados de fora: só a parte plana (as quinas arredondadas ficam creme).
+        if n.x < -0.999 and ct.x < -L / 2 + 0.01:
+            return 'pintaLadoEsq'
+        if n.x > 0.999 and ct.x > L / 2 - 0.01:
+            return 'pintaLadoDir'
         return None
     pintar_por(c, regra)
+    # u para a direita e v para cima de quem olha cada lado de fora.
+    uv_plano(c, {'pintaLadoEsq'}, (0, -1, 0), (0, 0, 1))
+    uv_plano(c, {'pintaLadoDir'}, (0, 1, 0), (0, 0, 1))
     p = [c]
     for sx in (-1, 1):
         for sy in (-1, 1):
@@ -122,6 +136,9 @@ def porta():
     d = caixa_redonda((L - 0.06, EP, A_PORTA), (0, yc, zc), 'forno', raio=0.022, segs=3)
     furo = box((0.44, EP + 0.1, 0.2), (0, yc, zc - 0.01), 'forno', bevel=0.03, segs=3)
     booleana(d, furo)
+    # A frente da porta, em volta do vidro (o vidro e a moldura ficam por cima do furo).
+    pintar_por(d, lambda ct, n: 'pintaFrente' if n.y < -0.999 and ct.y < yc - EP / 2 + 0.002 else None)
+    uv_plano(d, {'pintaFrente'}, (1, 0, 0), (0, 0, 1))
     p = [d]
     p.append(box((0.45, 0.01, 0.21), (0, yc, zc - 0.01), 'vidroForno', bevel=0.004, segs=1))
     # Moldura cromada em volta do vidro.
@@ -143,7 +160,7 @@ def porta():
 def forno():
     pivo = (0, Y_FRENTE - EP - 0.002, Z_PORTA)
     nos = {'forno': corpo() + miolo(), 'porta': (porta(), pivo)}
-    return {'nos': nos, 'clipes': {'abrir': ABRIR}, 'grupo': 'forno'}
+    return {'nos': nos, 'clipes': {'abrir': ABRIR}, 'grupo': 'forno', 'uv': True}
 
 
 ITENS = [('forno', forno)]

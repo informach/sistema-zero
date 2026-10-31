@@ -4,6 +4,7 @@ import { join } from 'node:path'
 import { ilhasDoAnel } from '@sistemazero/arquipelago-contracts'
 import { Matrix4, type Mesh, type Object3D, Quaternion, Raycaster, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { LUGAR_DA_IRIS, PORTA_DO_FINAL } from '../src/mundo/alto-do-farol'
 import {
   ALTURA_QUE_SEGURA,
   ARVORES,
@@ -24,8 +25,15 @@ import {
 } from '../src/mundo/colisao-da-ilha-central'
 import { lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
 import {
+  colisoresNoLugar,
+  lugarDoQuadroNaSuaIlha,
+  lugarDoQuadroNoFarol,
+  QUADRO_DA_SUA_ILHA,
+} from '../src/mundo/lugar-do-quadro'
+import {
   alturaDaIlha,
   BANCADA,
+  CATA_VENTO,
   CENTRO_DA_CASA,
   FAROL,
   INICIO,
@@ -34,6 +42,7 @@ import {
   QUARTO,
   trajetoDaPonte,
 } from '../src/mundo/medidas'
+import { LOTE_DA_CASA, LOTE_DA_CASA_GRANDE } from '../src/sistemas/construcao/lote'
 
 const MUNDO = join(import.meta.dir, '..', 'src', 'assets', 'mundo')
 
@@ -109,6 +118,7 @@ let terreno: Object3D
 let doTerreno: Solido[]
 let doFarol: Solido[]
 let doPier: Solido[]
+let doCataVento: Solido[]
 let todos: Solido[]
 
 const solidos = (raiz: Object3D) =>
@@ -119,6 +129,7 @@ beforeAll(async () => {
   doTerreno = solidos(terreno)
   doFarol = solidos(await carregar('farol.glb'))
   doPier = solidos(await carregar('pier.glb'))
+  doCataVento = solidos(await carregar('cata-vento.glb'))
   todos = [
     ...doTerreno,
     ...colisoresDasArvores(),
@@ -127,8 +138,23 @@ beforeAll(async () => {
     ...deslocar(COLISORES_DA_BANCADA, GRUPOS.bancada),
     ...deslocar([...COLISORES_DO_FAROL, ...doFarol], GRUPOS.farol),
     ...deslocar([...COLISORES_DO_PIER, ...doPier], GRUPOS.pier),
+    ...noCataVento(doCataVento),
+    ...(colisoresNoLugar(lugarDoQuadroNaSuaIlha()) as Solido[]),
+    ...(colisoresNoLugar(lugarDoQuadroNoFarol()) as Solido[]),
   ]
 })
+
+/** Os colisores do cata-vento no lugar dele (`CATA_VENTO`, girado e no chão da ilha). */
+function noCataVento(lista: Solido[]): Solido[] {
+  const { x, z, giro } = CATA_VENTO
+  const c = Math.cos(giro)
+  const s = Math.sin(giro)
+  const y = alturaDaIlha(x, z)
+  return lista.map((o) => {
+    const [px, py, pz] = o.posicao
+    return { ...o, posicao: [x + px * c + pz * s, y + py, z - px * s + pz * c] }
+  })
+}
 
 /** Algo que não dá para subir (mais alto que o degrau) segura o corpo em (x, z)? */
 function quemSegura(x: number, z: number, lista = todos): string | undefined {
@@ -261,24 +287,19 @@ describe('as árvores, a casa e a horta', () => {
     expect(quemSegura(PORTA.x, CENTRO_DA_CASA.z + QUARTO.fundo / 2, fechada)).toBe('col-porta')
   })
 
-  test('as trilhas de pedra (porta, píer, horta e bancada) ficam livres', () => {
+  test('as trilhas de pedra (píer e horta) ficam livres', () => {
+    // Saem da beira do lote grande da casa: dentro dele o chão fica para a obra.
     const trilhas: [number, number][][] = [
       [
-        [2.5, 1.6],
-        [1.5, 6],
-        [-1.5, 12],
+        [-0.5, 12.8],
+        [-2, 15],
         [-4, 18],
         [-5, 24.5],
       ],
-      // As pedras até a horta saem de baixo da varanda: quem sai pela porta contorna a coluna.
       [
-        [2.5, 2.4],
-        [4.5, 2.4],
-        [7.4, 1.2],
-      ],
-      [
-        [8.2, -1.2],
-        [9.6, -4.4],
+        [-0.5, 12.8],
+        [3, 13.3],
+        [5.4, 13.4],
       ],
     ]
     for (const trilha of trilhas) {
@@ -341,10 +362,71 @@ describe('dá para andar da porta até tudo', () => {
     }
   })
 
+  test('o cata-vento ao lado da horta (dentro do alcance de "Mudar o clima", 1,8 m)', () => {
+    expect(chegaPerto(CATA_VENTO.x, CATA_VENTO.z, 1.6)).toBe(true)
+    // Ele segura o corpo, mas não tapa nenhum canteiro.
+    expect(quemSegura(CATA_VENTO.x, CATA_VENTO.z)).toBe('col-cil-poste-cata-vento-1')
+    for (let i = 0; i < 6; i++) {
+      const { x, z } = posicaoDoCanteiro(i)
+      expect(Math.hypot(x - CATA_VENTO.x, z - CATA_VENTO.z)).toBeGreaterThan(1.3)
+    }
+  })
+
   test('a bancada, o farol e o começo do píer', () => {
     expect(chegaPerto(BANCADA.x, BANCADA.z, 2)).toBe(true)
     expect(chegaPerto(FAROL.x, FAROL.z, 3.4)).toBe(true)
     expect(chegaPerto(PIER.x, PIER.z - 0.5, 0.6)).toBe(true)
+  })
+
+  test('o Quadro das Cores da sua ilha (C03a): chega pela frente, sem tapar trilha nem ponte', () => {
+    const lugar = lugarDoQuadroNaSuaIlha()
+    const frente = {
+      x: lugar.x + Math.sin(lugar.giro) * 1.6,
+      z: lugar.z + Math.cos(lugar.giro) * 1.6,
+    }
+    expect(chegaPerto(frente.x, frente.z, 0.6)).toBe(true)
+    expect(quemSegura(lugar.x, lugar.z - 0.14)).toBe('col-quadro-das-cores')
+    // Olha para a trilha do píer e fica fora dela.
+    expect(
+      Math.hypot(
+        QUADRO_DA_SUA_ILHA.olharPara.x - lugar.x,
+        QUADRO_DA_SUA_ILHA.olharPara.z - lugar.z,
+      ),
+    ).toBeGreaterThan(2)
+    for (const ilha of ilhasDoAnel())
+      for (const p of trajetoDaPonte(ilha))
+        expect(Math.hypot(p.x - lugar.x, p.z - lugar.z)).toBeGreaterThan(3)
+  })
+
+  test('o quadro do Farol (C03b): chega pela frente, longe da porta e da Íris, fora das obras', () => {
+    const lugar = lugarDoQuadroNoFarol()
+    const frente = {
+      x: lugar.x + Math.sin(lugar.giro) * 1.6,
+      z: lugar.z + Math.cos(lugar.giro) * 1.6,
+    }
+    expect(chegaPerto(frente.x, frente.z, 0.6)).toBe(true)
+    expect(chegaPerto(PORTA_DO_FINAL.x, PORTA_DO_FINAL.z, 0.6)).toBe(true)
+    // A porta (raio 2) e a Íris (alcance da conversa) não disputam o "Usar" de quem está na frente.
+    for (const outro of [PORTA_DO_FINAL, LUGAR_DA_IRIS])
+      expect(Math.hypot(outro.x - frente.x, outro.z - frente.z)).toBeGreaterThan(3.5)
+    // As quinas do cavalete (1,3 por 0,4) ficam onde nenhuma obra chega: fora dos dois lotes da casa
+    // ou no pé do farol, que o lote grande tem como ocupado.
+    const c = Math.cos(lugar.giro)
+    const sn = Math.sin(lugar.giro)
+    for (const lote of [LOTE_DA_CASA, LOTE_DA_CASA_GRANDE]) {
+      const a = lote.area
+      for (const [dx, dz] of [
+        [-0.7, -0.4],
+        [0.7, -0.4],
+        [-0.7, 0.3],
+        [0.7, 0.3],
+      ] as const) {
+        const x = lugar.x + dx * c + dz * sn
+        const z = lugar.z - dx * sn + dz * c
+        const dentro = (r: typeof a) => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1
+        expect(dentro(a) && !lote.ocupadas.some((o) => dentro(o.ret)), lote.id).toBe(false)
+      }
+    }
   })
 
   test('a cabeça de cada ponte', () => {

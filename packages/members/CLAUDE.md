@@ -1,5 +1,73 @@
 # CLAUDE.md — @sistemazero/members
 
+## Vaga de arte: o desenho do Pinta da aula no jogo do Estúdio (29/10/2026, etapa 1)
+
+Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. Contrato PURO no core
+(`@sistemazero/core/learning`, `art-slots.ts`): `PintaBlock.artSlot?: {name, replaces?}` (o desenho
+preenche a vaga) e `StudioBlock.artSlots?: {name, mode: 'add'|'replace'}[]` (até 8; o jogo importa).
+O nome da vaga tem a régua de um nome de imagem do Estúdio (`ART_SLOT_NAME_PATTERN`, até 48), porque
+VIRA o nome da imagem. DTO TypeBox nos dois blocos; `assertBlockCoherent` recusa a vaga no Pinta de
+galeria ou de exploração (precisa da entrega do próprio desenho) e as vagas no Estúdio de galeria.
+A criança recebe só os NOMES (`STUDIO_MEMBER_CONTENT_KEYS` + `toMemberFacingStudioContent`; o Pinta
+já ia inteiro). Testes: `tests/unit/art-slots-blocks.test.ts`, os de vaga em
+`tests/integration/pinta.test.ts` e `core/src/learning/art-slots.test.ts`.
+
+**Etapa 2, a conferência do CURSO (29/10/2026).** A régua é pura no core
+(`artSlotCourseIssues`): vaga preenchida por dois desenhos; jogo importando vaga que nenhum desenho
+preenche; vaga preenchida DEPOIS do jogo (ordem módulo → aula → PARTE da aula → bloco); `replace`
+sem `replaces` ou com imagem que o jogo não tem; e `add` com o nome de uma imagem que o jogo já tem
+(a quinta, fora da lista do design: o desenho colidiria com a imagem nos materiais). Cada problema
+tem uma `key` estável, e quem grava compara antes × depois (`newArtSlotCourseIssues`): só recusa o
+que a gravação CRIOU, **409 `ART_SLOT_CONFLICT`** com a frase da régua (nomeia aula e vaga).
+- **Onde roda**, sempre com o repositório da transação da trava do curso (`withStudioAuthoringLock`,
+  o `FOR UPDATE` da linha do curso): `guardArtSlots` em reordenar e excluir aula e módulo, e no
+  `BlockAdminService` (criar, editar, excluir, reordenar; ele não tem rota, só os testes de banco o
+  usam); `startArtSlotGuard` na publicação do rascunho (lê antes de trocar os blocos, confirma
+  DEPOIS de gravar as partes, porque a ordem dentro da aula vem delas). A publicação só paga a
+  leitura quando a aula tem vaga antes ou depois (`hasArtSlots`). A importação de manifesto vai ao
+  rascunho e passa pela mesma publicação.
+- **O "Conferir"** (`POST …/draft/validate`) simula: as vagas de agora com os blocos da aula
+  trocados pelos do rascunho (`draftArtSlotIssues`), e devolve o problema como item da conferência.
+- **A leitura** é `listArtSlotBlocks` (`art-slots.repository.ts`): blocos não arquivados do curso
+  (aula rascunho inclusa) com vaga, e os NOMES das imagens do jogo tirados no banco (o projeto tem
+  até 1,5 MB). ⚠️ Esse SQL espelha `studioGameImageNames` (`domain/course/art-slot-course.ts`); o
+  falso em memória usa a função de domínio, então só `tests/db/art-slots-sql.test.ts` alcança o SQL.
+- ⚠️ O falso de `withStudioAuthoringLock` agora é REENTRANTE (`AsyncLocalStorage`, como o `FOR
+  UPDATE` na mesma transação) e DESFAZ módulos, aulas e blocos no erro (a conferência recusa depois
+  de escrever). Testes: `tests/integration/art-slots-course.test.ts` e o SQL acima.
+
+**Etapa 3, a leitura da criança (29/10/2026).** `GET /members/lessons/:lessonId/blocks/:blockId/art-slots`
+(`GetArtSlotsService`, rota de gateway `members-art-slots`) → `{slots: [{name, mode, replaces, asset}]}`
+na ordem das vagas do bloco de Estúdio. Régua do carryover: aula publicada e liberada, bloco numa
+parte aberta, acesso pela CONTA e entrega pelo PERFIL (`getOne(userId, …)`, nunca de outra
+criança). O desenho de cada vaga vem do bloco de Pinta em aula PUBLICADA do curso que a preenche
+(`CourseRepository.findArtSlotFillers`, o primeiro em ordem de curso; `replaces` sai dele). Vaga sem
+desenho publicado ou sem entrega volta com `asset: null`; vagas ilegíveis valem como nenhuma; bloco
+que não é Estúdio é 404. Testes: `tests/integration/art-slots-read.test.ts` e o SQL em
+`tests/db/art-slots-sql.test.ts`.
+
+**Full review das vagas (29/10/2026).** (1) A busca do desenho da criança (`findArtSlotFillers`)
+passou a usar a MESMA leitura da conferência (`listArtSlotBlocks`) com `artSlotFillers` do domínio:
+sem bloco arquivado (antes pegava o bloco de Pinta arquivado por uma publicação) e na ordem com a
+PARTE da aula; vaga ilegível vale como nenhuma. (2) `ArtSlotCourseBlock.published`: um Estúdio de
+aula publicada que importa uma vaga preenchida só em aula NÃO publicada é o problema
+`unpublished` ("Publique essa aula antes"); despublicar uma aula (rascunho `/unpublish` e
+`LessonAdminService.update`) passa pela conferência, e o "Conferir" trata o rascunho como
+publicado. (3) As chaves dos problemas não dependem da ordem dos blocos (`duplicate:<vaga>:<bloco>`
+por bloco repetido, `order:<jogo>:<vaga>`, `replace-missing:<jogo>:<vaga>`): reordenar vagas
+repetidas de antes não vira 409. (4) Vaga de arte em Pinta de MAPA é recusada (`tilemap` não vira
+imagem sozinho). Testes: `tests/integration/art-slots-course.test.ts` (§review),
+`tests/db/art-slots-sql.test.ts` e `core/src/learning/art-slots.test.ts`.
+
+**Texto dos materiais na publicação (29/10/2026).** O item `text` do bloco `materials` aceitava
+até 2000 caracteres no DTO de publicação (`MaterialsBlockSchema`), enquanto o core
+(`isLearningManifest`) aceita 50000: a importação dos cursos do Faísca passava e a PUBLICAÇÃO
+recusava ("Preencha os campos obrigatórios deste bloco"), porque o Passo a passo do projeto vai
+inteiro num item de texto com a prévia em livro (3 a 15 mil caracteres). Hoje
+`MATERIALS_TEXT_MAX_CHARS` = 50000, igual ao core. Teste: `tests/unit/materials-text-publish.test.ts`
+(todo bloco de materiais com itens dos manifestos do Faísca passa no `parsePublishedLessonBlock`).
+Achado pelo ensaio de ponta a ponta da vaga de arte (`community-kids/e2e-art-slots`).
+
 ## Leituras internas do Arquipélago (27/10/2026)
 
 `interfaces/http/routes/arquipelago-internal.routes.ts`, prefixo `/members/internal/arquipelago`
@@ -11,7 +79,7 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   `JornadaDosMembrosSchema` do contrato do jogo (validado do lado do jogo; o Members não importa o
   contrato). Política do Kids não publicada = versão 0 sem postos; outra falha sobe como erro.
 - **Porta de moedas** (`arquipelago-coins.routes.ts`, token `ARQUIPELAGO_COINS_TOKEN`): teto
-  SEMANAL de **150** moedas do jogo por pessoa (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, segunda a
+  SEMANAL de **100** moedas do jogo por pessoa (`ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS`, segunda a
   domingo em São Paulo, tudo ou nada, `WEEKLY_LIMIT`), separado do teto diário dos cursos. A conta
   que levou ao número está em `docs/arquipelago-regras.md`. Teste: `tests/db/arquipelago-coins.test.ts`
   (`ARQUIPELAGO_COINS_TEST_DATABASE_URL`, banco local `kids_journey_*`).
@@ -54,26 +122,52 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   `false`, então o cache de 10 min do executor vale). Nada é guardado. Corpo até 4 MB
   (`ARQUIPELAGO_OBJECTIVES_BODY_BYTES` no `bodyLimitForPath`: são dois projetos).
   - `POST /objetivos/analisar` `{audience, projetoInicial, gabarito, objetivos}` →
-    `AnaliseDosMembrosSchema`. Só corpo malformado é 400; o resto vira `problemas`: Python
-    (`OBJETIVO_PYTHON`/`PROJETO_PYTHON`), Pro (`PROJETO_PRO`), `bridgeCodeAhead`
+    `AnaliseDosMembrosSchema`. Só corpo malformado é 400; o resto vira `problemas`: Python Pro
+    (`PROJETO_PYTHON_PRO`), gabarito em outro ambiente (`GABARITO_DE_OUTRO_AMBIENTE`: outra
+    linguagem ou tipo, outra release Python ou outro modelo Pro), `bridgeCodeAhead`
     (`PROJETO_SINCRONIZANDO`), mais de 20 objetivos ou de 8 que rodam o jogo, regra inválida
     (`isSectionCompletion`), a régua da publicação das aulas com o inicial do desafio
     (`sectionProjectChecksEnvironmentIssue`, `projectCheckAuthoring({initialProject}).issues`,
     espera somada acima de `EXECUTION_LIMITS.maxSectionWaitMs`), só extras (`SEM_OBRIGATORIO`) e
     `GABARITO_NAO_PASSA` (obrigatório em que o gabarito falha). Com problema de autoria, nada vai
-    ao executor e `gabarito`/`inicial` saem vazios. `blocosDoGabarito` = `projectBlockTypes` do
-    gabarito no `SERVER_BLOCK_CATALOG`, sem moldura (`contract.domain === 'frame'`) e sem os tipos
-    do inicial; `blocosDesconhecidos` = fora do catálogo. Executor fora → `EXECUTOR_INDISPONIVEL`
+    ao executor e `gabarito`/`inicial` saem vazios. `blocosDoGabarito` = tipos acrescentados,
+    retirados, alterados ou reordenados por `blocosACompletar`, conhecidos no catálogo e sem
+    moldura (`contract.domain === 'frame'`). `blocosDesconhecidos` inclui inicial e gabarito
+    e gera `BLOCO_DESCONHECIDO` impeditivo. Executor fora → `EXECUTOR_INDISPONIVEL`
     (ocupado: `EXECUTOR_OCUPADO`; recusa: `EXECUTOR_RECUSOU`), a estrutura segue conferida e os
     que rodam o jogo saem `passou: false` sem acusar o gabarito. O limite do executor da análise
     é um só (`arquipelago-admin`).
   - `POST /objetivos/verificar` `{requester, audience, objetivos, projetoInicial, projeto}` →
     `{passou, resultados}` (`passou` = todos os obrigatórios; sem obrigatório, `false`). Projeto
-    copiado como nas entregas (`copyStudioProjectJson` + `MAX_STUDIO_PROJECT_CHARS`), tipo igual
-    ao do inicial e nunca Pro (400 `VALIDATION_ERROR`), `bridgeCodeAhead` 409
-    `STUDIO_PROJECT_SYNCING`, recusa do executor 400 `PROJECT_CHECK_REJECTED`, executor fora (ou
-    análise incompleta) 424, ocupado 429 `PROJECT_CHECK_BUSY`. O `requester` (quem joga) é o
-    limite por pessoa do executor.
+    copiado como nas entregas (`copyStudioProjectJson` + `MAX_STUDIO_PROJECT_CHARS`), linguagem e
+    tipo iguais aos do inicial, mesmo modelo Pro e, no Python, mesma continuidade de ambiente
+    (`studioProjectContinuityIssue`); Python Pro recusado (400 `VALIDATION_ERROR`),
+    `bridgeCodeAhead` 409 `STUDIO_PROJECT_SYNCING`, recusa do executor 400
+    `PROJECT_CHECK_REJECTED`, executor fora (ou análise incompleta, ou o Python fora:
+    `STUDIO_PYTHON_PROJECT_CHECK_UNAVAILABLE`) 424, ocupado 429 `PROJECT_CHECK_BUSY`. O
+    `requester` (quem joga) é o limite por pessoa do executor.
+  - **C02 (30/10/2026): Python, JavaScript em texto e Pro.** Python clássico vai ao
+    `SectionProgressionService.evaluatePythonObjectives` (o MESMO `PythonProjectCheckerService.grade`
+    do "Verificar esta parte", sem vínculo de aula) com `CURADORIA_DO_DESAFIO_PYTHON` (vazia: a
+    política de runtime confere release, modo e extensões; o projeto precisa de uma release do
+    catálogo do ambiente). Erro de política vira `PYTHON_RECUSOU` na análise e 400 na
+    verificação. Python e Pro não derivam blocos (o catálogo do servidor não tem blocos Python e o
+    Pro não tem blocos). O JavaScript em texto é o clássico na Ponte, sem mudança. A rota guarda
+    `profileId` e `stdin` do objetivo (o `z.object` os descartava). Testes:
+    `tests/unit/arquipelago-objectives-c02.test.ts` e `tests/unit/arquipelago-c02-pacotes.test.ts`
+    (os quatro pacotes de `docs/desafios-do-jogo` pela análise de verdade).
+    `tests/unit/arquipelago-c02-ambiente.test.ts` confere os projetos Python contra o catálogo
+    PUBLICADO (`022e5b54…`, o seletor de staging e produção).
+  - **C02b (30/10/2026): o ambiente Python do Estúdio de desafio.** `POST /ambiente`
+    `{requester, accountId, audience, projetoInicial, pedido}` → `ArquipelagoRuntimeService`
+    (`application/arquipelago/arquipelago-runtime.service.ts`, ligado só com a política de
+    runtime; sem ela, 424). O pedido é um `StudioArquipelagoRuntimeRequest` (core); passa só o
+    mesmo projeto aberto, Python clássico, no ambiente do INICIAL (`studioProjectContinuityIssue`;
+    extensão a mais é recusada pela política) e o público de quem joga. Autoriza pela política com
+    `CURADORIA_DO_DESAFIO_PYTHON` e as extensões do inicial, capacidades editar, executar e
+    pausar. Não depende do Estúdio Completo. 400 pedido inválido, 403 recusa. Testes:
+    `tests/unit/arquipelago-runtime.service.test.ts` (catálogo publicado e política de verdade) e
+    as rotas em `tests/arquipelago-internal.routes.test.ts`.
   - Testes: `tests/unit/arquipelago-objectives.service.test.ts` (verificador de verdade, executor
     falso, saídas conferidas contra o contrato lido PELO CAMINHO) e as rotas em
     `tests/arquipelago-internal.routes.test.ts`.
@@ -3193,3 +3287,33 @@ financeiro. Extensão nunca reduz validade já maior nem ressuscita acesso revog
 Sem esse campo, o contrato anterior continua para compras e eventos históricos.
 Na liberação, Members e Funnel precisam aceitar esse contrato ANTES do Payments emitir
 `cycleAccess` ou `payment.subscription_period_confirmed`.
+
+## Repertório dos desafios alterados, C01c (30/10/2026)
+
+`ArquipelagoObjectivesService.analisar` deriva requisitos com `blocosACompletar`: compara
+conteúdo, multiplicidade, ordem e área, incluindo contêineres cujo corpo foi completado.
+Não usar só diferença de tipos: um laço vazio já pede repertório quando a pessoa o completa.
+Apoio intacto, IDs e apresentação do editor não contam. `data`, campos e estado extra contam.
+Travessia iterativa limitada pelo leitor do Estúdio e pelos limites de JSON; ciclos e IDs
+duplicados continuam recusados. Tipos desconhecidos no inicial ou gabarito geram problema
+impeditivo, não apenas uma lista informativa. Sem alteração de contrato ou persistência.
+Testes em `arquipelago-blocos-a-completar`, `arquipelago-objectives.service` e
+`arquipelago-repertorio-local`. O último confere o relatório editorial de 108 entradas,
+sem importar Members no jogo ou nos contratos.
+
+## Posse compartilhada da galeria, L04 (30/10/2026)
+
+`ArquipelagoInventoryRepository` usa `room_inventory`, perfil/público e a transação
+`spendCoinsInTransaction` da loja. Trava da conta antes da carteira. Preço e identidade
+compatível vêm do contrato puro `posse-da-galeria.ts`; nenhuma importação do jogo.
+GET `/internal/arquipelago/galeria` e POST `/galeria/compras` usam o token de MOEDAS,
+nunca o token de leitura. Preço e privilégio público não entram no corpo do navegador.
+A compra atômica e a posse preexistente impedem débito repetido entre os dois destinos.
+
+Adoção é somente operacional, sem rota: `scripts/adopt-arquipelago-gallery.ts`, arquivo
+versionado exportado pelo serviço do jogo e SHA conferido. Confronta o débito histórico
+e a identidade; gratuita exige compra paga e identidade confiável. A migration gerada
+0142 acrescenta `arquipelago_gallery_adoption` (evento de valor zero). Sem moeda/XP novo.
+Ver `docs/operations/arquipelago-galeria-unica.md` antes do corte: pausar e drenar compras
+NOS DOIS destinos, adotar, conferir e só depois reabrir. Testes de banco em
+`tests/db/arquipelago-inventory.test.ts`, somente URL local `kids_journey_*`.

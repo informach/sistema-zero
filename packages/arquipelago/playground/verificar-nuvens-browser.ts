@@ -255,6 +255,9 @@ try {
     await page.screenshot({ scale: 'css', path: path.join(prints, `nuvens-${tipo}-irie.png`) })
     await conversa.getByRole('button', { name: 'Continuar' }).click()
     await conversa.getByText(APRESENTACAO_DA_IRIE[1]).waitFor()
+    // A terceira fala (fase4-08) ensina o clima da sua ilha.
+    await conversa.getByRole('button', { name: 'Continuar' }).click()
+    await conversa.getByText(APRESENTACAO_DA_IRIE[2]).waitFor()
     await conversa.getByRole('button', { name: 'Tchau, Iriê' }).click()
     await conversa.waitFor({ state: 'detached' })
     console.log(`${tipo}: conversa abriu, avançou e fechou`)

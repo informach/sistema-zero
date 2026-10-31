@@ -69,10 +69,12 @@ lê as duas na hora de exportar). Ele também acrescenta:
 - **Projeto azul:** `projetoAzul` são as faces translúcidas (alfa 0,32) e `projetoAzulLinha` o
   contorno e as linhas da grade da planificação, mais fortes. Como na bancada, o jogo deve somar a
   luz (`AdditiveBlending`, sem `depthWrite`).
-- **Faces que recebem imagem:** `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir`, `pintaTopo` (na
-  geladeira) e `tela` (no fliperama) têm coordenadas de textura de 0 a 1, com u para a direita e
-  v para cima de quem olha a face de fora (o topo, visto de cima, com a frente embaixo). A cor de
-  base é a de um objeto sem pintura; ao pôr a imagem no `map`, o jogo põe a cor em branco.
+- **Faces que recebem imagem:** `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir`, `pintaTopo` e
+  `tela` (no fliperama) têm coordenadas de textura de 0 a 1, com u para a direita e v para cima de
+  quem olha a face de fora (o topo, visto de cima, com a frente embaixo). A cor de base é a do
+  objeto sem pintura (cada script troca a cor dos `pinta*` pela da peça, então o modelo não muda);
+  ao pôr a imagem no `map`, o jogo põe a cor em branco. Uma face pode ser feita de várias peças
+  (as duas portinhas do aquário: `uv_plano_juntos`, a mesma projeção em todas).
 - **Clipes:** gravados como faixas do NLA, um clipe do glTF por nome. `abrir` toca uma vez
   (`LoopOnce` com `clampWhenFinished`); `nadar` e `crepitar` são laços.
 
@@ -84,9 +86,12 @@ lê as duas na hora de exportar). Ele também acrescenta:
   com os materiais trocados por um azul translúcido no código (`mundo/objetos-da-casa.tsx`). Falta,
   se a dona quiser o mesmo acabamento, um `<id>-holograma.glb` de cada um, com `projetor` e as
   faces em `projetoAzul` e `projetoAzulLinha`.
-- **Faces do Pinta:** só a geladeira tem as faces planas (`pinta*`) e o fliperama a `tela`. Sem
-  elas o molde do objeto vai sem faces e o jogo deixa o "Pintar no Pinta" desligado. Falta, nos
-  outros, a planificação da caixa com `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir` e `pintaTopo`.
+- **Faces do Pinta (29/10/2026, fase3-11):** a geladeira, o forno, o aquário, a casinha, o museu e
+  a planta de interior têm faces `pinta*`, e o fliperama a `tela` (medidas em cada arquivo abaixo,
+  as mesmas do catálogo). A lareira e a banda ficam sem faces de propósito: a lareira é toda de
+  tijolinhos em relevo (pintar por baixo deles estragaria o desenho) e os instrumentos da banda têm
+  formas diferentes demais para uma imagem só. Sem faces, o molde vai sem elas e o jogo deixa o
+  "Pintar no Pinta" desligado; o Molda vale para todos.
 
 ## Contrato de cada arquivo
 
@@ -129,6 +134,9 @@ lê as duas na hora de exportar). Ele também acrescenta:
 - `porta`: a porta do forno com o vidro (`vidroForno`, translúcido), a moldura e o puxador. Pivô na
   dobradiça, embaixo na frente (x 0, y 0,12, z +0,34).
 - Clipe `abrir`: 0,75 s, toca uma vez; a porta deita para a frente e para em 88°.
+- Faces do Pinta, na cor creme do forno: `pintaFrente` na frente da porta, em volta do vidro
+  (0,66 × 0,43), e `pintaLadoEsq` e `pintaLadoDir` na parte plana dos lados do corpo (0,53 × 0,72).
+  O topo é a mesa das bocas: sem face.
 
 ### `aquario.glb` (footprint 2 × 1)
 
@@ -142,6 +150,9 @@ lê as duas na hora de exportar). Ele também acrescenta:
   (o palhaço numa volta grande, o azul numa volta do outro lado e mais alto, o amarelo num oito
   embaixo, o rosa numa voltinha perto da superfície, à esquerda), com o rabinho balançando. As
   bolhas sobem do baú em 2 s, três vezes por volta, e somem na superfície.
+- Faces do Pinta: `pintaFrente` nas duas portinhas, uma imagem só que passa de uma para a outra
+  (1,41 × 0,34, na cor delas; os peixinhos recortados ficam por cima), e `pintaLadoEsq` e
+  `pintaLadoDir` nos lados do móvel (0,55 × 0,42). O vidro, a água e os peixes não mudam.
 
 ### `lareira.glb` (footprint 2 × 1)
 
@@ -185,6 +196,10 @@ malha; o nó não tem giro).
 | `placa` | pedestal fino com o tampo inclinado da legenda | (0,60, 0,55) |
 | `texto` | a face lisa da legenda (`placaFace`), 0,32 × 0,22; mesmo pivô da `placa` | (0,60, 0,55) |
 
+Faces do Pinta, na cor da madeira: a frente (`pintaFrente`, 0,82 × 0,12) e os lados
+(`pintaLadoEsq` e `pintaLadoDir`, 0,44 × 0,12) da base de madeira da vitrine. O vidro, os fósseis,
+a redoma e o crânio não mudam.
+
 ### `casinha.glb` (footprint 2 × 2)
 
 - `casinha`: a casinha de madeira (tábuas, cantoneiras, porta em arco, janelinha de coração e o
@@ -193,6 +208,9 @@ malha; o nó não tem giro).
   miolo 0,92 × 1,02: cabe o cachorro adulto (0,71 de altura, 0,97 de comprimento).
 - `placa`: a plaquinha do nome em cima da porta.
 - `texto`: a face lisa do nome (`placaFace`), 0,30 × 0,09.
+- Faces do Pinta, na cor da madeira: `pintaFrente` na parede da frente, com a porta (0,98 × 0,58), e
+  `pintaLadoEsq` e `pintaLadoDir` nas paredes dos lados (1,08 × 0,58). Os frisos das tábuas, as
+  cantoneiras, o arco da porta e a janelinha ficam por cima, como numa casinha pintada de verdade.
 
 ## Peças
 
@@ -239,5 +257,8 @@ triângulos. Do museu: redoma 1824, vitrine 2556, crânio 2608, pegada 934, plac
   com a nervura clara no meio (`nervuraFolha`).
 - Medidas: 0,78 de largura × 1,28 de altura × 0,88 de fundo, a base em y = 0 e o meio do vaso na
   origem. O script recusa (assert) passar de meia célula para cada lado (0,48) ou de 1,40 de
-  altura. 4,5 mil triângulos, 108 KB. Sem clipe, sem luz, sem faces do Pinta.
+  altura. 4,5 mil triângulos. Sem clipe, sem luz.
+- Face do Pinta: `pintaFrente` é a volta do corpo do vaso fora da faixa e da borda (na cor creme),
+  com as coordenadas de textura em volta do eixo (`uv_em_volta`: u de 0 a 1 dando a volta, 0,5 na
+  frente e a emenda atrás; v de baixo para cima), como um rótulo: 1,13 de volta × 0,37 de altura.
 - Script: `arte/objetos/planta_interior.py`; miniatura em `src/assets/casa/miniaturas/objeto-planta-interior.png`.

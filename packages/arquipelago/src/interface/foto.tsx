@@ -1,13 +1,16 @@
+import type { EnvioAoClube, SituacaoDoClube } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useRef, useState } from 'react'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useJogo } from '../estado/contexto'
 import { cameraDaFoto } from '../estado/foto'
 import {
+  clubeDepoisDoEnvio,
   eTeclaDaFoto,
   nomeDaFoto,
   PAINEL_DA_FOTO,
   podeEntrarNaFoto,
+  podeMandarAoClube,
   TEXTOS_DA_FOTO as T,
 } from '../sistemas/modo-foto'
 
@@ -31,15 +34,36 @@ function baixar(url: string, nome: string) {
 /**
  * O modo foto (fase2-09) no lugar do HUD: o título com a dica, "Tirar foto" e "Voltar". Os botões
  * ficam no alto e no canto de baixo à direita, longe do direcional do toque. A foto é um PNG do
- * canvas oferecido para baixar; nada vai para o serviço nem para o Clube.
+ * canvas oferecido para baixar. Com o Clube ligado (N08b), a foto pronta pode ir para a moderação
+ * do Clube pela plataforma.
  */
 export function ModoFoto() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const aparelhoPedeMenos = useReducedMotion()
   const jogoPedeMenos = useConforto(lojaDoConforto(loja), (s) => s.conforto.menosMovimento)
   const [situacao, setSituacao] = useState<Situacao>({ tipo: 'esperando' })
   const tirar = useRef<HTMLButtonElement>(null)
   const ultimaUrl = useRef<string | null>(null)
+  const ultimaFoto = useRef<Blob | null>(null)
+  const [clube, setClube] = useState<SituacaoDoClube | null>(null)
+  const [envio, setEnvio] = useState<EnvioAoClube | 'mandando' | null>(null)
+
+  useEffect(() => {
+    const porta = plataforma.clube
+    if (!porta) return
+    let vivo = true
+    porta
+      .situacao()
+      .then((s) => {
+        if (vivo) setClube(s)
+      })
+      .catch(() => {
+        if (vivo) setClube('fora-do-ar')
+      })
+    return () => {
+      vivo = false
+    }
+  }, [plataforma])
 
   useEffect(() => {
     const anterior = document.activeElement as HTMLElement | null
@@ -63,6 +87,8 @@ export function ModoFoto() {
       if (ultimaUrl.current) URL.revokeObjectURL(ultimaUrl.current)
       const url = URL.createObjectURL(png)
       ultimaUrl.current = url
+      ultimaFoto.current = png
+      setEnvio(null)
       const nome = nomeDaFoto(new Date())
       baixar(url, nome)
       setSituacao({ tipo: 'pronta', url, nome })
@@ -71,8 +97,29 @@ export function ModoFoto() {
     }
   }
 
+  async function mandarAoClube() {
+    const porta = plataforma.clube
+    const foto = ultimaFoto.current
+    if (!porta || !foto || envio === 'mandando') return
+    setEnvio('mandando')
+    const resultado = await porta.mandarFoto(foto).catch((): EnvioAoClube => 'falhou')
+    setEnvio(resultado)
+    setClube((c) => clubeDepoisDoEnvio(c, resultado))
+  }
+
   const recado =
-    situacao.tipo === 'pronta' ? T.pronta : situacao.tipo === 'falhou' ? T.falhou : T.dica
+    envio && envio !== 'mandando'
+      ? T.envio[envio]
+      : situacao.tipo === 'pronta'
+        ? T.pronta
+        : situacao.tipo === 'falhou'
+          ? T.falhou
+          : T.dica
+  const oferecerClube = podeMandarAoClube(
+    clube,
+    situacao.tipo === 'pronta' ? 'pronta' : 'outra',
+    envio,
+  )
   return (
     <section
       className={`arq-foto${aparelhoPedeMenos || jogoPedeMenos ? ' sem-entrada' : ''}`}
@@ -86,6 +133,16 @@ export function ModoFoto() {
             <a href={situacao.url} download={situacao.nome}>
               {T.baixarDeNovo}
             </a>
+          ) : null}
+          {oferecerClube || envio === 'mandando' ? (
+            <button
+              type="button"
+              className="arq-botao leve"
+              disabled={envio === 'mandando'}
+              onClick={() => void mandarAoClube()}
+            >
+              {envio === 'mandando' ? T.mandando : T.mandarAoClube}
+            </button>
           ) : null}
         </div>
         <button

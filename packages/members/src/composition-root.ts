@@ -16,6 +16,7 @@ import { ArquipelagoCourseActivityService } from './application/arquipelago/arqu
 import { ArquipelagoObjectivesService } from './application/arquipelago/arquipelago-objectives.service'
 import { ArquipelagoReadsService } from './application/arquipelago/arquipelago-reads.service'
 import { ArquipelagoRoomService } from './application/arquipelago/arquipelago-room.service'
+import { ArquipelagoRuntimeService } from './application/arquipelago/arquipelago-runtime.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
@@ -52,6 +53,7 @@ import { LiveRewardsService } from './application/gamification/live-rewards.serv
 import { RecordStudioActivityDayService } from './application/gamification/record-studio-activity-day.service'
 import { RecordStudioRemixService } from './application/gamification/record-studio-remix.service'
 import { SetVacationService } from './application/gamification/set-vacation.service'
+import { GetArtSlotsService } from './application/get-art-slots/get-art-slots.service'
 import { GetAttachmentDownloadService } from './application/get-attachment-download/get-attachment-download.service'
 import { RecordMaterialDownloadService } from './application/get-attachment-download/record-material-download.service'
 import { GetCertificateService } from './application/get-certificate/get-certificate.service'
@@ -159,6 +161,7 @@ import { DrizzleAiUsageRepository } from './infrastructure/persistence/drizzle/a
 import { DrizzleAnalyticsRepository } from './infrastructure/persistence/drizzle/analytics.repository'
 import { ArquipelagoCoinsRepository } from './infrastructure/persistence/drizzle/arquipelago-coins.repository'
 import { ArquipelagoCourseActivityRepository } from './infrastructure/persistence/drizzle/arquipelago-course-activity.repository'
+import { ArquipelagoInventoryRepository } from './infrastructure/persistence/drizzle/arquipelago-inventory.repository'
 import { DrizzleAvatarRepository } from './infrastructure/persistence/drizzle/avatar.repository'
 import { DrizzleCertificateRepository } from './infrastructure/persistence/drizzle/certificate.repository'
 import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/drizzle/challenge-config.repository'
@@ -989,6 +992,13 @@ export async function createApplication(env: Env): Promise<Application> {
     sectionProgression,
     studioBindings,
   )
+  const getArtSlots = new GetArtSlotsService(
+    checkAccess,
+    courses,
+    progress,
+    studioSubmissions,
+    sectionProgression,
+  )
   const openLessonStudio = new OpenLessonStudioService(
     new LessonDraftAccessService(courses, checkAccess, progress, sectionProgression),
     courses,
@@ -1160,6 +1170,7 @@ export async function createApplication(env: Env): Promise<Application> {
   const server = createServer({
     arquipelagoCoins: {
       repository: new ArquipelagoCoinsRepository(db),
+      inventory: new ArquipelagoInventoryRepository(db),
       token: env.ARQUIPELAGO_COINS_TOKEN,
     },
     arquipelagoInternal: {
@@ -1175,6 +1186,9 @@ export async function createApplication(env: Env): Promise<Application> {
       aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
       saldo: gamificationRepo,
       quartos: new ArquipelagoRoomService(roomRepo),
+      ambiente: studioRuntimePolicy
+        ? new ArquipelagoRuntimeService(studioRuntimePolicy)
+        : undefined,
       token: env.ARQUIPELAGO_MEMBERS_TOKEN,
     },
     liveMaterials,
@@ -1239,6 +1253,7 @@ export async function createApplication(env: Env): Promise<Application> {
       submitQuiz,
       submitStudio,
       getStudioCarryover,
+      getArtSlots,
       openLessonStudio,
       authorizeLessonRuntime,
       getOwnStudioSubmission,

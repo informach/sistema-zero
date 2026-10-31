@@ -49,6 +49,16 @@ material ou nó `pintaFrente`, `pintaLadoEsq`, `pintaLadoDir` ou `pintaTopo`, co
 UV com u para a direita e v para cima, vista de fora. Sem superfície adequada, manter o molde
 sem essa face. O catálogo só deve declarar as faces efetivamente entregues e medidas.
 
+**Entregue em 29/10/2026 (sessão do Blender, na conferência da fase3-11).** Forno: a frente da
+porta, em volta do vidro (0,66 × 0,43), e os lados (0,53 × 0,72). Aquário: as duas portinhas do
+móvel, uma imagem só (1,41 × 0,34), e os lados do móvel (0,55 × 0,42). Museu: a frente (0,82 ×
+0,12) e os lados (0,44 × 0,12) da base de madeira. Casinha: a parede da frente com a porta (0,98 ×
+0,58) e as dos lados (1,08 × 0,58). Planta: o rótulo que dá a volta no vaso, com a emenda atrás
+(1,13 × 0,37; a faixa terracota passa por cima). O topo do forno ficou de fora (é a mesa das
+bocas). A lareira (tijolinhos em relevo) e a banda (formas diferentes demais) ficam sem
+faces, de propósito. `tests/faces-dos-objetos.test.ts` confere cada face do catálogo no GLB: o
+retângulo prometido e a imagem inteira (UV de 0 a 1).
+
 ## Revisão e evidências
 
 - A leitura dos GLBs reais mostrou que `pintaFrente` e as outras faces estão nos materiais das

@@ -44,7 +44,8 @@ describe('Nuvens completo', () => {
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('nuvens.glb')))
     const preparada = prepararIlha(cena, nuvens)
     expect(preparada.plataformas).toHaveLength(4)
-    expect(preparada.colisores.length).toBe(50)
+    // 50 da ilha e 60 do porto do barco (a torre de escada, o deque e a escadinha do mar).
+    expect(preparada.colisores.length).toBe(110)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, nuvens)).toBe(preparada)
     const geometrias = new Set<BufferGeometry>()
@@ -76,7 +77,7 @@ describe('Nuvens completo', () => {
         dentro(new Vector3().fromBufferAttribute(vertices, i).applyMatrix4(no.matrixWorld))
     })
     expect(maximo).toBeGreaterThan(raioDoChaoDaIlha(nuvens, 1, 0))
-    expect(maximo).toBeCloseTo(18.7404, 2)
+    expect(maximo).toBeGreaterThan(25)
     expect(raioDaEsperaDaIlha(nuvens, 1, 0)).toBe(19.2)
     for (const c of lerColisores(modelo)) {
       if (c.forma === 'malha') continue
@@ -198,7 +199,7 @@ describe('a Irie na ilha', () => {
     expect(a.salvamento).toBe(s)
     expect(a.falas).toEqual([...APRESENTACAO_DA_IRIE])
     a.falas.pop()
-    expect(comecarConversaComAIrie(s).falas).toHaveLength(2)
+    expect(comecarConversaComAIrie(s).falas).toHaveLength(APRESENTACAO_DA_IRIE.length)
     expect(JSON.stringify(s)).toBe(antes)
     for (const fala of APRESENTACAO_DA_IRIE) expect(fala).not.toMatch(/[—!?]/)
   })

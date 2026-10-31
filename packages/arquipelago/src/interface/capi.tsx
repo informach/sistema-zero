@@ -13,6 +13,7 @@ import {
 } from '../sistemas/conversa-da-capi'
 import { itensParaDar } from '../sistemas/itens'
 import { AMIZADE, coracoes, diaDe } from '../sistemas/moradores'
+import { entregarPedidoPeloPainel } from './entrega-do-pedido'
 
 const CORACOES = 5
 
@@ -47,7 +48,8 @@ export function Coracoes({ amizade }: { amizade: number }) {
  * tchau). O jogo fica parado enquanto ela está aberta.
  */
 export function PainelDaCapi() {
-  const { loja } = useJogo()
+  const contexto = useJogo()
+  const { loja } = contexto
   const conversa = lojaDaConversa(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DA_CAPI)
   const salvamento = useEstado((s) => s.salvamento)
@@ -71,11 +73,7 @@ export function PainelDaCapi() {
   const fechar = () => loja.getState().abrirPainel(null)
 
   function aoEntregar() {
-    const s = loja.getState()
-    const r = entregar(s.salvamento)
-    if (!r.entregou) return
-    s.mudar(() => r.salvamento)
-    conversa.getState().responder(r.falas, true)
+    void entregarPedidoPeloPainel(contexto, 'capi', PAINEL_DA_CAPI, entregar)
   }
 
   function aoPresentear(itemId: string) {

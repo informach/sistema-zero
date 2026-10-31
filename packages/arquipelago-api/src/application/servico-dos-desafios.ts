@@ -1,6 +1,7 @@
 import {
   aprendaIssoEm,
   type ConteudoDoDesafio,
+  type CoresConquistadas,
   type DesafioAberto,
   type DesafiosDoJogador,
   diaDeSaoPaulo,
@@ -9,6 +10,7 @@ import {
   ilha,
   ilhaAberta,
   migrarConteudoDoDesafio,
+  type PedirAmbienteDoDesafio,
   POSICOES_DA_JORNADA,
   ProjetoDoMinijogoSchema,
   QUADROS_POR_ILHA,
@@ -71,6 +73,17 @@ export class ServicoDosDesafios {
       agora?: () => Date
     },
   ) {}
+
+  /** Só leitura: conquistas não dependem de publicação, carteira ou Members disponíveis. */
+  async cores(jogador: Jogador): Promise<CoresConquistadas> {
+    const decisao = decidirAcesso(this.deps.politica, jogador)
+    if (!decisao.liberado) throw new AcessoBloqueadoError(decisao.motivo)
+    const conclusoes = await this.deps.repo.conclusoes(jogador.id, jogador.publico)
+    return {
+      versao: 1,
+      ilhas: ILHAS.map((i) => ({ id: i.id, quadros: posicoesConquistadas(conclusoes, i.id) })),
+    }
+  }
 
   async listar(jogador: Jogador, ilha?: IlhaId): Promise<DesafiosDoJogador> {
     this.exigirLigado(jogador)
@@ -208,6 +221,36 @@ export class ServicoDosDesafios {
       ultimosResultados:
         progresso?.revisao === desafio.publicacao.revisao ? progresso.ultimosResultados : [],
       concluido: feito !== undefined,
+    }
+  }
+
+  /**
+   * O ambiente Python do Estúdio de desafio (C02b). As mesmas conferências da verificação (a
+   * revisão publicada, o público, a ilha aberta ou o desafio feito); o Members confere o pedido
+   * do Estúdio contra o projeto INICIAL desta revisão e devolve a decisão. Nada é guardado.
+   */
+  async ambiente(jogador: Jogador, id: string, pedido: PedirAmbienteDoDesafio): Promise<unknown> {
+    this.exigirLigado(jogador)
+    const lido = await this.deps.repo.lerPublicacao(id, pedido.revisao)
+    if (!lido || lido.desafio.metadados.publico !== jogador.publico)
+      throw new DesafioNaoEncontradoError()
+    if (lido.desafio.situacao !== 'publicado') throw new DesafioMudouError()
+    const conteudo = conteudoDe({ id, publicacao: lido.publicacao }, this.deps.logger)
+    if (!conteudo) throw new DesafioMudouError()
+    const feito = await this.feito(jogador, id)
+    if (!feito) await this.exigirDisponivel(jogador, lido.desafio.metadados.ilha, lido.publicacao)
+    if (!this.deps.membros) throw new PlataformaIndisponivelError()
+    try {
+      return await this.deps.membros.autorizarAmbiente({
+        requester: jogador.id,
+        accountId: jogador.contaId ?? jogador.id,
+        audience: publicoDosMembros(jogador),
+        projetoInicial: conteudo.projetoInicial,
+        pedido: pedido.pedido,
+      })
+    } catch (erro) {
+      if (erro instanceof MembrosIndisponiveisError) throw new PlataformaIndisponivelError(erro)
+      throw erro
     }
   }
 
@@ -407,12 +450,23 @@ export class ServicoDosDesafios {
 
 /** Quadros do Quadro das Cores feitos na ilha (um por número, arquivados inclusive). */
 export function quadrosFeitos(conclusoes: readonly ConclusaoGuardada[], ilha: IlhaId): number {
-  const quadros = new Set(
-    conclusoes
-      .filter((c) => c.tipo === 'quadro-das-cores' && c.ilha === ilha && c.quadro !== null)
-      .map((c) => c.quadro),
-  )
-  return Math.min(quadros.size, QUADROS_POR_ILHA)
+  return posicoesConquistadas(conclusoes, ilha).length
+}
+
+export function posicoesConquistadas(
+  conclusoes: readonly ConclusaoGuardada[],
+  ilha: IlhaId,
+): number[] {
+  return [
+    ...new Set(
+      conclusoes
+        .filter((c) => c.tipo === 'quadro-das-cores' && c.ilha === ilha && c.quadro !== null)
+        .map((c) => c.quadro)
+        .filter(
+          (q): q is number => q !== null && Number.isInteger(q) && q >= 1 && q <= QUADROS_POR_ILHA,
+        ),
+    ),
+  ].sort((a, b) => a - b)
 }
 
 function conteudoDe(

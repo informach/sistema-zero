@@ -1,0 +1,1210 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "farol-meu-jogo-do-arquipelago-adulto",
+      "publico": "adulto",
+      "ilha": "farol",
+      "tipo": "quadro-das-cores",
+      "quadro": 1,
+      "ordem": 10,
+      "publicar": true,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "Meu jogo do Arquipélago",
+        "enunciado": "Agora o jogo é seu. O guia está no palco e há desenhos para usar: estrela, farol, concha e Lumi. Invente uma pequena aventura com a sua ideia. Os critérios estão na lista de objetivos: o guia anda, algo acontece num encontro, o jogo lembra o que aconteceu, uma decisão usa essa lembrança e uma tecla recomeça. O resto é escolha sua.",
+        "dicas": [
+          "Comece pelo guia andando. Depois escolha um encontro e o que o jogo vai lembrar dele.",
+          "Se travar, lembre do Pega-conchas: pegar, lembrar e decidir no balde."
+        ],
+        "projetoInicial": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "farol-meu-jogo-do-arquipelago",
+          "name": "Meu jogo do Arquipélago",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#e9e4ff\");\n  SZGame2D.enableClassicControls(\"always\");\n  const guia = SZGame2D.createSprite({ x: 48, y: 240, w: 48, h: 48, image: \"guia\" });\n  // Quando acontecer\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawLabel(ctx, \"Meu jogo do Arquipélago\", 20, 35, \"#2c2a4a\", 18, \"left\");\n    SZGame2D.drawSprite(ctx, guia);\n  }, \"farol-meu-jogo_loops_0\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "farol-guia",
+              "name": "guia",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjI1IiByPSIxOCIgZmlsbD0iI2YyYjg0YiIvPjxjaXJjbGUgY3g9IjE4IiBjeT0iMjEiIHI9IjMiIGZpbGw9IiMzYjJhMWEiLz48Y2lyY2xlIGN4PSIzMCIgY3k9IjIxIiByPSIzIiBmaWxsPSIjM2IyYTFhIi8+PHBhdGggZD0iTTE3IDMxcTcgNiAxNCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjJhMWEiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "farol-estrela",
+              "name": "estrela",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJtMjQgNCA2IDEzIDE0IDItMTAgMTAgMyAxNC0xMy03LTEzIDcgMy0xNEw0IDE5bDE0LTJaIiBmaWxsPSIjZmZkOTRhIiBzdHJva2U9IiNjOTlhMTIiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "farol-farol",
+              "name": "farol",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJNMTggNDQgMjAgMTRoOGwyIDMwWiIgZmlsbD0iI2Y0ZjFlYSIgc3Ryb2tlPSIjNWI1ODc4IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTkgMjRoMTBNMTkgMzRoMTAiIHN0cm9rZT0iI2Q5NTM0ZiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHJlY3QgeD0iMTciIHk9IjYiIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiByeD0iMiIgZmlsbD0iI2ZmZTY4MCIgc3Ryb2tlPSIjNWI1ODc4IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4="
+            },
+            {
+              "id": "farol-concha",
+              "name": "concha",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJNMjQgNkMxMCA4IDQgMjQgOCAzOGgzMmM0LTE0LTItMzAtMTYtMzJaIiBmaWxsPSIjZjdjOWI4IiBzdHJva2U9IiNjOTgyNmQiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0yNCA4djMwTTE2IDEybC00IDI2bTIwLTI2IDQgMjYiIHN0cm9rZT0iI2M5ODI2ZCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+"
+            },
+            {
+              "id": "farol-lumi",
+              "name": "lumi",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjI2IiByPSIxNCIgZmlsbD0iIzlmZTBmZiIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjYiIHI9IjIwIiBmaWxsPSIjOWZlMGZmIiBvcGFjaXR5PSIuMyIvPjxjaXJjbGUgY3g9IjE5IiBjeT0iMjQiIHI9IjIuNSIgZmlsbD0iIzFmM2E1MiIvPjxjaXJjbGUgY3g9IjI5IiBjeT0iMjQiIHI9IjIuNSIgZmlsbD0iIzFmM2E1MiIvPjwvc3ZnPg=="
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 480,
+                  "bg": "#e9e4ff",
+                  "__id": "farol-meu-jogo_start_0"
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "always",
+                  "__id": "farol-meu-jogo_start_1"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "guia",
+                  "image": "guia",
+                  "x": 48,
+                  "y": 240,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "farol-meu-jogo_start_2"
+                }
+              ],
+              "events": [],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:clear",
+                      "__id": "farol-meu-jogo_loops_0_body_0"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": "Meu jogo do Arquipélago",
+                      "x": 20,
+                      "y": 35,
+                      "size": 18,
+                      "color": "#2c2a4a",
+                      "align": "left",
+                      "__id": "farol-meu-jogo_loops_0_body_1"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "ctxVar": "ctx",
+                      "spriteVar": "guia",
+                      "__id": "farol-meu-jogo_loops_0_body_2"
+                    }
+                  ],
+                  "__id": "farol-meu-jogo_loops_0"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "id": "farol-meu-jogo_start_0",
+                        "fields": {
+                          "BG": "#e9e4ff"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_enable_classic_controls",
+                            "id": "farol-meu-jogo_start_1",
+                            "fields": {
+                              "MODE": "always"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_image_sprite",
+                                "id": "farol-meu-jogo_start_2",
+                                "fields": {
+                                  "NAME": "guia",
+                                  "IMAGE": "guia"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 48
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 240
+                                      }
+                                    }
+                                  },
+                                  "W": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 48
+                                      }
+                                    }
+                                  },
+                                  "H": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 48
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "id": "farol-meu-jogo_loops_0",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_clear",
+                              "id": "farol-meu-jogo_loops_0_body_0",
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_draw_label",
+                                  "id": "farol-meu-jogo_loops_0_body_1",
+                                  "fields": {
+                                    "COLOR": "#2c2a4a",
+                                    "ALIGN": "left"
+                                  },
+                                  "inputs": {
+                                    "TEXT": {
+                                      "shadow": {
+                                        "type": "sz_val_text",
+                                        "fields": {
+                                          "TEXT": "Meu jogo do Arquipélago"
+                                        }
+                                      }
+                                    },
+                                    "X": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 20
+                                        }
+                                      }
+                                    },
+                                    "Y": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 35
+                                        }
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 18
+                                        }
+                                      }
+                                    }
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_draw_sprite",
+                                      "id": "farol-meu-jogo_loops_0_body_2",
+                                      "fields": {
+                                        "SPRITE": "guia"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ],
+          "programmingLanguage": "javascript"
+        },
+        "gabarito": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "farol-meu-jogo-do-arquipelago",
+          "name": "Meu jogo do Arquipélago",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#e9e4ff\");\n  SZGame2D.enableClassicControls(\"always\");\n  const guia = SZGame2D.createSprite({ x: 48, y: 240, w: 48, h: 48, image: \"guia\" });\n  let temEstrela = false;\n  let aceso = false;\n  const estrela = SZGame2D.createSprite({ x: 260, y: 240, w: 48, h: 48, image: \"estrela\" });\n  const farol = SZGame2D.createSprite({ x: 520, y: 240, w: 48, h: 48, image: \"farol\" });\n  // Quando acontecer\n  SZGame2D.onOverlap(() => guia, () => estrela, () => {\n    temEstrela = true;\n    SZGame2D.destroySprite(estrela);\n  }, \"farol-meu-jogo_events_0\");\n  SZGame2D.onOverlap(() => guia, () => farol, () => {\n    if (temEstrela) {\n      aceso = true;\n    }\n  }, \"farol-meu-jogo_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"farol-meu-jogo_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.topDown(guia, 4);\n    SZGame2D.clampToScreen(guia, ctx);\n    SZGame2D.clear();\n    SZGame2D.drawLabel(ctx, \"Meu jogo do Arquipélago\", 20, 35, \"#2c2a4a\", 18, \"left\");\n    SZGame2D.drawSprite(ctx, estrela);\n    SZGame2D.drawSprite(ctx, farol);\n    if (aceso) {\n      SZGame2D.drawLabel(ctx, \"O farol acendeu.\", 20, 70, \"#2c2a4a\", 18, \"left\");\n    }\n    SZGame2D.drawSprite(ctx, guia);\n  }, \"farol-meu-jogo_loops_0\");\n}, \"__sz-project\");\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "farol-guia",
+              "name": "guia",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjI1IiByPSIxOCIgZmlsbD0iI2YyYjg0YiIvPjxjaXJjbGUgY3g9IjE4IiBjeT0iMjEiIHI9IjMiIGZpbGw9IiMzYjJhMWEiLz48Y2lyY2xlIGN4PSIzMCIgY3k9IjIxIiByPSIzIiBmaWxsPSIjM2IyYTFhIi8+PHBhdGggZD0iTTE3IDMxcTcgNiAxNCAwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzYjJhMWEiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "farol-estrela",
+              "name": "estrela",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJtMjQgNCA2IDEzIDE0IDItMTAgMTAgMyAxNC0xMy03LTEzIDcgMy0xNEw0IDE5bDE0LTJaIiBmaWxsPSIjZmZkOTRhIiBzdHJva2U9IiNjOTlhMTIiIHN0cm9rZS13aWR0aD0iMiIvPjwvc3ZnPg=="
+            },
+            {
+              "id": "farol-farol",
+              "name": "farol",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJNMTggNDQgMjAgMTRoOGwyIDMwWiIgZmlsbD0iI2Y0ZjFlYSIgc3Ryb2tlPSIjNWI1ODc4IiBzdHJva2Utd2lkdGg9IjIiLz48cGF0aCBkPSJNMTkgMjRoMTBNMTkgMzRoMTAiIHN0cm9rZT0iI2Q5NTM0ZiIgc3Ryb2tlLXdpZHRoPSI0Ii8+PHJlY3QgeD0iMTciIHk9IjYiIHdpZHRoPSIxNCIgaGVpZ2h0PSI4IiByeD0iMiIgZmlsbD0iI2ZmZTY4MCIgc3Ryb2tlPSIjNWI1ODc4IiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4="
+            },
+            {
+              "id": "farol-concha",
+              "name": "concha",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBkPSJNMjQgNkMxMCA4IDQgMjQgOCAzOGgzMmM0LTE0LTItMzAtMTYtMzJaIiBmaWxsPSIjZjdjOWI4IiBzdHJva2U9IiNjOTgyNmQiIHN0cm9rZS13aWR0aD0iMiIvPjxwYXRoIGQ9Ik0yNCA4djMwTTE2IDEybC00IDI2bTIwLTI2IDQgMjYiIHN0cm9rZT0iI2M5ODI2ZCIgc3Ryb2tlLXdpZHRoPSIyIi8+PC9zdmc+"
+            },
+            {
+              "id": "farol-lumi",
+              "name": "lumi",
+              "kind": "image",
+              "source": "library",
+              "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0OCIgaGVpZ2h0PSI0OCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48Y2lyY2xlIGN4PSIyNCIgY3k9IjI2IiByPSIxNCIgZmlsbD0iIzlmZTBmZiIvPjxjaXJjbGUgY3g9IjI0IiBjeT0iMjYiIHI9IjIwIiBmaWxsPSIjOWZlMGZmIiBvcGFjaXR5PSIuMyIvPjxjaXJjbGUgY3g9IjE5IiBjeT0iMjQiIHI9IjIuNSIgZmlsbD0iIzFmM2E1MiIvPjxjaXJjbGUgY3g9IjI5IiBjeT0iMjQiIHI9IjIuNSIgZmlsbD0iIzFmM2E1MiIvPjwvc3ZnPg=="
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g2d:setupStage",
+                  "width": 640,
+                  "height": 480,
+                  "bg": "#e9e4ff",
+                  "__id": "farol-meu-jogo_start_0"
+                },
+                {
+                  "type": "g2d:enableClassicControls",
+                  "mode": "always",
+                  "__id": "farol-meu-jogo_start_1"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "guia",
+                  "image": "guia",
+                  "x": 48,
+                  "y": 240,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "farol-meu-jogo_start_2"
+                },
+                {
+                  "type": "var",
+                  "name": "temEstrela",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "farol-meu-jogo_start_3_value"
+                  },
+                  "__id": "farol-meu-jogo_start_3"
+                },
+                {
+                  "type": "var",
+                  "name": "aceso",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "farol-meu-jogo_start_4_value"
+                  },
+                  "__id": "farol-meu-jogo_start_4"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "estrela",
+                  "image": "estrela",
+                  "x": 260,
+                  "y": 240,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "farol-meu-jogo_start_5"
+                },
+                {
+                  "type": "g2d:createImageSprite",
+                  "varName": "farol",
+                  "image": "farol",
+                  "x": 520,
+                  "y": 240,
+                  "w": 48,
+                  "h": 48,
+                  "__id": "farol-meu-jogo_start_6"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g2d:onOverlap",
+                  "aVar": "guia",
+                  "bVar": "estrela",
+                  "body": [
+                    {
+                      "type": "assign",
+                      "name": "temEstrela",
+                      "value": {
+                        "type": "bool",
+                        "value": true,
+                        "__id": "farol-meu-jogo_events_0_body_0_value"
+                      },
+                      "__id": "farol-meu-jogo_events_0_body_0"
+                    },
+                    {
+                      "type": "g2d:destroySprite",
+                      "spriteVar": "estrela",
+                      "__id": "farol-meu-jogo_events_0_body_1"
+                    }
+                  ],
+                  "__id": "farol-meu-jogo_events_0"
+                },
+                {
+                  "type": "g2d:onOverlap",
+                  "aVar": "guia",
+                  "bVar": "farol",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "temEstrela",
+                        "__id": "farol-meu-jogo_events_1_body_0_cond"
+                      },
+                      "then": [
+                        {
+                          "type": "assign",
+                          "name": "aceso",
+                          "value": {
+                            "type": "bool",
+                            "value": true,
+                            "__id": "farol-meu-jogo_events_1_body_0_then_0_value"
+                          },
+                          "__id": "farol-meu-jogo_events_1_body_0_then_0"
+                        }
+                      ],
+                      "else": [],
+                      "__id": "farol-meu-jogo_events_1_body_0"
+                    }
+                  ],
+                  "__id": "farol-meu-jogo_events_1"
+                },
+                {
+                  "type": "g2d:onKey",
+                  "key": "Enter",
+                  "body": [
+                    {
+                      "type": "g2d:restart",
+                      "__id": "farol-meu-jogo_events_2_body_0"
+                    }
+                  ],
+                  "__id": "farol-meu-jogo_events_2"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g2d:updateEachFrame",
+                  "body": [
+                    {
+                      "type": "g2d:topDown",
+                      "spriteVar": "guia",
+                      "speed": 4,
+                      "__id": "farol-meu-jogo_loops_0_body_0"
+                    },
+                    {
+                      "type": "g2d:clampToScreen",
+                      "spriteVar": "guia",
+                      "ctxVar": "ctx",
+                      "__id": "farol-meu-jogo_loops_0_body_1"
+                    },
+                    {
+                      "type": "g2d:clear",
+                      "__id": "farol-meu-jogo_loops_0_body_2"
+                    },
+                    {
+                      "type": "g2d:drawLabel",
+                      "ctxVar": "ctx",
+                      "text": "Meu jogo do Arquipélago",
+                      "x": 20,
+                      "y": 35,
+                      "size": 18,
+                      "color": "#2c2a4a",
+                      "align": "left",
+                      "__id": "farol-meu-jogo_loops_0_body_3"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "ctxVar": "ctx",
+                      "spriteVar": "estrela",
+                      "__id": "farol-meu-jogo_loops_0_body_4"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "ctxVar": "ctx",
+                      "spriteVar": "farol",
+                      "__id": "farol-meu-jogo_loops_0_body_5"
+                    },
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "var",
+                        "name": "aceso",
+                        "__id": "farol-meu-jogo_loops_0_body_6_cond"
+                      },
+                      "then": [
+                        {
+                          "type": "g2d:drawLabel",
+                          "ctxVar": "ctx",
+                          "text": "O farol acendeu.",
+                          "x": 20,
+                          "y": 70,
+                          "size": 18,
+                          "color": "#2c2a4a",
+                          "align": "left",
+                          "__id": "farol-meu-jogo_loops_0_body_6_then_0"
+                        }
+                      ],
+                      "else": [],
+                      "__id": "farol-meu-jogo_loops_0_body_6"
+                    },
+                    {
+                      "type": "g2d:drawSprite",
+                      "ctxVar": "ctx",
+                      "spriteVar": "guia",
+                      "__id": "farol-meu-jogo_loops_0_body_7"
+                    }
+                  ],
+                  "__id": "farol-meu-jogo_loops_0"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-2d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_setup_stage",
+                        "id": "farol-meu-jogo_start_0",
+                        "fields": {
+                          "BG": "#e9e4ff"
+                        },
+                        "inputs": {
+                          "W": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 640
+                              }
+                            }
+                          },
+                          "H": {
+                            "shadow": {
+                              "type": "sz_val_number",
+                              "fields": {
+                                "NUM": 480
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_enable_classic_controls",
+                            "id": "farol-meu-jogo_start_1",
+                            "fields": {
+                              "MODE": "always"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_create_image_sprite",
+                                "id": "farol-meu-jogo_start_2",
+                                "fields": {
+                                  "NAME": "guia",
+                                  "IMAGE": "guia"
+                                },
+                                "inputs": {
+                                  "X": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 48
+                                      }
+                                    }
+                                  },
+                                  "Y": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 240
+                                      }
+                                    }
+                                  },
+                                  "W": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 48
+                                      }
+                                    }
+                                  },
+                                  "H": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 48
+                                      }
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_js_var_create",
+                                    "id": "farol-meu-jogo_start_3",
+                                    "fields": {
+                                      "NAME": "temEstrela"
+                                    },
+                                    "inputs": {
+                                      "VALUE": {
+                                        "block": {
+                                          "type": "sz_val_bool",
+                                          "fields": {
+                                            "VALUE": "false"
+                                          },
+                                          "id": "farol-meu-jogo_start_3_value"
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_js_var_create",
+                                        "id": "farol-meu-jogo_start_4",
+                                        "fields": {
+                                          "NAME": "aceso"
+                                        },
+                                        "inputs": {
+                                          "VALUE": {
+                                            "block": {
+                                              "type": "sz_val_bool",
+                                              "fields": {
+                                                "VALUE": "false"
+                                              },
+                                              "id": "farol-meu-jogo_start_4_value"
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_g2d_create_image_sprite",
+                                            "id": "farol-meu-jogo_start_5",
+                                            "fields": {
+                                              "NAME": "estrela",
+                                              "IMAGE": "estrela"
+                                            },
+                                            "inputs": {
+                                              "X": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 260
+                                                  }
+                                                }
+                                              },
+                                              "Y": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 240
+                                                  }
+                                                }
+                                              },
+                                              "W": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 48
+                                                  }
+                                                }
+                                              },
+                                              "H": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 48
+                                                  }
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_g2d_create_image_sprite",
+                                                "id": "farol-meu-jogo_start_6",
+                                                "fields": {
+                                                  "NAME": "farol",
+                                                  "IMAGE": "farol"
+                                                },
+                                                "inputs": {
+                                                  "X": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 520
+                                                      }
+                                                    }
+                                                  },
+                                                  "Y": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 240
+                                                      }
+                                                    }
+                                                  },
+                                                  "W": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 48
+                                                      }
+                                                    }
+                                                  },
+                                                  "H": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 48
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_on_overlap",
+                        "id": "farol-meu-jogo_events_0",
+                        "fields": {
+                          "A": "guia",
+                          "B": "estrela"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_js_var_assign",
+                              "id": "farol-meu-jogo_events_0_body_0",
+                              "fields": {
+                                "NAME": "temEstrela"
+                              },
+                              "inputs": {
+                                "VALUE": {
+                                  "block": {
+                                    "type": "sz_val_bool",
+                                    "fields": {
+                                      "VALUE": "true"
+                                    },
+                                    "id": "farol-meu-jogo_events_0_body_0_value"
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_destroy_sprite",
+                                  "id": "farol-meu-jogo_events_0_body_1",
+                                  "fields": {
+                                    "SPRITE": "estrela"
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_on_overlap",
+                            "id": "farol-meu-jogo_events_1",
+                            "fields": {
+                              "A": "guia",
+                              "B": "farol"
+                            },
+                            "inputs": {
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_js_if_else",
+                                  "id": "farol-meu-jogo_events_1_body_0",
+                                  "inputs": {
+                                    "THEN": {
+                                      "block": {
+                                        "type": "sz_js_var_assign",
+                                        "id": "farol-meu-jogo_events_1_body_0_then_0",
+                                        "fields": {
+                                          "NAME": "aceso"
+                                        },
+                                        "inputs": {
+                                          "VALUE": {
+                                            "block": {
+                                              "type": "sz_val_bool",
+                                              "fields": {
+                                                "VALUE": "true"
+                                              },
+                                              "id": "farol-meu-jogo_events_1_body_0_then_0_value"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "COND": {
+                                      "block": {
+                                        "type": "sz_val_variable",
+                                        "fields": {
+                                          "NAME": "temEstrela"
+                                        },
+                                        "id": "farol-meu-jogo_events_1_body_0_cond"
+                                      }
+                                    }
+                                  },
+                                  "extraState": {
+                                    "hasElse": true
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g2d_on_key",
+                                "id": "farol-meu-jogo_events_2",
+                                "fields": {
+                                  "KEY": "Enter"
+                                },
+                                "inputs": {
+                                  "BODY": {
+                                    "block": {
+                                      "type": "sz_g2d_restart",
+                                      "id": "farol-meu-jogo_events_2_body_0"
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g2d_update_each_frame",
+                        "id": "farol-meu-jogo_loops_0",
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g2d_top_down",
+                              "id": "farol-meu-jogo_loops_0_body_0",
+                              "fields": {
+                                "SPRITE": "guia"
+                              },
+                              "inputs": {
+                                "SPEED": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 4
+                                    }
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g2d_clamp_to_screen",
+                                  "id": "farol-meu-jogo_loops_0_body_1",
+                                  "fields": {
+                                    "SPRITE": "guia"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_g2d_clear",
+                                      "id": "farol-meu-jogo_loops_0_body_2",
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_g2d_draw_label",
+                                          "id": "farol-meu-jogo_loops_0_body_3",
+                                          "fields": {
+                                            "COLOR": "#2c2a4a",
+                                            "ALIGN": "left"
+                                          },
+                                          "inputs": {
+                                            "TEXT": {
+                                              "shadow": {
+                                                "type": "sz_val_text",
+                                                "fields": {
+                                                  "TEXT": "Meu jogo do Arquipélago"
+                                                }
+                                              }
+                                            },
+                                            "X": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "fields": {
+                                                  "NUM": 20
+                                                }
+                                              }
+                                            },
+                                            "Y": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "fields": {
+                                                  "NUM": 35
+                                                }
+                                              }
+                                            },
+                                            "SIZE": {
+                                              "shadow": {
+                                                "type": "sz_val_number",
+                                                "fields": {
+                                                  "NUM": 18
+                                                }
+                                              }
+                                            }
+                                          },
+                                          "next": {
+                                            "block": {
+                                              "type": "sz_g2d_draw_sprite",
+                                              "id": "farol-meu-jogo_loops_0_body_4",
+                                              "fields": {
+                                                "SPRITE": "estrela"
+                                              },
+                                              "next": {
+                                                "block": {
+                                                  "type": "sz_g2d_draw_sprite",
+                                                  "id": "farol-meu-jogo_loops_0_body_5",
+                                                  "fields": {
+                                                    "SPRITE": "farol"
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_js_if_else",
+                                                      "id": "farol-meu-jogo_loops_0_body_6",
+                                                      "inputs": {
+                                                        "THEN": {
+                                                          "block": {
+                                                            "type": "sz_g2d_draw_label",
+                                                            "id": "farol-meu-jogo_loops_0_body_6_then_0",
+                                                            "fields": {
+                                                              "COLOR": "#2c2a4a",
+                                                              "ALIGN": "left"
+                                                            },
+                                                            "inputs": {
+                                                              "TEXT": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_text",
+                                                                  "fields": {
+                                                                    "TEXT": "O farol acendeu."
+                                                                  }
+                                                                }
+                                                              },
+                                                              "X": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 20
+                                                                  }
+                                                                }
+                                                              },
+                                                              "Y": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 70
+                                                                  }
+                                                                }
+                                                              },
+                                                              "SIZE": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 18
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        },
+                                                        "COND": {
+                                                          "block": {
+                                                            "type": "sz_val_variable",
+                                                            "fields": {
+                                                              "NAME": "aceso"
+                                                            },
+                                                            "id": "farol-meu-jogo_loops_0_body_6_cond"
+                                                          }
+                                                        }
+                                                      },
+                                                      "extraState": {
+                                                        "hasElse": true
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_sprite",
+                                                          "id": "farol-meu-jogo_loops_0_body_7",
+                                                          "fields": {
+                                                            "SPRITE": "guia"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-2d",
+              "version": "1.2.0",
+              "installedAt": 0
+            }
+          ],
+          "programmingLanguage": "javascript"
+        },
+        "objetivos": [
+          {
+            "id": "anda",
+            "label": "A seta para a direita leva o guia pelo palco.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 650
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "guia.x"
+                },
+                "compare": "greaterThan",
+                "value": 100
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "encontro",
+            "label": "Algo acontece quando o guia encontra outro desenho.",
+            "rule": {
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "encounter"
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "lembra",
+            "label": "No encontro, o jogo guarda uma informação.",
+            "rule": {
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "memory"
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "decide",
+            "label": "Um Se usa essa informação para decidir o que acontece.",
+            "rule": {
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "decision"
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "recomeca",
+            "label": "Uma tecla recomeça o jogo.",
+            "rule": {
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "restart"
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "some",
+            "label": "Extra: algo sai da tela quando é pego no encontro.",
+            "optional": true,
+            "rule": {
+              "type": "gameCausality",
+              "actor": "guia",
+              "step": "removal"
+            },
+            "programmingLanguage": "javascript"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Mais um desafio",
+          "texto": "Faça alguma coisa sair da tela quando for pega no encontro."
+        },
+        "recompensa": {
+          "cor": false,
+          "atracao": "meu-jogo-do-arquipelago",
+          "moedas": 20,
+          "moedasExtra": 10
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

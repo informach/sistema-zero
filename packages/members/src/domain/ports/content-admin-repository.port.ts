@@ -1,5 +1,6 @@
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
+import type { ArtSlotCourseBlock } from '@sistemazero/core/learning'
 import type {
   Course,
   CourseAudience,
@@ -223,6 +224,13 @@ export interface ContentAdminRepository {
     chain: string,
     operation: (repository: ContentAdminRepository) => Promise<T>,
   ): Promise<T>
+
+  /**
+   * Blocos de Pinta e de Estúdio do curso que preenchem ou importam uma vaga de arte (aula
+   * rascunho inclusa, bloco arquivado não), com a posição no curso e as imagens do jogo. É a
+   * entrada da conferência `artSlotCourseIssues`; chame sob `withStudioAuthoringLock`.
+   */
+  listArtSlotBlocks(courseId: string): Promise<ArtSlotCourseBlock[]>
 
   /** Same course row lock/order used by draft publication; callback stays in its transaction. */
   withStudioAuthoringLock<T>(

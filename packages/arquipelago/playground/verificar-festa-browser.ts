@@ -7,7 +7,7 @@ import path from 'node:path'
 import { criarSalvamentoInicial } from '@sistemazero/arquipelago-contracts'
 import { chromium } from 'playwright-core'
 import { FOGUEIRA_DA_FESTA } from '../src/mundo/arranjo-da-festa'
-import { giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
+import { BANCADA, giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
 import type { MedidaDoDesenho } from '../src/mundo/medidor'
 
 declare global {
@@ -66,7 +66,7 @@ try {
     // Sem placa de vídeo (CI, contêiner), o WebGL vem do SwiftShader, como nos outros verificadores.
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
-  for (const largura of [1280, 390]) {
+  for (const largura of process.env.ARQUIPELAGO_CARNAVAL === '1' ? [] : [1280, 390]) {
     const context = await browser.newContext({
       viewport: { width: largura, height: 844 },
       hasTouch: largura === 390,
@@ -149,6 +149,12 @@ try {
       1,
     )
     await page.screenshot({ path: path.join(prints, `pipoca-${largura}.png`) })
+    await painel.getByRole('button', { name: /Milho da fogueira:/ }).click()
+    await page.waitForFunction(() => {
+      const s = JSON.parse(localStorage.getItem('arquipelago-playground') ?? '{}').salvamento
+      return s?.inventario?.['milho-da-fogueira'] === 1 && !s.inventario.milho
+    })
+    await page.screenshot({ path: path.join(prints, `milho-${largura}.png`) })
     assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
     await painel.getByRole('button', { name: 'Voltar ao jogo' }).click()
     await page.getByRole('button', { name: 'Comer pipoca de festa (1)', exact: true }).click()
@@ -187,6 +193,70 @@ try {
       `Junina ${largura}: luz, clipe, E, receita, inventário, diversão, aviso e desmontagem`,
     )
     await context.close()
+  }
+  for (const largura of [1280, 390]) {
+    const context = await browser.newContext({
+      viewport: { width: largura, height: 844 },
+      hasTouch: largura === 390,
+    })
+    context.setDefaultTimeout(90_000)
+    try {
+      const s = criarSalvamentoInicial(new Date())
+      s.posicao = { x: BANCADA.x, y: 2.2, z: BANCADA.z + 1.6 }
+      s.casa.portaNova = true
+      s.inventario = { alface: 1, tomate: 1, milho: 1 }
+      await context.addInitScript(
+        ({ s }) => {
+          if (!localStorage.getItem('arquipelago-playground'))
+            localStorage.setItem(
+              'arquipelago-playground',
+              JSON.stringify({ revisao: 1, salvamento: s, atualizadoEm: new Date().toISOString() }),
+            )
+        },
+        { s },
+      )
+      const page = await context.newPage()
+      const erros: string[] = []
+      page.on('pageerror', (e) => erros.push(e.message))
+      await page.goto(`${base}/?posicao=3&festa=carnaval&dia=nenhum`, {
+        waitUntil: 'domcontentloaded',
+      })
+      await page.getByText('Ver as receitas', { exact: false }).first().waitFor()
+      if (largura === 390) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
+      else await page.keyboard.press('KeyE')
+      const painel = page.getByRole('dialog', { name: 'Bancada', exact: true })
+      await painel.getByRole('button', { name: /Salada do Carnaval:/ }).click()
+      await page.waitForFunction(
+        () =>
+          JSON.parse(localStorage.getItem('arquipelago-playground') ?? '{}').salvamento
+            ?.inventario?.['salada-do-carnaval'] === 1,
+      )
+      await page.screenshot({ path: path.join(prints, `carnaval-pronto-${largura}.png`) })
+      // Outra festa explícita evita depender do mês real em que o verificador rodar.
+      await page.goto(`${base}/?posicao=3&festa=junina&dia=nenhum`, {
+        waitUntil: 'domcontentloaded',
+      })
+      await page.getByText('Ver as receitas', { exact: false }).first().waitFor()
+      if (largura === 390) await page.getByRole('button', { name: 'Usar', exact: true }).tap()
+      else await page.keyboard.press('KeyE')
+      assert.equal(
+        await painel.getByRole('button', { name: /Salada do Carnaval:/ }).isDisabled(),
+        true,
+      )
+      const inv = await page.evaluate(
+        () =>
+          JSON.parse(localStorage.getItem('arquipelago-playground') ?? '{}').salvamento.inventario,
+      )
+      assert.deepEqual(inv, { 'salada-do-carnaval': 1 })
+      await page.screenshot({ path: path.join(prints, `carnaval-guardado-${largura}.png`) })
+      assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth))
+      assert.deepEqual(erros, [])
+      resultados.push(
+        `Carnaval ${largura}: bancada, preparo, retorno fora da festa, prato preservado e preparo bloqueado`,
+      )
+    } finally {
+      await context.close()
+    }
   }
   writeFileSync(
     path.join(prints, 'resultado.json'),

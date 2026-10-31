@@ -4,6 +4,7 @@ import {
   guardadosNaGeladeira,
   guardarAlimentoNaGeladeira,
   INSTRUMENTOS_DA_BANDA,
+  OBJETOS_DA_CASA,
   type ObjetoDaCasa,
   type Obra,
   POSTOS_DA_JORNADA,
@@ -15,6 +16,7 @@ import { coracoes } from '../moradores'
 import { planta } from './comodos'
 import { chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
+import { celulasDosMoveisAltos } from './moveis'
 import type { Resultado } from './obra'
 
 /**
@@ -89,6 +91,8 @@ export function porObjeto(
   const usadas = new Set(outros.flatMap(celulasDoObjeto).map(chaveDaCelula))
   const caminhos = new Set(obra.caminhos.map((c) => chaveDaCelula(c)))
   const canteiros = new Set(obra.canteiros.map((c) => chaveDaCelula(c)))
+  // Em cima do tapete pode; de outro móvel, não.
+  const moveis = celulasDosMoveisAltos(obra)
   const comodos = new Set<number>()
   for (const c of celulas) {
     if (!naArea(lote.area, c)) return { ok: false, motivo: 'fora-do-lote' }
@@ -97,6 +101,7 @@ export function porObjeto(
     if (noFixo(lote, c)) return { ok: false, motivo: 'objeto-no-quarto' }
     const k = chaveDaCelula(c)
     if (usadas.has(k)) return { ok: false, motivo: 'tem-objeto' }
+    if (moveis.has(k)) return { ok: false, motivo: 'tem-movel' }
     const i = p.comodoDe.get(k)
     if (LUGAR_DO_OBJETO[id] === 'dentro') {
       if (i === undefined) return { ok: false, motivo: 'objeto-fora-de-comodo' }
@@ -138,7 +143,8 @@ export function tirarObjeto(obra: Obra, c: Celula): Resultado {
  * Os projetos que a pessoa ganhou e ainda não estavam guardados: a geladeira vem do primeiro
  * pedido entregue à Capi, o forno da primeira receita do Bento (um coração de amizade), a casinha
  * de adotar um bicho no Bosque, a planta de interior da primeira obra (da casa ou de uma cabana) e
- * o aquário do primeiro coral replantado no Recife (fase3-03).
+ * o aquário do primeiro coral replantado no Recife (fase3-03). No modo livre (o final do Farol
+ * concluído), todos os que faltam.
  * Devolve o mesmo salvamento quando nada mudou.
  */
 export function ganharProjetos(
@@ -153,10 +159,15 @@ export function ganharProjetos(
   if (!s.projetos.forno && coracoes(s.moradores.bento.amizade) >= 1) ganhos.push('forno')
   if (!s.projetos.casinha && s.bichos.adotado) ganhos.push('casinha')
   if (!s.projetos.aquario && s.recife.corais !== 0) ganhos.push('aquario')
+  // O museu dos fósseis chega com o fóssil descoberto no Vale (fase4-03).
+  if (!s.projetos.museu && s.vale.escavacao === 3) ganhos.push('museu')
   // Os instrumentos da banda chegam com o festival de inverno do Pico (fase3-08).
   if (!s.projetos.banda && s.pico.banda === 2 ** INSTRUMENTOS_DA_BANDA - 1) ganhos.push('banda')
   const temObra = s.construcao.casa !== null || Object.keys(s.construcao.cabanas).length > 0
   if (!s.projetos['planta-interior'] && temObra) ganhos.push('planta-interior')
+  // O modo livre da Lenda (fase4-12): com o final do Farol concluído, todos os que faltam chegam.
+  if (s.farol.concluido)
+    for (const id of OBJETOS_DA_CASA) if (!s.projetos[id] && !ganhos.includes(id)) ganhos.push(id)
   if (ganhos.length === 0) return { salvamento: s, ganhos }
   const projetos = { ...s.projetos }
   for (const id of ganhos)

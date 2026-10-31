@@ -1,4 +1,7 @@
-import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { type Humor, humor, type Salvamento } from '@sistemazero/arquipelago-contracts'
+
+export { type Humor, humor } from '@sistemazero/arquipelago-contracts'
+
 import type { Item } from './itens'
 
 export type Necessidades = Salvamento['necessidades']
@@ -32,16 +35,8 @@ export function comer(n: Necessidades, item: Item): Necessidades {
   }
 }
 
-export type Humor = 'otimo' | 'bem' | 'cansado'
-
-export function humor(n: Necessidades): Humor {
-  if (n.energia < 15 || n.fome < 15) return 'cansado'
-  if (n.fome > 60 && n.energia > 60 && n.diversao > 60) return 'otimo'
-  return 'bem'
-}
-
-/** Multiplicador da velocidade pelo humor: o maior é o do humor ótimo. */
-export const RITMO = { otimo: 1.1, bem: 1, cansado: 0.8 } as const satisfies Record<Humor, number>
+/** Cuidar dá 10% de bônus. Necessidade baixa conserva o ritmo básico, sem tornar trajetos mais difíceis. */
+export const RITMO = { otimo: 1.1, bem: 1, cansado: 1 } as const satisfies Record<Humor, number>
 
 export function ritmo(n: Necessidades): number {
   return RITMO[humor(n)]

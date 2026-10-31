@@ -63,6 +63,7 @@ interface Api {
   actionDown(action: string): boolean
   actionPressed(action: string): boolean
   onActionPressed(action: string, fn: () => void, id?: string): void
+  onKey(key: string, fn: () => void, id?: string): void
   pauseGame(): void
   resumeGame(): void
   isPaused(): boolean
@@ -125,6 +126,37 @@ function fire(
 }
 
 describe('primitivas de plataforma clássica', () => {
+  it('o toque dispara a tecla canônica uma vez por aperto sem duplicar o teclado', () => {
+    const { api, document, listeners } = load()
+    api.enableClassicControls('always')
+    const keys = {
+      left: 'ArrowLeft',
+      right: 'ArrowRight',
+      up: 'ArrowUp',
+      down: 'ArrowDown',
+      jump: 'Space',
+      action: 'x',
+      select: 'Backspace',
+      start: 'Enter',
+      pause: 'Escape',
+    }
+    for (const [action, key] of Object.entries(keys)) {
+      let count = 0
+      api.onKey(key, () => count++)
+      const button = document.querySelector<HTMLButtonElement>(`[data-sz-g2d-action="${action}"]`)!
+      button.dispatchEvent(new Event('pointerdown'))
+      button.dispatchEvent(new Event('pointerdown'))
+      expect(count, action).toBe(1)
+      button.dispatchEvent(new Event('pointerup'))
+      button.click()
+      expect(count, action).toBe(2)
+      fire(listeners, 'keydown', { key, code: key, repeat: false })
+      fire(listeners, 'keydown', { key, code: key, repeat: true })
+      expect(count, action).toBe(3)
+      fire(listeners, 'keyup', { key, code: key })
+    }
+  })
+
   it('expõe ações semânticas com borda de aperto e teclado clássico', () => {
     const { api, listeners } = load()
 

@@ -2,7 +2,14 @@ import { z } from 'zod'
 import { PERFIS_DA_FAMILIA_MAXIMO } from './api'
 import { OBJETOS_DA_CASA } from './objetos'
 import { QuartoSchema } from './plataforma'
-import { CanteiroSchema, ObraSchema, PERCURSOS, ResultadoDoPercursoSchema } from './salvamento'
+import {
+  CanteiroSchema,
+  ObraDaCasaSchema,
+  ObraSchema,
+  obraComMoveis,
+  PERCURSOS,
+  ResultadoDoPercursoSchema,
+} from './salvamento'
 
 /**
  * A família no Arquipélago (28/10/2026, fase1-18): o resumo da semana de cada criança e as
@@ -92,6 +99,17 @@ export const PermissoesDaFamiliaSchema = z.strictObject({
 })
 export type PermissoesDaFamilia = z.infer<typeof PermissoesDaFamiliaSchema>
 
+/**
+ * Fotos no Clube (N08b, 30/10/2026): o que a criança lê da permissão da conta dela em
+ * `GET /arquipelago/clube`. Adulto e conta sem escolha guardada recebem `false`.
+ */
+export const VERSAO_DAS_FOTOS_NO_CLUBE = 1
+export const FotosNoClubeDoJogadorSchema = z.strictObject({
+  versao: z.literal(VERSAO_DAS_FOTOS_NO_CLUBE),
+  fotosNoClube: z.boolean(),
+})
+export type FotosNoClubeDoJogador = z.infer<typeof FotosNoClubeDoJogadorSchema>
+
 /** Sem escolha guardada: irmãos podem visitar; outras crianças e fotos no Clube, não. */
 export const PERMISSOES_PADRAO: Readonly<PermissoesDaFamilia> = Object.freeze({
   visitasDeIrmaos: true,
@@ -147,7 +165,9 @@ export type IrmaoParaOJogo = IrmaosParaOJogo['irmaos'][number]
 export const CasaDoIrmaoSchema = z.strictObject({
   versao: z.literal(VERSAO_DAS_VISITAS),
   perfilId: z.uuid(),
-  obra: ObraSchema.nullable(),
+  // A obra da V20 (com os móveis). A de antes, sem eles, ainda vale enquanto serviço e jogo trocam
+  // de versão: chega com a lista de móveis vazia.
+  obra: z.union([ObraDaCasaSchema, ObraSchema.transform(obraComMoveis)]).nullable(),
   horta: z.array(CanteiroSchema).max(24),
   completos: z.array(z.enum(OBJETOS_DA_CASA)).max(OBJETOS_DA_CASA.length),
   quarto: QuartoSchema.nullable(),

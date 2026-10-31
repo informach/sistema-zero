@@ -1,4 +1,8 @@
-import type { Ilha, MotivoDeBloqueio } from '@sistemazero/arquipelago-contracts'
+import {
+  type Ilha,
+  type MotivoDeBloqueio,
+  POSTOS_DA_JORNADA,
+} from '@sistemazero/arquipelago-contracts'
 import { createContext, useContext } from 'react'
 import { recadoDaCompra } from '../sistemas/construcao/galeria'
 import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta'
@@ -10,6 +14,7 @@ import { falaDaLuneta, NOMES_DOS_POSTOS, recadoDaIris } from '../sistemas/luneta
  * só a comunidade adulta baixa (`adulto/pele-adulta.ts`).
  */
 export interface VozDoJogo {
+  farolFechado: string
   carregando: { titulo: string; texto: string }
   bloqueado: { titulo: string; motivos: Record<MotivoDeBloqueio, string> }
   descanso: { titulo: string; texto: string }
@@ -28,9 +33,17 @@ export interface VozDoJogo {
   compraSomenteLeitura: string
   /** O que abre uma ilha ainda fechada, no mapa do arquipélago (fase3-03). */
   ilhaFechadaNoMapa: (ilha: Ilha) => string
+  /** O marco da jornada no cartão de quem joga, no alto do HUD (a posição vai de 1 a 8). */
+  marcoDaJornada: (posicao: number) => string
+  /**
+   * As falas dos primeiros passos e das dicas que tocam na jornada: o mapa das ilhas cinzas e o
+   * quadro que pede um curso (as outras são do Zappy e iguais nos dois públicos).
+   */
+  passos: { mapa: string; curso: string }
 }
 
 export const VOZ_KIDS: VozDoJogo = {
+  farolFechado: 'O Farol abre na Lenda. Enquanto isso, há muito para criar nas ilhas.',
   carregando: {
     titulo: 'Acendendo o Arquipélago',
     texto: 'O Zappy está trazendo a sua casa e o seu avatar.',
@@ -63,6 +76,14 @@ export const VOZ_KIDS: VozDoJogo = {
     ilha.id === 'farol'
       ? `Acende na ${NOMES_DOS_POSTOS[ilha.posto]}.`
       : `Abre em ${NOMES_DOS_POSTOS[ilha.posto]}.`,
+  marcoDaJornada: (posicao) => {
+    const i = Math.min(POSTOS_DA_JORNADA.length, Math.max(1, Math.floor(posicao) || 1)) - 1
+    return NOMES_DOS_POSTOS[POSTOS_DA_JORNADA[i]!]
+  },
+  passos: {
+    mapa: 'Essas são as ilhas. As cinzas abrem quando você chega a um posto novo nos cursos.',
+    curso: 'Se um quadro pedir um curso, faça as aulas e volte aqui.',
+  },
 }
 
 /** Sem provedor (testes e telas soltas), a voz é a do Kids. */

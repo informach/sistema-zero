@@ -20,7 +20,7 @@ afterAll(async () => {
   if (needsDom) await GlobalRegistrator.unregister()
 })
 
-test('os oito projetos do Bosque abrem como blocos e geram o mesmo jogo', () => {
+test('os projetos do Bosque abrem como blocos e geram o mesmo jogo', () => {
   ensureBlocklyInitialized()
   registerExtensionBlocks(gameTwoDBlocks)
   for (const d of criarManifesto().desafios) {
@@ -44,7 +44,9 @@ test('os oito projetos do Bosque abrem como blocos e geram o mesmo jogo', () => 
 
 test('trocar sorteio por passo fixo, fala ou dono do ponto reprova a estrutura', () => {
   const m = criarManifesto()
-  for (const d of [m.desafios[0]!, m.desafios[3]!]) {
+  for (const d of m.desafios.filter((d) =>
+    ['bosque-corrida-dos-bichos', 'bosque-corrida-dos-bichos-placar'].includes(d.slug),
+  )) {
     for (const c of d.conteudo.objetivos as SectionJavaScriptProjectCheck[]) {
       if (isSectionExecutionRule(c.rule)) continue
       const project = structuredClone(d.conteudo.gabarito) as Project

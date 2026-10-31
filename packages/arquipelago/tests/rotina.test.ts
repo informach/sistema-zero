@@ -195,14 +195,16 @@ describe('o intérprete', () => {
     ])
     expect(r.salvamento.horta[0]?.regadoEm).toBe(AGORA.toISOString())
     expect(r.salvamento.horta[1]).toMatchObject({ semente: null, regadoEm: null })
-    // A alface colhida (2) foi para a geladeira; a semente voltou para a mochila.
-    expect(r.salvamento.projetos.geladeira?.guardado).toEqual({ alface: 2 })
+    // Duas alfaces e uma pelo humor ótimo vão para a geladeira; a semente volta para a mochila.
+    expect(r.salvamento.projetos.geladeira?.guardado).toEqual({ alface: 3 })
     expect(r.salvamento.inventario['semente-alface']).toBe(s.inventario['semente-alface']! + 1)
     expect(r.salvamento.inventario.alface).toBeUndefined()
     expect(r.registro).toContain('Regou o canteiro 1.')
-    expect(r.registro).toContain('Colheu 2 alface no canteiro 2.')
+    expect(r.registro).toContain(
+      'Colheu 3 alface no canteiro 2. Colheita especial: mais um pelo humor ótimo.',
+    )
     expect(r.registro).toContain('O canteiro 3 está vazio.')
-    expect(r.registro.at(-1)).toBe('Guardou 2 na geladeira.')
+    expect(r.registro.at(-1)).toBe('Guardou 3 na geladeira.')
   })
 
   test('o que não cabe na geladeira vai para a mochila; nada se perde', () => {
@@ -213,8 +215,10 @@ describe('o intérprete', () => {
     }
     const r = rodarRotina('quindim', ROTINA_DO_QUINDIM, cheia, AGORA, TODOS)
     expect(r.salvamento.projetos.geladeira?.guardado).toEqual({ milho: 3, alface: 1 })
-    expect(r.salvamento.inventario.alface).toBe(1)
-    expect(r.registro.at(-1)).toBe('Guardou 1 na geladeira. 1 não coube e ficou na sua mochila.')
+    expect(r.salvamento.inventario.alface).toBe(2)
+    expect(r.registro.at(-1)).toBe(
+      'Guardou 1 na geladeira. 2 não couberam e ficaram na sua mochila.',
+    )
   })
 
   test('com erro, para com o motivo e devolve o que o Lumi carregava, sem castigo', () => {
@@ -229,7 +233,7 @@ describe('o intérprete', () => {
     expect(r.erro).toBe(
       'Para guardar tudo, o Lumi precisa estar na geladeira. Ponha um Voar até a geladeira antes.',
     )
-    expect(r.salvamento.inventario.alface).toBe(2)
+    expect(r.salvamento.inventario.alface).toBe(3)
     expect(r.registro.at(-1)).toBe('O que o Lumi colheu ficou na sua mochila.')
     expect(
       rodarRotina('quindim', [{ c: 'quando-amanhecer' }, { c: 'regar' }], s, AGORA, TODOS).erro,
@@ -309,7 +313,7 @@ describe('o intérprete', () => {
     const r = rodarRotina('quindim', escolha, s, AGORA, TODOS)
     expect(r.erro).toBeNull()
     expect(r.passos.filter((p) => p !== 'voar')).toEqual(['regar', 'colher'])
-    expect(r.salvamento.inventario.alface).toBe(2)
+    expect(r.salvamento.inventario.alface).toBe(3)
   })
 
   test('o laço passo a passo reaproveita o passo e a pilha', () => {

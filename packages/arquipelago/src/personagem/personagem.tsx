@@ -8,9 +8,11 @@ import {
   useRapier,
 } from '@react-three/rapier'
 import type { QuartoDoJogo } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef } from 'react'
+import { Suspense, useEffect, useMemo, useRef } from 'react'
 import { type Group, MathUtils, type Matrix4, Vector3 } from 'three'
 import { type LugarDeDescanso, useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol } from '../estado/farol'
+import { GRUPO_DE_NINGUEM } from '../mundo/grupos'
 import { maisPerto } from '../mundo/interativos'
 import {
   alturaDaIlha,
@@ -23,11 +25,13 @@ import {
   PORTA,
   QUARTO,
 } from '../mundo/medidas'
+import { DESCER_DO_BALAO, podeDescerDoBalao } from '../sistemas/balao'
 import { comLanterna } from '../sistemas/borroes'
 import { CIPO, type Ponto } from '../sistemas/cipo'
 import type { CorpoQueEmpurra } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import { AVISO_DA_CORRENTEZA, CORRENTEZA } from '../sistemas/correnteza'
+import { BANCO } from '../sistemas/descanso'
 import type { EntradaDaLocomocao } from '../sistemas/locomocao'
 import { mostrarAvatarNoMergulho } from '../sistemas/mergulho'
 import {
@@ -40,9 +44,11 @@ import {
 } from '../sistemas/modos'
 import { passoComColisao } from '../sistemas/modos/colisao'
 import { inclinacaoNoDesenho } from '../sistemas/modos/equilibrio'
+import { MONTARIA } from '../sistemas/montaria'
 import { ritmo } from '../sistemas/necessidades'
 import { comPatins, RAPIDEZ_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado } from '../sistemas/pausa'
+import { temPlanador } from '../sistemas/planador'
 import { lugarLivreNoQuarto } from '../sistemas/ponto-de-partida'
 import { falaDaSaida, saiuDaVisita } from '../sistemas/visitas'
 import { AvatarDoJogo } from './avatar-do-jogo'
@@ -53,6 +59,7 @@ import {
   INCLINACAO_NO_CIPO,
   segurarACorda,
 } from './bracos'
+import { PlanadorAberto } from './planador-aberto'
 
 const MEIA_ALTURA = CORPO.meiaAltura
 const RAIO = CORPO.raio
@@ -81,6 +88,8 @@ function noMundo(saida: Ponto, altura: number, desenho: Matrix4, centro: Ponto):
 /** O quanto o avatar inclina para dentro da curva (radianos por radiano/segundo de giro). */
 const INCLINACAO_NA_CURVA = 0.035
 const INCLINACAO_MAXIMA = 0.14
+/** No planador, o corpo pende um pouco para a frente, pendurado na barra (radianos). */
+const INCLINACAO_NO_PLANADOR = 0.25
 /** O peso (kg) com que a criança empurra e pisa o que é dinâmico. */
 const MASSA_DA_CRIANCA = 30
 /**
@@ -109,9 +118,16 @@ export function Personagem() {
   const { controle, loja, rastro, interativos, pedidos, movimento } = useJogo()
   const calcados = useEstado((s) => comPatins(s.patins, s.salvamento.inventario))
   const lanterna = useEstado((s) => comLanterna(s.lanterna, s.salvamento.inventario))
+  const comPlanador = useEstado((s) => temPlanador(s.salvamento))
+  const montado = useEstado((s) => s.modo === 'montar')
   const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
+  const corpoDoPersonagem = corpo
   const colisor = useRef<RapierCollider>(null)
+  /** Montada no dino do Vale, o colisor maior (dela com ele) que o controlador usa no lugar do dela. */
+  const colisorMontado = useRef<RapierCollider>(null)
+  /** De 0 (de pé) a 1 (na sela), para o desenho subir e descer suave. */
+  const naSela = useRef(0)
   const visual = useRef<Group>(null)
   const usosAtendidos = useRef(controle.usar)
   const pulosAtendidos = useRef(controle.pulos)
@@ -159,7 +175,13 @@ export function Personagem() {
   const aceitaColisorDoMundo = useMemo(
     () => (colisor: RapierCollider) => {
       const corpo = colisor.parent()
+      // Os colisores do próprio corpo (o dela e o de montada) nunca seguram ele mesmo.
+      if (corpo && corpo.handle === corpoDoPersonagem.current?.handle) return false
+      // Montando, o colisor do dino parado (que some no quadro seguinte) não empurra a sela.
+      if (v.modo === 'montar' && (corpo?.userData as { montaria?: boolean })?.montaria) return false
       if (v.modo === 'barco' && (corpo?.userData as { barco?: boolean })?.barco) return false
+      // No balão, o cesto parado (que segura quem anda em volta) não segura quem entra nele.
+      if (v.modo === 'balao' && (corpo?.userData as { balao?: boolean })?.balao) return false
       // Sentado no trenó, o colisor dele (que fica no platô) não segura quem desce.
       if (v.modo === 'escorregar' && (corpo?.userData as { peca?: string })?.peca === 'treno')
         return false
@@ -239,6 +261,7 @@ export function Personagem() {
     correr: false,
     ritmo: 1,
     patins: false,
+    planador: false,
     conversa: null,
     gravidade: GRAVIDADE,
     nivelDoMar: NIVEL_DA_AGUA,
@@ -313,6 +336,7 @@ export function Personagem() {
     e.correr = controle.correr
     e.ritmo = ritmo(estado.salvamento.necessidades)
     e.patins = comPatins(estado.patins, estado.salvamento.inventario)
+    e.planador = temPlanador(estado.salvamento)
     e.conversa = pedidos.conversa
 
     // Pedido de um interativo ("Pegar o cipó", "Escalar o tronco").
@@ -328,12 +352,14 @@ export function Personagem() {
     }
     // Todo percurso consulta o mundo, inclusive escada, borda e escalada. Os guiados
     // usam o controlador sem snap/degrau; sensores e o bicho não bloqueiam o caminho.
+    // Montada, quem mede o caminho é o colisor dela com o dino (o dela fica dentro dele).
+    const colDoPasso = v.modo === 'montar' && colisorMontado.current ? colisorMontado.current : col
     const gastouUsar = passoComColisao(
       modo,
       v,
       e,
       movimento,
-      col,
+      colDoPasso,
       kcc,
       kccNoCipo,
       rapier.QueryFilterFlags.EXCLUDE_SENSORS,
@@ -342,8 +368,17 @@ export function Personagem() {
     )
     b.setNextKinematicTranslation(v.prox)
     // Pegou um cipó ou grudou no tronco neste passo: no ar e na casca ela está sempre "andando".
-    if (v.modo !== 'chao' && v.modo !== 'barco' && v.modo !== 'mergulho') v.velPedida = 1
+    // (Montada, a velocidade é a do dino: o desenho dele anda, corre ou para por ela.)
+    if (
+      v.modo !== 'chao' &&
+      v.modo !== 'barco' &&
+      v.modo !== 'mergulho' &&
+      v.modo !== 'montar' &&
+      v.modo !== 'balao'
+    )
+      v.velPedida = 1
     movimento.noChao = v.modo === 'chao' && v.noChao
+    movimento.beira = v.beira
     const usou = e.usou && !gastouUsar
     const prox = v.prox
     const nadando = v.nadando
@@ -358,7 +393,7 @@ export function Personagem() {
     const real =
       v.modo === 'chao'
         ? Math.hypot(prox.x - p.x, prox.z - p.z) / dt / passada
-        : v.modo === 'cipo' || v.modo === 'barco'
+        : v.modo === 'cipo' || v.modo === 'barco' || v.modo === 'balao'
           ? 0
           : Math.hypot(prox.x - p.x, prox.y - p.y, prox.z - p.z) / dt
     m.velocidade += (real - m.velocidade) * Math.min(1, dt * 14)
@@ -366,7 +401,7 @@ export function Personagem() {
     m.velY = v.velY
     m.nadando = nadando
     m.especial =
-      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'mergulho'
+      v.modo === 'chao' || v.modo === 'barco' || v.modo === 'balao' || v.modo === 'mergulho'
         ? null
         : v.modo === 'descanso'
           ? (v.descanso?.jeito ?? null)
@@ -381,17 +416,23 @@ export function Personagem() {
     // Na casa de um irmão (fase3-12) só se olha: nada do mundo oferece ação, e sair da ilha
     // central termina a visita (lá fora o jogo é dela e volta a gravar).
     if (estado.visita && !pedidos.teleporte && saiuDaVisita(prox.x, prox.z)) {
-      const nome = estado.visita.nome
+      const { nome, origem } = estado.visita
       estado.visitar(null)
-      estado.dizer(falaDaSaida(nome))
+      estado.dizer(falaDaSaida(nome, origem))
     }
     estado.definirAlvo(
-      parado || (v.modo !== 'chao' && v.modo !== 'mergulho') || estado.visita
-        ? null
-        : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho'),
+      v.modo === 'balao'
+        ? !parado && v.balao && podeDescerDoBalao(v.balao)
+          ? DESCER_DO_BALAO
+          : null
+        : parado ||
+            (v.modo !== 'chao' && v.modo !== 'mergulho' && v.modo !== 'planar') ||
+            estado.visita
+          ? null
+          : maisPerto(interativos, prox.x, prox.z, v.modo === 'mergulho', v.modo === 'planar'),
     )
 
-    if (usou && (v.modo === 'chao' || v.modo === 'mergulho') && !parado) {
+    if (usou && (v.modo === 'chao' || v.modo === 'mergulho' || v.modo === 'planar') && !parado) {
       const alvo = estado.alvo
       if (alvo) interativos.get(alvo.id)?.agir()
     }
@@ -421,17 +462,14 @@ export function Personagem() {
     delta = Math.atan2(Math.sin(delta), Math.cos(delta))
     const giro = delta * Math.min(1, dt * 12)
     vis.rotation.y += giro
-    // No cipó o corpo pende junto com a corda (as mãos para o pivô); nadando, deita de bruços; na
-    // cama, deita de costas.
-    const deitada = v.modo === 'descanso' && v.descanso?.jeito === 'deitar'
+    // No cipó o corpo pende junto com a corda (as mãos para o pivô). Nadar de bruços e deitar de
+    // costas já vêm deitados nos clipes.
     const inclinar =
       v.modo === 'cipo' && v.cipo
         ? -v.cipo.balanco.angulo - INCLINACAO_NO_CIPO
-        : nadando
-          ? 1.1
-          : deitada
-            ? -Math.PI / 2
-            : 0
+        : v.modo === 'planar'
+          ? INCLINACAO_NO_PLANADOR
+          : 0
     vis.rotation.x = MathUtils.lerp(vis.rotation.x, inclinar, v.modo === 'cipo' ? 0.35 : 0.15)
     const curva =
       v.modo === 'chao' && !nadando
@@ -469,6 +507,20 @@ export function Personagem() {
       vis.position.y += (ultimo.desenho.y - centro.y - vis.position.y) * d
       vis.position.z += (ultimo.desenho.z - centro.z - vis.position.z) * d
     }
+    // Montada, o desenho sobe até a sela, com a bacia em cima dela (o clipe Sentar a põe atrás
+    // da origem): o corpo do Rapier continua no chão, dentro do colisor de montada.
+    naSela.current += ((v.modo === 'montar' ? 1 : 0) - naSela.current) * Math.min(1, dt * 8)
+    if (naSela.current > 0.001) {
+      const s = naSela.current
+      vis.position.x += Math.sin(vis.rotation.y) * BANCO.baciaAtras * s
+      vis.position.y += MONTARIA.subidaDoDesenho * s
+      vis.position.z += Math.cos(vis.rotation.y) * BANCO.baciaAtras * s
+    }
+    // No balão, o desenho vai no cesto como ele está desenhado (com o clipe `flutuar`).
+    const voo = v.balao
+    if (v.modo === 'balao' && voo?.fase === 'voo') {
+      vis.position.set(voo.visual.x - centro.x, voo.visual.y - centro.y, voo.visual.z - centro.z)
+    }
     const viagem = v.barco
     if (viagem && (viagem.fase === 'viagem' || viagem.fase === 'espera')) {
       vis.position.set(
@@ -487,16 +539,19 @@ export function Personagem() {
 
     // Em túneis a sonda pode aproximar a câmera até o corpo. Só o desenho some;
     // a cápsula, as animações e os comandos continuam iguais.
+    const final = lojaDoFarol(loja).getState().etapa
     vis.visible =
-      v.modo !== 'mergulho' ||
-      mostrarAvatarNoMergulho(
-        Math.hypot(
-          camera.position.x - centro.x,
-          camera.position.y - centro.y,
-          camera.position.z - centro.z,
-        ),
-        vis.visible,
-      )
+      final !== 'fachos' &&
+      final !== 'fim' &&
+      (v.modo !== 'mergulho' ||
+        mostrarAvatarNoMergulho(
+          Math.hypot(
+            camera.position.x - centro.x,
+            camera.position.y - centro.y,
+            camera.position.z - centro.z,
+          ),
+          vis.visible,
+        ))
     rastro.x = centro.x
     rastro.y = centro.y
     rastro.z = centro.z
@@ -514,6 +569,15 @@ export function Personagem() {
       enabledRotations={[false, false, false]}
     >
       <CapsuleCollider ref={colisor} args={[MEIA_ALTURA, RAIO]} />
+      {montado ? (
+        <CapsuleCollider
+          ref={colisorMontado}
+          args={[MONTARIA.meiaAltura, MONTARIA.raio]}
+          // O pé no mesmo lugar que o da cápsula dela.
+          position={[0, MONTARIA.meiaAltura + MONTARIA.raio - MEIA_ALTURA - RAIO, 0]}
+          collisionGroups={GRUPO_DE_NINGUEM}
+        />
+      ) : null}
       <group
         ref={(g) => {
           visual.current = g
@@ -528,6 +592,11 @@ export function Personagem() {
           comPatins={calcados}
           comLanterna={lanterna}
         />
+        {comPlanador ? (
+          <Suspense fallback={null}>
+            <PlanadorAberto />
+          </Suspense>
+        ) : null}
       </group>
     </RigidBody>
   )

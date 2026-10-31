@@ -13,6 +13,13 @@ Gera três arquivos em `src/assets/ilhas/`:
 """
 from lib_ilhas_b import *
 from pico_caverna import montar_caverna
+import lib_cais
+
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): o −x é da caverna de cristal, então o
+# deque sai no rumo de 250° (o lado de fora, entre a caverna e o palco), longe da trilha e do iglu.
+# A beira do tampo (13,3 do meio) e o degrau (0,4 depois) foram medidos no `col-terreno`; a ponta
+# fica 3,3 além do barranco (15,5).
+PORTO = dict(terra=(-4.549, -12.498), rumo=250, degrau=0.4, comprimento=5.5, lado=1)
 
 MONTANHA = dict(x=-4.5, z=-1.5, r=6.6, h=12.0)
 # A trilha (para o jogo, fase3-07): um corte em espiral na encosta, 1,25 volta no sentido horário
@@ -602,7 +609,8 @@ def ilha():
     cen += montar(lambda c: boneco_de_neve(col=c), 6.6, 6.0, angulo_para(6.6, 6.0, 4, 0))
     # O pequeno saiu do pé da montanha (estava enterrado na encosta), para perto do palco.
     cen += montar(lambda c: boneco_de_neve(0.7, col=c), -1.6, -8.8, angulo_para(-1.6, -8.8, 2, 0))
-    for i, (x, z) in enumerate(((5.6, -4.2), (-1.0, 7.0), (9.4, -8.8), (-9.6, 7.8), (0.6, -10.2))):
+    # O segundo saiu da frente do painel mais alto (estava onde sobe o vento do planador, fase3-09).
+    for i, (x, z) in enumerate(((5.6, -4.2), (-2.7, 6.3), (9.4, -8.8), (-9.6, 7.8), (0.6, -10.2))):
         cen += montar(lambda c, i=i: bloco_de_gelo(0.9, seed=i, col=c), x, z, R(23 * i))
     montinhos = []
     for i, (x, z, rx, rz) in enumerate(((-8.5, -5.5, 1.8, 1.2), (-4.0, -8.6, 1.0, 0.6), (-6.5, 6.8, 1.4, 0.9),
@@ -671,13 +679,21 @@ def ilha():
                 ('trilha-inicio', pe_trilha[0], -pe_trilha[1], pe_trilha[2]),
                 ('trilha-fim', fim_trilha[0], -fim_trilha[1], fim_trilha[2]),
                 ('cume', cume[0], -cume[1], cume[2]), ('parede-de-gelo', -2.5, 8.2),
-                ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1)]
+                ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1),
+                # O vento que sobe na frente do painel mais alto (fase3-09): com o planador, leva ao
+                # alto da parede. O jogo põe o raio e a altura (`CORRENTE_DO_PICO`).
+                ('corrente-de-ar', -0.9, 7.7, TOPO)]
         + extras_do_jogo + ancoras_da_banda(giro_iglu, giro_palco, (cx, cy, zc), a_boca))
     # O desenho do trenó num nó próprio, com a origem na base dele: o jogo o leva debaixo de quem
     # desce de trenó (o nome `treno` é da âncora; dois nós com o mesmo nome viravam `treno.001`).
-    exportar('pico', {'chao': chao, 'montanha': mont, 'cenario': cen, 'telhado-iglu': telhado_iglu,
-                      'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_,
-                      'caverna-joia': joia_}, ancoras, colisores=col)
+    nos = {'chao': chao, 'montanha': mont, 'cenario': cen, 'telhado-iglu': telhado_iglu,
+           'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_, 'caverna-joia': joia_}
+    porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
+    ancoras += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('pico', nos, ancoras, colisores=col, porto=dados_porto)
 
 
 def props():

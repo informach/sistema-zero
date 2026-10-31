@@ -1,5 +1,12 @@
 # @sistemazero/api-gateway — Guia do Agente
 
+## Cores conquistadas do Arquipélago (A02, 30/10/2026)
+
+Rota explícita `arquipelago-cores-conquistadas`: GET `/arquipelago/desafios/cores`, jogador
+autenticado e ativo, 60 leituras/minuto por identidade, mesmas transformações das rotas do jogo.
+O literal deve resolver antes do detalhe `/:id`. Sem POST/PUT. Teste em
+`tests/unit/arquipelago-config.test.ts`; não acrescenta migração nem configuração obrigatória.
+
 ## Arquipélago Vagalume (27/10/2026)
 
 `src/infrastructure/config/arquipelago-routes.ts` (`arquipelagoGateway`) só entra na config quando

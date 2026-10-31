@@ -3,6 +3,7 @@ import { ValidationError } from '@sistemazero/core/errors'
 import { UnauthorizedError } from '@sistemazero/core/http'
 import { JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
 import { Elysia } from 'elysia'
+import { AccessDeniedError } from '../src/domain/entitlement/entitlement.errors'
 import { KidsJourneyUnavailableError } from '../src/domain/kids-journey/kids-journey.errors'
 import {
   ProjectCheckBusyError,
@@ -10,6 +11,7 @@ import {
   ProjectCheckUnavailableError,
   StudioProjectSyncingError,
 } from '../src/domain/learning/learning.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../src/domain/studio/python-project-check.errors'
 import { arquipelagoCoinsRoutes } from '../src/interfaces/http/routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from '../src/interfaces/http/routes/arquipelago-internal.routes'
 
@@ -29,6 +31,7 @@ function criar(over: {
   aulas?: unknown
   saldo?: unknown
   quartos?: unknown
+  ambiente?: unknown
 }) {
   const staffPreview = mock(over.staffPreview ?? (async () => ({ policyVersion: 4 })))
   const policy = mock(
@@ -56,6 +59,7 @@ function criar(over: {
         aulas: over.aulas as never,
         saldo: over.saldo as never,
         quartos: over.quartos as never,
+        ambiente: over.ambiente as never,
         token: 'configurado' in over ? over.configurado : token,
       }),
     )
@@ -257,6 +261,51 @@ test('verificar valida o corpo e repassa o pedido', async () => {
   expect(verificar).toHaveBeenCalledWith(pedidoDeVerificacao)
 })
 
+test('C02: perfil e entradas do objetivo Python chegam inteiros ao serviço; o Python fora é 424', async () => {
+  const python = {
+    id: 'acertar',
+    label: 'Acertar a bolha soma um ponto',
+    programmingLanguage: 'python',
+    profileId: 'python-browser',
+    stdin: ['7', ''],
+    rule: {
+      type: 'behavior',
+      steps: [],
+      expect: { target: { kind: 'console' }, compare: 'truthy' },
+    },
+  }
+  const analisar = mock(async () => analiseVazia)
+  const verificar = mock(async () => ({ passou: true, resultados: [] }))
+  const { app } = criar({ objetivos: { analisar, verificar } })
+  const analise = { ...pedidoDeAnalise, objetivos: [python] }
+  expect((await app.handle(postar('/objetivos/analisar', analise))).status).toBe(200)
+  expect(analisar).toHaveBeenCalledWith(analise)
+  const verificacao = { ...pedidoDeVerificacao, objetivos: [python] }
+  expect((await app.handle(postar('/objetivos/verificar', verificacao))).status).toBe(200)
+  expect(verificar).toHaveBeenCalledWith(verificacao)
+  for (const ruim of [
+    { ...python, stdin: ['1', '2', '3', '4', '5'] },
+    { ...python, profileId: 'x'.repeat(97) },
+  ])
+    expect(
+      (await app.handle(postar('/objetivos/analisar', { ...pedidoDeAnalise, objetivos: [ruim] })))
+        .status,
+    ).toBe(400)
+  const fora = criar({
+    objetivos: {
+      analisar: mock(),
+      verificar: async () => {
+        throw new StudioPythonProjectCheckUnavailableError()
+      },
+    },
+  })
+  const res = await fora.app.handle(postar('/objetivos/verificar', verificacao))
+  expect(res.status).toBe(424)
+  expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
+    'STUDIO_PYTHON_PROJECT_CHECK_UNAVAILABLE',
+  )
+})
+
 describe('aulas concluídas (a volta ao curso dos pais, 29/10/2026)', () => {
   const lia = '11111111-1111-4111-8111-111111111111'
   const tom = '22222222-2222-4222-8222-222222222222'
@@ -358,5 +407,65 @@ describe('quarto (a visita de um irmão no Arquipélago, 29/10/2026)', () => {
     expect((await app.handle(pedir(`userId=${tom}&audience=bebes`))).status).toBe(400)
     expect(quarto).toHaveBeenCalledTimes(0)
     expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
+  })
+})
+
+describe('ambiente Python do desafio (C02b, 30/10/2026)', () => {
+  const pedidoDeAmbiente = {
+    requester: userId,
+    accountId: userId,
+    audience: 'kids',
+    projetoInicial: projeto,
+    pedido: { operation: 'analyze' },
+  }
+
+  test('exige o token de leitura; corpo malformado é 400; sem o serviço, 424', async () => {
+    const autorizar = mock(async () => ({ version: 1 }))
+    const { app } = criar({ ambiente: { autorizar } })
+    expect((await app.handle(postar('/ambiente', pedidoDeAmbiente, null))).status).toBe(401)
+    expect((await app.handle(postar('/ambiente', pedidoDeAmbiente, tokenDasMoedas))).status).toBe(
+      401,
+    )
+    for (const ruim of [
+      { ...pedidoDeAmbiente, requester: 'x' },
+      { ...pedidoDeAmbiente, audience: 'teen' },
+      { ...pedidoDeAmbiente, pedido: 'texto' },
+    ])
+      expect((await app.handle(postar('/ambiente', ruim))).status).toBe(400)
+    expect(autorizar).toHaveBeenCalledTimes(0)
+    const semServico = criar({})
+    expect((await semServico.app.handle(postar('/ambiente', pedidoDeAmbiente))).status).toBe(424)
+  })
+
+  test('devolve a decisão do serviço; recusa vira 403 e pedido inválido 400', async () => {
+    const autorizar = mock(async () => ({ version: 1 }))
+    const { app } = criar({ ambiente: { autorizar } })
+    const ok = await app.handle(postar('/ambiente', pedidoDeAmbiente))
+    expect(ok.status).toBe(200)
+    expect(await ok.json()).toEqual({ version: 1 })
+    expect(autorizar).toHaveBeenCalledWith(pedidoDeAmbiente)
+    const negado = criar({
+      ambiente: {
+        autorizar: mock(async () => {
+          throw new AccessDeniedError('O projeto aberto não é do ambiente deste desafio.')
+        }),
+      },
+    })
+    const res = await negado.app.handle(postar('/ambiente', pedidoDeAmbiente))
+    expect(res.status).toBe(403)
+    expect(await res.json()).toEqual({
+      error: {
+        code: 'ACCESS_DENIED',
+        message: 'O projeto aberto não é do ambiente deste desafio.',
+      },
+    })
+    const invalido = criar({
+      ambiente: {
+        autorizar: mock(async () => {
+          throw new ValidationError('O pedido do ambiente é inválido.')
+        }),
+      },
+    })
+    expect((await invalido.app.handle(postar('/ambiente', pedidoDeAmbiente))).status).toBe(400)
   })
 })

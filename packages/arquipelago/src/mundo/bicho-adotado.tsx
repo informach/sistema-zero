@@ -16,6 +16,7 @@ import gatoGlb from '../assets/bichos/gato.glb'
 import porquinhoGlb from '../assets/bichos/porquinho.glb'
 import { lojaDoBicho, PAINEL_DO_BICHO } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
+import { quemAcompanha } from '../sistemas/companhia'
 import { jogoPausado } from '../sistemas/pausa'
 import {
   atrasDela,
@@ -28,7 +29,7 @@ import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { ESCALA_DOS_BICHOS, URL_DO_FILHOTE } from './bichos-do-bosque'
 import { useInterativo } from './interativos'
-import { GRAVIDADE, PASSO_DA_FISICA } from './medidas'
+import { alturaDaIlha, GRAVIDADE, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 
 const URL_DO_ADULTO: Readonly<Record<BichoDoBosque, string>> = {
@@ -46,6 +47,11 @@ const FOLGA = 0.02
 /** De que distância aparece "Cuidar de...". */
 const ALCANCE_DE_CUIDAR = 1.9
 const UMA_VEZ: readonly string[] = ['feliz', 'truque']
+/**
+ * Onde ele espera quando o bichinho do quarto é a companhia (S01): no gramado em frente à
+ * varanda, fora da horta e do caminho da porta. Como um "alvo" parado, olhando para a casa.
+ */
+const EM_CASA = { x: 4, z: 4.5, direcao: Math.PI, y: alturaDaIlha(4, 4.5) + 1 } as const
 
 /**
  * O bicho adotado: segue a criança pela ilha central e pelo Bosque (`sistemas/seguir.ts`), com um
@@ -62,6 +68,7 @@ export function BichoAdotado() {
   // A última reação já tocada fica aqui, fora do corpo: crescer troca o corpo (outro modelo), e o
   // corpo novo ainda toca a festinha do cuidado que o fez crescer.
   const reacaoVista = useRef(lojaDoBicho(loja).getState().reacao.n)
+  const emCasa = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet) !== 'adotado')
   if (!id || !fase || !nome) return null
   return (
     <ComReserva reserva={null}>
@@ -71,6 +78,7 @@ export function BichoAdotado() {
         fase={fase}
         nome={nome}
         reacaoVista={reacaoVista}
+        emCasa={emCasa}
       />
     </ComReserva>
   )
@@ -81,11 +89,14 @@ function CorpoDoBicho({
   fase,
   nome,
   reacaoVista,
+  emCasa,
 }: {
   id: BichoDoBosque
   fase: 'filhote' | 'adulto'
   nome: string
   reacaoVista: RefObject<number>
+  /** Não é a companhia agora: anda até a frente de casa e espera lá. */
+  emCasa: boolean
 }) {
   const { loja, rastro, movimento, pedidos } = useJogo()
   const { world, rapier } = useRapier()
@@ -96,6 +107,10 @@ function CorpoDoBicho({
   const url = fase === 'adulto' ? URL_DO_ADULTO[id] : URL_DO_FILHOTE[id]
   const { cena, actions, mixer, olhos } = useCopiaAnimada(url, raiz, UMA_VEZ)
   const bicho = lojaDoBicho(loja)
+  const ficaEmCasa = useRef(emCasa)
+  ficaEmCasa.current = emCasa
+  /** Quem ele segue: a criança, ou o lugar de esperar em casa. */
+  const alvo = () => (ficaEmCasa.current ? EM_CASA : rastro)
 
   // Onde ele nasce: dois passos atrás da criança. O corpo pode montar antes do primeiro quadro do
   // personagem (o modelo já estava baixado), quando o `rastro` ainda não tem a posição dela: por
@@ -154,18 +169,22 @@ function CorpoDoBicho({
     const cuidando = s.painelAberto === PAINEL_DO_BICHO
     if (!nasceu.current) {
       nasceu.current = true
-      const p = atrasDela(rastro)
-      pos.current = { x: p.x, y: rastro.y, z: p.z }
+      const a = alvo()
+      const p = atrasDela(a)
+      pos.current = { x: p.x, y: a.y, z: p.z }
       b.setTranslation(pos.current, true)
     }
 
     // Para onde ir: atrás da criança; parado se o jogo está parado (menu, painel, ferramenta).
-    const espera = movimento.modo !== 'chao' || s.nadando || jogoPausado(s)
-    const passo = passoDoSeguir(seguir.current, pos.current, rastro, espera || cuidando, dt)
+    const espera = ficaEmCasa.current
+      ? jogoPausado(s)
+      : movimento.modo !== 'chao' || s.nadando || jogoPausado(s)
+    const a = alvo()
+    const passo = passoDoSeguir(seguir.current, pos.current, a, espera || cuidando, dt)
     clipeDoPasso.current = passo.clipe
     if (passo.reaparecer) {
-      const p = atrasDela(rastro)
-      pos.current = { x: p.x, y: rastro.y, z: p.z }
+      const p = atrasDela(a)
+      pos.current = { x: p.x, y: a.y, z: p.z }
       velY.current = 0
       b.setTranslation(pos.current, true)
     } else if (!jogoPausado(s) && pedidos.chaoChegando.size === 0) {

@@ -61,6 +61,7 @@ import { toast } from 'sonner'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { useConfirm } from '@/components/admin/use-confirm'
 import { useSortableItem } from '@/components/dnd/use-sortable-item'
+import { PintaArtSlotFields, StudioArtSlotsFields } from '@/components/editor/art-slot-fields'
 import { HtmlCodeEditor } from '@/components/editor/html-code-editor'
 import { LearningBuilder } from '@/components/editor/learning-builder'
 import { LessonBlockKindBadge } from '@/components/editor/lesson-block-kind'
@@ -96,6 +97,7 @@ import { useStudioAuthoringOptions } from '@/components/studio/use-studio-author
 import { useStudioAuthoringPalette } from '@/components/studio/use-studio-authoring-palette'
 import type { StudioAuthoringRuntimeScope } from '@/components/studio/use-studio-authoring-runtime'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
+import { lessonArtSlots, lessonGameImageNames } from '@/lib/art-slot-authoring'
 import { studentLessonLink } from '@/lib/course-modality'
 import { EMPTY_LEARNING } from '@/lib/learning-form-defaults'
 import {
@@ -576,6 +578,8 @@ function LessonEditorSession({
       studioPythonLevel: c.kind === 'studio' ? resolvePythonLearningLevel(c.pythonLevel) : 1,
       studioAllowBlocks: c.kind === 'studio' ? (c.allowBlocks ?? []) : [],
       studioChain: c.kind === 'studio' ? (c.chain ?? '') : '',
+      studioArtSlots:
+        c.kind === 'studio' ? (c.artSlots ?? []).map(({ name, mode }) => ({ name, mode })) : [],
       studioShowcaseEnabled: c.kind === 'studio' ? (c.showcase?.enabled ?? false) : false,
       studioShowcaseTitle: c.kind === 'studio' ? (c.showcase?.title ?? '') : '',
       studioShowcaseSummary: c.kind === 'studio' ? (c.showcase?.summary ?? '') : '',
@@ -597,6 +601,8 @@ function LessonEditorSession({
       pintaSize: EMPTY_BLOCK.pintaSize,
       pintaToolPreset: c.kind === 'pinta' ? presetOfAllowTools(c.allowTools) : 'essencial',
       pintaChain: c.kind === 'pinta' ? (c.chain ?? '') : '',
+      pintaArtSlotName: c.kind === 'pinta' ? (c.artSlot?.name ?? '') : '',
+      pintaArtSlotReplaces: c.kind === 'pinta' ? (c.artSlot?.replaces ?? '') : '',
     })
     if (c.kind === 'studio') {
       const projectKind = (c.initialProject as { kind?: string } | undefined)?.kind
@@ -2406,6 +2412,20 @@ function LessonEditorSession({
                         placeholder="ex.: heroi-do-jogo"
                       />
                     </Field>
+                    {blockForm.toolPurpose !== 'experiment' ? (
+                      <PintaArtSlotFields
+                        name={blockForm.pintaArtSlotName}
+                        replaces={blockForm.pintaArtSlotReplaces}
+                        gameImages={lessonGameImageNames(draft?.document.blocks ?? [])}
+                        onChange={({ name, replaces }) =>
+                          setBlockForm((f) => ({
+                            ...f,
+                            pintaArtSlotName: name,
+                            pintaArtSlotReplaces: replaces,
+                          }))
+                        }
+                      />
+                    ) : null}
                   </div>
                 ) : null}
 
@@ -2513,6 +2533,11 @@ function LessonEditorSession({
                         }
                       />
                     </Field>
+                    <StudioArtSlotsFields
+                      value={blockForm.studioArtSlots}
+                      candidates={lessonArtSlots(draft?.document.blocks ?? [], editingBlock?.id)}
+                      onChange={(studioArtSlots) => setBlockForm((f) => ({ ...f, studioArtSlots }))}
+                    />
                     <div className="flex flex-col gap-1">
                       <label className="flex items-center gap-2 text-sm">
                         <input

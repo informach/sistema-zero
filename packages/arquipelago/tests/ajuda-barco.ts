@@ -16,6 +16,7 @@ export function viagemReal() {
       ancorasDoPorto(ler('ilhas/recife.glb'), 'cais', recife.centro, giroDaIlha(recife.ilha)),
     ],
     { x: 1, y: 0.5, z: 0 },
-    recife.centro,
+    [null, { ...recife.centro, y: 0 }],
+    ['sua-ilha', 'recife'],
   )
 }

@@ -1,0 +1,85 @@
+{
+  "casos": [
+    {
+      "quadro": 1,
+      "tela": "computador",
+      "entrada": "teclado",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-1-computador.png"
+    },
+    {
+      "quadro": 2,
+      "tela": "computador",
+      "entrada": "teclado",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-2-computador.png"
+    },
+    {
+      "quadro": 3,
+      "tela": "computador",
+      "entrada": "teclado",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-3-computador.png"
+    },
+    {
+      "quadro": 4,
+      "tela": "computador",
+      "entrada": "teclado",
+      "resultado": 4,
+      "reinicio": true,
+      "print": "quadro-4-computador.png"
+    },
+    {
+      "quadro": 5,
+      "tela": "computador",
+      "entrada": "teclado",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-5-computador.png"
+    },
+    {
+      "quadro": 1,
+      "tela": "celular",
+      "entrada": "toque real CDP",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-1-celular.png"
+    },
+    {
+      "quadro": 2,
+      "tela": "celular",
+      "entrada": "toque real CDP",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-2-celular.png"
+    },
+    {
+      "quadro": 3,
+      "tela": "celular",
+      "entrada": "toque real CDP",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-3-celular.png"
+    },
+    {
+      "quadro": 4,
+      "tela": "celular",
+      "entrada": "toque real CDP",
+      "resultado": 4,
+      "reinicio": true,
+      "print": "quadro-4-celular.png"
+    },
+    {
+      "quadro": 5,
+      "tela": "celular",
+      "entrada": "toque real CDP",
+      "resultado": true,
+      "reinicio": true,
+      "print": "quadro-5-celular.png"
+    }
+  ],
+  "browserFechado": true
+}

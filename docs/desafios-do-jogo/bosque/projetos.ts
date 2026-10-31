@@ -12,6 +12,12 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
 
 export const bichos = BICHOS_DO_BOSQUE
 export type Variacao = 'corrida' | 'pedras' | 'noite' | 'placar'
+export const selecaoDosBichos = [
+  { tecla: 'ArrowUp', simbolo: '↑' },
+  { tecla: 'ArrowLeft', simbolo: '←' },
+  { tecla: 'ArrowRight', simbolo: '→' },
+  { tecla: 'ArrowDown', simbolo: '↓' },
+] as const
 const n = (value: number): JSExpr => ({ type: 'num', value })
 const s = (value: string): JSExpr => ({ type: 'str', value })
 const v = (name: string): JSExpr => ({ type: 'var', name })
@@ -79,11 +85,6 @@ const art: Record<string, string> = {
   porquinho: svg(
     '<ellipse cx="36" cy="80" rx="26" ry="5" fill="#344e4133"/><ellipse cx="36" cy="62" rx="25" ry="20" fill="#ed9ba8"/><path d="M17 78v-8m38 8v-8" stroke="#b7637d" stroke-width="10" stroke-linecap="round"/><path d="M13 30L12 8l20 12M59 30l1-22-20 12" fill="#e78b9d" stroke="#bc647e" stroke-width="2"/><ellipse cx="36" cy="37" rx="26" ry="25" fill="#ffbdc7"/><g fill="#493336"><circle cx="25" cy="33" r="4"/><circle cx="47" cy="33" r="4"/></g><ellipse cx="36" cy="46" rx="15" ry="11" fill="#e68b9f"/><g fill="#a95371"><ellipse cx="31" cy="46" rx="2" ry="3"/><ellipse cx="41" cy="46" rx="2" ry="3"/></g><path d="M29 59q7 4 14 0" fill="none" stroke="#a95371" stroke-width="2"/>',
   ),
-  botao: svg(
-    '<rect x="2" y="2" width="156" height="42" rx="14" fill="#246fce" stroke="#1654a2" stroke-width="3"/>',
-    160,
-    46,
-  ),
   pista: svg(
     '<rect width="640" height="430" fill="#c8e9ce"/><path d="M0 0H640V72H0" fill="#e9f6df"/><g fill="#f8ebca" stroke="#d8bd8e" stroke-width="2"><rect x="0" y="88" width="530" height="61" rx="12"/><rect x="0" y="158" width="530" height="61" rx="12"/><rect x="0" y="228" width="530" height="61" rx="12"/><rect x="0" y="298" width="530" height="61" rx="12"/></g><path d="M0 0v280" transform="translate(480 85)" stroke="#fff" stroke-width="14" stroke-dasharray="10 10"/><path d="M0 0v280" transform="translate(480 95)" stroke="#264d48" stroke-width="14" stroke-dasharray="10 10"/>',
     640,
@@ -118,15 +119,13 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const corridaPronta = pronto || variacao !== 'corrida'
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: 640, height: 430, bg: '#c8e9ce' },
+    { type: 'g2d:enableClassicControls', mode: 'auto' },
     { type: 'var', name: 'correndo', value: bool(false) },
     { type: 'var', name: 'vencedor', value: s('') },
     { type: 'var', name: 'escolhido', value: s('') },
     { type: 'var', name: 'acesa', value: bool(false) },
     { type: 'var', name: 'passo', value: n(0) },
     { type: 'var', name: 'corridas', value: n(0) },
-    image('largada', 'botao', 12, 377, 160, 46),
-    { type: 'g2d:createGroup', varName: 'botoesLargada' },
-    { type: 'g2d:addToGroup', spriteVar: 'largada', groupVar: 'botoesLargada' },
     {
       type: 'g2d:createSprite',
       varName: 'chegada',
@@ -139,9 +138,8 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   ]
   const events: JSStatement[] = [
     {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesLargada',
-      itemName: 'botaoClicado',
+      type: 'g2d:onKey',
+      key: 'Enter',
       body: corridaPronta
         ? [...bichos.flatMap(largadaDoBicho), set('vencedor', s('')), set('correndo', bool(true))]
         : [],
@@ -197,14 +195,9 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     if (corridaPronta)
       moves.push(iff(v('correndo'), [iff(cmp(v('escolhido'), '===', s(bicho)), [], walk)]))
     if (variacao === 'corrida') {
-      start.push(
-        { type: 'g2d:createGroup', varName: `selecao_${bicho}` },
-        { type: 'g2d:addToGroup', spriteVar: bicho, groupVar: `selecao_${bicho}` },
-      )
       events.push({
-        type: 'g2d:onGroupClick',
-        groupVar: `selecao_${bicho}`,
-        itemName: 'bichoClicado',
+        type: 'g2d:onKey',
+        key: selecaoDosBichos[i]!.tecla,
         body: pronto
           ? [
               iff(cmp(v('correndo'), '===', bool(false)), [
@@ -236,7 +229,12 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
     drawings.push(
       draw(bicho),
       label(v(`fala_${bicho}`), x(bicho), y - 2, 14),
-      label(bicho, 540, y + 20, 14),
+      label(
+        variacao === 'corrida' ? `${selecaoDosBichos[i]!.simbolo} ${bicho}` : bicho,
+        535,
+        y + 20,
+        18,
+      ),
     )
     if (variacao === 'pedras')
       drawings.push({
@@ -267,15 +265,9 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
       { type: 'g2d:setOpacity', spriteVar: 'noite', percent: n(94) },
     )
     drawings.push(draw('noite'))
-    start.push(
-      image('zappy', 'botao', 204, 377, 200, 46),
-      { type: 'g2d:createGroup', varName: 'botoesZappy' },
-      { type: 'g2d:addToGroup', spriteVar: 'zappy', groupVar: 'botoesZappy' },
-    )
     events.push({
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesZappy',
-      itemName: 'lanternaClicada',
+      type: 'g2d:onKey',
+      key: 'Space',
       body: pronto
         ? [
             iff(
@@ -292,36 +284,24 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
           ]
         : [],
     })
-    drawings.push(draw('zappy'), {
-      ...label('Zappy: acender / apagar', 216, 404, 14),
-      color: '#ffffff',
-    } as JSStatement)
+    drawings.push(label('Espaço ou A: acender / apagar', 255, 390, 20))
   }
   if (variacao === 'corrida')
-    drawings.push(label('Espaço:', 210, 405), label(v('escolhido'), 280, 405))
+    drawings.push(label('Espaço ou A move:', 255, 390, 20), label(v('escolhido'), 255, 417, 20))
   if (variacao === 'placar') {
-    start.push(
-      image('zerar', 'botao', 204, 377, 200, 46),
-      { type: 'g2d:createGroup', varName: 'botoesZerar' },
-      { type: 'g2d:addToGroup', spriteVar: 'zerar', groupVar: 'botoesZerar' },
-    )
     events.push({
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesZerar',
-      itemName: 'zerarClicado',
+      type: 'g2d:onKey',
+      key: 'Space',
       body: pronto ? [...bichos.map((b) => set(`vitorias_${b}`, n(0))), set('corridas', n(0))] : [],
     })
-    drawings.push(draw('zerar'), {
-      ...label('Zerar placar', 231, 405),
-      color: '#ffffff',
-    } as JSStatement)
+    drawings.push(label('Espaço ou A: zerar placar', 255, 390, 20))
     drawings.push({
       type: 'g2d:drawScore',
       ctxVar: 'ctx',
       label: 'Corridas: ',
       value: v('corridas'),
-      x: 440,
-      y: 405,
+      x: 255,
+      y: 415,
       color: '#163d35',
       size: 16,
     })
@@ -329,12 +309,12 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   if (variacao === 'pedras') {
     events.push({
       type: 'g2d:onKey',
-      key: 'Enter',
+      key: 'Space',
       body: pronto
         ? [...bichos.flatMap(largadaDoBicho), set('vencedor', s('')), set('correndo', bool(true))]
         : [],
     })
-    drawings.push(label('Extra: Enter dá outra largada', 205, 405, 15))
+    drawings.push(label('Extra: Espaço ou A recomeça', 255, 390, 20))
   }
   const source: SZIRV2 = {
     version: 2,
@@ -351,12 +331,11 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             { type: 'g2d:clear' },
             { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'pista' },
             ...drawings,
-            draw('largada'),
-            { ...label('Largada', 52, 405, 18), color: '#ffffff' } as JSStatement,
+            label('Largada: Enter ou +', 16, 390, 20),
             label('Corrida dos bichos', 16, 28, 23),
             label(
               variacao === 'corrida'
-                ? 'Extra: clique em um bicho antes da largada. Espaço faz ele andar.'
+                ? 'Extra: escolha pela seta ao lado do nome.'
                 : variacao === 'pedras'
                   ? 'Faça os bichos pularem as pedras e voltarem ao chão.'
                   : variacao === 'noite'
@@ -364,7 +343,7 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
                     : 'Cada vitória vale um ponto para quem chegou primeiro.',
               16,
               55,
-              14,
+              20,
             ),
           ],
         },

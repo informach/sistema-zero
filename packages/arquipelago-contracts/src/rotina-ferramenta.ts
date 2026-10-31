@@ -1,39 +1,53 @@
 import { z } from 'zod'
 import { CartasDoJogadorSchema } from './api'
+import { ContextoDaColheitaSchema } from './colheita'
 import { cartasNaMao, validarRotina } from './rotina-validacao'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
-import { CanteiroSchema, LUMIS, ProjetoAzulSchema } from './salvamento'
+import { CanteiroSchema, LUMIS, ProjetoAzulAtualSchema } from './salvamento'
 
-export const VERSAO_FERRAMENTA_ROTINA = 1
+export const VERSAO_FERRAMENTA_ROTINA = 2
 /** Um início vazio pode abrir no editor, mas nunca é aceito como rotina guardada. */
 export const RascunhoInicialDaRotinaSchema = z.union([
   RotinaSchema,
   z.tuple([z.strictObject({ c: z.enum(['quando-amanhecer', 'quando-anoitecer']) })]),
 ])
-export const MundoDaRotinaSchema = z
+export const MundoDaRotinaV1Schema = z
   .strictObject({
     horta: z.array(CanteiroSchema).max(24),
     inventario: z.record(z.string().min(1).max(60), z.number().int().min(0).max(999)),
-    geladeira: ProjetoAzulSchema.nullable(),
+    geladeira: ProjetoAzulAtualSchema.nullable(),
     geladeiraPosta: z.boolean(),
   })
   .refine((m) => !m.geladeiraPosta || m.geladeira !== null, 'geladeira ausente')
 
+export const MundoDaRotinaV2Schema = MundoDaRotinaV1Schema.safeExtend({
+  colheita: ContextoDaColheitaSchema,
+})
+export const MundoDaRotinaSchema = z.union([MundoDaRotinaV2Schema, MundoDaRotinaV1Schema])
+
 /** Dados transitórios da abertura. Nada deste molde aumenta o salvamento V10. */
-export const MoldeDaRotinaSchema = z.strictObject({
-  versao: z.literal(VERSAO_FERRAMENTA_ROTINA),
+export const MoldeDaRotinaV1Schema = z.strictObject({
+  versao: z.literal(1),
   abertura: z.uuid(),
   lumi: z.enum(LUMIS),
   rotina: RascunhoInicialDaRotinaSchema.nullable(),
   outrosCartoes: z.number().int().min(0).max(LIMITES_DA_ROTINA.cartoesNasRotinas),
   cartas: CartasDoJogadorSchema.nullable(),
-  mundo: MundoDaRotinaSchema,
+  mundo: MundoDaRotinaV1Schema,
   agora: z.iso.datetime({ offset: true }),
 })
+export const MoldeDaRotinaV2Schema = MoldeDaRotinaV1Schema.extend({
+  versao: z.literal(VERSAO_FERRAMENTA_ROTINA),
+  mundo: MundoDaRotinaV2Schema,
+})
+export const MoldeDaRotinaSchema = z.discriminatedUnion('versao', [
+  MoldeDaRotinaV1Schema,
+  MoldeDaRotinaV2Schema,
+])
 export type MoldeDaRotina = z.infer<typeof MoldeDaRotinaSchema>
 
 export const ResultadoDaFerramentaRotinaSchema = z.strictObject({
-  versao: z.literal(VERSAO_FERRAMENTA_ROTINA),
+  versao: z.union([z.literal(1), z.literal(VERSAO_FERRAMENTA_ROTINA)]),
   abertura: z.uuid(),
   lumi: z.enum(LUMIS),
   rotina: RotinaSchema,
@@ -46,7 +60,12 @@ export function conferirResultadoDaRotina(
   resultado: unknown,
 ): { resultado: ResultadoDaFerramentaRotina } | { motivo: string } {
   const r = ResultadoDaFerramentaRotinaSchema.safeParse(resultado)
-  if (!r.success || r.data.abertura !== molde.abertura || r.data.lumi !== molde.lumi)
+  if (
+    !r.success ||
+    r.data.versao !== molde.versao ||
+    r.data.abertura !== molde.abertura ||
+    r.data.lumi !== molde.lumi
+  )
     return { motivo: 'A resposta não pertence a esta rotina. Abra o editor novamente.' }
   const recusa = validarRotina(r.data.rotina, cartasNaMao(molde.cartas))
   if (recusa) return recusa

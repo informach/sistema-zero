@@ -9,7 +9,8 @@
  * `ARQUIPELAGO_PRINTS` (padrão: a pasta temporária).
  */
 import { spawn } from 'node:child_process'
-import { readFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { chromium } from 'playwright-core'
@@ -17,15 +18,23 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { giroDaIlha, ilhasEmVolta } from '../src/mundo/medidas'
 import { BALCOES } from '../src/sistemas/turnos'
 
-const port = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4599)
+const port = await new Promise<number>((resolve, reject) => {
+  const s = createServer().once('error', reject)
+  s.listen(0, '127.0.0.1', () => {
+    const a = s.address()
+    if (!a || typeof a === 'string') return reject(Error('Sem porta local'))
+    s.close(() => resolve(a.port))
+  })
+})
 const baseURL = `http://127.0.0.1:${port}`
 const prints = process.env.ARQUIPELAGO_PRINTS ?? tmpdir()
+mkdirSync(prints, { recursive: true })
+const publico = process.env.ARQUIPELAGO_PUBLICO === 'adulto' ? 'adulto' : 'kids'
+const celular = process.env.ARQUIPELAGO_CELULAR === '1'
 const vila = ilhasEmVolta().find((i) => i.ilha.id === 'vila-doce')
 if (!vila) throw new Error('Sem a Vila Doce no anel.')
 const giroIlha = giroDaIlha(vila.ilha)
-const glb = readFileSync(
-  path.join(import.meta.dir, '..', 'src', 'assets', 'ilhas', 'vila-doce.glb'),
-)
+const glb = readFileSync(path.resolve('src', 'assets', 'ilhas', 'vila-doce.glb'))
 const modelo = (
   await new GLTFLoader().parseAsync(
     glb.buffer.slice(glb.byteOffset, glb.byteOffset + glb.byteLength),
@@ -62,11 +71,17 @@ function lerPedido(posto: keyof typeof BALCOES, fala: string): Record<string, nu
 const server = spawn('bun', ['playground/servidor.ts'], {
   env: { ...process.env, PORTA: String(port) },
   stdio: ['ignore', 'pipe', 'pipe'],
+  windowsHide: true,
 })
+const encerrado = new Promise<void>((resolve) => server.once('close', () => resolve()))
 server.stdout.on('data', () => {})
 server.stderr.on('data', (d) => process.stderr.write(d))
 let browser: Awaited<ReturnType<typeof chromium.launch>> | undefined
 const erros: string[] = []
+const limite = setTimeout(() => {
+  void browser?.close()
+  server.kill()
+}, 6 * 60_000)
 try {
   const deadline = Date.now() + 30_000
   while (true) {
@@ -84,17 +99,37 @@ try {
     headless: true,
     args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
   })
-  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } })
-  context.setDefaultTimeout(120_000)
+  const context = await browser.newContext({
+    viewport: celular ? { width: 390, height: 844 } : { width: 1280, height: 720 },
+    isMobile: celular,
+    hasTouch: celular,
+    deviceScaleFactor: 0.5,
+    reducedMotion: 'reduce',
+  })
+  context.setDefaultTimeout(30_000)
   await context.addInitScript((origem) => {
-    if (location.origin === origem) localStorage.setItem('arquipelago:medir', '1')
+    if (location.origin === origem) {
+      localStorage.setItem('arquipelago:medir', '1')
+      localStorage.setItem(
+        'arquipelago:conforto',
+        JSON.stringify({ menosMovimento: true, qualidade: 'leve' }),
+      )
+    }
   }, baseURL)
   const page = await context.newPage()
   page.on('pageerror', (e) => erros.push(e.message))
   const chegada = ancora('chegada')
   const em = `${chegada.x.toFixed(2)},${chegada.z.toFixed(2)},${(chegada.y + 1.2).toFixed(2)}`
   // Posição 8: todas as ilhas abertas.
-  await page.goto(`${baseURL}/?novo=1&posicao=8&em=${em}`, { waitUntil: 'domcontentloaded' })
+  await page.goto(`${baseURL}/?novo=1&posicao=8&publico=${publico}&em=${em}`, {
+    waitUntil: 'domcontentloaded',
+  })
+  await page.evaluate(() => {
+    const u = new URL(location.href)
+    u.searchParams.delete('novo')
+    u.searchParams.delete('em')
+    history.replaceState(null, '', u)
+  })
   const levar = (p: P, olhar: number) =>
     page.evaluate(
       ({ x, y, z, g }) =>
@@ -126,7 +161,8 @@ try {
   await page.getByText('Conversar com o Bento').first().waitFor({ timeout: 20_000 })
 
   // 1. A conversa com o Bento oferece o balcão da padaria.
-  await page.keyboard.press('KeyE')
+  if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).click()
+  else await page.keyboard.press('KeyE')
   const conversa = page.getByRole('dialog', { name: 'Bento' })
   await conversa.waitFor({ timeout: 10_000 })
   for (let i = 0; i < 8; i++) {
@@ -137,7 +173,9 @@ try {
   await conversa.getByRole('button', { name: 'Ajudar no balcão' }).click()
   const turno = page.getByRole('dialog', { name: 'Turno na padaria' })
   await turno.waitFor({ timeout: 10_000 })
-  await turno.getByText('O primeiro turno do dia é pago.').waitFor()
+  await turno
+    .getByText('O primeiro turno do dia dá ingredientes e 5 moedas', { exact: false })
+    .waitFor()
   await page.screenshot({ path: path.join(prints, 'turno-convite.png') })
   await turno.getByRole('button', { name: 'Começar o turno' }).click()
 
@@ -169,6 +207,10 @@ try {
   await turno.getByRole('img', { name: '2 de 3 estrelas' }).waitFor({ timeout: 10_000 })
   await turno.getByText('O Bento paga o turno com 1 fubá, 1 leite e 1 ovo.').waitFor()
   await turno.getByText('Obrigado pela ajuda no balcão.', { exact: false }).waitFor()
+  await turno.getByText('5 moedas confirmadas pelo turno de hoje.', { exact: true }).waitFor()
+  await page.locator('.arq-moedas b').filter({ hasText: /^85$/ }).waitFor()
+  const largura = await turno.evaluate((e) => ({ visivel: e.clientWidth, conteudo: e.scrollWidth }))
+  if (largura.conteudo > largura.visivel + 1) throw Error('Painel com rolagem horizontal')
   await page.screenshot({ path: path.join(prints, 'turno-fim.png') })
   await turno.getByRole('button', { name: 'Voltar ao jogo' }).click()
   await turno.waitFor({ state: 'detached' })
@@ -184,7 +226,8 @@ try {
     await levar(junto, rumoDe(junto, a))
     await page.waitForTimeout(2500)
     await page.getByText(rotulo).first().waitFor({ timeout: 20_000 })
-    await page.keyboard.press('KeyE')
+    if (celular) await page.getByRole('button', { name: 'Usar', exact: true }).click()
+    else await page.keyboard.press('KeyE')
     const painel = page.getByRole('dialog', { name: titulo })
     await painel.waitFor({ timeout: 10_000 })
     await painel.getByRole('button', { name: 'Começar o turno' }).click()
@@ -196,8 +239,49 @@ try {
   }
 
   if (erros.length > 0) throw new Error(`Erros na página: ${erros.join(' | ')}`)
+  const carteira = await page.evaluate(() =>
+    JSON.parse(localStorage.getItem('arquipelago-playground:galeria') ?? 'null'),
+  )
+  if (carteira?.saldo !== 85) throw Error(`Saldo inesperado ${carteira?.saldo}`)
+  await page.waitForFunction(
+    () =>
+      JSON.parse(localStorage.getItem('arquipelago-playground') ?? 'null')?.salvamento?.inventario
+        ?.fuba === 1,
+  )
+  await page.reload({ waitUntil: 'domcontentloaded' })
+  await page.waitForFunction(
+    () => !!(globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho,
+  )
+  const reaberto = await page.evaluate(() => ({
+    carteira: JSON.parse(localStorage.getItem('arquipelago-playground:galeria') ?? 'null'),
+    inventario: JSON.parse(localStorage.getItem('arquipelago-playground') ?? 'null')?.salvamento
+      ?.inventario,
+  }))
+  if (reaberto.carteira?.saldo !== 85 || reaberto.inventario?.fuba !== 1)
+    throw Error('Reabertura perdeu a recompensa')
+  writeFileSync(
+    path.join(prints, 'resultado.json'),
+    JSON.stringify({ publico, celular, largura, saldo: 85, reaberto, erros }, null, 2),
+  )
   console.log(`Turnos conferidos. Prints em ${prints}`)
+} catch (erro) {
+  for (const contexto of browser?.contexts() ?? []) {
+    const pagina = contexto.pages()[0]
+    if (pagina) {
+      await pagina.screenshot({ path: path.join(prints, 'falha.png') }).catch(() => {})
+      writeFileSync(
+        path.join(prints, 'falha.txt'),
+        `${String(erro)}\n${await pagina
+          .locator('body')
+          .innerText()
+          .catch(() => '(página indisponível)')}`,
+      )
+    }
+  }
+  throw erro
 } finally {
+  clearTimeout(limite)
   await browser?.close()
   server.kill()
+  await encerrado
 }

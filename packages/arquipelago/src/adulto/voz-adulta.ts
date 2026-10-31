@@ -1,6 +1,7 @@
 import type { Ilha } from '@sistemazero/arquipelago-contracts'
 import type { VozDoJogo } from '../interface/voz'
 import { POSICAO_DO_MOLDA } from '../sistemas/construcao/projeto-azul'
+import { artigoDaIlha } from '../sistemas/luneta'
 
 /**
  * A voz do jogo na comunidade adulta: o mesmo formato da `VOZ_KIDS`, na voz do community
@@ -10,11 +11,12 @@ import { POSICAO_DO_MOLDA } from '../sistemas/construcao/projeto-azul'
  */
 function falaDaLuneta(ilha: Ilha): string {
   if (ilha.id === 'farol') return 'Lá está o Farol, ao lado da sua casa.'
-  const artigo = ilha.id === 'vila-doce' || ilha.id === 'nuvens' ? 'a' : 'o'
-  return `Lá é ${artigo} ${ilha.nome}. A ponte abre quando você chegar à etapa ${ilha.posicao} da sua jornada.`
+  return `Lá é ${artigoDaIlha(ilha)} ${ilha.nome}. A ponte abre quando você chegar à etapa ${ilha.posicao} da sua jornada.`
 }
 
 export const VOZ_ADULTA: VozDoJogo = {
+  farolFechado:
+    'O Farol abre no último marco da jornada. As ilhas continuam disponíveis para explorar e criar.',
   carregando: {
     titulo: 'Acendendo o Arquipélago',
     texto: 'Trazendo a sua casa e o seu avatar.',
@@ -49,4 +51,9 @@ export const VOZ_ADULTA: VozDoJogo = {
     ilha.id === 'farol'
       ? 'Acende na última etapa da sua jornada.'
       : `Abre na etapa ${ilha.posicao} da sua jornada.`,
+  marcoDaJornada: (posicao) => `Etapa ${Math.min(8, Math.max(1, Math.floor(posicao) || 1))}`,
+  passos: {
+    mapa: 'Essas são as ilhas. As cinzas abrem quando você chega a uma nova etapa da sua jornada.',
+    curso: 'Se um quadro pedir um curso, faça as aulas e volte aqui.',
+  },
 }

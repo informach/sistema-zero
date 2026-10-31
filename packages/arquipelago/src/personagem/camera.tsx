@@ -1,12 +1,17 @@
 import { useFrame, useThree } from '@react-three/fiber'
 import { useRapier } from '@react-three/rapier'
+import { ILHAS, type IlhaId } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useEffect, useMemo, useRef } from 'react'
 import { MathUtils, PerspectiveCamera, Quaternion, Vector3 } from 'three'
+import { lojaDaChegada } from '../estado/chegada'
 import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { PAINEL_DE_CONSTRUIR } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDoFarol, useFarol } from '../estado/farol'
 import { useToque } from '../estado/preferencias'
+import { ALTO_DO_FAROL, campoDaSala, vistaFinal } from '../mundo/alto-do-farol'
+import { type PalcoDaChegada, palcoDaChegada, vistaDaChegada } from '../mundo/chegada-da-ponte'
 import { GRUPOS_DO_RAIO_DA_CAMERA } from '../mundo/grupos'
 import { vistaDaLuneta } from '../mundo/luneta-medidas'
 import {
@@ -34,6 +39,9 @@ import {
   METROS_DA_DISTANCIA,
   MULTIPLICADOR_DA_RAPIDEZ,
 } from '../sistemas/conforto'
+import { PAINEL_DAS_ESTRELAS } from '../sistemas/constelacoes'
+import { SEGUNDOS_DA_VISTA } from '../sistemas/final-do-farol'
+import { CAMERA_DA_GALERIA, cameraDaGaleria, galeriaAberta } from '../sistemas/galeria-do-farol'
 import { ilhaDaLuneta, PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { MERGULHO } from '../sistemas/mergulho'
 import {
@@ -45,6 +53,7 @@ import {
   passoDosPesos,
   perfilDaVez,
 } from '../sistemas/perfis-de-camera'
+import { suavizarAngulo } from '../sistemas/zappy'
 
 const IDENTIDADE = { x: 0, y: 0, z: 0, w: 1 }
 /** Do ponto que a câmera olha (a cabeça) até o peito do avatar. */
@@ -104,12 +113,34 @@ function gravarDica() {
  */
 export function Camera() {
   const { rastro, movimento, loja, pedidos, controle } = useJogo()
+  const farol = lojaDoFarol(loja)
+  const noFarol = useFarol(loja, (s) => s.etapa !== 'fora' && s.etapa !== 'carregando')
+  const antesDoFarol = useRef({
+    ativa: false,
+    posicao: new Vector3(),
+    giro: new Quaternion(),
+    campo: 55,
+    giroDoCorpo: 0,
+    /** O giro suavizado da câmera da galeria (`null` até a primeira vista da sala). */
+    galeria: { angulo: null as number | null },
+  })
+  const antesDaChegada = useRef({
+    ativa: false,
+    ilha: null as IlhaId | null,
+    palco: null as PalcoDaChegada | null,
+    posicao: new Vector3(),
+    giro: new Quaternion(),
+  })
   const toque = useToque()
   const dentro = useEstado((s) => s.dentroDeCasa)
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const naLuneta = useEstado((s) => s.painelAberto === PAINEL_DA_LUNETA)
   const jornada = useEstado((s) => s.jornada)
   const tamanho = useThree((s) => s.size)
+  const panoramaDoFinal = useMemo(
+    () => vistaFinal(tamanho.width / tamanho.height),
+    [tamanho.width, tamanho.height],
+  )
   const vista = useMemo(
     () => vistaDaLuneta(ilhaDaLuneta(jornada), tamanho.width / tamanho.height),
     [jornada, tamanho.width, tamanho.height],
@@ -157,7 +188,7 @@ export function Camera() {
   const recentrarVisto = useRef(controle.recentrar)
 
   useEffect(() => {
-    if (construindo || naLuneta) return
+    if (construindo || naLuneta || noFarol) return
     const el = gl.domElement
     const dedos = new Map<number, { x: number; y: number }>()
     let pinca: { separacao: number; distancia: number } | null = null
@@ -264,7 +295,7 @@ export function Camera() {
       el.removeEventListener('wheel', roda)
       window.removeEventListener('keydown', tecla)
     }
-  }, [gl, rastro, conforto, construindo, naLuneta])
+  }, [gl, rastro, conforto, construindo, naLuneta, noFarol])
 
   // Mudou a distância nas preferências: a câmera vai até ela (a roda e a pinça seguem valendo).
   useEffect(
@@ -297,10 +328,108 @@ export function Camera() {
   useFrame((_, dt) => {
     // Uma única dona da câmera por quadro. O Construir cuida do alvo, controles e suavização.
     if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) return
+    // A cena da subida de posto (N02): a câmera mostra a ilha, a ponte e a travessia.
+    const cena = lojaDaChegada(loja).getState()
+    const antesC = antesDaChegada.current
+    if (cena.ilha !== null && camera instanceof PerspectiveCamera) {
+      if (!antesC.ativa || antesC.ilha !== cena.ilha) {
+        if (!antesC.ativa) {
+          antesC.posicao.copy(camera.position)
+          antesC.giro.copy(camera.quaternion)
+        }
+        antesC.ativa = true
+        antesC.ilha = cena.ilha
+        const ilha = ILHAS.find((i) => i.id === cena.ilha)
+        antesC.palco = ilha ? palcoDaChegada(ilha) : null
+      }
+      if (antesC.palco) {
+        const v = vistaDaChegada(antesC.palco, cena.tempo, cena.menosMovimento)
+        camera.position.set(v.posicao.x, v.posicao.y, v.posicao.z)
+        camera.lookAt(v.alvo.x, v.alvo.y, v.alvo.z)
+        return
+      }
+    }
+    if (antesC.ativa && cena.ilha === null && camera instanceof PerspectiveCamera) {
+      antesC.ativa = false
+      antesC.ilha = null
+      camera.position.copy(antesC.posicao)
+      camera.quaternion.copy(antesC.giro)
+      return
+    }
+    const final = farol.getState()
+    const antesF = antesDoFarol.current
+    if (final.etapa !== 'fora' && !antesF.ativa && camera instanceof PerspectiveCamera) {
+      antesF.ativa = true
+      antesF.posicao.copy(camera.position)
+      antesF.giro.copy(camera.quaternion)
+      antesF.campo = camera.fov
+      antesF.giroDoCorpo = rastro.giro
+    }
+    if (
+      final.etapa !== 'fora' &&
+      final.etapa !== 'carregando' &&
+      camera instanceof PerspectiveCamera
+    ) {
+      if ((final.etapa === 'fachos' || final.etapa === 'fim') && final.varanda) {
+        const vista = panoramaDoFinal
+        const p = final.menosMovimento ? 1 : Math.min(1, final.tempo / SEGUNDOS_DA_VISTA)
+        const k = p * p * (3 - 2 * p)
+        camera.position.set(
+          final.varanda.x + (vista.x - final.varanda.x) * k,
+          final.varanda.y + 1.8 + (vista.y - final.varanda.y - 1.8) * k,
+          final.varanda.z + (vista.z - final.varanda.z) * k,
+        )
+        // Mira abaixo do anel para deixar as seis ilhas acima do painel de fala.
+        camera.lookAt(0, -55 * k, 0)
+      } else if (galeriaAberta(loja.getState().salvamento) && !loja.getState().visita) {
+        // O modo livre (fase4-12): a câmera da galeria acompanha o lado da sala onde ela está.
+        const lado = Math.atan2(rastro.z - ALTO_DO_FAROL.z, rastro.x - ALTO_DO_FAROL.x)
+        const g = antesF.galeria
+        g.angulo =
+          g.angulo === null || menosMovimento
+            ? lado
+            : suavizarAngulo(g.angulo, lado, CAMERA_DA_GALERIA.rapidez, Math.min(dt, 0.1))
+        const vista = cameraDaGaleria(g.angulo)
+        camera.position.set(
+          ALTO_DO_FAROL.x + vista.posicao.x,
+          ALTO_DO_FAROL.y + vista.posicao.y,
+          ALTO_DO_FAROL.z + vista.posicao.z,
+        )
+        camera.lookAt(
+          ALTO_DO_FAROL.x + vista.alvo.x,
+          ALTO_DO_FAROL.y + vista.alvo.y,
+          ALTO_DO_FAROL.z + vista.alvo.z,
+        )
+        rastro.giro = vista.giro
+      } else {
+        camera.position.set(ALTO_DO_FAROL.x + 2, ALTO_DO_FAROL.y + 2.8, ALTO_DO_FAROL.z + 2.7)
+        camera.lookAt(ALTO_DO_FAROL.x - 0.7, ALTO_DO_FAROL.y + 1.3, ALTO_DO_FAROL.z - 1.2)
+        rastro.giro = Math.atan2(2.7, 3.9)
+      }
+      camera.fov =
+        final.etapa === 'sala' || final.etapa === 'pagina'
+          ? campoDaSala(tamanho.width / tamanho.height)
+          : (PERFIS_DE_CAMERA.farol.campoDeVisao ?? 65)
+      camera.updateProjectionMatrix()
+      return
+    }
+    if (antesF.ativa && final.etapa === 'fora' && camera instanceof PerspectiveCamera) {
+      antesF.ativa = false
+      antesF.galeria.angulo = null
+      camera.position.copy(antesF.posicao)
+      camera.quaternion.copy(antesF.giro)
+      camera.fov = antesF.campo
+      rastro.giro = antesF.giroDoCorpo
+      camera.updateProjectionMatrix()
+      return
+    }
+    // A luneta do mirante das Nuvens (fase4-07) escreve a vista dela enquanto está aberta.
+    const mira = loja.getState().painelAberto === PAINEL_DAS_ESTRELAS ? movimento.mira : null
     const perfilAtual = perfilDaVez({
       barco: movimento.modo === 'barco',
+      balao: movimento.modo === 'balao',
       mergulho: movimento.modo === 'mergulho',
-      luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA,
+      luneta: loja.getState().painelAberto === PAINEL_DA_LUNETA || mira !== null,
       conversa: loja.getState().painelAberto !== null && pedidos.conversa !== null,
       dentroDeCasa: dentro,
       correndoPercurso: movimento.corrida !== null,
@@ -315,9 +444,10 @@ export function Camera() {
         antesL.campo = camera.fov
       }
       // Corte para a vista óptica, sem viajar através do mundo ou mexer no rastro do corpo.
-      camera.position.set(vista.posicao.x, vista.posicao.y, vista.posicao.z)
-      camera.lookAt(vista.alvo.x, vista.alvo.y, vista.alvo.z)
-      camera.fov += (vista.campo - camera.fov) * (menosMovimento ? 1 : 1 - Math.exp(-dt * 10))
+      const v = mira ?? vista
+      camera.position.set(v.posicao.x, v.posicao.y, v.posicao.z)
+      camera.lookAt(v.alvo.x, v.alvo.y, v.alvo.z)
+      camera.fov += (v.campo - camera.fov) * (menosMovimento ? 1 : 1 - Math.exp(-dt * 10))
       camera.updateProjectionMatrix()
       return
     }

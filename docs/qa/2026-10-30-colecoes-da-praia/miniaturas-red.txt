@@ -1,0 +1,189 @@
+[
+  {
+    "id": "concha-caracol",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/concha-caracol-cqg3408z.png"
+  },
+  {
+    "id": "concha-listrada",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/concha-listrada-qn3bxacj.png"
+  },
+  {
+    "id": "concha-mexilhao",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/concha-mexilhao-hmvdsxn3.png"
+  },
+  {
+    "id": "concha-tigre",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/concha-tigre-c59dn5hs.png"
+  },
+  {
+    "id": "concha-vieira",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/concha-vieira-ytrvzv47.png"
+  },
+  {
+    "id": "estrela-do-mar",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/estrela-do-mar-2y5ra2hg.png"
+  },
+  {
+    "id": "peixe-garoupa",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/peixe-garoupa-asejqwcc.png"
+  },
+  {
+    "id": "peixe-linguado",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/peixe-linguado-1cqbj0vy.png"
+  },
+  {
+    "id": "peixe-robalo",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/peixe-robalo-hgqfgpc6.png"
+  },
+  {
+    "id": "peixe-sardinha",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/peixe-sardinha-jrn1zwgh.png"
+  },
+  {
+    "id": "peixe-voador",
+    "ok": false,
+    "url": "http://127.0.0.1:56912/aulas/exemplo/peixe-voador-mp4drf65.png"
+  }
+]
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Miniaturas devem resolver pela pasta do módulo
++ actual - expected
+
++ [
++   {
++     id: 'concha-caracol',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/concha-caracol-cqg3408z.png'
++   },
++   {
++     id: 'concha-listrada',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/concha-listrada-qn3bxacj.png'
++   },
++   {
++     id: 'concha-mexilhao',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/concha-mexilhao-hmvdsxn3.png'
++   },
++   {
++     id: 'concha-tigre',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/concha-tigre-c59dn5hs.png'
++   },
++   {
++     id: 'concha-vieira',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/concha-vieira-ytrvzv47.png'
++   },
++   {
++     id: 'estrela-do-mar',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/estrela-do-mar-2y5ra2hg.png'
++   },
++   {
++     id: 'peixe-garoupa',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-garoupa-asejqwcc.png'
++   },
++   {
++     id: 'peixe-linguado',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-linguado-1cqbj0vy.png'
++   },
++   {
++     id: 'peixe-robalo',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-robalo-hgqfgpc6.png'
++   },
++   {
++     id: 'peixe-sardinha',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-sardinha-jrn1zwgh.png'
++   },
++   {
++     id: 'peixe-voador',
++     ok: false,
++     url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-voador-mp4drf65.png'
++   }
++ ]
+- []
+
+    at file:///C:/Users/tocha/projects/sistema-zero-praia-20261030/packages/arquipelago/playground/verificar-miniaturas-praia-browser.mjs:49:10 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    {
+      id: 'concha-caracol',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/concha-caracol-cqg3408z.png'
+    },
+    {
+      id: 'concha-listrada',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/concha-listrada-qn3bxacj.png'
+    },
+    {
+      id: 'concha-mexilhao',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/concha-mexilhao-hmvdsxn3.png'
+    },
+    {
+      id: 'concha-tigre',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/concha-tigre-c59dn5hs.png'
+    },
+    {
+      id: 'concha-vieira',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/concha-vieira-ytrvzv47.png'
+    },
+    {
+      id: 'estrela-do-mar',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/estrela-do-mar-2y5ra2hg.png'
+    },
+    {
+      id: 'peixe-garoupa',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-garoupa-asejqwcc.png'
+    },
+    {
+      id: 'peixe-linguado',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-linguado-1cqbj0vy.png'
+    },
+    {
+      id: 'peixe-robalo',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-robalo-hgqfgpc6.png'
+    },
+    {
+      id: 'peixe-sardinha',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-sardinha-jrn1zwgh.png'
+    },
+    {
+      id: 'peixe-voador',
+      ok: false,
+      url: 'http://127.0.0.1:56912/aulas/exemplo/peixe-voador-mp4drf65.png'
+    }
+  ],
+  expected: [],
+  operator: 'deepStrictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

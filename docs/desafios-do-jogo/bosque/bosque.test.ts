@@ -43,6 +43,9 @@ test('o arquivo importável corresponde à fonte e só usa blocos dos cursos at�
   expect(creatorJourneyLevel('coder').reward.blockLevel).toBe('iniciante-2d')
   const arquivo = await Bun.file(new URL('./bosque.manifesto.json', import.meta.url)).json()
   expect(arquivo).toEqual(manifesto)
+  expect(await Bun.file(new URL('./bosque-adulto.manifesto.json', import.meta.url)).json()).toEqual(
+    criarManifesto('adulto'),
+  )
   for (const d of manifesto.desafios) {
     for (const p of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
       const project = p as { ir: unknown; blocksState: unknown }

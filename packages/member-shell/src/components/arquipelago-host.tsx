@@ -1,12 +1,18 @@
 'use client'
 
 import {
+  type ClubeDoJogo,
   type DesafioAberto,
+  EnvioAoClubeSchema,
   ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
   type MoldeDaRotina,
   MoldeDeDesafioSchema,
+  MoldeDoJogoDoMuralSchema,
+  type MoldeDoVestuario,
+  MoldeDoVestuarioSchema,
   type MontagemDoArquipelago,
+  PERCURSOS,
   type PedidoDeFerramenta,
   type Plataforma,
   type PublicoJogo,
@@ -14,6 +20,7 @@ import {
   QuartoSchema,
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
+  SituacaoDoClubeSchema,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
@@ -35,6 +42,9 @@ import {
 const RotinaDialog = lazy(() =>
   import('./arquipelago-rotina-dialog').then((m) => ({ default: m.ArquipelagoRotinaDialog })),
 )
+const AvatarDialog = lazy(() =>
+  import('./arquipelago-avatar-dialog').then((m) => ({ default: m.ArquipelagoAvatarDialog })),
+)
 
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
@@ -44,6 +54,9 @@ const ChallengeDialog = lazy(() =>
 )
 const MinijogoPlayer = lazy(() =>
   import('./arquipelago-minijogo-player').then((m) => ({ default: m.ArquipelagoMinijogoPlayer })),
+)
+const MuralPlayer = lazy(() =>
+  import('./arquipelago-mural-player').then((m) => ({ default: m.ArquipelagoMuralPlayer })),
 )
 
 class ToolLoadBoundary extends Component<
@@ -75,14 +88,31 @@ const CAMINHOS_DO_JOGO = new Set([
   '/tempo/recuperar',
   '/tempo/sessao',
   '/cartas',
+  '/desafios/cores',
   '/galeria',
   '/galeria/compras',
+  '/insumos/pendente',
+  '/insumos/comprar',
+  '/pedidos/pendentes',
+  '/pedidos/entregar',
+  '/profissoes/iniciar',
+  '/profissoes/concluir',
   '/minijogos',
+  '/mural',
   '/irmaos',
+  '/amigos',
+  '/fantasmas',
+  '/visitas-adultas/convite',
+  '/visitas-adultas/abrir',
+  '/visitas-adultas/conferir',
 ])
 const UUID = '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'
 /** A casa de um irmão para a visita (fase3-12), só leitura. */
 const CASA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/casa$`)
+/** A casa de um amigo que a família aceitou (N08a), só leitura. */
+const CASA_DE_AMIGO = new RegExp(`^/amigos/${UUID}/casa$`)
+const FANTASMA = new RegExp(`^/fantasmas/(${PERCURSOS.join('|')})$`)
+const FANTASMA_DO_IRMAO = new RegExp(`^/irmaos/${UUID}/fantasmas/(${PERCURSOS.join('|')})$`)
 /**
  * Os desafios: a lista (com `?ilha=`), o desafio aberto e o prêmio visto. Conferir NÃO está aqui:
  * quem manda o projeto é o Estúdio de desafio da página, nunca o jogo.
@@ -100,13 +130,21 @@ export function soDoKids(caminho: string): boolean {
     caminho === '/tempo/sessao' ||
     caminho === '/tempo/recuperar' ||
     caminho === '/irmaos' ||
-    CASA_DO_IRMAO.test(caminho)
+    caminho === '/amigos' ||
+    CASA_DO_IRMAO.test(caminho) ||
+    CASA_DE_AMIGO.test(caminho) ||
+    FANTASMA_DO_IRMAO.test(caminho)
   )
 }
 
 export function caminhoDoJogo(caminho: string): boolean {
   return (
-    CAMINHOS_DO_JOGO.has(caminho) || DESAFIOS_DO_JOGO.test(caminho) || CASA_DO_IRMAO.test(caminho)
+    CAMINHOS_DO_JOGO.has(caminho) ||
+    DESAFIOS_DO_JOGO.test(caminho) ||
+    CASA_DO_IRMAO.test(caminho) ||
+    CASA_DE_AMIGO.test(caminho) ||
+    FANTASMA.test(caminho) ||
+    FANTASMA_DO_IRMAO.test(caminho)
   )
 }
 
@@ -177,6 +215,35 @@ function lerStudioConfig(value: unknown, viewerId: string): ArquipelagoStudioCon
   return c as unknown as ArquipelagoStudioConfig
 }
 
+/**
+ * Fotos no Clube (N08b): a situação (permissão dos responsáveis e o canal das fotos no Clube) e o
+ * envio do PNG do modo foto. Só o Kids monta; qualquer falha vira `fora-do-ar` ou `falhou`.
+ */
+export function clubeDoKids(): ClubeDoJogo {
+  return {
+    async situacao() {
+      try {
+        const r = await json('/api/arquipelago/clube')
+        const lido = SituacaoDoClubeSchema.safeParse(r.corpo)
+        return r.status === 200 && lido.success ? lido.data.situacao : 'fora-do-ar'
+      } catch {
+        return 'fora-do-ar'
+      }
+    },
+    async mandarFoto(foto) {
+      try {
+        const form = new FormData()
+        form.append('file', foto, 'arquipelago.png')
+        const r = await json('/api/arquipelago/clube/foto', { method: 'POST', body: form })
+        const lido = EnvioAoClubeSchema.safeParse(r.corpo)
+        return lido.success ? lido.data.situacao : 'falhou'
+      } catch {
+        return 'falhou'
+      }
+    },
+  }
+}
+
 async function json(url: string, init?: RequestInit): Promise<{ status: number; corpo: unknown }> {
   const resposta = await sessionFetch(url, init)
   return { status: resposta.status, corpo: await resposta.json().catch(() => null) }
@@ -241,7 +308,11 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     servico: {
       async buscar(caminho, pedido) {
-        if (!caminhoDoJogo(caminho) || (opcoes.publico !== 'kids' && soDoKids(caminho)))
+        if (
+          !caminhoDoJogo(caminho) ||
+          (opcoes.publico !== 'kids' && soDoKids(caminho)) ||
+          (opcoes.publico !== 'adulto' && caminho.startsWith('/visitas-adultas/'))
+        )
           return { status: 404, corpo: { code: 'NOT_FOUND' } }
         return json(`${BASE}${caminho}`, {
           ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
@@ -251,6 +322,7 @@ export function criarPlataformaDoArquipelago(opcoes: {
     },
     abrirFerramenta:
       opcoes.abrirFerramenta ?? (async () => ({ situacao: 'indisponivel', motivo: 'em-breve' })),
+    ...(opcoes.publico === 'kids' ? { clube: clubeDoKids() } : {}),
     voltarParaPlataforma: () => window.location.assign(opcoes.voltarPara),
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
   }
@@ -276,6 +348,7 @@ export function ArquipelagoHost(props: {
   const [estado, setEstado] = useState<Estado>('carregando')
   const [challenge, setChallenge] = useState<DesafioAberto | null>(null)
   const [minijogo, setMinijogo] = useState<string | null>(null)
+  const [jogoDoMural, setJogoDoMural] = useState<string | null>(null)
   const [creation, setCreation] = useState<{
     ferramenta: 'pinta' | 'molda' | 'estudio'
     studioAvailable: boolean
@@ -285,6 +358,7 @@ export function ArquipelagoHost(props: {
     objeto: PedidoDeObjeto | null
   } | null>(null)
   const [moldeRotina, setMoldeRotina] = useState<MoldeDaRotina | null>(null)
+  const [vestuario, setVestuario] = useState<MoldeDoVestuario | null>(null)
   const fimRotina = useRef<((resultado: ResultadoDaFerramentaRotina | null) => void) | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
   const abrindo = useRef(false)
@@ -299,6 +373,19 @@ export function ArquipelagoHost(props: {
         return { situacao: 'indisponivel', motivo: 'ocupado' }
       abrindo.current = true
       try {
+        if (pedido.ferramenta === 'avatar') {
+          const molde = MoldeDoVestuarioSchema.safeParse(pedido.molde)
+          if (pedido.proposito !== 'vestir' || !molde.success)
+            return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          const acesso = await json(`${BASE}/ferramentas/avatar`)
+          if (!vivo) return { situacao: 'cancelado' }
+          if (acesso.status !== 200 || !pertenceAoPerfil(acesso.corpo, id))
+            return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setVestuario(molde.data)
+          })
+        }
         if (pedido.ferramenta === 'rotina-lumi') {
           return await abrirRotinaNaPlataforma(
             pedido,
@@ -311,6 +398,14 @@ export function ArquipelagoHost(props: {
               })
             },
           )
+        }
+        if (pedido.ferramenta === 'estudio' && pedido.proposito === 'jogo-do-mural') {
+          const molde = MoldeDoJogoDoMuralSchema.safeParse(pedido.molde)
+          if (!molde.success) return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+          return await new Promise<ResultadoDeFerramenta>((resolve) => {
+            pendente.current = resolve
+            setJogoDoMural(molde.data.playId)
+          })
         }
         if (pedido.ferramenta === 'estudio' && pedido.proposito === 'minijogo') {
           const idDoJogo = (pedido.molde as { desafioId?: unknown } | undefined)?.desafioId
@@ -416,8 +511,10 @@ export function ArquipelagoHost(props: {
       fimRotina.current?.(null)
       fimRotina.current = null
       setMoldeRotina(null)
+      setVestuario(null)
       setChallenge(null)
       setMinijogo(null)
+      setJogoDoMural(null)
       setCreation(null)
       pendente.current?.({ situacao: 'cancelado' })
       pendente.current = null
@@ -429,6 +526,79 @@ export function ArquipelagoHost(props: {
     // A moldura usa estilo próprio (não classes): o jogo ocupa a tela em qualquer app que hospede.
     <div style={{ position: 'fixed', inset: 0, background: '#0e1430' }}>
       <div ref={elemento} style={{ position: 'absolute', inset: 0 }} />
+      {vestuario ? (
+        <ToolLoadBoundary
+          Aviso={Aviso}
+          ferramenta="avatar"
+          onCancel={() => {
+            setVestuario(null)
+            pendente.current?.({ situacao: 'cancelado' })
+            pendente.current = null
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="avatar" falhou={false} />}>
+            <AvatarDialog
+              festa={vestuario.festa}
+              publico={publico}
+              onFinish={async (saved) => {
+                const resolve = pendente.current
+                if (!resolve) return
+                setVestuario(null)
+                if (!saved) {
+                  pendente.current = null
+                  resolve({ situacao: 'cancelado' })
+                  return
+                }
+                try {
+                  const acesso = await json(`${BASE}/ferramentas/avatar`)
+                  if (!pertenceAoPerfil(acesso.corpo, id)) throw Error('O perfil ativo mudou')
+                  const p = criarPlataformaDoArquipelago({
+                    publico,
+                    perfil: { id, primeiroNome },
+                    voltarPara,
+                  })
+                  const avatar = await p.lerAvatar()
+                  if (pendente.current !== resolve) return
+                  pendente.current = null
+                  resolve({ situacao: 'avatar-pronto', avatar })
+                } catch (erro) {
+                  console.error('[arquipelago] avatar', erro)
+                  if (pendente.current === resolve) {
+                    pendente.current = null
+                    resolve({ situacao: 'indisponivel', motivo: 'leitura-do-avatar' })
+                  }
+                }
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      ) : null}
+      {jogoDoMural && (
+        <ToolLoadBoundary
+          key={jogoDoMural}
+          Aviso={Aviso}
+          ferramenta="estudio"
+          onCancel={() => {
+            setJogoDoMural(null)
+            const resolve = pendente.current
+            pendente.current = null
+            resolve?.({ situacao: 'cancelado' })
+          }}
+        >
+          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
+            <MuralPlayer
+              playId={jogoDoMural}
+              publico={publico}
+              onClose={() => {
+                setJogoDoMural(null)
+                const resolve = pendente.current
+                pendente.current = null
+                resolve?.({ situacao: 'cancelado' })
+              }}
+            />
+          </Suspense>
+        </ToolLoadBoundary>
+      )}
       {minijogo && (
         <ToolLoadBoundary
           Aviso={Aviso}

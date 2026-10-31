@@ -13,9 +13,12 @@ import {
 import type { Ponto } from './cipo'
 import { receberPatins } from './patins'
 
+/** Todos os percursos atuais têm progresso durável, incluindo as corridas das Nuvens. */
+export type IdDoPercurso = PercursoId
+
 /** O que muda de um percurso para outro (as contas são as mesmas). */
 export interface ConfigDoPercurso {
-  id: PercursoId
+  id: IdDoPercurso
   /** O título da tela de resultado e o nome do cronômetro. */
   nome: string
   /** O texto do botão na largada. */
@@ -29,8 +32,11 @@ export interface ConfigDoPercurso {
   tempoAlvoMs: number
   /** Quantas coisas estão espalhadas (pegar todas é a terceira estrela). */
   vagalumes: number
-  /** O nome delas (a estrela, o cronômetro e o resultado) e o símbolo do cronômetro. */
-  coletavel: { varios: string; Varios: string; simbolo: string }
+  /**
+   * O nome delas (a estrela, o cronômetro e o resultado), o símbolo do cronômetro e se a palavra é
+   * feminina ("as fitas", "pegas").
+   */
+  coletavel: { varios: string; Varios: string; simbolo: string; feminino?: boolean }
   /** A coisa é pega a esta distância do centro do corpo. */
   raioDoVagalume: number
   /** Chegou: a esta distância (no chão) da chegada. */
@@ -44,6 +50,11 @@ export interface ConfigDoPercurso {
   corteVoltaMs: number
   /** O que a chegada dá (os patins da entrega), com a fala; `null` quando não há nada a dar. */
   premio?: (s: Salvamento) => { salvamento: Salvamento; fala: string } | null
+  /**
+   * As paradas só contam na ordem (percursos no chão, em que dava para cortar caminho até a
+   * última). Nos percursos do alto, pular uma parada já é chegar mais longe.
+   */
+  emOrdem?: boolean
 }
 
 export const PERCURSO_DAS_COPAS = {
@@ -135,11 +146,180 @@ export const PERCURSO_DO_CUME = {
   corteVoltaMs: 340,
 } as const satisfies ConfigDoPercurso
 
+/** As fitas do arco-íris que a Iriê perdeu: a terceira estrela das duas corridas das Nuvens. */
+const FITAS_DO_ARCO_IRIS = {
+  varios: 'fitas do arco-íris',
+  Varios: 'Fitas do arco-íris',
+  simbolo: '🎀',
+  feminino: true,
+} as const
+
+/**
+ * Os saltos entre nuvens (fase4-07): dos degraus de nuvem, de plataforma em plataforma (as que
+ * sobem e descem, fase4-06), até o tampo da mais alta, com uma fita do arco-íris em cada vão.
+ */
+export const PERCURSO_DOS_SALTOS = {
+  id: 'nuvens-saltos',
+  nome: 'Saltos entre nuvens',
+  rotuloDaLargada: 'Começar os saltos entre nuvens',
+  falaDoComeco:
+    'Valendo. Suba os degraus de nuvem e pule de plataforma em plataforma até a mais alta.',
+  falaDoFim: 'Os saltos pararam. Nos degraus de nuvem dá para começar de novo quando quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você pulou de nuvem em nuvem com todas as fitas.',
+  /**
+   * Cada salto entre plataformas só cabe quando a de trás está no alto e a da frente embaixo, numa
+   * janela a cada 10 s, e a plataforma 1 só recebe do degrau quando está embaixo. Sem perder
+   * nenhuma janela, a volta leva até uns 55 s, conforme a fase do ciclo na largada (o teste conta):
+   * 60 s dá a estrela a quem não perde nenhuma janela.
+   */
+  tempoAlvoMs: 60_000,
+  /** Uma fita em cada vão entre as plataformas (do degrau para a 1 é só um passo, sem vão). */
+  vagalumes: 3,
+  coletavel: FITAS_DO_ARCO_IRIS,
+  raioDoVagalume: 0.8,
+  /** O tampo da plataforma mais alta tem 1,8 m de raio. */
+  raioDaChegada: 1.4,
+  folgaDoDeque: 0.3,
+  distanciaParaDesistir: 6,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A corrida de balão (fase4-07): passar de balão pelas seis argolas do arco-íris na ordem
+ * (`sistemas/corrida-de-balao.ts`). A primeira argola começa; a sexta é a chegada.
+ */
+export const PERCURSO_DO_BALAO = {
+  id: 'nuvens-balao',
+  nome: 'Corrida de balão',
+  rotuloDaLargada: 'Passe de balão pela argola vermelha',
+  falaDoComeco: 'Valendo. Passe pelas seis argolas do arco-íris na ordem, da vermelha à roxa.',
+  falaDoFim: 'A corrida parou. A argola vermelha começa de novo quando você passar por ela.',
+  falaDasTresEstrelas: 'Três estrelas. Você voou pelo arco-íris inteiro com todas as fitas.',
+  /**
+   * Um piloto que não erra, pelas regras do balão, faz a volta em uns 29 s (o teste da corrida
+   * mede): 45 s dá a estrela a quem pilota com calma, sem precisar ser perfeito.
+   */
+  tempoAlvoMs: 45_000,
+  vagalumes: 3,
+  coletavel: FITAS_DO_ARCO_IRIS,
+  /** O balão pega a fita a esta distância do meio dele (o envelope é largo). */
+  raioDoVagalume: 1.6,
+  raioDaChegada: 1.8,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * A volta pela praia da sua ilha (V19, "primeiros percursos na praia e nas pedras"): da pedra do
+ * leste, pela areia do sul, de pedra em pedra até a pedra do oeste, pegando conchas brilhantes.
+ * As paradas ficam no chão: contam na ordem. Ninguém cai, só desiste longe da praia.
+ */
+export const PERCURSO_DA_PRAIA = {
+  id: 'praia-pedras',
+  nome: 'Volta pela praia',
+  rotuloDaLargada: 'Começar a volta pela praia',
+  falaDoComeco: 'Valendo. Siga pela areia de pedra em pedra até a pedra grande do oeste.',
+  falaDoFim: 'A volta parou. A pedra do leste começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você deu a volta na praia com todas as conchas.',
+  /**
+   * A volta tem uns 70 m de areia (o teste mede pelas paradas): correndo são uns 16 s e andando
+   * uns 32 s. 26 s deixa a estrela para quem corre a maior parte, parando para pegar as conchas.
+   */
+  tempoAlvoMs: 26_000,
+  vagalumes: 5,
+  coletavel: {
+    varios: 'conchas brilhantes',
+    Varios: 'Conchas brilhantes',
+    simbolo: '🐚',
+    feminino: true,
+  },
+  raioDoVagalume: 0.9,
+  raioDaChegada: 1.8,
+  folgaDoDeque: 0.6,
+  /** Sair da praia para dentro da ilha (mais que isto da linha das paradas) desiste. */
+  distanciaParaDesistir: 9,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+  emOrdem: true,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * Os corais do Recife (V19): de coral em coral pelo arco em volta da lagoa, do primeiro do oeste
+ * ao último do norte, com uma pérola no ar em cada vão. Cair na areia ou na lagoa volta ao último
+ * coral alcançado.
+ */
+export const PERCURSO_DOS_CORAIS = {
+  id: 'recife-corais',
+  nome: 'Pulos nos corais',
+  rotuloDaLargada: 'Começar os pulos nos corais',
+  falaDoComeco: 'Valendo. Pule de coral em coral em volta da lagoa até o último do arco.',
+  falaDoFim: 'Os pulos pararam. O primeiro coral do arco começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você pulou o arco inteiro com todas as pérolas.',
+  /**
+   * Onze pulos de uns 2,2 m entre os topos (o teste mede): quem mira e pula sem cair leva uns
+   * 16 s. 22 s deixa a estrela para quem não cai, sem exigir correr.
+   */
+  tempoAlvoMs: 22_000,
+  vagalumes: 5,
+  coletavel: { varios: 'pérolas', Varios: 'Pérolas', simbolo: '🫧', feminino: true },
+  raioDoVagalume: 0.8,
+  raioDaChegada: 0.7,
+  folgaDoDeque: 0.3,
+  distanciaParaDesistir: 6,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
+/**
+ * As pegadas do Vale (V19): seguir as pedras do vulcão na ordem, a pé ou montado no dino (a
+ * montaria é o brinquedo do Vale e chega mais rápido), pegando os fósseis que brilham no caminho.
+ */
+export const PERCURSO_DAS_PEGADAS = {
+  id: 'vale-pegadas',
+  nome: 'Trilha das pedras do vulcão',
+  rotuloDaLargada: 'Começar a trilha das pedras',
+  falaDoComeco: 'Valendo. Passe pelas pedras do vulcão na ordem, a pé ou montado no dino.',
+  falaDoFim: 'A trilha parou. A primeira pedra começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você passou por todas as pedras com todos os fósseis.',
+  /**
+   * Seis trechos de uns 5 m entre as pedras (o teste mede): correndo a pé são uns 8 s, montado
+   * menos. 12 s dá a estrela a quem corre sem parar ou vai no dino com calma.
+   */
+  tempoAlvoMs: 12_000,
+  vagalumes: 5,
+  coletavel: { varios: 'fósseis', Varios: 'Fósseis', simbolo: '🦴' },
+  raioDoVagalume: 1.2,
+  raioDaChegada: 1.6,
+  folgaDoDeque: 2.5,
+  distanciaParaDesistir: 8,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+  emOrdem: true,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
-export const PERCURSOS_DO_JOGO: Readonly<Record<PercursoId, ConfigDoPercurso>> = {
+export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
   'vila-telhados': PERCURSO_DOS_TELHADOS,
   'pico-cume': PERCURSO_DO_CUME,
+  'nuvens-saltos': PERCURSO_DOS_SALTOS,
+  'nuvens-balao': PERCURSO_DO_BALAO,
+  'praia-pedras': PERCURSO_DA_PRAIA,
+  'recife-corais': PERCURSO_DOS_CORAIS,
+  'vale-pegadas': PERCURSO_DAS_PEGADAS,
+}
+
+/** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */
+export function todasAsColetaveis(config: ConfigDoPercurso, quantas: number): string {
+  return `${config.coletavel.feminino ? 'As' : 'Os'} ${quantas} ${config.coletavel.varios}`
+}
+
+/** "Vagalumes pegos", "Fitas do arco-íris pegas" (o título do contador). */
+export function coletaveisPegas(config: ConfigDoPercurso): string {
+  return `${config.coletavel.Varios} ${config.coletavel.feminino ? 'pegas' : 'pegos'}`
 }
 
 export interface DequeDoPercurso extends Ponto {
@@ -242,7 +422,10 @@ export function passoDaCorrida(
     c.tempoMs = Math.round(c.tempoMs)
     return { tipo: 'chegou' }
   }
-  for (let i = pontos.deques.length - 1; i > c.deque; i--) {
+  const ate = config.emOrdem
+    ? Math.min(c.deque + 1, pontos.deques.length - 1)
+    : pontos.deques.length - 1
+  for (let i = ate; i > c.deque; i--) {
     const d = pontos.deques[i]
     if (!d) continue
     if (

@@ -6684,7 +6684,7 @@
           {
             "id": "porta-com-chave-em-execucao",
             "label": "Com a chave, acenda o farol e chame o barco.",
-            "hint": "Teste recolher a chave antes de ir ao farol. O então deve registrar a vitória, acender o farol e mudar o aviso.",
+            "hint": "Teste recolher a chave antes de ir ao farol. O então deve registrar a vitória, trocar a imagem do farol e mudar o aviso.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6711,6 +6711,16 @@
                     },
                     "compare": "equals",
                     "value": true
+                  }
+                },
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "farol.imageName"
+                    },
+                    "compare": "changed"
                   }
                 }
               ],
@@ -7133,15 +7143,6 @@
                         "blockType": "sz_g2d_set_image",
                         "fields": {
                           "SPRITE": "farol"
-                        },
-                        "fieldOptions": {
-                          "IMAGE": [
-                            "farol-listrado-aceso",
-                            "farol-de-pedra-aceso",
-                            "farol-de-madeira-aceso",
-                            "farol-colorido-aceso",
-                            "farol-aceso"
-                          ]
                         }
                       },
                       {
@@ -7192,15 +7193,6 @@
                       "blockType": "sz_g2d_set_image",
                       "fields": {
                         "SPRITE": "farol"
-                      },
-                      "fieldOptions": {
-                        "IMAGE": [
-                          "farol-listrado-aceso",
-                          "farol-de-pedra-aceso",
-                          "farol-de-madeira-aceso",
-                          "farol-colorido-aceso",
-                          "farol-aceso"
-                        ]
                       }
                     }
                   }
@@ -7339,15 +7331,6 @@
                       "blockType": "sz_g2d_set_image",
                       "fields": {
                         "SPRITE": "farol"
-                      },
-                      "fieldOptions": {
-                        "IMAGE": [
-                          "farol-listrado-aceso",
-                          "farol-de-pedra-aceso",
-                          "farol-de-madeira-aceso",
-                          "farol-colorido-aceso",
-                          "farol-aceso"
-                        ]
                       }
                     }
                   }

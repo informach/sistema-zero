@@ -1,5 +1,6 @@
 import { useAnimations, useGLTF } from '@react-three/drei'
 import { useFrame, useThree } from '@react-three/fiber'
+import { ILHAS, type IlhaId } from '@sistemazero/arquipelago-contracts'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { Component, type ReactNode, Suspense, useEffect, useMemo, useRef } from 'react'
 import {
@@ -11,7 +12,13 @@ import {
   type PointLight,
 } from 'three'
 import zappyGlb from '../assets/zappy.glb'
+import { lojaDaChegada } from '../estado/chegada'
 import { useJogo } from '../estado/contexto'
+import { useFarol } from '../estado/farol'
+import { guiaDoZappy } from '../estado/primeiros-passos'
+import { type PalcoDaChegada, palcoDaChegada, zappyNaChegada } from '../mundo/chegada-da-ponte'
+import { ALCANCE_DO_GUIA } from '../mundo/guia-do-zappy'
+import { CORPO } from '../sistemas/corpo'
 import {
   ALTURA_DO_ZAPPY,
   diferencaDeAngulo,
@@ -41,6 +48,11 @@ const VELOCIDADE_DO_MERGULHO_MAXIMO = 7
 const LONGE_DO_LUGAR = 0.35
 /** Mais longe que isso (m) foi um salto (início do jogo, teleporte): ele aparece no lugar, sem cruzar o mapa. */
 const SALTO = 8
+/** Mostrando um lugar (os primeiros passos): a altura acima do chão e a rapidez do voo até lá. */
+const ALTURA_NO_GUIA = 2.1
+const RAPIDEZ_NO_GUIA = 2.2
+/** Depois de mostrar um lugar, por quanto tempo (s) a volta é voando, nunca um salto. */
+const VOLTA_DO_GUIA = 5
 
 /**
  * O Zappy, o vagalume guia, voando no ombro do personagem e virando junto com ele: andando, olha
@@ -48,36 +60,86 @@ const SALTO = 8
  * virada ele dá a volta por fora em vez de atravessar o corpo dela. À noite a bunda ilumina em volta.
  */
 export function Zappy() {
-  const { rastro, ambiente } = useJogo()
+  const { loja, rastro, ambiente } = useJogo()
+  const noFinal = useFarol(loja, (s) => s.etapa === 'fachos' || s.etapa === 'fim')
   const camera = useThree((s) => s.camera)
   const reduzido = useReducedMotion()
   const grupo = useRef<Group>(null)
   const luz = useRef<PointLight>(null)
   const brilho = useRef({ forca: 1 })
   const voando = useRef(false)
-  const voo = useRef({ emVolta: rastro.direcao, parado: 0, inclinacao: 0, iniciado: false })
+  const chegada = useRef<{
+    ilha: IlhaId | null
+    palco: PalcoDaChegada | null
+    origem: { x: number; y: number; z: number }
+  }>({ ilha: null, palco: null, origem: { x: 0, y: 0, z: 0 } })
+  const voo = useRef({
+    emVolta: rastro.direcao,
+    parado: 0,
+    inclinacao: 0,
+    iniciado: false,
+    guiouAte: -Infinity,
+  })
   useFrame(({ clock }, dtBruto) => {
     const g = grupo.current
     if (!g) return
     const dt = Math.min(dtBruto, 0.1)
     const t = clock.elapsedTime
     const v = voo.current
+    // A cena da subida de posto (N02): ele voa da criança até a ilha cinza e fica sobre ela.
+    const cena = lojaDaChegada(loja).getState()
+    if (cena.ilha !== null && !cena.menosMovimento) {
+      if (chegada.current.ilha !== cena.ilha) {
+        const ilha = ILHAS.find((i) => i.id === cena.ilha)
+        chegada.current = {
+          ilha: cena.ilha,
+          palco: ilha ? palcoDaChegada(ilha) : null,
+          origem: { x: g.position.x, y: g.position.y, z: g.position.z },
+        }
+      }
+      const palco = chegada.current.palco
+      if (palco) {
+        const p = zappyNaChegada(palco, cena.tempo, chegada.current.origem)
+        g.position.set(p.x, p.y, p.z)
+        g.rotation.y = giroPara({ x: g.position.x, z: g.position.z }, palco.ilha)
+        voando.current = true
+        return
+      }
+    } else if (chegada.current.ilha !== null) {
+      // Acabou a cena: ele volta para o lado dela de uma vez (como depois de um corte).
+      chegada.current = { ilha: null, palco: null, origem: { x: 0, y: 0, z: 0 } }
+      v.iniciado = false
+    }
     const ela = { x: rastro.x, z: rastro.z }
     // O lugar dele acompanha a direção dela pelo caminho mais curto, girando em volta do corpo.
     v.emVolta = suavizarAngulo(v.emVolta, rastro.direcao, RAPIDEZ_EM_VOLTA, dt)
     const lugar = lugarAoLado(ela, v.emVolta)
     const balanco = reduzido ? 0.3 : 1
-    const alvoX = lugar.x + Math.sin(t * 1.3) * 0.12 * balanco
-    const alvoZ = lugar.z + Math.cos(t * 1.1) * 0.12 * balanco
-    const alvoY = rastro.y + ALTURA_DO_ZAPPY + Math.sin(t * 2.4) * 0.1 * balanco
+    // Nos primeiros passos ele voa na frente até o lugar que a fala mostra e fica piscando lá.
+    const guia = guiaDoZappy(loja).alvo
+    const mostrando =
+      guia !== null && Math.hypot(guia.x - rastro.x, guia.z - rastro.z) < ALCANCE_DO_GUIA
+        ? guia
+        : null
+    if (mostrando) v.guiouAte = t + VOLTA_DO_GUIA
+    const perto = mostrando ?? lugar
+    const alvoX = perto.x + Math.sin(t * 1.3) * 0.12 * balanco
+    const alvoZ = perto.z + Math.cos(t * 1.1) * 0.12 * balanco
+    const alvoY =
+      (mostrando ? rastro.y - CORPO.doCentroAoPe + ALTURA_NO_GUIA : rastro.y + ALTURA_DO_ZAPPY) +
+      Math.sin(t * 2.4) * 0.1 * balanco
     if (!v.iniciado) g.rotation.order = 'YXZ'
-    if (!v.iniciado || Math.hypot(alvoX - g.position.x, alvoZ - g.position.z) > SALTO) {
+    const saltou = t > v.guiouAte && Math.hypot(alvoX - g.position.x, alvoZ - g.position.z) > SALTO
+    // Com menos movimento ele não atravessa a tela voando: aparece no lugar que mostra.
+    if (!v.iniciado || saltou || (mostrando && reduzido)) {
       g.position.set(alvoX, alvoY, alvoZ)
-      g.rotation.y = rastro.direcao
-      v.emVolta = rastro.direcao
+      if (!v.iniciado || saltou) {
+        g.rotation.y = rastro.direcao
+        v.emVolta = rastro.direcao
+      }
       v.iniciado = true
     }
-    const k = 1 - Math.exp(-dt * 5)
+    const k = 1 - Math.exp(-dt * (mostrando ? RAPIDEZ_NO_GUIA : 5))
     g.position.x += (alvoX - g.position.x) * k
     g.position.y += (alvoY - g.position.y) * k
     g.position.z += (alvoZ - g.position.z) * k
@@ -89,8 +151,10 @@ export function Zappy() {
     v.parado = rastro.velocidade > VELOCIDADE_DE_ANDAR ? 0 : v.parado + dt
     const olhar = paraOndeOlhar(rastro.velocidade, v.parado)
     const daqui = { x: g.position.x, z: g.position.z }
-    const alvoGiro =
-      olhar === 'caminho'
+    // Mostrando um lugar, ele olha para ela (chamando para perto).
+    const alvoGiro = mostrando
+      ? giroPara(daqui, ela)
+      : olhar === 'caminho'
         ? rastro.direcao
         : olhar === 'ela'
           ? giroPara(daqui, ela)
@@ -113,7 +177,7 @@ export function Zappy() {
     if (luz.current) luz.current.intensity = 2 + noite * 14
   })
   return (
-    <group ref={grupo}>
+    <group ref={grupo} name="zappy-3d" visible={!noFinal}>
       <Barreira reserva={<Bolinha />}>
         <Suspense fallback={<Bolinha />}>
           <ModeloDoZappy brilho={brilho} voando={voando} />

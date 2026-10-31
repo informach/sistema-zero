@@ -27,6 +27,7 @@ const ESCOLHAS: Escolhas = {
   piso: 'tabua',
   caminho: 'pedra',
   objeto: null,
+  movel: null,
   giro: 0,
 }
 
@@ -140,6 +141,8 @@ describe('as ferramentas', () => {
       salvamento: {
         ...criarSalvamentoInicial(new Date('2026-10-28T12:00:00Z')),
         casa: { portaNova: true },
+        // A chave do quintal (N11) abre o canteiro no Construir.
+        chaves: 8,
       },
       jornada: 2,
       quarto: QUARTO_DE_EXEMPLO,

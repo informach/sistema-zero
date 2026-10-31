@@ -1,4 +1,11 @@
-import { envelope, ForbiddenError, UnauthorizedError } from '@sistemazero/core/http'
+import { CORPO_DO_FANTASMA_MAX_BYTES } from '@sistemazero/arquipelago-contracts'
+import {
+  envelope,
+  ForbiddenError,
+  InvalidJsonBodyError,
+  RequestBodyTooLargeError,
+  UnauthorizedError,
+} from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
@@ -32,26 +39,66 @@ import {
   type ServicoDaMedicao,
 } from '../../application/servico-da-medicao'
 import type { ServicoDasCartas } from '../../application/servico-das-cartas'
+import {
+  BandejasDoTurnoInvalidasError,
+  type ServicoDasProfissoes,
+  TurnoNaoEncontradoError,
+} from '../../application/servico-das-profissoes'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
+import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
+import type { ServicoDasVisitasDeAmigos } from '../../application/servico-das-visitas-de-amigos'
 import type { ServicoDoJogo } from '../../application/servico-do-jogo'
 import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
+import type { ServicoDosFantasmas } from '../../application/servico-dos-fantasmas'
+import type { ServicoDosInsumos } from '../../application/servico-dos-insumos'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
-import { ConferenciaIndisponivelError } from '../../domain/membros.port'
+import type { ServicoDosPedidos } from '../../application/servico-dos-pedidos'
+import { RecordeDoFantasmaMudouError } from '../../domain/fantasmas.port'
+import {
+  CompraDesatualizadaError,
+  CompraIncompativelError,
+  CompraPendenteError,
+  CompraSemEspacoError,
+} from '../../domain/insumos.port'
+import { AmbienteRecusadoError, ConferenciaIndisponivelError } from '../../domain/membros.port'
+import { PedidoRecusadoError } from '../../domain/pedidos.port'
 import {
   EventoTempoConflitanteError,
   SequenciaDeTempoInvalidaError,
 } from '../../domain/tempo-erros'
+import {
+  SalvamentoDaVisitaNecessarioError,
+  VisitaAdultaIndisponivelError,
+} from '../../domain/visitas-adultas.port'
+import {
+  CasaDeAmigoIndisponivelError,
+  LimiteDeCasasError,
+  VisitasDeAmigosDesligadasError,
+} from '../../domain/visitas-de-amigos.port'
 import { rotasDaEquipe } from './rotas-da-equipe'
 import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
+import { rotasDasProfissoes } from './rotas-das-profissoes'
 import { rotasDasVisitas } from './rotas-das-visitas'
+import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
+import { rotasDasVisitasDeAmigos } from './rotas-das-visitas-de-amigos'
 import { rotasDoCliente } from './rotas-do-cliente'
 import { CorpoInvalidoError, rotasDoJogo } from './rotas-do-jogo'
 import { rotasDosDesafios } from './rotas-dos-desafios'
+import { rotasDosFantasmas } from './rotas-dos-fantasmas'
+import { rotasDosInsumos } from './rotas-dos-insumos'
 import { rotasDosMinijogos } from './rotas-dos-minijogos'
+import { rotasDosPedidos } from './rotas-dos-pedidos'
 
 export interface DependenciasHttp {
+  /** Visitas de outras crianças (N08a); sem ele, as rotas não existem. */
+  amigos?: ServicoDasVisitasDeAmigos
+  visitasAdultas?: ServicoDasVisitasAdultas
+  fantasmas?: ServicoDosFantasmas
+  pedidos?: ServicoDosPedidos
+  insumos?: ServicoDosInsumos
+  profissoes?: ServicoDasProfissoes
   minijogos?: ServicoDosMinijogos
   medicao?: ServicoDaMedicao
   logger: Logger
@@ -81,10 +128,12 @@ export const CORPO_DA_EQUIPE = 4 * 1024 * 1024
 
 /** Conferir um desafio leva o projeto do Estúdio da pessoa (até 1,5 milhão de caracteres). */
 export const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
-const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/verificar$/
+const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/(verificar|ambiente)$/
 
 /** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
 function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
+  if (caminho.startsWith('/arquipelago/visitas-adultas/')) return 1024
+  if (caminho === '/arquipelago/fantasmas') return CORPO_DO_FANTASMA_MAX_BYTES
   if (caminho.startsWith('/arquipelago/admin/')) return CORPO_DA_EQUIPE
   if (CONFERIR.test(caminho)) return CORPO_DA_CONFERENCIA
   return tetoDoJogo
@@ -107,6 +156,71 @@ export function createServer(deps: DependenciasHttp) {
       }
     })
     .onError(({ error, set, code }) => {
+      if (error instanceof CasaDeAmigoIndisponivelError) {
+        set.status = 404
+        return envelope('CASA_DE_AMIGO_INDISPONIVEL', error.message)
+      }
+      if (error instanceof VisitasDeAmigosDesligadasError) {
+        set.status = 403
+        return envelope('VISITAS_DE_AMIGOS_DESLIGADAS', error.message)
+      }
+      if (error instanceof LimiteDeCasasError) {
+        set.status = 409
+        return envelope('LIMITE_DE_CASAS', error.message)
+      }
+      if (error instanceof VisitaAdultaIndisponivelError) {
+        set.status = 404
+        return envelope('VISITA_ADULTA_INDISPONIVEL', error.message)
+      }
+      if (error instanceof SalvamentoDaVisitaNecessarioError) {
+        set.status = 409
+        return envelope('SALVAMENTO_NECESSARIO', error.message)
+      }
+      if (error instanceof RequestBodyTooLargeError) {
+        set.status = 413
+        return envelope('CORPO_GRANDE_DEMAIS', 'Requisição grande demais')
+      }
+      if (error instanceof RecordeDoFantasmaMudouError) {
+        set.status = 409
+        return envelope('RECORDE_DO_FANTASMA_MUDOU', error.message)
+      }
+      if (error instanceof PedidoRecusadoError) {
+        set.status = 409
+        return envelope(
+          error.motivo === 'incompativel' ? 'PEDIDO_INCOMPATIVEL' : 'PEDIDO_BASE_RECUSADO',
+          error.message,
+        )
+      }
+      if (error instanceof CompraPendenteError) {
+        set.status = 423
+        return envelope('COMPRA_PENDENTE', error.message)
+      }
+      if (error instanceof CompraIncompativelError) {
+        set.status = 409
+        return envelope('COMPRA_INCOMPATIVEL', error.message)
+      }
+      if (error instanceof CompraDesatualizadaError) {
+        set.status = 409
+        return envelope(
+          error.reservada ? 'COMPRA_DESATUALIZADA' : 'COMPRA_BASE_DESATUALIZADA',
+          error.message,
+        )
+      }
+      if (error instanceof CompraSemEspacoError) {
+        set.status = 422
+        return envelope(
+          error.reservada ? 'COMPRA_SEM_ESPACO' : 'COMPRA_BASE_SEM_ESPACO',
+          error.message,
+        )
+      }
+      if (error instanceof TurnoNaoEncontradoError) {
+        set.status = 404
+        return envelope('TURNO_NAO_ENCONTRADO', 'Este turno não foi encontrado.')
+      }
+      if (error instanceof BandejasDoTurnoInvalidasError) {
+        set.status = 422
+        return envelope('TURNO_RESPOSTAS_INVALIDAS', 'Confira os seis pedidos deste turno.')
+      }
       if (error instanceof SequenciaDeTempoInvalidaError) {
         set.status = 409
         return envelope('TEMPO_SEQUENCIA_INVALIDA', 'A sessão de tempo precisa ser retomada.')
@@ -172,6 +286,10 @@ export function createServer(deps: DependenciasHttp) {
         set.status = status
         return envelope(codigo, error.message)
       }
+      if (error instanceof AmbienteRecusadoError) {
+        set.status = 403
+        return envelope('AMBIENTE_RECUSADO', error.message)
+      }
       if (error instanceof DesafioNaoEncontradoError) {
         set.status = 404
         return envelope('DESAFIO_NAO_ENCONTRADO', error.message)
@@ -227,6 +345,7 @@ export function createServer(deps: DependenciasHttp) {
       }
       if (
         error instanceof CorpoInvalidoError ||
+        error instanceof InvalidJsonBodyError ||
         error instanceof PeriodoDaMedicaoInvalidoError ||
         code === 'VALIDATION' ||
         code === 'PARSE'
@@ -248,6 +367,36 @@ export function createServer(deps: DependenciasHttp) {
       rotasDoJogo({ servico: deps.servico, cartas: deps.cartas, tokenInterno: deps.tokenInterno }),
     )
     .use(rotasDaEquipe({ equipe: deps.equipe, tokenInterno: deps.tokenInterno }))
+    .use(
+      deps.visitasAdultas
+        ? rotasDasVisitasAdultas({ visitas: deps.visitasAdultas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.amigos
+        ? rotasDasVisitasDeAmigos({ amigos: deps.amigos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.fantasmas
+        ? rotasDosFantasmas({ fantasmas: deps.fantasmas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.insumos
+        ? rotasDosInsumos({ insumos: deps.insumos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.pedidos
+        ? rotasDosPedidos({ pedidos: deps.pedidos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.profissoes
+        ? rotasDasProfissoes({ profissoes: deps.profissoes, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
     .use(
       deps.medicao
         ? rotasDaMedicao({ medicao: deps.medicao, tokenInterno: deps.tokenInterno })

@@ -1,94 +1,75 @@
-import type { Salvamento } from '@sistemazero/arquipelago-contracts'
+import { type LugarDaReceita, RECEITAS, type Receita } from '@sistemazero/arquipelago-contracts'
+
+export {
+  cestaDoMorador,
+  type LugarDaReceita,
+  type OrigemDaReceita,
+  RECEITAS,
+  type Receita,
+  receitasDoMorador,
+  receitasNovasDoMorador,
+} from '@sistemazero/arquipelago-contracts'
+
+import {
+  BICHOS_DO_BOSQUE,
+  SALVAMENTO_MAX_BYTES,
+  type Salvamento,
+} from '@sistemazero/arquipelago-contracts'
+import type { Festa } from './festas'
 import { adicionar, type Inventario, quantidade, remover } from './itens'
+import { coracoes } from './moradores'
+import { VIDA_NO_ANEL } from './moradores-do-anel'
 
 /** O nome do painel da bancada (a escolha da receita quando não há uma só para fazer). */
 export const PAINEL_DA_BANCADA = 'bancada'
-
-/** Onde a receita se faz: a bancada da ilha (fogão e pia) ou o forno da casa (projeto azul). */
-export type LugarDaReceita = 'bancada' | 'forno' | 'fogueira'
-
-export interface Receita {
-  id: string
-  nome: string
-  precisa: Record<string, number>
-  faz: { id: string; qtd: number }
-  onde: LugarDaReceita
-  /** Com quantos corações o Bento lembra e ensina esta receita (sem: já se sabe desde o começo). */
-  bento?: number
-}
-
-/**
- * As receitas. A salada e a pipoca já se sabem; as da Vila Doce o Bento lembra conforme a amizade
- * (fase2-04): o bolo de fubá com um coração, o pão de queijo com dois, o brigadeiro com três e o
- * chocolate quente com quatro.
- */
-export const RECEITAS: Receita[] = [
-  {
-    id: 'pipoca-de-festa',
-    nome: 'Pipoca de festa',
-    precisa: { milho: 1 },
-    faz: { id: 'pipoca-de-festa', qtd: 1 },
-    onde: 'fogueira',
-  },
-  {
-    id: 'salada',
-    nome: 'Salada da horta',
-    precisa: { alface: 1, tomate: 1 },
-    faz: { id: 'salada', qtd: 1 },
-    onde: 'bancada',
-  },
-  {
-    id: 'pipoca',
-    nome: 'Pipoca',
-    precisa: { milho: 1 },
-    faz: { id: 'pipoca', qtd: 2 },
-    onde: 'bancada',
-  },
-  {
-    id: 'bolo-de-fuba',
-    nome: 'Bolo de fubá',
-    precisa: { fuba: 1, leite: 1, ovo: 1 },
-    faz: { id: 'bolo-de-fuba', qtd: 1 },
-    onde: 'forno',
-    bento: 1,
-  },
-  {
-    id: 'pao-de-queijo',
-    nome: 'Pão de queijo',
-    precisa: { polvilho: 1, queijo: 1 },
-    faz: { id: 'pao-de-queijo', qtd: 3 },
-    onde: 'forno',
-    bento: 2,
-  },
-  {
-    id: 'brigadeiro',
-    nome: 'Brigadeiro',
-    precisa: { cacau: 1, leite: 2 },
-    faz: { id: 'brigadeiro', qtd: 4 },
-    onde: 'bancada',
-    bento: 3,
-  },
-  {
-    id: 'chocolate-quente',
-    nome: 'Chocolate quente',
-    precisa: { cacau: 1, leite: 1 },
-    faz: { id: 'chocolate-quente', qtd: 1 },
-    onde: 'bancada',
-    bento: 4,
-  },
-]
 
 export function receitaPeloId(id: string): Receita | null {
   return RECEITAS.find((r) => r.id === id) ?? null
 }
 
-/** As receitas que a pessoa sabe com `coracoesDoBento` corações de amizade com o Bento. */
-export function receitasConhecidas(coracoesDoBento: number): Receita[] {
-  return RECEITAS.filter((r) => (r.bento ?? 0) <= coracoesDoBento)
+export function receitaConhecida(r: Receita, s: Salvamento): boolean {
+  if (r.origem.tipo === 'amizade')
+    return coracoes(s.moradores[r.origem.morador].amizade) >= r.origem.coracoes
+  if (r.origem.tipo === 'colecao')
+    return BICHOS_DO_BOSQUE.every((b) => s.bichos.achados.includes(b))
+  return true
+}
+
+/** Saber a receita não depende da estação; preparar o prato da festa depende. */
+export function receitaEmEpoca(r: Receita, festa: Festa | null): boolean {
+  return r.origem.tipo !== 'festa' || r.origem.festa === festa
+}
+
+export function receitasConhecidas(s: Salvamento): Receita[] {
+  return RECEITAS.filter((r) => receitaConhecida(r, s))
+}
+
+/** Mesma pista no diário e na bancada; nunca oferece um curso ou ingrediente inexistente. */
+export function dicaDaReceita(r: Receita, s: Salvamento): string {
+  const o = r.origem
+  if (o.tipo === 'amizade') {
+    const nome = o.morador === 'bento' ? 'Bento' : VIDA_NO_ANEL[o.morador].nome
+    const faltam = Math.max(0, o.coracoes - coracoes(s.moradores[o.morador].amizade))
+    return faltam > 0
+      ? `${nome} ensina com ${o.coracoes} ${o.coracoes === 1 ? 'coração' : 'corações'} de amizade (falta${faltam > 1 ? 'm' : ''} ${faltam}).`
+      : `Os pedidos de ${nome} dão ingredientes. Complete o restante com a horta.`
+  }
+  if (o.tipo === 'colecao')
+    return 'Encontre os quatro bichos do Bosque. Os ingredientes vêm da horta.'
+  if (o.tipo === 'festa')
+    return o.festa === 'junina'
+      ? 'Na fogueira da Festa Junina, em junho. O prato pronto fica na mochila depois da festa.'
+      : o.festa === 'fim-de-ano'
+        ? 'Na bancada durante a festa de fim de ano, de 20 de dezembro a 6 de janeiro. Ela volta todo ano.'
+        : 'Na bancada durante o Carnaval. Esta receita volta todo ano.'
+  return 'Os ingredientes vêm da horta.'
 }
 
 export function podeCozinhar(inv: Inventario, r: Receita): boolean {
-  return Object.entries(r.precisa).every(([id, qtd]) => quantidade(inv, id) >= qtd)
+  return (
+    Object.entries(r.precisa).every(([id, qtd]) => quantidade(inv, id) >= qtd) &&
+    quantidade(inv, r.faz.id) - (r.precisa[r.faz.id] ?? 0) + r.faz.qtd <= 999
+  )
 }
 
 export function cozinhar(inv: Inventario, r: Receita): Inventario | null {
@@ -121,12 +102,17 @@ export function ingredientesPorExtenso(r: Receita, nomes: (id: string) => string
 export function fazerReceita(
   s: Salvamento,
   r: Receita,
+  festa: Festa | null = null,
 ): { salvamento: Salvamento; fala: string } | null {
+  if (!receitaEmEpoca(r, festa)) return null
   const inventario = cozinhar(s.inventario, r)
   if (!inventario) return null
+  const salvamento = { ...s, inventario }
+  if (new TextEncoder().encode(JSON.stringify(salvamento)).byteLength > SALVAMENTO_MAX_BYTES)
+    return null
   const feito = r.onde === 'forno' ? 'Saiu do forno' : 'Ficou pronto'
   return {
-    salvamento: { ...s, inventario },
+    salvamento,
     fala: `${feito}: ${r.nome.toLowerCase()}. Clique embaixo para comer.`,
   }
 }

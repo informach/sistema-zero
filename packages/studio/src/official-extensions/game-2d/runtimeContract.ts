@@ -128,6 +128,8 @@ export interface GameTwoDSprite {
   vx: number
   vy: number
   image: GameTwoDImageHandle | null
+  /** O nome da imagem fixa atual (`null` com figura, texto ou animação): o que um objetivo lê. */
+  imageName?: string | null
   anim: GameTwoDAnimation | null
   animStates?: Record<string, { sheet: GameTwoDSpriteSheet; from: number; to: number; fps: number }>
   _animState?: string | null

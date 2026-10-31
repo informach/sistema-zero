@@ -110,6 +110,14 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     recife: _recife,
     vale: _vale,
     pico: _pico,
+    nuvens: _nuvens,
+    farol: _farol,
+    clima: _clima,
+    ilhasVisitadas: _visitas,
+    chaves: _chaves,
+    segredos: _segredos,
+    mapa: _mapa,
+    companhia: _companhia,
     ...v3
   } = inicial()
   const antigo = {
@@ -140,13 +148,13 @@ test('diário V3 pendente migra para a atual sem perder alteração nem identida
     })
     const lido = await armazem.ler()
     expect(lido?.base.salvamento).toMatchObject({
-      versao: 14,
+      versao: 20,
       inventario: { milho: 4 },
       projetos: {},
     })
-    expect(lido?.enviado).toMatchObject({ versao: 14, inventario: { milho: 3 } })
+    expect(lido?.enviado).toMatchObject({ versao: 20, inventario: { milho: 3 } })
     expect(lido?.local).toMatchObject({
-      versao: 14,
+      versao: 20,
       inventario: { milho: 2 },
       construcao: { casa: null, cabanas: {} },
     })
@@ -160,7 +168,19 @@ test('fechar sem PUT e reabrir recupera o diário, isolado por perfil', async ()
   const perfil = crypto.randomUUID()
   const p = criarPlataformaFalsa()
   const primeira = await fila(await abrir(perfil), p.servico)
-  const local = { ...inicial(), inventario: { milho: 7 } }
+  const local = {
+    ...inicial(),
+    inventario: { milho: 7 },
+    nuvens: { constelacoes: 33 },
+    farol: { pagina: true, concluido: true, galeria: [] },
+    clima: 'chuva' as const,
+    percursos: {
+      'nuvens-balao': {
+        estrelas: { chegada: true, tempo: false, vagalumes: true },
+        melhorTempoMs: 41000,
+      },
+    },
+  }
   primeira.f.guardar(local)
   await primeira.f.parar()
   expect(p.guardado().revisao).toBe(0)

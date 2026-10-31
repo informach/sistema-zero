@@ -11,6 +11,12 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
     // O sistema REPETE keydown enquanto a tecla fica segurada; "quando apertar" só
     // dispara no toque, então ignoramos as repetições (senão vira metralhadora).
     if (e.repeat) return;
+    _dispatchGameKeyInput(e);
+  });
+  // A mesma borda serve ao teclado real e à tecla canônica de um botão de toque.
+  // O botão não emite um KeyboardEvent sintético: isso acionaria de novo a camada de ações.
+  /** @param {{key: string, code: string}} e */
+  function _dispatchGameKeyInput(e) {
     var generation = _driverGeneration;
     if (_spriteScene) {
       var sceneKey = _normalizeGameKey(e.key);
@@ -37,7 +43,7 @@ export const gameTwoDWorldEventsRuntime = `  // ---- Eventos "Quando…" ----
     // repetição acima: segurar a tecla não dispara em rajada). Se um handler
     // específico reiniciou o jogo, o laço já saiu e este nem roda.
     _emitAnyInput();
-  });
+  }
   /** Roda fn toda vez que a tecla é apertada (compara e.key e e.code). */
   function onKey(key, fn, id) {
     if (typeof fn !== 'function' || !key) return;

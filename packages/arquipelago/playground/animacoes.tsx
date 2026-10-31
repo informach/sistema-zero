@@ -147,7 +147,7 @@ function Motor({
 const CIPO_NA_MAO = q.get('cipo') === '1'
 
 /**
- * Pendurado como no jogo: o corpo inclinado para trás em volta das mãos e as mãos fechadas na
+ * No cipó como no jogo: o clipe Corda, o corpo em volta das mãos e as mãos fechadas na
  * corda (`segurarACorda`), com a corda desenhada passando à frente do queixo.
  */
 function NaCorda({ movimento }: { movimento: { current: EntradaDaLocomocao } }) {

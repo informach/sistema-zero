@@ -1,4 +1,8 @@
-import { galeriaDoObjeto, type ObjetoDaCasa } from '@sistemazero/arquipelago-contracts'
+import {
+  destinosDaAparencia,
+  galeriaDoObjeto,
+  type ObjetoDaCasa,
+} from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaGaleria, useGaleria } from '../estado/galeria'
@@ -90,6 +94,11 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
       <img src={MINIATURA_DO_OBJETO[objeto]} alt="" />
       <b>Da galeria</b>
       <small>{`${item.nome}: ${moedas(item.preco)}`}</small>
+      <small>
+        {destinosDaAparencia(item.id).includes('quarto')
+          ? 'A posse também vale no Meu quarto. O visual acompanha cada lugar.'
+          : 'Esta aparência é usada no Arquipélago.'}
+      </small>
       <small className="arq-galeria-saldo">{linhaDoSaldo(dados, fechada)}</small>
       {estado?.tipo === 'em-uso' ? <small className="arq-galeria-uso">Em uso</small> : null}
       {estado?.tipo === 'usar' ? (

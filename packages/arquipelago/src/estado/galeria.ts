@@ -69,7 +69,9 @@ export function criarLojaDaGaleria(plataforma: Plataforma): LojaDaGaleria {
         const dados = r.status === 200 ? lerGaleria(r.corpo) : null
         if (dados) {
           pedido++
-          set({ dados, fechada: false })
+          // A compra traz o saldo e a posse mais novos, substituindo a leitura em voo.
+          // Sua resposta será ignorada pelo contador, então encerre também o indicador dela.
+          set({ dados, fechada: false, carregando: false })
           return { ok: true }
         }
         const recusa = motivoDaRecusa(r.status, r.corpo)

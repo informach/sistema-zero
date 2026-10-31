@@ -25,8 +25,10 @@ import { useEstado, useJogo } from '../estado/contexto'
 import {
   type EstadoDaIlha,
   esmaecer,
+  esperandoPeloChao,
   ilhaPreferida,
   opacidadeAlvo,
+  PRIORIDADE_DA_CARGA_DA_ILHA,
   proximoEstadoDaIlha,
 } from '../sistemas/ilhas-completas'
 import { MERGULHO } from '../sistemas/mergulho'
@@ -127,6 +129,10 @@ export function prepararIlha(cena: Object3D, ilha: Ilha): IlhaPreparada {
   cena.rotation.y = giroDaIlha(ilha)
   const colisores = lerColisores(cena)
   tirarNosDeColisao(cena)
+  // As formas de escalar (`escalada-*`, sem material) são lidas pelo jogo, mas não desenham.
+  cena.traverse((o) => {
+    if (o.name.startsWith('escalada-')) o.visible = false
+  })
   // O arquivo é só desta ilha (não vem de um cache dividido): tinge e esmaece os materiais dele.
   const originais = materiaisDe(cena)
   const copas = separarCopas(cena)
@@ -268,6 +274,8 @@ export function useIlhaCompleta(
 
   useFrame((_, dt) => {
     const v = vivo.current
+    if (troca.colisoresNaCena && troca.opacidade >= 0.99) movimento.caisProntos.add(ilha.id)
+    else movimento.caisProntos.delete(ilha.id)
     const distancia = Math.hypot(rastro.x - centro.x, rastro.z - centro.z)
     const perto =
       !!info &&
@@ -293,10 +301,7 @@ export function useIlhaCompleta(
     })
     // Com o personagem em cima da ilha antes de o chão de verdade chegar (o jogo abriu num deque),
     // ele espera no ar em vez de cair até a versão leve.
-    const chegando =
-      v.estado === 'carregando' ||
-      v.estado === 'pronta' ||
-      (v.estado === 'ativa' && !troca.colisoresNaCena)
+    const chegando = esperandoPeloChao(proximo, troca.colisoresNaCena === true)
     // Espera também fora do contorno leve: ponta do Bosque e caverna do Recife.
     const m = noModelo(rastro.x - centro.x, rastro.z - centro.z, giroDaIlha(ilha))
     const emCima = distancia < raioDaEsperaDaIlha(ilha, m.x, m.z) + MARGEM_DA_ESPERA_PELO_CHAO
@@ -330,7 +335,7 @@ export function useIlhaCompleta(
       .catch(() => {
         if (carga === v.carga) v.falhou = true
       })
-  })
+  }, PRIORIDADE_DA_CARGA_DA_ILHA)
 
   // De volta a longe: a cena já tirou a completa (este efeito roda depois do React), então
   // geometrias, materiais e texturas podem ser soltos sem a placa de vídeo desenhar de novo.
@@ -347,9 +352,10 @@ export function useIlhaCompleta(
       vivo.current.carga++
       vivo.current.preparada = null
       pedidos.chaoChegando.delete(ilha.id)
+      movimento.caisProntos.delete(ilha.id)
       if (info) soltarIlha(info.url)
     },
-    [info, pedidos, ilha.id],
+    [info, pedidos, ilha.id, movimento],
   )
 
   return { estado, preparada }
@@ -389,6 +395,18 @@ export function ColisoresDaIlha({
         </RigidBody>
       ))}
     </>
+  )
+}
+
+/**
+ * Os colisores de uma peça carregada à parte numa ilha (o mirante das Nuvens): um corpo fixo, sem
+ * marcar a troca da ilha (`colisoresNaCena` é da ilha).
+ */
+export function ColisoresSoltos({ colisores }: { colisores: ColisorDaIlha[] }) {
+  return (
+    <RigidBody type="fixed" colliders={false}>
+      {colisores.map(colisorDaIlha)}
+    </RigidBody>
   )
 }
 

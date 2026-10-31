@@ -1,13 +1,42 @@
 # Arquipélago Vagalume
 
+Situação atual por funcionalidade: [estado atual](arquipelago-estado-atual.md), com fontes,
+provas locais e dependências de implantação. Os registros datados abaixo preservam a evolução.
+
+## Rede do barco pela borda, L10
+
+A rede usa os sete cais da arte, seis ligações entre vizinhas e central a Recife, apenas
+para ilhas abertas pela jornada. Painel de destinos, prontidão compartilhada, espera,
+retorno seguro e corredores das boias estão no jogo. A proteção do chão começa antes da
+física ao reabrir num deque. Não altera V18 nem concede progresso. Provas e limites em
+`docs/qa/2026-10-30-rede-barco/README.md`; implantação e fantasma familiar continuam separados.
+
+
 O jogo 3D das comunidades Kids e adulta. Proposta e decisões da dona no Canvas
 <https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W>. Este documento descreve o que existe no
-código depois da Fase 0 (27/10/2026).
+código e as entregas registradas até 30/10/2026. O levantamento completo e os critérios de
+conclusão estão em `docs/plans/2026-10-29-arquipelago-entrega-integral-design.md`.
 
 ## Decisões da dona
 
+### Entregas locais de 30/10, ainda sem publicação
+
+O primeiro pedido da ilha central entrega o projeto azul da geladeira na primeira colheita
+manual completa. A feira agora permite comprar sementes e ingredientes, com confirmação,
+carteira compartilhada e retomada de compra sem débito duplicado. O comando econômico é
+guardado no serviço e no diário local, separado do salvamento V18. Provas e limites em
+`docs/qa/2026-10-30-primeiro-pedido/README.md` e `docs/qa/2026-10-30-insumos/README.md`.
+Os pedidos dos moradores também são confirmados no serviço, com amizade, cesta e crédito
+idempotente na carteira. Receitas sazonais e sugestões de roupas foram implementadas e
+conferidas localmente. O vestuário abre o configurador da plataforma por cima do jogo.
+Provas adicionais em `docs/qa/2026-10-30-pedidos/`, `2026-10-30-receitas-sazonais/` e
+`2026-10-30-vestuario/`. Revisão integrada e implantação continuam pendentes no plano integral.
+
+### Base do jogo
+
 - Nome: **Arquipélago Vagalume**. A ilha da criança fica no **centro**, com a casa e o farol; as
-  outras seis ilhas ficam em volta, cinza até a jornada colorir. Robôs não entram (os Lumis
+  outras seis ilhas ficam em volta. A jornada abre a ponte e a cor-base; as conquistas dos
+  Quadros das Cores ampliam a cor sem apagar conquistas anteriores. Robôs não entram (os Lumis
   fazem esse papel). Física com **Rapier** (WASM liberado na página do jogo).
 - **Tudo separado:** pastas e pacotes próprios. Mudar o jogo não pode afetar a plataforma, e mudar
   a plataforma não pode afetar o jogo. Só o **avatar** e o **quarto** são divididos, nos dois
@@ -25,7 +54,7 @@ código depois da Fase 0 (27/10/2026).
 | Pacote | O que é |
 |---|---|
 | `packages/avatar-quarto` | Avatar 3D e quarto 3D (saíram do member-shell sem mudar comportamento; os caminhos antigos repassam) |
-| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV2`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
+| `packages/arquipelago-contracts` | Zod: ilhas, limites, `SalvamentoV18`, a interface `Plataforma`, o manifesto do cliente e as respostas do serviço |
 | `packages/arquipelago` | O jogo no navegador (R3F, drei, Rapier, zustand), com playground e plataforma de mentira |
 | `packages/arquipelago-api` | O serviço do jogo (Bun, Elysia, Drizzle, schema `arquipelago`, porta 3015) |
 
@@ -126,7 +155,11 @@ mesma ilha. Mudam a voz e o desenho do que fala com quem joga:
 Plano, levantamento e a lista de lançamento (variáveis, ordem, o que conferir em staging):
 [plans/2026-10-29-arquipelago-lancamento-adulto.md](plans/2026-10-29-arquipelago-lancamento-adulto.md).
 
-## Ligado e pendente (27/10/2026)
+## Registro histórico: ligado e pendente em 27/10/2026
+
+Este registro não é uma lista de pendências atuais. Desde então, o teto semanal voltou a
+100, pedidos remunerados foram ligados no serviço e outras integrações receberam provas
+locais. A situação vigente está no índice acima; nenhum deploy é presumido deste histórico.
 
 Ligado no código: serviço registrado em `.railway/`, rotas do gateway, menu nas duas comunidades,
 cartão do limite na área dos pais, ferramentas de verdade por cima do jogo (inclusive o Pinta e o
@@ -172,3 +205,18 @@ A implementação e os testes locais não indicam implantação em staging ou pr
 `em=x,z`, `adiantar`, `bichos=achados`, `cartas`, `dia=pronto|feito|nenhum` para o desafio do dia e
 `objetos=sem-acesso` para o Pinta e o Molda no molde).
 O Zappy é modelado por script no Blender (`packages/arquipelago/arte/zappy`).
+
+
+## Continuidade do progresso (L01, introduzida na V16)
+
+A V16 introduziu no salvamento os dois percursos das Nuvens, suas seis constelações, a página e a
+conclusão do Farol e a escolha do clima. Conserva referências de aparência antigas, sem
+truncamento. Não exige alteração nas tabelas. As provas e limitações do lote ficam em
+`docs/qa/2026-10-29-continuidade/README.md`; o restante da proposta segue os 14 lotes do plano.
+
+## Amizade e diário (L02/L06)
+
+V17 guarda também a amizade de Maré, Floco, Jade e Iriê. Conversa, presentes e pedidos usam
+os mesmos limites de Capi e Bento. Dois corações abrem as páginas do Pico, Vale e Nuvens;
+a página do Recife continua no navio. Ações anteriores dos moradores continuam disponíveis.
+Plano e critérios em `docs/superpowers/plans/2026-10-29-arquipelago-historia-moradores.md`.

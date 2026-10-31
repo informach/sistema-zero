@@ -1,0 +1,271 @@
+{
+  "medidas": {
+    "primeiro-offline": [
+      {
+        "ilha": "bosque",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ],
+    "antes": [
+      {
+        "ilha": "bosque",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ],
+    "conquistada": [
+      {
+        "ilha": "bosque",
+        "quadros": [1, 0, 0, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ],
+    "recarga-offline": [
+      {
+        "ilha": "bosque",
+        "quadros": [1, 0, 0, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ],
+    "arquivadas": [
+      {
+        "ilha": "bosque",
+        "quadros": [1, 0, 1, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ],
+    "host-antigo": [
+      {
+        "ilha": "bosque",
+        "quadros": [1, 0, 1, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ],
+    "catalogo-desligado": [
+      {
+        "ilha": "bosque",
+        "quadros": [1, 0, 1, 0, 0, 0],
+        "chegada": 1,
+        "base": 0.3
+      },
+      {
+        "ilha": "vila-doce",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "recife",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "pico",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "vale-dos-dinos",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      },
+      {
+        "ilha": "nuvens",
+        "quadros": [0, 0, 0, 0, 0, 0],
+        "chegada": 0,
+        "base": 0.3
+      }
+    ]
+  },
+  "erros": []
+}

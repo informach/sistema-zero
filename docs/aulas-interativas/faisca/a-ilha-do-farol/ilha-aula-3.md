@@ -57,7 +57,34 @@ Acenda o farol com a chave.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-### Parte 3. O que você descobriu no 3D
+### Parte 3. O farol acende uma vez só
+
+O farol acende uma vez só.
+
+- Intenção: application.
+- Blocos: video-uma-vez, ponte-uma-vez.
+- Conclusão: video-uma-vez; objetivos do projeto atual.
+
+- Dentro de A cada quadro, coloque o comando que move personagem com o teclado.
+- Faça o personagem andar para a direita com a seta correspondente.
+- Faça o personagem andar para a esquerda com a seta correspondente.
+- Faça o personagem andar para o fundo com a seta correspondente.
+- Faça o personagem andar para a frente com a seta correspondente.
+- Em Ao iniciar, defina os três valores da posição de chave.
+- Esconda chave dentro do encontro do personagem com chave.
+- Alcance a chave no lugar escolhido e recolha apenas ao encostar.
+- Comece temChave em falso, em Ao iniciar.
+- No mesmo encontro com chave, esconda a chave e guarde temChave verdadeiro.
+- Mude aviso dentro do encontro com chave.
+- No encontro com farol, consulte temChave e mude aviso no senão.
+- Em uma partida nova, o farol continua apagado e pede a chave.
+- No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
+- Com a chave, acenda o farol, saia dele pelo cais e volte: a luz continua acesa.
+- No encontro com farol, coloque o Se temChave dentro de Se não ganhou.
+
+**Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+
+### Parte 4. O que você descobriu no 3D
 
 Conferir ponto de vista, posição, altura e escolha de teste.
 
@@ -69,7 +96,7 @@ Conferir ponto de vista, posição, altura e escolha de teste.
 
 **Zappy na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
 
-### Parte 4. Deixe o jogo com a sua cara
+### Parte 5. Deixe o jogo com a sua cara
 
 Deixe o jogo com a sua cara.
 
@@ -92,10 +119,11 @@ Deixe o jogo com a sua cara.
 - Em uma partida nova, o farol continua apagado e pede a chave.
 - No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
 - Recolha a chave, acenda o farol e recomece uma partida.
+- No encontro com farol, coloque o Se temChave dentro de Se não ganhou.
 
 **Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-### Parte 5. Escolha seu esconderijo e teste de verdade
+### Parte 6. Escolha seu esconderijo e teste de verdade
 
 Escolha seu esconderijo e teste de verdade.
 
@@ -118,10 +146,11 @@ Escolha seu esconderijo e teste de verdade.
 - Em uma partida nova, o farol continua apagado e pede a chave.
 - No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
 - Recolha a chave, acenda o farol e recomece uma partida.
+- No encontro com farol, coloque o Se temChave dentro de Se não ganhou.
 
 **Zappy na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
-### Parte 6. Sua ilha está pronta
+### Parte 7. Sua ilha está pronta
 
 Sua ilha está pronta.
 

@@ -456,6 +456,44 @@ describe('bloco Pinta — autoria da cadeia (o tipo é load-bearing)', () => {
     ).toBe(200)
   })
 
+  test('vaga de arte: a autoria guarda o nome e a imagem que o desenho substitui', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+
+    const res = await blocoPinta(app, aulas[0].id, {
+      artSlot: { name: 'minha-chave', replaces: 'chave-dourada' },
+    })
+
+    expect(res.status).toBe(200)
+    const bloco = await readJson(res)
+    expect(bloco.document.blocks.at(-1).content.artSlot).toEqual({
+      name: 'minha-chave',
+      replaces: 'chave-dourada',
+    })
+  })
+
+  test('vaga de arte: nome fora da régua de imagem do Estúdio → 400', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+
+    for (const artSlot of [{ name: 'Minha Chave' }, { name: 'minha-chave', replaces: 'Chave' }]) {
+      const res = await blocoPinta(app, aulas[0].id, { artSlot })
+      expect(res.status, JSON.stringify(artSlot)).toBe(400)
+    }
+  })
+
+  test('vaga de arte: precisa do desenho enviado no bloco (sem galeria e sem exploração)', async () => {
+    const { app } = buildApp()
+    const { aulas } = await arvore(app)
+
+    const experimento = await blocoPinta(app, aulas[0].id, {
+      artSlot: { name: 'minha-chave' },
+      purpose: 'experiment',
+    })
+    expect(experimento.status).toBe(400)
+    expect((await readJson(experimento)).error.message).toContain('vaga de arte')
+  })
+
   test('canonicaliza o nome da cadeia antes de validar e persistir', async () => {
     const { app } = buildApp()
     const { aulas } = await arvore(app)
@@ -526,5 +564,23 @@ describe('bloco Pinta — projeção da aula', () => {
     const depois = await readJson(await abrirAula(app, slug, lessonId))
     const atualizado = depois.blocks.find((b: { id: string }) => b.id === blockId)
     expect(atualizado.pintaState.submitted).toBe(true)
+  })
+})
+
+describe('vaga de arte na aula da criança', () => {
+  test('o Pinta leva a vaga que preenche e o Estúdio as vagas que importa, só os nomes', async () => {
+    const { app, courses, slug, lessonId } = cenario()
+    seedPintaBlock(courses, lessonId, {
+      artSlot: { name: 'minha-chave', replaces: 'chave-dourada' },
+    })
+    seedStudioBlock(courses, lessonId, { artSlots: [{ name: 'minha-chave', mode: 'add' }] })
+
+    const res = await abrirAula(app, slug, lessonId)
+    expect(res.status).toBe(200)
+    const aula = await readJson(res)
+    const pinta = aula.blocks.find((b: { kind: string }) => b.kind === 'pinta')
+    const studio = aula.blocks.find((b: { kind: string }) => b.kind === 'studio')
+    expect(pinta.content.artSlot).toEqual({ name: 'minha-chave', replaces: 'chave-dourada' })
+    expect(studio.content.artSlots).toEqual([{ name: 'minha-chave', mode: 'add' }])
   })
 })

@@ -19,8 +19,15 @@ pouco menor que o desenho). Copas, raízes, flores, capim, taboas e vitórias-r�
 personagem passa por eles sem tropeçar.
 """
 from lib_ilhas import *
+import lib_cais
 
 SEMENTE = 1.0 * 1.7 * 2  # a mesma da versão leve
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): o deque sai da ponta de campo (−x),
+# atrás do lote da cabana, e o barco atraca do lado +z dele. A beira do tampo e o degrau foram
+# medidos no `col-terreno` (o tampo plano dos dois lados do deque até x −19,3; o chão desce abaixo
+# das tábuas 0,4 depois); a ponta fica 3,3 além do fim do barranco (x −22,6): a popa do barco passa
+# 0,8 dele.
+PORTO = dict(terra=(-19.3, 0.0), rumo=180, degrau=0.4, comprimento=6.6, lado=-1)
 
 # Árvores do percurso: (x, z, escala, variante, altura do deque, raio do deque)
 T1 = (-2.0, -3.0, 1.35, 'a', 4.0, 2.9)   # casa na árvore (começo)
@@ -405,6 +412,34 @@ def galho_dos_cipos(col, copas, troncos):
     return p
 
 
+# O tronco de escalar (a árvore T6): o meio da casca desenhada embaixo (no chão) e em cima, e o raio
+# dela em cada ponta. O jogo lê o nó `escalada-cil-tronco-dos-cipos` (`troncoDoNo` em
+# `src/mundo/bosque.ts`) no lugar da constante de antes.
+TRONCO_DE_ESCALAR = dict(base=(8.6, 5.21, TOPO), topo=(8.84, 5.07, 6.5), raio_base=0.86, raio_topo=0.5)
+
+
+def tronco_de_escalar():
+    """`escalada-cil-tronco-dos-cipos`: o tronco que dá para subir, em pé, sem material (não desenha:
+    é a forma da escalada, como os `col-*` são as da colisão). Dois anéis de 12 lados e as tampas."""
+    t = TRONCO_DE_ESCALAR
+    verts, faces = [], []
+    for (x, z, y), r in ((t['base'], t['raio_base']), (t['topo'], t['raio_topo'])):
+        for k in range(12):
+            a = 2 * math.pi * k / 12
+            verts.append((x + math.cos(a) * r, -z + math.sin(a) * r, y))
+    for k in range(12):
+        j = (k + 1) % 12
+        faces.append((k, j, 12 + j, 12 + k))
+    faces.append(tuple(range(11, -1, -1)))
+    faces.append(tuple(range(12, 24)))
+    me = bpy.data.meshes.new('escalada-cil-tronco-dos-cipos')
+    me.from_pydata(verts, [], faces)
+    me.update()
+    o = bpy.data.objects.new('escalada-cil-tronco-dos-cipos', me)
+    bpy.context.collection.objects.link(o)
+    return o
+
+
 def cipo(i):
     """Um cipó pendurado (pivô no galho): a corda verde com folhinhas e uma alça no fim."""
     cx, cz, ch = CIPOS[i]
@@ -697,12 +732,17 @@ def construir():
     for i in range(len(CIPOS)):
         objs, pivo = cipo(i)
         cipos[f'cipo-{i + 1}'] = (objs, pivo)
-    anc = ancoras(pista)
+    anc = ancoras(pista) + [tronco_de_escalar()]
     nos_copa = {f'copa-{i + 1}': c for i, c in enumerate(copas)}
     nos_copa.update({f'tronco-{i + 1}': t for i, t in enumerate(troncos)})
     nos = {'terreno': chao, 'agua': agua, 'construcoes': obras, 'vegetacao': veg, **cipos, **nos_copa,
            'telhado-casa-na-arvore': telhado}
-    exportar('bosque', nos, anc, colisores=col)
+    porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
+    anc += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('bosque', nos, anc, colisores=col, porto=dados_porto)
 
 
 def props():

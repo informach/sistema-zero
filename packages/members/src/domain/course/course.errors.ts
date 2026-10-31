@@ -239,6 +239,16 @@ export class PintaChainTypeMismatchError extends DomainError {
   // então quem lança PRECISA montá-la. Herda o construtor do DomainError.
 }
 
+/**
+ * Uma gravação da autoria criaria um problema nas vagas de arte do curso (etapa 2 de
+ * `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`): vaga repetida, importada sem
+ * desenho, preenchida depois do jogo, ou imagem do jogo que não bate. → 409, na AUTORIA.
+ */
+export class ArtSlotConflictError extends DomainError {
+  readonly code = 'ART_SLOT_CONFLICT'
+  // Sem `message` default: a frase nomeia a aula e a vaga (`artSlotCourseIssues`, no core).
+}
+
 /** Bloco de certificado inexistente na aula (ou o bloco não é um certificado). → 404. */
 export class CertificateBlockNotFoundError extends DomainError {
   readonly code = 'CERTIFICATE_BLOCK_NOT_FOUND'

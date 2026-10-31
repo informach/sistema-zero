@@ -56,8 +56,8 @@ chegada (`conferir_corredor`).
 
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore` e 265 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4` | não tem | 27.762 | 958 KB |
-| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites` e 86 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6` | não tem | 27.606 | 961 KB |
+| `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-11`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore`, `porto` (o deque do barco) e 282 `col-*` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4`, `barco` e `cais` (o porto do barco) | não tem | 32.700 | 1.206 KB |
+| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites`, `porto` (o deque do barco) e 93 `col-*` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6`, `barco` e `cais` (o porto do barco) | não tem | 29.304 | 1.039 KB |
 | `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10` e 71 `col-*` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho`, `coral-muda-1`…`coral-muda-4` | `balancar` (2 s, as algas) | 17.484 | 615 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
@@ -190,13 +190,12 @@ A posição de cada âncora (x, y, z do jogo) está no `relatorio.json`. As espe
 O jogo marca no código o que ainda não está no `bosque.glb`. O Blender sem tela roda pelo `bpy`
 do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
 
-- **Tronco de escalar:** um nó `escalada-cil-tronco-dos-cipos` no tronco da árvore do galho dos
-  cipós (T6), na convenção dos colisores: cilindro unitário sem material, em pé, do chão (y = 1) até
-  6,5, com o raio da casca desenhada (0,86 embaixo, 0,5 em cima; o meio vai de x 8,6, z 5,21 a
-  x 8,84, z 5,07 no referencial do jogo). Hoje esses números estão em `TRONCO_DOS_CIPOS`
-  (`src/mundo/bosque.ts`), e o jogo desenha uma trepadeira em espiral por cima para mostrar que ele
-  sobe. Ficaria melhor com a trepadeira modelada (ou degraus de madeira pregados) no próprio tronco.
-  O jogo ainda não lê `escalada-*`: quando o nó chegar, troque a constante pela leitura dele.
+- **Tronco de escalar (feito em 29/10/2026):** o nó `escalada-cil-tronco-dos-cipos` está no
+  `bosque.glb` (`TRONCO_DE_ESCALAR` e `tronco_de_escalar()` em `bosque.py`): dois anéis de 12 lados
+  sem material, do chão (y = 1, raio 0,86, meio em x 8,6, z 5,21) até 6,5 (raio 0,5, meio em x 8,84,
+  z 5,07). O jogo lê com `troncoDoNo` (`src/mundo/bosque.ts`) e esconde os `escalada-*` ao preparar a
+  ilha; `TRONCO_DOS_CIPOS` ficou só de reserva, e `tests/movimento-do-bosque.test.ts` confere que os
+  dois batem. A trepadeira em espiral continua desenhada pelo código.
 - **Lago (28/10/2026):** a bacia de 0,85 m já está no `col-terreno` (`cavar_bacia` do
   `lib_ilhas.py`, só na colisão; a lagoa do Recife usa a mesma desde 29/10/2026, com o nó `agua` de
   um material só e a bacia acabando em 1,08 raio, antes dos corais grandes; `tests/lagos-das-ilhas.test.ts` mede o fundo e a rampa). O desenho continua com a água
@@ -220,6 +219,19 @@ do PyPI (veja "Rodar" acima); o que falta passar para o modelo:
   barco dentro de um grupo na âncora `barco`.
 - **Recife:** `agua`/`lagoa` e a fonte de chocolate são nós à parte, para o jogo trocar o material
   (água que mexe, chocolate brilhante).
+
+## O porto do barco (30/10/2026)
+
+Pedido de arte da rede do barco: o Bosque e a Vila Doce ganharam um deque de praia com as âncoras
+`barco` (linha d'água, proa no +x da âncora, para o mar) e `cais` (os pés no meio do tampo), no
+mesmo arranjo do cais do Recife (o barco a 2,2 m do eixo, ao lado da ponta; o `cais` 1,2 m antes
+dela). O desenho é o nó `porto`; o que se pisa é `col-cais-beira` (as tábuas da beira, em cima do
+tampo, topo a 1,12) e `col-cais-deque` (topo a 0,89), as estacas `col-cil-estaca-cais-*`. Tudo sai
+de `arte/mundo/lib_cais.py` (`deque_de_praia`), com o lugar no `PORTO` de cada script (medido no
+`col-terreno`). O relatório traz o bloco `porto` (âncoras, acesso, caixa do deque, caixa da ilha
+com e sem o porto, corredor livre do casco). Conferência: `tests/portos-das-ilhas.test.ts`; prints
+em `docs/qa/2026-10-30-portos-do-barco/`; a entrega completa, com os números de cada ilha, em
+`docs/plans/2026-10-30-arquipelago-portos-do-barco.md`.
 
 ## Lugares de exploração do Recife
 

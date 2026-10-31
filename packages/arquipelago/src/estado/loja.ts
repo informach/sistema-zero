@@ -1,14 +1,17 @@
 import type {
   Acesso,
   AvatarDoJogo,
-  PercursoId,
   QuartoDoJogo,
   ResultadoDoPercurso,
   Salvamento,
   SalvamentoGuardado,
 } from '@sistemazero/arquipelago-contracts'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import type { Clima } from '../sistemas/clima'
+import { acaoEmCurso, encerraOTempo } from '../sistemas/fim-do-tempo'
+import type { Isca } from '../sistemas/iscas'
 import { salvamentoPausado } from '../sistemas/pausa'
+import type { IdDoPercurso } from '../sistemas/percurso'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
 import { minutosRestantes } from '../sistemas/tempo-livre'
 import type { Visita } from '../sistemas/visitas'
@@ -16,7 +19,7 @@ import type { ModoDoCorpo } from './contexto'
 
 /** O fim de uma corrida, para a tela de resultado. */
 export interface ResultadoDaCorrida {
-  percurso: PercursoId
+  percurso: IdDoPercurso
   tempoMs: number
   /** As estrelas DESTA corrida. */
   estrelas: ResultadoDoPercurso['estrelas']
@@ -30,10 +33,13 @@ export interface ResultadoDaCorrida {
 
 /** A corrida em andamento, para o cronômetro (o tempo corre fora do React). */
 export interface CorridaNaTela {
-  percurso: PercursoId
+  percurso: IdDoPercurso
   vagalumes: number
   totalDeVagalumes: number
 }
+
+/** Recados curtos duram sete segundos desde a emissão, mesmo trocando de cartão. */
+const DURACAO_DO_RECADO_MS = 7000
 
 /** O estado do jogo de UMA montagem (cada `montarArquipelago` cria a sua loja). */
 export interface EstadoDoJogo {
@@ -42,7 +48,7 @@ export interface EstadoDoJogo {
   quarto: QuartoDoJogo
   avatar: AvatarDoJogo
   acesso: Acesso
-  dica: { id: number; texto: string } | null
+  dica: { id: number; texto: string; expiraEm: number } | null
   alvo: { id: string; rotulo: string } | null
   dentroDeCasa: boolean
   nadando: boolean
@@ -51,6 +57,8 @@ export interface EstadoDoJogo {
   painelAberto: string | null
   ferramentaAberta: boolean
   tempoAcabou: boolean
+  /** Quando o tempo acabou com uma ação em andamento (N07): o fim espera ela, até 30 s. */
+  tempoAcabandoDesde: number | null
   tempoPausado: boolean
   tempoSincronizando: boolean
   salvamentoSituacao: SituacaoDoSalvamento
@@ -66,6 +74,8 @@ export interface EstadoDoJogo {
   patins: boolean
   /** A lanterna acesa (`sistemas/borroes.ts`; vale só se ainda está na mochila, não é salva). */
   lanterna: boolean
+  /** A isca escolhida para a próxima pesca (`sistemas/iscas.ts`; vale só se está na mochila). */
+  isca: Isca | null
   /** Sentada no banco ou deitada na cama (`sistemas/descanso.ts`), escrito pelo personagem. */
   descanso: 'sentar' | 'deitar' | null
   /**
@@ -86,11 +96,15 @@ export interface EstadoDoJogo {
   registrarTempo(usadoHojeSegundos: number, acabou: boolean, limiteDiarioMinutos?: number): void
   adotar(guardado: SalvamentoGuardado): void
   definirModo(modo: EstadoDoJogo['modo']): void
+  definirAvatar(avatar: AvatarDoJogo): void
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
+  acharConstelacao(indice: number): void
+  escolherClima(clima: Clima): void
   cortar(): void
   calcarPatins(calcados: boolean): void
   acenderLanterna(acesa: boolean): void
+  escolherIsca(isca: Isca | null): void
   definirDescanso(jeito: 'sentar' | 'deitar' | null): void
   /** Começa (com a casa do irmão) ou termina (`null`) a visita. */
   visitar(visita: Visita | null): void
@@ -123,13 +137,18 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     painelAberto: null,
     ferramentaAberta: false,
     tempoAcabou: false,
+    tempoAcabandoDesde: null,
     tempoPausado: false,
     tempoSincronizando: false,
     salvamentoSituacao: 'ok',
     definirSituacaoSalvamento(salvamentoSituacao) {
       set({
         salvamentoSituacao,
-        ...(salvamentoPausado(salvamentoSituacao) ? { painelAberto: null } : {}),
+        // A confirmação é transitória e já tem um diálogo modal que bloqueia comandos.
+        // Preserva o painel e a câmera para mostrar o recibo na mesma conversa.
+        ...(salvamentoSituacao !== 'confirmando' && salvamentoPausado(salvamentoSituacao)
+          ? { painelAberto: null }
+          : {}),
       })
     },
     usadoHojeSegundos: d.acesso.usadoHojeSegundos,
@@ -139,6 +158,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     corte: 0,
     patins: false,
     lanterna: false,
+    isca: null,
     descanso: null,
     visita: null,
     mudar(fn) {
@@ -151,7 +171,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       d.aoMudar(novo)
     },
     dizer(texto) {
-      set({ dica: { id: proximaDica++, texto } })
+      set({ dica: { id: proximaDica++, texto, expiraEm: Date.now() + DURACAO_DO_RECADO_MS } })
     },
     definirAlvo(alvo) {
       const atual = get().alvo
@@ -181,10 +201,19 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       set({ tempoSincronizando: sincronizando })
     },
     registrarTempo(usadoHojeSegundos, acabou, limiteDiarioMinutos) {
-      const tempoAcabou = acabou || get().tempoAcabou
+      const antes = get()
+      // No fim de uma ação, o tempo espera ela acabar (N07); `encerrarTempo` termina a espera.
+      const esperar =
+        acabou &&
+        !antes.tempoAcabou &&
+        acaoEmCurso(antes) &&
+        (antes.tempoAcabandoDesde === null ||
+          !encerraOTempo(antes.tempoAcabandoDesde, Date.now(), true))
+      const tempoAcabou = (acabou && !esperar) || antes.tempoAcabou
       set({
         usadoHojeSegundos,
         tempoAcabou,
+        tempoAcabandoDesde: esperar ? (antes.tempoAcabandoDesde ?? Date.now()) : null,
         ...(tempoAcabou ? { painelAberto: null } : {}),
         ...(limiteDiarioMinutos === undefined
           ? {}
@@ -196,6 +225,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     definirModo(modo) {
       if (get().modo !== modo) set({ modo })
+    },
+    definirAvatar(avatar) {
+      set({ avatar })
     },
     definirCorrida(corrida) {
       const atual = get().corrida
@@ -213,6 +245,16 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     mostrarResultado(resultado) {
       set({ resultado })
     },
+    escolherClima(clima) {
+      get().mudar((s) => (s.clima === clima ? s : { ...s, clima }))
+    },
+    acharConstelacao(indice) {
+      if (!Number.isInteger(indice) || indice < 0 || indice >= 6) return
+      get().mudar((s) => {
+        const constelacoes = s.nuvens.constelacoes | (1 << indice)
+        return constelacoes === s.nuvens.constelacoes ? s : { ...s, nuvens: { constelacoes } }
+      })
+    },
     cortar() {
       set({ corte: get().corte + 1 })
     },
@@ -221,6 +263,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     acenderLanterna(lanterna) {
       if (get().lanterna !== lanterna) set({ lanterna })
+    },
+    escolherIsca(isca) {
+      if (get().isca !== isca) set({ isca })
     },
     visitar(visita) {
       set({ visita })

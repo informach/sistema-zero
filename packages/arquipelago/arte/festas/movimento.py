@@ -86,9 +86,16 @@ def mergulho():
     return {'nos': nos, 'vazios': vazios, 'centrar': False, 'grupo': 'movimento', 'pasta': 'movimento'}
 
 
+# A vela fica bem acima da barra: no jogo a cabeça do avatar (com o coque) vai até uns 2,3 m dos
+# pés, e com as mãos na barra (1,22) a vela passa por cima dela (fase3-09, 29/10/2026).
+VELA = 0.4
+
+
 def _metade_asa(s):
     """Uma metade da vela (s = 1 esquerda, -1 direita), em listras de três cores."""
-    nariz, ponta, cauda = Vector((0, -0.85, 2.05)), Vector((s * 1.3, 0.35, 1.97)), Vector((0, 0.5, 2.02))
+    nariz = Vector((0, -0.85, 2.05 + VELA))
+    ponta = Vector((s * 1.3, 0.35, 1.97 + VELA))
+    cauda = Vector((0, 0.5, 2.02 + VELA))
     nu, nv = 6, 4
     verts, faces = [], []
     for i in range(nu + 1):
@@ -114,19 +121,19 @@ def _metade_asa(s):
 
 
 def planador():
-    est = [tube([(0, -0.88, 2.05), (0, 0.55, 2.02)], [0.024, 0.02], 'tuboPlanador', seg=8)]
-    est.append(tube([(-0.62, -0.12, 2.0), (0.62, -0.12, 2.0)], [0.018, 0.018], 'tuboPlanador', seg=6))
+    est = [tube([(0, -0.88, 2.05 + VELA), (0, 0.55, 2.02 + VELA)], [0.024, 0.02], 'tuboPlanador', seg=8)]
+    est.append(tube([(-0.62, -0.12, 2.0 + VELA), (0.62, -0.12, 2.0 + VELA)], [0.018, 0.018], 'tuboPlanador', seg=6))
     # Triângulo de controle (o "A"): dois tubos descendo e a barra de segurar.
-    topo, bar = (0, -0.1, 2.0), 1.22
+    topo, bar = (0, -0.1, 2.0 + VELA), 1.22
     for s in (-1, 1):
         est.append(tube([topo, (s * 0.38, -0.32, bar)], [0.018, 0.018], 'tuboPlanador', seg=6))
         est.append(cyl(0.028, 0.1, (s * 0.22, -0.32, bar), 'mascaraBorracha', verts=10, rot=(0, R(90), 0)))
     est.append(tube([(-0.4, -0.32, bar), (0.4, -0.32, bar)], [0.02, 0.02], 'tuboPlanador', seg=8))
-    est.append(cone(0.05, 0.12, (0, -0.94, 2.05), 'velaPlanador', verts=10, rot=(R(90), 0, 0), smooth_it=True))
-    est.append(box((0.1, 0.18, 0.02), (0, 0.6, 2.06), 'velaPlanador2', bevel=0.008, segs=1))
-    nos = {'planador': (est, (0, -0.1, 2.0))}
+    est.append(cone(0.05, 0.12, (0, -0.94, 2.05 + VELA), 'velaPlanador', verts=10, rot=(R(90), 0, 0), smooth_it=True))
+    est.append(box((0.1, 0.18, 0.02), (0, 0.6, 2.06 + VELA), 'velaPlanador2', bevel=0.008, segs=1))
+    nos = {'planador': (est, (0, -0.1, 2.0 + VELA))}
     for lado, s in (('esq', 1), ('dir', -1)):
-        nos[f'asa-{lado}'] = (_metade_asa(s), (0, -0.1, 2.02))
+        nos[f'asa-{lado}'] = (_metade_asa(s), (0, -0.1, 2.02 + VELA))
     sobe = [(0, (0, 0, 0)), (24, (0, 0, 0.05)), (48, (0, 0, 0))]
     planar = {'planador': {'location': sobe, 'rotation_euler': [(0, (0, 0, 0)), (24, (R(2), 0, 0)), (48, (0, 0, 0))]}}
     for lado, s in (('esq', 1), ('dir', -1)):

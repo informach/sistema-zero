@@ -4,6 +4,9 @@ import {
   ManifestoDoClienteSchema,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
+import { conferirPortosDaArte } from './gerar-portos'
+
+await conferirPortosDaArte()
 
 /**
  * Compila o jogo para publicação: arquivos com hash em `dist/cliente/` e um `manifesto.json`

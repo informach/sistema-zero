@@ -72,9 +72,12 @@ describe('calendário civil de São Paulo', () => {
     expect(festaDoDia(new Date('2026-07-01T02:59:59Z'))).toBe('junina')
     expect(festaDoDia(new Date('2026-07-01T03:00:00Z'))).toBeNull()
     expect(festaDoDia(new Date('invalid'))).toBeNull()
-    for (const data of ['2026-12-20', '2026-12-31', '2027-01-06', '2026-08-15'])
+    // O fim de ano foi aprovado em 30/10/2026: de 20/12 a 06/01, atravessando a virada.
+    for (const data of ['2026-12-20', '2026-12-31', '2027-01-01', '2027-01-06'])
+      expect(festaDoDia(new Date(`${data}T12:00:00Z`))).toBe('fim-de-ano')
+    for (const data of ['2026-12-19', '2027-01-07', '2026-08-15'])
       expect(festaDoDia(new Date(`${data}T12:00:00Z`))).toBeNull()
-    expect(CALENDARIO_DAS_FESTAS['fim-de-ano'].aprovada).toBe(false)
+    expect(CALENDARIO_DAS_FESTAS['fim-de-ano'].motivo).toContain('aprovou')
     expect(CALENDARIO_DAS_FESTAS.lanternas.data).toBeNull()
   })
   test('override só aceita os quatro nomes e avisos separam perfis e festas', () => {

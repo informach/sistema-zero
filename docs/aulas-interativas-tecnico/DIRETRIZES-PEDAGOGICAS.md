@@ -122,7 +122,7 @@ A seção de mexa e veja vem antes de publicar, para o jogo publicado ter a cara
 
 Números dentro dos blocos são sombras: o bloco novo solto em cima deles toma o lugar sem sobrar nada. Já a pergunta **x > 0** que nasce no **Se** é um bloco de verdade. Ela vai primeiro para a lixeira, e a pergunta nova entra no lugar vazio. Soltar em cima dela deixa um bloco solto ou monta uma pergunta que a verificação não aceita.
 
-**Artes que a criança pode trocar usam uma caixa única.** O bloco que cria um sprite guarda largura e altura; trocar só a imagem estica o desenho novo para o tamanho antigo. Quando a aula oferece escolher entre desenhos, como bichinhos e esconderijos no Cadê, todos os desenhos de um mesmo tipo têm a mesma caixa e a mesma linha de base, e a caixa do esconderijo cobre a do personagem. Decisão do responsável em 05/10/2026. A troca é ensinada antes de publicar: o jogo publicado ganha a cara da criança, e a escolha não vira critério. No Cadê, essa parte é a única entrega da Aula 2 e exige vídeo e envio, mesmo quando a criança prefere manter as imagens e a mensagem. No Farol, a troca é uma aplicação anterior à entrega, com os critérios próprios de cada parte; o envio fica depois das imagens, dos avisos e da posição. Na última parte que muda o jogo antes de publicar, a seção também pode exigir o envio em dia (10/10/2026): ela só fecha quando o último envio é igual ao projeto de agora, para a equipe receber a versão final; quando já houve envio, a fala pede o reenvio do que mudou e, sem mudança, a parte fecha sem reenvio. No Cadê, o primeiro envio acontece na própria personalização; no Farol, depois da escolha de posição; o envio em dia só evita avançar com uma versão antiga se a criança voltar a editar depois de enviar. Exceção registrada no Farol (06/10/2026): a parte que troca o farol confere só que a imagem dentro de então continua sendo um farol aceso, de qualquer modelo, para o jogo publicado acender; a escolha do modelo segue livre. Os nomes dos sprites são neutros (bicho1, esconderijo1), para não contradizer a imagem escolhida.
+**Artes que a criança pode trocar usam uma caixa única.** O bloco que cria um sprite guarda largura e altura; trocar só a imagem estica o desenho novo para o tamanho antigo. Quando a aula oferece escolher entre desenhos, como bichinhos e esconderijos no Cadê, todos os desenhos de um mesmo tipo têm a mesma caixa e a mesma linha de base, e a caixa do esconderijo cobre a do personagem. Decisão do responsável em 05/10/2026. A troca é ensinada antes de publicar: o jogo publicado ganha a cara da criança, e a escolha não vira critério. No Cadê, essa parte é a única entrega da Aula 2 e exige vídeo e envio, mesmo quando a criança prefere manter as imagens e a mensagem. No Farol, a troca é uma aplicação anterior à entrega, com os critérios próprios de cada parte; o envio fica depois das imagens, dos avisos e da posição. Na última parte que muda o jogo antes de publicar, a seção também pode exigir o envio em dia (10/10/2026): ela só fecha quando o último envio é igual ao projeto de agora, para a equipe receber a versão final; quando já houve envio, a fala pede o reenvio do que mudou e, sem mudança, a parte fecha sem reenvio. No Cadê, o primeiro envio acontece na própria personalização; no Farol, depois da escolha de posição; o envio em dia só evita avançar com uma versão antiga se a criança voltar a editar depois de enviar. No Farol, a parte que troca o farol aceita qualquer imagem dentro de então, inclusive um farol desenhado pela criança; quem confere que o jogo publicado acende é o objetivo que roda o jogo, pela imagem do farol que muda ao vencer (29/10/2026; substitui a exceção de 06/10/2026, que exigia um dos faróis acesos de fábrica). Os nomes dos sprites são neutros (bicho1, esconderijo1), para não contradizer a imagem escolhida.
 
 **Na personalização, cada troca é escolha da criança.** Depois de demonstrar uma troca, a fala diz que ela troca o que quiser e que o que ela gostou pode ficar como está; o teste e a publicação não supõem que tudo mudou. Uma regra de verdade aparece como condição ("se você trocar o farol, troque o par"), não como mais uma ordem. O exemplo da professora vem com "como" ("clique no nome da imagem, como veleiro"; "troque pelo x do lugar que você escolheu, como 160"): uma ordem com nome ou número fixo, logo depois de "você pode escolher", faz a criança copiar o exemplo. O "como" também serve a quem tem projeto salvo com nomes antigos. Ajuste do responsável no Cadê em 10/10/2026, estendido ao Farol em 13/10/2026. Quem já salvou o projeto recebe as imagens novas do curso ao abrir a aula, mas o código dele (nomes e tamanhos dos sprites) continua o antigo: registrar no módulo o que fica diferente para essas crianças.
 
@@ -344,3 +344,31 @@ Não repetir a experiência na segunda aula; o quiz dela pode ter uma previsão 
 dimensão. O Poder conta com as duas aulas concluídas. Quando o conceito pede um bloco que só uma das
 dimensões tinha, conferir o catálogo inteiro antes: descer um bloco existente para o iniciante vem
 antes de criar um novo (ver `faisca/README.md`).
+
+## Gatilho de uma vez: a recompensa respeita o estado da partida, direção de 29/10/2026
+
+Relato da dona na Ilha do Farol: depois de pegar a chave, cada volta ao farol reiniciava a
+animação da luz. Um encontro só conta quando começa; sair e voltar roda a regra de novo. Uma
+recompensa disparada por encontro (acender, abrir, florescer, tocar o sino da vitória) precisa
+de uma **guarda de estado**, como nos jogos profissionais: a regra só responde enquanto a
+partida não foi ganha (`Se não ganhou`) ou enquanto o objeto ainda está fechado. Pedido da dona:
+"do jeito profissional de criar jogos, sem gambiarra". Nada de esconder o objeto, mudar a
+mensagem para disfarçar ou mexer no motor para ignorar o pedido repetido.
+
+- Ensinar com o problema primeiro: no próprio jogo, a criança volta ao objeto e vê a animação
+  recomeçar; a guarda vem como conserto, numa parte curta (uma ideia por seção).
+- Só blocos que o curso já usa: `Se`, `não` e o valor da variável que guarda o estado.
+- O objetivo executado sai do objeto, volta e confere que o estado final continua (a luz `aceso`,
+  não um `acender` recomeçado).
+- **Só no gatilho que fecha o jogo** (decisão da dona, 29/10/2026): "o farol era a finalização do
+  jogo. Agora, se for uma coisa intermediária em que eu posso fazer a ação várias vezes, aí não."
+  A guarda vale para a vitória (o farol aceso, a flor aberta). Uma ação que faz parte do jogo e
+  pode se repetir (a alavanca que baixa a ponte de novo, a sequência dos símbolos tentada outra
+  vez) não ganha guarda, nem uma recompensa do meio que não encerra a partida (o baú das Moedas,
+  a porta da cabana): o fim continua sendo o farol.
+- Aplicado à Ilha do Farol (parte **O farol acende uma vez só**) e ao Jardim Secreto 3D, em que a
+  flor é o fim do jogo: a guarda entra na parte **Faça a flor responder**, sem parte nova, porque
+  a missão aplica o que a criança já aprendeu na Ilha (ajuda própria "A flor abre uma vez só" no
+  Passo a passo). No 2D a troca de imagem para a mesma imagem não muda nada na tela, e o Jardim
+  2D fica como está. Nos Poderes 3D (Moedas, Cabana, Ponte e Baú) o farol já vem com a guarda, e
+  os gatilhos próprios deles ficam sem guarda, pela regra acima.

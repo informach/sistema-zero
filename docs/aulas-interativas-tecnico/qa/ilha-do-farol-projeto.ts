@@ -23,6 +23,7 @@ export const ILHA_PARTES = [
   'aviso',
   'sem-chave',
   'decisao',
+  'uma-vez',
   'aparencia',
   'personalizar',
 ] as const
@@ -90,6 +91,7 @@ ${
 ${
   n >= 6
     ? `SZGame3D.onTouch(personagem,farol,()=>{
+  ${n >= 8 ? 'if(!ganhou){' : ''}
   if(temChave){
     ${
       n >= 7
@@ -99,6 +101,7 @@ ${
         : ''
     }
   }else{aviso="Falta a chave. Procure na ilha antes de voltar.";}
+  ${n >= 8 ? '}' : ''}
 });`
     : ''
 }

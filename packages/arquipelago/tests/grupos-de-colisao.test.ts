@@ -24,7 +24,10 @@ test('nenhum colisor recebe um grupo que pode ser undefined (só as constantes d
   const ruins = arquivos.flatMap((p) =>
     [...readFileSync(p, 'utf8').matchAll(/(?:collision|solver)Groups=\{([^}]*)\}/g)]
       .map((m) => m[1]?.trim() ?? '')
-      .filter((v) => v !== 'GRUPO_SO_DO_CORPO' && v !== 'GRUPOS_DO_RAIO_DA_CAMERA')
+      .filter(
+        (v) =>
+          v !== 'GRUPO_SO_DO_CORPO' && v !== 'GRUPOS_DO_RAIO_DA_CAMERA' && v !== 'GRUPO_DE_NINGUEM',
+      )
       .map((v) => `${p}: ${v}`),
   )
   expect(ruins).toEqual([])

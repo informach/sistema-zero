@@ -2,9 +2,10 @@ import { useFrame } from '@react-three/fiber'
 import {
   CATALOGO_DE_OBJETOS,
   type LumiId,
+  PERFIS_DOS_LUMIS,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { type Group, Vector3 } from 'three'
 import algodaoGlb from '../assets/lumis/algodao.glb'
 import bolhaGlb from '../assets/lumis/bolha.glb'
@@ -42,7 +43,7 @@ import {
 } from '../sistemas/rotina'
 import { suavizarAngulo } from '../sistemas/zappy'
 import { trocarClipe, useCopiaAnimada } from './animado'
-import { ESCALA_DOS_LUMIS_DA_VILA } from './borroes-da-vila'
+import { ESCALA_DOS_LUMIS_DA_VILA } from './borroes-da-ilha'
 import { lugarDoCanteiro } from './horta'
 import { ALTURA_DA_TERRA } from './medidas'
 import { ComReserva } from './modelos'
@@ -111,7 +112,14 @@ export function RotinaDosLumis() {
       }
     }
     // Na casa de um irmão (fase3-12) a horta é a dele: a rotina espera a volta.
-    if (!atual && !loja.getState().visita && rotina.getState().fila.length > 0) {
+    const s = loja.getState()
+    if (
+      !atual &&
+      !s.visita &&
+      !s.acesso.somenteLeitura &&
+      !jogoPausado(s) &&
+      rotina.getState().fila.length > 0
+    ) {
       const pedido = rotina.getState().tirarDaFila()
       if (pedido) setAtual({ ...pedido, chave: proxima.current++ })
     }
@@ -140,7 +148,14 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
   const pausado = useEstado(jogoPausado)
   const raiz = useRef<Group>(null)
   const corpo = useRef<Group>(null)
-  const { cena, actions } = useCopiaAnimada(MODELOS[pedido.lumi], raiz, CLIPES_DE_UMA_VEZ, pausado)
+  const { cena, actions } = useCopiaAnimada(
+    MODELOS[pedido.lumi],
+    raiz,
+    CLIPES_DE_UMA_VEZ,
+    pausado,
+    false,
+    PERFIS_DOS_LUMIS[pedido.lumi].brilho,
+  )
   // Criados uma vez por Lumi que chega (o laço do quadro só reaproveita).
   const [exec] = useState(() => comecarExecucao(pedido.lumi, limparRotina(pedido.cartoes)))
   const [pos] = useState(() => {
@@ -160,6 +175,13 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
   const conferindo = useRef(false)
   const paradas = useRef(rotina.getState().paradas)
   const fim = useRef(false)
+  const vivo = useRef(true)
+  useEffect(() => {
+    vivo.current = true
+    return () => {
+      vivo.current = false
+    }
+  }, [])
 
   const tocar = (clipe: string) => {
     if (tocando.current === clipe) return
@@ -169,7 +191,7 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
 
   /** Acaba: o que o Lumi carregava vai para a mochila, e a última vez fica para o painel. */
   const acabar = (motivoDeFora: string | null) => {
-    if (fim.current) return
+    if (fim.current || !vivo.current) return
     fim.current = true
     const e = exec
     const s = loja.getState().salvamento
@@ -198,6 +220,10 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
   useFrame((_, dt) => {
     const e = exec
     if (corpo.current) corpo.current.position.copy(pos)
+    if (loja.getState().acesso.somenteLeitura && !fim.current) {
+      acabar('A rotina parou porque este acesso é somente para olhar.')
+      return
+    }
     if (pausado) return
     if (fase.current === 'festa') {
       tempo.current -= dt
@@ -221,6 +247,7 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
       rotina.getState().mostrarAndando({ lumi: pedido.lumi, texto: 'chegando na horta' })
       const cartas = lojaDasCartas(loja, plataforma)
       const conferir = () => {
+        if (!vivo.current || fim.current) return
         const recusa = validarRotina(pedido.cartoes, cartasNaMao(cartas.getState().dados))
         valeu.current = recusa === null
         if (recusa) acabar(recusa.motivo)
@@ -247,7 +274,7 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
         tocar('parado')
       } else {
         fase.current = 'trabalhando'
-        tempo.current = RITMO_DA_ROTINA.trabalho
+        tempo.current = PERFIS_DOS_LUMIS[pedido.lumi].trabalho
         tocar('trabalhar')
       }
       return
@@ -255,7 +282,7 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
     if (fase.current === 'voando') {
       const f = falta.current.copy(alvo.current).sub(pos)
       const d = f.length()
-      const anda = RITMO_DA_ROTINA.voo * Math.min(dt, 0.1)
+      const anda = PERFIS_DOS_LUMIS[pedido.lumi].voo * Math.min(dt, 0.1)
       if (d > 1e-3 && raiz.current)
         raiz.current.rotation.y = suavizarAngulo(
           raiz.current.rotation.y,
@@ -271,7 +298,7 @@ function LumiTrabalhando({ pedido, aoTerminar }: { pedido: PedidoDeRotina; aoTer
       if (tempo.current > 0) return
     }
     // O passo terminou no mundo: vale no salvamento (pelas funções puras) e vem o próximo.
-    const r = aplicarPasso(e, loja.getState().salvamento, new Date())
+    const r = aplicarPasso(e, loja.getState().salvamento, new Date(), loja.getState().jornada)
     if (r.salvamento !== loja.getState().salvamento) loja.getState().mudar(() => r.salvamento)
     registro.current.push(r.texto)
     fase.current = 'pensando'

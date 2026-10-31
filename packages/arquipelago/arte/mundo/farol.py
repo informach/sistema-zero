@@ -8,7 +8,9 @@ Nós (contrato com `src/mundo/farol.tsx`):
   cinza; aceso, mostra as cores de verdade (vermelho e branco do Arquipélago);
 - `lampada`: a lâmpada (material `lampadaFarol`, o jogo acende a emissão);
 - `vidro`: o vidro da lanterna (material `vidroFarol`, brilha quando acende);
-- `facho`: dois fachos opostos com o pivô no centro da lâmpada; o jogo gira em y.
+- `facho`: dois fachos opostos com o pivô no centro da lâmpada; o jogo gira em y;
+- `porta`: a folha da porta e a maçaneta, com o pivô na dobradiça (o lado oposto à maçaneta, no pé
+  da folha). Girar em y negativo abre para fora.
 
 Colisão: a torre é o cilindro do código (raio 1,6). As pedras do pé e os degraus da porta trazem os
 nós `col-cil-pedra-farol-*` e `col-degrau-farol-*` (sem material), que o jogo lê do arquivo.
@@ -35,7 +37,7 @@ def no_lado(ang, r, z):
     return (math.cos(ang) * r, math.sin(ang) * r, z)
 
 
-def corpo(col):
+def corpo(col, porta):
     p = []
     # Pedras do pé: um monte de pedras chapadas, mais alto atrás.
     for i, (a, d, s, h) in enumerate([(0.75, 1.45, 2.0, 1.25), (1.6, 1.55, 1.8, 1.05), (2.6, 1.45, 2.2, 1.45),
@@ -71,9 +73,10 @@ def corpo(col):
                  rot=(0, R(90), pa)))
     c2 = no_lado(pa, raio(Y0 + 0.95) + 0.03, Y0 + 0.95)
     p.append(box((0.08, 1.05, 1.62), c2, 'farolBranco', bevel=0.03, segs=1, rot=(0, 0, pa)))
-    p.append(box((0.1, 0.72, 1.42), no_lado(pa, raio(Y0 + 0.9) + 0.06, Y0 + 0.88), 'batente', bevel=0.03, segs=1,
-                 rot=(0, 0, pa)))
-    p.append(sphere(0.06, no_lado(pa + 0.18, raio(Y0 + 0.9) + 0.14, Y0 + 0.85), 'macaneta', subdiv=1))
+    # A folha da porta e a maçaneta vão para o nó `porta` (gira na dobradiça, do lado oposto à maçaneta).
+    porta.append(box((0.1, 0.72, 1.42), no_lado(pa, raio(Y0 + 0.9) + 0.06, Y0 + 0.88), 'batente', bevel=0.03, segs=1,
+                     rot=(0, 0, pa)))
+    porta.append(sphere(0.06, no_lado(pa + 0.18, raio(Y0 + 0.9) + 0.14, Y0 + 0.85), 'macaneta', subdiv=1))
     for k, y in enumerate((3.55, 5.0, 6.45)):
         a = pa + 1.9 + k * 2.1
         r = raio(y)
@@ -139,6 +142,13 @@ def cone_aberto(comp, r0, r1, m, seg=20, sentido=1):
     return o
 
 
+def dobradica():
+    """O eixo da porta: na borda da folha do lado oposto à maçaneta, no pé da folha."""
+    pa = ANG_PORTA
+    cx, cy, _ = no_lado(pa, raio(Y0 + 0.9) + 0.06, 0)
+    return (cx + math.sin(pa) * 0.36, cy - math.cos(pa) * 0.36, Y0 + 0.17)
+
+
 def facho():
     return [cone_aberto(26, 0.35, 3.2, 'fachoFarol', sentido=1), cone_aberto(26, 0.35, 3.2, 'fachoFarol', sentido=-1)]
 
@@ -146,8 +156,10 @@ def facho():
 def main():
     lib_q.reset()
     col = []
+    porta = []
     exportar('farol', {
-        'farol': corpo(col),
+        'farol': corpo(col, porta),
+        'porta': (porta, dobradica()),
         'vidro': vidro(),
         'lampada': lampada(),
         'facho': (facho(), (0, 0, YL)),

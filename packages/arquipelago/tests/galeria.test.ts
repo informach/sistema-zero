@@ -7,10 +7,12 @@ import {
   GravarSalvamentoSchema,
   type ProjetoAzul,
   ProjetoAzulSchema,
+  type RespostaDoServico,
   SalvamentoGuardadoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { criarLojaDaGaleria } from '../src/estado/galeria'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
+import { criarGaleriaFalsa, MOEDAS_DE_EXEMPLO } from '../src/plataforma/galeria-falsa'
 import {
   aparenciasQueEleTem,
   estadoDoCartao,
@@ -128,6 +130,34 @@ describe('as recusas da compra', () => {
 })
 
 describe('a loja da galeria com a plataforma de mentira', () => {
+  test('compra encerra a leitura antiga sem perder posse nem deixar a galeria carregando', async () => {
+    const plataforma = criarPlataformaFalsa({ persistir: false })
+    const buscar = plataforma.servico.buscar.bind(plataforma.servico)
+    let responder!: (r: RespostaDoServico) => void
+    const antiga = new Promise<RespostaDoServico>((resolve) => {
+      responder = resolve
+    })
+    plataforma.servico.buscar = (caminho, opcoes) =>
+      caminho === '/galeria' ? antiga : buscar(caminho, opcoes)
+    const loja = criarLojaDaGaleria(plataforma)
+    const leitura = loja.getState().carregar()
+    expect(loja.getState().carregando).toBe(true)
+    expect(await loja.getState().comprar(GELADEIRA.id)).toEqual({ ok: true })
+    expect(loja.getState().carregando).toBe(false)
+    responder({ status: 200, corpo: { possuidas: [], saldo: 80, ilimitado: false } })
+    await leitura
+    expect(loja.getState()).toMatchObject({
+      carregando: false,
+      comprando: null,
+      dados: { possuidas: [GELADEIRA.id], saldo: 20 },
+    })
+    // Um erro novo pode oferecer tentar novamente, sem ressuscitar o carregamento antigo.
+    plataforma.servico.buscar = async () => ({ status: 503, corpo: null })
+    await loja.getState().carregar()
+    expect(loja.getState()).toMatchObject({ carregando: false, fechada: true })
+    expect(loja.getState().dados?.saldo).toBe(20)
+  })
+
   test('lê o saldo, compra uma vez só e o salvamento aceita a aparência paga', async () => {
     const plataforma = criarPlataformaFalsa({ persistir: false, galeria: { moedas: 100 } })
     const loja = criarLojaDaGaleria(plataforma)
@@ -162,6 +192,71 @@ describe('a loja da galeria com a plataforma de mentira', () => {
     expect(
       SalvamentoGuardadoSchema.parse(r.corpo).salvamento?.projetos.geladeira?.aparencia,
     ).toEqual(daGaleria)
+  })
+
+  test('reabrir o playground não esquece as compras do salvamento guardado', async () => {
+    const guardados = new Map<string, string>()
+    const antes = (globalThis as { localStorage?: unknown }).localStorage
+    ;(globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => guardados.get(k) ?? null,
+      setItem: (k: string, v: string) => guardados.set(k, v),
+      removeItem: (k: string) => guardados.delete(k),
+    }
+    try {
+      const vestido = {
+        ...criarSalvamentoInicial(AGORA),
+        projetos: { geladeira: usarAparencia(vazio, daGaleria) },
+      }
+      const gravar = (p: ReturnType<typeof criarPlataformaFalsa>, revisaoBase: number) =>
+        p.servico.buscar('/salvamento', {
+          metodo: 'PUT',
+          corpo: GravarSalvamentoSchema.parse({ revisaoBase, salvamento: vestido }),
+        })
+      const primeira = criarPlataformaFalsa({ persistir: true, galeria: { moedas: 100 } })
+      const loja = criarLojaDaGaleria(primeira)
+      await loja.getState().carregar()
+      expect(await loja.getState().comprar(GELADEIRA.id)).toEqual({ ok: true })
+      expect((await gravar(primeira, 0)).status).toBe(200)
+      // A página recarregou: a mesma aparência continua paga, e o salvamento segue aceito.
+      const reaberta = criarPlataformaFalsa({ persistir: true, galeria: { moedas: 100 } })
+      expect((await gravar(reaberta, 1)).status).toBe(200)
+    } finally {
+      ;(globalThis as { localStorage?: unknown }).localStorage = antes
+    }
+  })
+
+  test('a compra fica guardada mesmo quando o progresso com ela só chega depois de reabrir', async () => {
+    const guardados = new Map<string, string>()
+    const antes = (globalThis as { localStorage?: unknown }).localStorage
+    ;(globalThis as { localStorage?: unknown }).localStorage = {
+      getItem: (k: string) => guardados.get(k) ?? null,
+      setItem: (k: string, v: string) => guardados.set(k, v),
+      removeItem: (k: string) => guardados.delete(k),
+    }
+    try {
+      const primeira = criarPlataformaFalsa({ persistir: true })
+      const loja = criarLojaDaGaleria(primeira)
+      await loja.getState().carregar()
+      expect(await loja.getState().comprar(GELADEIRA.id)).toEqual({ ok: true })
+      // A página fechou antes de a fila gravar: o progresso com a aparência ficou no aparelho.
+      const reaberta = criarPlataformaFalsa({ persistir: true })
+      const vestido = {
+        ...criarSalvamentoInicial(AGORA),
+        projetos: { geladeira: usarAparencia(vazio, daGaleria) },
+      }
+      const r = await reaberta.servico.buscar('/salvamento', {
+        metodo: 'PUT',
+        corpo: GravarSalvamentoSchema.parse({ revisaoBase: 0, salvamento: vestido }),
+      })
+      expect(r.status).toBe(200)
+      const lida = await reaberta.servico.buscar('/galeria')
+      expect(lida.corpo).toMatchObject({
+        possuidas: [GELADEIRA.id],
+        saldo: MOEDAS_DE_EXEMPLO - GELADEIRA.preco,
+      })
+    } finally {
+      ;(globalThis as { localStorage?: unknown }).localStorage = antes
+    }
   })
 
   test('saldo curto: o motivo com quanto falta e o saldo de agora no cartão', async () => {
@@ -204,4 +299,17 @@ test('os textos da galeria seguem a voz da casa (sem travessão nem exclamação
       expect(t).not.toMatch(/!(?!=)/)
     }
   }
+})
+
+test('playground segue a idempotência por item do Members, não por chave aleatória do navegador', () => {
+  const galeria = criarGaleriaFalsa({ moedas: 200 })
+  const chave = crypto.randomUUID()
+  const comprar = (aparencia: string) =>
+    galeria.buscar('/galeria/compras', 'POST', { aparencia, chave })
+  expect(comprar('aquario-classico')).toMatchObject({ status: 200, corpo: { saldo: 130 } })
+  expect(comprar('aquario-classico')).toMatchObject({ status: 200, corpo: { saldo: 130 } })
+  expect(comprar('fliperama-classico')).toMatchObject({
+    status: 200,
+    corpo: { saldo: 60, possuidas: ['aquario-classico', 'fliperama-classico'] },
+  })
 })

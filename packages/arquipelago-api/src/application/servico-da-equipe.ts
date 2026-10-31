@@ -12,11 +12,11 @@ import {
   type DesafioDaEquipe,
   type GravarDesafio,
   type ItemDaConferencia,
-  ilha as ilhaDoContrato,
   LIMITES_DO_DESAFIO,
   LIMITES_DO_MANIFESTO,
   type ManifestoDeDesafios,
   type MetadadosDoDesafio,
+  MetadadosDoDesafioSchema,
   migrarConteudoDoDesafio,
   type ProblemaDoDesafio,
   type ResumoDoDesafio,
@@ -37,6 +37,7 @@ import {
   ordemDeGravacao,
 } from '../domain/manifestos'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
+import { analisarRepertorio } from '../domain/repertorio-do-desafio'
 import {
   ConflitoDoCadastroError,
   DesafioComProblemasError,
@@ -359,6 +360,52 @@ export class ServicoDaEquipe {
     situacao: 'arquivado' | 'ativo',
   ): Promise<DesafioDaEquipe> {
     this.exigirEscrita(equipe)
+    if (situacao === 'ativo') {
+      const atual = await this.exigirRevisao(id, revisaoBase)
+      if (atual.revisaoPublicada !== null) {
+        // Reativar recupera a publicação congelada, não publica o rascunho atual.
+        if (!atual.metadadosPublicados || !atual.blocosPublicados) {
+          throw new DesafioComProblemasError([
+            {
+              codigo: 'PUBLICACAO_SEM_REPERTORIO',
+              mensagem:
+                'A publicação anterior não tem repertório conferível. Revise e publique novamente.',
+            },
+          ])
+        }
+        const publicacao = await this.repo.lerPublicacaoParaAnalise(id, atual.revisaoPublicada)
+        const conteudo = migrarConteudoDoDesafio(publicacao?.conteudo)
+        const metadados = MetadadosDoDesafioSchema.safeParse(publicacao?.metadados)
+        if (!publicacao || !conteudo || !metadados.success)
+          throw new DesafioComProblemasError([
+            {
+              codigo: 'PUBLICACAO_INVALIDA',
+              mensagem:
+                'A publicação anterior não pode ser conferida. Revise e publique novamente.',
+            },
+          ])
+        const curriculo = await this.leituras.curriculo(
+          metadados.data.publico === 'kids' ? 'kids' : 'adult',
+        )
+        const { problemas } = analisarRepertorio(
+          publicacao.blocosExigidos,
+          curriculo,
+          metadados.data,
+        )
+        if (problemas.length > 0) throw new DesafioComProblemasError(problemas)
+        const { analise } = await this.analiseDe(metadados.data, conteudo)
+        if (analise.problemas.length > 0) throw new DesafioComProblemasError(analise.problemas)
+        const congelados = new Set(publicacao.blocosExigidos)
+        if (analise.blocosExigidos.some((b) => !congelados.has(b)))
+          throw new DesafioComProblemasError([
+            {
+              codigo: 'PUBLICACAO_REQUER_NOVOS_REQUISITOS',
+              mensagem:
+                'A publicação antiga não guarda todos os requisitos atuais. Revise e publique novamente.',
+            },
+          ])
+      }
+    }
     return paraEquipe(
       resolver(
         await this.repo.mudarSituacao({
@@ -397,16 +444,43 @@ export class ServicoDaEquipe {
         throw new PlataformaIndisponivelError(erro)
       throw erro
     }
-    const exigidos = blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais)
-    const cobertura = coberturaDosBlocos(exigidos, curriculo, ilhaDoContrato(metadados.ilha).posto)
-    const problemas: ProblemaDoDesafio[] = [...membros.problemas, ...problemasLocais(conteudo)]
+    const derivados = new Set(membros.blocosDoGabarito)
+    const retirados = new Set(conteudo.blocosManuais.retirar)
+    // A edição manual não pode ocultar as ferramentas necessárias para completar as regras.
+    const exigidos = [
+      ...new Set([
+        ...derivados,
+        ...blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais),
+      ]),
+    ].sort()
+    const repertorio = analisarRepertorio(exigidos, curriculo, metadados)
+    const problemas: ProblemaDoDesafio[] = [
+      ...membros.problemas,
+      ...[...derivados]
+        .filter((b) => retirados.has(b))
+        .map((bloco) => ({
+          codigo: 'BLOCO_DERIVADO_RETIRADO',
+          mensagem: `O bloco ${bloco} participa das regras a completar. Remova sua retirada manual ou revise o projeto inicial e o gabarito.`,
+        })),
+      ...problemasLocais(conteudo),
+      ...repertorio.problemas,
+    ]
+    // Respostas anteriores do Members informavam desconhecidos sem um problema impeditivo.
+    if (
+      membros.blocosDesconhecidos.length &&
+      !problemas.some((p) => p.codigo === 'BLOCO_DESCONHECIDO')
+    )
+      problemas.push({
+        codigo: 'BLOCO_DESCONHECIDO',
+        mensagem: `O bloco ${membros.blocosDesconhecidos[0]} não existe no catálogo do Estúdio. Revise os projetos antes de publicar.`,
+      })
     return {
       conteudo,
       vista: membros.vista,
       analise: {
         blocosDerivados: [...membros.blocosDoGabarito].sort(),
         blocosExigidos: exigidos,
-        cobertura,
+        cobertura: repertorio.cobertura,
         problemas,
         gabarito: membros.gabarito,
         inicial: membros.inicial,

@@ -145,6 +145,8 @@ describe('o modo Construir', () => {
 
   test('o desfazer lembra no máximo as últimas obras', () => {
     const { loja, construcao } = montar()
+    // O caminho é do quintal: a chave dele (N11) vem antes.
+    loja.getState().mudar((s) => ({ ...s, chaves: 8 }))
     construcao.getState().abrir()
     for (let i = 0; i < LEMBRA_PARA_TRAS + 5; i++) {
       const obra = loja.getState().salvamento.construcao.casa ?? LOTE_DA_CASA.obraInicial

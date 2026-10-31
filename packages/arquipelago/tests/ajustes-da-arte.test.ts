@@ -68,6 +68,11 @@ for (const arquivo of ['lumis/estrelinha', 'lumis/buzio', 'ilhas/recife', 'festa
     expect(b.luzes.map((l) => l.material.emissiveIntensity)).toEqual(iniciais)
     iluminarArte(a.luzes, momentoDoDia(13 * 60_000, 0).noite)
     expect(a.luzes.map((l) => l.material.emissiveIntensity)).toEqual(iniciais)
+    iluminarArte(a.luzes, true, 1.5)
+    expect(a.luzes.map((l) => l.material.emissiveIntensity)).toEqual(iniciais.map((x) => x * 1.5))
+    expect(b.luzes.map((l) => l.material.emissiveIntensity)).toEqual(iniciais)
+    iluminarArte(a.luzes, false, 1.5)
+    expect(a.luzes.every((l) => l.material.emissiveIntensity === 0)).toBe(true)
     let liberados = 0
     for (const l of a.luzes) l.material.addEventListener('dispose', () => liberados++)
     a.soltar()

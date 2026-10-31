@@ -1,6 +1,125 @@
 # CLAUDE.md — @sistemazero/arquipelago-contracts
 
+Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md).
+`SalvamentoSchema` recebe versões anteriores e devolve V18; teto de 65.536 bytes UTF-8.
+Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
+explicam sua introdução, não a versão atual da resposta.
+
+## Salvamento V20: móveis da casa e galeria do Farol (30/10/2026)
+
+`moveis.ts`: `MOVEIS` (21 ids, só cresce no fim; o salvamento guarda o índice), `MovelNaObraSchema`
+(tupla `[índice, x, z, giro]`) e `MOVEIS_NA_CASA_MAXIMO` (24). `ObraDaCasaSchema` = obra antiga +
+`moveis`; `ObraDaCabanaSchema` aceita só `moveis: []`. `Obra` é o tipo da V20; `ObraAteV19` o de
+antes. `farol.galeria`: até `VAGAS_DA_GALERIA_DO_FAROL` (6) vagas, cada uma `null` ou
+`ExposicaoDoFarol` (`['a', objeto, idDaAparencia]`, `['j', playId]`, `['d', desafioId]`), só com o
+final concluído e sem repetir criação (`chaveDaExposicao`). `migrarDaV19` põe listas vazias.
+`CasaDoIrmaoSchema.obra` aceita a obra V20 ou a antiga (completada por `obraComMoveis`). Pior caso:
+63.989 bytes (folga 1.547). Testes: `tests/salvamento-v20.test.ts`, cenário cheio atualizado.
+
+## Visitas adultas V1 (L12, 30/10/2026)
+
+`visitas-adultas.ts` define o código base64url de 32 caracteres, comando de geração vazio,
+comando `{ codigo }`, estado sem código e projeção visual sem identidade. O quarto e seus
+itens removem campos não desenhados; o quarto próprio continua com seu contrato aberto.
+Os métodos da porta do serviço agora incluem DELETE, de forma aditiva. Sem alteração da V18,
+do teto do save ou do formato histórico de visitas Kids. Não usar código em URL ou save.
+
+## Fantasma V1 (L10, 30/10/2026)
+
+`fantasma.ts`: amostras a 100 ms, coordenadas inteiras em centímetros, giro em 65536 unidades,
+até 5 min, 3001 amostras e 128 KB. `GuardarFantasmaSchema` recebe revisão confirmada e artefato,
+sem identidade, nome, moedas ou recompensa. O envelope admite mais 1 KB. A resposta é
+`disponivel` com artefato ou `ausente` sem campos adicionais. São dados separados do save V18.
+`tests/fantasma.test.ts` cobre percursos reais, limites, último trecho parcial e chaves estritas.
+
+## Cores conquistadas V1 (A02, 30/10/2026)
+
+`cores-conquistadas.ts`: resposta estrita de leitura, até oito ilhas sem repetição, cada uma com
+posições únicas de 1 a 6. Não recebe pessoa, público, saldo ou aprovação. O serviço obtém as
+posições da publicação histórica de cada conclusão autenticada. A cor independe do catálogo
+atual. Acréscimo compatível pela porta genérica de serviço, sem mudar `Plataforma` ou salvamento.
+`tests/cores-conquistadas.test.ts` cobre versão, limites, duplicatas e campos desconhecidos.
+
+## Vestuário sazonal V1 (L09, 30/10/2026)
+
+`vestuario-festas.ts` contém sugestões de peças já existentes e o molde estrito da ferramenta
+`avatar`, propósito `vestir`. Só recebe versão e festa; não recebe usuário, preço, saldo ou
+peças arbitrárias. A seleção não concede posse e não ativa datas de festa. `avatar-pronto`
+devolve o avatar persistido da plataforma. Nada é gravado na V18. O teste de conformidade
+confere nomes e categorias no catálogo puro de apresentação do avatar.
+
+## Pedidos remunerados V1 (L07, 30/10/2026)
+
+`pedidos-catalogo.ts` e `receitas-moradores.ts` são dados puros compartilhados; o jogo conserva
+falas, gostos e o preparo culinário. `pedidos-entrega.ts` escolhe o pedido e calcula a entrega
+inteira, amizade, cesta e prêmio de três ou quatro moedas. Recusa falta de itens, pedido já feito,
+dia diferente, mochila acima de 999 ou save acima de 65.536 bytes. Não modifica a entrada.
+O relógio civil é São Paulo, independente do fuso do aparelho. Não confundir com o ciclo solar.
+
+`pedidos-remunerados.ts` recebe comando V1 estrito com UUID, revisão-base, morador, dia e ID.
+Não recebe identidade, moeda, amizade nem inventário do navegador. Resultado traz o mesmo
+comando, save confirmado e pagamento pendente, creditado, teto ou recusado. Não reinterpretar
+comandos antigos quando mudar a economia; versionar a regra. O prêmio financeiro não mora na V18.
+
+## Insumos V1 (L07, 30/10/2026)
+
+`insumos.ts` contém onze sementes/ingredientes e duas iscas (30/10/2026), de duas ou três moedas, e
+compra de uma a dez unidades. Comando estrito com UUID e revisão confirmada. Não recebe preço,
+público ou identidade do navegador. `prepararEntregaDeInsumos` preserva a entrada e só aceita
+entrega inteira, até 999 por item e 65.536 bytes UTF-8. Resultado valida preço, revisão e saldo
+coerentes com o estado da operação. Reservas financeiras ficam no serviço, fora de V18.
+Não alterar o significado de um comando V1 já reservado ao mudar preços no futuro.
+
+## Salvamento V18: ilhas visitadas (30/10/2026)
+
+`SalvamentoV18Schema` acrescenta `ilhasVisitadas`, inteiro 0 a 255. `BIT_DA_ILHA`, em
+`exploracao.ts`, fixa a identidade dos oito bits; nunca ordenar pelo catálogo mutável.
+`migrarDaV17` começa em zero e preserva todos os campos anteriores, sem inferir descobertas.
+Schemas V1 a V17 continuam estritos. `SalvamentoSchema` recebe todos e devolve V18.
+O teto continua 65.536 bytes UTF-8. `salvamento-v18.test.ts` cobre todas as 256 combinações,
+dados inválidos, entrada histórica intocada e o cenário cheio. Visita não é autoridade para
+abrir ilha, conceder prêmio nem validar atividade.
+
+## Publicações no fliperama (L05)
+
+`minijogos.ts` exporta `JogosDoMuralSchema`: no máximo 24 publicações recentes, apenas UUID
+`playId` e `titulo` até 300 caracteres. `MoldeDoJogoDoMuralSchema` é estrito e aceita só o UUID.
+A ferramenta existente `estudio`, propósito `jogo-do-mural`, não cria fonte nem versão de save.
+Quem decide autoria, comunidade e visibilidade é o Hub; quem roda é o player público da plataforma.
+
+## Pedidos dos balcões e profissão V1 (L07, 29/10/2026)
+
+`turnos.ts` contém a regra pura dos seis fregueses e das bandejas, compartilhada pelo jogo e
+pelo serviço. A semente do turno remunerado é o UUID reservado pelo serviço, não um dia
+escolhido pelo navegador. `numero-estavel.ts` preserva o sorteio estável usado pelos moradores.
+`profissoes.ts` valida o início, as seis respostas e a sessão: dia civil válido e estado de
+pagamento coerente com conclusão. Versão 1 não pode mudar seu significado para sessões já
+guardadas. O prêmio inicial é 5 moedas. O teto total do jogo é conferido no Members.
+Não acrescentar campo de moedas ao salvamento do aparelho.
+
+## Trabalho dos Lumis e colheita inteira (29/10/2026)
+
+`lumis-trabalho.ts` define os 14 perfis de voo, carga, trabalho e brilho. É catálogo, sem campo
+novo no salvamento. `rotina-execucao.ts` confere a carga por espécie e `cabeColheita` confere a
+mochila e a semente devolvida. Recusa preserva a planta madura; guardar transfere só a carga
+colhida e mantém na mochila o que não couber na geladeira. Não duplicar a regra no editor.
+Testes de conservação e paridade passo a passo em `tests/lumis-trabalho.test.ts`.
+
+`colheita.ts` centraliza humor e bônus: clima favorável +1, humor ótimo +1, sem subtrair o
+rendimento básico. `colher` recebe contexto explícito; não consulta relógio ou sorteio escondido.
+`MundoDaRotinaV2Schema` exige esse contexto transitório. O molde novo usa versão 2; V1 continua
+estrito, sem bônus. A resposta precisa ter a mesma versão, abertura e Lumi do pedido. Os schemas
+históricos e o salvamento V17 não recebem campos. Testes em `colheita-especial.test.ts` e
+`rotina-colheita-v2.test.ts`.
+
 ## Medição agregada (28/10/2026)
+
+**A06, 30/10/2026:** `RelatorioDaMedicaoSchema.mudancasDeAparencia` é opcional e separa
+aplicações/trocas registradas no período da fotografia `criacao`. Mesmas três origens e
+supressão de grupos menores que cinco, sem nomes, IDs de criação ou contagens auxiliares.
+Ausência do campo não é zero. Primeiro atualizar Admin, que aceita o serviço antigo, depois
+API: o schema estrito do Admin antigo rejeita o campo novo. Save e versão de Plataforma
+permanecem iguais. A coleta não reconstrói datas de criação nem de compra.
 
 `medicao.ts`: filtro estrito por público e até 90 dias civis, relatório e números discriminados
 entre `disponivel`, `poucos-dados` e `aguardando`. Valores protegidos são `null`, sem campos
@@ -49,7 +168,9 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   no adulto, uma etapa por ilha antes do Farol, porque a ilha abre pela posição da etapa).
 - `limites.ts`: limite diário do tempo livre (padrão 30 min, de 10 a 240, passo 5) e o dia de
   São Paulo.
-- `salvamento.ts`: `SalvamentoV11` estrito (fase3-02: V10 mais as três marcas de `recife`).
+- `salvamento.ts`: formato atual `SalvamentoV18Schema`, estrito. `SalvamentoSchema` aceita
+  versões anteriores e migra para V18. O teto é medido em bytes UTF-8.
+  Histórico: a V11 acrescentou as três marcas de `recife` à V10 (fase3-02).
   A V10 (29/10/2026, fase2-07) é a V9 mais `rotinas`, a rotina
   de cada Lumi preso, só das espécies em `lumis`, com o teto somando todas; `migrarDaV9` começa
   sem nenhuma; testes em `tests/salvamento-v10.test.ts`, com o pior caso de 64 KB com tudo no teto,
@@ -68,7 +189,7 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   mais `presenteDosBichosEntregue`; a V4 é a V3
   mais `construcao` e `projetos`, 28/10/2026, o
   modo construção; a V3 é a V2 mais `moradores.capi` e `bichos`; a V2 é a V1 mais `percursos`;
-  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV9`;
+  teto de 64 KB, salvamento inicial e migrações (`migrarDaV1` a `migrarDaV17`;
   `SalvamentoSchema` aceita as anteriores e já devolve migradas; uma aba antiga não lê a resposta
   atual). A migração da V4 preserva o progresso e inicia a marca do presente como `false`.
   Os schemas V1 a V4 continuam imutáveis; os testes `salvamento-v5.test.ts` conferem a cadeia.
@@ -94,7 +215,13 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   visões da pessoa são estritas: gabarito e regra nunca saem. Desafio do dia (28/10/2026):
   `MOEDAS_PADRAO_POR_TIPO` (10 e 5), `corPermitida` (a cor é sempre falsa, obrigada por `refine`
   em `CriarDesafioSchema`, `GravarDesafioSchema` e `DesafioDoManifestoSchema`) e o campo opcional
-  `doDia: { id, dia, feito } | null` em `DesafiosDoJogadorSchema`.
+  `doDia: { id, dia, feito } | null` em `DesafiosDoJogadorSchema`. C02 (30/10/2026):
+  `ObjetivoDoDesafioSchema` é a união de `ObjetivoJavaScriptDoDesafioSchema` (como antes) e
+  `ObjetivoPythonDoDesafioSchema` (`programmingLanguage: 'python'`, `profileId` e `stdin` até 4
+  linhas, o `SectionPythonProjectCheck` das aulas). Perfil e entradas fora do Python são
+  recusados. A regra continua opaca: o Members confere. Teste: `tests/desafios-python.test.ts`.
+  C02b: `PedirAmbienteDoDesafioSchema` (`{revisao, pedido}`), o pedido de ambiente Python do
+  Estúdio de desafio; a resposta é a decisão do Members, conferida pelo contrato do core.
 - `aprenda.ts`: "Aprenda isso em", blocos exigidos e a cobertura dos blocos pelos cursos.
 - `cartas-lumi.ts`: os 14 cartões da rotina dos Lumis e o bloco que libera cada cartão de controle.
 - `rotinas.ts` (fase2-07): a rotina de um Lumi como árvore de cartões (`CartaoDaRotinaSchema`, o
@@ -125,8 +252,8 @@ Contrato e intérprete em `arquipelago-contracts/src/rotina-*.ts`; plano `docs/p
 ## Salvamento V11: descobertas do Recife (29/10/2026)
 
 `SalvamentoV11Schema` acrescenta somente `recife: { bau, pagina, tesouro }`, três booleanos.
-`migrarDaV10` preserva o documento e começa as marcas em false. A união pública aceita V1 a V11
-e, na época da V11, devolvia V11. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
+`migrarDaV10` preserva o documento e começa as marcas em false. Na época da V11, a união pública
+aceitava V1 a V11 e devolvia V11; atualmente recebe até V18. Não acrescentar campos aos schemas históricos. A validação de dono e limite das
 rotinas é compartilhada sem mudar a régua da V10. O pior caso completo continua limitado a 64 KB.
 Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 
@@ -136,7 +263,7 @@ Testes: `salvamento-v11.test.ts` e pior caso em `salvamento-v10.test.ts`.
 `vila-telhados`: só alarga o que a V2 em diante aceitam. O pior caso de 64 KB (com uma entrada por
 percurso, em `tests/salvamento-v10.test.ts`) tinha 140 bytes de margem antes da V12. O teste
 agora inclui também os três ninhos do Vale e a escavação, os corais e a banda, dentro do mesmo
-teto: sobram 29 bytes (medido em 29/10/2026, depois da V14). Campo novo precisa conferir o espaço
+teto: sobravam 29 bytes depois da V14; a V15 abriu espaço (4579, abaixo). Campo novo precisa conferir o espaço
 antes.
 
 ## Salvamento V12: descobertas do Vale (29/10/2026)
@@ -176,3 +303,53 @@ V14; a V13 continua estrita. 19 bytes no pior caso: sobram 29 do teto. Testes em
 `Plataforma.lerAparencia(criacaoId, sinal?)` é opcional, recebe somente id da conta e devolve
 bytes próprios ou null. Mantém contrato 1 e salvamento intactos. A visita não recebe esses ids.
 Testes em `tests/aparencias.test.ts`; regra completa em `docs/arquipelago-regras.md` §6.16.
+
+## Salvamento V15: o filhote do Vale (fase4-03, 29/10/2026)
+
+`SalvamentoV15Schema` troca `vale` por `ValeV15Schema`: o da V12 mais `filhote`
+(`FilhoteDoValeSchema`, `null` até a Jade entregar o ovo): `ovo` de 0 a `DIAS_PARA_CHOCAR` (3),
+`aquecidoEm`, `comeuEm` e `carinhoEm` (dia ou `null`), `nome` de 1 a 16 letras ou `null` e `dias`
+de 0 a `DIAS_CUIDADOS_MAXIMO` (99). Para caber, o id de uma aparência guardada vai até
+`ID_DA_APARENCIA_MAXIMO` (40; `AparenciaV15Schema`, `ProjetoAzulV15Schema`); o migrador histórico
+`migrarDaV14` tira das guardadas o que passar disso (a em uso vira `null`) e começa o filhote
+em `null`. Esse filtro não é usado pela migração pública atual, descrita na V16 abaixo.
+Na entrega da V15, a fixture de capacidade com IDs canônicos deixava 4579 bytes livres;
+ela não representa todas as combinações de referências legadas longas. Os testes antigos montam a base
+pela V14 (`tests/ajuda-salvamento.ts`, `inicialV14`). Testes: `salvamento-v15.test.ts`. O catálogo
+diz de onde vem o museu (o fóssil descoberto no Vale).
+
+
+## Salvamento V16: continuidade sem descarte (L01, 29/10/2026)
+
+Na entrega V16, a união pública aceitava V1 a V16 e devolvia V16. `migrarDaV15` acrescenta `nuvens.constelacoes`
+(0..63), `farol.pagina`, `farol.concluido` e `clima` (`sol`, `nublado`, `chuva`). Final concluído
+exige página. `PERCURSOS` inclui `nuvens-saltos` e `nuvens-balao`; os schemas até V15 mantêm o
+catálogo histórico. `migrarDaV14ParaAtual` preserva IDs antigos de até 80, sem chamar o filtro
+histórico de `migrarDaV14`. Os schemas e migradores históricos não mudam de semântica.
+
+`ProjetoAzulAtualSchema` volta ao limite aceito antes da V15. O formato da ferramenta Lumi V1
+não muda; sua geladeira aceita referências antigas completas. `ID_DA_APARENCIA_MAXIMO` é o
+limite histórico V15, não o limite global de bytes nem uma instrução para truncar IDs.
+O orçamento com IDs canônicos e a recusa global acima de 64 KB são provas diferentes.
+Testes: `salvamento-v16.test.ts`, `salvamento-v10.test.ts` e HTTP do serviço.
+
+## Salvamento V17: amizade dos seis moradores (29/10/2026)
+
+A união pública aceita V1 a V17 e devolve V17. `migrarDaV16` acrescenta Maré, Floco, Jade e
+Iriê, cada qual com seu próprio `MoradorSchema` vazio. Capi, Bento, objetos e conquistas são
+preservados. Os esquemas históricos continuam estritos e os migradores de versão conservam
+seu destino. `migrarDaV14ParaAtual` é a composição até a versão atual, preservando os IDs longos.
+
+`MORADORES_DO_ANEL` é a lista dos seis registros. A amizade e o inventário continuam na mesma
+revisão CAS; não se somam cópias concorrentes. O caso pesado com os seis pedidos em Unicode
+ocupa 62.605 bytes, com 2.931 de margem. O teto de 65.536 bytes continua independente dessa
+fixture e nunca autoriza truncar dados. Testes: `salvamento-v17.test.ts` e capacidade V10.
+
+## Posse única da galeria (L04, 30/10/2026)
+
+`posse-da-galeria.ts` mantém os nove IDs de aparência e mapeia a identidade da posse.
+Aquário, fliperama e planta têm destinos quarto e jogo; os outros seis só jogo. Os
+preços únicos permanecem no `GALERIA`. Contratos internos são estritos e não aceitam
+preço no pedido. `adocao-da-galeria.ts` é transferência operacional v1, com limite
+de compras e recusa de chaves/itens repetidos. Nunca expor sua aplicação ao jogador.
+O save V18 permanece igual. Nenhum contrato importa o jogo, React ou three.

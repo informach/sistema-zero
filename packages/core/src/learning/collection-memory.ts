@@ -109,23 +109,38 @@ export function evaluatesCollectionMemory(rule: CollectionMemoryRule, project: u
     (rule.dimension === '2d'
       ? s.type === 'g2d:setImage' && s.spriteVar === rule.destination
       : s.type === 'g3d:modelAnimation' && s.objVar === rule.destination && s.op === 'tocar')
+  const decides = (s: Record<string, unknown>) => {
+    for (const name of collected) {
+      const before = condition(s.cond, name, false),
+        after = condition(s.cond, name, true)
+      if (before === undefined || after === undefined || before === after) continue
+      const success = after ? s.then : s.else,
+        missing = before ? s.then : s.else
+      if (
+        Array.isArray(success) &&
+        success.some(reaction) &&
+        Array.isArray(missing) &&
+        !missing.some(reaction)
+      )
+        return true
+    }
+    return false
+  }
+  // A decisão pode morar dentro de uma guarda que não lê a memória, como o `Se não ganhou` que
+  // faz o destino responder uma vez só: os dois ramos dessa guarda também são olhados.
+  const found = (body: unknown, depth: number): boolean =>
+    Array.isArray(body) &&
+    depth <= 4 &&
+    body
+      .filter(active)
+      .some(
+        (s) =>
+          s.type === 'if' &&
+          (decides(s) ||
+            ([...collected].every((name) => condition(s.cond, name, true) === undefined) &&
+              (found(s.then, depth + 1) || found(s.else, depth + 1)))),
+      )
   for (const e of b.events.filter(active))
-    if (encounter(e, rule.destination) && Array.isArray(e.body))
-      for (const s of e.body.filter(active))
-        if (s.type === 'if')
-          for (const name of collected) {
-            const before = condition(s.cond, name, false),
-              after = condition(s.cond, name, true)
-            if (before === undefined || after === undefined || before === after) continue
-            const success = after ? s.then : s.else,
-              missing = before ? s.then : s.else
-            if (
-              Array.isArray(success) &&
-              success.some(reaction) &&
-              Array.isArray(missing) &&
-              !missing.some(reaction)
-            )
-              return true
-          }
+    if (encounter(e, rule.destination) && found(e.body, 0)) return true
   return false
 }

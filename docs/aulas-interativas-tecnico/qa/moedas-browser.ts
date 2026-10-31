@@ -73,7 +73,7 @@ writeFileSync(
         }
       : {
           assets: Object.fromEntries(p.assets!.map((a) => [a.name, a.dataUrl])),
-          assetMeta: assetMetaManifest(p.assets),
+          assetsMeta: assetMetaManifest(p.assets),
         }),
     runtimeInspection: true,
   }),

@@ -1,11 +1,13 @@
+import type { EnvioAoClube, SituacaoDoClube } from '@sistemazero/arquipelago-contracts'
 import { jogoPausado, type SinaisDePausa } from './pausa'
 
 /**
  * O modo foto (fase2-09, regras puras): um valor de `painelAberto`, então o personagem fica parado
  * (a mesma pausa dos painéis) e a câmera continua girando e aproximando como sempre. O HUD, a fala
- * do Zappy e as dicas somem; Esc ou "Voltar" fecham o painel e o HUD volta. A foto fica só no
- * aparelho: nada vai para o serviço nem para o Clube (fotos no Clube começam desligadas,
- * `PERMISSOES_PADRAO`, ECA Digital art. 21).
+ * do Zappy e as dicas somem; Esc ou "Voltar" fecham o painel e o HUD volta. A foto fica no
+ * aparelho. Com "Fotos no Clube" ligado pelos responsáveis (N08b, começa desligado, ECA Digital
+ * art. 21) e o canal das fotos no Clube, aparece "Mandar para o Clube": a foto vai para a
+ * moderação do Clube, nunca direto.
  */
 
 /** O valor de `painelAberto` do modo foto. */
@@ -62,6 +64,31 @@ export function capturarQuadro<Cena, Camera>(
   })
 }
 
+/** "Mandar para o Clube" só aparece com a foto pronta, o Clube ligado e a foto ainda não mandada. */
+export function podeMandarAoClube(
+  clube: SituacaoDoClube | null,
+  foto: 'pronta' | 'outra',
+  envio: EnvioAoClube | 'mandando' | null,
+): boolean {
+  return (
+    clube === 'ligado' &&
+    foto === 'pronta' &&
+    envio !== 'mandando' &&
+    envio !== 'em-moderacao' &&
+    envio !== 'publicada'
+  )
+}
+
+/** Depois do envio, a situação do Clube que vale (o servidor pode ter mudado de ideia). */
+export function clubeDepoisDoEnvio(
+  clube: SituacaoDoClube | null,
+  envio: EnvioAoClube,
+): SituacaoDoClube | null {
+  if (envio === 'desligado') return 'desligado'
+  if (envio === 'sem-clube') return 'sem-clube'
+  return clube
+}
+
 export const TEXTOS_DA_FOTO = {
   titulo: 'Modo foto',
   dica: 'Gire e aproxime a câmera para enquadrar.',
@@ -70,5 +97,14 @@ export const TEXTOS_DA_FOTO = {
   pronta: 'Foto pronta. Ela ficou só neste aparelho.',
   baixarDeNovo: 'Baixar de novo',
   falhou: 'A foto não saiu agora. Tente de novo.',
+  mandarAoClube: 'Mandar para o Clube',
+  mandando: 'Mandando para o Clube',
+  envio: {
+    'em-moderacao': 'A foto foi para o Clube. Ela aparece lá depois que um adulto da equipe olhar.',
+    publicada: 'A foto já está no Clube.',
+    desligado: 'As fotos no Clube estão desligadas. Quem decide são os responsáveis.',
+    'sem-clube': 'O Clube ainda não recebe fotos do jogo. A foto ficou neste aparelho.',
+    falhou: 'A foto não chegou ao Clube agora. Tente de novo.',
+  } satisfies Record<EnvioAoClube, string>,
   voltar: 'Voltar',
 } as const

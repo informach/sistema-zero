@@ -1,5 +1,13 @@
 import { z } from 'zod'
+import {
+  BIT_DA_SEGREDO_MAXIMO,
+  BIT_DO_COMODO,
+  COMPANHIAS,
+  MAPAS_DAS_ILHAS,
+  MapaDaIlhaSchema,
+} from './exploracao'
 import { ILHA_IDS } from './ilhas'
+import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
 import { GELADEIRA_GUARDA, OBJETOS_DA_CASA } from './objetos'
 import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
 
@@ -9,7 +17,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 14
+export const VERSAO_SALVAMENTO = 20
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -44,7 +52,15 @@ export type SalvamentoV1 = z.infer<typeof SalvamentoV1Schema>
  * fase2-05) e `pico-cume` (a subida ao cume do Pico Gelado, fase3-07) entraram em 29/10/2026 sem
  * versão nova: só alargam o que a V2 em diante aceitam.
  */
-export const PERCURSOS = ['bosque-copas', 'vila-telhados', 'pico-cume'] as const
+const PERCURSOS_ATE_V15 = ['bosque-copas', 'vila-telhados', 'pico-cume'] as const
+const PERCURSOS_ATE_V18 = [...PERCURSOS_ATE_V15, 'nuvens-saltos', 'nuvens-balao'] as const
+/** V19 (30/10/2026): os percursos da praia e das pedras, dos corais do Recife e das pegadas do Vale. */
+export const PERCURSOS = [
+  ...PERCURSOS_ATE_V18,
+  'praia-pedras',
+  'recife-corais',
+  'vale-pegadas',
+] as const
 export type PercursoId = (typeof PERCURSOS)[number]
 
 /** Uma hora: o jogo desiste da corrida que passa disto (nada acima vai para o salvamento). */
@@ -64,7 +80,7 @@ export type ResultadoDoPercurso = z.infer<typeof ResultadoDoPercursoSchema>
 /** V2 (27/10/2026): a V1 mais o melhor resultado de cada percurso. */
 export const SalvamentoV2Schema = SalvamentoV1Schema.extend({
   versao: z.literal(2),
-  percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+  percursos: z.partialRecord(z.enum(PERCURSOS_ATE_V15), ResultadoDoPercursoSchema),
 })
 export type SalvamentoV2 = z.infer<typeof SalvamentoV2Schema>
 
@@ -237,9 +253,30 @@ export const ObraSchema = z.strictObject({
     .max(18)
     .refine((lista) => semRepetir(lista.map(naCelula)), 'canteiro repetido'),
 })
-export type Obra = z.infer<typeof ObraSchema>
+/** A obra das versões 4 a 19 (sem os móveis). */
+export type ObraAteV19 = z.infer<typeof ObraSchema>
 
-/** As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). */
+/**
+ * A obra da casa na V20 (30/10/2026): a de antes mais os móveis da cozinha, da sala e do banheiro
+ * (`moveis.ts`). A cabana tem o mesmo formato, mas sem móvel: eles são da casa, como os objetos.
+ */
+export const ObraDaCasaSchema = ObraSchema.extend({
+  moveis: z.array(MovelNaObraSchema).max(MOVEIS_NA_CASA_MAXIMO),
+})
+export const ObraDaCabanaSchema = ObraSchema.extend({
+  moveis: z.array(MovelNaObraSchema).max(0),
+})
+export type Obra = z.infer<typeof ObraDaCasaSchema>
+
+/** Uma obra das versões até a 19 com a lista de móveis vazia. */
+export function obraComMoveis(obra: ObraAteV19): Obra {
+  return { ...obra, moveis: [] }
+}
+
+/**
+ * As ilhas onde dá para fazer cabana (28/10/2026: só o Bosque, a primeira ilha nova). O iglu do
+ * Pico (E04) espera o lote na arte e um documento próprio no serviço: o salvamento está cheio.
+ */
 export const ILHAS_COM_CABANA = ['bosque'] as const
 export type IlhaComCabana = (typeof ILHAS_COM_CABANA)[number]
 
@@ -578,20 +615,347 @@ export type SalvamentoV14 = z.infer<typeof SalvamentoV14Schema>
 export function migrarDaV13(v13: SalvamentoV13): SalvamentoV14 {
   return { ...v13, versao: 14, pico: { banda: 0 } }
 }
-export const SalvamentoSchema = z.union([
+const SalvamentoAteV14Schema = z.union([
   SalvamentoV14Schema,
   SalvamentoAteV13Schema.transform(migrarDaV13),
 ])
-export type Salvamento = SalvamentoV14
+
+/**
+ * V15 (fase4-03, 29/10/2026). O id de uma aparência guardada vai até `ID_DA_APARENCIA_MAXIMO`
+ * (40; eram 80): os ids de verdade são os do catálogo da galeria e os das criações da conta
+ * (uuid, 36), e os 40 que sobram por aparência, vezes 12 aparências por objeto, abrem uns 5 KB
+ * no pior caso para o que vem (o filhote do Vale e as próximas ilhas).
+ */
+export const ID_DA_APARENCIA_MAXIMO = 40
+export const AparenciaV15Schema = z.strictObject({
+  origem: z.enum(ORIGENS_DA_APARENCIA),
+  id: z.string().min(1).max(ID_DA_APARENCIA_MAXIMO),
+})
+export const ProjetoAzulV15Schema = ProjetoAzulV4Schema.extend({
+  aparencia: AparenciaV15Schema.nullable(),
+  aparencias: z.array(AparenciaV15Schema).max(APARENCIAS_GUARDADAS_MAXIMO),
+})
+  .refine(
+    (p) => p.aparencias.every((a, i) => p.aparencias.findIndex((b) => mesmaAparencia(a, b)) === i),
+    'aparência repetida',
+  )
+  .refine(
+    (p) => p.aparencia === null || p.aparencias.some((a) => mesmaAparencia(a, p.aparencia!)),
+    'a aparência em uso fica entre as guardadas',
+  )
+export type ProjetoAzulV15 = z.infer<typeof ProjetoAzulV15Schema>
+
+/**
+ * O filhote de dino do Vale (fase4-03): `ovo` conta os dias em que o ovo foi aquecido no chão
+ * quente do pé do vulcão (com `DIAS_PARA_CHOCAR` ele nasce), `aquecidoEm` o último desses dias;
+ * nascido, ganha um `nome` (até lá, `null`), e `dias` conta os dias em que comeu e ganhou carinho
+ * (`comeuEm` e `carinhoEm`, o último dia de cada um). Sem prazo: um dia sem cuidar não tira nada.
+ */
+export const DIAS_PARA_CHOCAR = 3
+export const DIAS_CUIDADOS_MAXIMO = 99
+export const FilhoteDoValeSchema = z.strictObject({
+  ovo: z.number().int().min(0).max(DIAS_PARA_CHOCAR),
+  aquecidoEm: dia.nullable(),
+  nome: z.string().trim().min(1).max(16).nullable(),
+  comeuEm: dia.nullable(),
+  carinhoEm: dia.nullable(),
+  dias: z.number().int().min(0).max(DIAS_CUIDADOS_MAXIMO),
+})
+export type FilhoteDoVale = z.infer<typeof FilhoteDoValeSchema>
+export const ValeV15Schema = ValeSchema.extend({ filhote: FilhoteDoValeSchema.nullable() })
+
+export const SalvamentoV15Schema = z
+  .strictObject({
+    ...SalvamentoV14Schema.shape,
+    versao: z.literal(15),
+    projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulV15Schema),
+    vale: ValeV15Schema,
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV15 = z.infer<typeof SalvamentoV15Schema>
+
+/**
+ * Da V14: o filhote ainda não existe, e uma aparência com id além de 40 sai das guardadas (e da em
+ * uso). Nenhum id real passa de 40; se um passar, perde-se só aquela aparência, nunca o objeto.
+ */
+export function migrarDaV14(v14: SalvamentoV14): SalvamentoV15 {
+  const cabe = (a: AparenciaDoObjeto) => a.id.length <= ID_DA_APARENCIA_MAXIMO
+  const projetos: SalvamentoV15['projetos'] = {}
+  for (const [id, p] of Object.entries(v14.projetos) as [
+    keyof SalvamentoV15['projetos'],
+    ProjetoAzul,
+  ][])
+    projetos[id] = {
+      ...p,
+      aparencia: p.aparencia && cabe(p.aparencia) ? p.aparencia : null,
+      aparencias: p.aparencias.filter(cabe),
+    }
+  return { ...v14, versao: 15, projetos, vale: { ...v14.vale, filhote: null } }
+}
+/**
+ * V16 preserva as referências de até 80 caracteres que V14 já aceitava. A migração atual não
+ * passa pelo filtro histórico da V15. Produtores novos continuam usando IDs canônicos (UUID
+ * ou catálogo); o limite global em bytes é conferido antes de qualquer gravação.
+ */
+export const ProjetoAzulAtualSchema = ProjetoAzulSchema
+export const CLIMAS_DO_JOGO = ['sol', 'nublado', 'chuva'] as const
+export const SalvamentoV16Schema = z
+  .strictObject({
+    ...SalvamentoV15Schema.shape,
+    versao: z.literal(16),
+    projetos: z.partialRecord(z.enum(OBJETOS_DA_CASA), ProjetoAzulAtualSchema),
+    percursos: z.partialRecord(z.enum(PERCURSOS_ATE_V18), ResultadoDoPercursoSchema),
+    nuvens: z.strictObject({ constelacoes: z.number().int().min(0).max(63) }),
+    farol: z
+      .strictObject({ pagina: z.boolean(), concluido: z.boolean() })
+      .refine((f) => !f.concluido || f.pagina, 'O final concluído tem a página lida.'),
+    clima: z.enum(CLIMAS_DO_JOGO),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV16 = z.infer<typeof SalvamentoV16Schema>
+
+export function migrarDaV15(v15: SalvamentoV15): SalvamentoV16 {
+  return {
+    ...v15,
+    versao: 16,
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false },
+    clima: 'sol',
+  }
+}
+
+/** Mesmo destino sem descartar referências aceitas nas versões até V14. */
+export function migrarDaV14ParaV16(v14: SalvamentoV14): SalvamentoV16 {
+  return {
+    ...v14,
+    versao: 16,
+    vale: { ...v14.vale, filhote: null },
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false },
+    clima: 'sol',
+  }
+}
+
+/** Histórico até V16, inclusive o caminho que preserva aparências antigas. */
+export const SalvamentoAteV16Schema = z.union([
+  SalvamentoV16Schema,
+  SalvamentoV15Schema.transform(migrarDaV15),
+  SalvamentoAteV14Schema.transform(migrarDaV14ParaV16),
+])
+
+export const MORADORES_DO_ANEL = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie'] as const
+export const SalvamentoV17Schema = z
+  .strictObject({
+    ...SalvamentoV16Schema.shape,
+    versao: z.literal(17),
+    moradores: z.strictObject({
+      capi: MoradorSchema,
+      bento: MoradorSchema,
+      mare: MoradorSchema,
+      floco: MoradorSchema,
+      jade: MoradorSchema,
+      irie: MoradorSchema,
+    }),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV17 = z.infer<typeof SalvamentoV17Schema>
+
+export function migrarDaV16(s: SalvamentoV16): SalvamentoV17 {
+  return {
+    ...s,
+    versao: 17,
+    moradores: {
+      ...s.moradores,
+      mare: { ...MORADOR_NOVO },
+      floco: { ...MORADOR_NOVO },
+      jade: { ...MORADOR_NOVO },
+      irie: { ...MORADOR_NOVO },
+    },
+  }
+}
+
+export const SalvamentoAteV17Schema = z.union([
+  SalvamentoV17Schema,
+  SalvamentoAteV16Schema.transform(migrarDaV16),
+])
+
+export const SalvamentoV18Schema = z
+  .strictObject({
+    ...SalvamentoV17Schema.shape,
+    versao: z.literal(18),
+    ilhasVisitadas: z.number().int().min(0).max(255),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV18 = z.infer<typeof SalvamentoV18Schema>
+
+/** Não inferir visita a partir de posto, posição ou ponte vista. */
+export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
+  return { ...s, versao: 18, ilhasVisitadas: 0 }
+}
+
+/** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV20 {
+  return migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))
+}
+
+export const SalvamentoAteV18Schema = z.union([
+  SalvamentoV18Schema,
+  SalvamentoAteV17Schema.transform(migrarDaV17),
+])
+
+/**
+ * V19 (30/10/2026, levantamento integrado): três percursos novos, as chaves dos cômodos da casa
+ * da Íris (um bit por cômodo), os segredos que o kit de movimento abre nas ilhas antigas (um bit
+ * por segredo), o mapa que se revela andando (uma grade de 8 × 8 por ilha, em hexadecimal) e
+ * quem acompanha a criança pela ilha. Nada disso consome itens: as conquistas se juntam.
+ */
+export const SalvamentoV19Schema = z
+  .strictObject({
+    ...SalvamentoV18Schema.shape,
+    versao: z.literal(19),
+    percursos: z.partialRecord(z.enum(PERCURSOS), ResultadoDoPercursoSchema),
+    chaves: z.number().int().min(0).max(15),
+    segredos: z
+      .number()
+      .int()
+      .min(0)
+      .max(BIT_DA_SEGREDO_MAXIMO * 2 - 1),
+    mapa: z.partialRecord(z.enum(MAPAS_DAS_ILHAS), MapaDaIlhaSchema),
+    companhia: z.enum(COMPANHIAS),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV19 = z.infer<typeof SalvamentoV19Schema>
+
+/**
+ * As chaves que uma obra já usa (N11). Antes da V19 o modo construir era todo livre; o que a
+ * criança já pôs continua dela: ladrilho é da cozinha, azulejo do banheiro, as janelas grande e
+ * em arco da sala, e cerca, caminho ou canteiro do quintal.
+ */
+export function chavesUsadasNaObra(obra: ObraAteV19 | null | undefined): number {
+  if (!obra) return 0
+  let chaves = 0
+  if (obra.pisos.some((p) => p.tipo === 'ladrilho')) chaves |= BIT_DO_COMODO.cozinha
+  if (obra.pisos.some((p) => p.tipo === 'azulejo')) chaves |= BIT_DO_COMODO.banheiro
+  if (obra.aberturas.some((a) => a.tipo === 'janela-grande' || a.tipo === 'janela-arco'))
+    chaves |= BIT_DO_COMODO.sala
+  if (obra.cercas.length > 0 || obra.caminhos.length > 0 || obra.canteiros.length > 0)
+    chaves |= BIT_DO_COMODO.quintal
+  return chaves
+}
+
+/**
+ * Nenhum segredo nem célula do mapa é presumido. As chaves começam com o que a obra (a casa e as
+ * cabanas) já usa, para nada construído deixar de ser editável. Quem já tinha bicho adotado
+ * continua com ele acompanhando; sem ele, o bichinho do quarto acompanha.
+ */
+export function migrarDaV18(s: SalvamentoV18): SalvamentoV19 {
+  let chaves = chavesUsadasNaObra(s.construcao.casa)
+  for (const cabana of Object.values(s.construcao.cabanas)) chaves |= chavesUsadasNaObra(cabana)
+  const companhia = s.bichos.adotado ? 'adotado' : 'quarto'
+  return { ...s, versao: 19, chaves, segredos: 0, mapa: {}, companhia }
+}
+
+export const SalvamentoAteV19Schema = z.union([
+  SalvamentoV19Schema,
+  SalvamentoAteV18Schema.transform(migrarDaV18),
+])
+
+/** Quantas criações o alto do Farol expõe no modo livre (fase4-12). */
+export const VAGAS_DA_GALERIA_DO_FAROL = 6
+
+/**
+ * Uma criação exposta no Farol, em tupla curta: `a` é uma aparência que um objeto guarda (o id da
+ * criação do Pinta, do Molda ou guardada, lida em `projetos[objeto].aparencias`), `j` um jogo
+ * publicado no Mural (o `playId`) e `d` um minijogo aprovado no Desafio (o `desafioId`).
+ */
+export const ExposicaoDoFarolSchema = z.union([
+  z.tuple([z.literal('a'), z.enum(OBJETOS_DA_CASA), z.string().min(1).max(ID_DA_APARENCIA_MAXIMO)]),
+  z.tuple([z.literal('j'), z.uuid()]),
+  z.tuple([z.literal('d'), z.uuid()]),
+])
+export type ExposicaoDoFarol = z.infer<typeof ExposicaoDoFarolSchema>
+
+/** A mesma criação nunca fica em duas vagas. */
+export function chaveDaExposicao(e: ExposicaoDoFarol): string {
+  return e.join(':')
+}
+
+/**
+ * V20 (30/10/2026): os móveis da casa (`construcao.casa.moveis`) e a galeria do Farol (`farol.galeria`,
+ * uma vaga por posição, `null` vazia). A galeria só se enche com o final concluído: é o modo livre.
+ */
+export const SalvamentoV20Schema = z
+  .strictObject({
+    ...SalvamentoV19Schema.shape,
+    versao: z.literal(20),
+    construcao: z.strictObject({
+      casa: ObraDaCasaSchema.nullable(),
+      cabanas: z.partialRecord(z.enum(ILHAS_COM_CABANA), ObraDaCabanaSchema),
+    }),
+    farol: z
+      .strictObject({
+        pagina: z.boolean(),
+        concluido: z.boolean(),
+        galeria: z.array(ExposicaoDoFarolSchema.nullable()).max(VAGAS_DA_GALERIA_DO_FAROL),
+      })
+      .refine((f) => !f.concluido || f.pagina, 'O final concluído tem a página lida.')
+      .refine(
+        (f) => f.concluido || f.galeria.every((e) => e === null),
+        'A galeria abre com o final concluído.',
+      )
+      .refine((f) => {
+        const chaves = f.galeria.flatMap((e) => (e ? [chaveDaExposicao(e)] : []))
+        return new Set(chaves).size === chaves.length
+      }, 'A mesma criação em duas vagas.'),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV20 = z.infer<typeof SalvamentoV20Schema>
+
+/** Nenhum móvel posto e a galeria vazia: nada é presumido. */
+export function migrarDaV19(s: SalvamentoV19): SalvamentoV20 {
+  const { casa, cabanas } = s.construcao
+  // A V19 que já circulou no staging migrou da V18 sem as chaves da obra e com o bicho do quarto
+  // acompanhando (ninguém podia escolher ainda). Aqui as duas coisas se acertam: as chaves só
+  // somam o que a obra já usa, e o bicho adotado volta a acompanhar.
+  let chaves = s.chaves | chavesUsadasNaObra(casa)
+  for (const cabana of Object.values(cabanas)) chaves |= chavesUsadasNaObra(cabana)
+  return {
+    ...s,
+    versao: 20,
+    chaves,
+    companhia: s.bichos.adotado ? 'adotado' : s.companhia,
+    construcao: {
+      casa: casa ? obraComMoveis(casa) : null,
+      cabanas: Object.fromEntries(
+        Object.entries(cabanas).map(([ilha, obra]) => [ilha, obraComMoveis(obra)]),
+      ),
+    },
+    farol: { ...s.farol, galeria: [] },
+  }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV20Schema,
+  SalvamentoAteV19Schema.transform(migrarDaV19),
+])
+export type Salvamento = SalvamentoV20
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
 
 export function criarSalvamentoInicial(agora: Date): Salvamento {
   return {
-    versao: 14,
+    versao: VERSAO_SALVAMENTO,
+    ilhasVisitadas: 0,
+    chaves: 0,
+    segredos: 0,
+    mapa: {},
+    companhia: 'quarto',
+    nuvens: { constelacoes: 0 },
+    farol: { pagina: false, concluido: false, galeria: [] },
+    clima: 'sol',
     pico: { banda: 0 },
-    vale: { pegadas: false, escavacao: 0, ninhos: [] },
+    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),
@@ -607,7 +971,14 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     pontesVistas: [],
     casa: { portaNova: false },
     percursos: {},
-    moradores: { capi: { ...MORADOR_NOVO }, bento: { ...MORADOR_NOVO } },
+    moradores: {
+      capi: { ...MORADOR_NOVO },
+      bento: { ...MORADOR_NOVO },
+      mare: { ...MORADOR_NOVO },
+      floco: { ...MORADOR_NOVO },
+      jade: { ...MORADOR_NOVO },
+      irie: { ...MORADOR_NOVO },
+    },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },
     projetos: {},

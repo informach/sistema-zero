@@ -6,7 +6,14 @@ import type {
   RepositorioDaMedicao,
 } from '../../../domain/medicao'
 import type { Database } from './db'
-import { desafiosConcluidos, minijogos, salvamentos, sessoesDeTempo, tempoDiario } from './schema'
+import {
+  desafiosConcluidos,
+  minijogos,
+  mudancasDeAparencia,
+  salvamentos,
+  sessoesDeTempo,
+  tempoDiario,
+} from './schema'
 
 /** Só agregados saem do banco. Uma fotografia consistente, sem ler tabelas da plataforma. */
 export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
@@ -55,6 +62,24 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
           AND (projeto.value->>'ganhoEm')::timestamptz < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
         GROUP BY 1
       `)
+        const mudancas = await tx.execute<{
+          origem: string
+          quantidade: number
+          pessoas: number
+        }>(sql`
+          SELECT CASE WHEN ${mudancasDeAparencia.origem} IN ('pinta', 'molda')
+            THEN 'pinta-molda' ELSE ${mudancasDeAparencia.origem} END AS origem,
+            count(*)::int AS quantidade, count(DISTINCT ${mudancasDeAparencia.jogadorId})::int AS pessoas
+          FROM ${mudancasDeAparencia}
+          WHERE ${mudancasDeAparencia.publico} = ${f.publico}
+            AND ${mudancasDeAparencia.registradoEm} >= (${f.de}::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+            AND ${mudancasDeAparencia.registradoEm} < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
+          GROUP BY 1
+        `)
+        const mudanca = (nome: string): ContagemDaMedicao => {
+          const linha = mudancas.find((r) => r.origem === nome)
+          return { quantidade: linha?.quantidade ?? 0, pessoas: linha?.pessoas ?? 0 }
+        }
         const aprovados = await tx.execute<{ quantidade: number; pessoas: number }>(sql`
         SELECT count(*)::int AS quantidade, count(DISTINCT ${desafiosConcluidos.jogadorId})::int AS pessoas
         FROM ${desafiosConcluidos}
@@ -73,6 +98,11 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
           AND ${minijogos.aprovadoEm} < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
         `)
         return {
+          mudancasDeAparencia: {
+            pintaMolda: mudanca('pinta-molda'),
+            criacaoGuardada: mudanca('criacao'),
+            galeria: mudanca('galeria'),
+          },
           minijogos: jogos[0] ?? { quantidade: 0, pessoas: 0 },
           coortes: [...coortes],
           pintaMolda: origem('pinta-molda'),

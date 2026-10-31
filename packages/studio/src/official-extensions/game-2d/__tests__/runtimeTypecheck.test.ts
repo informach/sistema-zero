@@ -417,7 +417,9 @@ test('a dívida de parâmetros JS sem tipo não pode crescer', () => {
   // +1: `_inspectContactBounds(sprite)` tem JSDoc GameTwoDSprite e lê a caixa de colisão sem mutar.
   // +4 (29/10/2026): `onTouchGroup(getSprite, getGroup, fn, id)`, tipado pela interface
   // pública do contrato, como o `onOverlap` ao lado.
-  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1495)
+  // +2: despacho comum de tecla e borda do pad; ambos com JSDoc explícito. O contador
+  // sintático também conta parâmetros tipados, e a prova semântica acima continua exigida.
+  expect(runtimeFunctionParameterCount(gameTwoDRuntime)).toBeLessThanOrEqual(1497)
 })
 
 test('volume ZERO deixa mudo de verdade (não cai em fallback)', () => {

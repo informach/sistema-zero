@@ -1,6 +1,9 @@
+import { escolherPedidoDoMorador, pedidoDoMoradorPeloId } from '@sistemazero/arquipelago-contracts'
+
+export { PEDIDOS_DO_BENTO } from '@sistemazero/arquipelago-contracts'
+
 import type { Morador } from '@sistemazero/arquipelago-contracts'
 import type { Aniversario, Gostos, PedidoDeMorador } from './moradores'
-import { sorteio } from './moradores'
 
 /**
  * O Bento, o tamanduá confeiteiro da Vila Doce (fase2-02, regras puras). A amizade usa as mesmas
@@ -21,16 +24,8 @@ export const GOSTOS_DO_BENTO: Gostos = {
 }
 
 /** Os pedidos do dia: o que ele precisa para tentar lembrar as receitas e abrir a padaria. */
-export const PEDIDOS_DO_BENTO: readonly PedidoDeMorador[] = [
-  { id: 'milho-2', texto: 'Dois milhos da horta, para o fubá do bolo', itens: { milho: 2 } },
-  { id: 'milho-1', texto: 'Um milho para provar uma receita', itens: { milho: 1 } },
-  { id: 'pipoca-2', texto: 'Duas pipocas para a feira', itens: { pipoca: 2 } },
-  { id: 'salada-1', texto: 'Uma salada para o almoço da padaria', itens: { salada: 1 } },
-  { id: 'tomate-2', texto: 'Dois tomates para o molho do pão', itens: { tomate: 2 } },
-]
-
 export function pedidoDoBentoPeloId(id: string): PedidoDeMorador | null {
-  return PEDIDOS_DO_BENTO.find((p) => p.id === id) ?? null
+  return pedidoDoMoradorPeloId('bento', id)
 }
 
 /**
@@ -39,8 +34,7 @@ export function pedidoDoBentoPeloId(id: string): PedidoDeMorador | null {
  */
 export function pedidoDoDiaDoBento(bento: Morador, dia: string, perfilId: string): Morador {
   if (bento.pedido?.dia === dia) return bento
-  const i = sorteio(`bento:${perfilId}:${dia}`) % PEDIDOS_DO_BENTO.length
-  const id = PEDIDOS_DO_BENTO[i]?.id ?? 'milho-1'
+  const id = escolherPedidoDoMorador('bento', perfilId, dia, 0)
   return { ...bento, pedido: { dia, id, entregue: false } }
 }
 

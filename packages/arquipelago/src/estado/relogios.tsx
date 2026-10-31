@@ -2,9 +2,17 @@ import { useEffect } from 'react'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA } from '../mundo/medidas'
 import { passarTempoDoBicho } from '../sistemas/bichos'
 import { descansar, FALA_DA_SONECA_CHEIA, sonecaAcabou } from '../sistemas/descanso'
+import {
+  acaoEmCurso,
+  encerraOTempo,
+  FALA_DO_TEMPO_ACABANDO,
+  FALA_DO_TEMPO_ACABOU,
+} from '../sistemas/fim-do-tempo'
+import { foraDaPassagemDoFarol } from '../sistemas/final-do-farol'
 import { passarTempo } from '../sistemas/necessidades'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { useJogo } from './contexto'
+import { lojaDoFarol } from './farol'
 
 /**
  * O que corre com o tempo, fora da cena: necessidades (e as do bicho adotado), o cochilo quando a
@@ -12,6 +20,26 @@ import { useJogo } from './contexto'
  */
 export function Relogios() {
   const { loja, controle, plataforma, rastro, pedidos, gerenteTempo, movimento } = useJogo()
+
+  // O fim do tempo no fim da ação (N07): avisa uma vez e encerra quando a ação acaba.
+  useEffect(() => {
+    let avisou = false
+    const t = setInterval(() => {
+      const s = loja.getState()
+      if (s.tempoAcabandoDesde === null) {
+        avisou = false
+        return
+      }
+      if (!avisou) {
+        avisou = true
+        s.dizer(FALA_DO_TEMPO_ACABANDO)
+      }
+      if (!encerraOTempo(s.tempoAcabandoDesde, Date.now(), acaoEmCurso(s))) return
+      s.dizer(FALA_DO_TEMPO_ACABOU)
+      loja.setState({ tempoAcabou: true, tempoAcabandoDesde: null, painelAberto: null })
+    }, 500)
+    return () => clearInterval(t)
+  }, [loja])
 
   useEffect(() => {
     let ultimaPosicao = { x: rastro.x, z: rastro.z }
@@ -23,6 +51,7 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
+        s.tempoAcabandoDesde === null &&
         !s.tempoPausado &&
         !salvamentoPausado(s.salvamentoSituacao) &&
         !s.tempoSincronizando
@@ -51,7 +80,11 @@ export function Relogios() {
         }
         // Com um painel aberto (a conversa, o cuidar, o Quadro), o cochilo espera ele fechar.
         const agora = loja.getState()
-        if (agora.salvamento.necessidades.energia <= 0 && agora.painelAberto === null) {
+        if (
+          agora.salvamento.necessidades.energia <= 0 &&
+          agora.painelAberto === null &&
+          foraDaPassagemDoFarol(lojaDoFarol(loja).getState(), pedidos.teleporte !== null)
+        ) {
           pedidos.teleporte = {
             x: CENTRO_DA_CASA.x,
             y: ALTURA_DA_TERRA + 1.2,
@@ -63,7 +96,9 @@ export function Relogios() {
       }
 
       if (
+        foraDaPassagemDoFarol(lojaDoFarol(loja).getState(), pedidos.teleporte !== null) &&
         movimento.modo !== 'barco' &&
+        movimento.modo !== 'balao' &&
         movimento.modo !== 'mergulho' &&
         segundos % 15 === 0 &&
         Math.hypot(rastro.x - ultimaPosicao.x, rastro.z - ultimaPosicao.z) > 1
@@ -81,6 +116,7 @@ export function Relogios() {
         !s.menuAberto &&
         !s.ferramentaAberta &&
         !s.tempoAcabou &&
+        s.tempoAcabandoDesde === null &&
         !s.tempoPausado &&
         !salvamentoPausado(s.salvamentoSituacao)
       )

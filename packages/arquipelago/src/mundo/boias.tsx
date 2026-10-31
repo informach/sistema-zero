@@ -36,6 +36,7 @@ export function Boias({
 }
 
 const SEM_OUTRAS: readonly RodaDeNado[] = []
+const SEM_ROTAS: readonly RotaDoBarco[] = []
 
 /** Boinhas da corda por trecho entre duas boias. */
 const BOINHAS_POR_TRECHO = 4
@@ -69,10 +70,10 @@ const CIMA = new Vector3(0, 1, 0)
 
 function BoiasDoModelo({ roda, outras }: { roda: RodaDeNado; outras: readonly RodaDeNado[] }) {
   const { movimento } = useJogo()
-  const [rota, definirRota] = useState<RotaDoBarco | null>(null)
+  const [rotas, definirRotas] = useState<readonly RotaDoBarco[]>(SEM_ROTAS)
   useFrame(() => {
-    const r = movimento.barco?.rota ?? null
-    if (r !== rota) definirRota(r)
+    const r = movimento.rotasDoBarco
+    if (r !== rotas) definirRotas(r)
   })
   const raiz = useModelo(MODELOS.boias)
   const pecas = useMemo(
@@ -99,10 +100,12 @@ function BoiasDoModelo({ roda, outras }: { roda: RodaDeNado; outras: readonly Ro
         const b = boias[(i + 1) % boias.length] ?? a
         if (a.dentro || b.dentro) return []
         if (
-          rota &&
-          (noCorredorDoBarco(rota, a) ||
-            noCorredorDoBarco(rota, b) ||
-            noCorredorDoBarco(rota, { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }))
+          rotas.some(
+            (rota) =>
+              noCorredorDoBarco(rota, a) ||
+              noCorredorDoBarco(rota, b) ||
+              noCorredorDoBarco(rota, { x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }),
+          )
         )
           return []
         const dx = b.x - a.x
@@ -110,11 +113,11 @@ function BoiasDoModelo({ roda, outras }: { roda: RodaDeNado; outras: readonly Ro
         const comp = Math.hypot(dx, dz)
         return [{ a, ux: dx / comp, uz: dz / comp, comp, giro: Math.atan2(-dz, dx) }]
       }),
-    [boias, rota],
+    [boias, rotas],
   )
   const visiveis = useMemo(
-    () => boias.filter((b) => !b.dentro && !(rota && noCorredorDoBarco(rota, b))),
-    [boias, rota],
+    () => boias.filter((b) => !b.dentro && !rotas.some((rota) => noCorredorDoBarco(rota, b))),
+    [boias, rotas],
   )
   const malhas = useRef<{
     boia: (InstancedMesh | null)[]
@@ -174,7 +177,7 @@ function BoiasDoModelo({ roda, outras }: { roda: RodaDeNado; outras: readonly Ro
     pecas[grupo].map((p, i) => (
       <instancedMesh
         // biome-ignore lint/suspicious/noArrayIndexKey: as peças de um nó não mudam de ordem
-        key={`${i}:${n}:${rota ? 'porto' : 'roda'}`}
+        key={`${i}:${n}:${rotas.length ? 'porto' : 'roda'}`}
         ref={(m) => {
           malhas.current[grupo][i] = m
         }}

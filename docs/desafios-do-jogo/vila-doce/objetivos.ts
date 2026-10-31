@@ -7,12 +7,13 @@ import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/l
 import type { Variacao } from './projetos'
 
 export const largada: ExecutionStep = {
-  action: 'clickTarget',
-  target: { kind: 'sprite', path: 'largada', groupPath: 'botoesLargada' },
+  action: 'press',
+  key: 'Enter',
+  holdMs: 30,
 }
 const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
 const press = (
-  key: 'ArrowUp' | 'ArrowDown' | 'ArrowRight' | 'Enter',
+  key: 'ArrowUp' | 'ArrowDown' | 'ArrowRight' | 'Enter' | 'Space',
   holdMs: number,
 ): ExecutionStep => ({ action: 'press', key, holdMs })
 const val = (
@@ -57,8 +58,8 @@ export const rotaPorBaixo: ExecutionStep[] = [
 const extra = (prazo: number) =>
   behavior(
     'recomecar-enter',
-    'Extra: Enter recoloca o entregador no começo e inicia outra corrida.',
-    [largada, press('ArrowRight', 1500), press('Enter', 30)],
+    'Extra: Espaço ou A recoloca o entregador no começo e inicia outra corrida.',
+    [largada, press('ArrowRight', 1500), press('Space', 30)],
     val('correndo', 'equals', true),
     [
       point(2, 'entregador.x', 'greaterThan', 100),
@@ -75,7 +76,7 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
   corrida: [
     behavior(
       'largada',
-      'A Largada recoloca o entregador no começo, zera as entregas e inicia o prazo.',
+      'Enter ou + recoloca o entregador no começo, zera as entregas e inicia o prazo.',
       [largada, ...rotaPorCima, largada],
       val('correndo', 'equals', true),
       [

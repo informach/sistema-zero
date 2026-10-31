@@ -9,6 +9,7 @@ import type {
   DesafioNoBanco,
   DesafioPublicado,
   PublicacaoGuardada,
+  PublicacaoParaAnalise,
   RepositorioDeDesafios,
   RepositorioDoJogadorNosDesafios,
   ResultadoDaEscrita,
@@ -18,7 +19,7 @@ import type {
 /** Repositório de desafios em memória com as mesmas regras do Drizzle (revisão, slug, quadro). */
 export class DesafiosEmMemoria implements RepositorioDeDesafios {
   readonly linhas = new Map<string, DesafioNoBanco>()
-  readonly publicacoes = new Map<string, { revisao: number; blocosExigidos: string[] }[]>()
+  readonly publicacoes = new Map<string, ({ revisao: number } & PublicacaoParaAnalise)[]>()
   readonly snapshots = new Map<string, { conteudo: unknown; metadados: MetadadosDoDesafio }>()
 
   async listar(filtro: Parameters<RepositorioDeDesafios['listar']>[0]) {
@@ -37,6 +38,11 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
   async ler(id: string) {
     const d = this.linhas.get(id)
     return d ? structuredClone(d) : null
+  }
+
+  async lerPublicacaoParaAnalise(id: string, revisao: number) {
+    const publicacao = this.publicacoes.get(id)?.find((p) => p.revisao === revisao)
+    return publicacao ? structuredClone(publicacao) : null
   }
 
   async criar(e: Parameters<RepositorioDeDesafios['criar']>[0]): Promise<ResultadoDaEscrita> {
@@ -94,7 +100,14 @@ export class DesafiosEmMemoria implements RepositorioDeDesafios {
     if (conflito) return { ok: false, motivo: conflito }
     const lista = this.publicacoes.get(e.id) ?? []
     if (!lista.some((p) => p.revisao === e.revisaoBase))
-      lista.push({ revisao: e.revisaoBase, blocosExigidos: [...e.publicacao.blocosExigidos] })
+      lista.push(
+        structuredClone({
+          revisao: e.revisaoBase,
+          blocosExigidos: e.publicacao.blocosExigidos,
+          conteudo: e.publicacao.conteudo,
+          metadados: d.metadados,
+        }),
+      )
     this.publicacoes.set(e.id, lista)
     this.snapshots.set(
       e.id,

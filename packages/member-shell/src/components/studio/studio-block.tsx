@@ -39,6 +39,8 @@ import { type ApiError, apiGet, apiSend } from '../../lib/api'
 import { cn } from '../../lib/cn'
 import { dataUrlBase64ToBlob } from '../../lib/data-url'
 import { useReportActivityExpanded } from '../../lib/lesson-activity-expansion'
+import { loadLessonArt } from '../../lib/lesson-art-load'
+import { applyLessonArt } from '../../lib/lesson-art-slots'
 import type { LessonDraftConflictOutcome, LessonDraftRemote } from '../../lib/lesson-draft-cloud'
 import { requestPersistentStorage } from '../../lib/persistent-storage'
 import {
@@ -58,7 +60,12 @@ import {
 } from '../../lib/studio-lesson-seed'
 import { lessonStudioBackupProjectId, lessonStudioProjectId } from '../../lib/studio-project-id'
 import { isInitialTemplateProject } from '../../lib/studio-template'
-import type { StudioBlock, StudioStateView, StudioSubmissionResultView } from '../../lib/types'
+import type {
+  ArtSlotsView,
+  StudioBlock,
+  StudioStateView,
+  StudioSubmissionResultView,
+} from '../../lib/types'
 import { useLessonCopy } from '../lesson-copy-context'
 import {
   LessonDraftStatus,
@@ -382,12 +389,16 @@ function LessonStudioBlockView({
     initialProject: content.initialProject,
     chain: content.chain,
     submitted: studioState?.submitted ?? false,
+    artSlots: content.artSlots?.length ?? 0,
   })
   sementeRef.current = {
     initialProject: content.initialProject,
     chain: content.chain,
     submitted: studioState?.submitted ?? false,
+    artSlots: content.artSlots?.length ?? 0,
   }
+  // O desenho de uma vaga de arte não chegou nesta abertura (o jogo abriu sem ele).
+  const [artNote, setArtNote] = useState(false)
   const [seed, setSeed] = useState<Project | null>(null)
   const lessonRuntime = useLessonRuntime({
     project: seed,
@@ -616,6 +627,20 @@ function LessonStudioBlockView({
         )
         return result?.project ? { ...(result.project as Project), id: projectId } : null
       }
+      // Os desenhos das vagas de arte (o Pinta da aula) entram nos materiais a cada abertura,
+      // por cima da versão escolhida: redesenhar e reenviar chega aqui na próxima vez. Só para
+      // quem é aluno (`viewerId`): a prévia e o ensaio do Admin não têm desenho de criança. A
+      // leitura começa JÁ, junto com a escolha da versão (review de 29/10/2026), e fica de fora
+      // sem internet: o desenho da abertura anterior já está no projeto guardado.
+      const artSlotsNow = sementeRef.current.artSlots
+      const artPromise =
+        artSlotsNow && lessonId && player?.viewerId && !resumeOffline
+          ? loadLessonArt(() =>
+              apiGet<ArtSlotsView>(
+                `/api/members/lessons/${encodeURIComponent(lessonId)}/blocks/${encodeURIComponent(blockId)}/art-slots`,
+              ),
+            )
+          : null
       let enqueuePrepared: (() => void) | undefined
       // A versão da CONTA entra antes de o editor montar (uma vez por rascunho): depois disto a
       // ordem de sempre, com o local primeiro, já abre a versão mais nova.
@@ -670,7 +695,7 @@ function LessonStudioBlockView({
         }
       }
       const semente = sementeRef.current
-      const project = await resolveStudioLessonSeed({
+      let project = await resolveStudioLessonSeed({
         local: async () => {
           const saved = await mod.createLocalPersistenceAdapter().load(projectId)
           if (resumeOffline && !saved)
@@ -684,6 +709,13 @@ function LessonStudioBlockView({
         initial: { ...(semente.initialProject as Project), id: projectId },
       })
       if (!active) return
+      if (artPromise) {
+        const art = await artPromise
+        if (!active) return
+        let tooBig = false
+        project = applyLessonArt(project, art.slots, { onTooBig: () => (tooBig = true) })
+        setArtNote(art.failed || tooBig)
+      }
       if (admission && !resumeOffline)
         await confirmStudioLessonContext({
           context: admission,
@@ -1245,6 +1277,11 @@ function LessonStudioBlockView({
         subscribeProjectChanges={subscribeProjectChanges}
       />
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
+      {artNote ? (
+        <p role="status" className="text-sm text-muted-foreground">
+          {estudio.desenhoNaoVeio}
+        </p>
+      ) : null}
 
       {submitted ? (
         <div className="space-y-1">

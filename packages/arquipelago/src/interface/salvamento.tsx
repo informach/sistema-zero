@@ -51,16 +51,20 @@ export function SalvamentoDoJogo({ fila }: { fila: FilaDeSalvamento }) {
       <div>
         <div className="arq-zappy" aria-hidden="true" />
         <h1 id="arq-salvamento-titulo">
-          {situacao === 'conflito'
-            ? 'Seu jogo mudou em outro aparelho'
-            : 'Vamos proteger seu progresso'}
+          {situacao === 'confirmando'
+            ? 'Vamos confirmar seu pedido'
+            : situacao === 'conflito'
+              ? 'Seu jogo mudou em outro aparelho'
+              : 'Vamos proteger seu progresso'}
         </h1>
         <p>
-          {situacao === 'conflito'
-            ? 'As duas versões têm mudanças diferentes. Escolha qual quer continuar. A outra versão será substituída. Você pode baixar uma cópia deste aparelho antes de escolher.'
-            : situacao === 'recusado'
-              ? 'O serviço não aceitou o salvamento. Seu progresso está guardado neste aparelho. Tente novamente ou baixe uma cópia antes de voltar para a plataforma.'
-              : 'Não conseguimos guardar o jogo neste aparelho. Pausamos para evitar perder mudanças. Tente novamente ou baixe uma cópia antes de sair.'}
+          {situacao === 'confirmando'
+            ? 'Seu pedido está guardado. Vamos conferir o resultado sem repetir a entrega nem a cobrança. Você pode tentar novamente ou voltar depois.'
+            : situacao === 'conflito'
+              ? 'As duas versões têm mudanças diferentes. Escolha qual quer continuar. A outra versão será substituída. Você pode baixar uma cópia deste aparelho antes de escolher.'
+              : situacao === 'recusado'
+                ? 'O serviço não aceitou o salvamento. Seu progresso está guardado neste aparelho. Tente novamente ou baixe uma cópia antes de voltar para a plataforma.'
+                : 'Não conseguimos guardar o jogo neste aparelho. Pausamos para evitar perder mudanças. Tente novamente ou baixe uma cópia antes de sair.'}
         </p>
         <div style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           {situacao === 'conflito' ? (
@@ -87,7 +91,11 @@ export function SalvamentoDoJogo({ fila }: { fila: FilaDeSalvamento }) {
               type="button"
               className="arq-botao"
               disabled={ocupado}
-              onClick={() => void executar(() => fila.salvarAgora())}
+              onClick={() =>
+                void executar(() =>
+                  situacao === 'confirmando' ? fila.retomarOperacoes() : fila.salvarAgora(),
+                )
+              }
             >
               Tentar novamente
             </button>

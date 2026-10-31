@@ -142,6 +142,40 @@ export const ilhaMissing: SectionProjectCheck = {
     expect: equals('ganhou', false),
   },
 }
+/**
+ * A luz acende uma vez só: com a chave, acender o farol, sair dele pelo cais e voltar. O
+ * encontro só conta quando começa, por isso a saída e a volta. Sem a guarda (Se não ganhou), a
+ * volta pede "acender" de novo e a luz recomeça; com ela, o laço já trocou para "aceso" e ali
+ * fica. A espera cobre o acender (1,25 s) mesmo com os quadros lentos de um executor sem placa
+ * de vídeo, e a volta é conferida antes de um acender recomeçado terminar. As setas são por
+ * tempo, mas a saída para no cais e a volta continua encostando no farol, qualquer que seja a
+ * velocidade. Os prazos das idas medem cerca de 1,3 vez as idas medidas (3,8 s e 5,2 s).
+ */
+export const ilhaOnce: SectionProjectCheck = {
+  id: 'uma-vez-em-jogo',
+  label: 'Com a chave, acenda o farol, saia dele pelo cais e volte: a luz continua acesa.',
+  rule: {
+    type: 'behavior',
+    steps: [
+      approach('chave', undefined, 4900),
+      approach('farol', undefined, 6700),
+      { action: 'wait', ms: 1600 },
+      { action: 'press', key: 'ArrowLeft', holdMs: 600 },
+      { action: 'press', key: 'ArrowRight', holdMs: 700 },
+      { action: 'wait', ms: 100 },
+    ],
+    checkpoints: [
+      { afterStep: 1, expect: equals('temChave', true) },
+      { afterStep: 2, expect: equals('ganhou', true) },
+      { afterStep: 2, expect: lit(true) },
+    ],
+    expect: {
+      target: { kind: 'value', path: 'farol.userData.sz.animWant' },
+      compare: 'contains',
+      value: 'aceso',
+    },
+  },
+}
 export const ilhaWin: SectionProjectCheck = {
   id: 'vitoria-em-jogo',
   label: 'Recolha a chave, acenda o farol e recomece uma partida.',

@@ -11,6 +11,12 @@ Gera dois arquivos em `src/assets/ilhas/`:
   `cranio-fossil`, cada um com a base em y = 0.
 """
 from lib_ilhas_b import *
+import lib_cais
+
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): o deque sai do −x, atrás do vulcão,
+# entre as pedras do pé dele e as samambaias. A beira do tampo (x −12,4) e o degrau (0,4 depois)
+# foram medidos no `col-terreno`; a ponta fica 3,3 além do barranco (x −15,0).
+PORTO = dict(terra=(-12.4, 0.0), rumo=180, degrau=0.4, comprimento=5.9, lado=-1)
 
 VULCAO = dict(x=-4.2, z=-2.6, r=5.6, h=7.2)
 
@@ -348,7 +354,13 @@ def ilha():
         extras=[('observatorio', 3.2, -5.3), ('varanda', 3.2, -7.6, TOPO + 2.8), ('escavacao', 4.4, 6.8, TOPO + 0.06),
                 ('ninho-1', -7.6, 6.6), ('ninho-2', 8.6, -6.4), ('ninho-3', -1.4, 9.8),
                 ('cratera', VULCAO['x'], VULCAO['z'], TOPO - 0.3 + VULCAO['h'] - 0.4), ('pe-do-vulcao', 2.4, -1.9)])
-    exportar('vale-dos-dinos', {'chao': chao, 'vulcao': pedras, 'lava': lava, 'cenario': cen}, ancoras, colisores=col)
+    nos = {'chao': chao, 'vulcao': pedras, 'lava': lava, 'cenario': cen}
+    porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
+    ancoras += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('vale-dos-dinos', nos, ancoras, colisores=col, porto=dados_porto)
 
 
 def props():

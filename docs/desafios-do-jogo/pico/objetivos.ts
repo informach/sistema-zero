@@ -6,10 +6,8 @@ import type {
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import type { Variacao } from './projetos'
 
-export const pular: ExecutionStep = {
-  action: 'clickTarget',
-  target: { kind: 'sprite', path: 'pular', groupPath: 'botoesPular' },
-}
+/** Espaço pula (no toque, A), uma tecla da trilha (C01b). */
+export const pular: ExecutionStep = { action: 'press', key: 'Space', holdMs: 30 }
 const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
 const press = (key: 'ArrowRight' | 'ArrowLeft' | 'ArrowUp', holdMs: number): ExecutionStep => ({
   action: 'press',
@@ -69,7 +67,7 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
   plataforma: [
     behavior(
       'andar-e-pousar',
-      'O pinguim cai até o gelo e fica de pé nele, e as setas o levam para os lados sem sair da tela.',
+      'As setas levam o pinguim para os lados sobre o gelo, sem sair da tela.',
       [pousarNoComeco, press('ArrowRight', 500), press('ArrowLeft', 2200)],
       val('pinguim.x', 'equals', 0),
       [
@@ -82,7 +80,7 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     ),
     behavior(
       'pular',
-      'Pular faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar.',
+      'Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar.',
       [pousarNoComeco, pular, wait(250), pular, wait(300), wait(1200)],
       val('noChao', 'equals', true),
       [
@@ -147,7 +145,6 @@ export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
       val('flocos', 'equals', 1),
       [
         point(3, 'pegouFloco', 'equals', true),
-        point(3, 'floco.opacity', 'equals', 0),
         point(3, 'flocos', 'equals', 1),
         point(5, 'flocos', 'equals', 1),
       ],

@@ -1,0 +1,15 @@
+{
+  "publico": "kids",
+  "celular": false,
+  "insumos": true,
+  "quantidade": 3,
+  "saldo": 74,
+  "debitos": 1,
+  "limites": {
+    "largura": 680,
+    "conteudo": 680,
+    "direita": 980,
+    "tela": 1280
+  },
+  "erros": []
+}

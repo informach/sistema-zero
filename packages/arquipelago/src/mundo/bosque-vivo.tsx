@@ -28,9 +28,11 @@ import { CIPO, comprimentoDaPegada, criarBalanco } from '../sistemas/cipo'
 import { CORDAS, criarPontos, passoDasCordas } from '../sistemas/cordas'
 import { CORPO } from '../sistemas/corpo'
 import { PERCURSO_DAS_COPAS, type PontosDoPercurso } from '../sistemas/percurso'
+import { segredoObrigatorio } from '../sistemas/segredos'
 import { DURACAO_DO_DIA_MS, PARTE_CLARA } from '../sistemas/tempo-do-dia'
 import { forcaPorHora } from '../sistemas/vento'
 import { BichosDoBosque } from './bichos-do-bosque'
+import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import {
   type AncorasDoPercurso,
   CIPOS_DO_BOSQUE,
@@ -44,6 +46,7 @@ import {
   percursoNoMundo,
   TOPO_DO_BOSQUE,
   TRONCO_DOS_CIPOS,
+  troncoDoNo,
   troncoNoMundo,
 } from './bosque'
 import { CabanaDoBosque } from './cabana-do-bosque'
@@ -65,6 +68,7 @@ import { giroDaIlha, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
 import { ObjetosReativos } from './objetos-reativos'
 import { Ondinhas } from './ondinhas'
+import { SegredoNoAlto } from './segredos-das-ilhas'
 import { TroncoNoLago } from './tronco-no-lago'
 import { ventoAgora } from './vegetacao-ao-vento'
 
@@ -87,6 +91,9 @@ const LARGURA_DA_ESCADA = 0.6
 /** A largura da pista do escorregador (a tábua de 1 m entre as laterais, no `bosque.py`). */
 const LARGURA_DA_PISTA = 1
 
+/** O segredo desta ilha (N12): o baú no alto do vento. */
+const SEGREDO_BOSQUE = segredoObrigatorio('bosque')
+
 export function BosqueVivo({
   ilha,
   centro,
@@ -105,6 +112,10 @@ export function BosqueVivo({
   const comeco = useMemo(() => Date.parse(loja.getState().salvamento.criadoEm), [loja])
   const giro = giroDaIlha(ilha)
   const meio = useMemo(() => ({ x: centro.x, y: 0, z: centro.z }), [centro.x, centro.z])
+  const lugaresDosLumis = useMemo(
+    () => ancorasDosLumis(preparada.modelo, meio, giro),
+    [preparada, meio, giro],
+  )
 
   // Os nós dos cipós (o pivô é a posição do nó: ele fica direto na raiz do modelo).
   const cipos = useMemo(() => {
@@ -190,9 +201,9 @@ export function BosqueVivo({
   const tronco = useMemo<TroncoVivo>(
     () => ({
       id: `${ilha.id}:tronco-dos-cipos`,
-      tronco: troncoNoMundo(TRONCO_DOS_CIPOS, meio, giro),
+      tronco: troncoNoMundo(troncoDoNo(preparada.modelo) ?? TRONCO_DOS_CIPOS, meio, giro),
     }),
-    [meio, giro, ilha.id],
+    [preparada, meio, giro, ilha.id],
   )
   const troncos = useMemo(() => [tronco.tronco], [tronco])
 
@@ -388,6 +399,8 @@ export function BosqueVivo({
 
   return (
     <group ref={pecas} visible={false}>
+      <BorroesDaIlha ilha="bosque" ancoras={lugaresDosLumis} meio={meio} />
+      <SegredoNoAlto segredo={SEGREDO_BOSQUE} meio={meio} giro={giro} />
       <ComReserva reserva={null}>
         <ObjetosReativos pecas={pecasSoltas} galho={galhoSeco} />
       </ComReserva>
@@ -498,8 +511,8 @@ function Placa({ x, y, z, giro }: { x: number; y: number; z: number; giro: numbe
 }
 
 /**
- * A trepadeira em espiral no tronco de escalar: mostra que aquele tronco dá para subir (a marca
- * fica no código até o Blender ganhar o nó `escalada-*`).
+ * A trepadeira em espiral no tronco de escalar (lido do nó `escalada-cil-tronco-dos-cipos`): mostra
+ * que aquele tronco dá para subir.
  */
 function Trepadeira({ tronco, preparada }: { tronco: TroncoVivo; preparada: IlhaPreparada }) {
   const geometria = useMemo(() => {

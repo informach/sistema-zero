@@ -3,16 +3,22 @@ import {
   AMIZADE_MAXIMA,
   abrirRotinaNaPlataforma,
   BICHOS_DO_BOSQUE,
+  type ClubeDoJogo,
   CODIGO_SALVAMENTO_DESATUALIZADO,
   ComandoSessaoTempoSchema,
   type ConflitoDeSalvamento,
+  chavesUsadasNaObra,
   criarSalvamentoInicial,
   diaDeSaoPaulo,
+  type Fantasma,
   GravarSalvamentoSchema,
+  ilhaAberta,
+  ilhasDoAnel,
   LIMITE_DIARIO_PADRAO_MINUTOS,
   type LumiId,
   type MoldeDaRotina,
   MoldeDeObjetoSchema,
+  MoldeDoVestuarioSchema,
   migrarSalvamento,
   type PedidoDeFerramenta,
   type Plataforma,
@@ -22,25 +28,38 @@ import {
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
   type SalvamentoGuardado,
+  type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
+import { adotar } from '../sistemas/bichos'
+import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
 import { lerAparenciaFalsa } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
 import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
+import { CHAVE_DOS_FANTASMAS_FALSOS, criarFantasmasFalsos } from './fantasmas-falsos'
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
+import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
+import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
+import { criarProfissoesFalsas } from './profissoes-falsas'
+import { criarVisitasAdultasFalsas } from './visitas-adultas-falsas'
 
 /**
  * Uma plataforma de mentira para rodar o jogo sozinho (playground e testes). Cumpre o mesmo
  * contrato da de verdade, com o serviço do jogo em memória (e, se der, no localStorage).
  */
 export interface OpcoesDaPlataformaFalsa {
+  visitaAdulta?: 'ligado' | 'revogar-ao-conferir'
+  fantasma?: Fantasma
+  somenteLeitura?: boolean
   /** O playground hospeda o editor fora do jogo; a falsa mantém as mesmas recusas da ponte. */
   editarRotina?: (molde: MoldeDaRotina) => Promise<ResultadoDaFerramentaRotina | null>
   rotina?: 'editor' | 'cancelado' | 'indisponivel'
   publico?: PublicoJogo
   posicao?: number
   limiteDiarioMinutos?: number | null
+  /** Segundos já usados hoje (o playground prova o fim do tempo sem esperar o limite inteiro). */
+  usadoHojeSegundos?: number
   liberado?: boolean
   quarto?: QuartoDoJogo
   persistir?: boolean
@@ -53,6 +72,8 @@ export interface OpcoesDaPlataformaFalsa {
   desafios?: 'ligados' | 'desligados'
   /** O desafio do dia: `pronto` (padrão), `feito` ("Amanhã tem outro") ou `nenhum`. */
   dia?: DiaDoPlayground
+  /** Os quadros do Bosque todos feitos (`?quadros=feitos`). */
+  quadrosFeitos?: boolean
   /**
    * O Pinta e o Molda no molde de um objeto: `pronto` (padrão, a ferramenta de mentira guarda na
    * hora) ou `sem-acesso` (a página responde que a ferramenta não está liberada).
@@ -62,14 +83,27 @@ export interface OpcoesDaPlataformaFalsa {
   editarObjeto?: (pedido: PedidoDeFerramenta) => Promise<boolean>
   /** `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`). */
   obra?: 'exemplo'
+  /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
+  jogos?: 'exemplo'
+  /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
+  convidados?: boolean
   /** Prepara os quatro achados, preservando a marca de um presente já entregue. */
   bichos?: 'achados'
+  /** Um gato já adotado, chamado Mingau, como companhia (S01). */
+  adotado?: boolean
   /** A amizade com o Bento (de 0 a 500): com 100 ele já lembrou o bolo de fubá (fase2-04). */
   bento?: number
   /** Põe um par de patins na mochila (o prêmio da entrega pelos telhados, fase2-05). */
   patins?: boolean
+  /** Põe o planador na mochila (o presente do Floco, fase3-09; os segredos, N12). */
+  planador?: boolean
   /** Põe a lanterna na mochila (o presente do Bento, fase2-06). */
   lanterna?: boolean
+  /**
+   * As pontes das ilhas abertas já vistas (o playground começa assim, para a cena da subida de
+   * posto não cobrir as conferências; `?chegada=1` mostra a cena).
+   */
+  pontesVistas?: boolean
   /** A energia de começo (de 0 a 100), para conferir o descanso (fase2-13). */
   energia?: number
   /** Os Lumis já presos (`{ quindim: 2 }`), como se a lanterna já tivesse prendido (fase2-06). */
@@ -80,6 +114,28 @@ export interface OpcoesDaPlataformaFalsa {
   galeria?: OpcoesDaGaleriaFalsa
   /** Os irmãos (recordes e visitas, fase3-12): `sozinha` (padrão), `irmaos`, `desligada` ou `fora-do-ar`. */
   familia?: FamiliaDoPlayground
+  /**
+   * Fotos no Clube (N08b): sem a opção, a plataforma não monta o Clube (como o adulto). Com ela,
+   * a situação que o Clube responde; `falha-no-envio` diz `ligado` e falha ao mandar.
+   */
+  clube?: ClubeDoPlayground
+}
+
+export type ClubeDoPlayground = SituacaoDoClube | 'falha-no-envio'
+
+/** O Clube de mentira: guarda as fotos mandadas para a conferência. */
+function clubeFalso(clube: ClubeDoPlayground): ClubeDoJogo & { mandadas: Blob[] } {
+  const mandadas: Blob[] = []
+  return {
+    mandadas,
+    situacao: async () => (clube === 'falha-no-envio' ? 'ligado' : clube),
+    async mandarFoto(foto) {
+      if (clube === 'falha-no-envio') return 'falhou'
+      if (clube !== 'ligado') return clube === 'fora-do-ar' ? 'falhou' : clube
+      mandadas.push(foto)
+      return 'em-moderacao'
+    },
+  }
 }
 
 export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
@@ -102,6 +158,22 @@ export const QUARTO_DE_EXEMPLO: QuartoDoJogo = {
 }
 
 const CHAVE = 'arquipelago-playground'
+/** As compras da galeria de mentira, à parte do salvamento (o `?novo=1` do playground apaga). */
+export const CHAVE_DA_GALERIA = 'arquipelago-playground:galeria'
+export const CHAVE_DAS_PROFISSOES = 'arquipelago-playground:profissoes'
+
+/** Os jogos de `jogos: 'exemplo'`, só do playground. */
+export const MINIJOGO_DE_EXEMPLO = {
+  desafioId: '5b3f0a52-6d1e-4c3a-9a51-0e7f4c2b9d10',
+  titulo: 'Corrida dos bichos da Ana',
+  aprovadoEm: '2026-10-29T15:00:00.000Z',
+  atualizadoEm: '2026-10-29T15:00:00.000Z',
+  capa: null,
+} as const
+export const JOGO_DO_MURAL_DE_EXEMPLO = {
+  playId: '9d2c7e41-3a8b-4f6d-b1c5-2e4a6f8d0b13',
+  titulo: 'Labirinto das conchas',
+} as const
 
 export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataforma & {
   guardado(): SalvamentoGuardado
@@ -109,12 +181,60 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const agora = o.agora ?? (() => new Date())
   const publico = o.publico ?? 'kids'
   const limite = publico === 'kids' ? (o.limiteDiarioMinutos ?? LIMITE_DIARIO_PADRAO_MINUTOS) : null
-  const desafios = criarDesafiosFalsos(o.posicao ?? 2, { dia: o.dia, agora })
-  const galeria = criarGaleriaFalsa(o.galeria)
+  const desafios = criarDesafiosFalsos(o.posicao ?? 2, {
+    dia: o.dia,
+    agora,
+    quadrosFeitos: o.quadrosFeitos,
+  })
+  const galeria = criarGaleriaFalsa(
+    o.galeria,
+    o.persistir && typeof localStorage !== 'undefined'
+      ? {
+          ler: () => localStorage.getItem(CHAVE_DA_GALERIA),
+          gravar: (v) => localStorage.setItem(CHAVE_DA_GALERIA, v),
+        }
+      : undefined,
+  )
   const familia = criarFamiliaFalsa(o.familia)
+  const visitasAdultas = criarVisitasAdultasFalsas({
+    publico,
+    somenteLeitura: o.somenteLeitura === true,
+    salvo: () => guardado,
+    exemplo: o.visitaAdulta,
+    casa: { versao: 1, obra: obraDeExemplo(), horta: [], completos: [], quarto: null },
+  })
+  const fantasmas = criarFantasmasFalsos({
+    salvo: () => guardado,
+    somenteLeitura: () => o.somenteLeitura === true,
+    familia: (c, m) => familia.buscar(c, m),
+    exemplo: o.fantasma,
+    persistencia:
+      o.persistir && typeof localStorage !== 'undefined'
+        ? {
+            ler: () => localStorage.getItem(CHAVE_DOS_FANTASMAS_FALSOS),
+            gravar: (dado) => localStorage.setItem(CHAVE_DOS_FANTASMAS_FALSOS, dado),
+          }
+        : undefined,
+  })
+  const profissoes = criarProfissoesFalsas({
+    agora,
+    posicao: o.posicao ?? 2,
+    somenteLeitura: o.somenteLeitura ?? false,
+    creditar: galeria.creditar,
+    guarda:
+      o.persistir && typeof localStorage !== 'undefined'
+        ? {
+            ler: () => localStorage.getItem(`${CHAVE_DAS_PROFISSOES}:${publico}`),
+            gravar: (valor) => localStorage.setItem(`${CHAVE_DAS_PROFISSOES}:${publico}`, valor),
+          }
+        : undefined,
+  })
+  let registrosDeInsumos: RegistroDeInsumosFalso[] = []
+  let registrosDePedidos: RegistroDePedidoFalso[] = []
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
+  if (o.usadoHojeSegundos) usado.set(diaDeSaoPaulo(agora()), Math.max(0, o.usadoHojeSegundos))
   const eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
   type Sessao = {
     id: string
@@ -174,8 +294,14 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   } else if (o.persistir && typeof localStorage !== 'undefined') {
     try {
       const bruto = localStorage.getItem(CHAVE)
-      if (bruto) guardado = JSON.parse(bruto) as SalvamentoGuardado
+      if (bruto) {
+        const { comprasDeInsumos: registros, pedidosRemunerados, ...salvo } = JSON.parse(bruto)
+        guardado = salvo as SalvamentoGuardado
+        registrosDeInsumos = registros ?? []
+        registrosDePedidos = pedidosRemunerados ?? []
+      }
     } catch {}
+    galeria.lembrarCompras(migrarSalvamento(guardado.salvamento))
   }
   if (o.obra === 'exemplo') {
     const atual =
@@ -187,9 +313,33 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ...atual,
         casa: { portaNova: true },
         construcao: { ...atual.construcao, casa: obraDeExemplo() },
+        // A obra de exemplo usa acabamentos dos cômodos: as chaves vêm com ela (N11).
+        chaves: atual.chaves | chavesUsadasNaObra(obraDeExemplo()),
         projetos: { ...PROJETOS_DE_EXEMPLO, ...atual.projetos },
       },
       atualizadoEm: agora().toISOString(),
+    }
+  }
+  if (o.convidados) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const moradores = { ...atual.moradores }
+    for (const quem of MORADORES_CONVIDAVEIS)
+      moradores[quem] = { ...moradores[quem], conversaEm: diaDeSaoPaulo(agora()) }
+    quarto = {
+      theme: 'padrao',
+      pet: null,
+      placedItems: [
+        { itemId: 'planta', x: 0, y: 0 },
+        { itemId: 'cacto', x: 3, y: 0 },
+        { itemId: 'vela', x: 5, y: 0 },
+        { itemId: 'luminaria', x: 7, y: 0 },
+        { itemId: 'vaso-flores', x: 9, y: 0 },
+      ],
+    }
+    guardado = {
+      revisao: guardado.revisao + 1,
+      atualizadoEm: agora().toISOString(),
+      salvamento: { ...atual, casa: { portaNova: true }, moradores },
     }
   }
   if (o.bichos === 'achados') {
@@ -199,6 +349,16 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: { ...atual, bichos: { ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] } },
       atualizadoEm: agora().toISOString(),
     }
+  }
+  if (o.adotado) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const bichos = adotar({ ...atual.bichos, achados: [...BICHOS_DO_BOSQUE] }, 'gato', 'Mingau')
+    if (bichos && !atual.bichos.adotado)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, bichos, companhia: 'adotado' },
+        atualizadoEm: agora().toISOString(),
+      }
   }
   if (o.bento !== undefined && Number.isFinite(o.bento)) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
@@ -221,6 +381,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         atualizadoEm: agora().toISOString(),
       }
   }
+  if (o.planador) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    if (!atual.inventario.planador)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, inventario: { ...atual.inventario, planador: 1 } },
+        atualizadoEm: agora().toISOString(),
+      }
+  }
   if (o.energia !== undefined) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
     const energia = Math.max(0, Math.min(100, o.energia))
@@ -229,6 +398,19 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       salvamento: { ...atual, necessidades: { ...atual.necessidades, energia } },
       atualizadoEm: agora().toISOString(),
     }
+  }
+  if (o.pontesVistas) {
+    const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
+    const abertas = ilhasDoAnel()
+      .filter((i) => ilhaAberta(i.id, o.posicao ?? 1))
+      .map((i) => i.id)
+    const faltam = abertas.filter((id) => !atual.pontesVistas.includes(id))
+    if (faltam.length > 0)
+      guardado = {
+        revisao: guardado.revisao + 1,
+        salvamento: { ...atual, pontesVistas: [...atual.pontesVistas, ...faltam] },
+        atualizadoEm: agora().toISOString(),
+      }
   }
   if (o.lanterna) {
     const atual = migrarSalvamento(guardado.salvamento) ?? criarSalvamentoInicial(agora())
@@ -250,11 +432,63 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   const persistir = () => {
     if (!o.persistir || typeof localStorage === 'undefined') return
     try {
-      localStorage.setItem(CHAVE, JSON.stringify(guardado))
+      localStorage.setItem(
+        CHAVE,
+        JSON.stringify({
+          ...guardado,
+          comprasDeInsumos: registrosDeInsumos,
+          pedidosRemunerados: registrosDePedidos,
+        }),
+      )
     } catch {}
   }
 
+  const insumos = criarInsumosFalsos({
+    somenteLeitura: o.somenteLeitura ?? false,
+    ler: () => guardado,
+    registros: registrosDeInsumos,
+    debitar: galeria.debitar,
+    agora,
+    gravar: (salvo, registros) => {
+      if (o.persistir && typeof localStorage !== 'undefined')
+        localStorage.setItem(
+          CHAVE,
+          JSON.stringify({
+            ...salvo,
+            comprasDeInsumos: registros,
+            pedidosRemunerados: registrosDePedidos,
+          }),
+        )
+      guardado = salvo
+      registrosDeInsumos = registros
+    },
+  })
+
+  const pedidos = criarPedidosFalsos({
+    somenteLeitura: o.somenteLeitura ?? false,
+    posicao: o.posicao ?? 2,
+    ler: () => guardado,
+    registros: registrosDePedidos,
+    compraPendente: insumos.pendente,
+    creditar: galeria.creditar,
+    agora,
+    gravar: (salvo, registros) => {
+      if (o.persistir && typeof localStorage !== 'undefined')
+        localStorage.setItem(
+          CHAVE,
+          JSON.stringify({
+            ...salvo,
+            comprasDeInsumos: registrosDeInsumos,
+            pedidosRemunerados: registros,
+          }),
+        )
+      guardado = salvo
+      registrosDePedidos = registros
+    },
+  })
+
   const acesso = (): Acesso => ({
+    somenteLeitura: o.somenteLeitura ?? false,
     liberado: o.liberado ?? true,
     motivo: (o.liberado ?? true) ? null : 'fora-da-lista',
     limiteDiarioMinutos: limite,
@@ -290,14 +524,28 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     },
     servico: {
       async buscar(caminho, opcoes) {
-        if (caminho === '/minijogos') return { status: 200, corpo: { minijogos: [] } }
+        const exemplo = o.jogos === 'exemplo'
+        if (caminho === '/mural')
+          return { status: 200, corpo: { jogos: exemplo ? [JOGO_DO_MURAL_DE_EXEMPLO] : [] } }
+        if (caminho === '/minijogos')
+          return { status: 200, corpo: { minijogos: exemplo ? [MINIJOGO_DE_EXEMPLO] : [] } }
         const metodo = opcoes?.metodo ?? 'GET'
+        const daVisitaAdulta = visitasAdultas.buscar(caminho, metodo, opcoes?.corpo)
+        if (daVisitaAdulta) return daVisitaAdulta
+        const doFantasma = fantasmas.buscar(caminho, metodo, opcoes?.corpo)
+        if (doFantasma) return doFantasma
+        const dosInsumos = insumos.buscar(caminho, metodo, opcoes?.corpo)
+        if (dosInsumos) return dosInsumos
+        const dosPedidos = pedidos.buscar(caminho, metodo, opcoes?.corpo)
+        if (dosPedidos) return dosPedidos
+        const daProfissao = profissoes.buscar(caminho, metodo, opcoes?.corpo)
+        if (daProfissao) return daProfissao
         const daGaleria = galeria.buscar(caminho, metodo, opcoes?.corpo)
         if (daGaleria) return daGaleria
         const daFamilia = familia.buscar(caminho, metodo)
         if (daFamilia) return daFamilia
         if (caminho.startsWith('/desafios')) {
-          if (o.desafios === 'desligados')
+          if (o.desafios === 'desligados' && caminho !== '/desafios/cores')
             return { status: 403, corpo: { error: { code: 'DESAFIOS_DESLIGADOS' } } }
           const r = desafios.buscar(caminho, metodo)
           if (r) return r
@@ -307,6 +555,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/acesso' && metodo === 'GET') return { status: 200, corpo: acesso() }
         if (caminho === '/salvamento' && metodo === 'GET') return { status: 200, corpo: guardado }
         if (caminho === '/salvamento' && metodo === 'PUT') {
+          if (insumos.pendente())
+            return { status: 423, corpo: { error: { code: 'COMPRA_PENDENTE' } } }
           const corpo = GravarSalvamentoSchema.safeParse(opcoes?.corpo)
           if (!corpo.success) return { status: 400, corpo: { code: 'VALIDATION_ERROR' } }
           if (!galeria.aceita(corpo.data.salvamento))
@@ -433,6 +683,15 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       },
     },
     abrirFerramenta: async (pedido) => {
+      if (pedido.ferramenta === 'avatar') {
+        if (o.somenteLeitura) return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+        if (
+          pedido.proposito !== 'vestir' ||
+          !MoldeDoVestuarioSchema.safeParse(pedido.molde).success
+        )
+          return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+        return { situacao: 'indisponivel', motivo: 'playground' }
+      }
       if (pedido.ferramenta === 'rotina-lumi') {
         if (o.rotina === 'indisponivel' || (!o.editarRotina && o.rotina !== 'cancelado'))
           return { situacao: 'indisponivel', motivo: 'playground' }
@@ -445,6 +704,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       }
       return (await desafios.abrir(pedido)) ?? (await abrirNoMolde(pedido))
     },
+    ...(o.clube ? { clube: clubeFalso(o.clube) } : {}),
     voltarParaPlataforma: () => {},
     relatarErro: (erro, contexto) => console.error(`[arquipelago] ${contexto}`, erro),
     guardado: () => guardado,

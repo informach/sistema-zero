@@ -55,7 +55,7 @@ describe('planificacaoDoMolde', () => {
   })
 
   test('molde sem faces não tem planificação', () => {
-    expect(planificacaoDoMolde(CATALOGO_DE_OBJETOS.forno.molde)).toBeNull()
+    expect(planificacaoDoMolde(CATALOGO_DE_OBJETOS.lareira.molde)).toBeNull()
   })
 
   test('frente sem lados nem topo: a frente sozinha, marcada', () => {

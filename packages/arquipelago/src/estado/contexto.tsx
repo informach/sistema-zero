@@ -1,15 +1,18 @@
-import type { Plataforma } from '@sistemazero/arquipelago-contracts'
+import type { IlhaId, Plataforma } from '@sistemazero/arquipelago-contracts'
 import { createContext, useContext } from 'react'
 import { useStore } from 'zustand'
 import type { Controle } from '../controles/controle'
 import type { RegistroDeInterativos } from '../mundo/interativos'
-import type { Travessia } from '../sistemas/barco'
+import type { VistaDaLuneta } from '../mundo/vista-da-luneta'
+import type { Voo } from '../sistemas/balao'
+import type { PortoId, RotaDoBarco, Travessia } from '../sistemas/barco'
 import type { Ponto } from '../sistemas/cipo'
 import type { Corda, CorpoQueEmpurra } from '../sistemas/cordas'
 import { RODA_DA_ILHA_CENTRAL, type RodaDeNado } from '../sistemas/correnteza'
 import type { Tronco } from '../sistemas/escalada'
 import type { criarGerenteTempo } from '../sistemas/gerente-tempo'
-import type { Corrida } from '../sistemas/percurso'
+import type { Corrida, IdDoPercurso } from '../sistemas/percurso'
+import type { FilaDeSalvamento } from '../sistemas/salvar'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
 /** Posição do personagem, lida a cada quadro pela câmera e pelo Zappy (fora do React). */
@@ -32,6 +35,12 @@ export interface Rastro {
 export interface Ambiente {
   luz: number
   noite: boolean
+  /**
+   * O clima da sua ilha (fase4-08), escrito pelo `ClimaDaIlha` perto da ilha central: quanto da
+   * luz do sol fica (1 = toda) e quanto o céu vai para o cinza do tempo fechado (0 = nada).
+   */
+  luzDoClima?: number
+  cinzaDoClima?: number
 }
 
 /** Pedidos de fora para o personagem (o cochilo leva de volta para casa). */
@@ -138,6 +147,8 @@ export interface BordaViva {
 }
 
 import type { VolumeDeMergulho } from '../sistemas/mergulho'
+import type { BeiraDaMontaria, MontariaViva } from '../sistemas/montaria'
+import type { CorrenteDeAr } from '../sistemas/planador'
 
 export type ModoDoCorpo =
   | 'chao'
@@ -149,7 +160,10 @@ export type ModoDoCorpo =
   | 'borda'
   | 'descanso'
   | 'barco'
+  | 'balao'
   | 'mergulho'
+  | 'planar'
+  | 'montar'
 
 /**
  * Onde descansar (fase2-13, `sistemas/descanso.ts`): sentado num banco ou deitado na cama. O corpo
@@ -174,6 +188,11 @@ export interface LugarDeDescanso {
 export interface Movimento {
   mergulhos: VolumeDeMergulho[]
   barco: Travessia | null
+  caisProntos: Set<IlhaId>
+  rotasDoBarco: readonly RotaDoBarco[]
+  embarcarPara: ((origem: PortoId, destino: PortoId) => boolean) | null
+  /** O balão das Nuvens (fase4-09), registrado pelo desenho dele enquanto a ilha está ativa. */
+  balao: Voo | null
   cipos: CipoVivo[]
   troncos: TroncoVivo[]
   aguas: AguaRasa[]
@@ -186,14 +205,22 @@ export interface Movimento {
    * do anel aberta, registrada pelo `Anel`. Fora delas, a correnteza leva de volta.
    */
   rodasDeNado: RodaDeNado[]
+  /** As correntes de vento que sobem (`sistemas/planador.ts`), registradas pela ilha ativa. */
+  correntes: CorrenteDeAr[]
+  /** O dino de montaria do Vale (`sistemas/montaria.ts`), registrado pela ilha ativa. */
+  montaria: MontariaViva | null
+  /** Montada, onde o passo parou (a água, o limite do Vale): o Vale avisa uma vez. Do personagem. */
+  beira: BeiraDaMontaria
   /** Pedido de um interativo ("Pegar o cipó", "Escalar"): o personagem atende no quadro seguinte. */
   pedido:
     | { tipo: 'cipo' | 'tronco'; id: string }
     | { tipo: 'descanso'; lugar: LugarDeDescanso }
     | { tipo: 'levantar' }
     | { tipo: 'barco'; viagem: Travessia }
+    | { tipo: 'balao'; voo: Voo }
     | { tipo: 'mergulho'; volume: VolumeDeMergulho }
     | { tipo: 'escorregar'; escorregador: Escorregador }
+    | { tipo: 'montar'; montaria: MontariaViva }
     | null
   /** Escritos pelo personagem. */
   modo: ModoDoCorpo
@@ -208,13 +235,25 @@ export interface Movimento {
   corpoDesenhado: CorpoQueEmpurra | null
   /** A corrida do percurso em andamento (o cronômetro lê o tempo daqui). */
   corrida: Corrida | null
-  /** Pedido da tela para o percurso: correr de novo ou parar. */
-  pedidoDoPercurso: 'recomecar' | 'parar' | null
+  /**
+   * A vista pela luneta do mirante das Nuvens (fase4-07), escrita pelo mirante enquanto ela está
+   * aberta: a câmera usa no lugar da vista da luneta do píer. Os botões do visor escrevem o pedido.
+   */
+  mira: VistaDaLuneta | null
+  /**
+   * Pedido da tela para um percurso: correr de novo ou parar. Diz qual, porque as Nuvens têm dois
+   * na mesma ilha (os saltos e a corrida de balão, fase4-07).
+   */
+  pedidoDoPercurso: { acao: 'recomecar' | 'parar'; percurso: IdDoPercurso } | null
 }
 
 export function criarMovimento(): Movimento {
   return {
     barco: null,
+    caisProntos: new Set(),
+    rotasDoBarco: [],
+    embarcarPara: null,
+    balao: null,
     cipos: [],
     troncos: [],
     aguas: [],
@@ -224,17 +263,22 @@ export function criarMovimento(): Movimento {
     escorregadores: [],
     bordas: [],
     rodasDeNado: [RODA_DA_ILHA_CENTRAL],
+    correntes: [],
+    montaria: null,
+    beira: null,
     pedido: null,
     modo: 'chao',
     noChao: false,
     foco: { x: 0, y: 0, z: 0 },
     corpoDesenhado: null,
     corrida: null,
+    mira: null,
     pedidoDoPercurso: null,
   }
 }
 
 export interface ContextoDoJogo {
+  fila?: FilaDeSalvamento | null
   loja: LojaDoJogo
   plataforma: Plataforma
   gerenteTempo: ReturnType<typeof criarGerenteTempo> | null

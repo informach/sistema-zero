@@ -1,0 +1,66 @@
+[
+  {
+    "nome": "kids-computador",
+    "pratos": {
+      "moqueca-de-legumes": 1,
+      "acai-na-tigela": 1,
+      "mingau-de-milho": 1,
+      "canjica": 1,
+      "salada-colorida": 1
+    },
+    "largura": {
+      "conteudo": 560,
+      "caixa": 560
+    },
+    "reabriu": true,
+    "erros": []
+  },
+  {
+    "nome": "kids-celular",
+    "pratos": {
+      "moqueca-de-legumes": 1,
+      "acai-na-tigela": 1,
+      "mingau-de-milho": 1,
+      "canjica": 1,
+      "salada-colorida": 1
+    },
+    "largura": {
+      "conteudo": 350,
+      "caixa": 350
+    },
+    "reabriu": true,
+    "erros": []
+  },
+  {
+    "nome": "adulto-computador",
+    "pratos": {
+      "moqueca-de-legumes": 1,
+      "acai-na-tigela": 1,
+      "mingau-de-milho": 1,
+      "canjica": 1,
+      "salada-colorida": 1
+    },
+    "largura": {
+      "conteudo": 560,
+      "caixa": 560
+    },
+    "reabriu": true,
+    "erros": []
+  },
+  {
+    "nome": "adulto-celular",
+    "pratos": {
+      "moqueca-de-legumes": 1,
+      "acai-na-tigela": 1,
+      "mingau-de-milho": 1,
+      "canjica": 1,
+      "salada-colorida": 1
+    },
+    "largura": {
+      "conteudo": 350,
+      "caixa": 350
+    },
+    "reabriu": true,
+    "erros": []
+  }
+]

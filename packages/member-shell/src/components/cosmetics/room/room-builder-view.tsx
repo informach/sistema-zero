@@ -1,5 +1,6 @@
 'use client'
 
+import { aparenciaDoItem } from '@sistemazero/arquipelago-contracts'
 import {
   ArrowDownToLine,
   ArrowUpToLine,
@@ -273,7 +274,13 @@ export function RoomBuilderView(props: RoomBuilderViewProps) {
                   className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-(--kids-lime-tint) px-4 py-2.5"
                 >
                   <p className="font-semibold text-sm">
-                    Gostou? <span className="text-muted-foreground">({pendingBuy.label})</span>
+                    Esta peça pode ser sua.{' '}
+                    <span className="text-muted-foreground">({pendingBuy.label})</span>
+                    {aparenciaDoItem(pendingBuy.id) ? (
+                      <small className="block font-normal">
+                        A posse também vale no Arquipélago, quando você construir esse objeto.
+                      </small>
+                    ) : null}
                   </p>
                   <div className="flex items-center gap-2">
                     <button

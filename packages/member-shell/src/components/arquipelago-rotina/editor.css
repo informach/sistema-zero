@@ -185,7 +185,7 @@
     padding: 8px 12px;
     gap: 8px;
   }
-  .sz-lumi-editor header p {
+  .sz-lumi-editor header .sz-lumi-instrucao {
     display: none;
   }
   .sz-lumi-editor h1,

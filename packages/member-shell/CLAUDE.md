@@ -1,5 +1,90 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Visitas adultas do Arquipélago (L12, 30/10/2026)
+
+O host reconhece apenas `/visitas-adultas/convite`, `/abrir` e `/conferir`. O host Kids recusa
+os três antes da rede. Shims só no app community; nunca criar equivalentes no Kids.
+O BFF mantém no-store, corpo de até 1024 bytes e os métodos GET/POST/DELETE previstos.
+Não chama a lista de perfis Kids ou tenta descobrir o nome de quem compartilhou. O código
+segue no corpo autenticado, nunca em URL. A API é dona do consentimento e da projeção.
+
+## Trajeto familiar do Arquipélago (L10, 30/10/2026)
+
+O BFF repassa PUT de até 129 KB e GET dos percursos conhecidos com `private, no-store`.
+A leitura de irmão exige também a lista atual do Auth: perfil ausente é 404 e leitura
+indisponível é 502, sem pedir o artefato ao jogo. O serviço reconfirma conta e permissão.
+O host aceita apenas os caminhos de percurso conhecidos e bloqueia família no adulto.
+Os apps têm shims de leitura/escrita própria; só o Kids tem o shim da trajetória do irmão.
+Nenhuma regra de corrida ou armazenamento de amostras mora na plataforma.
+
+## Cores conquistadas do Arquipélago (A02, 30/10/2026)
+
+O host permite `/desafios/cores` nos dois públicos. `arquipelagoCoresConquistadas.GET` repassa
+para o gateway com `private, no-store`; os apps Kids e adulto expõem seus próprios route shims.
+Identidade vem da sessão, nunca de query/corpo fornecidos pelo jogo. Sem método de escrita.
+A porta genérica `servico.buscar` continua na mesma versão. Servidor ou host antigo pode recusar
+o caminho: o jogo preserva a última cor confirmada e usa conclusões disponíveis no catálogo.
+Testes: `arquipelago-host.test.ts` e `arquipelago-routes.test.ts`.
+
+## Avatar por cima do Arquipélago (L09, 30/10/2026)
+
+`avatar`/`vestir` aceita `MoldeDoVestuarioSchema` V1. O host confere o perfil pela rota de acesso,
+abre `ArquipelagoAvatarDialog` com o configurador existente e relê o avatar confirmado ao voltar.
+O mesmo resolver fica reservado até a leitura terminar; unmount cancela e invalida o retorno.
+O configurador recebe `onReturn` opcional. Sem ele, a navegação completa continua igual.
+Com ele, Voltar cancela a prévia e Salvar retorna após PUT e captura. Saída durante operações
+em voo é bloqueada. A compra é a mesma de antes, sem preço escolhido pelo jogo.
+
+`SeasonalAvatarChoices` usa somente peças do catálogo autenticado, com categoria compatível,
+e preço do serviço. As sugestões recolhem após escolher, para preservar a prévia. No adulto,
+ficam dentro do painel existente para manter as áreas da grade. Kids e adulto mantêm suas peles.
+Prova local e limitações: `docs/qa/2026-10-30-vestuario/README.md`.
+
+O allowlist `CAMINHOS_DO_JOGO` inclui os seis caminhos exatos de insumos, pedidos e profissões.
+Adicionar uma rota no BFF sem esta lista impede a chamada no jogo hospedado. Os testes do host
+cobrem ambos os públicos, corpo, AbortSignal e recusa de caminhos arbitrários.
+
+## Publicações do Mural no fliperama (L05, 29/10/2026)
+
+`arquipelagoJogosDoMural` repassa `GET /hub/my-playable-showcase`, valida `JogosDoMuralSchema`
+e responde `private, no-store`; `/api/arquipelago/mural` existe nos dois apps. Não recebe autor
+ou público do jogo. O Hub deriva ambos da identidade do gateway.
+O host aceita `estudio` / `jogo-do-mural` com UUID estrito e mantém a exclusão mútua das
+ferramentas. `ArquipelagoMuralPlayer` monta o `PublicPlayer` existente em diálogo, com a pele
+do público, devolução de foco e desmontagem ao sair. `embedded` só ajusta a altura ao diálogo;
+a página pública continua com `h-dvh`. A leitura do projeto é abortada ao fechar ou reiniciar.
+Não copiar fonte de publicação para o jogo: isso perderia a revogação e os runtimes Python/Pro.
+
+## O desenho da criança no jogo: vagas de arte (29/10/2026, etapa 5)
+
+Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. O bloco de Estúdio da
+aula com `content.artSlots` põe nos materiais do jogo o desenho que a criança entregou no bloco de
+Pinta de cada vaga, a cada abertura:
+- **Leitura**: `GET /api/members/lessons/:lessonId/blocks/:blockId/art-slots` (handler
+  `routes.artSlots`, client `members.getArtSlots`, atalhos `route.ts` no community e no Kids) →
+  `ArtSlotsView {slots: [{name, mode, replaces, asset}]}`; quem decide acesso e de qual perfil é o
+  members.
+- **Conversão** (`lib/lesson-art-load.ts`, `loadLessonArt` + `convertPintaWire`): o desenho guardado
+  (`pintaAssetFromWire`) vira imagem do Estúdio pelo MESMO exportador do Pinta
+  (`exportLoadedAssetForStudio` de `@sistemazero/pinta/studio-library`, PNG nos tetos do Estúdio,
+  com as animações). Leitura que falha ou desenho que não converte deixam a vaga vazia e ligam o
+  recado `copy.estudio.desenhoNaoVeio`; o bloco nunca quebra por isso.
+- **Montagem** (`lib/lesson-art-slots.ts`, `applyLessonArt`, puro): `add` acrescenta ou atualiza a
+  imagem com o nome da vaga (id `lesson-art-<vaga>`, `source: 'lesson-art'`) e NUNCA troca uma
+  imagem da criança com o mesmo nome; `replace` troca a imagem `replaces` mantendo id e nome (os
+  blocos que a usavam passam a mostrar o desenho). Vaga vazia não tira o que já entrou; sem
+  mudança volta o MESMO objeto; Pro e Python ficam como estão.
+- **Onde roda**: no efeito da semente do `studio-block.tsx`, DEPOIS de escolher a versão (local,
+  envio, cadeia, inicial) e antes de montar o editor; só com `player.viewerId` (a prévia e o ensaio
+  do Admin não têm desenho de criança). A impressão do conteúdo ignora `lesson-art`, então abrir
+  com o desenho não marca o projeto como mudado.
+- **Full review (29/10/2026):** a montagem respeita os tetos de materiais do Estúdio
+  (`STUDIO_ASSETS_TOTAL_CHARS` 33 milhões e `STUDIO_ASSETS_MAX_COUNT` 128, amarrados ao
+  `PROJECT_ASSET_LIMITS` por teste): o desenho que estouraria fica de fora com o recado
+  (`onTooBig`), em vez de o saneamento do Estúdio sumir com imagens caladas. A leitura das vagas
+  começa junto com a escolha da versão (não depois) e não roda sem internet (`resumeOffline`).
+- Testes: `tests/lesson-art.test.ts`.
+
 ## Arquipélago Vagalume: a porta do jogo (27/10/2026)
 
 O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta da plataforma.
@@ -29,6 +114,16 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   Desafios (27/10/2026): `arquipelagoDesafios` (GET, `?ilha=` conferida), `arquipelagoDesafio`
   (GET `:id` uuid), `arquipelagoDesafioVerificar` (POST, corpo até 4 MB, prazo de 165 s no
   gateway; os shims põem `maxDuration = 180`) e `arquipelagoDesafioRecompensaVista` (POST).
+  C02b (30/10/2026): `arquipelagoDesafioAmbiente` (POST, até 2 MB, repasse sem cache ao serviço,
+  a decisão do ambiente Python) e `arquipelagoDesafioPro` (POST `/api/arquipelago/desafios/:id/pro`,
+  o molde de `lesson-pro-runtime.ts`: abre o desafio no serviço com a sessão, exige a mesma
+  revisão, tira o modelo Pro do projeto INICIAL e compila no executor com
+  `opaqueStudioRuntimeExecutionId('arquipelago', jogadorId, id, revisao)`). O diálogo
+  (`arquipelago-challenge-dialog.tsx`) monta o Python por `useArquipelagoChallengeRuntime`
+  (`@sistemazero/studio/challenge-runtime`) e o Pro com o adaptador `proRuntime` nessa rota; a
+  paleta do jogo (`blocosPermitidos`) só vale no JavaScript. Nenhum dos dois usa o Estúdio livre
+  (vendido à parte). Testes: `tests/arquipelago-routes.test.ts` e
+  `tests/fixtures/arquipelago-challenge-dialog.fixture.tsx`.
 - **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
   `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
   monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
@@ -3690,6 +3785,8 @@ novo exigiria mexer no workflow.
   cancelar. `lerCartas` relê as conquistas; guardar exige uma leitura atual.
 - A prévia usa o `rotina-execucao` do contrato, o mesmo intérprete do jogo, sobre uma cópia do
   mundo recebido; não grava nem chama o serviço para rodar a rotina.
+- A descrição da espécie usa `descricaoDoTrabalhoLumi` do contrato e permanece visível no
+  celular. Capacidade afeta os passos da prévia; o intervalo didático não mede o voo real.
 - Os portais do Blockly ficam no diálogo durante a edição e voltam ao host ao fechar.
 - O jogo não importa o editor: pede `rotina-lumi` pela porta `abrirFerramenta`. O host de QA em
   `tests/fixtures/rotina-lumi-playground.tsx` serve o playground do jogo (o CSS sai de
@@ -3710,3 +3807,10 @@ Recusas, versões futuras, erro e aborto devolvem null para manter o modelo de r
 atual abre modelo clássico e cenário pixel; cenas do Molda e outros formatos ficam na reserva.
 A escala da caixa agora vem do contrato. Testes: `tests/arquipelago-aparencia.test.ts` e
 `tests/arquipelago-objeto.test.ts`. Regras em §6.16 e plano `2026-10-29-arquipelago-molda-no-mundo.md`.
+
+## Contexto da colheita no mini estúdio dos Lumis
+
+`RotinaLumiEditor` recebe os moldes V1 e V2 dos contratos. A resposta conserva a versão do
+pedido. V2 mostra o clima e o humor congelados na abertura e executa o intérprete compartilhado;
+não altera a ilha nem presume que o contexto continuará igual depois de fechar. V1 conserva a
+prévia sem bônus. Nunca duplicar regras de colheita no componente.

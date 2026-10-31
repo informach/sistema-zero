@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { quadrosFeitos } from '../../src/application/servico-dos-desafios'
+import { posicoesConquistadas, quadrosFeitos } from '../../src/application/servico-dos-desafios'
 import {
   chaveDasMoedas,
   passouNosObrigatorios,
@@ -109,6 +109,12 @@ describe('quadrosFeitos', () => {
       c({ tipo: 'desafio-do-dia', quadro: null }),
     ]
     expect(quadrosFeitos(lista, 'bosque')).toBe(2)
+    expect(
+      posicoesConquistadas(
+        [...lista, ...[0, 7, 1.5, null].map((quadro) => c({ quadro }))],
+        'bosque',
+      ),
+    ).toEqual([1, 2])
     expect(
       quadrosFeitos(
         [1, 2, 3, 4, 5, 6].map((q) => c({ quadro: q })),

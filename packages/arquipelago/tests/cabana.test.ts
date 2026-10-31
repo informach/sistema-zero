@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   criarSalvamentoInicial,
-  ObraSchema,
+  ObraDaCabanaSchema,
   SalvamentoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import type { Object3D } from 'three'
@@ -98,7 +98,7 @@ describe('a cabana no Bosque', () => {
 
   test('as regras valem no lote: quatro paredes fecham um cômodo, e a porta entra numa delas', () => {
     const obra = cabanaDeQuatro(lote)
-    expect(ObraSchema.safeParse(obra).success).toBe(true)
+    expect(ObraDaCabanaSchema.safeParse(obra).success).toBe(true)
     const p = planta(obra, lote)
     expect(p.comodos).toHaveLength(1)
     expect(p.dentro.size).toBe(16)

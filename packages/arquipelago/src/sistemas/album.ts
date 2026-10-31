@@ -11,6 +11,9 @@ import {
   type PercursoId,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
+import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
+import { colecaoDaPraia } from './colecoes-da-praia'
+import { colecaoDaIlha } from './colecoes-das-ilhas'
 import { rotuloDaAparencia } from './construcao/galeria'
 import {
   colecaoDeReceitas,
@@ -19,7 +22,8 @@ import {
   type EstadoDoBicho,
 } from './diario'
 import { ESPECIES_DE_LUMI } from './lumis'
-import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
+import { formatarTempo, PERCURSOS_DO_JOGO, todasAsColetaveis } from './percurso'
+import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS } from './segredos'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
 
@@ -76,6 +80,11 @@ export const ILHA_DO_PERCURSO: Readonly<Record<PercursoId, IlhaId>> = {
   'bosque-copas': 'bosque',
   'vila-telhados': 'vila-doce',
   'pico-cume': 'pico',
+  'nuvens-saltos': 'nuvens',
+  'nuvens-balao': 'nuvens',
+  'praia-pedras': 'sua-ilha',
+  'recife-corais': 'recife',
+  'vale-pegadas': 'vale-dos-dinos',
 }
 
 export interface EstrelaDoPercurso {
@@ -113,7 +122,7 @@ export function percursosDoAlbum(s: Salvamento): {
         },
         {
           ganhou: r?.estrelas.vagalumes ?? false,
-          texto: `Os ${config.vagalumes} ${config.coletavel.varios}`,
+          texto: todasAsColetaveis(config, config.vagalumes),
         },
       ],
       melhorTempo: r ? formatarTempo(r.melhorTempoMs) : null,
@@ -199,10 +208,65 @@ export function lumisDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: LumiD
   return { conta: contar(itens.filter((l) => l.estado === 'preso').length, itens.length), itens }
 }
 
+// ── Os segredos das ilhas (N12) ─────────────────────────────────────────────────────────────────
+
+export interface SegredoDoAlbum {
+  id: string
+  ilha: string
+  achado: boolean
+  texto: string
+}
+
+export function segredosDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: SegredoDoAlbum[] } {
+  const itens = SEGREDOS.map((g) => {
+    const achado = segredoAchado(s.segredos, g)
+    return {
+      id: g.id,
+      ilha: ILHAS.find((i) => i.id === g.ilha)?.nome ?? g.ilha,
+      achado,
+      texto: achado ? 'Baú da Íris achado no alto do vento.' : TEXTOS_DOS_SEGREDOS.dica,
+    }
+  })
+  return { conta: contar(itens.filter((i) => i.achado).length, itens.length), itens }
+}
+
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
 
 export function albumDoSalvamento(s: Salvamento) {
+  const conchas = colecaoDaPraia(s, 'conchas')
+  const peixes = colecaoDaPraia(s, 'peixes')
+  const notas = colecaoDaIlha(s, 'notas')
+  const cristais = colecaoDaIlha(s, 'cristais')
+  const estrelas = colecaoDaIlha(s, 'estrelas')
+  const achados = (Object.keys(ACHADOS_DO_RECIFE) as AchadoDoRecife[]).map((id) => ({
+    id,
+    nome: ACHADOS_DO_RECIFE[id].nome,
+    dica: ACHADOS_DO_RECIFE[id].dica,
+    achado: s.recife[id],
+  }))
   return {
+    conchas: {
+      conta: contar(conchas.filter((p) => p.encontrado).length, conchas.length),
+      itens: conchas,
+    },
+    peixes: {
+      conta: contar(peixes.filter((p) => p.encontrado).length, peixes.length),
+      itens: peixes,
+    },
+    notas: { conta: contar(notas.filter((p) => p.encontrado).length, notas.length), itens: notas },
+    cristais: {
+      conta: contar(cristais.filter((p) => p.encontrado).length, cristais.length),
+      itens: cristais,
+    },
+    estrelas: {
+      conta: contar(estrelas.filter((p) => p.encontrado).length, estrelas.length),
+      itens: estrelas,
+    },
+    recife: {
+      conta: contar(achados.filter((a) => a.achado).length, achados.length),
+      itens: achados,
+    },
+    segredos: segredosDoAlbum(s),
     bichos: bichosDoAlbum(s),
     receitas: receitasDoAlbum(s),
     percursos: percursosDoAlbum(s),

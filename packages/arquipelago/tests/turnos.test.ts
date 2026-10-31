@@ -144,6 +144,34 @@ describe('o balcão', () => {
 })
 
 describe('fechar o turno', () => {
+  test('um turno antigo concluído depois não reabre o pagamento de ingredientes do dia atual', () => {
+    const t = turnoInteiro('sucos')
+    const hoje = fecharTurno(inicial(), t, HOJE)
+    if (!hoje) throw Error('Sem pagamento')
+    const atrasado = fecharTurno(hoje.salvamento, t, '2026-10-28')
+    expect(atrasado?.pagou).toBe(false)
+    expect(atrasado?.salvamento.turnos.sucos?.pagoEm).toBe(HOJE)
+    expect(atrasado?.salvamento.inventario).toEqual(hoje.salvamento.inventario)
+  })
+  test('pagamento inteiro e receita nova não se perdem quando a mochila está cheia', () => {
+    for (const posto of POSTOS_DA_VILA) {
+      const s = inicial()
+      const id = Object.keys(BALCOES[posto].pagamento)[0]
+      if (!id) throw new Error('Sem pagamento')
+      s.inventario[id] = 999
+      const antes = structuredClone(s)
+      expect(fecharTurno(s, turnoInteiro(posto), HOJE)).toBeNull()
+      expect(s).toEqual(antes)
+    }
+    const s = inicial()
+    s.moradores.bento.amizade = 100 - AMIZADE.turno
+    // Um fubá cabe; pagamento + ingredientes da receita recém-aprendida não cabem.
+    s.inventario.fuba = 998
+    expect(fecharTurno(s, turnoInteiro('padaria'), HOJE)).toBeNull()
+    expect(s.turnos.padaria).toBeUndefined()
+    s.inventario.fuba = 997
+    expect(fecharTurno(s, turnoInteiro('padaria'), HOJE)?.salvamento.inventario.fuba).toBe(999)
+  })
   test('só fecha o turno terminado', () => {
     expect(fecharTurno(inicial(), comecarTurno('sucos', HOJE, 0), HOJE)).toBeNull()
   })

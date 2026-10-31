@@ -150,6 +150,19 @@ parte; `projectObjectiveKind` dá `game`/`function`/`script`. A ida 3D (`approac
 `MAX_WALKABLE_RECTS` (32, era 8 até 29/10/2026) retângulos de chão: com a pedra e os coqueiros
 sólidos, o chão da Ilha do Farol sai recortado em 20. Testes: `tests/project-execution.test.ts`.
 
+## Regra causal do jogo autoral: `gameCausality` (30/10/2026)
+
+`learning/game-causality.ts`: encontro com efeito, lembrança, decisão que usa a lembrança,
+recomeço por tecla e "sumir" num encontro, num jogo 2D de nomes LIVRES (só o personagem é
+dado). Só conta código que pode rodar: ramo de condição constante (`Se falso`, `x e falso`),
+laço de zero voltas e bloco desativado ficam de fora. A decisão dobra a condição com o valor
+inicial e o valor guardado; contagem (`pontos = pontos + 1`) e condição que depende de outra
+coisa ficam "desconhecidas" e bastam com um ramo que age. Nasceu da revisão do projeto autoral
+do Farol (um `Se falso` em volta de tudo passava nas regras de presença de bloco). Atravessa
+a fronteira: `GAME_CAUSALITY_STEPS` no DTO do Members, `projectCheckAuthoring` do Estúdio e os
+dois editores de objetivos do Admin. Testes: `game-causality.test.ts` e
+`docs/desafios-do-jogo/farol/farol.test.ts`.
+
 ## Impressão do conteúdo e "envio em dia" (10/10/2026)
 
 O rascunho do Estúdio e do Pinta da fase passou a subir sozinho para a conta, e o envio virou só a

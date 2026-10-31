@@ -51,6 +51,25 @@ export interface PortaDosMembros {
     projetoInicial: unknown
     projeto: unknown
   }): Promise<VerificacaoDosMembros>
+  /**
+   * O ambiente Python do Estúdio de desafio (C02b): a decisão do Members para o pedido do Estúdio,
+   * conferido contra o projeto inicial. Recusa do Members vira `AmbienteRecusadoError`.
+   */
+  autorizarAmbiente(pedido: {
+    requester: string
+    accountId: string
+    audience: PublicoDosMembros
+    projetoInicial: unknown
+    pedido: unknown
+  }): Promise<unknown>
+}
+
+/** O Members recusou o ambiente (outro projeto, outro ambiente, release revogada): a frase dele. */
+export class AmbienteRecusadoError extends Error {
+  constructor(mensagem?: string) {
+    super(mensagem ?? 'Este ambiente não está disponível para o desafio.')
+    this.name = 'AmbienteRecusadoError'
+  }
 }
 
 /** O executor não respondeu (424) ou está cheio (429): nada é guardado, a pessoa tenta de novo. */

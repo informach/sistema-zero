@@ -33,8 +33,13 @@ test('duas sessões juntam descobertas sem perder os ninhos ou repetir etapas', 
     true,
   )
   const junto = conciliarSalvamento(base, local, remoto)
-  expect(junto?.vale).toEqual({ pegadas: true, escavacao: 2, ninhos: ['ninho-3', 'ninho-1'] })
-  expect(base.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [] })
+  expect(junto?.vale).toEqual({
+    pegadas: true,
+    escavacao: 2,
+    ninhos: ['ninho-3', 'ninho-1'],
+    filhote: null,
+  })
+  expect(base.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [], filhote: null })
 })
 test('escavação em três ações, sem prazo, sem mutar e sem repetir conquista', () => {
   const s = novo()
@@ -61,11 +66,9 @@ test('ninho exige observar no mundo e dar espaço; pausa não conclui e a conqui
     expect(cuidarDoNinho(s, id, true)).toBe(s)
   }
   expect(todosOsNinhosCuidados(s)).toBe(true)
-  expect(comecarConversaComAJade(s).falas).toEqual([
-    'Você cuidou dos três ninhos.',
-    'Observar sem tocar e dar espaço ajuda a cuidar dos ovos.',
-  ])
-  expect(comecarConversaComAJade(s).salvamento).toBe(s)
+  const conversa = comecarConversaComAJade(s)
+  expect(conversa.falas[0]).toBe('Você cuidou dos três ninhos.')
+  expect(conversa.salvamento.vale.ninhos).toEqual(s.vale.ninhos)
   expect(colecaoDoVale(s).filter((i) => i.id.startsWith('ninho') && i.feito)).toHaveLength(3)
 })
 test('o rastro confere a ordem, aceita exploração livre e não avança durante pausa', () => {

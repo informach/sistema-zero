@@ -5,16 +5,13 @@ import { type Color, type MeshStandardMaterial, Object3D } from 'three'
 import quadroGlb from '../assets/itens/quadro-das-cores.glb'
 import { useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
-import {
-  AVISO_DO_DIA,
-  diaParaAvisar,
-  manchasAcesas,
-  quadrosDaIlha,
-} from '../sistemas/quadro-das-cores'
+import { lojaDosPassos } from '../estado/primeiros-passos'
+import { pedacosPintados } from '../sistemas/cor-da-ilha'
+import { AVISO_DO_DIA, diaParaAvisar, quadrosDaIlha } from '../sistemas/quadro-das-cores'
 import { Colisores } from './colisores'
 import type { IlhaPreparada } from './ilha-completa'
 import { useInterativo } from './interativos'
-import { COLISORES_DO_QUADRO, posicaoDoQuadro } from './lugar-do-quadro'
+import { COLISORES_DO_QUADRO, type LugarDoQuadro, posicaoDoQuadro } from './lugar-do-quadro'
 
 export { LUGAR_DO_QUADRO, posicaoDoQuadro } from './lugar-do-quadro'
 
@@ -52,18 +49,23 @@ export const painelDoQuadro = (ilha: Ilha) => `quadro:${ilha.id}`
 export function QuadroDasCores({
   ilha,
   centro,
-  preparada,
+  ...onde
 }: {
   ilha: Ilha
   centro: { x: number; z: number }
-  preparada: IlhaPreparada
-}) {
+} & ({ preparada: IlhaPreparada } | { lugar: LugarDoQuadro })) {
   const { loja, plataforma } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
   const dados = useDesafios(desafios, (s) => s.dados)
+  const cores = useDesafios(desafios, (s) => s.cores)
   const festa = useDesafios(desafios, (s) => s.festa)
   const raiz = useModelo(QUADRO_URL)
-  const lugar = useMemo(() => posicaoDoQuadro(preparada.modelo), [preparada])
+  const preparada = 'preparada' in onde ? onde.preparada : null
+  const lugarFixo = 'lugar' in onde ? onde.lugar : null
+  const lugar = useMemo(
+    () => lugarFixo ?? posicaoDoQuadro((preparada as IlhaPreparada).modelo),
+    [lugarFixo, preparada],
+  )
 
   const { modelo, manchas } = useMemo(() => {
     const grupo = new Object3D()
@@ -79,14 +81,16 @@ export function QuadroDasCores({
   }, [raiz])
 
   // A cor de cada mancha: 0 (cinza) a 1 (a cor da tinta). Feito acende; a festa anima.
-  const quadros = useMemo(
-    () => (dados ? quadrosDaIlha(dados.desafios, ilha.id) : []),
-    [dados, ilha.id],
+  // Na sua ilha e no Farol os quadros não pintam (`cor: false`): as manchas seguem os feitos.
+  const semCor = ilha.id === 'sua-ilha' || ilha.id === 'farol'
+  const alvo = useMemo(
+    () =>
+      pedacosPintados(
+        semCor && dados ? quadrosDaIlha(dados.desafios, ilha.id) : null,
+        cores.ilhas.find((i) => i.id === ilha.id)?.quadros,
+      ),
+    [cores, dados, ilha.id, semCor],
   )
-  const alvo = useMemo(() => {
-    const acesas = quadros.length > 0 ? manchasAcesas(quadros) : []
-    return Array.from({ length: 6 }, (_, i) => (acesas[i] ? 1 : 0))
-  }, [quadros])
   const atual = useRef<number[]>([0, 0, 0, 0, 0, 0])
   const pintados = useRef(false)
 
@@ -116,14 +120,18 @@ export function QuadroDasCores({
     void desafios.getState().carregar()
   }, [desafios])
 
-  // Desafio do dia por fazer: o Zappy avisa uma vez por dia, ao chegar numa ilha completa.
+  // Desafio do dia por fazer: o Zappy avisa uma vez por dia, ao chegar numa ilha completa. A sua
+  // ilha e o Farol ficam sempre montados: avisar ali seria avisar ao abrir o jogo.
+  const avisa = !semCor
   useEffect(() => {
-    if (!dados) return
+    if (!dados || !avisa) return
     const dia = diaParaAvisar(dados, lerAviso(plataforma.perfil.id))
     if (!dia) return
     gravarAviso(plataforma.perfil.id, dia)
+    // Na primeira vez, a dica do Quadro das Cores toma o lugar do aviso.
+    if (lojaDosPassos(loja, plataforma).getState().pedirDica('quadro')) return
     loja.getState().dizer(AVISO_DO_DIA)
-  }, [dados, loja, plataforma])
+  }, [avisa, dados, loja, plataforma])
 
   useInterativo(`quadro-${ilha.id}`, {
     x: centro.x + lugar.x,

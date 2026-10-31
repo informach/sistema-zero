@@ -1,0 +1,285 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "recife-mira-de-bolhas-python",
+      "publico": "kids",
+      "ilha": "recife",
+      "tipo": "desafio-do-dia",
+      "quadro": null,
+      "ordem": 70,
+      "publicar": false,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "Mira de bolhas: resgate dos vagalumes",
+        "enunciado": "Os vagalumes do Recife ficaram presos em bolhas. Este desafio é em Python, com Pygame Zero. O mar, as tocas de coral, a bolha e o placar já estão prontos no main.py. Complete três funções. on_mouse_down(pos): um clique dentro da bolha solta o vagalume, soma 1 em resgatados e chama sortear_toca; um clique na água não soma nada. sortear_toca(): sorteie um número de 1 a 3 e leve a bolha para a toca desse número. update(dt): conte o tempo da rodada e, quando ele acabar, termine a rodada para que os cliques não contem mais. Fazer a tecla R recomeçar fica para o extra.",
+        "dicas": [
+          "As tocas ficam nestas posições de bolha.topleft: toca 1 em (80, 120), toca 2 em (280, 80) e toca 3 em (480, 120).",
+          "Para mudar uma variável do jogo dentro de uma função, escreva global e o nome dela no começo da função.",
+          "A rodada vale enquanto jogando é True. Confira jogando antes de contar um clique."
+        ],
+        "projetoInicial": {
+          "formatVersion": 3,
+          "id": "recife-mira-python",
+          "name": "Resgate dos vagalumes",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "programmingLanguage": "python",
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-25-integrated-games-2",
+            "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+          },
+          "kind": "classic",
+          "mode": "bridge",
+          "projectTools": [],
+          "installedExtensions": [
+            {
+              "id": "python-pgzero",
+              "version": "1.0.0",
+              "installedAt": 0
+            }
+          ],
+          "assets": [],
+          "python": {
+            "entrypoint": "main.py",
+            "dependencyLock": {
+              "lockVersion": 1,
+              "target": "browser",
+              "pythonVersion": "3.14.2",
+              "runtimeManifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+              "requirementsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "packages": []
+            }
+          },
+          "ir": null,
+          "blocksState": null,
+          "files": {
+            "main.py": "import random\n\nWIDTH = 640\nHEIGHT = 480\nTITLE = \"Resgate dos vagalumes\"\n\nDURACAO = 7\nbolha = Rect((280, 360), (80, 80))\nresgatados = 0\ntempo = DURACAO\njogando = True\n\n\ndef sortear_toca():\n    pass\n\n\ndef on_mouse_down(pos):\n    pass\n\n\ndef update(dt):\n    pass\n\n\ndef on_key_down(key):\n    pass\n\n\ndef draw():\n    screen.fill((18, 72, 110))\n    screen.draw.filled_rect(Rect((0, 440), (640, 40)), (214, 190, 140))\n    screen.draw.filled_circle((120, 160), 52, (232, 120, 120))\n    screen.draw.filled_circle((320, 120), 52, (240, 160, 96))\n    screen.draw.filled_circle((520, 160), 52, (196, 120, 200))\n    screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))\n    screen.draw.circle(bolha.center, 40, (255, 255, 255))\n    screen.draw.filled_circle(bolha.center, 10, (255, 230, 90))\n    screen.draw.text(\"Vagalumes resgatados: \" + str(resgatados), (20, 16), fontsize=32)\n    screen.draw.text(\"Tempo: \" + str(int(tempo)), (500, 16), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"A maré virou. Aperte R para recomeçar.\", center=(320, 280), fontsize=36)\n",
+            "requirements.txt": ""
+          }
+        },
+        "gabarito": {
+          "formatVersion": 3,
+          "id": "recife-mira-python",
+          "name": "Resgate dos vagalumes",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "programmingLanguage": "python",
+          "runtime": {
+            "profileId": "python-browser",
+            "releaseId": "2026-10-25-integrated-games-2",
+            "manifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1"
+          },
+          "kind": "classic",
+          "mode": "bridge",
+          "projectTools": [],
+          "installedExtensions": [
+            {
+              "id": "python-pgzero",
+              "version": "1.0.0",
+              "installedAt": 0
+            }
+          ],
+          "assets": [],
+          "python": {
+            "entrypoint": "main.py",
+            "dependencyLock": {
+              "lockVersion": 1,
+              "target": "browser",
+              "pythonVersion": "3.14.2",
+              "runtimeManifestSha256": "0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1",
+              "requirementsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "packages": []
+            }
+          },
+          "ir": null,
+          "blocksState": null,
+          "files": {
+            "main.py": "import random\n\nWIDTH = 640\nHEIGHT = 480\nTITLE = \"Resgate dos vagalumes\"\n\nDURACAO = 7\nbolha = Rect((280, 360), (80, 80))\nresgatados = 0\ntempo = DURACAO\njogando = True\n\n\ndef sortear_toca():\n    numero = random.randint(1, 3)\n    if numero == 1:\n        bolha.topleft = (80, 120)\n    elif numero == 2:\n        bolha.topleft = (280, 80)\n    else:\n        bolha.topleft = (480, 120)\n\n\ndef on_mouse_down(pos):\n    global resgatados\n    if jogando and bolha.collidepoint(pos):\n        resgatados = resgatados + 1\n        sortear_toca()\n\n\ndef update(dt):\n    global tempo, jogando\n    if jogando:\n        tempo = tempo - dt\n        if tempo <= 0:\n            tempo = 0\n            jogando = False\n\n\ndef on_key_down(key):\n    global resgatados, tempo, jogando\n    if key == keys.R:\n        resgatados = 0\n        tempo = DURACAO\n        jogando = True\n        bolha.topleft = (280, 360)\n\n\ndef draw():\n    screen.fill((18, 72, 110))\n    screen.draw.filled_rect(Rect((0, 440), (640, 40)), (214, 190, 140))\n    screen.draw.filled_circle((120, 160), 52, (232, 120, 120))\n    screen.draw.filled_circle((320, 120), 52, (240, 160, 96))\n    screen.draw.filled_circle((520, 160), 52, (196, 120, 200))\n    screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))\n    screen.draw.circle(bolha.center, 40, (255, 255, 255))\n    screen.draw.filled_circle(bolha.center, 10, (255, 230, 90))\n    screen.draw.text(\"Vagalumes resgatados: \" + str(resgatados), (20, 16), fontsize=32)\n    screen.draw.text(\"Tempo: \" + str(int(tempo)), (500, 16), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"A maré virou. Aperte R para recomeçar.\", center=(320, 280), fontsize=36)\n",
+            "requirements.txt": ""
+          }
+        },
+        "objetivos": [
+          {
+            "id": "acertar",
+            "label": "Clicar na bolha solta o vagalume e soma um resgate; clicar na água não soma.",
+            "hint": "Use bolha.collidepoint(pos) para saber se o clique foi dentro da bolha.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "click",
+                  "x": 40,
+                  "y": 300
+                },
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 400
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "resgatados"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "sortear",
+            "label": "Depois do resgate, a bolha aparece numa das três tocas de coral.",
+            "hint": "random.randint(1, 3) sorteia o número da toca; cada número muda bolha.topleft.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 400
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "bolha.y"
+                },
+                "compare": "atMost",
+                "value": 120
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "relogio",
+            "label": "O relógio conta o tempo da rodada.",
+            "hint": "Em update(dt), tire dt do tempo enquanto a rodada está valendo.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 1500
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "tempo"
+                },
+                "compare": "decreased"
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "fim",
+            "label": "Quando o tempo acaba, a rodada termina e os cliques não contam mais.",
+            "hint": "Quando o tempo chegar a zero, mude jogando para False.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 400
+                },
+                {
+                  "action": "wait",
+                  "ms": 9500
+                },
+                {
+                  "action": "click",
+                  "x": 120,
+                  "y": 160
+                },
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 120
+                },
+                {
+                  "action": "click",
+                  "x": 520,
+                  "y": 160
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "resgatados"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "recomecar",
+            "label": "Extra: R recomeça a rodada com a bolha de volta na areia.",
+            "hint": "Em on_key_down, confira key == keys.R e volte os valores do começo.",
+            "optional": true,
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 400
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "r",
+                  "holdMs": 80
+                },
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 400
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "resgatados"
+                },
+                "compare": "equals",
+                "value": 1
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Mais um desafio",
+          "texto": "Faça a tecla R recomeçar a rodada: resgatados volta a zero, o tempo volta ao começo e a bolha volta para a areia."
+        },
+        "recompensa": {
+          "cor": false,
+          "moedas": 10,
+          "moedasExtra": 5
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

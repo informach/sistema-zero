@@ -1,4 +1,5 @@
 import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
+import { artSlotFillers } from '../../../domain/course/art-slot-course'
 import type {
   Course,
   CourseAudience,
@@ -13,6 +14,7 @@ import type {
 } from '../../../domain/course/course'
 import { ACCESSIBLE_COURSE_STATUSES } from '../../../domain/course/course'
 import type { CourseRepository } from '../../../domain/ports/course-repository.port'
+import { listArtSlotBlocks } from './art-slots.repository'
 import type { Database } from './db'
 import { lessonContentAvailable } from './lesson-availability'
 import { memberStudioContentProjection } from './member-studio-content-projection'
@@ -409,6 +411,15 @@ export class DrizzleCourseRepository implements CourseRepository {
       .orderBy(desc(modules.sortOrder), desc(lessons.sortOrder), desc(lessonBlocks.sortOrder))
       .limit(1)
     return row ? { blockId: row.blockId, lessonId: row.lessonId } : null
+  }
+
+  async findArtSlotFillers(
+    courseId: string,
+    names: readonly string[],
+  ): Promise<Map<string, { blockId: string; replaces: string | null }>> {
+    if (!names.length) return new Map()
+    // A mesma leitura da conferência do curso: sem blocos arquivados e com a parte da aula.
+    return artSlotFillers(await listArtSlotBlocks(this.db, courseId), names)
   }
 
   async countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>> {

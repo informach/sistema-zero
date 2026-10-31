@@ -235,7 +235,8 @@ export async function createContextualRuntimeEnvironmentCore(
       if (
         scope.context.kind === 'public' ||
         scope.context.kind === 'mastery-review' ||
-        scope.context.kind === 'live'
+        scope.context.kind === 'live' ||
+        scope.context.kind === 'arquipelago'
       )
         throw new Error('O contexto da análise Python não está disponível.')
       return scope.context

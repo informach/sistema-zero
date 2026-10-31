@@ -27,6 +27,8 @@ import { AvatarThumb } from './thumb-canvas'
 
 export interface AdultAvatarConfiguratorProps {
   returnTo: AvatarReturnPath
+  onExit?: () => void
+  seasonalChoices?: ReactNode
   dark: boolean
   state: AvatarStateView | null
   loadState: LoadState
@@ -70,17 +72,38 @@ export function AdultAvatarConfigurator(props: AdultAvatarConfiguratorProps) {
     <div className="sz-cos-av-start">
       {/* Navegação COMPLETA (como o `window.location.assign` da saída depois de salvar): o layout
           relê a foto nova do avatar. */}
-      <a href={props.returnTo} className="sz-cos-back">
-        <ChevronLeft aria-hidden="true" />
-        <ShortLabel text={back} compact />
-      </a>
+      {props.onExit ? (
+        <button
+          type="button"
+          onClick={props.onExit}
+          disabled={props.saving || Boolean(props.busy)}
+          className="sz-cos-back"
+        >
+          <ChevronLeft aria-hidden="true" />
+          Voltar ao jogo
+        </button>
+      ) : (
+        <a href={props.returnTo} className="sz-cos-back">
+          <ChevronLeft aria-hidden="true" />
+          <ShortLabel text={back} compact />
+        </a>
+      )}
       <h1 className="sz-cos-av-title">{copy.title}</h1>
     </div>
   )
 
   if (loadState === 'error') {
     return (
-      <div className="sz-cos-av" data-state="error">
+      <div
+        className="sz-cos-av"
+        data-state="error"
+        onKeyDown={(e) => {
+          if (e.key === 'Escape' && props.onExit) {
+            e.preventDefault()
+            props.onExit()
+          }
+        }}
+      >
         <header className="sz-cos-av-head">{start}</header>
         <div className="sz-cos-av-error">
           <p>{copy.loadError}</p>
@@ -94,7 +117,16 @@ export function AdultAvatarConfigurator(props: AdultAvatarConfiguratorProps) {
   }
 
   return (
-    <div className="sz-cos-av" data-mode={mode}>
+    <div
+      className="sz-cos-av"
+      data-mode={mode}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && props.onExit) {
+          e.preventDefault()
+          props.onExit()
+        }
+      }}
+    >
       <header className="sz-cos-av-head">
         {start}
         <div className="sz-cos-av-actions">
@@ -113,7 +145,7 @@ export function AdultAvatarConfigurator(props: AdultAvatarConfiguratorProps) {
           <button
             type="button"
             onClick={props.onSave}
-            disabled={props.saving || props.hasLocked || !state}
+            disabled={props.saving || Boolean(props.busy) || props.hasLocked || !state}
             className="sz-cos-btn"
           >
             {props.saving ? (
@@ -158,6 +190,7 @@ export function AdultAvatarConfigurator(props: AdultAvatarConfiguratorProps) {
       </div>
 
       <section className="sz-cos-av-panel" aria-label={copy.panel}>
+        {props.seasonalChoices}
         <div role="group" aria-label={copy.modeGroup} className="sz-cos-segmented">
           <button
             type="button"

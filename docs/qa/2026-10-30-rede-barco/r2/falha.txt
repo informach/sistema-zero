@@ -1,0 +1,2 @@
+TimeoutError: page.waitForFunction: Timeout 180000ms exceeded.
+Arquipélago no ar em http://127.0.0.1:63659

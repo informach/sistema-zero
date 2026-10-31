@@ -11,9 +11,36 @@ type Resposta = { status: number; body: unknown; retryAfter?: string }
 const PERFIL = '11111111-1111-4111-8111-111111111111'
 const IRMAO = '33333333-3333-4333-8333-333333333333'
 
+test('convites adultos repassam somente os métodos previstos e preservam privacidade no erro local', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { versao: 1, ativo: false } })
+  const post = (corpo: unknown) =>
+    new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) })
+  const respostas = [
+    await routes.arquipelagoConviteAdulto.GET(),
+    await routes.arquipelagoConviteAdulto.POST(post({})),
+    await routes.arquipelagoConviteAdulto.DELETE(),
+    await routes.arquipelagoVisitaAdulta.POST(post({ codigo: 'a'.repeat(32) })),
+    await routes.arquipelagoConferirVisitaAdulta.POST(post({ codigo: 'a'.repeat(32) })),
+  ]
+  for (const r of respostas) expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.map((c) => c.metodo)).toEqual(['GET', 'POST', 'DELETE', 'POST', 'POST'])
+  expect(chamadas.map((c) => c.caminho)).toEqual([
+    '/arquipelago/visitas-adultas/convite',
+    '/arquipelago/visitas-adultas/convite',
+    '/arquipelago/visitas-adultas/convite',
+    '/arquipelago/visitas-adultas/abrir',
+    '/arquipelago/visitas-adultas/conferir',
+  ])
+  const invalida = await routes.arquipelagoVisitaAdulta.POST(post({ codigo: 'a'.repeat(2048) }))
+  expect(invalida.status).toBe(400)
+  expect(invalida.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toHaveLength(5)
+})
+
 function montar(
   resposta: Resposta,
   perfis: Resposta = { status: 200, body: { profiles: [{ id: PERFIL }, { id: IRMAO }] } },
+  irmaos: Resposta = { status: 200, body: { siblings: [{ id: IRMAO, name: 'Irmão' }] } },
 ) {
   const chamadas: Chamada[] = []
   const routes = createArquipelagoRoutes({
@@ -31,7 +58,7 @@ function montar(
         return resposta
       },
     } as never,
-    profiles: { list: async () => perfis } as never,
+    profiles: { list: async () => perfis, siblings: async () => irmaos } as never,
   })
   return { routes, chamadas }
 }
@@ -40,6 +67,197 @@ const pedido = (corpo: string) =>
   new Request('http://local/api/arquipelago/salvamento', { method: 'PUT', body: corpo })
 
 const fetchOriginal = globalThis.fetch
+
+test('fantasma não usa um perfil removido da lista atual do Auth nem avança sem a leitura', async () => {
+  for (const [lista, status] of [
+    [{ status: 200, body: { siblings: [] } }, 404],
+    [{ status: 502, body: null }, 502],
+  ] as const) {
+    const { routes, chamadas } = montar({ status: 200, body: {} }, undefined, lista)
+    const r = await routes.arquipelagoFantasmaDoIrmao.GET(new Request('http://local'), {
+      params: Promise.resolve({ id: IRMAO, percurso: 'bosque-copas' }),
+    })
+    expect(r.status).toBe(status)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(chamadas).toHaveLength(0)
+  }
+})
+test('cores conquistadas só repassam GET privado sem identidade no corpo ou na consulta', async () => {
+  const corpo = { versao: 1, ilhas: [{ id: 'bosque', quadros: [1] }] }
+  const { routes, chamadas } = montar({ status: 200, body: corpo })
+  const resposta = await routes.arquipelagoCoresConquistadas.GET()
+  expect(resposta.status).toBe(200)
+  expect(await resposta.json()).toEqual(corpo)
+  expect(resposta.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toEqual([
+    { caminho: '/arquipelago/desafios/cores', metodo: 'GET', corpo: undefined },
+  ])
+  expect(Object.keys(routes.arquipelagoCoresConquistadas)).toEqual(['GET'])
+})
+
+test('trajetos validam caminho, limitam corpo e não usam cache', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { versao: 1, situacao: 'ausente' } })
+  const r = await routes.arquipelagoFantasma.GET(new Request('http://local'), {
+    params: Promise.resolve({ percurso: 'bosque-copas' }),
+  })
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas[0]?.caminho).toBe('/arquipelago/fantasmas/bosque-copas')
+  expect(
+    (
+      await routes.arquipelagoFantasma.GET(new Request('http://local'), {
+        params: Promise.resolve({ percurso: 'outro' }),
+      })
+    ).status,
+  ).toBe(400)
+  expect(
+    (
+      await routes.arquipelagoFantasmaDoIrmao.GET(new Request('http://local'), {
+        params: Promise.resolve({ id: IRMAO, percurso: 'vila-telhados' }),
+      })
+    ).status,
+  ).toBe(200)
+  expect(chamadas.at(-1)?.caminho).toBe(`/arquipelago/irmaos/${IRMAO}/fantasmas/vila-telhados`)
+  const antes = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoFantasmaDoIrmao.GET(new Request('http://local'), {
+        params: Promise.resolve({ id: 'outro', percurso: 'vila-telhados' }),
+      })
+    ).status,
+  ).toBe(400)
+  expect(
+    (
+      await routes.arquipelagoFantasmas.PUT(
+        new Request('http://local', { method: 'PUT', body: 'x'.repeat(129 * 1024 + 1) }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(antes)
+})
+test('pedidos repassam comando e pendências de forma privada, sem cache e com corpo limitado', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
+  const pendentes = await routes.arquipelagoPedidosPendentes.GET()
+  expect(pendentes.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)?.caminho).toBe('/arquipelago/pedidos/pendentes')
+  const corpo = {
+    versao: 1,
+    chave: PERFIL,
+    revisaoBase: 1,
+    morador: 'bento',
+    dia: '2026-10-30',
+    pedido: 'milho-2',
+  }
+  const r = await routes.arquipelagoPedidosEntregar.POST(
+    new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) }),
+  )
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/pedidos/entregar',
+    metodo: 'POST',
+    corpo,
+  })
+  const n = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoPedidosEntregar.POST(
+        new Request('http://local', {
+          method: 'POST',
+          body: JSON.stringify({ texto: 'a'.repeat(1025) }),
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(n)
+})
+
+test('insumos repassam compra e pendência sem cache e limitam o corpo', async () => {
+  const { routes, chamadas } = montar({ status: 423, body: { error: { code: 'COMPRA_PENDENTE' } } })
+  const pendente = await routes.arquipelagoInsumosPendentes.GET()
+  expect(pendente.status).toBe(423)
+  expect(pendente.headers.get('cache-control')).toBe('private, no-store')
+  const corpo = { versao: 1, chave: PERFIL, revisaoBase: 1, item: 'leite', quantidade: 3 }
+  await routes.arquipelagoInsumosComprar.POST(
+    new Request('http://local', {
+      method: 'POST',
+      body: JSON.stringify(corpo),
+      headers: { 'content-type': 'application/json' },
+    }),
+  )
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/insumos/comprar',
+    metodo: 'POST',
+    corpo,
+  })
+  const n = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoInsumosComprar.POST(
+        new Request('http://local', {
+          method: 'POST',
+          body: JSON.stringify({ texto: 'a'.repeat(1025) }),
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(n)
+})
+test('Mural próprio usa Hub, valida o contrato e não compartilha cache', async () => {
+  const corpo = { jogos: [{ playId: PERFIL, titulo: 'Meu jogo' }] }
+  const { routes, chamadas } = montar({ status: 200, body: corpo })
+  const r = await routes.arquipelagoJogosDoMural.GET()
+  expect(r.status).toBe(200)
+  expect(await r.json()).toEqual(corpo)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toEqual([
+    { caminho: '/hub/my-playable-showcase', metodo: 'GET', corpo: undefined },
+  ])
+  for (const resposta of [
+    { status: 200, body: { jogos: [{ playId: 'invalido' }] } },
+    { status: 401, body: null },
+  ]) {
+    const falha = await montar(resposta).routes.arquipelagoJogosDoMural.GET()
+    expect(falha.status).toBe(resposta.status === 200 ? 502 : 401)
+    expect(falha.headers.get('cache-control')).toBe('private, no-store')
+  }
+})
+describe('profissões no repasse', () => {
+  test('repasse privado, sem mudar o corpo, e recusa corpo grande antes do gateway', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
+    for (const [acao, handler] of [
+      ['iniciar', routes.arquipelagoProfissaoIniciar.POST],
+      ['concluir', routes.arquipelagoProfissaoConcluir.POST],
+    ] as const) {
+      const corpo = acao === 'iniciar' ? { posto: 'padaria' } : { sessao: PERFIL, respostas: [] }
+      const resposta = await handler(
+        new Request(`http://local/api/arquipelago/profissoes/${acao}`, {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify(corpo),
+        }),
+      )
+      expect(resposta.headers.get('cache-control')).toBe('private, no-store')
+      expect(chamadas.at(-1)).toMatchObject({
+        caminho: `/arquipelago/profissoes/${acao}`,
+        metodo: 'POST',
+        corpo,
+      })
+      const n = chamadas.length
+      expect(
+        (
+          await handler(
+            new Request('http://local', {
+              method: 'POST',
+              body: JSON.stringify({ texto: 'a'.repeat(4097) }),
+            }),
+          )
+        ).status,
+      ).toBe(400)
+      expect(chamadas).toHaveLength(n)
+    }
+  })
+})
 describe('minijogos aprovados no repasse', () => {
   test('jogador lista e abre só pelo id validado', async () => {
     const { routes, chamadas } = montar({ status: 200, body: { minijogos: [] } })
@@ -459,5 +677,225 @@ describe('recordes da família e visitas (fase3-12)', () => {
     })
     expect(torto.status).toBe(400)
     expect(chamadas).toHaveLength(1)
+  })
+})
+
+describe('visitas de outras crianças (N08a)', () => {
+  test('os convites ganham o nome da grade do Auth; quem não está na grade sai', async () => {
+    const OUTRO = '99999999-9999-4999-8999-999999999999'
+    const amigos = {
+      versao: 1,
+      situacao: 'ok',
+      convites: [
+        { perfilId: PERFIL, ativo: true },
+        { perfilId: OUTRO, ativo: false },
+      ],
+      casas: [{ id: '88888888-8888-4888-8888-888888888888', apelido: 'Casa da Lua' }],
+    }
+    const perfis = { status: 200, body: { profiles: [{ id: PERFIL, name: 'Lia' }] } }
+    const { routes, chamadas } = montar({ status: 200, body: amigos }, perfis)
+    const r = await routes.arquipelagoAmigosDaFamilia.GET()
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(await r.json()).toEqual({
+      ...amigos,
+      convites: [{ perfilId: PERFIL, ativo: true, nome: 'Lia' }],
+    })
+    expect(chamadas[0]).toMatchObject({
+      caminho: '/arquipelago/familia/amigos',
+      query: { perfis: PERFIL },
+    })
+    const estranha = montar({ status: 200, body: { versao: 1 } }, perfis)
+    expect((await estranha.routes.arquipelagoAmigosDaFamilia.GET()).status).toBe(502)
+  })
+
+  test('desligar o convite e remover a casa conferem o id; a criança só lê', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { versao: 1 } })
+    const ruim = await routes.arquipelagoConviteDeAmigo.DELETE(
+      new Request('http://local/x?perfil=nao-e-uuid', { method: 'DELETE' }),
+    )
+    expect(ruim.status).toBe(400)
+    await routes.arquipelagoConviteDeAmigo.DELETE(
+      new Request(`http://local/x?perfil=${PERFIL}`, { method: 'DELETE' }),
+    )
+    await routes.arquipelagoRemoverAmigo.DELETE(
+      new Request('http://local/x', { method: 'DELETE' }),
+      {
+        params: Promise.resolve({ id: IRMAO }),
+      },
+    )
+    await routes.arquipelagoCasasDeAmigos.GET()
+    await routes.arquipelagoCasaDeAmigo.GET(new Request('http://local/x'), {
+      params: Promise.resolve({ id: IRMAO }),
+    })
+    expect(chamadas.map((c) => `${c.metodo} ${c.caminho}`)).toEqual([
+      `DELETE /arquipelago/familia/amigos/convite/${PERFIL}`,
+      `DELETE /arquipelago/familia/amigos/${IRMAO}`,
+      'GET /arquipelago/amigos',
+      `GET /arquipelago/amigos/${IRMAO}/casa`,
+    ])
+  })
+})
+
+describe('Python e Pro no Estúdio de desafio (C02b, 30/10/2026)', () => {
+  const id = '22222222-2222-4222-8222-222222222222'
+  const ctx = (valor: string) => ({ params: Promise.resolve({ id: valor }) })
+  const post = (corpo: unknown, headers: Record<string, string> = {}) =>
+    new Request(`http://kids.test/api/arquipelago/desafios/${id}/pro`, {
+      method: 'POST',
+      headers,
+      body: typeof corpo === 'string' ? corpo : JSON.stringify(corpo),
+    })
+
+  async function nuvens() {
+    const manifesto = await Bun.file(
+      new URL('../../../docs/desafios-do-jogo/nuvens/nuvens-pro.manifesto.json', import.meta.url),
+    ).json()
+    return manifesto.desafios[0].conteudo.projetoInicial as {
+      kind: 'pro'
+      tree: Record<string, unknown>
+      proMeta: { templateId: string }
+    }
+  }
+  const aberto = (projetoInicial: unknown, revisao = 2) => ({
+    status: 200,
+    body: {
+      id,
+      jogadorId: PERFIL,
+      blocosPermitidos: null,
+      revisao,
+      titulo: 'Nuvens',
+      enunciado: 'Monte a grade.',
+      dicas: [],
+      desafioExtra: null,
+      objetivos: [],
+      projetoInicial,
+      ultimosResultados: [],
+      concluido: false,
+    },
+  })
+  const ambienteAntes = {
+    url: process.env.STUDIO_PRO_RUNTIME_URL,
+    token: process.env.STUDIO_PRO_RUNTIME_TOKEN,
+  }
+  afterEach(() => {
+    globalThis.fetch = fetchOriginal
+    if (ambienteAntes.url === undefined) delete process.env.STUDIO_PRO_RUNTIME_URL
+    else process.env.STUDIO_PRO_RUNTIME_URL = ambienteAntes.url
+    if (ambienteAntes.token === undefined) delete process.env.STUDIO_PRO_RUNTIME_TOKEN
+    else process.env.STUDIO_PRO_RUNTIME_TOKEN = ambienteAntes.token
+  })
+
+  test('ambiente: repassa o pedido do Estúdio ao serviço, sem cache', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { version: 1 } })
+    const corpo = { revisao: 2, pedido: { operation: 'analyze' } }
+    const r = await routes.arquipelagoDesafioAmbiente.POST(
+      new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) }),
+      ctx(id),
+    )
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(chamadas).toEqual([
+      { caminho: `/arquipelago/desafios/${id}/ambiente`, metodo: 'POST', corpo },
+    ])
+    expect(
+      (
+        await routes.arquipelagoDesafioAmbiente.POST(
+          new Request('http://local', { method: 'POST', body: '{"revisao":1}' }),
+          ctx('x'),
+        )
+      ).status,
+    ).toBe(400)
+    const grande = JSON.stringify({ revisao: 1, pedido: { x: 'a'.repeat(2 * 1024 * 1024) } })
+    expect(
+      (
+        await routes.arquipelagoDesafioAmbiente.POST(
+          new Request('http://local', { method: 'POST', body: grande }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(1)
+  })
+
+  test('Pro: corpo que não é Pro não sai do BFF; o jogo que recusa abrir decide', async () => {
+    const inicial = await nuvens()
+    const { routes, chamadas } = montar({ status: 403, body: { error: { code: 'X' } } })
+    expect((await routes.arquipelagoDesafioPro.POST(post({ revisao: 2 }), ctx(id))).status).toBe(
+      400,
+    )
+    expect(
+      (await routes.arquipelagoDesafioPro.POST(post({ revisao: 2, project: inicial }), ctx('x')))
+        .status,
+    ).toBe(400)
+    expect(chamadas).toEqual([])
+    const r = await routes.arquipelagoDesafioPro.POST(
+      post({ revisao: 2, project: inicial }),
+      ctx(id),
+    )
+    expect(r.status).toBe(403)
+    expect(chamadas.map((c) => [c.caminho, c.metodo])).toEqual([
+      [`/arquipelago/desafios/${id}`, 'GET'],
+    ])
+  })
+
+  test('Pro: outra revisão é 409, desafio que não é Pro é 403, sem executor é 503', async () => {
+    const inicial = await nuvens()
+    globalThis.fetch = (async () => {
+      throw new Error('o executor não deveria ser chamado')
+    }) as unknown as typeof fetch
+    const outra = montar(aberto(inicial, 3))
+    expect(
+      (
+        await outra.routes.arquipelagoDesafioPro.POST(
+          post({ revisao: 2, project: inicial }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(409)
+    const classico = montar(aberto({ files: { 'script.js': '' } }))
+    expect(
+      (
+        await classico.routes.arquipelagoDesafioPro.POST(
+          post({ revisao: 2, project: inicial }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(403)
+    delete process.env.STUDIO_PRO_RUNTIME_URL
+    delete process.env.STUDIO_PRO_RUNTIME_TOKEN
+    const semExecutor = montar(aberto(inicial))
+    expect(
+      (
+        await semExecutor.routes.arquipelagoDesafioPro.POST(
+          post({ revisao: 2, project: inicial }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(503)
+  })
+
+  test('Pro: o modelo vem do inicial, não do projeto enviado; a execução é do jogador e do desafio', async () => {
+    const inicial = await nuvens()
+    process.env.STUDIO_PRO_RUNTIME_URL = 'https://runtime.test/'
+    process.env.STUDIO_PRO_RUNTIME_TOKEN = 'token-do-executor-de-teste'
+    const enviados: { url: string; corpo: Record<string, unknown> }[] = []
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      enviados.push({ url: String(url), corpo: JSON.parse(String(init?.body)) })
+      return Response.json({ ok: false, message: 'Erro de compilação de teste' }, { status: 422 })
+    }) as unknown as typeof fetch
+    const { routes } = montar(aberto(inicial))
+    const trocado = { ...inicial, proMeta: { ...inicial.proMeta, templateId: 'outro-modelo' } }
+    const r = await routes.arquipelagoDesafioPro.POST(
+      post({ revisao: 2, project: trocado }),
+      ctx(id),
+    )
+    expect(r.headers.get('cache-control')).toBe('no-store')
+    expect(((await r.json()) as { error: { message: string } }).error.message).toBe(
+      'Erro de compilação de teste',
+    )
+    expect(enviados).toHaveLength(1)
+    expect(enviados[0]?.url).toBe('https://runtime.test/v1/build')
+    expect(enviados[0]?.corpo.templateId).toBe(inicial.proMeta.templateId)
+    expect(enviados[0]?.corpo.executionId).toMatch(/^arquipelago-[a-f0-9]{48}$/)
   })
 })

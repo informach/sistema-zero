@@ -18,6 +18,35 @@ const prefix = `https://api.github.com/repos/${repository}/actions/`
 const canonicalPrefix = 'https://api.github.com/repositories/123/actions/'
 const metadata = () => response({ id: 123, full_name: repository })
 
+test('histórico com mais de mil tentativas preserva as implantações aprovadas antigas', async () => {
+  // GitHub devolveu total_count=1117 nas páginas 1..10 e zero na página 11.
+  // As tentativas sem sucesso não podem ser uma baseline e consumiam esse limite.
+  const approved = Array.from({ length: 468 }, (_, i) => ({ id: 2000 + i }))
+  const all = [...Array.from({ length: 649 }, (_, i) => ({ id: i + 1 })), ...approved]
+  const api = createGitHubApi(repository, 'synthetic-test-token', async (raw: string) => {
+    if (raw === repositoryUrl) return metadata()
+    const url = new URL(raw)
+    const page = Number(url.searchParams.get('page'))
+    const rows = url.searchParams.get('status') === 'success' ? approved : all
+    const start = (page - 1) * 100
+    if (start >= 1000) return response({ total_count: 0, workflow_runs: [] })
+    const next = new URL(url)
+    next.searchParams.set('page', String(page + 1))
+    return response(
+      { total_count: rows.length, workflow_runs: rows.slice(start, start + 100) },
+      start + 100 < rows.length ? `<${next}>; rel="next"` : '',
+    )
+  })
+  const found: Array<{ id: number }> = []
+  let page: number | null = 1
+  while (page !== null) {
+    const result = await api.listRuns(page)
+    found.push(...result.runs)
+    page = result.nextPage
+  }
+  expect(found).toEqual(approved)
+})
+
 test('GitHub adapter uses exact-attempt jobs and bounded read-only authenticated requests', async () => {
   const requests: Array<{ url: string; options: RequestInit }> = []
   const api = createGitHubApi(
@@ -49,7 +78,7 @@ test('GitHub adapter uses exact-attempt jobs and bounded read-only authenticated
 })
 
 test('GitHub adapter follows validated next-page metadata without changing repository', async () => {
-  const next = `${prefix}workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=2`
+  const next = `${prefix}workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=2`
   const api = createGitHubApi(repository, 'synthetic-test-token', async (url: string) =>
     url === repositoryUrl
       ? metadata()
@@ -69,13 +98,13 @@ test('actual GitHub numeric-repository Link is accepted only after matching repo
       return response({ id: 1254724087, full_name: 'Informach/Sistema-Zero' })
     return response(
       { workflow_runs: [{ id: 1 }], total_count: 815 },
-      '<https://api.github.com/repositories/1254724087/actions/workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=2>; rel="next", <https://api.github.com/repositories/1254724087/actions/workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=9>; rel="last"',
+      '<https://api.github.com/repositories/1254724087/actions/workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=2>; rel="next", <https://api.github.com/repositories/1254724087/actions/workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=9>; rel="last"',
     )
   })
   expect(await api.listRuns(1)).toEqual({ runs: [{ id: 1 }], totalCount: 815, nextPage: 2 })
   expect(calls).toEqual([
     `https://api.github.com/repos/${name}`,
-    `https://api.github.com/repos/${name}/actions/workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=1`,
+    `https://api.github.com/repos/${name}/actions/workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=1`,
   ])
 })
 
@@ -196,7 +225,7 @@ for (const [defect, transform] of [
 ] as const) {
   test(`numeric-repository Link refuses ${defect} without following it`, async () => {
     const target = new URL(
-      `${canonicalPrefix}workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=2`,
+      `${canonicalPrefix}workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=2`,
     )
     transform(target)
     const requests: string[] = []
@@ -210,7 +239,7 @@ for (const [defect, transform] of [
     expect(baselineFailureCode(error)).toBe('github-pagination')
     expect(requests).toEqual([
       repositoryUrl,
-      `${prefix}workflows/ci.yml/runs?branch=staging&event=push&per_page=100&page=1`,
+      `${prefix}workflows/ci.yml/runs?branch=staging&event=push&status=success&per_page=100&page=1`,
     ])
   })
 }

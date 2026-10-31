@@ -35,9 +35,10 @@ const HOJE = '2026-10-28'
 const AMANHA = '2026-10-29'
 
 describe('a Capi: amizade', () => {
-  test('o dia é o do calendário do aparelho', () => {
-    expect(diaDe(new Date(2026, 2, 5, 23, 59))).toBe('2026-03-05')
-    expect(diaDe(new Date(2026, 11, 31, 0, 0))).toBe('2026-12-31')
+  test('o dia é o de São Paulo, inclusive perto da meia-noite UTC', () => {
+    expect(diaDe(new Date('2026-03-06T02:59:00Z'))).toBe('2026-03-05')
+    expect(diaDe(new Date('2027-01-01T02:59:59Z'))).toBe('2026-12-31')
+    expect(diaDe(new Date('2027-01-01T03:00:00Z'))).toBe('2027-01-01')
   })
 
   test('cada coração são 100 pontos, até 5', () => {

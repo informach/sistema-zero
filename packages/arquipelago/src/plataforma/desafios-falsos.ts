@@ -10,11 +10,13 @@ import {
   type RespostaDoServico,
   type ResultadoDeFerramenta,
 } from '@sistemazero/arquipelago-contracts'
+import { coresDoCatalogo } from '../sistemas/cores-conquistadas'
 
 /**
  * Desafios de mentira para o playground: três quadros cadastrados no Bosque (um pronto para fazer,
- * um que pede um bloco de curso e um feito), o resto vazio, e o desafio do dia nos três estados
- * (`DiaDoPlayground`). Abrir um desafio "resolve" na hora.
+ * um que pede um bloco de curso e um feito), o resto vazio, dois da sua ilha (C03a: um feito e um
+ * pronto, sem pintar a ilha), o projeto autoral do Farol (C03b) e o desafio do dia nos três estados (`DiaDoPlayground`). Abrir um
+ * desafio "resolve" na hora.
  */
 export type DiaDoPlayground = 'pronto' | 'feito' | 'nenhum'
 
@@ -32,11 +34,12 @@ function desafio(
   quadro: number,
   titulo: string,
   situacao: DesafioNaLista['situacao'],
+  ilha: IlhaId = 'bosque',
 ): DesafioNaLista {
   return {
     id,
     revisao: 1,
-    ilha: 'bosque',
+    ilha,
     tipo: 'quadro-das-cores',
     quadro,
     ordem: quadro,
@@ -46,28 +49,62 @@ function desafio(
       situacao === 'faltam-blocos'
         ? [{ bloco: 'sz_js_repeat', rotulo: 'Repetir vezes', cursos: [CURSO] }]
         : [],
-    recompensa: { cor: true, moedas: 20, moedasExtra: 10 },
+    recompensa: { cor: ilha !== 'sua-ilha' && ilha !== 'farol', moedas: 20, moedasExtra: 10 },
     recompensaVista: situacao === 'concluido',
   }
 }
 
 export function criarDesafiosFalsos(
   posicao: number,
-  o: { dia?: DiaDoPlayground; agora?: () => Date } = {},
+  o: { dia?: DiaDoPlayground; agora?: () => Date; quadrosFeitos?: boolean } = {},
 ) {
   const dia = o.dia ?? 'pronto'
+  // Com `quadrosFeitos`, as seis posições do Bosque têm conquistas confirmadas para prints.
+  const situacao = (s: DesafioNaLista['situacao']) => (o.quadrosFeitos ? 'concluido' : s)
   const agora = o.agora ?? (() => new Date())
   let feitoHoje = dia === 'feito'
   const lista: DesafioNaLista[] = [
-    desafio('00000000-0000-4000-8000-0000000000a1', 1, 'A borboleta que voa', 'disponivel'),
+    desafio(
+      '00000000-0000-4000-8000-0000000000a1',
+      1,
+      'A borboleta que voa',
+      situacao('disponivel'),
+    ),
     desafio(
       '00000000-0000-4000-8000-0000000000a2',
       2,
       'O coelho que pula o tronco',
-      'faltam-blocos',
+      situacao('faltam-blocos'),
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
+    desafio('00000000-0000-4000-8000-0000000000b1', 1, 'Passos na areia', 'concluido', 'sua-ilha'),
+    desafio(
+      '00000000-0000-4000-8000-0000000000b2',
+      2,
+      'A primeira concha',
+      'disponivel',
+      'sua-ilha',
+    ),
+    desafio(
+      '00000000-0000-4000-8000-0000000000c1',
+      1,
+      'Meu jogo do Arquipélago',
+      'disponivel',
+      'farol',
+    ),
   ]
+  if (o.quadrosFeitos) {
+    for (let quadro = 4; quadro <= QUADROS_POR_ILHA; quadro++) {
+      lista.push(
+        desafio(
+          `00000000-0000-4000-8000-0000000000a${quadro}`,
+          quadro,
+          `Quadro ${quadro}`,
+          'concluido',
+        ),
+      )
+    }
+  }
   if (dia !== 'nenhum')
     lista.push({
       ...desafio(DO_DIA, 0, 'A corrida das pedras', dia === 'feito' ? 'concluido' : 'disponivel'),
@@ -91,6 +128,8 @@ export function criarDesafiosFalsos(
   })
   return {
     buscar(caminho: string, metodo: string): RespostaDoServico | null {
+      if (metodo === 'GET' && caminho === '/desafios/cores')
+        return { status: 200, corpo: coresDoCatalogo(lista) }
       if (metodo === 'GET' && (caminho === '/desafios' || caminho.startsWith('/desafios?')))
         return { status: 200, corpo: resposta() }
       const vista = caminho.match(/^\/desafios\/([^/]+)\/recompensa-vista$/)

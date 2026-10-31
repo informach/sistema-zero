@@ -14,6 +14,14 @@ import {
   trechosDasChaves,
 } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
+import {
+  celulasDoMovel,
+  ehDeParede,
+  lerMovel,
+  moveisDaObra,
+  movelNoLugar,
+  pecasNaAresta,
+} from './moveis'
 import { celulasDoObjeto, LUGAR_DO_OBJETO, objetoEm } from './projeto-azul'
 
 /**
@@ -41,6 +49,11 @@ export type Recusa =
   | { motivo: 'tem-objeto' }
   | { motivo: 'objeto-fora-de-comodo' }
   | { motivo: 'objeto-no-quarto' }
+  | { motivo: 'tem-movel' }
+  | { motivo: 'movel-fora-de-comodo' }
+  | { motivo: 'movel-no-quarto' }
+  | { motivo: 'sem-parede-atras' }
+  | { motivo: 'movel-na-parede' }
   | { motivo: 'nada' }
 
 export type Resultado = { ok: true; obra: Obra } | ({ ok: false } & Recusa)
@@ -77,6 +90,9 @@ export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resul
   const fixas = chavesDosTrechos(lote.paredesFixas)
   const chaves = chavesDosTrechos(obra.paredes)
   const canteiros = new Set(obra.canteiros.map(chaveDaCelula))
+  const moveisDeChao = moveisDaObra(obra)
+    .filter((m) => !ehDeParede(m.id))
+    .map((m) => new Set(celulasDoMovel(m).map(chaveDaCelula)))
   const antes = chaves.size
   for (const aresta of arestas) {
     const k = chaveDaAresta(aresta)
@@ -89,6 +105,9 @@ export function esticarParede(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resul
     const [l1, l2] = ladosDaAresta(aresta)
     const o1 = objetoEm(obra, l1)
     if (o1 >= 0 && o1 === objetoEm(obra, l2)) return recusa({ motivo: 'tem-objeto' })
+    // Nem um móvel de chão (o sofá de três células fica inteiro).
+    if (moveisDeChao.some((cs) => cs.has(chaveDaCelula(l1)) && cs.has(chaveDaCelula(l2))))
+      return recusa({ motivo: 'tem-movel' })
     chaves.add(k)
   }
   if (chaves.size === antes) return recusa({ motivo: 'nada' })
@@ -166,6 +185,9 @@ export function porAbertura(obra: Obra, lote: Lote, tipo: TipoDeAbertura, a: Are
     if (lado.some((l) => p.paredes.has(chaveDaAresta(l))))
       return recusa({ motivo: 'encontro-de-paredes' })
   }
+  // A porta não abre no quadro: a peça de parede sai primeiro (de qualquer lado da parede).
+  if (arestas.some((x) => pecasNaAresta(obra, x).length > 0))
+    return recusa({ motivo: 'movel-na-parede' })
   const minhas = new Set(arestas.map(chaveDaAresta))
   const iguais = (x: typeof nova) =>
     x.tipo === nova.tipo && x.eixo === nova.eixo && x.x === nova.x && x.z === nova.z
@@ -223,6 +245,12 @@ export function arrumar(obra: Obra, lote: Lote, p: Planta = planta(obra, lote)):
     if (LUGAR_DO_OBJETO[o.id] === 'dentro') return comodos.size === 1 && !comodos.has(undefined)
     return comodos.size === 1 && comodos.has(undefined)
   })
+  // O móvel que perdeu o lugar (o cômodo abriu, a parede de trás saiu) sai da obra; o catálogo é
+  // livre, então ele não fica guardado: dá para pôr de novo.
+  const moveis = obra.moveis.filter((t) => {
+    const m = lerMovel(t)
+    return m !== null && movelNoLugar(m, obra, p)
+  })
   const cercasAntes = chavesDosTrechos(obra.cercas)
   const cercas = [...cercasAntes].filter((k) => {
     if (p.paredes.has(k)) return false
@@ -234,6 +262,7 @@ export function arrumar(obra: Obra, lote: Lote, p: Planta = planta(obra, lote)):
     aberturas,
     caminhos: caminhos.length === obra.caminhos.length ? obra.caminhos : caminhos,
     objetos: objetos.length === obra.objetos.length ? obra.objetos : objetos,
+    moveis: moveis.length === obra.moveis.length ? obra.moveis : moveis,
     cercas: cercas.length === cercasAntes.size ? obra.cercas : trechosDasChaves(cercas),
   }
 }

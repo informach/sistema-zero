@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, mock, test } from 'bun:test'
 import {
   type ConteudoDoDesafio,
+  CoresConquistadasSchema,
   type CurriculoDeBlocos,
   DesafioAbertoSchema,
   DesafiosDoJogadorSchema,
@@ -20,6 +21,7 @@ import {
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
 import { chaveDasMoedas } from '../../src/domain/desafios'
 import {
+  AmbienteRecusadoError,
   ConferenciaIndisponivelError,
   MembrosIndisponiveisError,
   type PortaDosMembros,
@@ -226,6 +228,66 @@ async function chamar(
 
 const conferir = (id = BORBOLETA, revisao = 1, headers = crianca()) =>
   chamar('POST', `/${id}/verificar`, headers, { revisao, projeto })
+
+describe('cores conquistadas', () => {
+  test('suporte lê a cor sem gravar conclusão nem recompensa', async () => {
+    await conferir()
+    const antes = structuredClone([...repo.concluidos.entries()])
+    creditar.mockClear()
+    const r = await chamar('GET', '/cores', crianca({ 'x-auth-impersonator-id': EQUIPE }))
+    expect(r.status).toBe(200)
+    expect(
+      CoresConquistadasSchema.parse(r.corpo).ilhas.find((i) => i.id === 'bosque')?.quadros,
+    ).toEqual([1])
+    expect([...repo.concluidos.entries()]).toEqual(antes)
+    expect(creditar).not.toHaveBeenCalled()
+  })
+  test('arquivar e mover o cadastro preserva a posição ganha, mesmo com catálogo e Members desligados', async () => {
+    expect((await conferir()).status).toBe(200)
+    const d = repo.desafios.get(BORBOLETA)!
+    d.situacao = 'arquivado'
+    d.metadados = { ...d.metadados, ilha: 'vila-doce', quadro: 5 }
+    modo = 'desligado'
+    membros = null
+    montar()
+    creditar.mockClear()
+    const antes = [...repo.concluidos.entries()]
+    const r = await chamar('GET', '/cores', crianca())
+    expect(r.status).toBe(200)
+    const cores = CoresConquistadasSchema.parse(r.corpo)
+    expect(cores.ilhas.find((i) => i.id === 'bosque')?.quadros).toEqual([1])
+    expect(cores.ilhas.find((i) => i.id === 'vila-doce')?.quadros).toEqual([])
+    expect([...repo.concluidos.entries()]).toEqual(antes)
+    expect(creditar).not.toHaveBeenCalled()
+    expect((await chamar('GET', '', crianca())).status).toBe(403)
+  })
+
+  test('não revela conquista de outra pessoa ou de outro público', async () => {
+    await conferir()
+    for (const h of [
+      adulto,
+      crianca({ 'x-auth-user-id': ADULTO }),
+      { ...adulto, 'x-auth-user-id': PERFIL },
+    ]) {
+      const r = await chamar('GET', '/cores', h)
+      expect(r.status).toBe(200)
+      expect(
+        CoresConquistadasSchema.parse(r.corpo).ilhas.every((i) => i.quadros.length === 0),
+      ).toBe(true)
+    }
+  })
+
+  test('sem acesso ao jogo não lê cores; rota não oferece escrita', async () => {
+    expect(
+      (await chamar('GET', '/cores', crianca({ 'x-internal-token': 'invalido' }))).status,
+    ).toBe(401)
+    politica.modo = 'desligado'
+    montar()
+    expect((await chamar('GET', '/cores', crianca())).status).toBe(403)
+    expect((await chamar('POST', '/cores', crianca(), {})).status).not.toBe(200)
+    expect(repo.concluidos.size).toBe(0)
+  })
+})
 
 describe('liga e desliga', () => {
   test('desligado: 403 DESAFIOS_DESLIGADOS, inclusive para a equipe', async () => {
@@ -593,6 +655,61 @@ describe('conferir', () => {
       }),
     )
     expect(salvamento.status).toBe(413)
+  })
+})
+
+describe('ambiente Python do Estúdio de desafio (C02b)', () => {
+  const pedido = { operation: 'analyze', context: { kind: 'arquipelago' } }
+  const pedirAmbiente = (id = BORBOLETA, revisao = 1, headers = crianca()) =>
+    chamar('POST', `/${id}/ambiente`, headers, { revisao, pedido })
+  let autorizar: ReturnType<typeof mock>
+  beforeEach(() => {
+    autorizar = mock(async () => ({ version: 1, decisao: 'do-members' }))
+    membros = membrosDeMentira({
+      lerJogador: async () => ({ posicao, total: 8, blocos }),
+      lerCurriculo: async () => curriculo,
+      autorizarAmbiente: autorizar as unknown as PortaDosMembros['autorizarAmbiente'],
+    })
+    montar()
+  })
+
+  test('repassa ao Members quem joga, o público, o inicial da revisão e o pedido do Estúdio', async () => {
+    const r = await pedirAmbiente()
+    expect(r.status).toBe(200)
+    expect(r.corpo).toEqual({ version: 1, decisao: 'do-members' })
+    expect(autorizar).toHaveBeenCalledWith({
+      requester: PERFIL,
+      accountId: CONTA,
+      audience: 'kids',
+      projetoInicial: projeto,
+      pedido,
+    })
+  })
+
+  test('bloqueado, revisão inexistente ou arquivado: não pede ao Members', async () => {
+    expect((await pedirAmbiente(PONTE)).status).toBe(403)
+    expect((await pedirAmbiente(BORBOLETA, 7)).status).toBe(404)
+    const d = repo.desafios.get(BORBOLETA)
+    if (d) d.situacao = 'arquivado'
+    expect((await pedirAmbiente()).status).toBe(409)
+    expect(autorizar).not.toHaveBeenCalled()
+    expect((await chamar('POST', `/${FAROL}/ambiente`, crianca(), { revisao: 1 })).status).toBe(400)
+  })
+
+  test('recusa do Members vira 403 com a frase dele; Members fora, 424', async () => {
+    autorizar.mockImplementation(async () => {
+      throw new AmbienteRecusadoError('O projeto aberto não é do ambiente deste desafio.')
+    })
+    const recusado = await pedirAmbiente()
+    expect(recusado.status).toBe(403)
+    expect(recusado.corpo.error).toMatchObject({
+      code: 'AMBIENTE_RECUSADO',
+      message: 'O projeto aberto não é do ambiente deste desafio.',
+    })
+    autorizar.mockImplementation(async () => {
+      throw new MembrosIndisponiveisError('rede')
+    })
+    expect((await pedirAmbiente()).status).toBe(424)
   })
 })
 

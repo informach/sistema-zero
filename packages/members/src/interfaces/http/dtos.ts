@@ -8,6 +8,12 @@ import {
   HELP_TUTORIAL_STATUSES,
   HELP_VIDEO_PROVIDERS,
 } from '@sistemazero/core/help'
+import {
+  ART_SLOT_NAME_MAX_CHARS,
+  ART_SLOT_NAME_PATTERN,
+  MATERIALS_TEXT_MAX_CHARS,
+  MAX_STUDIO_ART_SLOTS,
+} from '@sistemazero/core/learning'
 import { STUDIO_READABLE_PROJECT_ID_PATTERN } from '@sistemazero/core/studio/project-format'
 import { t } from 'elysia'
 import { MAX_SUBMISSION_MESSAGE_CHARS } from '../../domain/course/lesson-block'
@@ -1126,6 +1132,15 @@ const StudioProjectSchema = t.Union([
     { additionalProperties: true },
   ),
 ])
+/**
+ * Vaga de arte (29/10/2026): o nome que liga um desenho do bloco de Pinta ao jogo do bloco de
+ * Estúdio. A régua de forma é a do core (`ART_SLOT_NAME_PATTERN`), a mesma de um nome de imagem
+ * do Estúdio; a coerência (repetidos, modo) fica no `assertBlockCoherent`.
+ */
+const ArtSlotNameSchema = t.String({
+  maxLength: ART_SLOT_NAME_MAX_CHARS,
+  pattern: ART_SLOT_NAME_PATTERN.source,
+})
 /** Bloco Estúdio: editor pré-configurado embutido na aula (ver domain/course/lesson-block.ts). */
 const StudioBlockSchema = t.Object({
   // Retain only so legacy writers reject explicitly instead of silently stripping the field.
@@ -1147,6 +1162,16 @@ const StudioBlockSchema = t.Object({
   solutionProject: t.Optional(t.Unknown()),
   /** Nome do projeto contínuo (cadeia) — ver StudioBlock em domain/course/lesson-block.ts. */
   chain: t.Optional(t.String({ maxLength: 80 })),
+  /** Vagas de arte que o jogo importa — ver StudioBlock. */
+  artSlots: t.Optional(
+    t.Array(
+      t.Object({
+        name: ArtSlotNameSchema,
+        mode: t.Union([t.Literal('add'), t.Literal('replace')]),
+      }),
+      { minItems: 1, maxItems: MAX_STUDIO_ART_SLOTS },
+    ),
+  ),
   /** Vitrine (Mural dos Criadores) — config da auto-publicação; ver StudioBlock. */
   showcase: t.Optional(
     t.Object({
@@ -1200,6 +1225,10 @@ const PintaBlockSchema = t.Object({
   allowTools: t.Optional(t.Array(t.String({ maxLength: 40 }), { maxItems: 60 })),
   /** Nome do desenho contínuo (cadeia) — ver PintaBlock em domain/course/lesson-block.ts. */
   chain: t.Optional(t.String({ maxLength: 80 })),
+  /** A vaga de arte que o desenho preenche — ver PintaBlock. */
+  artSlot: t.Optional(
+    t.Object({ name: ArtSlotNameSchema, replaces: t.Optional(ArtSlotNameSchema) }),
+  ),
 })
 
 /**
@@ -1244,6 +1273,9 @@ const ComingSoonBlockSchema = t.Object({
  * aluno, lendo o anexo. Declará-los aqui deixaria o admin gravar um tamanho que envelhece na
  * primeira troca de arquivo. O `normalize` do Elysia descarta o que não está declarado.
  */
+/** O teto do texto de um item de materiais: o MESMO do manifesto, vindo do core. */
+export { MATERIALS_TEXT_MAX_CHARS }
+
 const MaterialsBlockSchema = t.Object({
   kind: t.Literal('materials'),
   title: t.Optional(t.String({ maxLength: 120 })),
@@ -1267,7 +1299,10 @@ const MaterialsBlockSchema = t.Object({
       t.Object({
         id: t.String({ minLength: 1, maxLength: 64 }),
         kind: t.Literal('text'),
-        markdown: t.String({ minLength: 1, maxLength: 2000 }),
+        // O mesmo teto do core (`isLearningManifest`): o Passo a passo do projeto vai inteiro
+        // num item de texto com a prévia em livro, e tem de 3 a 15 mil caracteres. Com os 2000
+        // de antes, a importação aceitava e a PUBLICAÇÃO recusava (29/10/2026).
+        markdown: t.String({ minLength: 1, maxLength: MATERIALS_TEXT_MAX_CHARS }),
       }),
       t.Object({
         id: t.String({ minLength: 1, maxLength: 64 }),

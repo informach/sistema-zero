@@ -1,0 +1,21 @@
+{
+  "resultados": [
+    {
+      "tipo": "computador",
+      "geracaoRotacaoRevogacao": true,
+      "codigoForaDoArmazenamento": true,
+      "saveIntactoNaVisita": true,
+      "retornoPorRevogacao": true,
+      "erros": []
+    },
+    {
+      "tipo": "celular",
+      "geracaoRotacaoRevogacao": true,
+      "codigoForaDoArmazenamento": true,
+      "saveIntactoNaVisita": true,
+      "retornoPorRevogacao": true,
+      "erros": []
+    }
+  ],
+  "kidsSeparado": true
+}

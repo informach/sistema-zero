@@ -10,6 +10,7 @@ import { eixoSobOsPes, entrarNoEquilibrio } from './equilibrio'
 import { escadaParaPegar, pegarEscada } from './escada'
 import { agarrarTronco, troncoContra } from './escalada'
 import { entrarNoEscorregador, pistaSobOsPes } from './escorregar'
+import { abrirOPlanador, podeAbrirOPlanador } from './planar'
 import type { ModoDeMovimento } from './tipos'
 
 /** O avatar nada quando a cintura (esta altura acima dos pés) passa da linha da água. */
@@ -137,6 +138,11 @@ export const MODO_CHAO: ModoDeMovimento = {
     if (e.conversa && e.parado) c.direcao = Math.atan2(e.conversa.x - e.p.x, e.conversa.z - e.p.z)
     c.velPedida = Math.hypot(vx, vz)
 
+    // No ar, com o planador na mochila, pular de novo abre o planador (fase3-09).
+    if (e.pulou && podeAbrirOPlanador(c, e)) {
+      abrirOPlanador(c, e.agora, aviso)
+      return false
+    }
     if (!e.parado && !c.nadando) {
       // No ar, as mãos pegam o cipó que passar perto delas (de um cipó para o outro).
       if (!c.noChao) {

@@ -200,10 +200,18 @@ def barra(a, b, m, r=0.012, verts=6):
     return o
 
 
-def uv_plano(o, materiais, eixo_u, eixo_v):
+def _pontos_da_face(o, materiais):
+    me = o.data
+    idx = {i for i, m in enumerate(me.materials) if m and m.name in materiais}
+    M = o.matrix_world
+    return [M @ me.vertices[v].co for p in me.polygons if p.material_index in idx for v in p.vertices]
+
+
+def uv_plano(o, materiais, eixo_u, eixo_v, limites=None):
     """Coordenadas de textura de 0 a 1 nas faces dos `materiais`, projetadas nos eixos dados
     (u para a direita e v para cima de quem olha a face de fora). As outras faces não mudam (uma
-    camada nova começa em 0), então dá para chamar uma vez por face pintável."""
+    camada nova começa em 0), então dá para chamar uma vez por face pintável. `limites` (u0, u1,
+    v0, v1) usa o retângulo dado em vez do das faces deste objeto (`uv_plano_juntos`)."""
     bpy.context.view_layer.update()
     me = o.data
     if not me.uv_layers:
@@ -212,12 +220,15 @@ def uv_plano(o, materiais, eixo_u, eixo_v):
     idx = {i for i, m in enumerate(me.materials) if m and m.name in materiais}
     eu, ev = Vector(eixo_u), Vector(eixo_v)
     M = o.matrix_world
-    pts = [M @ me.vertices[v].co for p in me.polygons if p.material_index in idx for v in p.vertices]
+    pts = _pontos_da_face(o, materiais)
     if not pts:
         return o
-    us = [p.dot(eu) for p in pts]
-    vs = [p.dot(ev) for p in pts]
-    u0, u1, v0, v1 = min(us), max(us), min(vs), max(vs)
+    if limites:
+        u0, u1, v0, v1 = limites
+    else:
+        us = [p.dot(eu) for p in pts]
+        vs = [p.dot(ev) for p in pts]
+        u0, u1, v0, v1 = min(us), max(us), min(vs), max(vs)
     for p in me.polygons:
         if p.material_index not in idx:
             continue
@@ -225,6 +236,22 @@ def uv_plano(o, materiais, eixo_u, eixo_v):
             w = M @ me.vertices[me.loops[li].vertex_index].co
             uv[li].uv = ((w.dot(eu) - u0) / (u1 - u0), (w.dot(ev) - v0) / (v1 - v0))
     return o
+
+
+def uv_plano_juntos(objetos, materiais, eixo_u, eixo_v):
+    """Uma face pintável feita de várias peças (as duas portinhas do aquário): a mesma projeção de 0
+    a 1 no retângulo de todas juntas, então a imagem passa de uma peça para a outra."""
+    bpy.context.view_layer.update()
+    eu, ev = Vector(eixo_u), Vector(eixo_v)
+    pts = [p for o in objetos for p in _pontos_da_face(o, materiais)]
+    if not pts:
+        return objetos
+    us = [p.dot(eu) for p in pts]
+    vs = [p.dot(ev) for p in pts]
+    lim = (min(us), max(us), min(vs), max(vs))
+    for o in objetos:
+        uv_plano(o, materiais, eixo_u, eixo_v, limites=lim)
+    return objetos
 
 
 def booleana(alvo, corte, op='DIFFERENCE'):

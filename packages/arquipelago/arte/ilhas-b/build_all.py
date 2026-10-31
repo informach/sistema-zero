@@ -16,22 +16,36 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 RAIZ = os.path.abspath(os.path.join(AQUI, '..', '..', '..', '..'))
-SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol', 'pico_caverna', 'nuvens_constelacoes']
+SCRIPTS = ['pico', 'vale', 'nuvens', 'alto_do_farol', 'pico_caverna', 'nuvens_constelacoes', 'argola_nuvem']
 ILHA = ('chegada', 'morador', 'lumi-1', 'lumi-2', 'lumi-3', 'lumi-4')
+# O ponto de embarque do barco (`arte/mundo/lib_cais.py`): o deque de praia e, nas Nuvens, a torre.
+PORTO = ('barco', 'cais')
+COL_PRAIA = ('col-cais-beira', 'col-cais-deque', 'col-cil-estaca-cais')
+COL_TORRE = ('col-cais-deque', 'col-cais-degrau', 'col-cais-patamar', 'col-cais-ponte', 'col-cais-torre',
+             'col-guarda-cais', 'col-cil-estaca-cais')
 ESPERADO = {
-    'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu'),
+    'pico': {'nos': ('chao', 'montanha', 'cenario', 'telhado-iglu', 'porto'),
              'ancoras': ILHA + ('palco', 'iglu', 'cume', 'parede-de-gelo', 'iglu-dentro', 'fogareiro')
-             + tuple(f'{p}-{i}' for p in ('instrumento', 'banda', 'musico') for i in ('xilofone', 'violao', 'bateria'))},
+             + tuple(f'{p}-{i}' for p in ('instrumento', 'banda', 'musico') for i in ('xilofone', 'violao', 'bateria'))
+             + PORTO,
+             'colisores': COL_PRAIA},
     'pico-props': {'nos': ('pinheiro-nevado-a', 'pinheiro-nevado-b', 'bloco-de-gelo', 'boneco-de-neve', 'painel-de-gelo')},
     'pico-treno': {'nos': ('treno',)},
-    'vale-dos-dinos': {'nos': ('chao', 'vulcao', 'lava', 'cenario'),
-                       'ancoras': ILHA + ('observatorio', 'escavacao', 'ninho-1', 'cratera')},
+    'vale-dos-dinos': {'nos': ('chao', 'vulcao', 'lava', 'cenario', 'porto'),
+                       'ancoras': ILHA + ('observatorio', 'escavacao', 'ninho-1', 'cratera') + PORTO,
+                       'colisores': COL_PRAIA},
     'vale-dos-dinos-props': {'nos': ('samambaia-gigante', 'cavalinha', 'ninho', 'ovo-dino', 'osso', 'cranio-fossil')},
-    'nuvens': {'nos': ('chao', 'cenario') + tuple(f'fio-{k}' for k in range(1, 7)) + tuple(f'plataforma-{k}' for k in range(1, 5)),
-               'ancoras': ILHA + ('tear', 'ninho', 'balao', 'topo-plataforma-4')},
+    'nuvens': {'nos': ('chao', 'cenario') + tuple(f'fio-{k}' for k in range(1, 7)) + tuple(f'plataforma-{k}' for k in range(1, 5))
+               + ('porto',),
+               'ancoras': ILHA + ('tear', 'ninho', 'balao', 'topo-plataforma-4') + PORTO,
+               'colisores': COL_TORRE},
     'nuvens-balao': {'nos': ('balao',), 'clipes': ('flutuar',)},
-    'alto-do-farol': {'nos': ('sala', 'escada', 'mesa-da-iris', 'vidros', 'lente'), 'ancoras': ('entrada', 'lanterna', 'mesa'),
+    'alto-do-farol': {'nos': ('sala', 'escada', 'mesa-da-iris', 'vidros', 'lente'),
+                      'ancoras': ('entrada', 'lanterna', 'mesa', 'chegada', 'leitura', 'camera-varanda'),
+                      'colisores': ('col-cil-piso-sala', 'col-parede-sala', 'col-cil-grade-escada', 'col-mesa-iris',
+                                    'col-cil-base-lente'),
                       'clipes': ('girar',)},
+    'nuvens-argola': {'nos': ('nuvem', 'faixa')},
     # Lugares de exploração (cada um com os seus col-*; o referencial de cada um está no README).
     'pico-caverna': {'nos': ('rocha', 'chao', 'cristais', 'cristais-luz', 'gelo', 'percurso', 'joia'),
                      'ancoras': ('entrada', 'galeria', 'laguinho', 'cristal-raro') + tuple(f'degrau-{k}' for k in range(1, 5)),

@@ -14,6 +14,8 @@ export function ControlesDeToque() {
   const { controle } = useJogo()
   const toque = useToque()
   const modo = useEstado((s) => s.modo)
+  // Com algo perto para usar, o botão "Usar" acende (o aviso de cima diz o quê).
+  const temAlvo = useEstado((s) => s.alvo !== null)
   const noBarco = modo === 'barco'
   const zona = useRef<HTMLDivElement>(null)
   const anel = useRef<HTMLDivElement>(null)
@@ -127,7 +129,7 @@ export function ControlesDeToque() {
         )}
         <button
           type="button"
-          className="arq-botao"
+          className="arq-botao leve arq-toque-pular"
           onPointerDown={(e) => {
             if (pulo.current !== null) return
             pulo.current = e.pointerId
@@ -139,9 +141,20 @@ export function ControlesDeToque() {
           onPointerCancel={soltarPulo}
           onLostPointerCapture={soltarPulo}
         >
-          {modo === 'mergulho' ? 'Subir' : modo === 'cipo' ? 'Soltar' : 'Pular'}
+          {modo === 'mergulho' || modo === 'balao'
+            ? 'Subir'
+            : modo === 'cipo'
+              ? 'Soltar'
+              : modo === 'planar'
+                ? 'Fechar'
+                : 'Pular'}
         </button>
-        <button type="button" className="arq-botao leve" onClick={() => controle.usar++}>
+        <button
+          type="button"
+          className="arq-botao arq-toque-usar"
+          data-pronto={temAlvo ? '' : undefined}
+          onClick={() => controle.usar++}
+        >
           Usar
         </button>
       </div>

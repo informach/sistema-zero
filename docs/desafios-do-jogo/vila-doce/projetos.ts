@@ -46,7 +46,8 @@ const vel = (vx: number, vy = 0): JSStatement => ({
   vx: n(vx),
   vy: n(vy),
 })
-const apply: JSStatement = { type: 'g2d:applyVelocity', spriteVar: 'entregador' }
+// Cada ocorrência precisa de um nó próprio para receber um ID distinto no Blockly.
+const apply = (): JSStatement => ({ type: 'g2d:applyVelocity', spriteVar: 'entregador' })
 const draw = (spriteVar: string): JSStatement => ({
   type: 'g2d:drawSprite',
   spriteVar,
@@ -93,11 +94,6 @@ const arte: Record<string, string> = {
     84,
     '<rect x="3" y="3" width="74" height="78" rx="13" fill="#fff8dc" stroke="#67a3a4" stroke-width="5"/><path d="M19 41h42l-5 25H25z" fill="#e6ac73"/><path d="M20 41c0-15 40-15 40 0" fill="#fff2ce" stroke="#ab795d" stroke-width="3"/><text x="40" y="25" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#426c6f">1</text>',
   ),
-  botao: svg(
-    170,
-    46,
-    '<rect x="2" y="5" width="166" height="39" rx="13" fill="#54478c"/><rect x="2" y="1" width="166" height="39" rx="13" fill="#7562b8"/>',
-  ),
 }
 const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
   id: `vila-${name}`,
@@ -111,10 +107,10 @@ const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
 function largada(variacao: Variacao): JSStatement[] {
   return [
     vel(-PISTA.largura, -PISTA.altura),
-    apply,
+    apply(),
     { type: 'g2d:clampToScreen', spriteVar: 'entregador', ctxVar: 'ctx' },
     vel(PISTA.inicioX, PISTA.inicioY),
-    apply,
+    apply(),
     vel(0),
     set('tempo', n(variacao === 'tempo' ? PISTA.prazoCurto : PISTA.prazo)),
     set('entregas', n(0)),
@@ -133,27 +129,23 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
   const corridaPronta = variacao !== 'corrida' || pronto
   const start: JSStatement[] = [
     { type: 'g2d:setupStage', width: PISTA.largura, height: PISTA.altura, bg: '#fff6e5' },
-    { type: 'g2d:enableClassicControls', mode: 'directions' },
+    { type: 'g2d:enableClassicControls', mode: 'auto' },
     { type: 'var', name: 'correndo', value: b(false) },
     { type: 'var', name: 'tempo', value: n(0) },
     { type: 'var', name: 'entregas', value: n(0) },
     { type: 'var', name: 'primeiraEntregue', value: b(false) },
-    { type: 'var', name: 'recado', value: s('Toque em Largada para começar.') },
+    { type: 'var', name: 'recado', value: s('Enter ou + dá a largada. Depois, use as setas.') },
     image('entregador', 'entregador', PISTA.inicioX, PISTA.inicioY, 40, 48),
     image('caixa', 'caixa', 286, 238, 62, 100),
     image('destino', 'entrega', 550, 246, 70, 84),
-    image('largada', 'botao', 16, 426, 170, 46),
-    { type: 'g2d:createGroup', varName: 'botoesLargada' },
-    { type: 'g2d:addToGroup', spriteVar: 'largada', groupVar: 'botoesLargada' },
   ]
   const events: JSStatement[] = [
     {
-      type: 'g2d:onGroupClick',
-      groupVar: 'botoesLargada',
-      itemName: 'botao',
+      type: 'g2d:onKey',
+      key: 'Enter',
       body: corridaPronta ? largada(variacao === 'tempo' && !pronto ? 'corrida' : variacao) : [],
     },
-    { type: 'g2d:onKey', key: 'Enter', body: pronto ? largada(variacao) : [] },
+    { type: 'g2d:onKey', key: 'Space', body: pronto ? largada(variacao) : [] },
     {
       type: 'g2d:onOverlap',
       aVar: 'entregador',
@@ -267,15 +259,15 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
             ...drawings,
             draw('entregador'),
             label(v('recado'), 16, 413, 16),
-            draw('largada'),
-            label('Largada', 56, 454, 19, '#ffffff'),
+            label('Largada: Enter ou +', 16, 444, 19),
+            label('Extra: Espaço ou A recomeça.', 16, 470, 17),
             {
               type: 'g2d:drawScore',
               ctxVar: 'ctx',
               label: 'Tempo: ',
               value: v('tempo'),
-              x: 218,
-              y: 451,
+              x: 286,
+              y: 444,
               size: 17,
               color: '#493c56',
             },
@@ -284,8 +276,8 @@ export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
               ctxVar: 'ctx',
               label: 'Entregas: ',
               value: v('entregas'),
-              x: 405,
-              y: 451,
+              x: 448,
+              y: 444,
               size: 17,
               color: '#493c56',
             },

@@ -2,6 +2,7 @@ import {
   BICHOS_DO_BOSQUE,
   type BichoDoBosque,
   type Capi,
+  prepararEntregaDoPedido,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { adotar, motivoDoNome, receberPresenteDosBichos } from './bichos'
@@ -18,7 +19,6 @@ import {
   coracoes,
   darPresente,
   ehAniversario,
-  entregarPedido,
   pedidoDoDia,
   pedidoPeloId,
   podeEntregar,
@@ -123,12 +123,12 @@ export function entregar(s: Salvamento): {
   entregou: boolean
   falas: string[]
 } {
-  const r = entregarPedido(s.moradores.capi, s.inventario, s.bichos.achados.length)
-  if (!r.entregou) return { salvamento: s, entregou: false, falas: [] }
+  const r = prepararEntregaDoPedido(s, 'capi', s.moradores.capi.pedido?.dia ?? '')
+  if (!r.ok) return { salvamento: s, entregou: false, falas: [] }
   return {
-    salvamento: { ...s, inventario: r.inv, moradores: { ...s.moradores, capi: r.capi } },
+    salvamento: r.salvamento,
     entregou: true,
-    falas: comAPagina(s.moradores.capi, r.capi, [FALA_DA_ENTREGA]),
+    falas: comAPagina(s.moradores.capi, r.salvamento.moradores.capi, [FALA_DA_ENTREGA]),
   }
 }
 
@@ -165,7 +165,8 @@ export function adotarPelaCapi(
   const bichos = adotar(s.bichos, bicho, nome)
   if (!bichos?.adotado) return { motivo: 'Esse bicho não está no cercadinho.' }
   return {
-    salvamento: { ...s, bichos },
+    // O bicho adotado vira a companhia (S01): ele vai junto, como sempre foi.
+    salvamento: { ...s, bichos, companhia: 'adotado' },
     fala: `${bichos.adotado.nome} já gostou de você e vai junto para casa. Cuide com carinho.`,
   }
 }

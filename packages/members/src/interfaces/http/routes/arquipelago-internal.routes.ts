@@ -13,7 +13,9 @@ import {
 import type { ArquipelagoObjectivesService } from '../../../application/arquipelago/arquipelago-objectives.service'
 import type { ArquipelagoReadsService } from '../../../application/arquipelago/arquipelago-reads.service'
 import type { ArquipelagoRoomService } from '../../../application/arquipelago/arquipelago-room.service'
+import type { ArquipelagoRuntimeService } from '../../../application/arquipelago/arquipelago-runtime.service'
 import type { KidsJourneyQueryService } from '../../../application/kids-journey/kids-journey-query.service'
+import { AccessDeniedError } from '../../../domain/entitlement/entitlement.errors'
 import {
   KidsJourneyInitializingError,
   KidsJourneyUnavailableError,
@@ -24,6 +26,7 @@ import {
   ProjectCheckUnavailableError,
   StudioProjectSyncingError,
 } from '../../../domain/learning/learning.errors'
+import { StudioPythonProjectCheckUnavailableError } from '../../../domain/studio/python-project-check.errors'
 
 /**
  * Rotas S2S para o serviço do jogo (Arquipélago): nunca roteadas pelo gateway nem expostas ao
@@ -53,6 +56,9 @@ const Objetivo = z.object({
   hint: z.string().trim().max(300).optional(),
   optional: z.literal(true).optional(),
   programmingLanguage: z.string().max(40).optional(),
+  /** Só Python (C02): sem estes dois, o `z.object` os descartaria em silêncio. */
+  profileId: z.string().max(96).optional(),
+  stdin: z.array(z.string().max(4096)).max(4).optional(),
   rule: z.record(z.string(), z.unknown()),
 })
 const PedidoDeAnalise = z.object({
@@ -79,6 +85,18 @@ const PedidoDeVerificacao = z.object({
 })
 
 /** O que a verificação devolve como erro (o jogo lê o `code`; nada vira 5xx por causa do executor). */
+/**
+ * Corpo de `/ambiente` (C02b): quem joga e o projeto inicial vêm do serviço do jogo, que já
+ * conferiu o desafio; o `pedido` é o do Estúdio, conferido no serviço contra o inicial.
+ */
+const PedidoDeAmbiente = z.object({
+  requester: z.uuid(),
+  accountId: z.uuid(),
+  audience: Publico,
+  projetoInicial: Projeto,
+  pedido: Projeto,
+})
+
 function erroDaVerificacao(error: unknown): { status: number; code: string; message: string } {
   if (error instanceof ProjectCheckRejectedError)
     return { status: 400, code: 'PROJECT_CHECK_REJECTED', message: error.message }
@@ -88,7 +106,8 @@ function erroDaVerificacao(error: unknown): { status: number; code: string; mess
     return { status: 409, code: error.code, message: error.message }
   if (
     error instanceof ProjectCheckUnavailableError ||
-    error instanceof ProjectStructureAnalysisLimitError
+    error instanceof ProjectStructureAnalysisLimitError ||
+    error instanceof StudioPythonProjectCheckUnavailableError
   )
     return { status: 424, code: error.code, message: error.message }
   if (error instanceof ProjectCheckBusyError)
@@ -107,6 +126,8 @@ export function arquipelagoInternalRoutes(deps: {
   saldo?: { getBalance(userId: string, audience: 'kids' | 'adult'): Promise<number> }
   /** O quarto de um perfil (a visita de um irmão no jogo); ausente, 424. */
   quartos?: Pick<ArquipelagoRoomService, 'quarto'>
+  /** O ambiente Python de um desafio aberto no jogo (C02b); ausente, 424. */
+  ambiente?: Pick<ArquipelagoRuntimeService, 'autorizar'>
   token?: string
 }) {
   const jornadaIndisponivel = (error: unknown) =>
@@ -255,6 +276,35 @@ export function arquipelagoInternalRoutes(deps: {
           const { status, code, message } = erroDaVerificacao(error)
           set.status = status
           return { error: { code, message } }
+        }
+      })
+      /**
+       * A decisão de ambiente Python do Estúdio de desafio (C02b), no formato
+       * `StudioArquipelagoRuntimeDecisionSchema`. 400 pedido malformado, 403 outro projeto,
+       * ambiente ou público, 424 sem o serviço ou sem a política de runtime.
+       */
+      .post('/ambiente', async ({ body, set }) => {
+        const pedido = PedidoDeAmbiente.safeParse(body)
+        if (!pedido.success) {
+          set.status = 400
+          return { error: { code: 'INVALID_BODY' } }
+        }
+        if (!deps.ambiente) {
+          set.status = 424
+          return { error: { code: 'AMBIENTE_INDISPONIVEL' } }
+        }
+        try {
+          return await deps.ambiente.autorizar(pedido.data)
+        } catch (error) {
+          if (error instanceof ValidationError) {
+            set.status = 400
+            return { error: { code: 'VALIDATION_ERROR', message: error.message } }
+          }
+          if (error instanceof AccessDeniedError) {
+            set.status = 403
+            return { error: { code: 'ACCESS_DENIED', message: error.message } }
+          }
+          throw error
         }
       })
   )

@@ -1,5 +1,175 @@
 # Arquipélago Vagalume: regras do jogo
 
+Situação por funcionalidade, com código, conteúdo, provas e implantação separados:
+[estado atual](arquipelago-estado-atual.md). Nesta base de 30/10/2026, o formato vigente é V19,
+o teto é 65.536 bytes UTF-8 e o limite semanal de moedas do jogo é 100. Seções datadas sobre
+versões anteriores registram a evolução; não substituem o contrato atual.
+
+## Repertório antes de publicar desafios (C01a, 30/10/2026)
+
+Chegar a um posto abre a ilha, mas não ensina os cursos daquele posto. Cada desafio continua
+pedindo os blocos que a pessoa realmente conquistou. Antes de publicar, a equipe precisa
+ter uma fonte de ensino publicada na mesma comunidade, naquele posto ou antes. Bloco sem
+curso, inexistente ou de posto futuro impede publicar, mesmo com gabarito aprovado.
+
+Um Quadro das Cores não pode obrigar toda a comunidade a escolher um Poder específico.
+Seu repertório precisa aparecer em uma base 2D, base 3D ou missão. Desafios opcionais podem
+usar Poderes escolhidos; quem ainda não tem o bloco vê onde aprender. A regra vale também
+para importar e reativar. Reativar confere a versão publicada; editar o rascunho não altera
+essa versão. Conquistas anteriores continuam válidas. Nada muda na promoção da Jornada.
+
+Desde C01c, o Members compara o conteúdo dos blocos, incluindo condições, corpos de laços,
+ordem e área de execução. Completar um tipo já presente exige sua ferramenta; apoio intacto,
+molduras e mudanças só de posição/ID/comentário não. Cópias adicionais e retiradas também
+entram. Bloco desconhecido no inicial ou no gabarito impede publicar. A análise descreve
+ferramentas alteradas, não prova aprendizado: os objetivos continuam conferindo comportamento.
+Desde C01e, retirar manualmente um requisito derivado impede publicar e não o esconde da
+cobertura. Retiradas de acréscimos não derivados continuam válidas. O relatório local
+`docs/desafios-do-jogo/regras-a-completar.json` usa essa mesma derivação e distingue projetos
+inválidos de projetos sem lacunas; publicação e fontes remotas não são inferidas dele.
+
+Desde C01e2, reativar também refaz a análise do conteúdo original publicado. Se a lista
+antiga omitir uma ferramenta agora necessária, a equipe precisa revisar e publicar uma
+nova versão. O histórico e as conquistas não são reescritos. Um gabarito recusado, uma cópia
+ilegível ou o serviço de análise indisponível mantêm o desafio arquivado. Edição concorrente
+continua protegida pela revisão. Publicações já ativas não são alteradas automaticamente.
+
+No C01b2a, os seis quadros do Bosque, Pedras e Placar passaram a usar apenas fontes locais
+da trilha. A corrida começa por Enter ou + no controle de toque. No extra, as setas escolhem
+o bicho antes da largada e Espaço/A o movimenta. Noite continua opcional, com opacidade de
+Cadê Todo Mundo. Nenhuma concessão de bloco ou publicação remota foi feita.
+
+No C01b2b, a corrida da Vila Doce e suas três variações usam Enter/+ para a largada e
+Espaço/A no extra para recomeçar. O controle de toque inclui essas ações. Os quatro projetos
+deixam de exigir clique em grupos e inclusão no grupo do botão, que só tinham fonte local
+em extra. Os cinco primeiros quadros permanecem iguais. Isso corrige a dependência opcional;
+a aplicação específica de pulo, gravidade e ritmo do Inventor continua em revisão curricular.
+
+Plano: `docs/superpowers/plans/2026-10-30-arquipelago-curriculo-publicacao.md`.
+Classificar retomadas e aplicações e completar as linguagens do currículo ainda são os
+lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou publicados.
+
+## Resumo do dia, fim do tempo no fim da ação e festa de fim de ano (N06, N07, 30/10/2026)
+
+- **Resumo do dia** (`sistemas/resumo-do-dia.ts`, `interface/resumo-do-dia.tsx`): no primeiro
+  carregamento de cada dia o jogo fotografa o salvamento no aparelho, por público e perfil
+  (`arquipelago:resumo-do-dia:<público>:<perfil>`). Ao deitar na cama abre "Hoje na sua ilha", só
+  com o que ela fez de bom (Lumis, estrelas, pedidos, corações, projetos azuis, pontes, ilhas,
+  chaves, segredos, constelações) e a boa-noite; "Continuar" volta ainda deitada. A tela de
+  descanso do fim do tempo traz o mesmo resumo. Vale no adulto. Sem campo novo no salvamento.
+- **Fim do tempo no fim da ação** (`sistemas/fim-do-tempo.ts`): se o tempo livre acaba com uma
+  ação em andamento (corrida, balão, montaria, mergulho, barco, cipó, escorregador ou um painel
+  aberto, como a conversa ou a cena da ponte), o jogo espera ela acabar, no máximo 30 s. O Zappy
+  avisa ("O tempo de hoje acabou. Termine o que está fazendo e eu ponho você para dormir.") e,
+  no fim, diz "Hora de descansar" e vem a tela de descanso. Durante a espera o jogo não pede mais
+  tempo ao serviço, que continua sendo quem controla o limite.
+- **Festa de fim de ano**: aprovada pela dona em 30/10/2026, de 20 de dezembro a 6 de janeiro
+  (atravessa a virada). Usa o arranjo e a arte que já existiam na Vila, as ideias de roupa da
+  época e uma receita nova da festa, o manjar de coco (1 leite de coco e 2 leites, na bancada, fome
+  +30 e diversão +20). A Noite das Lanternas continua sem data e desligada.
+- Playground: um jogo novo começa com as pontes das ilhas abertas já vistas (`?chegada=1` mostra a
+  cena); `?usado=SEGUNDOS` simula o tempo já usado hoje. Provas:
+  `tests/resumo-e-fim-do-tempo.test.ts`, `playground/verificar-descanso-browser.ts` e
+  `playground/verificar-fim-do-tempo-browser.ts`.
+
+## Horta em horas e clima natural (N03 e N04, 30/10/2026)
+
+A horta cresce em horas de verdade (seção 6.3). Antes das Nuvens o tempo da sua ilha muda
+sozinho, um clima por dia do jogo, igual em qualquer aparelho (`climaNatural`: 55% sol, 25%
+nublado, 20% chuva). Ele faz tudo o que o clima escolhido faz: a chuva rega, o sol pede água mais
+cedo, a colheita especial, o céu e o relógio. Com as Nuvens, a Iriê ensina a escolher, como antes
+(`climaEfetivo` em `sistemas/clima.ts`). Numa visita o tempo é de sol. A prévia da rotina usa a
+hora da prévia. Provas: `tests/horta-e-clima-natural.test.ts`,
+`playground/verificar-clima-natural-browser.ts` e `verificar-clima-browser.ts`.
+
+## Lumis em todas as ilhas (N01, 30/10/2026)
+
+Cada ilha tem a sua família de Lumis, como pede a proposta: praia (Estrelinha e Búzio), Bosque
+(Pitanga e Ipê), Vila (Quindim e Brigadeiro), Recife (Bolha e Pérola), Pico (Gelinho e Cristal),
+Vale (Ovinho e Brotinho) e Nuvens (Algodão e Pluma). À noite saem dois borrões em cada ilha
+aberta, perto das âncoras `lumi-1` a `lumi-4` (na sua ilha, quatro lugares na beira do gramado,
+entre as pontes, `LUGARES_DOS_LUMIS_DA_PRAIA`). Antes do primeiro Lumi da família, todos viram o
+comum; depois, um em cada cinco vira o raro. Os presos moram na ilha deles e ensinam a rotina
+como os da Vila. A Vila mantém os ids e a chave de presos de antes.
+
+A lanterna aparece na HUD da proposta desde o começo: na primeira noite, o Zappy entrega a
+lanterna a quem ainda não tem ("Chegou a noite. Os borrões do Cinza saem pelas ilhas..."). O
+Bento continua repondo se ela sumir. Escolha mínima, avisada à dona: a proposta não diz quem dá.
+
+Regras em `sistemas/borroes.ts` (`FAMILIAS_DOS_LUMIS`, `borroesDaNoite(dia, lumis, ilha)`,
+`lumisNaIlha`, `lanternaDoZappy`); no mundo, `mundo/borroes-da-ilha.tsx`. Sem mudança no
+salvamento: `lumis` já guardava as 14 espécies. Provas: `tests/lumis-das-ilhas.test.ts` e
+`playground/verificar-lumis-das-ilhas-browser.ts`.
+
+## Salvamento V19 e os percursos novos (levantamento de 30/10/2026)
+
+A V19 acrescenta, sem consumir itens: três percursos (`praia-pedras`, `recife-corais`,
+`vale-pegadas`), as chaves dos cômodos da casa da Íris (`chaves`, um bit por cômodo), os
+segredos das ilhas (`segredos`, um bit por segredo, até 24), o mapa que se revela andando
+(`mapa`, uma grade de 8 × 8 por ilha em hexadecimal) e quem acompanha pela ilha (`companhia`:
+`quarto` ou `adotado`). A V18 migra sem segredo nem mapa, com o bicho do quarto acompanhando e
+com as chaves que a obra já usava (casa e cabanas, `chavesUsadasNaObra`). Entre
+duas sessões, chaves, segredos e mapa se juntam; a companhia segue a regra da preferência do
+clima. Na V20 (o iglu do Pico foi adiado, §6.16.2b), o documento cheio fica em 63.989 bytes
+(teste `salvamento-v10`); com o catálogo inteiro a 999, em 64.923 (folga de 613). A migração
+`0017_percursos_da_v19` atualiza a lista de percursos aceita pelos fantasmas.
+
+Os percursos novos usam colisores que as ilhas já têm (`mundo/percursos-das-ilhas.ts`):
+- **Pulos nos corais** (Recife): os 12 corais em volta da lagoa, do oeste pelo sul até o norte,
+  com uma pérola em cada um de cinco vãos. Cair na areia ou na lagoa volta ao último coral.
+  Estrela do tempo em 22 s.
+- **Trilha das pedras do vulcão** (Vale): as sete pedras na ordem, a pé ou montado; a sétima é a
+  chegada. Só a próxima pedra conta (`emOrdem`), para não cortar caminho. Estrela em 12 s.
+- **Volta pela praia** (sua ilha): da pedra do leste pela areia do sul até a pedra do oeste,
+  paradas na ordem, cinco conchas brilhantes. Estrela em 26 s (só correndo).
+
+Em todos os percursos, cair na água conta como queda (volta à última parada). Provas:
+`tests/percursos-das-ilhas.test.ts` e `playground/verificar-percursos-v19-browser.ts`
+(compilar com `bun build --target=node --external playwright-core` e rodar com `node`).
+
+## Medição: fotografia e mudanças de aparência (A06, 30/10/2026)
+
+A equipe vê três coisas separadas. A fotografia mostra a aparência guardada hoje nos projetos
+azuis recebidos no período. As mudanças contam aplicações e trocas confirmadas pelo salvamento,
+na data em que o servidor as recebeu. As aprovações contam a primeira conclusão do desafio.
+
+Trocar uma aparência não é criar outra obra nem comprar outra peça. Voltar a uma aparência
+anterior conta outra aplicação. Retirar, repetir o mesmo save ou perder uma disputa de revisão
+não conta. O primeiro save recebido é somente a base, inclusive quando vem de outro aparelho.
+O histórico anterior não é reconstruído. Pinta, Molda e criação guardada são origens declaradas,
+não prova de autoria. As datas de criação e de compras ainda não estão integradas ao relatório.
+
+Grupos de menos de cinco pessoas ficam ocultos. Não há lista de pessoas, IDs de criações ou
+total auxiliar que revele o grupo oculto. Sessão de suporte não grava. Apagar o save apaga seus
+eventos. O histórico fica em uma tabela própria, sem aumentar a V18 nem mudar moedas ou acesso.
+O período segue os dias de São Paulo, com até 90 dias. Sem o campo novo, o Admin mostra fonte
+indisponível, nunca zero. A coleta depende da implantação da migração 0015 e do serviço novo;
+esta execução só a testou no Postgres local descartável.
+
+Plano: `docs/superpowers/plans/2026-10-30-arquipelago-medicao-de-aparencias.md`.
+Provas locais: `docs/qa/2026-10-30-medicao-aparencias/`.
+
+## Pausa do quarto e movimento ambiente (30/10/2026, A03a)
+
+Na casa própria e na visita, pets e móveis animados param quando o jogo pausa, inclusive no
+menu, num painel ou numa ferramenta. Retomam do mesmo instante, sem recomeçar o clipe. O
+balanço do passarinho usa apenas o tempo ativo, sem recuperar o tempo passado na pausa.
+
+A preferência de menos movimento, do aparelho ou do Conforto, deixa os modelos em repouso e
+interrompe o passeio do pet. O rótulo do Conforto menciona câmera e ambiente. O quarto da
+plataforma continua usando seu comportamento anterior quando não recebe uma pausa do jogo.
+Regras: `arquipelago/src/mundo/casa.tsx`, `sistemas/pausa.ts` e os componentes compartilhados
+`avatar-quarto/src/quarto/room-glb-model.tsx` e `pet-3d.tsx`. Sem mudança de salvamento ou arte.
+
+## Ajuste de recursos dos personagens (30/10/2026, A01)
+
+Entrar e sair de uma sala não deve acumular memória dos personagens que reaparecem.
+Cada cópia animada libera os próprios esqueletos e suas texturas de ossos ao sair da cena.
+O modelo original e as outras cópias continuam utilizáveis. Geometrias e materiais
+compartilhados não são descartados por essa cópia. O verificador do Farol acompanha texturas
+e geometrias em três remontagens depois do aquecimento; conferir somente geometrias não basta.
+Regra técnica: `mundo/arte-animada.ts`, `copiarArteAnimada().soltar()`.
+
 Levantamento de 27/10/2026, feito lendo o código. Para a visão geral dos pacotes e de como o jogo
 chega à criança, veja `docs/arquipelago.md`.
 
@@ -73,18 +243,24 @@ Arquivo: `arquipelago/src/mundo/medidas.ts`.
 - **Distâncias:** as ilhas do anel ficam a `RAIO_DO_ANEL = 82` do centro e têm raio
   `RAIO_DA_ILHA_DO_ANEL = 13`. O gramado da sua ilha vai até 24 (`RAIO_DO_GRAMADO`), a praia até 29
   (`RAIO_DA_PRAIA`) e o raso até 36 (`RAIO_DO_RASO`). Uma unidade é mais ou menos 1 metro.
-- **A ponte:** quando a ilha abre, a ponte aparece e a cor escorre pela ilha em 4,5 segundos
-  (`DURACAO_DA_CHEGADA_MS = 4500`, em `arquipelago/src/mundo/anel.tsx`). O Zappy avisa: "A ponte
-  para o ... ficou pronta". Essa chegada aparece uma vez só. A ilha entra em
-  `pontesVistas` no salvamento.
+- **A ponte (cena da subida de posto, N02, 30/10/2026):** a ponte nova fica fechada e a ilha
+  cinza até a cena dela. A cena começa quando a criança está fora de casa, sem painel, menu,
+  ferramenta, corrida ou visita (`mundo/cena-da-chegada.tsx`, regras em
+  `mundo/chegada-da-ponte.ts`): o Zappy voa até a ilha cinza (2,4 s, câmera no alto da sua ilha),
+  a ponte se monta tábua por tábua com a cor escorrendo (4,5 s, câmera de lado) e a câmera anda
+  pela travessia (3,4 s). A legenda diz cada etapa; "Pular" ou o Esc encerram. Com menos
+  movimento, a câmera fica parada de lado e a cena dura 5,5 s. No fim, o Zappy avisa: "A ponte
+  para o ... ficou pronta" e a ilha entra em `pontesVistas`. Duas pontes novas: uma cena por vez,
+  na ordem dos postos. Provas: `tests/chegada-da-ponte.test.ts` e
+  `playground/verificar-ponte-montando-browser.ts`.
   - Fechada, a ponte tem só o primeiro quarto, do lado da sua ilha (`TRECHO_QUEBRADO = 0,25`,
     `mundo/medidas.ts`), com a placa no fim. Ao abrir, ela cresce do fim desse trecho até a ilha
     (`fracaoMontada`), e o chão que segura o corpo acompanha as tábuas: quem está em cima do
     trecho quebrado continua de pé durante a montagem (antes, o chão da ponte sumia nos 4,5 s e a
     criança caía na água). Os corrimãos entram quando ela termina.
-- **Ilha aberta hoje:** chegar perto mostra a ação "Olhar em volta". O Zappy explica que os
-  moradores e os bichos chegam numa próxima fase. No Bosque, que já tem a Capi (seção 6.15), essa
-  ação não aparece (`ILHAS_VIVAS` em `arquipelago/src/mundo/anel.tsx`).
+- **Ilhas vivas:** as seis ilhas do anel têm moradores e bichos (`ILHAS_VIVAS` em
+  `arquipelago/src/mundo/anel.tsx`). A antiga ação "Olhar em volta", que dizia que eles chegariam
+  numa próxima fase, saiu do código em 30/10/2026 (N13).
 - **O Farol** fica na sua ilha, ao lado da casa (`FAROL = { x: -12, z: -13 }`). Ele acende quando a
   posição é 8 ou mais (`arquipelago/src/mundo/farol.tsx`, `aceso = jornada >= 8`).
 - **Primeira entrada:** a pessoa aparece no quarto (`INICIO`). Enquanto a porta nova não foi
@@ -231,8 +407,9 @@ ECA Digital (Lei 15.211/2025, art. 21): restrito por padrão, quem libera são o
   vale `PERMISSOES_PADRAO`.
 - O `PUT` leva as três de uma vez (`PermissoesDaFamiliaSchema`, objeto estrito). Suporte somente
   leitura recebe 403 `SOMENTE_LEITURA`.
-- Quem obedece a "Visitas de irmãos" desde 29/10/2026: os recordes da família e as visitas (§6.20).
-  As outras duas ainda só se gravam, leem e mostram.
+- Quem obedece a "Visitas de irmãos": os recordes da família, as visitas e os trajetos familiares (§6.20).
+  "Visitas de outras crianças" abre as casas de amigos (§6.22) e "Fotos no Clube" abre o envio
+  do modo foto para o Clube (§6.23).
 
 **No cartão:** cada parte só aparece com a leitura dela. Limite que falha ou jogo fechado para a
 família esconde o cartão inteiro (e a semana e as permissões nem são pedidas); semana ou
@@ -337,8 +514,12 @@ Arquivos: `arquipelago-api/src/application/servico-do-jogo.ts` (`comandarSessaoT
 
 Arquivo: `arquipelago-contracts/src/salvamento.ts`.
 
-- **Versão:** `VERSAO_SALVAMENTO = 10` (`SalvamentoV10Schema`, estrito: campo desconhecido é
-  recusado). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
+- **Versão:** hoje `VERSAO_SALVAMENTO = 20` (`SalvamentoV20Schema`, estrito: campo desconhecido é
+  recusado; atualizado em 30/10/2026). Da V11 à V20, cada versão está descrita na seção da fase
+  que a criou: os achados do Recife (V11), o Vale (V12), os corais (V13), a banda (V14), o
+  filhote (V15), as constelações, o clima e o Farol (V16), a amizade do anel (V17), as visitas
+  às ilhas (V18), os percursos novos, chaves, segredos, mapa e companhia (V19, seção "Salvamento
+  V19") e os móveis da casa e a galeria do Farol (V20, §6.16.4). A V2 (27/10/2026) é a V1 mais o melhor resultado de cada percurso. A V3 (28/10/2026) é
   a V2 mais a Capi e os bichos do Bosque. A V4 (28/10/2026) é a V3 mais o modo construção e os
   projetos azuis. A V5 acrescenta `presenteDosBichosEntregue`, sem alterar os formatos anteriores.
   A V6 (29/10/2026) guarda as `aparencias` de cada projeto azul (a galeria, §9.9). A V7
@@ -354,8 +535,9 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   - as pontes já vistas;
   - se a porta nova da casa foi aberta;
   - o melhor de cada percurso (`percursos`): as três estrelas, cada uma guardada à parte, e o
-    melhor tempo em milissegundos (de 0 a 1 hora). Hoje o único percurso é `bosque-copas`
-    (`PERCURSOS`);
+    melhor tempo em milissegundos (de 0 a 1 hora). São oito percursos (`PERCURSOS`, desde a V19):
+    `bosque-copas`, `vila-telhados`, `pico-cume`, `nuvens-saltos`, `nuvens-balao`,
+    `praia-pedras`, `recife-corais` e `vale-pegadas`;
   - a Capi (`moradores.capi`): a amizade (de 0 a 500, `AMIZADE_MAXIMA`), o último dia de conversa e
     de presente e o pedido do dia (o dia, qual é e se já foi entregue). Os dias são `AAAA-MM-DD`
     no horário do aparelho;
@@ -393,7 +575,10 @@ Arquivo: `arquipelago-contracts/src/salvamento.ts`.
   nenhum projeto azul; `migrarDaV4`: tudo igual e `presenteDosBichosEntregue: false`;
   `migrarDaV5`: a aparência em uso vira a única guardada; `migrarDaV6`: tudo igual e o Bento sem
   amizade, conversa, presente nem pedido, `MORADOR_NOVO`; `migrarDaV7`: nenhum turno feito;
-  `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina montada).
+  `migrarDaV8`: nenhum Lumi preso; `migrarDaV9`: nenhuma rotina montada; da V10 à V20, cada
+  migração na seção da fase que criou a versão; a V18 para a V19 já traz as chaves do que a obra
+  usa e o bicho adotado acompanhando, e a V19 para a V20 acerta as mesmas duas coisas para quem
+  passou pela V19 do staging).
 - **Aba aberta antes da atualização:** ela ainda grava a versão antiga. O serviço aceita e guarda
   já migrado, mas responde na versão atual, que a aba antiga não lê. Só a primeira gravação dela fica; as seguintes
   falham (e voltam para a fila a cada 20 s) até a página recarregar. Isso vale para qualquer
@@ -503,8 +688,9 @@ Arquivos: `sistemas/necessidades.ts` e `estado/relogios.tsx`.
   - `cansado`: energia ou fome abaixo de 15;
   - `otimo`: fome, energia e diversão acima de 60;
   - `bem`: o resto.
-- **Ritmo:** o humor muda a velocidade de andar (`ritmo`). Ótimo é 1,1 vezes, bem é 1 vez, cansado
-  é 0,8 vez.
+- **Ritmo:** cuidar dá um bônus de velocidade (`ritmo`). Ótimo é 1,1 vezes; bem e cansado
+  conservam 1 vez, o ritmo básico. Necessidades baixas não reduzem a velocidade de andar,
+  correr, nadar ou equilibrar. As regras de comida, gasto de energia e descanso não mudam.
 
 ### 6.3 Horta
 
@@ -513,11 +699,14 @@ Arquivos: `sistemas/horta.ts` e `mundo/horta.tsx`.
 - **Os canteiros:** 6 no começo, numa grade de 3 colunas por 2 linhas (`HORTA` em `medidas.ts`).
 - **As sementes:** `SEMENTES` = alface, tomate, milho.
 - **O ciclo:** plantar, regar, esperar, colher. A planta só cresce depois de regada.
-- **Tempo para crescer, contado da rega** (`CRESCIMENTO_MS`). O código avisa que estes tempos são
-  curtos de propósito, para dar para ver crescer numa sessão:
-  - alface: 3 minutos;
-  - tomate: 5 minutos;
-  - milho: 8 minutos.
+- **Tempo para crescer, contado da rega** (`CRESCIMENTO_MS`): "planta hoje, colhe amanhã", como
+  na proposta (decisão da dona em 30/10/2026):
+  - alface: 4 horas;
+  - tomate: 8 horas;
+  - milho: 16 horas.
+- **O primeiro pedido** cresce no tempo curto do tutorial (`CRESCIMENTO_DO_PRIMEIRO_PEDIDO_MS`:
+  alface 3, tomate 5 e milho 8 minutos) enquanto a geladeira não foi ganha. O que foi regado até
+  ganhar a geladeira continua no tempo curto (`noTempoDoPrimeiroPedido`): nada "encolhe".
 - **Estágios** (`estagio`):
   - `vazio`;
   - `semente`: plantada e não regada;
@@ -527,6 +716,15 @@ Arquivos: `sistemas/horta.ts` e `mundo/horta.tsx`.
 - **A horta cresce no tempo de verdade,** também com o jogo fechado.
 - **Colheita** (`COLHEITA`): alface 2, tomate 3, milho 2. Cada colheita devolve também 1 semente
   da mesma planta, então a horta nunca acaba.
+- **Colheita especial:** o clima que vale na sua ilha (o natural do dia antes das Nuvens, o
+  escolhido depois) acrescenta: sol, 1 tomate; nublado, 1 alface; chuva, 1 milho. Humor ótimo acrescenta mais 1 alimento, com ou sem
+  clima liberado. Valem o clima e o humor no momento de colher. Não há sorteio nem redução da
+  colheita normal por ficar longe. O resultado anuncia cada bônus, sem criar alimento novo.
+- **Tudo precisa caber:** a mão e os Lumis conferem a quantidade inteira e a semente antes de
+  tirar a planta. Se a mochila ou a carga não comportar tudo, o canteiro continua maduro.
+  O bônus nunca vira alimento perdido por arredondamento ou corte no teto de 999.
+- **Prévia da rotina:** mostra o clima e o humor da abertura. Usa a mesma regra de colheita do
+  mundo, mas não muda a ilha. Se o contexto mudar antes do Testar, o bônus pode mudar também.
 - **Qual semente vai no canteiro:** o canteiro vazio planta a primeira semente que a pessoa tiver,
   nesta ordem: alface, tomate, milho (`ORDEM` em `mundo/horta.tsx`).
 
@@ -575,6 +773,31 @@ são de exemplo, para ajustar.
 - Só aparecem as receitas que ela já sabe (`receitasConhecidas`, pelos corações com o Bento); a
   lista diz quantas o Bento ainda vai lembrar.
 - O raio da ação é 2,2.
+
+#### Receitas das amizades e da coleção do Bosque (L08)
+
+O diário e os lugares de cozinhar mostram o mesmo livro. A receita aprendida fica disponível
+pela conquista, sem prazo para usar e sem perda por ficar um tempo fora. As sete receitas
+anteriores mantêm seus ingredientes e efeitos. Estas cinco completam o catálogo atual:
+
+| Receita | Como aprender | Ingredientes | Onde fazer | Efeito ao comer |
+|---|---|---|---|---|
+| Moqueca de legumes | Um coração com Maré | 2 tomates, 1 milho e 1 leite de coco | Bancada | Fome +55, energia +10 |
+| Açaí na tigela | Um coração com Jade | 1 polpa de açaí | Bancada | Fome +25, energia +15 |
+| Mingau de milho | Um coração com Floco | 1 fubá e 1 leite | Bancada | Fome +35, energia +10 |
+| Canjica | Um coração com Iriê | 2 milhos e 1 leite | Bancada | Fome +35, diversão +10 |
+| Salada colorida | Achar os quatro bichos do Bosque | 2 alfaces, 2 tomates e 1 milho | Bancada | Fome +55, energia +15 |
+
+Cada preparo faz um prato. Os valores são escolhas de equilíbrio desta entrega; as necessidades
+continuam limitadas a 100. Os pedidos diários dos quatro moradores dão os ingredientes que não
+vêm da horta, depois de aprender a receita. A pista no diário e na bancada explica a origem.
+Repetir o pedido entregue não dá outra cesta. Se a cesta inteira não couber, o pedido e os itens
+continuam intactos para tentar depois. Cozinhar também recusa antes de gastar ingredientes se
+o prato não couber. Os itens usam nome e ícone na mochila; não há modelo de prato novo no mundo.
+
+A pipoca de festa continua restrita à fogueira da Junina. Nenhuma data sazonal pendente é
+ativada por esta mudança. A coleção do Recife conta três descobertas: baú, página e tesouro.
+O total de corais achados é outro progresso e não entra nessa contagem.
 
 ### 6.6 O personagem
 
@@ -809,11 +1032,15 @@ The Sims):
 
 Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medidas.ts`.
 
-- **Duas versões:** cada ilha do anel tem uma versão leve e pode ter uma versão completa, feita
-  no Blender. O Bosque e, desde 29/10/2026, a Vila Doce têm a completa (`ILHAS_COMPLETAS` em
-  `mundo/ilha-completa.tsx`). Na Vila Doce o percurso dos telhados já se pisa (caixotes a 1 m,
-  casinhas a 2,0, 2,8 e 3,6 m, terraço da sorveteria a 4,4 m); o Bento, as lojas e as entregas vêm
-  nas próximas etapas.
+- **Duas versões:** cada ilha do anel tem uma versão leve e uma completa, feita no Blender. As
+  seis têm a completa (`ILHAS_COMPLETAS` em `mundo/ilha-completa.tsx`): Bosque, Vila Doce,
+  Recife, Pico, Vale dos Dinos e Ilha das Nuvens, todas vivas (`ILHAS_VIVAS`). Na Vila Doce o
+  percurso dos telhados se pisa (caixotes a 1 m, casinhas a 2,0, 2,8 e 3,6 m, terraço da
+  sorveteria a 4,4 m).
+- **Decisão (N15, registrada em 30/10/2026):** a proposta fala em três versões (silhueta, média e
+  completa); o jogo usa duas, a leve (que já é a silhueta cinza no anel) e a completa, com a
+  busca começando na faixa da ponte. Ajuste técnico para caber no orçamento de memória (uma
+  ilha completa por vez), sem mudar o que a criança vê de longe.
 - **O ciclo** (`proximoEstadoDaIlha`): `longe` → `carregando` → `pronta` → `ativa` →
   `descarregando` → `longe`.
 - **Quando busca:** a ilha precisa estar aberta. A busca começa quando a pessoa entra na faixa da
@@ -1278,8 +1505,8 @@ de mentirinha: ela atende o balcão, sem gastar nada do inventário.
   (vai para a bandeja, no máximo `MAXIMO_NA_BANDEJA`, 5; tocar na bandeja tira um) e entrega.
   Certo, vem o próximo; errado, conta um engano, a bandeja esvazia e o freguês repete o pedido.
   Bandeja vazia não entrega. Não há relógio: ninguém perde por demorar.
-- **Os pedidos** são sorteados pelo balcão, o dia e quantos turnos ela já fez ali
-  (`pedidosDoTurno`): o mesmo turno repete os pedidos, o seguinte traz outros.
+- **Os pedidos** vêm da sessão do serviço, com seis bandejas por balcão e dia. Reabrir mantém
+  os mesmos pedidos. O jogo e o serviço usam a mesma regra pura dos contratos.
 - **Estrelas** (`estrelasDoTurno`): nenhum engano, 3; até dois, 2; mais, 1. O salvamento guarda as
   melhores de cada balcão.
 - **Pagamento:** só o primeiro turno do dia em cada balcão paga (`pagoEm`). Padaria: 1 fubá, 1
@@ -1287,16 +1514,20 @@ de mentirinha: ela atende o balcão, sem gastar nada do inventário.
   pago na padaria também vale `AMIZADE.turno` (10) com o Bento e, se passar um coração, traz a
   receita nova e a página do diário (`ajudarOBento`). Os outros turnos do dia são só pela diversão
   e pelas estrelas.
-- **Moedas:** os turnos ainda não pagam moedas. A proposta prevê moedas baixas nos turnos, dentro
-  do teto semanal, mas cada recompensa precisa ser autorizada no serviço antes de ligar (o
-  salvamento é escrito pelo aparelho).
+- **Moedas:** cada balcão dá 5 no primeiro turno do dia, dentro do teto semanal de 100 do jogo.
+  O serviço cria a sessão e confere as seis bandejas. O aparelho não escolhe prêmio nem dia.
+  Resposta perdida é retomada com a mesma chave. Teto ou carteira fora do ar guardam o prêmio
+  no serviço, para tentar quando um balcão abrir novamente. Não se perdem moedas por esperar.
+- **Mochila cheia:** ingredientes do turno e novas cestas do Bento precisam caber inteiros.
+  Sem espaço, a bandeja continua para tentar outra vez; pedido e presente não são consumidos.
+  Um turno antigo não apaga o registro de ingredientes já recebidos em um dia mais novo.
 - **Textos:** as falas dos fregueses concordam em número e gênero (`itensPorExtenso`) e seguem as
   regras de texto (sem travessão, sem exclamação, sem começar com pergunta), conferidas no teste.
 - Testes: `tests/turnos.test.ts`; navegador: `bun playground/verificar-turnos-browser.ts`.
 
 ### 6.15.3 Os borrões da noite e os Lumis da Vila Doce (fase2-06)
 
-Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-vila.tsx` (no mundo),
+Arquivos: `arquipelago/src/sistemas/borroes.ts` (regras), `mundo/borroes-da-ilha.tsx` (no mundo, desde 30/10 em todas as ilhas),
 `personagem/lanterna-na-mao.tsx` (a lanterna acesa na mão). Salvamento V9: `lumis`, quantos de
 cada espécie ela já prendeu.
 
@@ -1337,13 +1568,19 @@ cada espécie ela já prendeu.
 Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodos.ts`, `obra.ts`,
 `pecas.ts`). Plano e decisões: `docs/plans/2026-10-28-arquipelago-modo-construcao.md`.
 
-- **O lote da casa** (`LOTE_DA_CASA`): a grade de 1 célula por unidade, nas coordenadas do mundo,
-  de x -13 a 14 e de z -12 a 8. É onde o chão da sua ilha é plano: em toda célula livre o chão
-  fica entre 0,15 abaixo e 0,02 acima do topo da terra (teste).
-- **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): a varanda, a horta,
-  a bancada, as duas árvores perto da casa, o pé do farol, as cinco moitas do terreno e o
-  morrinho na frente da varanda. Um teste confere que todo colisor do lote (horta, bancada,
-  farol, árvores, moitas) cai numa célula ocupada.
+- **O lote da casa** (`LOTE_DA_CASA`, 31/10/2026, pedido dela: o lugar de construir mais livre e
+  coerente para a casa crescer a partir do quarto): a grade de 1 célula por unidade, nas
+  coordenadas do mundo, de x -15 a 16 e de z -14 a 10 (`CHAO_DO_LOTE` em `mundo/medidas.ts`). É
+  onde o chão da sua ilha é plano: em toda célula livre o chão fica entre 0,15 abaixo e 0,02
+  acima do topo da terra (teste). Não há árvore, moita, pedra, flor nem trilha dentro dele nem no
+  lote grande do Vale: a grama fica livre para a obra.
+- **A horta, a bancada e o cata-vento** saíram de perto da parede do quarto: ficam na frente e à
+  direita da casa, fora do lote grande (horta em x 10,5 e z 15, bancada em x 15 e z 14,
+  cata-vento em x 6,8 e z 15, com a hélice olhando para a horta). Uma trilha de pedras sai da
+  beira do lote para o píer e outra para o cata-vento e a horta. A latinha de minhocas fica ao
+  lado da horta (3 m para o oeste e 2 m para a casa).
+- **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): só a varanda e o pé
+  do farol. Um teste confere que todo colisor do lote cai numa célula ocupada.
 - **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. As paredes da esquerda e do
   fundo são da plataforma (fixas: sem porta nem janela). As da frente e da direita viram paredes
   do kit na primeira obra (travadas: aceitam porta e janela, mas não se apagam), com a porta nova e
@@ -1433,7 +1670,7 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   `objetos.ts`): o objeto chega com a função pronta e funciona em holograma; com aparência fica
   completo.
   - **De onde vem** (`ganharProjetos`, conferido a cada mudança do salvamento): a geladeira, do
-    primeiro pedido entregue (hoje o da Capi, o único pedido do jogo); a casinha, de adotar um bicho
+    primeiro pedido da ilha central (a primeira colheita manual); entregar à Capi também concede o projeto se ainda faltar; a casinha, de adotar um bicho
     no Bosque. O Zappy avisa: "Chegou o projeto azul: geladeira. Ponha em casa no modo Construir.".
     Os outros objetos (forno, aquário, lareira, banda, fliperama, museu) estão no catálogo com o
     molde; a função e a origem deles entram com as ilhas de cada um.
@@ -1450,8 +1687,9 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   - **A geladeira** (`GELADEIRA_GUARDA`): guarda 4 alimentos no holograma e 12 com aparência, um
     por vez, da mochila para dentro e de volta. Só alimento (item que se come). "Conserva" fica para
     quando a comida estragar (hoje nada estraga).
-  - **A aparência** (painel do objeto, `interface/projeto-azul.tsx`): "Pintar no Pinta" (a frente,
-    os lados e o topo da caixa; só com as faces no modelo, hoje só a geladeira) e "Modelar no
+  - **A aparência** (painel do objeto, `interface/projeto-azul.tsx`): "Pintar no Pinta" (as faces
+    que o modelo tiver: a geladeira, o forno, o aquário, o museu, a casinha e o vaso da planta; a
+    lareira e a banda não têm faces) e "Modelar no
     Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
     `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
     a origem e o id da criação). "Usar uma criação minha" entra com o cartão dele.
@@ -1575,8 +1813,7 @@ Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação 
 - Níveis: Começando desde 0, Gostoso desde 6, Aconchegante desde 12 e Muito aconchegante desde
   22 pontos. São de uma a quatro estrelas, acompanhadas de texto, não apenas de cor.
   Teto da soma: 39 pontos. `ACONCHEGO_QUE_CHAMA_VISITA` = 12 e `ACONCHEGO_DA_FESTA` = 22,
-  alinhados aos dois níveis de cima. Visitas e festas ficam para outra fase; estes números
-  ainda não acionam moradores, recompensas ou eventos.
+  alinhados aos dois níveis de cima. As visitas de moradores e festas em casa seguem a seção 6.16.2.
 - Olhar: toque de até 6 px seleciona o cômodo no chão; arrastar continua movendo a câmera.
   A célula observada é transitória, para continuar no mesmo lugar quando o ID do cômodo muda.
   O botão Aconchego abre o painel da barra, com seletor acessível para teclado e toque.
@@ -1587,6 +1824,145 @@ Balanceamento inicial escolhido para esta entrega, ainda sujeito a observação 
 
 Testes: `tests/aconchego.test.ts` e `playground/verificar-aconchego-browser.ts`, usando plataforma
 falsa e sem persistência. Prints e evidências em `docs/qa/2026-10-28-arquipelago-aconchego.md`.
+
+### 6.16.2 Moradores em casa (L06, 29/10/2026)
+
+Com 12 pontos em um cômodo, uma visita conhecida pode aparecer na sua casa. Com 22, o menu
+**Moradores em casa** oferece **Começar festa**, reunindo até três moradores. Não soma os pontos
+de salas diferentes. A casa original usa as medidas da mesma planta do modo Construir.
+
+- A escolha é estável por perfil e dia de São Paulo. Só entram moradores com quem já houve
+  conversa e cuja ilha está liberada pela jornada. Kids e adulto usam as mesmas regras.
+- A busca parte da porta principal. Respeita paredes, portas, móveis e objetos, deixa uma
+  célula livre de folga em volta e pelo menos 3 metros entre convidados. Se a presença cortar
+  o caminho para uma célula antes alcançável, o lugar é recusado. Não empurra móveis nem avatar.
+- Os modelos, colisores e conversas são os mesmos das ilhas. Enquanto um morador está na casa,
+  sua presença original fica oculta. Conversa, presente e pedido continuam com o limite diário.
+- Ao construir, entrar em visita de outra pessoa, perder acesso ou afastar-se mais de 22 metros
+  do centro da casa, os convidados saem e liberam suas cópias. Ao voltar, o encontro escolhido
+  pode reabrir. **Descansar das visitas** mantém a casa sem convidados até convidar novamente.
+- Não há moedas extras, penalidade por faltar ou campo novo no salvamento. A escolha do encontro
+  dura esta montagem do jogo. Ao reabrir, volta a visita automática.
+- A planta só é recalculada quando casa, móveis, projetos, moradores, dia ou escolha mudam.
+  Não roda no passo da física. O painel usa os mesmos cartões, foco e botões da comunidade.
+
+Testes: `tests/visitas-dos-moradores.test.ts`. Playground: `?convidados=1&posicao=8`.
+Verificador: `playground/verificar-convidados-browser.ts`; evidências em
+`docs/qa/2026-10-29-convidados/`.
+
+### 6.16.2a As chaves dos cômodos (N11, 30/10/2026)
+
+A proposta põe como aventura da sua ilha "achar a chave de cada cômodo": a casa da Íris só tem
+cor no quarto e a criança desenha o resto (cozinha, sala, banheiro, quintal). Como o Construir
+não tem cômodo com tipo (a criança fecha paredes onde quiser), a chave dá cor pelo acabamento
+que é daquele cômodo. Escolha mínima, registrada como decisão:
+
+| Chave | Libera no Construir | Onde fica (x, z) |
+|---|---|---|
+| Cozinha | piso de ladrilho | (20,5; -3,6), a leste da horta |
+| Sala | janelas grande e em arco | (6,8; -18,8), ao sul |
+| Banheiro | piso de azulejo | (-16,5; 2,1), a oeste da casa |
+| Quintal | cerca, caminho e canteiro | (-6; 14,8), ao norte |
+
+- Sem chave nenhuma a casa já cresce: parede, porta, janela redonda, piso de tábua, objetos dos
+  pedidos, apagar e olhar. A janela começa na redonda.
+- Trancado aparece em cinza com 🔑 e o nome da chave. Tocar mostra o recado "Precisa da chave da
+  cozinha. Ela está escondida em algum canto da sua ilha." A loja recusa a escolha e recusa a
+  obra que traga um acabamento trancado novo; o que a obra já usava continua editável.
+- As chaves ficam no gramado, fora do lote da casa (também do quintal grande do Vale), a mais de 4 m da linha de cada ponte e a
+  mais de 3 m das conchas e dos Lumis (teste contra os colisores reais da casa, do farol, do
+  píer, das árvores e do `terreno.glb`). "Pegar a chave da cozinha" guarda o bit em `chaves`; o
+  Zappy diz o que ela abre e quantas faltam. A chave achada some do mundo.
+- O painel do Construir mostra "Chaves da casa: n de 4" até a quarta.
+- Visita e suporte somente leitura não pegam chave.
+
+Arquivos: `sistemas/chaves-da-casa.ts`, `mundo/chaves-da-casa.tsx`, `estado/construcao.ts`,
+`interface/construir.tsx`. Provas: `tests/chaves-da-casa.test.ts` e
+`playground/verificar-chaves-browser.ts`.
+
+### 6.16.2b O iglu do Pico (E04, adiado)
+
+A proposta põe "construir o iglu" no Pico. Ele espera duas coisas: o lote na arte (o `pico.glb`
+atual só tem chão plano e livre na praça de chegada da ponte; pedido em
+`docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`) e espaço para guardar. Com a V20 (móveis
+e galeria do Farol), o salvamento cheio está a cerca de 600 bytes do teto: o iglu, como o segundo
+andar e o terreno, vai para um documento próprio no serviço. A cabana da ilha já é genérica
+(`CabanaDaIlha`, lote das âncoras `lote-cabana-a` e `-b`, piso na altura da âncora, ferramentas
+conforme os tetos do lote). Os tetos do iglu e o ramo dele no lote saíram do código na
+integração da V20; voltam junto com o documento próprio e o lote na arte.
+
+### 6.16.2c O quintal grande do Vale (E04, 30/10/2026)
+
+A proposta põe o "quintal grande" no Vale. Do posto do Vale em diante (posição 6, Arquiteto), o
+lote da casa cresce (`LOTE_DA_CASA_GRANDE`, `loteDaCasa(jornada)`; medidas no fim desta seção). O
+chão do anel novo fica na faixa de altura do lote de antes (variação até 0,4 m, como o resto do
+gramado sob a obra). No anel novo só o farol fica ocupado. A planta, o aconchego e as visitas
+dos moradores sempre leem o lote grande, que contém o pequeno: a obra de antes dá o mesmo
+resultado. As chaves e o vento do segredo da sua ilha ficam fora dele (a do banheiro foi para
+x -11,5 e z 17,2; o vento do segredo, para x 8,5 e z 19, atrás da horta). Provas:
+`tests/quintal-grande.test.ts`.
+
+Desde 31/10/2026 o lote de sempre é o antigo lote grande (x -15 a 16, z -14 a 10) e o quintal
+grande do Vale vai de x -17 a 16 e z -15 a 12 (o canto sudeste encosta na praia: mais para o
+leste ou para o sul passa da grama). Os dois lotes têm as mesmas ocupadas: a varanda e o farol.
+
+### 6.16.4 Móveis da cozinha, da sala e do banheiro (salvamento V20, 30/10/2026)
+
+A ferramenta **Móveis** do Construir põe os 21 móveis da arte `arte/casa/comodos.py` nos cômodos
+novos da casa, separados nas abas Cozinha, Sala e Banheiro (com a miniatura de cada um). O catálogo
+é livre: não precisa ganhar nem comprar, e apagar não guarda nada. Na cabana não vão móveis.
+
+| Cômodo | Móveis |
+|---|---|
+| Cozinha | balcão com pia (2 × 1), balcão, armário alto, mesa (2 × 1), cadeira, prateleira de potes (parede) |
+| Sala | sofá (3 × 1), poltrona, mesinha de centro (2 × 1), tapete (3 × 2), estante baixa (2 × 1), luminária de pé, planta, quadro (parede) |
+| Banheiro | banheira (2 × 1), pia, espelho (parede), vaso sanitário, chuveiro com box, tapetinho, toalheiro (parede) |
+
+- De chão: inteiro num cômodo novo (o quarto é o da plataforma), sem parede no meio, sem ficar em
+  cima de objeto nem de outro móvel. O tapete e o tapetinho ficam por baixo: móvel e objeto podem ir
+  em cima deles, mas um tapete não vai em cima de outro. Girar vira o móvel de quarto em quarto.
+- De parede (quadro, espelho, prateleira e toalheiro): na parede mais perto do toque, sem porta nem
+  janela ali, uma peça por lado de parede. Não ocupa o chão (o espelho fica em cima da pia).
+- A obra se arruma sozinha: abrir o cômodo, apagar a parede de trás ou levar a casa para o quintal
+  tira o móvel. A parede não corta um móvel ao meio e a porta não abre em cima de uma peça pendurada
+  (o Zappy explica). O apagar tira primeiro o móvel de chão, depois a peça do lado mais perto e o
+  tapete por último.
+- No aconchego, cada tipo de móvel soma variedade como um objeto; a luminária de pé conta como luz e
+  a planta como planta. As visitas dos moradores não ficam em cima de móvel (só do tapete).
+- O salvamento guarda até 24 móveis na casa (`MOVEIS_NA_CASA_MAXIMO`), cada um em tupla
+  `[índice em MOVEIS, x, z, giro]`. A lista `MOVEIS` dos contratos só cresce no fim.
+
+Onde mudar: catálogo e regras em `sistemas/construcao/moveis.ts`; desenho e colisão em
+`mundo/moveis-da-obra.tsx`. Testes: `tests/moveis.test.ts` (inclui os nós e as medidas dos GLBs) e
+`arquipelago-contracts/tests/salvamento-v20.test.ts`. Navegador:
+`playground/verificar-moveis-browser.ts`.
+
+### 6.16.3 Temas de construção da semana (L09, 29/10/2026)
+
+O diário mostra uma sugestão nova a cada segunda-feira, pelo dia civil de São Paulo. A lista
+V1 começa em 26/10/2026 e alterna seis temas: luz, caminho da horta, cores próprias, histórias,
+cozinha e visitas. Depois do sexto, recomeça. Os dois públicos veem o mesmo tema.
+
+Todas as ideias continuam disponíveis no seletor. Trocar a semana não apaga uma obra, cobra
+presença nem exige terminar algo. Não há avaliação automática, moeda ou compra obrigatória.
+Cada sugestão traz um caminho com os recursos que já existem. O botão para construir só abre
+na própria casa e mantém as recusas de acesso, tempo, visita e salvamento.
+
+O tema vem da data e não ocupa espaço no salvamento. A virada de ano não reinicia a sequência.
+
+### 6.16.4 Feira semanal da Vila (L09, 29/10/2026)
+
+A barraca de brinquedos da Vila Doce abre a feira com E ou Usar. Três das nove aparências do
+catálogo ganham destaque a cada segunda-feira de São Paulo. As outras continuam na mesma tela,
+com o mesmo preço. Em três semanas, todas passam pelo destaque. Nada some por faltar.
+
+Comprar continua usando a galeria existente, com confirmação e saldo informado pelo serviço.
+Uma aparência comprada não é cobrada novamente. O projeto azul precisa estar na casa antes
+de oferecer sua aparência; o projeto já funciona sem comprar. Visita, suporte, tempo bloqueado
+ou conflito de salvamento não permitem compra. Sair da ilha fecha a feira.
+
+A vitrine não cria carteira, inventário ou prêmio. A unificação da propriedade com o inventário
+do Members continua em L04. Insumos e peças sazonais são entregas distintas, ainda abertas.
 
 ### 6.17 O diário e as pegadas
 
@@ -1785,7 +2161,7 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
 - **Quem é irmão:** quem guardou o jogo logado na mesma conta (`perfis_da_conta`), não é a própria
   criança e vê o jogo pela mesma decisão de acesso. Irmão que nunca jogou nesta conta não aparece.
   A comunidade adulta não tem família.
-- **A permissão:** "Visitas de irmãos" (`visitasDeIrmaos`, padrão ligada) liga as duas coisas.
+- **A permissão:** "Visitas de irmãos" (`visitasDeIrmaos`, padrão ligada) liga recordes, visitas e trajetos familiares.
   Desligada, a lista vem `desligado` e a casa dá 403 `VISITAS_DESLIGADAS`. As outras duas
   permissões não mudam nada aqui. O jogo relê a lista a cada resultado e a cada abertura do painel.
 - **As rotas** (só leitura, de quem joga, fora de `/arquipelago/familia/`):
@@ -1804,6 +2180,22 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
   correu". No empate, ela vem antes. Sem irmão ou com a permissão desligada, a parte não aparece;
   lendo, "Lendo os recordes da família."; sem resposta, "Os recordes da família não carregaram
   agora."
+- **Seguir o trajeto (L10, 30/10/2026):** os recordes dos irmãos oferecem uma imagem transparente
+  do caminho para a próxima corrida. Ela não tem colisão, não atrapalha e não dá prêmio. Usa
+  avatar padrão, sem foto ou roupa do irmão. Pode retirar com "Correr sem trajeto".
+  - A mesma permissão das visitas decide o acesso. O BFF confere que o perfil continua na lista
+    atual dos irmãos do Auth e o serviço confere a conta e a permissão. Adultos não leem família Kids.
+  - A referência é lida novamente na largada, ao retomar a aba e a cada 15 segundos de aba visível.
+    Uma leitura demora no máximo 5 segundos; indisponibilidade ou recusa retira a referência.
+    Isso não interrompe a corrida. Não há promessa de revogação instantânea por push.
+  - Gravar um caminho não comprova uma corrida sem trapaça. O serviço aceita só o tempo do
+    recorde já salvo, sem conceder moedas, estrelas ou itens. Mudou o recorde, o caminho antigo
+    deixa de ser oferecido. Sem caminho, a corrida continua normal.
+  - Até cinco minutos, com uma posição a cada 0,1 segundo e interpolação entre elas. O relógio
+    ativo da corrida dirige a imagem; menu e pausa não o avançam. A física permanece a 1/60 s.
+  - A trajetória fica fora dos 64 KB da V18. Há no máximo uma por perfil/percurso. Envios sem
+    resposta ficam no diário do próprio aparelho e são retomados sem apagar uma captura melhor.
+    Excluir o salvamento remove seus trajetos. Não são guardados nomes ou sessões antigas.
 - **Visitas:** "🏡 Visitar um irmão" no menu abre o painel (`PAINEL_DAS_VISITAS`) com cada irmão
   ("Já construiu a casa." ou "Ainda mora na casa de antes.") e "Ver a casa".
   - Na visita, o jogo desenha a casa, o quintal e a horta do irmão (os objetos com aparência com o
@@ -1833,6 +2225,187 @@ os do gateway e do BFF; navegador: `arquipelago/playground/verificar-visitas-bro
   beliche e cachorro, e o Tomás, com a casa de antes e o quarto que não abriu), `sozinha` (padrão),
   `desligada` e `fora-do-ar`.
 - **Moedas:** nada disto paga moedas. O salvamento não mudou (continua na V10).
+
+### 6.21 Visitas adultas consentidas (L12, 30/10/2026)
+
+Na comunidade adulta, receber visita começa desligado. No menu, Visitas da comunidade permite
+ativar e gerar um código para compartilhar por escolha própria. Não há lista pública de
+pessoas. Qualquer pessoa adulta com acesso ao jogo e ao código pode ver a casa compartilhada;
+por isso ele deve ser enviado somente a quem se quer receber. Não há limite parental.
+
+Gerar outro código invalida o anterior. Desligar visitas revoga o convite. A consulta da escolha
+nunca devolve o código, e fechar o painel o oculta. Ele não vai para URL, armazenamento do
+aparelho ou salvamento. O serviço guarda somente seu hash, um por save adulto. A exclusão do
+save elimina o convite. Uma resposta de alteração perdida exige reler a escolha, sem fingir
+que a alteração foi recusada ou confirmada.
+
+Quem visita só olha a casa, o quintal e o quarto. Não recebe nome, identidade, moedas, progresso
+ou os projetos privados de quem convidou. Campos extras do quarto não são compartilhados.
+O próprio save fica intacto enquanto a visita está aberta. Sair volta à casa própria. O Kids
+continua com os irmãos autorizados pelos responsáveis, sem nenhum caminho de convite adulto.
+
+A autorização é conferida ao abrir e novamente depois da leitura do quarto. Durante a visita,
+uma confirmação pequena roda a cada 15 segundos com a aba visível e ao retomá-la. Ela tem
+prazo de 5 segundos. Recusa, revogação ou falha devolvem a pessoa à própria casa; não há
+promessa de revogação instantânea por push. Suporte pode consultar, mas não mudar consentimento.
+
+As trajetórias familiares não se tornam públicas por esse convite. Não existe ranking,
+chat, publicação, recompensa ou concessão de blocos por visitar. V18 continua com o mesmo teto.
+Plano e provas locais: `2026-10-30-arquipelago-visitas-adultas.md` e `docs/qa/2026-10-30-visitas-adultas/`.
+
+### 6.22 Visitas de outras crianças (N08a, 30/10/2026)
+
+A proposta diz "No Kids, só família, a menos que os pais liberem" (ECA Digital, art. 21). Tudo
+começa desligado e só funciona com "Visitas de outras crianças" ligado nas **duas** contas.
+
+- **Convite:** na área dos pais, o responsável gera o convite de uma criança. O código (32
+  caracteres, 192 bits) aparece uma vez e é mandado de família para família, fora da plataforma.
+  O serviço guarda só o SHA-256, um convite por criança. Gerar outro código invalida o anterior
+  para aceites novos; as casas já aceitas continuam. "Desligar convite" fecha a casa para todas
+  as famílias que a aceitaram.
+- **Aceite:** o responsável da outra família digita o código e dá um apelido à casa (1 a 24
+  letras, números, espaço, ponto, apóstrofo ou hífen). O aceite vale para as crianças daquela
+  conta, até 20 casas (409 `LIMITE_DE_CASAS`). Código da própria família não vale (404
+  `CASA_DE_AMIGO_INDISPONIVEL`): irmãos já se visitam pela §6.20.
+- **Nomes não atravessam:** o serviço não conhece nomes. O apelido é escrito pela família que
+  visita e fica na conta dela. Não existe diretório, busca ou lista de outras crianças, e a
+  criança nunca digita código.
+- **Na criança:** o painel de visitas mostra "Casas de amigos" embaixo dos irmãos
+  (`GET /amigos`). A visita (`GET /amigos/:id/casa`) é a mesma projeção da casa do irmão (obra,
+  horta, objetos completos e quarto), só de olhar, sem o id de quem mora. A cada leitura o
+  serviço confere de novo: interruptor ligado nas duas contas, convite ativo, criança anfitriã
+  ainda vendo o jogo. Se desligaram, a resposta é 403 `VISITAS_DE_AMIGOS_DESLIGADAS` e o painel
+  diz que quem decide são os responsáveis.
+- **Rotas dos pais** (`/arquipelago/familia/amigos*`, só a sessão da conta com o portão de
+  senha): `GET` (convites por criança, com o nome posto pelo BFF a partir da grade do Auth, e as
+  casas aceitas), `POST convite`, `DELETE convite/:perfilId`, `POST aceitar`, `DELETE :id`.
+  Suporte somente leitura recebe 403 `SOMENTE_LEITURA`.
+- Sem mudança no salvamento. Banco: migração `0018_visitas_de_amigos` (`convites_de_amigos` e
+  `casas_de_amigos`, um aceite por par). Plano: `2026-10-30-arquipelago-visitas-de-amigos.md`.
+
+### 6.23 Fotos no Clube (N08b, 30/10/2026)
+
+Com "Fotos no Clube" ligado pelos responsáveis, o modo foto ganha "Mandar para o Clube" depois
+que a foto fica pronta. A foto vai para a moderação do Clube dos Criadores, nunca direto.
+
+- **Quando aparece:** só no Kids (só o host do Kids monta `plataforma.clube`), com a permissão
+  ligada (`GET /arquipelago/clube`, a criança lê só esta permissão da conta dela) e com o canal
+  `fotos-do-arquipelago` no servidor `clube-dos-criadores`, aberto a membros e com aprovação
+  prévia. Sem o Clube (produto vendido à parte), sem o canal ou com o canal sem aprovação
+  prévia, o botão não aparece e a foto fica só no aparelho, como antes.
+- **O envio** (`POST /api/arquipelago/clube/foto`, no BFF): confere tudo de novo, aceita só o
+  PNG do jogo dentro do limite de imagem do Clube, reencoda pelo mesmo otimizador das imagens do
+  Clube (sem metadados), guarda no R2 de UGC, registra o anexo no hub e abre o tópico "Foto do
+  Arquipélago" no canal. O hub deixa o tópico pendente pela aprovação do canal; aprovar,
+  recusar, esconder e denunciar seguem a moderação do Clube. Sessão de suporte não manda.
+- **Na tela:** "A foto foi para o Clube. Ela aparece lá depois que um adulto da equipe olhar."
+  Uma foto vai uma vez; tirar outra libera o botão de novo. Se o servidor responder que a
+  permissão foi desligada ou que o Clube não recebe fotos, o botão some e o recado diz o motivo.
+- **Para ligar em produção:** a equipe cria o canal `fotos-do-arquipelago` no Clube dos
+  Criadores com "Quem posta: membros" e aprovação prévia. Sem o canal, nada muda para a criança.
+- Sem mudança no salvamento nem no banco do jogo. Plano:
+  `2026-10-30-arquipelago-fotos-no-clube.md`.
+
+### 6.24 Segredos das ilhas (N12, 30/10/2026)
+
+A proposta: "o kit de movimento abre segredos nas ilhas antigas" e "baús, Lumis raros e páginas
+extras do diário em lugares que só o kit de movimento completo alcança". Escolha mínima,
+registrada como decisão: nas quatro ilhas antes do Pico, um baú da Íris flutua no alto de um
+vento que sobe, o mesmo do Pico (`CorrenteDeAr`), com flocos dourados. Sem o planador o vento não
+leva ninguém; com ele, a criança pula dentro do vento, abre o planador e sobe até o baú.
+
+| Segredo | Ilha | Pé do vento |
+|---|---|---|
+| bit 1 | Sua ilha | (10,3; 12,3) no mundo |
+| bit 2 | Bosque dos Bichos | (7; 0) no modelo |
+| bit 4 | Vila Doce | (0; 6) no modelo |
+| bit 8 | Recife | (-8; -2) no modelo |
+
+- O vento tem 1,1 m de raio e 6,5 m de altura; o baú fica 1,3 m ao lado do alto. O pulo sem
+  planador chega a mais de 3 m dele; no alto do vento ele fica ao alcance (2,2 m).
+- Ao pé do vento, "Olhar o vento": sem planador, "Lá no alto tem um baú, e o vento sobe até ele.
+  Só que ele só leva quem plana. O planador vem do Pico Gelado."; com ele, como subir.
+- Planando, só valem as ações marcadas `noAr` (por ora, o baú); a HUD do planador mostra a ação
+  ao lado de "Fechar o planador". "Abrir o baú" guarda o bit em `segredos`, uma vez só. Achado,
+  o vento e o baú somem.
+- O álbum ganha "Segredos das ilhas: n de 4". O baú é o `bau.glb`. Ele não dá item: os cristais e
+  a estrela que estavam sem uso viraram as coleções do Pico e das Nuvens (30/10), e um baú não
+  pode marcar peça de outra coleção.
+- O que vai dentro dos baús pela proposta (Lumis raros e páginas extras do diário) pede espécies
+  e texto novos da história. Fica como pendência de conteúdo.
+
+Provas: `tests/segredos.test.ts` (colunas livres contra os colisores reais das quatro ilhas,
+chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segredos-browser.ts`
+(com `?planador=1`).
+
+### 6.25 O mapa que se revela andando (E02, 30/10/2026)
+
+A proposta: "Mapa que se revela conforme você anda." Cada ilha com mapa (as sete, o Farol fica
+no da sua ilha) tem uma grade de 8 × 8 partes num quadrado em volta dela: 60 m de lado na sua
+ilha e 28 m nas do anel. O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
+por ilha; dois aparelhos juntam as partes, nunca perdem).
+
+- Enquanto a criança está na ilha (andando, nadando ou planando), as partes a até 6 m dela se
+  revelam. Não conta pausado, de visita, em suporte somente leitura nem durante um transporte.
+- Só contam as partes de terra: as que têm o meio dentro da ilha (29 m na sua ilha, 13 m nas do
+  anel), com meia parte de folga.
+- O painel do mapa mostra, embaixo do arquipélago, o mapa da ilha onde a criança está: as partes
+  vistas na cor da ilha, as outras em névoa cinza, e a marca de onde ela está. A legenda conta
+  "Mapa desta ilha: n de m partes descobertas." Na lista, cada ilha visitada diz "Mapa n%
+  descoberto."
+
+Arquivos: `sistemas/mapa-da-ilha.ts`, `estado/exploracao.ts` (`observarMapa`),
+`mundo/descoberta-da-ilha.tsx`, `interface/mapa.tsx`. Provas: `tests/mapa-da-ilha.test.ts` e
+`playground/verificar-mapa-da-ilha-browser.ts`.
+
+### 6.26 Quem acompanha pela ilha (S01, 30/10/2026)
+
+A proposta traz "os bichinhos reais da plataforma" para o jogo. O bichinho do quarto
+(`quarto.pet`: gato, cachorro ou passarinho) sai do quarto e acompanha a criança pela ilha, com o
+mesmo seguir do bicho adotado (`sistemas/seguir.ts`): anda atrás dela, corre quando ela se
+afasta, espera no cipó, no tronco e na água e reaparece atrás dela quando fica longe. Ele não tem
+corpo de física (é pequeno); a altura acompanha o pé da criança quando ela pisa. O passarinho voa
+0,9 m acima do chão, balançando 0,12 m para cima e para baixo. Enquanto ele acompanha, o quarto
+fica sem ele.
+
+- Pausa: nada se mexe, nem o giro nem o balanço (revisão de 30/10/2026; antes o giro continuava).
+- Menos movimento (no aparelho ou no menu do jogo): o passarinho voa reto, sem balanço, e continua
+  seguindo a criança (`alturaDoPet`).
+
+- Com um bicho adotado no Bosque, a criança escolhe quem vai com ela, no painel do bicho ("Quem vai
+  com você pela ilha": o nome dele ou "Gato do quarto"). O outro espera: o bichinho no quarto, o
+  bicho adotado no gramado em frente à varanda, onde continua dando para cuidar dele.
+- Adotar faz do bicho a companhia (como sempre foi). A V18 migra com o bicho adotado acompanhando,
+  se houver; sem ele, o bichinho do quarto.
+- Escolha guardada em `companhia` (V19); entre dois aparelhos vale a mesma regra da preferência do
+  clima. Sem o escolhido (o quarto ficou sem bichinho), vai quem houver.
+
+Arquivos: `sistemas/companhia.ts`, `mundo/pet-que-acompanha.tsx`, `mundo/bicho-adotado.tsx`,
+`mundo/casa.tsx`, `interface/bicho.tsx`. Provas: `tests/companhia.test.ts`,
+`tests/pet-que-acompanha.test.ts` e `playground/verificar-companhia-browser.ts` (com `?adotado=1`
+e o passarinho, `?pet=passaro`: pausa no computador e no celular, balanço só sem movimento
+reduzido; provado por mutação).
+
+### 6.27 Decisões registradas no levantamento de 30/10/2026
+
+Escolhas aprovadas no plano do levantamento integrado (`docs/arquipelago-levantamento-2026-10-30.md`),
+anotadas para não serem refeitas por engano:
+
+- **Duas versões de ilha (N15):** leve e completa, em vez de silhueta, média e completa (§6.9).
+- **A Íris na abertura:** a proposta diz que ela aparece "só pelas páginas"; a abertura "O Cinza"
+  mostra a Íris na sala do Farol numa ilustração do passado. Fica: é memória, não encontro, e o
+  segredo do final continua guardado. Ela só aparece no jogo depois dos seis fachos.
+- **Rótulos dos minijogos (N09):** os minijogos seguem a régua de conteúdo da Jornada
+  (`docs/desafios-do-jogo/conteudo-por-posto.md`), e os nomes da proposta do Arquipélago ficam
+  como estão (Pega-conchas, Corrida dos bichos, Corrida do entregador, Mira de bolhas, Fase de
+  plataforma, Proteja os ninhos, Jardim que floresce). Onde o rótulo e o conteúdo divergem (o
+  entregador da Vila pede gravidade e pulo; os postos 4 a 7 são Python e JavaScript), a aplicação
+  na linguagem do posto vem pelo lote C02, sem trocar o nome.
+- **O posto do Molda (N10):** o Molda abre no Explorador, como a proposta do Arquipélago pede
+  (`POSICAO_DO_MOLDA`). A Jornada põe a primeira peça como extra do Construtor; o extra continua
+  valendo na plataforma, e o jogo não abre antes.
+- **A chave de cada cômodo (N11), os segredos (N12), a companhia (S01), o iglu (adiado) e o
+  quintal grande:** mínimos coerentes descritos nas seções §6.16.2a a §6.16.2c, §6.24 e §6.26.
 
 ## 7. Desafios
 
@@ -2081,15 +2654,53 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
     o ... ficou pronta. A cor começou a voltar para lá.";
   - quadro feito: o pedaço dele ganha a cor inteira. Na festa, a cor escorre em 2,4 s
     (`DURACAO_DA_TINTA_S`);
-  - quadro sem desafio publicado: o pedaço já vem colorido, para a criança nunca ficar presa num
-    cinza sem ter o que fazer. Ilha sem nenhum desafio fica toda colorida;
-  - desafios desligados ou serviço fora do ar: a ilha toda colorida (como antes dos desafios);
+  - quadro sem desafio publicado: conserva os 30% da ponte, ou a cor inteira já conquistada;
+  - desafios desligados ou serviço fora do ar: usa as posições confirmadas anteriormente. Sem
+    nenhuma leitura confirmada, conserva a base da ponte. Uma falha nunca restaura a ilha inteira;
+  - arquivar, mover ou substituir uma publicação não apaga a cor conquistada. A posição vem da
+    revisão guardada na conclusão. Mover um desafio já feito não pinta também o lugar novo;
   - entre dois pedaços a cor se mistura numa faixa (`BORDA_DOS_PEDACOS`), e bem no meio da ilha
     vale a média dos seis.
-  A mesma tinta vale para a versão leve, a completa e as copas que esmaecem.
+  A mesma tinta vale para a versão leve, a completa e as copas que esmaecem. As manchas do quadro
+  e o contador também usam as conquistas confirmadas, mesmo quando o desafio saiu do catálogo.
+  `GET /arquipelago/desafios/cores` lê as posições históricas da pessoa e do público autenticados,
+  sem depender do catálogo ligado, do Members ou da carteira. Exige acesso ao jogo e não escreve
+  nem cobra prêmios. A resposta V1 aceita até oito ilhas e seis posições únicas por ilha.
+  O aparelho guarda uma fotografia visual de até 2.048 caracteres, separada por perfil e público.
+  Ela não libera ilha, curso, botão de recompensa, aprovação nem moedas. Suporte não a grava.
+  Armazenamento bloqueado não impede jogar. Uma primeira montagem reinicia os uniforms, para não
+  herdar a tinta de outra pessoa. Sem a rota nova, usa apenas conclusões conhecidas no catálogo
+  e a fotografia anterior, nunca transforma o contador agregado em posições inventadas.
+  Na implantação, serviço, gateway e portas Kids/adulto precisam oferecer a rota para recuperar
+  posições arquivadas no primeiro acesso de outro aparelho. Sem mudança de salvamento.
 - **Plataforma de mentira** (`src/plataforma/desafios-falsos.ts`): no playground, o Bosque tem o
   quadro 1 pronto, o 2 esperando o curso Repetições e o 3 feito. "Fazer o desafio" conclui em
-  0,4 s. Com `desafios: 'desligados'`, responde 403. O desafio do dia de mentira está em 7.12.
+  0,4 s. Com `desafios: 'desligados'`, o catálogo responde 403 e a leitura histórica continua.
+  `?quadros=feitos` fornece seis conquistas reais na fixture do Bosque. `?cores=sem-conquistas`,
+  `fora-do-ar`, `arquivadas`, `desligado` e `antigo` exercitam as reservas no playground. Prova visual em
+  `docs/qa/2026-10-30-cores-conquistadas/`. O desafio do dia de mentira está em 7.12.
+
+### 7.11.1 O Quadro das Cores da sua ilha (C03a, 30/10/2026)
+
+- A sua ilha (posto Faísca) tem os seis quadros do Pega-conchas (`docs/desafios-do-jogo/sua-ilha/`).
+  O cavalete fica na grama ao lado da trilha de pedras da porta até o píer, em (-1,5; 18,5),
+  olhando para a trilha (`QUADRO_DA_SUA_ILHA`). Ele é montado pela ilha central, sempre presente.
+- Os quadros da sua ilha não pintam a ilha, que já tem cor (`cor: false`). O cavalete acende a
+  mancha de cada quadro feito, e o painel mostra "Desafio concluído", nunca "Cor de volta".
+- A sua ilha não dá o aviso do desafio do dia: o cavalete dela está sempre montado, e avisar ali
+  seria avisar ao abrir o jogo. O aviso continua ao chegar numa ilha do anel.
+- O painel da sua ilha diz "Sua ilha: n de 6 desafios feitos." e o Zappy comemora "Desafio
+  feito. Olhe a mancha nova no quadro da praia."
+- **O projeto autoral do Farol (C03b):** depois do final (`farol.concluido`) aparece um cavalete
+  do lado oeste do Farol, em (-16; -11), fora dos dois lotes da casa e longe da porta e da Íris,
+  olhando para o Farol (`QUADRO_DO_FAROL`). Ele tem um quadro só, "Meu jogo do Arquipélago"
+  (`docs/desafios-do-jogo/farol/`): critérios explícitos (o guia anda, um encontro, uma
+  informação guardada nele, um Se que a usa e uma tecla que recomeça), sem resposta pronta. Os
+  quatro últimos usam a regra causal `gameCausality` do core: só conta código que pode rodar
+  (revisão de 30/10/2026; um `Se falso` em volta de tudo passava na conferência por blocos). O painel mostra
+  "Um jogo todo seu, com os critérios na lista. Faça quando quiser." e esconde os quadros vazios.
+  Feito, o Zappy diz "Seu jogo ficou pronto. Ele vai para o fliperama da sua casa." Não pinta nada
+  e não dá o aviso do desafio do dia.
 
 ### 7.12 O desafio do dia
 
@@ -2287,8 +2898,9 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
 - **No mundo** (`RotinaDosLumis`, montado na cena): um Lumi de cada vez (os outros esperam na
   fila) aparece um pouco acima do primeiro canteiro, com o GLB da espécie na escala 0,5, e faz os
   passos: `andar` voando, `trabalhar` em cada Regar, Colher e Guardar tudo, `parado` no Esperar e
-  `feliz` no fim, antes de sumir. O ritmo (`RITMO_DA_ROTINA`, **proposta**): voo a 2 m/s, 0,9 m
-  acima da terra do canteiro e 0,1 m acima do topo da geladeira, 1,2 s de trabalho e 1,6 s de festa.
+  `feliz` no fim, antes de sumir. O ritmo da espécie vem de `PERFIS_DOS_LUMIS`: voo de 2 a 3 m/s
+  e trabalho de 0,9 a 1,2 s. As alturas são 0,9 m acima da terra do canteiro e 0,1 m acima do topo
+  da geladeira. A festa final dura 1,6 s.
   Cada passo vale no salvamento na hora em que termina. Com o jogo parado (menu, painel), o Lumi
   espera. O Lumi atravessa as paredes para chegar à geladeira.
 - **O aviso no HUD:** "Rotina do Quindim: regando o canteiro 2" com "Parar", no alto à direita
@@ -2303,9 +2915,18 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
   nascer."), sem os casos vazios do Escolha. "Apagar a rotina" esquece a guardada.
 - **A última vez:** o painel mostra como foi a última vez de cada Lumi nesta sessão (o que ele fez,
   passo a passo, e o motivo se parou), aberta quando parou no meio.
-- **Fica para depois (proposta):** o "jeito próprio" de cada Lumi da proposta ("um é rápido, outro
-  carrega muito, outro brilha à noite") ainda não muda a rotina; todos voam e trabalham no mesmo
-  ritmo. Os lugares são só a horta e a geladeira da ilha central.
+- **Jeito próprio:** Bolha e Pluma voam a 3 m/s e levam 8 alimentos; Búzio, Ipê, Brigadeiro e
+  Ovinho levam 24, a 2 m/s. Os demais levam 12. Pitanga, Quindim e Gelinho voam a 2,5 m/s e
+  trabalham em 1 s; Brotinho trabalha em 0,9 s. Estrelinha, Pérola, Cristal e Algodão têm luz
+  noturna 1,5 vez mais intensa. Os demais usam a luz original. O catálogo compartilhado é
+  `arquipelago-contracts/src/lumis-trabalho.ts`; raridade não torna uma espécie melhor em tudo.
+- **Colheita inteira:** carga ou mochila sem espaço deixam o canteiro maduro, com um aviso.
+  A semente que volta também precisa caber. Guardar libera só a carga realmente transferida;
+  geladeira cheia deixa o restante na mochila. A colheita manual segue a mesma proteção.
+- **Prévia:** usa o mesmo intérprete e os mesmos limites da espécie. O passo didático não mede
+  o tempo de voo. O álbum e o mini estúdio mostram capacidade e velocidade, inclusive no celular.
+- **Receita inteira:** se os pratos prontos não couberem, não gasta ingredientes. O painel pede
+  para usar ou guardar alguns pratos antes de tentar de novo.
 - **Moedas:** nada disto paga moedas.
 
 ### Mini estúdio de blocos dos Lumis (fase2-14)
@@ -2341,7 +2962,7 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
 ### 9.2 O teto semanal
 
 Arquivo: `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`,
-constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150`.
+constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 100`.
 
 - **A semana:** de segunda a domingo, no horário de São Paulo
   (`date_trunc('week', ...)` no fuso `America/Sao_Paulo`).
@@ -2352,9 +2973,12 @@ constante `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 150`.
   `members/src/domain/gamification/coins.ts`) não inclui as moedas do jogo
   (`applyDailyCap`).
 
-### 9.3 A conta que levou ao 150
+### 9.3 O teto escolhido para o jogo
 
-Decisão de 27/10/2026. Os valores dos cursos estão em `members/src/domain/gamification/coins.ts`
+Em 29/10/2026, a revisão alinhou o código ao teto de 100 moedas por semana escolhido
+pela dona na conversa. O valor anterior de 150 não autoriza remover saldo já recebido.
+As compras não diminuem a soma de ganhos da semana, e um prêmio pendente guarda sua chave.
+Os valores dos cursos estão em `members/src/domain/gamification/coins.ts`
 (`COIN_VALUES`, `quizPassedCoins`) e em `members/src/domain/gamification/missions.ts`.
 
 | Atividade nos cursos | Moedas |
@@ -2368,8 +2992,8 @@ Decisão de 27/10/2026. Os valores dos cursos estão em `members/src/domain/gami
 - **Quem estuda com regularidade** ganha entre 150 e 300 moedas por semana nos cursos.
 - **Quem usa muito** chega a cerca de 700 por semana, limitado pelo teto diário (7 dias × 100).
   Os marcos de sequência de dias ficam fora do teto diário.
-- **O jogo dá no máximo metade** do que ganha quem estuda com regularidade (cerca de 300 por
-  semana). Por isso o teto é 150, e os cursos continuam sendo a fonte principal de moedas.
+- **O jogo tem teto de 100 por semana**, independente do teto diário dos cursos. Os números
+  de moedas dos cursos são regras de recompensa, não uma medição de quanto cada pessoa estuda.
 - **Gasto só cosmético.** São 138 itens pagos de avatar e de quarto, de 30 a 300 moedas, com
   mediana de 70:
   - 74 peças do avatar, em `members/src/domain/avatar/avatar3d-catalog.ts`;
@@ -2457,8 +3081,8 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Museu dos fósseis (`museu-classico`) | Museu dos fósseis | 70 |
 
 - **Por que esses preços:** de 2 a 4 desafios principais (20 moedas cada), ou uns 4 a 7 desafios do
-  dia (10 e 5); a planta, um enfeite pequeno, custa um desafio e meio. O piso é um desafio (`PRECO_MINIMO_DA_GALERIA` 20) e o teto é metade do teto
-  semanal do jogo (`PRECO_MAXIMO_DA_GALERIA` 75, de 150): algumas tarefas, nunca uma semana
+  dia (10 e 5); a planta, um enfeite pequeno, custa um desafio e meio. O piso é um desafio (`PRECO_MINIMO_DA_GALERIA` 20) e o teto fica abaixo do teto
+  semanal do jogo (`PRECO_MAXIMO_DA_GALERIA` 75, de 100): algumas tarefas, nunca uma semana
   inteira. Fica dentro da faixa da loja do quarto e do avatar (30 a 300, mediana 70).
 - **O modelo:** hoje cada aparência é o modelo do Blender do próprio objeto (`modelo: 'objeto'`,
   `arquipelago/src/assets/objetos/<objeto>.glb`). Os ids são estáveis (estão no banco e nos
@@ -2517,7 +3141,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Nome, ilha e cor de cada Lumi no álbum | 14 espécies (§6.17.1) | `arquipelago/src/sistemas/album.ts`, `ESPECIES_DE_LUMI` |
 | Tetos da rotina dos Lumis | 16 por rotina, 32 somando, 3 níveis (§8.2) | `arquipelago-contracts/src/rotinas.ts`, `LIMITES_DA_ROTINA` |
 | Cartões olhados numa execução | 200 | `arquipelago/src/sistemas/rotina.ts`, `CARTOES_POR_EXECUCAO` |
-| Ritmo do Lumi na rotina | voo 2 m/s, trabalho 1,2 s, festa 1,6 s | `rotina.ts`, `RITMO_DA_ROTINA` |
+| Ritmo do Lumi na rotina | voo 2 a 3 m/s, trabalho 0,9 a 1,2 s, carga 8 a 24, festa 1,6 s | contratos: `PERFIS_DOS_LUMIS`, `RITMO_DA_ROTINA` |
 | Lote de tempo | 10 s | `arquipelago/src/sistemas/armazem-tempo.ts`, `TAMANHO_LOTE` |
 | Segundos por envio de tempo | 1 a 120 | `arquipelago-contracts/src/api.ts`, `RegistrarTempoSchema` |
 | Teto de tempo por dia | 86.400 s | `arquipelago-api/src/infrastructure/persistence/drizzle/repositorio.ts`, `TETO_DO_DIA` |
@@ -2574,7 +3198,7 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
 | Moedas padrão | 20 e 10; desafio do dia 10 e 5 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
-| Teto semanal de moedas do jogo | 150 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
+| Teto semanal de moedas do jogo | 100 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
 | Preços da galeria | 30 a 70 (seção 9.9) | `arquipelago-contracts/src/galeria.ts`, `GALERIA` |
 | Faixa de preço da galeria | 20 a 75 | `galeria.ts`, `PRECO_MINIMO_DA_GALERIA` e `PRECO_MAXIMO_DA_GALERIA` |
 | Aparências guardadas por objeto | 12 | `salvamento.ts`, `APARENCIAS_GUARDADAS_MAXIMO` |
@@ -2588,7 +3212,8 @@ visual. Catálogo em `arquipelago-contracts/src/galeria.ts` (`GALERIA`).
 ## 11. Diferenças encontradas entre documentação e código
 
 O levantamento de 27/10/2026 achou dez pontos em que a documentação ou um comentário do código
-dizia outra coisa. Todos foram corrigidos no mesmo dia, seguindo o código:
+dizia outra coisa. O registro abaixo preserva a revisão histórica; a decisão posterior de
+29/10 restaura o teto de 100 indicado pela dona, conforme a seção 9.3:
 
 1. `docs/plans/2026-10-27-arquipelago-desafios.md` (linha "Moedas"): o teto semanal passou de 100
    para 150, e o prêmio que bate no teto é cobrado de novo numa semana seguinte (antes dizia que
@@ -2667,6 +3292,27 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 `mundo-reativo.ts` guarda um conjunto fixo de 16 ondas. `ondinhas.tsx` lê a entrada e o deslocamento da criança e do tronco, desenha em uma malha instanciada e recorta no limite do lago. Não há simulação de fluido nem partículas criadas por quadro. Movimento reduzido baixa a opacidade. Estados transitórios pertencem à ilha ativa. Estações Peças soltas e Galho seco em `/movimento` usam as mesmas peças.
 
 ⚠️ Até 28/10/2026 os colisores da ilha completa e das pontes vivas iam com `collisionGroups={cond ? GRUPO : undefined}`. O `@react-three/rapier` aplica `undefined` como o grupo 0, então nenhum corpo dinâmico tocava a ilha: o caixote, as peças soltas, o galho, a folha e a pena atravessavam o chão e voltavam ao lugar. Só o personagem, cujo controlador não olha grupos, pisava. Use `gruposDoColisor` (`mundo/grupos.ts`); `tests/grupos-de-colisao.test.ts` recusa o padrão. O plano da física viva registra medições, notas do cartão e a conferência que falta em celular físico.
+
+### Coleções da praia e pesca tranquila (30/10/2026, E01)
+
+- Cinco conchas ficam na areia da ilha central: caracol, vieira, tigre, mexilhão e listrada.
+  A estrela-do-mar é observada e fica no seu lugar. Cada descoberta é registrada uma vez no
+  álbum e na mochila, pelo mesmo inventário. Não se come nem se dá essa lembrança de presente.
+- No píer há uma vara. Perto dela, usar lança a linha. Depois de 3 segundos de jogo ativo,
+  aparece Recolher a linha por 5 segundos. Usar antes da hora apenas orienta a esperar.
+  Se o peixe escapar, basta tentar de novo: não se perdem iscas, moedas ou descobertas.
+- A pausa congela a espera e a janela. Sair do alcance cancela somente a tentativa em curso.
+  A janela é a mesma no teclado e no toque. Não há prêmio financeiro, sorte obrigatória ou
+  cobrança para completar a coleção. As cinco espécies novas aparecem em ordem: sardinha,
+  robalo, garoupa, linguado e peixe-voador. O registro permanece e o peixe volta ao mar.
+- O álbum mostra o que foi descoberto e onde procurar o que falta, nas duas comunidades.
+  A barra da mochila reúne as lembranças em um botão para abrir o álbum, sem cobrir o jogo
+  com onze espaços. Alimentos, sementes e equipamentos conservam seus próprios lugares.
+  As lembranças usam o inventário já existente da V18, sem novo campo, migração ou escrita
+  adicional em localStorage. Visitas e suporte de somente leitura não concedem descobertas.
+- O píer conserva o corredor, o embarque do barco e a luneta. Conchas e vara usam a arte
+  pronta. Seus comandos só aparecem após carregar o modelo e exigem altura e alcance reais.
+  Este recorte não entrega os desafios do Pega-conchas nem uma receita que consuma peixes.
 
 ### Nico, Estrelinha e Búzio na praia (28/10/2026)
 
@@ -2761,6 +3407,12 @@ Plano: `docs/plans/2026-10-29-arquipelago-recife.md`. Evidências e limites da c
 
 ## Minijogos aprovados viram brinquedos (desafios-16, 29/10/2026)
 
+- O fliperama também mostra até 24 publicações recentes do próprio perfil no Mural, separadas
+  por comunidade. Só entram publicações visíveis com jogo. Elas abrem no player público da
+  plataforma, sem copiar fonte para o salvamento. Retirar a publicação impede a próxima abertura,
+  mesmo que o botão ainda estivesse na lista. Voltar fecha o player e atualiza a lista.
+  Não há moeda, prêmio ou desbloqueio adicional por abrir um jogo do Mural.
+
 - Passar nos objetivos principais de um desafio com recompensa.atracao guarda uma cópia do
   projeto conferido. Há uma por jogador e desafio. Refazer e passar troca somente essa cópia;
   reprovar não a muda. A primeira aprovação permanece datada para a medição.
@@ -2788,47 +3440,42 @@ Plano: `docs/plans/2026-10-29-arquipelago-recife.md`. Evidências e limites da c
 Plano: docs/plans/2026-10-29-arquipelago-minijogos.md. Testes, implantação e prints:
  docs/qa/2026-10-29-arquipelago-minijogos.md.
 
-## Barco entre a ilha central e o Recife (fase3-04, 29/10/2026)
+## Barco pela borda das ilhas (fase3-04 ampliada, L10, 30/10/2026)
 
-Decisão proposta nesta implementação: viagem guiada, disponível somente quando o Recife já
-está aberto pela jornada. E ou Usar junto da âncora de embarque inicia a ida ou a volta.
-Andar e pular não soltam a criança no mar. Os controles de andar, pular e Construir saem da
-tela durante a viagem; o menu continua disponível. Não há horário nem localização persistente
-do barco. Em repouso há um barco em cada porto, com o do Recife montado só com a ilha ativa.
+O barco aparece depois de abrir o Recife pela jornada. Liga cada ilha do anel às duas
+vizinhas, e mantém a viagem entre sua ilha e o Recife. Só oferece destinos abertos.
+A viagem é guiada: E ou Usar abre os destinos; escolher começa a travessia. Agora não e
+Escape fecham sem embarcar. Nenhuma viagem libera posto ou marca visita por conta própria.
 
-- As posições vêm das âncoras `barco` e `embarque` do píer e `barco` e `cais` do Recife.
-  A âncora `passageiro`, filha do nó animado, leva o desenho do avatar junto do balanço.
-  O grupo de navegação fica fora da raiz do mixer. A atualização manual do mixer e da âncora
-  acontece entre a física e o desenho do personagem, sem atraso de um quadro.
-- O barco substitui `barquinho-decorativo` e `col-barco-1`. Casco e cabine têm caixas simples
-  que seguram só o corpo. Durante a travessia, o modo `barco` passa pelo controlador livre do
-  Rapier; a cápsula mantém as colisões com o mundo. Obstrução no embarque devolve ao cais.
-- Rota proposta: saída pela proa por 8 m, guia a 60 m do centro no setor 110 graus, entre
-  Nuvens e Vale dos Dinos, depois arco a 120 m pelo leste até o setor menos 70 graus e o cais
-  do Recife. São 10 graus entre guias e 20 amostras por trecho, preparadas uma vez.
-  O trajeto atual mede aproximadamente 524,44 m. A volta inverte a mesma rota.
-- Velocidade máxima de 12 m/s. Os 10 m próximos de cada cais misturam suavemente até 2 m/s,
-  para aproximar e atracar sem arrancada. Embarque e desembarque duram 1,5 s, com elevação
-  de até 0,6 m para passar pela amurada. Alcance do interativo: 1,25 m junto da âncora.
-- O corredor tem 5 m de meia largura nas linhas de boias. Só boias e trechos de corda que
-  ocupam o caminho saem do desenho. A correnteza dos nadadores continua igual.
-- O Recife continua no ciclo normal de carregar e soltar. O barco espera a 27 m do centro,
-  dentro da zona de troca e fora da espera pelo chão. Só prossegue com colisores montados
-  e opacidade de pelo menos 0,99. Depois de 20 s de espera sem carga, retorna ao porto de
-  origem. Isso não libera ilha, não desembarca na silhueta e não deixa a criança na água.
-- Pausa congela viagem e balanço. Perfil de câmera `barco`: distância mínima de 13 m e
-  inclinação mínima de 0,55 radiano, para o casco caber também na tela estreita. Não força giro nem acompanha o balanço; movimento
-  reduzido mantém essa câmera estável e reduz o ritmo do clipe pela metade.
-- O estado é transitório. O relógio não guarda posição durante a viagem; nenhum campo foi
-  acrescentado ao salvamento. Fechar o jogo mantém a última posição segura já guardada.
-- Metadados dos portos são lidos do JSON dos GLBs, sem criar outra ilha completa na GPU.
-  As amostras e os objetos do passo físico são reaproveitados, sem alocação no laço.
+- Os sete portos usam as âncoras da arte. Nas Nuvens, a escada liga o cais na água ao chão
+  elevado. As âncoras são extraídas durante a preparação da distribuição, sem baixar todas
+  as ilhas apenas para descobrir os destinos. Desenho, terreno e colisores vêm dos GLBs.
+- Em repouso, só os barcos próximos e com cais pronto entram na cena. Durante a travessia,
+  o viajante toma o lugar deles. O máximo continua sendo uma ilha completa na memória.
+- O caminho usa os canais dos portos e o arco externo de 150 m. Nos cinco portos novos,
+  conserva os 25 m retos pela proa medidos na arte. A central conserva o setor 110 graus,
+  entre Nuvens e Vale; o Recife conserva o setor -70, fora do navio e do labirinto.
+  São 10 graus entre guias e 20 amostras por trecho. As rotas são preparadas e reaproveitadas.
+- A velocidade máxima é 12 m/s, reduzida suavemente a 2 m/s perto dos cais. A manobra começa
+  a 25 m do porto e termina antes dos últimos 10 m, para não girar encostando no deque.
+  Embarque e desembarque levam 1,5 s, com elevação de até 0,6 m para passar pela amurada.
+  O alcance para embarcar é 1,25 m. Escolher destino confere novamente distância, chão e jornada.
+- O mesmo corpo passa pelo controlador do Rapier. Andar e pular não o soltam na água.
+  Pausa congela viagem e balanço. A câmera acompanha o corpo estável, sem giro automático
+  ou balanço, também com movimento reduzido. O desenho acompanha a âncora animada do passageiro.
+- Na aproximação, espera a 29 m do centro até o chão e os colisores estarem prontos. Sem
+  carga por 20 segundos, volta à origem pela mesma rota. Se o cais de retorno também falhar,
+  aguarda embarcado. Nunca desembarca sobre a ilha leve nem alterna destinos sem parar.
+- Reabrir o jogo no deque publica a espera pelo chão antes do primeiro passo da física,
+  evitando cair durante a carga. O navegador também confere esse caso em tela pequena.
+- As boias abrem corredores visuais de 5 m de meia largura nas ligações disponíveis.
+  O limite de nado e a correnteza não mudam.
+- O estado da viagem é transitório. Nenhum campo novo no salvamento; o relógio não guarda
+  posição no mar. Fechar o jogo conserva a última posição segura já gravada.
 
-Conferência: `?novo=1&barco=central` e `?novo=1&barco=recife`, com o posto do Recife por
-padrão. `posicao=2` permite conferir a recusa antes da abertura. Medidas em
-`__arquipelagoDesenho.barco`. Plano: `docs/plans/2026-10-29-arquipelago-barco.md`.
-Testes: `barco.test.ts`, `barco-colisao.test.ts` e `ancoras-do-barco.test.ts`.
-Navegador: `playground/verificar-barco-browser.ts`; evidências em `docs/qa/2026-10-29-barco/`.
+Plano: `docs/superpowers/plans/2026-10-30-arquipelago-rede-do-barco.md`. Testes da geometria,
+malha do casco e cápsula nos sete portos, com banco ausente. Conferência local de interface,
+toque e carga em `docs/qa/2026-10-30-rede-barco/`. Não é implantação nem prova de FPS em GPU real.
 
 ## Pico Gelado completo e apresentação do Floco (fase3-06, 29/10/2026)
 
@@ -2950,6 +3597,39 @@ os colisores em `tests/colisores-do-pico.test.ts`. Navegador: `playground/verifi
   contrato em `salvamento-v14.test.ts`. Navegador: `playground/verificar-pico-browser.ts` (entrar no
   iglu, levar os três instrumentos, o fogareiro sem ingredientes, o festival e o Floco falando dele).
 
+## O planador e o vento da parede de gelo (fase3-09, 29/10/2026)
+
+- **O presente.** Com o festival de inverno começado, a primeira conversa com o Floco dá o
+  planador: "Pela música de volta, este planador é seu. No ar, pule de novo para abrir e pule outra
+  vez para fechar." O festival avisa ("Ele tem um presente para você.") e as conversas seguintes
+  lembram do vento: "Com o planador, o vento na frente da parede de gelo leva lá para o alto dela."
+  O planador é um equipamento na mochila (🪁); tocar nele diz como usar. Fica para sempre.
+- **Abrir e fechar.** Com o planador na mochila, no ar, pular de novo abre: depois de 0,15 s fora
+  do chão e subindo a menos de 1 m/s (perto do alto do pulo ou caindo; o pulo de beirada e o de
+  tolerância continuam sendo pulo). Pular outra vez fecha e o embalo segue até pisar. Pisar no chão
+  ou cair na água também fecha. Vale em qualquer ilha. Sem prazo, sem castigo.
+- **Planando.** O corpo desce a 1,8 m/s (do platô do cume, uns 4,7 s no ar) e segue para a frente a
+  4,2 m/s; com o controle, vai a 5,5 m/s para onde se pede, com o peso do ar (aceleração 4, freio
+  2,5). A pessoa fica pendurada na barra, um pouco inclinada para a frente, com as asas do
+  `planador.glb` abertas por cima. Abrir caindo freia suave (a velocidade de cair chega na pedida
+  aos poucos), sem tranco.
+- **O vento que sobe.** Na frente da parede de gelo do Pico (âncora `corrente-de-ar` do `pico.glb`)
+  há uma corrente de 1 m de raio que sobe 4,75 m do chão, com flocos de neve subindo para mostrar
+  onde ela fica. Planando dentro dela, o corpo sobe a 3,2 m/s; nos últimos 1,5 m a subida some e a
+  pessoa fica pairando lá em cima, um pouco acima do alto da parede. Dentro do vento e acima dele, o
+  ar segura no lugar: sem tocar no controle, o planador não sai andando (quem abre o planador acima
+  do vento desce devagar até o alto dele). Para sair, é só guiar para onde quiser. Guiando para a
+  parede, ela pousa lá em cima (âncora `topo-da-parede`); segurando para a frente além da conta,
+  passa da parede e pousa atrás dela, e para parar em cima basta fechar o planador (pular) sobre o
+  alto da parede. Com menos movimento, os flocos ficam parados.
+- **Salvamento:** nenhuma versão nova. O planador é um item do inventário (que já aceita itens
+  novos), e a corrente e o modo planar não guardam nada.
+- Onde mudar: `PLANADOR` e `CORRENTE_DO_PICO` em `sistemas/planador.ts`; o modo em
+  `sistemas/modos/planar.ts`. Testes: `tests/planador.test.ts` e o bloco do vento em
+  `tests/colisores-do-pico.test.ts` (a corrente livre de colisores do chão ao alto e o voo até o alto
+  da parede). Navegador: `playground/verificar-pico-browser.ts` (o presente no festival, abrir no ar
+  sobre o vento, subir acima da parede, sair do vento planando e pousar).
+
 ## Mergulho do Recife (fase3-02, 29/10/2026)
 
 - Na marca de mergulho do Recife, use **Mergulhar** depois que o cenário carregar. A direção
@@ -3029,10 +3709,80 @@ mantém a prioridade até a saída, mesmo que a pessoa se aproxime da área de o
 - A V12 guarda pegadas seguidas, etapa da escavação e ids dos ninhos cuidados. V1 a V11 migram
   sem perder conquistas. Retomar mantém inclusive a escavação parcial. Duas sessões conciliam
   as descobertas por união dos ninhos, maior etapa e rastro concluído, sem duplicar recompensas.
-- Nenhuma mudança de GLB, gerador, amizade ou inventário. Filhote e museu continuam na fase4-03.
+- Nenhuma mudança de GLB, gerador, amizade ou inventário. Filhote e museu são da fase4-03 (abaixo).
 
 Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência e capturas:
 `docs/qa/2026-10-29-vale-pegadas-ninhos/README.md`.
+
+## O filhote do Vale e o museu dos fósseis (fase4-03, 29/10/2026)
+
+- **O ovo.** Com os três ninhos cuidados, a conversa com a Jade entrega um ovo, uma vez só:
+  "Você cuidou dos três ninhos.", "Um dos ovos dos ninhos precisa de calor para chocar." e "Leve
+  este ovo ao chão quente, no pé do vulcão, e aqueça um pouco a cada dia.". Depois ela lembra do
+  calor ("O ovo precisa de calor. Aqueça no chão quente do pé do vulcão, um dia de cada vez.") ou
+  fala do filhote ("O filhote cresce com comida e carinho, um dia de cada vez."). Antes dos ninhos,
+  a apresentação de sempre.
+- **O chão quente.** Na âncora `pe-do-vulcao` do `vale-dos-dinos.glb`, um círculo amarelo de
+  0,6 m que pulsa devagar e o `ovo-dino` do GLB de props com 0,47 m (escala 0,6), balançando de leve
+  (parado com menos movimento e na pausa). "Aquecer o ovo" (E ou Usar, até 2,2 m) conta um dia;
+  no mesmo dia, "Ver o ovo" só lembra de voltar amanhã. Com `DIAS_PARA_CHOCAR` (3) dias ele choca.
+  Os dias não precisam ser seguidos: um dia sem aquecer não tira nada. O dia é o de São Paulo
+  (`diaDe`, o mesmo dos moradores).
+- **O filhote.** Um tricerátopo filhote (`triceratops-filhote.glb`, clipes `andar`, `parado` e
+  `pular`), que passeia devagar (0,5 m/s, 4 s parado em cada ponto) entre cinco pontos de chão
+  plano em volta do chão quente (`PASSEIO_DO_FILHOTE`, conferidos contra o GLB, também na reta
+  entre um e outro). Não colide: é bicho miúdo que anda em volta, como o adotado. "Dar um nome ao
+  filhote" abre o painel com o nome (1 a 16 letras); depois, "Cuidar de Tricê" abre a comida e o
+  carinho. "Dar comida" usa uma alface, um tomate ou um milho da mochila (nessa ordem), uma vez por
+  dia; sem nada disso, "Ele come alface, tomate ou milho. Colha na horta e traga.". "Fazer
+  carinho" vale uma vez por dia. O dia em que ele come e ganha carinho conta para crescer, uma vez
+  só; com `DIAS_PARA_CRESCER` (5) dias cuidados ele está crescido. O desenho vai da escala 1
+  (0,48 m) à 1,8 (0,86 m), aos poucos, a cada dia cuidado. Comer ou carinho que muda algo toca o
+  pulinho. Sem fome que cai, sem tristeza, sem prazo e sem perda.
+- **O museu.** O projeto azul do museu dos fósseis chega com o fóssil descoberto (a escavação
+  nas três etapas, `ganharProjetos`). No painel do objeto, "N de 6 descobertas do Vale dos
+  Dinos" e a coleção do Vale: pegadas, fóssil, os três ninhos e o filhote, com o mesmo texto do
+  diário. O filhote entrou também na coleção do Vale do diário.
+- **Salvamento V15:** `vale.filhote`, `null` até a Jade entregar o ovo, depois `{ ovo, aquecidoEm,
+  nome, comeuEm, carinhoEm, dias }` (ovo de 0 a 3, dias de 0 a 99, nome de 1 a 16 letras). A V14
+  migra com `null`. Para caber, o id de uma aparência guardada passou a ter até 40 caracteres
+  (`ID_DA_APARENCIA_MAXIMO`; os ids de hoje têm até 36, o uuid): a migração tira das guardadas o
+  que passar disso. No pior caso de 64 KB, com o filhote também no máximo, sobram 4579 bytes.
+  Duas sessões juntam o filhote mais adiantado (o maior ovo e os maiores dias, as datas mais
+  recentes, o nome da sessão local quando as duas deram nome).
+
+Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`. Testes:
+`tests/filhote-do-vale.test.ts` e `arquipelago-contracts/tests/salvamento-v15.test.ts`. Navegador:
+`playground/verificar-filhote-browser.ts`, no computador e no celular emulado.
+
+## A montaria do Vale (fase4-04, 29/10/2026)
+
+- **O dino.** Um parassaurolofo de sela (`dino-montaria.glb`, clipes `parado`, `andar`, `correr` e
+  `pular`) na escala 0,85: 2 m de altura e 3,65 m de comprimento. Ele espera entre o vulcão e a
+  chegada (`MONTARIA_NO_VALE`, chão plano e largo, conferido contra o GLB), olhando para quem vem
+  da ponte. Parado, o corpo dele segura o corpo da criança (uma caixa de 1,1 × 2 × 3,2 m, só para
+  o corpo).
+- **Montar.** "Montar no dino" (E ou Usar, até 2,2 m), de pé no chão e fora da água. Antes dos três
+  ninhos: "O dino ainda não conhece você. Cuide dos três ninhos do Vale e ele vai confiar.". Depois:
+  "Você subiu na sela. Use o mesmo botão para descer.", e o dino vem para baixo da criança, que vai
+  sentada na sela.
+- **Montada.** O modo `montar`: anda a 3,6 m/s e corre a 6 (a criança anda a 2,2 e corre a 4,6), com
+  o mesmo peso de começar e parar do chão, e pula um pouco mais alto que a criança (9 m/s de
+  subida). O controle é o de sempre; a câmera, também. O dino não entra na água: o passo para na
+  beira, e o Zappy diz "O dino não entra na água. Ele prefere a terra do Vale.". Ele também não sai
+  do Vale: anda até 10,8 m do meio da ilha (a ponte começa a 11,5), e lá o Zappy diz "O dino não
+  sai do Vale. Ele gosta daqui.". Quem vai montada
+  usa um colisor maior (raio 0,6, o pé no mesmo lugar): a cabeça e a cauda passam um pouco dele,
+  porque a cápsula não gira com o corpo.
+- **Descer.** O mesmo E ou Usar, no chão. A criança desce com um pulinho para o lado esquerdo dele
+  (cai a uns 1,1 m do meio do corpo, fora dele; uma parede ao lado segura o pulinho mais perto, e o
+  colisor do dino espera ela se afastar); o dino fica parado onde parou, olhando para onde ia,
+  e o colisor dele volta quando ela se afasta. A ilha que sai de cena também tira da sela.
+- Nada vai para o salvamento: quando a ilha monta de novo, o dino volta ao lugar dele. Sem prazo,
+  sem cansaço e sem queda.
+
+Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`. Testes: `tests/montaria.test.ts`.
+Navegador: `playground/verificar-montaria-browser.ts`, no computador e no celular emulado.
 
 ## Corais, aquário e mapa do Recife (fase3-03, 29/10/2026)
 
@@ -3061,10 +3811,23 @@ Plano: `docs/plans/2026-10-29-arquipelago-vale-pegadas-ninhos.md`. Conferência 
   porque a visita não traz os corais dele.
 - **O mapa.** Na mesa de mapas da Maré (âncora `mapa`), "Ver o mapa do arquipélago" (até 2 m)
   abre o mapa: as oito ilhas desenhadas na posição do anel do mundo, a sua ilha no meio com o
-  Farol, as abertas pela jornada coloridas e as fechadas em cinza. A lista ao lado diz "Aberta.",
-  "Você está aqui." (no Recife) ou o que abre a ilha, pela voz do jogo: no Kids "Abre em Mestre
-  dos Jogos." (o Farol "Acende na Lenda."), no adulto "Abre na etapa 5 da sua jornada.". Só
-  olhar: nada é gravado. Esc ou "Voltar ao jogo" fecha.
+  Farol. A jornada abre o acesso; a visita preenche a ilha no mapa. Contorno colorido indica
+  ilha aberta ainda por explorar; cinza sem contorno indica ilha fechada. A lista diz
+  "Visitada.", "Aberta para explorar." ou o que abre a ilha, pela voz da comunidade. O marcador
+  diz "Você está nesta região.", pois acompanha a ilha mais próxima mesmo durante a travessia.
+  Esc ou "Voltar ao jogo" fecha. Abrir o mapa não grava visita.
+
+### Mapa descoberto (L10, 30/10/2026)
+
+Uma visita fica guardada quando a pessoa está apoiada no chão, no modo de andar, com o chão
+carregado. O miolo do anel usa 12 m de raio; o gramado central, 24 m; o Farol já aberto, 4 m.
+A altura precisa estar acima da terra, inclusive os 8 m das Nuvens. Passar no mar, barco,
+balão ou planador não conta. Pausa, suporte e visita à casa alheia não registram descoberta.
+
+O salvamento V18 guarda oito marcas em `ilhasVisitadas`. Versões anteriores começam sem
+marcas porque não havia registro confiável de visita. Nada da mochila, diário ou jornada
+é apagado. Duas sessões juntam suas marcas sem duplicar itens. Esse registro não dá prêmio,
+moeda, bloco ou acesso. A conferência local está em `docs/qa/2026-10-30-mapa-descoberto/`.
 
 Plano, decisões e pedidos de arte: `docs/plans/2026-10-29-arquipelago-recife-corais-aquario-mapa.md`.
 Testes: `tests/corais-do-recife.test.ts` (regras, os arquivos, o fundo e a grade de andar até cada
@@ -3095,3 +3858,381 @@ coral e até a mesa) e `arquipelago-contracts/tests/salvamento-v13.test.ts`. Nav
 - Esta fase não liga corrida, constelações, clima ou passeio de balão. Não muda o salvamento,
   não altera geradores e não regrava GLBs. Testes e capturas em
   `docs/qa/2026-10-29-nuvens/README.md`.
+
+## Balão da Ilha das Nuvens (fase4-09, 29/10/2026)
+
+- O balão fica parado na âncora `balao` do `nuvens.glb`. A pé, no chão e a até 1,6 m do cesto,
+  "Subir no balão" (E ou Usar) leva a criança para dentro do cesto em 0,7 s, com um pulinho de
+  0,95 m por cima da borda (0,82 m). O cesto parado segura quem anda em volta (caixa de 1,1 ×
+  0,82 × 1,1 m, só para o corpo).
+- No voo, segurar Pular (no toque, o botão vira "Subir") acende o fogo: o balão sobe com 1,4 m/s²
+  até 1,8 m/s. Soltando, desce devagar, até 0,7 m/s. O direcional empurra para os lados com
+  1,6 m/s², até 3 m/s; sem ele, o ar segura e a velocidade de lado cai pela metade a cada 0,8 s.
+- Limites sem castigo: teto de 18 m acima do tampo da ilha; passando de 24 m do meio da ilha, uma
+  brisa mansa traz de volta (até 4 m/s² em 6 m, mais forte que o direcional). Fora do chão da ilha
+  (mais de 19,2 m do meio), o ar segura o cesto 1,5 m acima do tampo.
+- O cesto pousa quando encosta em algo por baixo: o chão, o ninho no alto da árvore, um degrau de
+  nuvem. Pousado, não desliza, e aparece "Descer do balão" (E ou Usar). Perto do lugar do balão
+  (até 1,5 m) a criança sai 1,4 m para o meio da ilha; longe dele, fica de pé onde pousou. O balão
+  volta sozinho ao lugar dele. No voo, nada do mundo lá embaixo oferece ação.
+- A pausa congela o voo e o clipe `flutuar`; com menos movimento (aparelho ou menu), o `flutuar` vai
+  a 35% da velocidade. A câmera se afasta um pouco (no mínimo 11 m, inclinação mínima 0,45). A
+  posição não é gravada durante o voo, e o balão não muda o salvamento: ele sempre recomeça parado.
+
+
+## Proteja os ninhos no Estúdio (fase4-05, 29/10/2026)
+
+O pacote do Vale fica em `docs/desafios-do-jogo/vale`. O Quadro das Cores 6, ordem 60, usa ondas de cinza e uma lista de ninhos. Cenário, desenho, placar e botão de recomeçar vêm prontos. A criança completa três regras: cobrir um ninho ao tocar, começar a próxima onda e percorrer a lista para contar o que ficou protegido ou com cinza. Não há contagem regressiva. Cada onda começa pelo botão, depois de preparar os ninhos.
+
+A proposta local usa três ninhos, três ondas e um ponto por proteção. Cada onda limpa a proteção para permitir tentar de novo. As três variações, ordens 61 a 63, mudam uma regra cada: quatro ondas, dois pontos por proteção e um quarto ninho na lista. O extra reinicia pelo Enter. O principal dá 20 moedas e o extra 10; os desafios do dia dão 10 e 5, conforme `MOEDAS_PADRAO_POR_TIPO`. Só o principal pinta a ilha. A atração é `proteja-os-ninhos`.
+
+Os oito projetos são JavaScript em blocos, sem HTML, CSS ou Canvas. As provas usam o executor real, incluindo versões com erros para impedir que um objetivo passe só pelo desenho. Importar e publicar no Admin é outra etapa. O quadro estava livre nos manifestos locais e precisa ser conferido também na futura importação. Nenhum banco foi acessado.
+
+## A última página e a volta da Íris (fase4-11, 29/10/2026)
+
+**Prioridade da orientação, 30/10/2026:** na sala, o Agora indica a última página na mesa da
+Íris. Durante a subida, a leitura, os fachos e o corte de volta, os lembretes de plantio,
+desafio diário, rotina, mochila e tutorial cedem esse espaço. Os controles da sala, o menu
+e os avisos necessários continuam disponíveis. O menu não convida a iniciar o tutorial nesse
+momento. Nada é concluído ou apagado: ao descer, voltam as pendências e a mesma fala dos primeiros
+passos. Recados temporários vencem no prazo normal, sem reaparecer vencidos. A regra vale para
+os dois públicos e não altera o acesso ao final.
+
+Na Lenda, posição 8 da jornada, E / Usar oferece **Subir o Farol**. Antes, a porta oferece um recado gentil, com voz própria para o público adulto. Visitas não iniciam esse final. A passagem para o interior acontece pelo interativo; a dobradiça da porta exterior já está ligada, como descrito abaixo.
+
+O interior é a sala existente em `alto-do-farol.glb`, carregada só ao entrar e descartada ao sair. A sala usa um referencial próprio, 40 m acima do zero do mar, para não sobrepor a torre exterior. Esse número é uma decisão técnica, não uma medida da história. As âncoras `chegada`, `leitura` e `camera-varanda` orientam chegada, leitura e vista. O piso tem raio 4,2 m e topo y 0 no modelo; 16 caixas fecham o anel das paredes, com centro a 4,35 m. A mesa e a base da lente têm formas simples. Nenhuma malha de desenho vira colisor. Os colisores vêm do próprio arquivo (nós `col-*`); a grade do vão da escada também colide, para ninguém cair pela escada. A porta do farol de fora abre na dobradiça quando a criança chega perto e o Farol já pode ser subido.
+
+O alcance da porta é 2 m e o da leitura é 2,1 m. O corte de entrada e saída mantém a duração de 600 ms, com relógio próprio que pausa junto do jogo, trocando a cena no meio opaco, aos 300 ms de tempo ativo. Esc e o botão de descer devolvem o corpo a um ponto livre diante da porta. A posição da sala não entra no salvamento e o cochilo automático espera a pessoa descer. Uma falha ao carregar mantém a criança na ilha e permite tentar de novo.
+
+A última página tem quatro trechos, sem limite de tempo para ler. Íris conta que escondeu os rascunhos por medo, que o Cinza nasceu deles e que sua primeira faísca é o Zappy. A página fica guardada no diário depois da leitura, inclusive ao reabrir o jogo. Em seguida, a câmera se afasta da varanda por 3 segundos. Seis fachos alcançam as ilhas na ordem do anel, com 2 segundos para cada uma. Com menos movimento, a câmera já corta para a vista final, sem voo. Menu, interrupção de tempo, ferramenta, conflito de salvamento e aba escondida pausam a sequência. Não se carregam as seis ilhas completas. A névoa deixa de cobrir apenas essa vista panorâmica e volta ao sair.
+
+A Íris aparece perto da casa depois que os seis fachos terminam, em x -8, z -9, no chão medido pela ilha. Usa o morador genérico, os cinco clipes existentes e os olhos com `piscar` e `feliz`. O corpo simples tem raio 0,49 m e altura 2,13 m, medidos na cabeça e na pele do GLB, sem chapéu e braços estendidos. O foco da conversa fica a 1,7035 m dos pés, no centro vertical da cabeça. Alcance de conversa 2,2 m, olhar a 7 m, aceno a cada 45 s e giro com rapidez 3, iguais aos demais moradores. A conversa é fixa e não cria amizade, pedido ou presente.
+
+A leitura e a volta da Íris ficam no salvamento V16. Reabrir mantém a página no diário e a Íris em casa. A conclusão só é guardada ao terminar a sequência, nunca apenas por alcançar a Lenda. Sair antes disso permite tentar de novo. A animação recomeça ao entrar no Farol; a conquista não se perde.
+
+## O modo livre e a galeria do Farol (fase4-12, 30/10/2026)
+
+- **Começa com o final.** Quando os seis fachos terminam e o final fica guardado
+  (`farol.concluido`), o modo livre começa. Todos os projetos azuis que ainda faltavam chegam de uma
+  vez (geladeira, forno, casinha, lareira, banda, aquário, fliperama, museu e planta), para montar a
+  casa do jeito dela. O Zappy diz uma fala só: "O modo livre começou. Todos os projetos azuis
+  chegaram para você montar a casa do seu jeito, e o alto do Farol agora é a sua galeria." A Íris,
+  em casa, ganha uma terceira fala que convida a subir. Nada é cobrado e nada some.
+- **A galeria.** A sala do alto do Farol ganha seis pedestais (0,9 m de altura, tampo dourado de
+  0,37 m de raio) em volta da lente, a 3,3 m do meio, longe da varanda, da grade da escada e da mesa
+  da Íris. Cada pedestal é uma vaga. De frente para ele, E / Usar abre o painel da vaga ("Escolher o
+  que expor na vaga N" ou "Ver a criação da vaga N").
+- **O que dá para expor.** Só criações dela, nunca inventadas: as aparências feitas no Pinta e no
+  Molda que os objetos guardam (as compradas na galeria de aparências não entram), os minijogos
+  aprovados no Desafio e os jogos publicados no Mural (as duas listas vêm do serviço; sem elas, só
+  as aparências). A aparência aparece no pedestal como o objeto dela, encolhido para caber num cubo
+  de 0,85 m; o jogo aparece num quadro com a capa do minijogo ou o nome escrito.
+- **Escolher.** O painel mostra o que está exposto (com "Jogar" para os jogos e "Tirar daqui") e as
+  criações em três grupos (Pinta e Molda, Minijogos, Jogos do Mural). "Expor aqui" põe a criação na
+  vaga; se ela já estava em outra, muda de lugar (a mesma criação não fica em duas vagas) e a lista
+  mostra "Na vaga N". Se a aparência deixar de ser guardada pelo objeto, a vaga avisa e fica vazia
+  no mundo até ela escolher outra.
+- **Fica guardado.** A escolha mora no salvamento V20 (`farol.galeria`, até seis vagas, só depois do
+  final). Reabrir o jogo mostra os mesmos pedestais. Se só uma sessão mudou a galeria, vale a dela;
+  mudada nas duas ao mesmo tempo, a criança escolhe qual fica, como no clima.
+- **A câmera da sala.** Antes do final, a vista da sala é fixa (a mesma de sempre). No modo livre,
+  ela anda em volta da lente junto com a criança: fica de lado (50° à frente dela, a 3 m do meio),
+  a 3,25 m do piso (abaixo do forro vermelho do domo, a 3,5 m, e acima da lente, a 3,12 m), mirando
+  o lado da sala onde ela está. De lado, a lente nunca fica no caminho, nem com a criança encostada
+  no vidro, e os pedestais aparecem um por um. Andar para a frente leva em volta da lente. Com menos
+  movimento ela acompanha na hora, sem girar.
+- **Orientação.** No modo livre, o Agora da sala diz "Escolher as criações dos pedestais da galeria"
+  e "Reler a última página na mesa da Íris" (no celular aparece só o primeiro). Visitas não veem a
+  galeria nem mudam vagas.
+
+## Saltos entre nuvens, corrida de balão e constelações (fase4-07, 29/10/2026)
+
+- **O progresso fica guardado.** A V16 guarda as estrelas e o melhor tempo das duas corridas,
+  além das seis constelações descobertas. Reabrir mantém as conquistas. Duas sessões juntam
+  descobertas e estrelas e preservam o menor tempo, sem somar prêmios.
+- **Saltos entre nuvens.** "Começar os saltos entre nuvens" no chão, antes dos degraus de nuvem.
+  As paradas são o terceiro degrau e as plataformas 1 a 3; a chegada, o tampo da plataforma 4, que
+  vale em qualquer altura do sobe e desce. Caindo no chão da ilha, o corte suave leva de volta à
+  última parada, no lugar onde a plataforma estiver. Três fitas do arco-íris, uma em cada vão entre
+  as plataformas, na altura do pulo correndo feito na hora certa (a de trás no alto, a da frente
+  embaixo). Estrela do tempo até 60 s: sem perder nenhuma janela das plataformas a volta leva até
+  uns 55 s, conforme a fase do ciclo na largada.
+- **Corrida de balão.** Seis argolas de pé em volta da ilha, a 15 m do meio, uma de cada cor dos
+  fios do tear (vermelha, laranja, amarela, verde, azul e roxa), com o meio de 5 a 11 m acima do
+  tampo. Raio de 4,2 m: o balão inteiro passa. Conta passar o meio do balão (3,3 m acima da base do
+  cesto) pelo plano da argola a menos de 1,8 m do meio dela, na ordem. A vermelha começa a corrida
+  (o cronômetro aparece) e a roxa chega. Três fitas do arco-íris entre as argolas, um pouco mais
+  altas, pegas a 1,6 m do meio do balão. Estrela do tempo até 45 s (quem pilota sem errar leva uns
+  29 s). Descer do balão no meio, ou "Parar", termina sem chegar; "Correr de novo" volta a esperar a
+  argola vermelha. A argola da vez brilha mais (o brilho pulsa, parado com menos movimento).
+- **Para pilotar melhor:** soltando o fogo, o embalo para cima acaba em pouco mais de 1 s (freia a
+  1,5 m/s²) e depois o balão desce devagar como antes.
+- **Constelações escondidas.** O mirante (deque com a luneta grande) fica entre o tear e a beira da
+  ilha. De dia, "Olhar pela luneta" faz o Zappy dizer que as estrelas só aparecem à noite. À noite
+  abre a vista: as setas (ou o direcional, ou os botões do visor) miram o céu. Pela luneta, as
+  figuras ainda escondidas aparecem bem fracas, sem as linhas; a olho nu, não aparecem. Segurar o
+  centro das estrelas de uma figura a menos de 7° do meio da vista por 1,2 s a acende: as estrelas
+  aparecem uma por uma em 1 s (todas juntas com menos movimento), as linhas entram por último e o
+  Zappy diz o nome (a arara, o balão, o vagalume, o peixe, o farol e a nota musical). Achada, ela
+  fica acesa nas noites seguintes enquanto o jogo está aberto. Amanhecendo com a vista aberta, ela
+  fecha.
+
+## Clima da sua ilha (fase4-08, 29/10/2026)
+
+- Com a Ilha das Nuvens aberta, a Iriê ensina (a terceira fala dela) e o menu ganha a seção "Clima
+  da sua ilha": sol, nublado ou chuva. O relógio do topo mostra o clima. A escolha fica guardada e volta ao reabrir. Um jogo novo começa com sol. Numa visita, a ilha é do irmão e o
+  tempo dela não muda.
+- O tempo vale perto da ilha central (até 34 m do meio, sumindo aos poucos em mais 8 m). Nublado:
+  o sol fica a 65% e o céu fica cinza. Chuva: o sol fica a 50%, o céu mais cinza e caem gotas em
+  volta da criança (250 no modo leve, 450 no médio, 700 no completo; nenhuma com menos movimento e
+  nenhuma dentro de casa). A pausa congela as gotas.
+- A chuva rega sozinha o que está plantado (confere a cada segundo).
+- Com o clima ligado, a planta regada pede água de novo no meio do crescimento: com sol aos 30%,
+  nublado aos 60% (o sol forte pede mais cedo); na chuva não pede, a chuva rega. Ela pede durante
+  15% do crescimento, com uma gota azul em cima e "Regar". Regar nessa hora adianta o crescimento
+  em 15%. Sem regar, a planta cresce no mesmo tempo de sempre: nada estraga e nada se perde.
+
+## Minijogo do Estúdio "Jardim que floresce" (fase4-10, 29/10/2026)
+
+- O pacote de desafios das Nuvens: um Quadro das Cores (quadro 6) e três desafios do dia, no Jogo 2D
+  com os blocos ensinados até o Gênio da Criação. Ainda não foi importado no Admin.
+- A simulação: começo com 0 de água e 3 de sol; Regar e Sol guardam 3 cada; a cada 1 segundo o
+  tempo aumenta 1 e, com água e sol, a flor cresce 10 e gasta 1 de cada; em 100 o jardim floresce.
+- As variações mudam uma regra: rega forte (Regar guarda 5), sol forte (com 6 ou mais de sol a flor
+  cresce 20) e chuva (cai 1 de água por segundo). O extra é a tecla Enter recomeçar o jardim.
+- Moedas de sempre: 20 e 10 de extra no quadro, 10 e 5 nos desafios do dia. Detalhes e provas em
+  `docs/desafios-do-jogo/nuvens/README.md`.
+
+## Continuidade e limite do salvamento (L01, 29/10/2026)
+
+O salvamento V16 reúne o progresso das Nuvens, a última página, a volta da Íris e o clima.
+As versões antigas continuam legíveis. Uma referência antiga de criação não é cortada para
+caber: os até 80 caracteres aceitos antes são preservados. A migração não inventa conquistas.
+
+O documento continua limitado a 65.536 bytes UTF-8. A conferência inclui os dados depois de
+migrar. Se passar do teto, o serviço recusa a nova gravação e conserva a anterior; o jogo mantém
+o rascunho local. Os testes distinguem o orçamento dos IDs canônicos dos produtores de uma
+combinação artificial de referências antigas longas. Não se promete que qualquer combinação
+máxima de todos os campos caiba no teto.
+
+## HUD, menu de pausa e abertura "O Cinza" (29/10/2026)
+
+- **A abertura** aparece sozinha uma vez por perfil em cada aparelho (a marca fica no aparelho; sem
+  armazenamento, só num jogo novo) e nunca no acesso de suporte. Ela tem 8 cenas e 9 falas.
+  A leitura começa manual, sem prazo. Anterior e Próxima percorrem cada fala, inclusive as duas
+  da última cena. Na última fala, Começar entra no jogo. Um toque no palco ou Enter também avança;
+  as setas para esquerda e direita voltam e avançam. Nos botões, Enter e Espaço acionam o botão.
+  Passar sozinho liga a sequência de 73 segundos de tempo ativo; Pausar leitura conserva a fala.
+  Navegar manualmente volta ao modo manual. Aba escondida não consome tempo de leitura.
+  Segurar Espaço no palco ou o botão por 1 segundo pula tudo; Esc fecha.
+  A primeira fala do Zappy vem quando ela fecha. Fechada pela tela do tempo ou pelo salvamento, ela
+  não conta como vista. Dá para rever no Diário ("Rever a abertura: O Cinza"), sem a fala nem a marca.
+  Enquanto ela cobre a tela, o mundo 3D não é desenhado; na saída (1,2 s) ele volta.
+- **O "Agora"** lembra no máximo 3 coisas (no celular, a primeira), nesta ordem: abrir a porta nova,
+  comer (fome abaixo de 25), descansar (energia abaixo de 25), regar o que foi plantado, colher o que
+  amadureceu e o desafio de hoje no Quadro das Cores. Não dá prêmio nem cria tarefa.
+- **A mochila**: os itens que fazem alguma coisa vêm primeiro e as teclas 1 a 5 usam os cinco
+  primeiros. As teclas não valem com o jogo parado nem na corrida ou no balão (lá a mochila some).
+- **Na corrida e no balão** a HUD mostra só quem joga (sem moedas), o relógio, o menu, a barra da
+  corrida e, no balão, a altura (de 0 ao teto de 18 m acima do tampo) com o fogo.
+- **A ilha no alto** é a mais perto da pessoa (na ponte, a ponta mais perto), conferida duas vezes por
+  segundo; o Quadro das Cores dela aparece quando a ilha tem algum desafio.
+- **As moedas** são o saldo da conta lido do serviço da galeria; sem leitura, não aparecem.
+
+## Amizade nas seis ilhas e páginas que faltavam (L02/L06, 29/10/2026)
+
+Maré, Floco, Jade e Iriê agora têm amizade, presente e pedido diário, como Capi e Bento.
+A primeira conversa do dia soma 10 pontos. Um pedido entregue soma 30. O primeiro presente
+de comida soma 20 se for um preferido ou 8 se for outro. No aniversário, esse presente vale
+o dobro. Cada coração vale 100, até cinco corações. Faltar um dia nunca tira pontos.
+
+Maré gosta de salada e alface; Floco, de pipoca e chocolate quente; Jade, de milho e salada;
+Iriê, de tomate e pipoca. Os pedidos usam alface, tomate, milho e pipoca já existentes.
+Aniversários escolhidos para o calendário do jogo: Maré 8 de junho, Floco 21 de junho,
+Jade 18 de maio e Iriê 21 de setembro. Não são informações históricas da proposta.
+
+Com dois corações, Floco, Jade e Iriê entregam as páginas do Pico, Vale e Nuvens. A fala da
+página vem por último. O diário mostra quantos corações faltam e conserva a página depois
+de reabrir. A página do Recife continua sendo encontrada no navio. Floco continua com o
+planador, Jade com o ovo e Íris com a apresentação do final.
+
+O salvamento V17 acrescenta os quatro registros, preservando tudo da V16. Amizade e itens
+consumidos pertencem à mesma alteração, sem somar duas abas. O painel não entrega presentes
+durante visita, suporte, conflito ou sincronização do tempo. No caso pesado dos testes,
+com seis pedidos em Unicode, o documento ocupa 62.605 de 65.536 bytes. Não há corte de dados.
+
+## Galeria compartilhada com o quarto (L04, 30/10/2026)
+
+A posse do aquário, do fliperama e da planta vale no jogo e no Meu quarto. Cada lugar
+usará o seu próprio visual. O preço é o mesmo: 70 moedas para aquário ou fliperama,
+30 para a planta. Quem já comprou não paga outra vez nem paga diferença. As outras
+seis aparências continuam só no jogo, pois ainda não têm modelo no quarto.
+
+A compra só muda a aparência. O projeto azul já funciona sem ela, e comprar no
+quarto não libera o projeto azul. A posse e as moedas ficam no Members, separadas
+por pessoa e comunidade. Perder a resposta ou clicar duas vezes não cobra novamente.
+
+Antes de trocar o sistema, as compras antigas são conferidas e adotadas sem gastar
+moedas. Uma compra sem comprovação fica para revisão, nunca vira nova cobrança.
+Se o serviço não responder, a interface avisa; não finge que os objetos desapareceram.
+
+
+## Primeiro pedido da ilha central (L02/L03, 30/10/2026)
+
+O Zappy convida a plantar, regar e colher um alimento na horta da própria ilha.
+As sementes iniciais bastam. A alface mantém seus três minutos de crescimento,
+e o pedido não tem prazo. O Diário explica a recompensa e o Agora mostra um passo
+por vez, sem repetir a mesma instrução de regar ou colher.
+
+A primeira colheita manual que cabe inteira na mochila entrega o projeto azul da
+geladeira. Alimento, semente devolvida e projeto entram no mesmo salvamento.
+Colheita imatura ou mochila cheia não consome nem entrega nada. Quem já conquistou
+a geladeira conserva a data e as aparências. A entrega à Capi continua disponível.
+A função funciona em holograma; aparência e ferramentas seguem suas próprias regras.
+Não há moedas, blocos concedidos nem uma nova marca de progresso no salvamento.
+
+## Sementes e ingredientes na feira (L07, 30/10/2026)
+
+Comprar é opcional. A horta continua devolvendo sementes e os moradores continuam dando
+ingredientes. A feira vende as três sementes, fubá, leite e ovo por duas moedas a unidade.
+Polvilho, queijo, cacau, leite de coco e polpa de açaí custam três. A pessoa escolhe de uma
+a dez unidades e confere o total antes de confirmar. Cancelar não gasta moedas.
+
+A compra inteira precisa caber na mochila, até 999 de cada item, e no salvamento de 64 KB.
+Sem espaço ou moedas, nada é entregue nem consumido. Comprar ingrediente não ensina uma
+receita, não libera uma ferramenta e não entrega um projeto azul.
+
+O jogo guarda o pedido antes de cobrar. Se a conexão cair, ele pausa e oferece retomar a
+mesma compra. Reabrir ou trocar de aparelho não cobra nem entrega duas vezes. O saldo fica
+na plataforma e os itens no salvamento do jogo. Uma resposta incerta nunca é tratada como
+saldo insuficiente. Kids e adultos usam as mesmas regras de compra.
+
+## Moedas pelos pedidos dos moradores (L07, 30/10/2026)
+
+
+Cada um dos seis moradores pode agradecer um pedido por dia com três moedas. Com humor ótimo,
+são quatro. O dia começa à meia-noite de São Paulo, não quando o sol nasce no jogo. A amizade
+continua ganhando 30 pontos e as cestas seguem as receitas de cada morador. Faltar não tira nada.
+
+Os prêmios usam o mesmo limite de 100 moedas por semana do jogo inteiro. Ao alcançar o limite,
+a pessoa ainda pode ajudar, ganhar amizade e receber ingredientes. As moedas que ficaram fora
+do limite não se acumulam para a semana seguinte. Comprar não reabre esse limite.
+
+A entrega acontece inteira no serviço: confere pedido e itens, guarda a nova mochila e depois
+confirma o crédito na carteira. Se a resposta se perder, retomar usa a mesma entrega, sem gastar
+ingredientes nem ganhar moedas de novo. Uma moeda ainda sem confirmação não impede continuar
+jogando depois que a entrega foi guardada. Kids e adultos seguem a mesma regra.
+
+## Receitas e roupas que voltam com as festas (L09, 30/10/2026)
+
+A Salada do Carnaval leva uma alface, um tomate e um milho, na bancada. Repõe 30 de fome e
+20 de diversão. O Milho da fogueira leva um milho, na fogueira da Junina, e repõe 20 de fome
+e 20 de diversão. A pipoca da festa continua dando 30 de diversão. Os ingredientes vêm da horta.
+
+As receitas ficam no Diário o ano inteiro. O preparo só abre na festa correspondente e volta
+no próximo ano. O prato que já está na mochila não vence nem desaparece. Sem espaço para o
+prato inteiro ou no salvamento de 64 KB, os ingredientes não são consumidos.
+
+Durante uma festa, a feira também oferece sugestões de roupas no avatar da plataforma.
+A pessoa pode escolher outras peças. A prévia não compra nem salva; a confirmação e o saldo
+são os mesmos do configurador do avatar. Cancelar descarta a prévia não salva. A posse de uma
+peça comprada permanece depois da festa. Não há roupa obrigatória nem prêmio por comprar.
+
+Carnaval sugere máscara e coroa de flores; Junina, camiseta listrada e laço. Lanternas e fim
+de ano têm sugestões preparadas, mas continuam sem data automática aprovada. O jogo não
+ativa essas festas por conta própria. Kids e adultos usam suas próprias interfaces e contas.
+
+## Primeiros passos com o Zappy (30/10/2026)
+
+Pedido da dona: quando a criança entra pela primeira vez, ela fica perdida. O Zappy ensina o
+começo fazendo, uma coisa por vez. Proposta aprovada no canvas "Primeiros passos com o Zappy".
+
+- **Quem vê sozinho:** quem ainda não tem a geladeira, logo depois da abertura da primeira vez
+  (vista ou pulada) ou, sem abertura, ao abrir o jogo. Quem parou no meio continua de onde estava.
+  Quem pulou ou terminou só vê pelo menu. Nunca na casa do irmão nem no acesso de suporte. A marca
+  fica no aparelho, por público e perfil; o salvamento não muda.
+- **As 23 falas, em 6 capítulos:** oi (com o nome); andar, olhar em volta e pular; chegar na porta
+  nova e abrir; plantar, regar e a planta crescendo (o nome e o tempo vêm da semente: alface três
+  minutos, tomate cinco, milho oito); as barrinhas, a mochila, abrir o menu, o mapa (dentro do
+  menu) e "pode explorar" (só se a planta ainda cresce); colher, a geladeira, a obra e o fim.
+- **O que conta como feito:** andar 2 metros, girar a câmera um quarto de volta, um pulo, o aviso
+  da porta aparecer, a porta aberta, a etapa do primeiro pedido mudar, o menu aberto, a geladeira
+  ganha, o Construir aberto, um cômodo novo, uma porta nova na obra, a geladeira posta e voltar ao
+  Viver. Ler e fechar não conta. Feito, aparece "Isso. Feito." por 1,5 s e a próxima fala chega.
+- **O que o jogo já tem** (a porta aberta antes da hora, a horta já plantada) vira lembrete: a fala
+  aparece com "Você já fez isso." e segue sozinha em 4 s.
+- **A geladeira:** a fala 16 diz que ela precisa de um cômodo novo, fora do quarto, com "Fazer
+  agora" e "Depois". A frente da porta nova é a varanda, então o cômodo vai encostado na casa e
+  ganha uma porta. Saindo do Construir no meio, a fala volta a pedir o Construir. "Depois" vai para
+  o fim; a obra volta, com as mesmas falas, na próxima vez que o Construir da casa abrir.
+- **O X:** fala sem tarefa avança; fala com tarefa recolhe, e a tarefa vira a primeira linha do
+  Agora com o rosto do Zappy (tocar abre de novo). Enter também fecha. Enquanto o tutorial anda,
+  a linha dele toma o lugar da linha do primeiro pedido.
+- **Pular:** "Pular o tutorial" pede confirmação no próprio cartão ("Tudo bem pular. Quando
+  quiser, me chame no menu, em Primeiros passos.") e guarda onde parou.
+- **Rever:** no menu, em Início, o cartão "Primeiros passos" diz o capítulo e tem Continuar e
+  Começar de novo (feito: "Rever os primeiros passos"); no Diário, embaixo de "Rever a abertura".
+  Começar de novo não desfaz nada.
+- **Onde a fala some:** menu (menos as falas do mapa, que moram nele), painéis, ferramentas,
+  corrida, balão, barco, tela do tempo, resultado e modo foto. Volta sozinha depois.
+- **O Zappy mostra o lugar:** voa até a porta, o canteiro, a casa ou a geladeira e fica olhando
+  para a criança; um facho dourado e um anel marcam o alvo; no "andar", um círculo de luz no chão
+  mostra até onde ir. Com menos movimento ele aparece no lugar, e o anel não pulsa. Na HUD, um anel
+  acende na parte que a fala mostra.
+- **O fim:** o cartão "O que você já sabe" (andar e olhar, pular, usar as coisas, plantar e colher,
+  menu e mapa, e Construir se a geladeira foi posta) por cima do jogo parado. Não dá moeda nem
+  prêmio: o prêmio é a geladeira do primeiro pedido.
+- **Textos:** sem travessão, sem exclamação, sem começar com pergunta (teste). A tecla desenhada e
+  o texto mudam com o último jeito de jogar (teclado, toque ou controle). As falas do mapa e do
+  curso vêm da voz do público (o adulto fala da etapa da jornada).
+
+## Dicas de primeira vez (30/10/2026)
+
+- Uma vez só por assunto, por perfil no aparelho. O cartão é o do Zappy, verde-água, com a etiqueta
+  "Primeira vez" e "1 de 2". Explicam e acendem o anel; nunca pedem tarefa. O X passa a fala.
+- **Quadro das Cores:** ao chegar perto do cavalete (ou no aviso do desafio de hoje, que ela
+  substitui na primeira vez): o que é o Quadro, os seis pedaços de cor e o curso que um quadro pode
+  pedir. Na primeira vez que o painel abre: o desafio de hoje, com o anel no cartão dele.
+- **Barco:** no primeiro "Embarcar": para onde ele leva (o Recife ou de volta para casa) e que ele
+  para sozinho no cais; na primeira chegada fora de casa, como voltar.
+- **Lumis:** ao ganhar a lanterna; no primeiro borrão (no lugar de "O borrão fugiu da escuridão");
+  quatro segundos depois de prender o primeiro Lumi (a rotina e o Caderno dos Lumis).
+- **Primeira noite:** quando anoitece com a criança jogando, menos no meio dos primeiros passos
+  (aí espera a próxima noite). Uma fala sempre e mais uma que combine: a cama com a energia baixa,
+  senão a lanterna ou o Bento na Vila aberta.
+- **Uma de cada vez,** e nunca com os primeiros passos andando. Ficam no menu, em "Dicas que você
+  já viu", para ler de novo. "Desligar as dicas" no cartão (com confirmação) e em Conforto e
+  controles, onde religa.
+
+## Coleções do Pico e das Nuvens (30/10/2026)
+
+Doze peças novas no álbum, em três grupos de quatro. Cada peça se pega uma vez, com E ou Usar,
+e vai para a mochila como lembrança (quantidade 1, igual às conchas). Não se come, não se dá de
+presente e não ocupa espaço na barra: as lembranças de todas as coleções viram um botão só, que
+abre o álbum. Nada novo no salvamento.
+
+- **Notas musicais do Pico:** semínima perto do lago congelado, colcheia do lado da caverna, duas
+  colcheias perto do iglu e a clave de sol no alto da parede de gelo (chega-se pelo vento, com o
+  planador). As notas flutuam girando devagar; com menos movimento, ficam paradas.
+- **Cristais do Pico:** três no chão da caverna de cristal (ponta de gelo azul, ametista e geodo
+  verde) e o cristal rosa, o de sempre, no alto das pedras do fundo.
+- **Estrelas das Nuvens:** quatro estrelas caídas que só aparecem, e só se pegam, à noite.
+
+Quando a última peça de um grupo entra, o Zappy diz "Coleção completa". Onde mudar: lugares e
+textos em `sistemas/colecoes-das-ilhas.ts` (os lugares são do referencial do GLB da ilha e o teste
+`colecoes-das-ilhas.test.ts` confere chão, caminho a pé e distância de 2 m dos outros interativos).
+
+## Iscas da pesca (30/10/2026)
+
+Duas iscas ajudam a pescar, sem sorte e sem perda:
+
+| Isca | O que muda | De graça | Na feira |
+|---|---|---|---|
+| Minhoca | o peixe chega em 1 s (sem isca, 3 s) | latinha no canto da horta, do lado do cata-vento | 2 moedas |
+| Isca de penas | 10 s para recolher (sem isca, 5 s) | no tampo do píer, mais perto da praia | 2 moedas |
+
+A de graça só aparece quando a mochila não tem nenhuma daquele tipo. A criança escolhe a isca pela
+mochila ("Usar a minhoca na pesca"); o recado do píer passa a dizer "Lançar a linha com a minhoca".
+A isca só é gasta quando o peixe vem: perder a janela, sair do píer ou pausar não gasta nada.
+Trocar de isca com a linha na água não muda o lançamento em curso. Iscas não viram presente.
+Onde mudar: `PESCA_COM_ISCA` em `sistemas/iscas.ts`; preço em `INSUMOS` dos contratos.

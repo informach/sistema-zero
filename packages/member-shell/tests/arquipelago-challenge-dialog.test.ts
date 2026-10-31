@@ -18,7 +18,7 @@ test('challenge dialog saves, verifies and returns only confirmed completion', a
       new Response(child.stderr).text(),
     ])
     expect(code, out + err).toBe(0)
-    expect(out + err).toMatch(/5 pass/)
+    expect(out + err).toMatch(/8 pass/)
   } finally {
     clearTimeout(timer)
     if (child.exitCode === null) child.kill()

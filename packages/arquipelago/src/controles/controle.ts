@@ -79,6 +79,8 @@ export function atualizarEntrada(c: Controle, fonte: Fonte, parte: Partial<Entra
     proxima.ordem++
   }
   fontes.set(fonte, proxima)
+  if (proxima.eixoX !== 0 || proxima.eixoZ !== 0 || proxima.pular || proxima.correr)
+    ultimas.set(c, fonte)
   let direcao: Canal | undefined
   let correr = false
   let pular = false
@@ -95,6 +97,16 @@ export function atualizarEntrada(c: Controle, fonte: Fonte, parte: Partial<Entra
   c.correr = correr
   c.pular = pular
   c.descer = descer
+}
+
+const ultimas = new WeakMap<Controle, Fonte>()
+
+/**
+ * O último dispositivo que pediu alguma coisa (andar, pular, correr), ou `null` antes do primeiro
+ * pedido: as falas dos primeiros passos desenham a tecla ou o botão dele.
+ */
+export function ultimaEntrada(c: Controle): Fonte | null {
+  return ultimas.get(c) ?? null
 }
 
 export function soltarEntrada(c: Controle, fonte: Fonte): void {

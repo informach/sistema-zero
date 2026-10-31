@@ -1,5 +1,434 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
+Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
+código, conteúdo, prova local e implantação separados. Salvamento atual V20, teto de
+65.536 bytes UTF-8, moedas do jogo até 100 por semana. Seções datadas preservam o histórico;
+consultar o contrato e o teste de documento cheio antes de acrescentar campos.
+
+## Coleções da praia e pesca (E01, 30/10/2026)
+
+`sistemas/colecoes-da-praia.ts` mantém o catálogo das cinco conchas, estrela-do-mar e cinco
+peixes. O inventário existente guarda uma lembrança por descoberta, como o cristal raro.
+Nada novo na V18: álbum e mochila leem o mesmo registro. Lembranças não podem ser dadas,
+comidas ou usadas em receitas. A estrela é observada e continua na areia; peixes voltam ao mar.
+`itensDaBarra` preserva os insumos e reúne essas lembranças em um único botão para o álbum,
+sem esconder suas entradas no inventário. Não ocupar onze espaços da HUD no celular.
+O joystick flutuante é montado antes da barra visível na HUD, para a zona de gesto não
+interceptar botões da mochila. Painéis continuam depois dos dois. Não contornar com clique
+forçado em QA ou com um z-index alto que passe por cima das telas de pausa.
+
+`sistemas/pesca.ts` é transitório e puro: espera 3 s ativos e permite recolher por 5 s. Pausa
+congela; sair cancela; perder a janela não gasta nem remove nada. Espécies novas em ordem
+fixa, sem raridade que impeça completar. O passo não aloca e limita retomadas de aba a 0,1 s.
+`mundo/colecoes-da-praia.tsx` só registra comandos depois que o modelo carrega, confere chão,
+altura, proximidade e política de escrita a cada ação. Visitas não permitem coleta ou pesca.
+Materiais e geometrias estáticos pertencem ao cache, nunca à cópia de transformações.
+
+O ponto do píer é compartilhado em `mundo/lugares-da-praia.ts`, longe do embarque e das estacas.
+`tests/colecoes-da-praia.test.ts` confere catálogo, GLBs/ícones, espaço do corpo e save cheio.
+`playground/verificar-praia-browser.ts` usa modelos reais e plataforma falsa, sem dados remotos.
+
+## Móveis dos cômodos e salvamento V20 (30/10/2026)
+
+V20 nos contratos: `construcao.casa.moveis` (tuplas `MovelNaObra`, até `MOVEIS_NA_CASA_MAXIMO`;
+`ObraDaCabanaSchema` aceita só a lista vazia) e `farol.galeria` (a galeria do Farol, fase4-12, abaixo). O tipo
+`Obra` é o da V20; `ObraAteV19` e `ObraSchema` ficam para as versões antigas. Valide a obra pelo
+lugar (`ObraDaCasaSchema` ou `ObraDaCabanaSchema`), como `estado/construcao.ts`. A visita aceita a
+obra antiga e completa os móveis vazios (`obraComMoveis`), para serviço e jogo trocarem de versão
+sem quebrar. `sistemas/construcao/moveis.ts` tem o catálogo (`DADOS_DO_MOVEL`), `porMovel`,
+`tirarMovel`, `giroDaParedeNoToque` e `movelNoLugar` (usado por `arrumar`). Os móveis entram em
+`esticarParede`, `porAbertura`, `porObjeto`, aconchego e visitas dos moradores. Desenho em
+`mundo/moveis-da-obra.tsx` (cópia do nó do GLB do cômodo, colisão pela caixa do próprio modelo,
+menos tapete e peça de parede; a luminária acende à noite). Miniaturas `movel-<id>.png` pela
+`arte/casa/miniaturas.py` e depois a paleta de 128 cores. Pior caso do salvamento: 63.989 bytes no
+contrato e 64.923 com o catálogo inteiro a 999.
+
+## Quadro das Cores da sua ilha (C03a, 30/10/2026)
+
+`QuadroDasCores` recebe `preparada` (ilhas do anel, lugar pela chegada da ponte) ou `lugar`
+(`LugarDoQuadro`). A `IlhaCentral` monta o da sua ilha em `lugarDoQuadroNaSuaIlha()`, na grama ao
+lado da trilha do píer. Na sua ilha as manchas seguem os quadros feitos da lista (não há cor da
+ilha), o painel não diz "Cor de volta" e o aviso do desafio do dia não sai. O mesmo vale para o
+Farol (C03b): `QuadroDoFarol` monta o cavalete em `lugarDoQuadroNoFarol()` só com
+`farol.concluido`, fora dos lotes da casa, e o painel esconde os quadros vazios. Conteúdo em
+`docs/desafios-do-jogo/sua-ilha/`. Prova: `tests/colisao-da-ilha-central.test.ts` (o colisor do
+cavalete entra na busca de caminho) e `playground/verificar-quadro-da-sua-ilha-browser.ts`.
+
+## Modo livre e galeria do Farol (fase4-12, 30/10/2026)
+
+`farol.concluido` liga o modo livre: `ganharProjetos` entrega todos os `OBJETOS_DA_CASA` que faltam
+(`GanharProjetos` diz só `FALA_DO_MODO_LIVRE` quando chegam vários) e a Íris ganha a terceira fala.
+Regras puras em `sistemas/galeria-do-farol.ts`: `VAGAS_DA_GALERIA` (seis pontos no referencial do
+`alto-do-farol.glb`, conferidos contra os colisores reais), `exporNaVaga` (muda de vaga sem repetir,
+guarda só até a última cheia), `tirarDaVaga`, `criacoesParaExpor` (aparências do Pinta/Molda, nunca
+`origem: 'galeria'`, minijogos e Mural das lojas do serviço) e `cameraDaGaleria`. A escolha mora em
+`farol.galeria` (V20); a conciliação trata a galeria inteira como o clima.
+`mundo/galeria-do-farol.tsx` (montado pela `SalaDoFarol`): pedestais com colisor
+`col-cil-pedestal-*` (só para o corpo), `ModeloDoObjeto` (agora exportado) encolhido num cubo de
+0,85 m e quadro com a capa ou o nome para os jogos; interativo na frente de cada vaga. Painel:
+`interface/galeria-do-farol.tsx` (`painelAberto` = `galeria-do-farol:<vaga>`); "Jogar" usa
+`abrirJogo` de `estado/minijogos.ts`, o mesmo do fliperama. ⚠️ A vista da sala é fixa e esconde as
+vagas do lado da porta: com a galeria aberta, `personagem/camera.tsx` usa `cameraDaGaleria` (de lado, abaixo do
+forro do domo a 3,5 m, girando com a criança; o teste confere com raios contra a sala inteira que a
+lente e o forro nunca tapam a criança nem o pedestal dela). Antes do final nada muda. Playground:
+`?jogos=exemplo` põe um minijogo e um jogo do Mural nas listas da plataforma falsa; o `em=` troca o
+salvamento por um novo, então o verificador semeia a posição. Prova:
+`playground/verificar-galeria-farol-browser.ts` e `tests/galeria-do-farol.test.ts`.
+
+## Coleções do Pico e das Nuvens e iscas da pesca (30/10/2026)
+
+`sistemas/colecoes-das-ilhas.ts`: quatro notas e quatro cristais do Pico e quatro estrelas das
+Nuvens, lembranças de quantidade 1 como as da praia (`registrarNaIlha`), sem campo novo. Os lugares
+são do referencial do GLB da ilha; `mundo/colecoes-das-ilhas.tsx` (montado pelo `PicoVivo` e pelo
+`NuvensVivo`) leva ao mundo por `paraOMundo`. O cristal rosa não tem lugar: é o do pedestal
+(`cristal-do-pico.tsx`), que agora também anuncia a coleção completa. Estrelas só à noite (o
+estado troca só na virada, não a cada quadro). `ITENS[*].colecao` vale `praia`, `pico` ou `nuvens`,
+e `itensDaBarra` junta todas as lembranças num botão só ("Abrir o álbum de coleções").
+`tests/colecoes-das-ilhas.test.ts` confere cada lugar contra os colisores reais: chão livre,
+caminho a pé da chegada (na caverna, da boca), a clave no tampo `col-topo-parede-*` e 2 m dos
+outros interativos. Ponto novo precisa passar nesse teste antes de entrar.
+
+`sistemas/iscas.ts`: minhoca (espera 1 s) e pena (janela 10 s). `EstadoDaPesca` guarda a `regra`
+e a `isca` do lançamento; `agirNaPesca` devolve a isca só ao recolher, e é aí que o mundo a gasta.
+`loja.isca` é transitório (vale só com ela na mochila, `iscaValendo`). A isca de graça
+(`LUGAR_DA_MINHOCA`, `LUGAR_DA_PENA` em `mundo/lugares-da-praia.ts`) aparece só com a mochila sem
+nenhuma. As duas entraram nos `INSUMOS` dos contratos (fonte `praia`). Prova no navegador:
+`playground/verificar-colecoes-e-iscas-browser.ts` (`ARQUIPELAGO_PARTE=pico|nuvens|iscas`).
+
+## Orientação no final do Farol (30/10/2026, A04)
+
+`Hud` usa o estado do final e do corte para suspender Agora, rotina, mochila e primeiros
+passos. `PainelDoFarol` orienta a mesa na sala e conserva as falas próprias nas etapas seguintes.
+Não concluir ou apagar tarefas para organizar a tela. Ao desmontar `PrimeirosPassos`, limpar
+apenas a guia 3D e `tela`; a loja conserva progresso e fila. O menu do Farol não oferece iniciar
+ou rever o tutorial. `Dica` continua montada e vence no prazo normal enquanto oculta.
+`estado/loja.ts` carimba `dica.expiraEm` na emissão, fora do salvamento. HUD e cartão do
+tutorial usam esse mesmo prazo de sete segundos; remontar não renova recados antigos.
+Provas: `passos-desmontagem.test.ts` e `verificar-final-farol-browser.ts`, incluindo retomada.
+
+## Visitas adultas por convite (L12, 30/10/2026)
+
+`estado/visitas-adultas.ts` é por montagem. Receber começa desligado, com código revogável
+gerado no serviço. O código só vive na tela e no pedido, nunca em URL, save ou localStorage.
+Resposta de alteração perdida vira estado desconhecido, para reler. Fechar o painel invalida
+operações pendentes; desmontar retira a visita. As recusas Kids e suporte também valem na API.
+
+`interface/visitas-adultas.tsx` usa o tema/painel existente e não aparece no Kids. A visita
+reutiliza `sistemas/visitas.ts`, com origem adulta explícita, sem permissão de mudar o save.
+A cada 15 s visíveis e ao retomar, a confirmação pequena tem prazo de 5 s. Recusa/falha volta
+à casa própria; não prometer push instantâneo. `chegada-da-visita.ts` é comum à família Kids.
+
+Playground: `?publico=adulto&visita-adulta=1`; `visita-adulta=revogar` recusa a próxima
+conferência. O consentimento falso é em memória, sem persistir código de teste. Prova visual:
+`verificar-visitas-adultas-browser.ts`, com contextos novos para massas independentes, sem
+apagar rascunhos para contornar conflito. V18, física e limite de tempo Kids não mudam.
+
+## Pausa do quarto (30/10/2026, A03a)
+
+`Quarto` em `mundo/casa.tsx`, tanto próprio quanto visitado, propaga `jogoPausado` pelo
+`RoomPausedContext`. Não usar `RoomMotionContext` para pausar: ele encerra a ação e restaura
+a pose neutra. Esse contexto continua controlando menos movimento, combinando a preferência
+do aparelho com a do Conforto. `Pet3D.paused` congela passeio e balanço; o relógio é local.
+Prova de mixer real: `tests/quarto-pausa.test.ts`. Prova visual de poses, menu, preferência
+e visita: `playground/verificar-quarto-pausa-browser.ts`, com `?pet=passaro`. O medidor expõe
+`__arquipelagoLerQuarto()` somente quando habilitado, sem percorrer as poses a cada quadro.
+
+## Ritmo básico e cuidado (30/10/2026, A03c)
+
+`sistemas/necessidades.ts`, `RITMO`: ótimo 1,1; bem e cansado 1. Cuidado oferece bônus, sem
+reduzir o ritmo básico de andar, correr, nadar ou equilibrar quando uma necessidade está baixa.
+Comida, gasto e descanso continuam nas regras existentes. `tests/sistemas.test.ts` cobre os
+limites e `tests/modos.test.ts` passa necessidades reais ao movimento. A prova do navegador
+`verificar-ritmo-browser.ts` observa velocidade, deslocamento, pulo e pouso com energia 10.
+O medidor opcional inclui `velocidade` na leitura sob demanda de `__arquipelagoLerCorpo()`.
+
+## Fantasma familiar dos percursos (L10, 30/10/2026)
+
+`estado/fantasmas.ts` é por montagem. O gravador recebe o relógio ativo das corridas genéricas
+e do balão. `armazem-fantasmas.ts` é um diário IndexedDB separado da V18, por público/perfil,
+com um melhor por percurso. Só envia após a fila confirmar o save e a leitura do recorde.
+Resposta perdida conserva o envio; confirmação antiga não apaga um trajeto mais rápido.
+
+Os recordes da família oferecem seguir o trajeto. BFF e serviço conferem família e permissão;
+ao começar, retomar a aba e a cada 15 s visíveis a referência é lida de novo, com prazo de 5 s.
+Nas conferências periódicas, usar a lista dos recordes em vez de baixar novamente as amostras.
+Recusa/falha retira a imagem, sem parar a corrida. Adultos guardam seus trajetos, sem ler irmãos.
+Não há prêmio, nome persistido, alteração de V18 ou promessa de validação antitrapaça.
+
+`mundo/fantasma-familiar.tsx` reutiliza o avatar padrão com material e ossos próprios, sem corpo
+do Rapier. `AvatarRig` passou a separar ossos, cores e morphs por montagem. O desenho interpola
+as amostras pelo relógio da corrida; a pausa não o avança. Nada aloca no passo do gravador/replay.
+`?familia=irmaos&fantasma=1` prepara uma trajetória simulada da Vila pelas âncoras reais, só no
+playground. Prova: `playground/verificar-fantasma-browser.ts`, relatório em `docs/qa`.
+No reinício, a captura só começa no primeiro quadro do relógio ativo, depois do corte e do
+teleporte. A plataforma falsa persiste os próprios artefatos de QA; `novo=1` limpa só essa massa.
+
+## Primeiros passos com o Zappy e dicas de primeira vez (30/10/2026)
+
+Proposta aprovada no canvas `https://claude.ai/artifact/X1GNotDTxZpdJsNG5QvhW8` (decisões com as
+sugestões do canvas: marca no aparelho, o X recolhe a tarefa, quem já tem a geladeira só vê pelo
+menu, o nome "Primeiros passos"). Notas e prints: `docs/qa/2026-10-30-primeiros-passos.md`.
+
+- Regras puras: `sistemas/primeiros-passos.ts` (`PASSOS`: 6 capítulos e 23 falas; `feito`,
+  `jaFeito` vira lembrete, `pular`, `esperar`; `passoQueVale`, `voltarAoConstruir`,
+  `deveComecarSozinho`, `lerMarca`) e `sistemas/dicas.ts` (`DICAS`: Quadro, painel do Quadro,
+  barco, chegada de barco, lanterna, borrão, primeiro Lumi e primeira noite). Ler e fechar nunca
+  conta: a tarefa só se cumpre pelo jogo mudando (andar 2 m, girar a câmera, pular, a porta, a
+  etapa do primeiro pedido, o menu, a obra). O passo da horta segue `primeiroPedido`.
+- ⚠️ A geladeira não vai no quarto (`objeto-no-quarto`) e a frente da porta nova é a varanda
+  (ocupada no lote): a obra do capítulo 6 é Construir, Parede (cômodo encostado na casa), Porta
+  do cômodo, Objetos e Pronto. "Depois" deixa `obraPendente` e a obra volta (falas 18 a 22) quando
+  o Construir da casa abre.
+- Loja: `estado/primeiros-passos.ts` (`lojaDosPassos(loja, plataforma)`, uma por montagem: o
+  passo, a fase fala/isso/lembrete, a fila das dicas, `tela` com o anel e o cartão) e
+  `guiaDoZappy(loja)` (mutável, lido a cada quadro pelo Zappy e pelo facho). Marcas no aparelho:
+  `arquipelago:passos:<publico>:<perfil>` e `arquipelago:dicas:<publico>:<perfil>`; o salvamento
+  não muda.
+- Tela: `interface/primeiros-passos.tsx` (`PrimeirosPassos` na HUD confere o jogo a cada 250 ms,
+  dispara as dicas e mostra o `CartaoDoZappy`; `CartaoDosPassosNoMenu`, `FalaDosPassosNoMenu`,
+  `ReverOsPrimeirosPassos` no Diário, a linha no Agora por `useLinhaDosPassos`). O cartão nunca
+  toma o foco e solta o foco depois do clique: com um botão focado, o teclado não anda
+  (`controles/controle.ts`). Com o cartão na tela, a fala solta do jogo entra nele (recado) e o
+  `.arq-dica` não aparece. O anel é `data-anel` na raiz da HUD (`estilos.ts`).
+- Mundo: `mundo/guia-do-zappy.tsx` (facho e anel no alvo, círculo do "andar") e o Zappy voando
+  até o alvo (`personagem/zappy.tsx`; com menos movimento ele aparece lá).
+- Começa sozinho ao abrir o jogo sem abertura (`jogo.tsx`) ou quando a abertura da primeira vez
+  fecha (`interface/abertura.tsx`), no lugar da boas-vindas. Falas trocadas: a geladeira ganha
+  (horta), a planta de interior espera o fim (`GanharProjetos`), o aviso do desafio de hoje e o
+  borrão fugindo viram dica na primeira vez. As falas que tocam na jornada vêm da voz
+  (`VozDoJogo.passos`).
+- Conserto da HUD junto: no Construir o "Agora" sai e o cartão do Zappy vai para `top:136px` (no
+  computador ele cobria o Agora e encostava no cartão de quem joga).
+- Playground: `?passos=1` (do zero), `?passos=manter`, `?dicas=1`; sem eles, passos feitos e dicas
+  desligadas. Testes: `tests/primeiros-passos.test.ts` e `tests/primeiros-passos-loja.test.ts`;
+  navegador: `playground/verificar-passos-browser.ts` (`ARQUIPELAGO_PARTE=passos|celular|dicas`).
+
+## Descarte das cópias animadas (30/10/2026, A01)
+
+`copiarArteAnimada` é dona dos esqueletos clonados e dos materiais de brilho que duplica.
+`soltar()` descarta cada esqueleto próprio, incluindo sua `boneTexture`, e os materiais próprios.
+Não descartar geometria, textura de material ou material compartilhado com o GLB em cache.
+O descarte continua seguro se chamado de novo, inclusive após realocação da textura por um efeito
+remontado. A prova do Farol repete três entradas/saídas após aquecimento e confere texturas além
+de geometrias. Teste puro: `arte-animada-descarte.test.ts`.
+
+## Integração dos portos de 30/10/2026
+
+Os cinco GLBs do commit `080b6a3d2` estão integrados. `raioDaEsperaDaIlha` amplia a espera
+somente no setor de 35 graus para cada lado do porto. Limites com folga do corpo: Bosque
+26,7 m, Vila 19,2 m, Pico 19,6 m, Vale 19,1 m e Nuvens 25,9 m. A caverna do Pico conserva
+o limite maior de 28 m. Nenhum desses setores ultrapassa a ativação da ilha, a 30 m.
+`portos-das-ilhas.test.ts` percorre os vértices reais dos novos colisores; os testes do Pico,
+Vale e Nuvens não excluem mais o porto da cobertura. Isso protege a reabertura sobre o deque.
+Os portos fazem parte das ilhas completas. A rede e a transformação das âncoras estão
+implementadas no recorte L10 descrito na seção do barco abaixo. O fantasma familiar continua separado.
+
+## Receitas sazonais (L09, 30/10/2026)
+
+O vestuário usa a ferramenta `avatar`/`vestir`, molde V1 estrito com a festa. A feira só abre
+durante uma festa atual. Peças, posse, preço e confirmação são do configurador do Members.
+O retorno `avatar-pronto` substitui o avatar da montagem e atualiza o saldo; cancelar não grava
+a prévia. O jogo pausa enquanto a ferramenta abre. V18 não recebe roupa nem preço.
+Na plataforma falsa, o editor ausente responde `playground`; molde inválido e suporte têm
+recusas próprias. A prova visual usa o diálogo real em uma fixture local, descrita no QA.
+
+A Salada do Carnaval usa alface, tomate e milho na bancada; o Milho da fogueira usa milho na
+Junina, junto da pipoca existente. São pratos com ícones do inventário, sem modelo 3D novo.
+`receitaEmEpoca` recebe a festa explicitamente. Diário conserva as receitas; bancada automática
+e painel conferem a época novamente ao agir. `fazerReceita` recusa prato de outra festa e save
+acima de 65.536 bytes sem consumir ingredientes. Pratos prontos não expiram nem somem.
+`festaAtual` aceita override apenas da plataforma falsa; as datas não aprovadas continuam desligadas.
+
+## Compra de insumos (L07, 30/10/2026)
+
+A feira oferece onze sementes/ingredientes e as duas iscas do catálogo V1 compartilhado, uma a dez unidades.
+O painel informa quantidade, preço total e fontes gratuitas, com confirmação e cancelamento.
+`FilaDeSalvamento` guarda a base e o comando UUID no mesmo diário IndexedDB, fora de V18,
+antes de chamar o serviço. O estado `confirmando` pausa o mundo e permite retomar na proteção do
+salvamento. A abertura consulta pendência antes de iniciar o jogo. Ao fechar, não inicia novas
+consultas; um comando sem resposta fica disponível para a próxima abertura.
+
+Só reaplicar um comando conhecido ao rascunho em voo se revisão e snapshot inteiro da resposta
+forem exatamente a entrega esperada. Não somar inventários remotos arbitrários. Concorrência
+divergente mantém o conflito e o rascunho. GET/POST de insumos usam apenas a ponte da plataforma.
+O jogo nunca importa o Members. `insumos-falsos.ts` reproduz comandos e recusas no playground;
+a prova de débito único real está nos testes locais do serviço, não no playground.
+
+Evidências em `docs/qa/2026-10-30-insumos/README.md`; implantação em
+`docs/operations/arquipelago-insumos.md`.
+
+## Pedidos remunerados (L07, 30/10/2026)
+
+Os seis moradores usam o catálogo, as receitas e `prepararEntregaDoPedido` dos contratos.
+O dia é o de São Paulo. A conversa só calcula uma prévia das falas: a fila confirma consumo,
+amizade, cesta e três moedas (quatro com humor ótimo) no serviço. Nunca aplicar a prévia ao save.
+O teto semanal de 100 é o mesmo das outras recompensas, na carteira do Members.
+
+O diário IndexedDB guarda `entrega` antes de enviar, fora de V18, mutuamente exclusiva com
+`compra`. `retomarOperacoes` consulta a reserva de insumos e no máximo um crédito pendente.
+Crédito pendente não prende o salvamento, pois o consumo já aconteceu. Resultado de teto é
+terminal e não acumula dívida. Reabrir usa a mesma chave e recebe o save mais recente.
+
+Durante `confirmando`, o modal bloqueia comandos e preserva o painel/câmera da conversa.
+Conflito, recusa e fim do tempo ainda o fecham. O recibo pode aparecer enquanto o relógio
+retoma, mas a interface mantém as ações bloqueadas. Resposta tardia não reabre painel fechado.
+O playground usa a mesma entrega pura; a prova de carteira real usa bancos locais descartáveis.
+
+## Mapa das visitas (L10, 30/10/2026)
+
+O salvamento atual é V18, com `ilhasVisitadas` em oito bits estáveis. `sistemas/exploracao.ts`
+é a regra pura; `estado/exploracao.ts` respeita pausa, modo, suporte, visita e carregamento.
+`mundo/descoberta-da-ilha.tsx` só observa chão disponível: raio 12 no anel, 24 na central e
+4 no Farol aberto. Nas Nuvens, a altura mínima é 8 m. Um bit já marcado não gera nova gravação.
+`conciliar-salvamento.ts` faz união das descobertas, sem mudar a transação de inventário.
+O mapa distingue acesso pela jornada de visita física. O marcador indica a região mais próxima,
+não é prova de presença. `playground/verificar-mapa-browser.ts` confere persistência e interface
+nos dois tamanhos. Não inferir visitas antigas por posto, ponte vista ou posição guardada.
+
+## Feira semanal (L09, 29/10/2026)
+
+`sistemas/semana.ts` é a semana civil compartilhada pelo tema e pela feira. `feira.ts` destaca
+três aparências existentes e conserva o catálogo inteiro. `mundo/feira.tsx` usa `barraca-6`,
+sem geometria ou colisor novo. `interface/feira.tsx` reutiliza `CartaoDaGaleria` e a loja existente:
+mesma confirmação, preço, posse e saldo do serviço, sem segunda carteira. Projeto azul ausente,
+suporte, tempo, visita ou conflito não oferecem compra. Desmontar a ilha fecha o painel.
+`verificar-feira-browser.ts` prova interação, confirmação/cancelamento, compra e reabertura no
+playground local. A unificação da propriedade no Members é L04, ainda não concluída.
+
+## Tema semanal no diário (L09, 29/10/2026)
+
+`sistemas/tema-da-semana.ts` calcula a segunda-feira civil de São Paulo e o índice da lista V1
+(referência 26/10/2026, seis temas). `interface/tema-da-semana.tsx` mantém as outras ideias
+selecionáveis, sem prazo, prêmio, persistência ou alteração de obras. Reabre Construir pela
+loja existente e só na própria casa. Não confundir sugestão criativa com objetivo do Estúdio.
+
+
+## Convidados pelo aconchego (L06, 29/10/2026)
+
+`sistemas/visitas-dos-moradores.ts` calcula visita (12 pontos) ou festa (22) por cômodo,
+com moradores conhecidos de ilhas liberadas. Usa planta, área dos objetos e footprint dos
+móveis; valida a circulação desde a porta antes de ocupar uma célula. Sem prêmio novo ou save.
+`estado/convidados.ts` é por montagem; `mundo/convidados.tsx` só mantém modelos perto da casa.
+O morador original é ocultado enquanto está na casa. Reutilize `MoradorDaIlha`, sem duplicar
+amizade/conversas. A posição memorizada evita fechar a conversa nas atualizações do jogo.
+`Moradores em casa` no menu permite festa, visita e descanso. Suporte, tempo, conflito,
+construção e visita alheia recusam presença. `?convidados=1` prepara somente o playground.
+
+
+## Profissões e entrega inteira (L07, 29/10/2026)
+
+`estado/turno.ts` abre uma sessão do serviço antes do balcão e manda as seis bandejas aceitas.
+`sistemas/profissoes.ts` guarda a confirmação sem resposta por perfil/público/balcão no aparelho;
+limpa só ao receber a mesma sessão concluída. Pendência de pagamento confirmada passa a ser do
+servidor. Fechar/reabrir invalida respostas antigas da UI. Não inventar saldo ou moedas locais.
+Os três balcões ganham 5 moedas/dia cada, dentro das 100 semanais de todo o jogo.
+
+As regras puras dos pedidos estão em `arquipelago-contracts/src/turnos.ts`; o jogo adapta só
+ingredientes e amizade. `adicionarConjunto` recusa uma cesta que não cabe inteira. Bento não
+consome presente/pedido nem cruza a amizade de uma receita enquanto sua cesta não couber.
+O playground simula as mesmas recusas e crédito idempotente, separado do salvamento.
+Testes: `tests/profissoes.test.ts`, `turnos.test.ts`, `receitas-do-bento.test.ts`.
+
+## Receitas por amizade e coleção (L08, 29/10/2026)
+
+`sistemas/receitas.ts` é o catálogo único de receitas e suas origens. `receitaConhecida` recebe
+o salvamento inteiro: não deduzir mais o livro apenas dos corações do Bento. Diário, álbum,
+bancada e forno usam a mesma régua. Maré, Floco, Jade e Iriê ensinam com um coração; os quatro
+bichos do Bosque liberam a salada colorida. Os pedidos dos quatro moradores entregam a cesta
+de ingredientes não cultiváveis, numa operação inteira: se não couber, nada é consumido nem
+marcado como entregue. Não adicionar item de recompensa ao render nem alterar o save histórico.
+
+O catálogo tem 12 receitas e 30 itens de mochila. O cenário combinado de obra, rotinas,
+aparências e amizades, com cada item a 999, usa 63.055 bytes (margem de 2.481). A prova é
+`tests/receitas-do-anel.test.ts`, usando o gerador compartilhado de cenários pesados dos contratos.
+Isso é uma prova do cenário construído, não uma promessa de que qualquer JSON arbitrário cabe.
+O teto continua obrigatório na gravação.
+
+No álbum do Recife, conte apenas baú, página e tesouro por `albumDoSalvamento().recife`.
+`corais` é uma máscara de progresso e nunca é uma quarta descoberta.
+
+## Colheita especial e prévia V2 (29/10/2026)
+
+`sistemas/colheita.ts` monta o contexto da horta: necessidades atuais e clima só após Nuvens.
+`mundo/horta.tsx` e `sistemas/rotina.ts` passam esse contexto para a mesma `colher` dos contratos.
+Clima favorável soma 1 e humor ótimo soma 1; a recusa por carga/mochila deixa a planta madura.
+O mini estúdio recebe uma cópia no molde V2. O mundo relê o contexto ao aplicar o passo, sem
+salvar o resultado da prévia. V1 segue legível sem contexto. Não adicionar outro cálculo no
+editor ou campo nos canteiros. Plano L08 em `docs/superpowers/plans/2026-10-29-arquipelago-lumis-e-colheita.md`.
+
+## HUD nova, menu de pausa e abertura "O Cinza" (29/10/2026)
+
+- Proposta aprovada no canvas `https://claude.ai/artifact/Mz6AmdkuYdc9jb3mR6yuPd`; notas e prints em
+  `docs/qa/2026-10-29-arquipelago-hud.md`.
+- `interface/hud.tsx`: as partes da HUD (`QuemJoga` com o retrato do avatar, `IlhaAgora`, `Relogio`, `Agora`, `Dica`,
+  `Mochila`, `BotaoDaFoto`, `AlturaDoBalao`, `Cronometro`). As contas puras moram em
+  `sistemas/hud.ts` (ilha mais perto, Quadro das Cores, lembretes do "Agora", atalhos 1 a 5).
+  `.arq-hud.em-atividade` (corrida ou balão) esconde o que não é da atividade; `.entrando` faz a HUD
+  aparecer depois da abertura. Classes que os verificadores usam continuam (`.arq-necessidades`,
+  `.arq-topo-dir`, `.arq-dica`, `.arq-acao`, `.arq-modos`, `.arq-inventario`), assim como os nomes
+  "Abrir o menu", "Menu do jogo", "Continuar jogando" e "Usar".
+- `interface/menu.tsx`: o menu de pausa (lugares, Início, Conforto e controles, mapa pequeno).
+  `interface/mapa.tsx` dá `useIlhaAqui` (a ilha onde a pessoa está) e `MapaPequeno`.
+- `interface/icones.tsx`: ícones de traço (24 px, `currentColor`, sempre `aria-hidden`). Item da
+  mochila continua com o emoji do item (é a arte dele).
+- CSS: o bloco novo fica no FIM de `ESTILOS` (sobrescreve o antigo de mesma força). Posição só de
+  computador vai em `@media (min-width:641px)`, para não atropelar as regras antigas de celular.
+  Tokens na `.arq-raiz`: `--arq-titulo` (Baloo 2 do Kids; o adulto troca pelo dele). A pele adulta
+  deixa o menu claro (bancada) e a HUD na noite dela.
+- Abertura: roteiro e tempos em `sistemas/abertura.ts` (`CENAS`, `momentoDaAbertura`,
+  `deveMostrarAbertura`), pinturas em `interface/abertura-cenas.tsx`, tela em
+  `interface/abertura.tsx` (painel `PAINEL_DA_ABERTURA`: o mundo para por baixo e a cena 3D deixa de
+  desenhar, `mundo/cena.tsx`, até a saída começar). Aparece sozinha uma vez por público e perfil no
+  aparelho (chave `arquipelago:abertura:<publico>:<perfil>`, `estado/abertura.ts`) ou num jogo novo
+  sem armazenamento; nunca no suporte. O `carregar()` do `jogo.tsx` já a abre antes do primeiro
+  quadro. Abra sempre por `abrirAbertura(loja, 'primeira' | 'rever')`: a `lojaDaAbertura` guarda a
+  origem e o `saindo`. Só a `primeira` marca como vista e termina com a primeira fala do Zappy
+  (`boasVindas` ou os primeiros passos); fechada à força (tempo pausado ou acabado, salvamento parado) não marca.
+  A leitura começa manual, sem prazo, por `LEITURAS_DA_ABERTURA` e `navegarLeitura`: nove falas
+  nas oito cenas. Anterior/Próxima interrompem o automático; Começar só aparece na última fala.
+  Passar sozinho e Pausar leitura controlam o tempo ativo, preservando o instante na pausa e
+  descontando abas escondidas. Enter/Espaço mantêm a ativação nativa dos controles visíveis;
+  no palco, Enter avança e Espaço segurado pula. As setas navegam por fala. Blur cancela o
+  gesto de pular. Prova: `playground/verificar-leitura-browser.ts` e os testes de abertura.
+  O texto segue a história da
+  proposta e NÃO conta o segredo do Farol.
+- **Cenas da abertura são o jogo de verdade** (pedido dela, 29/10/2026): `interface/abertura-cenas.tsx`
+  mostra as imagens de `src/assets/abertura/*.webp` (o arquipélago colorido e cinza de cima, a Íris na
+  sala do Farol e a sala vazia desbotada, o barco de noite na chuva, a chave e a carta no píer, a casa
+  de noite e o Zappy no quarto, olhando para a câmera), com o `arq-ab-fundo` deslizando e, por cima, só
+  a névoa, o clarão do raio e as palavras da carta. Para refazer: `playground/capturar-abertura.ts`
+  (as `TOMADAS`: URL do playground, palco e peças soltas; `ARQUIPELAGO_SO` escolhe), que usa o palco
+  do medidor (`mundo/palco-de-print.tsx`: `__arquipelagoPalco` com câmera parada, `olharPara`,
+  `alturaDoAlvo`, `virarParaCamera`, `esconder`, `semNevoa`; `__arquipelagoPorNaCena` com os GLB que
+  o servidor do playground serve em `/modelos/`). Depois, PNG para WebP (a sala vazia perde quase toda
+  a cor). `?quadros=feitos` deixa o Bosque inteiro colorido. ⚠️ Não editar `src` durante a captura:
+  o servidor recompila a cada página.
+- **Retrato na HUD**: `mundo/retrato-do-avatar.tsx` desenha só o avatar (camada 7, com a luz própria
+  do retrato, que o jogo não vê) numa imagem de 128 px, com o enquadramento da foto de rosto da
+  plataforma (`sistemas/retrato.ts`: 45% de cima, 80% do quadro, de frente); tira quando ela fica
+  parada e de novo quando as peças mudam (`estado/retrato.ts`). Sem retrato, a inicial. ⚠️ As peças
+  têm esqueleto: a caixa vem de `SkinnedMesh.computeBoundingBox` (a da geometria é minúscula).
+- Playground: a abertura só aparece com `?abertura=1`. Navegador:
+  `playground/verificar-hud-browser.ts` (computador, notebook e celular; abertura, sobreposição das
+  partes, tecla 1, menu, diário, noite e corrida). Testes: `tests/hud.test.ts`, `tests/abertura.test.ts`.
+
+## Portos do barco: a arte (30/10/2026)
+
+- Pedido de arte da rede do barco: Bosque, Vila Doce, Pico, Vale e Nuvens ganharam o nó `porto`, as
+  âncoras `barco` (linha d'água, proa no +x da âncora) e `cais` (os pés no tampo do deque) e os
+  colisores `col-cais-*` (o que se pisa), `col-guarda-cais-*`, `col-cil-estaca-cais-*` e, nas Nuvens,
+  `col-cais-torre`. O mesmo arranjo do cais do Recife (barco a 2,2 m do eixo, ao lado da ponta; `cais`
+  1,2 m antes dela). Gerador comum: `arte/mundo/lib_cais.py`; lugar no `PORTO` de cada script.
+- ⚠️ Nas Nuvens o mar é y = −7 no arquivo (a ilha fica a y = 7): o porto é um deque no mar e uma torre
+  de escada até o tampo (29 espelhos de 0,249, sem elevador nem peça que se mexe), com a escadinha de
+  sair do mar. `ancorasDoPorto` (`mundo/portos.ts`) monta com y = 0: some `ALTURA_DAS_NUVENS` ali.
+- A rede ainda não está ligada. O porto passa da espera pelo chão (os testes de espera do Vale, Pico e
+  Nuvens deixam `doPortoDoBarco` de fora até ela ser recalculada) e cruza a roda de boias de 19 m.
+- Números de cada ilha, percurso das Nuvens e limites dos colisores:
+  `docs/plans/2026-10-30-arquipelago-portos-do-barco.md` (e o bloco `porto` dos relatórios de arte).
+  Testes: `tests/portos-das-ilhas.test.ts` (âncoras, pés no deque, caminhada do cais ao tampo, casco
+  e corredor do casco livres). Prints: `docs/qa/2026-10-30-portos-do-barco/`.
+
 ## Ajustes da arte aj-ligar-02 a 09 (29/10/2026)
 
 - `sistemas/ajustes-da-arte.ts`: fase FNV-1a por id e clipe, patins +0,089 m só no desenho (`ELEVACAO_DOS_PATINS`),
@@ -254,26 +683,37 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   `tests/colisores-da-ilha.test.ts` (lê o `bosque.glb`: grupos, sem material, percurso nas copas de
   ponta a ponta, escada, escorregador, corredor da chegada livre, enfeites que seguram o corpo).
 
-## Animações do avatar (28/10/2026)
+## Animações do avatar (Mixamo, 29/10/2026)
 
-- Clipes em `src/assets/avatar/locomocao.glb` (Andar, Correr, Pulo, Queda, Aterrissagem, Nado,
-  Pendurado, Escalar, e os dos modos novos: Equilibrar, SubirEscada, PendurarBorda, SubirBorda,
-  Escorregar),
-  gerados por `arte/avatar/locomocao.py` no esqueleto Mixamo da plataforma: IK de dois ossos nas
-  pernas, pé que gira sobre calcanhar e bola, bacia, peito, braços e cabeça. O "Idle" é o da
-  plataforma (`Poses.glb`). O script enxuga o GLB: só giros e a posição da bacia.
-- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe. Andar
-  e correr na MESMA fase, que anda pela distância dividida pela passada (o pé não patina). As
-  medidas dos ciclos ficam nos dois arquivos e precisam bater (o teste confere a duração e que o pé
-  no apoio acompanha o chão).
+- Clipes em `src/assets/avatar/locomocao.glb`, vindos do Mixamo pelo `arte/avatar/mixamo.py`
+  (os FBX ficam fora do repositório, em `MIXAMO_DIR`): Parado, Andar, Correr, Pulo, Queda,
+  Aterrissagem, Nado, NadoParado, Corda (cipó), Planar, Escalar, SubirEscada, Equilibrar,
+  PendurarBorda, SubirBorda, Escorregar, Sentar, Montar e Deitar. O "Idle" da plataforma não é
+  mais usado. O script tira o deslocamento (o corpo do jogo anda), encaixa assento, sela, barra,
+  borda e colchão, e enxuga o GLB (só giros e a posição da bacia). O README de `arte/avatar` diz o
+  que vem de cada arquivo do Mixamo.
+- `src/sistemas/locomocao.ts` (puro, `tests/locomocao.test.ts`): pesos e tempo de cada clipe, com
+  as durações e passadas do `RESUMO` do script. Andar e correr na MESMA fase (os dois começam no
+  pé esquerdo), que anda pela distância dividida pela passada. Na água, Nado acima de
+  `NADANDO_ACIMA_DE` e NadoParado abaixo; no tronco caído, Equilibrar parada e Andar andando.
+- Os clipes de nadar e de deitar já vêm deitados: o personagem não inclina mais o desenho nesses
+  casos. No cipó o Corda faz as pernas e o `depoisDaPose` ainda fecha as mãos na corda
+  (`personagem/bracos.ts`, `INCLINACAO_NO_CIPO` 0). O planador põe a barra nas mãos do Planar
+  (`BARRA_NO_AVATAR`, 1,25 m de altura e 0,2 m à frente).
 - `personagem/avatar-do-jogo.tsx` aplica a regra às ações (`AvatarRig` com `extraClips` e
-  `onAnimations`: o rig deixa de tocar a pose sozinho). O personagem escreve `movimento` (velocidade
-  de verdade, chão, subida, nado, `pendurado`: `cipo` ou `escalada`); o desenho desce
-  `FOLGA_DO_CONTROLADOR` para o pé encostar. Na escalada a velocidade é a 3D (subir conta), e o
-  Escalar anda por `velocidade / CICLO_DE_ESCALAR.passada`. No cipó, `depoisDaPose` fecha as
-  mãos na corda por cima do Pendurado.
-- Conferir sem o jogo: `/animacoes` no playground (`playground/animacoes.tsx`), com o chão
-  quadriculado correndo na velocidade do passo.
+  `onAnimations`), todas no tempo da regra.
+- Prints no jogo: `playground/verificar-animacoes-browser.ts` (Bosque, cama e banco, Pico e Vale;
+  `ARQUIPELAGO_CENAS` escolhe). O medidor dá `__arquipelagoMovimento()` e
+  `__arquipelagoCameraEmVolta(desvio)` para levar o corpo a cada modo e virar a câmera. O pulo
+  sai pelo relógio virtual do navegador (`Emulation.setVirtualTimePolicy`, 1/30 s por quadro): a
+  1 quadro por segundo do SwiftShader o pulo inteiro cabe em dois quadros. Prints em
+  `docs/qa/2026-10-29-animacoes-mixamo/`.
+- ⚠️ A borda soltava sozinha (até 29/10/2026): pendurada, o corpo ia a `daParede` da quina, mais
+  perto que o raio mais a folga do controlador; no fim do encaixe o Rapier não deixava chegar, o
+  passo guiado virava "bloqueado" e devolvia ao chão. `BORDA.daParede` agora é
+  `CORPO.raio + CORPO.folga + 0,02` (teste com o Rapier em `tests/modos-colisao.test.ts`), e o
+  PendurarBorda põe as mãos 0,43 m à frente (`maos_a_frente` do script). No roteiro: posta logo
+  abaixo da quina, ela agarra ao cair; ⚠️ pular pendurada é soltar.
 
 ## Quadro das Cores (28/10/2026)
 
@@ -296,8 +736,16 @@ decisões da dona: Canvas `https://claude.ai/artifact/5eNo1oqsndxmV6MPLxaz1W` e 
   ponte), regra em `sistemas/cor-da-ilha.ts` e tinta no shader em `mundo/pintura-da-ilha.ts`
   (`pinturaDaIlha(ilha)`: uniforms divididos por todos os materiais da ilha, leve, completa e as
   cópias das copas; `pintarMateriais` liga o `onBeforeCompile` uma vez por material). O `Anel` lê
-  a lista dos desafios ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Testes:
-  `tests/cor-da-ilha.test.ts`.
+  catálogo e conquistas ao abrir o jogo; `usePinturaDaIlha` anda os pedaços. Sem publicação ou
+  leitura, fica a base de 30% da ponte ou a última cor confirmada, nunca cor inteira por falha.
+  `estado/desafios.ts` lê `/desafios/cores` independentemente do catálogo. A posição histórica
+  prevalece sobre o lugar atual de um desafio movido. Reserva para host antigo: conclusões do
+  catálogo. `sistemas/cores-conquistadas.ts` une a fotografia visual por perfil/público, até 2 KB
+  no localStorage, sem escrita de suporte e sem autoridade para acesso ou recompensa. Quadro,
+  contador e ilha usam essa mesma fotografia. Uniforms reiniciam na primeira renderização de
+  cada montagem; publicação não tira tinta. Sem campo novo no salvamento.
+  Testes: `cor-da-ilha.test.ts`, `cores-conquistadas.test.ts`, `quadro-das-cores.test.ts`.
+  Navegador: `playground/verificar-cores-browser.ts`; QA em `docs/qa/2026-10-30-cores-conquistadas/`.
 
 ## Caderno dos Lumis (28/10/2026)
 
@@ -455,13 +903,13 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   tubo refeito a cada quadro sobre a corrente (Catmull-Rom, lados levados de anel em anel), a alça
   na ponta e as folhas dobradas pela altura de repouso delas. Monta no efeito da ilha ativa e
   desmonta ao sair (a corda do arquivo volta).
-- **Escalada** (`sistemas/escalada.ts`): o tronco da árvore dos cipós (`TRONCO_DOS_CIPOS`, um cone
-  um pouco torto do tamanho da casca desenhada). Andar contra ele por `esperaParaGrudar` (ou pular
+- **Escalada** (`sistemas/escalada.ts`): o tronco da árvore dos cipós (o nó
+  `escalada-cil-tronco-dos-cipos` do `bosque.glb`, lido por `troncoDoNo`; um cone um pouco torto do
+  tamanho da casca desenhada; `TRONCO_DOS_CIPOS` é a reserva com os mesmos números). Andar contra ele por `esperaParaGrudar` (ou pular
   nele) gruda; frente e trás sobem e descem, os lados seguem a tela, descer no pé solta, pular solta
   para fora (ou para onde se pede, se for para longe). Lá de cima, o pulo cai no `cipo-1`. A
   trepadeira em espiral (desenhada no código) mostra que aquele tronco sobe e esmaece com ele.
-  Ainda não há nó `escalada-*` no GLB: o que falta passar para o Blender está no README de
-  `arte/ilhas`.
+  Os nós `escalada-*` não desenham: `prepararIlha` os esconde.
 - **Lago**: o nó `agua` (a elipse da caixa e a altura da superfície) com a bacia de 0,85 m no
   `col-terreno`: nada como no mar (mesma regra, `ENTRAR_NO_NADO`/`SAIR_DO_NADO`). O tronco que boia
   (`mundo/tronco-no-lago.tsx`) é um corpo dinâmico com quatro pontos de flutuação
@@ -602,7 +1050,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Borrões da noite e Lumis da Vila (fase2-06, salvamento V9 `lumis`): regras puras em
   `sistemas/borroes.ts` (`borroesDaNoite` pelo dia do jogo, `passoDoBorrao` sem alocar, `prender`,
   `prenderBorrao`, `lumisNaVila`, `receberLanterna`, `lerPresos`/`gravarPresos`); no mundo,
-  `mundo/borroes-da-vila.tsx` (montado pelo `VilaViva`: borrões à noite perto das âncoras `lumi-N`,
+  `mundo/borroes-da-ilha.tsx` (desde 30/10 `BorroesDaIlha`, montado em cada ilha viva e na praia; antes só pelo `VilaViva`: borrões à noite perto das âncoras `lumi-N`,
   Lumis morando nelas). A lanterna é item (`ITENS.lanterna`, equipamento) que o Bento dá do segundo
   encontro em diante; `loja.lanterna` (transitório) acende pelo botão da mochila e
   `personagem/lanterna-na-mao.tsx` a pendura na ponta dos dedos (sem luz de verdade: uma luz a mais
@@ -613,8 +1061,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   `sonecaAcabou`, `lugarNoBanco`, `lugarNaCama`) e o modo do corpo `modos/descanso.ts` (entra pelo
   pedido `{ tipo: 'descanso', lugar }` do interativo, sai andando, pulando, usando ou pelo pedido
   `levantar`). O corpo do Rapier fica de pé ao lado do móvel e só o desenho vai para o assento ou o
-  colchão (`personagem.tsx`; deitado, o desenho gira −90° em X, como no nado ele deita para a
-  frente). Clipes "Sentar" e "Deitar" no `locomocao.glb`. A energia sobe nos `Relogios`
+  colchão (`personagem.tsx`; o clipe "Deitar" já vem deitado de costas). Clipes "Sentar" e
+  "Deitar" no `locomocao.glb`. A energia sobe nos `Relogios`
   (`loja.descanso`); a barrinha "Soneca" fica no HUD. Bancos: `mundo/bancos-da-vila.tsx` lê os
   colisores `col-banco-N` da ilha preparada (já girados com a ilha: não girar de novo). Testes:
   `tests/descanso.test.ts`; navegador: `bun playground/verificar-descanso-browser.ts`
@@ -651,14 +1099,20 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Loja à parte em `estado/rotina.ts` (`lojaDaRotina`: o Lumi escolhido, a fila, o que ele faz agora
   e a última vez; `abrirRotina`). Painel `interface/rotina.tsx` (`PAINEL_DA_ROTINA`), aberto pelo
   caderno ("Montar a rotina de um Lumi") e perto de um Lumi da Vila ("Ensinar a rotina", de fundo,
-  em `mundo/borroes-da-vila.tsx`); o aviso `RotinaAndando` fica no HUD, no alto à direita (no
+  em `mundo/borroes-da-ilha.tsx`); o aviso `RotinaAndando` fica no HUD, no alto à direita (no
   celular, 154 px do topo).
 - No mundo: `mundo/rotina-dos-lumis.tsx` (`RotinaDosLumis`, na `Cena`): a virada de
   `ambiente.noite` põe na fila as rotinas daquele Quando (`quandoDaVirada`, `rotinasDoQuando`);
   um Lumi de cada vez aparece na horta com `useCopiaAnimada` (escala 0,5) e toca `andar`,
   `trabalhar`, `parado` e `feliz` (`trocarClipe`). Os lugares saem de `lugarDoCanteiro` (exportado
-  de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
-- ⚠️ O pior caso do salvamento fica a 29 bytes do teto de 64 KB com as rotinas no teto (era
+    de `mundo/horta.tsx`) e `lugarDaGeladeira`. O medidor mostra `lumiDaRotina`.
+  - Perfis dos 14 Lumis em `arquipelago-contracts/src/lumis-trabalho.ts`: voo, trabalho, carga e
+    luz noturna. Prévia e mundo usam o mesmo intérprete com capacidade por espécie. Colheita
+    inteira recusa mochila, semente ou carga sem espaço e mantém a planta madura. A colheita
+    manual usa `cabeColheita`; receitas recusam saída cheia antes de consumir ingredientes.
+    Provas em `tests/lumis-trabalho.test.ts` dos contratos e
+    `playground/verificar-lumis-trabalho-browser.ts` no jogo.
+- ⚠️ O pior caso do salvamento ficava a 29 bytes do teto de 64 KB com as rotinas no teto (era
   290 na V10; o `recife` da V11 custa 54, o percurso `pico-cume` uns 96, o `vale` da V12 80, os
   corais da V13 12 e a banda da V14 19; medido em 29/10/2026, `tests/salvamento-v10.test.ts`):
   campo novo no salvamento precisa achar espaço antes (encurtar outro campo ou mudar o formato
@@ -719,7 +1173,9 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   vêm de `colecaoDoBosque` e `colecaoDeReceitas` do diário, e o painel (`interface/album.tsx`,
   `PAINEL_DO_ALBUM`, aberto pelo menu) desenha com os `Bicho` e `Receita` exportados de
   `interface/diario.tsx`. Os Lumis: `ESPECIES_DE_LUMI` (nome, ilha, comum ou rara e a cor do
-  material `corpo` do GLB, conferida no teste); sem miniatura desenhada ainda, um círculo da cor.
+  material `corpo` do GLB, conferida no teste) e a miniatura de cada espécie (`MINIATURA_DO_LUMI` de
+  `interface/miniaturas-dos-lumis.ts`, PNGs de `arte/lumis/miniaturas.py`); quem ainda não foi
+  encontrado aparece como a silhueta escura da mesma imagem. A rotina usa as mesmas miniaturas.
 - Modo foto: `PAINEL_DA_FOTO` em `painelAberto` (a pausa dos painéis para o personagem; a câmera
   segue girando). O `Hud` troca tudo pela `ModoFoto` (`interface/foto.tsx`), como na luneta;
   `AtalhoDaFoto` escuta o F. A captura mora dentro do `<Canvas>` (`mundo/foto.tsx`, `CameraDaFoto`,
@@ -805,7 +1261,7 @@ Plano: `docs/plans/2026-10-29-arquipelago-pico-percurso-treno-caverna.md`; regra
   `floco-1..5`, `cume` e a linha `treno-curva-N` (para o rumo das voltas) e monta os
   `PontosDoPercurso`; o `PicoVivo` roda o `CorridaNaIlha` genérico com flocos de neve brancos.
   ⚠️ O pior caso do salvamento ganhou a entrada `pico-cume` (uns 96 bytes): sobravam uns 140 do
-  teto de 64 KB; depois da V12, da V13 e da V14 sobram 29.
+  teto de 64 KB; depois da V12, da V13 e da V14 sobravam 29 (a V15 abriu espaço: 4579).
 - **Trenó** (`sistemas/treno.ts`, `mundo/treno-do-pico.tsx`): não é um modo novo. A trilha vira uma
   pista do MESMO modo `escorregar`, com o atrito do gelo (`MATERIAIS.gelo`), teto de 4,5 m/s e
   `soPorPedido` (andar na trilha não senta; só o pedido `escorregar` do "Descer de trenó", do
@@ -848,9 +1304,31 @@ Regras e textos: `docs/arquipelago-regras.md` (seção da fase3-08); plano:
   `col-morador-pinguim-N`, curvados sem o instrumento e balançando quando ele volta (menos
   movimento: parados); as notas do festival sobem do palco com a banda completa. Tudo respeita a
   pausa, a troca da ilha (0,99) e o somente leitura.
-- ⚠️ O pior caso do salvamento ficou com 29 bytes de folga depois da V14.
+- ⚠️ O pior caso do salvamento ficou com 29 bytes de folga depois da V14 (a V15 abriu espaço: 4579).
 - Testes: `tests/banda.test.ts`, o bloco do iglu em `tests/colisores-do-pico.test.ts`, o Floco em
   `tests/pico.test.ts`; navegador: `playground/verificar-pico-browser.ts`.
+
+## O planador e o vento da parede de gelo (fase3-09, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-planador.md`; regras e números em `docs/arquipelago-regras.md`.
+
+- **Item e presente** (`sistemas/planador.ts`): `planador` em `ITENS` (equipamento, 🪁), dado pelo
+  Floco na primeira conversa do festival (`comecarConversaComOFloco`, `pegarPlanador`); sem versão
+  nova do salvamento. Tocar no item da mochila diz como usar (`COMO_USAR_O_PLANADOR`).
+- **Modo `planar`** (`sistemas/modos/planar.ts`, em `MODOS` e `ModoDoCorpo`): entra pelo modo chão
+  (`podeAbrirOPlanador`, `abrirOPlanador`, com `EntradaDoPasso.planador`), leva o corpo pelo
+  controlador do chão e fecha pulando, pisando ou na água. `PLANADOR` guarda os números. O HUD diz
+  "Fechar o planador"; no toque, o botão Pular vira Fechar. Na locomoção, usa o clipe Planar.
+- **Corrente de ar** (`CorrenteDeAr` em `movimento.correntes`, `subidaDaCorrente`; na coluna dela,
+  `naColunaDaCorrente`, o ar segura no lugar quem plana sem pedir direção): a do Pico vem da
+  âncora `corrente-de-ar` (`mundo/corrente-de-ar.tsx`, `correnteDoPico`, montada pelo `PicoVivo`,
+  com flocos de neve subindo). `CORRENTE_DO_PICO` (raio 1, altura 4,75) é a medida que leva do alto
+  dela ao alto da parede (`topo-da-parede`).
+- **Desenho**: `personagem/planador-aberto.tsx` (`PlanadorAberto`, o `planador.glb` com o clipe
+  `planar` dentro do desenho do avatar, barra em `BARRA_NO_AVATAR`), só com o item na mochila e
+  visível no modo planar; o corpo inclina `INCLINACAO_NO_PLANADOR` para a frente.
+- Testes: `tests/planador.test.ts` e o bloco da fase3-09 em `tests/colisores-do-pico.test.ts`;
+  navegador: `playground/verificar-pico-browser.ts`.
 
 ## O Vale dos Dinos e a Jade (fase4-01, 29/10/2026)
 
@@ -971,6 +1449,13 @@ Fliperama chega ao ler o primeiro minijogo aprovado, pela regra ganharProjetos. 
 
 Plano e testes: docs/plans/2026-10-29-arquipelago-minijogos.md.
 
+L05 também lista as publicações recentes do próprio perfil no Mural, por `servico.buscar('/mural')`.
+`estado/mural.ts` só guarda a listagem transitória, sem fonte, moeda ou alteração de salvamento.
+O pedido `estudio` / `jogo-do-mural` contém `MoldeDoJogoDoMuralSchema` (apenas `playId` UUID).
+A plataforma abre o player público por cima do jogo, que fica pausado. A publicação é revalidada
+na abertura; sair remove o player e relê a lista. Fonte, moderação e distribuição ficam na
+plataforma, nunca no jogo. Plano: `docs/superpowers/plans/2026-10-29-arquipelago-fliperama-mural.md`.
+
 ## Festas da estação na Vila (fase2-10, 29/10/2026)
 
 `sistemas/festas.ts` concentra o calendário puro pelo dia de São Paulo. Carnaval vai do sábado à
@@ -995,28 +1480,37 @@ Testes: `tests/festas.test.ts` e `playground/verificar-festa-browser.ts`. O brow
 plataforma falsa, verifica os fluxos em 1280 e 390 pixels e aceita `ARQUIPELAGO_CHROMIUM`.
 Relatório, prints e decisões pendentes em `docs/qa/2026-10-29-primeira-festa-da-estacao.md`.
 
-## Barco entre as ilhas (fase3-04)
+## Rede do barco (fase3-04 ampliada, L10)
 
-- `sistemas/barco.ts` prepara a rota entre os portos e avança a travessia guiada em passo fixo.
-  `modos/barco.ts` usa o mesmo corpo e o controlador livre com colisões; não libera nado nem
-  pulo no mar. A resposta opcional `obstruido` mantém o apoio e permite devolver ao cais.
-- `mundo/barcos.tsx` usa as âncoras dos GLBs, `useCopiaAnimada` e `trocarClipe`. O mixer do
-  barco viajante é manual: `avancar` e leitura da âncora na prioridade menos 0,5, depois da
-  física (menos 1) e antes do personagem (0). Não ler a âncora só depois do personagem:
-  isso deixa o avatar um quadro atrás, principalmente em aparelhos lentos.
-- `mundo/portos.ts` lê só os metadados dos GLBs. Não manter uma segunda cópia completa do
-  Recife para ler âncoras. `RecifeVivo` informa colisores prontos e opacidade de 0,99; sair da
-  ilha limpa o sinal. Espera a 27 m, retorno automático após 20 s sem carga.
-- O barco aparece só com o Recife aberto. Substitui nó e colisor do barquinho decorativo.
-  Boias abrem corredor visual de 5 m de meia largura; a correnteza não muda. Rota externa a
-  120 m, velocidade 12 m/s reduzida a 2 m/s nos cais. Regras completas em
-  `docs/arquipelago-regras.md`, seção fase3-04.
-- Não guardar posição no mar nem estado do barco. Pausa congela clipe e travessia. A câmera
-  acompanha o corpo estável, sem giro automático ou balanço, inclusive com movimento reduzido.
-- Playground `?barco=central|recife`, medidor `.barco`, testes `barco.test.ts` e
-  `barco-colisao.test.ts`. `playground/verificar-barco-browser.ts` confere os dois sentidos,
-  pausa, controles, espera por carga, ilha fechada e toque, com SwiftShader e
-  `ARQUIPELAGO_CHROMIUM`. Prints em `docs/qa/2026-10-29-barco/`. Nenhum GLB gerado nesta tarefa.
+- `sistemas/rede-do-barco.ts` deriva seis ligações de vizinhança dos ângulos das ilhas e mantém
+  central a Recife. `ligacaoAberta` exige Recife, origem e destino abertos pela jornada.
+- `scripts/gerar-portos.ts` extrai as sete âncoras para `mundo/portos-da-arte.json`. Build e
+  playground conferem o arquivo; os testes comparam a fonte determinística aos GLBs reais.
+  Não editar coordenadas à mão. O navegador não baixa ilhas para ler âncoras. Nas Nuvens,
+  a transformação soma `ALTURA_DAS_NUVENS`, deixando o barco em y=0 e o cais em y=0,89.
+- `useIlhaCompleta` publica a proteção do chão na prioridade -2, antes da física a -1,
+  incluindo a primeira transição para carregando. Publica/remove `movimento.caisProntos`
+  pelos colisores e opacidade de 0,99. Não atribuir esse sinal só ao Recife.
+- `mundo/barcos.tsx` tem um viajante e monta barcos atracados só a menos de 43 m, com chão
+  pronto. Mantém o teto de uma ilha completa na memória. Cache de curvas pertence à montagem.
+  `movimento.embarcarPara` revalida painel, visita, pausa, jornada, modo, chão, alcance e altura.
+- `interface/barco.tsx` oferece destinos por E ou Usar, foco inicial, ciclo de Tab e Escape.
+  Fechar não embarca. O painel usa as classes do jogo nas duas comunidades e no celular.
+- Arco externo de 150 m. Cinco portos novos usam 25 m pela proa; central usa setor 110 e
+  Recife usa setor -70, fora das áreas de mergulho. Velocidade 12 m/s e 2 m/s perto do cais.
+  Manobra começa a 25 m e termina antes dos últimos 10 m. Giro é interpolado entre amostras;
+  a mistura não extrapola e a meia volta tem lado definido. Não escolher o cais de chegada
+  para alinhar a saída. Pausa congela a viagem e a animação. O mixer permanece na prioridade -0,5.
+- A travessia conhece origem/destino e os dois sinais de prontidão. Espera a 29 m do centro,
+  dentro da ativação de 30 m. Após 20 s sem destino, retorna à origem. Se o retorno também
+  não carregar, permanece segura no barco, sem alternar destinos nem largar o corpo na água.
+- As boias retiram só os corredores das ligações abertas, de 5 m de meia largura. A correnteza
+  de quem nada não muda. Nenhuma versão nova de save, prêmio ou visita automática.
+- `playground/verificar-rede-barco-browser.ts` é o operador atual. O nome antigo do verificador
+  do barco delega a ele. `?barco=central|bosque|vila-doce|recife|pico|vale-dos-dinos|nuvens` começa
+  no cais; `posicao=8` abre a rede inteira. Use uma pasta nova em `ARQUIPELAGO_PRINTS`.
+  Plano e provas: `docs/superpowers/plans/2026-10-30-arquipelago-rede-do-barco.md` e
+  `docs/qa/2026-10-30-rede-barco/README.md`. Nenhum GLB ou gerador de arte alterado.
 
 ## Mergulho do Recife (fase3-02, 29/10/2026)
 
@@ -1116,7 +1610,195 @@ recursos privados de cada objeto. Molda encaixa na caixa sem inverter +z; Pinta 
 A reserva permanece durante leitura, falha, excesso ou página antiga. Mudança de id, retorno da
 oficina (inclusive mesmo id), visita e desmontagem cancelam e liberam recursos, inclusive tardios.
 Não usar `useGLTF` para estas criações nem descartar geometrias/texturas do catálogo na pintura.
-Visitas não leem criação alheia. A capa do fliperama prevalece na tela; a animação do aquário do
+Visitas não leem criação alheia. As faces do Pinta (29/10/2026) estão na geladeira, no forno, no aquário, no museu,
+na casinha e no vaso da planta (a lareira e a banda, de propósito, não), conferidas contra o
+catálogo por `tests/faces-dos-objetos.test.ts`. A galeria de mentira guarda as compras à parte do
+salvamento (`CHAVE_DA_GALERIA`, que o `?novo=1` apaga), como o serviço. A capa do fliperama prevalece na tela; a animação do aquário do
 catálogo continua quando esse modelo aparece. Testes: `aparencias.test.ts`; verificador:
 `playground/verificar-aparencias-browser.ts`. Plano e pedidos de faces de arte:
 `docs/plans/2026-10-29-arquipelago-molda-no-mundo.md`. Regras e tetos em §6.16.
+
+## O filhote do Vale e o museu (fase4-03, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-filhote-e-museu.md`; regras e textos em
+`docs/arquipelago-regras.md` (seção da fase4-03).
+
+- **Salvamento V15** (`vale.filhote`): regras puras em `sistemas/filhote-do-vale.ts` (aquecer,
+  nome, comida, carinho, o dia cuidado, o tamanho, o passeio e `juntarFilhotes`, usado pela
+  `conciliar-salvamento.ts`). A Jade entrega o ovo na conversa (`sistemas/jade.ts`), uma vez, com os
+  três ninhos cuidados.
+- **No mundo**: `mundo/filhote-do-vale.tsx` (`FilhoteDoVale`, montado pelo `ValeVivo` na sua própria
+  `ComReserva`): o chão quente na âncora `pe-do-vulcao` (o `ovo-dino` do GLB de props com 0,47 m e
+  um círculo amarelo, para não sumir na lava) e, depois que choca, o filhote (`triceratops-filhote.glb`, `andar`, `parado`,
+  `pular`) passeando por `PASSEIO_DO_FILHOTE` (pontos no referencial do GLB, conferidos no teste,
+  também a reta entre eles). Nada colide. Pausa, visita, somente leitura e a troca da ilha (0,99)
+  bloqueiam as ações.
+- **Painel**: `interface/filhote.tsx` (`PAINEL_DO_FILHOTE`, loja `estado/filhote.ts` com a fala e o
+  pulinho), primeiro o nome, depois "Dar comida" e "Fazer carinho" com o que já foi feito hoje.
+- **Museu**: chega em `ganharProjetos` com `vale.escavacao === 3`; o painel do objeto mostra a
+  coleção do Vale (`interface/museu.tsx`, `colecaoDoVale`, que ganhou o filhote; os ícones são
+  `ICONE_DO_VALE` de `interface/diario.tsx`).
+- Testes: `tests/filhote-do-vale.test.ts`; navegador: `playground/verificar-filhote-browser.ts`
+  (semeia o salvamento no `localStorage` do playground, um contexto limpo por começo).
+
+## A montaria do Vale (fase4-04, 29/10/2026)
+
+Plano: `docs/plans/2026-10-29-arquipelago-montaria.md`; regras em `docs/arquipelago-regras.md`.
+
+- Regras em `sistemas/montaria.ts`; modo `montar` em `sistemas/modos/montar.ts` (em `MODOS`), que
+  entra pelo pedido `montar` e sai pelo E / Usar. ⚠️ `mudarModo` solta a sela em qualquer troca de
+  modo (o dino fica onde estava): não limpar `c.montaria` à mão.
+- `personagem.tsx`: montada, o controlador usa a cápsula de montada (`MONTARIA.raio`, pé no mesmo
+  lugar, `GRUPO_DE_NINGUEM` de `mundo/grupos.ts`), o desenho sobe `MONTARIA.subidaDoDesenho` no
+  clipe Sentar e `velPedida` fica a do dino. `aceitaColisorDoMundo` ignora os colisores do próprio
+  corpo.
+- `mundo/montaria-do-vale.tsx` (no `ValeVivo`, com a sua `ComReserva`): `movimento.montaria`, o
+  interativo, o desenho e o colisor do dino parado (`col-montaria`, só para o corpo, volta quando a
+  criança sai de cima, `longeParaVoltar`).
+- Testes: `tests/montaria.test.ts` (regras, modo e o lugar no GLB); navegador:
+  `playground/verificar-montaria-browser.ts`.
+
+## Balão das Nuvens (fase4-09, 29/10/2026)
+
+- Regras puras em `sistemas/balao.ts` (`BALAO`, `Voo`, `passoDoBalao`); modo `balao` em
+  `sistemas/modos/balao.ts`, guiado (`direto`) como o barco: o voo começa de onde a física deixou o
+  corpo, e o corpo parado mais alto que o pedido é pouso. Pousado, o cesto pressiona o apoio
+  (`BALAO.pressao`) para soltar sozinho se o apoio sair (plataforma descendo).
+- `mundo/balao-das-nuvens.tsx` (montado pelo `NuvensVivo`): `nuvens-balao.glb` em carga privada
+  (sai com a ilha), `AnimationMixer` próprio do `flutuar`, `Voo` em `movimento.balao`, interativo
+  "Subir no balão", caixa do cesto parado com `userData.balao` (o personagem ignora no modo
+  `balao`) e `voo.visual` (o nó animado) para desenhar a criança no cesto, na prioridade −0,5.
+- "Descer do balão" não é interativo do mundo: o personagem põe `DESCER_DO_BALAO` no alvo quando o
+  cesto está pousado, e o "usar" é gasto pelo modo. Saída perto do lugar: `voo.saida` vira
+  `pedidos.teleporte` no desenho.
+- Perfil de câmera `balao`; o toque troca "Pular" por "Subir"; a posição não é gravada no voo; o
+  Construir some no balão. O medidor expõe `balao`.
+- Testes: `balao.test.ts` (regras e modo), `balao-das-nuvens.test.ts` (lugar livre, alcance a pé e
+  saída contra os colisores). Verificador: `playground/verificar-balao-browser.ts`. Pedidos de arte
+  no plano `docs/plans/2026-10-29-arquipelago-balao.md` (feitos: a âncora `balao` foi para perto do
+  poste, em (5,6; 6,0), e o cesto ganhou a âncora `passageiro`). No voo, a criança é desenhada na
+  âncora `passageiro` (o piso do cesto, que sobe e balança com o clipe), não na base do nó `balao`.
+
+
+## Final no alto do Farol (fase4-11, 29/10/2026)
+
+- `sistemas/final-do-farol.ts`: acesso na Lenda, pausas, quatro trechos da página, seis fachos e apresentação da Íris. `estado/farol.ts` isola a animação por montagem com WeakMap; a página e a conclusão ficam em `salvamento.farol` (V16). Não inferir conclusão apenas de jornada 8.
+- `mundo/final-do-farol.tsx`, montado pelo Farol: carregamento privado com AbortController, descarte ao sair, sala a y 40, âncoras lidas no referencial local mesmo depois de montar a cena. `mundo/alto-do-farol.ts` concentra medidas, âncoras e alvos do anel. Os colisores vêm do arquivo: `prepararSala` lê os `col-*` (piso, 16 caixas da parede, grade do vão da escada, mesa com estante, lente) e tira esses nós da cena, uma vez, logo depois de carregar. A chegada é a âncora `chegada` (fora da grade e da lente), a leitura é `leitura` e a câmera da vista parte de `camera-varanda`. A porta do farol de fora é o nó `porta` do `farol.glb` (pivô na dobradiça): `mundo/farol.tsx` abre para fora quando a criança chega a 3 m de `PORTA_DO_FINAL` e o Farol já pode ser subido (sem animação com menos movimento). Não usar o carregador de ilhas completas para o interior.
+- A câmera existente continua a única dona da vista. O perfil `farol` usa 65 graus, com panorama adaptado ao aspecto. Ao sair, restaura a pose anterior. Na sequência, sala, avatar e Zappy 3D ficam ocultos; a fala do Zappy permanece no painel. O céu retira a névoa apenas nessa vista. Não carregar ilhas completas por causa da câmera. O facho de exploração fica oculto durante os seis fachos do final e respeita pausa e menos movimento fora dele.
+- `interface/farol.tsx` usa o estilo dos painéis de moradores. Não dar foco automático ao botão da sala: isso captura WASD. A leitura recebe foco. Esc e Descer usam a mesma saída. Os relógios não guardam a posição do interior nem iniciam cochilo nele, mas o limite de tempo da plataforma continua valendo.
+- `paginasDoDiario(s)` lê `salvamento.farol.pagina`, inclusive depois de reabrir. A Íris só monta após a sequência e usa `MoradorDaIlha`, sem amizade. A porta fechada passa por `VozDoJogo`, inclusive para adultos.
+- Testes em `tests/final-do-farol.test.ts`; conferência em `playground/verificar-final-farol-browser.ts`, com SwiftShader, computador e celular emulado. Plano com pedidos de arte e campo futuro em `docs/plans/2026-10-29-arquipelago-final-do-farol.md`. Prints em `docs/qa/2026-10-29-final-farol/`.
+
+O minijogo do Vale (fase4-05) está em `docs/desafios-do-jogo/vale`, com provas no executor e roundtrip Blockly. É só o pacote de desafios; esta entrega não importa nem publica no Admin e não altera o Vale vivo.
+
+## Saltos, corrida de balão e constelações das Nuvens (fase4-07, 29/10/2026)
+
+- **Percursos duráveis (V16).** `nuvens-saltos` e `nuvens-balao` estão em `PERCURSOS`.
+  `terminarCorrida` grava os cinco percursos em `salvamento.percursos`; álbum e família leem o
+  mesmo catálogo. As versões até V15 continuam com os três IDs históricos. Cada corrida só
+  avança a própria instância (`loja.corrida.percurso`).
+- **Saltos:** `mundo/saltos-das-nuvens.ts` lê os tampos dos colisores (`col-cil-degrau-nuvem-3`,
+  `col-cil-plataforma-N`). ⚠️ Os colisores da ilha preparada vêm girados com ela:
+  `tamposDosSaltos(colisores, giro)` desfaz o giro antes do `percursoNoMundo`. A volta de queda
+  numa plataforma lê `PlataformaDasNuvens.elevacao`, escrita a cada passo da física.
+- **Corrida de balão:** regra pura em `sistemas/corrida-de-balao.ts` (`ARGOLAS`,
+  `LUGARES_DAS_ARGOLAS`, `passouPelaArgola`, `passoDaCorridaDeBalao`); desenho em
+  `mundo/corrida-de-balao.tsx`: a argola de nuvem do `nuvens-argola.glb` (`arte/ilhas-b/argola_nuvem.py`,
+  carga privada como o balão; nós `nuvem`, igual nas seis, e `faixa`, com o material de cada argola nas
+  cores dos `fio1` a `fio6`, que acende na próxima). Enquanto carrega, ou sem o arquivo, ficam os toros
+  lisos. Os tufos ficam por fora da faixa: o vão livre é o mesmo de antes. O tempo-alvo
+  vem do piloto do teste, que voa pelas regras de `sistemas/balao.ts`.
+- **Constelações:** regra pura em `sistemas/constelacoes.ts`; mirante em
+  `mundo/constelacoes-das-nuvens.tsx` (carga privada do `nuvens-constelacoes.glb`, colisores por
+  `ColisoresSoltos`, lugar na constante `MIRANTE_DAS_NUVENS` até a âncora pedida). A vista escreve
+  `movimento.mira` (`mundo/vista-da-luneta.ts`), que a câmera usa no perfil `luneta`; o visor é
+  `interface/estrelas.tsx` (classes `arq-mirante-*`; ⚠️ `arq-estrelas` é a lista da tela de
+  resultado). O painel aberto conta como pausa no `jogoPausado`: o acender das estrelas desconta
+  só o próprio painel. As estrelas não usam a neblina da cena (`fog = false`). A mira aponta para
+  o centro das estrelas da figura (`meioDasEstrelas`): o pivô do nó fica fora do desenho.
+- Testes: `saltos-das-nuvens.test.ts`, `corrida-de-balao.test.ts`, `constelacoes.test.ts`.
+  Verificador: `playground/verificar-nuvens-aventura-browser.ts` (`ARQUIPELAGO_PARTE=noite` roda
+  só as constelações; cada parte abre um contexto novo do navegador). O medidor expõe `corrida`,
+  `mira` e `constelacoes`, e `__arquipelagoLerCorpo` devolve o olho da vista.
+
+## Clima da sua ilha (fase4-08, 29/10/2026)
+
+- Regra pura em `sistemas/clima.ts` (`CLIMA`, `pedeAgua`, `regarComSede`, `chuvaNaHorta`). O
+  bônus mexe só no `regadoEm` (vai para trás): nenhum campo novo. `climaLiberado` = Nuvens abertas.
+- A escolha mora em `salvamento.clima` (V16), escrita por `escolherClima` e no menu (`interface/clima.tsx`). O
+  relógio do HUD mostra o símbolo. A Iriê tem a terceira fala (o verificador da fase4-06 avança por
+  ela).
+- `mundo/clima-da-ilha.tsx` (montado na cena): escreve `ambiente.luzDoClima` e
+  `ambiente.cinzaDoClima` (opcionais; o `Ceu` multiplica o sol e o preenchimento e puxa o céu para
+  `CEU_FECHADO`), desenha as gotas (`LineSegments` que seguem a criança, nome `chuva-da-ilha`) e a
+  cada 1 s de jogo chama `chuvaNaHorta`. A horta (`mundo/horta.tsx`) usa `climaDaHorta` para o
+  "Regar" da janela, a gota azul (`gota-da-sede`) e o bônus.
+- O medidor expõe `clima` e `horta` (semente, regado, progresso). Testes: `clima.test.ts`.
+  Verificador: `playground/verificar-clima-browser.ts` (espera o relógio de verdade: a alface pede
+  aos 54 s) e, no fim, usa o cata-vento.
+- O cata-vento da horta (`mundo/cata-vento.tsx`, `cata-vento.glb` de `arte/mundo/cata_vento.py`,
+  lugar em `CATA_VENTO` de `medidas.ts`): a hélice (nó `helice`) gira em volta do z do modelo com
+  `GIRO_DO_CATA_VENTO[clima]` (um quarto com menos movimento; parada na pausa; numa visita, o giro
+  do sol). Com as Nuvens abertas e fora de visita, "Mudar o clima" chama `proximoClima` e
+  `escolherClima` e diz a `FALA_DO_CLIMA`. O poste colide (`col-cil-poste-cata-vento-1`, conferido
+  em `colisao-da-ilha-central.test.ts`).
+
+## Minijogo "Jardim que floresce" (fase4-10, 29/10/2026)
+
+- Fora do pacote do jogo: `docs/desafios-do-jogo/nuvens/` (fontes, manifesto, README, conferência
+  visual), com as provas em `arquipelago-contracts/tests/manifesto-das-nuvens.test.ts`,
+  `studio/src/blockly/__tests__/nuvensManifest.test.ts`, `arquipelago-api` (manifestos) e
+  `studio-runtime/tests/nuvens-browser.test.ts` (executor real, com `SZ_CHECK_CHROMIUM`).
+- "A cada N segundos" (`g2d:everySeconds`) tem de ser bloco raiz do projeto, ao lado do laço; o
+  executor recusa `checkpoints: []` (ausente ou com pontos) e espera de mais de 10 s num passo.
+
+## Continuidade do progresso (L01, V16, 29/10/2026)
+
+A loja deriva constelações, clima, recordes e final do salvamento. `mudar` protege visitas,
+suporte e conflitos. `nuvens.constelacoes` usa bits 0 a 5. `farol.pagina` só nasce ao concluir
+os trechos; `farol.concluido` só ao terminar os fachos e exige a página. A animação e a posição
+no interior não são persistidas. Na conciliação, descobertas usam união, estrelas usam união
+e o melhor tempo usa mínimo; escolhas simultâneas de clima diferentes pedem resolução.
+
+A V16 preserva referências de aparência de até 80 caracteres aceitas nas versões antigas,
+sem passar pelo filtro histórico V15. O teto global continua 65.536 bytes UTF-8. Documento
+acima do teto é recusado, sem truncar nem apagar a cópia local. O editor Lumi aceita essas
+referências na geladeira, mantendo o formato da ferramenta V1.
+
+## Amizade no anel e páginas do diário (L02/L06, V17)
+
+`sistemas/moradores-do-anel.ts` concentra gostos, aniversários, pedidos e falas de Maré, Floco,
+Jade e Iriê. `amizade-do-anel.ts` usa as mesmas contas de Capi e Bento: conversa 10, pedido 30,
+presente preferido 20 ou comum 8, um por dia, dobro no aniversário e teto 500. Nenhuma ausência
+tira amizade. `MoradorDaIlha` compõe a atividade antiga e a relação na mesma alteração: planador
+do Floco e ovo da Jade não são substituídos nem duplicados.
+
+O painel comum recusa ações em visita, suporte, conflito, pausa de tempo e sincronização. As
+páginas do Pico, Vale e Nuvens abrem com dois corações (200), derivadas da amizade salva. A
+fala de entrega fica no fim da conversa no cruzamento desse limite. Recife conserva a página
+do navio. Íris conserva a apresentação do final, sem uma amizade inventada.
+
+V17 acrescenta os quatro moradores sem modificar V16. `tests/amizade-do-anel.test.ts` prova
+idempotência, consumo, aniversário, páginas e composição das atividades. O verificador
+`playground/verificar-amizade-browser.ts` conversa, presenteia, entrega, reabre e lê o diário
+pelos controles reais, com plataforma local. Não é prova de desempenho em aparelho físico.
+
+## Galeria canônica no Members (L04, 30/10/2026)
+
+O cartão informa os destinos reais da posse. Aquário, fliperama e planta também
+valem no Meu quarto, com representação própria; os outros seis só têm arte no jogo.
+O cliente continua lendo `/galeria`, sem inventário autoritativo no save. Comprar
+no quarto não concede o projeto azul funcional. A plataforma falsa segue a mesma
+idempotência por item, mesmo quando uma chave do navegador é reutilizada.
+O verificador da feira aceita `ARQUIPELAGO_GALERIA_COMPARTILHADA=1` para a fixture
+local da planta, cujo projeto já existe nesse cenário. Essa prova visual não substitui o banco real nem o fluxo autenticado.
+
+
+## Primeiro pedido da ilha central (L02/L03)
+
+`primeiro-pedido.ts` deriva o próximo gesto da porta, da horta e da posse da geladeira.
+`colherNaIlha` aplica a colheita manual inteira, com o mesmo bônus do contrato, e
+concede o projeto apenas se ele ainda não existe. O mundo chama essa regra pura;
+HUD e Diário só explicam. Visita, suporte e pausa continuam guardados na loja.
+Não há alteração do save V18, migração, saldo ou régua de cursos. A prova de navegador
+usa gestos reais e adianta somente o relógio do navegador depois de regar.

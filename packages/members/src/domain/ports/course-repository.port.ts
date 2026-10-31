@@ -93,6 +93,15 @@ export interface CourseRepository {
     /** Studio continuity uses this learner's already-bound chain before current authoring. */
     owner?: { userId: string; accountId: string },
   ): Promise<{ blockId: string; lessonId: string } | null>
+  /**
+   * O desenho de cada vaga de arte: o bloco de Pinta, em aula PUBLICADA do curso, que preenche
+   * cada nome pedido (o primeiro em ordem de curso), com a imagem do jogo que ele substitui.
+   * Nome sem desenho publicado fica fora do mapa.
+   */
+  findArtSlotFillers(
+    courseId: string,
+    names: readonly string[],
+  ): Promise<Map<string, { blockId: string; replaces: string | null }>>
   /** Total de aulas por curso, em lote (admin). courseId → total. */
   countLessonsByCourseIds(courseIds: string[]): Promise<Map<string, number>>
   /** Total de aulas PUBLICADAS por curso, em lote (evita N+1 em "meus cursos"). */

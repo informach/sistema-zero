@@ -3,28 +3,40 @@ import { LeiturasDosMembros } from './application/leituras-dos-membros'
 import { ConferenciaDoMapa } from './application/mapa-das-ilhas'
 import { ServicoDaEquipe } from './application/servico-da-equipe'
 import { ServicoDaFamilia } from './application/servico-da-familia'
-import { aparenciasPagas, ServicoDaGaleria } from './application/servico-da-galeria'
+import { ServicoDaGaleria } from './application/servico-da-galeria'
 import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDasCartas } from './application/servico-das-cartas'
+import { ServicoDasProfissoes } from './application/servico-das-profissoes'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
+import { ServicoDasVisitasAdultas } from './application/servico-das-visitas-adultas'
+import { ServicoDasVisitasDeAmigos } from './application/servico-das-visitas-de-amigos'
 import { ServicoDoJogo } from './application/servico-do-jogo'
 import { ServicoDosDesafios } from './application/servico-dos-desafios'
+import { ServicoDosFantasmas } from './application/servico-dos-fantasmas'
+import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
+import { ServicoDosPedidos } from './application/servico-dos-pedidos'
 import type { Env } from './infrastructure/config/env'
 import { MembrosHttp } from './infrastructure/members/membros-http'
 import { MoedasHttp } from './infrastructure/members/moedas-http'
+import { PosseHttp } from './infrastructure/members/posse-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { createDbConnection } from './infrastructure/persistence/drizzle/db'
 import { DrizzleRepositorioDoJogo } from './infrastructure/persistence/drizzle/repositorio'
 import { DrizzleRepositorioDaFamilia } from './infrastructure/persistence/drizzle/repositorio-da-familia'
-import { DrizzleRepositorioDaGaleria } from './infrastructure/persistence/drizzle/repositorio-da-galeria'
 import {
   DrizzleRepositorioDeDesafios,
   DrizzleRepositorioDoJogadorNosDesafios,
 } from './infrastructure/persistence/drizzle/repositorio-de-desafios'
+import { DrizzleRepositorioDosFantasmas } from './infrastructure/persistence/drizzle/repositorio-fantasmas'
+import { DrizzleRepositorioDosInsumos } from './infrastructure/persistence/drizzle/repositorio-insumos'
 import { DrizzleRepositorioDaMedicao } from './infrastructure/persistence/drizzle/repositorio-medicao'
 import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/drizzle/repositorio-minijogos'
+import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
+import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
+import { DrizzleRepositorioDasVisitasAdultas } from './infrastructure/persistence/drizzle/repositorio-visitas-adultas'
+import { DrizzleRepositorioDasVisitasDeAmigos } from './infrastructure/persistence/drizzle/repositorio-visitas-de-amigos'
 import { createServer } from './interfaces/http/server'
 
 export interface Application {
@@ -43,13 +55,17 @@ export function createApplication(env: Env): Application {
     publicos: new Set(env.ARQUIPELAGO_PUBLICOS),
     lista: new Set(env.ARQUIPELAGO_LISTA),
   }
-  const comprasDaGaleria = new DrizzleRepositorioDaGaleria(connection.db)
+  const posse =
+    env.MEMBERS_URL && env.ARQUIPELAGO_COINS_TOKEN
+      ? new PosseHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_COINS_TOKEN })
+      : null
+  const galeria = new ServicoDaGaleria({ posse, politica })
   const servico = new ServicoDoJogo(
     new DrizzleRepositorioDoJogo(connection.db),
     politica,
     undefined,
     new RepositorioDeSessoesDeTempo(connection.db),
-    (jogadorId) => aparenciasPagas(comprasDaGaleria, jogadorId),
+    (jogador) => galeria.aparenciasPagas(jogador),
   )
   const membros =
     env.MEMBERS_URL && env.ARQUIPELAGO_MEMBERS_TOKEN
@@ -78,13 +94,6 @@ export function createApplication(env: Env): Application {
     moedas,
     logger,
   })
-  const galeria = new ServicoDaGaleria({
-    galeria: comprasDaGaleria,
-    debito: moedas,
-    leituras,
-    politica,
-    logger,
-  })
   const repositorioDaFamilia = new DrizzleRepositorioDaFamilia(connection.db)
   const familia = new ServicoDaFamilia({
     familia: repositorioDaFamilia,
@@ -95,7 +104,50 @@ export function createApplication(env: Env): Application {
     leituras,
     logger,
   })
+  const visitas = new ServicoDasVisitas({
+    familia: repositorioDaFamilia,
+    politica,
+    membros,
+    logger,
+  })
   const app = createServer({
+    amigos: new ServicoDasVisitasDeAmigos({
+      repo: new DrizzleRepositorioDasVisitasDeAmigos(connection.db),
+      familia: repositorioDaFamilia,
+      politica,
+      membros,
+      logger,
+    }),
+    visitasAdultas: new ServicoDasVisitasAdultas({
+      repo: new DrizzleRepositorioDasVisitasAdultas(connection.db),
+      politica,
+      membros,
+      logger,
+    }),
+    fantasmas: new ServicoDosFantasmas({
+      repo: new DrizzleRepositorioDosFantasmas(connection.db),
+      politica,
+      visitas,
+    }),
+    pedidos: new ServicoDosPedidos({
+      repo: new DrizzleRepositorioDosPedidos(connection.db),
+      moedas,
+      leituras,
+      politica,
+      logger,
+    }),
+    insumos: new ServicoDosInsumos({
+      repo: new DrizzleRepositorioDosInsumos(connection.db),
+      debito: moedas,
+      politica,
+    }),
+    profissoes: new ServicoDasProfissoes({
+      repo: new DrizzleRepositorioDasProfissoes(connection.db),
+      moedas,
+      leituras,
+      politica,
+      logger,
+    }),
     minijogos: new ServicoDosMinijogos(new DrizzleRepositorioDosMinijogos(connection.db), politica),
     medicao: new ServicoDaMedicao(
       new DrizzleRepositorioDaMedicao(connection.db),
@@ -110,12 +162,7 @@ export function createApplication(env: Env): Application {
     desafios,
     familia,
     galeria,
-    visitas: new ServicoDasVisitas({
-      familia: repositorioDaFamilia,
-      politica,
-      membros,
-      logger,
-    }),
+    visitas,
     cliente: { dir: env.ARQUIPELAGO_CLIENTE_DIR, servirMapas: env.ARQUIPELAGO_SERVIR_MAPAS },
     tokenInterno: env.INTERNAL_API_TOKEN,
     maxRequestBodyBytes: env.MAX_REQUEST_BODY_BYTES,

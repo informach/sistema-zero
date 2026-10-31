@@ -20,6 +20,13 @@ a casquinha gigante e os enfeites de pé (pirulitos, bengalas, postes, jujubas, 
 moitas). Toldos, flores, tufos e o miúdo das construções não colidem.
 """
 from lib_ilhas import *
+import lib_cais
+
+# O ponto de embarque do barco (pedido de arte de 30/10/2026): o deque sai do −x da ilha 2 m para o
+# +z do eixo, entre o poste da esquina e a casinha de telhado marrom (na linha do meio a casinha 3
+# fica a meio metro do poste). A beira do tampo (x −12,7) e o degrau (1,0 depois, onde o chão
+# desce abaixo das tábuas) foram medidos no `col-terreno`; a ponta fica 3,3 além do barranco.
+PORTO = dict(terra=(-12.7, 2.05), rumo=180, degrau=1.0, comprimento=5.7, lado=-1)
 
 SEMENTE = 3 * 1.7  # a mesma da versão leve
 
@@ -481,8 +488,14 @@ def construir():
     for k, (x, z, h, _) in enumerate(CASINHAS):
         anc.append(ancora(f'telhados-{k + 1}', x, z, TOPO + h))
     anc.append(ancora('telhados-fim', *frente(SORVETERIA[0], SORVETERIA[1], 0.6, -3.4, -3.0), TOPO + ALTURA_SORVETERIA))
-    exportar('vila-doce', {'terreno': chao, 'fonte': agua_fonte, 'construcoes': obras, 'telhados': telhados,
-                           'feira': feira, 'enfeites': enf}, anc + ancoras_feira, colisores=col)
+    nos = {'terreno': chao, 'fonte': agua_fonte, 'construcoes': obras, 'telhados': telhados, 'feira': feira,
+           'enfeites': enf}
+    porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
+    anc += lib_cais.ancoras_do_porto(ancora, dados_porto)
+    dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
+    dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
+    nos['porto'] = porto
+    exportar('vila-doce', nos, anc + ancoras_feira, colisores=col, porto=dados_porto)
 
 
 def props():

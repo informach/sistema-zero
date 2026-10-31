@@ -11,6 +11,7 @@ const obra: Obra = {
   cercas: [],
   caminhos: [],
   canteiros: [],
+  moveis: [],
 }
 
 test('V4 preserva construção local ao conciliar progresso remoto independente', () => {
@@ -91,4 +92,17 @@ test('reconhece envio confirmado e preserva alteração local posterior', () => 
 test('dois jogos novos diferentes nunca se sobrepõem automaticamente', () => {
   const outro = criarSalvamentoInicial(new Date('2026-10-28T11:00:00Z'))
   expect(conciliarSalvamento(null, base, outro)).toBeNull()
+})
+
+test('V20: a galeria do Farol vale a da sessão que mudou; mudada nas duas, a criança escolhe', () => {
+  const fim = { ...base, farol: { pagina: true, concluido: true, galeria: [] } }
+  const jogo = ['j', '7d3f2c1a-5b6e-4f80-9a1b-2c3d4e5f6a7b'] as ['j', string]
+  const minijogo = ['d', '1a2b3c4d-5e6f-4a8b-9c0d-1e2f3a4b5c6d'] as ['d', string]
+  const local = { ...fim, farol: { ...fim.farol, galeria: [jogo] } }
+  // O remoto só mudou o clima: a galeria de cá fica.
+  const remoto = { ...fim, clima: 'chuva' as const }
+  expect(conciliarSalvamento(fim, local, remoto)?.farol.galeria).toEqual([jogo])
+  expect(conciliarSalvamento(fim, remoto, local)?.farol.galeria).toEqual([jogo])
+  const outra = { ...remoto, farol: { ...fim.farol, galeria: [null, minijogo] } }
+  expect(conciliarSalvamento(fim, local, outra)).toBeNull()
 })

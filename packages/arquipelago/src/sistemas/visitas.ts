@@ -1,7 +1,11 @@
 import {
   type Canteiro,
+  type CasaDeAmigo,
+  CasaDeAmigoSchema,
   type CasaDoIrmao,
   CasaDoIrmaoSchema,
+  type CasasDeAmigos,
+  CasasDeAmigosSchema,
   type IrmaoParaOJogo,
   type IrmaosParaOJogo,
   IrmaosParaOJogoSchema,
@@ -26,6 +30,8 @@ export const PAINEL_DAS_VISITAS = 'visitas'
 
 /** A visita em andamento: o irmão e o que a casa dele mostra (nada mais do salvamento dele). */
 export interface Visita {
+  /** De onde veio a visita: um irmão (sem origem), um adulto ou um amigo (N08a). */
+  origem?: 'adulto' | 'amigo'
   perfilId: string
   nome: string
   obra: Obra | null
@@ -73,6 +79,12 @@ export const TEXTOS_DAS_VISITAS = {
   comCasa: 'Já construiu a casa.',
   voltar: 'Voltar para a minha casa',
   tentarDeNovo: 'Tentar de novo',
+  amigosTitulo: 'Casas de amigos',
+  amigosExplica: 'As casas que os responsáveis aceitaram. Na casa de um amigo, você só olha.',
+  amigosForaDoAr: 'As casas de amigos não carregaram agora.',
+  amigosNenhuma: 'Ainda não há casas de amigos. Quem aceita são os responsáveis.',
+  amigosDesligadas:
+    'As visitas de outras crianças estão desligadas. Quem decide são os responsáveis.',
   recordesTitulo: 'Recordes da família',
   recordesCarregando: 'Lendo os recordes da família.',
   recordesForaDoAr: 'Os recordes da família não carregaram agora.',
@@ -80,20 +92,30 @@ export const TEXTOS_DAS_VISITAS = {
   voce: 'Você',
 } as const
 
-/** A faixa no alto durante a visita. */
-export function faixaDaVisita(nome: string): string {
-  return `Você está na casa de ${nome}. Aqui você só olha.`
+/**
+ * A faixa no alto durante a visita. Na casa de um amigo o nome é o apelido que a família deu
+ * ("Casa da Lua", "Ana"), então a frase não diz "a casa de".
+ */
+export function faixaDaVisita(nome: string, origem?: Visita['origem']): string {
+  return origem === 'amigo'
+    ? `Você está visitando ${nome}. Aqui você só olha.`
+    : `Você está na casa de ${nome}. Aqui você só olha.`
 }
 
-/** O que o Zappy diz ao chegar: a faixa e, sem o quarto do irmão, que ele não abriu. */
-export function falaDaChegada(visita: Pick<Visita, 'nome' | 'quarto'>): string {
-  const faixa = faixaDaVisita(visita.nome)
-  return visita.quarto ? faixa : `${faixa} O quarto de ${visita.nome} não abriu agora.`
+/** O que o Zappy diz ao chegar: a faixa e, sem o quarto de quem mora, que ele não abriu. */
+export function falaDaChegada(visita: Pick<Visita, 'nome' | 'quarto' | 'origem'>): string {
+  const faixa = faixaDaVisita(visita.nome, visita.origem)
+  if (visita.quarto) return faixa
+  return visita.origem === 'amigo'
+    ? `${faixa} O quarto não abriu agora.`
+    : `${faixa} O quarto de ${visita.nome} não abriu agora.`
 }
 
 /** O que o Zappy diz quando ela sai da ilha central no meio da visita. */
-export function falaDaSaida(nome: string): string {
-  return `Você saiu da casa de ${nome}. O seu jogo volta a ser guardado.`
+export function falaDaSaida(nome: string, origem?: Visita['origem']): string {
+  return origem === 'amigo'
+    ? `Você saiu da visita a ${nome}. O seu jogo volta a ser guardado.`
+    : `Você saiu da casa de ${nome}. O seu jogo volta a ser guardado.`
 }
 
 /** O que o Zappy diz ao voltar. */
@@ -135,6 +157,52 @@ export function leituraDaCasa(status: number, corpo: unknown, perfilId: string):
 function codigoDoErro(corpo: unknown): string | null {
   const erro = (corpo as { error?: { code?: unknown } } | null)?.error
   return typeof erro?.code === 'string' ? erro.code : null
+}
+
+export type LeituraDasCasasDeAmigos =
+  | { tipo: 'ok'; casas: CasasDeAmigos['casas'] }
+  | { tipo: 'desligado' }
+  | { tipo: 'fora-do-ar' }
+
+/** A resposta de `GET /amigos` (N08a): as casas que a família aceitou e ainda valem. */
+export function leituraDasCasasDeAmigos(status: number, corpo: unknown): LeituraDasCasasDeAmigos {
+  if (status !== 200) return { tipo: 'fora-do-ar' }
+  const lido = CasasDeAmigosSchema.safeParse(corpo)
+  if (!lido.success) return { tipo: 'fora-do-ar' }
+  if (lido.data.situacao === 'desligado') return { tipo: 'desligado' }
+  return { tipo: 'ok', casas: lido.data.casas }
+}
+
+export type LeituraDaCasaDeAmigo =
+  | { tipo: 'ok'; casa: CasaDeAmigo }
+  | { tipo: 'desligado' }
+  | { tipo: 'nao-abriu' }
+
+/** A resposta de `GET /amigos/:id/casa`: 403 `VISITAS_DE_AMIGOS_DESLIGADAS` diz que desligaram. */
+export function leituraDaCasaDeAmigo(
+  status: number,
+  corpo: unknown,
+  id: string,
+): LeituraDaCasaDeAmigo {
+  if (status === 403 && codigoDoErro(corpo) === 'VISITAS_DE_AMIGOS_DESLIGADAS')
+    return { tipo: 'desligado' }
+  if (status !== 200) return { tipo: 'nao-abriu' }
+  const lido = CasaDeAmigoSchema.safeParse(corpo)
+  if (!lido.success || lido.data.id !== id) return { tipo: 'nao-abriu' }
+  return { tipo: 'ok', casa: lido.data }
+}
+
+/** A visita à casa de um amigo: o apelido que a família deu vale como nome. */
+export function visitaDaCasaDeAmigo(casa: CasaDeAmigo): Visita {
+  return {
+    origem: 'amigo',
+    perfilId: casa.id,
+    nome: casa.apelido,
+    obra: casa.obra,
+    horta: casa.horta,
+    completos: casa.completos,
+    quarto: casa.quarto,
+  }
 }
 
 /** A visita a partir do irmão escolhido e da casa que o serviço mandou. */

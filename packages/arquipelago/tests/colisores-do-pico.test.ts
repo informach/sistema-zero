@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
-import type { Mesh, Object3D } from 'three'
+import { type Mesh, type Object3D, Vector3 } from 'three'
 import { ALCANCE_DO_BANCO, bancosDosColisores, pontoDoBanco } from '../src/mundo/bancos-da-vila'
 import {
   type ColisorDaIlha,
@@ -7,18 +7,28 @@ import {
   pecaDoColisor,
   soParaOCorpo,
 } from '../src/mundo/colisores-da-ilha'
+import { correnteDoPico } from '../src/mundo/corrente-de-ar'
 import { maisPerto, type RegistroDeInterativos } from '../src/mundo/interativos'
 import { GRAVIDADE } from '../src/mundo/medidas'
 import { BANDA } from '../src/sistemas/banda'
 import { alcanceDoPulo, beiradaMaximaDoPulo, CORPO } from '../src/sistemas/corpo'
 import { lugarNoBanco } from '../src/sistemas/descanso'
 import {
+  criarEstadoDoCorpo,
+  type EntradaDoPasso,
+  MODOS,
+  type MundoDoMovimento,
+} from '../src/sistemas/modos'
+import { CORRENTE_DO_PICO } from '../src/sistemas/planador'
+import {
   arquivoDaIlha,
+  bate,
   carregarGlb,
   type Forma,
   gradeDeAndar,
   grupo,
   jsonDoGlb,
+  pisoEm,
   TAMPO,
   topoDaForma,
 } from './ajuda-colisores'
@@ -459,5 +469,102 @@ describe('o iglu por dentro e a banda (fase3-08)', () => {
         expect(Math.abs(p.y - palco.y)).toBeLessThan(0.02)
       }
     }
+  })
+})
+
+describe('o vento da parede de gelo e o planador (fase3-09)', () => {
+  const corrente = () => {
+    const c = correnteDoPico(raiz, { x: 0, y: 0, z: 0 }, 0)
+    if (!c) throw new Error('pico.glb sem a âncora corrente-de-ar')
+    return c
+  }
+  const algumaBate = (p: Vector3) => formas.some((f) => bate(f, p))
+
+  test('a corrente fica no chão, na frente do painel mais alto, e chega-se nela andando', () => {
+    const c = corrente()
+    expect(Math.abs(c.base - TAMPO)).toBeLessThan(0.05)
+    expect(c.topo - c.base).toBe(CORRENTE_DO_PICO.altura)
+    const topo = ancora('topo-da-parede')
+    // O vento sobe um pouco mais alto que o alto da parede: saindo dele, o planador chega à parede
+    // ainda por cima dela (mais alto, ele passaria por cima sem descer até o alto da parede).
+    expect(c.topo).toBeGreaterThan(topo.y + 0.25)
+    expect(Math.hypot(topo.x - c.x, topo.z - c.z)).toBeLessThan(3)
+    const grade = gradeDeAndar(terreno, formas)
+    const chegada = ancora('chegada')
+    expect(grade.chegaPerto(grade.alcance(chegada.x, chegada.z), c.x, c.z, 0.5)).toBe(true)
+  }, 120_000)
+
+  test('dentro dela não há nada em que o corpo bata, do chão ao alto', () => {
+    const c = corrente()
+    for (let y = c.base + 0.3; y <= c.topo; y += 0.25) {
+      for (let k = 0; k < 9; k++) {
+        const r = k === 0 ? 0 : c.raio * 0.8
+        const a = (k / 8) * Math.PI * 2
+        const p = new Vector3(c.x + Math.cos(a) * r, y + CORPO.doCentroAoPe, c.z + Math.sin(a) * r)
+        expect(algumaBate(p), `em ${p.x.toFixed(2)}, ${y.toFixed(2)}, ${p.z.toFixed(2)}`).toBe(
+          false,
+        )
+      }
+    }
+  })
+
+  test('do alto da corrente, planando para a parede, a criança pousa no alto dela', () => {
+    const c = corrente()
+    const topo = ancora('topo-da-parede')
+    const mundo: MundoDoMovimento = {
+      cipos: [],
+      troncos: [],
+      aguas: [],
+      equilibrios: [],
+      escadas: [],
+      escorregadores: [],
+      bordas: [],
+      rodasDeNado: [],
+      correntes: [c],
+      foco: { x: 0, y: 0, z: 0 },
+    }
+    const corpo = criarEstadoDoCorpo()
+    corpo.modo = 'planar'
+    const p = new Vector3(c.x, c.topo - 0.1 + CORPO.doCentroAoPe, c.z)
+    const n = Math.hypot(topo.x - c.x, topo.z - c.z)
+    corpo.direcao = Math.atan2(topo.x - c.x, topo.z - c.z)
+    let pousou: string | undefined
+    for (let i = 0; i < 600 && !pousou; i++) {
+      const e: EntradaDoPasso = {
+        dt: 1 / 60,
+        agora: i * 16,
+        parado: false,
+        p: { x: p.x, y: p.y, z: p.z },
+        ix: 0,
+        iz: 1,
+        pedidoX: (topo.x - c.x) / n,
+        pedidoZ: (topo.z - c.z) / n,
+        ladoX: 1,
+        ladoZ: 0,
+        pulou: false,
+        usou: false,
+        correr: false,
+        ritmo: 1,
+        patins: false,
+        planador: true,
+        conversa: null,
+        gravidade: GRAVIDADE,
+        nivelDoMar: 0,
+      }
+      MODOS.planar.passo(corpo, e, mundo)
+      const prox = p.clone().add(new Vector3(corpo.desloc.x, corpo.desloc.y, corpo.desloc.z))
+      const piso = pisoEm(formas, prox.x, prox.z)
+      if (prox.y - CORPO.doCentroAoPe <= piso.y) {
+        // Pousar é chegar por cima: com os pés já abaixo do alto, a criança bateria na lateral.
+        expect(p.y - CORPO.doCentroAoPe, `chegou pela lateral de ${piso.nome}`).toBeGreaterThan(
+          piso.y - 0.05,
+        )
+        pousou = piso.nome ?? 'chao'
+      } else {
+        expect(algumaBate(prox), `bateu em ${prox.x.toFixed(2)}, ${prox.y.toFixed(2)}`).toBe(false)
+        p.copy(prox)
+      }
+    }
+    expect(pousou).toStartWith('col-topo-parede')
   })
 })

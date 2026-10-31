@@ -8,6 +8,7 @@ Promessa do posto: **Eu faço o jogo lembrar e decidir.** Gênero: aventura de c
 | Curso da trilha 3D | [A Ilha do Farol](a-ilha-do-farol/README.md) | Aulas e materiais |
 | Missão 2D e 3D | [O Jardim Secreto](o-jardim-secreto/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
 | Extra | [Cadê Todo Mundo?](cade-todo-mundo/README.md) | Aulas e materiais |
+| Extra | [Meu primeiro desenho no Pinta](meu-primeiro-desenho-no-pinta/README.md) | Uma aula, jogo e materiais; mídia/publicação pendentes |
 | Poder (2D e 3D) | [Moedas no caminho](poder-moedas-no-caminho/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
 | Poder (2D e 3D) | [O segredo da cabana](poder-o-segredo-da-cabana/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |
 | Poder (2D e 3D) | [A ponte apressada](poder-a-ponte-apressada/README.md) | Duas aulas, jogos e materiais; mídia/publicação pendentes |

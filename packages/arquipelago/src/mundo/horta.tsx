@@ -1,10 +1,18 @@
-import type { Canteiro as DadosDoCanteiro, Semente } from '@sistemazero/arquipelago-contracts'
+import {
+  type Canteiro as DadosDoCanteiro,
+  fraseDaColheitaEspecial,
+  type Semente,
+} from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useState } from 'react'
 import { Color } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosPassos } from '../estado/primeiros-passos'
+import { type Clima, climaEfetivo, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
+import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
-import { colher, type Estagio, estagio, plantar, progresso, regar } from '../sistemas/horta'
-import { adicionar, ITENS, quantidade, remover } from '../sistemas/itens'
+import { type Estagio, estagio, geladeiraEm, plantar, progresso, regar } from '../sistemas/horta'
+import { ITENS, quantidade, remover } from '../sistemas/itens'
+import { colherNaIlha } from '../sistemas/primeiro-pedido'
 import { hortaVisivel } from '../sistemas/visitas'
 import {
   ALTURA_QUE_SEGURA,
@@ -50,10 +58,14 @@ function Canteiro({
   canteiro: DadosDoCanteiro
   agora: number
 }) {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
   const { x, z, escala } = lugarDoCanteiro(canteiro.id, indice)
-  const fase = estagio(canteiro, agora)
-  const p = progresso(canteiro, agora)
+  const geladeira = useEstado((s) => geladeiraEm(s.salvamento))
+  const fase = estagio(canteiro, agora, geladeira)
+  const p = progresso(canteiro, agora, geladeira)
+  const clima = useEstado((s) => climaDaHorta(s, agora))
+  // A planta que pede água (fase4-08) mostra uma gota em cima.
+  const sede = clima !== null && pedeAgua(canteiro, agora, clima, geladeira)
 
   useInterativo_(
     `canteiro-${canteiro.id}`,
@@ -65,13 +77,15 @@ function Canteiro({
       const s = loja.getState().salvamento
       const c = s.horta[indice]
       if (!c) return null
-      const f = estagio(c, Date.now())
+      const f = estagio(c, Date.now(), geladeiraEm(s))
       if (f === 'vazio') {
         const semente = sementeQueDaParaPlantar(s.inventario)
         return semente ? `Plantar ${ITENS[semente]?.nome.toLowerCase()}` : null
       }
       if (f === 'semente') return 'Regar'
       if (f === 'maduro') return `Colher ${ITENS[c.semente ?? '']?.nome.toLowerCase()}`
+      const clima = climaDaHorta(loja.getState(), Date.now())
+      if (clima && pedeAgua(c, Date.now(), clima, geladeiraEm(s))) return 'Regar'
       return null
     },
     () => {
@@ -79,7 +93,7 @@ function Canteiro({
       loja.getState().mudar((s) => {
         const c = s.horta[indice]
         if (!c) return s
-        const f = estagio(c, agoraData.getTime())
+        const f = estagio(c, agoraData.getTime(), geladeiraEm(s))
         const horta = [...s.horta]
         if (f === 'vazio') {
           const semente = sementeQueDaParaPlantar(s.inventario)
@@ -97,14 +111,36 @@ function Canteiro({
           loja.getState().dizer('Regado. Daqui a pouco começa a crescer.')
           return { ...s, horta }
         }
+        // Crescendo, ela pode estar pedindo água (fase4-08): regar adianta o crescimento.
+        const clima = climaDaHorta(loja.getState(), agoraData.getTime())
+        const comSede = clima && regarComSede(c, agoraData, clima, geladeiraEm(s))
+        if (comSede) {
+          horta[indice] = comSede
+          loja.getState().dizer(FALA_DO_BONUS)
+          return { ...s, horta }
+        }
         if (f === 'maduro') {
-          const r = colher(c, agoraData.getTime())
-          if (!r) return s
-          horta[indice] = r.canteiro
-          // Uma semente volta junto: a horta nunca acaba.
-          const inv = adicionar(adicionar(s.inventario, r.item, r.qtd), `semente-${r.item}`, 1)
-          loja.getState().dizer(`Você colheu ${r.qtd} ${ITENS[r.item]?.nome.toLowerCase()}.`)
-          return { ...s, horta, inventario: inv }
+          const r = colherNaIlha(s, indice, agoraData, loja.getState().jornada)
+          if (!r.ok) {
+            if (r.motivo !== 'mochila') return s
+            loja
+              .getState()
+              .dizer(
+                'A mochila está cheia. Use ou guarde os alimentos e sementes. A colheita continua no canteiro.',
+              )
+            return s
+          }
+          const colheita = r.colheita
+          // Nos primeiros passos, a geladeira ganha é a fala 16 deles (no lugar desta).
+          if (!(r.ganhouGeladeira && lojaDosPassos(loja, plataforma).getState().andando()))
+            loja
+              .getState()
+              .dizer(
+                r.ganhouGeladeira
+                  ? falaDoGanho('geladeira')
+                  : `Você colheu ${colheita.qtd} ${ITENS[colheita.item]?.nome.toLowerCase()}.${fraseDaColheitaEspecial(colheita.bonus)}`,
+              )
+          return r.salvamento
         }
         return s
       })
@@ -113,6 +149,7 @@ function Canteiro({
 
   return (
     <group position={[x, ALTURA_DA_TERRA, z]} scale={escala}>
+      {sede ? <GotaDaSede /> : null}
       <ComReserva reserva={<CanteiroDeAntes canteiro={canteiro} fase={fase} p={p} />}>
         <CanteiroDoModelo
           semente={canteiro.semente ?? null}
@@ -123,6 +160,27 @@ function Canteiro({
         />
       </ComReserva>
     </group>
+  )
+}
+
+/**
+ * O clima que vale na horta agora: o natural do dia antes das Nuvens, o escolhido depois
+ * (`climaEfetivo`). Numa visita a horta do irmão só se olha: `null`, sem pedir água.
+ */
+function climaDaHorta(
+  s: { jornada: number; visita: unknown; salvamento: { clima: Clima; criadoEm: string } },
+  agoraMs: number,
+): Clima | null {
+  return s.visita ? null : climaEfetivo(s, agoraMs)
+}
+
+/** A gota azul em cima da planta que pede água (some quando rega ou quando passa a vontade). */
+function GotaDaSede() {
+  return (
+    <mesh position={[0, 1.15, 0]} scale={[0.12, 0.17, 0.12]} name="gota-da-sede">
+      <sphereGeometry args={[1, 12, 10]} />
+      <meshStandardMaterial color="#5aa9ff" emissive="#2f6fd0" emissiveIntensity={0.4} />
+    </mesh>
   )
 }
 

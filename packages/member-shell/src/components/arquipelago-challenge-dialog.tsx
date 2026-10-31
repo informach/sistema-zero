@@ -5,12 +5,15 @@ import {
   type DesafioAberto,
   ResultadoDaVerificacaoSchema,
 } from '@sistemazero/arquipelago-contracts'
+import { isStudioProArtifact } from '@sistemazero/core/studio'
 import {
   createLocalPersistenceAdapter,
   type EditableStudioProject,
+  STUDIO_PRO_BUILD_LIMITS,
   type StudioHandle,
   StudioLesson,
   type StudioPersistenceAdapter,
+  type StudioProRuntimeAdapter,
 } from '@sistemazero/studio'
 import { prepareProjectForHost } from '@sistemazero/studio/project-validation'
 import { Button } from '@sistemazero/ui/button'
@@ -18,6 +21,9 @@ import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import { challengeDraftScope } from '../lib/arquipelago-challenge'
+import { createProToolchainPreparer } from '../lib/pro-toolchain'
+import { sessionFetch } from '../lib/session-fetch'
+import { useArquipelagoChallengeRuntime } from './studio/use-arquipelago-challenge-runtime'
 
 type Prepared = { project: EditableStudioProject; adapter: StudioPersistenceAdapter }
 
@@ -64,9 +70,8 @@ export function ArquipelagoChallengeDialog({
     void (async () => {
       const saved = await adapter.load(scope.projectId)
       const project = saved ?? (await prepareProjectForHost(desafio.projetoInicial))
-      if (!project || project.programmingLanguage === 'python' || project.kind === 'pro') {
+      if (!project)
         throw new Error('O projeto inicial deste desafio não é compatível com o Estúdio em blocos.')
-      }
       if (active) {
         setPrepared({ project: { ...project, id: scope.projectId, name: desafio.titulo }, adapter })
         setStale(desafio.ultimosResultados.length > 0)
@@ -89,6 +94,60 @@ export function ArquipelagoChallengeDialog({
       release?.()
     }
   }, [audience, desafio])
+
+  // C02b (30/10/2026): o Python ganha o ambiente pelo desafio (serviço do jogo e Members) e o Pro
+  // compila no executor pela rota do desafio. Nenhum dos dois depende do Estúdio Completo.
+  const project = prepared?.project ?? null
+  const isPython = project?.programmingLanguage === 'python'
+  const isPro = project?.kind === 'pro'
+  const runtime = useArquipelagoChallengeRuntime({
+    project,
+    userId: desafio.jogadorId,
+    audience,
+    desafioId: desafio.id,
+    revisao: desafio.revisao,
+  })
+  const proRuntime = useMemo<StudioProRuntimeAdapter | undefined>(() => {
+    if (!isPro) return undefined
+    const url = `/api/arquipelago/desafios/${encodeURIComponent(desafio.id)}/pro`
+    return {
+      limits: STUDIO_PRO_BUILD_LIMITS,
+      prepareDependencies: createProToolchainPreparer(url, sessionFetch, {
+        revisao: desafio.revisao,
+      }),
+      async build({ project, signal }) {
+        const res = await sessionFetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            revisao: desafio.revisao,
+            project: {
+              kind: 'pro',
+              tree: project.tree,
+              assets: project.assets,
+              proMeta: project.proMeta,
+            },
+          }),
+          signal,
+        })
+        const body = (await res.json().catch(() => null)) as {
+          artifact?: unknown
+          output?: string
+          durationMs?: number
+          error?: { message?: string; output?: string }
+        } | null
+        if (!res.ok || !body || !isStudioProArtifact(body.artifact)) {
+          const error = new Error(
+            body?.error?.message ?? 'Não foi possível compilar o projeto.',
+          ) as Error & { output?: string }
+          if (body?.error?.output) error.output = body.error.output
+          throw error
+        }
+        return { artifact: body.artifact, output: body.output, durationMs: body.durationMs }
+      },
+    }
+  }, [isPro, desafio.id, desafio.revisao])
+  const pythonWaiting = isPython && !runtime.environment
 
   async function verify() {
     if (locked.current || !handle.current || !ready) return
@@ -183,16 +242,31 @@ export function ArquipelagoChallengeDialog({
         </p>
       )}
       <div className="min-h-0 flex-1">
-        {prepared ? (
+        {prepared && pythonWaiting ? (
+          <div role="status" className="flex flex-col items-start gap-3 p-6">
+            <span>{runtime.error ?? 'Preparando o ambiente Python…'}</span>
+            {runtime.error && (
+              <Button variant="outline" onClick={runtime.retry}>
+                Tentar de novo
+              </Button>
+            )}
+          </div>
+        ) : prepared ? (
           <StudioLesson
             ref={handle}
             initialProject={prepared.project}
             persistence={prepared.adapter}
-            initialMode="blocks"
-            allowedModes={['blocks', 'bridge']}
+            initialMode={isPro ? 'code' : prepared.project.mode === 'bridge' ? 'bridge' : 'blocks'}
+            allowedModes={isPro ? ['code'] : ['blocks', 'bridge']}
             level="avancado-3d"
-            grantedBlockIds={desafio.blocosPermitidos ?? undefined}
-            features={{ extensions: false }}
+            // A régua de blocos do jogo é a paleta do JavaScript; Python e Pro abrem pela ilha.
+            grantedBlockIds={
+              isPython || isPro ? undefined : (desafio.blocosPermitidos ?? undefined)
+            }
+            pythonLevel={isPython ? 3 : undefined}
+            features={{ extensions: false, professional: isPro }}
+            proRuntime={proRuntime}
+            runtimeEnvironment={runtime.environment}
             onReady={() => {
               releaseOpening.current?.()
               releaseOpening.current = undefined
@@ -220,7 +294,7 @@ export function ArquipelagoChallengeDialog({
           <span className="font-medium">
             Objetivos do projeto · {passed}/{required.length}
           </span>
-          <Button disabled={busy || !ready} onClick={() => void verify()}>
+          <Button disabled={busy || !ready || pythonWaiting} onClick={() => void verify()}>
             {busy ? 'Aguarde…' : 'Verificar projeto'}
           </Button>
         </div>

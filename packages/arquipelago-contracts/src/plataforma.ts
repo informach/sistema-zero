@@ -68,12 +68,12 @@ export interface RespostaDoServico {
 export interface ServicoDoJogo {
   buscar(
     caminho: string,
-    opcoes?: { metodo?: 'GET' | 'POST' | 'PUT'; corpo?: unknown; sinal?: AbortSignal },
+    opcoes?: { metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE'; corpo?: unknown; sinal?: AbortSignal },
   ): Promise<RespostaDoServico>
 }
 
 /** Ferramentas da plataforma que o jogo pode pedir para abrir (com o molde do objeto). */
-export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi'
+export type FerramentaDaPlataforma = 'pinta' | 'molda' | 'estudio' | 'rotina-lumi' | 'avatar'
 export interface PedidoDeFerramenta {
   ferramenta: FerramentaDaPlataforma
   /** Identifica o que o jogo quer de volta (o objeto, o desafio). */
@@ -84,8 +84,32 @@ export interface PedidoDeFerramenta {
 export type ResultadoDeFerramenta =
   | { situacao: 'pronto'; criacaoId: string }
   | { situacao: 'rotina-pronta'; resultado: ResultadoDaFerramentaRotina }
+  | { situacao: 'avatar-pronto'; avatar: AvatarDoJogo }
   | { situacao: 'cancelado' }
   | { situacao: 'indisponivel'; motivo: string }
+
+/**
+ * Fotos no Clube (N08b, 30/10/2026). `ligado`: a permissão dos responsáveis está ligada e o
+ * Clube tem o canal das fotos com aprovação prévia. `sem-clube`: a criança não tem o Clube ou o
+ * canal não existe. A foto mandada espera a moderação do Clube (`em-moderacao`); só a equipe
+ * publica direto (`publicada`).
+ */
+export const SITUACOES_DO_CLUBE = ['ligado', 'desligado', 'sem-clube', 'fora-do-ar'] as const
+export type SituacaoDoClube = (typeof SITUACOES_DO_CLUBE)[number]
+export const SituacaoDoClubeSchema = z.strictObject({ situacao: z.enum(SITUACOES_DO_CLUBE) })
+export const ENVIOS_AO_CLUBE = [
+  'em-moderacao',
+  'publicada',
+  'desligado',
+  'sem-clube',
+  'falhou',
+] as const
+export type EnvioAoClube = (typeof ENVIOS_AO_CLUBE)[number]
+export const EnvioAoClubeSchema = z.strictObject({ situacao: z.enum(ENVIOS_AO_CLUBE) })
+export interface ClubeDoJogo {
+  situacao(): Promise<SituacaoDoClube>
+  mandarFoto(foto: Blob): Promise<EnvioAoClube>
+}
 
 export interface Plataforma {
   versaoContrato: typeof VERSAO_CONTRATO_PLATAFORMA
@@ -99,6 +123,8 @@ export interface Plataforma {
   abrirFerramenta(pedido: PedidoDeFerramenta): Promise<ResultadoDeFerramenta>
   /** Só criações da pessoa desta montagem. Bytes próprios, sem URL autenticada no jogo. */
   lerAparencia?(criacaoId: string, sinal?: AbortSignal): Promise<AparenciaLida | null>
+  /** Fotos no Clube (N08b): só o Kids monta. Sem ele, a foto fica só no aparelho. */
+  clube?: ClubeDoJogo
   /** Sai do jogo e volta para a plataforma (a página decide para onde). */
   voltarParaPlataforma(): void
   relatarErro(erro: unknown, contexto: string): void

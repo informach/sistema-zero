@@ -223,6 +223,56 @@ describe.skipIf(!url)('DrizzleRepositorioDeDesafios (Postgres real)', () => {
     expect(codigo).toBe('23514')
   })
 
+  test('análise lê a revisão exata mesmo arquivada, sem trocar pela última nem pelo rascunho', async () => {
+    await criar(ID1)
+    await repo.publicar({ id: ID1, revisaoBase: 1, publicacao, por: ADMIN, agora: AGORA })
+    const novo = { ...conteudo, titulo: 'Segunda publicação' }
+    const novosMetadados = meta({ publico: 'adulto', ilha: 'recife', quadro: 3 })
+    await repo.gravar({
+      id: ID1,
+      revisaoBase: 1,
+      conteudo: novo,
+      metadados: novosMetadados,
+      por: ADMIN,
+      agora: AGORA,
+    })
+    await repo.publicar({
+      id: ID1,
+      revisaoBase: 2,
+      publicacao: { ...publicacao, conteudo: novo, blocosExigidos: ['c'] },
+      por: ADMIN,
+      agora: AGORA,
+    })
+    await repo.mudarSituacao({
+      id: ID1,
+      revisaoBase: 2,
+      situacao: 'arquivado',
+      por: ADMIN,
+      agora: AGORA,
+    })
+    await repo.gravar({
+      id: ID1,
+      revisaoBase: 3,
+      conteudo: { ...novo, titulo: 'Rascunho' },
+      metadados: meta(),
+      por: ADMIN,
+      agora: AGORA,
+    })
+    expect(await repo.lerPublicacaoParaAnalise(ID1, 1)).toEqual({
+      conteudo,
+      metadados: meta(),
+      blocosExigidos: ['a', 'b'],
+    })
+    const segunda = await repo.lerPublicacaoParaAnalise(ID1, 2)
+    expect(segunda).toEqual({ conteudo: novo, metadados: novosMetadados, blocosExigidos: ['c'] })
+    if (!segunda) throw new Error('Publicação de teste ausente')
+    segunda.blocosExigidos.push('não gravar')
+    expect((await repo.lerPublicacaoParaAnalise(ID1, 2))?.blocosExigidos).toEqual(['c'])
+    expect(await repo.lerPublicacaoParaAnalise(ID1, 4)).toBeNull()
+    expect(await repo.lerPublicacaoParaAnalise(ID2, 1)).toBeNull()
+    expect((await repo.ler(ID1))?.situacao).toBe('arquivado')
+  })
+
   test('arquivar invalida uma publicação cuja análise usou a revisão anterior', async () => {
     await criar(ID1)
     await repo.publicar({ id: ID1, revisaoBase: 1, publicacao, por: ADMIN, agora: AGORA })

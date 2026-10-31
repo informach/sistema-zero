@@ -28,19 +28,19 @@ test.skipIf(!url)('limite semanal, concorrência, idempotência e saldo no Postg
   const results = await Promise.all(
     Array.from({ length: 10 }, () => repo.movimentar({ ...base, key: randomUUID() }, now)),
   )
-  expect(results.filter((result) => result.ok)).toHaveLength(7)
-  expect(results.filter((result) => !result.ok && result.code === 'WEEKLY_LIMIT')).toHaveLength(3)
+  expect(results.filter((result) => result.ok)).toHaveLength(5)
+  expect(results.filter((result) => !result.ok && result.code === 'WEEKLY_LIMIT')).toHaveLength(5)
   const [profile] =
     await connection.sql`select coin_balance, lifetime_coins_earned from members.gamification_profiles where user_id = ${userId}`
-  expect(profile?.coin_balance).toBe(140)
-  expect(profile?.lifetime_coins_earned).toBe(140)
+  expect(profile?.coin_balance).toBe(100)
+  expect(profile?.lifetime_coins_earned).toBe(100)
   const nextWeek = new Date('2026-11-02T03:00:00Z')
   const key = randomUUID()
   const credit = await repo.movimentar({ ...base, key }, nextWeek)
-  expect(credit).toMatchObject({ ok: true, balance: 160, replayed: false })
+  expect(credit).toMatchObject({ ok: true, balance: 120, replayed: false })
   expect(await repo.movimentar({ ...base, key }, nextWeek)).toMatchObject({
     ok: true,
-    balance: 160,
+    balance: 120,
     replayed: true,
   })
   expect(await repo.movimentar({ ...base, key, amount: 21 }, nextWeek)).toEqual({
@@ -49,13 +49,13 @@ test.skipIf(!url)('limite semanal, concorrência, idempotência e saldo no Postg
   })
   expect(
     await repo.movimentar(
-      { ...base, operation: 'debit', amount: 161, key: randomUUID() },
+      { ...base, operation: 'debit', amount: 121, key: randomUUID() },
       nextWeek,
     ),
   ).toEqual({ ok: false, code: 'INSUFFICIENT_BALANCE' })
   expect(
     await repo.movimentar({ ...base, operation: 'debit', amount: 30, key: randomUUID() }, nextWeek),
-  ).toMatchObject({ ok: true, balance: 130 })
+  ).toMatchObject({ ok: true, balance: 90 })
   expect(
     await repo.movimentar({ ...base, accountId: randomUUID(), key: randomUUID() }, nextWeek),
   ).toEqual({ ok: false, code: 'OWNER_MISMATCH' })
@@ -74,12 +74,92 @@ test.skipIf(!url)('adultos seguem o mesmo teto semanal de ganhos', async () => {
   expect(
     await repo.movimentar({ ...base, accountId: randomUUID(), key: randomUUID(), amount: 1 }, now),
   ).toEqual({ ok: false, code: 'OWNER_MISMATCH' })
-  expect(await repo.movimentar({ ...base, key: randomUUID(), amount: 150 }, now)).toMatchObject({
+  expect(await repo.movimentar({ ...base, key: randomUUID(), amount: 100 }, now)).toMatchObject({
     ok: true,
-    balance: 150,
+    balance: 100,
   })
   expect(await repo.movimentar({ ...base, key: randomUUID(), amount: 1 }, now)).toEqual({
     ok: false,
     code: 'WEEKLY_LIMIT',
   })
 })
+
+test.skipIf(!url)(
+  'compra não reabre o teto e a semana muda à meia-noite de São Paulo',
+  async () => {
+    const repo = new ArquipelagoCoinsRepository(connection.db)
+    const base = {
+      userId: randomUUID(),
+      accountId: randomUUID(),
+      audience: 'kids' as const,
+      operation: 'credit' as const,
+    }
+    const domingo = new Date('2026-11-02T02:59:59.999Z')
+    const segunda = new Date('2026-11-02T03:00:00.000Z')
+    const key = randomUUID()
+    expect(await repo.movimentar({ ...base, key, amount: 100 }, domingo)).toMatchObject({
+      ok: true,
+      balance: 100,
+      replayed: false,
+    })
+    expect(
+      await repo.movimentar(
+        { ...base, key: randomUUID(), operation: 'debit', amount: 75 },
+        domingo,
+      ),
+    ).toMatchObject({
+      ok: true,
+      balance: 25,
+    })
+    expect(await repo.movimentar({ ...base, key: randomUUID(), amount: 1 }, domingo)).toEqual({
+      ok: false,
+      code: 'WEEKLY_LIMIT',
+    })
+    // Repetir um crédito da semana passada não ocupa o teto da semana nova.
+    expect(await repo.movimentar({ ...base, key, amount: 100 }, segunda)).toMatchObject({
+      ok: true,
+      replayed: true,
+    })
+    expect(
+      await repo.movimentar({ ...base, key: randomUUID(), amount: 100 }, segunda),
+    ).toMatchObject({
+      ok: true,
+      balance: 125,
+    })
+    const [row] =
+      await connection.sql`select coin_balance, lifetime_coins_earned from members.gamification_profiles where user_id = ${base.userId}`
+    expect(row).toMatchObject({ coin_balance: 125, lifetime_coins_earned: 200 })
+  },
+)
+
+test.skipIf(!url)(
+  'crédito histórico acima do teto novo é preservado sem nova cobrança',
+  async () => {
+    const repo = new ArquipelagoCoinsRepository(connection.db)
+    const userId = randomUUID()
+    const base = {
+      userId,
+      accountId: userId,
+      audience: 'adult' as const,
+      operation: 'credit' as const,
+    }
+    const now = new Date('2026-10-29T12:00:00Z')
+    const key = randomUUID()
+    await repo.movimentar({ ...base, key, amount: 100 }, now)
+    // Fixture da política antiga, somente no banco descartável do teste.
+    await connection.sql`update members.coin_events set amount = 150, balance_after = 150 where user_id = ${userId} and source_id = ${key}`
+    await connection.sql`update members.gamification_profiles set coin_balance = 150, lifetime_coins_earned = 150 where user_id = ${userId}`
+    expect(await repo.movimentar({ ...base, key, amount: 150 }, now)).toMatchObject({
+      ok: true,
+      balance: 150,
+      replayed: true,
+    })
+    expect(await repo.movimentar({ ...base, key: randomUUID(), amount: 1 }, now)).toEqual({
+      ok: false,
+      code: 'WEEKLY_LIMIT',
+    })
+    const [row] =
+      await connection.sql`select coin_balance, lifetime_coins_earned from members.gamification_profiles where user_id = ${userId}`
+    expect(row).toMatchObject({ coin_balance: 150, lifetime_coins_earned: 150 })
+  },
+)

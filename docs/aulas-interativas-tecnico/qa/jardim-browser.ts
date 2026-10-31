@@ -49,6 +49,8 @@ if (scenario === 'sem-memoria') js = js.replaceAll('temRegador = true', 'temRega
 if (scenario === 'sem-movimento') js = js.replace(/SZGame[23]D.topDown\([^;]+;/, '')
 if (scenario === 'sem-decisao') js = js.replace(/if \(temRegador\)/g, 'if (true)')
 if (scenario === 'renomeada') js = js.replaceAll('temRegador', 'pegouOObjeto')
+// Sem a guarda da partida (só 3D): a volta à flor repete o florescer.
+if (scenario === 'sem-guarda') js = js.replace('if (!ganhou) {', 'if (true) {')
 if (scenario !== 'correto' && js === p.files['script.js']) throw Error('Mutação não aplicada')
 await preloadCourseModels(p.assets, js)
 writeFileSync(
@@ -65,7 +67,7 @@ writeFileSync(
         }
       : {
           assets: Object.fromEntries(p.assets!.map((a) => [a.name, a.dataUrl])),
-          assetMeta: assetMetaManifest(p.assets),
+          assetsMeta: assetMetaManifest(p.assets),
         }),
     runtimeInspection: true,
   }),
@@ -105,8 +107,10 @@ const expected = (id: string) =>
   scenario === 'sem-movimento'
     ? false
     : scenario === 'sem-memoria'
-      ? id !== 'com-regador'
+      ? id !== 'com-regador' && id !== 'uma-vez'
       : scenario === 'sem-decisao'
         ? id !== 'sem-regador'
-        : true
+        : scenario === 'sem-guarda'
+          ? id !== 'uma-vez'
+          : true
 if (verdicts.some((v) => v.passed !== expected(v.id))) process.exit(1)

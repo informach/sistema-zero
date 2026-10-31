@@ -1,12 +1,25 @@
 import {
+  BIT_DO_COMODO,
+  COMODOS_DA_IRIS,
+  type ComodoDaIris,
+  chavesUsadasNaObra,
+  type Movel,
   type ObjetoDaCasa,
   type Obra,
-  ObraSchema,
+  ObraDaCabanaSchema,
+  ObraDaCasaSchema,
   type PisoDaCasa,
   type PisoDoQuintal,
 } from '@sistemazero/arquipelago-contracts'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
+import {
+  comodoDaFerramenta,
+  comodoDaJanela,
+  comodoDoPiso,
+  liberado,
+  recadoDaTranca,
+} from '../sistemas/chaves-da-casa'
 import { falaDaRecusa } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 import { type Celula, LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
@@ -91,6 +104,8 @@ export interface EstadoDaConstrucao {
   caminho: PisoDoQuintal
   /** O objeto escolhido na ferramenta Objeto e o giro dele (quartos de volta). */
   objeto: ObjetoDaCasa | null
+  /** O móvel escolhido na ferramenta Móveis (o giro é o mesmo do objeto). */
+  movel: Movel | null
   giro: number
   camera: CameraDeObra
   /** As obras de antes (para desfazer), da mais antiga para a mais nova. */
@@ -109,6 +124,7 @@ export interface EstadoDaConstrucao {
   escolherPiso(p: PisoDaCasa): void
   escolherCaminho(c: PisoDoQuintal): void
   escolherObjeto(o: ObjetoDaCasa): void
+  escolherMovel(m: Movel): void
   girarObjeto(): void
   moverCamera(c: Partial<CameraDeObra>): void
   /** Grava o resultado de uma mudança na obra da casa (ou faz o Zappy explicar a recusa). */
@@ -160,6 +176,14 @@ function alvoAoAbrir(onde: OndeSeConstroi, cabana: CabanaAoAlcance | null) {
   return { x: (x0 + x1) / 2, z: (z0 + z1) / 2 }
 }
 
+/** A escolha está destrancada? Se não, o Zappy diz qual chave falta (N11). */
+function destrancado(loja: LojaDoJogo, comodo: ComodoDaIris | null): boolean {
+  const jogo = loja.getState()
+  if (liberado(jogo.salvamento.chaves, comodo)) return true
+  if (comodo) jogo.dizer(recadoDaTranca(comodo))
+  return false
+}
+
 export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
   let ultimaObra: Obra | null = null
   return createStore<EstadoDaConstrucao>((set, get) => ({
@@ -168,10 +192,12 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     observarComodo: (celulaObservada) => set({ celulaObservada, aconchegoAberto: true }),
     mostrarAconchego: (aconchegoAberto) => set({ aconchegoAberto }),
     ferramenta: 'parede',
-    janela: 'janela-grande',
+    // A janela redonda é livre; a grande e a em arco esperam a chave da sala (N11).
+    janela: 'janela-redonda',
     piso: 'tabua',
     caminho: 'pedra',
     objeto: null,
+    movel: null,
     giro: 0,
     camera: { ...CAMERA_DE_OBRA, alvo: { ...CAMERA_DE_OBRA.alvo }, giro: 0 },
     antes: [],
@@ -186,11 +212,21 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     definirDentroDaObra: (dentro) => {
       if (get().dentroDaObra !== dentro) set({ dentroDaObra: dentro })
     },
-    escolher: (ferramenta) => set({ ferramenta, aconchegoAberto: false }),
-    escolherJanela: (janela) => set({ janela, ferramenta: 'janela' }),
-    escolherPiso: (piso) => set({ piso, ferramenta: 'piso' }),
+    escolher: (ferramenta) => {
+      if (!destrancado(loja, comodoDaFerramenta(ferramenta))) return
+      set({ ferramenta, aconchegoAberto: false })
+    },
+    escolherJanela: (janela) => {
+      if (!destrancado(loja, comodoDaJanela(janela))) return
+      set({ janela, ferramenta: 'janela' })
+    },
+    escolherPiso: (piso) => {
+      if (!destrancado(loja, comodoDoPiso(piso))) return
+      set({ piso, ferramenta: 'piso' })
+    },
     escolherCaminho: (caminho) => set({ caminho, ferramenta: 'caminho' }),
     escolherObjeto: (objeto) => set({ objeto, ferramenta: 'objeto' }),
+    escolherMovel: (movel) => set({ movel, ferramenta: 'movel' }),
     girarObjeto: () => set({ giro: (get().giro + 1) % 4 }),
     moverCamera: (c) => set({ camera: { ...get().camera, ...c } }),
     aplicar(r) {
@@ -204,13 +240,22 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       // Os limites de células/arestas do lote não são os limites de trechos serializados.
       // Validar na confirmação (não a cada movimento da prévia) evita gravar algo que o
       // serviço recusaria, inclusive quando novas ferramentas forem acrescentadas.
-      if (!ObraSchema.safeParse(r.obra).success) {
+      const esquema = get().onde === 'casa' ? ObraDaCasaSchema : ObraDaCabanaSchema
+      if (!esquema.safeParse(r.obra).success) {
         const fala = falaDaRecusa({ motivo: 'limite' })
         if (fala) jogo.dizer(fala)
         return false
       }
       const onde = get().onde
       const atual = obraDe(loja.getState(), onde)
+      // Nada trancado entra na obra (N11): só o que a chave abriu ou o que a obra já usava.
+      const novas =
+        chavesUsadasNaObra(r.obra) & ~chavesUsadasNaObra(atual) & ~jogo.salvamento.chaves
+      const trancado = COMODOS_DA_IRIS.find((c) => (novas & BIT_DO_COMODO[c]) !== 0)
+      if (trancado) {
+        jogo.dizer(recadoDaTranca(trancado))
+        return false
+      }
       const historico = atual === ultimaObra ? get().antes : []
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
       mudarObra(loja, r.obra, onde)

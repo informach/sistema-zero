@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/community-kids
 
+## Ensaio de ponta a ponta da vaga de arte (29/10/2026)
+
+`bun run e2e:art-slots` (`playwright.art-slots.config.ts`, também no CI do Kids): o desenho do bloco
+de Pinta da aula entra no jogo do bloco de Estúdio, com o extra "Meu primeiro desenho no Pinta"
+(design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`).
+- `e2e-art-slots/fixtures/serve.ts` sobe o MEMBERS DE VERDADE em memória (o `buildApp` dos testes,
+  importado por caminho calculado para o typecheck do Kids não compilar o members), importa o
+  manifesto do extra pelas rotas do Admin (sem os vídeos ainda não gravados e sem a parte que só
+  pedia o vídeo) e publica. O executor dos objetivos é o adaptador de produção
+  (`createStudioRuntimeChecker`) com o `POST /v1/check` respondido aqui, rodando o
+  `check-objectives.mjs` do studio-runtime no Chromium. As rotas `/api/members/*` vão ao members
+  como o BFF faria (navegação e progresso com PUT, `studio-context` com o público).
+- `client.tsx` monta os componentes reais do member-shell (`LessonSections`, `PintaBlockView`,
+  `StudioBlockView`). ⚠️ Não o `KidsLessonBlocks`: ele usa o roteador do Next, que não existe aqui.
+- O teste joga o jogo pronto, desenha com Círculo e Retângulo, envia o desenho, confere
+  `minha-chave` com o selo "Seu desenho da aula" em Imagens, troca a imagem no "Criar sprite
+  chave", verifica (2 de 2) e envia; depois redesenha, envia de novo, reabre a aula e confere que a
+  imagem do jogo mudou. Fora do CI, `SZ_CHECK_CHROMIUM` aponta o Chromium da página e do executor.
+
 ## Arquipélago Vagalume: a página do jogo (27/10/2026)
 
 Desenho e regras em `docs/arquipelago.md`. Aqui mora só a página que hospeda o jogo.

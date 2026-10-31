@@ -1,10 +1,138 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Visitas entre amigos: revogação, troca e teto (N08a, R01 a R03, 31/10/2026)
+
+O aceite vale para o convite que o originou. `apagarConvite` e `gerarConvite` (troca de código)
+apagam, na mesma transação, as `casas_de_amigos` daquela criança: código novo pede aceite novo.
+`aceitar` recebe o convite (`{perfilId, hash}`), trava a família visitante com
+`pg_advisory_xact_lock` e confere, com a linha do convite travada, que o código ainda vale, antes
+de contar o teto (`ResultadoDoAceite`: `ok`, `limite`, `sem-convite`). `casa` confere tudo de
+novo depois de ler o salvamento e o quarto, como as visitas adultas. Sem migração nova. Testes no
+bloco "revogação, troca de código e teto" de `tests/db/visitas-de-amigos.test.ts`.
+
+## Salvamento V20 (30/10/2026)
+
+Leitura e PUT normalizam até V20 pelo contrato (móveis da casa e galeria do Farol, listas vazias na
+migração). Mesmo JSONB, revisão CAS e teto de 64 KB; sem coluna nem migração SQL. A visita de irmão
+e a adulta devolvem a obra V20 (com `moveis`). Testes HTTP e de banco seguem só em Postgres local.
+
+## Visitas adultas consentidas (L12, 30/10/2026)
+
+`ServicoDasVisitasAdultas` exige adulto e acesso ao jogo em todas as leituras, e recusa
+alterações no suporte. `convites_adultos`, migração gerada 0016, tem uma linha por save adulto,
+FK com cascade e índice único de hash. O código tem 24 bytes aleatórios em base64url, só fica
+em claro na resposta de geração e não é parâmetro de rota. Não alterar V18 nem tabelas antigas.
+
+GET/POST/DELETE `visitas-adultas/convite` consultam, giram e revogam. POST `abrir` e `conferir`
+recebem `{ codigo }`. O corpo real é limitado a 1024 bytes mesmo sem Content-Length. Tudo
+tem no-store. `conferir` não lê JSONB nem o Members. `abrir` projeta a casa, filtra campos extras
+do quarto e revalida depois de esperar o Members, para recusar revogação concorrente.
+Não há nome, id ou progresso do dono na resposta. A audiência do quarto é `adult`.
+
+Testes de DB/HTTP: `tests/db/visitas-adultas.test.ts`, somente com
+`ARQUIPELAGO_VISITAS_ADULTAS_TEST_DATABASE_URL` ou `TEST_DATABASE_URL` do CI em localhost e banco arquipelago_test*.
+
+## Trajetórias de recordes (L10, 30/10/2026)
+
+Migração gerada 0014, `fantasmas`: uma linha por jogador/percurso, FK do save com cascade,
+público e artefato limitado. `DrizzleRepositorioDosFantasmas` trava o save antes de validar
+revisão e melhor tempo. Uma leitura só oferece o trajeto correspondente ao recorde atual.
+Não modifica save, moedas ou estrelas. A exclusão do save elimina a trajetória.
+
+`PUT /arquipelago/fantasmas` recebe `GuardarFantasmaSchema`, recusa suporte e lê no máximo
+129 KB reais do stream, após autenticação. Artefato: 128 KB, V1, até 5 min e 3001 amostras.
+GET próprio `/fantasmas/:percurso` e GET familiar `/irmaos/:perfilId/fantasmas/:percurso`
+respondem `private, no-store`, sem identidade ou nome. Familiar reutiliza `autorizarIrmao`
+das visitas; não consulta o quarto. Falta do trajeto é `ausente`, revisão/recorde divergentes
+são 409. Testes `tests/db/fantasmas.test.ts`, variável local exclusiva
+`ARQUIPELAGO_FANTASMAS_TEST_DATABASE_URL` ou `TEST_DATABASE_URL` do CI, Postgres descartável `arquipelago_test*`.
+
+## Cor conquistada independente do catálogo (A02, 30/10/2026)
+
+`GET /arquipelago/desafios/cores`, antes de `/:id`, usa `ServicoDosDesafios.cores`.
+Exige `decidirAcesso` e a identidade/público autenticados. Lê `repo.conclusoes`, cuja consulta
+liga a conclusão à revisão publicada histórica, não ao cadastro atual. Filtra posições inteiras
+de 1 a 6, únicas e ordenadas por ilha. Arquivar ou mover a publicação não move a conquista.
+Não depende de Members, catálogo ligado, carteira ou escolha do dia. Não grava, inclusive no
+suporte. Resposta `CoresConquistadasSchema`, sem dados pessoais, gabarito ou carteira.
+Testes HTTP reais com repositório em memória em `desafios-do-jogador.test.ts`; regra em
+`tests/unit/desafios.test.ts`. Sem migração, escrita remota ou mudança nas respostas anteriores.
+
+## Pedidos dos moradores (L07, 30/10/2026)
+
+`GET /pedidos/pendentes` e `POST /pedidos/entregar` usam identidade confiável e recusam suporte.
+A migração gerada 0013 registra UUID, perfil/público/morador/dia único, chave financeira gerada
+no servidor e pagamento. A primeira entrega exige a ilha na jornada. Replay autorizado preserva
+o direito adquirido sem exigir novamente a ilha, a data atual ou a revisão antiga.
+
+Consumo, amizade, cesta e crédito pendente são atômicos sob a trava do save. A entrega recusa
+compra de insumos pendente. Depois, só a linha do crédito fica travada durante o S2S de cinco
+segundos. Crédito pendente permite PUT normal. O Members confirma idempotência e teto semanal.
+Teto confirmado é terminal; resposta perdida conserva a chave. Replay devolve o save atual.
+Catálogo e itens persistidos são conferidos pelo serviço, mas save do cliente não prova a origem
+histórica de cada item. Nenhuma alteração de V18 ou variável nova.
+
+`tests/db/pedidos.test.ts` cobre HTTP, concorrência, acesso, revisão e recuperação.
+`pedidos-members.test.ts` usa as duas bases locais e a carteira real, incluindo teto e perda
+de resposta depois do crédito. Nenhum teste se conecta a banco remoto.
+
+## Compras de insumos (L07, 30/10/2026)
+
+`GET /insumos/pendente` e `POST /insumos/comprar` usam identidade do gateway, política de acesso
+e recusa de suporte. Catálogo V1 e preço são do contrato, não do corpo enviado pelo cliente.
+Migração gerada 0012: reserva durável por UUID, uma pendência por perfil, antes do débito S2S.
+Reserva, confirmação e PUT travam primeiro a mesma linha de salvamento. PUT recusa pendência
+com 423. A porta do Members tem prazo de cinco segundos; resposta perdida mantém a reserva.
+Retomar usa a mesma chave. Entrega, revisão e conclusão são atômicas no banco do jogo.
+Nunca expirar uma reserva sem reconciliar a carteira. Não apagar o histórico nem repetir com
+outra chave. Resultado de comando antigo devolve o save atual, sem ressuscitar consumíveis.
+
+`tests/db/insumos.test.ts` cobre concorrência e HTTP no Postgres descartável; `insumos-members`
+usa também a carteira real do Members e interrompe a resposta depois do commit do débito.
+Variáveis e ordem de implantação em `docs/operations/arquipelago-insumos.md`. Nenhum teste usa
+banco remoto. V18 e teto de 64 KB permanecem iguais.
+
+## Salvamento V18: mapa descoberto (30/10/2026)
+
+Leitura e gravação usam `SalvamentoSchema` central e migram V1 a V17 para V18, com
+`ilhasVisitadas: 0` quando não existia. JSONB e CAS existentes bastam; nenhuma coluna ou
+migração SQL nova. O teto de 64 KB continua aplicado ao documento migrado antes da gravação.
+Testes HTTP conferem V17 recebida, V18 inválida sem substituição, descoberta reaberta e revisão
+atrasada. Esses bits são registro visual do jogo, nunca uma fonte de moedas ou acesso.
+
+## Profissões remuneradas (L07, 29/10/2026)
+
+`POST /arquipelago/profissoes/iniciar` reserva por pessoa/público/balcão/dia de São Paulo.
+`concluir` recebe a sessão e seis bandejas. `ServicoDasProfissoes` confere o roteiro V1 dos
+contratos, exige Vila Doce pela jornada e bloqueia suporte. O prêmio de 5 moedas nasce no
+servidor; `turnos_remunerados` (migração gerada 0011) guarda a versão e o pagamento. Não usar
+`turnos.pagoEm` do save como prova financeira. Não reinterpretar uma sessão de versão antiga.
+
+Crédito no Members usa a sessão como chave. Uma resposta atrasada de teto não rebaixa crédito
+confirmado. Reabertura tenta a pendência mais antiga, sem insistir no teto da mesma semana.
+O teto de 100 é da carteira do Members, compartilhado com os desafios, não um segundo saldo.
+Teste de HTTP/concorrência em `tests/db/profissoes.test.ts`: variável
+`ARQUIPELAGO_PROFISSOES_TEST_DATABASE_URL`, só Postgres local `arquipelago_test*`.
+
 ## Medição da equipe (geral-06, 28/10/2026)
+
+**A06, 30/10/2026:** a fotografia abaixo continua em `criacao`. `mudancasDeAparencia`
+conta aplicações/trocas observadas entre revisões aceitas, pela data do servidor, não por
+`ganhoEm`. Migração gerada 0015, tabela separada do save V18, FK cascade e chave
+jogador/revisão/objeto. O CAS grava save e eventos na mesma transação, sob a mesma trava.
+Primeiro save é base; conflito, repetição, retirada e suporte não criam aplicações.
+Não guarda IDs de criação. Origem declarada não prova autoria, aprendizado ou aquisição.
+Não reconstruir eventos anteriores. Grupos menores que cinco continuam suprimidos.
+
+Teste `tests/db/mudancas-de-aparencia.test.ts`, variável exclusiva
+`ARQUIPELAGO_APARENCIAS_TEST_DATABASE_URL`, somente banco local `arquipelago_test*`.
+Implantar migração, Admin novo e depois API: o Admin antigo rejeita campos desconhecidos.
+Rollback API primeiro, conservar a tabela. Plano e limites em
+`docs/superpowers/plans/2026-10-30-arquipelago-medicao-de-aparencias.md`.
 
 `GET /arquipelago/equipe/medicao?de=AAAA-MM-DD&ate=AAAA-MM-DD&publico=kids|adulto`
 usa `lerEquipe` e o token do gateway. `ServicoDaMedicao` limita o período inclusivo a 90 dias,
-recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São quatro consultas
+recusa futuro pelo dia de São Paulo e delega ao `DrizzleRepositorioDaMedicao`. São consultas
 agregadas numa transação somente leitura com snapshot repetível. Nenhum ID de pessoa sai do banco.
 
 `domain/medicao.ts` protege grupos menores que cinco. Na volta, também protege a linha inteira
@@ -29,7 +157,7 @@ coorte (`protegerVoltaAoCurso`). Só Kids.
 Testes: `tests/unit/medicao.test.ts`, `tests/db/medicao.test.ts` (rota real e Postgres).
 `ARQUIPELAGO_MEDICAO_TEST_DATABASE_URL` precisa apontar para localhost e um banco descartável
 com prefixo `arquipelago_test`. Variável própria para não disputar tabelas com os demais testes.
-Não usar banco remoto. Não há migração nem variável nova de produção para este relatório.
+Não usar banco remoto. A versão inicial não exigia migração; A06 adiciona a 0015 descrita acima.
 
 Serviço do jogo **Arquipélago Vagalume**. Porta **3015**, schema Postgres **`arquipelago`**,
 journal `arquipelago_migrations`. Bun + Elysia + Drizzle, no molde do `packages/referrals`
@@ -68,6 +196,30 @@ dois, o serviço sobe igual e as leituras ficam desligadas.
   `tests/integration/http.test.ts`.
 
 ## Seção Jogo do Admin: cadastro dos desafios (27/10/2026)
+
+**C01a, 30/10/2026:** `domain/repertorio-do-desafio.ts` transforma cobertura impossível em
+problema de publicação: bloco desconhecido, sem curso publicado da comunidade ou só ensinado
+depois da ilha. Quadro das Cores exige fonte em base2d, base3d ou mission até o posto; Poder,
+extra ou Maestria não podem ser a única fonte. Desafios opcionais podem usar Poder do posto,
+sempre sujeitos aos blocos conquistados pela pessoa. Não confundir chegar à ilha com concluir
+seus cursos. Mesma análise na importação; reativação confere metadados/blocos congelados da
+publicação, nunca o rascunho posterior. Sem mudança de formato, conquistas ou salvamento.
+Testes `repertorio-do-desafio.test.ts`, `equipe.test.ts` e `manifestos.test.ts`.
+
+**C01e, 30/10/2026:** a análise sempre preserva os blocos derivados pelo Members na cobertura.
+Retirada manual de um derivado produz `BLOCO_DERIVADO_RETIRADO`; publicação e importação
+mantêm o rascunho. Cancelar acréscimos não derivados continua válido. Desconhecidos da
+resposta do Members também impedem publicar, inclusive no formato anterior que só os
+listava, sem duplicar um problema já informado. Não altera snapshots publicados nem o
+helper histórico `blocosExigidos` do contrato.
+
+**C01e2, 30/10/2026:** reativar lê o conteúdo e os metadados da revisão publicada exata,
+mesmo arquivada, por `lerPublicacaoParaAnalise`. Refaz a análise atual e confere também a
+cobertura dos requisitos congelados. Requisito atual ausente da lista histórica produz
+`PUBLICACAO_REQUER_NOVOS_REQUISITOS`: publicar uma revisão nova, sem reescrever a antiga.
+Cópia ausente/ilegível, gabarito recusado e Members indisponível não reativam. A escrita
+final mantém o CAS; edição durante a análise retorna 409 e preserva o rascunho. Teste SQL
+em Postgres local descartável e testes HTTP, sem alteração de schema ou salvamento.
 
 Tabelas da migration gerada `0002_desafios`: `desafios` (cadastro, `revisao` é a trava; índice
 único de `slug` e de quadro por público e ilha fora os arquivados, nos dois casos traduzidos em
@@ -142,7 +294,12 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   situação, o que falta e "Aprenda isso em"), `GET /desafios/:id` (`DesafioAberto`: só a vista dos
   objetivos e o projeto inicial; bloqueado → 403 `DESAFIO_BLOQUEADO` com `situacao`),
   `POST /desafios/:id/verificar` (`{revisao, projeto}`; corpo até `CORPO_DA_CONFERENCIA`, 4 MB)
-  e `POST /desafios/:id/recompensa-vista`.
+  e `POST /desafios/:id/recompensa-vista`. C02b (30/10/2026): `POST /desafios/:id/ambiente`
+  (`PedirAmbienteDoDesafioSchema`, `{revisao, pedido}`) com as conferências do `verificar`; o
+  `PortaDosMembros.autorizarAmbiente` manda quem joga, a conta (`contaId ?? id`), o público e o
+  projeto INICIAL da revisão ao `POST /members/internal/arquipelago/ambiente`, e devolve a decisão
+  conferida por `StudioArquipelagoRuntimeDecisionSchema`. Recusa do Members (400/403) vira
+  `AmbienteRecusadoError` → 403 `AMBIENTE_RECUSADO` com a frase dele; Members fora, 424.
 - Conferir: a revisão que a pessoa abriu continua conferível enquanto existir; arquivado → 409
   `DESAFIO_MUDOU`; revisão que não existe → 404. Não concluído é reconferido (ilha e blocos) antes
   de gastar o executor. O executor fora, cheio ou recusando vira 424 `CONFERENCIA_INDISPONIVEL`,
@@ -232,19 +389,16 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   e qualquer outro erro sobe. Testes:
   `tests/integration/visitas.test.ts`, `tests/unit/visitas.test.ts` e o bloco dos irmãos de
   `tests/db/familia.test.ts`.
-- **Galeria** (fase1-13, 29/10/2026): `ServicoDaGaleria` (`application/servico-da-galeria.ts`),
-  tabela `compras_da_galeria` (uma linha por jogador e aparência: `pendente` com a chave e o preço,
-  `paga` quando o Members confirma), repositório `DrizzleRepositorioDaGaleria`, rotas em
-  `interfaces/http/rotas-da-galeria.ts` (montadas só com a dependência `galeria`). O débito é a
-  porta de moedas de sempre com `operation: 'debit'` (`PortaDoDebito`, o mesmo `MoedasHttp`): a
-  mesma carteira, trava e livro de moedas da loja do quarto. A chave guardada (e o preço guardado)
-  vão em toda tentativa: repetir nunca cobra duas vezes; porta fora deixa `pendente`; saldo curto
-  apaga a reserva. A equipe compra com 0 moedas, sem chamar o Members. O saldo vem de
-  `LeiturasDosMembros.saldo` (`GET /members/internal/arquipelago/saldo`, sem cache). ⚠️ O
-  `ServicoDoJogo` recebe `aparenciasPagas` e recusa (422 `APARENCIA_NAO_COMPRADA`) o salvamento com
-  uma aparência `galeria` não paga ou de outro objeto. `objetosCriados` (a semana dos pais) conta
-  pelas `aparencias` guardadas (salvamento V6). Testes: `tests/integration/galeria.test.ts`,
-  `tests/unit/galeria-portas.test.ts` e `tests/db/galeria.test.ts`.
+- **Galeria canônica (L04, 30/10/2026)**: `ServicoDaGaleria` consulta e compra pela
+  `PosseHttp`, com token de moedas e limite de resposta de 8 KB/5 s. A autoridade é
+  `room_inventory` do Members por perfil/público; não há reserva, débito ou posse
+  local novo. `ServicoDoJogo` confere as aparências com a identidade inteira da sessão.
+  Serviço fora responde 424, não inventário vazio. Equipe também consulta a posse.
+  `compras_da_galeria` é só histórico; o repositório antigo de compra foi removido.
+  Exportação somente leitura em `scripts/exportar-posse-da-galeria.ts`, contrato de
+  transferência v1, sem JSON do save. Procedimento obrigatório antes do corte em
+  `docs/operations/arquipelago-galeria-unica.md`. Testes de exportação em `tests/db/galeria.test.ts`
+  usam somente Postgres local `arquipelago_test*`; o dinheiro e a adoção são testados no Members.
 - **Salvamento**: gravação numa instrução só (insert on conflict do nothing na revisão 0, update
   com `where revisao = base` nas demais); quem perde recebe o que está guardado. Teto de 64 KB.
   Guardado que não passa no formato atual → 409 `SALVAMENTO_ILEGIVEL` (nunca devolve "vazio",
@@ -287,3 +441,19 @@ usando `SalvamentoSchema`: recebem e leem V1 a V10 migradas para V11. Não há c
 migração SQL, pois as marcas ficam no mesmo JSONB e na mesma revisão CAS. Limite de 64 KB mantido.
 A prova HTTP local cobre envio V10, retorno V11, guarda das três marcas e recusa de revisão velha.
 Os testes de banco continuam restritos a Postgres local cujo nome começa por `arquipelago_test`.
+
+
+## Continuidade V16 (L01, 29/10/2026)
+
+A leitura e o PUT usam a migração do contrato até V16. A atualização é do JSON, sem coluna
+nova. Não executar migração em lote do banco remoto. Referências antigas de até 80 caracteres
+são preservadas; o tamanho UTF-8 é conferido depois da normalização e antes de gravar. Acima
+de 64 KB, 413 sem modificar a revisão anterior. Revisão concorrente continua 409, com a cópia
+atual. Testes HTTP cobrem V14 com Unicode, V16 com Nuvens/Farol/clima e reabertura do serviço.
+
+## Amizade V17 (29/10/2026)
+
+Leitura e PUT agora normalizam até V17 pelo contrato. Maré, Floco, Jade e Iriê usam o mesmo
+JSONB, limite UTF-8 e revisão CAS, sem migração SQL. A prova HTTP guarda amizade e conquista,
+reabre, e confirma 409 para revisão atrasada. Os esquemas V1 a V16 permanecem históricos.
+Não usar banco remoto para testar ou fazer regravação em lote dos documentos existentes.

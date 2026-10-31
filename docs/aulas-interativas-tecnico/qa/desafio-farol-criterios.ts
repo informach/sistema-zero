@@ -3,7 +3,6 @@ import type {
   SectionProjectCheck,
   SectionStructureRule,
 } from '../../../packages/core/src/learning/section-progression'
-import { FAROL_FAROIS } from '../../../packages/studio/src/arte/farol-assets'
 import { farolDirecaoObservada } from './desafio-farol-direcao'
 import {
   memoriaFarolObservada,
@@ -193,22 +192,14 @@ export const portaCompleta: SectionProjectCheck[] = [
         fields: { NAME: 'ganhou' },
         inputs: { VALUE: true },
       },
-      {
-        blockType: 'sz_g2d_set_image',
-        fields: { SPRITE: 'farol' },
-        fieldOptions: { IMAGE: [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso'] },
-      },
+      { blockType: 'sz_g2d_set_image', fields: { SPRITE: 'farol' } },
       aviso,
     ]),
   ),
   check(
     'acender',
     'Troque a imagem do farol dentro de então, no encontro com o farol.',
-    naResposta('THEN', {
-      blockType: 'sz_g2d_set_image',
-      fields: { SPRITE: 'farol' },
-      fieldOptions: { IMAGE: [...FAROL_FAROIS.map(({ aceso }) => aceso), 'farol-aceso'] },
-    }),
+    naResposta('THEN', { blockType: 'sz_g2d_set_image', fields: { SPRITE: 'farol' } }),
   ),
   check(
     'vitoria',
@@ -227,10 +218,11 @@ export const portaCompleta: SectionProjectCheck[] = [
 ]
 
 /**
- * A parte em que a criança troca o farol (`personalizar`, decisão da dona em 06/10/2026): a mesma
- * regra `acender` da entrega, para o jogo publicado continuar acendendo. Aceita os quatro faróis
- * acesos e o antigo `farol-aceso`, então nenhuma escolha de modelo é reprovada; reprova só uma
- * imagem apagada ou que não é farol no espaço do então.
+ * A parte em que a criança troca o farol (`personalizar`): a mesma regra `acender` da entrega,
+ * para o jogo publicado continuar acendendo. Desde 29/10/2026 (`docs/plans/2026-10-29-desenho-da-
+ * crianca-no-jogo-design.md`) qualquer imagem vale no "Trocar imagem do sprite farol" do então,
+ * inclusive um farol desenhado pela criança: quem confere que o farol de fato muda ao vencer é o
+ * objetivo que roda o jogo (`porta-com-chave-em-execucao`, `farol.imageName` mudou).
  */
 export const farolEscolhido: SectionProjectCheck[] = [
   {

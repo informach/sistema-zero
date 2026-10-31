@@ -1,8 +1,11 @@
 /** Shared learning contracts. No framework, persistence or editor dependency. */
+
+export * from './art-slots'
 export * from './authoring'
 export * from './authoring-manifest-projection'
 export * from './gallery-delivery'
 export * from './gallery-studio-source'
+export * from './game-causality'
 export * from './legacy-layout'
 export * from './legacy-studio-solutions'
 export * from './lesson-project-examples-gate'
@@ -24,6 +27,7 @@ export * from './video-watch'
 import { isStudioAuthoringProject } from '../studio/authoring-project'
 import { STUDIO_PROJECT_FORMAT_VERSION } from '../studio/project-format'
 import { StudioPythonLearningLevelSchema } from '../studio/python-learning'
+import type { PintaArtSlot, StudioArtSlotImport } from './art-slots'
 import { type GalleryDeliveryConfig, isGalleryDeliveryConfig } from './gallery-delivery'
 import { isLearningPredictionContext, type LearningPredictionContext } from './prediction-context'
 import {
@@ -959,6 +963,8 @@ export interface LearningManifest {
               allowLevelReveal?: boolean
               pythonLevel?: 1 | 2 | 3
               chain?: string
+              /** Vagas de arte que o jogo importa (desenhos da criança nos blocos de Pinta). */
+              artSlots?: StudioArtSlotImport[]
               showcase?: {
                 enabled: boolean
                 title?: string
@@ -973,6 +979,8 @@ export interface LearningManifest {
               purpose?: 'experiment' | 'submission'
               allowTools?: string[]
               chain?: string
+              /** A vaga de arte que este desenho preenche. */
+              artSlot?: PintaArtSlot
             }
           | { kind: 'materials'; title?: string; items: unknown[]; bookPreview?: boolean }
           | {
@@ -997,6 +1005,13 @@ export interface LearningManifest {
     }
   >
 }
+
+/**
+ * O teto do texto de um item de materiais: o Passo a passo do projeto vai inteiro num item de
+ * texto com a prévia em livro. O DTO de publicação do members usa a MESMA constante (com números
+ * diferentes, a importação aceitava e a publicação recusava; 29/10/2026).
+ */
+export const MATERIALS_TEXT_MAX_CHARS = 50_000
 
 function isManifestContent(content: unknown): boolean {
   if (!record(content)) return false
@@ -1056,7 +1071,7 @@ function isManifestContent(content: unknown): boolean {
           (item.kind === 'file'
             ? text(item.attachmentId, 64)
             : item.kind === 'text'
-              ? text(item.markdown, 50000)
+              ? text(item.markdown, MATERIALS_TEXT_MAX_CHARS)
               : item.kind === 'link'
                 ? text(item.url, 2000) && text(item.label, 200)
                 : item.kind === 'image'

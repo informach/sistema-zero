@@ -1,29 +1,52 @@
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { Suspense } from 'react'
-import { useEstado } from '../estado/contexto'
+import { lojaDaAbertura, useAbertura } from '../estado/abertura'
+import { useEstado, useJogo } from '../estado/contexto'
 import { Camera } from '../personagem/camera'
 import { Personagem } from '../personagem/personagem'
 import { Zappy } from '../personagem/zappy'
+import { PAINEL_DA_ABERTURA } from '../sistemas/abertura'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERFIS_DE_QUALIDADE } from '../sistemas/qualidade'
+import { segredoObrigatorio } from '../sistemas/segredos'
 import { Agua } from './agua'
 import { Anel } from './anel'
 import { Bancada } from './bancada'
 import { Barcos } from './barcos'
 import { BichoAdotado } from './bicho-adotado'
 import { Casa } from './casa'
+import { CenaDaChegada } from './cena-da-chegada'
 import { Ceu } from './ceu'
+import { ChavesDaCasa } from './chaves-da-casa'
+import { ClimaDaIlha } from './clima-da-ilha'
+import { ColecoesDaPraia } from './colecoes-da-praia'
+import { ConvidadosDaCasa } from './convidados'
+import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
+import { FantasmaFamiliar } from './fantasma-familiar'
 import { Farol } from './farol'
 import { CameraDaFoto } from './foto'
+import { GuiaDoZappyNoMundo } from './guia-do-zappy'
 import { HabitantesDaPraia } from './habitantes-da-praia'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
-import { GRAVIDADE, LONGE_DA_CAMERA, PASSO_DA_FISICA, PERTO_DA_CAMERA } from './medidas'
+import {
+  GRAVIDADE,
+  LONGE_DA_CAMERA,
+  PASSO_DA_FISICA,
+  PERTO_DA_CAMERA,
+  PRIORIDADE_DA_FISICA,
+} from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
+import { PetQueAcompanha } from './pet-que-acompanha'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
+import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
+import { SegredoNoAlto } from './segredos-das-ilhas'
+
+/** O segredo da sua ilha (N12): o baú no alto do vento. */
+const SEGREDO_DA_SUA_ILHA = segredoObrigatorio('sua-ilha')
 
 // Os modelos do mundo começam a baixar junto com o jogo (cada peça mostra a forma simples até chegar).
 carregarModelos()
@@ -40,10 +63,16 @@ export function Cena({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
 function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
   const { nivel } = useQualidade()
   const ferramentaAberta = useEstado((estado) => estado.ferramentaAberta)
+  // A abertura cobre a tela inteira: o mundo não precisa ser desenhado por baixo dela. Na saída
+  // ele volta a desenhar, para estar lá quando a tela clareia.
+  const { loja } = useJogo()
+  const aberturaSaindo = useAbertura(lojaDaAbertura(loja), (a) => a.saindo)
+  const naAbertura = useEstado((estado) => estado.painelAberto === PAINEL_DA_ABERTURA)
+  const aberturaCobre = naAbertura && !aberturaSaindo
   const pausado = useEstado(jogoPausado)
   return (
     <Canvas
-      frameloop={ferramentaAberta ? 'never' : 'always'}
+      frameloop={ferramentaAberta || aberturaCobre ? 'never' : 'always'}
       className="arq-canvas"
       dpr={[0, PERFIS_DE_QUALIDADE[nivel].dpr]}
       gl={{ antialias: true, powerPreference: 'high-performance' }}
@@ -67,23 +96,34 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           gravity={[0, -GRAVIDADE, 0]}
           timeStep={PASSO_DA_FISICA}
           interpolate
-          updatePriority={-1}
+          updatePriority={PRIORIDADE_DA_FISICA}
         >
           <Agua />
           <IlhaCentral />
+          <DescobertasDaIlhaCentral />
           <HabitantesDaPraia />
+          <ColecoesDaPraia />
+          <ChavesDaCasa />
+          <SegredoNoAlto segredo={SEGREDO_DA_SUA_ILHA} />
           <Casa />
+          <ConvidadosDaCasa />
           <Horta />
+          <ClimaDaIlha />
           <Bancada />
           <Farol />
           <Anel />
+          <CenaDaChegada />
           <Barcos />
           <Personagem />
+          <FantasmaFamiliar />
+          <RetratoDoAvatar />
           <BichoAdotado />
+          <PetQueAcompanha />
           <Camera />
           <Medidor />
         </Physics>
         <Zappy />
+        <GuiaDoZappyNoMundo />
         <RotinaDosLumis />
       </Suspense>
     </Canvas>
