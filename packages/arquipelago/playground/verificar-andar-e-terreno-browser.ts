@@ -4,7 +4,9 @@
  * - `?obra=andar&posicao=7`: a casa com a sala à esquerda do quarto, o andar de cima (escada na
  *   sala, dois cômodos em cima do quarto, o piso aberto com o guarda-corpo) e um morrinho no
  *   quintal. A criança sobe a escada andando, fica de pé lá em cima e o guarda-corpo a segura na
- *   beira sem parede; no morrinho o chão sobe 1,5 m, e ela sobe até o alto andando.
+ *   beira sem parede; no morrinho o chão sobe 1,5 m, e ela sobe até o alto andando. A poltrona do
+ *   cômodo de cima segura o corpo e está desenhada ali (o nó `poltrona` no piso de cima, pelo
+ *   `__arquipelagoAcharNos`), com o print de lado e o de perto pelo palco do medidor.
  * - A barra do Construir: Terreno e Escada no térreo, a troca para o andar de cima (só as
  *   ferramentas de lá), no computador e no celular, sem rolar a página para o lado. No celular, a
  *   casa de fora e o piso aberto lá em cima, de pé na altura dele.
@@ -50,11 +52,22 @@ type Janela = typeof globalThis & {
   __arquipelagoLerCorpo?: () => Corpo
   __arquipelagoCameraEmVolta?: (desvio: number) => void
   __arquipelagoDesenho?: { quadrosPorSegundo?: number }
+  __arquipelagoAcharNos?: (nome: string) => NoNaCena[]
+  __arquipelagoPalco?: (cena: CenaDePrint | null) => void
+}
+type NoNaCena = Ponto & { visivel: boolean }
+type CenaDePrint = {
+  posicao: [number, number, number]
+  alvo: [number, number, number]
+  campo?: number
+  olharPara?: { no: string; altura?: number }
 }
 
 /** O topo do piso de baixo da casa (o mesmo do verificador dos móveis) e o do piso de cima. */
 const PISO = 1.02
 const PISO_DE_CIMA = PISO + 4.1
+/** O meio da poltrona do cômodo da direita lá em cima (a célula x 3, z -6, `obraEstendidaDeExemplo`). */
+const POLTRONA_DE_CIMA = { x: 3.5, z: -5.5 }
 /** Do centro do corpo (o `rastro` do medidor) ao pé: `CORPO.doCentroAoPe`. */
 const PE = 0.9
 /** De quanto acima do chão o corpo é solto ao ser levado (cai e assenta). */
@@ -149,6 +162,13 @@ function dePeEm(c: Corpo, chao: number, onde: string) {
   console.log(`${onde}: pé em ${pe(c).toFixed(2)} (chão em ${chao.toFixed(2)})`)
   assert(c.noChao, `${onde}: não está no chão`)
   assert(Math.abs(pe(c) - chao) < 0.15, `${onde}: o pé em ${pe(c).toFixed(2)}, o chão em ${chao}`)
+}
+
+/** Os nós da cena com esse nome (o lugar no mundo e se aparecem), pelo medidor. */
+async function nos(p: Page, nome: string): Promise<NoNaCena[]> {
+  const achados = await p.evaluate((n) => (globalThis as Janela).__arquipelagoAcharNos?.(n), nome)
+  assert(achados, 'sem o __arquipelagoAcharNos no medidor')
+  return achados
 }
 
 async function escadas(p: Page): Promise<Escada[]> {
@@ -326,9 +346,44 @@ try {
     )
     console.log(`Encostado na poltrona de cima: z ${naPoltrona.z.toFixed(2)}`)
     assert(paradoNela >= 4, 'não parou na poltrona de cima')
-    assert(naPoltrona.z > -5.2, `a poltrona de cima não segurou (z ${naPoltrona.z.toFixed(2)})`)
+    assert(
+      naPoltrona.z > -5.2 && naPoltrona.z < POLTRONA_DE_CIMA.z + 1.3,
+      `a poltrona de cima não segurou (z ${naPoltrona.z.toFixed(2)})`,
+    )
     dePeEm(await assentar(p), PISO_DE_CIMA, 'Encostado na poltrona de cima')
+    // O que segura é a poltrona DESENHADA: o nó `poltrona` aparece no meio da célula, no piso de
+    // cima (e não no térreo, escondido ou só o colisor).
+    const poltronas = await nos(p, 'poltrona')
+    console.log(`Poltronas na cena: ${JSON.stringify(poltronas)}`)
+    const desenhada = poltronas.find(
+      (n) =>
+        n.visivel &&
+        Math.abs(n.x - POLTRONA_DE_CIMA.x) < 0.05 &&
+        Math.abs(n.y - PISO_DE_CIMA) < 0.05 &&
+        Math.abs(n.z - POLTRONA_DE_CIMA.z) < 0.05,
+    )
+    assert(desenhada, 'a poltrona de cima não está desenhada na célula dela, no piso de cima')
+    // O print com a câmera do jogo de lado: de trás, a cabeça dela tapa a poltrona logo à frente
+    // (a câmera do jogo olha de cima, e o print de antes mostrava só o chão de ladrilho).
+    await p.evaluate(() => (globalThis as Janela).__arquipelagoCameraEmVolta?.(Math.PI - 1.1))
+    await quadros(p, 8)
     await p.screenshot({ path: path.join(prints, 'poltrona-de-cima.png') })
+    // E de perto, com a câmera parada no canto do fundo do cômodo (x 6, z -8) olhando para ela:
+    // a poltrona na frente, a criança encostada do outro lado.
+    await p.evaluate(
+      ({ y }) =>
+        (globalThis as Janela).__arquipelagoPalco?.({
+          posicao: [5.5, y + 1.7, -7.5],
+          alvo: [0, 0, 0],
+          olharPara: { no: 'poltrona', altura: 0.4 },
+          campo: 50,
+        }),
+      { y: PISO_DE_CIMA },
+    )
+    await quadros(p, 8)
+    await p.screenshot({ path: path.join(prints, 'poltrona-de-cima-perto.png') })
+    await p.evaluate(() => (globalThis as Janela).__arquipelagoPalco?.(null))
+    await quadros(p, 2)
     // A porta de lambri do andar vista do piso aberto (de x < -6, olhando para +x).
     const noAberto = await levar(p, { x: -8.5, y: PISO_DE_CIMA, z: -2.5 }, -Math.PI / 2)
     dePeEm(noAberto, PISO_DE_CIMA, 'No piso aberto')
