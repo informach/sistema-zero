@@ -1580,11 +1580,62 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   beira do lote para o píer e outra para o cata-vento e a horta. A latinha de minhocas fica ao
   lado da horta (3 m para o oeste e 2 m para a casa).
 - **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): só a varanda e o pé
-  do farol. Um teste confere que todo colisor do lote cai numa célula ocupada.
-- **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. As paredes da esquerda e do
-  fundo são da plataforma (fixas: sem porta nem janela). As da frente e da direita viram paredes
-  do kit na primeira obra (travadas: aceitam porta e janela, mas não se apagam), com a porta nova e
-  as duas janelas no lugar das do `casa.glb`.
+  do farol. A varanda segue a porta de entrada (abaixo): na obra inicial fica onde sempre esteve
+  (x 0 a 5, z 0 a 2). Um teste confere que todo colisor do lote cai numa célula ocupada.
+- **A porta de entrada** (31/10/2026, pedido dela: a porta de entrada muda de lugar no Construir, e
+  a varanda vai junto; `sistemas/construcao/entrada.ts`): a casa construída sempre tem UMA entrada,
+  a primeira porta de fora na ordem das portas e janelas da obra. Porta de fora é a que tem, em toda
+  a largura, um lado dentro de casa e o outro fora (porta entre dois cômodos ou numa parede solta
+  não conta). O salvamento não mudou: nas obras já salvas a entrada é a porta nova, a primeira da
+  obra inicial. Uma obra antiga sem porta de fora fica sem varanda até ganhar uma; a primeira porta
+  de fora posta vira a entrada, se a varanda dela couber.
+- **A varanda** é uma peça do kit (`casa-varanda.glb`, o mesmo desenho e os mesmos materiais da
+  varanda da casa de antes: deque de tábuas com vigas, degrau, colunas, toldo, vasinhos e o lampião
+  que acende à noite), posta do lado de fora da entrada com a posição e o giro da parede dela. Ocupa
+  5 células ao longo da parede (a porta e uma de cada lado) e 2 de fundo. Ela encosta na parede em
+  toda a largura: as 5 arestas da linha da porta precisam ser parede (a varanda não dobra uma
+  quina). Colide no tampo do deque, no degrau, nas colunas e nos vasinhos, só para o corpo (a câmera
+  passa). O toldo sai junto com o telhado (no Construir e com a pessoa dentro de casa). Na casa
+  construída a varanda e o toldo da casa de antes saem de cena.
+- **Mudar a entrada de lugar:** com a ferramenta Porta, tocar na porta de entrada a escolhe (a porta
+  e a varanda ficam amarelas e a linha de baixo diz "Toque numa parede de fora para levar a entrada e
+  a varanda."); o toque seguinte numa parede de fora leva a porta e a varanda para lá, e a parede de
+  antes fica inteira, sem porta. A prévia mostra a porta e a varanda novas em azul (ou vermelho, com
+  o motivo na linha de baixo). Tocar na entrada de novo, trocar de ferramenta, desfazer ou fechar
+  solta a escolha. Uma janela no caminho vira porta ("A janela virou porta."); uma porta de fora no
+  mesmo lugar vira a entrada. Recusas: a parede não dá para fora ("A entrada vai numa parede que dá
+  para fora."); a varanda não cabe (uma das células fora do lote, dentro de casa, no pé do farol, num
+  canteiro, num caminho ou num objeto, uma parede ou cerca encostando nela, ou a parede não segue de
+  um dos lados da porta: "A varanda não cabe aí. Escolha outra parede de fora."); e as da porta de
+  sempre (sem parede, parede chegando no meio, quadro do Meu quarto, peça pendurada). O Desfazer
+  volta a entrada.
+- **A entrada não se apaga:** o Apagar na porta de entrada, na parede dela ou numa parede que abriria
+  o cômodo dela para fora é recusado: "A casa precisa de uma porta de entrada. Toque nela com a Porta
+  para mudar de lugar.". As outras portas de fora são portas comuns (saem com o Apagar).
+- **O que segue a entrada:** as portas do kit abrem sozinhas perto da criança (a entrada também); o
+  Zappy dos primeiros passos aponta a frente da entrada na casa construída; com o quarto todo tomado
+  por móveis, a criança aparece na frente da entrada. A chegada das visitas continua na frente do
+  lote (x 2,5 e z 11, olhando para a casa) e a trilha de pedra do lote até o píer continua a mesma
+  (são do chão da ilha).
+- **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. Na casa construída as quatro
+  paredes dele são do kit (31/10/2026, pedido dela: todas aceitam porta e janela) e são travadas:
+  aceitam porta e janela, mas não se apagam. A frente e a direita entram na obra inicial, com a
+  porta nova e as duas janelas no lugar das do `casa.glb`; o fundo e a esquerda o jogo põe sozinho
+  na planta (`paredesTravadas` do lote), sem gravar no salvamento, então valem também para as casas
+  construídas antes. Dentro do quarto continua não indo parede e o piso continua o da plataforma.
+- **Cor de dentro do quarto:** o lado das paredes do quarto que dá para dentro dele usa a cor que a
+  criança escolheu no Meu quarto (`resolveRoomAppearance`): a esquerda (x -6) e a direita (x 6)
+  com a cor da parede da esquerda do Meu quarto; o fundo (z -8) e a frente (z 0) com a do fundo
+  (paredes opostas com a mesma cor, porque o Meu quarto só mostra duas). Decisão de 31/10/2026: com
+  o fundo e a esquerda coloridos e a frente e a direita na cor do kit, o quarto ficava com duas
+  cores sem motivo. O lado de fora e os cômodos novos ficam na cor do kit; cada casa usa uma cópia
+  própria do material, solta quando sai de cena.
+- **Quadros do Meu quarto:** os quadros, prateleiras e outros itens pendurados (`mount: 'wall'`)
+  continuam no lugar, na esquerda e no fundo. Porta ou janela que passe por uma aresta onde há um
+  item pendurado é recusada: "Nessa parede tem um quadro do seu quarto. Ponha a porta mais para o
+  lado." (ou "Ponha a janela mais para o lado."). No Construir as paredes ficam cortadas e os itens
+  pendurados saem de cena; uma faixa vermelha em cima da parede cortada marca onde eles ficam. No
+  Viver, a esquerda e o fundo do quarto nunca são cortados (os quadros estão neles).
 - **Parede:** fica nas linhas da grade. Arrastar estica a parede reto, pelo eixo em que o dedo
   andou mais. Não dá em cima do que está ocupado, dentro do quarto nem fora do lote, e não dá para
   fechar algo ocupado dentro de casa. Tetos do jogo: 320 arestas e 200 trechos de parede por lote
@@ -1599,43 +1650,60 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   lado só, lambri, com a fachada para fora.
 - **Porta e janela** (`LARGURA_DA_ABERTURA`): porta e janela grande ocupam 3 células, a janela em
   arco 2 e a redonda 1. Entram com o meio na aresta tocada e precisam caber inteiras numa parede
-  do kit, sem outra abertura no caminho e sem parede chegando no meio delas. Teto: 48 por lote.
+  do kit, sem outra abertura no caminho, sem parede chegando no meio delas e sem peça pendurada
+  (móvel de parede ou quadro do Meu quarto). Teto: 48 por lote.
+- **A janela vira porta** (31/10/2026): a porta posta em cima de uma janela (pegando a janela
+  inteira ou só uma parte) tira a janela e entra no lugar dela, e o Zappy diz "A janela virou
+  porta.". O Desfazer volta a janela. Porta em cima de porta e janela em cima de porta ou de janela
+  continuam recusadas ("Ali já tem porta ou janela.").
 - **Quinas:** em toda ponta solta de parede, em toda dobra em L e onde uma parede em pé encontra
   uma cortada na mesma linha; nada no T, no cruzamento e na emenda reta.
 - **Colisão:** as paredes em pé (sempre altas, o corte é só desenho), com o vão de 2,2 por 3 de
-  cada porta livre, e as quinas. As paredes fixas colidem pela casa de antes.
+  cada porta livre, e as quinas. As quatro paredes do quarto colidem pelo kit (uma porta no fundo
+  ou na esquerda deixa o vão livre); a varanda colide pelo kit, na entrada, e da casa de antes nada
+  colide.
 - **A casa construída** (`mundo/obra.tsx`, montada pela `Casa`): enquanto
   `salvamento.construcao.casa` é `null`, a casa é a de antes (`casa.glb`). Com obra, o kit desenha as
-  paredes, as quinas, as portas, as janelas e os pisos dos cômodos novos, e do `casa.glb` ficam o
-  revestimento de fora das paredes da plataforma, o telhado do quarto e a varanda (a porta nova
-  vira a porta do kit, no mesmo lugar). As janelas do kit acendem à noite.
+  paredes (as quatro do quarto inclusive), as quinas, as portas, as janelas e os pisos dos cômodos
+  novos, e do `casa.glb` fica só o telhado do quarto (a porta nova vira a porta do kit, no mesmo
+  lugar, e a varanda é a do kit, na porta de entrada). O `revestimento` (lado de fora da esquerda e do fundo, quinas, alicerce e
+  soleira) e as paredes do Meu quarto (`Walls`) saem de cena: o kit já tem tudo isso, e junto eles
+  teriam faces no mesmo plano (teste "a casa construída" em `tests/faces-coplanares.test.ts`, com
+  as paredes em pé e cortadas). As janelas do kit acendem à noite.
 - **Porta do kit:** abre sozinha quando a pessoa chega a 2,2 do meio do vão (`PERTO_DA_PORTA`) e
   fecha quando ela se afasta; a de fora (lambri) abre para fora. O vão nunca colide.
 - **Playground:** `?obra=exemplo` começa a casa com a obra de exemplo
   (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
-  nova saindo do quarto).
+  nova saindo do quarto). `?obra=fundo` é a mesma com um cômodo atrás do quarto (x 1 a 6, z -12 a
+  -8), ligado por uma porta no fundo. `?obra=entrada` é a de exemplo com a porta de entrada na frente
+  do cômodo da frente do quarto (a janela em arco virou porta e a frente do quarto ficou sem porta).
 - **Viver e Construir** (`interface/construir.tsx`, loja `estado/construcao.ts`): os dois botões no
   alto da tela aparecem depois que a porta nova abriu, quando nada mais está por cima do jogo.
   Construir para o personagem (`PAINEL_DE_CONSTRUIR` em `painelAberto`); "Pronto", "Viver" ou Esc
   voltam. Na primeira vez, a casa de antes vira a obra inicial do lote (na hora de abrir, para a
   criança já ver as paredes do quarto como peças do kit).
 - **No Construir** (`mundo/construir.tsx`): todas as paredes ficam cortadas, o telhado do quarto
-  sai e a grade do lote aparece no chão, com o que está ocupado tingido de vermelho. A câmera de
+  sai e a grade do lote aparece no chão, com o que está ocupado tingido de vermelho. Na parede
+  cortada a porta fica com o batente e a janela aparece inteira, na altura da parede cortada (a
+  peça `-baixa` de cada janela, 31/10/2026). A câmera de
   obra (`CAMERA_DE_OBRA`) abre sempre de frente para a casa, a 24 de distância e 0,95 de
   inclinação, olhando para (0, -3); os botões giram um oitavo de volta e aproximam ou afastam 4
   (de 8 a 40); a roda aproxima; setas e W A S D andam; Q e E giram; arrastar com o botão direito
   gira e inclina. Ela toma o lugar da câmera do jogo só enquanto o Construir está aberto.
-- **Ferramentas:** Parede (arrastar estica), Porta, Janela (grande, em arco ou redonda), Piso (do
+- **Ferramentas:** Parede (arrastar estica), Porta (e mudar a porta de entrada de lugar), Janela (grande, em arco ou redonda), Piso (do
   cômodo inteiro: tábua, ladrilho ou azulejo), Apagar (arrastar apaga paredes; um toque tira a
   porta ou a janela, e sem ela a parede) e Olhar (arrastar anda pela obra). A prévia mostra em
   verde o que dá (em azul para porta e janela) e em vermelho o que não dá; o Zappy explica a
-  recusa (`sistemas/construcao/falas.ts`). "Desfazer" volta até 30 mudanças
+  recusa (`sistemas/construcao/falas.ts`). Enquanto o mouse (ou o dedo, arrastando) passa por cima
+  de onde não dá, a linha de baixo da barra troca a dica da ferramenta pelo motivo, em vermelho
+  (o mesmo texto que o Zappy diria no toque, `motivoDaPrevia`), e volta à dica quando a prévia dá
+  ou some. No celular, sem passar por cima, fica como era: o toque mostra a fala. "Desfazer" volta até 30 mudanças
   (`LEMBRA_PARA_TRAS`), só enquanto o Construir está aberto.
 - **Corte das paredes** (`sistemas/construcao/telhado.ts`, `paredesCortadasNoViver`): no
   Construir, todas as paredes do kit ficam cortadas. No Viver, com a pessoa numa célula de dentro
   de casa (o quarto ou um cômodo novo), fica cortada toda parede cuja linha separa a câmera da
-  pessoa; fora de casa, nenhuma. O jogo confere a cada 0,12 s. As paredes fixas da plataforma
-  nunca são cortadas. A parede cortada continua segurando o corpo, mas a câmera passa por ela
+  pessoa; fora de casa, nenhuma. O jogo confere a cada 0,12 s. A esquerda e o fundo do quarto
+  nunca são cortados no Viver (os quadros do Meu quarto ficam neles). A parede cortada continua segurando o corpo, mas a câmera passa por ela
   (`col-obra-cortada-*`, como o guarda-corpo dos deques).
 - **Telhado** (`telhadoDoComodo`): cada cômodo novo retangular ganha o telhado de duas águas do kit,
   com a cumeeira correndo em x, beirais, águas (meia água no meio quando o fundo é ímpar),

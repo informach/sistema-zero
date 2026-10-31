@@ -194,7 +194,7 @@ describe('moldar o terreno do lote (E04, Nuvens)', () => {
     const altura = (x: number, z: number) => (x === 2 && z === 3 ? 1 : 0)
     const plano = new PlaneGeometry(8, 8, 8, 8).rotateX(-Math.PI / 2)
     const v = verticesMoldados(plano, altura)
-    const pos = plano.attributes.position
+    const pos = plano.getAttribute('position')
     for (let i = 0; i < pos.count; i++) {
       const esperado = pos.getX(i) === 2 && pos.getZ(i) === 3 ? 1 : 0
       expect(v[i * 3 + 1]).toBeCloseTo(pos.getY(i) + esperado)

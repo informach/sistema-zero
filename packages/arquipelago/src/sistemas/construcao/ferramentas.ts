@@ -9,6 +9,7 @@ import type {
   TipoDeAbertura,
 } from '@sistemazero/arquipelago-contracts'
 import { planta } from './comodos'
+import { celulasDoRetangulo, entradaDaObra, ladoDeFora, retanguloDaVaranda } from './entrada'
 import {
   type Aresta,
   aberturaNaAresta,
@@ -36,6 +37,7 @@ import {
   aberturaEm,
   apagarParede,
   esticarParede,
+  moverEntrada,
   porAbertura,
   type Resultado,
   tirarAbertura,
@@ -83,6 +85,11 @@ export interface Escolhas {
   /** O móvel escolhido na ferramenta Móveis (o giro é o mesmo; a peça de parede acha a parede). */
   movel: Movel | null
   giro: number
+  /**
+   * A porta de entrada está escolhida (ferramenta Porta): o próximo toque numa parede de fora leva
+   * a entrada e a varanda para lá.
+   */
+  entradaSelecionada?: boolean
   /** O Terreno sobe (`1`) ou desce (`-1`) o chão. */
   moldar?: 1 | -1
 }
@@ -114,7 +121,15 @@ export function celulasDoTerreno(
 export const PERTO_DA_ARESTA = 0.3
 
 export type Previa =
-  | { tipo: 'arestas'; arestas: Aresta[]; ok: boolean }
+  | {
+      tipo: 'arestas'
+      arestas: Aresta[]
+      ok: boolean
+      /** As células da varanda que vai junto com a porta de entrada (ferramenta Porta). */
+      varanda?: Celula[]
+      /** É a porta de entrada de agora, destacada (tocar nela escolhe ou solta). */
+      entrada?: true
+    }
   | { tipo: 'celulas'; celulas: Celula[]; ok: boolean }
   | { tipo: 'ponto'; ponto: { x: number; z: number } }
 
@@ -153,6 +168,12 @@ export function apagarNaLinha(obra: Obra, lote: Lote, arestas: readonly Aresta[]
   return r1
 }
 
+/**
+ * O que o toque faz com a escolha da porta de entrada (ferramenta Porta): `selecionar` (tocou na
+ * entrada), `soltar` (tocou nela de novo, ou a entrada mudou de lugar).
+ */
+export type MudancaNaEntrada = 'selecionar' | 'soltar'
+
 /** Um toque em `onde` (posição no chão): o que muda e a prévia. */
 export function toque(
   f: Ferramenta,
@@ -162,7 +183,7 @@ export function toque(
   escolhas: Escolhas,
   horta: readonly Canteiro[],
   projetos: Salvamento['projetos'] = {},
-): { resultado: Resultado | null; previa: Previa } {
+): { resultado: Resultado | null; previa: Previa; entrada?: MudancaNaEntrada } {
   const celula = celulaEm(onde.x, onde.z)
   if (f === 'piso') {
     const p = planta(obra, lote)
@@ -208,6 +229,10 @@ export function toque(
     return { resultado: r, previa: { tipo: 'celulas', celulas, ok: r.ok } }
   }
   const aresta = arestaMaisPerto(onde.x, onde.z)
+  if (f === 'porta' && lote.varanda) {
+    const naEntrada = toqueNaEntrada(obra, lote, aresta, escolhas)
+    if (naEntrada) return naEntrada
+  }
   if (f === 'porta' || f === 'janela') {
     const tipo = f === 'porta' ? 'porta' : escolhas.janela
     const r = porAbertura(obra, lote, tipo, aresta)
@@ -244,12 +269,17 @@ export function toque(
     const ab = obra.aberturas[i]
     if (ab)
       return {
-        resultado: tirarAbertura(obra, aresta),
+        // A porta de entrada não sai (o Zappy diz como mudar de lugar).
+        resultado: tirarAbertura(obra, aresta, lote),
         previa: { tipo: 'arestas', arestas: arestasDaAbertura(ab), ok: true },
       }
     const k = chaveDaAresta(aresta)
     const perto = distanciaAteAAresta(onde, aresta) <= PERTO_DA_ARESTA
-    const temAlgo = chavesDosTrechos(obra.paredes).has(k) || chavesDosTrechos(obra.cercas).has(k)
+    // As paredes do quarto contam (o apagar recusa e o Zappy diz por quê).
+    const temAlgo =
+      chavesDosTrechos(obra.paredes).has(k) ||
+      chavesDosTrechos(lote.paredesTravadas).has(k) ||
+      chavesDosTrechos(obra.cercas).has(k)
     if (perto && temAlgo)
       return {
         resultado: apagarNaLinha(obra, lote, [aresta]),
@@ -261,6 +291,52 @@ export function toque(
     }
   }
   return { resultado: null, previa: { tipo: 'ponto', ponto: pontoMaisPerto(onde.x, onde.z) } }
+}
+
+/**
+ * A ferramenta Porta e a porta de entrada (31/10/2026, pedido dela: a entrada muda de lugar e a
+ * varanda vai junto). Tocar na entrada escolhe (ou solta) e a prévia mostra a porta e a varanda
+ * destacadas; com ela escolhida, o toque numa parede leva a entrada para lá (`moverEntrada`), e a
+ * prévia mostra onde a porta e a varanda ficariam. Fora disso, `null` (a Porta de sempre).
+ */
+function toqueNaEntrada(
+  obra: Obra,
+  lote: Lote,
+  aresta: Aresta,
+  escolhas: Escolhas,
+): { resultado: Resultado | null; previa: Previa; entrada?: MudancaNaEntrada } | null {
+  const p = planta(obra, lote)
+  const e = entradaDaObra(obra, lote, p)
+  if (!e) return null
+  const k = chaveDaAresta(aresta)
+  if (arestasDaAbertura(e.abertura).some((x) => chaveDaAresta(x) === k))
+    return {
+      resultado: null,
+      previa: {
+        tipo: 'arestas',
+        arestas: arestasDaAbertura(e.abertura),
+        ok: true,
+        varanda: celulasDoRetangulo(retanguloDaVaranda(e)),
+        entrada: true,
+      },
+      entrada: escolhas.entradaSelecionada ? 'soltar' : 'selecionar',
+    }
+  if (!escolhas.entradaSelecionada) return null
+  const r = moverEntrada(obra, lote, aresta)
+  const nova = aberturaNaAresta('porta', aresta)
+  const fora = ladoDeFora(nova, p)
+  return {
+    resultado: r,
+    previa: {
+      tipo: 'arestas',
+      arestas: arestasDaAbertura(nova),
+      ok: r.ok,
+      ...(fora === null
+        ? {}
+        : { varanda: celulasDoRetangulo(retanguloDaVaranda({ abertura: nova, fora })) }),
+    },
+    ...(r.ok ? { entrada: 'soltar' as const } : {}),
+  }
 }
 
 function distanciaAteAAresta(p: NoChao, a: Aresta): number {

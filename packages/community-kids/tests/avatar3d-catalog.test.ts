@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { readFileSync } from 'node:fs'
+import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import {
   AVATAR_CATEGORIES,
@@ -126,5 +126,175 @@ describe('avatar3d: arquivos das peças (Kids e adulto)', () => {
     )
     expect(paletteForPart('eyes', 'eyes-13')).toBeUndefined()
     expect(paletteForPart('top', undefined)).toEqual(AVATAR_CATEGORY_PALETTES.top)
+  })
+})
+
+/** O GLB inteiro: cabeçalho JSON e o bloco binário. */
+function glbFull(file: string) {
+  const bytes = readFileSync(file)
+  const jsonLength = bytes.readUInt32LE(12)
+  const json = JSON.parse(bytes.subarray(20, 20 + jsonLength).toString('utf8')) as GlbDoc
+  const binStart = 20 + jsonLength
+  const binLength = bytes.readUInt32LE(binStart)
+  return { json, bin: bytes.subarray(binStart + 8, binStart + 8 + binLength), size: bytes.length }
+}
+
+interface GlbDoc {
+  accessors: {
+    bufferView?: number
+    byteOffset?: number
+    componentType: number
+    count: number
+    normalized?: boolean
+    type: string
+  }[]
+  bufferViews: { byteOffset?: number; byteStride?: number }[]
+  materials?: { name?: string }[]
+  meshes: {
+    primitives: { attributes: Record<string, number>; indices?: number; mode?: number }[]
+  }[]
+  nodes: { name?: string }[]
+  skins?: { joints: number[] }[]
+}
+
+const COMPONENT_BYTES: Record<number, number> = { 5121: 1, 5123: 2, 5125: 4, 5126: 4 }
+
+/** Os valores de um acessório VEC4 (juntas ou pesos) como números, um vetor por vértice. */
+function readVec4(doc: GlbDoc, bin: Buffer, accessorIndex: number): number[][] {
+  const acc = doc.accessors[accessorIndex]
+  if (!acc || acc.bufferView === undefined) return []
+  const view = doc.bufferViews[acc.bufferView]
+  const size = COMPONENT_BYTES[acc.componentType] ?? 4
+  const stride = view?.byteStride ?? size * 4
+  const start = (view?.byteOffset ?? 0) + (acc.byteOffset ?? 0)
+  const max = acc.componentType === 5121 ? 255 : acc.componentType === 5123 ? 65535 : 1
+  const out: number[][] = []
+  for (let i = 0; i < acc.count; i++) {
+    const vec: number[] = []
+    for (let c = 0; c < 4; c++) {
+      const at = start + i * stride + c * size
+      const raw =
+        acc.componentType === 5126
+          ? bin.readFloatLE(at)
+          : acc.componentType === 5123
+            ? bin.readUInt16LE(at)
+            : bin.readUInt8(at)
+      vec.push(acc.normalized ? raw / max : raw)
+    }
+    out.push(vec)
+  }
+  return out
+}
+
+/** Triângulos da peça inteira (todas as malhas), como o relatório do Blender conta. */
+function triangleCount(doc: GlbDoc): number {
+  let total = 0
+  for (const mesh of doc.meshes)
+    for (const prim of mesh.primitives) {
+      if ((prim.mode ?? 4) !== 4) continue
+      const ref = prim.indices ?? prim.attributes.POSITION
+      total += Math.floor((ref === undefined ? 0 : (doc.accessors[ref]?.count ?? 0)) / 3)
+    }
+  return total
+}
+
+/**
+ * Roupas de festa (B16, 31/10/2026), feitas por `scripts/avatar-blender/festas.py`. Ainda NÃO estão
+ * no catálogo (`AVATAR_PART_INFO` é da dona e entra depois), então os testes de cima não as veem:
+ * aqui o teste lê os oito GLBs direto. O encaixe dos chapéus nas cabeças (o app esconde o cabelo
+ * debaixo do chapéu) e os cabelos que a tiara não atravessa são conferidos no Blender por
+ * `conferir_festas.py` (relatório em `festas-relatorio.json`).
+ */
+describe('avatar3d: roupas de festa (GLBs lidos direto)', () => {
+  const FESTA = {
+    'hat-08': 'hat',
+    'top-07': 'top',
+    'hat-09': 'hat',
+    'outfit-07': 'outfit',
+    'enfeite-06': 'enfeite',
+    'top-08': 'top',
+    'hat-10': 'hat',
+    'top-09': 'top',
+  } as const
+  const novas = Object.keys(FESTA)
+  const armature = glbJson(join(KIDS_PUBLIC, 'base', 'Armature.glb'))
+  const canonical = (armature.skins?.[0]?.joints ?? []).map((i) => armature.nodes?.[i]?.name ?? '')
+  const headIndex = canonical.indexOf('mixamorig:Head')
+  const existentes = readdirSync(join(KIDS_PUBLIC, 'parts'))
+    .filter((f) => f.endsWith('.glb'))
+    .map((f) => f.slice(0, -4))
+    .filter((id) => !novas.includes(id))
+
+  /** O maior triângulos/KB entre as peças que já existem da mesma família (o teto). */
+  const teto = (prefix: string) => {
+    let tris = 0
+    let size = 0
+    for (const id of existentes.filter((e) => e.startsWith(`${prefix}-`))) {
+      const glb = glbFull(join(KIDS_PUBLIC, 'parts', `${id}.glb`))
+      tris = Math.max(tris, triangleCount(glb.json))
+      size = Math.max(size, glb.size)
+    }
+    return { tris, size }
+  }
+
+  test('GLB e miniatura nos dois apps, iguais', () => {
+    for (const id of novas)
+      for (const dir of ['parts', 'thumbs'] as const) {
+        const ext = dir === 'parts' ? 'glb' : 'png'
+        const kids = readFileSync(join(KIDS_PUBLIC, dir, `${id}.${ext}`))
+        const adult = readFileSync(join(ADULT_PUBLIC, dir, `${id}.${ext}`))
+        expect(adult.equals(kids), `${dir}/${id}.${ext} igual no Kids e no adulto`).toBe(true)
+      }
+  })
+
+  test('juntas na ordem do Armature.glb', () => {
+    expect(headIndex).toBeGreaterThanOrEqual(0)
+    for (const id of novas) {
+      const doc = glbFull(join(KIDS_PUBLIC, 'parts', `${id}.glb`)).json
+      const joints = (doc.skins?.[0]?.joints ?? []).map((i) => doc.nodes[i]?.name ?? '')
+      expect(joints, `juntas de ${id}`).toEqual(canonical)
+    }
+  })
+
+  test('chapéus e tiara presos só ao osso da cabeça', () => {
+    for (const [id, cat] of Object.entries(FESTA)) {
+      if (cat !== 'hat' && cat !== 'enfeite') continue
+      const { json, bin } = glbFull(join(KIDS_PUBLIC, 'parts', `${id}.glb`))
+      const usados = new Set<number>()
+      for (const mesh of json.meshes)
+        for (const prim of mesh.primitives) {
+          const j = prim.attributes.JOINTS_0
+          const w = prim.attributes.WEIGHTS_0
+          if (j === undefined || w === undefined) continue
+          const joints = readVec4(json, bin, j)
+          const weights = readVec4(json, bin, w)
+          joints.forEach((vec, i) => {
+            vec.forEach((joint, c) => {
+              if ((weights[i]?.[c] ?? 0) > 1e-4) usados.add(joint)
+            })
+          })
+        }
+      expect([...usados], `ossos com peso em ${id}`).toEqual([headIndex])
+    }
+  })
+
+  test('a cor principal vem de um material Color_ (a criança troca)', () => {
+    for (const id of novas) {
+      const materials = glbJson(join(KIDS_PUBLIC, 'parts', `${id}.glb`)).materials ?? []
+      expect(
+        materials.some((m) => m.name?.includes('Color_')),
+        `${id} tem Color_`,
+      ).toBe(true)
+    }
+  })
+
+  test('abaixo dos tetos das peças da mesma família', () => {
+    for (const [id, cat] of Object.entries(FESTA)) {
+      const limite = teto(cat)
+      expect(limite.tris, `há peças ${cat} para medir`).toBeGreaterThan(0)
+      const glb = glbFull(join(KIDS_PUBLIC, 'parts', `${id}.glb`))
+      expect(triangleCount(glb.json), `triângulos de ${id}`).toBeLessThan(limite.tris)
+      expect(glb.size, `bytes de ${id}`).toBeLessThan(limite.size)
+    }
   })
 })

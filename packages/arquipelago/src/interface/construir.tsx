@@ -53,7 +53,12 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     emoji: '🧱',
     dica: 'Arraste no chão para esticar a parede. Paredes fechadas viram um cômodo.',
   },
-  { id: 'porta', nome: 'Porta', emoji: '🚪', dica: 'Toque numa parede para pôr a porta.' },
+  {
+    id: 'porta',
+    nome: 'Porta',
+    emoji: '🚪',
+    dica: 'Toque numa parede para pôr a porta. Toque na entrada para levar ela a outro lugar.',
+  },
   { id: 'janela', nome: 'Janela', emoji: '🪟', dica: 'Toque numa parede para pôr a janela.' },
   { id: 'piso', nome: 'Piso', emoji: '🟫', dica: 'Toque num cômodo para trocar o piso dele.' },
   {
@@ -206,6 +211,10 @@ export function ModosDoJogo() {
   )
 }
 
+/** A dica da Porta com a entrada escolhida (31/10/2026). */
+export const DICA_DA_ENTRADA_ESCOLHIDA =
+  'Toque numa parede de fora para levar a entrada e a varanda.'
+
 /** A barra do Construir: as ferramentas, as escolhas de janela e piso, a câmera e o Desfazer. */
 export function BarraDeConstruir() {
   const { loja, plataforma } = useJogo()
@@ -214,6 +223,13 @@ export function BarraDeConstruir() {
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const atual = useConstrucao(construcao, (s) => s.ferramenta)
   const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
+  // Passando por cima de onde não dá, a linha de baixo diz por quê (no toque, o Zappy já diz).
+  const motivo = useConstrucao(construcao, (s) => s.motivoDaPrevia)
+  // Com a porta de entrada escolhida, a dica diz o próximo passo.
+  const entradaEscolhida = useConstrucao(
+    construcao,
+    (s) => s.entradaSelecionada && s.ferramenta === 'porta',
+  )
   const janela = useConstrucao(construcao, (s) => s.janela)
   const piso = useConstrucao(construcao, (s) => s.piso)
   const caminho = useConstrucao(construcao, (s) => s.caminho)
@@ -254,12 +270,14 @@ export function BarraDeConstruir() {
     : FERRAMENTAS.filter((f) => f.id !== 'terreno' || podeMoldarOTerreno(jornada))
   if (!aberto) return null
   const s = () => construcao.getState()
-  const dica = FERRAMENTAS.find((f) => f.id === atual)?.dica
+  const dica =
+    motivo ??
+    (entradaEscolhida ? DICA_DA_ENTRADA_ESCOLHIDA : FERRAMENTAS.find((f) => f.id === atual)?.dica)
   return (
     <section className="arq-obra" aria-label="Ferramentas de construir">
       {aconchegoAberto && <PainelDeAconchego />}
       <div className="arq-obra-dica-linha">
-        <p className="arq-obra-dica" aria-live="polite">
+        <p className={`arq-obra-dica${motivo ? ' recusa' : ''}`} aria-live="polite">
           {dica}
         </p>
         {/* Na mesma linha da dica, para a barra não crescer (N11). */}

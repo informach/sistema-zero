@@ -39,3 +39,12 @@ reiniciar as ações ao retomar. `RoomMotionContext` continua habilitando anima�
 O jogo fornece suas regras de pausa e conforto; nenhuma regra de sessão entra neste pacote.
 Prova com mixer Three real e efeitos React em `arquipelago/tests/quarto-pausa.test.ts`,
 isolada em processo próprio para não contaminar os outros testes.
+
+## O passeio do bichinho com ponto a evitar (31/10/2026)
+
+O passo do `Pet3D` mora em `quarto/pet-walk.ts` (`petWalkStep`, puro). Props opcionais, só do
+jogo: `onPosition(x, z, rumo)` a cada quadro e `avoid` (ref de `PetAvoid`: a criança perto e à
+frente faz parar e virar; `nudge` que muda dá um passinho para o lado livre; `lift` sobe o
+passarinho; os dois últimos valem também com menos movimento). Sem elas o passeio é idêntico ao
+de antes, sorteio por sorteio: `tests/pet-walk.test.ts` compara 4.000 passos com a cópia literal
+do laço antigo. O "Meu quarto" não passa nada.

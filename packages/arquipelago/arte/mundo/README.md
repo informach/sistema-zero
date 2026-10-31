@@ -82,7 +82,7 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 |---|---|---|---|---|---|
 | `terreno.glb` | `terreno.py` | mundo (ilha central na origem) | `chao` (com o filho `chao-do-lote`), `enfeites`, `espuma` e os `col-cil-moita-*`, `col-cil-pedra-*` | 13.974 | 447 KB |
 | `arvores.glb` | `vegetacao.py` | pé da árvore, escala 1 | `arvore-redonda`, `arvore-frutas`, `arvore-pinheiro`, `coqueiro` | 3.852 | 86 KB |
-| `casa.glb` | `casa.py` | grupo `Casa` (centro do quarto, piso em y = 0) | `paredes`, `revestimento`, `janelas`, `telhado`, `varanda`, `porta` | 6.874 | 353 KB |
+| `casa.glb` | `casa.py` | grupo `Casa` (centro do quarto, piso em y = 0) | `paredes`, `revestimento`, `janelas`, `telhado`, `toldo` (31/10/2026, antes dentro do `telhado`), `varanda`, `porta` | 6.874 | 354 KB |
 | `horta.glb` | `horta.py` | centro de um canteiro | `canteiro`, `semente`, `alface-broto`/`-crescendo`/`-maduro`, `tomate-…`, `milho-…` | 3.010 | 111 KB |
 | `bancada.glb` | `bancada.py` | grupo `Bancada` | `projetor`, `holograma` | 2.342 | 89 KB |
 | `farol.glb` | `farol.py` | grupo `Farol` | `farol` (com o filho `subida`), `porta` (folha e maçaneta, pivô na dobradiça; y negativo abre para fora), `vidro`, `lampada`, `facho`, os `col-cil-pedra-farol-*`, `col-degrau-farol-*`, `col-cil-lanterna-farol-1` e os da subida (abaixo), com as âncoras dela | 6.838 | 262 KB |

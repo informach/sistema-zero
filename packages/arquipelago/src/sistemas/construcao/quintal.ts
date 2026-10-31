@@ -1,5 +1,6 @@
 import type { Canteiro, Obra, PisoDoQuintal } from '@sistemazero/arquipelago-contracts'
 import { planta } from './comodos'
+import { loteDaObra } from './entrada'
 import {
   type Aresta,
   arestasDoArrasto,
@@ -53,7 +54,9 @@ function celulaLivre(lote: Lote, c: Celula, dentro: Set<string>): Recusa | null 
 }
 
 /** Esticar a cerca de `a` até `b` (nas arestas, como a parede). */
-export function esticarCerca(obra: Obra, lote: Lote, a: Ponto, b: Ponto): Resultado {
+export function esticarCerca(obra: Obra, loteDoLugar: Lote, a: Ponto, b: Ponto): Resultado {
+  // A varanda da entrada ocupa o lugar (ela segue a porta de entrada da obra).
+  const lote = loteDaObra(loteDoLugar, obra)
   const arestas = arestasDoArrasto(a, b)
   if (arestas.length === 0) return recusa({ motivo: 'nada' })
   const p = planta(obra, lote)
@@ -98,10 +101,12 @@ function ladosDe(a: Aresta): [Celula, Celula] {
 /** Pintar o caminho (pedra ou grama) pelas células do arrasto; o que já é caminho troca de tipo. */
 export function pintarCaminho(
   obra: Obra,
-  lote: Lote,
+  loteDoLugar: Lote,
   celulas: readonly Celula[],
   tipo: PisoDoQuintal,
 ): Resultado {
+  // A varanda da entrada ocupa o lugar (ela segue a porta de entrada da obra).
+  const lote = loteDaObra(loteDoLugar, obra)
   const p = planta(obra, lote)
   const canteiros = new Set(obra.canteiros.map(chaveDaCelula))
   const porCelula = new Map(obra.caminhos.map((c) => [chaveDaCelula(c), c]))
@@ -122,7 +127,9 @@ export function pintarCaminho(
 }
 
 /** Pôr um canteiro numa célula do quintal (vazia: sem caminho, sem cerca em volta). */
-export function porCanteiro(obra: Obra, lote: Lote, c: Celula): Resultado {
+export function porCanteiro(obra: Obra, loteDoLugar: Lote, c: Celula): Resultado {
+  // A varanda da entrada ocupa o lugar (ela segue a porta de entrada da obra).
+  const lote = loteDaObra(loteDoLugar, obra)
   const p = planta(obra, lote)
   const r = celulaLivre(lote, c, p.dentro)
   if (r) return recusa(r)

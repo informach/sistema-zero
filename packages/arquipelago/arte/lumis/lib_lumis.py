@@ -54,7 +54,47 @@ def comecar(paleta):
     PALETA.clear()
     PALETA.update(BASE)
     PALETA.update(paleta)
+    if LUZ['ligado']:
+        PALETA['corpo'] = _perolado(PALETA['corpo'])
     bpy.context.scene.render.fps = FPS
+
+
+# ---------------------------------------------------------------- Lumis de luz (B12)
+#
+# A terceira versão de cada família, que só se acha nos segredos (nunca sai em troca de moeda). É a
+# própria função da rara rodando com `ligar_luz()`: a mesma forma, com
+# - o `corpo` num tom mais claro e perolado, com emissão leve (`FORCA_DO_CORPO_DE_LUZ`);
+# - a coroa de luz (`coroa-de-luz`): cinco pontinhas acesas acima da cabeça, que dá uma volta
+#   inteira no `feliz`;
+# - o rastro de luz (`rastro-de-luz`): três faíscas atrás, que acompanham o andar;
+# - só se precisar, para a coroa e o rastro caberem no teto de triângulos (a rara do Brigadeiro já tem
+#   2.972), as bolas grandes (o corpo, 24 ou mais gomos) com menos gomos: `reduz` 1 tira um sexto dos
+#   gomos em volta (24 viram 20) e 2 também um sétimo dos anéis (14 viram 12). `luz.py` escolhe a
+#   menor que cabe;
+# - as pinturas um pouco mais afastadas do corpo (`ALTO_DE_LUZ`);
+# - o arquivo `<id>-de-luz.glb`, a raiz `lumi-<id>-de-luz` e `raridade: "luz"` no relatório.
+LUZ = {'ligado': False, 'reduz': 0}
+FORCA_DO_CORPO_DE_LUZ = 0.3
+# As pinturas (olhos, boca, língua, barriga, coração) 3 vezes mais afastadas da camada de baixo: na
+# rara a pupila fica a 3 mm do branco e a língua a 1,5 mm da boca, dentro da tolerância de
+# `scripts/faces-coplanares.ts`; aqui cada camada fica a mais de 3 mm da outra e nenhuma pisca.
+ALTO_DE_LUZ = 3.0
+
+
+def ligar_luz(ligado=True, reduz=0):
+    LUZ['ligado'], LUZ['reduz'] = ligado, reduz
+
+
+def _misturar(a, b, k):
+    a, b = a.lstrip('#'), b.lstrip('#')
+    return '#' + ''.join(f'{round(int(a[i:i + 2], 16) * (1 - k) + int(b[i:i + 2], 16) * k):02x}' for i in (0, 2, 4))
+
+
+def _perolado(entrada):
+    """O `corpo` da versão de luz: metade do caminho até o branco perolado, liso e acendendo de leve."""
+    cor, rug, _emis, _forca, alfa = entrada
+    clara = _misturar(cor, '#fff8fc', 0.5)
+    return (clara, min(rug, 0.22), clara, FORCA_DO_CORPO_DE_LUZ, alfa)
 
 
 def mat(chave):
@@ -97,6 +137,10 @@ def _matriz(pos=(0, 0, 0), rot=(0, 0, 0), escala=(1, 1, 1)):
 
 
 def bola(material, raio, pos, escala=(1, 1, 1), seg=20, aneis=12, rot=(0, 0, 0), liso=True):
+    if LUZ['ligado'] and seg >= 24 and LUZ['reduz']:
+        seg = round(seg * 5 / 6)
+        if LUZ['reduz'] > 1:
+            aneis = round(aneis * 6 / 7)
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=seg, v_segments=aneis, radius=raio)
     bmesh.ops.transform(bm, matrix=_matriz(pos, rot, escala), verts=bm.verts)
@@ -388,6 +432,8 @@ def decalque(alvo, material, centro, tamanho, forma=None, rot=0.0, alto=0.004, b
     meio estufa `bojo` (olhos e corações ficam gordinhos).
     """
     forma = forma or forma_elipse()
+    if LUZ['ligado']:
+        alto *= ALTO_DE_LUZ
     # Desenho grande precisa de mais anéis: senão a curva do corpo fura os triângulos retos.
     aneis = max(aneis, int(max(tamanho) / 0.05) + 1)
     D, U, V = _eixos(direcao, cima)
@@ -495,6 +541,53 @@ def faiscas(raio, altura, tamanhos=(0.085, 0.065, 0.075)):
     return juntar(pecas, 'faiscas', pivo=(0, 0, altura))
 
 
+def coroa_de_luz(centro, raio=0.12, alta=0.12, baixa=0.045, esp=0.024, pontas=5):
+    """A coroa dos Lumis de luz: um aro de `pontas` pontas, com uma pedrinha acesa em cada
+    ponta, toda no material `luz`. `centro` é o meio da base (o pivô, onde ela gira)."""
+    bm = bmesh.new()
+    n = 2 * pontas
+    aneis = []
+    for k in range(n):
+        a = 2 * math.pi * k / n + math.pi / 2
+        alto = alta if k % 2 == 0 else baixa
+        c, s = math.cos(a), math.sin(a)
+        aneis.append([bm.verts.new((r * c, r * s, z)) for r, z in (
+            (raio, 0), (raio, alto), (raio - esp, alto), (raio - esp, 0))])
+    for k in range(n):
+        a, b = aneis[k], aneis[(k + 1) % n]
+        for i in range(4):
+            bm.faces.new((a[i], b[i], b[(i + 1) % 4], a[(i + 1) % 4]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bmesh.ops.translate(bm, vec=Vector(centro), verts=bm.verts)
+    # Lisas: com a luz acesa as facetas nem aparecem, e cada vértice repetido pesaria no arquivo.
+    pecas = [_malha('coroa', bm, 'luz')]
+    for k in range(0, n, 2):
+        a = 2 * math.pi * k / n + math.pi / 2
+        ponta = Vector(centro) + Vector(((raio - esp / 2) * math.cos(a), (raio - esp / 2) * math.sin(a), alta + 0.016))
+        pecas.append(bola('luz', 0.022, ponta, (1, 1, 1.45), seg=4, aneis=2))
+    return juntar(pecas, 'coroa-de-luz', pivo=tuple(centro))
+
+
+def rastro_de_luz(pivo, tamanhos=(0.07, 0.055, 0.042)):
+    """O rastro dos Lumis de luz: três faíscas `luz` em fila atrás (+Y), cada uma menor e mais longe,
+    presas em `pivo` (de onde o rastro balança)."""
+    p = Vector(pivo)
+    lugares = ((0.0, 0.07, 0.03), (-0.035, 0.18, 0.0), (0.03, 0.29, -0.025))
+    giros = (90, 50, 130)
+    pecas = [estrela4('luz', t, p + Vector(d), rot=(0, 0, g)) for t, d, g in zip(tamanhos, lugares, giros)]
+    rastro = juntar(pecas, 'rastro-de-luz', pivo=tuple(p))
+    for f in rastro.data.polygons:
+        f.use_smooth = True
+    return rastro
+
+
+def _caixa(objs):
+    bpy.context.view_layer.update()
+    pts = [o.matrix_world @ Vector(c) for o in objs for c in o.bound_box]
+    return (Vector((min(q.x for q in pts), min(q.y for q in pts), min(q.z for q in pts))),
+            Vector((max(q.x for q in pts), max(q.y for q in pts), max(q.z for q in pts))))
+
+
 # ---------------------------------------------------------------- partes comuns
 
 def bracinhos(material, ombro_x, ombro_z, tam=(0.065, 0.065, 0.11), abre=28, y=-0.02):
@@ -578,6 +671,10 @@ class Lumi(Animado):
     def __init__(self, nome, corpo, olhos=None, bracos=(), pes=(), enfeites=(), faiscas=None,
                  cabeca=None, flutua=False, asas=False, quadrupede=False, pulo=0.3, passo=0.07,
                  peso=1.0):
+        self.coroa = self.rastro = None
+        if LUZ['ligado']:
+            nome = f'{nome}-de-luz'
+            self._vestir_de_luz(corpo, cabeca, faiscas)
         self.nome = nome
         self.raiz = bpy.data.objects.new(f'lumi-{nome}', None)
         bpy.context.scene.collection.objects.link(self.raiz)
@@ -599,7 +696,46 @@ class Lumi(Animado):
                 prender(o, cabeca or corpo)
         if faiscas:
             prender(faiscas, self.raiz)
+        if self.coroa:
+            prender(self.coroa, self.raiz)
+            prender(self.rastro, self.raiz)
+            if faiscas:
+                # A roda de faíscas da rara gira com a coroa: presa nela, sem animação própria (cada
+                # parte animada a mais pesa uns 4 KB no arquivo, e o teto é 130 KB).
+                prender(faiscas, self.coroa)
+                self.faiscas = None
         self.registrar()
+        if self.coroa and faiscas:
+            self.objs.remove(faiscas)
+
+    def _vestir_de_luz(self, corpo, cabeca, faiscas):
+        """A coroa acima de tudo, no meio da cabeça; o rastro atrás de tudo. A roda de faíscas da rara
+        fica em volta da coroa (só sai do lugar no Brotinho, que tem a cabeça na frente do corpo)."""
+        malhas = [o for o in bpy.data.objects if o.type == 'MESH' and o is not faiscas]
+        mn, mx = _caixa(malhas)
+        cmn, cmx = _caixa([cabeca or corpo])
+        meio = (cmn + cmx) / 2
+        if faiscas and Vector((faiscas.location.x - meio.x, faiscas.location.y - meio.y)).length > 0.05:
+            faiscas.location = (meio.x, meio.y, faiscas.location.z)
+        if faiscas:
+            meio.x, meio.y = faiscas.location.x, faiscas.location.y
+            # Lisas, como a coroa e o rastro: acesas, as facetas nem aparecem e o arquivo fica menor.
+            for f in faiscas.data.polygons:
+                f.use_smooth = True
+        self.coroa = coroa_de_luz((meio.x, meio.y, mx.z + 0.06))
+        _, topo = _caixa([corpo])
+        self.topo_do_corpo, self.base_do_corpo = topo.z, corpo.location.z
+        self.rastro = rastro_de_luz((0, mx.y + 0.03, 0.12 + 0.28 * (topo.z - mn.z)))
+
+    def gravar(self, nome, quadros, funcao, laco=True):
+        if self.coroa is None:
+            return super().gravar(nome, quadros, funcao, laco)
+
+        def com_luz(lumi, t):
+            poses = funcao(lumi, t)
+            _poses_de_luz(lumi, poses, nome, t)
+            return poses
+        return super().gravar(nome, quadros, com_luz, laco)
 
     def animar(self):
         self.gravar('parado', 48, clip_parado)
@@ -667,6 +803,37 @@ def _enfeites(L, poses, t, forca=1.0, voltas=1, extra=None):
 def _esticar(k):
     """k > 0 achata, k < 0 estica (sem mudar muito o volume)."""
     return (1 + 0.5 * k, 1 + 0.5 * k, 1 - k)
+
+
+def _poses_de_luz(L, poses, clipe, t):
+    """A coroa e o rastro dos Lumis de luz em cada clipe (os mesmos laços de 1 e 2 s da rara).
+
+    A roda de faíscas vai presa na coroa: as voltas inteiras (360 graus, que fecham o laço da coroa de
+    cinco pontas e o da roda de três) giram as duas juntas; no andar e no trabalhar a coroa só balança.
+    O rastro só se mexe no andar (nos outros clipes vai parado atrás, levado pela raiz): cada clipe a
+    mais em que ele se mexe pesa uns 1 KB no arquivo.
+    """
+    w = 2 * math.pi * t
+    es = poses.get(L.corpo, ((0, 0, 0), (0, 0, 0), (1, 1, 1)))[2]
+    # A coroa acompanha o topo do corpo quando ele estica e achata (o corpo escala a partir da base).
+    segue = (es[2] - 1) * (L.topo_do_corpo - L.base_do_corpo)
+    rastro = ((0, 0, 0), (0, 0, 0), (1, 1, 1))
+    if clipe == 'parado':
+        sobe, giro, pulso = 0.012 * math.sin(2 * w), 360 * t, 0.06 * math.sin(2 * w)
+    elif clipe == 'andar':
+        sobe, giro, pulso = 0.015 * math.sin(2 * w - 0.6), 12 * math.sin(w), 0.05 * math.sin(2 * w)
+        # O rastro vem atrás dos passos: sobe e desce atrasado, balança para o lado contrário e estica.
+        rastro = ((0, 0, 0), (12 * math.sin(2 * w - 1.0), 0, -16 * math.sin(w - 0.7)), (1, 1.18 + 0.1 * math.sin(2 * w), 1))
+    elif clipe == 'pular':
+        sobe, giro, pulso = 0.025 * _sino(t, 0.46, 0.22), 360 * _suave(t), 0.12 * _sino(t, 0.46, 0.3)
+    elif clipe == 'trabalhar':
+        sobe, giro, pulso = 0.01 * math.sin(4 * w), 8 * math.sin(2 * w), 0.05 * math.sin(4 * w)
+    else:
+        # O feliz: dois pulinhos e a volta inteira da coroa, uma vez por laço.
+        p = (2 * t) % 1
+        sobe, giro, pulso = 0.02 * max(0.0, math.sin(math.pi * min(1, p / 0.7))), 360 * t, 0.1 * math.sin(4 * w)
+    poses[L.coroa] = ((0, 0, segue + sobe), (0, 0, giro), (1 + pulso,) * 3)
+    poses[L.rastro] = rastro
 
 
 def clip_parado(L, t):
@@ -845,6 +1012,9 @@ def triangulos():
 
 
 def exportar(nome, info):
+    if LUZ['ligado']:
+        info = {**info, 'raridade': 'luz', 'rara': nome, 'reducao': LUZ['reduz']}
+        nome = f'{nome}-de-luz'
     caminho = os.path.join(SAIDA, f'{nome}.glb')
     os.makedirs(SAIDA, exist_ok=True)
     sc = bpy.context.scene
@@ -866,11 +1036,19 @@ def exportar(nome, info):
     mats = sorted({m.name for o in bpy.data.objects if o.type == 'MESH' for m in o.data.materials})
     clips = sorted({t.name for o in bpy.data.objects if o.animation_data for t in o.animation_data.nla_tracks})
     print(f'{nome}: {tris} triângulos, {tam / 1024:.0f} KB, clipes {clips}')
+    if LUZ['ligado']:
+        forca = bpy.data.materials['corpo'].node_tree.nodes['Principled BSDF'].inputs['Emission Strength'].default_value
+        info = {**info, 'coroa': _materiais_de('coroa-de-luz'), 'rastro': _materiais_de('rastro-de-luz'),
+                'emissao_do_corpo': round(forca, 3)}
     if os.environ.get('LUMIS_DETALHE'):
         for o in bpy.data.objects:
             if o.type == 'MESH':
                 print('  ', o.name, sum(len(p.vertices) - 2 for p in o.data.polygons))
     _relatar(nome, {**info, 'triangulos': tris, 'kb': round(tam / 1024, 1), 'clipes': clips, 'materiais': mats})
+
+
+def _materiais_de(nome):
+    return sorted({m.name for m in bpy.data.objects[nome].data.materials})
 
 
 def _relatar(nome, dados):

@@ -25,8 +25,8 @@ const lote: Lote = {
   id: 'bosque',
   area: { x0: -1, z0: -1, x1: 22, z1: 22 },
   fixo: null,
-  paredesFixas: [],
   paredesTravadas: [],
+  paredesDoMeuQuarto: null,
   ocupadas: [],
 }
 function sala(w = 4, h = 4): Obra {
