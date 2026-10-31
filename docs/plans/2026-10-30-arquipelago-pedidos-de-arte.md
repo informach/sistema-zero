@@ -205,8 +205,9 @@ Ordem de produção:
 10. **B13. Atalhos pelos telhados da Vila:** confirmado; especificação na seção "Os atalhos pelos
     telhados da Vila" logo abaixo.
 
-Não pedidos por decisão da dona: Lumis raros com modelo próprio (B12, primeiro como variação de cor
-no código), bolsa de carteiro do Nico (B15) e roupas de festa novas (B16).
+Não pedidos por decisão da dona em 30/10: Lumis raros com modelo próprio (B12), bolsa de carteiro
+do Nico (B15) e roupas de festa novas (B16). Revisto em 31/10/2026: B12 e B16 pedidos (seção
+"Pedidos de 31/10/2026" no fim); a bolsa do Nico já existe.
 
 ### As ilhas mais altas nos postos mais altos (B1 e B2)
 
@@ -301,3 +302,79 @@ no terraço.
 Não pedidos por decisão da dona: Lumis raros com modelo próprio (B12, primeiro como variação de cor
 no código), bolsa de carteiro do Nico (B15) e roupas de festa novas (B16).
 
+## Pedidos de 31/10/2026: Lumis de luz (B12) e roupas de festa (B16)
+
+A dona decidiu em 31/10/2026 pedir a arte destes dois, que em 30/10 tinham ficado para depois. A
+bolsa de carteiro do Nico (B15) não entra: ela já existe no `personagens/nico.glb` (bolsa a
+tiracolo com os envelopes, `arte/personagens/nico.py`). O levantamento tinha errado nesse ponto.
+As regras gerais deste documento valem para os dois (gerar pelos scripts, não renomear nada que
+existe, cores pelo nome do material, relatório e README do kit atualizados).
+
+### B12. Os Lumis de luz, um por família (kit `arte/lumis`)
+
+Hoje cada família já tem a espécie comum e a rara (a rara sai em um de cada cinco borrões). A
+proposta põe "Lumis raros" dentro dos baús que só o kit de movimento alcança. Para o baú não dar
+uma espécie que a criança já pega à noite, o pedido é uma terceira versão de cada família, que
+só se acha nos segredos.
+
+| Família | Parte da rara | Arquivo novo | Nome para a criança |
+| --- | --- | --- | --- |
+| Sua ilha (praia) | Búzio | `buzio-de-luz.glb` | Búzio de Luz |
+| Bosque | Ipê | `ipe-de-luz.glb` | Ipê de Luz |
+| Vila Doce | Brigadeiro | `brigadeiro-de-luz.glb` | Brigadeiro de Luz |
+| Recife | Pérola | `perola-de-luz.glb` | Pérola de Luz |
+| Pico | Cristal | `cristal-de-luz.glb` | Cristal de Luz |
+| Vale | Brotinho | `brotinho-de-luz.glb` | Brotinho de Luz |
+| Nuvens | Pluma | `pluma-de-luz.glb` | Pluma de Luz |
+
+- **Forma:** a mesma da rara da família, para a criança reconhecer de onde ele vem, com dois
+  detalhes iguais em todos: uma coroa de luz (anel de cinco pontinhas acesas flutuando acima da
+  cabeça, preso ao mesmo nó da cabeça) e um rastro curto de três faíscas atrás, que acompanha o
+  `andar`.
+- **Cor:** o corpo num tom mais claro e perolado que o da rara, com emissão leve (0,3) no material
+  `corpo`; a coroa e as faíscas no material `luz`, como o resto da luz dos Lumis. De dia ele se
+  distingue da rara pela coroa; à noite, por brilhar inteiro.
+- **Animação:** os mesmos cinco clipes (`andar`, `feliz`, `parado`, `pular`, `trabalhar`), com os
+  mesmos nomes, durações e laços da rara. No `feliz`, a coroa dá uma volta.
+- **Tetos:** até 3.000 triângulos e 130 KB por arquivo, como as raras; mesma escala de autor (o
+  jogo usa 0,3) e a frente para +Z.
+- **Miniaturas:** `src/assets/lumis/miniaturas/<id>.png`, 160 px, pelo `miniaturas.py`, no mesmo
+  enquadramento das 14 de hoje.
+- **Preservar:** as 14 espécies e o borrão sem mudança; o `relatorio.json` ganha as sete com
+  `raridade: "luz"`.
+- **Aceite:** o `build_all.py` conferindo clipes, tetos e materiais; um teste novo que lê os sete
+  GLBs e confere os cinco clipes, a coroa acima da cabeça e o material `corpo` com emissão. Pôr o
+  Lumi de luz dentro do baú, o caderno e o álbum é código desta sessão. Nunca sorteado em troca de
+  moeda (A28).
+
+### B16. Roupas de festa novas (pipeline do avatar, `community-kids/scripts/avatar-blender`)
+
+Hoje as festas sugerem peças que já existem (`arquipelago-contracts/src/vestuario-festas.ts`). O
+pedido é uma peça de cabeça e uma de corpo por festa, feitas para a festa, que a criança
+conquista na própria festa (A21).
+
+| Festa | Peça | Id | Como é |
+| --- | --- | --- | --- |
+| Carnaval | Chapéu | `hat-08` | Cartolinha de lantejoula com uma pluma curta e serpentina enrolada na aba |
+| Carnaval | Parte de cima | `top-07` | Colete de franjas coloridas sobre camiseta, com confetes estampados |
+| Festa Junina | Chapéu | `hat-09` | Chapéu de palha com dois remendos de chita e a aba desfiada |
+| Festa Junina | Roupa inteira | `outfit-07` | Vestido de chita com babado na barra (a barra repesada nas coxas, como as saias compridas) |
+| Noite das Lanternas | Enfeite | `enfeite-06` | Tiara com três lanterninhas de papel penduradas |
+| Noite das Lanternas | Parte de cima | `top-08` | Capa curta de estrelas, presa nos ombros, até a cintura |
+| Fim de ano | Chapéu | `hat-10` | Gorro de tricô com pompom e barra branca |
+| Fim de ano | Parte de cima | `top-09` | Suéter de tricô com uma estrela grande no peito e flocos na barra |
+
+- **Regras do pipeline:** o mesmo esqueleto (`public/avatar3d/base/Armature.glb`), exportação
+  passando pelo `reordenar.py`, chapéus e enfeites presos só ao osso da cabeça, roupas herdando os
+  pesos das peças do pacote. Cada peça entra nas duas pastas
+  (`community-kids/public/avatar3d/parts/` e `community/public/avatar3d/parts/`) com a miniatura
+  das duas pastas `thumbs/` (`bun run gen:avatar-thumbs <id>`).
+- **Cor:** a cor principal de cada peça num material `Color_*`, para a criança trocar como nas
+  outras; o que não pode mudar (a palha, a chita, a estrela do suéter) com cor própria. Peça sem
+  `Color_` vai para a lista de cores fixas, que é código.
+- **Tetos:** no teto das peças do pacote da mesma categoria; os chapéus cabem sobre os cabelos
+  `hair-01` a `hair-18` sem atravessar (o mesmo cuidado dos chapéus atuais).
+- **Preservar:** nenhuma peça existente muda; os ids novos continuam a numeração de cada categoria.
+- **Aceite:** `tests/avatar3d-catalog.test.ts` com as oito peças, as miniaturas nas duas pastas e
+  uma prévia de cada peça no avatar parado e andando. O nome no catálogo, a festa de cada uma e a
+  conquista na festa são código desta sessão.

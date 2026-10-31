@@ -2480,10 +2480,13 @@ faz o que as seções acima descrevem.
     pisam (torre de doces, coral, ponta de gelo, vulcão, torres de nuvem); a largura e tudo o que se
     pisa não mudam, e a silhueta copia a ilha completa. Revisto em 30/10/2026 depois de medir: só na
     silhueta, a ilha encolheria na troca da ponte. Alvos no documento de pedidos de arte.
-14. **Lumis raros (B12):** primeiro como variação de cor e brilho no código, sem modelo novo.
-    Nunca sorteados em troca de moeda.
-15. **Bolsa do Nico (B15):** não por enquanto; a conversa e os pedidos (A19) dão o papel de carteiro.
-16. **Roupas de festa (B16):** não por enquanto; as peças existentes passam a ser conquistadas (A21).
+14. **Lumis raros (B12):** revisto em 31/10/2026: com arte, os Lumis de luz, uma terceira versão de
+    cada família (a forma da rara, coroa de luz e brilho), que só se acha nos baús dos segredos.
+    Nunca sorteados em troca de moeda. Pedido no documento de pedidos de arte.
+15. **Bolsa do Nico (B15):** a bolsa a tiracolo já existe no `nico.glb`; nada a pedir.
+16. **Roupas de festa (B16):** revisto em 31/10/2026: uma peça de cabeça e uma de corpo por festa,
+    novas, conquistadas na própria festa (A21), além das sugestões de peças existentes. Pedido no
+    documento de pedidos de arte.
 
 ## 7. Desafios
 
