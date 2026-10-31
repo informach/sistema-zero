@@ -43,7 +43,7 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
 
 | Festa | Id | Função | Peça | Cor própria (sem `Color_`) |
 | --- | --- | --- | --- | --- |
-| Carnaval | `hat-08` | `cartolinha` | cartolinha de lantejoula com pluma curta e serpentina na aba | fita, pluma, serpentina |
+| Carnaval | `hat-08` | `cartolinha` | cartolinha de lantejoula com pluma curta e serpentina na aba, no alto da cabeça | fita, pluma, serpentina |
 | Carnaval | `top-07` | `colete` | colete de franjas coloridas sobre camiseta com confetes | camiseta, franjas, confetes |
 | Junina | `hat-09` | `palha` | chapéu de palha com dois remendos de chita e aba desfiada | palha, chita (a fita é `Color_`) |
 | Junina | `outfit-07` | `chita` | vestido de chita com babado, barra repesada nas coxas | chita e florzinhas (o babado é `Color_`) |
@@ -52,13 +52,40 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
 | Fim de ano | `hat-10` | `gorro` | gorro de tricô com pompom e barra branca | barra, pompom |
 | Fim de ano | `top-09` | `sueter` | suéter com estrela grande no peito e flocos na barra | estrela, faixa e flocos |
 
-- **Chapéus e tiara cabem sobre os cabelos.** O oco de cada chapéu e o arco da tiara são medidos
-  contra os próprios cabelos (`assentar`, `menor_escala`): nenhum vértice de `hair-01` a `hair-18`
-  nem das cabeças fica fora do oco. Os cabelos de `FORA_*` (topete alto, pontas para os lados, rabo
-  alto, crespo volumoso...) não cabem num chapéu desse tamanho; `conferir_festas.py` aceita esses
-  só quando TODOS os chapéus que já existem e ficam na cabeça também os atravessam (a auréola
-  `hat-05` flutua e fica de fora), e grava a conta em `festas-relatorio.json`. Hoje o app esconde o
-  cabelo e o enfeite debaixo de qualquer chapéu (`AVATAR_HIDE_GROUPS`).
+- **Chapéus encaixam na cabeça, como os antigos (31/10/2026, decisão da dona).** O app esconde o
+  cabelo e o enfeite debaixo de qualquer chapéu (`AVATAR_HIDE_GROUPS`), então `hat-08`, `hat-09` e
+  `hat-10` assentam na cabeça careca. Cada chapéu é desenhado num tamanho de referência (o primeiro,
+  que cabia sobre os cabelos) e `menor_escala` acha a menor escala em que o oco guarda as seis
+  cabeças `head-01` a `head-06` acima da boca do chapéu; `colocar` aplica essa escala, a planta oval
+  do crânio (`Q_OVAL` 1,13 mais fundo que largo, `P_OVAL` 2,25) e a posição, igual em todas as
+  partes (o remendo continua colado na copa, a serpentina na aba). O gorro ainda acha a menor altura
+  (`menor_altura`) e ganha 7 cm de folga no cocuruto. A altura e a inclinação de cada boca
+  (`Z_CARTOLA`, `Z_PALHA`, `Z_GORRO`) seguem a régua dos chapéus antigos: a cartolinha fica no alto,
+  como a cartola `hat-04`; a palha e o gorro descem até a testa, acima das sobrancelhas, como o boné
+  `hat-02` e o pirata `hat-07`.
+- **A régua dos chapéus.** `conferir_festas.py` mede, em cada uma das seis cabeças, os chapéus
+  antigos que ficam na cabeça (`hat-01` a `hat-04`, `hat-06`, `hat-07`; a auréola `hat-05` flutua) e
+  os novos: a menor distância até a cabeça (`folga_min`), a folga do topo do crânio até o chapéu
+  (`topo`), quanto o chapéu desce na frente, dos lados e na nuca (o ponto mais baixo do couro cujo
+  raio, saindo do centro da cabeça, acha o chapéu a até 15 cm) e a mediana dessa folga
+  (`folga_oco`). O chapéu novo passa com zero vértices atravessando as cabeças, `folga_min` até
+  3 cm (o boné `hat-02`, o mais folgado dos antigos que encostam, tem 2,7) e descida e folga no
+  máximo iguais às dos antigos que cobrem o crânio (`hat-02`, `hat-03`, `hat-04`, `hat-07`). Os
+  números de cada chapéu, os dos antigos e os limites ficam em `festas-relatorio.json`
+  (`pecas.<id>.encaixe`, `regua_chapeus`); o script grava o relatório já no formato do biome do
+  monorepo.
+
+  | Chapéu | Escala | `folga_min` | `topo` | Frente | Lado | Nuca | `folga_oco` |
+  | --- | --- | --- | --- | --- | --- | --- | --- |
+  | `hat-08` cartolinha | 0,783 | 0,9 cm | 24,5 cm | 12,3 cm | 19,8 cm | 21,2 cm | 9,5 cm |
+  | `hat-09` palha | 0,797 | 1,0 cm | 5,6 cm | 23,9 cm | 28,9 cm | 32,4 cm | 7,8 cm |
+  | `hat-10` gorro | 0,642 (altura 0,511) | 1,0 cm | 8,8 cm | 17,6 cm | 28,9 cm | 35,1 cm | 8,5 cm |
+  | limite (antigos) | | 3 cm | | 23,9 cm | 34,1 cm | 35,7 cm | 10,3 cm |
+
+- **A tiara cabe sobre os cabelos.** Enfeite não esconde o cabelo: o arco de `enfeite-06` é medido
+  contra os próprios cabelos (`FORA_TIARA`) e as cabeças. `conferir_festas.py` aceita um cabelo que
+  a tiara atravesse só quando TODOS os enfeites que já existem (`enfeite-01` a `enfeite-05`) também
+  o atravessam (hoje, só o crespo volumoso `hair-15`).
 - **Roupas herdam os pesos do pacote** (`herdar_pesos`: cada vértice novo copia os pesos do vértice
   mais próximo de `top-01`/`outfit-01`; a capa só do tronco, para não seguir o braço).
 - **Ainda fora do catálogo.** As oito peças não estão em `AVATAR_PART_INFO` (o catálogo é da dona);

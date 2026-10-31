@@ -4,11 +4,14 @@ Carnaval: cartolinha (hat-08) e colete de franjas (top-07). Junina: chapéu de p
 vestido de chita (outfit-07). Lanternas: tiara de lanterninhas (enfeite-06) e capa de estrelas
 (top-08). Fim de ano: gorro (hat-10) e suéter de estrela (top-09).
 
-Chapéus e a tiara ficam presos só ao osso da cabeça e são medidos contra os cabelos: o oco do
-chapéu (e o arco da tiara) sai do tamanho dos próprios cabelos `hair-01` a `hair-18` e das
-cabeças, para nenhum fio atravessar. Os cabelos de `FORA_*` não cabem num chapéu desse tamanho
-(o rabo alto, o crespo...) e são conferidos por `conferir_festas.py` contra os chapéus que já
-existem. Roupas nascem das peças do pacote e herdam os pesos delas (`herdar_pesos`).
+Chapéus e a tiara ficam presos só ao osso da cabeça. O app esconde o cabelo debaixo de um chapéu
+(`AVATAR_HIDE_GROUPS`), então os chapéus encaixam na cabeça careca, como os antigos: cada um é
+desenhado num tamanho de referência e `menor_escala` acha a menor escala em que o oco guarda as
+seis cabeças `head-01` a `head-06` acima da boca do chapéu, com a planta oval do crânio
+(`raio_oval`, `colocar`). A altura e a inclinação da boca seguem a régua dos chapéus antigos
+(quanto descem na testa, nas orelhas e na nuca), conferida por `conferir_festas.py`. A tiara não
+esconde o cabelo e continua medida contra os cabelos `hair-01` a `hair-18`. Roupas nascem das
+peças do pacote e herdam os pesos delas (`herdar_pesos`).
 """
 import os, sys, math, random
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -24,13 +27,13 @@ CABECAS = [f'head-{i:02d}' for i in range(1, 7)]
 C = Vector((0, -0.04, 1.70))  # centro da cabeça
 TRONCO = {'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'LeftShoulder', 'RightShoulder'}
 
-# Cabelos que nenhum chapéu desse tamanho cobre (ver o relatório de conferir_festas.py):
-# 06 topete alto atrás, 08 pontas para os lados, 11 comprido jogado para trás, 13 rabo alto,
-# 15 crespo volumoso. O coque (17) cabe na cartola e no gorro, não na palha.
-FORA_CARTOLA = {'hair-06', 'hair-08', 'hair-13', 'hair-15'}
-FORA_PALHA = {'hair-06', 'hair-08', 'hair-11', 'hair-13', 'hair-15'}
-FORA_GORRO = {'hair-08', 'hair-11', 'hair-13', 'hair-15', 'hair-18'}
+# Cabelo que o arco da tiara não cobre (o crespo volumoso; ver conferir_festas.py).
 FORA_TIARA = {'hair-15'}
+# Planta do crânio (corte horizontal das cabeças entre z 1.8 e 2.05): 13% mais funda que larga e
+# um pouco quadrada (superelipse de expoente 2.25), centrada em y = C.y.
+Q_OVAL, P_OVAL = 1.13, 2.25
+# Altura (no eixo da cabeça) do centro da boca de cada chapéu; ver a régua em conferir_festas.py.
+Z_CARTOLA, Z_PALHA, Z_GORRO = 2.05, 1.90, 1.88
 
 
 # ── ajudantes ───────────────────────────────────────────────────────────────────────────────
@@ -60,37 +63,62 @@ def local(pontos, M):
     return h[:, :3]
 
 
-def assentar(pontos, M, oco, z0=1.6, z1=2.9, folga=0.012):
-    """Menor altura da base (no eixo do chapéu) para que nenhum ponto acima dela fique fora do oco.
-    `oco(r, h)` diz, para arrays, se o ponto a raio r e altura h acima da base está no oco."""
-    p = local(pontos, M)
-    r = np.hypot(p[:, 0], p[:, 1])
-    lo, hi = z0, z1
-    for _ in range(32):
-        mid = (lo + hi) / 2
-        h = p[:, 2] - mid
-        sel = h > -folga
-        if np.all(oco(r[sel], h[sel])):
-            hi = mid
-        else:
-            lo = mid
-    return hi
+def raio_oval(x, y):
+    """Raio na planta oval do crânio: o ponto (x, y) fica na oval de tamanho r (meia-largura r,
+    meia-profundidade Q_OVAL * r). Com Q_OVAL = 1 e P_OVAL = 2 é o raio comum."""
+    return (np.abs(x) ** P_OVAL + np.abs(y / Q_OVAL) ** P_OVAL) ** (1 / P_OVAL)
 
 
-def menor_escala(pontos, M, oco, k0=0.5, k1=3.0):
-    """Menor escala k do oco (`oco(r, h, k)`) que guarda todos os pontos acima da base (h > 0)."""
+def n_oval(u):
+    return (abs(math.cos(u)) ** P_OVAL + abs(math.sin(u) / Q_OVAL) ** P_OVAL) ** (1 / P_OVAL)
+
+
+def menor_escala(pontos, M, oco, k0=0.3, k1=2.0, folga=0.012):
+    """Menor escala s do chapéu para que o oco de referência (`oco(r, h)`, em arrays, r na planta
+    oval e h acima da boca) guarde todos os pontos acima da boca (M = posição e inclinação)."""
     p = local(pontos, M)
-    r = np.hypot(p[:, 0], p[:, 1])
-    sel = p[:, 2] > -0.012
-    r, h = r[sel], p[sel, 2]
+    r = raio_oval(p[:, 0], p[:, 1])
+    h = p[:, 2]
+    sel = h > -folga
+    r, h = r[sel], h[sel]
     lo, hi = k0, k1
     for _ in range(32):
         mid = (lo + hi) / 2
-        if np.all(oco(r, h, mid)):
+        if np.all(oco(r / mid, h / mid)):
             hi = mid
         else:
             lo = mid
     return hi
+
+
+def menor_altura(pontos, M, oco, s, k0=0.3, k1=2.0, folga=0.012):
+    """Com a planta já na escala s, a menor escala da altura que ainda guarda os pontos: o gorro
+    fica rente à cabeça em vez de alto."""
+    p = local(pontos, M)
+    r = raio_oval(p[:, 0], p[:, 1])
+    h = p[:, 2]
+    sel = h > -folga
+    r, h = r[sel], h[sel]
+    lo, hi = k0, k1
+    for _ in range(32):
+        mid = (lo + hi) / 2
+        if np.all(oco(r / s, h / mid)):
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
+def colocar(o, M, s, oval=True, sz=None):
+    """Leva uma parte desenhada no tamanho de referência (planta redonda, boca em z = 0) para a
+    cabeça: escala s (sz na altura, se dada), planta oval do crânio e depois M. Todas as partes
+    passam pela mesma conta, e o que estava colado na copa continua colado."""
+    sz = s if sz is None else sz
+    for v in o.data.vertices:
+        x, y, z = v.co
+        f = s / n_oval(math.atan2(y, x)) if oval and (x or y) else s
+        v.co = M @ Vector((x * f, y * f, z * sz))
+    o.data.update()
 
 
 def revolve(loop, seg=32, closed=True, radial=None):
@@ -123,11 +151,6 @@ def revolve(loop, seg=32, closed=True, radial=None):
                 bm.faces.new((a[k], a[k2], b[k2], b[k]))
     bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
     return new_obj('revolucao', bm)
-
-
-def place(o, M):
-    o.data.transform(M)
-    o.data.update()
 
 
 def emissivo(m, strength=0.6):
@@ -222,20 +245,20 @@ def cabeca(arm, head, pid, meshes):
 
 # ── Carnaval ────────────────────────────────────────────────────────────────────────────────
 def cartolinha():
-    pts = pontos_de(CABELOS + CABECAS)
-    todos = juntar_pontos(pts, FORA_CARTOLA)
+    cabecas = juntar_pontos(pontos_de(CABECAS))
     reset()
     random.seed(8)
     arm, head = load('head-01')
+    # Tamanho de referência (o de 31/10, feito para caber sobre os cabelos); `menor_escala` encolhe.
     R_IN, H_IN = 0.385, 0.40          # oco: cilindro um pouco mais largo em cima
     R_CO, R_BO, T_B, H = 0.405, 0.58, 0.022, 0.43
-    M0 = Matrix.Translation((0.0, -0.02, 2.2)) @ Matrix.Rotation(math.radians(-7), 4, 'Y') @ Matrix.Translation((0, 0, -2.2))
+    # Boca no alto da cabeça, como a cartola antiga (hat-04): inclinada para trás e de lado.
+    M = Matrix.Translation((0.0, C.y, Z_CARTOLA)) @ Matrix.Rotation(math.radians(-6), 4, 'X') @ Matrix.Rotation(math.radians(-7), 4, 'Y')
 
     def oco(r, h):
         return (r < R_IN + 0.02 * np.clip(h / H_IN, 0, 1) - 0.012) & (h < H_IN - 0.012)
-    zb = assentar(todos, M0, oco)
-    print('cartolinha: base em', round(zb, 3))
-    M = M0 @ Matrix.Translation((0, 0, zb))
+    s = menor_escala(cabecas, M, oco)
+    print('cartolinha: escala', round(s, 3))
     # Copa de lantejoula: anéis com os vértices tremidos e sombra chapada (cada face brilha de um jeito).
     rings = 9
     loop = [(0.0, H_IN), (R_IN + 0.02, H_IN), (R_IN, 0.0), (R_BO, 0.0), (R_BO, T_B)]
@@ -249,12 +272,12 @@ def cartolinha():
             v.co.x *= f
             v.co.y *= f
             v.co.z += random.uniform(-0.006, 0.006)
-    place(copa, M)
+    colocar(copa, M, s)
     shade(copa, False)
     set_material(copa, metal(mat('Color_', hexrgb('#8e44ad'), 0.3)))
     # Fita dourada na base da copa.
     fita = revolve([(R_CO - 0.004, T_B), (R_CO + 0.016, T_B), (R_CO + 0.016, T_B + 0.075), (R_CO - 0.004, T_B + 0.075)], seg=28)
-    place(fita, M)
+    colocar(fita, M, s)
     set_material(fita, metal(mat('Fita', hexrgb('#f1c40f'), 0.35)))
     # Pluma curta presa na fita, do lado direito, inclinada para trás.
     base_p = Vector((-0.36, 0.17, T_B + 0.06))
@@ -264,7 +287,7 @@ def cartolinha():
     for v in pena.data.vertices:  # achatada: larga de lado, fina de frente
         d = v.co - base_p
         v.co.x = base_p.x + d.x * 0.45
-    place(pena, M)
+    colocar(pena, M, s)
     set_material(pena, mat('Pluma', hexrgb('#f8a5c2'), 0.9))
     # Serpentina enrolada na aba (duas voltas largas em torno da aba, cada uma com 26 espirais).
     serps = []
@@ -277,10 +300,10 @@ def cartolinha():
             v = fase + 2 * math.pi * 22 * (u1 - u0) * t
             re, a = R_BO - 0.035, 0.032
             pts_s.append(Vector(((re + a * math.cos(v)) * math.cos(u), (re + a * math.cos(v)) * math.sin(u), T_B / 2 + a * math.sin(v))))
-        s = tube(pts_s, [0.0065] * n, seg=4)
-        place(s, M)
-        set_material(s, mat('Serpentina', hexrgb(cor), 0.5))
-        serps.append(s)
+        sp = tube(pts_s, [0.0065] * n, seg=4)
+        colocar(sp, M, s)
+        set_material(sp, mat('Serpentina', hexrgb(cor), 0.5))
+        serps.append(sp)
     # Ponta solta da serpentina caindo da aba, enrolada.
     ponta = []
     u = 2 * math.pi * 1.15
@@ -290,7 +313,7 @@ def cartolinha():
         ang = u + 0.4 * t
         ponta.append(Vector((r * math.cos(ang) + 0.025 * math.cos(9 * t * math.pi), r * math.sin(ang) + 0.025 * math.sin(9 * t * math.pi), -0.12 * t)))
     pt = tube(ponta, [0.0065] * 26, seg=4)
-    place(pt, M)
+    colocar(pt, M, s)
     set_material(pt, serps[0].data.materials[0])
     serp = join(serps[:1] + [pt], 'Serpentina')
     meshes = [copa, fita, pena, serp, serps[1]]
@@ -393,9 +416,10 @@ def colete():
 
 
 # ── Junina ──────────────────────────────────────────────────────────────────────────────────
-def remendo(M, ang, z0, w, h, r, cor, flor, seed):
+def remendo(pos, ang, z0, w, h, r, cor, flor, seed):
     """Remendo de chita colado na copa: retângulo curvo com florzinhas. `r(z)` é o raio de fora da
-    copa na altura z (o remendo acompanha a copa que afina para cima)."""
+    copa na altura z (o remendo acompanha a copa que afina para cima); `pos(o)` leva cada parte do
+    tamanho de referência para a cabeça, como a copa."""
     rnd = random.Random(seed)
     bm = bmesh.new()
     nu, nv = 4, 3
@@ -412,7 +436,7 @@ def remendo(M, ang, z0, w, h, r, cor, flor, seed):
             bm.faces.new((grid[j][i], grid[j][i + 1], grid[j + 1][i + 1], grid[j + 1][i]))
     p = new_obj('remendo', bm)
     solidify(p, 0.006, offset=-1)
-    place(p, M)
+    pos(p)
     set_material(p, mat('Chita', hexrgb(cor), 0.8))
     flores = []
     for k in range(5):
@@ -421,27 +445,27 @@ def remendo(M, ang, z0, w, h, r, cor, flor, seed):
         c = Vector(((r(z) + 0.0135) * math.cos(a), (r(z) + 0.0135) * math.sin(a), z))
         flores.append(disco(c, Vector((math.cos(a), math.sin(a), 0)), 0.016, n=10, lobos=1))
     f = join(flores, 'Florzinhas')
-    place(f, M)
+    pos(f)
     set_material(f, mat('Chita', hexrgb(flor), 0.7))
     return p, f
 
 
 def palha():
-    pts = pontos_de(CABELOS + CABECAS)
-    todos = juntar_pontos(pts, FORA_PALHA)
+    cabecas = juntar_pontos(pontos_de(CABECAS))
     reset()
     random.seed(9)
     arm, head = load('head-01')
-    # Oco da copa: 0.45 na boca, fechando em cúpula; a aba larga e desfiada.
+    # Oco da copa no tamanho de referência: 0.45 na boca, fechando em cúpula; a aba larga e desfiada.
     def r_in(h):
         return 0.45 - 0.05 * np.clip(h / 0.26, 0, 1) ** 2
 
     def oco(r, h):
         return (r < r_in(h) - 0.012) & (h < 0.35 - 0.012) & ((h < 0.24) | (r < 0.40 * np.sqrt(np.clip(1 - ((h - 0.24) / 0.11) ** 2, 0, 1)) - 0.012))
-    M0 = Matrix.Translation((0.0, 0.0, 2.1)) @ Matrix.Rotation(math.radians(6), 4, 'X') @ Matrix.Translation((0, 0, -2.1))  # aba erguida na frente
-    zb = assentar(todos, M0, oco)
-    print('palha: base em', round(zb, 3))
-    M = M0 @ Matrix.Translation((0, 0, zb))
+    # Boca da copa na testa, acima das sobrancelhas, como o boné e o pirata antigos; inclinada para
+    # trás (aba erguida na frente, o rosto aparece).
+    M = Matrix.Translation((0.0, C.y, Z_PALHA)) @ Matrix.Rotation(math.radians(-6), 4, 'X')
+    s = menor_escala(cabecas, M, oco)
+    print('palha: escala', round(s, 3))
     T = 0.03
     copa_out = [(0.475, T), (0.47, 0.10), (0.455, 0.18), (0.43, 0.25), (0.40, 0.30), (0.33, 0.35), (0.20, 0.38), (0.0, 0.385)]
     copa_in = [(0.0, 0.35), (0.22, 0.345), (0.33, 0.32), (0.40, 0.24), (0.43, 0.12), (0.45, 0.0)]
@@ -454,17 +478,16 @@ def palha():
             return r + (0.03 if int(round(u / (2 * math.pi) * seg)) % 2 else -0.012) + random.uniform(-0.01, 0.01)
         return r
     chapeu = revolve(loop, seg=seg, radial=franja)
-    place(chapeu, M)
     shade(chapeu, False)
     claro, escuro = mat('Palha', hexrgb('#e8c872'), 0.9), mat('Palha_trama', hexrgb('#c9a24f'), 0.9)
     chapeu.data.materials.append(claro)
     chapeu.data.materials.append(escuro)
-    Mi = M.inverted()
     for p in chapeu.data.polygons:  # trama: faixas alternadas na copa e na aba
-        c = Mi @ p.center
+        c = p.center
         rr = math.hypot(c.x, c.y)
         k = int(c.z / 0.045) if c.z > T + 0.005 else int(rr / 0.07)
         p.material_index = k % 2
+    colocar(chapeu, M, s)
     # Fiapos soltos na borda da aba.
     fiapos = []
     for k in range(18):
@@ -474,11 +497,11 @@ def palha():
         b = d * (R_BO + 0.07 + random.uniform(0, 0.03)) + Vector((random.uniform(-0.02, 0.02), random.uniform(-0.02, 0.02), -0.05))
         fiapos.append(tube([a, (a + b) / 2, b], [0.006, 0.005, 0.003], seg=3))
     fi = join(fiapos, 'Fiapos')
-    place(fi, M)
+    colocar(fi, M, s)
     set_material(fi, escuro)
     # Fita da copa (cor da paleta).
     fita = revolve([(0.47, T + 0.002), (0.488, T + 0.002), (0.483, T + 0.075), (0.465, T + 0.075)], seg=seg)
-    place(fita, M)
+    colocar(fita, M, s)
     set_material(fita, mat('Color_', hexrgb('#c0392b'), 0.7))
     shade(fita, True)
     # Dois remendos de chita na copa (um na frente à esquerda, outro atrás à direita).
@@ -487,8 +510,10 @@ def palha():
             if z <= z1:
                 return r0 + (r1 - r0) * (z - z0) / (z1 - z0)
         return copa_out[-1][0]
-    p1, f1 = remendo(M, math.radians(-120), 0.185, 0.24, 0.14, r_copa, '#c0392b', '#f6d32d', 1)
-    p2, f2 = remendo(M, math.radians(35), 0.19, 0.20, 0.12, r_copa, '#2980b9', '#ffffff', 2)
+    def pos(o):
+        colocar(o, M, s)
+    p1, f1 = remendo(pos, math.radians(-120), 0.185, 0.24, 0.14, r_copa, '#c0392b', '#f6d32d', 1)
+    p2, f2 = remendo(pos, math.radians(35), 0.19, 0.20, 0.12, r_copa, '#2980b9', '#ffffff', 2)
     chita = join([p1, p2], 'Chita')
     flores = join([f1, f2], 'Flores')
     cabeca(arm, head, 'hat-palha', [chapeu, fi, fita, chita, flores])
@@ -714,21 +739,24 @@ def capa():
 
 # ── Fim de ano ──────────────────────────────────────────────────────────────────────────────
 def gorro():
-    pts = pontos_de(CABELOS + CABECAS)
-    todos = juntar_pontos(pts, FORA_GORRO)
+    cabecas = juntar_pontos(pontos_de(CABECAS))
     reset()
     random.seed(10)
     arm, head = load('head-01')
-    # Boca do gorro num plano inclinado: alta na testa (acima das sobrancelhas), baixa na nuca.
-    tilt = math.radians(-16)
-    M0 = Matrix.Translation((0, 0.0, 1.835)) @ Matrix.Rotation(tilt, 4, 'X')
-    RAZAO, P = 1.1, 2.6  # cúpula cheia (superelipse): cabe o mesmo cabelo com menos largura
+    # Boca do gorro num plano inclinado: alta na testa (acima das sobrancelhas), baixa na nuca, por
+    # cima das orelhas.
+    M0 = Matrix.Translation((0, C.y, Z_GORRO)) @ Matrix.Rotation(math.radians(-12), 4, 'X')
+    RAZAO, P = 1.1, 2.6  # cúpula cheia (superelipse)
+    k = 0.58  # raio do oco no tamanho de referência (o de 31/10, sobre os cabelos)
 
-    def oco(r, h, k):
+    def oco(r, h):
         hh = np.clip(h / (RAZAO * k), 0, 1)
         return (r < k * np.clip(1 - hh ** P, 0, 1) ** (1 / P) - 0.012) & (h < RAZAO * k - 0.012)
-    k = menor_escala(todos, M0, oco)
-    print('gorro: raio do oco', round(k, 3))
+    s = menor_escala(cabecas, M0, oco)
+    # Rente na altura e mais 7 cm no cocuruto (entre o gorro de Natal hat-03, 4 cm, e o boné
+    # hat-02, 11 cm): a cúpula continua de gorro, sem virar touca de natação.
+    sz = menor_altura(cabecas, M0, oco, s) + 0.07 / (RAZAO * k)
+    print('gorro: escala', round(s, 3), 'altura', round(sz, 3))
     R, H = k + 0.012, RAZAO * k + 0.012
     T = 0.035
 
@@ -744,20 +772,21 @@ def gorro():
     def nervura(r, z, u):  # tricô: nervuras verticais só por fora
         return r * (1 + 0.018 * math.cos(20 * u)) if (r, z) in fora else r
     corpo = revolve(loop, seg=40, radial=nervura)
-    place(corpo, M0)
+    colocar(corpo, M0, s, sz=sz)
     set_material(corpo, mat('Color_', hexrgb('#c0392b'), 0.95))
     shade(corpo, True)
     # Barra branca dobrada na boca e pompom no topo.
     barra = revolve([(R - 0.002, -0.01), (R + T + 0.02, -0.01), (R + T + 0.03, 0.055), (R + T + 0.02, 0.12), (R - 0.002, 0.12)], seg=40,
                     radial=lambda r, z, u: r * (1 + 0.012 * math.cos(20 * u)) if r > R + T else r)
-    place(barra, M0)
+    colocar(barra, M0, s, sz=sz)
     branco = mat('Barra', hexrgb('#f4f4f4'), 0.95)
     set_material(barra, branco)
     shade(barra, True)
-    pom = ico(Vector((0, -0.02, H + T + 0.08)), 0.14, sub=2)
+    pc = Vector((0, -0.02, (H + T) * sz / s + 0.08))  # no topo da cúpula, já na altura ajustada
+    pom = ico(pc, 0.14, sub=2)
     for v in pom.data.vertices:
-        v.co += (v.co - Vector((0, -0.02, H + T + 0.08))).normalized() * random.uniform(-0.012, 0.012)
-    place(pom, M0)
+        v.co += (v.co - pc).normalized() * random.uniform(-0.012, 0.012)
+    colocar(pom, M0, s, oval=False)  # o pompom fica redondo
     set_material(pom, mat('Pompom', hexrgb('#ffffff'), 1.0))
     shade(pom, True)
     cabeca(arm, head, 'hat-gorro', [corpo, barra, pom])

@@ -201,8 +201,9 @@ function triangleCount(doc: GlbDoc): number {
 /**
  * Roupas de festa (B16, 31/10/2026), feitas por `scripts/avatar-blender/festas.py`. Ainda NÃO estão
  * no catálogo (`AVATAR_PART_INFO` é da dona e entra depois), então os testes de cima não as veem:
- * aqui o teste lê os oito GLBs direto. Os cabelos que os chapéus e a tiara não atravessam são
- * conferidos no Blender por `conferir_festas.py` (relatório em `festas-relatorio.json`).
+ * aqui o teste lê os oito GLBs direto. O encaixe dos chapéus nas cabeças (o app esconde o cabelo
+ * debaixo do chapéu) e os cabelos que a tiara não atravessa são conferidos no Blender por
+ * `conferir_festas.py` (relatório em `festas-relatorio.json`).
  */
 describe('avatar3d: roupas de festa (GLBs lidos direto)', () => {
   const FESTA = {
