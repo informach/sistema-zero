@@ -120,6 +120,12 @@ const ARQUIVOS: Arquivo[] = [
       caminho: `objetos/${id}.glb`,
       juntos: /^(banda|museu)-/.test(id) ? CADA_NO_SOZINHO : TODOS_JUNTOS,
     })),
+  // Os Lumis de luz (B12, `arte/lumis/luz.py`, 31/10/2026): as pinturas ficam a mais de 3 mm da
+  // camada de baixo (`ALTO_DE_LUZ`), então nenhuma pisca.
+  ...['buzio', 'ipe', 'brigadeiro', 'perola', 'cristal', 'brotinho', 'pluma'].map((id) => ({
+    caminho: `lumis/${id}-de-luz.glb`,
+    juntos: TODOS_JUNTOS,
+  })),
 ]
 
 /**

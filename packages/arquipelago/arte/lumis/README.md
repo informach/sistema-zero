@@ -3,7 +3,8 @@
 Lote 3 do `arte/INVENTARIO.md`. Os Lumis são criaturinhas de luz que nascem do Cinza. À noite os
 borrões de névoa saem e desbotam o que está fora; a lanterna prende um borrão e ele vira um Lumi
 colorido da família da ilha. Cada ilha do anel tem uma família com duas espécies, a comum e a rara, e
-a sua ilha (a praia) também.
+a sua ilha (a praia) também. Cada família tem ainda a rara de luz, que só se acha nos segredos (veja
+"Os Lumis de luz").
 
 Tudo é gerado por script no Blender sem tela (o mesmo `bpy` do Zappy e das peças do quarto):
 
@@ -36,6 +37,48 @@ ao jogo: o sistema de Lumis vem depois e, até lá, eles ficam só como arquivo.
 
 Os nomes da família da praia (Estrelinha e Búzio) e o jeito de ser dos dois são provisórios até a
 dona confirmar.
+
+## Os Lumis de luz (B12, 31/10/2026)
+
+Cada família ganhou uma terceira versão, que só se acha nos segredos: a rara de luz. Ela **nunca é
+sorteada em troca de moeda** (nem no borrão de 1 em 5, nem em loja ou sorteio pago); quem liga isso no
+jogo (baú, caderno, álbum) é a dona, e por enquanto nada no jogo usa estes arquivos.
+
+| Ilha | Lumi de luz | Rara de onde vem | Arquivo |
+|---|---|---|---|
+| Sua ilha (praia) | **Búzio de Luz** (`buzio-de-luz`) | Búzio | `buzio-de-luz.glb` |
+| Bosque dos Bichos | **Ipê de Luz** (`ipe-de-luz`) | Ipê | `ipe-de-luz.glb` |
+| Vila Doce | **Brigadeiro de Luz** (`brigadeiro-de-luz`) | Brigadeiro | `brigadeiro-de-luz.glb` |
+| Recife Coral | **Pérola de Luz** (`perola-de-luz`) | Pérola | `perola-de-luz.glb` |
+| Pico Gelado | **Cristal de Luz** (`cristal-de-luz`) | Cristal | `cristal-de-luz.glb` |
+| Vale dos Dinos | **Brotinho de Luz** (`brotinho-de-luz`) | Brotinho | `brotinho-de-luz.glb` |
+| Ilha das Nuvens | **Pluma de Luz** (`pluma-de-luz`) | Pluma | `pluma-de-luz.glb` |
+
+Como eles são: a forma da rara (o `luz.py` roda a própria função da rara de cada família com
+`L.ligar_luz()`, nada copiado à mão), com o corpo num tom mais claro e perolado que acende de leve
+(material `corpo` com emissão de força 0,3), uma **coroa de luz** de cinco pontinhas acesas acima da
+cabeça (nó `coroa-de-luz`, material `luz`) e um **rastro de luz** de três faíscas atrás (nó
+`rastro-de-luz`, material `luz`). A roda de três faíscas da rara continua, presa na coroa e girando com
+ela (no Brotinho ela passa a ficar em volta da coroa, em cima da cabeça, que fica na frente do corpo).
+
+- Os mesmos cinco clipes da rara, com os mesmos nomes, durações e laços. A coroa acompanha o corpo
+  quando ele estica e achata; dá uma volta inteira no `feliz` (e no `parado` e no `pular`) e só
+  balança no `andar` e no `trabalhar`. O rastro balança, sobe e desce atrasado e estica no `andar`
+  (nos outros clipes vai parado atrás, levado pela raiz).
+- Mesma escala da rara e frente para +Z. A raiz se chama `lumi-<id>-de-luz`.
+- Para caber nos tetos (3.000 triângulos e 130 KB), o `luz.py` gera cada um primeiro como a rara e, se
+  passar, de novo com a bola do corpo mais simples (`reducao` 1: 24 gomos viram 20; `reducao` 2:
+  também 14 anéis viram 12). Fica com o primeiro que cabe; o nível vai no `relatorio.json`. A coroa,
+  o rastro e as faíscas da roda são lisos (acesos, as facetas nem aparecem e o arquivo fica menor).
+- As pinturas do rosto, da barriga e do coração ficam 3 vezes mais afastadas da camada de baixo
+  (`ALTO_DE_LUZ`), então os sete passam limpos no `tests/faces-coplanares.test.ts`.
+
+No `relatorio.json` cada um entra com `raridade: "luz"`, `rara` (a espécie de onde vem), `reducao`,
+os materiais da coroa e do rastro e a força da emissão do corpo. O `build_all.py` confere, no fim,
+os sete contra a rara: os mesmos clipes com as mesmas durações (lidas dos GLBs), os tetos e os
+materiais. O teste `tests/lumis-de-luz.test.ts` lê os GLBs reais (clipes e durações iguais às da rara,
+coroa acima do topo do corpo em todos os clipes, a volta inteira do `feliz`, rastro atrás, corpo
+acendendo, mesma escala e frente da rara).
 
 Como eles são:
 
@@ -137,8 +180,17 @@ de altura, mais ou menos a cabeça do Zappy. A frente olha para +Z no three.js.
 | `estrelinha.glb` | 2.780 | 97 KB |
 | `buzio.glb` | 2.970 | 123 KB |
 | `borrao.glb` | 2.962 | 157 KB |
+| `buzio-de-luz.glb` | 2.954 | 126 KB |
+| `ipe-de-luz.glb` | 2.986 | 127 KB |
+| `brigadeiro-de-luz.glb` | 2.956 | 121 KB |
+| `perola-de-luz.glb` | 2.976 | 115 KB |
+| `cristal-de-luz.glb` | 1.638 | 103 KB |
+| `brotinho-de-luz.glb` | 2.946 | 123 KB |
+| `pluma-de-luz.glb` | 2.794 | 121 KB |
 
-Os números de cada geração ficam em `relatorio.json`.
+Os números de cada geração ficam em `relatorio.json` (o `build_all.py` passa o `biome format` da raiz
+no fim; quem gera uma família só, sem o `build_all.py`, passa à mão:
+`./node_modules/.bin/biome format --write packages/arquipelago/arte/lumis/relatorio.json`).
 
 ## Arquivos
 
@@ -149,8 +201,10 @@ Os números de cada geração ficam em `relatorio.json`.
   arquivo com as faixas de animação desligadas, para a pose parada do GLB ser a de descanso; assim
   `scripts/faces-coplanares.ts` não acusa nada nos dois.
 - `borrao.py`: o borrão do Cinza e as quatro animações dele.
-- `build_all.py`: gera tudo.
+- `luz.py`: os sete Lumis de luz (a rara de cada família com `L.ligar_luz()`); `ITEM=ipe,buzio` gera só
+  alguns.
+- `build_all.py`: gera tudo e confere os Lumis de luz contra as raras.
 - `previa.py`: renderiza uma cena de conferência (Cycles) a partir dos GLB; não faz parte do jogo.
-- `miniaturas.py`: as miniaturas de 160 px das 14 espécies (`src/assets/lumis/miniaturas/<id>.png`,
+- `miniaturas.py`: as miniaturas de 160 px das 14 espécies e dos 7 de luz (`src/assets/lumis/miniaturas/<id>.png`,
   com o enquadramento dos ícones dos itens) para o álbum e a rotina; depois, a paleta de 128 cores
   com `PASTA=src/assets/lumis/miniaturas python3 -I arte/itens/icones_paleta.py`.
