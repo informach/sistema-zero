@@ -23,6 +23,7 @@ import { ClimaDaIlha } from './clima-da-ilha'
 import { ColecoesDaPraia } from './colecoes-da-praia'
 import { ConvidadosDaCasa } from './convidados'
 import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
+import { EnquantoFechado } from './enquanto-fechado'
 import { FantasmaFamiliar } from './fantasma-familiar'
 import { Farol } from './farol'
 import { CameraDaFoto } from './foto'
@@ -125,6 +126,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
         <Zappy />
         <GuiaDoZappyNoMundo />
         <RotinaDosLumis />
+        <EnquantoFechado />
       </Suspense>
     </Canvas>
   )

@@ -98,7 +98,7 @@ export function PainelDeAmizadeDoAnel({ quem, painel }: { quem: MoradorDoAnel; p
             salvamento.moradores[quem].pedido?.dia === diaDe(new Date()) && (
               <div className="arq-capi-pedido feito">
                 <b>Pedido de hoje entregue</b>
-                <span>Outro pedido chega na próxima visita em um novo dia.</span>
+                <span>Outro pedido chega amanhã.</span>
               </div>
             )
           )}

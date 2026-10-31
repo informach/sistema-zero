@@ -129,4 +129,9 @@ export function resumoDoDia(antes: FotoDoDia, s: Salvamento, hoje: string): stri
   return linhas
 }
 
-export const BOA_NOITE = 'A horta continua crescendo enquanto você dorme. Nada se perde.'
+/**
+ * A horta cresce no tempo de verdade (horas), não no dia do jogo: dormir na cama não adianta a
+ * colheita, fechar o jogo também não atrasa (A14).
+ */
+export const BOA_NOITE =
+  'A horta cresce no tempo de verdade, mesmo com o jogo fechado. Nada se perde.'
