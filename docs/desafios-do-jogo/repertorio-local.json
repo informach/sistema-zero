@@ -4749,7 +4749,11 @@
         },
         {
           "id": "bandeira",
-          "descricao": "Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou."
+          "descricao": "Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo."
+        },
+        {
+          "id": "fase-2",
+          "descricao": "Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo."
         }
       ],
       "tiposJaPresentes": [
@@ -4763,6 +4767,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",
@@ -5215,7 +5220,11 @@
         },
         {
           "id": "bandeira",
-          "descricao": "Passar o buraco com um pulo e chegar à bandeira marca que a fase terminou."
+          "descricao": "Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo."
+        },
+        {
+          "id": "fase-2",
+          "descricao": "Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo."
         }
       ],
       "tiposJaPresentes": [
@@ -5229,6 +5238,7 @@
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
         "sz_g2d_draw_label",
+        "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_enable_classic_controls",
         "sz_g2d_on_key",

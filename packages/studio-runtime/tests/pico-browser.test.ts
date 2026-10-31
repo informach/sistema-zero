@@ -100,11 +100,16 @@ nativeTest(
           if (l?.type !== 'g2d:updateEachFrame') throw Error('Laço ausente')
           return l
         }
-        if (d.tipo === 'quadro-das-cores') {
-          wrong('sem-gravidade', ['andar-e-pousar', 'pular', 'agua', 'bandeira'], (behavior) => {
-            const l = laco(behavior)
-            l.body = l.body.filter((s) => s.type !== 'g2d:applyGravity')
-          })
+        // A fase de plataforma em blocos é desafio do dia desde o lote 8 (o quadro 6 é o Python).
+        if (d.slug === 'pico-fase-de-plataforma') {
+          wrong(
+            'sem-gravidade',
+            ['andar-e-pousar', 'pular', 'agua', 'bandeira', 'fase-2'],
+            (behavior) => {
+              const l = laco(behavior)
+              l.body = l.body.filter((s) => s.type !== 'g2d:applyGravity')
+            },
+          )
           wrong('sem-pouso', ['andar-e-pousar'], (behavior) => {
             // O pouso pronto: os ifs do laço que olham a faixa x de cada gelo.
             for (const s of laco(behavior).body)
@@ -122,8 +127,15 @@ nativeTest(
           wrong('agua-sem-volta', ['agua'], (behavior) => {
             contato(behavior, 'mar').body = []
           })
-          wrong('bandeira-sem-marca', ['bandeira'], (behavior) => {
+          wrong('bandeira-sem-marca', ['bandeira', 'fase-2'], (behavior) => {
             contato(behavior, 'bandeira').body = []
+          })
+          // A46: a bandeira que termina na fase 1, sem trocar de fase.
+          wrong('sem-troca-de-fase', ['bandeira', 'fase-2'], (behavior) => {
+            const corpo = contato(behavior, 'bandeira').body
+            const troca = corpo[0]
+            if (troca?.type !== 'if') throw Error('Troca de fase ausente')
+            contato(behavior, 'bandeira').body = troca.else ?? []
           })
         } else if (d.slug.endsWith('pulo-alto')) {
           wrong('pulo-antigo', ['pulo-alto'], (behavior) => forcaDoPulo(behavior, 13, 9))
