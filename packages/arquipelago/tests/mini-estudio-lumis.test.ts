@@ -55,6 +55,15 @@ const rotina: CartaoDaRotina[] = [
   { c: 'voar-ate', a: 'geladeira' },
   { c: 'guardar' },
 ]
+/**
+ * Uma rotina com Escolha, que chega no quinto posto (os cartões chegam pelo posto desde as lacunas
+ * de 01/11/2026): quem está no quarto (`algumas`, o playground) ainda não tem.
+ */
+const comEscolha: CartaoDaRotina[] = [
+  { c: 'quando-amanhecer' },
+  { c: 'voar-ate', a: 'horta' },
+  { c: 'para-cada', d: [{ c: 'escolha', casos: { 'precisa-de-agua': [{ c: 'regar' }] } }] },
+]
 test('prévia passo a passo é a execução do jogo, sem mudar o salvamento original', () => {
   const s = inicial(),
     antes = structuredClone(s),
@@ -150,7 +159,7 @@ test('permissão revogada durante a edição e teto conjunto recusam o retorno',
   const r = await abrirRotinaNaPlataforma(
     { ferramenta: 'rotina-lumi', proposito: 'rotina', molde: m },
     async () => (++n === 1 ? cartas : respostaDasCartas('algumas', 'kids')),
-    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina }),
+    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina: comEscolha }),
   )
   expect(n).toBe(2)
   expect(r.situacao).toBe('indisponivel')
@@ -223,7 +232,7 @@ test('ponte relê serviço, ignora conquistas forjadas e valida versão e abertu
   const bloqueado = await abrirRotinaNaPlataforma(
     pedido,
     async () => respostaDasCartas('algumas', 'kids'),
-    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina }),
+    async (x) => ({ versao: x.versao, abertura: x.abertura, lumi: x.lumi, rotina: comEscolha }),
   )
   expect(bloqueado.situacao).toBe('indisponivel')
   expect(

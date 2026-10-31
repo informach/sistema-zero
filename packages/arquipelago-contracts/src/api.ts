@@ -132,7 +132,12 @@ export const CartasDoJogadorSchema = z.strictObject({
       tipo: z.enum(['quando', 'acao', 'controle']),
       efeito: z.string().max(200),
       conquistada: z.boolean(),
-      /** Só nos que faltam: os cursos que liberam o bloco do cartão. */
+      /**
+       * A posição do posto em que o cartão chega (lacunas, 01/11/2026). Opcional: um serviço de
+       * antes não manda.
+       */
+      posto: z.number().int().min(1).max(8).optional(),
+      /** Só nos que faltam: os cursos que ensinam o bloco do cartão. */
       aprendaEm: z.array(
         z.strictObject({
           courseId: z.uuid(),

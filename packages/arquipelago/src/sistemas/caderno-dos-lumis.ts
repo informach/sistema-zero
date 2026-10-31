@@ -1,13 +1,14 @@
 import {
   type CartasDoJogador,
   CartasDoJogadorSchema,
+  ILHAS,
   type TipoDeCarta,
 } from '@sistemazero/arquipelago-contracts'
 
 /**
  * O caderno dos Lumis (regra pura, sem React): a coleção de cartões da rotina, arrumada por tipo.
  * Quem tem cada cartão vem SEMPRE do serviço (`GET /cartas`: os do jogo para todos, os de controle
- * pelos blocos conquistados nos cursos, equipe com todos); aqui só se arruma para a tela. Montar a
+ * pelo posto da Jornada, equipe com todos); aqui só se arruma para a tela. Montar a
  * rotina e o Lumi executar ficam para a Fase 2.
  */
 export type CartaDoCaderno = CartasDoJogador['cartas'][number]
@@ -27,7 +28,7 @@ const SECOES: readonly { tipo: TipoDeCarta; titulo: string; explica: string }[] 
   {
     tipo: 'controle',
     titulo: 'Controle',
-    explica: 'Os mesmos blocos do Estúdio. Cada um chega quando você aprende o bloco num curso.',
+    explica: 'Os mesmos blocos do Estúdio. Cada um chega num posto da Jornada.',
   },
 ]
 
@@ -38,6 +39,16 @@ export function secoesDoCaderno(cartas: readonly CartaDoCaderno[]): SecaoDoCader
     if (daSecao.length === 0) return []
     return [{ ...s, cartas: daSecao, prontas: daSecao.filter((c) => c.conquistada).length }]
   })
+}
+
+/**
+ * Quando um cartão que falta chega: com a ilha do posto dele (os cartões chegam pelo posto da
+ * Jornada desde as lacunas de 01/11/2026). `null` sem o posto (serviço de antes).
+ */
+export function quandoChega(carta: CartaDoCaderno): string | null {
+  if (carta.conquistada || carta.posto === undefined) return null
+  const nome = ILHAS.find((i) => i.posicao === carta.posto)?.nome
+  return nome ? `Chega quando ${nome} abrir.` : null
 }
 
 /** Onde aprender um cartão que falta: o curso mais cedo (o serviço já manda em ordem). */
