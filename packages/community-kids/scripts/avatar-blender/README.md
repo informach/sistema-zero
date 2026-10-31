@@ -64,11 +64,13 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
   (`Z_CARTOLA`, `Z_PALHA`, `Z_GORRO`) seguem a régua dos chapéus antigos: a palha e o gorro descem
   até a testa, acima das sobrancelhas, como o boné `hat-02` e o pirata `hat-07`. A cartolinha tira o
   tamanho da boca no alto da cabeça, como a cartola `hat-04`, e depois afunda `AFUNDA_CARTOLA`
-  (8,5 cm, pedido da dona) até a aba ficar na altura da aba da cartola `hat-04` ajustada (ou abaixo
-  dela: z 2,00 na frente, 1,89 dos lados e atrás, contra 2,02, 1,95 e 1,90), a 10 cm das
-  sobrancelhas; para não crescer inteira, só a boca se abre no formato do crânio (`menor_boca`: a
-  planta alarga 1,22 vez na aba e volta ao normal no alto da copa). Mais funda, a boca aberta passa
-  da folga no oco dos chapéus antigos (10,3 cm).
+  (11,5 cm, pedido da dona) até a aba ficar abaixo da aba da cartola `hat-04` ajustada (z 1,97 na
+  frente e 1,85 dos lados e atrás, contra 2,02, 1,95 e 1,90), a 8 cm das sobrancelhas; para não
+  crescer inteira, só a boca se abre no formato do crânio (`menor_boca`: a planta alarga 1,26 vez na
+  aba e volta ao normal no alto da copa). A aba é grossa como a da `hat-04` (`T_B` 0,06, era
+  0,022), com a borda arredondada e de lantejoula; a serpentina enrola por fora dela. A folga no oco
+  (11 cm) passa da dos chapéus antigos (10,3 cm): exceção registrada em `EXCECOES_REGUA` de
+  `conferir_festas.py`, decisão da dona de 31/10/2026.
 - **A régua dos chapéus.** `conferir_festas.py` mede, em cada uma das seis cabeças, os chapéus
   antigos que ficam na cabeça (`hat-01` a `hat-04`, `hat-06`, `hat-07`; a auréola `hat-05` flutua) e
   os novos: a menor distância até a cabeça (`folga_min`), a folga do topo do crânio até o chapéu
@@ -78,13 +80,14 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
   `eyebrow-*` e `eyes-*`). O chapéu novo passa com zero vértices atravessando as cabeças,
   `folga_min` até 3 cm (o boné `hat-02`, o mais folgado dos antigos que encostam, tem 2,7), descida
   e folga no máximo iguais às dos antigos que cobrem o crânio (`hat-02`, `hat-03`, `hat-07`) e
-  `rosto` de pelo menos 6 mm. Os números de cada chapéu, os dos antigos e os limites ficam em
+  `rosto` de pelo menos 6 mm; um limite só deixa de valer para a peça listada em `EXCECOES_REGUA`,
+  com o motivo, que vai ao relatório (`excecoes_regua`). Os números de cada chapéu, os dos antigos e os limites ficam em
   `festas-relatorio.json` (`pecas.<id>`, `ajustadas.hat-04`, `regua_chapeus`); o script grava o
   relatório já no formato do biome do monorepo.
 
   | Chapéu | Escala | `folga_min` | `topo` | Frente | Lado | Nuca | `folga_oco` |
   | --- | --- | --- | --- | --- | --- | --- | --- |
-  | `hat-08` cartolinha | 0,783 (boca 1,22) | 1,2 cm | 15,9 cm | 17,6 cm | 27,1 cm | 28,9 cm | 9,7 cm |
+  | `hat-08` cartolinha | 0,783 (boca 1,26) | 1,1 cm | 12,8 cm | 17,6 cm | 28,9 cm | 28,9 cm | 11,0 cm (exceção) |
   | `hat-09` palha | 0,797 | 1,0 cm | 5,6 cm | 23,9 cm | 28,9 cm | 32,4 cm | 7,8 cm |
   | `hat-10` gorro | 0,642 (altura 0,511) | 1,0 cm | 8,8 cm | 17,6 cm | 28,9 cm | 35,1 cm | 8,5 cm |
   | `hat-04` cartola (ajustada) | boca 1,55 | 0,8 cm | 48,3 cm | 17,6 cm | 23,6 cm | 28,2 cm | 8,7 cm |
