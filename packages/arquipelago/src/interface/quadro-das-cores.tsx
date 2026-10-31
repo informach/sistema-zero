@@ -10,6 +10,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { desafioDeHoje, oQueFalta, type Quadro, quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import { receitaPeloId } from '../sistemas/receitas'
 
 /** Quanto tempo a festa da cor fica na tela antes de o serviço guardar que foi vista. */
 const FESTA_MS = 4000
@@ -29,7 +30,13 @@ function Premio({ d }: { d: DesafioNaLista | null }) {
   ]
     .filter(Boolean)
     .join(' e ')
-  const extra = r.moedasExtra > 0 ? ` O desafio extra vale mais ${r.moedasExtra}.` : ''
+  // O prêmio-objeto do extra (A25) vem junto das moedas do extra.
+  const receita = r.receitaDoExtra ? receitaPeloId(r.receitaDoExtra)?.nome.toLowerCase() : null
+  const doExtra = [
+    r.moedasExtra > 0 ? `mais ${r.moedasExtra}` : null,
+    receita ? `a receita de ${receita}` : null,
+  ].filter(Boolean)
+  const extra = doExtra.length > 0 ? ` O desafio extra vale ${doExtra.join(' e ')}.` : ''
   return partes ? <p className="arq-quadro-premio">{`Prêmio: ${partes}.${extra}`}</p> : null
 }
 

@@ -138,11 +138,20 @@ describe('o Bento: o pedido do dia', () => {
     expect(iguais).toBeLessThan(30)
   })
 
-  test('todos os pedidos saem no sorteio', () => {
-    const vistos = new Set<string>()
-    for (let d = 0; d < 200; d++)
-      vistos.add(pedidoDoDiaDoBento(bentoNovo(), `dia-${d}`, PERFIL).pedido?.id ?? '')
-    expect([...vistos].sort()).toEqual(PEDIDOS_DO_BENTO.map((p) => p.id).sort())
+  test('todos os pedidos saem no sorteio; os de prato só com a receita ensinada (A22)', () => {
+    const vistos = (amizade: number) => {
+      const ids = new Set<string>()
+      for (let d = 0; d < 300; d++)
+        ids.add(
+          pedidoDoDiaDoBento({ ...bentoNovo(), amizade }, `dia-${d}`, PERFIL).pedido?.id ?? '',
+        )
+      return [...ids].sort()
+    }
+    const daHorta = PEDIDOS_DO_BENTO.filter((p) => !p.receita).map((p) => p.id)
+    expect(vistos(0)).toEqual([...daHorta].sort())
+    // Um coração: o bolo de fubá (o primeiro prato). Dois: também o pão de queijo.
+    expect(vistos(100)).toEqual([...daHorta, 'bolo-de-fuba-1'].sort())
+    expect(vistos(200)).toEqual(PEDIDOS_DO_BENTO.map((p) => p.id).sort())
   })
 })
 

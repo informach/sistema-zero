@@ -222,6 +222,44 @@ export function guardarNaGeladeira(
   return ehAlimento(item) ? guardarAlimentoNaGeladeira(p, inventario, item) : null
 }
 
+/**
+ * A geladeira completa conserva (a proposta: "guarda 12 e conserva", "mantém fresco"; §6.28, A31):
+ * comido direto dela, o alimento vem fresquinho e sacia um quarto a mais. Nada estraga fora dela,
+ * e o holograma continua guardando e devolvendo do mesmo jeito.
+ */
+export const FRESQUINHO = 1.25
+
+export const FALA_DO_FRESQUINHO = 'Fresquinho da geladeira. Matou a fome mais um pouco.'
+
+/** Pode comer fresquinho este alimento: a geladeira tem aparência e ele está guardado nela. */
+export function podeComerFresquinho(p: ProjetoAzul, item: string): boolean {
+  return Boolean(p.aparencia) && (p.guardado?.[item] ?? 0) > 0 && ehAlimento(item)
+}
+
+/** Comer direto da geladeira completa: tira um da geladeira e sacia com o bônus de fresquinho. */
+export function comerDaGeladeira(
+  p: ProjetoAzul,
+  necessidades: Salvamento['necessidades'],
+  item: string,
+): { projeto: ProjetoAzul; necessidades: Salvamento['necessidades'] } | null {
+  const comida = ITENS[item]?.comida
+  if (!comida || !podeComerFresquinho(p, item)) return null
+  const tem = p.guardado?.[item] ?? 0
+  const guardado = { ...(p.guardado ?? {}) }
+  if (tem > 1) guardado[item] = tem - 1
+  else delete guardado[item]
+  const mais = (v = 0) => Math.round(v * FRESQUINHO)
+  const limitar = (v: number) => Math.max(0, Math.min(100, v))
+  return {
+    projeto: { ...p, guardado },
+    necessidades: {
+      fome: limitar(necessidades.fome + mais(comida.fome)),
+      energia: limitar(necessidades.energia + mais(comida.energia)),
+      diversao: limitar(necessidades.diversao + mais(comida.diversao)),
+    },
+  }
+}
+
 /** Tirar um alimento da geladeira para a mochila. */
 export function tirarDaGeladeira(
   p: ProjetoAzul,

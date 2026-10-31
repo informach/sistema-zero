@@ -12,11 +12,14 @@ import { lojaDaGaleria } from '../estado/galeria'
 import { usarAparencia } from '../sistemas/construcao/galeria'
 import {
   capacidade,
+  comerDaGeladeira,
   ehAlimento,
+  FALA_DO_FRESQUINHO,
   guardados,
   guardarNaGeladeira,
   moldaAberto,
   oQueOPintaPinta,
+  podeComerFresquinho,
   recadoDaFerramentaFechada,
   tirarDaGeladeira,
 } from '../sistemas/construcao/projeto-azul'
@@ -52,9 +55,30 @@ function Geladeira() {
         ? { ...s, projetos: { ...s.projetos, geladeira: r.projeto }, inventario: r.inventario }
         : s
     })
+  const comerFresquinho = (item: string) => {
+    let comeu = false
+    loja.getState().mudar((s) => {
+      const p = s.projetos.geladeira
+      const r = p && comerDaGeladeira(p, s.necessidades, item)
+      if (!r) return s
+      comeu = true
+      return {
+        ...s,
+        projetos: { ...s.projetos, geladeira: r.projeto },
+        necessidades: r.necessidades,
+      }
+    })
+    if (comeu) loja.getState().dizer(FALA_DO_FRESQUINHO)
+  }
   return (
     <section className="arq-objeto-geladeira" aria-label="O que está na geladeira">
       <p className="arq-quadro-sub">{`Guardados: ${tem} de ${cabe}.`}</p>
+      {projeto.aparencia ? (
+        <p className="arq-caderno-explica">
+          Com aparência, a geladeira conserva: comido daqui, o alimento vem fresquinho e mata mais a
+          fome.
+        </p>
+      ) : null}
       <h3 className="arq-menu-titulo">Na geladeira</h3>
       {dentro.length === 0 ? (
         <p className="arq-caderno-explica">Ainda vazia.</p>
@@ -75,6 +99,15 @@ function Geladeira() {
               >
                 {`${ITENS[id]?.emoji ?? ''} ${ITENS[id]?.nome ?? id} × ${q}: tirar`}
               </button>
+              {podeComerFresquinho(projeto, id) ? (
+                <button
+                  type="button"
+                  className="arq-botao leve"
+                  onClick={() => comerFresquinho(id)}
+                >
+                  {`Comer ${ITENS[id]?.nome.toLowerCase() ?? id} fresquinho`}
+                </button>
+              ) : null}
             </li>
           ))}
         </ul>

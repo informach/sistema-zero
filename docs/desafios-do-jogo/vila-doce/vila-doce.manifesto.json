@@ -15379,7 +15379,8 @@
           "cor": true,
           "atracao": "corrida-do-entregador",
           "moedas": 20,
-          "moedasExtra": 10
+          "moedasExtra": 10,
+          "receitaDoExtra": "brigadeiro"
         },
         "blocosManuais": {
           "acrescentar": [],

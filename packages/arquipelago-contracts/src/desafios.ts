@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { ILHA_IDS } from './ilhas'
 import { ProblemaDoMapaSchema } from './membros'
+import { RECEITAS } from './receitas-moradores'
 
 /**
  * Os desafios do jogo (decisão de 27/10/2026, plano em `docs/plans/2026-10-27-arquipelago-desafios.md`):
@@ -143,6 +144,14 @@ export const RecompensaDoDesafioSchema = z.strictObject({
   atracao: z.string().min(1).max(80).optional(),
   moedas: z.number().int().min(0).max(LIMITES_DO_DESAFIO.moedas),
   moedasExtra: z.number().int().min(0).max(LIMITES_DO_DESAFIO.moedasExtra),
+  /**
+   * O prêmio-objeto do desafio extra (§6.28, A25): uma receita do caderno, como na proposta
+   * ("★ extra: receita de brigadeiro"). Opcional: os conteúdos de antes continuam valendo.
+   */
+  receitaDoExtra: z
+    .string()
+    .refine((id) => RECEITAS.some((r) => r.id === id), 'Receita desconhecida')
+    .optional(),
 })
 export type RecompensaDoDesafio = z.infer<typeof RecompensaDoDesafioSchema>
 
@@ -483,6 +492,8 @@ export const DesafioNaListaSchema = z.strictObject({
   ),
   recompensa: RecompensaDoDesafioSchema,
   recompensaVista: z.boolean(),
+  /** O desafio extra já foi feito (A25: o prêmio-objeto vale). Opcional para o serviço anterior. */
+  extraFeito: z.boolean().optional(),
 })
 export type DesafioNaLista = z.infer<typeof DesafioNaListaSchema>
 

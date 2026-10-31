@@ -2,12 +2,14 @@ import { useFrame } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
 import { AdditiveBlending, BoxGeometry, EdgesGeometry, type Group } from 'three'
 import { useJogo } from '../estado/contexto'
+import { lojaDosDesafios } from '../estado/desafios'
 import { festaAtual } from '../estado/festas'
 import {
   fazerReceita,
   PAINEL_DA_BANCADA,
   receitaEmEpoca,
   receitasConhecidas,
+  receitasDosExtras,
   receitasPossiveis,
 } from '../sistemas/receitas'
 import { COLISORES_DA_BANCADA } from './colisao-da-ilha-central'
@@ -24,10 +26,11 @@ export function Bancada() {
   const { loja, plataforma } = useJogo()
   const possiveis = () => {
     const s = loja.getState().salvamento
+    const extras = receitasDosExtras(lojaDosDesafios(loja, plataforma).getState().dados)
     return receitasPossiveis(
       s.inventario,
       'bancada',
-      receitasConhecidas(s).filter((r) => receitaEmEpoca(r, festaAtual(plataforma))),
+      receitasConhecidas(s, extras).filter((r) => receitaEmEpoca(r, festaAtual(plataforma))),
     )
   }
   useInterativo('bancada', {

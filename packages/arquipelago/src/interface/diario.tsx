@@ -1,6 +1,7 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { abrirAbertura } from '../estado/abertura'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { EMOJI_DO_BICHO } from '../sistemas/bichos'
 import {
   colecaoDeReceitas,
@@ -10,6 +11,7 @@ import {
   type EstadoDoBicho,
   paginasDoDiario,
 } from '../sistemas/diario'
+import { receitasDosExtras } from '../sistemas/receitas'
 import { paginasExtras } from '../sistemas/segredos'
 import { Pegada } from './pegadas'
 import { PedidoDaIlha } from './primeiro-pedido'
@@ -88,7 +90,9 @@ export function Receita({ r }: { r: EstadoDaReceita }) {
  * a coleção de bichos e pegadas do Bosque. Só lê o salvamento; nada aqui muda o jogo.
  */
 export function Diario() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
+  const dadosDosDesafios = useDesafios(lojaDosDesafios(loja, plataforma), (s) => s.dados)
+  const extras = useMemo(() => receitasDosExtras(dadosDosDesafios), [dadosDosDesafios])
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_DIARIO)
   const salvamento = useEstado((s) => s.salvamento)
   const fechar = useRef<HTMLButtonElement>(null)
@@ -103,7 +107,7 @@ export function Diario() {
   const colecao = colecaoDoBosque(salvamento)
   const abertas = paginas.filter((p) => p.aberta).length
   const conhecidos = colecao.filter((b) => b.estado !== 'escondido').length
-  const receitas = colecaoDeReceitas(salvamento)
+  const receitas = colecaoDeReceitas(salvamento, extras)
   const sabidas = receitas.filter((r) => r.sabe).length
 
   return (
