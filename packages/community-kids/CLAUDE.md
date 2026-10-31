@@ -107,7 +107,7 @@ itens. Medido no staging: 726×484 → 972×808 em 1440×900, sem rolagem. Teste
 
 Pedido dela: o currículo novo tinha trocado as telas aprovadas por componentes genéricos. Elas
 voltaram, nas peças da casa, em `components/kids/creator-journey/` (`parts`, `trail`, `map`,
-`mastery`, `course-context`, `studio-modes`). Nome único: **Cursos da trilha** (2D e 3D).
+`mastery`, `studio-modes`). Nome único: **Cursos da trilha** (2D e 3D).
 
 - **`/cursos`** (`KidsCreatorCatalog`): cabeçalho centrado, o mapa em fita
   (`CreatorJourneyMapKids`, com `JourneyRibbon`/`ProgressDots` do `journey-map.tsx`, agora
@@ -129,10 +129,12 @@ voltaram, nas peças da casa, em `components/kids/creator-journey/` (`parts`, `t
 - **Maestrias**: `KidsMasteryHub` ("Escolha no que quer ficar craque") e `KidsMasteryArea`. Cada
   nível é um `HeadingDisclosure` do `@sistemazero/ui` (o `<h2>` com o botão de abrir dentro): no
   `<summary>` o título sumia da lista de títulos do leitor de tela. O nível atual nasce aberto.
-- **Início, perfil, pais, curso, Criar e celebração**: `creator-journey-card` com as pílulas,
-  `journey-timeline` (escada de postos), `child-progress` (pílulas), `KidsCourseJourneyContext`
-  ("Como funciona a missão" com os quadros verdadeiros), `StudioModes` em Criar e a celebração de
-  nível com "A Trilha X abriu".
+- **Página do curso (31/10/2026):** o botão de voltar à trilha e o título precedem os módulos e
+  as aulas. Sem cartão contextual e sem outro botão para ver a trilha. O aviso de publicação
+  pendente continua aparecendo quando necessário.
+- **Início, perfil, pais, Criar e celebração**: `creator-journey-card` com as pílulas,
+  `journey-timeline` (escada de postos), `child-progress` (pílulas), `StudioModes` em Criar e a
+  celebração de nível com "A Trilha X abriu".
 - Testes: `tests/creator-journey-screens.test.tsx` (componentes reais) e os guardas de texto.
 
 ## Currículo comum da Jornada do Criador (25/10/2026)

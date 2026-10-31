@@ -1,12 +1,8 @@
-import {
-  isKidsStaffPreview,
-  kidsJourneyAccess,
-} from '@sistemazero/member-shell/lib/kids-journey-access'
+import { kidsJourneyAccess } from '@sistemazero/member-shell/lib/kids-journey-access'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { KidsBackButton } from '@/components/kids/back-button'
 import { CourseTrail } from '@/components/kids/course-trail'
-import { KidsCourseJourneyContext } from '@/components/kids/creator-journey/course-context'
 import { KidsBand } from '@/components/kids/kids-band'
 import {
   journeyLockLevel,
@@ -64,18 +60,6 @@ export default async function CoursePage({
           </h1>
         </div>
       </KidsBand>
-
-      {course.curriculum || course.accessReason ? (
-        <KidsBand tone="creme" innerClassName="py-3 md:py-4">
-          <div className="mx-auto max-w-[40rem]">
-            <KidsCourseJourneyContext
-              placement={course.curriculum}
-              accessReason={course.accessReason}
-              view={journey && !isKidsStaffPreview(journey) ? (journey.curriculum ?? null) : null}
-            />
-          </div>
-        </KidsBand>
-      ) : null}
 
       {/* A régua saiu: quem separa as partes agora é a troca de FAIXA. */}
       {pendingPublication && (deliveryState === 'pending' || deliveryState === 'delivered') ? (
