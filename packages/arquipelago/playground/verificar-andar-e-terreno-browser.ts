@@ -308,6 +308,27 @@ try {
     const noComodo = await levar(p, { x: -3, y: PISO_DE_CIMA, z: -4 }, Math.PI / 2)
     dePeEm(noComodo, PISO_DE_CIMA, 'No cômodo de cima')
     await p.screenshot({ path: path.join(prints, 'comodo-de-cima.png') })
+    // A poltrona do cômodo da direita (a célula x 3 a 4, z -6 a -5): andando para o fundo, ela
+    // segura o corpo antes da parede do fundo (z -8).
+    const naFrente = await levar(p, { x: 3.5, y: PISO_DE_CIMA, z: -1.5 }, 0)
+    dePeEm(naFrente, PISO_DE_CIMA, 'Na frente da poltrona de cima')
+    let antesDaPoltrona = naFrente
+    let paradoNela = 0
+    const naPoltrona = await andarAte(
+      p,
+      (c) => {
+        paradoNela =
+          Math.hypot(c.x - antesDaPoltrona.x, c.z - antesDaPoltrona.z) < 0.005 ? paradoNela + 1 : 0
+        antesDaPoltrona = c
+        return paradoNela >= 4
+      },
+      1500,
+    )
+    console.log(`Encostado na poltrona de cima: z ${naPoltrona.z.toFixed(2)}`)
+    assert(paradoNela >= 4, 'não parou na poltrona de cima')
+    assert(naPoltrona.z > -5.2, `a poltrona de cima não segurou (z ${naPoltrona.z.toFixed(2)})`)
+    dePeEm(await assentar(p), PISO_DE_CIMA, 'Encostado na poltrona de cima')
+    await p.screenshot({ path: path.join(prints, 'poltrona-de-cima.png') })
     // A porta de lambri do andar vista do piso aberto (de x < -6, olhando para +x).
     const noAberto = await levar(p, { x: -8.5, y: PISO_DE_CIMA, z: -2.5 }, -Math.PI / 2)
     dePeEm(noAberto, PISO_DE_CIMA, 'No piso aberto')
@@ -334,7 +355,9 @@ try {
     await p.getByRole('button', { name: 'Andar de cima', exact: true }).click()
     await quadros(p, 4)
     assert.equal(await barra.getByRole('button', { name: /Terreno/ }).count(), 0)
-    assert.equal(await barra.getByRole('button', { name: /Móveis/ }).count(), 0)
+    // Os móveis vão nos cômodos de cima (31/10/2026); o "Meu quarto" fica só no térreo.
+    await barra.getByRole('button', { name: /Móveis/ }).waitFor()
+    assert.equal(await p.getByRole('button', { name: /Meu quarto/ }).count(), 0)
     await barra.getByRole('button', { name: /Parede/ }).waitFor()
     await p.screenshot({ path: path.join(prints, 'construir-andar-de-cima.png') })
     await p.getByRole('button', { name: 'Térreo', exact: true }).click()

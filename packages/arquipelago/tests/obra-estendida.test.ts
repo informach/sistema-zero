@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import {
   CELULAS_MOLDADAS_MAXIMO,
   criarSalvamentoInicial,
+  MOVEIS,
   OBJETOS_DA_CASA,
   OBRA_ESTENDIDA_MAX_BYTES,
   type ObraEstendida,
@@ -387,6 +388,8 @@ describe('o documento cheio da obra estendida (plano do E04, "Verificação prev
         paredes: trechos(cima.trechosDeParede),
         aberturas: janelas(cima.aberturas),
         pisos: pisos(cima.pisos),
+        // Os móveis dos cômodos de cima no teto, com o índice e as coordenadas mais compridos.
+        moveis: Array.from({ length: cima.moveis }, () => [MOVEIS.length - 1, -60, -60, 3]),
       },
       terreno: {
         alturas: Array.from({ length: CELULAS_MOLDADAS_MAXIMO }, (_, i) => {

@@ -3,6 +3,7 @@ import { join } from 'node:path'
 import {
   type AndarDeCima,
   criarSalvamentoInicial,
+  MOVEIS,
   type Obra,
 } from '@sistemazero/arquipelago-contracts'
 import { criarLojaDaConstrucao, type FonteDoAndar } from '../src/estado/construcao'
@@ -36,6 +37,7 @@ import {
 } from '../src/sistemas/construcao/andar'
 import { planta } from '../src/sistemas/construcao/comodos'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
+import { porMovel } from '../src/sistemas/construcao/moveis'
 import { esticarParede, porAbertura } from '../src/sistemas/construcao/obra'
 import { NADA_CORTADO, TUDO_CORTADO } from '../src/sistemas/construcao/pecas'
 import { carregarGlb } from './ajuda-colisores'
@@ -503,5 +505,107 @@ describe('o andar de cima da casa (E04, Pico)', () => {
     expect(casa()).toBe(antes)
     expect(conferirAndar(caixa.andar, casa(), LOTE)).toBeNull()
     expect(falas).toContain(FALA_DO_ANDAR['quebra-o-andar'])
+  })
+
+  describe('móveis nos cômodos de cima (revisão de 31/10)', () => {
+    /** A sala com a escada e dois cômodos de cima, em cima do quarto. */
+    function comComodosEmCima() {
+      const obra = obraComSala()
+      const andar = comEscada(obra)
+      const lote = loteDeCima(LOTE)
+      let cima = obraDeCima(andar)
+      for (const [a, b] of [
+        [
+          { x: -6, z: -8 },
+          { x: 6, z: -8 },
+        ],
+        [
+          { x: -6, z: 0 },
+          { x: 6, z: 0 },
+        ],
+        [
+          { x: -6, z: -8 },
+          { x: -6, z: 0 },
+        ],
+        [
+          { x: 6, z: -8 },
+          { x: 6, z: 0 },
+        ],
+        [
+          { x: 0, z: -8 },
+          { x: 0, z: 0 },
+        ],
+      ] as const) {
+        const r = esticarParede(cima, lote, a, b)
+        if (!r.ok) throw new Error(r.motivo)
+        cima = r.obra
+      }
+      return { obra, andar, lote, cima }
+    }
+
+    test('o móvel vai num cômodo de cima, e não no piso aberto', () => {
+      const { obra, andar, lote, cima } = comComodosEmCima()
+      const r = porMovel(cima, lote, 'poltrona', { x: -3, z: -4 }, 0)
+      if (!r.ok) throw new Error(r.motivo)
+      const comMovel = andarDaObra(r.obra, andar.escada)
+      expect(comMovel.moveis).toHaveLength(1)
+      expect(conferirAndar(comMovel, obra, LOTE)).toBeNull()
+      // O piso aberto (em cima da sala) não é cômodo.
+      expect(porMovel(cima, lote, 'poltrona', { x: -8, z: -7 }, 0).ok).toBe(false)
+      // O andar sem móvel não grava o campo (igual aos gravados antes).
+      expect('moveis' in andarDaObra(cima, andar.escada)).toBe(false)
+    })
+
+    test('móvel fora de cômodo ou no vão da escada é recusado; a escada não sai com móvel', () => {
+      const { obra, andar, cima } = comComodosEmCima()
+      const indice = MOVEIS.indexOf('poltrona')
+      const noVao = { ...andarDaObra(cima, andar.escada), moveis: [[indice, -10, -3, 0]] as never }
+      expect(conferirAndar(noVao, obra, LOTE)).toBe('movel-fora')
+      const comMovel = { ...andar, moveis: [[indice, -3, -4, 0]] as never }
+      expect(tirarEscada(comMovel)).toEqual({ ok: false, motivo: 'escada-com-obra' })
+    })
+
+    test('a loja do Construir põe o móvel lá em cima e o Desfazer de cima o tira', () => {
+      const { obra, andar, lote, cima } = comComodosEmCima()
+      const inicial = criarSalvamentoInicial(new Date('2026-10-31T12:00:00Z'))
+      const loja = criarLoja({
+        salvamento: {
+          ...inicial,
+          casa: { portaNova: true },
+          construcao: { ...inicial.construcao, casa: obra },
+        },
+        jornada: POSICAO_DO_ANDAR,
+        quarto: QUARTO_DE_EXEMPLO,
+        avatar: {} as never,
+        acesso: {
+          liberado: true,
+          motivo: null,
+          limiteDiarioMinutos: null,
+          usadoHojeSegundos: 0,
+          contabilizaTempo: false,
+        },
+        aoMudar: () => {},
+      })
+      const caixa: { andar: AndarDeCima | null } = { andar: andarDaObra(cima, andar.escada) }
+      const construcao = criarLojaDaConstrucao(loja)
+      const s = () => construcao.getState()
+      s().registrarAndar({
+        ler: () => caixa.andar,
+        gravar: (a) => {
+          caixa.andar = a
+        },
+      })
+      s().abrir()
+      s().escolherCamada('cima')
+      s().escolher('movel')
+      expect(s().ferramenta).toBe('movel')
+      const r = porMovel(obraDeCima(caixa.andar), lote, 'poltrona', { x: 2, z: -3 }, 0)
+      expect(s().aplicar(r)).toBe(true)
+      expect(caixa.andar?.moveis).toHaveLength(1)
+      // A obra do térreo não mudou.
+      expect(loja.getState().salvamento.construcao.casa).toBe(obra)
+      s().desfazer()
+      expect(caixa.andar?.moveis ?? []).toHaveLength(0)
+    })
   })
 })

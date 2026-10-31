@@ -1,4 +1,9 @@
-import { type AndarDeCima, AndarDeCimaSchema, type Obra } from '@sistemazero/arquipelago-contracts'
+import {
+  type AndarDeCima,
+  AndarDeCimaSchema,
+  MOVEIS_NA_CASA_MAXIMO,
+  type Obra,
+} from '@sistemazero/arquipelago-contracts'
 import { type Planta, planta } from './comodos'
 import {
   type Aresta,
@@ -9,7 +14,7 @@ import {
   ladosDaAresta,
 } from './grade'
 import { type Celula, chaveDaCelula, type Lote, noFixo, OBRA_VAZIA } from './lote'
-import { celulasDoMovel, moveisDaObra } from './moveis'
+import { celulasDoMovel, moveisDaObra, movelNoLugar } from './moveis'
 import {
   type CaixaDaObra,
   type Corte,
@@ -69,6 +74,7 @@ export type RecusaDoAndar =
   | 'na-escada'
   | 'escada-com-obra'
   | 'quebra-o-andar'
+  | 'movel-fora'
   | 'limite'
 
 export const FALA_DO_ANDAR: Readonly<Record<RecusaDoAndar, string>> = {
@@ -86,6 +92,7 @@ export const FALA_DO_ANDAR: Readonly<Record<RecusaDoAndar, string>> = {
   'na-escada': 'Aqui é o vão da escada.',
   'escada-com-obra': 'Tire antes as paredes de cima. Depois a escada sai.',
   'quebra-o-andar': 'Essa mudança deixaria o andar de cima sem chão.',
+  'movel-fora': 'Lá em cima o móvel fica dentro de um cômodo, longe do vão e da chegada da escada.',
   limite: 'O andar de cima já está cheio.',
 }
 
@@ -205,7 +212,8 @@ export function loteDeCima(lote: Lote): Lote {
       trechosDeCerca: 0,
       caminhos: 0,
       canteiros: 0,
-      moveis: 0,
+      // Os móveis vão só nos cômodos de cima (o `porMovel` já pede cômodo).
+      moveis: MOVEIS_NA_CASA_MAXIMO,
     },
   }
 }
@@ -217,12 +225,20 @@ export function obraDeCima(andar: AndarDeCima | null): Obra {
     paredes: andar?.paredes ?? [],
     aberturas: andar?.aberturas ?? [],
     pisos: andar?.pisos ?? [],
+    moveis: andar?.moveis ?? [],
   }
 }
 
 /** A obra de cima de volta ao andar (a escada fica a mesma). */
 export function andarDaObra(obra: Obra, escada: Escada | null): AndarDeCima {
-  return { escada, paredes: obra.paredes, aberturas: obra.aberturas, pisos: obra.pisos }
+  return {
+    escada,
+    paredes: obra.paredes,
+    aberturas: obra.aberturas,
+    pisos: obra.pisos,
+    // Sem móvel, o campo não vai (o andar fica igual aos gravados antes).
+    ...(obra.moveis.length > 0 ? { moveis: obra.moveis } : {}),
+  }
 }
 
 export function plantaDeCima(andar: AndarDeCima | null, lote: Lote): Planta {
@@ -266,6 +282,16 @@ export function conferirAndar(
       if (!piso.has(m as string) || !piso.has(n as string)) return 'porta-de-fora'
     }
   }
+  // Os móveis de cima: num cômodo de cima, fora do vão e da célula onde a escada chega.
+  const deCima = obraDeCima(andar)
+  const chegada = chaveDaCelula(celulaDeChegada(andar.escada))
+  for (const m of moveisDaObra(deCima)) {
+    if (!movelNoLugar(m, deCima, pc)) return 'movel-fora'
+    for (const c of celulasDoMovel(m)) {
+      const k = chaveDaCelula(c)
+      if (vao.has(k) || k === chegada) return 'movel-fora'
+    }
+  }
   if (!AndarDeCimaSchema.safeParse(andar).success) return 'limite'
   return null
 }
@@ -293,7 +319,7 @@ export function naEscada(andar: AndarDeCima | null, c: Celula): boolean {
 /** Tirar a escada (só com o andar sem paredes, portas e janelas: o andar inteiro sai). */
 export function tirarEscada(andar: AndarDeCima | null): Resultado {
   if (!andar?.escada) return { ok: false, motivo: 'sem-escada' }
-  if (andar.paredes.length > 0 || andar.aberturas.length > 0)
+  if (andar.paredes.length > 0 || andar.aberturas.length > 0 || (andar.moveis?.length ?? 0) > 0)
     return { ok: false, motivo: 'escada-com-obra' }
   return { ok: true, andar: ANDAR_VAZIO }
 }

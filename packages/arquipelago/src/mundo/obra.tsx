@@ -15,6 +15,7 @@ import { useJogo } from '../estado/contexto'
 import {
   ALTURA_DO_ANDAR,
   caixaDeAntesDoAndar,
+  obraDeCima,
   pecasDoAndar,
   pecasVisiveisDoAndar,
   plantaDeCima,
@@ -42,6 +43,7 @@ import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { noModelo } from './medidas'
 import { ComReserva, copiarNo, materiaisDe, useModelo } from './modelos'
+import { MoveisDaObra } from './moveis-da-obra'
 import {
   type CoresDoMeuQuarto,
   MATERIAL_DE_DENTRO,
@@ -388,6 +390,16 @@ export function ObraNoMundo({
     ...(comAndar && deCima && comTelhadoDeCima ? deCima.telhados : []),
   ]
   const folhas = [...pecas.folhas, ...(comAndar && deCima ? deCima.folhas : [])]
+  // Os móveis dos cômodos de cima, na altura do piso de cima, com o andar (somem e deixam de
+  // colidir quando ele some).
+  const obraDeCimaComMoveis = useMemo(
+    () => (andar?.moveis?.length ? obraDeCima(andar) : null),
+    [andar],
+  )
+  const baseDeCima = useMemo<[number, number, number]>(
+    () => [base[0], base[1] + ALTURA_DO_ANDAR, base[2]],
+    [base],
+  )
   return (
     <>
       <group position={base} rotation-y={giro}>
@@ -404,6 +416,9 @@ export function ObraNoMundo({
       <group position={[base[0], 0, base[2]]} rotation-y={giro}>
         <Colisores lista={colisores} />
       </group>
+      {comAndar && obraDeCimaComMoveis ? (
+        <MoveisDaObra obra={obraDeCimaComMoveis} base={baseDeCima} />
+      ) : null}
     </>
   )
 }

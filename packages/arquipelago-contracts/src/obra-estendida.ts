@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { MOVEIS_NA_CASA_MAXIMO, MovelNaObraSchema } from './moveis'
 import { AberturaSchema, ObraDaCabanaSchema, PisoDoComodoSchema, TrechoSchema } from './salvamento'
 
 /**
@@ -26,6 +27,11 @@ export const AndarDeCimaSchema = z.strictObject({
   paredes: z.array(TrechoSchema).max(120),
   aberturas: z.array(AberturaSchema).max(30),
   pisos: z.array(PisoDoComodoSchema).max(20),
+  /**
+   * Os móveis dos cômodos de cima (revisão de 31/10/2026), no formato da obra do térreo. Opcional:
+   * os andares gravados antes não têm o campo, e o andar sem móvel não o grava.
+   */
+  moveis: z.array(MovelNaObraSchema).max(MOVEIS_NA_CASA_MAXIMO).optional(),
 })
 export type AndarDeCima = z.infer<typeof AndarDeCimaSchema>
 

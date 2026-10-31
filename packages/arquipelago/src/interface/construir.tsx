@@ -125,6 +125,7 @@ const FERRAMENTAS_DE_CIMA: ReadonlySet<Ferramenta> = new Set([
   'porta',
   'janela',
   'piso',
+  'movel',
   'apagar',
   'olhar',
 ])
@@ -451,15 +452,17 @@ export function BarraDeConstruir() {
             >
               ⟳ Girar
             </button>
-            {/* O quarto é o da plataforma (A10): arrumar abre o editor do Meu Quarto. */}
-            <button
-              type="button"
-              className="arq-botao leve"
-              disabled={ferramentaAberta}
-              onClick={() => void arrumarOQuarto(loja, plataforma)}
-            >
-              🛏️ Meu quarto
-            </button>
+            {/* O quarto é o da plataforma (A10): arrumar abre o editor do Meu Quarto. Fica no térreo. */}
+            {camada === 'cima' ? null : (
+              <button
+                type="button"
+                className="arq-botao leve"
+                disabled={ferramentaAberta}
+                onClick={() => void arrumarOQuarto(loja, plataforma)}
+              >
+                🛏️ Meu quarto
+              </button>
+            )}
           </fieldset>
           {/* Uma fileira só, que rola para o lado: a barra não cobre o cômodo (no celular, a tela). */}
           <fieldset className="arq-obra-escolhas rolar">
