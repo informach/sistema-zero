@@ -3015,17 +3015,31 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
   `fora-do-ar`, `arquivadas`, `desligado` e `antigo` exercitam as reservas no playground. Prova visual em
   `docs/qa/2026-10-30-cores-conquistadas/`. O desafio do dia de mentira está em 7.12.
 
-### 7.11.1 O Quadro das Cores da sua ilha (C03a, 30/10/2026)
+### 7.11.1 O Quadro das Cores da sua ilha (C03a, 30/10/2026; cor por quadro desde 01/11/2026)
 
 - A sua ilha (posto Faísca) tem os seis quadros do Pega-conchas (`docs/desafios-do-jogo/sua-ilha/`).
   O cavalete fica na grama ao lado da trilha de pedras da porta até o píer, em (-1,5; 18,5),
   olhando para a trilha (`QUADRO_DA_SUA_ILHA`). Ele é montado pela ilha central, sempre presente.
-- Os quadros da sua ilha não pintam a ilha, que já tem cor (`cor: false`). O cavalete acende a
-  mancha de cada quadro feito, e o painel mostra "Desafio concluído", nunca "Cor de volta".
+- **Cada quadro devolve a cor de uma parte da sua ilha** (`cor: true`; lacunas de 01/11/2026,
+  pela proposta, que põe a cor como o prêmio principal; desfaz o "não pinta" de 30/10). Na ordem
+  dos quadros (`PARTES_DA_SUA_ILHA`): 1 a casa, 2 a horta, 3 o píer, 4 a praia, 5 o gramado e 6 a
+  trilha das pedras. A cor do quadro soma com a das ações de A17 (a porta nova, a primeira
+  colheita, o primeiro peixe): o que vier primeiro pinta. Os quadros feitos vêm do serviço
+  (`/desafios/cores`), como nas ilhas do anel; o salvamento não ganha nada. O cavalete acende a
+  mancha do quadro e o painel mostra "Cor de volta", como no anel.
+- O chão da sua ilha tem a cor nos vértices: o gramado e a praia desbotam no shader dos borrões
+  (`desbotadoDoMaterial`, um `vec2` por material: o que é verde e o resto), e a trilha das pedras
+  ganha materiais próprios. A cor volta escorrendo em 1,6 s (na hora com menos movimento).
+- **O desafio do dia da sua ilha (lacunas, 01/11/2026):** três variações do Pega-conchas pronto,
+  cada uma mudando uma regra, como no Bosque e no Vale (`VARIACOES_DA_SUA_ILHA`, ordens 61 a 63,
+  10 e 5 moedas, sem cor, atração `pega-conchas`): "o aviso do Nico" (faltando concha, o balde
+  guarda `falta`), "só a rosa" (o balde enche só com a concha do alto) e "esvaziar o balde" (a
+  barra de espaço). O Enter que recomeça é o extra. Só blocos do Faísca. Entram no banco do
+  desafio do dia como os das outras ilhas (a sua ilha está sempre aberta).
 - A sua ilha não dá o aviso do desafio do dia: o cavalete dela está sempre montado, e avisar ali
   seria avisar ao abrir o jogo. O aviso continua ao chegar numa ilha do anel.
-- O painel da sua ilha diz "Sua ilha: n de 6 desafios feitos." e o Zappy comemora "Desafio
-  feito. Olhe a mancha nova no quadro da praia."
+- O painel da sua ilha diz "Sua ilha: n de 6 cores de volta." e o Zappy diz qual parte ganhou
+  cor: "Desafio feito. A cor voltou para a praia da sua ilha." (`falaDaCorDaSuaIlha`).
 - **O projeto autoral do Farol (C03b):** depois do final (`farol.concluido`) aparece um cavalete
   do lado oeste do Farol, em (-16; -11), fora dos dois lotes da casa e longe da porta e da Íris,
   olhando para o Farol (`QUADRO_DO_FAROL`). Ele tem um quadro só, "Meu jogo do Arquipélago"

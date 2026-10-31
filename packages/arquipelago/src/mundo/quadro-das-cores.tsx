@@ -81,8 +81,9 @@ export function QuadroDasCores({
   }, [raiz])
 
   // A cor de cada mancha: 0 (cinza) a 1 (a cor da tinta). Feito acende; a festa anima.
-  // Na sua ilha e no Farol os quadros não pintam (`cor: false`): as manchas seguem os feitos.
-  const semCor = ilha.id === 'sua-ilha' || ilha.id === 'farol'
+  // No Farol os quadros não pintam (`cor: false`): as manchas seguem os feitos. A sua ilha pinta
+  // desde as lacunas de 01/11/2026.
+  const semCor = ilha.id === 'farol'
   const alvo = useMemo(
     () =>
       pedacosPintados(
