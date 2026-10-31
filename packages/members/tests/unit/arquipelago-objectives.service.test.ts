@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { isDeepStrictEqual } from 'node:util'
+import { ValidationError } from '@sistemazero/core/errors'
 import {
   AnaliseDosMembrosSchema,
   VerificacaoDosMembrosSchema,
@@ -153,6 +154,15 @@ const codigos = (analise: { problemas: { codigo: string }[] }) =>
   analise.problemas.map((p) => p.codigo)
 
 describe('analisar', () => {
+  test('projeto recusado pelo preparo vira problema de autoria, sem abortar a análise', async () => {
+    const { executor } = executorFalso(() => new ValidationError('Os materiais são inválidos.'))
+    const analise = await analisar(criar(executor))
+    expect(AnaliseDosMembrosSchema.parse(analise)).toEqual(analise)
+    expect(codigos(analise)).toContain('PROJETO_INVALIDO')
+    expect(analise.gabarito.find((r) => r.id === 'anda')?.passou).toBe(false)
+    expect(analise.inicial.find((r) => r.id === 'anda')?.passou).toBe(false)
+  })
+
   test('apoio pronto: objetivo obrigatório já cumprido pelo inicial impede publicar', async () => {
     const analise = await analisar(criar(), {
       projetoInicial: gabarito,

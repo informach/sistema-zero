@@ -148,6 +148,11 @@ Estas rotas estão preparadas no código, mas ainda exigem provas reais de R2/Cl
 
 ## Preview Python protegido
 
+A preparação isolada usa o prazo da operação: inspeção e validação conservam 120 s;
+missões usam os 140 s de `PYTHON_MISSION_LIMITS.jobMs`, incluindo materialização e inspeção.
+O runner de missão continua limitado a 125 s e o chamador a 150 s. O cancelamento do
+proprietário pode encerrar antes e sempre exige a retirada confirmada do sandbox.
+
 ### Configuração do Construir Python no BFF
 
 Nos aplicativos Community e Community Kids, o shell compartilhado seleciona o executor pela linguagem persistida do projeto. `STUDIO_PRO_RUNTIME_URL` e `STUDIO_PRO_RUNTIME_TOKEN` continuam configurando JavaScript. Python usa os quatro valores opcionais `STUDIO_PYTHON_RUNTIME_URL`, `STUDIO_PYTHON_RUNTIME_TOKEN`, `STUDIO_PYTHON_LANGUAGE_URL` e `STUDIO_PYTHON_LANGUAGE_TOKEN`; todos precisam estar presentes para disponibilizar Construir Python. Cada token tem pelo menos 32 caracteres e corresponde ao `INTERNAL_TOKEN` do respectivo serviço no mesmo ambiente. São segredos de servidor, sem prefixo `NEXT_PUBLIC_`. Use HTTPS em produção; HTTP só é admitido explicitamente em loopback no desenvolvimento.
