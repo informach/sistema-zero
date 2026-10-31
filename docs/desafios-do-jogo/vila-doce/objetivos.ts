@@ -259,39 +259,14 @@ const principais: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
       [largada, wait(2600)],
       val('velocidade', 'atMost', PISTA.velocidade - 1),
     ),
-    estrutura(
-      'com-limite',
-      'A velocidade só aumenta enquanto não passa do limite, entre -14 e -7.',
-      {
-        blockType: 'sz_g2d_every_seconds',
-        area: 'loops',
-        inputBlocks: {
-          BODY: {
-            blockType: 'sz_js_if_else',
-            inputBlocks: {
-              COND: jogando,
-              THEN: {
-                blockType: 'sz_js_if_else',
-                inputBlocks: {
-                  COND: {
-                    blockType: 'sz_val_compare',
-                    fields: { OP: '>' },
-                    inputBlocks: {
-                      LEFT: { blockType: 'sz_val_variable', fields: { NAME: 'velocidade' } },
-                      RIGHT: numero(-14, -7),
-                    },
-                  },
-                  THEN: {
-                    blockType: 'sz_js_var_increment',
-                    fields: { NAME: 'velocidade', DELTA: -1 },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    ),
+    // A ficha da proposta (lacunas, 01/11/2026): o fim da corrida mostra os pontos. O teto da
+    // velocidade continua no projeto, pronto, mas não é critério: ele é da missão do posto.
+    {
+      id: 'pontos-no-fim',
+      label: 'Encostar numa pedra encerra a corrida e a tela do fim mostra os metros.',
+      programmingLanguage: 'javascript',
+      rule: EXTRAS.telaComMetros.rule,
+    },
     estrutura('um-acelerador', 'Um único bloco muda a velocidade no projeto inteiro.', {
       blockType: 'sz_js_var_increment',
       fields: { NAME: 'velocidade' },

@@ -13782,11 +13782,11 @@
       "conteudo": {
         "versao": 1,
         "titulo": "A corrida do entregador",
-        "enunciado": "Os clientes estão com pressa. O Bento quer que cada pedra nova venha um pouco mais rápida que a anterior, mas só até um limite, para a corrida continuar possível de jogar.",
+        "enunciado": "O Bento precisa de um jogo para a barraca da feira. Os clientes estão com pressa: ele quer que cada pedra nova venha um pouco mais rápida que a anterior e que, quando o entregador bater, a tela do fim mostre quantos metros ele correu.",
         "dicas": [
-          "A velocidade das pedras é um número negativo: quanto menor, mais rápido.",
-          "Antes de acelerar, confira se a velocidade ainda não chegou ao limite.",
-          "A mudança acontece no mesmo relógio que cria cada pedra."
+          "A velocidade das pedras é um número negativo: quanto menor, mais rápido. Pare de acelerar em -9, para a corrida continuar possível.",
+          "A mudança acontece no mesmo relógio que cria cada pedra.",
+          "Na tela do fim, desenhe o placar com a variável metros."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -13799,7 +13799,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>A corrida do entregador</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#bfe6f2\");\n  SZGame2D.setStageDescription(\"Leve os doces do Bento pela rua: pule as pedras com Espaço, com a seta para cima ou com um toque na tela.\");\n  const entregador = SZGame2D.createDino({ x: 70, y: 150, size: 56, color: \"#f2a65a\" });\n  const pedras = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  SZGame2D.setHitboxScale(entregador, 80);\n  let metros = 0;\n  let velocidade = -5;\n  const bolo = SZGame2D.createSprite({ x: 560, y: 175, w: 28, h: 28, image: \"bolo\" });\n  bolo.vx = -4; bolo.vy = 0;\n  // Quando acontecer\n  SZGame2D.onJump(() => entregador, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"vila_corrida_events_0\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.restart();\n    }\n    }, \"vila_corrida_events_1\");\n  SZGame2D.onOverlap(() => entregador, () => bolo, () => {\n\n  }, \"vila_corrida_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vila\");\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(entregador);\n      SZGame2D.controlDino(entregador, ctx, 13);\n      SZGame2D.drawSprite(ctx, entregador);\n      SZGame2D.applyVelocity(bolo);\n      if (SZGame2D.spriteX(bolo) < -40) {\n        bolo.vx = -640; bolo.vy = -480;\n        SZGame2D.applyVelocity(bolo);\n        SZGame2D.clampToScreen(bolo, ctx);\n        bolo.vx = 560; bolo.vy = 175;\n        SZGame2D.applyVelocity(bolo);\n        bolo.vx = -4; bolo.vy = 0;\n      }\n      SZGame2D.drawSprite(ctx, bolo);\n      SZGame2D.updateGroup(pedras);\n      SZGame2D.drawGroup(ctx, pedras);\n      SZGame2D.overlapSpriteGroup(() => entregador, pedras, (pedra) => {\n        SZGame2D.explodeSprite(pedra, \"#f2b56a\");\n        SZGame2D.shake(ctx, 6);\n        SZGame2D.playFx(\"gameover\");\n        SZGame2D.setScene(\"fim\");\n      });\n      SZGame2D.pruneOffscreen(ctx, pedras, 40, (pedra) => {\n\n      });\n      SZGame2D.drawScore(ctx, \"Metros: \", metros, 12, 30, \"#493c56\", 22);\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"A corrida do entregador\", \"Leve os doces do Bento pela rua.\", \"Aperte uma tecla ou toque na tela para começar\", \"#5b3a2e\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.showScreen(ctx, \"Fim da corrida\", \"Uma pedra derrubou o entregador.\", \"Aperte uma tecla ou toque para correr de novo\", \"#5b3a2e\");\n      SZGame2D.drawScore(ctx, \"Metros: \", metros, 190, 240, \"#fff4d8\", 22);\n    }\n  }, \"vila_corrida_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(pedras, ctx, { type: \"rock\", x: SZGame2D.randomBetween(500, 560), size: SZGame2D.randomBetween(28, 44), vx: velocidade });\n      }\n    }\n  });\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada_2\", 1)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        metros = metros + 1;\n      }\n    }\n  });\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(480, 270, \"#bfe6f2\");\n  SZGame2D.setStageDescription(\"Leve os doces do Bento pela rua: pule as pedras com Espaço, com a seta para cima ou com um toque na tela.\");\n  const entregador = SZGame2D.createDino({ x: 70, y: 150, size: 56, color: \"#f2a65a\" });\n  const pedras = SZGame2D.createGroup();\n  SZGame2D.setScene(\"inicio\");\n  SZGame2D.setHitboxScale(entregador, 80);\n  let metros = 0;\n  let velocidade = -5;\n  const bolo = SZGame2D.createSprite({ x: 560, y: 175, w: 28, h: 28, image: \"bolo\" });\n  bolo.vx = -4; bolo.vy = 0;\n  // Quando acontecer\n  SZGame2D.onJump(() => entregador, () => {\n      SZGame2D.playFx(\"jump\");\n    }, \"vila_corrida_events_0\");\n  SZGame2D.onAnyInput(() => {\n      if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.setScene(\"jogando\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.restart();\n    }\n    }, \"vila_corrida_events_1\");\n  SZGame2D.onOverlap(() => entregador, () => bolo, () => {\n\n  }, \"vila_corrida_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"vila\");\n    if (SZGame2D.sceneIs(\"jogando\")) {\n      SZGame2D.applyGravity(entregador);\n      SZGame2D.controlDino(entregador, ctx, 13);\n      SZGame2D.drawSprite(ctx, entregador);\n      SZGame2D.applyVelocity(bolo);\n      if (SZGame2D.spriteX(bolo) < -40) {\n        bolo.vx = -640; bolo.vy = -480;\n        SZGame2D.applyVelocity(bolo);\n        SZGame2D.clampToScreen(bolo, ctx);\n        bolo.vx = 560; bolo.vy = 175;\n        SZGame2D.applyVelocity(bolo);\n        bolo.vx = -4; bolo.vy = 0;\n      }\n      SZGame2D.drawSprite(ctx, bolo);\n      SZGame2D.updateGroup(pedras);\n      SZGame2D.drawGroup(ctx, pedras);\n      SZGame2D.overlapSpriteGroup(() => entregador, pedras, (pedra) => {\n        SZGame2D.explodeSprite(pedra, \"#f2b56a\");\n        SZGame2D.shake(ctx, 6);\n        SZGame2D.playFx(\"gameover\");\n        SZGame2D.setScene(\"fim\");\n      });\n      SZGame2D.pruneOffscreen(ctx, pedras, 40, (pedra) => {\n\n      });\n      SZGame2D.drawScore(ctx, \"Metros: \", metros, 12, 30, \"#493c56\", 22);\n    } else if (SZGame2D.sceneIs(\"inicio\")) {\n      SZGame2D.showScreen(ctx, \"A corrida do entregador\", \"Leve os doces do Bento pela rua.\", \"Aperte uma tecla ou toque na tela para começar\", \"#5b3a2e\");\n    } else if (SZGame2D.sceneIs(\"fim\")) {\n      SZGame2D.showScreen(ctx, \"Fim da corrida\", \"Uma pedra derrubou o entregador.\", \"Aperte uma tecla ou toque para correr de novo\", \"#5b3a2e\");\n    }\n  }, \"vila_corrida_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 1.4)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        SZGame2D.spawnObstacle(pedras, ctx, { type: \"rock\", x: SZGame2D.randomBetween(500, 560), size: SZGame2D.randomBetween(28, 44), vx: velocidade });\n      }\n    }\n  });\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada_2\", 1)) {\n      if (SZGame2D.sceneIs(\"jogando\")) {\n        metros = metros + 1;\n      }\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -14266,33 +14266,6 @@
                               },
                               "bg": "#5b3a2e",
                               "__id": "vila_corrida_loops_0_body_2_elseif_1_then_0"
-                            },
-                            {
-                              "type": "g2d:drawScore",
-                              "ctxVar": "ctx",
-                              "label": "Metros: ",
-                              "value": {
-                                "type": "var",
-                                "name": "metros",
-                                "__id": "vila_corrida_loops_0_body_2_elseif_1_then_1_value"
-                              },
-                              "x": {
-                                "type": "num",
-                                "value": 190,
-                                "__id": "vila_corrida_loops_0_body_2_elseif_1_then_1_x"
-                              },
-                              "y": {
-                                "type": "num",
-                                "value": 240,
-                                "__id": "vila_corrida_loops_0_body_2_elseif_1_then_1_y"
-                              },
-                              "color": "#fff4d8",
-                              "size": {
-                                "type": "num",
-                                "value": 22,
-                                "__id": "vila_corrida_loops_0_body_2_elseif_1_then_1_size"
-                              },
-                              "__id": "vila_corrida_loops_0_body_2_elseif_1_then_1"
                             }
                           ]
                         }
@@ -15178,54 +15151,6 @@
                                                     "TEXT": "Aperte uma tecla ou toque para correr de novo"
                                                   },
                                                   "id": "vila_corrida_loops_0_body_2_elseif_1_then_0_hint"
-                                                }
-                                              }
-                                            },
-                                            "next": {
-                                              "block": {
-                                                "type": "sz_g2d_draw_score",
-                                                "id": "vila_corrida_loops_0_body_2_elseif_1_then_1",
-                                                "fields": {
-                                                  "LABEL": "Metros: ",
-                                                  "COLOR": "#fff4d8"
-                                                },
-                                                "inputs": {
-                                                  "VALUE": {
-                                                    "block": {
-                                                      "type": "sz_val_variable",
-                                                      "fields": {
-                                                        "NAME": "metros"
-                                                      },
-                                                      "id": "vila_corrida_loops_0_body_2_elseif_1_then_1_value"
-                                                    }
-                                                  },
-                                                  "X": {
-                                                    "shadow": {
-                                                      "type": "sz_val_number",
-                                                      "fields": {
-                                                        "NUM": 190
-                                                      },
-                                                      "id": "vila_corrida_loops_0_body_2_elseif_1_then_1_x"
-                                                    }
-                                                  },
-                                                  "Y": {
-                                                    "shadow": {
-                                                      "type": "sz_val_number",
-                                                      "fields": {
-                                                        "NUM": 240
-                                                      },
-                                                      "id": "vila_corrida_loops_0_body_2_elseif_1_then_1_y"
-                                                    }
-                                                  },
-                                                  "SIZE": {
-                                                    "shadow": {
-                                                      "type": "sz_val_number",
-                                                      "fields": {
-                                                        "NUM": 22
-                                                      },
-                                                      "id": "vila_corrida_loops_0_body_2_elseif_1_then_1_size"
-                                                    }
-                                                  }
                                                 }
                                               }
                                             }
@@ -17413,55 +17338,27 @@
             "programmingLanguage": "javascript"
           },
           {
-            "id": "com-limite",
-            "label": "A velocidade só aumenta enquanto não passa do limite, entre -14 e -7.",
+            "id": "pontos-no-fim",
+            "label": "Encostar numa pedra encerra a corrida e a tela do fim mostra os metros.",
             "rule": {
               "type": "usesBlock",
-              "blockType": "sz_g2d_every_seconds",
+              "blockType": "sz_js_if_else",
               "area": "loops",
+              "withinBlock": "sz_g2d_update_each_frame",
               "inputBlocks": {
-                "BODY": {
-                  "blockType": "sz_js_if_else",
+                "ELSEIF_COND1": {
+                  "blockType": "sz_g2d_scene_is",
+                  "fields": {
+                    "SCENE": "fim"
+                  }
+                },
+                "ELSEIF_THEN1": {
+                  "blockType": "sz_g2d_draw_score",
                   "inputBlocks": {
-                    "COND": {
-                      "blockType": "sz_g2d_scene_is",
+                    "VALUE": {
+                      "blockType": "sz_val_variable",
                       "fields": {
-                        "SCENE": "jogando"
-                      }
-                    },
-                    "THEN": {
-                      "blockType": "sz_js_if_else",
-                      "inputBlocks": {
-                        "COND": {
-                          "blockType": "sz_val_compare",
-                          "fields": {
-                            "OP": ">"
-                          },
-                          "inputBlocks": {
-                            "LEFT": {
-                              "blockType": "sz_val_variable",
-                              "fields": {
-                                "NAME": "velocidade"
-                              }
-                            },
-                            "RIGHT": {
-                              "blockType": "sz_val_number",
-                              "fieldRanges": {
-                                "NUM": {
-                                  "min": -14,
-                                  "max": -7
-                                }
-                              }
-                            }
-                          }
-                        },
-                        "THEN": {
-                          "blockType": "sz_js_var_increment",
-                          "fields": {
-                            "NAME": "velocidade",
-                            "DELTA": -1
-                          }
-                        }
+                        "NAME": "metros"
                       }
                     }
                   }

@@ -3008,8 +3008,8 @@
           "descricao": "Cada pedra nova deixa a próxima um pouco mais rápida."
         },
         {
-          "id": "com-limite",
-          "descricao": "A velocidade só aumenta enquanto não passa do limite, entre -14 e -7."
+          "id": "pontos-no-fim",
+          "descricao": "Encostar numa pedra encerra a corrida e a tela do fim mostra os metros."
         },
         {
           "id": "um-acelerador",
@@ -3600,8 +3600,8 @@
           "descricao": "Cada pedra nova deixa a próxima um pouco mais rápida."
         },
         {
-          "id": "com-limite",
-          "descricao": "A velocidade só aumenta enquanto não passa do limite, entre -14 e -7."
+          "id": "pontos-no-fim",
+          "descricao": "Encostar numa pedra encerra a corrida e a tela do fim mostra os metros."
         },
         {
           "id": "um-acelerador",

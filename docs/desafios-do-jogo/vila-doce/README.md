@@ -17,7 +17,7 @@ conteúdo para o adulto. Os dois são gerados por `bun gerar-manifesto.ts` a par
 | Começar e recomeçar | Quadro das Cores | 3 | Uma tecla começa na abertura e recomeça no fim | aulas 7 a 9 |
 | A batida | Quadro das Cores | 4 | A batida leva ao fim, com a área justa (50% a 95%) | aulas 9 e 10 |
 | Cada pedra num lugar | Quadro das Cores | 5 | Lugar e tamanho sorteados, com limites | aula 12 |
-| A corrida do entregador | Quadro das Cores | 6 | Cada pedra mais rápida, até um limite | aula 13 |
+| A corrida do entregador | Quadro das Cores | 6 | Cada pedra mais rápida e o fim mostra os metros (a ficha da proposta; o teto, que é da missão, não é critério) | aula 13 |
 | Pedras maiores | Desafio do dia | Nenhum | Um pulo mais forte, de 12 a 16 | aula 3 |
 | Pombos na praça | Desafio do dia | Nenhum | O obstáculo sorteado, com pombos que pedem abaixar | aula 5 |
 | Quem não vê a tela | Desafio do dia | Nenhum | A descrição do palco com o objetivo e os três controles | aula 13 |

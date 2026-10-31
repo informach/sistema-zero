@@ -141,10 +141,15 @@ TypeScript). Arquivos: [Kids](nuvens-pro.manifesto.json) e
 10 e 5 moedas, sem cor). Fontes: `pro-projetos.ts` (a árvore do projeto), `pro-objetivos.ts` e
 `gerar-manifesto-pro.ts`. Plano: [C02](../../superpowers/plans/2026-10-30-arquipelago-c02-python-e-texto.md).
 
-O modelo fica separado da apresentação. `src/main.ts` (pronto) desenha a grade de 4 por 6, liga o
-clique a `construir` (Shift e clique a `remover`), as teclas 1 e 2 à planta, C a `colher` e S e R a
-`salvar` e `carregar` com `localStorage`. A pessoa completa o modelo em `src/regras.ts`, só com
-funções puras exportadas: grade, ocupação, custo, produção e guardar e reabrir.
+O modelo fica separado da apresentação. `src/main.ts` (pronto) desenha a grade de 4 por 6 (até 8
+colunas), liga o clique a `construir`, as teclas 1 e 2 à planta, C a `colher`, E a `expandir` e S e
+R a `salvar` e `carregar` com `localStorage`. Desde as lacunas de 01/11/2026 os critérios não são a
+lista da missão do Gênio (A Base da Lua: ocupação, saldo, devolução ao retirar, salvar e abrir):
+essas regras vêm prontas em `src/regras.ts`, e a pessoa completa as do jardim do céu, só com
+funções puras exportadas: `vizinhas` (as quatro vizinhas dentro da grade), `colher` com o bônus das
+plantas juntas, `expandir` (uma coluna por 4 moedas, sem mudar o jardim recebido) e, no extra,
+`plantasPorTipo`. Prova no executor real: `packages/studio-runtime/tests/desafios-pro-smoke.ts
+--ilha=nuvens` (8 execuções, 25 objetivos).
 
 | Objetivo | Como confere | Erro causal recusado |
 | --- | --- | --- |
