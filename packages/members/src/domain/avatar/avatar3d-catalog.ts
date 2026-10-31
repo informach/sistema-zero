@@ -58,8 +58,13 @@ export interface AvatarSlot {
 export interface Avatar3dPart {
   id: string
   category: AvatarCategory
-  tier: 'free' | 'coins'
-  /** Preço em moedas Zappy (0 quando `free`). */
+  /**
+   * `free`: de todo mundo. `coins`: compra com moedas Zappy. `festa` (B16, 31/10/2026): só a festa
+   * do Arquipélago concede, no jogo e na época dela; nunca à venda (decisão da dona: "Só
+   * conquistadas na festa").
+   */
+  tier: 'free' | 'coins' | 'festa'
+  /** Preço em moedas Zappy (0 quando `free` ou `festa`). */
   price: number
 }
 
@@ -67,6 +72,12 @@ const free = (id: string, category: AvatarCategory): Avatar3dPart => ({
   id,
   category,
   tier: 'free',
+  price: 0,
+})
+const festa = (id: string, category: AvatarCategory): Avatar3dPart => ({
+  id,
+  category,
+  tier: 'festa',
   price: 0,
 })
 const paid = (id: string, category: AvatarCategory, price: number): Avatar3dPart => ({
@@ -191,10 +202,11 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('hat-05', 'hat', 120),
   paid('hat-06', 'hat', 150),
   paid('hat-07', 'hat', 150),
-  // As roupas das festas (B16, 31/10/2026): a festa do Arquipélago concede (A21); fora dela, à venda.
-  paid('hat-08', 'hat', 120), // cartolinha de Carnaval
-  paid('hat-09', 'hat', 100), // chapéu de palha junino
-  paid('hat-10', 'hat', 110), // gorro de fim de ano
+  // As roupas das festas (B16, 31/10/2026): só a festa do Arquipélago concede (A21), nunca à venda.
+  // A lista é a `conquista` de `VESTUARIO_DAS_FESTAS` (teste de conformidade).
+  festa('hat-08', 'hat'), // cartolinha de Carnaval
+  festa('hat-09', 'hat'), // chapéu de palha junino
+  festa('hat-10', 'hat'), // gorro de fim de ano
 
   // Enfeite de cabelo (26/10/2026): nenhum grátis + pagos (tintável). Chapéu esconde.
   free('enfeite-none', 'hairAccessory'),
@@ -203,7 +215,7 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('enfeite-03', 'hairAccessory', 80), // coroa de flores
   paid('enfeite-04', 'hairAccessory', 50), // presilhas de estrela
   paid('enfeite-05', 'hairAccessory', 90), // orelhinhas de gato
-  paid('enfeite-06', 'hairAccessory', 80), // tiara de lanterninhas (Noite das Lanternas)
+  festa('enfeite-06', 'hairAccessory'), // tiara de lanterninhas (Noite das Lanternas)
 
   // Roupa de cima — 1 grátis + 2 pagas (tintável).
   free('top-01', 'top'),
@@ -212,9 +224,9 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('top-04', 'top', 60), // manga longa
   paid('top-05', 'top', 100), // moletom com capuz
   paid('top-06', 'top', 70), // listrada
-  paid('top-07', 'top', 90), // colete de franjas (Carnaval)
-  paid('top-08', 'top', 100), // capa de estrelas (Noite das Lanternas)
-  paid('top-09', 'top', 100), // suéter de estrela (fim de ano)
+  festa('top-07', 'top'), // colete de franjas (Carnaval)
+  festa('top-08', 'top'), // capa de estrelas (Noite das Lanternas)
+  festa('top-09', 'top'), // suéter de estrela (fim de ano)
 
   // Roupa de baixo — 1 grátis + 2 pagas (tintável).
   free('bottom-01', 'bottom'),
@@ -231,7 +243,7 @@ export const AVATAR3D_PARTS: readonly Avatar3dPart[] = [
   paid('outfit-04', 'outfit', 110),
   paid('outfit-05', 'outfit', 120),
   paid('outfit-06', 'outfit', 100), // vestido longo (tintável)
-  paid('outfit-07', 'outfit', 110), // vestido de chita (Festa Junina)
+  festa('outfit-07', 'outfit'), // vestido de chita (Festa Junina)
 
   // Calçado — 1 grátis + pagos (tintável).
   free('shoes-01', 'shoes'),

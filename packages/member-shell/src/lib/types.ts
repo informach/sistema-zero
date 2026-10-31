@@ -1110,7 +1110,8 @@ export interface AvatarConfigInput {
 export interface AvatarPartView {
   id: string
   category: string
-  tier: 'free' | 'coins'
+  /** `festa` (B16, 31/10/2026): só a festa do Arquipélago concede; sem preço nem compra. */
+  tier: 'free' | 'coins' | 'festa'
   price: number
   owned: boolean
   locked: boolean
