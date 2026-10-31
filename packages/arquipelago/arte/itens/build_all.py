@@ -13,7 +13,7 @@ import sys
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 GRUPOS = ['colheita', 'sementes', 'comidas', 'ferramentas', 'colecao', 'lugares', 'cozinha', 'ingredientes', 'iscas',
-          'colecoes']
+          'colecoes', 'fosseis', 'pegadas', 'plantas_do_ceu']
 ITENS = os.path.join(AQUI, '..', '..', 'src', 'assets', 'itens')
 ICONES = os.path.join(AQUI, '..', '..', 'src', 'assets', 'icones')
 TETO_TRIS, TETO_KB, TETO_ICONE_KB = 4000, 300, 20
@@ -39,6 +39,16 @@ CONTRATO = {
 for _pid in ('nota-seminima', 'nota-colcheia', 'nota-dupla', 'nota-clave-de-sol', 'estrela-cadente', 'estrela-sorriso',
              'estrela-cintilante', 'estrela-trio'):
     CONTRATO[_pid] = {'materiais': ['luz']}
+
+# Os estágios das plantas do céu (`plantas-do-ceu.glb`, nove nós no padrão da horta), com a flor
+# aberta brilhando; as pegadas, com a marca afundada no barro.
+CONTRATO['plantas-do-ceu'] = {'nos': [f'{p}-{e}' for p in ('flor-de-nuvem', 'estrela-trepadeira', 'arco-iris-de-petala')
+                                      for e in ('broto', 'crescendo', 'maduro')],
+                              'materiais': ['florNuvem', 'florEstrela', 'petalaVermelha']}
+for _pid in ('pegada-rex', 'pegada-triceratopo', 'pegada-passaro', 'pegada-capivara'):
+    CONTRATO[_pid] = {'materiais': ['barroPegada', 'barroFundo']}
+# GLBs que não são item da mochila e não têm ícone (o mesmo conjunto do `render.py`).
+SEM_ICONE = {'plantas-do-ceu'}
 
 rel = os.path.join(AQUI, 'relatorio.json')
 if os.path.exists(rel):
@@ -79,6 +89,8 @@ if os.environ.get('ICONES'):
     # A paleta usa o Pillow do Python do sistema.
     subprocess.run(['python3', '-I', os.path.join(AQUI, 'icones_paleta.py')], check=True)
 for pid in dados:
+    if pid in SEM_ICONE:
+        continue
     p = os.path.join(ICONES, f'{pid}.png')
     if not os.path.exists(p):
         erros.append(f'{pid}: sem ícone')

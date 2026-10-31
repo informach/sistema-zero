@@ -73,6 +73,28 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'ilhas/pico.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vale-dos-dinos.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/nuvens.glb', juntos: TODOS_JUNTOS },
+  // Os fósseis do Vale (nós soltos do catálogo de props e itens do museu), as pegadas e as plantas
+  // do céu (um estágio por vez, como a horta), 31/10/2026.
+  { caminho: 'ilhas/vale-dos-dinos-props.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'itens/plantas-do-ceu.glb', juntos: CADA_NO_SOZINHO },
+  ...[
+    'fossil-cranio-rex',
+    'fossil-dente',
+    'fossil-garra',
+    'fossil-vertebra',
+    'fossil-chifre-triceratopo',
+    'fossil-ovo',
+    'pegada-rex',
+    'pegada-triceratopo',
+    'pegada-passaro',
+    'pegada-capivara',
+    'flor-de-nuvem',
+    'estrela-trepadeira',
+    'arco-iris-de-petala',
+    'semente-flor-de-nuvem',
+    'semente-estrela-trepadeira',
+    'semente-arco-iris-de-petala',
+  ].map((id) => ({ caminho: `itens/${id}.glb`, juntos: TODOS_JUNTOS })),
   // Casa (31/10/2026): o segundo andar, o café e a decoração de festa, uma peça por nó.
   { caminho: 'casa/casa-andar.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'casa/casa-cafe.glb', juntos: CADA_NO_SOZINHO },

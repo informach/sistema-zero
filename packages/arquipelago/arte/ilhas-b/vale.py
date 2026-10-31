@@ -8,10 +8,37 @@ Gera dois arquivos em `src/assets/ilhas/`:
   colisores `col-*` (aj-ligar-01: o vulcão entra no `col-terreno`, com as encostas que não se
   sobem; o resto são formas simples, na convenção do README de `arte/ilhas`);
 - `vale-dos-dinos-props.glb`: `samambaia-gigante`, `cavalinha`, `ninho`, `ovo-dino`, `osso`,
-  `cranio-fossil`, cada um com a base em y = 0.
+  `cranio-fossil` e os seis fósseis do museu (`fossil-cranio-rex`, `fossil-dente`, `fossil-garra`,
+  `fossil-vertebra`, `fossil-chifre-triceratopo`, `fossil-ovo`, o mesmo desenho dos itens:
+  `arte/itens/fosseis.py`), cada um com a base em y = 0.
+
+O vulcão é o marco de altura do Vale (pedido de 31/10/2026): a agulha de cima (`vulcao_alto`, no
+nó `vulcao`) leva a boca a 16,3 m e a fumaça a uns 19,8 m acima do mar. Ela fica toda acima do
+que se pisa e não entra no `col-terreno` (o chão de colisão continua o de antes; a âncora
+`cratera` também, agora dentro da agulha).
+
+O segredo da montaria (31/10/2026, `segredo_da_montaria`): um terraço de basalto na encosta sul do
+vulcão (âncora `segredo-montaria` no tampo, colisor `col-terraco-segredo`), alto demais para o
+pulo e para o planador, com uma rampa como único acesso. O tampo da rampa é a faixa de cinza
+quente: o nó `cinza-quente` (material `cinzaQuente`, brilho fraco de brasa) e o nó vazio
+`cinza-quente-area`, a caixa da área: o cubo de 1 m centrado no nó, levado pela posição, pelo
+giro e pela escala dele (quem estiver dentro, sem estar montado, volta; o dino passa). O colisor da
+rampa é `col-rampa-cinza`. Por baixo da parte alta da rampa passa a trilha das pedras do vulcão.
 """
 from lib_ilhas_b import *
 import lib_cais
+
+# Os fósseis do museu: o desenho mora em `arte/itens/fosseis.py` (no fim do caminho, para os
+# módulos daqui e do `arte/mundo` virem antes).
+sys.path.append(os.path.join(AQUI, '..', 'itens'))
+import fosseis  # noqa: E402
+
+lib_q.PALETTE.update({
+    'cinzaQuente': ('#8a7d78', 0.95, '#ff7a3c', 0.12),
+    'brasaDaCinza': ('#ff8a3c', 0.5, '#ff7a2c', 0.8),
+    'basalto': ('#4b4752', 0.9, None, 0),
+    'basaltoClaro': ('#635e6a', 0.9, None, 0),
+})
 
 # O ponto de embarque do barco (pedido de arte de 30/10/2026): o deque sai do −x, atrás do vulcão,
 # entre as pedras do pé dele e as samambaias. A beira do tampo (x −12,4) e o degrau (0,4 depois)
@@ -19,9 +46,37 @@ import lib_cais
 PORTO = dict(terra=(-12.4, 0.0), rumo=180, degrau=0.4, comprimento=5.9, lado=-1)
 
 VULCAO = dict(x=-4.2, z=-2.6, r=5.6, h=7.2)
+# A agulha de cima do vulcão (z do Blender, a partir do mar; raio): começa dentro do cone de antes e
+# leva a boca a 16,3 m. O perfil de baixo fica por dentro da superfície antiga (que tem até 7% de
+# variação no raio).
+VULCAO_ALTO = dict(perfil=[(6.0, 2.2), (7.85, 1.98), (9.2, 1.9), (11.0, 1.7), (13.0, 1.5), (14.8, 1.33), (16.3, 1.15)],
+                   boca=0.9, fundo=16.05)
+# O segredo da montaria (no referencial do jogo): o pé da rampa no chão, o topo dela na beira do
+# terraço, a altura do tampo do terraço (y), a largura da rampa, o lado do terraço, a quebra da
+# rampa (a distância do pé e a altura) e a espessura da laje: o lance de baixo a 46° e o de cima a
+# uns 34° (o dino sobe até 52°). O pé fica entre a pedra 6 do vulcão, a samambaia da trilha da
+# escavação e o ninho 3: por baixo da ponte passam a trilha das pedras e o dino a caminho do oeste.
+# O terraço fica alto demais para quem chega pulando ou planando (o teste mede).
+SEGREDO = dict(pe=(-2.3, 7.35), topo=(-1.41, 1.66), altura=5.6, largura=1.9, terraco=2.4, quebra=(1.9, 3.0),
+               espessura=0.22)
 
 
 # ------------------------------------------------------------------ vulcão
+RIOS = (math.radians(-60), math.radians(15), math.radians(120))
+
+
+def rio_de_lava(k):
+    """Os pontos do rio de lava `k` pela encosta do cone de antes (da borda da cratera ao pé)."""
+    cx, cy, h, r, a = VULCAO['x'], -VULCAO['z'], VULCAO['h'], VULCAO['r'], RIOS[k]
+    pts = []
+    for t in (0.0, 0.25, 0.5, 0.75, 1.0):
+        tt = 0.98 - 0.98 * t
+        rr = r * 0.36 + (r - r * 0.36) * t
+        aa = a + 0.25 * math.sin(t * 3 + k)
+        pts.append((cx + math.cos(aa) * (rr + 0.08), cy + math.sin(aa) * (rr + 0.08), TOPO - 0.3 + h * tt + 0.1))
+    return pts
+
+
 def vulcao(col):
     cx, cy = VULCAO['x'], -VULCAO['z']
     h, r = VULCAO['h'], VULCAO['r']
@@ -62,23 +117,80 @@ def vulcao(col):
         # Baixa (uns 0,35 acima do chão): sobe-se andando, como nas pedras do lago do Bosque.
         col.append(col_cilindro('pedra-vulcao', 0.42, 0.6, (px, py, TOPO + 0.05)))
     # Lava: o lago da cratera, os rios pelas encostas e as poças no pé.
-    lava = [cyl(r * 0.28, 0.1, (cx, cy, TOPO - 0.3 + h - 0.5), 'lava', verts=n)]
-    for k, a in enumerate((math.radians(-60), math.radians(15), math.radians(120))):
-        pts = []
-        for t in (0.0, 0.25, 0.5, 0.75, 1.0):
-            tt = 0.98 - 0.98 * t
-            rr = r * 0.36 + (r - r * 0.36) * t
-            aa = a + 0.25 * math.sin(t * 3 + k)
-            pts.append((cx + math.cos(aa) * (rr + 0.08), cy + math.sin(aa) * (rr + 0.08), TOPO - 0.3 + h * tt + 0.1))
+    # (O lago da cratera de antes ficou dentro da agulha: agora ele está na boca dela.)
+    lava = []
+    for k, a in enumerate(RIOS):
+        pts = rio_de_lava(k)
         lava.append(tube(pts, [0.26, 0.3, 0.34, 0.38, 0.32], 'lava', seg=6))
         fim = pts[-1]
         lava.append(slab(blob(fim[0] + math.cos(a) * 0.6, fim[1] + math.sin(a) * 0.6, 0.9, 0.7, seed=k, n=16, wob=0.15),
                          TOPO - 0.02, TOPO + 0.05, 'lava', bevel=0.0, name='poca', fundo=False))
+    alto, lava_alta, boca = vulcao_alto(cx, cy, rnd)
+    pedras += alto
+    lava += lava_alta
     fumaca = []
     for k, (dx, dy, dz, rr) in enumerate(((0, 0, 0.9, 0.95), (0.6, 0.3, 1.7, 0.75), (-0.3, 0.7, 2.4, 0.6),
                                           (0.4, -0.2, 3.0, 0.45))):
-        fumaca.append(uvball(rr, (cx + dx, cy + dy, TOPO + h + dz), 'nuvemSombra', seg=10, ring=6))
+        fumaca.append(uvball(rr, (cx + dx, cy + dy, boca + dz), 'nuvemSombra', seg=10, ring=6))
     return pedras, lava, fumaca, o
+
+
+def raio_da_agulha(z):
+    """O raio da agulha na altura z (sem a variação), pelo perfil."""
+    perfil = VULCAO_ALTO['perfil']
+    for (z0, r0), (z1, r1) in zip(perfil, perfil[1:]):
+        if z <= z1:
+            return r0 + (r1 - r0) * max(0.0, (z - z0) / (z1 - z0))
+    return perfil[-1][1]
+
+
+def vulcao_alto(cx, cy, rnd):
+    """A agulha de cima do vulcão (o marco de altura do Vale): anéis de rocha em camadas até a boca,
+    com o lago de lava lá em cima e os rios descendo até onde os de antes começam. Só desenho: o
+    `col-terreno` continua o cone de antes (nada daqui se pisa)."""
+    n = 18
+    perfil = VULCAO_ALTO['perfil']
+    verts, faces = [], []
+    for k, (z, rr) in enumerate(perfil):
+        for i in range(n):
+            a = 2 * math.pi * i / n + k * 0.23
+            j = 1 + rnd.uniform(-0.05, 0.05) if 0 < k < len(perfil) - 1 else 1
+            verts.append((cx + math.cos(a) * rr * j, cy + math.sin(a) * rr * j, z))
+    k_boca = len(perfil) - 1
+    for i in range(n):
+        a = 2 * math.pi * i / n + k_boca * 0.23
+        verts.append((cx + math.cos(a) * VULCAO_ALTO['boca'], cy + math.sin(a) * VULCAO_ALTO['boca'], VULCAO_ALTO['fundo']))
+    for k in range(len(perfil)):
+        for i in range(n):
+            a0, a1 = k * n + i, k * n + (i + 1) % n
+            b0, b1 = (k + 1) * n + i, (k + 1) * n + (i + 1) % n
+            faces += [(a0, a1, b1), (a0, b1, b0)]
+    o = malha('vulcao-alto', verts, faces, 'rochaVulcao', cima=False)
+    import bmesh as _bm
+    bm = _bm.new()
+    bm.from_mesh(o.data)
+    _bm.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(o.data)
+    bm.free()
+    # Camadas de rocha (uma faixa escura a cada dois anéis) e a boca escura.
+    pintar_por(o, lambda c, nn: 'rochaVulcaoEscura' if (c.z > 15.4 or c.z < 7.85 or 9.2 < c.z < 11.0 or 13.0 < c.z < 14.8)
+               else None)
+    lib_q.flat(o)
+    boca = perfil[-1][0]
+    lava = [cyl(VULCAO_ALTO['boca'] + 0.05, 0.1, (cx, cy, VULCAO_ALTO['fundo'] - 0.1), 'lava', verts=n)]
+    # Os rios: da boca até o começo dos rios de antes (mesmo ângulo e o mesmo ponto de partida).
+    h, r = VULCAO['h'], VULCAO['r']
+    for k, a in enumerate(RIOS):
+        aa0 = a + 0.25 * math.sin(k)
+        fim = rio_de_lava(k)[0]
+        pts = []
+        for z in (boca - 0.1, 14.6, 12.8, 11.0, 9.3, 8.4):
+            aa = aa0 + 0.12 * math.sin(z * 0.9 + k)
+            rr = raio_da_agulha(z) + 0.12
+            pts.append((cx + math.cos(aa) * rr, cy + math.sin(aa) * rr, z))
+        pts.append(fim)
+        lava.append(tube(pts, [0.16, 0.18, 0.2, 0.22, 0.24, 0.25, 0.26], 'lava', seg=6))
+    return [o], lava, boca
 
 
 # ------------------------------------------------------------------ peças
@@ -306,6 +418,124 @@ def pegada(x, z, a, s=1.0):
     return p
 
 
+# ------------------------------------------------------------------ o segredo da montaria
+def altura_do_cone(rv):
+    """A altura (z do Blender) da superfície do cone de antes a `rv` do eixo, sem a variação."""
+    h, r = VULCAO['h'], VULCAO['r']
+    perfil = [(r * f, TOPO - 0.3 + h * t) for f, t in ((1, 0), (0.84, 0.2), (0.66, 0.42), (0.5, 0.64), (0.4, 0.84),
+                                                        (0.36, 1.0))]
+    if rv >= perfil[0][0]:
+        return TOPO - 0.3
+    for (r0, z0), (r1, z1) in zip(perfil, perfil[1:]):
+        if rv >= r1:
+            return z0 + (z1 - z0) * (r0 - rv) / (r0 - r1)
+    return perfil[-1][1]
+
+
+def _perto_do_rio(p, rio, folga):
+    for a, b in zip(rio, rio[1:]):
+        ax, ay, bx, by = a[0], a[1], b[0], b[1]
+        vx, vy = bx - ax, by - ay
+        t = max(0.0, min(1.0, ((p.x - ax) * vx + (p.y - ay) * vy) / (vx * vx + vy * vy)))
+        if math.hypot(p.x - ax - t * vx, p.y - ay - t * vy) < folga:
+            return True
+    return False
+
+
+def segredo_da_montaria(col):
+    """O terraço do segredo na encosta sul do vulcão e a rampa de cinza quente, o único acesso.
+
+    Devolve (desenho, faixa de cinza, nó da área, âncora). A rampa sai do chão no `pe` e chega à
+    beira do terraço no `topo`, em dois lances: o de baixo, curto e íngreme, cheio até o chão; o de
+    cima, uma ponte por cima da trilha das pedras do vulcão e do caminho do dino para o oeste da
+    ilha (vão de mais de 2,2 m embaixo dele). A faixa de cinza cobre o tampo inteiro, do chão até a
+    beira do terraço; a área é uma caixa só, no plano do lance de cima."""
+    from mathutils import Vector as V
+    fx, fy = SEGREDO['pe'][0], -SEGREDO['pe'][1]
+    tx, ty = SEGREDO['topo'][0], -SEGREDO['topo'][1]
+    larg, alt, lado = SEGREDO['largura'], SEGREDO['altura'], SEGREDO['terraco']
+    ku, kv = SEGREDO['quebra']
+    d = V((tx - fx, ty - fy))
+    lh = d.length
+    d.normalize()
+    phi = math.atan2(d.y, d.x)
+    psi = math.atan2(-d.x, d.y)
+    t1 = math.atan2(kv - TOPO, ku)
+    t2 = math.atan2(alt - kv, lh - ku)
+    esp = SEGREDO['espessura']
+    e1, e2 = esp / math.cos(t1), esp / math.cos(t2)
+
+    def topo(u):
+        return TOPO + u * math.tan(t1) if u <= ku else kv + (u - ku) * math.tan(t2)
+
+    def no_rumo(pts, prof, m):
+        o = prism(pts, prof, (0, 0, 0), m)
+        o.rotation_euler = (0, 0, phi)
+        o.location = (fx, fy, 0)
+        return o
+
+    def faixa_(u0, u1, cima, baixo):
+        """Perfil (u, z) de uma laje que segue o tampo, de u0 a u1, com a quebra no meio."""
+        return [(u0, topo(u0) + cima), (ku, kv + cima), (u1, topo(u1) + cima), (u1, topo(u1) - baixo[1]),
+                (ku, kv - (baixo[0] + baixo[1]) / 2), (u0, topo(u0) - baixo[0])]
+
+    cen = [no_rumo(faixa_(-0.4, lh, 0.0, (e1, e2)), larg, 'basalto')]
+    # Embaixo do lance de baixo, cheio até o chão (o de cima é ponte).
+    u_g = (e1 - 0.35) / math.tan(t1)
+    cen.append(no_rumo([(u_g, TOPO - 0.3), (ku, TOPO - 0.3), (ku, kv - (e1 + e2) / 2 + 0.05)], larg - 0.04, 'basaltoClaro'))
+    # O terraço: uma laje de basalto alinhada com a rampa, apoiada em colunas que entram no vulcão.
+    c = V((fx, fy)) + d * (lh - 0.05 + lado / 2)
+    cen.append(box((lado, lado, 0.5), (c.x, c.y, alt - 0.25), 'basalto', bevel=0.06, segs=1, rot=(0, 0, phi)))
+    col.append(col_caixa('terraco-segredo', (lado, lado, 1.0), (c.x, c.y, alt - 0.5), rot=(0, 0, phi)))
+    rnd = random.Random(31)
+    cx, cy = VULCAO['x'], -VULCAO['z']
+    per = V((-d.y, d.x))
+    for i in (-1, 0, 1):
+        for j in (-1, 0, 1):
+            p = c + d * (j * lado * 0.33) + per * (i * lado * 0.33) + V((rnd.uniform(-0.1, 0.1), rnd.uniform(-0.1, 0.1)))
+            chao = altura_do_cone(math.hypot(p.x - cx, p.y - cy))
+            # Só em cima do vulcão e fora dos rios de lava.
+            if chao < TOPO + 1.0 or any(_perto_do_rio(p, rio_de_lava(k), 0.85) for k in range(len(RIOS))):
+                continue
+            z0, z1 = chao - 0.5, alt - 0.48
+            cen.append(cyl(rnd.uniform(0.28, 0.36), z1 - z0, (p.x, p.y, (z0 + z1) / 2), 'basaltoClaro' if (i + j) % 2 else
+                           'basalto', verts=6, rot=(0, 0, rnd.uniform(0, 1))))
+    # Os colisores dos dois lances (o tampo de cada um é o tampo da rampa).
+    for (ua, za), (ub, zb), th, alem in (((-0.5, topo(-0.5)), (ku, kv), t1, 0.0), ((ku, kv), (lh, alt), t2, 0.0)):
+        a3 = V((d.x * math.cos(th), d.y * math.cos(th), math.sin(th)))
+        n3 = V((-d.x * math.sin(th), -d.y * math.sin(th), math.cos(th)))
+        comp = math.hypot(ub - ua, zb - za) + alem
+        meio = V((fx, fy, 0)) + V((d.x, d.y, 0)) * ((ua + ub) / 2) + V((0, 0, (za + zb) / 2))
+        col.append(col_caixa('rampa-cinza', (larg, comp, esp), tuple(meio - n3 * esp / 2), rot=(th, 0, psi)))
+    cinza = [no_rumo(faixa_(-0.3, lh - 0.02, 0.03, (0.03, 0.03)), larg - 0.06, 'cinzaQuente')]
+    for k in range(16):
+        u = rnd.uniform(0.3, lh - 0.3)
+        w = rnd.uniform(-larg / 2 + 0.25, larg / 2 - 0.25)
+        q = V((fx, fy)) + d * u + per * w
+        b = uvball(rnd.uniform(0.04, 0.07), (q.x, q.y, topo(u) + 0.03), 'brasaDaCinza', seg=6, ring=4, scale=(1, 1, 0.4))
+        b.rotation_euler = (0, -(t1 if u <= ku else t2), phi)
+        cinza.append(b)
+    # A área: uma caixa no plano do lance de cima, que pega também o tampo do lance de baixo (que
+    # fica até 0,4 m abaixo desse plano). Coordenadas (s ao longo, n para cima do plano) a partir da quebra.
+    a2 = (math.cos(t2), math.sin(t2))
+    n2 = (-math.sin(t2), math.cos(t2))
+    s_de = lambda u, z: (u - ku) * a2[0] + (z - kv) * a2[1]  # noqa: E731
+    n_de = lambda u, z: (u - ku) * n2[0] + (z - kv) * n2[1]  # noqa: E731
+    sa0, sa1 = s_de(0.0, TOPO) - 0.15, s_de(lh, alt) + 0.15
+    na0, na1 = min(n_de(u / 10 * ku, topo(u / 10 * ku)) for u in range(11)) - 0.08, 2.2
+    sm, nm = (sa0 + sa1) / 2, (na0 + na1) / 2
+    um, zm = ku + sm * a2[0] + nm * n2[0], kv + sm * a2[1] + nm * n2[1]
+    area = bpy.data.objects.new('cinza-quente-area', None)
+    area.empty_display_type = 'CUBE'
+    area.empty_display_size = 0.5
+    area.location = (fx + d.x * um, fy + d.y * um, zm)
+    area.rotation_euler = (t2, 0, psi)
+    area.scale = (larg + 0.4, sa1 - sa0, na1 - na0)
+    bpy.context.collection.objects.link(area)
+    anc = ancora('segredo-montaria', c.x, -c.y, alt)
+    return cen, cinza, area, anc
+
+
 # ------------------------------------------------------------------ a ilha
 def ilha():
     lib_q.reset()
@@ -345,7 +575,9 @@ def ilha():
     for x, z in ((5.2, -2.8), (5.2, 2.8), (0.2, 3.4)):
         cen += poste_lampiao(x, z)
         col.append(col_cilindro('poste-lampiao', 0.1, 2.9, (x, -z, TOPO + 1.45)))
-    conferir_corredor(cen + pedras + lava, 'vale')
+    seg_cen, cinza, area, anc_segredo = segredo_da_montaria(col)
+    cen += seg_cen
+    conferir_corredor(cen + pedras + lava + cinza, 'vale')
     # O chão que se pisa: tampo, praia e barranco e o vulcão (a lava e as manchas só desenham).
     col.insert(0, col_terreno(chao + [vulcao_]))
     ancoras = ancoras_padrao(
@@ -354,7 +586,8 @@ def ilha():
         extras=[('observatorio', 3.2, -5.3), ('varanda', 3.2, -7.6, TOPO + 2.8), ('escavacao', 4.4, 6.8, TOPO + 0.06),
                 ('ninho-1', -7.6, 6.6), ('ninho-2', 8.6, -6.4), ('ninho-3', -1.4, 9.8),
                 ('cratera', VULCAO['x'], VULCAO['z'], TOPO - 0.3 + VULCAO['h'] - 0.4), ('pe-do-vulcao', 2.4, -1.9)])
-    nos = {'chao': chao, 'vulcao': pedras, 'lava': lava, 'cenario': cen}
+    ancoras += [anc_segredo, area]
+    nos = {'chao': chao, 'vulcao': pedras, 'lava': lava, 'cenario': cen, 'cinza-quente': cinza}
     porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
     ancoras += lib_cais.ancoras_do_porto(ancora, dados_porto)
     dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
@@ -365,8 +598,11 @@ def ilha():
 
 def props():
     lib_q.reset()
-    exportar('vale-dos-dinos-props', {'samambaia-gigante': samambaia_gigante(), 'cavalinha': cavalinha(),
-                                       'ninho': ninho(), 'ovo-dino': ovo(), 'osso': osso(), 'cranio-fossil': cranio_fossil()})
+    nos = {'samambaia-gigante': samambaia_gigante(), 'cavalinha': cavalinha(), 'ninho': ninho(), 'ovo-dino': ovo(),
+           'osso': osso(), 'cranio-fossil': cranio_fossil()}
+    for pid in fosseis.FORMAS:
+        nos[pid] = fosseis.fossil(pid)
+    exportar('vale-dos-dinos-props', nos)
 
 
 if __name__ == '__main__':
