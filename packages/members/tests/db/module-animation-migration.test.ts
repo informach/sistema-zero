@@ -49,6 +49,8 @@ test.skipIf(!database)(
       const entries = journal.entries.slice(0, index + 1)
       const previous = entries.at(-2)!
       const latest = entries.at(-1)!
+      const contraction = journal.entries[index + 1]!
+      expect(contraction.tag).toBe('0144_retire_module_rive')
       const digest = async (tag: string) =>
         createHash('sha256')
           .update(await readFile(join(source, `${tag}.sql`)))
@@ -101,8 +103,25 @@ test.skipIf(!database)(
       expect((await sql`select rive_url from members.modules where id = ${id}`)[0]?.rive_url).toBe(
         originalUrl,
       )
-      // Simulate the later contraction only in this disposable DB. It is not shipped in 0143.
-      await sql.unsafe('alter table members.modules drop column rive_url')
+      // Apply the generated contraction through the real migrator after the backfill.
+      await copyFile(
+        join(source, `${contraction.tag}.sql`),
+        join(fixture, `${contraction.tag}.sql`),
+      )
+      await writeFile(
+        join(fixture, 'meta/_journal.json'),
+        JSON.stringify({ ...journal, entries: [...entries, contraction] }),
+      )
+      await migrate(db, config)
+      await migrate(db, config)
+      const retired =
+        await sql`select hash, created_at from drizzle.members_migrations order by created_at`
+      expect(retired).toHaveLength(3)
+      expect(retired[2]?.hash).toBe(await digest(contraction.tag))
+      expect(Number(retired[2]?.created_at)).toBe(contraction.when)
+      expect(
+        await sql`select 1 from information_schema.columns where table_schema = 'members' and table_name = 'modules' and column_name = 'rive_url'`,
+      ).toHaveLength(0)
       const [afterRetirement] = await db.select().from(modules).where(eq(modules.id, id))
       expect(afterRetirement).toEqual(beforeRetirement)
     } finally {
