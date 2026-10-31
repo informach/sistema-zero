@@ -14,8 +14,8 @@ import { coresDoCatalogo } from '../sistemas/cores-conquistadas'
 
 /**
  * Desafios de mentira para o playground: três quadros cadastrados no Bosque (um pronto para fazer,
- * um que pede um bloco de curso e um feito), o resto vazio, dois da sua ilha (C03a: um feito e um
- * pronto, sem pintar a ilha), o projeto autoral do Farol (C03b) e o desafio do dia nos três estados (`DiaDoPlayground`). Abrir um
+ * um que pede um bloco de curso e um feito), o resto vazio, dois da sua ilha (C03a: o quadro 4
+ * feito, que pinta a praia, e o 2 pronto), o projeto autoral do Farol (C03b) e o desafio do dia nos três estados (`DiaDoPlayground`). Abrir um
  * desafio "resolve" na hora.
  */
 export type DiaDoPlayground = 'pronto' | 'feito' | 'nenhum'
@@ -57,7 +57,7 @@ function desafio(
         ? [{ bloco: 'sz_js_repeat', rotulo: 'Repetir vezes', cursos: [CURSO] }]
         : [],
     aprenda: situacao === 'disponivel' && ilha === 'bosque' ? [CURSO] : [],
-    recompensa: { cor: ilha !== 'sua-ilha' && ilha !== 'farol', moedas: 20, moedasExtra: 10 },
+    recompensa: { cor: ilha !== 'farol', moedas: 20, moedasExtra: 10 },
     recompensaVista: situacao === 'concluido',
   }
 }
@@ -85,7 +85,8 @@ export function criarDesafiosFalsos(
       situacao('faltam-blocos'),
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
-    desafio('00000000-0000-4000-8000-0000000000b1', 1, 'Passos na areia', 'concluido', 'sua-ilha'),
+    // Feito o quadro 4 da sua ilha: só a praia tem cor de quadro (casa, horta e píer seguem A17).
+    desafio('00000000-0000-4000-8000-0000000000b1', 4, 'A concha rosa', 'concluido', 'sua-ilha'),
     desafio(
       '00000000-0000-4000-8000-0000000000b2',
       2,

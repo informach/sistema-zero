@@ -926,7 +926,7 @@
           "texto": "Complete o evento Enter para recomeçar a praia do início."
         },
         "recompensa": {
-          "cor": false,
+          "cor": true,
           "atracao": "sua-ilha-passos-na-areia",
           "moedas": 20,
           "moedasExtra": 10
@@ -2202,7 +2202,7 @@
           "texto": "Complete o evento Enter para recomeçar a praia do início."
         },
         "recompensa": {
-          "cor": false,
+          "cor": true,
           "atracao": "sua-ilha-a-primeira-concha",
           "moedas": 20,
           "moedasExtra": 10
@@ -4344,7 +4344,7 @@
           "texto": "Complete o evento Enter para recomeçar a praia do início."
         },
         "recompensa": {
-          "cor": false,
+          "cor": true,
           "atracao": "sua-ilha-o-balde-do-nico",
           "moedas": 20,
           "moedasExtra": 10
@@ -6727,7 +6727,7 @@
           "texto": "Complete o evento Enter para recomeçar a praia do início."
         },
         "recompensa": {
-          "cor": false,
+          "cor": true,
           "atracao": "sua-ilha-a-concha-rosa",
           "moedas": 20,
           "moedasExtra": 10
@@ -8980,7 +8980,7 @@
           "texto": "Faça a barra de espaço também recomeçar a praia. No controle da tela, use A."
         },
         "recompensa": {
-          "cor": false,
+          "cor": true,
           "atracao": "sua-ilha-a-mare-volta",
           "moedas": 20,
           "moedasExtra": 10
@@ -11384,7 +11384,7 @@
           "texto": "Complete o evento Enter para recomeçar a praia do início."
         },
         "recompensa": {
-          "cor": false,
+          "cor": true,
           "atracao": "pega-conchas",
           "moedas": 20,
           "moedasExtra": 10
