@@ -16,6 +16,15 @@
  * Constantes (N3, 31/10/2026): `podeAgir = falso` no início e nunca mudado é tão constante quanto o
  * `falso` literal. `constantsOf` acha as variáveis que só têm o valor do início (nenhuma atribuição
  * que pode rodar muda o valor) e as condições passam a ser lidas com elas.
+ *
+ * Quatro brechas fechadas (lacunas, 01/11/2026):
+ * - o encontro é com um desenho ou grupo criado por código que roda (um grupo, também com quem
+ *   entra nele); encontrar um nome que nunca existe não conta;
+ * - a contagem com passo literal (`pontos = pontos + 1`) só decide se algum valor que ela alcança
+ *   muda a condição (`Se pontos < 0` nunca muda);
+ * - `constantsOf` só tira a variável da conta pelos campos que escrevem nela (nomes de variável),
+ *   não por um texto que repete o nome;
+ * - `x = x` não é efeito.
  */
 export type GameCausalityStep = 'encounter' | 'memory' | 'decision' | 'restart' | 'removal'
 export const GAME_CAUSALITY_STEPS: readonly GameCausalityStep[] = [
@@ -182,9 +191,13 @@ function walkLive(
   }
 }
 
-/** Um comando que faz alguma coisa (um Se ou um laço vazio não fazem). */
+/** `x = x`: guarda na variável o que ela já tem. */
+const selfAssign = (s: Node) =>
+  s.type === 'assign' && record(s.value) && s.value.type === 'var' && s.value.name === s.name
+/** Um comando que faz alguma coisa (um Se, um laço vazio ou `x = x` não fazem). */
 const isEffect = (s: Node) =>
-  !['if', 'repeat', 'while', 'doWhile', 'forOf', 'comment'].includes(String(s.type))
+  !['if', 'repeat', 'while', 'doWhile', 'forOf', 'comment'].includes(String(s.type)) &&
+  !selfAssign(s)
 function hasEffect(body: unknown, env: Env): boolean {
   let found = false
   walkLive(
@@ -229,6 +242,12 @@ function behaviorOf(project: unknown): Behavior | undefined {
 
 /** Os campos de comando que dão nome a uma variável nova (que esconde outra com o mesmo nome). */
 const SHADOW_FIELDS = ['itemName', 'varName', 'indexName'] as const
+/**
+ * Os campos de comando que nomeiam uma variável (e podem escrever nela): `name`, `target` e os que
+ * terminam em `Name` ou `Var`. Um texto, uma tecla ou uma imagem com o mesmo nome não escrevem.
+ */
+const writesVariable = (key: string) =>
+  key === 'name' || key === 'target' || /(Name|Var)$/.test(key)
 
 /**
  * As variáveis que nunca mudam (N3): criadas uma vez só, no topo de "Meus moldes" ou do "Ao
@@ -281,9 +300,9 @@ function constantsOf(b: Behavior): Env {
         const v = fold(s.value, env)
         if (v === UNKNOWN || v !== env.get(s.name)) drop(s.name)
       }
-      // Qualquer outro campo de comando com o nome pode escrever nele: fora da conta.
+      // Outro campo de comando que nomeia a variável pode escrever nela: fora da conta.
       for (const [key, value] of Object.entries(s)) {
-        if (key === 'type' || key === '__id') continue
+        if (key === 'type' || key === '__id' || !writesVariable(key)) continue
         if (s.type === 'assign' && key === 'name') continue
         if (s.type === 'var' && key === 'name') continue
         if (typeof value === 'string' && env.has(value)) drop(value)
@@ -294,15 +313,50 @@ function constantsOf(b: Behavior): Env {
   return env
 }
 
-/** Os corpos que podem rodar dos encontros do personagem com outra coisa. */
+/**
+ * O que existe no jogo: os desenhos criados por código que pode rodar (`g2d:create*` e
+ * `g2d:spawn*` com `varName`) e os grupos criados que recebem alguém (`spawn*` ou `addToGroup`).
+ */
+function existing(b: Behavior, env: Env): { sprites: Set<string>; groups: Set<string> } {
+  const sprites = new Set<string>()
+  const created = new Set<string>()
+  const filled = new Set<string>()
+  const visit = (s: Node) => {
+    const type = String(s.type)
+    if (type === 'g2d:createGroup' || type === 'g2d:allEnemiesGroup') {
+      if (typeof s.varName === 'string') created.add(s.varName)
+      return
+    }
+    if (
+      (type.startsWith('g2d:create') || type.startsWith('g2d:spawn')) &&
+      typeof s.varName === 'string'
+    )
+      sprites.add(s.varName)
+    if (
+      (type.startsWith('g2d:spawn') || type === 'g2d:addToGroup') &&
+      typeof s.groupVar === 'string'
+    )
+      filled.add(s.groupVar)
+  }
+  for (const area of [b.molds, b.start, b.events, b.loops]) walkLive(area, visit, env)
+  return { sprites, groups: new Set([...created].filter((g) => filled.has(g))) }
+}
+
+/** Os corpos que podem rodar dos encontros do personagem com outra coisa que existe. */
 function encounters(b: Behavior, actor: string, env: Env): unknown[][] {
   const out: unknown[][] = []
+  const { sprites, groups } = existing(b, env)
   const visit = (s: Node) => {
+    const other = s.aVar === actor ? s.bVar : s.bVar === actor ? s.aVar : null
     const meets =
       (s.type === 'g2d:onOverlap' &&
-        ((s.aVar === actor && s.bVar !== actor) || (s.bVar === actor && s.aVar !== actor))) ||
+        typeof other === 'string' &&
+        other !== actor &&
+        sprites.has(other)) ||
       ((s.type === 'g2d:onTouchGroup' || s.type === 'g2d:onSpriteGroupOverlap') &&
-        s.spriteVar === actor)
+        s.spriteVar === actor &&
+        typeof s.groupVar === 'string' &&
+        groups.has(s.groupVar))
     if (meets && Array.isArray(s.body)) out.push(s.body)
   }
   walkLive(b.events, visit, env)
@@ -326,8 +380,38 @@ function withVar(env: Env, name: string, value: Folded): Env {
   return out
 }
 
+/**
+ * O passo literal de uma contagem (`x = x + 2`, `x = x - 1`, `x = 1 + x`), ou `null` quando o
+ * valor novo não é a própria variável mais um número.
+ */
+function literalStep(name: string, value: unknown, env: Env): number | null {
+  if (!record(value) || value.type !== 'binop' || (value.op !== '+' && value.op !== '-'))
+    return null
+  const self = (e: unknown) => record(e) && e.type === 'var' && e.name === name
+  const n = (e: unknown) => {
+    const f = fold(e, withVar(env, name, UNKNOWN))
+    return typeof f === 'number' ? f : null
+  }
+  if (self(value.left)) {
+    const d = n(value.right)
+    return d === null ? null : value.op === '+' ? d : -d
+  }
+  if (value.op === '+' && self(value.right)) return n(value.left)
+  return null
+}
+
+/** As contagens com passo literal achadas nos encontros: nome → os passos. */
+type Steps = Map<string, number[]>
+/** Quantos passos de uma contagem a decisão confere (o bastante para os limites de um jogo). */
+const COUNT_HORIZON = 200
+
 /** O que o encontro guarda: nome → valor depois (UNKNOWN quando a conta não fecha aqui). */
-function memories(b: Behavior, actor: string, env: Env): Map<string, Folded> {
+function memories(
+  b: Behavior,
+  actor: string,
+  env: Env,
+  steps: Steps = new Map(),
+): Map<string, Folded> {
   const initial = initialValues(b, env)
   const out = new Map<string, Folded>()
   for (const body of encounters(b, actor, env))
@@ -342,6 +426,11 @@ function memories(b: Behavior, actor: string, env: Env): Map<string, Folded> {
         const own = new Set<string>()
         references(s.value, own)
         out.set(s.name, own.has(s.name) ? UNKNOWN : after)
+        const step = own.has(s.name) ? literalStep(s.name, s.value, env) : null
+        steps.set(s.name, [
+          ...(steps.get(s.name) ?? []),
+          ...(step === null ? [Number.NaN] : [step]),
+        ])
       },
       env,
     )
@@ -365,8 +454,22 @@ function otherwiseOf(s: Node): unknown[] {
   ]
 }
 
+/**
+ * Os valores que uma contagem alcança a partir do início, com os passos literais dela (um passo
+ * só, ou vários iguais), até `COUNT_HORIZON` encontros. `null` quando a conta não é só essa.
+ */
+function reachable(start: Folded, steps: number[] | undefined): number[] | null {
+  if (typeof start !== 'number' || !steps?.length) return null
+  if (steps.some((d) => !Number.isFinite(d))) return null
+  const distinct = [...new Set(steps)]
+  if (distinct.length !== 1) return null
+  const d = distinct[0] as number
+  return Array.from({ length: COUNT_HORIZON }, (_, k) => start + d * (k + 1))
+}
+
 function decides(b: Behavior, actor: string, env: Env): boolean {
-  const remembered = memories(b, actor, env)
+  const steps: Steps = new Map()
+  const remembered = memories(b, actor, env, steps)
   if (!remembered.size) return false
   const initial = initialValues(b, env)
   let found = false
@@ -382,7 +485,18 @@ function decides(b: Behavior, actor: string, env: Env): boolean {
       const before = fold(s.cond, withVar(env, name, initial.get(name) as Folded))
       const now = fold(s.cond, withVar(env, name, remembered.get(name) as Folded))
       if (before === UNKNOWN || now === UNKNOWN) {
-        // A conta depende de outra coisa (uma contagem, outra variável): basta um ramo agir.
+        // Uma contagem de passo literal: algum valor que ela alcança precisa virar a condição.
+        const values = reachable(initial.get(name) as Folded, steps.get(name))
+        if (values && before !== UNKNOWN) {
+          const flips = values.some((value) => {
+            const c = fold(s.cond, withVar(env, name, value))
+            return c !== UNKNOWN && Boolean(c) !== Boolean(before)
+          })
+          const success = before ? otherwise : s.then
+          if (flips && hasEffect(success, env)) found = true
+          continue
+        }
+        // A conta depende de outra coisa (outra variável, um sorteio): basta um ramo agir.
         if (hasEffect(s.then, env) || hasEffect(otherwise, env)) found = true
         continue
       }
