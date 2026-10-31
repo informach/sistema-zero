@@ -672,8 +672,13 @@ Arquivos: `sistemas/necessidades.ts` e `estado/relogios.tsx`.
 - **Atualização:** a cada 2 segundos de jogo ativo. As regras de "ativo" são as do tempo livre
   (seção 4).
 - **Faixa:** cada necessidade fica entre 0 e 100.
-- **Cochilo:** com a energia em 0, o personagem volta para casa e a energia vai para 60. O Zappy
-  diz: "Você cansou e tirou um cochilo em casa. Nada se perdeu." Nada é castigado.
+- **Cochilo (lacunas, 01/11/2026, pela proposta: "o avatar cochila onde está e acorda em casa"):**
+  com a energia em 0, o jogo espera o painel fechar e a ação em andamento acabar (corrida, barco,
+  balão, mergulho, montaria, trenó e escorregador, cipó, planador, escalada, borda, escada e
+  equilíbrio; `podeCochilar` em `sistemas/descanso.ts`). Então ela cochila ali mesmo: a tela
+  escurece com "Cochilando" e o Zzz, os comandos esperam, e o Zappy diz "Você cansou e cochilou
+  aqui mesmo." Depois de `SEGUNDOS_DE_COCHILO` (4) segundos de jogo ativo ela acorda em casa com a
+  energia em 60: "Você acordou em casa, descansada. Nada se perdeu." Nada é castigado.
 - **Descansar (fase2-13, combinado com a dona em 29/10/2026):** sentar num banco ou deitar na cama
   devolve a energia aos poucos (`sistemas/descanso.ts`, `ENERGIA_POR_SEGUNDO`):
   - **banco:** 0,55 por segundo (de vazia a cheia em uns 3 minutos). Hoje são os três bancos da
@@ -2426,13 +2431,18 @@ chão a 1 m e sem teto, alcance com e sem planador) e `playground/verificar-segr
 
 A proposta: "Mapa que se revela conforme você anda." Cada ilha com mapa (as sete, o Farol fica
 no da sua ilha) tem uma grade de 8 × 8 partes num quadrado em volta dela: 60 m de lado na sua
-ilha e 28 m nas do anel. O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
+ilha e, nas do anel, o dobro do alcance de cada uma (lacunas, 01/11/2026: antes eram 28 m em
+todas, e o navio do Recife, a cabana do Bosque e a caverna do Pico ficavam fora do mapa). O salvamento guarda as partes vistas (`mapa`, 16 dígitos hexadecimais
 por ilha; dois aparelhos juntam as partes, nunca perdem).
 
 - Enquanto a criança está na ilha (andando, nadando ou planando), as partes a até 6 m dela se
   revelam. Não conta pausado, de visita, em suporte somente leitura nem durante um transporte.
-- Só contam as partes de terra: as que têm o meio dentro da ilha (29 m na sua ilha, 13 m nas do
-  anel), com meia parte de folga.
+- Só contam as partes de terra. Na sua ilha, as que têm o meio a até 29 m, com meia parte de
+  folga. Nas do anel, as que têm algum ponto dentro do alcance da ilha naquele rumo
+  (`alcanceNoRumo`, o mesmo `raioDaEsperaDaIlha` que o jogo usa ao abrir a ilha: o lóbulo da
+  cabana, a caverna do Pico, o Recife até 24 m, as Nuvens e os portos). Com a grade nova, as
+  partes já vistas antes de 01/11 continuam guardadas, mas podem corresponder a outro pedaço da
+  ilha; o mapa só ganha partes, nunca perde.
 - O painel do mapa mostra, embaixo do arquipélago, o mapa da ilha onde a criança está: as partes
   vistas na cor da ilha, as outras em névoa cinza, e a marca de onde ela está. A legenda conta
   "Mapa desta ilha: n de m partes descobertas." Na lista, cada ilha visitada diz "Mapa n%
@@ -3433,7 +3443,7 @@ objeto já vale no projeto azul; a galeria só compra o visual. Catálogo em `ar
 | Parte clara do dia | 75% | `tempo-do-dia.ts`, `PARTE_CLARA` |
 | Queda das necessidades | fome 2, energia 1,2, diversão 1 por minuto | `arquipelago/src/sistemas/necessidades.ts`, `QUEDA_POR_MINUTO` |
 | Energia descansando | banco 0,55 e cama 1,7 por segundo | `arquipelago/src/sistemas/descanso.ts`, `ENERGIA_POR_SEGUNDO` |
-| Energia depois do cochilo | 60 | `arquipelago/src/estado/relogios.tsx` |
+| Energia depois do cochilo | 60 | `ENERGIA_AO_ACORDAR`, `arquipelago/src/sistemas/descanso.ts` |
 | Humor e ritmo | 15 e 60; 1,1, 1, 0,8 | `necessidades.ts`, `humor` e `ritmo` |
 | Crescimento da horta | 3, 5 e 8 min | `arquipelago/src/sistemas/horta.ts`, `CRESCIMENTO_MS` |
 | Colheita | 2, 3 e 2 | `horta.ts`, `COLHEITA` |
@@ -3599,11 +3609,13 @@ A fogueira de `mundo/fogueira-viva.tsx` tem quatro peças dentro das pedras e um
 - Nico fica na areia da ilha central em `(0, 25)`, olhando para o interior da ilha. Respira
   parado e acena quando a criança chega a menos de quatro metros. Não repete enquanto ela
   permanece perto e espera pelo menos oito segundos entre acenos. A até seis metros ele vira
-  para a criança e, longe, volta a olhar para o interior da ilha. Ainda não entrega cartas
-  nem abre conversa.
-- Estrelinha, comum, fica em `(2, 25)`; Búzio, raro, em `(3, 26)`. Usam escala 0,5 (uns 37 cm, para
-  aparecerem na areia vistos da câmera) e a animação de descanso, em fases diferentes. São presenças visuais: não geram conchas nem recompensas
-  e não são adicionados à coleção da pessoa. Captura e rotinas continuam para a etapa dos Lumis.
+  para a criança e, longe, volta a olhar para o interior da ilha. Desde a §6.28 (A19) ele
+  conversa e é o carteiro da praia (`mundo/nico.tsx`).
+- Estrelinha e Búzio **não ficam mais fixos na areia** (lacunas, 01/11/2026): pela proposta, o
+  Zappy é a última luz do arquipélago e os Lumis nascem do Cinza. Eles aparecem na praia só
+  depois de presos com a lanterna, pelos `BorroesDaIlha` da sua ilha, nos lugares
+  `LUGARES_DOS_LUMIS_DA_PRAIA`, como os das outras ilhas. As posições `(2, 25)` e `(3, 26)` de
+  `HABITANTES_DA_PRAIA` ficam só como referência das áreas livres da coleta.
 - Os três têm um cilindro arredondado menor que o desenho. A câmera atravessa esse colisor.
   Os Lumis mantêm colisores pequenos, que o personagem pode transpor como um pequeno degrau.
 - As animações param com a pausa do jogo e ficam mais lentas com movimento reduzido.

@@ -606,6 +606,23 @@ function Soneca() {
   )
 }
 
+/**
+ * Cochilando no lugar com a energia no zero (lacunas, 01/11/2026): a tela escurece ali mesmo, com o
+ * Zzz, e ela acorda em casa. Não pega toque nem clique.
+ */
+function Cochilo() {
+  const cochilando = useEstado((s) => s.cochilando)
+  if (!cochilando) return null
+  return (
+    <div className="arq-soneca arq-cochilo" role="status">
+      <div className="arq-soneca-cartao arq-cartao">
+        <b>Cochilando</b>
+        <span aria-hidden="true">Zzz</span>
+      </div>
+    </div>
+  )
+}
+
 /** A tecla (ou, no toque, o botão) da ação perto, e o que fazer no cipó e no tronco. */
 function Acao() {
   const alvo = useEstado((s) => s.alvo)
@@ -846,9 +863,7 @@ function Resultado() {
           ) : null}
           <button
             type="button"
-            className={
-              salaAFrente ? 'arq-botao leve' : 'arq-botao'
-            }
+            className={salaAFrente ? 'arq-botao leve' : 'arq-botao'}
             onClick={() => {
               movimento.pedidoDoPercurso = { acao: 'recomecar', percurso: r.percurso }
             }}
@@ -981,6 +996,7 @@ export function Hud() {
       data-anel-cor={!noFarol && anel && anelDaDica ? 'dica' : undefined}
     >
       <Soneca />
+      <Cochilo />
       <QuemJoga />
       {/* Na casa do irmão, no lugar da ilha e do "Agora", de quem é a casa e a volta. */}
       {visitando || noFarol ? null : <IlhaAgora />}
