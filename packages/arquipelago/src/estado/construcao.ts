@@ -134,6 +134,7 @@ const FERRAMENTAS_DE_CIMA: readonly Ferramenta[] = [
   'porta',
   'janela',
   'piso',
+  'movel',
   'apagar',
 ]
 

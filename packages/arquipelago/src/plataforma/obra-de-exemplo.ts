@@ -5,6 +5,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { andarDaObra, loteDeCima, obraDeCima, porEscada } from '../sistemas/construcao/andar'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
+import { porMovel } from '../sistemas/construcao/moveis'
 import {
   esticarParede,
   moverEntrada,
@@ -103,8 +104,8 @@ export function obraDeExemploComAndar(): Obra {
 
 /**
  * O andar de cima e o terreno do exemplo (`?obra=andar`): a escada na sala, subindo para o fundo,
- * dois cômodos em cima do quarto com a porta entre eles e janelas, o resto do piso aberto com o
- * guarda-corpo; um morrinho no quintal (de meio metro a 1,5 m).
+ * dois cômodos em cima do quarto com a porta entre eles e janelas (no da direita, uma poltrona), o
+ * resto do piso aberto com o guarda-corpo; um morrinho no quintal (de meio metro a 1,5 m).
  */
 export function obraEstendidaDeExemplo(): ObraEstendida {
   const obra = obraDeExemploComAndar()
@@ -126,6 +127,7 @@ export function obraEstendidaDeExemplo(): ObraEstendida {
   passo(porAbertura(cima, lote, 'janela-arco', { eixo: 'x', x: -4, z: 0 }))
   passo(porAbertura(cima, lote, 'janela-redonda', { eixo: 'z', x: 6, z: -4 }))
   passo(trocarPiso(cima, lote, { x: 3, z: -4 }, 'ladrilho'))
+  passo(porMovel(cima, lote, 'poltrona', { x: 3, z: -6 }, 0))
   const alturas: [number, number, number][] = []
   for (let x = 8; x <= 12; x++)
     for (let z = 4; z <= 8; z++) {
