@@ -36,6 +36,12 @@
       "balao": [5.6, 1.0, 6.0],
       "barco": [-21.22, -7.0, -13.27],
       "cais": [-18.98, -6.11, -14.39],
+      "canteiro-ceu-1": [-2.2, 1.5, 6.5],
+      "canteiro-ceu-2": [-0.6, 1.5, 6.5],
+      "canteiro-ceu-3": [1.0, 1.5, 6.5],
+      "canteiro-ceu-4": [-2.2, 1.5, 8.5],
+      "canteiro-ceu-5": [-0.6, 1.5, 8.5],
+      "canteiro-ceu-6": [1.0, 1.5, 8.5],
       "chegada": [11.5, 1.0, 0.0],
       "lumi-1": [5.4, 1.0, 4.6],
       "lumi-2": [-0.8, 1.0, 4.0],
@@ -45,6 +51,7 @@
       "morador": [-3.4, 1.0, 3.2],
       "ninho": [-5.7, 5.1, 5.45],
       "pe-da-arvore": [-4.6, 1.0, 4.0],
+      "segredo-balao": [3.5, 14.0, 2.0],
       "tear": [-3.1, 1.0, -1.0],
       "topo-plataforma-1": [-15.5, 3.22, -3.0],
       "topo-plataforma-2": [-17.0, 5.02, 2.8],
@@ -53,22 +60,26 @@
     },
     "clipes": [],
     "colisores": {
+      "col-arco-marco": 6,
       "col-banquinho": 1,
       "col-cais-degrau": 33,
       "col-cais-deque": 1,
       "col-cais-patamar": 3,
       "col-cais-ponte": 1,
       "col-cais-torre": 1,
+      "col-canteiro-ceu": 6,
       "col-cil-copa": 4,
       "col-cil-copa-ninho": 3,
       "col-cil-degrau-nuvem": 3,
       "col-cil-estaca-cais": 10,
       "col-cil-moita-nuvem": 8,
       "col-cil-ninho-fundo": 1,
+      "col-cil-nuvem-segredo": 1,
       "col-cil-plataforma": 4,
       "col-cil-poste-balao": 1,
       "col-cil-poste-cataventos": 4,
       "col-cil-poste-lampiao": 2,
+      "col-cil-torre-nuvem": 1,
       "col-cil-tronco": 4,
       "col-cil-tronco-ninho": 1,
       "col-guarda-cais": 11,
@@ -77,9 +88,9 @@
       "col-tear": 1,
       "col-terreno": 1
     },
-    "kb": 812.2,
+    "kb": 1022.2,
     "nos": {
-      "cenario": 11378,
+      "cenario": 14134,
       "chao": 1314,
       "fio-1": 132,
       "fio-2": 132,
@@ -87,6 +98,7 @@
       "fio-4": 132,
       "fio-5": 132,
       "fio-6": 132,
+      "marco-torre-de-nuvem": 5496,
       "plataforma-1": 1516,
       "plataforma-2": 1516,
       "plataforma-3": 1516,
@@ -130,15 +142,15 @@
       },
       "caixa_da_ilha": {
         "canto_mais_longe_com": 27.43,
-        "canto_mais_longe_sem": 24.51,
+        "canto_mais_longe_sem": 25.13,
         "com_o_porto": {
-          "max": [12.4, 10.23, 15.24],
+          "max": [12.4, 17.06, 15.24],
           "min": [-20.44, -9.5, -18.29]
         },
         "raio_do_porto_no_chao": 25.35,
         "sem_o_porto": {
-          "max": [12.4, 10.23, 15.24],
-          "min": [-19.2, -6.4, -12.39]
+          "max": [12.4, 17.06, 15.24],
+          "min": [-19.2, -6.4, -16.21]
         }
       },
       "caixa_do_deque": {
@@ -168,7 +180,7 @@
       },
       "tipo": "torre de escada (ilha que flutua)"
     },
-    "triangulos": 26096
+    "triangulos": 34348
   },
   "nuvens-argola": {
     "ancoras": {},
@@ -305,7 +317,10 @@
       "instrumento-bateria": [-4.63, 9.54, -2.99],
       "instrumento-violao": [8.6, 1.0, -4.5],
       "instrumento-xilofone": [4.76, 1.03, 8.45],
+      "jogar": [1.6, 1.0, -11.2],
       "lago-congelado": [8.0, 1.1, -6.6],
+      "lote-cabana-a": [7.0, 1.02, 3.0],
+      "lote-cabana-b": [12.0, 1.02, 8.0],
       "lumi-1": [5.2, 1.0, 3.6],
       "lumi-2": [-0.6, 1.0, 4.8],
       "lumi-3": [6.6, 1.0, -3.4],
@@ -384,18 +399,22 @@
       "col-guarda-trilha": 29,
       "col-parede-gelo": 3,
       "col-parede-iglu": 21,
+      "col-quiosque": 1,
       "col-terreno": 1,
       "col-topo-parede": 1,
       "col-treno": 1
     },
-    "kb": 1247.0,
+    "kb": 1315.6,
     "nos": {
+      "brinquedo-do-festival": 1005,
       "caverna": 6588,
       "caverna-joia": 208,
       "cenario": 18621,
-      "chao": 462,
+      "chao": 580,
+      "marco-do-cume": 70,
       "montanha": 2234,
       "porto": 1698,
+      "tela": 2,
       "telhado-iglu": 1766,
       "treno-desenho": 668
     },
@@ -422,12 +441,12 @@
         "canto_mais_longe_com": 35.4,
         "canto_mais_longe_sem": 34.22,
         "com_o_porto": {
-          "max": [14.52, 11.32, 13.91],
+          "max": [14.52, 18.2, 13.91],
           "min": [-30.53, -2.5, -17.91]
         },
         "raio_do_porto_no_chao": 19.1,
         "sem_o_porto": {
-          "max": [14.52, 11.32, 13.91],
+          "max": [14.52, 18.2, 13.91],
           "min": [-30.53, -1.0, -15.45]
         }
       },
@@ -450,7 +469,7 @@
       },
       "tipo": "deque de praia"
     },
-    "triangulos": 32245
+    "triangulos": 33440
   },
   "pico-caverna": {
     "ancoras": {
@@ -514,6 +533,7 @@
       "barco": [-18.3, 0.0, 2.2],
       "cais": [-17.1, 0.89, 0.0],
       "chegada": [11.5, 1.0, 0.0],
+      "cinza-quente-area": [-1.95, 4.18, 5.09],
       "cratera": [-4.2, 7.5, -2.6],
       "escavacao": [4.4, 1.06, 6.8],
       "lumi-1": [6.0, 1.0, 4.0],
@@ -526,6 +546,7 @@
       "ninho-3": [-1.4, 1.0, 9.8],
       "observatorio": [3.2, 1.0, -5.3],
       "pe-do-vulcao": [2.4, 1.0, -1.9],
+      "segredo-montaria": [-1.23, 5.6, 0.52],
       "varanda": [3.2, 3.8, -7.6]
     },
     "clipes": [],
@@ -548,15 +569,18 @@
       "col-cranio": 1,
       "col-degrau-observatorio": 3,
       "col-guarda-cerca": 9,
+      "col-rampa-cinza": 2,
+      "col-terraco-segredo": 1,
       "col-terreno": 1
     },
-    "kb": 709.9,
+    "kb": 754.2,
     "nos": {
-      "cenario": 21308,
+      "cenario": 21420,
       "chao": 462,
-      "lava": 374,
+      "cinza-quente": 596,
+      "lava": 614,
       "porto": 1798,
-      "vulcao": 356
+      "vulcao": 608
     },
     "porto": {
       "acesso": {
@@ -581,12 +605,12 @@
         "canto_mais_longe_com": 23.81,
         "canto_mais_longe_sem": 21.19,
         "com_o_porto": {
-          "max": [14.09, 11.65, 14.71],
+          "max": [14.09, 19.75, 14.71],
           "min": [-18.57, -2.5, -14.9]
         },
         "raio_do_porto_no_chao": 18.6,
         "sem_o_porto": {
-          "max": [14.09, 11.65, 14.71],
+          "max": [14.09, 19.75, 14.71],
           "min": [-15.06, -1.0, -14.9]
         }
       },
@@ -609,20 +633,26 @@
       },
       "tipo": "deque de praia"
     },
-    "triangulos": 24298
+    "triangulos": 25498
   },
   "vale-dos-dinos-props": {
     "ancoras": {},
     "clipes": [],
-    "kb": 100.2,
+    "kb": 183.7,
     "nos": {
       "cavalinha": 1170,
       "cranio-fossil": 548,
+      "fossil-chifre-triceratopo": 660,
+      "fossil-cranio-rex": 988,
+      "fossil-dente": 392,
+      "fossil-garra": 520,
+      "fossil-ovo": 446,
+      "fossil-vertebra": 704,
       "ninho": 1432,
       "osso": 284,
       "ovo-dino": 348,
       "samambaia-gigante": 496
     },
-    "triangulos": 4278
+    "triangulos": 7988
   }
 }

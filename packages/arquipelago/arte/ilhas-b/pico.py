@@ -46,6 +46,23 @@ FLOCOS_DA_SUBIDA = (0.14, 0.34, 0.54, 0.74, 0.9)
 # oposto ao de onde a trilha chega, que vem dos ângulos maiores), virado para ela. A descida segue a linha do meio da trilha, um ponto a cada `PASSO_DA_DESCIDA` seções.
 TRENO_NO_PLATO = dict(raio=1.45, desvio=55)
 PASSO_DA_DESCIDA = 4
+# O lote do iglu da criança (E04, 31/10/2026): a clareira de neve plana de 5 × 5 m no canto +x +z, entre o
+# iglu do Floco e a beira, fora do corredor da chegada (|z| < 2,5), da subida, do palco e da caverna.
+# As células vão de x 7 a 12 e de z 3 a 8 (pontos do jogo; as âncoras `lote-cabana-a` e `-b` ficam nos
+# cantos). O tampo acaba uns 13,2 m do meio nesse rumo, e o canto de fora (r 14,4) cai na praia: um
+# aterro de neve, 2 cm acima do tampo, deixa o lote todo plano. O aterro entra no `col-terreno` e não
+# passa do barranco (`raioDoChaoDaIlha`, 14,4, mais 10 cm no canto). O boneco de neve grande e os dois
+# pinheiros que ficavam ali mudaram de lugar (os nomes e a ordem dos colisores continuam os mesmos).
+LOTE_DO_IGLU = dict(x0=7, z0=3, x1=12, z1=8, acima=0.02)
+ATERRO = dict(folga=0.4, raio=14.5)
+# O brinquedo do festival (31/10/2026): o quiosque de 2 × 2 m do minijogo, atrás e à esquerda do palco
+# (de quem olha o palco), virado para o leste: não tapa o palco, os músicos, os instrumentos nem a
+# subida. A âncora `jogar` fica na frente da tela, 1,6 m do meio. O bloco de gelo que ficava ali mudou.
+QUIOSQUE = dict(x=0.0, z=-11.2, olha=(4.0, -11.2), jogar=1.6)
+# O marco do Pico (31/10/2026, as ilhas mais altas nos postos mais altos): a ponta de gelo acima da
+# bandeira, no mastro do meio do platô, até 18 m acima do mar (a bandeira chegava a 11,3). A haste sobe
+# até `haste` acima do platô (o pulo leva a cabeça a uns 3,3), e o cristal começa lá. Não se pisa.
+MARCO = dict(topo=18.2, haste=3.6, meio=1.2, raio=0.55)
 
 
 def raio_montanha(t):
@@ -559,6 +576,77 @@ def bandeiras_da_trilha(antes, inicio, col, lado=0.95):
     return p
 
 
+def quiosque(col=None):
+    """O quiosque do minijogo do festival (2 × 2 m, frente para −Y): o balcão de madeira do palco com
+    a alavanca e os botões, o painel de gelo com a tela (`tela`, nó próprio), o telhado de duas águas
+    nevado com as bandeirinhas e o letreiro que acende. Devolve (desenho, [tela])."""
+    if col is not None:
+        # Uma caixa só, do chão ao beiral (o telhado passa por cima da cabeça de ninguém).
+        col.append(col_caixa('quiosque', (2.0, 2.0, 2.35), (0, 0, 1.175)))
+    # O armário começa 2 cm acima do chão: o fundo dele e o do rodapé no mesmo plano piscariam.
+    p = [box((1.9, 1.0, 2.18), (0, 0.45, 1.11), 'palco', bevel=0.05, segs=1),
+         box((1.96, 1.06, 0.12), (0, 0.45, 0.06), 'palcoClaro', bevel=0.03, segs=1)]
+    # O balcão da frente, com o tampo claro e a faixa de bandeirinhas pintada.
+    p.append(box((1.9, 0.7, 0.92), (0, -0.6, 0.46), 'palcoClaro', bevel=0.04, segs=1))
+    p.append(box((2.0, 0.8, 0.06), (0, -0.6, 0.955), 'palco', bevel=0.02, segs=1))
+    for i in range(6):
+        x = -0.75 + i * 0.3
+        p.append(prism([(-0.1, 0), (0.1, 0), (0, -0.18)], 0.02, (x, -0.96, 0.82),
+                       ('bandeirinhaA', 'bandeirinhaB', 'bandeirinhaC')[i % 3]))
+    # A alavanca e os botões no tampo.
+    p.append(cyl(0.07, 0.02, (-0.45, -0.6, 0.99), 'metalEscuro', verts=10))
+    p.append(cyl(0.015, 0.16, (-0.45, -0.6, 1.07), 'metalEscuro', verts=6))
+    p.append(uvball(0.045, (-0.45, -0.6, 1.16), 'cachecol', seg=8, ring=5))
+    for k, m in enumerate(('agarra', 'agarraAzul', 'bandeirinhaB')):
+        p.append(cyl(0.05, 0.03, (0.1 + k * 0.2, -0.6, 0.995), m, verts=10))
+    # O painel de gelo em volta da tela (a moldura com o furo) e o fundo escuro atrás dela.
+    yf = -0.05
+    for (sx, sz, cx, cz) in ((1.0, 0.1, 0, 1.92), (1.0, 0.1, 0, 1.18), (0.1, 0.84, -0.45, 1.55), (0.1, 0.84, 0.45, 1.55)):
+        p.append(box((sx, 0.08, sz), (cx, yf - 0.04, cz), 'geloClaro', bevel=0.02, segs=1))
+    p.append(box((0.82, 0.02, 0.62), (0, yf - 0.01, 1.55), 'metalEscuro', bevel=0.0))
+    tela = tela_com_uv(0.8, 0.6)
+    tela.location = (0, yf - 0.03, 1.55)
+    # Os postes da frente e o telhado de duas águas com a neve em cima.
+    for sx in (-1, 1):
+        p.append(cyl(0.05, 1.45, (sx * 0.9, -0.88, 1.68), 'palco', verts=6))
+    inc = R(24)
+    for sy in (-1, 1):
+        p.append(box((2.1, 1.2, 0.08), (0, sy * 0.52, 2.62), 'cortina', bevel=0.02, segs=1, rot=(-sy * inc, 0, 0)))
+        p.append(box((2.14, 1.0, 0.07), (0, sy * 0.47, 2.68), 'neve', bevel=0.03, segs=1, rot=(-sy * inc, 0, 0)))
+    for sx in (-1, 1):
+        p.append(prism([(-0.95, 0), (0.95, 0), (0, 0.42)], 0.06, (sx * 0.98, 0, 2.38), 'palcoClaro', rot=(0, 0, R(90))))
+    # O letreiro que acende, com a estrela de neve, em cima da frente.
+    p.append(box((1.1, 0.06, 0.3), (0, -1.0, 2.25), 'lanterna', bevel=0.02, segs=1))
+    p.append(prism(star_pts(0.14, 0.06, 6, 0), 0.04, (0, -1.05, 2.25), 'geloClaro'))
+    p += bandeirinhas((-0.95, -0.93, 2.3), (0.95, -0.93, 2.3), ['bandeirinhaA', 'bandeirinhaB', 'bandeirinhaC'], n=5,
+                      flecha=0.12)
+    return p, [tela]
+
+
+def marco_de_gelo(cume):
+    """A ponta de gelo do cume (o marco): o mastro da bandeira continua para cima numa haste fina até
+    passar do alcance do pulo, e lá no alto fica o cristal de gelo (duas pontas, com o miolo azul e dois
+    cristais menores), até 18 m acima do mar. Não toca o platô (só o mastro, que já tem o colisor dele);
+    só desenho."""
+    cx, cy, zc = cume
+    z0 = zc + 1.8
+    z1 = zc + MARCO['haste']
+    zm = z1 + MARCO['meio']
+    p = [cyl(0.045, z1 - z0 + 0.3, (cx, cy, (z0 + z1) / 2 + 0.1), 'metalEscuro', verts=6)]
+    # O cristal: a ponta de baixo (curta) e a de cima (comprida), seis faces.
+    p.append(cyl(MARCO['raio'], zm - z1, (cx, cy, (z1 + zm) / 2), 'geloClaro', verts=6, r2=0.0, rot=(R(180), 0, 0)))
+    p.append(cyl(MARCO['raio'], MARCO['topo'] - zm, (cx, cy, (zm + MARCO['topo']) / 2), 'geloClaro', verts=6, r2=0.0))
+    p.append(cyl(MARCO['raio'] * 0.55, (MARCO['topo'] - zm) * 0.8 - 0.06, (cx, cy, zm + (MARCO['topo'] - zm) * 0.4 + 0.03), 'geloFundo',
+                 verts=6, r2=0.0, rot=(0, 0, R(30))))
+    for k, (d, f) in enumerate(((0.0, 0.42), (math.pi, 0.32))):
+        ox, oy = math.cos(d + 0.5) * 0.42, math.sin(d + 0.5) * 0.42
+        hh = (MARCO['topo'] - zm) * f
+        p.append(cyl(MARCO['raio'] * 0.5, hh, (cx + ox, cy + oy, zm + hh / 2 - 0.2), 'gelo', verts=6, r2=0.0,
+                     rot=(-oy * 0.5, ox * 0.5, 0)))
+    print(f'MARCO do Pico: cristal de {z1:.2f} a {MARCO["topo"]:.2f}, a haste do mastro de {z0:.2f} a {z1:.2f}')
+    return p
+
+
 # ------------------------------------------------------------------ a ilha
 def ilha():
     lib_q.reset()
@@ -602,15 +690,19 @@ def ilha():
     cen += lago_congelado(8.0, -6.6)
     # Pinheiros nevados na volta, bonecos de neve, blocos de gelo e montinhos.
     for i, (x, z, s_, v) in enumerate(((-9.5, 5.5, 1.1, 'a'), (-10.5, 1.5, 0.95, 'b'), (-7.5, -8.5, 1.15, 'a'),
-                                       (-2.0, -10.5, 1.0, 'b'), (5.5, -10.2, 0.9, 'a'), (10.4, -3.8, 0.85, 'b'),
-                                       (10.0, 4.6, 1.0, 'a'), (6.2, 9.6, 1.05, 'b'), (1.0, 11.0, 0.9, 'a'),
-                                       (-6.8, 10.4, 0.95, 'b'), (-11.2, -3.0, 1.0, 'a'), (8.6, 8.0, 0.8, 'b'))):
+                                       (-2.0, -10.5, 1.0, 'b'), (6.3, -10.0, 0.9, 'a'), (10.4, -3.8, 0.85, 'b'),
+                                       (-3.0, 11.0, 1.0, 'a'), (6.2, 9.6, 1.05, 'b'), (1.0, 11.0, 0.9, 'a'),
+                                       (-6.8, 10.4, 0.95, 'b'), (-11.2, -3.0, 1.0, 'a'), (-10.5, 3.5, 0.8, 'b'))):
+        # O 7º (de 10; 4,6) e o 12º (de 8,6; 8) saíram do lote do iglu da criança (E04); o 5º foi de (5,5;
+        # −10,2) para (6,3; −10): entre ele e o palco passa a criança que vai ao quiosque do festival.
         cen += montar(lambda c, v=v, s_=s_: pinheiro_nevado(v, s_, col=c), x, z, R(37 * i))
-    cen += montar(lambda c: boneco_de_neve(col=c), 6.6, 6.0, angulo_para(6.6, 6.0, 4, 0))
+    # O boneco grande saiu de (6,6; 6) para a beira do lote do iglu da criança (E04), olhando para a chegada.
+    cen += montar(lambda c: boneco_de_neve(col=c), 6.0, 4.6, angulo_para(6.0, 4.6, 11, 0))
     # O pequeno saiu do pé da montanha (estava enterrado na encosta), para perto do palco.
     cen += montar(lambda c: boneco_de_neve(0.7, col=c), -1.6, -8.8, angulo_para(-1.6, -8.8, 2, 0))
     # O segundo saiu da frente do painel mais alto (estava onde sobe o vento do planador, fase3-09).
-    for i, (x, z) in enumerate(((5.6, -4.2), (-2.7, 6.3), (9.4, -8.8), (-9.6, 7.8), (0.6, -10.2))):
+    # O 5º saiu de (0,6; −10,2), onde fica o quiosque do minijogo do festival.
+    for i, (x, z) in enumerate(((5.6, -4.2), (-2.7, 6.3), (9.4, -8.8), (-9.6, 7.8), (-6.0, -9.5))):
         cen += montar(lambda c, i=i: bloco_de_gelo(0.9, seed=i, col=c), x, z, R(23 * i))
     montinhos = []
     for i, (x, z, rx, rz) in enumerate(((-8.5, -5.5, 1.8, 1.2), (-4.0, -8.6, 1.0, 0.6), (-6.5, 6.8, 1.4, 0.9),
@@ -669,9 +761,40 @@ def ilha():
         col.append(o)
     for n, x, z, y in cav_anc:
         extras_do_jogo.append((n if n == 'cristal-raro' else f'caverna-{n}', x + dx, z + dz, y))
-    conferir_corredor(cen + mont, 'pico')
-    # O chão que se pisa: tampo, praia e barranco, a montanha com a trilha e os montinhos de neve
-    # (as manchas e os caminhos, milímetros acima, só desenham).
+    # O lote do iglu da criança (E04): o aterro de neve plana, 2 cm acima do tampo, do lote com a folga em
+    # volta, cortado no barranco.
+    lt, at = LOTE_DO_IGLU, ATERRO
+    borda = []
+    for (xa, za), (xb, zb) in zip(((lt['x0'], lt['z0']), (lt['x1'], lt['z0']), (lt['x1'], lt['z1']), (lt['x0'], lt['z1'])),
+                                  ((lt['x1'], lt['z0']), (lt['x1'], lt['z1']), (lt['x0'], lt['z1']), (lt['x0'], lt['z0']))):
+        for k in range(10):
+            t = k / 10
+            x = xa + (xb - xa) * t
+            z = za + (zb - za) * t
+            # Para fora do lote, a folga (os cantos, na diagonal).
+            ox = -at['folga'] if x <= lt['x0'] else (at['folga'] if x >= lt['x1'] else 0)
+            oz = -at['folga'] if z <= lt['z0'] else (at['folga'] if z >= lt['z1'] else 0)
+            x, z = x + ox, z + oz
+            r = math.hypot(x, z)
+            if r > at['raio']:
+                x, z = x * at['raio'] / r, z * at['raio'] / r
+            borda.append((x, -z))
+    aterro = slab(borda, 0.0, TOPO + lt['acima'], 'neve', bevel=0.0, segs=1, name='clareira', fundo=False)
+    chao.append(aterro)
+    # O quiosque do minijogo do festival (nó `brinquedo-do-festival`, a tela no nó `tela`).
+    qx, qz = QUIOSQUE['x'], QUIOSQUE['z']
+    giro_q = angulo_para(qx, qz, *QUIOSQUE['olha'])
+    c_q = []
+    desenho_q, tela_q = quiosque(c_q)
+    brinquedo = colocar(desenho_q, qx, qz, giro_q, y=TOPO)
+    tela_q = colocar(tela_q, qx, qz, giro_q, y=TOPO)
+    col.extend(colocar(c_q, qx, qz, giro_q, y=TOPO))
+    jogar = no_mundo(0, -QUIOSQUE['jogar'], qx, qz, giro_q)
+    # A ponta de gelo do cume (o marco, só desenho).
+    marco = marco_de_gelo(cume)
+    conferir_corredor(cen + mont + brinquedo + tela_q + marco + [aterro], 'pico')
+    # O chão que se pisa: tampo, praia e barranco, a montanha com a trilha, os montinhos de neve e o aterro
+    # do lote (as manchas e os caminhos, milímetros acima, só desenham).
     col.insert(0, col_terreno(chao + [montanha_] + montinhos))
     ancoras = ancoras_padrao(
         lumis=[(5.2, 3.6), (-0.6, 4.8), (6.6, -3.4), (0.4, -9.2)], morador=(3.4, -5.1),
@@ -682,18 +805,26 @@ def ilha():
                 ('topo-da-parede', -0.4, 10.0, TOPO + 4.4), ('lago-congelado', 8.0, -6.6, TOPO + 0.1),
                 # O vento que sobe na frente do painel mais alto (fase3-09): com o planador, leva ao
                 # alto da parede. O jogo põe o raio e a altura (`CORRENTE_DO_PICO`).
-                ('corrente-de-ar', -0.9, 7.7, TOPO)]
+                ('corrente-de-ar', -0.9, 7.7, TOPO),
+                # O lote do iglu da criança (E04): os dois cantos, no chão do aterro.
+                ('lote-cabana-a', LOTE_DO_IGLU['x0'], LOTE_DO_IGLU['z0'], TOPO + LOTE_DO_IGLU['acima']),
+                ('lote-cabana-b', LOTE_DO_IGLU['x1'], LOTE_DO_IGLU['z1'], TOPO + LOTE_DO_IGLU['acima']),
+                # Onde se fica para jogar o minijogo do festival, na frente da tela do quiosque.
+                ('jogar', *jogar, TOPO)]
         + extras_do_jogo + ancoras_da_banda(giro_iglu, giro_palco, (cx, cy, zc), a_boca))
     # O desenho do trenó num nó próprio, com a origem na base dele: o jogo o leva debaixo de quem
     # desce de trenó (o nome `treno` é da âncora; dois nós com o mesmo nome viravam `treno.001`).
     nos = {'chao': chao, 'montanha': mont, 'cenario': cen, 'telhado-iglu': telhado_iglu,
-           'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_, 'caverna-joia': joia_}
+           'treno-desenho': (treno_, (tx, ty, zc + 0.02)), 'caverna': caverna_, 'caverna-joia': joia_,
+           # O quiosque com o pivô no chão, no meio dele; a tela num nó próprio (o único com coordenadas de
+           # textura) e a ponta de gelo do cume (o marco) num nó só dela.
+           'brinquedo-do-festival': (brinquedo, (qx, -qz, TOPO)), 'tela': tela_q, 'marco-do-cume': marco}
     porto, _, dados_porto = lib_cais.deque_de_praia(**PORTO, col=col, col_caixa=col_caixa, col_cilindro=col_cilindro)
     ancoras += lib_cais.ancoras_do_porto(ancora, dados_porto)
     dados_porto['caixa_do_deque'] = lib_cais.caixa_no_jogo(porto)
     dados_porto['caixa_da_ilha'] = lib_cais.caixas_da_ilha(nos, porto)
     nos['porto'] = porto
-    exportar('pico', nos, ancoras, colisores=col, porto=dados_porto)
+    exportar('pico', nos, ancoras, colisores=col, porto=dados_porto, uv=True)
 
 
 def props():
