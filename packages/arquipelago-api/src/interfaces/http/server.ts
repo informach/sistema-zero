@@ -44,6 +44,7 @@ import {
   type ServicoDasProfissoes,
   TurnoNaoEncontradoError,
 } from '../../application/servico-das-profissoes'
+import type { ServicoDasRoupas } from '../../application/servico-das-roupas'
 import type { ServicoDasVendas } from '../../application/servico-das-vendas'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
 import type { ServicoDasVisitasAdultas } from '../../application/servico-das-visitas-adultas'
@@ -82,6 +83,7 @@ import { rotasDaFamilia } from './rotas-da-familia'
 import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDasProfissoes } from './rotas-das-profissoes'
+import { rotasDasRoupas } from './rotas-das-roupas'
 import { rotasDasVendas } from './rotas-das-vendas'
 import { rotasDasVisitas } from './rotas-das-visitas'
 import { rotasDasVisitasAdultas } from './rotas-das-visitas-adultas'
@@ -102,6 +104,8 @@ export interface DependenciasHttp {
   pedidos?: ServicoDosPedidos
   /** A banca da feira (A22); sem ele, as rotas não existem. */
   vendas?: ServicoDasVendas
+  /** As roupas conquistadas (A21); sem ele, a rota não existe. */
+  roupas?: ServicoDasRoupas
   insumos?: ServicoDosInsumos
   profissoes?: ServicoDasProfissoes
   minijogos?: ServicoDosMinijogos
@@ -411,6 +415,11 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.vendas
         ? rotasDasVendas({ vendas: deps.vendas, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.roupas
+        ? rotasDasRoupas({ roupas: deps.roupas, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .use(

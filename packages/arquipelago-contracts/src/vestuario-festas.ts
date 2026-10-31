@@ -1,6 +1,9 @@
 import { z } from 'zod'
 
-/** Sugestões editoriais, sem preço, posse ou concessão. A carteira e o catálogo são do Members. */
+/**
+ * As peças de época de cada festa. Desde 31/10/2026 (§6.28, A21) as da festa em vigor são
+ * concedidas no avatar pelo serviço (`roupas.ts`); a carteira e o catálogo continuam do Members.
+ */
 export const VESTUARIO_DAS_FESTAS = {
   carnaval: { titulo: 'Ideias para o Carnaval', pecas: ['face-08', 'enfeite-03'] },
   junina: { titulo: 'Ideias para a Festa Junina', pecas: ['top-06', 'enfeite-01'] },

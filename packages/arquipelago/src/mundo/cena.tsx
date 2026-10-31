@@ -46,6 +46,7 @@ import { PetQueAcompanha } from './pet-que-acompanha'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
+import { RoupasConquistadas } from './roupas-conquistadas'
 import { SegredoNoAlto } from './segredos-das-ilhas'
 
 /** O segredo da sua ilha (N12): o baú no alto do vento. */
@@ -131,6 +132,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
         <GuiaDoZappyNoMundo />
         <RotinaDosLumis />
         <EnquantoFechado />
+        <RoupasConquistadas />
       </Suspense>
     </Canvas>
   )

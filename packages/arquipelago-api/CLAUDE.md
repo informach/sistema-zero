@@ -64,6 +64,14 @@ suporte. Resposta `CoresConquistadasSchema`, sem dados pessoais, gabarito ou car
 Testes HTTP reais com repositório em memória em `desafios-do-jogador.test.ts`; regra em
 `tests/unit/desafios.test.ts`. Sem migração, escrita remota ou mudança nas respostas anteriores.
 
+## Roupas conquistadas (§6.28 A21, 31/10/2026)
+
+`POST /roupas/sincronizar`: o serviço lê o salvamento guardado, calcula as roupas conquistadas
+(`roupasConquistadas` do contrato: três corações com um morador e a festa do dia em São Paulo) e
+pede ao Members pela porta das moedas (`AvatarHttp`, `POST /members/internal/arquipelago/avatar/pecas`).
+Idempotente, sem tabela nem migração. Members fora do ar devolve indisponível e o jogo tenta de
+novo na próxima abertura. Implantar o Members antes da API.
+
 ## Banca da feira (§6.28 A22, 31/10/2026)
 
 `GET /feira/vendas/pendentes` e `POST /feira/vender`, o mesmo desenho dos pedidos: identidade

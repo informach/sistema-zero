@@ -47,7 +47,7 @@ export function VestuarioDaFesta() {
     <section aria-label="Roupas da festa">
       <h3 className="arq-menu-titulo">Roupas da festa</h3>
       <p className="arq-caderno-explica">
-        Veja sugestões no seu avatar. Peças que você já tem continuam suas depois da festa.
+        As roupas desta festa chegam ao seu avatar enquanto ela dura e continuam suas depois.
       </p>
       <button
         type="button"

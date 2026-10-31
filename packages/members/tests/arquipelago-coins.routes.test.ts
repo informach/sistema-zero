@@ -100,3 +100,49 @@ test('inventário usa token de moedas, valida privilégio e recusa antes do repo
   expect(leitura.status).toBe(200)
   expect(await leitura.json()).toEqual(posse)
 })
+
+test('roupas do jogo: token dedicado, corpo validado e recusa de dono como 403 (A21)', async () => {
+  const conceder = mock(async (p: { pecas: string[] }) =>
+    p.pecas.includes('hat-99')
+      ? ({ ok: false, code: 'UNKNOWN_PART' } as const)
+      : p.pecas.includes('hat-02')
+        ? ({ ok: false, code: 'OWNER_MISMATCH' } as const)
+        : ({ ok: true, concedidas: p.pecas } as const),
+  )
+  const app = new Elysia()
+    .onError({ as: 'global' }, ({ error, set }) => {
+      if (error instanceof UnauthorizedError) {
+        set.status = 401
+        return { error: 'unauthorized' }
+      }
+    })
+    .use(
+      arquipelagoCoinsRoutes({ repository: { movimentar: mock() }, avatar: { conceder }, token }),
+    )
+  const pedido = {
+    userId: randomUUID(),
+    accountId: randomUUID(),
+    audience: 'kids',
+    pecas: ['hat-04'],
+  }
+  const enviar = (body: unknown, chave?: string) =>
+    app.handle(
+      new Request('http://local/members/internal/arquipelago/avatar/pecas', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          ...(chave ? { 'x-arquipelago-token': chave } : {}),
+        },
+        body: JSON.stringify(body),
+      }),
+    )
+  expect((await enviar(pedido)).status).toBe(401)
+  expect((await enviar({ ...pedido, pecas: [] }, token)).status).toBe(400)
+  expect((await enviar({ ...pedido, extra: 1 }, token)).status).toBe(400)
+  expect(conceder).toHaveBeenCalledTimes(0)
+  const ok = await enviar(pedido, token)
+  expect(ok.status).toBe(200)
+  expect(await ok.json()).toEqual({ ok: true, concedidas: ['hat-04'] })
+  expect((await enviar({ ...pedido, pecas: ['hat-02'] }, token)).status).toBe(403)
+  expect((await enviar({ ...pedido, pecas: ['hat-99'] }, token)).status).toBe(409)
+})

@@ -11,6 +11,7 @@ import {
   criarSalvamentoInicial,
   diaDeSaoPaulo,
   type Fantasma,
+  festaDoDia,
   GravarSalvamentoSchema,
   ilhaAberta,
   ilhasDoAnel,
@@ -27,6 +28,7 @@ import {
   RegistrarTempoSchema,
   type ResultadoDaFerramentaRotina,
   type ResultadoDeFerramenta,
+  roupasConquistadas,
   type SalvamentoGuardado,
   type SituacaoDoClube,
 } from '@sistemazero/arquipelago-contracts'
@@ -162,6 +164,8 @@ const CHAVE = 'arquipelago-playground'
 /** As compras da galeria de mentira, à parte do salvamento (o `?novo=1` do playground apaga). */
 export const CHAVE_DA_GALERIA = 'arquipelago-playground:galeria'
 export const CHAVE_DAS_PROFISSOES = 'arquipelago-playground:profissoes'
+/** As roupas que o playground já deu ao avatar (A21). */
+export const CHAVE_DAS_ROUPAS = 'arquipelago-playground:roupas'
 
 /** Os jogos de `jogos: 'exemplo'`, só do playground. */
 export const MINIJOGO_DE_EXEMPLO = {
@@ -233,6 +237,17 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   let registrosDeInsumos: RegistroDeInsumosFalso[] = []
   let registrosDePedidos: RegistroDePedidoFalso[] = []
   let registrosDeVendas: RegistroDeVendaFalsa[] = []
+  const roupasDadas = new Set<string>(
+    (() => {
+      if (!o.persistir || typeof localStorage === 'undefined') return []
+      try {
+        const lido: unknown = JSON.parse(localStorage.getItem(CHAVE_DAS_ROUPAS) ?? '[]')
+        return Array.isArray(lido) ? lido.filter((p): p is string => typeof p === 'string') : []
+      } catch {
+        return []
+      }
+    })(),
+  )
   let quarto = o.quarto ?? QUARTO_DE_EXEMPLO
   let guardado: SalvamentoGuardado = { revisao: 0, salvamento: null, atualizadoEm: null }
   const usado = new Map<string, number>()
@@ -575,6 +590,21 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (dosPedidos) return dosPedidos
         const daFeira = vendas.buscar(caminho, metodo, opcoes?.corpo)
         if (daFeira) return daFeira
+        // As roupas conquistadas (A21): o que o salvamento guardado conquistou e ainda não chegou.
+        if (caminho === '/roupas/sincronizar' && metodo === 'POST') {
+          if (o.somenteLeitura)
+            return { status: 403, corpo: { error: { code: 'SOMENTE_LEITURA' } } }
+          const salvo = migrarSalvamento(guardado.salvamento)
+          const novas = salvo
+            ? roupasConquistadas(salvo, festaDoDia(agora())).filter((p) => !roupasDadas.has(p))
+            : []
+          for (const p of novas) roupasDadas.add(p)
+          if (novas.length > 0 && o.persistir && typeof localStorage !== 'undefined')
+            try {
+              localStorage.setItem(CHAVE_DAS_ROUPAS, JSON.stringify([...roupasDadas]))
+            } catch {}
+          return { status: 200, corpo: { versao: 1, novas } }
+        }
         const daProfissao = profissoes.buscar(caminho, metodo, opcoes?.corpo)
         if (daProfissao) return daProfissao
         const daGaleria = galeria.buscar(caminho, metodo, opcoes?.corpo)
