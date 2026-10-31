@@ -208,6 +208,18 @@ test('vendas da feira repassam comando e pendências sem cache e com corpo limit
   expect(chamadas).toHaveLength(n)
 })
 
+test('as roupas conquistadas repassam sem corpo do navegador e sem cache (A21)', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { versao: 1, novas: [] } })
+  const r = await routes.arquipelagoRoupasSincronizar.POST()
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/roupas/sincronizar',
+    metodo: 'POST',
+    corpo: {},
+  })
+})
+
 test('insumos repassam compra e pendência sem cache e limitam o corpo', async () => {
   const { routes, chamadas } = montar({ status: 423, body: { error: { code: 'COMPRA_PENDENTE' } } })
   const pendente = await routes.arquipelagoInsumosPendentes.GET()

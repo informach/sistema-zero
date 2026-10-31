@@ -5,6 +5,12 @@ Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-es
 Schemas históricos continuam imutáveis. Menções a V11 e outras versões nas seções datadas
 explicam sua introdução, não a versão atual da resposta.
 
+## Festas e roupas no contrato (31/10/2026, §6.28 A21)
+
+`festas.ts` guarda o calendário puro (o jogo reexporta em `sistemas/festas.ts`); `roupas.ts` a regra
+das roupas conquistadas (`ROUPAS_DA_AMIZADE`, três corações; as de festa vêm de
+`VESTUARIO_DAS_FESTAS`) e os esquemas da porta do Members e da resposta do serviço.
+
 ## Salvamento V21: o Nico morador e o filhote como companhia (31/10/2026)
 
 `moradores.nico` (o carteiro da sua ilha, §6.28 A19) entra com `MORADOR_NOVO` na migração da V20,
