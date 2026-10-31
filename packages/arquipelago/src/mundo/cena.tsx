@@ -27,6 +27,7 @@ import { EnquantoFechado } from './enquanto-fechado'
 import { FantasmaFamiliar } from './fantasma-familiar'
 import { Farol } from './farol'
 import { FilhoteQueAcompanha } from './filhote-que-acompanha'
+import { FloradaDaIlha } from './florada'
 import { CameraDaFoto } from './foto'
 import { GuiaDoZappyNoMundo } from './guia-do-zappy'
 import { HabitantesDaPraia } from './habitantes-da-praia'
@@ -116,6 +117,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Casa />
           <ConvidadosDaCasa />
           <Horta />
+          <FloradaDaIlha />
           <ClimaDaIlha />
           <Bancada />
           <Farol />

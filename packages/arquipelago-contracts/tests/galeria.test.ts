@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test'
 import {
   aparenciaDaGaleria,
   CompraNaGaleriaSchema,
-  criarSalvamentoInicial,
   GALERIA,
   GaleriaDoJogadorSchema,
   galeriaDoObjeto,
@@ -27,6 +26,7 @@ import {
   migrarDaV13,
   migrarDaV14ParaAtual,
 } from '../src/salvamento'
+import { inicialV21 } from './ajuda-salvamento'
 
 describe('o catálogo da galeria', () => {
   test('três aparências por objeto (clássica, retrô e moderna), com o id estável que começa pelo objeto', () => {
@@ -120,7 +120,7 @@ describe('salvamento V6: as aparências guardadas', () => {
       mapa: _mapa,
       companhia: _companhia,
       ...resto
-    } = criarSalvamentoInicial(AGORA)
+    } = inicialV21(AGORA)
     const v5: SalvamentoV5 = {
       ...resto,
       versao: 5,

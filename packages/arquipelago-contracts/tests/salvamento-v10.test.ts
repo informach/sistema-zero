@@ -178,7 +178,8 @@ test('construção e rotinas no teto com IDs canônicos cabem nos 64 KB', () => 
   expect(maior).toBeLessThan(SALVAMENTO_MAX_BYTES)
   // V20 no teto (os 24 móveis da casa e as seis vagas da galeria do Farol somam 795 bytes aos
   // 63.194 da V19): 63.989 bytes. V21 (31/10/2026): o Nico com pedido soma 250: 64.239 bytes.
-  expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(1200)
+  // V22 (31/10/2026): os fósseis, a florada e os seis canteiros do céu somam 125: 64.364 bytes.
+  expect(SALVAMENTO_MAX_BYTES - maior).toBeGreaterThan(1100)
 })
 
 test('as listas da régua não mudam sem querer', () => {

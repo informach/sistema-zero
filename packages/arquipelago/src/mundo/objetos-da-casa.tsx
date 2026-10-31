@@ -70,6 +70,7 @@ import {
 } from './carregar-aparencia'
 import { giroEmY, type Solido } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { FosseisDoMuseu } from './fosseis-do-museu'
 import { useInterativo } from './interativos'
 import { ComReserva, materiaisDe, useModelo } from './modelos'
 
@@ -290,6 +291,7 @@ export function ModeloDoObjeto({
     <>
       <primitive object={desenho} dispose={null} />
       {id === 'aquario' && !criada ? <PeixesDoAquario copia={copia} url={url} /> : null}
+      {id === 'museu' && completo && !criada ? <FosseisDoMuseu /> : null}
     </>
   )
 }

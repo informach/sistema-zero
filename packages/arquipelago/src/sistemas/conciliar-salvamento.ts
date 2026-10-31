@@ -129,6 +129,8 @@ export function conciliarSalvamento(
       ninhos: [...new Set([...remoto.vale.ninhos, ...local.vale.ninhos])],
       // O filhote só avança cuidando (a comida sai do inventário, que já se concilia): o mais adiantado.
       filhote: juntarFilhotes(local.vale.filhote, remoto.vale.filhote),
+      // Os fósseis do museu (V22) são descobertas: os bits das duas sessões.
+      fosseis: local.vale.fosseis | remoto.vale.fosseis,
     },
     // Levar um instrumento ao palco também não gasta nada: os bits das duas sessões (fase3-08).
     pico: { banda: local.pico.banda | remoto.pico.banda },

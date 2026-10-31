@@ -18,13 +18,24 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 21
+export const VERSAO_SALVAMENTO = 22
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
 
 export const SEMENTES = ['alface', 'tomate', 'milho'] as const
 export type Semente = (typeof SEMENTES)[number]
+
+/**
+ * As plantas do jardim do céu, nas Nuvens (V22, 31/10/2026, B6): a arte de
+ * `arte/itens/plantas_do_ceu.py`. Crescem nos seis canteiros do terraço (`ceu-1` a `ceu-6`).
+ */
+export const SEMENTES_DO_CEU = [
+  'flor-de-nuvem',
+  'estrela-trepadeira',
+  'arco-iris-de-petala',
+] as const
+export type SementeDoCeu = (typeof SEMENTES_DO_CEU)[number]
 
 export const CanteiroSchema = z.strictObject({
   id: z.string().min(1).max(20),
@@ -33,6 +44,27 @@ export const CanteiroSchema = z.strictObject({
   regadoEm: iso.nullable(),
 })
 export type Canteiro = z.infer<typeof CanteiroSchema>
+
+/** Os seis canteiros do terraço do céu (`canteiro-ceu-1` a `-6` no `nuvens.glb`). */
+export const CANTEIROS_DO_CEU = 6
+/** Os minutos do jardim do céu contam a partir daqui (números curtos no salvamento). */
+export const MINUTO_ZERO_DO_CEU = Date.UTC(2026, 0, 1)
+/**
+ * Um canteiro plantado no jardim do céu, em tupla para pesar pouco: o canteiro (1 a 6), a planta
+ * (o índice em `SEMENTES_DO_CEU`) e o minuto em que foi plantada, contado de `MINUTO_ZERO_DO_CEU`.
+ * Lá em cima a chuva das nuvens rega: plantar já começa a crescer.
+ */
+export const PlantaDoCeuSchema = z.tuple([
+  z.number().int().min(1).max(CANTEIROS_DO_CEU),
+  z
+    .number()
+    .int()
+    .min(0)
+    .max(SEMENTES_DO_CEU.length - 1),
+  // Sete dígitos dão uns 19 anos de minutos.
+  z.number().int().min(0).max(9_999_999),
+])
+export type PlantaDoCeu = z.infer<typeof PlantaDoCeuSchema>
 
 export const SalvamentoV1Schema = z.strictObject({
   versao: z.literal(1),
@@ -796,8 +828,10 @@ export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
 }
 
 /** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
-export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV21 {
-  return migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s))))))
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV22 {
+  return migrarDaV21(
+    migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))),
+  )
 }
 
 export const SalvamentoAteV18Schema = z.union([
@@ -968,11 +1002,64 @@ export function migrarDaV20(s: SalvamentoV20): SalvamentoV21 {
   return { ...s, versao: 21, moradores: { ...s.moradores, nico: { ...MORADOR_NOVO } } }
 }
 
-export const SalvamentoSchema = z.union([
+export const SalvamentoAteV21Schema = z.union([
   SalvamentoV21Schema,
   SalvamentoAteV20Schema.transform(migrarDaV20),
 ])
-export type Salvamento = SalvamentoV21
+
+/** Os fósseis do museu (B4): cada um é um bit de `vale.fosseis`, nesta ordem, que nunca muda. */
+export const FOSSEIS_DO_VALE = [
+  'fossil-dente',
+  'fossil-garra',
+  'fossil-vertebra',
+  'fossil-ovo',
+  'fossil-chifre-triceratopo',
+  'fossil-cranio-rex',
+] as const
+export type FossilDoVale = (typeof FOSSEIS_DO_VALE)[number]
+export const BIT_DO_FOSSIL: Readonly<Record<FossilDoVale, number>> = Object.fromEntries(
+  FOSSEIS_DO_VALE.map((id, i) => [id, 1 << i]),
+) as Record<FossilDoVale, number>
+
+/** Quantas flores do céu a florada da sua ilha conta (B6). */
+export const FLORADA_MAXIMA = 999
+
+/**
+ * V22 (31/10/2026, lista B da proposta v3): os seis fósseis do museu achados no Vale (`vale.fosseis`,
+ * um bit por fóssil, B4), as plantas do jardim do céu (`ceu`, B6) e as flores do céu que a criança
+ * já mandou para a sua ilha florescer (`florada`). O jardim do céu não entra na `horta`: os 24
+ * canteiros dela podem estar todos no quintal.
+ */
+export const SalvamentoV22Schema = z
+  .strictObject({
+    ...SalvamentoV21Schema.shape,
+    versao: z.literal(22),
+    ceu: z
+      .array(PlantaDoCeuSchema)
+      .max(CANTEIROS_DO_CEU)
+      .refine((l) => new Set(l.map((p) => p[0])).size === l.length, 'canteiro do céu repetido'),
+    vale: ValeV15Schema.extend({
+      fosseis: z
+        .number()
+        .int()
+        .min(0)
+        .max(2 ** FOSSEIS_DO_VALE.length - 1),
+    }),
+    florada: z.number().int().min(0).max(FLORADA_MAXIMA),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV22 = z.infer<typeof SalvamentoV22Schema>
+
+/** Nenhum fóssil novo e nenhuma flor do céu ainda; o osso da escavação continua contado. */
+export function migrarDaV21(s: SalvamentoV21): SalvamentoV22 {
+  return { ...s, versao: 22, vale: { ...s.vale, fosseis: 0 }, florada: 0, ceu: [] }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV22Schema,
+  SalvamentoAteV21Schema.transform(migrarDaV21),
+])
+export type Salvamento = SalvamentoV22
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
@@ -989,7 +1076,9 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
     farol: { pagina: false, concluido: false, galeria: [] },
     clima: 'sol',
     pico: { banda: 0 },
-    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null },
+    vale: { pegadas: false, escavacao: 0, ninhos: [], filhote: null, fosseis: 0 },
+    florada: 0,
+    ceu: [],
     recife: { bau: false, pagina: false, tesouro: false, corais: 0 },
     presenteDosBichosEntregue: false,
     criadoEm: agora.toISOString(),

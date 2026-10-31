@@ -63,6 +63,7 @@ import { PainelDaGaleria } from './galeria-do-farol'
 import { Icone } from './icones'
 import { PainelDaIrie } from './irie'
 import { PainelDaJade } from './jade'
+import { PainelDoJardimDoCeu } from './jardim-do-ceu'
 import { VisorDaLuneta } from './luneta'
 import { PainelDoMapa, useIlhaAqui } from './mapa'
 import { PainelDaMare, PainelDoFloco, PainelDoNico } from './mare'
@@ -1005,6 +1006,7 @@ export function Hud() {
       <PainelDoQuadro />
       <PainelDaFeira />
       <PainelDoBrinquedo />
+      <PainelDoJardimDoCeu />
       <PainelDosConvidados />
       <PainelDaCapi />
       <PainelDoBento />

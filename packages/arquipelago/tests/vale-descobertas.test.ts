@@ -38,8 +38,9 @@ test('duas sessões juntam descobertas sem perder os ninhos ou repetir etapas', 
     escavacao: 2,
     ninhos: ['ninho-3', 'ninho-1'],
     filhote: null,
+    fosseis: 0,
   })
-  expect(base.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [], filhote: null })
+  expect(base.vale).toEqual({ pegadas: false, escavacao: 0, ninhos: [], filhote: null, fosseis: 0 })
 })
 test('escavação em três ações, sem prazo, sem mutar e sem repetir conquista', () => {
   const s = novo()

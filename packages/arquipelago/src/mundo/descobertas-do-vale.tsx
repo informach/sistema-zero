@@ -1,11 +1,18 @@
 import { useFrame } from '@react-three/fiber'
-import type { NinhoDoVale } from '@sistemazero/arquipelago-contracts'
+import type { FossilDoVale, NinhoDoVale } from '@sistemazero/arquipelago-contracts'
 import { useMemo, useRef, useState } from 'react'
-import type { Group } from 'three'
+import { Box3, type Group, Vector3 } from 'three'
 import propsGlb from '../assets/ilhas/vale-dos-dinos-props.glb'
 import { useEstado, useJogo } from '../estado/contexto'
 import { comLanterna, temLanterna } from '../sistemas/borroes'
 import { CORPO } from '../sistemas/corpo'
+import {
+  escavarFossil,
+  fosseisAchados,
+  fossilNaAreia,
+  NOME_DO_FOSSIL,
+  TEXTOS_DOS_FOSSEIS,
+} from '../sistemas/fosseis'
 import {
   caminhoDaOnda,
   comecarOndas,
@@ -47,6 +54,8 @@ export function DescobertasDoVale({
 }) {
   const { loja, rastro, movimento } = useJogo()
   const etapa = useEstado((s) => s.salvamento.vale.escavacao)
+  // Depois do primeiro osso, um fóssil novo por dia espera na areia (B4).
+  const naAreia = useEstado((s) => (s.visita ? null : fossilNaAreia(s.salvamento, new Date())))
   const locais = useMemo(() => explorarVale(preparada.modelo, preparada.colisores), [preparada])
   const lugares = useMemo(() => {
     const mundo = (p: { x: number; z: number; y?: number }) =>
@@ -85,12 +94,34 @@ export function DescobertasDoVale({
   useInterativo('escavacao-do-vale', {
     ...lugares.escavacao,
     raio: V.alcance,
-    rotulo: () => ACOES_DA_ESCAVACAO[loja.getState().salvamento.vale.escavacao] ?? 'Rever o fóssil',
+    rotulo: () => {
+      const s = loja.getState().salvamento
+      const acao = ACOES_DA_ESCAVACAO[s.vale.escavacao]
+      if (acao) return acao
+      return fossilNaAreia(s, new Date()) ? TEXTOS_DOS_FOSSEIS.escavar : 'Rever o fóssil'
+    },
     agir: () => {
       if (!podeAgir()) return
       const antes = loja.getState().salvamento.vale.escavacao
-      loja.getState().mudar((s) => escavarNoVale(s, true))
-      loja.getState().dizer(FALAS_DA_ESCAVACAO[antes] ?? FALA_DE_REVER_O_FOSSIL)
+      if (antes < 3) {
+        loja.getState().mudar((s) => escavarNoVale(s, true))
+        loja.getState().dizer(FALAS_DA_ESCAVACAO[antes] ?? FALA_DE_REVER_O_FOSSIL)
+        return
+      }
+      const r = escavarFossil(loja.getState().salvamento, new Date(), true)
+      if (r) {
+        loja.getState().mudar((s) => escavarFossil(s, new Date(), true)?.salvamento ?? s)
+        loja.getState().dizer(TEXTOS_DOS_FOSSEIS.achou(NOME_DO_FOSSIL[r.fossil]))
+        return
+      }
+      const todos = fosseisAchados(loja.getState().salvamento).length === 6
+      loja
+        .getState()
+        .dizer(
+          todos
+            ? TEXTOS_DOS_FOSSEIS.todos
+            : `${FALA_DE_REVER_O_FOSSIL} ${TEXTOS_DOS_FOSSEIS.amanha}`,
+        )
     },
   })
   useFrame(() => {
@@ -158,7 +189,7 @@ export function DescobertasDoVale({
         ))}
       {etapa > 0 && (
         <ComReserva reserva={null}>
-          <Fossil lugar={lugares.escavacao} etapa={etapa} giro={giro} />
+          <Fossil lugar={lugares.escavacao} etapa={etapa} giro={giro} naAreia={naAreia} />
         </ComReserva>
       )}
     </>
@@ -251,17 +282,34 @@ function OndasDeCinza({
 
 const ONDAS = Array.from({ length: ONDAS_DE_CINZA.quantas }, (_, i) => i)
 
+/** Quanto do fóssil novo fica enterrado na areia até ser escavado. */
+const ENTERRADO = 0.45
+
 function Fossil({
   lugar,
   etapa,
   giro,
+  naAreia,
 }: {
   lugar: { x: number; y: number; z: number }
   etapa: number
   giro: number
+  naAreia: FossilDoVale | null
 }) {
   const raiz = useModelo(new URL(propsGlb, import.meta.url).href)
   const osso = useMemo(() => copiarNo(raiz, 'osso'), [raiz])
+  const novo = useMemo(() => (naAreia ? copiarNo(raiz, naAreia) : null), [raiz, naAreia])
+  const altura = useMemo(
+    () => (novo ? new Box3().setFromObject(novo).getSize(new Vector3()).y : 0),
+    [novo],
+  )
+  // O fóssil do dia aparece meio enterrado no lugar do osso; achado, o osso volta.
+  if (novo)
+    return (
+      <group position={[lugar.x, lugar.y - altura * ENTERRADO, lugar.z]} rotation={[0, giro, 0]}>
+        <primitive object={novo} dispose={null} />
+      </group>
+    )
   // O osso mede 0,28 m de altura: metade ainda coberta após a primeira ação.
   return (
     <group

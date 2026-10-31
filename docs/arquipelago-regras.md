@@ -2512,6 +2512,17 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   clássica. A retrô usa só as cores da paleta "Doces" do Pinta: é a da Faísca, que ainda não pinta
   no jogo ("prontos da galeria com as cores da paleta"). As versões são posses só do Arquipélago;
   o quarto da plataforma continua só com as clássicas que já dividia (aquário, fliperama, planta).
+- **Fósseis do museu (B4, V22):** depois do primeiro osso, a escavação do Vale mostra um fóssil novo
+  por dia, contando do dia em que o museu chegou ("tempo real, algo novo todo dia"). Quem demora
+  não perde: os que ficaram para trás esperam na areia, um de cada vez. Cada um vai para a vitrine do
+  museu de casa. Escolha mínima, registrada.
+- **Pegadas no álbum (B5):** rex pelo rastro do Vale, tricerátopo pelo filhote crescido, capivara
+  pela conversa com a Capi e pássaro pela visita às Nuvens, tudo do que o salvamento já guarda.
+  Escolha mínima, registrada (a proposta só diz "bichos e pegadas" e "seguir pegadas").
+- **Jardim do céu e a ilha que floresce (B6, V22):** seis canteiros no terraço das Nuvens; as
+  sementes do céu vêm do jardim (não da mochila) e a chuva das nuvens rega. A flor colhida vai para
+  a sua ilha (`florada`), que floresce em três níveis com 1, 6 e 15 flores. O jardim fica no campo
+  `ceu` do salvamento, fora da horta.
 
 ## 7. Desafios
 

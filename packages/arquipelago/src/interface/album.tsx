@@ -12,10 +12,12 @@ import {
   tituloDaSecao,
 } from '../sistemas/album'
 import { type LembrancaDasIlhas, NOME_DO_GRUPO } from '../sistemas/colecoes-das-ilhas'
+import { TEXTOS_DOS_FOSSEIS } from '../sistemas/fosseis'
 import { Bicho, Receita } from './diario'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
 import { MINIATURA_DA_PRAIA } from './miniaturas-da-praia'
 import { MINIATURA_DAS_ILHAS } from './miniaturas-das-ilhas'
+import { MINIATURA_DA_PEGADA, MINIATURA_DO_FOSSIL } from './miniaturas-do-vale'
 
 /** O que cada coleção das ilhas pede, dito no topo da seção. */
 const EXPLICA_DO_GRUPO = {
@@ -264,6 +266,50 @@ export function Album() {
                 <span className="arq-quadro-estado">
                   {p.encontrado ? 'Mora no seu aquário.' : p.dica}
                 </span>
+              </div>
+            </li>
+          ))}
+        </Secao>
+        <Secao
+          id="fosseis"
+          nome="Fósseis do museu"
+          conta={a.fosseis.conta}
+          explica="Depois do primeiro osso, a escavação do Vale mostra um fóssil novo por dia."
+        >
+          {a.fosseis.itens.map((f) => (
+            <li key={f.id} className={`arq-diario-bicho${f.encontrado ? '' : ' escondido'}`}>
+              <img
+                className={`arq-album-miniatura${f.encontrado ? '' : ' silhueta'}`}
+                src={MINIATURA_DO_FOSSIL[f.id]}
+                alt=""
+                draggable={false}
+              />
+              <div className="arq-quadro-corpo">
+                <b>{f.nome}</b>
+                <span className="arq-quadro-estado">
+                  {f.encontrado ? TEXTOS_DOS_FOSSEIS.noMuseu : f.dica}
+                </span>
+              </div>
+            </li>
+          ))}
+        </Secao>
+        <Secao
+          id="pegadas"
+          nome="Pegadas"
+          conta={a.pegadas.conta}
+          explica="As pegadas que você já viu pelas ilhas."
+        >
+          {a.pegadas.itens.map((p) => (
+            <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+              <img
+                className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                src={MINIATURA_DA_PEGADA[p.id]}
+                alt=""
+                draggable={false}
+              />
+              <div className="arq-quadro-corpo">
+                <b>{p.nome}</b>
+                <span className="arq-quadro-estado">{p.texto}</span>
               </div>
             </li>
           ))}

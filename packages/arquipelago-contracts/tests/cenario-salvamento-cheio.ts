@@ -1,11 +1,14 @@
 import {
   APARENCIAS_GUARDADAS_MAXIMO,
   BIT_DA_SEGREDO_MAXIMO,
+  CANTEIROS_DO_CEU,
   type CartaoDaRotina,
   criarSalvamentoInicial,
   DIAS_CUIDADOS_MAXIMO,
   DIAS_PARA_CHOCAR,
   type ExposicaoDoFarol,
+  FLORADA_MAXIMA,
+  FOSSEIS_DO_VALE,
   ID_DA_APARENCIA_MAXIMO,
   LIMITES_DA_ROTINA,
   LUMIS,
@@ -18,7 +21,9 @@ import {
   OBJETOS_DA_CASA,
   type Obra,
   PERCURSOS,
+  type PlantaDoCeu,
   POSTOS_DA_VILA,
+  SEMENTES_DO_CEU,
   VAGAS_DA_GALERIA_DO_FAROL,
 } from '../src'
 
@@ -110,7 +115,21 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
     nuvens: { constelacoes: 63 },
     clima: 'nublado' as const,
     // Os três ids pesam mais que a lista vazia. false ocupa um byte a mais que true.
-    vale: { pegadas: false, escavacao: 3, ninhos: ['ninho-1', 'ninho-2', 'ninho-3'], filhote },
+    vale: {
+      pegadas: false,
+      escavacao: 3,
+      ninhos: ['ninho-1', 'ninho-2', 'ninho-3'],
+      filhote,
+      // V22: todos os fósseis do museu (dois dígitos).
+      fosseis: 2 ** FOSSEIS_DO_VALE.length - 1,
+    },
+    // V22: a florada no teto e os seis canteiros do céu plantados, cada um com o minuto de sete
+    // dígitos.
+    florada: FLORADA_MAXIMA,
+    ceu: Array.from(
+      { length: CANTEIROS_DO_CEU },
+      (_, i): PlantaDoCeu => [i + 1, SEMENTES_DO_CEU.length - 1, 9_999_999],
+    ),
     construcao: { casa: casaCheia(), cabanas: { bosque: cheia() } },
     farol: { pagina: true, concluido: true, galeria },
     projetos: Object.fromEntries(OBJETOS_DA_CASA.map((id) => [id, projeto])),

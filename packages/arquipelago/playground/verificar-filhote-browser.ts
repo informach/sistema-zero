@@ -90,7 +90,7 @@ function salvamento(filhote: Salvamento['vale']['filhote'], onde: P): Salvamento
     ...s,
     posicao: { x: onde.x, y: onde.y + 1.2, z: onde.z },
     inventario: { ...s.inventario, alface: 2 },
-    vale: { pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE], filhote },
+    vale: { ...s.vale, pegadas: true, escavacao: 3, ninhos: [...NINHOS_DO_VALE], filhote },
   }
 }
 
