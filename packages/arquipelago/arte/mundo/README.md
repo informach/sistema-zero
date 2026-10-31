@@ -80,22 +80,28 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
 
 | Arquivo | Script | Referencial | Nós (contrato com o código) | Triângulos | Tamanho |
 |---|---|---|---|---|---|
-| `terreno.glb` | `terreno.py` | mundo (ilha central na origem) | `chao`, `enfeites`, `espuma` e os `col-cil-moita-*`, `col-cil-pedra-*` | 14.040 | 452 KB |
+| `terreno.glb` | `terreno.py` | mundo (ilha central na origem) | `chao` (com o filho `chao-do-lote`), `enfeites`, `espuma` e os `col-cil-moita-*`, `col-cil-pedra-*` | 13.974 | 447 KB |
 | `arvores.glb` | `vegetacao.py` | pé da árvore, escala 1 | `arvore-redonda`, `arvore-frutas`, `arvore-pinheiro`, `coqueiro` | 3.852 | 86 KB |
 | `casa.glb` | `casa.py` | grupo `Casa` (centro do quarto, piso em y = 0) | `paredes`, `revestimento`, `janelas`, `telhado`, `varanda`, `porta` | 6.874 | 353 KB |
 | `horta.glb` | `horta.py` | centro de um canteiro | `canteiro`, `semente`, `alface-broto`/`-crescendo`/`-maduro`, `tomate-…`, `milho-…` | 3.010 | 111 KB |
 | `bancada.glb` | `bancada.py` | grupo `Bancada` | `projetor`, `holograma` | 2.342 | 89 KB |
-| `farol.glb` | `farol.py` | grupo `Farol` | `farol`, `porta` (folha e maçaneta, pivô na dobradiça; y negativo abre para fora), `vidro`, `lampada`, `facho` e os `col-cil-pedra-farol-*`, `col-degrau-farol-*` | 5.852 | 207 KB |
-| `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier`, `barquinho-decorativo` (o barquinho a remo e a corda até ele, com o casco no `col-barco-1`), os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1` e as âncoras `barco` (o barco da viagem atracado na linha d'água, giro com a proa para o mar) e `embarque` (no tampo, longe da luneta; também o desembarque) | 3.604 | 150 KB |
+| `farol.glb` | `farol.py` | grupo `Farol` | `farol` (com o filho `subida`), `porta` (folha e maçaneta, pivô na dobradiça; y negativo abre para fora), `vidro`, `lampada`, `facho`, os `col-cil-pedra-farol-*`, `col-degrau-farol-*`, `col-cil-lanterna-farol-1` e os da subida (abaixo), com as âncoras dela | 6.838 | 262 KB |
+| `pier.glb` | `pier.py` | grupo `Pier` (x −5, z 27, y = 0 no mar) | `pier` (com o filho `gruta`), `barquinho-decorativo` (o barquinho a remo e a corda até ele, com o casco no `col-barco-1`), os `col-cil-estaca-*`, `col-cil-poste-*`, `col-barco-1`, os `col-gruta-*` e `col-cil-rocha-gruta-*` e as âncoras `barco` (o barco da viagem atracado na linha d'água, giro com a proa para o mar), `embarque` (no tampo, longe da luneta; também o desembarque), `segredo-mergulho`, `mergulho-gruta` e `area-mergulho-gruta` | 3.932 | 170 KB |
 | `ponte.glb` | `ponte.py` | uma peça na origem (instanciada) | `tabua`, `poste`, `corda` | 192 | 9 KB |
-| `ilhas-do-anel.glb` | `ilhas_anel.py` | centro de cada ilha, y = 0 no mar | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` | 19.336 | 527 KB |
+| `ilhas-do-anel.glb` | `ilhas_anel.py` | o mesmo de cada ilha completa (centro dela, y = 0 no mar; nas Nuvens o mar fica em −7) | `bosque`, `vila-doce`, `recife`, `pico`, `vale-dos-dinos`, `nuvens` (uma malha cada, materiais `ilha` e, no Vale, `lava`) | 17.434 | 549 KB |
 | `boias.glb` | `boias.py` | uma peça na linha d'água (instanciada) | `boia`, `corda`, `flutuador` | 1.208 | 28 KB |
 | `cata-vento.glb` | `cata_vento.py` | base do poste (`CATA_VENTO` em `medidas.ts`, ao lado da horta) | `poste`, `helice` (pivô no cubo, gira em volta do z do three) e o `col-cil-poste-cata-vento-1` | 662 | 42 KB |
-| **total** | | | | **61.916** | **2,02 MB** |
+| `florada.glb` | `florada.py` | cada nível no meio de um canteirinho (y = 0 no chão); os pontos no mundo | `florada-1`, `-2`, `-3` e os Empty `ponto-florada-1` a `-24` | 1.424 | 69 KB |
+| `segredos-da-ilha.glb` | `segredos_ilha.py` | mundo (ilha central na origem) | `cipo-1` (pivô no galho), `arvore-do-cipo`, `copa-cipo`, `deque-do-cipo`, a âncora `segredo-cipo` e os `col-cil-tronco-cipo-1`, `col-deque-segredo-1`, `col-cil-poste-segredo-*` | 1.440 | 46 KB |
+| **total** | | | | **63.182** | **2,21 MB** |
 
 ### O que o código liga, desliga e mexe
 
-- **Chão**: a colisão continua sendo o trimesh de `alturaDaIlha`. A `espuma` balança devagar e é
+- **Chão**: a colisão continua sendo o trimesh de `alturaDaIlha`. O lote grande da casa (x −17 a 16,
+  z −15 a 12) é o `chao-do-lote`, filho do `chao`, numa grade de 1 m; o resto do chão é polar com os
+  ângulos dos 120 pontos da borda do lote, então os dois pedaços dividem os vértices da borda (sem
+  fresta nem emenda em T). Quem copia o `chao` leva os dois; para moldar o lote, troque só o filho.
+  Teste: `tests/chao-do-lote.test.ts`. A `espuma` balança devagar e é
   desenhada depois do mar.
 - **Árvores**: as mesmas 12 posições e escalas, com o tronco que colide (e, no pinheiro, a saia de
   galhos de baixo). As que ficam mais perto da praia viram `coqueiro`, e cada árvore tem um giro
@@ -115,16 +121,43 @@ em que cada nó é uma variante) lista as sobreposições e as emendas em T, com
   - apagado, as cores desbotam para o cinza;
   - aceso, a `lampada` e o `vidro` brilham e a luz do código fica em y 9,4 (o centro da lâmpada);
   - o `facho` gira em y, com material somado e um degradê por vértice que some na ponta.
-- **Píer**: o vidro do lampião (`lanterna`) acende à noite.
+- **Farol, a subida final por fora** (31/10/2026, nó `subida`, filho do `farol`): andaime atrás da
+  torre com a escada (`escada-1-*`, `col-escada-reta-1`), duas quinas (`borda-1-*`, `borda-2-*`), a
+  viga do equilíbrio (`equilibrio-1-a`/`-b`, 4,4 m de vão), a corrente de ar no deque 4
+  (`corrente-de-ar` no tampo e `corrente-de-ar-topo` onde a subida para; a altura dela é a diferença
+  entre as duas, não a do Pico) até o mirante na altura da varanda (9 m, o alto do cilindro da torre),
+  com o gradil aberto para a varanda. Âncoras do percurso: `subida-farol-largada`, `subida-farol-1`
+  a `-6` (deques 1 a 4, mirante e varanda) e `vagalume-farol-1` a `-5`. Colisores
+  `col-deque-subida-*`, `col-viga-subida-1`, `col-cil-poste-subida-*` e `col-cil-lanterna-farol-1`.
+  Teste: `tests/subida-do-farol.test.ts`. O percurso e a corrente ainda não estão ligados no código.
+- **Píer**: o vidro do lampião (`lanterna`) acende à noite. A gruta do mergulho (nó `gruta`, filho do
+  `pier`) fica no fundo depois da ponta do píer, no −x, com a entrada para o píer 1,2 m abaixo da
+  linha d'água; `segredo-mergulho` no chão de dentro, `mergulho-gruta` na linha d'água ao lado do
+  píer (como o `mergulho` do Recife) e `area-mergulho-gruta` no meio da área, no fundo (escala x = z
+  o raio, y a altura até a superfície). O mergulho ainda não está ligado na sua ilha.
+- **Florada** (`florada.glb`): o jogo põe uma cópia de um nível (`florada-1` a `-3`) em cada
+  `ponto-florada-N`. É miúda (até 0,42 m): não colide. Teste: `tests/florada.test.ts`.
+- **Segredo do cipó** (`segredos-da-ilha.glb`): ainda não carregado. O `cipo-1` segue o cipó do
+  Bosque (pivô na posição do nó, corda até o ponto mais baixo dele); o deque só se alcança soltando
+  do balanço. Teste: `tests/segredos-da-ilha.test.ts` (também a gruta).
 - **Pontes**:
   - `tabua`, `poste` (um par a cada 6 tábuas) e `corda` são malhas instanciadas;
   - quebrada, a ponte fica cinza e sem corda. Na chegada, tábuas, postes e corda aparecem junto com a
     animação de antes.
-- **Ilhas do anel**:
-  - o código gira cada ilha para o +x do modelo, o lado da chegada, sem enfeites num corredor,
-    ficar virado para a ilha central;
-  - cada material vai do cinza `#b3b8c1` para a cor de verdade conforme a ponte abre, e a lava do
-    Vale acende junto.
+- **Ilhas do anel** (a silhueta, refeita em 31/10/2026):
+  - sai da ilha completa (`src/assets/ilhas/<ilha>.glb`, com os marcos): o script junta as malhas
+    que desenham (sem `col-*` e `escalada-*`), tira as peças menores que 0,5 m, decima cada peça
+    pela área até uns 2.900 triângulos por ilha (a lava e as peças na beira da caixa sempre ficam) e
+    passa a cor de cada material para a cor por vértice (`COLOR_0`, material `ilha`). Fica com a
+    altura e a largura da completa, no mesmo referencial, para a troca na ponte não mudar o tamanho;
+    ao regerar uma ilha completa, rode o `ilhas_anel.py` de novo;
+  - o código gira cada ilha (a leve e a completa, com `giroDaIlha`) para o +x do modelo, o lado da
+    chegada, ficar virado para a ilha central;
+  - a tinta da ilha (`pintura-da-ilha.ts`) vai do cinza `#b3b8c1` para a cor de cada vértice conforme
+    a ponte abre, e a lava do Vale (material `lava`) acende junto. Quem colide é o
+    `apoiosDaIlhaLeve` (topo em y = 1, onde fica o tampo da silhueta), não a malha;
+  - teste: `tests/silhuetas-das-ilhas.test.ts` (alvos de altura nas duas versões, uma malha de até 3
+    mil triângulos, cor por vértice, altura e largura a menos de 5% da completa, contorno de cima).
 - **Boias** (`src/mundo/boias.tsx`): a linha que marca até onde se nada, em volta da sua ilha
   (42 m do centro, depois da parte rasa) e de cada ilha do anel aberta (19 m do centro dela, menos a
   Ilha das Nuvens, que fica no alto). `boia`, `corda` e `flutuador` são malhas instanciadas; a corda

@@ -75,39 +75,44 @@ async function medirFaces(objeto: string) {
   return medidas
 }
 
+/** As versões da galeria (31/10/2026, `galeria-variantes.test.ts`) usam o mesmo molde do objeto. */
+const VERSOES_DA_GALERIA = ['', '-retro', '-moderna'] as const
+
 describe('as faces do Pinta nos modelos dos objetos', () => {
-  for (const objeto of OBJETOS_DA_CASA) {
-    const { faces } = CATALOGO_DE_OBJETOS[objeto].molde
-    if (faces.length === 0) continue
-    test(`${objeto}: cada face do catálogo existe, do tamanho prometido e com a imagem inteira`, async () => {
-      const medidas = await medirFaces(objeto)
-      for (const f of faces) {
-        const m = medidas.get(NOMES_DAS_FACES[f.face])
-        expect(m, `${objeto} sem ${NOMES_DAS_FACES[f.face]}`).toBeDefined()
-        const t = m!.caixa.getSize(new Vector3())
-        // No GLB o y sobe e a frente olha para +z.
-        const [largura, altura, espessura] =
-          f.face === 'lado-esq' || f.face === 'lado-dir'
-            ? [t.z, t.y, t.x]
-            : f.face === 'topo'
-              ? [t.x, t.z, t.y]
-              : [t.x, t.y, t.z]
-        expect(m!.area).toBeLessThan(f.largura * f.altura * 1.02)
-        if (espessura < 0.01) {
-          expect(Math.abs(largura - f.largura)).toBeLessThan(0.02)
-          expect(Math.abs(altura - f.altura)).toBeLessThan(0.02)
-        } else {
-          // A face que dá a volta (o rótulo do vaso): a largura é a volta, a altura é a do vaso.
-          expect(Math.abs(altura - f.altura)).toBeLessThan(0.02)
-          expect(m!.area).toBeGreaterThan(f.largura * f.altura * 0.5)
+  for (const base of OBJETOS_DA_CASA)
+    for (const versao of VERSOES_DA_GALERIA) {
+      const objeto = `${base}${versao}`
+      const { faces } = CATALOGO_DE_OBJETOS[base].molde
+      if (faces.length === 0) continue
+      test(`${objeto}: cada face do catálogo existe, do tamanho prometido e com a imagem inteira`, async () => {
+        const medidas = await medirFaces(objeto)
+        for (const f of faces) {
+          const m = medidas.get(NOMES_DAS_FACES[f.face])
+          expect(m, `${objeto} sem ${NOMES_DAS_FACES[f.face]}`).toBeDefined()
+          const t = m!.caixa.getSize(new Vector3())
+          // No GLB o y sobe e a frente olha para +z.
+          const [largura, altura, espessura] =
+            f.face === 'lado-esq' || f.face === 'lado-dir'
+              ? [t.z, t.y, t.x]
+              : f.face === 'topo'
+                ? [t.x, t.z, t.y]
+                : [t.x, t.y, t.z]
+          expect(m!.area).toBeLessThan(f.largura * f.altura * 1.02)
+          if (espessura < 0.01) {
+            expect(Math.abs(largura - f.largura)).toBeLessThan(0.02)
+            expect(Math.abs(altura - f.altura)).toBeLessThan(0.02)
+          } else {
+            // A face que dá a volta (o rótulo do vaso): a largura é a volta, a altura é a do vaso.
+            expect(Math.abs(altura - f.altura)).toBeLessThan(0.02)
+            expect(m!.area).toBeGreaterThan(f.largura * f.altura * 0.5)
+          }
+          expect(m!.u[0]).toBeGreaterThan(-0.01)
+          expect(m!.u[1]).toBeLessThan(1.01)
+          expect(m!.v[0]).toBeGreaterThan(-0.01)
+          expect(m!.v[1]).toBeLessThan(1.01)
+          expect(m!.u[1] - m!.u[0]).toBeGreaterThan(0.95)
+          expect(m!.v[1] - m!.v[0]).toBeGreaterThan(0.95)
         }
-        expect(m!.u[0]).toBeGreaterThan(-0.01)
-        expect(m!.u[1]).toBeLessThan(1.01)
-        expect(m!.v[0]).toBeGreaterThan(-0.01)
-        expect(m!.v[1]).toBeLessThan(1.01)
-        expect(m!.u[1] - m!.u[0]).toBeGreaterThan(0.95)
-        expect(m!.v[1] - m!.v[0]).toBeGreaterThan(0.95)
-      }
-    })
-  }
+      })
+    }
 })

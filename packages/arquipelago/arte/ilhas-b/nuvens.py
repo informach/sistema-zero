@@ -15,10 +15,32 @@ Gera dois arquivos em `src/assets/ilhas/`:
 """
 from lib_ilhas_b import *
 import lib_cais
+from mathutils import Matrix
 
 FIOS = ['fio1', 'fio2', 'fio3', 'fio4', 'fio5', 'fio6']
 TEAR = dict(x=-4.2, z=-3.6)
 NINHO = dict(x=-5.8, z=5.4)
+# O jardim do céu (31/10/2026): o terraço de grama em cima de um degrau de nuvem (0,24 m, o corpo sobe
+# sozinho), de 6,4 × 6,4 m (o miolo plano tem pelo menos 6 × 6), no lado +z da ilha, entre o ninho e o
+# balão, longe dos saltos e das plataformas (−x), da corrida das argolas (em volta, a 15 m do meio) e do
+# mirante (−z). Seis canteiros de 1 × 1 m em duas fileiras de três, com a borda de tábuas e o colisor
+# de borda `col-canteiro-ceu-N` (0,7 m acima do terraço, `ALTURA_QUE_SEGURA`, como os da horta) e as
+# âncoras `canteiro-ceu-1` a `-6` no meio da terra de cada um. Um caminho de nuvem de 1,5 m de largura
+# sai do caminho da chegada até ele. Uma moita de nuvem e uma árvore que ficavam ali mudaram de lugar.
+JARDIM = dict(x=-0.6, z=7.5, lado=6.4, alto=0.24, grama=0.06)
+CANTEIROS_DO_CEU = [(dx, dz) for dz in (-1.0, 1.0) for dx in (-1.6, 0.0, 1.6)]
+CANTEIRO = dict(lado=1.0, borda=0.32, terra=0.27, segura=0.7)
+# O segredo do balão (31/10/2026): uma nuvem que se pisa a 13 m acima do tampo, em cima do meio da
+# ilha (dentro do teto do balão, 18 m, longe das argolas, que ficam a 15 m do meio). Nenhum lugar que
+# se pisa a pé chega perto dessa altura (a plataforma 4 vai a 10 m no alto do ciclo), então o planador
+# não chega lá; só o balão. A âncora `segredo-balao` fica em cima do colisor.
+SEGREDO_DO_BALAO = dict(x=3.5, z=2.0, acima=13.0, raio=1.5)
+# Os marcos das Nuvens (31/10/2026, as ilhas mais altas nos postos mais altos): uma torre de nuvem do
+# lado de fora da beira (no rumo de 255°, entre o mirante e a primeira argola, sem tocar o chão que se
+# pisa) até 17 m no arquivo (24 m no jogo, com os 7 da ilha) e o arco-íris em volta dela. Tudo fica
+# dentro do teto do balão: a torre e o arco têm colisor (o balão não atravessa).
+TORRE = dict(rumo=255, raio=15.0, base=-2.5, topo=17.0, grossura=1.1)
+ARCO_DA_TORRE = dict(altura=9.0, raio=2.8)
 
 
 # ------------------------------------------------------------------ peças
@@ -159,6 +181,103 @@ def balao():
     return p
 
 
+def jardim_do_ceu(col):
+    """O jardim do céu, no lugar dele: o degrau de nuvem, o terraço de grama, os seis canteiros com a
+    borda de tábuas e a terra, e os enfeites baixinhos (flores nos cantos e novelinhos nas esquinas, que
+    não colidem). Devolve (desenho, chão que se pisa, âncoras)."""
+    jx, jz, L = JARDIM['x'], JARDIM['z'], JARDIM['lado']
+
+    def quadrado(meio, z0, z1, m, nome):
+        pts = [(jx - meio, -jz - meio), (jx + meio, -jz - meio), (jx + meio, -jz + meio), (jx - meio, -jz + meio)]
+        return slab(pts, z0, z1, m, bevel=0.0, segs=1, name=nome, fundo=False)
+
+    base = quadrado(L / 2, TOPO - 0.2, TOPO + JARDIM['alto'] - JARDIM['grama'], 'nuvem', 'jardim-nuvem')
+    grama = quadrado(L / 2 - 0.08, TOPO + JARDIM['alto'] - JARDIM['grama'], TOPO + JARDIM['alto'], 'gramaClara', 'jardim-grama')
+    piso = TOPO + JARDIM['alto']
+    p = [base, grama]
+    # Bolinhas de nuvem na volta do degrau (por fora, baixinhas: não colidem).
+    for k in range(16):
+        lado, t = divmod(k, 4)
+        u = -L / 2 + (t + 0.5) * L / 4
+        x, z = [(jx + u, jz - L / 2), (jx + L / 2, jz + u), (jx - u, jz + L / 2), (jx - L / 2, jz - u)][lado]
+        p.append(uvball(0.28, (x, -z, TOPO + 0.02), 'nuvem' if k % 2 else 'nuvemAzulada', seg=8, ring=4,
+                        scale=(1.2, 1.2, 0.6)))
+    ancoras = []
+    for i, (dx, dz) in enumerate(CANTEIROS_DO_CEU, 1):
+        cx, cz = jx + dx, jz + dz
+        c = CANTEIRO
+        # A borda de tábuas (quatro lados) e a terra dentro, um pouco abaixo da borda.
+        for sx, sz, ox, oz in ((c['lado'], 0.1, 0, -0.45), (c['lado'], 0.1, 0, 0.45), (0.1, 0.8, -0.45, 0),
+                               (0.1, 0.8, 0.45, 0)):
+            p.append(box((sx, sz, c['borda']), (cx + ox, -(cz + oz), piso + c['borda'] / 2 - 0.01),
+                         'madeiraTear' if i % 2 else 'madeiraTearEscura', bevel=0.02, segs=1))
+        p.append(box((0.8, 0.8, c['terra']), (cx, -cz, piso + c['terra'] / 2 - 0.01), 'terra', bevel=0.0))
+        col.append(col_caixa('canteiro-ceu', (c['lado'], c['lado'], c['segura']), (cx, -cz, piso + c['segura'] / 2)))
+        ancoras.append((f'canteiro-ceu-{i}', cx, cz, piso + c['terra'] - 0.01))
+    # Flores nos quatro cantos do terraço (miúdo, não colide).
+    for k, (sx, sz) in enumerate(((-1, -1), (1, -1), (1, 1), (-1, 1))):
+        p += flor((jx + sx * (L / 2 - 0.35), -(jz + sz * (L / 2 - 0.35)), piso), ('petalaRosa', 'petalaAmarela',
+                                                                                    'petalaLilas', 'petalaRosa')[k],
+                  seed=40 + k)
+    return p, [base, grama], ancoras
+
+
+def nuvem_do_segredo(col):
+    """A nuvem do segredo do balão: um tufo grande e achatado, com o tampo plano que se pisa
+    (`col-cil-nuvem-segredo`) e a âncora `segredo-balao` em cima."""
+    s = SEGREDO_DO_BALAO
+    x, z, topo = s['x'], s['z'], TOPO + s['acima']
+    p = nuvem_fofa(x, -z, topo - 0.35, 1.25, 120, 'nuvem', 'nuvemAzulada', 6)
+    p.append(cyl(s['raio'] - 0.1, 0.3, (x, -z, topo - 0.15), 'nuvemPlataforma', verts=16))
+    # Uma estrelinha que acende no meio (de longe, à noite, mostra que tem algo lá).
+    p.append(prism(star_pts(0.35, 0.15), 0.08, (x, -z, topo + 0.6), 'estrela'))
+    col.append(col_cilindro('nuvem-segredo', s['raio'], 0.6, (x, -z, topo - 0.3)))
+    return p, ('segredo-balao', x, z, topo)
+
+
+def torre_de_nuvem(col):
+    """O marco das Nuvens: a torre de nuvem do lado de fora da beira (um miolo azulado com tufos em
+    volta, subindo do fundo da ilha até 17 m) e o arco-íris em volta dela, com os fios do tear."""
+    t = TORRE
+    a = R(t['rumo'])
+    x, z = math.cos(a) * t['raio'], math.sin(a) * t['raio']
+    bx, by = x, -z
+    h = t['topo'] - t['base']
+    p = [cyl(t['grossura'] * 0.8, h - 0.6, (bx, by, t['base'] + (h - 0.6) / 2), 'nuvemAzulada', verts=10,
+             r2=t['grossura'] * 0.45)]
+    for k in range(9):
+        zz = t['base'] + 1.5 + k * (h - 2.6) / 8
+        sk = 1.0 - 0.06 * k
+        p += nuvem_fofa(bx, by, zz, 0.75 * sk, 200 + k, 'nuvem', 'nuvemAzulada', 4)
+    p.append(uvball(0.75, (bx, by, t['topo'] - 0.5), 'nuvem', seg=10, ring=6, scale=(1, 1, 0.75)))
+    col.append(col_cilindro('torre-nuvem', t['grossura'] + 0.25, t['topo'] - t['base'] - 0.1,
+                            (bx, by, (t['base'] + t['topo'] - 0.1) / 2)))
+    # O arco-íris em volta da torre, no plano de pé que corta a beira (de lado para quem está na ilha).
+    ar = ARCO_DA_TORRE
+    giro = a + math.pi / 2
+    tx, ty = math.cos(giro), -math.sin(giro)
+    for k, m in enumerate(FIOS):
+        p.append(torus(ar['raio'] - k * 0.2, 0.11, (bx, by, ar['altura']), m, seg=20, rseg=4,
+                       rot=(R(90), 0, math.atan2(ty, tx)), arc=180))
+    for sgn in (-1, 1):
+        rm = ar['raio'] - 0.5
+        p += nuvem_fofa(bx + tx * rm * sgn, by + ty * rm * sgn, ar['altura'] - 0.1, 0.6, 230 + sgn, 'nuvem',
+                        'nuvemAzulada', 4)
+    # O colisor do arco: caixas ao longo da faixa (1,3 de largura, 0,3 de espessura).
+    rm = ar['raio'] - 0.5
+    n = 6
+    for k in range(n):
+        f0, f1 = math.pi * k / n, math.pi * (k + 1) / n
+        fm = (f0 + f1) / 2
+        u, w = math.cos(fm) * rm, math.sin(fm) * rm
+        comp = 2 * rm * math.sin((f1 - f0) / 2) + 0.2
+        # Gira a caixa para seguir a curva: no plano do arco (em y) e depois no rumo dele (em z).
+        giro_caixa = (Matrix.Rotation(math.atan2(ty, tx), 4, 'Z') @ Matrix.Rotation(-(fm + math.pi / 2), 4, 'Y'))
+        col.append(col_caixa('arco-marco', (comp, 0.3, 1.3), (bx + tx * u, by + ty * u, ar['altura'] + w),
+                             rot=tuple(giro_caixa.to_euler('XYZ'))))
+    return p
+
+
 # ------------------------------------------------------------------ a ilha
 # O ponto de embarque do barco (pedido de arte de 30/10/2026): no jogo a ilha fica a y = 7, então o
 # mar é y = −7 no arquivo. O deque fica no mar e a torre de escada sobe ao tampo no rumo de 215°, do
@@ -196,7 +315,8 @@ def ilha():
     cen += colocar(arvore_do_ninho(c), NINHO['x'], NINHO['z'], R(20), y=TOPO)
     col.extend(colocar(c, NINHO['x'], NINHO['z'], R(20), y=TOPO))
     # Nuvens fofas no chão (moitas de nuvem) e no ar em volta.
-    for i, (x, z, s, dy) in enumerate(((3.5, 5.5, 0.8, 0.4), (7.5, -6.0, 0.9, 0.4), (-1.0, 9.6, 0.7, 0.4),
+    # A 3ª saiu de (−1; 9,6), de dentro do jardim do céu (31/10/2026).
+    for i, (x, z, s, dy) in enumerate(((3.5, 5.5, 0.8, 0.4), (7.5, -6.0, 0.9, 0.4), (-5.0, 10.6, 0.7, 0.4),
                                        (-9.6, -5.5, 0.85, 0.4), (4.0, -9.8, 0.75, 0.4), (9.8, 5.8, 0.7, 0.4),
                                        (6.0, 9.0, 1.2, 4.8), (-3.0, -9.0, 1.3, 5.4), (9.0, -3.5, 1.0, 6.5))):
         cen += nuvem_fofa(x, -z, TOPO + dy, s, i)
@@ -228,7 +348,8 @@ def ilha():
             a = j * math.pi / 2 + k
             cen.append(prism([(0, 0), (0.32, 0.1), (0.3, 0.32)], 0.02, (bx2, by2 - 0.06, TOPO + 1.3), FIOS[(k + j) % 6],
                              rot=(R(90), a, 0)))
-    for i, (x, z, s) in enumerate(((-8.6, -1.0, 0.9), (8.8, 7.6, 0.85), (-1.5, -10.4, 0.9), (2.8, 10.6, 0.8))):
+    # A 4ª saiu de (2,8; 10,6), na beira do jardim do céu (31/10/2026).
+    for i, (x, z, s) in enumerate(((-8.6, -1.0, 0.9), (8.8, 7.6, 0.85), (-1.5, -10.4, 0.9), (4.6, 10.2, 0.8))):
         cen += anel.arvore_leve(x, z, s, 'copaClara', seed=60 + i)
         col.append(col_cilindro('tronco', 0.22 * s, 1.6 * s, (x, -z, TOPO + 0.8 * s)))
         col.append(col_cilindro('copa', 1.0 * s, 1.8 * s, (x, -z, TOPO + 2.3 * s)))
@@ -246,9 +367,18 @@ def ilha():
     for x, z in ((5.0, -2.8), (5.0, 2.8)):
         cen += poste_lampiao(x, z)
         col.append(col_cilindro('poste-lampiao', 0.1, 2.9, (x, -z, TOPO + 1.45)))
-    conferir_corredor(cen + [o for f in fios for o in f], 'nuvens')
-    # O chão que se pisa: o tampo e a rocha de baixo da ilha que flutua.
-    col.insert(0, col_terreno(chao))
+    # O jardim do céu, o caminho de nuvem até ele (1,5 m de largura, saindo do caminho da chegada), a nuvem
+    # do segredo do balão e o marco (a torre de nuvem com o arco-íris).
+    jardim, piso_do_jardim, ancoras_do_jardim = jardim_do_ceu(col)
+    cen += jardim
+    cen.append(caminho([(1.4, 0.0), (0.4, 2.2), (-0.4, JARDIM['z'] - JARDIM['lado'] / 2 + 0.3)], 0.75, 'nuvemAzulada',
+                       z1=0.012))
+    segredo, ancora_do_segredo = nuvem_do_segredo(col)
+    cen += segredo
+    marco = torre_de_nuvem(col)
+    conferir_corredor(cen + marco + [o for f in fios for o in f], 'nuvens')
+    # O chão que se pisa: o tampo e a rocha de baixo da ilha que flutua, e o terraço do jardim.
+    col.insert(0, col_terreno(chao + piso_do_jardim))
     plataformas = {}
     for i, (x, z, dy, r) in enumerate(PLATAFORMAS, 1):
         objs = ilha_flutuante(r, seed=i, arvore=(i == 4))
@@ -267,8 +397,9 @@ def ilha():
                 # O meio do deque do mirante, em cima dele (o mesmo MIRANTE e DEQUE de
                 # nuvens_constelacoes.py: o deque e a luneta vêm no nuvens-constelacoes.glb).
                 ('mirante', -6.0, -8.0, TOPO + 0.35)]
-        + [(f'topo-plataforma-{i}', x, z, TOPO + dy + 0.02) for i, (x, z, dy, r) in enumerate(PLATAFORMAS, 1)])
-    nos = {'chao': chao, 'cenario': cen}
+        + [(f'topo-plataforma-{i}', x, z, TOPO + dy + 0.02) for i, (x, z, dy, r) in enumerate(PLATAFORMAS, 1)]
+        + ancoras_do_jardim + [ancora_do_segredo])
+    nos = {'chao': chao, 'cenario': cen, 'marco-torre-de-nuvem': marco}
     for k, f in enumerate(fios, 1):
         nos[f'fio-{k}'] = f
     nos.update(plataformas)

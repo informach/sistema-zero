@@ -163,6 +163,13 @@ lib_q.PALETTE.update({
     'casaArvore': ('#f3c26b', 0.85, None, 0),
     'telhadoArvore': ('#e0498f', 0.8, None, 0),
     'balanço': ('#d8b57a', 0.9, None, 0),
+    # segredos da sua ilha (o cipó usa as cores do cipó do Bosque, `arte/ilhas/lib_ilhas.py`)
+    'troncoGrande': ('#6e4b2c', 0.9, None, 0),
+    'cipo': ('#5c8f3a', 0.9, None, 0),
+    'folhaCipo': ('#79b84a', 0.85, None, 0),
+    'rochaGruta': ('#6f7884', 0.9, None, 0),
+    'rochaGrutaEscura': ('#555d68', 0.9, None, 0),
+    'conchaBrilho': ('#fff0e0', 0.5, '#ffd9b0', 1.0),
 })
 lib_q.ALPHA.update({'fachoFarol': 0.35, 'holograma': 0.32, 'espuma': 0.75})
 
@@ -456,17 +463,25 @@ def _juntar(objs, nome, pivo=None):
 RELATORIO = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'relatorio.json')
 
 
-def exportar(pid, nos, colisores=(), ancoras=()):
+def exportar(pid, nos, colisores=(), ancoras=(), filhos=None):
     """Grava `SAIDA/pid.glb` com um nó por chave de `nos`, os nós de colisão `col-*` e as âncoras
     (nós vazios de nome fixo, onde o jogo põe alguma coisa).
 
     `nos` = {nome: [objetos]} ou {nome: ([objetos], pivô)}. Cada nó vira UMA malha (um nó com
     vários materiais vira várias primitivas). Os nomes dos nós e dos materiais são o contrato com
-    o jogo (README). `colisores` vão cada um com o seu TRS, sem juntar."""
+    o jogo (README). `colisores` vão cada um com o seu TRS, sem juntar. `filhos` = {nó: pai} pendura
+    um nó dentro de outro (quem copia o pai no jogo leva o filho junto; o filho é achado pelo nome)."""
     juntos = []
     for nome, val in nos.items():
         objs, pivo = (val if isinstance(val, tuple) else (val, None))
         juntos.append(_juntar(list(objs), nome, pivo))
+    por_nome = {o.name: o for o in juntos}
+    for filho, pai in (filhos or {}).items():
+        f, p = por_nome[filho], por_nome[pai]
+        mundo = f.matrix_world.copy()
+        f.parent = p
+        f.matrix_parent_inverse = p.matrix_world.inverted()
+        f.matrix_world = mundo
     bpy.ops.object.select_all(action='DESELECT')
     for o in juntos + list(colisores) + list(ancoras):
         o.select_set(True)

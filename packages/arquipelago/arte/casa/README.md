@@ -1,7 +1,8 @@
 # Casa do Arquipélago no Blender: kit de construir e móveis dos cômodos
 
-O kit modular do modo construir (paredes, portas, janelas, quinas, pisos e telhado) e os móveis
-da cozinha, da sala e do banheiro. Cada grupo tem um script que monta as peças no Blender sem tela
+O kit modular do modo construir (paredes, portas, janelas, quinas, pisos, telhado e, desde
+31/10/2026, o segundo andar) e os móveis da cozinha, da sala e do banheiro, do café e da banca de
+feira e a decoração de festa. Cada grupo tem um script que monta as peças no Blender sem tela
 (o mesmo `bpy` de `arte/itens` e `arte/mundo`) e grava GLBs em `src/assets/casa/`, com uma peça por
 nó. As peças ainda não estão ligadas ao jogo.
 
@@ -14,9 +15,11 @@ nó. As peças ainda não estão ligadas ao jogo.
 # o mesmo, montando também as cenas de conferência e conferindo as emendas entre peças vizinhas
 CENAS=1 /tmp/claude-0/blender-venv/bin/python -B arte/casa/build_all.py
 
-# só um grupo (GLB filtra pelo nome: paredes, portas, pisos, telhado / cozinha, sala, banheiro)
+# só um grupo (GLB filtra pelo nome: paredes, portas, pisos, telhado, andar / cozinha, sala, banheiro)
 GLB=telhado /tmp/claude-0/blender-venv/bin/python -B arte/casa/kit.py
 GLB=sala /tmp/claude-0/blender-venv/bin/python -B arte/casa/comodos.py
+/tmp/claude-0/blender-venv/bin/python -B arte/casa/cafe.py      # casa-cafe.glb
+/tmp/claude-0/blender-venv/bin/python -B arte/casa/festas.py    # casa-festas.glb
 
 # prévias das cenas montadas (Cycles; RES, AMOSTRAS, DIR_PREVIAS; VISTA troca a câmera)
 DIR_PREVIAS=/tmp/casa RES=640 AMOSTRAS=24 /tmp/claude-0/blender-venv/bin/python -B arte/casa/cenas.py kit cozinha
@@ -26,6 +29,9 @@ DIR_PREVIAS=/tmp/casa RES=640 AMOSTRAS=24 /tmp/claude-0/blender-venv/bin/python 
 PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
 ```
 
+⚠️ Os scripts regravam todos os GLBs do grupo, e o Blender não sai byte a byte igual (o conteúdo é o
+mesmo): depois do `build_all.py`, volte com `git checkout` os GLBs que você não quis mudar.
+
 `CASA_OUT=/outra/pasta` grava os GLBs em outro lugar. As cenas e as prévias vão para `DIR_PREVIAS`
 (padrão: `arte-casa` no diretório temporário), nunca para o repositório.
 
@@ -33,11 +39,13 @@ PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
 
 | Script | O que faz |
 |---|---|
-| `lib_casa.py` | importa a `lib_itens` (formas, paleta, `exportar`) e aponta a saída para `src/assets/casa` e o relatório para `arte/casa/relatorio.json` antes de cada exportação; paleta da casa; `extrudar`, `parede_grade`, `varrer`, `loft_ret`, `bloco`, `exportar_casa` |
-| `kit.py` | `casa-paredes.glb`, `casa-portas.glb`, `casa-pisos.glb`, `casa-telhado.glb` |
+| `lib_casa.py` | importa a `lib_itens` (formas, paleta, `exportar`) e aponta a saída para `src/assets/casa` e o relatório para `arte/casa/relatorio.json` antes de cada exportação; paleta da casa; `extrudar`, `parede_grade`, `varrer`, `loft_ret`, `bloco`, `exportar_casa` (com `junto`, grava também os colisores `col_caixa`/`col_girada` e as âncoras `ancora` de cada peça) |
+| `kit.py` | `casa-paredes.glb`, `casa-portas.glb`, `casa-pisos.glb`, `casa-telhado.glb`, `casa-andar.glb` |
 | `comodos.py` | `casa-cozinha.glb`, `casa-sala.glb`, `casa-banheiro.glb` |
-| `miniaturas.py` | `src/assets/casa/miniaturas/<id>.png` (160 px, fundo transparente): cada janela no meio de uma parede de lambri, cada piso e caminho numa grade, cada objeto de `src/assets/objetos` e cada móvel dos cômodos (`movel-<nó>.png`, 30/10/2026), com o enquadramento e a luz dos ícones dos itens (`arte/itens/render.py`). Refaça depois de mudar uma dessas peças; `tests/miniaturas.test.ts` confere que há uma por escolha |
-| `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis): GLB temporário e prévias |
+| `cafe.py` | `casa-cafe.glb` (café e banca de feira; importa os ajudantes e a paleta de `comodos.py`) |
+| `festas.py` | `casa-festas.glb` (decoração de festa; importa a `lib_festas` e os modelos da fogueira, da lanterna e da máscara de `arte/festas`) |
+| `miniaturas.py` | `src/assets/casa/miniaturas/<id>.png` (160 px, fundo transparente): cada janela no meio de uma parede de lambri, cada piso e caminho numa grade, cada objeto de `src/assets/objetos` e cada móvel dos cômodos (`movel-<nó>.png`, 30/10/2026) e, desde 31/10/2026, cada peça do café e da decoração de festa (também `movel-<nó>.png`), com o enquadramento e a luz dos ícones dos itens (`arte/itens/render.py`). Refaça depois de mudar uma dessas peças; `tests/miniaturas.test.ts` confere que há uma por escolha |
+| `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis, segundo andar `andar`, vitrine do café e das festas `cafe-festas`): GLB temporário e prévias |
 | `build_all.py` | roda tudo e confere |
 
 ## Medidas que o modo construir usa
@@ -101,6 +109,74 @@ PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
   com o fundo em y = +0,10. A face da parede do kit fica a 0,10 da linha da grade: a origem vai a
   0,20 da linha, com o giro da parede.
 
+## Segundo andar: contrato (pedido E04, 31/10/2026)
+
+Tudo no referencial do térreo (z = 0 é o piso de baixo). As paredes e o telhado de cima são as
+peças de sempre deslocadas 4,10 em z (a altura do piso de cima).
+
+- **Pisos de cima** (`piso-andar-tabua`, `-ladrilho`, `-azulejo`): os pisos da casa subidos: 1 × 1,
+  origem no meio da célula (em z = 0), topo em 4,10 e 10 cm de espessura (de 4,00, o topo das
+  paredes de baixo, a 4,10). Vão até a linha da grade, por cima das paredes de baixo; a face de
+  baixo é o forro (`telhadoForro`), o teto do cômodo de baixo. Sem colisor no arquivo: a caixa da
+  célula, de 4,00 a 4,10, como o jogo já monta as paredes em `pecas.ts`.
+- **`escada-interna`:** 1 × 4. Origem no meio do pé da escada, na linha da grade, subindo para +Y
+  (no jogo, para -z): ocupa x de -0,5 a 0,5 e y de 0 a 4. 14 degraus de 0,293 de espelho e 0,286 de
+  piso, de 0 a 4,10; o 14º degrau é o próprio piso de cima (de y = 3,71 a 4,00), e o piso de cima
+  continua de y = 4 em diante. Os lados ficam a 0,39 do meio (encostada numa parede do kit, sobra
+  1 cm até a face dela); o corrimão fica do lado -x (até 0,395 do meio). Por baixo, uma laje
+  inclinada de forro.
+  - Colisores (`col-escada-reta-*`, só para o corpo: a câmera passa, como a escada do Bosque):
+    `-1` é uma rampa de 45,7° (o corpo sobe até 52°) 0,1 acima da reta dos cantos de dentro dos
+    degraus, do pé até a beira do piso de cima; `-2` a `-14` são caixas embaixo dela (sempre 5 cm
+    abaixo, sem encostar no corpo) que fecham o vão de baixo da escada; `-15` é a faixa do último
+    degrau, em 4,10. Por que rampa: o degrau de 0,286 de piso é estreito demais para o degrau
+    automático do controlador (ele pede 0,25 livre em cima, além do corpo), e com uma caixa por
+    degrau a cápsula para no primeiro.
+  - Âncoras do modo escada (`escada.ts`), como as do Bosque: `escada-1-base` (0; 0; 0), no pé;
+    `escada-1-topo` (0; 4,0; 4,10), na beira do piso de cima; `escada-1-saida` (0; 4,7; 4,10), 0,7
+    dentro do piso de cima (no jogo: (0; 0; 0), (0; 4,1; -4), (0; 4,1; -4,7)). No modo, o corpo vai
+    pela reta da base ao topo, 0,47 para trás dela, uns 0,19 acima dos focinhos dos degraus.
+  - Andando, o corpo sobe pela rampa; com as âncoras registradas, andar contra o pé pega o modo
+    escada. As duas coisas estão no teste.
+- **`piso-andar-vao`:** o vão da escada no piso de cima, com a MESMA posição e giro da
+  `escada-interna` (1 × 4, de y = 0 a 4). Não tem piso: tem a faixa de acabamento que cobre a beira
+  dos pisos vizinhos (de 3,95 a 4,13) e o guarda-corpo nos três lados abertos (os dois compridos,
+  de 0,43 a 0,495 do meio, e o do pé, de y = 0,005 a 0,07); o quarto lado é onde a escada chega.
+  Colisores `col-guarda-vao-1` (lado -x), `-2` (+x) e `-3` (pé), de 4,00 a 5,10. Entre os dois
+  compridos ficam 0,84 livres: a cápsula (0,70 mais a folga do controlador) passa com 1 cm de cada
+  lado subindo reto. ⚠️ O guarda-corpo comprido ocupa a faixa de dentro da célula: não ponha o vão
+  com um lado comprido numa linha que tem parede em cima (a parede e o guarda-corpo se cruzam);
+  deixe a escada a uma célula da parede, ou peça uma variante sem esse lado.
+- **`guarda-corpo-andar`:** 1 de largura e 1,0 de altura (o corrimão em 0,99, 1 cm abaixo do topo
+  da parede cortada, para não ficarem no mesmo plano onde se encontram; o colisor vai até 1,0),
+  para a beira do piso de cima sem parede. Como a parede: origem no meio da base, na linha da
+  grade, em z = 0, e o +Y local é o lado do piso (o guarda-corpo fica de 0,02 a 0,10 da linha, em
+  cima do piso); mesmos giros da parede. Vizinhos encostam as pontas de costas um para o outro;
+  numa parede no fim da fileira, a ponta entra nela (como num T). Colisor `col-guarda-andar-1`.
+- Os colisores e as âncoras vão como nós de primeiro nível do arquivo, no mesmo referencial das
+  peças (todas na origem), como nas ilhas: quem põe a peça põe os dela com a mesma posição e giro.
+  Os nomes dizem de quem são: `col-escada-reta-*` e `escada-1-*` da escada, `col-guarda-vao-*` do
+  vão, `col-guarda-andar-1` do guarda-corpo. Com mais de uma escada, o jogo renumera as âncoras.
+- ⚠️ A parede de lambri subida 4,10 mostra o alicerce de pedra e o rodapé de fora no meio da
+  fachada (de 3,80 a 4,60): fica uma faixa entre os andares. Se ela não agradar, vale pedir uma
+  `parede-lambri-andar` sem alicerce.
+
+## Café, banca de feira e festas: contrato (31/10/2026)
+
+O mesmo contrato dos móveis (abaixo): base em z = 0, centrados na célula, frente para -Y, peça de
+parede centrada com o fundo em y = +0,10. Nomes de nó em português, minúsculos, com hífen. Os do
+café usam as cores da casa e da Vila Doce (rosa e creme) com os mesmos nomes de material de
+`arte/ilhas/lib_ilhas.py` (`toldoRosa`, `toldoBranco`, `baunilha`, `chocolate`, `menta`,
+`casquinha`, `madeiraDoce`, `confeito`, `farinha`). A vitrine usa o `vidroArmario` (o translúcido
+da casa); a placa da banca, `placaFace` (para o jogo escrever, como as barracas das festas). O
+caixote empilha: o próximo vai 0,32 acima.
+
+Nas festas, as peças de parede que se emendam (bandeirinhas, serpentina e varal de luz) têm 1,0 com
+as pontas do fio em x = ±0,5: lado a lado, o fio continua (na célula do canto, a quina passa na
+frente da ponta). O que acende tem emissão, como a luminária: `luz` (lâmpadas, chamas das
+lanternas), os papéis `lanternaAmarela` e `lanternaRosa`, `fogo` e `brasa` (fogueira) e `estrela`.
+Tetos: até 1.500 triângulos por peça (3 mil na árvore); no café, até 10 mil; arquivo até 450 KB.
+
 ## Móveis: contrato
 
 - Base em z = 0, centrado em x no footprint (largura × fundo em células) e frente para -Y.
@@ -121,7 +197,12 @@ PASTA=src/assets/casa/miniaturas python3 -I arte/itens/icones_paleta.py
 - `paredeDentro` (lado de dentro de toda parede) e `paredeVerso` (lado -Y da parede lisa): o jogo
   pinta por cômodo. As prévias pintam cada cômodo com uma cor.
 - `paredeTopo`: o topo da parede, que aparece no corte.
-- `vidroArmario`: único material translúcido (alfa 0,32, BLEND), para ver a louça no armário alto.
+- `vidroArmario`: único material translúcido (alfa 0,32, BLEND), para ver a louça no armário alto e
+  os doces na vitrine do café.
+- `telhadoForro`: a face de baixo dos pisos de cima e a laje de baixo da escada (o forro).
+- `placaFace`: a face lisa da placa da banca de feira, para o jogo escrever.
+- Festas: `luz`, `lanternaAmarela`, `lanternaRosa`, `fogo`, `brasa` e `estrela` saem com a emissão
+  ligada (os nomes e as cores de `arte/festas/lib_festas.py`); o jogo acende à noite.
 - Os da casca têm o mesmo nome e cor da `casa.py` (`parede`, `paredeSombra`, `acabamento`,
   `batente`, `alicerce`, `telhado`, `telhadoSombra`, `floreira`, `macaneta`).
 
@@ -145,9 +226,10 @@ As regras do README de `arte/mundo` valem aqui, e mais as das peças que se repe
   livros da estante afundam alturas diferentes na prateleira: nada fica no mesmo plano por acaso.
 
 Conferir: `bun scripts/faces-coplanares.ts --separados src/assets/casa/<arquivo>.glb` em cada GLB
-(o `build_all.py` já roda) e, nas cenas montadas, o mesmo sem `--separados` (`CENAS=1`). Na cena da
-cozinha, o fogão a lenha de `arte/itens` acusa pares só dele (lenha, fogo e chapa); as peças daqui
-não acusam nada.
+(o `build_all.py` já roda; `tests/faces-coplanares.test.ts` cobre `casa-andar`, `casa-cafe` e
+`casa-festas`) e, nas cenas montadas, o mesmo sem `--separados` (`CENAS=1`, com as cenas `andar` e
+`cafe-festas`). Na cena da cozinha, o fogão a lenha de `arte/itens` acusa pares só dele (lenha,
+fogo e chapa); as peças daqui não acusam nada.
 
 ## O que o jogo ainda desenha no código (falta no kit)
 
@@ -169,6 +251,15 @@ simples no código:
 - **Grama e pedra do quintal:** o topo fica na altura do chão da ilha, como diz o contrato acima,
   e por isso o jogo sobe as duas 1 cm (`ACIMA_DO_TERRENO` em `mundo/obra.tsx`) para não piscar contra
   o terreno.
+
+## Testes
+
+- `tests/casa-andar.test.ts`: pisos de cima, escada (degraus, colisores e âncoras), vão e
+  guarda-corpo, e a cápsula real do corpo (`CORPO`, com o controlador do Rapier do personagem)
+  subindo a escada contra os colisores do GLB, andando e no modo escada, até o piso de cima.
+- `tests/casa-cafe-e-festas.test.ts`: nós, medidas pedidas (±5 cm), contrato de chão e de parede,
+  triângulos, 450 KB, emissão do que acende, o vidro da vitrine, a placa da banca e as miniaturas.
+- `tests/miniaturas.test.ts` e `tests/faces-coplanares.test.ts` (os três arquivos novos).
 
 ## Peças
 
@@ -271,4 +362,46 @@ A altura do lambri conta o alicerce, que desce até -0,30 (dentro do chão da il
 | `tapetinho` | 1 × 1 | 0,80 × 0,02 × 0,52 | 232 |
 | `toalheiro` | parede | 0,70 × 0,51 × 0,15 | 416 |
 
-**Total:** 7 arquivos, 52.088 triângulos, 1,73 MB.
+### `casa-andar.glb` (2.954 triângulos, 131 KB)
+
+| Nó | Lugar | Tamanho | Triângulos |
+|---|---|---|---|
+| `piso-andar-tabua` | 1 × 1, topo em 4,10 | 1,00 × 0,10 × 1,00 | 146 |
+| `piso-andar-ladrilho` | 1 × 1, topo em 4,10 | 1,00 × 0,10 × 1,00 | 74 |
+| `piso-andar-azulejo` | 1 × 1, topo em 4,10 | 1,00 × 0,10 × 1,00 | 156 |
+| `escada-interna` | 1 × 4, origem no meio do pé | 0,78 × 5,17 × 4,00 (degraus até 4,10; o corrimão até 5,17) | 726 |
+| `piso-andar-vao` | 1 × 4, a posição da escada | 0,99 × 1,14 × 4,00 (de 3,95 a 5,09) | 1.620 |
+| `guarda-corpo-andar` | 1 célula, na linha | 1,00 × 1,00 × 0,08 (os postes entram 1 cm no piso; corrimão até 5,09) | 232 |
+
+Colisores: `col-escada-reta-1` a `-15`, `col-guarda-vao-1` a `-3`, `col-guarda-andar-1`. Âncoras:
+`escada-1-base`, `escada-1-topo`, `escada-1-saida`.
+
+### `casa-cafe.glb` (12.800 triângulos, 382 KB)
+
+| Nó | Footprint | Tamanho | Triângulos |
+|---|---|---|---|
+| `cafe-mesa-redonda` | 1 × 1 | 0,80 × 0,75 × 0,80 | 640 |
+| `cafe-cadeira` | 1 × 1 (assento a 0,50) | 0,44 × 0,93 × 0,44 | 1.316 |
+| `cafe-balcao` | 2 × 1 | 1,80 × 1,00 × 0,68 | 1.050 |
+| `cafe-vitrine-doces` | 1 × 1, de encostar | 0,92 × 1,26 × 0,66 | 4.210 |
+| `cafe-lousa-cardapio` | parede | 0,80 × 0,60 × 0,06 | 492 |
+| `cafe-banca-feira` | 2 × 1 | 1,80 × 2,00 × 0,86 | 4.854 |
+| `cafe-caixote` | 1 × 1, empilha a cada 0,32 | 0,61 × 0,32 × 0,40 | 238 |
+
+### `casa-festas.glb` (12.606 triângulos, 344 KB)
+
+| Nó | Lugar | Tamanho | Triângulos | Acende |
+|---|---|---|---|---|
+| `festa-junina-bandeirinhas` | parede, emenda | 1,00 × 0,24 × 0,06 | 430 | |
+| `festa-junina-lanterna-papel` | parede (braço de ferro) | 0,31 × 0,54 × 0,45 | 1.308 | `lanternaAmarela`, `luz` |
+| `festa-junina-fogueira` | 1 × 1 | 0,76 × 0,71 × 0,74 | 1.052 | `fogo`, `brasa` |
+| `festa-carnaval-serpentina` | parede, emenda | 1,00 × 0,57 × 0,10 | 1.212 | |
+| `festa-carnaval-mascara` | parede | 0,69 × 0,43 × 0,23 | 992 | |
+| `festa-carnaval-confete` | 1 × 1 (no chão, sem fundo) | 0,88 × 0,004 × 0,87 | 892 | |
+| `festa-fim-de-ano-arvore` | 1 × 1 | 0,84 × 1,76 × 0,86 | 2.740 | `luz`, `estrela` |
+| `festa-fim-de-ano-guirlanda` | parede | 0,50 × 0,58 × 0,12 | 1.372 | |
+| `festa-fim-de-ano-estrela-janela` | parede (ventosa) | 0,32 × 0,49 × 0,13 | 228 | `estrela`, `luz` |
+| `festa-lanternas-lanterna-chao` | 1 × 1 | 0,52 × 0,97 × 0,51 | 1.440 | `lanternaRosa`, `luz` |
+| `festa-lanternas-varal-de-luz` | parede, emenda | 1,00 × 0,14 × 0,06 | 940 | `luz` |
+
+**Total:** 10 arquivos, 80.448 triângulos, 2,57 MB.

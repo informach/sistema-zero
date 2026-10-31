@@ -156,6 +156,21 @@
         "y": 5.2,
         "z": 4.82
       },
+      "escada-2-base": {
+        "x": -7.59,
+        "y": 1.0,
+        "z": 10.54
+      },
+      "escada-2-saida": {
+        "x": -7.25,
+        "y": 5.5,
+        "z": 9.85
+      },
+      "escada-2-topo": {
+        "x": -7.59,
+        "y": 5.5,
+        "z": 10.54
+      },
       "escalada-cil-tronco-dos-cipos": {
         "x": 0.0,
         "y": 0.0,
@@ -315,6 +330,11 @@
         "x": 4.4,
         "y": 1.0,
         "z": -3.81
+      },
+      "segredo-patins": {
+        "x": -17.0,
+        "y": 5.5,
+        "z": 5.2
       }
     },
     "clipes": "",
@@ -336,30 +356,34 @@
       "col-cil-pedra-lago": 8,
       "col-cil-perna-escorregador": 6,
       "col-cil-poste": 2,
+      "col-cil-poste-pista-segredo": 8,
       "col-cil-toca": 2,
       "col-cil-toco": 3,
+      "col-cil-toco-segredo": 1,
       "col-cil-tora": 4,
       "col-cil-tronco": 28,
       "col-cocho": 1,
       "col-degrau": 12,
-      "col-escada-reta": 1,
+      "col-escada-reta": 2,
       "col-escorregador": 12,
       "col-escorregador-lado": 24,
       "col-floreira": 2,
       "col-guarda": 63,
+      "col-guarda-pista-segredo": 3,
       "col-pedra-de-agarrar": 1,
+      "col-pista-segredo": 1,
       "col-ponte": 16,
       "col-ponte-lado": 32,
       "col-terreno": 1,
       "col-varanda": 1
     },
-    "kb": 1205.7,
+    "kb": 1269.1,
     "nos": {
       "agua": 82,
       "cipo-1": 268,
       "cipo-2": 268,
       "cipo-3": 268,
-      "construcoes": 10864,
+      "construcoes": 12464,
       "copa-1": 900,
       "copa-10": 210,
       "copa-11": 210,
@@ -434,7 +458,7 @@
       },
       "tipo": "deque de praia"
     },
-    "triangulos": 32700
+    "triangulos": 34300
   },
   "bosque-props": {
     "ancoras": {},
@@ -564,6 +588,7 @@
       "col-cil-coral": 12,
       "col-cil-estaca": 6,
       "col-cil-pedra": 5,
+      "col-cil-pinaculo": 3,
       "col-cil-poste": 2,
       "col-cil-poste-luneta": 1,
       "col-cil-rocha-caverna": 23,
@@ -572,7 +597,7 @@
       "col-mesa": 1,
       "col-terreno": 1
     },
-    "kb": 614.5,
+    "kb": 679.2,
     "nos": {
       "agua": 94,
       "alga-1": 240,
@@ -589,9 +614,10 @@
       "construcoes": 5841,
       "corais": 3680,
       "enfeites": 2214,
+      "marco-pinaculos": 2976,
       "terreno": 902
     },
-    "triangulos": 17484
+    "triangulos": 20460
   },
   "recife-labirinto": {
     "ancoras": {
@@ -769,6 +795,11 @@
         "y": 1.0,
         "z": 0.0
       },
+      "jogar": {
+        "x": 1.85,
+        "y": 1.0,
+        "z": -9.75
+      },
       "lumi-1": {
         "x": 2.4,
         "y": 1.0,
@@ -835,6 +866,7 @@
       "col-balcao": 1,
       "col-banco": 3,
       "col-barraca": 6,
+      "col-barraca-do-jogo": 1,
       "col-cais-beira": 1,
       "col-cais-deque": 1,
       "col-caixote": 2,
@@ -851,19 +883,25 @@
       "col-cil-poste": 39,
       "col-cil-saco": 2,
       "col-cil-vaso": 3,
+      "col-escada-caixote": 6,
       "col-mureta": 3,
       "col-padaria": 1,
+      "col-prancha": 1,
       "col-sorveteria": 1,
       "col-telhado-padaria": 2,
       "col-terreno": 1
     },
-    "kb": 1039.4,
+    "kb": 1253.3,
     "nos": {
+      "atalhos": 2528,
+      "barraca-do-jogo": 1504,
       "construcoes": 6216,
       "enfeites": 4166,
       "feira": 7630,
       "fonte": 1996,
+      "marco-torre-de-doces": 176,
       "porto": 1698,
+      "tela": 2,
       "telhados": 6200,
       "terreno": 1398
     },
@@ -890,12 +928,12 @@
         "canto_mais_longe_com": 23.96,
         "canto_mais_longe_sem": 21.53,
         "com_o_porto": {
-          "max": [13.82, 10.55, 15.01],
+          "max": [13.82, 12.15, 15.01],
           "min": [-18.67, -2.5, -13.79]
         },
         "raio_do_porto_no_chao": 18.7,
         "sem_o_porto": {
-          "max": [13.82, 10.55, 15.01],
+          "max": [13.82, 12.15, 15.01],
           "min": [-15.44, -1.0, -13.79]
         }
       },
@@ -918,7 +956,7 @@
       },
       "tipo": "deque de praia"
     },
-    "triangulos": 29304
+    "triangulos": 33514
   },
   "vila-doce-props": {
     "ancoras": {},

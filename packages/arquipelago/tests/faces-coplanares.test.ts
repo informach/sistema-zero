@@ -61,6 +61,9 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'mundo/ponte.glb', juntos: TODOS_JUNTOS },
   { caminho: 'mundo/ilhas-do-anel.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'mundo/boias.glb', juntos: CADA_NO_SOZINHO },
+  // A florada (cada nível é um canteirinho sozinho) e o segredo do cipó da sua ilha (31/10/2026).
+  { caminho: 'mundo/florada.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'mundo/segredos-da-ilha.glb', juntos: TODOS_JUNTOS },
   { caminho: 'itens/quadro-das-cores.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vila-doce.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vila-doce-props.glb', juntos: CADA_NO_SOZINHO },
@@ -70,6 +73,49 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'ilhas/pico.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vale-dos-dinos.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/nuvens.glb', juntos: TODOS_JUNTOS },
+  // Os fósseis do Vale (nós soltos do catálogo de props e itens do museu), as pegadas e as plantas
+  // do céu (um estágio por vez, como a horta), 31/10/2026.
+  { caminho: 'ilhas/vale-dos-dinos-props.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'itens/plantas-do-ceu.glb', juntos: CADA_NO_SOZINHO },
+  ...[
+    'fossil-cranio-rex',
+    'fossil-dente',
+    'fossil-garra',
+    'fossil-vertebra',
+    'fossil-chifre-triceratopo',
+    'fossil-ovo',
+    'pegada-rex',
+    'pegada-triceratopo',
+    'pegada-passaro',
+    'pegada-capivara',
+    'flor-de-nuvem',
+    'estrela-trepadeira',
+    'arco-iris-de-petala',
+    'semente-flor-de-nuvem',
+    'semente-estrela-trepadeira',
+    'semente-arco-iris-de-petala',
+  ].map((id) => ({ caminho: `itens/${id}.glb`, juntos: TODOS_JUNTOS })),
+  // Casa (31/10/2026): o segundo andar, o café e a decoração de festa, uma peça por nó.
+  { caminho: 'casa/casa-andar.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-cafe.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'casa/casa-festas.glb', juntos: CADA_NO_SOZINHO },
+  // As versões retro e moderna da galeria (31/10/2026; na banda e no museu cada nó é uma peça solta).
+  ...[
+    'geladeira',
+    'forno',
+    'aquario',
+    'lareira',
+    'banda',
+    'fliperama',
+    'museu',
+    'casinha',
+    'planta-interior',
+  ]
+    .flatMap((objeto) => [`${objeto}-retro`, `${objeto}-moderna`])
+    .map((id) => ({
+      caminho: `objetos/${id}.glb`,
+      juntos: /^(banda|museu)-/.test(id) ? CADA_NO_SOZINHO : TODOS_JUNTOS,
+    })),
 ]
 
 /**
@@ -135,6 +181,7 @@ describe('faces coplanares e emendas abertas', () => {
       ilha.add(g)
     }
     por('terreno', 'mundo/terreno.glb', 0, 0, 0)
+    por('segredos', 'mundo/segredos-da-ilha.glb', 0, 0, 0)
     por('casa', 'mundo/casa.glb', CENTRO_DA_CASA.x, ALTURA_DA_TERRA + 0.02, CENTRO_DA_CASA.z)
     por('bancada', 'mundo/bancada.glb', BANCADA.x, ALTURA_DA_TERRA, BANCADA.z, ['projetor'])
     por('farol', 'mundo/farol.glb', FAROL.x, ALTURA_DA_TERRA, FAROL.z)

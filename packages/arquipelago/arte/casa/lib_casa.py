@@ -11,7 +11,8 @@ Acrescenta:
 - `varrer`: um perfil puxado ao longo de um caminho no plano da parede (molduras, batentes, arcos);
 - `loft_ret`: anéis de retângulos arredondados empilhados (cuba, banheira, vaso, tapete);
 - `bloco`: prisma com chanfro só nas arestas de cima que você escolher (tábuas, ladrilhos);
-- `exportar_casa`: grava o GLB com uma peça por nó, sem recentrar, e anota o tamanho de cada nó.
+- `exportar_casa`: grava o GLB com uma peça por nó, sem recentrar, e anota o tamanho de cada nó;
+  com `junto`, grava também os nós de colisão (`col_caixa`) e as âncoras (`ancora`) de cada peça.
 
 Eixos: no Blender o z aponta para cima e a frente olha para -Y (o glTF converte para o y para cima
 do three.js, com a frente para +Z).
@@ -445,15 +446,106 @@ def _caixa_obj(o):
     return mn, mx
 
 
-def exportar_casa(pid, nos, clipes=None, grupo='casa', notas=None):
+# ---------------------------------------------------------------- colisão e âncoras de uma peça
+# A convenção das ilhas (README de `arte/ilhas`, `lerColisores` no jogo): um nó `col-*` sem material,
+# com a malha da caixa unitária e o tamanho na escala do nó, vira uma caixa do tamanho dele.
+def _malha_col():
+    me = bpy.data.meshes.get('col-unidade-caixa')
+    if me is None:
+        bm = bmesh.new()
+        bmesh.ops.create_cube(bm, size=1)
+        me = bpy.data.meshes.new('col-unidade-caixa')
+        bm.to_mesh(me)
+        bm.free()
+    return me
+
+
+def col_caixa(nome, x0, x1, y0, y1, z0, z1):
+    """Caixa de colisão `nome` (o nome inteiro, `col-...`) pelos limites no referencial da peça."""
+    return col_girada(nome, (x1 - x0, y1 - y0, z1 - z0), ((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2))
+
+
+def col_girada(nome, tamanho, centro, rot=(0, 0, 0)):
+    """Caixa de colisão `nome` com `tamanho` (x, y, z antes do giro), centrada em `centro`."""
+    assert nome.startswith('col-')
+    o = bpy.data.objects.new(nome, _malha_col())
+    o.scale = tamanho
+    o.rotation_euler = rot
+    o.location = centro
+    bpy.context.collection.objects.link(o)
+    return o
+
+
+def ancora(nome, x, y, z):
+    """Nó vazio de nome fixo (onde o jogo põe alguma coisa), no referencial da peça."""
+    e = bpy.data.objects.new(nome, None)
+    e.empty_display_size = 0.05
+    e.location = (x, y, z)
+    bpy.context.collection.objects.link(e)
+    return e
+
+
+def _exportar_com_junto(pid, nos, junto, grupo):
+    """O `exportar` da lib_itens (sem centrar e sem clipes), gravando também os colisores e as
+    âncoras de cada peça (`junto`). Eles vão como nós de primeiro nível, no MESMO referencial da
+    peça (todas ficam na origem), como os `col-*` e as âncoras das ilhas: quem põe a peça põe os
+    dela com a mesma posição e giro. O nome diz de quem é cada um (README)."""
+    juntos = {nome: lib_itens._juntar(list(objs), nome) for nome, objs in nos.items()}
+    extras = [o for objs in junto.values() for o in objs]
+    bpy.ops.object.select_all(action='DESELECT')
+    for o in list(juntos.values()) + extras:
+        o.select_set(True)
+    path = os.path.join(SAIDA_CASA, f'{pid}.glb')
+    bpy.ops.export_scene.gltf(filepath=path, export_format='GLB', use_selection=True, export_apply=True,
+                              export_yup=True, export_texcoords=False, export_extras=False, export_animations=False)
+    objs = list(juntos.values())
+    tris = lib_itens._contar(objs)
+    kb = os.path.getsize(path) / 1024
+    mn, mx = lib_itens._caixa(objs)
+    cols = sorted(o.name for o in extras if o.type == 'MESH')
+    grupos_col = {}
+    for n in cols:
+        base = n.rsplit('-', 1)[0] if n.rsplit('-', 1)[-1].isdigit() else n
+        grupos_col[base] = grupos_col.get(base, 0) + 1
+    dados = {
+        'grupo': grupo,
+        'triangulos': tris,
+        'kb': round(kb, 1),
+        'nos': {o.name: lib_itens._contar([o]) for o in objs},
+        'vazios': sorted(o.name for o in extras if o.type == 'EMPTY'),
+        'clipes': [],
+        'materiais': sorted({m.name for o in objs for m in o.data.materials}),
+        'tamanho': [round(mx.x - mn.x, 3), round(mx.z - mn.z, 3), round(mx.y - mn.y, 3)],
+        'colisores': dict(sorted(grupos_col.items())),
+        # Âncoras em unidades do jogo (x, y para cima, z = -y do Blender), no referencial da peça.
+        'ancoras': {o.name: [round(o.location.x, 3), round(o.location.z, 3), round(-o.location.y, 3) + 0.0]
+                    for o in sorted(extras, key=lambda e: e.name) if o.type == 'EMPTY'},
+    }
+    print(f'EXPORTADO {pid}: {tris} triângulos, {kb:.0f} KB, nós {list(dados["nos"])}, {len(cols)} colisores')
+    try:
+        with open(RELATORIO_CASA) as f:
+            rel = json.load(f)
+    except (OSError, ValueError):
+        rel = {}
+    rel[pid] = dados
+    with open(RELATORIO_CASA, 'w') as f:
+        f.write(lib_itens.json_como_biome(dict(sorted(rel.items()))) + '\n')
+    return path
+
+
+def exportar_casa(pid, nos, clipes=None, grupo='casa', notas=None, junto=None):
     """Grava `src/assets/casa/<pid>.glb` com uma peça por nó, cada uma no SEU referencial (nada é
     recentrado: as peças ficam umas sobre as outras na origem, e o jogo clona o nó que quiser).
     Anota no relatório, por nó: triângulos, tamanho (largura x, altura, fundo, em unidades do jogo) e
-    a caixa no Blender (para conferir o contrato)."""
+    a caixa no Blender (para conferir o contrato). `junto` = {nó: [colisores e âncoras dele]}."""
     _apontar_para_a_casa()
     assert os.path.dirname(os.path.abspath(lib_itens.RELATORIO)) == PASTA_CASA
     assert os.path.abspath(lib_itens.SAIDA) == SAIDA_CASA
-    caminho = lib_itens.exportar(pid, nos, clipes=clipes, grupo=grupo, centrar=False)
+    if junto:
+        assert not clipes
+        caminho = _exportar_com_junto(pid, nos, junto, grupo)
+    else:
+        caminho = lib_itens.exportar(pid, nos, clipes=clipes, grupo=grupo, centrar=False)
     pecas = {}
     for nome in nos:
         o = bpy.data.objects.get(nome)
@@ -468,6 +560,8 @@ def exportar_casa(pid, nos, clipes=None, grupo='casa', notas=None):
         }
         if notas and nome in notas:
             pecas[nome]['nota'] = notas[nome]
+        if junto and nome in junto:
+            pecas[nome]['junto'] = sorted(f.name for f in junto[nome])
     with open(RELATORIO_CASA) as f:
         rel = json.load(f)
     rel[pid]['pecas'] = pecas

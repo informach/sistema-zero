@@ -97,6 +97,11 @@ GIRO_NO_ICONE = {'vara-de-pescar': -42, 'milho': 38}
 # E a vara engrossa só no ícone (largura e fundo; o comprimento fica), para a haste não sumir.
 GROSSURA_NO_ICONE = {'vara-de-pescar': 1.9}
 DIRECAO_DO_ICONE = '0.75,-1.25,0.85'
+# As pegadas são marcas no chão: vistas mais de cima, para a marca aparecer inteira.
+DIRECAO_NO_ICONE = {pid: (0.35, -0.75, 1.7) for pid in ('pegada-rex', 'pegada-triceratopo', 'pegada-passaro',
+                                                        'pegada-capivara')}
+# GLBs desta pasta que não são um item da mochila (os estágios das plantas do céu): sem ícone.
+SEM_ICONE = {'plantas-do-ceu'}
 
 
 def girar_na_tela(graus, grossura=1.0):
@@ -137,11 +142,12 @@ if __name__ == '__main__':
         os.makedirs(ICONES, exist_ok=True)
         so = set((env('ITEM') or '').split(',')) - {''}
         for nome in sorted(os.listdir(ITENS)):
-            if not nome.endswith('.glb') or (so and nome[:-4] not in so):
+            if not nome.endswith('.glb') or (so and nome[:-4] not in so) or nome[:-4] in SEM_ICONE:
                 continue
             giro = GIRO_NO_ICONE.get(nome[:-4])
             sc = cena(os.path.join(ITENS, nome), None,
-                      girar_na_tela(giro, GROSSURA_NO_ICONE.get(nome[:-4], 1.0)) if giro else None)
+                      girar_na_tela(giro, GROSSURA_NO_ICONE.get(nome[:-4], 1.0)) if giro else None,
+                      direcao=DIRECAO_NO_ICONE.get(nome[:-4]))
             gravar(sc, os.path.join(ICONES, nome[:-4] + '.png'), int(env('RES') or 256))
             print('ICONE', nome[:-4])
     else:

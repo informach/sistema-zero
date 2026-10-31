@@ -29,7 +29,8 @@ describe('Recife completo', () => {
     const antes = ilhasNaMemoria()
     const cena = await buscarIlha(url, () => carregarGlb(arquivoDaIlha('recife.glb')))
     const preparada = prepararIlha(cena, recife)
-    expect(preparada.colisores.length).toBe(71)
+    // 71 da ilha e os três pináculos de coral do marco (31/10/2026).
+    expect(preparada.colisores.length).toBe(74)
     expect(cena.getObjectByName('col-terreno')).toBeUndefined()
     expect(prepararIlha(cena, recife)).toBe(preparada)
     const geometrias = new Set<BoxGeometry>()
