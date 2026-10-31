@@ -97,7 +97,55 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
           AND ${minijogos.aprovadoEm} >= (${f.de}::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
           AND ${minijogos.aprovadoEm} < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
         `)
+        const [medidas] = await tx.execute<{
+          medidas: number
+          pessoasMedidas: number
+          primeira: number
+          pessoasPrimeira: number
+          tentativas: number
+          semDica: number
+          pessoasSemDica: number
+          dicas: number
+        }>(sql`
+          SELECT count(*) FILTER (WHERE ${desafiosConcluidos.tentativas} IS NOT NULL)::int AS "medidas",
+            count(DISTINCT ${desafiosConcluidos.jogadorId}) FILTER (WHERE ${desafiosConcluidos.tentativas} IS NOT NULL)::int AS "pessoasMedidas",
+            count(*) FILTER (WHERE ${desafiosConcluidos.tentativas} = 1)::int AS "primeira",
+            count(DISTINCT ${desafiosConcluidos.jogadorId}) FILTER (WHERE ${desafiosConcluidos.tentativas} = 1)::int AS "pessoasPrimeira",
+            coalesce(sum(${desafiosConcluidos.tentativas}), 0)::int AS "tentativas",
+            count(*) FILTER (WHERE ${desafiosConcluidos.dicas} = 0)::int AS "semDica",
+            count(DISTINCT ${desafiosConcluidos.jogadorId}) FILTER (WHERE ${desafiosConcluidos.dicas} = 0)::int AS "pessoasSemDica",
+            coalesce(sum(${desafiosConcluidos.dicas}), 0)::int AS "dicas"
+          FROM ${desafiosConcluidos}
+          WHERE ${desafiosConcluidos.publico} = ${f.publico}
+            AND ${desafiosConcluidos.concluidoEm} >= (${f.de}::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+            AND ${desafiosConcluidos.concluidoEm} < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
+        `)
+        const [reenvios] = await tx.execute<{ quantidade: number; pessoas: number }>(sql`
+          SELECT coalesce(sum(${minijogos.envios} - 1), 0)::int AS quantidade,
+            count(DISTINCT ${minijogos.jogadorId}) FILTER (WHERE ${minijogos.envios} > 1)::int AS pessoas
+          FROM ${minijogos} WHERE ${minijogos.publico} = ${f.publico}
+          AND ${minijogos.atualizadoEm} >= (${f.de}::date::timestamp AT TIME ZONE 'America/Sao_Paulo')
+          AND ${minijogos.atualizadoEm} < ((${f.ate}::date + 1)::timestamp AT TIME ZONE 'America/Sao_Paulo')
+        `)
+        const m = medidas ?? {
+          medidas: 0,
+          pessoasMedidas: 0,
+          primeira: 0,
+          pessoasPrimeira: 0,
+          tentativas: 0,
+          semDica: 0,
+          pessoasSemDica: 0,
+          dicas: 0,
+        }
         return {
+          aprendizagem: {
+            conclusoesMedidas: { quantidade: m.medidas, pessoas: m.pessoasMedidas },
+            acertoNaPrimeira: { quantidade: m.primeira, pessoas: m.pessoasPrimeira },
+            tentativas: { quantidade: m.tentativas, pessoas: m.pessoasMedidas },
+            semDica: { quantidade: m.semDica, pessoas: m.pessoasSemDica },
+            dicas: { quantidade: m.dicas, pessoas: m.pessoasMedidas },
+            reenvios: reenvios ?? { quantidade: 0, pessoas: 0 },
+          },
           mudancasDeAparencia: {
             pintaMolda: mudanca('pinta-molda'),
             criacaoGuardada: mudanca('criacao'),
@@ -113,6 +161,20 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
       },
       { isolationLevel: 'repeatable read', accessMode: 'read only' },
     )
+  }
+
+  /** Os salvamentos do público com alguma rotina montada (A26): o documento, sem mais nada. */
+  async salvamentosComRotina(publico: FiltroDaMedicao['publico']) {
+    return this.db
+      .select({ jogadorId: salvamentos.jogadorId, dados: salvamentos.dados })
+      .from(salvamentos)
+      .where(
+        and(
+          sql`${salvamentos.publico} = ${publico}`,
+          sql`jsonb_typeof(${salvamentos.dados}->'rotinas') = 'object'`,
+          sql`${salvamentos.dados}->'rotinas' <> '{}'::jsonb`,
+        ),
+      )
   }
 
   /** O mesmo recorte do cartão dos pais: sessão que só abriu e não contou tempo não é jogar. */

@@ -1,11 +1,13 @@
 import { describe, expect, test } from 'bun:test'
 import {
   aprendaIssoEm,
+  aprendaODesafio,
   CARTAS_LUMI,
   type CurriculoDeBlocos,
   CurriculoDeBlocosSchema,
   cartaConquistada,
   JogadorDosMembrosSchema,
+  linguagemDoProjeto,
 } from '../src'
 
 describe('cartões dos Lumis', () => {
@@ -66,5 +68,53 @@ describe('Aprenda isso em', () => {
     expect(JogadorDosMembrosSchema.safeParse({ posicao: 0, total: 8, blocos: [] }).success).toBe(
       false,
     )
+  })
+})
+
+describe('A3 e A24: a linguagem do desafio e o curso dele', () => {
+  test('a linguagem sai do projeto inicial; sem marca, blocos', () => {
+    expect(linguagemDoProjeto({ mode: 'blocks', programmingLanguage: 'javascript' })).toBe('blocos')
+    expect(linguagemDoProjeto({ mode: 'bridge', programmingLanguage: 'python' })).toBe('python')
+    expect(linguagemDoProjeto({ mode: 'bridge', programmingLanguage: 'javascript' })).toBe('texto')
+    expect(linguagemDoProjeto({ mode: 'code', kind: 'pro' })).toBe('pro')
+    expect(linguagemDoProjeto({ files: {} })).toBe('blocos')
+    expect(linguagemDoProjeto(null)).toBe('blocos')
+  })
+
+  test('em blocos, o curso mais adiantado entre os blocos; na linguagem, o curso-base do posto', () => {
+    const c: CurriculoDeBlocos = {
+      versao: 1,
+      cursos: [curso(1, 'coder', ['a']), curso(2, 'hacker', ['b']), curso(3, 'explorer', ['a'])],
+      catalogo: [],
+      cursosBase: [
+        {
+          posto: 'explorer',
+          courseId: '00000000-0000-4000-8000-000000000009',
+          titulo: 'Base do Explorador',
+          slug: 'base',
+        },
+      ],
+    }
+    expect(
+      aprendaODesafio({ linguagem: 'blocos', posto: 'explorer', blocos: ['a', 'b'] }, c).map(
+        (x) => x.titulo,
+      ),
+    ).toEqual(['Curso 2'])
+    expect(aprendaODesafio({ linguagem: 'blocos', posto: 'coder', blocos: ['z'] }, c)).toEqual([])
+    expect(
+      aprendaODesafio({ linguagem: 'python', posto: 'explorer', blocos: [] }, c).map(
+        (x) => x.titulo,
+      ),
+    ).toEqual(['Base do Explorador'])
+    expect(aprendaODesafio({ linguagem: 'pro', posto: 'champion', blocos: [] }, c)).toEqual([])
+    expect(CurriculoDeBlocosSchema.safeParse(c).success).toBe(true)
+    expect(
+      JogadorDosMembrosSchema.safeParse({
+        posicao: 4,
+        total: 8,
+        blocos: [],
+        cursosBase: ['explorer'],
+      }).success,
+    ).toBe(true)
   })
 })

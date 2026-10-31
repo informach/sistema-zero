@@ -1187,6 +1187,7 @@ export async function createApplication(env: Env): Promise<Application> {
       objetivos: new ArquipelagoObjectivesService({ verificador: sectionProgression }),
       aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
       saldo: gamificationRepo,
+      compras: new ArquipelagoCoinsRepository(db),
       quartos: new ArquipelagoRoomService(roomRepo),
       ambiente: studioRuntimePolicy
         ? new ArquipelagoRuntimeService(studioRuntimePolicy)

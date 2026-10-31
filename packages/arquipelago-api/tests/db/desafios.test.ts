@@ -333,6 +333,8 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogadorNosDesafios (Postgres real)', 
       revisao: 1,
       moedas: 20,
       moedasExtra: 10,
+      tentativas: 2,
+      dicas: 1,
       agora: AGORA,
     })
 
@@ -443,22 +445,29 @@ describe.skipIf(!url)('DrizzleRepositorioDoJogadorNosDesafios (Postgres real)', 
     expect(c?.recompensaVistaEm?.toISOString()).toBe(AGORA.toISOString())
   })
 
-  test('tentativa guardada por revisão (a última vence)', async () => {
+  test('tentativa guardada por revisão (a última vence), contando tentativas e dicas (A26)', async () => {
     await publicado(ID1)
-    await repo.guardarTentativa({
-      jogadorId: JOGADOR,
-      desafioId: ID1,
-      revisao: 1,
-      resultados: [{ id: 'o1', passou: false }],
-      agora: AGORA,
-    })
-    await repo.guardarTentativa({
-      jogadorId: JOGADOR,
-      desafioId: ID1,
-      revisao: 1,
-      resultados: [{ id: 'o1', passou: true }],
-      agora: AGORA,
-    })
+    expect(
+      await repo.guardarTentativa({
+        jogadorId: JOGADOR,
+        desafioId: ID1,
+        revisao: 1,
+        resultados: [{ id: 'o1', passou: false }],
+        dicas: 2,
+        agora: AGORA,
+      }),
+    ).toEqual({ tentativas: 1, dicas: 2 })
+    // As dicas ficam com a maior quantidade vista; as tentativas somam.
+    expect(
+      await repo.guardarTentativa({
+        jogadorId: JOGADOR,
+        desafioId: ID1,
+        revisao: 1,
+        resultados: [{ id: 'o1', passou: true }],
+        dicas: 0,
+        agora: AGORA,
+      }),
+    ).toEqual({ tentativas: 2, dicas: 2 })
     expect(await repo.progresso(JOGADOR, ID1)).toEqual({
       revisao: 1,
       ultimosResultados: [{ id: 'o1', passou: true }],

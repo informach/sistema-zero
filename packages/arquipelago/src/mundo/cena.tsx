@@ -43,6 +43,7 @@ import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
 import { Nico } from './nico'
 import { PetQueAcompanha } from './pet-que-acompanha'
+import { PlacaDoPedido } from './placa-do-pedido'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 import { QuartoRelido } from './quarto-relido'
 import { RetratoDoAvatar } from './retrato-do-avatar'
@@ -108,6 +109,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <DescobertasDaIlhaCentral />
           <HabitantesDaPraia />
           <Nico />
+          <PlacaDoPedido />
           <ColecoesDaPraia />
           <ChavesDaCasa />
           <SegredoNoAlto segredo={SEGREDO_DA_SUA_ILHA} />

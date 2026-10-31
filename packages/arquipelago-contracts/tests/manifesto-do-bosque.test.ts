@@ -53,7 +53,7 @@ test('manifesto do Bosque tem seis quadros e três desafios do dia para kids', (
   }
 })
 
-test('adulto tem os mesmos exercícios, slugs próprios e publicação pendente', async () => {
+test('adulto tem os mesmos exercícios, slugs próprios e a mesma publicação', async () => {
   const adulto = ManifestoDeDesafiosSchema.parse(
     await Bun.file(
       new URL(
@@ -67,7 +67,7 @@ test('adulto tem os mesmos exercícios, slugs próprios e publicação pendente'
     const kids = manifesto.desafios[i]!
     expect(d.publico).toBe('adulto')
     expect(d.slug).toBe(`${kids.slug}-adulto`)
-    expect(d.publicar).toBe(false)
+    expect(d.publicar).toBe(kids.publicar)
     expect(d.quadro).toBe(kids.quadro)
     expect(d.conteudo).toEqual(kids.conteudo)
   }

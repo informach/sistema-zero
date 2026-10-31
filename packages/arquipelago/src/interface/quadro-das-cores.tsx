@@ -9,7 +9,13 @@ import {
 import { useEffect, useRef, useState } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDosDesafios, useDesafios } from '../estado/desafios'
-import { desafioDeHoje, oQueFalta, type Quadro, quadrosDaIlha } from '../sistemas/quadro-das-cores'
+import {
+  desafioDeHoje,
+  ondeAprender,
+  oQueFalta,
+  type Quadro,
+  quadrosDaIlha,
+} from '../sistemas/quadro-das-cores'
 import { receitaPeloId } from '../sistemas/receitas'
 
 /** Quanto tempo a festa da cor fica na tela antes de o serviço guardar que foi vista. */
@@ -66,6 +72,9 @@ function CartaoDoQuadro({
         ) : null}
         {q.estado === 'disponivel' ? (
           <span className="arq-quadro-estado">Pronto para fazer</span>
+        ) : null}
+        {q.estado === 'disponivel' && d && ondeAprender(d) ? (
+          <span className="arq-quadro-aprenda">{ondeAprender(d)}</span>
         ) : null}
         {q.estado === 'vazio' ? (
           <span className="arq-quadro-estado">
@@ -148,6 +157,14 @@ function CartaoDeHoje({
 function Falta({ d }: { d: NonNullable<Quadro['desafio']> }) {
   const falta = oQueFalta(d)
   if (falta.ilhaFechada) return <span className="arq-quadro-estado">Abre quando a ilha abrir</span>
+  if (falta.faltaCurso)
+    return (
+      <span className="arq-quadro-estado">
+        {falta.cursos.length > 0
+          ? `Abre depois do curso ${falta.cursos.join(', ')}`
+          : 'Abre depois do curso deste posto'}
+      </span>
+    )
   if (falta.cursos.length === 0)
     return <span className="arq-quadro-estado">Faltam blocos que você ainda vai aprender</span>
   return (

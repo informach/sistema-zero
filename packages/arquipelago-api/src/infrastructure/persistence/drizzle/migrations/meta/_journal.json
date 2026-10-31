@@ -155,6 +155,13 @@
       "when": 1793425824051,
       "tag": "0021_teto_espera_a_semana",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1793427712162,
+      "tag": "0022_medicao_da_aprendizagem",
+      "breakpoints": true
     }
   ]
 }

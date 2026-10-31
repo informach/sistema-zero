@@ -9,8 +9,9 @@ import { montarProjetoPython } from './python-projetos'
 
 /**
  * C02 (30/10/2026): a Fase de plataforma do Pico em Python (Pygame Zero), com as fases como
- * dados, Kids e adulto. Desafio do dia (os seis quadros do Pico já estão ocupados),
- * `publicar: false`.
+ * dados, Kids e adulto. O sexto quadro da ilha
+ * (§6.28, A2): devolve a cor e abre só com o curso-base do posto concluído (A3). Publica ao importar;
+ * importar depois do manifesto em blocos da ilha, que tira o minijogo do quadro 6.
  */
 const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dicas: string[] }> = {
   kids: {
@@ -36,7 +37,7 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 }
 
 export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
-  const moedas = MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']
+  const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
@@ -46,10 +47,12 @@ export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
         slug: `pico-fase-de-plataforma-python${publico === 'adulto' ? '-adulto' : ''}`,
         publico,
         ilha: 'pico',
-        tipo: 'desafio-do-dia',
-        quadro: null,
-        ordem: 70,
-        publicar: false,
+        // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+        // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
+        tipo: 'quadro-das-cores',
+        quadro: 6,
+        ordem: 60,
+        publicar: true,
         conteudo: {
           versao: 1,
           ...textos[publico],
@@ -63,7 +66,7 @@ export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
                 ? 'Acrescente uma terceira fase à lista FASES, com J, C, S e plataformas que levem até a saída.'
                 : 'Acrescente uma terceira fase jogável a FASES (início, cristal, saída e plataformas alcançáveis).',
           },
-          recompensa: { cor: false, moedas: moedas.principal, moedasExtra: moedas.extra },
+          recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
           blocosManuais: { acrescentar: [], retirar: [] },
         },
       },

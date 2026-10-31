@@ -45,7 +45,7 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('a Ilha das Nuvens é do Gênio e o pacote tem seis quadros e três desafios do dia', () => {
+test('a Ilha das Nuvens é do Gênio e o pacote em blocos tem cinco quadros e quatro desafios do dia (o sexto quadro é na linguagem do posto, §6.28 A2)', () => {
   expect(ilha('nuvens').posto).toBe('champion')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
@@ -60,14 +60,14 @@ test('a Ilha das Nuvens é do Gênio e o pacote tem seis quadros e três desafio
     'nuvens-jardim-que-floresce-chuva',
   ])
   for (const [i, d] of manifesto.desafios.entries()) {
-    const tipo = i < 6 ? 'quadro-das-cores' : 'desafio-do-dia'
+    const tipo = i < 5 ? 'quadro-das-cores' : 'desafio-do-dia'
     expect(d.ilha).toBe('nuvens')
     expect(d.publico).toBe('kids')
     expect(d.tipo).toBe(tipo)
-    expect(d.quadro).toBe(i < 6 ? i + 1 : null)
-    expect(d.ordem).toBe(i < 6 ? (i + 1) * 10 : 60 + i - 5)
+    expect(d.quadro).toBe(i < 5 ? i + 1 : null)
+    expect(d.ordem).toBe(i < 5 ? (i + 1) * 10 : 60 + i - 5)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i < 6,
+      cor: i < 5,
       atracao: i < 5 ? d.slug : 'jardim-que-floresce',
       moedas: MOEDAS_PADRAO_POR_TIPO[tipo].principal,
       moedasExtra: MOEDAS_PADRAO_POR_TIPO[tipo].extra,

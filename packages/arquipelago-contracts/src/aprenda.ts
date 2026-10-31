@@ -23,6 +23,31 @@ export function aprendaIssoEm(bloco: string, curriculo: CurriculoDeBlocos): Onde
     .sort((a, b) => ordem(a.posto) - ordem(b.posto) || a.titulo.localeCompare(b.titulo, 'pt-BR'))
 }
 
+/**
+ * "Aprenda isso em" do desafio inteiro (A24): na linguagem do posto, o curso-base do posto da ilha;
+ * em blocos, o curso mais adiantado entre os primeiros cursos de cada bloco exigido (o que o
+ * desafio retoma por último). Vazio quando nenhum curso publicado ensina.
+ */
+export function aprendaODesafio(
+  e: { linguagem: 'blocos' | 'python' | 'texto' | 'pro'; posto: string; blocos: readonly string[] },
+  curriculo: CurriculoDeBlocos,
+): OndeAprender[] {
+  if (e.linguagem !== 'blocos') {
+    const base = curriculo.cursosBase?.find((c) => c.posto === e.posto)
+    return base
+      ? [{ courseId: base.courseId, titulo: base.titulo, slug: base.slug, posto: base.posto }]
+      : []
+  }
+  const ordem = (posto: string | null) =>
+    posto ? POSTOS_DA_JORNADA.indexOf(posto as (typeof POSTOS_DA_JORNADA)[number]) : -1
+  let melhor: OndeAprender | null = null
+  for (const bloco of e.blocos) {
+    const primeiro = aprendaIssoEm(bloco, curriculo)[0]
+    if (primeiro && (!melhor || ordem(primeiro.posto) > ordem(melhor.posto))) melhor = primeiro
+  }
+  return melhor ? [melhor] : []
+}
+
 /** Os blocos que o desafio pede: os do gabarito, mais os que a equipe acrescentou, menos os que retirou. */
 export function blocosExigidos(
   derivados: readonly string[],

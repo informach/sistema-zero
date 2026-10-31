@@ -57,15 +57,17 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
     desafios: [
       ...desafiosIniciaisDoVale(publico),
       ...VARIACOES.map((variacao, i) => {
-        const tipo = i === 0 ? 'quadro-das-cores' : 'desafio-do-dia'
+        const tipo = 'desafio-do-dia' as const
         const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
         return {
           slug: `vale-proteja-os-ninhos${i === 0 ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
           publico,
           ilha: 'vale-dos-dinos',
           tipo,
-          quadro: i === 0 ? 6 : null,
+          quadro: null,
           ordem: 60 + i,
+          // §6.28 A2: o sexto quadro é o desafio na Ponte; o minijogo em blocos continua como
+          // desafio do dia (nunca pinta). Sem fonte na trilha para os blocos: não publica (A1).
           publicar: false,
           conteudo: {
             versao: 1,
@@ -79,7 +81,7 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
                 'Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada.',
             },
             recompensa: {
-              cor: i === 0,
+              cor: false,
               atracao: 'proteja-os-ninhos',
               moedas: moedas.principal,
               moedasExtra: moedas.extra,

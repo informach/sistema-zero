@@ -57,17 +57,18 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
     desafios: [
       ...desafiosIniciaisDoRecife(publico),
       ...VARIACOES.map((variacao, index) => {
-        const tipo = variacao === 'mira' ? 'quadro-das-cores' : 'desafio-do-dia'
+        const tipo = 'desafio-do-dia' as const
         const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
         return {
           slug: `recife-mira-de-bolhas${variacao === 'mira' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
           publico,
           ilha: 'recife',
           tipo,
-          quadro: variacao === 'mira' ? 6 : null,
+          quadro: null,
           ordem: 60 + index,
-          // C01b: o principal pede publicação (fontes na trilha); as variações ficam como estavam.
-          publicar: variacao === 'mira',
+          // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
+          // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
+          publicar: true,
           conteudo: {
             versao: 1,
             ...textos[variacao],
@@ -80,7 +81,7 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
                 'Faça Enter (+ no toque) recomeçar a rodada: devolva a mira ao início, solte os alvos, esconda a bolha e zere os pontos.',
             },
             recompensa: {
-              cor: variacao === 'mira',
+              cor: false,
               atracao: 'mira-de-bolhas',
               moedas: moedas.principal,
               moedasExtra: moedas.extra,

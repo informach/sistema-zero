@@ -138,7 +138,7 @@ afterEach(async () => {
     extraAgora: false,
   })
 })
-async function render() {
+async function render(desafio: DesafioAberto = data) {
   const container = document.createElement('div')
   document.body.append(container)
   const root = createRoot(container),
@@ -146,7 +146,7 @@ async function render() {
   await act(async () =>
     root.render(
       <ArquipelagoChallengeDialog
-        desafio={data}
+        desafio={desafio}
         audience="kids"
         onFinish={(c) => finished.push(c)}
       />,
@@ -180,6 +180,18 @@ test('verification flushes before posting the published revision and returns con
   expect(ui.container.textContent).toContain('1/1')
   await ui.click('Voltar ao jogo')
   expect(ui.finished).toEqual([true])
+})
+test('A26: as dicas abrem uma por vez e a quantidade vai com a conferência', async () => {
+  const ui = await render({ ...data, dicas: ['Primeira dica', 'Segunda dica'] })
+  expect(ui.container.textContent).not.toContain('Primeira dica')
+  await ui.click('Ver uma dica')
+  expect(ui.container.textContent).toContain('Primeira dica')
+  expect(ui.container.textContent).not.toContain('Segunda dica')
+  await ui.click('Ver outra dica')
+  expect(ui.container.textContent).toContain('Segunda dica')
+  expect(ui.container.textContent).not.toContain('Ver outra dica')
+  await ui.click('Verificar projeto')
+  expect(sends[0]).toMatchObject({ revisao: 2, dicas: 2 })
 })
 test('failed save neither submits nor closes the draft', async () => {
   const ui = await render()

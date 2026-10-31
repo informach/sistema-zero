@@ -168,6 +168,12 @@ describe('manifesto de desafios', () => {
     expect([...desafios.linhas.values()][0]?.situacao).toBe('rascunho')
   })
 
+  const LINGUAGEM_DO_POSTO: Record<string, string> = {
+    recife: 'python',
+    pico: 'python',
+    vale: 'texto',
+    nuvens: 'pro',
+  }
   for (const ilhaCompleta of ['bosque', 'vila-doce', 'recife', 'pico', 'vale', 'nuvens'])
     test(`${ilhaCompleta} preserva os dois públicos ao importar, exportar e reimportar`, async () => {
       // A rota e o repositório são reais/em memória; a execução pedagógica tem sua prova no studio-runtime.
@@ -179,21 +185,27 @@ describe('manifesto de desafios', () => {
           inicial: p.objetivos.map((o) => ({ id: o.id, passou: false })),
         }),
       )
-      for (const publico of ['kids', 'adulto'] as const) {
-        const m = ManifestoDeDesafiosSchema.parse(
-          await Bun.file(
-            new URL(
-              `../../../../docs/desafios-do-jogo/${ilhaCompleta}/${ilhaCompleta}${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
-              import.meta.url,
-            ),
-          ).json(),
-        )
-        const { aplicacao } = await subir(m)
-        expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
-          m.desafios.map((d) => [d.slug, 'criar', d.publicar ?? false]),
-        )
-      }
-      expect(desafios.linhas.size).toBe(18)
+      // §6.28 A2: do Recife em diante, o sexto quadro vem no arquivo da linguagem do posto, que se
+      // importa depois do arquivo em blocos (o minijogo em blocos sai do quadro 6 antes).
+      const linguagem = LINGUAGEM_DO_POSTO[ilhaCompleta]
+      const arquivos = [ilhaCompleta, ...(linguagem ? [`${ilhaCompleta}-${linguagem}`] : [])]
+      for (const arquivo of arquivos)
+        for (const publico of ['kids', 'adulto'] as const) {
+          const m = ManifestoDeDesafiosSchema.parse(
+            await Bun.file(
+              new URL(
+                `../../../../docs/desafios-do-jogo/${ilhaCompleta}/${arquivo}${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
+                import.meta.url,
+              ),
+            ).json(),
+          )
+          const { aplicacao } = await subir(m)
+          expect(aplicacao.itens.map((i) => [i.slug, i.acao, i.publicado])).toEqual(
+            m.desafios.map((d) => [d.slug, 'criar', d.publicar ?? false]),
+          )
+        }
+      const porPublico = linguagem ? 10 : 9
+      expect(desafios.linhas.size).toBe(porPublico * 2)
       const revisoes = [...desafios.linhas.values()].map((d) => [d.id, d.revisao])
       for (const publico of ['kids', 'adulto'] as const) {
         const exportado = await chamar(
@@ -202,7 +214,7 @@ describe('manifesto de desafios', () => {
         )
         expect(exportado.status).toBe(200)
         const m = ManifestoDeDesafiosSchema.parse(exportado.json)
-        expect(m.desafios).toHaveLength(9)
+        expect(m.desafios).toHaveLength(porPublico)
         expect(m.desafios.every((d) => d.publico === publico)).toBe(true)
         expect(
           m.desafios
@@ -212,7 +224,7 @@ describe('manifesto de desafios', () => {
         ).toEqual([1, 2, 3, 4, 5, 6])
         const deNovo = await subir(m)
         expect(deNovo.conferencia.contagem).toMatchObject({
-          igual: 9,
+          igual: porPublico,
           criar: 0,
           atualizar: 0,
           publica: 0,

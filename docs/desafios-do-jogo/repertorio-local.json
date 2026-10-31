@@ -1180,7 +1180,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1221,7 +1221,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1272,7 +1272,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1319,7 +1319,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1370,7 +1370,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1416,7 +1416,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "largada",
@@ -1496,7 +1496,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "pular",
@@ -1604,7 +1604,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "ponto-cachorro",
@@ -1676,7 +1676,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1717,7 +1717,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1768,7 +1768,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1815,7 +1815,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1866,7 +1866,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -1912,7 +1912,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "largada",
@@ -1992,7 +1992,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "pular",
@@ -2100,7 +2100,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "ponto-cachorro",
@@ -3319,8 +3319,8 @@
       "publico": "kids",
       "ilha": "recife",
       "posto": 4,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Mira de bolhas",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
@@ -3391,7 +3391,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "bolha-rapida",
@@ -3444,7 +3444,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "dois-pontos",
@@ -3497,7 +3497,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "segundo-alvo",
@@ -3779,8 +3779,8 @@
       "publico": "adulto",
       "ilha": "recife",
       "posto": 4,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Mira de bolhas",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
@@ -3851,7 +3851,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "bolha-rapida",
@@ -3904,7 +3904,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "dois-pontos",
@@ -3957,7 +3957,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "segundo-alvo",
@@ -4249,8 +4249,8 @@
       "publico": "kids",
       "ilha": "pico",
       "posto": 5,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Fase de plataforma",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
@@ -4318,7 +4318,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "pulo-alto",
@@ -4370,7 +4370,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "floco",
@@ -4423,7 +4423,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quedas",
@@ -4715,8 +4715,8 @@
       "publico": "adulto",
       "ilha": "pico",
       "posto": 5,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Fase de plataforma",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
@@ -4784,7 +4784,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "pulo-alto",
@@ -4836,7 +4836,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "floco",
@@ -4889,7 +4889,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quedas",
@@ -5169,8 +5169,8 @@
       "publico": "kids",
       "ilha": "vale-dos-dinos",
       "posto": 6,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Proteja os ninhos",
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
@@ -5675,8 +5675,8 @@
       "publico": "adulto",
       "ilha": "vale-dos-dinos",
       "posto": 6,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Proteja os ninhos",
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
@@ -6181,8 +6181,8 @@
       "publico": "kids",
       "ilha": "nuvens",
       "posto": 7,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Jardim que floresce",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
@@ -6248,7 +6248,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "rega-forte",
@@ -6295,7 +6295,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "sol-forte",
@@ -6342,7 +6342,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "chuva",
@@ -6616,8 +6616,8 @@
       "publico": "adulto",
       "ilha": "nuvens",
       "posto": 7,
-      "quadro": 6,
-      "tipo": "quadro-das-cores",
+      "quadro": null,
+      "tipo": "desafio-do-dia",
       "titulo": "Jardim que floresce",
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
@@ -6683,7 +6683,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "rega-forte",
@@ -6730,7 +6730,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "sol-forte",
@@ -6777,7 +6777,7 @@
       "classificacao": "retomada-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "chuva",

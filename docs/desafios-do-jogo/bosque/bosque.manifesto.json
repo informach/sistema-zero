@@ -10,7 +10,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 1,
       "ordem": 10,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Vagalume aceso",
@@ -1170,7 +1170,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 2,
       "ordem": 20,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "O lanche do coelho",
@@ -3050,7 +3050,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 3,
       "ordem": 30,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Trilha das pegadas",
@@ -5456,7 +5456,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 4,
       "ordem": 40,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Cuide dos quatro",
@@ -8091,7 +8091,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 5,
       "ordem": 50,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Travessia tranquila",
@@ -9818,7 +9818,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos",
@@ -19678,7 +19678,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos: pedras",
@@ -46056,7 +46056,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos: placar",

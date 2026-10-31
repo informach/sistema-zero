@@ -13922,8 +13922,8 @@
       "slug": "vale-proteja-os-ninhos-adulto",
       "publico": "adulto",
       "ilha": "vale-dos-dinos",
-      "tipo": "quadro-das-cores",
-      "quadro": 6,
+      "tipo": "desafio-do-dia",
+      "quadro": null,
       "ordem": 60,
       "publicar": false,
       "conteudo": {
@@ -20477,10 +20477,10 @@
           "texto": "Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada."
         },
         "recompensa": {
-          "cor": true,
+          "cor": false,
           "atracao": "proteja-os-ninhos",
-          "moedas": 20,
-          "moedasExtra": 10
+          "moedas": 10,
+          "moedasExtra": 5
         },
         "blocosManuais": {
           "acrescentar": [],

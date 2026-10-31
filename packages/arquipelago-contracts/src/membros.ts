@@ -36,7 +36,23 @@ export const JogadorDosMembrosSchema = z.strictObject({
   posicao: z.number().int().min(1).max(500),
   total: z.number().int().min(1).max(500),
   blocos: z.array(BlocoSchema).max(5000),
+  /**
+   * Os postos cujo curso-base (o 2D da trilha) a pessoa concluiu (A3): o desafio na linguagem do
+   * posto (Python, Ponte, Pro) só abre com ele. Opcional para o Members anterior (sem = nenhum).
+   */
+  cursosBase: z.array(z.string().min(1).max(40)).max(20).optional(),
 })
+/**
+ * `GET /members/internal/arquipelago/compras?publico=&de=&ate=`: as compras pagas com moedas
+ * Zappy no jogo (a galeria), somadas no período (dias de São Paulo). Só agregados (A26).
+ */
+export const ComprasDosMembrosSchema = z.strictObject({
+  quantidade: z.number().int().min(0),
+  pessoas: z.number().int().min(0),
+  moedas: z.number().int().min(0),
+})
+export type ComprasDosMembros = z.infer<typeof ComprasDosMembrosSchema>
+
 export type JogadorDosMembros = z.infer<typeof JogadorDosMembrosSchema>
 
 /** `GET /members/internal/arquipelago/curriculo-de-blocos`: que curso libera qual bloco. */
@@ -63,6 +79,18 @@ export const CurriculoDeBlocosSchema = z.strictObject({
       }),
     )
     .max(10_000),
+  /** O curso-base de cada posto (A3 e A24), publicado, mesmo sem blocos. Opcional como acima. */
+  cursosBase: z
+    .array(
+      z.strictObject({
+        posto: z.string().min(1).max(40),
+        courseId: z.uuid(),
+        titulo: TituloSchema,
+        slug: z.string().min(1).max(200),
+      }),
+    )
+    .max(20)
+    .optional(),
 })
 export type CurriculoDeBlocos = z.infer<typeof CurriculoDeBlocosSchema>
 

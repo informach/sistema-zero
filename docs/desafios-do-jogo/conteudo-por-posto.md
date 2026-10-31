@@ -128,9 +128,13 @@ Lacunas que continuam com a equipe:
   publicada; o Members confere o ambiente contra o catálogo publicado
   (`members/tests/unit/arquipelago-c02-ambiente.test.ts`). Quando a release ativa mudar, troque,
   regenere e rode de novo.
-- Python e Pro não têm blocos do catálogo do servidor, então não derivam requisitos: abrem pela
-  ilha. O Vale em texto deriva blocos da Ponte (JavaScript avançado), que só terão fonte quando os
-  cursos do Arquiteto existirem; até lá a barreira C01a recusaria publicar.
+- Desde 31/10/2026 (§6.28, A2 e A3), cada um destes é o sexto quadro da ilha e devolve a cor; o
+  minijogo em blocos que ocupava o quadro 6 virou desafio do dia. Python, Ponte e Pro não têm
+  blocos do catálogo do servidor: o requisito é o curso-base (2D) do posto concluído, que o
+  Members informa; sem ele o desafio aparece trancado com "Aprenda isso em" e o curso. Importe o
+  arquivo em blocos da ilha antes do arquivo da linguagem (o quadro 6 precisa ficar livre). O
+  Vale em texto deriva blocos da Ponte (JavaScript avançado), que só terão fonte quando os cursos
+  do Arquiteto existirem; até lá ele fica sem pedido de publicação.
 - O inventário C01b1 (`repertorio-local`) segue só com os manifestos de blocos.
 
 Esta matriz orienta L03 da entrega integral. As provas existentes do executor continuam

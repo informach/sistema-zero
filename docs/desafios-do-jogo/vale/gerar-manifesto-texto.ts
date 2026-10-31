@@ -8,8 +8,10 @@ import { objetivosDoValeTexto } from './texto-objetivos'
 import { montarProjetoTexto } from './texto-projetos'
 
 /**
- * C02 (30/10/2026): o desafio do Vale em JavaScript textual (Ponte), Kids e adulto. Desafio do dia
- * (os seis quadros do Vale já estão ocupados), `publicar: false`: a importação é da dona.
+ * C02 (30/10/2026): o desafio do Vale em JavaScript textual (Ponte), Kids e adulto. O sexto quadro da ilha
+ * (§6.28, A2): devolve a cor e abre só com o curso-base do posto concluído (A3). Sem pedido de
+ * publicação até os cursos do Arquiteto existirem; importar depois do manifesto em blocos da ilha,
+ * que tira o minijogo do quadro 6.
  */
 const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dicas: string[] }> = {
   kids: {
@@ -35,7 +37,7 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 }
 
 export function criarManifestoTexto(publico: PublicoDoDesafio = 'kids') {
-  const moedas = MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']
+  const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
   return ManifestoDeDesafiosSchema.parse({
     formato: 'arquipelago-desafios',
     versao: 1,
@@ -45,9 +47,12 @@ export function criarManifestoTexto(publico: PublicoDoDesafio = 'kids') {
         slug: `vale-guardiao-dos-ninhos-texto${publico === 'adulto' ? '-adulto' : ''}`,
         publico,
         ilha: 'vale-dos-dinos',
-        tipo: 'desafio-do-dia',
-        quadro: null,
-        ordem: 70,
+        // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+        // curso-base do posto concluído (A3). Não publica ainda (A1): a Ponte deriva blocos que
+        // só terão fonte com os cursos do Arquiteto, e a barreira C01a recusaria.
+        tipo: 'quadro-das-cores',
+        quadro: 6,
+        ordem: 60,
         publicar: false,
         conteudo: {
           versao: 1,
@@ -62,7 +67,7 @@ export function criarManifestoTexto(publico: PublicoDoDesafio = 'kids') {
                 ? 'Faça a tecla R recomeçar a partida: sem ondas, sem nuvens e com as contagens zeradas.'
                 : 'Faça a tecla R reiniciar a partida: onda, inimigos, protegidos e vidas voltam ao início.',
           },
-          recompensa: { cor: false, moedas: moedas.principal, moedasExtra: moedas.extra },
+          recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
           blocosManuais: { acrescentar: [], retirar: [] },
         },
       },

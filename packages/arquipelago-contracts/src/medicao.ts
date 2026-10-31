@@ -72,6 +72,29 @@ export const RelatorioDaMedicaoSchema = z.strictObject({
     })
     .optional(),
   minijogos: NumeroDaMedicaoSchema.optional(),
+  /**
+   * Como se aprende no jogo (§6.28, A26). Das conclusões do período medidas (desde 31/10/2026):
+   * quantas na primeira tentativa, o total de tentativas e de dicas abertas até concluir, e
+   * quantas sem dica. As rotinas dos Lumis guardadas hoje e as que rodam até o fim sem erro no
+   * mundo de quem as montou. Reenvios de minijogos aprovados no período (um minijogo enviado de
+   * novo conta uma vez por envio a mais) e compras pagas na galeria (quantidade e moedas).
+   * Opcional para o serviço anterior.
+   */
+  aprendizagem: z
+    .strictObject({
+      conclusoesMedidas: NumeroDaMedicaoSchema,
+      acertoNaPrimeira: NumeroDaMedicaoSchema,
+      tentativas: NumeroDaMedicaoSchema,
+      semDica: NumeroDaMedicaoSchema,
+      dicas: NumeroDaMedicaoSchema,
+      rotinas: NumeroDaMedicaoSchema,
+      rotinasQueFuncionam: NumeroDaMedicaoSchema,
+      reenvios: NumeroDaMedicaoSchema,
+      /** Ausentes quando o Members não respondeu (aí `compras` fica em `semFonte`). */
+      compras: NumeroDaMedicaoSchema.optional(),
+      moedasNasCompras: NumeroDaMedicaoSchema.optional(),
+    })
+    .optional(),
   semFonte: z.array(
     z.enum(['volta-adulto', 'compras', 'minijogos', 'curso-24h', 'conclusoes-curso']),
   ),

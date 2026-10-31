@@ -11824,8 +11824,8 @@
       "slug": "pico-fase-de-plataforma",
       "publico": "kids",
       "ilha": "pico",
-      "tipo": "quadro-das-cores",
-      "quadro": 6,
+      "tipo": "desafio-do-dia",
+      "quadro": null,
       "ordem": 60,
       "publicar": true,
       "conteudo": {
@@ -17423,10 +17423,10 @@
           "texto": "Faça a seta para cima também pular, como Espaço: só quando o pinguim está no gelo."
         },
         "recompensa": {
-          "cor": true,
+          "cor": false,
           "atracao": "fase-de-plataforma",
-          "moedas": 20,
-          "moedasExtra": 10
+          "moedas": 10,
+          "moedasExtra": 5
         },
         "blocosManuais": {
           "acrescentar": [],
@@ -17441,7 +17441,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: pulo alto",
@@ -24288,7 +24288,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: floco de neve",
@@ -30813,7 +30813,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: quedas",

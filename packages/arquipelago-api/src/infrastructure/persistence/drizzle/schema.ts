@@ -49,6 +49,8 @@ export const minijogos = arquipelagoSchema.table(
     capa: text(),
     aprovadoEm: timestamp({ withTimezone: true }).notNull(),
     atualizadoEm: timestamp({ withTimezone: true }).notNull(),
+    /** Quantas vezes o minijogo foi aprovado e guardado (o primeiro envio conta 1; A26). */
+    envios: integer().notNull().default(1),
   },
   (t) => [
     primaryKey({ columns: [t.jogadorId, t.desafioId] }),
@@ -387,6 +389,10 @@ export const desafioProgresso = arquipelagoSchema.table(
       .references(() => desafios.id, { onDelete: 'cascade' }),
     revisao: integer().notNull(),
     ultimosResultados: jsonb().notNull(),
+    /** Conferências feitas (A26); a primeira já conta 1. */
+    tentativas: integer().notNull().default(0),
+    /** A maior quantidade de dicas abertas numa conferência (A26). */
+    dicas: smallint().notNull().default(0),
     atualizadoEm: timestamp({ withTimezone: true }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.jogadorId, t.desafioId] })],
@@ -418,6 +424,9 @@ export const desafiosConcluidos = arquipelagoSchema.table(
     /** Semana (segunda, em São Paulo, `AAAA-MM-DD`) em que o prêmio bateu no teto semanal. */
     moedasTetoSemana: varchar({ length: 10 }),
     moedasExtraTetoSemana: varchar({ length: 10 }),
+    /** Tentativas e dicas até concluir (A26); `null` nas conclusões de antes da medição. */
+    tentativas: integer(),
+    dicas: smallint(),
   },
   (t) => [
     primaryKey({ columns: [t.jogadorId, t.desafioId] }),
