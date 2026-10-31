@@ -1,14 +1,14 @@
 import { useFrame } from '@react-three/fiber'
-import { RoomGlbModel } from '@sistemazero/avatar-quarto/quarto/room-glb-model'
+import { type PassoDoGlb, RoomGlbModel } from '@sistemazero/avatar-quarto/quarto/room-glb-model'
 import { useReducedMotion } from '@sistemazero/avatar-quarto/use-reduced-motion'
 import { useRef } from 'react'
 import type { Group } from 'three'
-import { lojaDoConforto } from '../estado/conforto'
+import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { alturaDoPet, quemAcompanha } from '../sistemas/companhia'
 import { CORPO } from '../sistemas/corpo'
 import { jogoPausado } from '../sistemas/pausa'
-import { atrasDela, criarSeguir, passoDoSeguir } from '../sistemas/seguir'
+import { atrasDela, criarSeguir, passoDoSeguir, ritmoDoPasso } from '../sistemas/seguir'
 import { suavizarAngulo } from '../sistemas/zappy'
 
 /**
@@ -16,7 +16,9 @@ import { suavizarAngulo } from '../sistemas/zappy'
  * sem corpo de física (é pequeno e anda atrás dela; atravessar um canto não atrapalha ninguém). A
  * altura segue o pé da criança quando ela pisa, então ele sobe e desce com o chão sem cair do
  * mapa. No cipó, no tronco e na água ele espera parado e alcança depois. Na pausa nada se mexe,
- * nem o giro; com menos movimento o passarinho não balança (`alturaDoPet`).
+ * nem o giro; com menos movimento o passarinho não balança (`alturaDoPet`). O gato e o cachorro
+ * andam e correm com os clipes do arquivo no ritmo da velocidade (`ritmoDoPasso`); parados, tocam o
+ * parado do quarto, que o menos movimento desliga.
  */
 export function PetQueAcompanha() {
   const pet = useEstado((s) => s.quarto.pet)
@@ -34,6 +36,8 @@ function Pet({ petId }: { petId: string }) {
   const olhar = useRef(rastro.direcao)
   const tempo = useRef(0)
   const aparelhoPedeMenos = useReducedMotion()
+  const passoDoClipe = useRef<PassoDoGlb>({ clipe: null, ritmo: 1 })
+  const menosMovimento = useConforto(lojaDoConforto(loja), (c) => c.conforto.menosMovimento)
 
   useFrame((_, dtBruto) => {
     const g = raiz.current
@@ -71,6 +75,10 @@ function Pet({ petId }: { petId: string }) {
       if (rapidez > 0.2) olhar.current = Math.atan2(seguir.current.vx, seguir.current.vz)
       g.rotation.y = suavizarAngulo(g.rotation.y, olhar.current, 10, dt)
     }
+    // Na pausa o clipe congela (ritmo 0) no passo em que estava.
+    const r = ritmoDoPasso(passo.clipe, Math.hypot(seguir.current.vx, seguir.current.vz))
+    passoDoClipe.current.clipe = pausado ? passoDoClipe.current.clipe : r.clipe
+    passoDoClipe.current.ritmo = pausado ? 0 : r.ritmo
     const menos = aparelhoPedeMenos || lojaDoConforto(loja).getState().conforto.menosMovimento
     g.position.set(
       pos.current.x,
@@ -81,7 +89,12 @@ function Pet({ petId }: { petId: string }) {
 
   return (
     <group ref={raiz} name="pet-que-acompanha">
-      <RoomGlbModel itemId={petId} fallback={null} />
+      <RoomGlbModel
+        itemId={petId}
+        fallback={null}
+        passo={passoDoClipe}
+        parado={!aparelhoPedeMenos && !menosMovimento}
+      />
     </group>
   )
 }

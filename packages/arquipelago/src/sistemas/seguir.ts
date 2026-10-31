@@ -116,3 +116,22 @@ export function passoDoSeguir(
     reaparecer: false,
   }
 }
+
+/**
+ * O ritmo dos clipes do gato e do cachorro do quarto (B3, 31/10/2026): o `andar` foi feito para
+ * 1,5 m/s e o `correr` para 3,5 m/s, com os pés parados no chão. O clipe acelera na proporção da
+ * velocidade de verdade para os pés não escorregarem (2,2 m/s andando dá 1,47 vez).
+ */
+export const PASSO_DO_CLIPE = { andar: 1.5, correr: 3.5 } as const
+const RITMO_MINIMO = 0.4
+const RITMO_MAXIMO = 2
+
+/** O clipe do arquivo e o ritmo dele para o passo e a rapidez de agora (sentar é o parado). */
+export function ritmoDoPasso(
+  clipe: ClipeDoBicho,
+  rapidez: number,
+): { clipe: 'andar' | 'correr' | null; ritmo: number } {
+  if (clipe !== 'andar' && clipe !== 'correr') return { clipe: null, ritmo: 1 }
+  const ritmo = rapidez / PASSO_DO_CLIPE[clipe]
+  return { clipe, ritmo: Math.min(RITMO_MAXIMO, Math.max(RITMO_MINIMO, ritmo)) }
+}

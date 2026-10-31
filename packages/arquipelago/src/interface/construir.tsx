@@ -2,7 +2,6 @@ import {
   CATALOGO_DE_OBJETOS,
   COMODOS_DA_IRIS,
   type ComodoDaIris,
-  MOVEIS,
   OBJETOS_DA_CASA,
   type PisoDaCasa,
   type PisoDoQuintal,
@@ -18,6 +17,7 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { useFesta } from '../estado/festas'
 import { arrumarOQuarto } from '../estado/quarto'
 import {
   chaveDoComodo,
@@ -29,10 +29,11 @@ import {
   TEXTOS_DAS_CHAVES,
 } from '../sistemas/chaves-da-casa'
 import {
-  CATEGORIAS_DOS_MOVEIS,
   type CategoriaDoMovel,
+  categoriasDisponiveis,
   DADOS_DO_MOVEL,
   ehDeParede,
+  moveisDoCatalogo,
 } from '../sistemas/construcao/moveis'
 import { PainelDeAconchego } from './aconchego'
 import { Icone } from './icones'
@@ -116,6 +117,8 @@ const NOME_DA_CATEGORIA: Readonly<Record<CategoriaDoMovel, string>> = {
   cozinha: 'Cozinha',
   sala: 'Sala',
   banheiro: 'Banheiro',
+  cafe: 'Café e feira',
+  festa: 'Festa',
 }
 
 const PISOS: ReadonlyArray<{ id: PisoDaCasa; nome: string }> = [
@@ -209,7 +212,12 @@ export function BarraDeConstruir() {
   const caminho = useConstrucao(construcao, (s) => s.caminho)
   const objeto = useConstrucao(construcao, (s) => s.objeto)
   const movel = useConstrucao(construcao, (s) => s.movel)
-  const [categoria, setCategoria] = useState<CategoriaDoMovel>('cozinha')
+  const [escolhida, setCategoria] = useState<CategoriaDoMovel>('cozinha')
+  const jornada = useEstado((s) => s.jornada)
+  const festa = useFesta()
+  const categorias = categoriasDisponiveis(jornada, festa)
+  // A festa acabou com a aba dela aberta: volta para a cozinha.
+  const categoria = categorias.includes(escolhida) ? escolhida : 'cozinha'
   const projetos = useEstado((s) => s.salvamento.projetos)
   const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
@@ -310,7 +318,7 @@ export function BarraDeConstruir() {
         <>
           <fieldset className="arq-obra-escolhas arq-obra-categorias">
             <legend className="arq-sr">Cômodo dos móveis</legend>
-            {CATEGORIAS_DOS_MOVEIS.map((c) => (
+            {categorias.map((c) => (
               <button
                 key={c}
                 type="button"
@@ -341,7 +349,7 @@ export function BarraDeConstruir() {
           {/* Uma fileira só, que rola para o lado: a barra não cobre o cômodo (no celular, a tela). */}
           <fieldset className="arq-obra-escolhas rolar">
             <legend className="arq-sr">Móvel</legend>
-            {MOVEIS.filter((id) => DADOS_DO_MOVEL[id].categoria === categoria).map((id) => (
+            {moveisDoCatalogo(categoria, festa).map((id) => (
               <Escolha
                 key={id}
                 nome={DADOS_DO_MOVEL[id].nome}

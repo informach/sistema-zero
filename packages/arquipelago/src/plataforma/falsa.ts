@@ -174,7 +174,27 @@ export const MINIJOGO_DE_EXEMPLO = {
   aprovadoEm: '2026-10-29T15:00:00.000Z',
   atualizadoEm: '2026-10-29T15:00:00.000Z',
   capa: null,
+  ilha: 'bosque',
 } as const
+/** Os da Vila Doce e do Pico, para a barraca da feira e o quiosque do festival (B10). */
+export const MINIJOGOS_DAS_ILHAS_DE_EXEMPLO = [
+  {
+    desafioId: '7c1e2a40-8b5d-4f1e-9a2c-3d4e5f6a7b81',
+    titulo: 'Corrida do entregador',
+    aprovadoEm: '2026-10-30T15:00:00.000Z',
+    atualizadoEm: '2026-10-30T15:00:00.000Z',
+    capa: null,
+    ilha: 'vila-doce',
+  },
+  {
+    desafioId: '8d2f3b51-9c6e-4a2f-8b3d-4e5f6a7b8c92',
+    titulo: 'Fase de plataforma',
+    aprovadoEm: '2026-10-30T14:00:00.000Z',
+    atualizadoEm: '2026-10-30T14:00:00.000Z',
+    capa: null,
+    ilha: 'pico',
+  },
+] as const
 export const JOGO_DO_MURAL_DE_EXEMPLO = {
   playId: '9d2c7e41-3a8b-4f6d-b1c5-2e4a6f8d0b13',
   titulo: 'Labirinto das conchas',
@@ -584,7 +604,12 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (caminho === '/mural')
           return { status: 200, corpo: { jogos: exemplo ? [JOGO_DO_MURAL_DE_EXEMPLO] : [] } }
         if (caminho === '/minijogos')
-          return { status: 200, corpo: { minijogos: exemplo ? [MINIJOGO_DE_EXEMPLO] : [] } }
+          return {
+            status: 200,
+            corpo: {
+              minijogos: exemplo ? [MINIJOGO_DE_EXEMPLO, ...MINIJOGOS_DAS_ILHAS_DE_EXEMPLO] : [],
+            },
+          }
         const metodo = opcoes?.metodo ?? 'GET'
         const daVisitaAdulta = visitasAdultas.buscar(caminho, metodo, opcoes?.corpo)
         if (daVisitaAdulta) return daVisitaAdulta

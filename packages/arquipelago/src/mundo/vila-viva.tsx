@@ -10,6 +10,7 @@ import { BancosDaVila } from './bancos-da-vila'
 import { Bento } from './bento'
 import { ancorasDosLumis, BorroesDaIlha } from './borroes-da-ilha'
 import { percursoNoMundo } from './bosque'
+import { BrinquedoDeMinijogo } from './brinquedo-de-minijogo'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
 import { FeiraDaVila } from './feira'
 import { FestaNaVila } from './festa-na-vila'
@@ -37,7 +38,7 @@ const CORES_DO_CONFEITO: CoresDoColetavel = {
  * O que mexe na Vila Doce (montado pelo `anel.tsx` só com a ilha completa ATIVA, em coordenadas do
  * mundo): o Bento na frente da padaria, os balcões dos turnos (fase2-03), a entrega pelos
  * telhados (fase2-05), a festa da estação (fase2-10), os borrões da noite e os Lumis da Vila
- * (fase2-06) e os bancos de sentar (fase2-13).
+ * (fase2-06), os bancos de sentar (fase2-13) e a barraca do minijogo da ilha (B10).
  */
 /** O segredo desta ilha (N12): o baú no alto do vento. */
 const SEGREDO_VILA_DOCE = segredoObrigatorio('vila-doce')
@@ -81,6 +82,7 @@ export function VilaViva({
       <BalcoesDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
       <BancosDaVila colisores={preparada.colisores} meio={meio} />
       <FeiraDaVila modelo={preparada.modelo} meio={meio} giro={giro} />
+      <BrinquedoDeMinijogo ilha="vila-doce" modelo={preparada.modelo} meio={meio} giro={giro} />
       <FestaNaVila meio={meio} giro={giro} />
       <BorroesDaIlha ilha="vila-doce" ancoras={lugaresDosLumis} meio={meio} />
       <SegredoNoAlto segredo={SEGREDO_VILA_DOCE} meio={meio} giro={giro} />
