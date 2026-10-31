@@ -39,31 +39,31 @@ export const PEDIDOS_DOS_MORADORES: Record<string, PedidoDoMorador> = {
       'Acabou a partida e a Maré quer jogar outra sem fechar o jogo. Ela quer que o Enter comece uma partida nova, com o tempo cheio e os pontos zerados.',
     objetivo: 'O Enter começa outra partida com o tempo cheio e sem pontos.',
   },
-  // Pico: o Floco.
+  // Pico: o Floco (lacunas, 01/11/2026: a Fase do Pico, plataforma com fases do Mestre).
   'pulo-com-apoio': {
     pedido:
-      'O Floco está ensinando o pinguim a pular no gelo. Ele quer que o espaço faça o pinguim pular só quando os pés estão no chão; no ar, outro toque espera o próximo pouso.',
-    objetivo: 'O espaço faz o pinguim pular só quando ele está no chão, e conta cada pulo.',
+      'O Floco está ensinando o pinguim a pular no gelo. Ele quer que o espaço faça o pinguim pular só quando os pés estão no gelo; no ar, outro toque espera o próximo pouso.',
+    objetivo: 'O espaço faz o pinguim pular só quando ele está no gelo.',
   },
-  'freio-no-gelo': {
+  'agua-volta-ao-comeco': {
     pedido:
-      'O pinguim escorrega no gelo e não para. O Floco quer que o espaço funcione como um freio: o pinguim para e fica no mesmo lugar, mesmo com outros toques.',
-    objetivo: 'O espaço faz o pinguim parar e ficar no lugar.',
+      'Às vezes o pinguim cai na água gelada do buraco. O Floco quer que ele volte ao começo do gelo e que cada queda fique contada.',
+    objetivo: 'Cair na água leva o pinguim de volta ao começo e conta uma queda.',
   },
-  'floco-recolhido': {
+  'proxima-fase': {
     pedido:
-      'Um floco de neve caiu no caminho. O Floco quer que o pinguim recolha o floco ao encostar nele, uma vez só, e que o floco suma depois disso.',
-    objetivo: 'Encostar no floco recolhe e conta o floco uma vez só, e ele some.',
+      'O Floco montou uma segunda fase, com a bandeira lá no gelo do alto. Ele quer que, ao chegar à bandeira da primeira fase, o pinguim vá para a fase 2.',
+    objetivo: 'A bandeira da fase 1 leva o pinguim à fase 2.',
   },
-  'mochila-de-neve': {
+  'fim-do-jogo': {
     pedido:
-      'A mochila do Floco aguenta peso 4. Ele quer pôr cargas de peso 1 ou 2 só quando ainda couberem inteiras, sem colocar metade de uma carga.',
-    objetivo: 'Cada carga entra inteira só se couber no peso 4 da mochila.',
+      'Na fase 2, a bandeira fica no gelo do alto. O Floco quer que chegar até ela termine o jogo, uma vez só.',
+    objetivo: 'A bandeira da fase 2 termina o jogo, uma vez só.',
   },
-  'passagem-segura': {
+  'de-volta-a-fase-1': {
     pedido:
-      'A neve da passagem está cedendo. O Floco quer que o pinguim atravesse só depois que a neve firmar, e uma vez só.',
-    objetivo: 'O pinguim atravessa só com a neve firme, e uma vez só.',
+      'O Floco quer jogar de novo desde o começo sem fechar o jogo. Ele quer que o Enter leve tudo de volta à fase 1, sem quedas contadas.',
+    objetivo: 'O Enter volta o jogo para a fase 1, sem quedas.',
   },
   // Vale: a Jade.
   'contagem-da-lista': {

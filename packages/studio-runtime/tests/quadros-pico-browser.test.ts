@@ -68,72 +68,54 @@ for (const d of desafiosIniciaisDoPico('kids'))
             change((p.ir as SZIRV2).behavior)
             scenarios.push({ name, ids, project: p, passes: false })
           }
-          wrong('sem-reinicio', ['recomecar'], (b) => {
-            const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Enter')
-            if (e?.type !== 'g2d:onKey') throw Error('Evento Enter ausente')
-            e.body = []
-          })
-          if (d.quadro === 1 || d.quadro === 3 || d.quadro === 4 || d.quadro === 5)
-            wrong(
-              'ignora-condicao',
-              [
-                d.quadro === 1
-                  ? 'apoio'
-                  : d.quadro === 3
-                    ? 'uma-vez'
-                    : d.quadro === 4
-                      ? 'capacidade'
-                      : 'espera',
-              ],
-              (b) =>
-                visit(b.events, (s) => {
-                  if (s.type === 'if') s.cond = { type: 'bool', value: true }
-                }),
+          const evento = (b: SZIRV2['behavior'], tipo: string, chave?: string) => {
+            const e = b.events.find(
+              (s) =>
+                s.type === tipo &&
+                (chave === undefined ||
+                  ('key' in s && s.key === chave) ||
+                  ('bVar' in s && s.bVar === chave)),
             )
+            if (!e || !('body' in e) || !Array.isArray(e.body)) throw Error(`${tipo} ausente`)
+            return e as { body: JSStatement[] }
+          }
+          // A Fase do Pico (lacunas, 01/11/2026): cada erro tira a regra que o quadro ensina.
+          wrong(
+            'sem-enter',
+            d.quadro === 5 ? ['volta-a-fase-1', 'quedas-zeradas'] : ['recomecar'],
+            (b) => {
+              evento(b, 'g2d:onKey', 'Enter').body = []
+            },
+          )
           if (d.quadro === 1)
-            wrong('nao-sobe', ['apoio'], (b) =>
+            wrong('pula-no-ar', ['pular'], (b) =>
               visit(b.events, (s) => {
-                if (s.type === 'g2d:setVelocity') s.vy = { type: 'num', value: 0 }
+                if (s.type === 'if') s.cond = { type: 'bool', value: true }
               }),
             )
-          if (d.quadro === 2) {
-            wrong('velocidade-nao-zera', ['parada'], (b) =>
-              visit(b.events, (s) => {
-                if (s.type === 'g2d:setVelocity') s.vx = { type: 'num', value: 1 }
-              }),
-            )
-            wrong('freio-reinicia', ['parada'], (b) => {
-              const e = b.events.find((s) => s.type === 'g2d:onKey' && s.key === 'Space')
-              if (e?.type !== 'g2d:onKey') throw Error('Freio ausente')
-              e.body = [{ type: 'g2d:restart' }]
+          if (d.quadro === 2)
+            wrong('nao-conta', ['agua'], (b) => {
+              const e = evento(b, 'g2d:onOverlap', 'mar')
+              e.body = e.body.filter((s) => s.type !== 'assign' || s.name !== 'quedas')
             })
-          }
           if (d.quadro === 3)
-            wrong('conta-antes-do-contato', ['uma-vez'], (b) => {
-              const s = b.start.find((s) => s.type === 'var' && s.name === 'flocos')
-              if (s?.type !== 'var') throw Error('Contador ausente')
-              s.value = { type: 'num', value: 1 }
-            })
-          if (d.quadro === 1) {
-            const p = structuredClone(d.conteudo.gabarito) as Project
-            visit((p.ir as SZIRV2).behavior.events, (s) => {
-              if (s.type === 'g2d:setVelocity') s.vy = { type: 'num', value: -6 }
-            })
-            scenarios.push({
-              name: 'pulo-coerente-menos-alto',
-              project: p,
-              ids: ['acao', 'apoio'],
-              passes: true,
-            })
-          }
-          // C01b: esconder o floco é do cenário; o erro causal é contar sem a marca.
-          if (d.quadro === 3)
-            wrong('floco-sem-marca', ['uma-vez'], (b) =>
+            wrong('nao-muda-de-fase', ['proxima-fase'], (b) =>
               visit(b.events, (s) => {
-                if (s.type === 'if' && s.cond.type === 'binop' && s.cond.left.type === 'var')
-                  if (s.cond.left.name === 'pegou') s.cond = { type: 'bool', value: true }
+                if (s.type === 'assign' && s.name === 'fase') s.value = { type: 'num', value: 1 }
               }),
             )
+          if (d.quadro === 4)
+            wrong('termina-na-fase-1', ['fim'], (b) => {
+              const e = evento(b, 'g2d:onOverlap', 'bandeira')
+              const se = e.body[0]
+              if (se?.type !== 'if') throw Error('Se da fase ausente')
+              e.body = [...(se.else ?? [])]
+            })
+          if (d.quadro === 5)
+            wrong('esquece-a-fase', ['volta-a-fase-1'], (b) => {
+              const e = evento(b, 'g2d:onKey', 'Enter')
+              e.body = e.body.filter((s) => s.type !== 'assign' || s.name !== 'fase')
+            })
           for (const scenario of scenarios) {
             const objectives = d.conteudo.objetivos
               .filter((o) => !scenario.ids || scenario.ids.includes(o.id))

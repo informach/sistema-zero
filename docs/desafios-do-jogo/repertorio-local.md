@@ -44,11 +44,11 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | recife | Mira de bolhas: bolha rápida | retomada-em-blocos | A bolha sobe mais rápido e continua prendendo o alvo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: dois pontos | retomada-em-blocos | Cada alvo preso vale dois pontos, sem repetir a contagem ao ficar encostado ou acertar o mesmo alvo de novo. | Nenhum neste recorte | pedida |
 | recife | Mira de bolhas: outro alvo | retomada-em-blocos | O alvo novo também fica preso e vale um ponto, sem prender o outro alvo nem repetir a contagem. | Nenhum neste recorte | pedida |
-| pico | Pulo com apoio | retomada-em-blocos | O espaço faz o pinguim pular só quando ele está no chão, e conta cada pulo.; O pulo sobe, espera o pouso e pode começar de novo. | Nenhum neste recorte | pedida |
-| pico | Freio no gelo | retomada-em-blocos | O espaço faz o pinguim parar e ficar no lugar.; Frear zera a velocidade e conserva a parada. | Nenhum neste recorte | pedida |
-| pico | Floco recolhido | retomada-em-blocos | Encostar no floco recolhe e conta o floco uma vez só, e ele some.; Só o contato recolhe o floco, uma única vez. | Nenhum neste recorte | pedida |
-| pico | Mochila de neve | retomada-em-blocos | Cada carga entra inteira só se couber no peso 4 da mochila.; A carga inteira cabe no limite e a mochila pode ser esvaziada. | Nenhum neste recorte | pedida |
-| pico | Passagem segura | retomada-em-blocos | O pinguim atravessa só com a neve firme, e uma vez só.; A travessia espera a passagem e não se repete. | Nenhum neste recorte | pedida |
+| pico | Pulo com apoio | retomada-em-blocos | Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo no ar. | Nenhum neste recorte | pedida |
+| pico | A água volta ao começo | retomada-em-blocos | Cair na água devolve o pinguim ao começo e conta uma queda. | Nenhum neste recorte | pedida |
+| pico | A próxima fase | retomada-em-blocos | Chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo. | Nenhum neste recorte | pedida |
+| pico | Fim do jogo | retomada-em-blocos | Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo. | Nenhum neste recorte | pedida |
+| pico | De volta à fase 1 | retomada-em-blocos | Na fase 2, Enter volta à fase 1 com o pinguim no começo.; A volta à fase 1 também zera as quedas. | Nenhum neste recorte | pedida |
 | pico | Fase de plataforma | retomada-em-blocos | As setas levam o pinguim para os lados sobre o gelo, sem sair da tela.; Espaço faz o pinguim subir e voltar ao gelo, sem pular de novo enquanto ele está no ar.; Cair na água do buraco devolve o pinguim ao começo, de pé no primeiro gelo.; Passar o buraco e chegar à bandeira da fase 1 leva à fase 2, com o pinguim de volta ao começo.; Na fase 2, subir no gelo do alto e chegar à bandeira termina o jogo. | Nenhum neste recorte | pedida |
 | pico | Fase de plataforma: pulo alto | retomada-em-blocos | O pulo fica mais alto e o pinguim continua voltando ao gelo. | Nenhum neste recorte | pedida |
 | pico | Fase de plataforma: floco de neve | retomada-em-blocos | Pegar o floco de neve soma um floco uma única vez e o floco some, mesmo pulando de novo no mesmo lugar. | Nenhum neste recorte | pedida |
