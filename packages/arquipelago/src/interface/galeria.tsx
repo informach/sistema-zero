@@ -1,6 +1,8 @@
 import {
   destinosDaAparencia,
+  GALERIA,
   galeriaDoObjeto,
+  type IdDaGaleria,
   type ObjetoDaCasa,
 } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef, useState } from 'react'
@@ -14,7 +16,7 @@ import {
   recadoDaCompra,
   usarAparencia,
 } from '../sistemas/construcao/galeria'
-import { MINIATURA_DO_OBJETO } from './miniaturas'
+import { miniaturaDaAparencia } from './miniaturas'
 import { useVoz } from './voz'
 
 export type Avisar = (aviso: { tom: 'ok' | 'atencao'; texto: string } | null) => void
@@ -33,9 +35,18 @@ function linhaDoSaldo(
 /**
  * O cartão "Da galeria" (fase1-13, 29/10/2026), ao lado do Pinta e do Molda: a miniatura, o preço
  * e o saldo. Comprar pede confirmação; depois de pago, a aparência entra no lugar do holograma.
- * Sem saldo, o botão diz quanto falta e o cartão sugere um desafio.
+ * Sem saldo, o botão diz quanto falta e o cartão sugere um desafio. Um cartão por aparência do
+ * catálogo (`id`; sem ele, a clássica): desde 31/10/2026 cada objeto tem a retrô e a moderna (B8).
  */
-export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avisar: Avisar }) {
+export function CartaoDaGaleria({
+  objeto,
+  id,
+  avisar,
+}: {
+  objeto: ObjetoDaCasa
+  id?: IdDaGaleria
+  avisar: Avisar
+}) {
   const { loja, plataforma } = useJogo()
   const voz = useVoz()
   const galeria = lojaDaGaleria(loja, plataforma)
@@ -55,7 +66,7 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
       botaoComprar.current?.focus()
     }
   }, [confirmando])
-  const item = galeriaDoObjeto(objeto)[0]
+  const item = id ? GALERIA[id] : galeriaDoObjeto(objeto)[0]
   if (!projeto || !item) return null
   const estado = dados ? estadoDoCartao(item, dados, projeto) : null
   const ocupado = ferramentaAberta || comprando !== null
@@ -81,7 +92,7 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
     setConfirmando(false)
     if (r.ok) {
       vestir()
-      avisar({ tom: 'ok', texto: `Pronto. A ${item.nome} é sua e já está no lugar.` })
+      avisar({ tom: 'ok', texto: `Pronto, comprado: ${item.nome}. Já está no lugar.` })
     } else
       avisar({
         tom: 'atencao',
@@ -91,7 +102,7 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
 
   return (
     <div className="arq-ferramenta arq-galeria">
-      <img src={MINIATURA_DO_OBJETO[objeto]} alt="" />
+      <img src={miniaturaDaAparencia(item.id)} alt="" />
       <b>Da galeria</b>
       <small>{`${item.nome}: ${moedas(item.preco)}`}</small>
       <small>
@@ -108,7 +119,7 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
           disabled={ocupado}
           onClick={() => {
             vestir()
-            avisar({ tom: 'ok', texto: `A ${item.nome} voltou para o lugar.` })
+            avisar({ tom: 'ok', texto: `De volta ao lugar: ${item.nome}.` })
           }}
         >
           Usar, já é sua
@@ -135,7 +146,7 @@ export function CartaoDaGaleria({ objeto, avisar }: { objeto: ObjetoDaCasa; avis
       ) : null}
       {estado?.tipo === 'comprar' && confirmando ? (
         <fieldset className="arq-galeria-confirma">
-          <legend>{`Comprar a ${item.nome} por ${moedas(item.preco)}`}</legend>
+          <legend>{`Comprar ${item.nome} por ${moedas(item.preco)}`}</legend>
           {estado.depois !== null ? <small>{`Sobram ${moedas(estado.depois)}.`}</small> : null}
           <div className="arq-galeria-acoes">
             <button

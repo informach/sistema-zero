@@ -26,7 +26,8 @@ const insumos = process.env.ARQUIPELAGO_INSUMOS === '1'
 const compartilhada = process.env.ARQUIPELAGO_GALERIA_COMPARTILHADA === '1'
 const alvo = compartilhada
   ? { nome: 'Planta no vaso', objeto: 'planta-interior', id: 'planta-interior-classica', saldo: 50 }
-  : { nome: 'Geladeira clássica', objeto: 'geladeira', id: 'geladeira-classica', saldo: 20 }
+  : // A versão retrô da geladeira (B8, 31/10/2026): mesma compra, outra aparência.
+    { nome: 'Geladeira retrô', objeto: 'geladeira', id: 'geladeira-retro', saldo: 20 }
 const vila = ilhasEmVolta().find((i) => i.ilha.id === 'vila-doce')
 if (!vila) throw new Error('Sem a Vila Doce no anel.')
 const giroIlha = giroDaIlha(vila.ilha)
@@ -256,7 +257,8 @@ try {
     console.log(`Insumos conferidos em ${prints}`)
   } else {
     await feira.locator('summary').click()
-    if ((await feira.getByRole('article').count()) !== 9) throw Error('Catálogo incompleto')
+    // Nove objetos com a clássica, a retrô e a moderna (B8).
+    if ((await feira.getByRole('article').count()) !== 27) throw Error('Catálogo incompleto')
     const geladeira = feira.getByRole('article', { name: alvo.nome, exact: true })
     await geladeira.getByText('Você tem 80 moedas.', { exact: true }).waitFor()
     await geladeira

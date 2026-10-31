@@ -12,6 +12,25 @@ export const ITEM_DA_APARENCIA = {
   'museu-classico': 'arquipelago:museu-classico',
   'casinha-classica': 'arquipelago:casinha-classica',
   'planta-interior-classica': 'planta',
+  // As versões retrô e moderna (B8) são só do Arquipélago.
+  'geladeira-retro': 'arquipelago:geladeira-retro',
+  'geladeira-moderna': 'arquipelago:geladeira-moderna',
+  'forno-retro': 'arquipelago:forno-retro',
+  'forno-moderno': 'arquipelago:forno-moderno',
+  'aquario-retro': 'arquipelago:aquario-retro',
+  'aquario-moderno': 'arquipelago:aquario-moderno',
+  'lareira-retro': 'arquipelago:lareira-retro',
+  'lareira-moderna': 'arquipelago:lareira-moderna',
+  'banda-retro': 'arquipelago:banda-retro',
+  'banda-moderna': 'arquipelago:banda-moderna',
+  'fliperama-retro': 'arquipelago:fliperama-retro',
+  'fliperama-moderno': 'arquipelago:fliperama-moderno',
+  'museu-retro': 'arquipelago:museu-retro',
+  'museu-moderno': 'arquipelago:museu-moderno',
+  'casinha-retro': 'arquipelago:casinha-retro',
+  'casinha-moderna': 'arquipelago:casinha-moderna',
+  'planta-interior-retro': 'arquipelago:planta-interior-retro',
+  'planta-interior-moderna': 'arquipelago:planta-interior-moderna',
 } as const satisfies Record<IdDaGaleria, string>
 
 export type ItemDaGaleria = (typeof ITEM_DA_APARENCIA)[IdDaGaleria]

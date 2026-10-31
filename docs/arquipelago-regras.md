@@ -2508,6 +2508,10 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   posta continua guardada, sem aparecer nem colidir, e volta na festa seguinte. O que acende
   (luzes, lanternas, fogueira, estrela) brilha à noite. A Noite das Lanternas continua sem data,
   então as peças dela ainda não aparecem.
+- **Três aparências por objeto na galeria (B8):** a clássica, a retrô e a moderna, com o preço da
+  clássica. A retrô usa só as cores da paleta "Doces" do Pinta: é a da Faísca, que ainda não pinta
+  no jogo ("prontos da galeria com as cores da paleta"). As versões são posses só do Arquipélago;
+  o quarto da plataforma continua só com as clássicas que já dividia (aquário, fliperama, planta).
 
 ## 7. Desafios
 

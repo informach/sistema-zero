@@ -10,8 +10,9 @@ import {
   precoDoItemCompartilhado,
 } from '../src'
 
-test('nove identidades sem colisões e três destinos compatíveis sem renomear aparências', () => {
-  expect(new Set(Object.values(ITEM_DA_APARENCIA)).size).toBe(9)
+test('identidades sem colisões e três destinos compatíveis sem renomear aparências', () => {
+  // Nove clássicas e, desde 31/10/2026 (B8), as dezoito versões, só do Arquipélago.
+  expect(new Set(Object.values(ITEM_DA_APARENCIA)).size).toBe(27)
   expect(IDS_DA_GALERIA.filter((id) => destinosDaAparencia(id).includes('quarto'))).toEqual([
     'aquario-classico',
     'fliperama-classico',

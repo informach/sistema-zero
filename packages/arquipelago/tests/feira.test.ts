@@ -5,7 +5,8 @@ import { podeVerAparenciaNaFeira, vitrineDaSemana } from '../src/sistemas/feira'
 test('feira destaca três por semana sem retirar os outros nem alterar o preço', () => {
   const antes = JSON.stringify(GALERIA)
   const vistos = new Set<string>()
-  for (let semana = 0; semana < 3; semana++) {
+  // Três por semana: em IDS/3 semanas todas passaram pelo destaque.
+  for (let semana = 0; semana < IDS_DA_GALERIA.length / 3; semana++) {
     const vitrine = vitrineDaSemana(new Date(Date.UTC(2026, 9, 26 + 7 * semana, 12)))!
     expect(vitrine.destaques).toHaveLength(3)
     expect([...vitrine.destaques, ...vitrine.demais].sort()).toEqual([...IDS_DA_GALERIA].sort())
