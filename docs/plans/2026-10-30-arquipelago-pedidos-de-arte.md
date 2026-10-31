@@ -112,8 +112,8 @@ Entregar em `packages/arquipelago/src/assets/ilhas/pico.glb`:
 3. Nada de colisor sobre a clareira até 3 m de altura; o caminho a pé até ela com as folgas do
    pedido dos portos (faixa de 1,5 m, degraus de até 0,30 m).
 
-O aceite: `tests/cabana.test.ts` troca o teste "ainda não traz as âncoras" por um que confere o
-lote plano e livre contra os colisores do modelo.
+O aceite: um teste novo em `tests/cabana.test.ts` que confere o lote plano e livre contra os
+colisores do modelo (o teste do Pico que esperava as âncoras saiu junto com o iglu na V20).
 
 ## Pedidos do levantamento de 30/10: o resto da criação avançada e a subida final (E04)
 

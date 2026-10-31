@@ -14,6 +14,8 @@ movimento do pet que acompanha (merge `7d87ca0f8`); R4, lint do diff, com os man
 gravados no formato do Biome pelo gerador (merge `ae59bf925`); R5, este índice. R2 (Python e Pro
 abrindo pelo jogo, elegibilidade e release Python) está com a sessão do levantamento, no ramo
 `arquipelago/levantamento-c02-ambiente`; até ele chegar, o diálogo recusa Python e Pro.
+O que falta do plano, em ordem e separado entre Blender, código e decisões da dona:
+[o que falta](plans/2026-10-30-arquipelago-o-que-falta.md).
 
 ## Fontes vigentes
 
