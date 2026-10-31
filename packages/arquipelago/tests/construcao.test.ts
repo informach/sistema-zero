@@ -14,7 +14,14 @@ import {
   GRUPOS,
 } from '../src/mundo/colisao-da-ilha-central'
 import { type ColisorDaIlha, lerColisores, soParaOCorpo } from '../src/mundo/colisores-da-ilha'
-import { ALTURA_DA_TERRA, alturaDaIlha, CENTRO_DA_CASA, PORTA, QUARTO } from '../src/mundo/medidas'
+import {
+  ALTURA_DA_TERRA,
+  alturaDaIlha,
+  CENTRO_DA_CASA,
+  CHAO_DO_LOTE,
+  PORTA,
+  QUARTO,
+} from '../src/mundo/medidas'
 import { ladoDaParede, planta } from '../src/sistemas/construcao/comodos'
 import {
   aberturaNaAresta,
@@ -217,7 +224,7 @@ describe('paredes e cômodos', () => {
       ok: false,
       motivo: 'dentro-do-quarto',
     })
-    expect(esticarParede(o, L, { x: 10, z: -10 }, { x: 16, z: -10 })).toMatchObject({
+    expect(esticarParede(o, L, { x: 2, z: 11 }, { x: 6, z: 11 })).toMatchObject({
       ok: false,
       motivo: 'fora-do-lote',
     })
@@ -234,12 +241,17 @@ describe('paredes e cômodos', () => {
     })
   })
 
-  test('as moitas do terreno ocupam o lugar', () => {
-    expect(esticarParede(inicial(), L, { x: -10, z: -7 }, { x: -6, z: -7 })).toMatchObject({
+  test('o pé do farol ocupa o lugar; o resto do lote é livre (sem árvore, moita nem horta)', () => {
+    expect(esticarParede(inicial(), L, { x: -14, z: -10 }, { x: -10, z: -10 })).toMatchObject({
       ok: false,
       motivo: 'ocupado',
-      nome: 'a moita',
+      nome: 'o farol',
     })
+    expect(L.ocupadas.map((o) => o.nome)).toEqual(['a varanda', 'o farol'])
+    expect(L.area).toEqual(CHAO_DO_LOTE)
+    // Os cantos do lote, longe do quarto, aceitam parede.
+    expect(esticarParede(inicial(), L, { x: 10, z: -13 }, { x: 15, z: -13 }).ok).toBe(true)
+    expect(esticarParede(inicial(), L, { x: -14, z: 9 }, { x: -8, z: 9 }).ok).toBe(true)
   })
 
   test('apagar tira paredes e as portas delas; as do quarto ficam', () => {

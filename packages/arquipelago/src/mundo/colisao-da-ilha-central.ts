@@ -61,18 +61,18 @@ export const GRUPOS: Record<'casa' | 'bancada' | 'farol' | 'pier', Tripla> = {
 // ------------------------------------------------------------------ árvores
 /** As árvores da ilha central: (x, z, escala), as mesmas de `arte/mundo/lib_mundo.py`. */
 export const ARVORES: [number, number, number][] = [
-  [-9, 4, 1.2],
-  [-14, -3, 1],
-  [-16, 6, 1.3],
-  [-6, 12, 1.1],
-  [6, 14, 1.2],
-  [15, 10, 1],
+  [-18.5, 2, 1.2],
+  [18.5, 4.5, 1],
+  [-13.5, 14, 1.3],
+  [-8.5, 15.5, 1.1],
+  [3, 17.5, 1.2],
+  [18.5, 9.5, 1],
   [17, -10, 1.3],
-  [4, -16, 1.1],
+  [2, -18.5, 1.1],
   [-4, -17, 1],
   [-19, -6, 1.2],
-  [12, 16, 0.9],
-  [-12, 15, 1],
+  [16, 17, 0.9],
+  [-17.6, 10, 1],
 ]
 const VARIEDADES = ['arvore-redonda', 'arvore-frutas', 'arvore-pinheiro'] as const
 /** Qual árvore do Blender vai em cada lugar (os coqueiros ficam nas mais perto da praia). */

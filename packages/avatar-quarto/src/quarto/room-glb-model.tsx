@@ -25,6 +25,13 @@ export const RoomMotionContext = createContext(false)
 export const RoomPausedContext = createContext(false)
 
 /**
+ * Clipes de andar e correr do gato e do cachorro (31/10/2026), para o jogo trocar pela velocidade
+ * de quem acompanha a criança. O quarto toca todos os outros juntos (o parado é um clipe por
+ * parte); tocar estes junto misturaria as pernas.
+ */
+export const CLIPES_SO_DO_JOGO: ReadonlySet<string> = new Set(['andar', 'correr'])
+
+/**
  * Isola UMA peça: se o GLB não baixa, o `useGLTF` lança para fora do `<Suspense>` e derrubaria o
  * quarto inteiro com o que a criança estava montando. Aqui a peça cai no modelo de reserva (as
  * primitivas antigas). `resetKey` (o id) zera o erro ao trocar de peça.
@@ -65,7 +72,10 @@ function GlbScene({ url }: { url: string }) {
   }, [mixer, paused])
   useEffect(() => {
     if (!motion) return
-    const playing = Object.values(actions).filter((a) => a != null)
+    const playing = Object.entries(actions)
+      .filter(([nome]) => !CLIPES_SO_DO_JOGO.has(nome))
+      .map(([, a]) => a)
+      .filter((a) => a != null)
     for (const action of playing) action.reset().play()
     return () => {
       for (const action of playing) action.stop()

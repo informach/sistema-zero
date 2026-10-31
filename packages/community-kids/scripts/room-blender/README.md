@@ -29,7 +29,7 @@ Cada id do catálogo é uma função (com `-` trocado por `_`) de um destes arqu
 | `moveis.py` | cama, cadeira, mesa, sofá, estante, baú, escrivaninha, TV, beliche, pufe |
 | `decor.py` | enfeites de chão e de parede, plantas e luzes antigos |
 | `trofeus.py` | os 8 troféus e a estante de troféus |
-| `pets.py` | gato, cachorro e passarinho, com animação |
+| `pets.py` | gato, cachorro e passarinho, com animação (gato e cachorro também com `andar` e `correr` para o Arquipélago, ver o topo do arquivo) |
 | `novos.py` | as 27 peças novas (guarda-roupa, cantinho gamer, aquário animado, lâmpada de lava animada, letreiro neon…) |
 | `lib_q.py` | paleta e ajudantes (caixa chanfrada, almofada, tubo, prisma, texto, exportação) |
 
@@ -56,6 +56,10 @@ O gerador de miniaturas grava nas duas comunidades.
 - Peça parada vira uma malha só, com a transformação aplicada. Peça animada (bichinhos, aquário,
   lâmpada de lava) guarda as partes que mexem como objetos com o pivô na junta, e as chaves em
   laço; o quarto toca todas as animações do arquivo e marca a peça como `animated` no catálogo.
+  Exceção: `andar` e `correr` do gato e do cachorro (31/10/2026) são do jogo, e o quarto não os
+  toca (`CLIPES_SO_DO_JOGO` em `avatar-quarto/src/quarto/room-glb-model.tsx`). Eles saem das faixas
+  do NLA (`export(..., clipes=True)`), e a cena desses dois roda a 120 qps.
+  Conferência: `arquipelago/tests/pets-andam-sem-escorregar.test.ts`.
 
 `tests/room3d-catalog.test.ts` (no Kids) confere que toda peça tem GLB e miniatura iguais nas duas
 pastas, que só as peças animadas têm animação e, lendo os GLBs, que cada peça parada está no lugar

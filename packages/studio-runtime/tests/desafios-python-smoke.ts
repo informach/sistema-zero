@@ -75,7 +75,7 @@ for (const file of distribution.files) {
   const guardado = await readFile(target).catch(() => null)
   if (guardado && sha256(guardado) === file.sha256) continue
   const logico = comprimido.get(file.path)
-  const resposta = await fetch(
+  const resposta: Response = await fetch(
     `${host}${studioPythonRuntimeRoute(release.manifestSha256)}${logico ?? file.path}`,
     {
       signal: AbortSignal.timeout(120_000),

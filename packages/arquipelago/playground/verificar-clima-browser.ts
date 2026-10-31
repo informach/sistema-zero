@@ -229,8 +229,9 @@ try {
     console.log(`${tipo}: a planta pediu água e regar adiantou`)
 
     // 5. O cata-vento ao lado da horta: "Mudar o clima" passa do sol para o nublado.
-    // Um pouco de lado, para a criança não tapar o cata-vento no print.
-    await dePe({ x: CATA_VENTO.x + 1.3, y: ALTURA_DA_TERRA, z: CATA_VENTO.z + 0.9 }, true)
+    // Um pouco de lado e do lado de fora da horta (a hélice olha para ela), para a criança não tapar
+    // o cata-vento no print.
+    await dePe({ x: CATA_VENTO.x - 1.3, y: ALTURA_DA_TERRA, z: CATA_VENTO.z + 0.9 }, true)
     await acao('Mudar o clima').waitFor()
     await page.screenshot({ scale: 'css', path: path.join(prints, `clima-${tipo}-cata-vento.png`) })
     await usar()

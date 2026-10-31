@@ -287,24 +287,19 @@ describe('as árvores, a casa e a horta', () => {
     expect(quemSegura(PORTA.x, CENTRO_DA_CASA.z + QUARTO.fundo / 2, fechada)).toBe('col-porta')
   })
 
-  test('as trilhas de pedra (porta, píer, horta e bancada) ficam livres', () => {
+  test('as trilhas de pedra (píer e horta) ficam livres', () => {
+    // Saem da beira do lote grande da casa: dentro dele o chão fica para a obra.
     const trilhas: [number, number][][] = [
       [
-        [2.5, 1.6],
-        [1.5, 6],
-        [-1.5, 12],
+        [-0.5, 12.8],
+        [-2, 15],
         [-4, 18],
         [-5, 24.5],
       ],
-      // As pedras até a horta saem de baixo da varanda: quem sai pela porta contorna a coluna.
       [
-        [2.5, 2.4],
-        [4.5, 2.4],
-        [7.4, 1.2],
-      ],
-      [
-        [8.2, -1.2],
-        [9.6, -4.4],
+        [-0.5, 12.8],
+        [3, 13.3],
+        [5.4, 13.4],
       ],
     ]
     for (const trilha of trilhas) {
@@ -414,7 +409,8 @@ describe('dá para andar da porta até tudo', () => {
     // A porta (raio 2) e a Íris (alcance da conversa) não disputam o "Usar" de quem está na frente.
     for (const outro of [PORTA_DO_FINAL, LUGAR_DA_IRIS])
       expect(Math.hypot(outro.x - frente.x, outro.z - frente.z)).toBeGreaterThan(3.5)
-    // As quinas do cavalete (1,3 por 0,4) ficam fora dos dois lotes da casa.
+    // As quinas do cavalete (1,3 por 0,4) ficam onde nenhuma obra chega: fora dos dois lotes da casa
+    // ou no pé do farol, que o lote grande tem como ocupado.
     const c = Math.cos(lugar.giro)
     const sn = Math.sin(lugar.giro)
     for (const lote of [LOTE_DA_CASA, LOTE_DA_CASA_GRANDE]) {
@@ -427,7 +423,8 @@ describe('dá para andar da porta até tudo', () => {
       ] as const) {
         const x = lugar.x + dx * c + dz * sn
         const z = lugar.z - dx * sn + dz * c
-        expect(x >= a.x0 && x <= a.x1 && z >= a.z0 && z <= a.z1, lote.id).toBe(false)
+        const dentro = (r: typeof a) => x >= r.x0 && x <= r.x1 && z >= r.z0 && z <= r.z1
+        expect(dentro(a) && !lote.ocupadas.some((o) => dentro(o.ret)), lote.id).toBe(false)
       }
     }
   })

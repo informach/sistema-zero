@@ -69,29 +69,18 @@ export const OBRA_VAZIA: Obra = {
 export const QUARTO_NA_GRADE: Retangulo = { x0: -6, z0: -8, x1: 6, z1: 0 }
 
 /**
- * O lote da casa: onde o chão da sua ilha é plano (medido com `alturaDaIlha`, teste em
- * `tests/construcao.test.ts`). Varanda, horta, bancada, a árvore perto da casa, a do lado e o pé
- * do farol ficam ocupados; um teste confere que todo colisor do lote cai numa célula ocupada.
+ * O lote da casa (31/10/2026, pedido dela: o lugar de construir mais livre e coerente para a casa
+ * crescer a partir do quarto): o chão plano de `CHAO_DO_LOTE` (`mundo/medidas.ts`), sem árvore,
+ * moita, horta nem bancada, que ficam fora dele. Só a varanda da casa e o pé do farol ocupam.
+ * Um teste confere o chão plano e que todo colisor do lote cai numa célula ocupada.
  */
 export const LOTE_DA_CASA: Lote = {
   id: 'casa',
-  area: { x0: -13, z0: -12, x1: 14, z1: 8 },
+  area: { x0: -15, z0: -14, x1: 16, z1: 10 },
   ocupadas: [
     { nome: 'a varanda', ret: { x0: 0, z0: 0, x1: 5, z1: 2 } },
-    // A horta e o cata-vento ao lado (`CATA_VENTO`, x 13,9).
-    { nome: 'a horta', ret: { x0: 7, z0: -1, x1: 14, z1: 3 } },
-    { nome: 'a bancada', ret: { x0: 8, z0: -8, x1: 12, z1: -6 } },
-    { nome: 'a árvore', ret: { x0: -11, z0: 2, x1: -7, z1: 6 } },
-    { nome: 'a árvore', ret: { x0: -13, z0: -5, x1: -12, z1: -1 } },
-    { nome: 'o farol', ret: { x0: -13, z0: -12, x1: -9, z1: -9 } },
-    // As moitas do terreno (`col-cil-moita-*` do `terreno.glb`).
-    { nome: 'a moita', ret: { x0: -10, z0: -3, x1: -7, z1: 0 } },
-    { nome: 'a moita', ret: { x0: -10, z0: -8, x1: -7, z1: -5 } },
-    { nome: 'a moita', ret: { x0: 7, z0: -11, x1: 10, z1: -8 } },
-    { nome: 'a moita', ret: { x0: -5, z0: -12, x1: -2, z1: -9 } },
-    { nome: 'a moita', ret: { x0: 3, z0: -12, x1: 5, z1: -10 } },
-    // Na frente da varanda o chão sobe (a ondulação da ilha volta ali).
-    { nome: 'o morrinho', ret: { x0: 1, z0: 4, x1: 9, z1: 8 } },
+    // Já do tamanho do lote grande, que usa as mesmas ocupadas (o que passa da área não conta).
+    { nome: 'o farol', ret: { x0: -17, z0: -15, x1: -9, z1: -9 } },
   ],
   fixo: QUARTO_NA_GRADE,
   paredesFixas: [
@@ -138,20 +127,13 @@ export const POSICAO_DO_QUINTAL_GRANDE = 6
 
 /**
  * O quintal grande (E04, levantamento de 30/10): a proposta põe o "quintal grande" no Vale. O
- * lote da casa cresce 2 m para cada lado, no gramado da mesma altura do lote de antes (a variação
- * do chão fica na mesma faixa, teste). O que está no anel novo (árvore, pinheiros e o farol) fica
- * ocupado. A obra de antes continua igual: o lote grande contém o pequeno.
+ * lote da casa cresce 2 m para o oeste e para a frente e 1 m para trás, até onde o gramado deixa
+ * (o canto sudeste já encosta na praia). As ocupadas são as mesmas (a varanda e o farol). A obra de
+ * antes continua igual: o lote grande contém o pequeno.
  */
 export const LOTE_DA_CASA_GRANDE: Lote = {
   ...LOTE_DA_CASA,
-  area: { x0: -15, z0: -14, x1: 16, z1: 10 },
-  ocupadas: [
-    ...LOTE_DA_CASA.ocupadas,
-    { nome: 'a árvore', ret: { x0: -15, z0: -5, x1: -12, z1: -1 } },
-    { nome: 'o pinheiro', ret: { x0: -15, z0: 4, x1: -14, z1: 8 } },
-    { nome: 'o farol', ret: { x0: -15, z0: -14, x1: -9, z1: -9 } },
-    { nome: 'o pinheiro', ret: { x0: 13, z0: 8, x1: 16, z1: 10 } },
-  ],
+  area: { x0: -17, z0: -15, x1: 16, z1: 12 },
 }
 
 /** O lote da casa onde se constrói agora: o grande do Vale em diante. */
