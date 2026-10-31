@@ -3030,6 +3030,12 @@ Arquivos: `arquipelago/src/sistemas/quadro-das-cores.ts` (regra pura),
 - O chão da sua ilha tem a cor nos vértices: o gramado e a praia desbotam no shader dos borrões
   (`desbotadoDoMaterial`, um `vec2` por material: o que é verde e o resto), e a trilha das pedras
   ganha materiais próprios. A cor volta escorrendo em 1,6 s (na hora com menos movimento).
+- **O desafio do dia da sua ilha (lacunas, 01/11/2026):** três variações do Pega-conchas pronto,
+  cada uma mudando uma regra, como no Bosque e no Vale (`VARIACOES_DA_SUA_ILHA`, ordens 61 a 63,
+  10 e 5 moedas, sem cor, atração `pega-conchas`): "o aviso do Nico" (faltando concha, o balde
+  guarda `falta`), "só a rosa" (o balde enche só com a concha do alto) e "esvaziar o balde" (a
+  barra de espaço). O Enter que recomeça é o extra. Só blocos do Faísca. Entram no banco do
+  desafio do dia como os das outras ilhas (a sua ilha está sempre aberta).
 - A sua ilha não dá o aviso do desafio do dia: o cavalete dela está sempre montado, e avisar ali
   seria avisar ao abrir o jogo. O aviso continua ao chegar numa ilha do anel.
 - O painel da sua ilha diz "Sua ilha: n de 6 cores de volta." e o Zappy diz qual parte ganhou

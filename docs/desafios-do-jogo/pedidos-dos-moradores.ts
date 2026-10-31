@@ -240,6 +240,19 @@ const PEDIDOS_DOS_MINIJOGOS: Record<string, { pedido: string; soKids?: true }> =
     pedido:
       'O Nico quer as três conchas da praia, inclusive a do alto. Ele quer que o balde só fique cheio quando as três tiverem sido pegas.',
   },
+  // O desafio do dia da sua ilha (lacunas, 01/11/2026).
+  'sua-ilha-pega-conchas-aviso': {
+    pedido:
+      'O Nico nunca sabe quando falta concha no balde. Ele quer um aviso quando alguma das três ficar na praia, e o balde cheio como antes quando chegarem as três.',
+  },
+  'sua-ilha-pega-conchas-rosa': {
+    pedido:
+      'Hoje o Nico só quer a concha rosa, a do alto. Ele quer que o balde fique cheio com ela, mesmo sem as conchas da areia, e que as da areia sozinhas não encham.',
+  },
+  'sua-ilha-pega-conchas-esvaziar': {
+    pedido:
+      'O balde do Nico encheu e ele quer brincar de novo sem recomeçar a praia. Ele quer que a barra de espaço esvazie o balde.',
+  },
 }
 
 /** Teto de dicas de um desafio (`LIMITES_DO_DESAFIO.dicas`). */
