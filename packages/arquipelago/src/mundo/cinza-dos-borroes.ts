@@ -1,4 +1,4 @@
-import { type Material, Vector4 } from 'three'
+import { type Material, Vector2, Vector4 } from 'three'
 import { MANCHA_DO_BORRAO } from '../sistemas/borroes'
 import { CINZA } from './modelos'
 
@@ -73,6 +73,7 @@ const FRAGMENTO = /* glsl */ `
 varying vec3 vArqBorraoMundo;
 uniform vec4 uArqBorroes[${BORROES_A_VISTA}];
 uniform vec3 uArqCinzaDosBorroes;
+uniform vec2 uArqDesbotado;
 float arqCorQueSobra() {
   float sobra = 1.0;
   for (int k = 0; k < ${BORROES_A_VISTA}; k++) {
@@ -87,10 +88,31 @@ float arqCorQueSobra() {
 
 const COR = /* glsl */ `
 #include <color_fragment>
+if (uArqDesbotado.x > 0.0 || uArqDesbotado.y > 0.0) {
+  float arqVerde = smoothstep(-0.03, 0.03, diffuseColor.g - diffuseColor.r);
+  float arqQuanto = mix(uArqDesbotado.y, uArqDesbotado.x, arqVerde);
+  float arqLuz = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114)) * 0.85;
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(arqLuz) * vec3(0.94, 0.97, 1.0), arqQuanto);
+}
 diffuseColor.rgb = mix(uArqCinzaDosBorroes, diffuseColor.rgb, arqCorQueSobra());
 `
 
 const marcados = new WeakSet<Material>()
+const desbotados = new WeakMap<Material, { value: Vector2 }>()
+
+/**
+ * O desbotado inteiro do material (lacunas, 01/11/2026: a cor da sua ilha por quadro, no chão que
+ * tem a cor nos vértices): x para o que é verde (o gramado), y para o resto (a areia, as pedras);
+ * 0 com cor, até `QUANTO_DESBOTADO`. Só vale no material ligado por `desbotarPelosBorroes`.
+ */
+export function desbotadoDoMaterial(m: Material): { value: Vector2 } {
+  let u = desbotados.get(m)
+  if (!u) {
+    u = { value: new Vector2(0, 0) }
+    desbotados.set(m, u)
+  }
+  return u
+}
 
 /**
  * Liga o Cinza dos borrões nos materiais (uma vez por material, encadeado com o que já houver, como
@@ -104,14 +126,14 @@ export function desbotarPelosBorroes(materiais: readonly Material[]): void {
     const chave = m.customProgramCacheKey.bind(m)
     m.onBeforeCompile = (shader, renderer) => {
       anterior.call(m, shader, renderer)
-      Object.assign(shader.uniforms, uniforms)
+      Object.assign(shader.uniforms, uniforms, { uArqDesbotado: desbotadoDoMaterial(m) })
       shader.vertexShader = `varying vec3 vArqBorraoMundo;\n${shader.vertexShader.replace('#include <project_vertex>', VERTICE)}`
       shader.fragmentShader = (FRAGMENTO + shader.fragmentShader).replace(
         '#include <color_fragment>',
         COR,
       )
     }
-    m.customProgramCacheKey = () => `${chave()}|arq-borroes-1`
+    m.customProgramCacheKey = () => `${chave()}|arq-borroes-2`
     m.needsUpdate = true
   }
 }

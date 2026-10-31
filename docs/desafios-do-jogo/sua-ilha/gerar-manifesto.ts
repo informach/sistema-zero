@@ -19,8 +19,10 @@ const extra = (quadro: QuadroDaSuaIlha) =>
     : 'Complete o evento Enter para recomeçar a praia do início.'
 
 /**
- * A sua ilha já tem cor: os quadros não pintam (`cor: false`). O cavalete acende a mancha de cada
- * quadro feito, e cada quadro entrega o próprio minijogo ao fliperama; o sexto é o Pega-conchas.
+ * Cada quadro devolve a cor de uma parte da sua ilha (`cor: true`, lacunas de 01/11/2026, pela
+ * proposta; antes a sua ilha não pintava): a casa, a horta, o píer, a praia, o gramado e a trilha
+ * das pedras, na ordem dos quadros (`PARTES_DA_SUA_ILHA` no jogo). Cada quadro também entrega o
+ * próprio minijogo ao fliperama; o sexto é o Pega-conchas.
  * Pede publicação: todos os blocos vêm das fontes da trilha do Faísca (C01b; a importação é da
  * equipe e a barreira C01a confere de novo no serviço).
  */
@@ -46,7 +48,7 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
         objetivos: objetivosDoQuadro(quadro),
         desafioExtra: { titulo: 'Mais um desafio', texto: extra(quadro) },
         recompensa: {
-          cor: false,
+          cor: true,
           atracao: quadro === 6 ? 'pega-conchas' : `sua-ilha-${meta.slug}`,
           moedas: moedas.principal,
           moedasExtra: moedas.extra,

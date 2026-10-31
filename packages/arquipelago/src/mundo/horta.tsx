@@ -10,7 +10,6 @@ import { lojaDosPassos } from '../estado/primeiros-passos'
 import { type Clima, climaEfetivo, FALA_DO_BONUS, pedeAgua, regarComSede } from '../sistemas/clima'
 import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
-import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import {
   type Estagio,
   estagio,
@@ -30,6 +29,7 @@ import {
   type Solido,
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
+import { useCorDaParte } from './cor-da-sua-ilha'
 import { useDesbotado } from './desbotado'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA } from './medidas'
@@ -268,7 +268,7 @@ function CanteiroDoModelo({
     }
   }, [raiz])
   // A horta começa desbotada e ganha cor na primeira colheita (§6.28, A17).
-  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).horta)
+  const comCor = useCorDaParte('horta')
   useDesbotado(madeira, !comCor)
   useEffect(() => {
     if (terra) terra.material.color.copy(regado ? TERRA_REGADA : terra.cor)

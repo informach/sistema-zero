@@ -9,20 +9,57 @@ import { descobriuNaPraia, PEIXES_DA_PRAIA } from './colecoes-da-praia'
  * - a horta, na primeira colheita (é ela que dá o projeto da geladeira);
  * - o píer, no primeiro peixe pescado.
  * Na casa de um irmão (visita), tudo aparece com cor.
+ *
+ * Desde as lacunas de 01/11/2026 (pela proposta, a cor é o prêmio principal também aqui), cada
+ * quadro do Quadro das Cores da sua ilha devolve a cor de uma parte, na ordem de
+ * `PARTES_DA_SUA_ILHA`: a casa, a horta, o píer, a praia, o gramado e a trilha das pedras. A cor
+ * do quadro soma com a das ações acima (a que vier primeiro pinta). Os quadros feitos vêm do
+ * serviço (`/desafios/cores`), como nas ilhas do anel; o salvamento não ganha nada.
  */
-export interface CorDaSuaIlha {
-  casa: boolean
-  horta: boolean
-  pier: boolean
+export const PARTES_DA_SUA_ILHA = ['casa', 'horta', 'pier', 'praia', 'gramado', 'trilha'] as const
+export type ParteDaSuaIlha = (typeof PARTES_DA_SUA_ILHA)[number]
+export type CorDaSuaIlha = Record<ParteDaSuaIlha, boolean>
+
+/** O nome de cada parte, para o Zappy. */
+export const NOME_DA_PARTE: Readonly<Record<ParteDaSuaIlha, string>> = {
+  casa: 'a casa',
+  horta: 'a horta',
+  pier: 'o píer',
+  praia: 'a praia',
+  gramado: 'o gramado',
+  trilha: 'a trilha das pedras',
 }
 
-export function corDaSuaIlha(s: Salvamento, visitando = false): CorDaSuaIlha {
-  if (visitando) return { casa: true, horta: true, pier: true }
+/** A parte que o quadro `n` (1 a 6) pinta. */
+export function parteDoQuadro(n: number): ParteDaSuaIlha | null {
+  return PARTES_DA_SUA_ILHA[n - 1] ?? null
+}
+
+export function corDaSuaIlha(
+  s: Salvamento,
+  visitando = false,
+  quadros: readonly number[] = [],
+): CorDaSuaIlha {
+  const doQuadro = (p: ParteDaSuaIlha) => quadros.includes(PARTES_DA_SUA_ILHA.indexOf(p) + 1)
+  if (visitando)
+    return { casa: true, horta: true, pier: true, praia: true, gramado: true, trilha: true }
   return {
-    casa: s.casa.portaNova,
-    horta: Boolean(s.projetos.geladeira),
-    pier: PEIXES_DA_PRAIA.some((p) => descobriuNaPraia(s, p.id)),
+    casa: s.casa.portaNova || doQuadro('casa'),
+    horta: Boolean(s.projetos.geladeira) || doQuadro('horta'),
+    pier: PEIXES_DA_PRAIA.some((p) => descobriuNaPraia(s, p.id)) || doQuadro('pier'),
+    praia: doQuadro('praia'),
+    gramado: doQuadro('gramado'),
+    trilha: doQuadro('trilha'),
   }
+}
+
+/** O que o Zappy diz quando quadros da sua ilha acabam de ficar feitos. */
+export function falaDaCorDaSuaIlha(quadros: readonly number[]): string {
+  const partes = quadros.map(parteDoQuadro).filter((p): p is ParteDaSuaIlha => p !== null)
+  if (partes.length === 0) return 'Desafio feito. Olhe a mancha nova no quadro da praia.'
+  const nomes = partes.map((p) => NOME_DA_PARTE[p])
+  const lista = nomes.length === 1 ? nomes[0] : `${nomes.slice(0, -1).join(', ')} e ${nomes.at(-1)}`
+  return `Desafio feito. A cor voltou para ${lista} da sua ilha.`
 }
 
 /** Quanto o desbotado puxa para o cinza (o mesmo do Farol apagado). */

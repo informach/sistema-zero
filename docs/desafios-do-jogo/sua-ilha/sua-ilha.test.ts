@@ -44,7 +44,8 @@ test('os arquivos importáveis correspondem à fonte e só usam blocos da trilha
   expect(manifesto.desafios.map((d) => d.quadro)).toEqual([1, 2, 3, 4, 5, 6])
   for (const d of manifesto.desafios) {
     expect(d.ilha).toBe('sua-ilha')
-    expect(d.conteudo.recompensa.cor).toBe(false)
+    // Cada quadro devolve a cor de uma parte da sua ilha (lacunas, 01/11/2026).
+    expect(d.conteudo.recompensa.cor).toBe(true)
     for (const p of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
       const project = p as { ir: unknown; blocksState: unknown }
       expect(SZIRV2Schema.safeParse(project.ir).success, d.slug).toBe(true)

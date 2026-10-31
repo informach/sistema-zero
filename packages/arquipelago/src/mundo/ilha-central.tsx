@@ -2,10 +2,17 @@ import { useFrame } from '@react-three/fiber'
 import { RigidBody, TrimeshCollider } from '@react-three/rapier'
 import { ilha } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { BufferAttribute, type BufferGeometry, Color, type Mesh, PlaneGeometry } from 'three'
+import {
+  BufferAttribute,
+  type BufferGeometry,
+  Color,
+  type Material,
+  type Mesh,
+  type Object3D,
+  PlaneGeometry,
+} from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lanternaDoZappy } from '../sistemas/borroes'
-import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { jogoPausado } from '../sistemas/pausa'
 import { PERCURSO_DA_PRAIA } from '../sistemas/percurso'
 import { momentoDoDia } from '../sistemas/tempo-do-dia'
@@ -21,8 +28,9 @@ import {
 } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { type ColisorDaIlha, lerColisores } from './colisores-da-ilha'
+import { useCorDaParte } from './cor-da-sua-ilha'
 import { type CoresDoColetavel, CorridaNaIlha } from './corrida-na-ilha'
-import { useDesbotado } from './desbotado'
+import { useDesbotado, useDesbotadoNoShader } from './desbotado'
 import { lugarDoQuadroNaSuaIlha, lugarDoQuadroNoFarol } from './lugar-do-quadro'
 import { DISTANCIA_DOS_LUMIS_DA_PRAIA, LUGARES_DOS_LUMIS_DA_PRAIA } from './lugares-da-praia'
 import { LunetaDoPier } from './luneta'
@@ -105,8 +113,9 @@ function Terreno() {
  */
 function ChaoDoModelo() {
   const raiz = useModelo(MODELOS.terreno)
-  const { chao, doLote, enfeites, espuma, colisores } = useMemo(() => {
-    const chao = copiarNo(raiz, 'chao')
+  const { chao, doLote, enfeites, espuma, colisores, doChao, daTrilha } = useMemo(() => {
+    // Materiais próprios: o gramado, a praia e a trilha das pedras desbotam cada um pelo seu quadro.
+    const chao = copiarNo(raiz, 'chao', true)
     // O chão do lote ganha geometria própria: moldar não pode mexer no arquivo em cache.
     const doLote = chao.getObjectByName('chao-do-lote') ?? null
     doLote?.traverse((o) => {
@@ -118,6 +127,7 @@ function ChaoDoModelo() {
     espuma.renderOrder = 2
     for (const m of materiaisDe(espuma)) m.depthWrite = false
     const enfeites = copiarNo(raiz, 'enfeites')
+    const daTrilha = materiaisProprios(enfeites, ['pedraCaminho', 'pedraCaminhoEscura'])
     // À noite, os borrões soltos desbotam o chão e os enfeites em volta deles.
     desbotarPelosBorroes([...materiaisDe(chao), ...materiaisDe(enfeites)])
     return {
@@ -126,8 +136,13 @@ function ChaoDoModelo() {
       enfeites,
       espuma,
       colisores: lerColisores(raiz),
+      doChao: materiaisDe(chao),
+      daTrilha,
     }
   }, [raiz])
+  // A cor da sua ilha por quadro (lacunas, 01/11/2026): o gramado, a praia e a trilha das pedras.
+  useDesbotadoNoShader(doChao, !useCorDaParte('gramado'), !useCorDaParte('praia'))
+  useDesbotadoNoShader(daTrilha, !useCorDaParte('trilha'))
   const altura = useAlturaDoTerreno()
   useEffect(() => {
     if (doLote) moldarMalhas(doLote, altura)
@@ -148,6 +163,22 @@ function ChaoDoModelo() {
       <LanternaDoZappy />
     </>
   )
+}
+
+/** Troca pelos próprios (cópias) os materiais com estes nomes no nó, e devolve as cópias. */
+function materiaisProprios(no: Object3D, nomes: readonly string[]): Material[] {
+  const feitos = new Map<Material, Material>()
+  no.traverse((o) => {
+    const m = o as Mesh
+    if (!m.isMesh || Array.isArray(m.material) || !nomes.includes(m.material.name)) return
+    let novo = feitos.get(m.material)
+    if (!novo) {
+      novo = m.material.clone()
+      feitos.set(m.material, novo)
+    }
+    m.material = novo
+  })
+  return [...feitos.values()]
 }
 
 const MEIO_DA_ILHA = { x: 0, y: 0, z: 0 }
@@ -305,7 +336,7 @@ function PierDoModelo() {
     }
   }, [raiz])
   // O píer começa desbotado e ganha cor no primeiro peixe pescado (§6.28, A17).
-  const comCor = useEstado((s) => corDaSuaIlha(s.salvamento, s.visita !== null).pier)
+  const comCor = useCorDaParte('pier')
   useDesbotado(madeira, !comCor)
   useFrame(() => {
     if (viagemDisponivel !== (movimento.barco !== null)) definirDisponivel(movimento.barco !== null)
