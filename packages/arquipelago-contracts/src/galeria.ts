@@ -5,13 +5,18 @@ import type { ObjetoDaCasa } from './objetos'
  * A galeria (fase1-13, 29/10/2026): a aparência pronta de cada objeto da casa, comprada com moedas
  * Zappy. A função do objeto já vale no projeto azul; a galeria só compra o visual.
  *
- * Hoje há uma aparência por objeto, e ela é o modelo do Blender que o jogo já tem
- * (`arquipelago/src/assets/objetos/<objeto>.glb`). O catálogo já recebe variações (outras cores e
- * estilos do mesmo objeto): cada uma é uma entrada nova com id próprio e o `modelo` dela.
+ * Cada objeto tem três aparências (B8, 31/10/2026): a clássica, que é o modelo do Blender que o
+ * jogo já tinha (`arquipelago/src/assets/objetos/<objeto>.glb`), a retrô (formas arredondadas, nas
+ * cores da paleta "Doces" do Pinta, a da Faísca) e a moderna (linhas retas, uma cor forte e madeira
+ * clara), com a mesma caixa e os mesmos nós de função. Cada uma é uma entrada com id próprio e o
+ * `modelo` dela; o preço é o da clássica.
  */
 
-/** O modelo que a aparência mostra. `objeto` = o modelo do próprio objeto (`<objeto>.glb`). */
-export const MODELOS_DA_GALERIA = ['objeto'] as const
+/**
+ * O modelo que a aparência mostra. `objeto` = o modelo do próprio objeto (`<objeto>.glb`); `retro`
+ * e `moderna` = `<objeto>-retro.glb` e `<objeto>-moderna.glb`.
+ */
+export const MODELOS_DA_GALERIA = ['objeto', 'retro', 'moderna'] as const
 export type ModeloDaGaleria = (typeof MODELOS_DA_GALERIA)[number]
 
 /**
@@ -33,6 +38,25 @@ export const IDS_DA_GALERIA = [
   'museu-classico',
   'casinha-classica',
   'planta-interior-classica',
+  // As versões retrô e moderna (B8, 31/10/2026), na mesma ordem dos objetos.
+  'geladeira-retro',
+  'geladeira-moderna',
+  'forno-retro',
+  'forno-moderno',
+  'aquario-retro',
+  'aquario-moderno',
+  'lareira-retro',
+  'lareira-moderna',
+  'banda-retro',
+  'banda-moderna',
+  'fliperama-retro',
+  'fliperama-moderno',
+  'museu-retro',
+  'museu-moderno',
+  'casinha-retro',
+  'casinha-moderna',
+  'planta-interior-retro',
+  'planta-interior-moderna',
 ] as const
 export type IdDaGaleria = (typeof IDS_DA_GALERIA)[number]
 
@@ -110,6 +134,132 @@ export const GALERIA: Readonly<Record<IdDaGaleria, AparenciaDaGaleria>> = {
     nome: 'Planta no vaso',
     preco: 30,
     modelo: 'objeto',
+  },
+  'geladeira-retro': {
+    id: 'geladeira-retro',
+    objeto: 'geladeira',
+    nome: 'Geladeira retrô',
+    preco: 60,
+    modelo: 'retro',
+  },
+  'geladeira-moderna': {
+    id: 'geladeira-moderna',
+    objeto: 'geladeira',
+    nome: 'Geladeira moderna',
+    preco: 60,
+    modelo: 'moderna',
+  },
+  'forno-retro': {
+    id: 'forno-retro',
+    objeto: 'forno',
+    nome: 'Forno retrô',
+    preco: 50,
+    modelo: 'retro',
+  },
+  'forno-moderno': {
+    id: 'forno-moderno',
+    objeto: 'forno',
+    nome: 'Forno moderno',
+    preco: 50,
+    modelo: 'moderna',
+  },
+  'aquario-retro': {
+    id: 'aquario-retro',
+    objeto: 'aquario',
+    nome: 'Aquário retrô',
+    preco: 70,
+    modelo: 'retro',
+  },
+  'aquario-moderno': {
+    id: 'aquario-moderno',
+    objeto: 'aquario',
+    nome: 'Aquário moderno',
+    preco: 70,
+    modelo: 'moderna',
+  },
+  'lareira-retro': {
+    id: 'lareira-retro',
+    objeto: 'lareira',
+    nome: 'Lareira retrô',
+    preco: 60,
+    modelo: 'retro',
+  },
+  'lareira-moderna': {
+    id: 'lareira-moderna',
+    objeto: 'lareira',
+    nome: 'Lareira moderna',
+    preco: 60,
+    modelo: 'moderna',
+  },
+  'banda-retro': {
+    id: 'banda-retro',
+    objeto: 'banda',
+    nome: 'Instrumentos retrô',
+    preco: 70,
+    modelo: 'retro',
+  },
+  'banda-moderna': {
+    id: 'banda-moderna',
+    objeto: 'banda',
+    nome: 'Instrumentos modernos',
+    preco: 70,
+    modelo: 'moderna',
+  },
+  'fliperama-retro': {
+    id: 'fliperama-retro',
+    objeto: 'fliperama',
+    nome: 'Fliperama retrô',
+    preco: 70,
+    modelo: 'retro',
+  },
+  'fliperama-moderno': {
+    id: 'fliperama-moderno',
+    objeto: 'fliperama',
+    nome: 'Fliperama moderno',
+    preco: 70,
+    modelo: 'moderna',
+  },
+  'museu-retro': {
+    id: 'museu-retro',
+    objeto: 'museu',
+    nome: 'Museu retrô',
+    preco: 70,
+    modelo: 'retro',
+  },
+  'museu-moderno': {
+    id: 'museu-moderno',
+    objeto: 'museu',
+    nome: 'Museu moderno',
+    preco: 70,
+    modelo: 'moderna',
+  },
+  'casinha-retro': {
+    id: 'casinha-retro',
+    objeto: 'casinha',
+    nome: 'Casinha retrô',
+    preco: 40,
+    modelo: 'retro',
+  },
+  'casinha-moderna': {
+    id: 'casinha-moderna',
+    objeto: 'casinha',
+    nome: 'Casinha moderna',
+    preco: 40,
+    modelo: 'moderna',
+  },
+  'planta-interior-retro': {
+    id: 'planta-interior-retro',
+    objeto: 'planta-interior',
+    nome: 'Planta no vaso retrô',
+    preco: 30,
+    modelo: 'retro',
+  },
+  'planta-interior-moderna': {
+    id: 'planta-interior-moderna',
+    objeto: 'planta-interior',
+    nome: 'Planta no vaso moderna',
+    preco: 30,
+    modelo: 'moderna',
   },
 }
 

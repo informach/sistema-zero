@@ -341,3 +341,25 @@ test.skipIf(!url)(
     }
   },
 )
+
+test.skipIf(!url)(
+  'as versões retrô e moderna (B8) são posses à parte, só do Arquipélago, cobradas uma vez cada',
+  async () => {
+    const repo = new ArquipelagoInventoryRepository(c.db)
+    const room = new DrizzleRoomRepository(c.db)
+    const dono = await pessoa('kids')
+    for (const aparencia of ['geladeira-retro', 'geladeira-moderna', 'geladeira-retro'] as const)
+      await repo.comprar({ ...dono, aparencia, equipe: false })
+    const lido = await repo.ler(dono)
+    if (!lido) throw new Error('sem a galeria')
+    expect(lido.possuidas.sort()).toEqual(['geladeira-moderna', 'geladeira-retro'])
+    expect(lido.saldo).toBe(
+      200 - GALERIA['geladeira-retro'].preco - GALERIA['geladeira-moderna'].preco,
+    )
+    // O quarto da plataforma não ganha a geladeira (o item é `arquipelago:`).
+    expect(ITEM_DA_APARENCIA['geladeira-retro'].startsWith('arquipelago:')).toBe(true)
+    expect((await room.listInventory(dono.userId, 'kids')).sort()).toEqual(
+      ['arquipelago:geladeira-moderna', 'arquipelago:geladeira-retro'].sort(),
+    )
+  },
+)

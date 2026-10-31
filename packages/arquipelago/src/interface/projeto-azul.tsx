@@ -2,6 +2,7 @@ import {
   CATALOGO_DE_OBJETOS,
   type FerramentaDaPlataforma,
   GELADEIRA_GUARDA,
+  galeriaDoObjeto,
   OBJETOS_DA_CASA,
   type ObjetoDaCasa,
   ProjetoAzulAtualSchema,
@@ -261,7 +262,9 @@ export function PainelDoObjeto() {
             <b>Modelar no Molda</b>
             <small>{molda ? 'A forma inteira dentro do molde' : voz.moldaFechado}</small>
           </button>
-          <CartaoDaGaleria objeto={id} avisar={setAviso} />
+          {galeriaDoObjeto(id).map((item) => (
+            <CartaoDaGaleria key={item.id} objeto={id} id={item.id} avisar={setAviso} />
+          ))}
         </div>
         <p className="arq-caderno-explica">Feito por você não custa moeda.</p>
         <CriacoesQueCabem

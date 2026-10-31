@@ -2,6 +2,7 @@ import { useGLTF } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
 import {
   type AparenciaDoObjeto,
+  aparenciaDaGaleria,
   CATALOGO_DE_OBJETOS,
   type ObjetoDaCasa,
   type Obra,
@@ -21,15 +22,33 @@ import {
   TextureLoader,
 } from 'three'
 import aquarioGlb from '../assets/objetos/aquario.glb'
+import aquarioModernaGlb from '../assets/objetos/aquario-moderna.glb'
+import aquarioRetroGlb from '../assets/objetos/aquario-retro.glb'
 import bandaGlb from '../assets/objetos/banda.glb'
+import bandaModernaGlb from '../assets/objetos/banda-moderna.glb'
+import bandaRetroGlb from '../assets/objetos/banda-retro.glb'
 import casinhaGlb from '../assets/objetos/casinha.glb'
+import casinhaModernaGlb from '../assets/objetos/casinha-moderna.glb'
+import casinhaRetroGlb from '../assets/objetos/casinha-retro.glb'
 import fliperamaGlb from '../assets/objetos/fliperama.glb'
+import fliperamaModernaGlb from '../assets/objetos/fliperama-moderna.glb'
+import fliperamaRetroGlb from '../assets/objetos/fliperama-retro.glb'
 import fornoGlb from '../assets/objetos/forno.glb'
+import fornoModernaGlb from '../assets/objetos/forno-moderna.glb'
+import fornoRetroGlb from '../assets/objetos/forno-retro.glb'
 import geladeiraGlb from '../assets/objetos/geladeira.glb'
 import geladeiraHologramaGlb from '../assets/objetos/geladeira-holograma.glb'
+import geladeiraModernaGlb from '../assets/objetos/geladeira-moderna.glb'
+import geladeiraRetroGlb from '../assets/objetos/geladeira-retro.glb'
 import lareiraGlb from '../assets/objetos/lareira.glb'
+import lareiraModernaGlb from '../assets/objetos/lareira-moderna.glb'
+import lareiraRetroGlb from '../assets/objetos/lareira-retro.glb'
 import museuGlb from '../assets/objetos/museu.glb'
+import museuModernaGlb from '../assets/objetos/museu-moderna.glb'
+import museuRetroGlb from '../assets/objetos/museu-retro.glb'
 import plantaInteriorGlb from '../assets/objetos/planta-interior.glb'
+import plantaInteriorModernaGlb from '../assets/objetos/planta-interior-moderna.glb'
+import plantaInteriorRetroGlb from '../assets/objetos/planta-interior-retro.glb'
 import { lojaDoConforto } from '../estado/conforto'
 import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDoFarol } from '../estado/farol'
@@ -65,6 +84,54 @@ const MODELO_DO_OBJETO: Readonly<Record<ObjetoDaCasa, string>> = {
   museu: new URL(museuGlb, import.meta.url).href,
   casinha: new URL(casinhaGlb, import.meta.url).href,
   'planta-interior': new URL(plantaInteriorGlb, import.meta.url).href,
+}
+
+/** As versões retrô e moderna da galeria (B8): a mesma caixa e os mesmos nós de função. */
+const VARIANTE_DO_OBJETO: Readonly<Record<ObjetoDaCasa, { retro: string; moderna: string }>> = {
+  geladeira: {
+    retro: new URL(geladeiraRetroGlb, import.meta.url).href,
+    moderna: new URL(geladeiraModernaGlb, import.meta.url).href,
+  },
+  forno: {
+    retro: new URL(fornoRetroGlb, import.meta.url).href,
+    moderna: new URL(fornoModernaGlb, import.meta.url).href,
+  },
+  aquario: {
+    retro: new URL(aquarioRetroGlb, import.meta.url).href,
+    moderna: new URL(aquarioModernaGlb, import.meta.url).href,
+  },
+  lareira: {
+    retro: new URL(lareiraRetroGlb, import.meta.url).href,
+    moderna: new URL(lareiraModernaGlb, import.meta.url).href,
+  },
+  banda: {
+    retro: new URL(bandaRetroGlb, import.meta.url).href,
+    moderna: new URL(bandaModernaGlb, import.meta.url).href,
+  },
+  fliperama: {
+    retro: new URL(fliperamaRetroGlb, import.meta.url).href,
+    moderna: new URL(fliperamaModernaGlb, import.meta.url).href,
+  },
+  museu: {
+    retro: new URL(museuRetroGlb, import.meta.url).href,
+    moderna: new URL(museuModernaGlb, import.meta.url).href,
+  },
+  casinha: {
+    retro: new URL(casinhaRetroGlb, import.meta.url).href,
+    moderna: new URL(casinhaModernaGlb, import.meta.url).href,
+  },
+  'planta-interior': {
+    retro: new URL(plantaInteriorRetroGlb, import.meta.url).href,
+    moderna: new URL(plantaInteriorModernaGlb, import.meta.url).href,
+  },
+}
+
+/** O modelo do objeto completo com a aparência dela: a versão da galeria, senão o clássico. */
+export function modeloComAparencia(id: ObjetoDaCasa, aparencia: AparenciaDoObjeto | null): string {
+  const daGaleria = aparencia?.origem === 'galeria' ? aparenciaDaGaleria(aparencia.id) : undefined
+  return daGaleria && daGaleria.objeto === id && daGaleria.modelo !== 'objeto'
+    ? VARIANTE_DO_OBJETO[id][daGaleria.modelo]
+    : MODELO_DO_OBJETO[id]
 }
 
 /** O holograma feito no Blender (só a geladeira tem; os outros viram holograma no código). */
@@ -104,7 +171,9 @@ export function ModeloDoObjeto({
   const fonte = lojaDosMinijogos(loja, plataforma)
   const capa = useMinijogos(fonte, (s) => s.lista[0]?.capa ?? null)
   const visita = useEstado((s) => s.visita !== null)
-  const url = completo ? MODELO_DO_OBJETO[id] : (HOLOGRAMA_DO_OBJETO[id] ?? MODELO_DO_OBJETO[id])
+  const url = completo
+    ? modeloComAparencia(id, aparencia)
+    : (HOLOGRAMA_DO_OBJETO[id] ?? MODELO_DO_OBJETO[id])
   const raiz = useModelo(url)
   const { copia, materiaisProprios } = useMemo(() => {
     const c = raiz.clone(true)

@@ -7,7 +7,7 @@ import { salvamentoPausado } from '../sistemas/pausa'
 import { BancaDaFeira } from './banca-da-feira'
 import { type Avisar, CartaoDaGaleria } from './galeria'
 import { InsumosDaFeira } from './insumos'
-import { MINIATURA_DO_OBJETO } from './miniaturas'
+import { miniaturaDaAparencia } from './miniaturas'
 import { VestuarioDaFesta } from './vestuario'
 
 export function PainelDaFeira() {
@@ -120,10 +120,10 @@ function ItemDaFeira({ id, avisar }: { id: IdDaGaleria; avisar: Avisar }) {
     <article aria-label={item.nome} className="arq-feira-item">
       <h4>{item.nome}</h4>
       {temProjeto && pode ? (
-        <CartaoDaGaleria objeto={item.objeto} avisar={avisar} />
+        <CartaoDaGaleria objeto={item.objeto} id={id} avisar={avisar} />
       ) : (
         <>
-          <img src={MINIATURA_DO_OBJETO[item.objeto]} alt="" />
+          <img src={miniaturaDaAparencia(id)} alt="" />
           <p>{item.preco} moedas.</p>
           <p>
             {temProjeto

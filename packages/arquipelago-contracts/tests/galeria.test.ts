@@ -29,14 +29,20 @@ import {
 } from '../src/salvamento'
 
 describe('o catálogo da galeria', () => {
-  test('uma aparência por objeto, com o id estável que começa pelo objeto', () => {
-    for (const objeto of OBJETOS_DA_CASA) expect(galeriaDoObjeto(objeto)).toHaveLength(1)
+  test('três aparências por objeto (clássica, retrô e moderna), com o id estável que começa pelo objeto', () => {
+    for (const objeto of OBJETOS_DA_CASA) {
+      const lista = galeriaDoObjeto(objeto)
+      // A clássica vem primeiro; as versões de 31/10/2026 (B8) custam o mesmo.
+      expect(lista.map((a) => a.modelo)).toEqual(['objeto', 'retro', 'moderna'])
+      expect(new Set(lista.map((a) => a.preco)).size).toBe(1)
+    }
     for (const id of IDS_DA_GALERIA) {
       const a = GALERIA[id]
       expect(a.id).toBe(id)
       expect(id.startsWith(`${a.objeto}-`)).toBe(true)
-      expect(a.modelo).toBe('objeto')
     }
+    // Os nove de antes continuam nos mesmos lugares (estão nos salvamentos e no banco).
+    expect(IDS_DA_GALERIA.slice(0, 9).every((id) => GALERIA[id].modelo === 'objeto')).toBe(true)
     expect(Object.keys(GALERIA).sort()).toEqual([...IDS_DA_GALERIA].sort())
   })
 
