@@ -10,8 +10,11 @@ import {
   ALCANCE_DO_BAU,
   abrirSegredo,
   falaDoSegredo,
+  falaDoSegredoDoMovimento,
   falaDoVento,
   type Segredo,
+  type SegredoDoMovimento,
+  type SegredoQualquer,
   segredoAchado,
   TEXTOS_DOS_SEGREDOS,
   VENTO_DO_SEGREDO,
@@ -25,11 +28,29 @@ function podeMexer(s: EstadoDoJogo): boolean {
   return !s.acesso.somenteLeitura && !s.visita && !jogoPausado(s)
 }
 
-function Bau({ segredo, bau }: { segredo: Segredo; bau: Ponto }) {
+function Bau({
+  segredo,
+  bau,
+  escala = 1.6,
+  acima = -0.35,
+  giro = 0,
+}: {
+  segredo: SegredoQualquer
+  bau: Ponto
+  escala?: number
+  /** Do ponto do baú à base do modelo (no alto do vento, o meio dele). */
+  acima?: number
+  giro?: number
+}) {
   const modelo = useModelo(new URL(modeloDoBau, import.meta.url).href)
   const copia = useMemo(() => modelo.clone(true), [modelo])
   return (
-    <group name={`bau-${segredo.id}`} position={[bau.x, bau.y - 0.35, bau.z]} scale={1.6}>
+    <group
+      name={`bau-${segredo.id}`}
+      position={[bau.x, bau.y + acima, bau.z]}
+      rotation-y={giro}
+      scale={escala}
+    >
       <primitive object={copia} dispose={null} />
     </group>
   )
@@ -91,5 +112,56 @@ export function SegredoNoAlto({
         <Bau segredo={segredo} bau={bau} />
       </ComReserva>
     </>
+  )
+}
+
+/** Do pé ao baú no chão, para abrir (o corpo de pé ao lado dele, nadando ou no balão). */
+export const ALCANCE_DO_BAU_NO_CHAO = 2.4
+
+/**
+ * O baú de um segredo dos movimentos (B11): no chão do lugar que só aquele movimento alcança (a
+ * âncora `segredo-<movimento>`, já no mundo). Abre de perto, medindo também a altura, porque o
+ * lugar fica acima (o deque do cipó, a nuvem do balão) ou abaixo (a gruta) de onde se passa por
+ * baixo ou por cima. Na gruta abre nadando (`submerso`). Achado, o baú some.
+ */
+export function BauDoSegredo({
+  segredo,
+  lugar,
+  giro = 0,
+  submerso = false,
+}: {
+  segredo: SegredoDoMovimento
+  lugar: Ponto
+  giro?: number
+  submerso?: boolean
+}) {
+  const { loja, rastro } = useJogo()
+  const achado = useEstado((s) => segredoAchado(s.salvamento.segredos, segredo))
+  const perto = () =>
+    Math.hypot(rastro.x - lugar.x, rastro.y - CORPO.doCentroAoPe - lugar.y, rastro.z - lugar.z) <=
+    ALCANCE_DO_BAU_NO_CHAO
+  useInterativo(`segredo:${segredo.id}`, {
+    x: lugar.x,
+    z: lugar.z,
+    raio: ALCANCE_DO_BAU_NO_CHAO,
+    submerso,
+    rotulo() {
+      const s = loja.getState()
+      if (!podeMexer(s) || segredoAchado(s.salvamento.segredos, segredo) || !perto()) return null
+      return TEXTOS_DOS_SEGREDOS.abrir
+    },
+    agir() {
+      const s = loja.getState()
+      if (!podeMexer(s) || segredoAchado(s.salvamento.segredos, segredo) || !perto()) return
+      s.mudar((v) => abrirSegredo(v, segredo))
+      if (segredoAchado(loja.getState().salvamento.segredos, segredo))
+        s.dizer(falaDoSegredoDoMovimento())
+    },
+  })
+  if (achado) return null
+  return (
+    <ComReserva reserva={null}>
+      <Bau segredo={segredo} bau={lugar} escala={1.2} acima={0} giro={giro} />
+    </ComReserva>
   )
 }

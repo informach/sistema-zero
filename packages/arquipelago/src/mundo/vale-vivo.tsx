@@ -13,6 +13,7 @@ import { giroDaIlha, raioMaximoDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 import { MontariaDoVale } from './montaria-do-vale'
 import { deslocar, percursoDasPedrasDoVulcao } from './percursos-das-ilhas'
+import { CinzaQuente, SegredoNaIlha } from './segredos-dos-movimentos'
 import { lugarDaJade } from './vale'
 
 /** O fóssil da trilha: osso claro com o brilho laranja do vulcão. */
@@ -57,6 +58,8 @@ export function ValeVivo({
   return (
     <group ref={pecas} visible={false}>
       <BorroesDaIlha ilha="vale-dos-dinos" ancoras={lugaresDosLumis} meio={meio} />
+      <CinzaQuente modelo={preparada.modelo} meio={meio} giro={giro} />
+      <SegredoNaIlha id="montaria" modelo={preparada.modelo} meio={meio} giro={giro} />
       <ComReserva reserva={null}>
         <Jade modelo={preparada.modelo} meio={meio} giro={giro} />
         <DescobertasDoVale preparada={preparada} meio={meio} giro={giro} troca={troca} />

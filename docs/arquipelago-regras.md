@@ -2529,6 +2529,16 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   barra de rolagem sólida no meio. Pedidos vindos do mundo (a mesa de mapas, o álbum da casa) abrem
   o menu nessa seção (`PAINEIS_DO_MENU`, `secaoDoMenu` na loja). "Voltar ao jogo" fecha o menu.
   Painel novo que nasce do menu entra como seção dele (`JanelaDoPainel`), nunca como janela à parte.
+- **Segredos dos outros movimentos (B11):** além dos quatro baús no alto do vento (planador), cinco
+  lugares que só um movimento alcança, cada um com um baú da Íris e uma página extra do diário:
+  o deque do cipó na sua ilha (o cipó balança depois de visitar o Bosque), a gruta debaixo do píer
+  (mergulha-se depois de visitar o Recife; o baú abre nadando), o vão dos patins no Bosque, o
+  terraço da montaria no Vale (a cinza quente empurra quem vai a pé, sem dano; montado no dino, dá
+  para subir) e a nuvem do balão nas Nuvens. Montaria e balão ficam nas próprias ilhas, por serem
+  brinquedos de lá: ajuste técnico da proposta ("segredos nas ilhas antigas"). Os Lumis de luz
+  entram nos baús quando a arte chegar (B12).
+- **A subida por fora do Farol** chegou na arte de 31/10 e fica escondida, sem colisão, até virar
+  o percurso da Lenda (B7).
 
 ## 7. Desafios
 

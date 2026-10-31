@@ -64,6 +64,13 @@ export function Farol() {
  * O farol do Blender. Apagado: as cores desbotam para o cinza e a lanterna fica escura. Aceso:
  * vermelho e branco, a lâmpada e o vidro brilham, a luz alcança longe e os dois fachos giram.
  */
+/** Os colisores da subida por fora da torre (a escada, os deques, os postes, a viga e a lanterna). */
+export function ehDaSubidaDoFarol(nome: string): boolean {
+  return /^col-(cil-poste-subida|deque-subida|escada-reta|viga-subida|cil-lanterna-farol)-/.test(
+    nome,
+  )
+}
+
 function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: boolean }) {
   const { loja, rastro } = useJogo()
   const aparelho = useReducedMotion()
@@ -73,6 +80,10 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
   const luz = useRef<PointLight>(null)
   const partes = useMemo(() => {
     const corpo = copiarNo(raiz, 'farol', true)
+    // A subida por fora da torre (E04, arte de 31/10/2026) só vale com o percurso da Lenda: até lá
+    // não aparece nem colide (`ehDaSubidaDoFarol`).
+    const subida = corpo.getObjectByName('subida')
+    if (subida) subida.visible = false
     const vidro = copiarNo(raiz, 'vidro', true)
     const lampada = copiarNo(raiz, 'lampada', true)
     const porta = copiarNo(raiz, 'porta', true)
@@ -112,7 +123,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
       fechada: porta.rotation.y,
       facho,
       // As pedras do pé e os degraus da porta (nós `col-*` do arquivo); a torre é do código.
-      colisores: lerColisores(raiz),
+      colisores: lerColisores(raiz).filter((c) => !ehDaSubidaDoFarol(c.nome)),
       cores: [...coresOriginais(corpo), ...coresOriginais(lampada), ...coresOriginais(porta)],
       janelas: materiaisDe(corpo, 'vidroJanela'),
       vidros: materiaisDe(vidro),
