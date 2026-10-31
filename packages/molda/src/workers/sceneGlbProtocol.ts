@@ -21,6 +21,8 @@ export interface SceneGlbToken {
   /** Destination encoding. Part of the identity: a reply for the other one is not this one. */
   animatedPaint: boolean
   format?: SceneFileFormat
+  /** Ossos de personagem com nomes padrão na cópia. Também é identidade da resposta. */
+  standardBones?: boolean
 }
 export interface SceneGlbRequest extends SceneGlbToken {
   document: MoldaSceneDocument
@@ -45,6 +47,9 @@ export function readSceneGlbToken(raw: unknown): SceneGlbToken {
     ...(row.format === undefined
       ? {}
       : { format: v.choice(row.format, ['glb', 'gltf', 'obj'], 'format') }),
+    ...(row.standardBones === undefined
+      ? {}
+      : { standardBones: v.boolean(row.standardBones, 'standardBones') }),
   }
 }
 export function readSceneGlbRequest(raw: unknown): SceneGlbRequest {
@@ -53,6 +58,7 @@ export function readSceneGlbRequest(raw: unknown): SceneGlbRequest {
       'revision',
       'animatedPaint',
       'format',
+      'standardBones',
       'document',
     ]),
     token = readSceneGlbToken(row)
@@ -231,6 +237,7 @@ export function sceneGlbReply(token: SceneGlbToken, result: ReturnType<typeof en
     revision: token.revision,
     animatedPaint: token.animatedPaint,
     ...(token.format === undefined ? {} : { format: token.format }),
+    ...(token.standardBones === undefined ? {} : { standardBones: token.standardBones }),
     type: 'result' as const,
     result,
   }
@@ -244,13 +251,22 @@ export function readSceneGlbReply(
     row.documentId === expected.documentId &&
       row.revision === expected.revision &&
       row.animatedPaint === expected.animatedPaint &&
-      row.format === expected.format,
+      row.format === expected.format &&
+      row.standardBones === expected.standardBones,
     'reply',
     'Esse resultado pertence a outra criação, revisão ou destino.',
   )
   const type = v.choice(row.type, ['result', 'progress', 'error'], 'type')
   if (type === 'error') {
-    v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'format', 'type', 'message'])
+    v.record(row, 'reply', [
+      'documentId',
+      'revision',
+      'animatedPaint',
+      'format',
+      'standardBones',
+      'type',
+      'message',
+    ])
     return { type, message: v.text(row.message, 'message', 512) }
   }
   if (type === 'progress') {
@@ -259,12 +275,21 @@ export function readSceneGlbReply(
       'revision',
       'animatedPaint',
       'format',
+      'standardBones',
       'type',
       'progress',
     ])
     return { type, progress: v.choice(row.progress, ['validating', 'encoding'], 'progress') }
   }
-  v.record(row, 'reply', ['documentId', 'revision', 'animatedPaint', 'format', 'type', 'result'])
+  v.record(row, 'reply', [
+    'documentId',
+    'revision',
+    'animatedPaint',
+    'format',
+    'standardBones',
+    'type',
+    'result',
+  ])
   const result = v.record(row.result, 'result', ['bytes', 'issues', 'stats', 'clips'])
   const stats = v.record(result.stats, 'stats', Object.keys(STAT_LIMITS))
   const count = (key: keyof typeof STAT_LIMITS) =>

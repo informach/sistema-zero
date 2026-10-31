@@ -1,5 +1,10 @@
 import { expect, test } from 'bun:test'
-import { snapSceneMeasurement, snapSceneScale } from './measurementStep'
+import {
+  readSceneMeasurementStep,
+  SCENE_MEASUREMENT_STEP_DEFAULT,
+  snapSceneMeasurement,
+  snapSceneScale,
+} from './measurementStep'
 
 test('measurement precision supports whole units and tenths, including negative positions and minimum sizes', () => {
   expect(snapSceneMeasurement(3.7, 1)).toBe(4)
@@ -13,4 +18,13 @@ test('measurement precision supports whole units and tenths, including negative 
   expect(Object.is(snapSceneMeasurement(-0.01, 0.1), -0)).toBe(false)
   expect(snapSceneMeasurement(Number.MAX_VALUE, 0.1)).toBe(Number.MAX_VALUE)
   expect(snapSceneScale([1.64, 1, 1], [2, 3.25, 0], 0.1)).toEqual([1.65, 1, 1])
+})
+
+test('o passo guardado no perfil volta como escolhido; valor estranho volta ao fino', () => {
+  expect(SCENE_MEASUREMENT_STEP_DEFAULT).toBe(0.1)
+  expect(readSceneMeasurementStep('1')).toBe(1)
+  expect(readSceneMeasurementStep('0.1')).toBe(0.1)
+  expect(readSceneMeasurementStep('0.01')).toBe(0.01)
+  for (const raw of [null, '', '2', '0.5', 'abc', '1.0'])
+    expect(readSceneMeasurementStep(raw)).toBe(0.1)
 })

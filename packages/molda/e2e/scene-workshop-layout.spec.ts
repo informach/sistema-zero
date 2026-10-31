@@ -169,14 +169,11 @@ test('o menu de ajustes do palco cabe inteiro e seus campos recebem clique', asy
   await page.setViewportSize(SIZES[0])
   await trigger.click()
   await menu.getByLabel('Eixos de Mover e Girar').selectOption('local')
-  await menu.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }).check()
+  await menu.getByLabel('Passo ao mover e redimensionar').selectOption('0.01')
   await trigger.click()
   await trigger.click()
   await expect(menu.getByLabel('Eixos de Mover e Girar')).toHaveValue('local')
-  await expect(
-    menu.getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' }),
-  ).toBeChecked()
-  await expect(menu.getByText('Passo das medidas: 0,01', { exact: true })).toBeVisible()
+  await expect(menu.getByLabel('Passo ao mover e redimensionar')).toHaveValue('0.01')
   await page.screenshot({ path: testInfo.outputPath('menu-ajustes-desktop.png') })
   await page.setViewportSize(SIZES[3])
   await page.screenshot({ path: testInfo.outputPath('menu-ajustes-mobile.png') })

@@ -3389,6 +3389,26 @@
     max-height: 20%;
     min-height: 84px;
   }
+  /* Galeria de movimentos parada: só o que ela precisa, sem tirar a pose de vista. */
+  [data-molda-theme]
+    .mld-inspector-sections[data-activity="animation"]
+    .mld-inspector-overview:has([data-preset-gallery]) {
+    flex: 0 1 auto;
+    max-height: 45%;
+  }
+  /* Com uma prévia tocando, a área dos movimentos cresce; os ajustes da pose cedem espaço. */
+  [data-molda-theme]
+    .mld-inspector-sections[data-activity="animation"]
+    .mld-inspector-overview:has([data-preset-panel]) {
+    flex: 1 1 auto;
+    max-height: none;
+  }
+  [data-molda-theme]
+    .mld-inspector-sections[data-activity="animation"]:has([data-preset-panel])
+    .mld-inspector-properties {
+    flex: 0 1 20%;
+    min-height: 96px;
+  }
 }
 [data-molda-theme] .mld-ruler-tick {
   position: absolute;

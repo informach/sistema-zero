@@ -28,12 +28,9 @@ async function openMeasurements(page: Page) {
 async function fractions(page: Page, enabled: boolean) {
   const menu = page.locator('summary').filter({ hasText: 'Mais ajustes do palco' })
   await menu.click()
-  await page
-    .getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar' })
-    .setChecked(enabled)
-  await expect(
-    page.getByText(`Passo das medidas: ${enabled ? '0,01' : '1'}`, { exact: true }),
-  ).toBeVisible()
+  const step = page.getByLabel('Passo ao mover e redimensionar')
+  await step.selectOption(enabled ? '0.01' : '1')
+  await expect(step).toHaveValue(enabled ? '0.01' : '1')
   await menu.click()
 }
 
@@ -104,6 +101,11 @@ test('size and move handles and body dragging obey the measurement precision', a
     .and(page.locator('[aria-keyshortcuts="S"]'))
     .click()
   const handle = page.getByRole('button', { name: 'Tamanho no eixo X', exact: true })
+  // O padrão é o Fino (0,1); o Bloco prende o arrasto em números inteiros.
+  await handle.press('ArrowRight')
+  await expect(size).toHaveValue('2.10')
+  await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
+  await fractions(page, false)
   await handle.press('ArrowRight')
   await expect(size).toHaveValue('3.00')
   const tip = await handle.locator('.mld-axis-hit-tip').boundingBox()

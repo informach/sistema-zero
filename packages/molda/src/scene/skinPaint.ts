@@ -12,11 +12,13 @@ import {
   type SceneSkinPaintMix,
   type SceneSkinPaintRefusal,
 } from './skinPaintWeights'
+import { sceneMeshVertexNeighbors, smoothSceneSkinRow } from './skinSmooth'
 import { patchSceneSkinWeights } from './skinWeightPatch'
 import * as v from './validation'
 
 export interface SceneSkinPaintSettings {
-  mode: 'add' | 'subtract'
+  /** `smooth` mistura cada ponto com os vizinhos, em todos os ossos (o osso escolhido só colore). */
+  mode: 'add' | 'subtract' | 'smooth'
   radius: number
   strength: number
 }
@@ -39,7 +41,7 @@ export function createSceneSkinPaintStroke(
   settings: SceneSkinPaintSettings,
 ) {
   v.record(settings, 'paint', ['mode', 'radius', 'strength'])
-  const mode = v.choice(settings.mode, ['add', 'subtract'], 'paint.mode'),
+  const mode = v.choice(settings.mode, ['add', 'subtract', 'smooth'], 'paint.mode'),
     radius = v.number(settings.radius, 'paint.radius', Number.MIN_VALUE),
     strength = v.number(settings.strength, 'paint.strength', 0, 1),
     index = indexSceneDocument(document),
@@ -79,6 +81,16 @@ export function createSceneSkinPaintStroke(
     changed: patch.size,
     refused: { ...counts },
   })
+  // Os vizinhos leem as forças GUARDADAS: repassar no mesmo traço não acumula suavização.
+  let neighbors: Map<string, string[]> | null = null
+  const smoothed = (vertexId: string, alpha: number) => {
+    neighbors ??= sceneMeshVertexNeighbors(mesh)
+    const rows = (neighbors.get(vertexId) ?? []).flatMap((id) => {
+      const row = skin.weights[id]
+      return row ? [row] : []
+    })
+    return smoothSceneSkinRow(skin.weights[vertexId]!, rows, alpha)
+  }
   const savedWeight = (vertexId: string) =>
     skin.weights[vertexId]!.find((row) => row.jointId === jointId)?.weight ?? 0
   const readPatch = () =>
@@ -115,8 +127,11 @@ export function createSceneSkinPaintStroke(
           const alpha = strength * smoothMeshReach(distance, radius)
           if (alpha <= (coverage.get(vertexId) ?? 0)) return []
           const original = skin.weights[vertexId]!,
-            previous = savedWeight(vertexId),
-            target = mode === 'add' ? previous + alpha * (1 - previous) : previous * (1 - alpha),
+            previous = savedWeight(vertexId)
+          if (mode === 'smooth')
+            return [{ vertexId, alpha, previous, result: smoothed(vertexId, alpha) }]
+          const target =
+              mode === 'add' ? previous + alpha * (1 - previous) : previous * (1 - alpha),
             roundedEndpoint =
               alpha < 1 &&
               ((mode === 'add' && previous < 1 && target === 1) ||
@@ -134,7 +149,7 @@ export function createSceneSkinPaintStroke(
         refused.delete(vertexId)
         if (result.status === 'changed') {
           patch.set(vertexId, result.influences)
-          delta.set(vertexId, result.influences.find((row) => row.jointId === jointId)!.weight)
+          delta.set(vertexId, result.influences.find((row) => row.jointId === jointId)?.weight ?? 0)
         } else {
           if (patch.delete(vertexId)) delta.set(vertexId, previous)
           if (result.status === 'blocked') {

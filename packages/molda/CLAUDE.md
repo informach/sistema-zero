@@ -1,5 +1,139 @@
 # CLAUDE.md — @sistemazero/molda
 
+## Esqueleto de personagem e movimentos prontos — 30/10/2026
+
+Ossos e pesos → "Esqueleto de personagem": de frente, a criança marca queixo, virilha, cotovelo,
+pulso e joelho (5 pontos com espelho; 8 sem). `scene/characterRig.ts` monta 19 juntas + 5 pontas
+(Quadril → Barriga → Peito → Pescoço/Cabeça, Ombro/Braço/Antebraço/Mão, Coxa/Canela/Pé) num passo
+de desfazer: converte formas em malha, corta as peças nas juntas (`divideSceneByWorldPlane`; peça
+que recusa o corte só dobra menos macio), cria os ossos dentro do grupo do personagem e liga cada
+peça com `characterSkinWeights` (osso mais perto, mistura só perto da junta; a sugestão genérica
+mistura o joelho até o meio da coxa). Profundidade de cada junta = meio do corpo naquela altura.
+
+- **Sem campo novo no arquivo**: `findCharacterRigs` reconhece o esqueleto pela FORMA da
+  hierarquia (3 filhos no quadril, correntes de 3/2/4 elos até uma ponta) e pela direção dos
+  ossos (cima = quadril→pescoço, frente = pé→ponta do pé). Renomear não quebra, cópia da galeria
+  continua valendo, esqueleto à mão com a mesma forma serve. Apagar uma junta desfaz o
+  reconhecimento.
+- **Ossos antigos são trocados** (`removeOldBones`, no mesmo passo de desfazer): sai o vínculo
+  das peças do personagem, os ossos que ninguém mais usa (nunca uma peça nem o que está pendurado
+  nela) e as trilhas dos ossos antigos; movimento que fica vazio sai junto. O painel avisa antes
+  (`characterRigTarget(...).replaced`).
+- **Tela simplificada (30/10)**: em Animar, os 4 botões de personagem aparecem SEMPRE no topo de
+  "Experimentar um movimento pronto"; sem esqueleto, o clique abre a marcação e, ao montar, o
+  movimento entra em prévia (`characterRig.wanted`). Pular/Balançar/Girar ficam
+  recolhidos em "Movimentos de uma peça". Ossos e pesos tem "Remover ossos do modelo"
+  (`removeCharacterBones`). Durante a marcação os ossos antigos somem do palco e a câmera
+  enquadra o modelo (`cameraRequest.frame`). Com os movimentos abertos, a área deles cresce
+  (`:has([data-preset-panel])` em molda.css).
+- **Galeria viva, estilo Mixamo (31/10)**: em Animar, "Movimentos do personagem" fica SEMPRE
+  à mostra (fora do botão, que agora só abre "Movimentos de uma peça"). Um clique JÁ APLICA:
+  sem prévia nem "Guardar", o movimento entra no personagem, vira o movimento da linha do tempo
+  e toca, com as poses editáveis (`useCharacterMotion`). O personagem tem no máximo um de cada
+  (o clipe com o nome do movimento, com ✓); clicar num guardado só volta para ele, sem refazer.
+  Sliders Velocidade (0,5–2×, lida da duração) e Intensidade (50–150%, só da sessão) refazem o
+  clipe no lugar (`CharacterMotionOptions.replaces`: mesmo id, nome e posição) no mesmo ponto
+  do ciclo; enquanto conteúdo e clipe forem os do último ajuste, emendam o passo de desfazer
+  (`workshop.run(command, undefined, true)` → `editor.amend`). Na linha do tempo, as linhas com
+  pose vêm primeiro (os ossos animados não ficam abaixo das peças vazias). Espaço no painel:
+  `data-preset-gallery` (até 45%) e `data-preset-panel` (prévia de peça ou marcação). ⚠️
+  Montar esqueleto compara com `sameSceneContent`: a miniatura refeita no meio da marcação
+  mudava a identidade do documento e o botão recusava com "A criação mudou".
+- **Esqueleto montado em Animar (31/10)**: sem esqueleto, clicar num movimento NÃO leva mais
+  para Modelar → Ossos e pesos (a troca de aba confundia). A marcação dos 5 pontos acontece no
+  palco de Animar, com os passos dentro da galeria (`SceneCharacterRigSteps`, o mesmo bloco de
+  Ossos e pesos). `useCharacterRigBuilder` vale em `mode === 'animation'` também;
+  `start(ids, mirror, motion)` guarda o movimento, e trocar de movimento no meio da marcação só
+  troca `wanted` (`want`); ao montar, ele já entra no personagem. Enquanto marca, a galeria usa `data-preset-panel` para os botões
+  caberem.
+- **Ossos sozinhos, estilo Mixamo (31/10)**: sem esqueleto, clicar num movimento NÃO pede
+  pontos: `guessCharacterMarks` (`scene/characterAutoMarks.ts`) acha os 5 pontos na silhueta
+  de frente (grade de 160 linhas): virilha = vão entre as pernas no meio; queixo = onde a
+  cabeça afina (ou os ombros alargam), até metade da altura (cabeça grande de boneco fofo);
+  braço = o MAIOR pedaço fora do tronco (pedacinhos de manga e bermuda larga ficam de fora),
+  ombro no alto dele e ponta no ponto mais longe, então serve de braço aberto (T/A) ou caído;
+  beira do tronco = a do peito, ou a do quadril quando o peito encosta nos braços. Ossos e
+  movimento entram num passo de desfazer (`useCharacterMotion.rigAndChoose`). Recusa (cubo,
+  braço colado) → a marcação à mão de antes, com aviso. "Ajustar os ossos" abre a marcação já
+  com os pontos achados (`characterRig.start(..., points)`); o movimento só volta depois de
+  montar (o efeito de `wanted` espera `draft` acabar — antes, aplicava no meio e travava).
+  Testado com o menino (T), o Player (braços caídos, cabeça solta) e o aventureiro da ilha.
+- **Parado com pés plantados (31/10)**: o quadril do Parado balança, inclina e respira, e as
+  pernas eram rígidas, então um pé saía do chão e os dois escorregavam (3,7 cm num boneco de 2).
+  `Frame.planted` liga cinemática inversa de duas juntas: o joelho dobra (bisseção, só para trás)
+  até a perna caber até o tornozelo de repouso, a coxa gira para lá e o pé zera o giro. Plantado,
+  `air` é a descida do quadril que as pernas esperam (o contato com o chão já a traz; não somar de
+  novo). Teste: tornozelos e pontas a menos de 2 mm em 50/100/150%.
+- **Os 5 itens estilo Mixamo (31/10)** (plano em `docs/plans/2026-10-31-molda-mixamo-engenharia-reversa.md`):
+  - **Passada pelos pés:** Andando e Correndo não giram mais coxa e joelho por curvas. `gait()`
+    dá o alvo de cada tornozelo: no apoio vai para trás em velocidade constante, no balanço sobe
+    e volta. Um resolvedor de perna só (o do Parado) faz a cinemática inversa. O quadril desce
+    sozinho se o pé apoiado não alcança (0,995 da perna), e quadros com `feet` usam a altura
+    exata, sem o amostrador. Correndo tem 24 poses (com 16, a interpolação deixava o pé andar
+    5 mm).
+  - **No lugar:** `inPlace: false` soma `travel` (passada ÷ fração de apoio) por ciclo na trilha
+    do quadril, e o pé apoiado fica parado no mundo (< 4 mm). O "No lugar" é lido do próprio
+    clipe: translação com fim diferente do começo.
+  - **Braços:** `armClearance` mede a meia-largura do tronco (vértices de hips, spine e chest) e
+    o raio do braço nos pesos, e abre o braço caído até o cotovelo passar do tronco (de 12° a
+    45°). `arms` soma de −10° a +30°. Sem pesos, ficam os 12° de antes.
+  - **Biblioteca em dados:** `characterMotionLibrary.ts` tem `CharacterMotionData` (poses-chave
+    em quatérnios por papel de osso, mais `air`, `sway` e `forward` em pernas) e os 11 novos.
+    `frameFromData` interpola com slerp suave, e `power` escala a intensidade. Pés plantados
+    usam `STANDING`; pés livres com `contact` usam a sola no chão; sem `contact` (os meus), a
+    altura é absoluta. Os 4 geradores ficam em código. `CHARACTER_MOTION_INFO` traz categoria,
+    duração, repetição e os controles de cada um. Cair, Sentar e Levar um susto acontecem uma
+    vez (o último quadro é u = 1). As contas de giro moram em `characterQuaternion.ts`.
+  - **Meus movimentos:** `characterMotionFromClip` lê o que a pessoa vê (o giro de cada osso no
+    mundo em relação ao repouso, preso ao de cima, desfazendo `hang`), e serve para qualquer
+    espaço de clipe. `useCharacterMotionLibrary` guarda até 24 em localStorage por perfil (como
+    as paletas). Um clipe feito à mão que mexe ossos de personagem ganha o botão "Guardar como
+    movimento pronto". `kind: 'custom'` + `data` aplica. A escolha pendente (`wanted`) agora é
+    um `MotionChoice`.
+  - **Nomes padrão no GLB:** `standardBones` passa por cada lista fechada do caminho (token,
+    pedido, transporte, resposta e identidade, como `animatedPaint`). `renameSceneGlbBones`
+    renomeia as folhas e os nós `[base n]` / `[pose]` dos ossos de personagem para
+    `mixamorig:Hips` etc., e o segundo personagem usa `mixamorig2:`. Os espelhos ficam fora. A
+    opção só aparece com `files.interop` e um esqueleto de personagem.
+  - **Nível básico:** sem `model.skin`, a marcação à mão não existe. Se o automático falhar, o
+    painel explica como deixar o personagem (`autoFailedBasic`), e "Ajustar os ossos" some.
+- **Movimentos** (`scene/characterMotions.ts`): Parado 3 s, Andando 1 s, Correndo 0,7 s, Pulando
+  1,2 s, no lugar e em loop, Força 0,5–1,5. Poses em eixos canônicos (X esquerda, Y cima, Z
+  frente) presas ao osso de cima; trilha local = R⁻¹·g·R com o giro de repouso R de cada junta.
+  Braço modelado em T desce sozinho (`hang`) e o eixo da dobra abaixo dele é conjugado. O quadril
+  sobe/desce para a sola mais baixa ficar no chão, medido com `prepareSceneAnimationPreview` (a
+  mesma pose que o app desenha). Entram em "Movimentos prontos" (fieldset "Personagem") pelo mesmo
+  fluxo de prévia; trocar de um movimento em prévia para outro não abre o diálogo de transição.
+- Teste: `characterRig.test.ts` (pés nunca abaixo do chão, emenda do loop, GLB sem erros),
+  `SceneWorkshop.test.tsx` (fluxo + desfazer), `e2e/character-rig.spec.ts` (clica os 5 pontos).
+  Fixture: `testing/characterFixture.ts` (boneco de blocos em T).
+
+## Passo de mover e redimensionar — 30/10/2026
+
+"Mais ajustes do palco" tem o select "Passo ao mover e redimensionar": Bloco (1), **Fino (0,1,
+padrão)** e Livre (0,01), com a dica da opção logo abaixo. Antes era uma caixinha 1 ↔ 0,01 com
+padrão 1, grosso demais para ajustar personagem (1 bloco = a peça inteira) e o 0,01 é movimento
+livre na prática. Um select (e não três botões) mantém a catraca de controles da oficina.
+`SCENE_MEASUREMENT_STEPS`/`SCENE_MEASUREMENT_STEP_DEFAULT`/`readSceneMeasurementStep` em
+`scene/measurementStep.ts`; `useMeasurementStep` guarda a escolha no PERFIL (`moldaPreferenceKey`,
+como as dicas do palco), nunca na cena, no desfazer ou no arquivo. e2e que contam geometria em
+blocos inteiros escolhem o Bloco antes (`blockStep` em `component-operations.spec.ts`).
+
+## Suavizar forças — 29/10/2026
+
+O Smooth do weight paint do Blender, para dobras macias (ombro, cotovelo, joelho). Núcleo puro em
+`scene/skinSmooth.ts`: a mistura do ponto anda `amount` na direção da MÉDIA DOS VIZINHOS por aresta
+(`sceneMeshVertexNeighbors`), em TODOS os ossos do ponto (não só no osso em destaque); ficam os 4
+mais fortes, sobras abaixo de 1e-4 somem e o total volta a 1. Ponto sem vizinho não muda.
+
+- **Pincel** (`SceneSkinPaintSettings.mode: 'smooth'`, botão "Suavizar"): lê os vizinhos nas
+  forças GUARDADAS e usa a regra de cobertura do traço, então repassar não acumula. O osso
+  escolhido só colore a prévia (`delta` vale 0 quando a mistura perde esse osso).
+- **Botão** "Suavizar forças" (`smoothSceneSkinWeightsCommand`, `SCENE_SKIN_SMOOTH` = 3 passadas
+  de 0,5) nos pontos escolhidos; os de fora servem de vizinhos e não mudam. Mora em
+  `SceneSkinWeightTools`, FORA do rascunho keyed por revisão: a mensagem sobrevive à mudança de
+  pesos. Um clique = um desfazer. Gate `model.skin`, como o pincel.
+
 ## Pintar em três zonas — 27/10/2026
 
 Desenho: `docs/plans/2026-10-27-molda-pintar-ux-design.md`. A aba responde a três perguntas, cada
@@ -102,7 +236,7 @@ Revisão de publicação: `docs/plans/2026-10-18-molda-release-full-review.md`.
 - Puxar funciona em faces, linhas e pontos, inclusive pelas alças de mover. Criar face/linha,
   inset de uma região plana, flip X/Y/Z e grupos na árvore têm comandos reversíveis. O inset
   cria uma borda no contorno da região, preservando suas divisões internas.
-- Tamanho e posição usam passos de 1 por padrão; a opção de valores quebrados usa 0,1.
+- Tamanho e posição seguem o passo escolhido no palco (padrão 0,1; ver §Passo de mover).
   `measurementReference` mantém campos e alças coerentes após reflexões e pivôs personalizados.
 - Folha de pintura reúne Pintar e Ajustar mapa. Fica à esquerda do 3D, com divisor, ampliação,
   zoom e mão; em telas estreitas, Ver modelo/Ver folha alternam a área central. O UV não fica

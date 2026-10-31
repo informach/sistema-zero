@@ -533,7 +533,7 @@ test('move and pivot handles commit one drag, cancel interruptions and work whil
   await expect(page.getByRole('button', { name: 'Mover', exact: true })).toBeEnabled()
   await page.getByRole('button', { name: 'Mover', exact: true }).click()
   await page.getByRole('button', { name: 'Mover no eixo X', exact: true }).press('ArrowRight')
-  await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('1.00')
+  await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('0.10')
   await page.getByRole('button', { name: COPY.editor.undo, exact: true }).click()
   await expect(page.getByLabel('Posição X', { exact: true })).toHaveValue('0.00')
   await page.getByRole('button', { name: 'Pivô', exact: true }).click()
