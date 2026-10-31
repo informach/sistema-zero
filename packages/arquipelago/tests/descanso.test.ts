@@ -8,12 +8,17 @@ import {
   BANCO,
   CAMA,
   descansar,
+  ENERGIA_AO_ACORDAR,
   ENERGIA_POR_SEGUNDO,
   FALA_DA_SONECA_CHEIA,
+  FALA_DE_ACORDAR_EM_CASA,
   FALA_DE_DEITAR,
   FALA_DE_SENTAR,
+  FALA_DO_COCHILO,
   lugarNaCama,
   lugarNoBanco,
+  podeCochilar,
+  SEGUNDOS_DE_COCHILO,
   sonecaAcabou,
 } from '../src/sistemas/descanso'
 import {
@@ -25,6 +30,7 @@ import {
   type MundoDoMovimento,
 } from '../src/sistemas/modos'
 import { DESCANSO } from '../src/sistemas/modos/descanso'
+import { jogoPausado } from '../src/sistemas/pausa'
 import {
   arquivoDaIlha,
   bate,
@@ -205,4 +211,49 @@ test('os textos seguem as regras: sem travessão, sem exclamação, sem começar
   for (const t of [FALA_DE_SENTAR, FALA_DE_DEITAR, FALA_DA_SONECA_CHEIA]) {
     expect(t).not.toMatch(/[—!?]/)
   }
+})
+
+describe('o cochilo da energia no zero (lacunas, 01/11/2026)', () => {
+  const base = { energia: 0, corrida: null, modo: 'chao', painelAberto: null }
+  test('cochila no chão com a energia no zero, e só assim', () => {
+    expect(podeCochilar(base)).toBe(true)
+    expect(podeCochilar({ ...base, energia: 1 })).toBe(false)
+    expect(podeCochilar({ ...base, painelAberto: 'conversa' })).toBe(false)
+  })
+
+  test('espera o fim de uma corrida e do barco, balão, mergulho, montaria, trenó, cipó e planador', () => {
+    expect(podeCochilar({ ...base, corrida: { percurso: 'bosque-copas' } })).toBe(false)
+    for (const modo of [
+      'barco',
+      'balao',
+      'mergulho',
+      'montar',
+      'escorregar',
+      'cipo',
+      'planar',
+      'escalada',
+      'borda',
+      'escada',
+      'equilibrio',
+    ])
+      expect(podeCochilar({ ...base, modo })).toBe(false)
+  })
+
+  test('cochilando, os comandos param, e as falas seguem o jeito de falar com a criança', () => {
+    const sinais = {
+      menuAberto: false,
+      painelAberto: null,
+      ferramentaAberta: false,
+      tempoAcabou: false,
+      tempoPausado: false,
+      tempoSincronizando: false,
+      resultado: null,
+    }
+    expect(jogoPausado(sinais)).toBe(false)
+    expect(jogoPausado({ ...sinais, cochilando: true })).toBe(true)
+    for (const fala of [FALA_DO_COCHILO, FALA_DE_ACORDAR_EM_CASA])
+      expect(fala).not.toMatch(/[—–!?]/)
+    expect(SEGUNDOS_DE_COCHILO).toBeGreaterThan(0)
+    expect(ENERGIA_AO_ACORDAR).toBe(60)
+  })
 })

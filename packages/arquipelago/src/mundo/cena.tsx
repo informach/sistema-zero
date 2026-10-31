@@ -30,7 +30,6 @@ import { FilhoteQueAcompanha } from './filhote-que-acompanha'
 import { FloradaDaIlha } from './florada'
 import { CameraDaFoto } from './foto'
 import { GuiaDoZappyNoMundo } from './guia-do-zappy'
-import { HabitantesDaPraia } from './habitantes-da-praia'
 import { Horta } from './horta'
 import { IlhaCentral } from './ilha-central'
 import {
@@ -109,7 +108,6 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <Agua />
           <IlhaCentral />
           <DescobertasDaIlhaCentral />
-          <HabitantesDaPraia />
           <Nico />
           <PlacaDoPedido />
           <ColecoesDaPraia />

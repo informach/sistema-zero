@@ -7,6 +7,7 @@ import {
   MapaDaIlhaSchema,
 } from '@sistemazero/arquipelago-contracts'
 import {
+  alcanceNoRumo,
   MEDIDAS_DO_MAPA,
   meioDaParte,
   partesAVista,
@@ -31,7 +32,8 @@ describe('o mapa que se revela andando (E02)', () => {
   test('as partes de terra ficam dentro do quadrado e cobrem a ilha', () => {
     for (const ilha of MAPAS_DAS_ILHAS) {
       const terra = partesDeTerra(ilha)
-      expect(terra.length).toBeGreaterThan(30)
+      // Nas do anel o quadrado vai até o porto e a caverna (01/11/2026): a ilha ocupa menos dele.
+      expect(terra.length).toBeGreaterThan(ilha === 'sua-ilha' ? 30 : 20)
       expect(terra.length).toBeLessThanOrEqual(64)
       const { meioLado, terra: raio } = MEDIDAS_DO_MAPA[ilha]
       expect(meioLado).toBeGreaterThanOrEqual(raio)
@@ -83,5 +85,41 @@ describe('o mapa que se revela andando (E02)', () => {
       for (let z = -meioLado; z <= meioLado; z += 3)
         s = registrarNoMapa(s, 'recife', { x: 0, z: 0 }, { x, z })
     expect(porcentoDoMapa('recife', s.mapa.recife)).toBe(100)
+  })
+})
+
+describe('o mapa cobre a ilha inteira (lacunas, 01/11/2026)', () => {
+  test('o quadrado de cada ilha do anel vai até o alcance real dela', () => {
+    for (const ilha of MAPAS_DAS_ILHAS) {
+      if (ilha === 'sua-ilha') continue
+      const { meioLado, terra } = MEDIDAS_DO_MAPA[ilha]
+      expect(terra).toBeGreaterThanOrEqual(14.4)
+      expect(meioLado).toBeGreaterThanOrEqual(terra)
+    }
+    // O Recife vai até o labirinto e o navio (24 m); o Bosque, até a cabana e o porto.
+    expect(MEDIDAS_DO_MAPA.recife.terra).toBeGreaterThanOrEqual(24)
+    expect(MEDIDAS_DO_MAPA.bosque.terra).toBeGreaterThan(22)
+  })
+
+  test('em cada rumo, o ponto mais longe que se pisa cai numa parte de terra', () => {
+    for (const ilha of MAPAS_DAS_ILHAS) {
+      if (ilha === 'sua-ilha') continue
+      const terra = new Set(partesDeTerra(ilha))
+      const { meioLado } = MEDIDAS_DO_MAPA[ilha]
+      for (let g = 0; g < 360; g += 15) {
+        const a = (g * Math.PI) / 180
+        const r = alcanceNoRumo(ilha, Math.cos(a), Math.sin(a)) - 0.5
+        const p = { x: Math.cos(a) * r, z: Math.sin(a) * r }
+        const col = Math.min(7, Math.floor(((p.x + meioLado) / (2 * meioLado)) * 8))
+        const lin = Math.min(7, Math.floor(((p.z + meioLado) / (2 * meioLado)) * 8))
+        expect(terra.has(lin * 8 + col)).toBe(true)
+      }
+    }
+  })
+
+  test('andar até a borda do Recife revela o canto do navio no mapa', () => {
+    const s = criarSalvamentoInicial(AGORA)
+    const longe = registrarNoMapa(s, 'recife', { x: 0, z: 0 }, { x: 20, z: 0 })
+    expect(partesVistas('recife', longe.mapa.recife).vistas).toBeGreaterThan(0)
   })
 })

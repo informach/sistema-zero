@@ -85,6 +85,8 @@ export interface EstadoDoJogo {
   isca: Isca | null
   /** Sentada no banco ou deitada na cama (`sistemas/descanso.ts`), escrito pelo personagem. */
   descanso: 'sentar' | 'deitar' | null
+  /** Cochilando onde está, com a energia no zero (`sistemas/descanso.ts`, `estado/relogios.tsx`). */
+  cochilando: boolean
   /**
    * Na casa de um irmão (fase3-12, `sistemas/visitas.ts`): o mundo desenha a casa, o quintal e a
    * horta dele, e NADA é gravado (o `mudar` não faz nada). Não é salvo: recarregar volta para casa.
@@ -179,6 +181,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     lanterna: false,
     isca: null,
     descanso: null,
+    cochilando: false,
     visita: null,
     fechadoDesde: d.fechadoDesde ?? null,
     esquecerFechado() {

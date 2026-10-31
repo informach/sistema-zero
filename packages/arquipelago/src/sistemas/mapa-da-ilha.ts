@@ -1,11 +1,13 @@
 import {
   type IlhaComMapa,
   type IlhaId,
+  ilha as ilhaPeloId,
   LADO_DO_MAPA,
   MAPA_VAZIO,
   MAPAS_DAS_ILHAS,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
+import { giroDaIlha, noModelo, raioDaEsperaDaIlha } from '../mundo/medidas'
 
 /**
  * O mapa que se revela andando (E02, levantamento de 30/10). A proposta: "Mapa que se revela
@@ -15,15 +17,41 @@ import {
  * `VISTA` metros se revelam. Só contam as partes de terra (o meio delas dentro da ilha).
  */
 
-/** Metade do lado do quadrado do mapa de cada ilha (m) e o raio da terra dela. */
+/**
+ * Até onde cada ilha do anel vai, a contar do meio, no rumo de um ponto do mundo (relativo ao
+ * centro): o mesmo alcance que o jogo espera ao abrir a ilha (`raioDaEsperaDaIlha`, com o lóbulo da
+ * cabana do Bosque, a caverna do Pico, o labirinto do Recife, as Nuvens e os portos). Antes de
+ * 01/11/2026 o mapa cobria só 13 m em todas, e o navio do Recife e a cabana nunca apareciam.
+ */
+export function alcanceNoRumo(ilha: Exclude<IlhaComMapa, 'sua-ilha'>, x: number, z: number) {
+  const dados = ilhaPeloId(ilha)
+  const m = noModelo(x, z, giroDaIlha(dados))
+  return raioDaEsperaDaIlha(dados, m.x, m.z)
+}
+
+function maiorAlcance(ilha: Exclude<IlhaComMapa, 'sua-ilha'>): number {
+  let maior = 0
+  for (let i = 0; i < 360; i++) {
+    const a = (i * Math.PI) / 180
+    maior = Math.max(maior, alcanceNoRumo(ilha, Math.cos(a), Math.sin(a)))
+  }
+  return Math.ceil(maior * 10) / 10
+}
+
+const doAnel = (ilha: Exclude<IlhaComMapa, 'sua-ilha'>) => {
+  const terra = maiorAlcance(ilha)
+  return { meioLado: Math.ceil(terra), terra }
+}
+
+/** Metade do lado do quadrado do mapa de cada ilha (m) e o maior raio da terra dela. */
 export const MEDIDAS_DO_MAPA: Readonly<Record<IlhaComMapa, { meioLado: number; terra: number }>> = {
   'sua-ilha': { meioLado: 30, terra: 29 },
-  bosque: { meioLado: 14, terra: 13 },
-  'vila-doce': { meioLado: 14, terra: 13 },
-  recife: { meioLado: 14, terra: 13 },
-  pico: { meioLado: 14, terra: 13 },
-  'vale-dos-dinos': { meioLado: 14, terra: 13 },
-  nuvens: { meioLado: 14, terra: 13 },
+  bosque: doAnel('bosque'),
+  'vila-doce': doAnel('vila-doce'),
+  recife: doAnel('recife'),
+  pico: doAnel('pico'),
+  'vale-dos-dinos': doAnel('vale-dos-dinos'),
+  nuvens: doAnel('nuvens'),
 }
 
 /** Até onde a vista revela o mapa, em metros. */
@@ -47,17 +75,39 @@ export function meioDaParte(ilha: IlhaComMapa, i: number): { x: number; z: numbe
   }
 }
 
-/** As partes de terra da ilha (o meio dentro da terra, com meia parte de folga). */
+/**
+ * As partes de terra da ilha (o meio dentro da terra no rumo dele, com meia parte de folga). Na sua
+ * ilha, um círculo; nas do anel, o alcance de cada rumo (`alcanceNoRumo`).
+ */
 export function partesDeTerra(ilha: IlhaComMapa): number[] {
+  const guardado = TERRA.get(ilha)
+  if (guardado) return guardado
   const l = lado(ilha)
-  const limite = MEDIDAS_DO_MAPA[ilha].terra + l / 2
   const lista: number[] = []
   for (let i = 0; i < LADO_DO_MAPA * LADO_DO_MAPA; i++) {
     const p = meioDaParte(ilha, i)
-    if (Math.hypot(p.x, p.z) <= limite) lista.push(i)
+    if (ilha === 'sua-ilha') {
+      if (Math.hypot(p.x, p.z) <= MEDIDAS_DO_MAPA[ilha].terra + l / 2) lista.push(i)
+      continue
+    }
+    // Nas do anel, a parte é de terra se algum ponto dela (uma grade de 5 × 5) fica no chão: o
+    // porto e a caverna são estreitos e podem não passar pelo meio da parte.
+    // O ponto da parte mais perto do meio da ilha também conta (o canto de dentro).
+    const px = Math.max(p.x - l / 2, Math.min(0, p.x + l / 2))
+    const pz = Math.max(p.z - l / 2, Math.min(0, p.z + l / 2))
+    let terra = Math.hypot(px, pz) <= alcanceNoRumo(ilha, px || p.x, pz || p.z)
+    for (let a = 0; a < 5 && !terra; a++)
+      for (let b = 0; b < 5 && !terra; b++) {
+        const x = p.x - l / 2 + ((a + 0.5) * l) / 5
+        const z = p.z - l / 2 + ((b + 0.5) * l) / 5
+        terra = Math.hypot(x, z) <= alcanceNoRumo(ilha, x, z)
+      }
+    if (terra) lista.push(i)
   }
+  TERRA.set(ilha, lista)
   return lista
 }
+const TERRA = new Map<IlhaComMapa, number[]>()
 
 /** As partes a até `VISTA` de um ponto (relativo ao centro da ilha): o retângulo de cada uma. */
 export function partesAVista(ilha: IlhaComMapa, rel: { x: number; z: number }): number[] {
