@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { gravarManifesto } from '../gravar-manifesto'
 import { objetivosDasNuvensPro } from './pro-objetivos'
 import { montarProjetoPro } from './pro-projetos'
 
@@ -71,10 +72,10 @@ export function criarManifestoPro(publico: PublicoDoDesafio = 'kids') {
 
 if (import.meta.main)
   for (const publico of ['kids', 'adulto'] as const)
-    await Bun.write(
+    await gravarManifesto(
       new URL(
         `./nuvens-pro${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
         import.meta.url,
       ),
-      `${JSON.stringify(criarManifestoPro(publico), null, 2)}\n`,
+      criarManifestoPro(publico),
     )

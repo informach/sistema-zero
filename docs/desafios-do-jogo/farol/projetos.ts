@@ -23,6 +23,12 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
  */
 const bool = (value: boolean): JSExpr => ({ type: 'bool', value })
 const v = (name: string): JSExpr => ({ type: 'var', name })
+const iff = (cond: JSExpr, then: JSStatement[]): JSStatement => ({
+  type: 'if',
+  cond,
+  then,
+  else: [],
+})
 const assign = (name: string, value: boolean): JSStatement => ({
   type: 'assign',
   name,
@@ -124,16 +130,15 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
         type: 'g2d:onOverlap',
         aVar: 'guia',
         bVar: 'farol',
-        body: [{ type: 'if', cond: v('temEstrela'), then: [assign('aceso', true)], else: [] }],
+        body: [iff(v('temEstrela'), [assign('aceso', true)])],
       },
       { type: 'g2d:onKey', key: 'Enter', body: [{ type: 'g2d:restart' }] },
     )
-    drawing.push(draw('estrela'), draw('farol'), {
-      type: 'if',
-      cond: v('aceso'),
-      then: [label('O farol acendeu.', 20, 70)],
-      else: [],
-    })
+    drawing.push(
+      draw('estrela'),
+      draw('farol'),
+      iff(v('aceso'), [label('O farol acendeu.', 20, 70)]),
+    )
   }
   drawing.push(draw('guia'))
   const source: SZIRV2 = {

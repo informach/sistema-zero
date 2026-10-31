@@ -1118,7 +1118,6 @@
           {
             "id": "anda",
             "label": "A seta para a direita leva o guia pelo palco.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -1136,58 +1135,59 @@
                 "compare": "greaterThan",
                 "value": 100
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "encontro",
             "label": "Algo acontece quando o guia encontra outro desenho.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_on_overlap",
               "area": "events"
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "lembra",
             "label": "No encontro, o jogo guarda uma informação.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_var_assign",
               "withinBlock": "sz_g2d_on_overlap"
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "decide",
             "label": "Um Se decide o que acontece.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_js_if_else",
               "area": "events"
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomeca",
             "label": "Uma tecla recomeça o jogo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_restart",
               "withinBlock": "sz_g2d_on_key"
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "some",
             "label": "Extra: algo sai da tela quando é pego no encontro.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_destroy_sprite",
               "withinBlock": "sz_g2d_on_overlap"
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
