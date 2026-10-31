@@ -5,6 +5,7 @@
     "watchPatterns": [
       "/packages/community/**",
       "/packages/core/**",
+      "/packages/edisvg/**",
       "/packages/member-shell/**",
       "/packages/avatar-quarto/**",
       "/packages/arquipelago-contracts/**",

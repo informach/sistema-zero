@@ -5,6 +5,7 @@
     "watchPatterns": [
       "/packages/admin/**",
       "/packages/core/**",
+      "/packages/edisvg/**",
       "/packages/member-shell/**",
       "/packages/avatar-quarto/**",
       "/packages/helpdesk-contracts/**",
