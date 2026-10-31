@@ -2,6 +2,18 @@ import type { Vec3 } from '../core/model'
 
 export type SceneMeasurementStep = 1 | 0.1 | 0.01
 
+/** Do mais grosso ao mais fino; o fino (0,1) é o padrão: ajusta e ainda encaixa no arrasto. */
+export const SCENE_MEASUREMENT_STEPS: readonly SceneMeasurementStep[] = [1, 0.1, 0.01]
+export const SCENE_MEASUREMENT_STEP_DEFAULT: SceneMeasurementStep = 0.1
+export const SCENE_MEASUREMENT_STEP_STORAGE = 'measurement-step'
+
+/** Valor guardado no perfil; qualquer outra coisa volta ao padrão. */
+export function readSceneMeasurementStep(raw: string | null): SceneMeasurementStep {
+  return (
+    SCENE_MEASUREMENT_STEPS.find((step) => String(step) === raw) ?? SCENE_MEASUREMENT_STEP_DEFAULT
+  )
+}
+
 export const SCENE_COORDINATE_STEP = 0.01
 
 export function formatSceneCoordinate(value: number) {

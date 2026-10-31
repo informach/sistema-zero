@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import { COPY } from '../../../core/copy'
 import type { SceneFileFormat } from '../../../export/sceneFileFormat'
 import type { SceneGlbIssue } from '../../../export/sceneGlbReport'
+import { hasCharacterRig } from '../../../scene/characterMotions'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import type { EditorStore } from '../../../state/editorStore'
 import type { SceneViewportPort } from '../../../viewport/sceneViewportTypes'
@@ -47,6 +48,9 @@ export function SceneGlbExportPanel({
   const copy = COPY.scene.glbExport
   const [chosenFormat, setFormat] = useState<SceneFileFormat | 'png' | 'presentation'>('glb')
   const [chosenStudio, setAnimatedPaint] = useState(false)
+  const [chosenBones, setStandardBones] = useState(false)
+  // Só faz sentido com um esqueleto de personagem; a criação não muda com o painel aberto.
+  const rigged = useMemo(() => hasCharacterRig(editor.getState().asset), [editor])
   // O portão: GLB, foto e apresentação são `files.export` (o básico); glTF, OBJ e a cópia "para
   // outros programas" são `files.interop`. Sem ele, o GLB vai para o Estúdio, sem escolha.
   const interop = useMoldaToolAccess().can('files.interop')
@@ -57,6 +61,7 @@ export function SceneGlbExportPanel({
       ? chosenFormat
       : 'glb'
   const animatedPaint = interop ? chosenStudio : true
+  const standardBones = interop && rigged && format !== 'obj' && chosenBones
   /** Trocar o destino descarta a cópia preparada: consentimento não atravessa gravações. */
   function chooseDestination(next: boolean) {
     if (next === animatedPaint) return
@@ -139,6 +144,25 @@ export function SceneGlbExportPanel({
             </label>
           ))}
         </fieldset>
+      )}
+      {interop && rigged && format !== 'obj' && (
+        <label className="flex min-h-11 cursor-pointer items-start gap-3 rounded-xl border border-mld-border bg-mld-bg p-3 text-sm">
+          <input
+            type="checkbox"
+            name="glbStandardBones"
+            className="mt-0.5 size-5 shrink-0 accent-mld-accent"
+            checked={chosenBones}
+            onChange={(event) => {
+              // Outros nomes, outra cópia: o que já estava preparado não vale mais.
+              setStandardBones(event.target.checked)
+              if (state.status === 'busy' || state.status === 'ready') task.cancel()
+            }}
+          />
+          <span>
+            <span className="font-bold">{copy.boneNames}</span>
+            <span className="block text-mld-muted">{copy.boneNamesHint}</span>
+          </span>
+        </label>
       )}
       <p role="status" aria-atomic="true" className="font-bold">
         {state.status === 'busy'
@@ -237,6 +261,7 @@ export function SceneGlbExportPanel({
               void task.prepare(
                 format === 'obj' ? false : animatedPaint,
                 format === 'glb' ? undefined : format,
+                standardBones,
               )
             }
           >

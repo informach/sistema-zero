@@ -55,6 +55,15 @@ export const COPY = {
       interrupted:
         'O rascunho foi descartado ao interromper a edição. Os pesos guardados não mudaram.',
       failed: 'Não foi possível aplicar os pesos. Confira a seleção e tente novamente.',
+      smooth: 'Suavizar forças',
+      smoothHint:
+        'Mistura a força de cada ponto escolhido com a dos vizinhos, em todos os ossos. Deixa as dobras macias, como no ombro e no joelho. Para a peça toda, escolha todos os pontos.',
+      smoothed: (count: number) =>
+        count
+          ? `Forças suavizadas em ${count.toLocaleString('pt-BR')} ${count === 1 ? 'ponto' : 'pontos'}. Você pode desfazer.`
+          : 'Estes pontos já estavam suaves.',
+      smoothPrecision: (count: number) =>
+        `${count.toLocaleString('pt-BR')} ${count === 1 ? 'ponto foi preservado' : 'pontos foram preservados'} para não perder uma força muito pequena.`,
     },
     weightMap: {
       title: 'Ver força de um osso',
@@ -65,17 +74,122 @@ export const COPY = {
       exact:
         'Para ler ou ajustar os valores, escolha os pontos e abra Força dos ossos nestes pontos.',
     },
+    characterRig: {
+      title: 'Esqueleto de personagem',
+      intro:
+        'Monte um esqueleto de pessoa no personagem inteiro e use movimentos prontos: parado, andando, correndo e pulando.',
+      mirror: 'Marcar só um lado (o outro é espelhado)',
+      start: 'Montar esqueleto de personagem',
+      chooseHint:
+        'Escolha o grupo do personagem antes, ou deixe sem escolher para usar todas as peças.',
+      marks: {
+        chin: 'Toque no queixo.',
+        groin: 'Toque onde as pernas se juntam.',
+        elbow: 'Toque em um cotovelo.',
+        wrist: 'Toque no pulso desse braço.',
+        knee: 'Toque no joelho do mesmo lado.',
+      },
+      otherSide: 'Agora o outro lado.',
+      markHint: 'O palco mostra o personagem de frente. Marque no meio de cada parte.',
+      stageMark: 'Toque no ponto pedido no painel. Arraste no fundo para olhar.',
+      stagePreview: 'Confira o esqueleto. Ele só entra na criação ao usar Montar esqueleto.',
+      progress: (done: number, total: number) => `Ponto ${done} de ${total}`,
+      back: 'Último ponto',
+      restart: 'Marcar de novo',
+      cancel: 'Cancelar',
+      preview: 'Confira o esqueleto no palco. Ao montar, as peças passam a acompanhar os ossos.',
+      confirm: 'Montar esqueleto',
+      done: (pieces: number) =>
+        `Esqueleto pronto em ${pieces} ${pieces === 1 ? 'peça' : 'peças'}. Em Animar, experimente os movimentos de personagem.`,
+      ready: 'Este modelo já tem esqueleto de personagem.',
+      again: 'Montar de novo',
+      remove: 'Remover ossos do modelo',
+      removeHint:
+        'As peças ficam paradas no lugar; os movimentos feitos com esses ossos saem junto.',
+      removed: 'Ossos removidos. Dá para desfazer.',
+      thenMotion: (name: string) => `Depois de montar, "${name}" já entra no personagem.`,
+      replaces: (pieces: number) =>
+        `${pieces === 1 ? '1 peça já tem' : `${pieces} peças já têm`} ossos. Ao montar, eles são trocados pelo esqueleto de personagem, e os movimentos feitos com eles saem junto. Dá para desfazer.`,
+      animate: 'Experimentar movimentos',
+    },
+    characterMotions: {
+      title: 'Movimentos do personagem',
+      names: {
+        idle: 'Parado',
+        walk: 'Andando',
+        run: 'Correndo',
+        jump: 'Pulando',
+        crouch: 'Agachar',
+        sit: 'Sentar',
+        fall: 'Cair',
+        wave: 'Acenar',
+        clap: 'Bater palmas',
+        push: 'Empurrar',
+        punch: 'Golpe de leve',
+        dance: 'Dançar',
+        cheer: 'Comemorar',
+        lookAround: 'Olhar em volta',
+        startle: 'Levar um susto',
+      },
+      categories: {
+        mover: 'Mover',
+        brincar: 'Brincar',
+        dancar: 'Dançar',
+        emocoes: 'Emoções',
+        meus: 'Meus movimentos',
+      },
+      hint: 'Clique num movimento e ele já entra no personagem. Andando e Correndo ficam no lugar: o jogo é que leva o personagem pelo mundo.',
+      missing:
+        'Na primeira vez, o Molda coloca os ossos sozinho, olhando o personagem de frente. Funciona melhor em pé, com os braços abertos ou afastados do corpo.',
+      autoRigged: 'O Molda colocou os ossos sozinho. Ficou torto? Ajuste os ossos.',
+      adjust: 'Ajustar os ossos',
+      autoFailed: 'Não deu para achar o corpo sozinho. Marque os pontos no palco: é rapidinho.',
+      autoFailedBasic:
+        'Não deu para achar o corpo sozinho. Deixe o personagem em pé, de frente, com os braços abertos ou afastados do corpo, e tente de novo.',
+      simple: 'Movimentos de uma peça (pular, balançar, girar)',
+      applied: (name: string) => `${name} está no personagem, com as poses na linha do tempo.`,
+      speed: 'Velocidade',
+      strength: 'Intensidade',
+      tuneHint: 'Os ajustes refazem o movimento. Desfazer volta ao de antes.',
+      saved: 'Já está no personagem: escolher de novo volta para ele.',
+      inPlace: 'No lugar',
+      inPlaceHint:
+        'Desligado, o personagem anda para a frente de verdade, sem os pés escorregarem.',
+      arms: 'Braços',
+      armsValue: (degrees: number) =>
+        degrees === 0
+          ? 'automático'
+          : degrees > 0
+            ? `${degrees}° mais afastados`
+            : `${-degrees}° mais juntos`,
+      armsHint: 'O Molda já afasta os braços para não atravessarem o corpo; ajuste se quiser.',
+      once: 'Acontece uma vez e para na última pose.',
+      saveMine: 'Guardar como movimento pronto',
+      saveMineHint:
+        'Este movimento foi feito à mão. Guardado, ele aparece em Meus movimentos e serve em qualquer personagem com ossos.',
+      mineSaved: (name: string) => `"${name}" está em Meus movimentos.`,
+      mineFull: 'Meus movimentos está cheio (24). Tire um para guardar outro.',
+      mineError: 'Não deu para guardar neste navegador. Libere espaço e tente de novo.',
+      mineInvalid:
+        'Esse movimento não deu para guardar como pronto: ele precisa mexer os ossos do personagem.',
+      mineRemove: (name: string) => `Tirar ${name} de Meus movimentos`,
+      mineEmpty:
+        'Anime um personagem à mão e use "Guardar como movimento pronto" para ele aparecer aqui.',
+    },
     skinPaint: {
       title: 'Pincel de forças',
       off: 'Só observar',
       add: 'Dar força',
       subtract: 'Tirar força',
+      smooth: 'Suavizar',
       radius: 'Alcance (blocos)',
       strength: 'Intensidade (%)',
       radiusInvalid: 'Use um alcance maior que zero.',
       hint: 'Arraste sobre a peça. Soltar aplica um traço; Escape cancela. Desfazer retira o traço inteiro.',
       previewHint:
         'Durante o traço, as cores mostram uma prévia. Os pesos só são guardados ao soltar. A pintura não muda as cores da sua criação.',
+      smoothHint:
+        'Suavizar mistura cada ponto com os vizinhos, em todos os ossos: a dobra fica macia. As cores mostram o osso escolhido.',
       reachHint:
         'O círculo é uma referência do alcance em blocos. A força segue as faces ligadas, mesmo nas dobras; as cores mostram os pontos afetados. Repassar no mesmo traço não acumula força.',
       through: 'Ver pontos atrás da peça',
@@ -214,6 +328,9 @@ export const COPY = {
       destinationStudio: 'Para o Estúdio',
       destinationStudioHint:
         'Leva a folha inteira da pintura que se mexe, para ela continuar se mexendo nos jogos 3D do Estúdio.',
+      boneNames: 'Ossos com nomes padrão',
+      boneNamesHint:
+        'Os ossos do personagem vão com os nomes que Unity, Godot e Blender reconhecem (os do Mixamo), para receber animações de lá. Seu projeto não muda.',
       prepare: 'Preparar GLB',
       validating: 'Conferindo a criação…',
       encoding: 'Preparando peças, pintura e movimentos…',
@@ -492,7 +609,7 @@ export const COPY = {
     animationPoseAxes: { x: 'Lado (X)', y: 'Altura (Y)', z: 'Profundidade (Z)' },
     animationPoseIncompatible:
       'A pose copiada usa outro tipo de posição local. Escolha um movimento compatível.',
-    animationPresetTitle: 'Experimentar um movimento pronto',
+    animationPresetTitle: 'Movimentos prontos',
     animationPresetKind: 'Qual movimento?',
     animationPresetNames: { bounce: 'Pular', sway: 'Balançar', spin: 'Girar uma volta' },
     animationPresetHints: {
@@ -1202,7 +1319,12 @@ export const COPY = {
     pathAround: 'Lados do tubo',
     pathCaps: 'Fechar as pontas',
     pathClosed: 'Caminho fechado',
-    movementStep: 'Passo das medidas',
+    movementStepChoice: 'Passo ao mover e redimensionar',
+    movementSteps: {
+      1: { label: 'Bloco', hint: 'Anda 1 bloco por vez: bom para montar o grosso.' },
+      0.1: { label: 'Fino', hint: 'Anda 0,1 por vez: ajusta e ainda encaixa no lugar.' },
+      0.01: { label: 'Livre', hint: 'Anda 0,01 por vez: para os detalhes bem pequenos.' },
+    },
     showGrid: 'Mostrar grade',
     xray: 'Raio-X',
     xrayHint: 'Deixa as peças transparentes para ver e alcançar o que está atrás.',

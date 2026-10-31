@@ -254,7 +254,7 @@ test('exporta glTF, OBJ com materiais, PNG limpo e apresentação que gira sem i
   expect(errors).toEqual([])
 })
 
-test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina nova na galeria', async ({
+test('grade e imagem de apoio são da sessão, o passo é do perfil; o ZIP restaura a oficina nova na galeria', async ({
   page,
 }) => {
   await page.goto('/?')
@@ -273,9 +273,7 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
   await page.getByRole('button', { name: 'Mostrar grade', exact: true }).click()
   // O passo mora recolhido em "Mais ajustes do palco" desde o lote 7a: abrir faz parte do caminho.
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
-  await page
-    .getByRole('checkbox', { name: 'Passos de 0,01 ao mover e redimensionar', exact: true })
-    .check()
+  await page.getByLabel('Passo ao mover e redimensionar').selectOption('0.01')
   await expect(page.getByRole('button', { name: 'Desfazer', exact: true })).toBeDisabled()
   await backToGallery(page)
   const backup = await downloaded(page, 'Baixar tudo')
@@ -289,14 +287,9 @@ test('grade, passo e imagem de apoio são da sessão; o ZIP restaura a oficina n
     'aria-pressed',
     'true',
   )
-  // A oficina reaberta nasce com "Mais ajustes do palco" recolhido de novo.
+  // A oficina reaberta nasce com "Mais ajustes do palco" recolhido de novo; o passo é do perfil.
   await page.locator('summary').filter({ hasText: 'Mais ajustes do palco' }).click()
-  await expect(
-    page.getByRole('checkbox', {
-      name: 'Passos de 0,01 ao mover e redimensionar',
-      exact: true,
-    }),
-  ).not.toBeChecked()
+  await expect(page.getByLabel('Passo ao mover e redimensionar')).toHaveValue('0.01')
   await page.getByRole('button', { name: 'Imagem de apoio', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Escolher imagem', exact: true })).toBeVisible()
   await expect(page.getByText('apoio.png', { exact: true })).toHaveCount(0)
@@ -648,7 +641,7 @@ test('pintura 2D e prévia 3D compartilham pixels, desfazer e reabertura; movime
   await page.getByRole('button', { name: COPY.editor.redo, exact: true }).click()
   expect((await nativeProject(page)).images).toEqual(painted.images)
   await page.getByRole('button', { name: COPY.scene.animationMode, exact: true }).click()
-  await page.getByText(COPY.scene.animationPresetTitle, { exact: true }).click()
+  await page.getByText(COPY.scene.characterMotions.simple, { exact: true }).click()
   await page.getByRole('button', { name: 'Pular', exact: true }).click()
   await page.getByRole('button', { name: COPY.scene.animationPresetConfirm, exact: true }).click()
   const animated = await nativeProject(page)

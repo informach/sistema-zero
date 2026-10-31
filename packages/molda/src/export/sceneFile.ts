@@ -8,12 +8,18 @@ import { SceneGlbLossError } from './sceneGlbReport'
 /** Convert only our freshly encoded GLB. User files go through the import validators. */
 export async function encodeSceneFile(
   document: MoldaSceneDocument,
-  options: { format?: SceneFileFormat; allowLosses?: boolean; animatedPaint?: boolean } = {},
+  options: {
+    format?: SceneFileFormat
+    allowLosses?: boolean
+    animatedPaint?: boolean
+    standardBones?: boolean
+  } = {},
 ) {
   const format = options.format ?? 'glb'
   const result = encodeSceneGlb(document, {
     allowLosses: true,
     animatedPaint: format === 'obj' ? false : options.animatedPaint,
+    standardBones: format === 'obj' ? false : options.standardBones,
   })
   if (format !== 'glb') {
     const header = new DataView(result.bytes.buffer)

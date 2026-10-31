@@ -39,7 +39,7 @@ export function SceneSkinPaintControls({
       <legend className="sr-only">{copy.title}</legend>
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-bold text-mld-text">{copy.title}</span>
-        {(['off', 'add', 'subtract'] as const).map((value) => (
+        {(['off', 'add', 'subtract', 'smooth'] as const).map((value) => (
           <Button
             key={value}
             variant={mode === value ? 'primary' : 'ghost'}
@@ -90,6 +90,7 @@ export function SceneSkinPaintControls({
               {copy.radiusInvalid}
             </p>
           )}
+          {mode === 'smooth' && <p className="text-xs text-mld-muted">{copy.smoothHint}</p>}
           <p className="text-xs text-mld-muted">{copy.reachHint}</p>
         </>
       )}

@@ -5,6 +5,7 @@ import { GlbBinary, MAX_SCENE_GLB_BYTES } from './GlbBinary'
 import { encodeGlbContainer } from './glbContainer'
 import { SceneGlbMaterials } from './SceneGlbMaterials'
 import { prepareSceneGlbAnimations } from './sceneGlbAnimations'
+import { renameSceneGlbBones } from './sceneGlbBoneNames'
 import { prepareSceneGlbGeometry } from './sceneGlbGeometry'
 import { prepareSceneGlbHierarchy } from './sceneGlbHierarchy'
 import { type SceneGlbIssue, SceneGlbLossError } from './sceneGlbReport'
@@ -17,9 +18,11 @@ import { prepareSceneGlbSkin } from './sceneGlbSkin'
  */
 export function encodeSceneGlb(
   document: MoldaSceneDocument,
-  options: { allowLosses?: boolean; animatedPaint?: boolean } = {},
+  options: { allowLosses?: boolean; animatedPaint?: boolean; standardBones?: boolean } = {},
 ) {
   const hierarchy = prepareSceneGlbHierarchy(document)
+  // Para outros programas: ossos de personagem com os nomes padrão (Mixamo, Unity, Godot).
+  if (options.standardBones) renameSceneGlbBones(document, hierarchy)
   const issues: SceneGlbIssue[] = hierarchy.excluded.map((sourceId) => ({
     code: 'hidden-node',
     sourceId,

@@ -183,7 +183,7 @@ test('pintura real, cor composta, movimento e recuperação da pose após recarr
     await page.getByRole('button', { name: /^Escolher caixa/ }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
     await page
-      .getByRole('button', { name: 'Experimentar um movimento pronto', exact: true })
+      .getByRole('button', { name: 'Movimentos de uma peça (pular, balançar, girar)', exact: true })
       .click()
     await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     const previewSource = await snapshot()
@@ -355,7 +355,7 @@ test('câmera, pivô, divisão e decisões antes de abandonar prévias', async (
     await page.getByRole('button', { name: 'Concluir edição', exact: true }).click()
     await page.getByRole('button', { name: 'Animar', exact: true }).click()
     await page
-      .getByRole('button', { name: 'Experimentar um movimento pronto', exact: true })
+      .getByRole('button', { name: 'Movimentos de uma peça (pular, balançar, girar)', exact: true })
       .click()
     await page.getByRole('button', { name: 'Modelo inteiro', exact: true }).click()
     await page.getByRole('button', { name: 'Pular', exact: true }).click()

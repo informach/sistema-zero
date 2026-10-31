@@ -62,7 +62,7 @@ export class SceneGuideAnnotation {
   }
   update(state: ScenePreviewGuideState | null) {
     this.state = state
-    const count = state?.rig?.points.length ?? 0
+    const count = state?.rig?.numbered === false ? 0 : (state?.rig?.points.length ?? 0)
     while (this.rigLabels.children.length > count) this.rigLabels.lastElementChild?.remove()
     while (this.rigLabels.children.length < count) {
       const label = this.canvas.ownerDocument.createElement('span')

@@ -6,6 +6,7 @@ import { evaluateSceneNodeFlags } from './evaluate'
 import { SCENE_SKIN_LIMITS, type SceneSkinBinding, type SceneSkinInfluence } from './skin'
 import { bindSceneSkin, type SceneSkinBindInput } from './skinBinding'
 import { captureSceneSkinJoint, sceneSkinJointUsage } from './skinJoints'
+import { smoothSceneSkinRows } from './skinSmooth'
 import { patchSceneSkinWeights } from './skinWeightPatch'
 import * as v from './validation'
 
@@ -109,6 +110,33 @@ export function setSceneSkinWeights(
     options.normalize === undefined ? false : v.boolean(options.normalize, 'normalize')
   const next = patchSceneSkinWeights(skin, patch, normalize)
   return next === skin ? document : replace(document, next)
+}
+
+/** "Suavizar forças" nos pontos escolhidos: três passadas, metade do caminho para a média por vez. */
+export const SCENE_SKIN_SMOOTH = { iterations: 3, amount: 0.5 } as const
+
+export function smoothSceneSkinWeightsCommand(
+  document: MoldaSceneDocument,
+  skinId: string,
+  vertexIds: readonly string[],
+) {
+  const { skin, index } = context(document, skinId)
+  const ids = v.list(vertexIds, 'vertexIds', SCENE_SKIN_LIMITS.weightedVertices).map((id) => {
+    const valid = v.id(id, 'vertexIds')
+    v.requireScene(Object.hasOwn(skin.weights, valid), 'vertexIds', 'Escolha pontos desta peça.')
+    return valid
+  })
+  v.requireScene(ids.length > 0, 'vertexIds', 'Escolha pontos da peça para suavizar.')
+  const node = index.scene.nodes.get(skin.nodeId),
+    mesh = node?.kind === 'mesh' ? index.geometries.get(node.geometryId) : null
+  v.requireScene(mesh?.kind === 'mesh', 'skinId', 'Esta peça precisa de uma malha com pontos.')
+  const { patch, precision } = smoothSceneSkinRows(mesh, skin.weights, ids, SCENE_SKIN_SMOOTH)
+  const next = patchSceneSkinWeights(skin, patch, false)
+  return {
+    document: next === skin ? document : replace(document, next),
+    changed: Object.keys(patch).length,
+    precision,
+  }
 }
 
 /** Add one authorial support without assigning weights, changing old binds, or moving anything. */
