@@ -14,8 +14,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "A corrente muda",
-        "enunciado": "A concha já segue a corrente. Complete Espaço para alternar direita entre 1 e 0: se vale 1, passe para 0; senão, passe para 1. Cada toque troca o sentido, sem alterar o movimento pronto.",
+        "enunciado": "A Maré quer ver a concha passear pela lagoa nos dois sentidos. Cada toque no espaço deve virar a corrente: se a concha ia para a direita, passa a ir para a esquerda, e o contrário.",
         "dicas": [
+          "A concha já segue a corrente. Complete Espaço para alternar direita entre 1 e 0: se vale 1, passe para 0; senão, passe para 1. Cada toque troca o sentido, sem alterar o movimento pronto.",
           "Use Se e Senão no mesmo evento. Duas condições seguidas podem desfazer a troca.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -2065,7 +2066,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete as ações indicadas para esta rodada.",
+            "label": "Cada toque no espaço vira o sentido da corrente.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2237,8 +2238,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Conchas por viagem",
-        "enunciado": "Complete a seta esquerda para somar uma concha em cesta somente quando ela tiver menos de três. Na seta direita, some a cesta em guardadas e deixe cesta em zero. Descarregar de novo não duplica conchas, e a próxima viagem começa com a cesta vazia.",
+        "enunciado": "A Maré recolhe conchas numa cesta que leva no máximo três. Ela quer pegar conchas uma de cada vez e, depois, guardar a cesta inteira na caixa, começando a próxima viagem com a cesta vazia.",
         "dicas": [
+          "Complete a seta esquerda para somar uma concha em cesta somente quando ela tiver menos de três. Na seta direita, some a cesta em guardadas e deixe cesta em zero. Descarregar de novo não duplica conchas, e a próxima viagem começa com a cesta vazia.",
           "Na entrega, some a quantidade que já está na cesta antes de esvaziá-la.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -4202,7 +4204,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete as ações indicadas para esta rodada.",
+            "label": "A cesta leva até três conchas e a caixa guarda a cesta inteira, sem duplicar.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4440,8 +4442,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Dois corais cuidados",
-        "enunciado": "As setas escolhem o coral. Complete Espaço: para o coral 1, confira se cuidado1 é zero; então marque 1 e some um em cuidados. Faça o equivalente com cuidado2 para o coral 2. A ordem é livre, mas cada coral conta uma única vez.",
+        "enunciado": "Dois corais da lagoa estão desbotados. A Maré quer escolher um coral e cuidar dele, e cada coral cuidado conta uma vez só, na ordem que ela quiser.",
         "dicas": [
+          "As setas escolhem o coral. Complete Espaço: para o coral 1, confira se cuidado1 é zero; então marque 1 e some um em cuidados. Faça o equivalente com cuidado2 para o coral 2. A ordem é livre, mas cada coral conta uma única vez.",
           "Cada coral precisa da própria marca. Cuidar de um não muda a marca do outro.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -7182,7 +7185,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete as ações indicadas para esta rodada.",
+            "label": "Cada coral escolhido é cuidado e contado uma vez só.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -7400,8 +7403,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Uma bolha por vez",
-        "enunciado": "O voo e a volta da bolha já estão prontos. Complete Espaço: quando emVoo for zero, marque emVoo como 1 e some um em lancamentos. Enquanto ela vai e volta, novos toques esperam. Quando voltar, o cenário libera outra tentativa.",
+        "enunciado": "A Maré solta bolhas para ver onde a corrente leva. Ela quer soltar uma bolha de cada vez: enquanto uma está subindo e voltando, apertar de novo não solta outra.",
         "dicas": [
+          "O voo e a volta da bolha já estão prontos. Complete Espaço: quando emVoo for zero, marque emVoo como 1 e some um em lancamentos. Enquanto ela vai e volta, novos toques esperam. Quando voltar, o cenário libera outra tentativa.",
           "As duas ações ficam dentro da condição de que não há bolha em voo.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -9846,7 +9850,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete as ações indicadas para esta rodada.",
+            "label": "Só sai uma bolha nova quando a anterior já voltou.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -10016,8 +10020,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "A chave do navio",
-        "enunciado": "A seta esquerda já pega a chave enquanto o baú está fechado. Complete Espaço para abrir só quando chave for 1 e aberto for zero. Marque aberto como 1, deixe chave em zero e some um em aberturas. Sem chave ou depois de abrir, não acontece uma nova abertura.",
+        "enunciado": "O baú do navio afundado tem um cadeado. A Maré quer que o baú abra só com a chave na mão, uma vez, e que a chave fique usada depois de abrir.",
         "dicas": [
+          "A seta esquerda já pega a chave enquanto o baú está fechado. Complete Espaço para abrir só quando chave for 1 e aberto for zero. Marque aberto como 1, deixe chave em zero e some um em aberturas. Sem chave ou depois de abrir, não acontece uma nova abertura.",
           "Confira as duas informações antes de abrir. Use a chave e registre a abertura na mesma condição.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -12384,7 +12389,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete as ações indicadas para esta rodada.",
+            "label": "O baú abre só com a chave, uma vez, e a chave fica usada.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -12592,8 +12597,10 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas",
-        "enunciado": "O Recife tem alvos esperando dentro da água. Complete a mira horizontal com as setas. Faça Espaço (A no toque) lançar uma bolha da posição da mira para cima, uma de cada vez. Ao tocar um alvo ainda livre, pare a bolha, marque o alvo como preso e some um ponto. Errar ou acertar o mesmo alvo de novo não dá pontos. Depois de uma bolha sair pelo alto, permita outra tentativa. Recomeçar com Enter fica para o extra.",
+        "enunciado": "A Maré inventou uma brincadeira na lagoa: mirar e soltar bolhas para prender os alvos que boiam. Ela quer mirar com as setas, soltar uma bolha de cada vez e ganhar um ponto por alvo preso, sem contar o mesmo alvo duas vezes.",
         "dicas": [
+          "O Recife tem alvos esperando dentro da água. Complete a mira horizontal com as setas. Faça Espaço (A no toque) lançar uma bolha da posição da mira para cima, uma de cada vez. Ao tocar um alvo ainda livre, pare a bolha, marque o alvo como preso e some um ponto.",
+          "Errar ou acertar o mesmo alvo de novo não dá pontos. Depois de uma bolha sair pelo alto, permita outra tentativa. Recomeçar com Enter fica para o extra.",
           "Cenário, imagens e placar estão prontos. Complete os eventos de teclado e o laço do jogo.",
           "Use mover com setas na horizontal para a mira. Reposicione a bolha perto da mira antes de dar velocidade negativa em y.",
           "Guarde emVoo e preso. O contato só conta quando a bolha está em voo e o alvo ainda não está preso."
@@ -16750,8 +16757,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: bolha rápida",
-        "enunciado": "O jogo já funciona. Mude apenas a velocidade da bolha: ela sobe com velocidade y de -8, em vez de -5. A mira e as regras de captura continuam iguais. Solte uma bolha e observe como chega mais cedo ao alvo.",
+        "enunciado": "A Maré acha que as bolhas sobem devagar demais. Ela quer bolhas mais rápidas, sem mudar a mira nem as regras de prender os alvos.",
         "dicas": [
+          "O jogo já funciona. Mude apenas a velocidade da bolha: ela sobe com velocidade y de -8, em vez de -5. A mira e as regras de captura continuam iguais. Solte uma bolha e observe como chega mais cedo ao alvo.",
           "Procure a velocidade da bolha no evento da tecla Espaço.",
           "O valor negativo em y faz a bolha subir. Um módulo maior faz subir mais rápido.",
           "Mantenha a velocidade horizontal da bolha em zero."
@@ -21906,8 +21914,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: dois pontos",
-        "enunciado": "O jogo já funciona. Mude apenas a pontuação: cada alvo preso passa a valer dois pontos. Continue contando só uma vez por alvo. Uma bolha que erra não conta pontos, e Enter limpa o placar.",
+        "enunciado": "A Maré quer deixar a brincadeira mais animada: cada alvo preso passa a valer dois pontos, ainda contando uma vez só por alvo.",
         "dicas": [
+          "O jogo já funciona. Mude apenas a pontuação: cada alvo preso passa a valer dois pontos. Continue contando só uma vez por alvo. Uma bolha que erra não conta pontos, e Enter limpa o placar.",
           "A soma está dentro do contato da bolha com o alvo.",
           "Troque o valor somado, mantendo a condição que impede contar o mesmo alvo outra vez.",
           "Deixe a bolha junto do alvo e confira que os pontos não continuam aumentando."
@@ -27040,8 +27049,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: outro alvo",
-        "enunciado": "O jogo já funciona e um alvo novo apareceu à esquerda. Ele já está desenhado, mas ainda não pode ser preso. Complete apenas o contato da bolha com alvoNovo: pare a bolha, marque novoPreso e some um ponto uma única vez. O outro alvo continua com a regra que já tinha.",
+        "enunciado": "Apareceu um alvo novo do lado esquerdo da lagoa, mas a bolha passa por ele sem prender. A Maré quer que ele também possa ser preso, uma vez só.",
         "dicas": [
+          "O jogo já funciona e um alvo novo apareceu à esquerda. Ele já está desenhado, mas ainda não pode ser preso. Complete apenas o contato da bolha com alvoNovo: pare a bolha, marque novoPreso e some um ponto uma única vez. O outro alvo continua com a regra que já tinha.",
           "Observe o evento de contato com o alvo antigo.",
           "Use novoPreso para guardar a captura do alvo novo, sem alterar a marca preso do alvo antigo.",
           "Teste uma bolha em cada alvo e tente acertar novamente o mesmo alvo."

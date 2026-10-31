@@ -13,6 +13,7 @@ import { createEmptyProject, type Project } from '../../../packages/studio/src/c
 import { generateProjectFiles } from '../../../packages/studio/src/generators/project'
 import { assignStableIdsToIR } from '../../../packages/studio/src/ir/ids'
 import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/ir/schema'
+import { PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
 import { assetsDoPico } from './projetos'
 
 const n = (value: number): JSExpr => ({ type: 'num', value })
@@ -309,10 +310,17 @@ export function objetivosDoQuadroPico(
   const inicio = quadro === 2 ? 1 : 0
   const fim = quadro === 2 ? 0 : quadro === 4 ? 3 : 1
   const checks = [
-    check('acao', 'Complete a ação indicada para esta rodada.', passos, alvo, fim, [
-      at(0, alvo, inicio),
-      ...(quadro === 1 ? [at(1, 'noChao', 0), at(1, 'pinguim.y', 295, 'lessThan')] : []),
-    ]),
+    check(
+      'acao',
+      PEDIDOS_DOS_MORADORES[QUADROS_INICIAIS_DO_PICO[quadro - 1]!.slug]!.objetivo,
+      passos,
+      alvo,
+      fim,
+      [
+        at(0, alvo, inicio),
+        ...(quadro === 1 ? [at(1, 'noChao', 0), at(1, 'pinguim.y', 295, 'lessThan')] : []),
+      ],
+    ),
   ]
   if (quadro === 1)
     checks.push(
@@ -418,8 +426,10 @@ export function desafiosIniciaisDoPico(publico: PublicoDoDesafio) {
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
-        enunciado: meta.texto,
+        // A44: o pedido do morador; o texto técnico de antes vira a primeira dica.
+        enunciado: PEDIDOS_DOS_MORADORES[meta.slug]!.pedido,
         dicas: [
+          meta.texto,
           meta.dica,
           'Cenário e movimento já estão prontos. Complete apenas os eventos indicados.',
         ],

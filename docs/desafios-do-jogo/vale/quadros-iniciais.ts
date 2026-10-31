@@ -5,6 +5,7 @@ import {
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import type { JSStatement } from '../../../packages/studio/src/ir/schema'
+import { PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
 import {
   at,
   baseDoQuadro,
@@ -188,9 +189,14 @@ export function objetivosDoQuadroVale(
   const initial = quadro === 2 ? 1 : 0
   const final = quadro === 1 ? 3 : quadro === 2 ? 0 : 1
   const checks = [
-    check('acao', 'Complete a ação indicada para esta rodada.', steps, path, final, [
-      at(0, path, initial),
-    ]),
+    check(
+      'acao',
+      PEDIDOS_DOS_MORADORES[QUADROS_INICIAIS_DO_VALE[quadro - 1]!.slug]!.objetivo,
+      steps,
+      path,
+      final,
+      [at(0, path, initial)],
+    ),
   ]
   if (quadro === 1)
     checks.push(
@@ -279,8 +285,10 @@ export function desafiosIniciaisDoVale(publico: PublicoDoDesafio) {
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
-        enunciado: meta.texto,
+        // A44: o pedido do morador; o texto técnico de antes vira a primeira dica.
+        enunciado: PEDIDOS_DOS_MORADORES[meta.slug]!.pedido,
         dicas: [
+          meta.texto,
           meta.dica,
           'Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas.',
         ],
