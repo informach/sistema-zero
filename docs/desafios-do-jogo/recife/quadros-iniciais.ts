@@ -179,7 +179,9 @@ function fonteDoQuadro(quadro: QuadroInicialDoRecife, pronto: boolean): SZIRV2 {
     ...(quadro === 5 && pronto
       ? [iff(bin('>', v('pontos'), v('recorde')), [set('recorde', v('pontos'))])]
       : []),
-    ...inicio().filter(([name]) => name !== 'recorde').map(([name, value]) => set(name, value)),
+    ...inicio()
+      .filter(([name]) => name !== 'recorde')
+      .map(([name, value]) => set(name, value)),
     vel('bolha', n(0), n(0)),
   ]
   // O extra dos quadros 1 a 4: o Enter recomeça o jogo (o bloco da trilha do Faísca).
