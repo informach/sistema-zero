@@ -23,12 +23,22 @@ const encontro = (b: string, body: unknown[]) => ({
   body,
 })
 const desenhar = { type: 'g2d:drawSprite', ctxVar: 'ctx', spriteVar: 'porta' }
+/** Os desenhos dos exemplos, criados no início (o encontro só conta com o que existe). */
+const DESENHOS = ['heroi', 'chave', 'porta', 'moeda'].map((varName) => ({
+  type: 'g2d:createImageSprite',
+  varName,
+  image: varName,
+  x: 0,
+  y: 0,
+  w: 32,
+  h: 32,
+}))
 function projeto(
   events: unknown[],
   start: unknown[] = [{ type: 'var', name: 'pegou', value: bool(false) }],
   loops: unknown[] = [],
 ) {
-  return { ir: { version: 2, behavior: { start, events, loops } } }
+  return { ir: { version: 2, behavior: { start: [...DESENHOS, ...start], events, loops } } }
 }
 const confere = (step: GameCausalityStep, p: unknown) =>
   evaluatesGameCausality({ type: 'gameCausality', actor: 'heroi', step }, p)
@@ -188,6 +198,93 @@ describe('gameCausality', () => {
       isSectionCompletion(completion({ type: 'gameCausality', actor: 'guia', step: 'decision' })),
     ).toBe(true)
     expect(isSectionCompletion(completion({ type: 'gameCausality', actor: 'guia' }))).toBe(false)
+  })
+
+  describe('as quatro brechas fechadas (lacunas, 01/11/2026)', () => {
+    test('encontro com um desenho que nunca é criado, ou criado em código morto, não conta', () => {
+      const fantasma = projeto([encontro('ninguem', [assign('pegou', bool(true))])])
+      expect(confere('encounter', fantasma)).toBe(false)
+      expect(confere('memory', fantasma)).toBe(false)
+      const morto = projeto(
+        [encontro('ninguem', [assign('pegou', bool(true))])],
+        [
+          { type: 'var', name: 'pegou', value: bool(false) },
+          se(bool(false), [{ ...DESENHOS[1], varName: 'ninguem' }]),
+        ],
+      )
+      expect(confere('encounter', morto)).toBe(false)
+      // Grupo: criado e com alguém dentro conta; criado vazio, não.
+      const grupo = (comAlguem: boolean) =>
+        projeto(
+          [
+            {
+              type: 'g2d:onTouchGroup',
+              spriteVar: 'heroi',
+              groupVar: 'moedas',
+              itemName: 'm',
+              body: [assign('pegou', bool(true))],
+            },
+          ],
+          [
+            { type: 'var', name: 'pegou', value: bool(false) },
+            { type: 'g2d:createGroup', varName: 'moedas' },
+            ...(comAlguem
+              ? [{ type: 'g2d:addToGroup', spriteVar: 'moeda', groupVar: 'moedas' }]
+              : []),
+          ],
+        )
+      expect(confere('encounter', grupo(true))).toBe(true)
+      expect(confere('encounter', grupo(false))).toBe(false)
+    })
+
+    test('contagem de passo literal só decide se algum valor alcançado vira a condição', () => {
+      const conta = (op: string, limite: number, passo = 1) =>
+        projeto(
+          [
+            encontro('moeda', [
+              assign('pontos', { type: 'binop', op: '+', left: v('pontos'), right: num(passo) }),
+            ]),
+          ],
+          [{ type: 'var', name: 'pontos', value: num(0) }],
+          [
+            {
+              type: 'g2d:updateEachFrame',
+              body: [se({ type: 'binop', op, left: v('pontos'), right: num(limite) }, [desenhar])],
+            },
+          ],
+        )
+      expect(confere('decision', conta('<', 0))).toBe(false)
+      expect(confere('decision', conta('==', -3))).toBe(false)
+      expect(confere('decision', conta('==', 5, 2))).toBe(false)
+      expect(confere('decision', conta('>=', 3))).toBe(true)
+      expect(confere('decision', conta('==', 6, 2))).toBe(true)
+    })
+
+    test('um texto com o nome não solta a constante', () => {
+      const p = projeto(
+        [
+          encontro('chave', [se(v('podeAgir'), [assign('pegou', bool(true))])]),
+          {
+            type: 'g2d:onKey',
+            key: 'Space',
+            body: [{ type: 'g2d:drawLabel', ctxVar: 'ctx', text: 'podeAgir', x: 0, y: 0 }],
+          },
+        ],
+        [
+          { type: 'var', name: 'pegou', value: bool(false) },
+          { type: 'var', name: 'podeAgir', value: bool(false) },
+        ],
+      )
+      expect(confere('memory', p)).toBe(false)
+    })
+
+    test('x = x não é efeito', () => {
+      const p = projeto([
+        encontro('chave', [assign('pegou', v('pegou'))]),
+        encontro('porta', [se(v('outra'), [assign('outra', v('outra'))])]),
+      ])
+      expect(confere('encounter', p)).toBe(false)
+    })
   })
 
   describe('variável que nunca muda é constante (N3)', () => {
