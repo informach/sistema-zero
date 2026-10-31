@@ -10,7 +10,8 @@ import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-PECAS = ['terreno', 'vegetacao', 'casa', 'horta', 'bancada', 'farol', 'pier', 'ponte', 'ilhas_anel', 'boias', 'cata_vento']
+PECAS = ['terreno', 'vegetacao', 'casa', 'horta', 'bancada', 'farol', 'pier', 'ponte', 'ilhas_anel', 'boias', 'cata_vento',
+         'florada', 'segredos_ilha']
 
 rel = os.path.join(HERE, 'relatorio.json')
 if os.path.exists(rel):

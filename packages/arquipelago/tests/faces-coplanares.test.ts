@@ -61,6 +61,9 @@ const ARQUIVOS: Arquivo[] = [
   { caminho: 'mundo/ponte.glb', juntos: TODOS_JUNTOS },
   { caminho: 'mundo/ilhas-do-anel.glb', juntos: CADA_NO_SOZINHO },
   { caminho: 'mundo/boias.glb', juntos: CADA_NO_SOZINHO },
+  // A florada (cada nível é um canteirinho sozinho) e o segredo do cipó da sua ilha (31/10/2026).
+  { caminho: 'mundo/florada.glb', juntos: CADA_NO_SOZINHO },
+  { caminho: 'mundo/segredos-da-ilha.glb', juntos: TODOS_JUNTOS },
   { caminho: 'itens/quadro-das-cores.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vila-doce.glb', juntos: TODOS_JUNTOS },
   { caminho: 'ilhas/vila-doce-props.glb', juntos: CADA_NO_SOZINHO },
@@ -152,6 +155,7 @@ describe('faces coplanares e emendas abertas', () => {
       ilha.add(g)
     }
     por('terreno', 'mundo/terreno.glb', 0, 0, 0)
+    por('segredos', 'mundo/segredos-da-ilha.glb', 0, 0, 0)
     por('casa', 'mundo/casa.glb', CENTRO_DA_CASA.x, ALTURA_DA_TERRA + 0.02, CENTRO_DA_CASA.z)
     por('bancada', 'mundo/bancada.glb', BANCADA.x, ALTURA_DA_TERRA, BANCADA.z, ['projetor'])
     por('farol', 'mundo/farol.glb', FAROL.x, ALTURA_DA_TERRA, FAROL.z)

@@ -4,12 +4,18 @@ Referencial: o do mundo (a ilha central fica na origem do jogo). A altura de cad
 `altura()`, cópia exata de `alturaDaIlha` em `src/mundo/medidas.ts`, então o desenho cai em cima da
 colisão (que continua sendo calculada no código).
 
-A malha é polar no "raio efetivo" (a borda irregular da ilha), com um anel exatamente na borda do
-gramado (23,5) e outro na linha da areia molhada: as divisas ficam limpas, sem degraus de grade.
-As cores variam de leve por vértice (manchas de grama, areia secando).
+O retângulo do lote grande da casa (x -17 a 16, z -15 a 12, `LOTE_DA_CASA_GRANDE`) é uma malha
+própria, `chao-do-lote`, numa grade de 1 m (a célula do Construir): o jogo pode trocar só ela pela
+grade de alturas da criança. O resto do chão é polar no "raio efetivo" (a borda irregular da ilha),
+com os ângulos dos 120 pontos da borda do lote vistos do centro (os quatro cantos entre eles): o
+primeiro anel é a própria borda do lote, vértice por vértice (sem fresta nem emenda em T). Há um
+anel na borda do gramado (23,5) e outro na linha da areia molhada: as divisas ficam limpas. As
+cores variam de leve por vértice (manchas de grama, areia secando), com a mesma conta nas duas
+malhas.
 
-Nós: `chao` (o terreno), `enfeites` (capim, flores, moitas, pedras, pedras do caminho, estrelas
-do mar) e `espuma` (o anel branco na linha d'água; o jogo pode balançar).
+Nós: `chao` (o terreno, com o filho `chao-do-lote`: quem copia o `chao` leva os dois), `enfeites`
+(capim, flores, moitas, pedras, pedras do caminho, estrelas do mar, todos fora do lote grande) e
+`espuma` (o anel branco na linha d'água; o jogo pode balançar).
 
 Colisão: cada moita e cada pedra ganha um nó `col-cil-moita-*` ou `col-cil-pedra-*` (cilindro em
 pé, sem material) do lado do desenho; o jogo lê com `lerColisores`. Capim, flores, pedras do
@@ -67,51 +73,6 @@ def ponto(r_ef, a):
     return (x, -z, altura(x, z)), (x, z)
 
 
-def anel_de_faixas(raios, seg, zona, nome):
-    """Faixa polar entre os raios dados (todos com `seg` divisões)."""
-    verts, cores, faces = [], [], []
-    for r in raios:
-        for i in range(seg):
-            a = 2 * math.pi * i / seg
-            v, (x, z) = ponto(r, a)
-            verts.append(v)
-            cores.append(cor_do_chao(x, z, zona))
-    for j in range(len(raios) - 1):
-        for i in range(seg):
-            a0, a1 = j * seg + i, j * seg + (i + 1) % seg
-            b0, b1 = (j + 1) * seg + i, (j + 1) * seg + (i + 1) % seg
-            faces.append((a0, b0, b1, a1))
-    return verts, cores, faces
-
-
-def miolo(raios_dentro, seg_dentro, raio_emenda, seg_fora):
-    """O meio do gramado: leque no centro, anéis com `seg_dentro` e uma emenda até `seg_fora`."""
-    verts, cores, faces = [], [], []
-
-    def add(r, a):
-        v, (x, z) = ponto(r, a)
-        verts.append(v)
-        cores.append(cor_do_chao(x, z, 'grama'))
-        return len(verts) - 1
-
-    centro = add(0, 0)
-    aneis = [[add(r, 2 * math.pi * i / seg_dentro) for i in range(seg_dentro)] for r in raios_dentro]
-    for i in range(seg_dentro):
-        faces.append((centro, aneis[0][i], aneis[0][(i + 1) % seg_dentro]))
-    for j in range(len(aneis) - 1):
-        a, b = aneis[j], aneis[j + 1]
-        for i in range(seg_dentro):
-            faces.append((a[i], b[i], b[(i + 1) % seg_dentro], a[(i + 1) % seg_dentro]))
-    fora = [add(raio_emenda, 2 * math.pi * i / seg_fora) for i in range(seg_fora)]
-    k = seg_fora // seg_dentro
-    ult = aneis[-1]
-    for i in range(seg_dentro):
-        for s in range(k):
-            o0, o1 = fora[i * k + s], fora[(i * k + s + 1) % seg_fora]
-            faces.append((ult[i], o0, o1) if s < k - 1 else (ult[i], o0, o1, ult[(i + 1) % seg_dentro]))
-    return verts, cores, faces, fora
-
-
 def objeto_colorido(nome, verts, cores, faces):
     o = malha(nome, verts, faces, 'chao', liso=True)
     attr = o.data.color_attributes.new('Col', 'BYTE_COLOR', 'CORNER')
@@ -135,29 +96,74 @@ def material_do_chao():
     lib_q._MATS['chao'] = m
 
 
+def perimetro_do_lote():
+    """Os pontos inteiros (1 m) da borda do lote grande, em volta, do canto (x0, z0) para +x: são os
+    vértices da borda do `chao-do-lote` e os do primeiro anel do resto do chão (a emenda)."""
+    x0, z0, x1, z1 = LOTE_GRANDE
+    pts = [(x, z0) for x in range(x0, x1)] + [(x1, z) for z in range(z0, z1)]
+    pts += [(x, z1) for x in range(x1, x0, -1)] + [(x0, z) for z in range(z1, z0, -1)]
+    return sorted(pts, key=lambda p: math.atan2(p[1], p[0]))
+
+
+def lote():
+    """`chao-do-lote`: o retângulo do lote grande numa grade de 1 m (a célula do Construir), com a
+    altura de `altura()` em cada vértice e a mesma cor da grama em volta."""
+    x0, z0, x1, z1 = LOTE_GRANDE
+    nx, nz = x1 - x0 + 1, z1 - z0 + 1
+    verts, cores, faces = [], [], []
+    for j in range(nz):
+        for i in range(nx):
+            x, z = x0 + i, z0 + j
+            verts.append((x, -z, altura(x, z)))
+            cores.append(cor_do_chao(x, z, 'grama'))
+    for j in range(nz - 1):
+        for i in range(nx - 1):
+            a = j * nx + i
+            faces.append((a, a + 1, a + nx + 1, a + nx))
+    return objeto_colorido('chao-do-lote', verts, cores, faces)
+
+
+def faixas(angulos, raios_por_angulo, zona, primeiro=None):
+    """Faixa polar com um vértice por ângulo em cada anel. `raios_por_angulo[k][i]` é o raio efetivo
+    do anel k no ângulo i; `primeiro` (opcional) troca o anel 0 por pontos dados (x, z) do jogo."""
+    seg = len(angulos)
+    verts, cores, faces = [], [], []
+    for k, raios in enumerate(raios_por_angulo):
+        for i, a in enumerate(angulos):
+            if k == 0 and primeiro is not None:
+                x, z = primeiro[i]
+                v = (x, -z, altura(x, z))
+            else:
+                v, (x, z) = ponto(raios[i], a)
+            verts.append(v)
+            cores.append(cor_do_chao(x, z, zona))
+    for j in range(len(raios_por_angulo) - 1):
+        for i in range(seg):
+            a0, a1 = j * seg + i, j * seg + (i + 1) % seg
+            b0, b1 = (j + 1) * seg + i, (j + 1) * seg + (i + 1) % seg
+            faces.append((a0, b0, b1, a1))
+    return verts, cores, faces
+
+
 def chao():
+    """O chão em duas malhas: o `chao-do-lote` (grade do retângulo do lote grande) e o resto (`chao`),
+    polar no raio efetivo. Os ângulos do resto são os dos pontos da borda do lote vistos do centro
+    (cantos incluídos), então o primeiro anel do resto É a borda do lote, vértice por vértice."""
     material_do_chao()
-    SEG = 120
-    # Gramado: miolo de 60 divisões até r 11, depois anéis de 120 até a borda.
-    v, c, f, _ = miolo([1.4 * k for k in range(1, 8)], 60, 11.0, SEG)
-    raios = [11.0 + (BORDA_DO_GRAMADO - 11.0) * k / 11 for k in range(12)]
-    v2, c2, f2 = anel_de_faixas(raios, SEG, 'grama', 'g')
-    base = len(v)
-    # O primeiro anel de v2 repete o anel de emenda do miolo: liga direto.
-    emenda = list(range(base - SEG, base))
-    remap = {i: emenda[i] for i in range(SEG)}
-    for i in range(SEG, len(v2)):
-        remap[i] = base + i - SEG
-    v += v2[SEG:]
-    c += c2[SEG:]
-    f += [tuple(remap[i] for i in face) for face in f2]
-    grama = objeto_colorido('grama', v, c, f)
-    # Praia: da borda do gramado até a linha molhada.
-    rp = [BORDA_DO_GRAMADO, 24.2, 25.0, 25.9, 26.8, 27.6, 28.3, 28.9, 29.45, LINHA_MOLHADA]
-    areia = objeto_colorido('areia', *anel_de_faixas(rp, SEG, 'areia', 'a'))
+    borda = perimetro_do_lote()
+    angulos = [math.atan2(z, x) for x, z in borda]
+    rb = [raio_efetivo(x, z) for x, z in borda]
+    # A divisa da grama com a areia: 23,5, ou um pouco mais longe onde o canto do lote chega perto
+    # dela (sem faixa fina demais entre o lote e a praia).
+    fora = [max(BORDA_DO_GRAMADO, r + 0.6) for r in rb]
+    K = 9
+    raios = [[rb[i] + (fora[i] - rb[i]) * k / K for i in range(len(angulos))] for k in range(K + 1)]
+    grama = objeto_colorido('grama', *faixas(angulos, raios, 'grama', primeiro=borda))
+    rp = [24.2, 25.0, 25.9, 26.8, 27.6, 28.3, 28.9, 29.45, LINHA_MOLHADA]
+    areia = objeto_colorido('areia', *faixas(angulos, [fora] + [[r] * len(angulos) for r in rp], 'areia'))
     rm = [LINHA_MOLHADA, 30.5, 31.2, 32.1, 33.2, 34.5, 36.0, 38.5, 42.0]
-    molhada = objeto_colorido('molhada', *anel_de_faixas(rm, SEG, 'molhada', 'm'))
-    return [grama, areia, molhada]
+    molhada = objeto_colorido('molhada', *faixas(angulos, [[r] * len(angulos) for r in rm], 'molhada'))
+    return [grama, areia, molhada], [lote()]
 
 
 def espuma():
@@ -287,7 +293,8 @@ def enfeites(col):
         a = rnd.uniform(0, 2 * math.pi)
         r = BORDA_DO_GRAMADO * math.sqrt(rnd.uniform(0.04, 0.97))
         x, z = r * math.cos(a) * irregularidade(a), r * math.sin(a) * irregularidade(a)
-        if not livre(x, z) or perto_de_arvore(x, z, 0.5):
+        # Folga de meio metro: as lâminas do tufo não passam para dentro do lote.
+        if not livre(x, z, 0.5) or perto_de_arvore(x, z, 0.5):
             continue
         if r < 12 and rnd.random() < 0.5:
             continue
@@ -300,7 +307,7 @@ def enfeites(col):
     for gi, (gx, gz) in enumerate(grupos):
         for k in range(5):
             x, z = gx + rnd.uniform(-1.1, 1.1), gz + rnd.uniform(-1.1, 1.1)
-            if not livre(x, z) or perto_de_arvore(x, z, 0.6) or raio_efetivo(x, z) > BORDA_DO_GRAMADO - 0.6:
+            if not livre(x, z, 0.5) or perto_de_arvore(x, z, 0.6) or raio_efetivo(x, z) > BORDA_DO_GRAMADO - 0.6:
                 continue
             p += flor(no_chao(x, z), cores[gi % 4], seed=gi * 10 + k, r=0.15 + 0.04 * rnd.random())
     # Moitas: soltas pela ilha, fora do lote da casa (o lugar de construir fica livre).
@@ -332,8 +339,11 @@ def enfeites(col):
 def main():
     lib_q.reset()
     col = []
-    nos = {'chao': chao(), 'enfeites': enfeites(col), 'espuma': espuma()}
-    exportar('terreno', nos, colisores=col)
+    resto, do_lote = chao()
+    nos = {'chao': resto, 'chao-do-lote': do_lote, 'enfeites': enfeites(col), 'espuma': espuma()}
+    # O `chao-do-lote` é filho do `chao`: o jogo, que copia o nó `chao`, desenha os dois juntos, e
+    # pode achar o do lote pelo nome para trocar só ele pela grade de alturas da criança.
+    exportar('terreno', nos, colisores=col, filhos={'chao-do-lote': 'chao'})
 
 
 if __name__ == '__main__':

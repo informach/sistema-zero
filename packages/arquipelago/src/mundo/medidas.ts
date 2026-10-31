@@ -32,6 +32,9 @@ export const PORTA = { x: 2.5, largura: 2.2, altura: 3 } as const
  * O chão do lote da casa (31/10/2026, pedido dela: o lugar de construir mais livre): o retângulo
  * de células de x −15 a 16 e z −14 a 10 é plano e é a área do `LOTE_DA_CASA`. Árvores, moitas,
  * pedras, flores e trilhas ficam fora do lote grande (`LOTE_GRANDE` em `arte/mundo/terreno.py`).
+ * No `terreno.glb`, o chão do lote grande (x −17 a 16, z −15 a 12, `LOTE_DA_CASA_GRANDE`) é o nó
+ * `chao-do-lote`, filho do `chao`: grade de 1 m com a altura desta conta, emendada vértice por
+ * vértice no resto do chão (`tests/chao-do-lote.test.ts`), para o jogo poder trocar só ele.
  */
 export const CHAO_DO_LOTE = { x0: -15, z0: -14, x1: 16, z1: 10 } as const
 /**
