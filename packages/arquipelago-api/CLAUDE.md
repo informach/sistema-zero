@@ -284,7 +284,12 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   situação, o que falta e "Aprenda isso em"), `GET /desafios/:id` (`DesafioAberto`: só a vista dos
   objetivos e o projeto inicial; bloqueado → 403 `DESAFIO_BLOQUEADO` com `situacao`),
   `POST /desafios/:id/verificar` (`{revisao, projeto}`; corpo até `CORPO_DA_CONFERENCIA`, 4 MB)
-  e `POST /desafios/:id/recompensa-vista`.
+  e `POST /desafios/:id/recompensa-vista`. C02b (30/10/2026): `POST /desafios/:id/ambiente`
+  (`PedirAmbienteDoDesafioSchema`, `{revisao, pedido}`) com as conferências do `verificar`; o
+  `PortaDosMembros.autorizarAmbiente` manda quem joga, a conta (`contaId ?? id`), o público e o
+  projeto INICIAL da revisão ao `POST /members/internal/arquipelago/ambiente`, e devolve a decisão
+  conferida por `StudioArquipelagoRuntimeDecisionSchema`. Recusa do Members (400/403) vira
+  `AmbienteRecusadoError` → 403 `AMBIENTE_RECUSADO` com a frase dele; Members fora, 424.
 - Conferir: a revisão que a pessoa abriu continua conferível enquanto existir; arquivado → 409
   `DESAFIO_MUDOU`; revisão que não existe → 404. Não concluído é reconferido (ilha e blocos) antes
   de gastar o executor. O executor fora, cheio ou recusando vira 424 `CONFERENCIA_INDISPONIVEL`,

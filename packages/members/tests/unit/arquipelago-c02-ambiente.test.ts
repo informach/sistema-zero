@@ -1,9 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { PYTHON_PROJECT_MISSION_FEATURE } from '@sistemazero/core/studio/python-runtime-features'
-import {
-  type StudioProjectDocument,
-  studioRuntimeSubject,
-} from '@sistemazero/core/studio/runtime-subject'
+import type { StudioProjectDocument } from '@sistemazero/core/studio/project-document'
+import { studioRuntimeSubject } from '@sistemazero/core/studio/runtime-subject'
 import { ManifestoDeDesafiosSchema } from '../../../arquipelago-contracts/src/desafios'
 import { CURADORIA_DO_DESAFIO_PYTHON } from '../../src/application/arquipelago/arquipelago-objectives.service'
 import { createStudioRuntimeHosts } from '../../src/domain/studio/runtime-hosts'

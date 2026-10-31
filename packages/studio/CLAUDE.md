@@ -10,6 +10,13 @@ atalhos físicos, sem disparos extras no toque. `onKey` recebe a borda; `actionD
 sendo a leitura de ação mantida pelo dedo. Reinício durante a ação cancela o restante da
 geração antiga. Provas em classicPlatformer.test.ts e no navegador dos quadros do Bosque.
 
+## Desafio do Arquipélago (C02b, 30/10/2026)
+
+`challenge-runtime` (`createArquipelagoChallengeRuntimeEnvironment`) é o núcleo contextual com o
+contexto `arquipelago` (`audience`, `desafioId`, `revisao`, `projectId`) e SEM análise remota:
+o Python clássico na Ponte usa o quadro de análise do próprio runtime. Recusa o REPL antes de
+pedir; a decisão só aceita editar, executar e pausar. Teste: `src/runtime/challengeEnvironment.test.ts`.
+
 ## Revisão imutável de Maestria (25/10/2026)
 
 `mastery-review-runtime` cria um ambiente Python de execução vinculado ao UUID da entrega e à

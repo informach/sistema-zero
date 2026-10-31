@@ -168,6 +168,16 @@ describe('Arquipélago Vagalume no gateway', () => {
     expect(
       registry.resolve('POST', `/arquipelago/desafios/${desafio}/recompensa-vista`, 'v1')?.route.id,
     ).toBe('arquipelago-desafio-recompensa-vista')
+    // O ambiente Python do Estúdio de desafio (C02b): só POST, com o retrato do ambiente.
+    expect(
+      registry.resolve('POST', `/arquipelago/desafios/${desafio}/ambiente`, 'v1')?.route,
+    ).toMatchObject({
+      id: 'arquipelago-desafio-ambiente',
+      maxBodyBytes: 2 * 1024 * 1024,
+    })
+    expect(
+      registry.resolve('GET', `/arquipelago/desafios/${desafio}/ambiente`, 'v1'),
+    ).toBeUndefined()
     expect(registry.resolve('DELETE', `/arquipelago/desafios/${desafio}`, 'v1')).toBeUndefined()
     expect(registry.resolve('PUT', '/arquipelago/familia/limite', 'v1')?.route.id).toBe(
       'arquipelago-familia-limite',

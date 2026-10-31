@@ -16,7 +16,9 @@ import {
   type VerificacaoDosMembros,
   VerificacaoDosMembrosSchema,
 } from '@sistemazero/arquipelago-contracts'
+import { StudioArquipelagoRuntimeDecisionSchema } from '@sistemazero/core/studio/runtime-authorization'
 import {
+  AmbienteRecusadoError,
   ConferenciaIndisponivelError,
   MembrosIndisponiveisError,
   type PerguntaDoJogador,
@@ -128,10 +130,23 @@ export class MembrosHttp implements PortaDosMembros {
     )
   }
 
+  /** A decisão volta conferida pelo contrato do Estúdio: o jogo nunca repassa outro formato. */
+  async autorizarAmbiente(
+    pedido: Parameters<PortaDosMembros['autorizarAmbiente']>[0],
+  ): Promise<unknown> {
+    return validar(
+      StudioArquipelagoRuntimeDecisionSchema,
+      await this.ler('/members/internal/arquipelago/ambiente', undefined, {
+        corpo: pedido,
+        ambiente: true,
+      }),
+    )
+  }
+
   private async ler(
     caminho: string,
     signal?: AbortSignal,
-    opcoes: { corpo?: unknown; tempo?: number; conferencia?: boolean } = {},
+    opcoes: { corpo?: unknown; tempo?: number; conferencia?: boolean; ambiente?: boolean } = {},
   ): Promise<unknown> {
     const tempo = AbortSignal.timeout(opcoes.tempo ?? TEMPO_DA_LEITURA_MS)
     let resposta: Response
@@ -155,6 +170,15 @@ export class MembrosHttp implements PortaDosMembros {
       if (resposta.status === 409) throw new ConferenciaIndisponivelError('sincronizando')
       if (resposta.status === 400 || resposta.status === 413)
         throw new ConferenciaIndisponivelError('recusado')
+    }
+    if (opcoes.ambiente && (resposta.status === 400 || resposta.status === 403)) {
+      const corpo = (await resposta.json().catch(() => null)) as {
+        error?: { message?: unknown }
+      } | null
+      const mensagem = corpo?.error?.message
+      throw new AmbienteRecusadoError(
+        typeof mensagem === 'string' && mensagem.length <= 300 ? mensagem : undefined,
+      )
     }
     if (!resposta.ok) throw new MembrosIndisponiveisError('status', resposta.status)
     try {

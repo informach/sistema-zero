@@ -3,6 +3,7 @@ import {
   type AmigosDaFamiliaParaOsPais,
   AmigosDaFamiliaSchema,
   CORPO_DO_FANTASMA_MAX_BYTES,
+  DesafioAbertoSchema,
   IrmaosDoJogadorSchema,
   type IrmaosParaOJogo,
   JogosDoMuralSchema,
@@ -18,6 +19,18 @@ import { getEnv } from '../lib/env'
 import type { ProfilesClient } from '../server/clients'
 import { clientForwardHeaders, type GatewayModule, type GatewayResponse } from '../server/gateway'
 import { readJsonBodyWithLimit } from '../server/read-json-body'
+import {
+  buildStudioProProject,
+  isProStudioProject,
+  opaqueStudioRuntimeExecutionId,
+  prepareStudioProToolchain,
+  proProjectTemplateId,
+  proRuntimeOperation,
+  STUDIO_PRO_BUILD_LIMITS,
+  StudioProRuntimeInputError,
+  StudioProRuntimeUpstreamError,
+  studioProRuntimePublicStatus,
+} from '../server/studio-pro-runtime'
 
 export type ArquipelagoRoutes = ReturnType<typeof createArquipelagoRoutes>
 
@@ -28,6 +41,10 @@ const CORPO_PEQUENO = 1024
 const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
 /** Conferir roda o jogo no executor pelo Members: o prazo do "Verificar projeto" das aulas. */
 const ESPERA_DA_CONFERENCIA_MS = 165_000
+/** O pedido de ambiente Python do Estúdio de desafio leva só o retrato do ambiente (C02b). */
+const CORPO_DO_AMBIENTE = 2 * 1024 * 1024
+/** Compilar o Pro do desafio: o mesmo prazo da compilação das aulas. */
+const ESPERA_DO_PRO_MS = 55_000
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 /** As ilhas do contrato (minúsculas e hífen); o serviço confere o valor de verdade. */
 const ILHA = /^[a-z][a-z-]{0,39}$/
@@ -69,6 +86,13 @@ const invalido = () =>
     { error: { code: 'VALIDATION_ERROR', message: 'Requisição inválida' } },
     { status: 400 },
   )
+
+/** A resposta da compilação do Pro do desafio, no formato da rota das aulas. */
+const proResposta = (corpo: unknown, status = 200) =>
+  NextResponse.json(corpo, {
+    status,
+    headers: { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' },
+  })
 
 const privado = (resposta: NextResponse) => {
   resposta.headers.set('cache-control', 'private, no-store')
@@ -323,6 +347,105 @@ export function createArquipelagoRoutes(deps: {
         return chamar(`/desafios/${id}/verificar`, 'POST', lido.corpo, {
           timeoutMs: ESPERA_DA_CONFERENCIA_MS,
         })
+      },
+    },
+    /**
+     * O ambiente Python do Estúdio de desafio (C02b): o serviço confere o desafio e o Members, o
+     * pedido do Estúdio contra o projeto inicial. A decisão volta como veio.
+     */
+    arquipelagoDesafioAmbiente: {
+      POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        if (!id) return invalido()
+        const lido = await corpoJson(req, CORPO_DO_AMBIENTE)
+        if (!lido.ok) return invalido()
+        return privado(await chamar(`/desafios/${id}/ambiente`, 'POST', lido.corpo))
+      },
+    },
+    /**
+     * Compilar o Pro do desafio (C02b), no molde da aula: o desafio é aberto pelo serviço do jogo
+     * com a sessão de quem joga (as mesmas conferências de abrir), a revisão precisa ser a aberta e
+     * o modelo Pro vem do projeto INICIAL dele, nunca do enviado. Não depende do Estúdio Completo.
+     */
+    arquipelagoDesafioPro: {
+      POST: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
+        const id = await idDe(ctx)
+        if (!id) return invalido()
+        let operacao: ReturnType<typeof proRuntimeOperation>
+        try {
+          operacao = proRuntimeOperation(req)
+        } catch {
+          return invalido()
+        }
+        const lido = await corpoJson(req, STUDIO_PRO_BUILD_LIMITS.maxBffRequestBytes)
+        if (!lido.ok) return invalido()
+        const corpo = lido.corpo as { revisao?: unknown; project?: unknown } | null
+        if (typeof corpo?.revisao !== 'number' || !isProStudioProject(corpo.project))
+          return invalido()
+        const signal = AbortSignal.any([req.signal, AbortSignal.timeout(ESPERA_DO_PRO_MS)])
+        const aberto = await gateway.gatewayFetch(`/arquipelago/desafios/${id}`, {
+          method: 'GET',
+          signal,
+        })
+        if (aberto.status !== 200) return privado(repasse(aberto))
+        const desafio = DesafioAbertoSchema.safeParse(aberto.body)
+        if (!desafio.success)
+          return proResposta({ error: { message: 'O jogo não respondeu agora.' } }, 502)
+        if (desafio.data.revisao !== corpo.revisao)
+          return proResposta({ error: { message: 'O desafio mudou: abra de novo.' } }, 409)
+        const inicial = desafio.data.projetoInicial
+        const templateId = isProStudioProject(inicial) ? proProjectTemplateId(inicial) : null
+        if (!templateId)
+          return proResposta({ error: { message: 'Este desafio não é um projeto Pro.' } }, 403)
+        const runtimeUrl = process.env.STUDIO_PRO_RUNTIME_URL?.trim().replace(/\/$/, '')
+        const runtimeToken = process.env.STUDIO_PRO_RUNTIME_TOKEN?.trim()
+        if (!runtimeUrl || !runtimeToken)
+          return proResposta(
+            { error: { message: 'O ambiente Pro ainda não está configurado. Avise um adulto.' } },
+            503,
+          )
+        const executionId = await opaqueStudioRuntimeExecutionId(
+          'arquipelago',
+          desafio.data.jogadorId,
+          id,
+          String(desafio.data.revisao),
+        )
+        try {
+          if (operacao === 'prepare-dependencies')
+            return proResposta(
+              await prepareStudioProToolchain({
+                project: corpo.project,
+                executionId,
+                runtimeUrl,
+                runtimeToken,
+                signal,
+              }),
+            )
+          return proResposta(
+            await buildStudioProProject({
+              parentOrigin: new URL(req.url).origin,
+              project: corpo.project,
+              templateId,
+              executionId,
+              runtimeUrl,
+              runtimeToken,
+              signal,
+            }),
+          )
+        } catch (error) {
+          if (error instanceof StudioProRuntimeInputError)
+            return proResposta({ error: { message: error.message } }, error.status)
+          if (error instanceof StudioProRuntimeUpstreamError)
+            return proResposta(
+              { error: { message: error.message, output: error.output } },
+              studioProRuntimePublicStatus(error.status),
+            )
+          console.error('Falha ao compilar o Pro do desafio', error)
+          return proResposta(
+            { error: { message: 'O ambiente Pro demorou demais para responder. Tente de novo.' } },
+            504,
+          )
+        }
       },
     },
     /** O jogo mostrou a festa do prêmio. */

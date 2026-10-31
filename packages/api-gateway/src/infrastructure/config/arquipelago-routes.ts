@@ -265,6 +265,16 @@ export function arquipelagoGateway(opts: {
         timeoutMs: 165_000,
         rateLimit: { max: 10, windowMs: 60_000, by: 'principal' },
       },
+      // O ambiente Python do Estúdio de desafio (C02b): cada análise ou execução pede de novo a
+      // decisão (vale 30 s). O corpo leva só o retrato do ambiente do projeto.
+      {
+        ...jogador,
+        id: 'arquipelago-desafio-ambiente',
+        methods: ['POST'],
+        pathPattern: '/arquipelago/desafios/:id/ambiente',
+        maxBodyBytes: 2 * 1024 * 1024,
+        rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      },
       {
         ...jogador,
         id: 'arquipelago-desafio-recompensa-vista',

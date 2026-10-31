@@ -220,6 +220,8 @@ plataforma ↔ jogo ↔ serviço do jogo. Sem React, sem three, sem I/O.
   `ObjetivoPythonDoDesafioSchema` (`programmingLanguage: 'python'`, `profileId` e `stdin` até 4
   linhas, o `SectionPythonProjectCheck` das aulas). Perfil e entradas fora do Python são
   recusados. A regra continua opaca: o Members confere. Teste: `tests/desafios-python.test.ts`.
+  C02b: `PedirAmbienteDoDesafioSchema` (`{revisao, pedido}`), o pedido de ambiente Python do
+  Estúdio de desafio; a resposta é a decisão do Members, conferida pelo contrato do core.
 - `aprenda.ts`: "Aprenda isso em", blocos exigidos e a cobertura dos blocos pelos cursos.
 - `cartas-lumi.ts`: os 14 cartões da rotina dos Lumis e o bloco que libera cada cartão de controle.
 - `rotinas.ts` (fase2-07): a rotina de um Lumi como árvore de cartões (`CartaoDaRotinaSchema`, o

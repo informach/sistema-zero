@@ -116,10 +116,12 @@ README de cada ilha.
 
 Lacunas que continuam com a equipe:
 
-- O Estúdio de desafio do jogo abre o JavaScript em texto (na Ponte), mas não abre Python nem
-  Pro: o Python precisa de um contexto de autorização de runtime que hoje só existe em aulas,
-  salas e autoria, e o Pro de um build. A criança vê um recado; o Admin também não edita esses
-  projetos (chegam pelo manifesto).
+- O Estúdio de desafio do jogo abre os três (C02b, 30/10/2026): o JavaScript em texto na Ponte,
+  o Python com o ambiente autorizado pelo próprio desafio (contexto `arquipelago`: o serviço do
+  jogo atesta o desafio aberto e o Members confere o projeto contra o inicial) e o Pro compilado
+  no executor pela rota do desafio (o modelo vem do inicial). Nenhum depende do Estúdio Completo,
+  que é vendido à parte. Plano: `docs/superpowers/plans/2026-10-30-arquipelago-c02b-python-e-pro-no-jogo.md`.
+  O Admin ainda não edita esses projetos (chegam pelo manifesto).
 - Os projetos do Recife e do Pico apontam a release Python ATIVA em staging e produção,
   `2026-10-25-integrated-games-2` (Turtle, Pygame Zero, Pygame-ce e Raylib; `ambiente-python.ts`).
   A prova baixa a distribuição publicada, confere cada arquivo e roda na imagem do executor

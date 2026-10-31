@@ -66,7 +66,10 @@ O C02 (Python, texto e Pro) traz os próprios pacotes em `recife-python/`, `pico
 `vale-texto/` e `nuvens-pro/`. O Recife e o Pico apontam a release Python ativa em staging e
 produção (`2026-10-25-integrated-games-2`, com Pygame Zero) e passaram na distribuição publicada
 com a imagem publicada do executor (17 execuções, 49 conferências); o Vale espera os cursos do
-Arquiteto. O jogo ainda não abre projetos em Python nem Pro (mostra um recado).
+Arquiteto. O jogo abre os desafios em Python e Pro (C02b): o Python pede o ambiente ao serviço do
+jogo, que pede ao Members, e o Pro compila no executor pela rota do desafio. Provado em testes de
+cada camada; a abertura de verdade no navegador depende do runtime publicado, da pilha inteira e
+do conteúdo importado, e fica para a conta real.
 
 ### Com conta real e aparelho físico
 

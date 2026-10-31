@@ -126,6 +126,39 @@ export const StudioFreeRuntimeDecisionSchema = StudioLessonRuntimeDecisionSchema
 })
 export type StudioFreeRuntimeDecision = z.infer<typeof StudioFreeRuntimeDecisionSchema>
 
+/**
+ * A challenge opened in the Arquipélago (C02b). The game service attests the published revision
+ * and its initial project; Members authorizes only that environment. It never depends on the
+ * separately sold Studio product and has no remote language analysis.
+ */
+export const StudioArquipelagoRuntimeContextSchema = z.strictObject({
+  kind: z.literal('arquipelago'),
+  audience: z.enum(['kids', 'adult']),
+  desafioId: z.uuid(),
+  revisao: z.number().int().min(1).max(2_147_483_647),
+  projectId: StudioProjectIdSchema,
+})
+export type StudioArquipelagoRuntimeContext = z.infer<typeof StudioArquipelagoRuntimeContextSchema>
+export const StudioArquipelagoRuntimeRequestSchema = StudioLessonRuntimeRequestSchema.omit({
+  baselineId: true,
+})
+  .extend({
+    operation: z.enum(['execute', 'analyze']),
+    context: StudioArquipelagoRuntimeContextSchema,
+  })
+  .refine((request) => request.context.projectId === request.subject.id, {
+    message: 'O contexto precisa corresponder ao projeto aberto.',
+  })
+export type StudioArquipelagoRuntimeRequest = z.infer<typeof StudioArquipelagoRuntimeRequestSchema>
+export const StudioArquipelagoRuntimeDecisionSchema = StudioLessonRuntimeDecisionSchema.extend({
+  context: StudioArquipelagoRuntimeContextSchema,
+  operation: z.enum(['execute', 'analyze']),
+  capabilities: z.array(z.enum(['edit', 'execute', 'pause'])).max(3),
+})
+export type StudioArquipelagoRuntimeDecision = z.infer<
+  typeof StudioArquipelagoRuntimeDecisionSchema
+>
+
 /** Staff review reads an immutable submission; callers cannot substitute source or runtime. */
 export const StudioMasteryReviewRuntimeContextSchema = z.strictObject({
   kind: z.literal('mastery-review'),
@@ -228,6 +261,7 @@ export const StudioRuntimeDecisionSchema = z.union([
   StudioContextualRuntimeDecisionSchema,
   StudioPublicRuntimeDecisionSchema,
   StudioMasteryReviewRuntimeDecisionSchema,
+  StudioArquipelagoRuntimeDecisionSchema,
 ])
 export type StudioRuntimeDecision = z.infer<typeof StudioRuntimeDecisionSchema>
 export type StudioRuntimeCandidate = Omit<StudioLessonRuntimeRequest, 'baselineId'>

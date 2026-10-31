@@ -174,6 +174,7 @@ bun test docs/desafios-do-jogo/nuvens/nuvens-pro.test.ts
 bun packages/studio-runtime/tests/desafios-pro-smoke.ts
 ```
 
-Limites: o Estúdio de desafio do jogo ainda não abre projetos Pro, nem o Estúdio do Admin. A
+Limites: o Estúdio de desafio do jogo abre o Pro e compila pela rota do desafio (C02b); o Estúdio
+do Admin ainda não abre projetos Pro. A
 persistência (`localStorage`) é conferida pela ida e volta de `salvar` e `carregar`; recarregar a
 página não é um passo do executor. Ver `../conteudo-por-posto.md`, seção C02.

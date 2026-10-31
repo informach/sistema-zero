@@ -16,7 +16,11 @@ let initial: EditableStudioProject | null = null
 let stored: EditableStudioProject | null = null
 let grants: unknown
 let mode: string | undefined
+let props: Record<string, unknown> = {}
 let sends: unknown[] = []
+let paths: string[] = []
+let environmentRequests: unknown[] = []
+const environment = { signal: new AbortController().signal, marca: 'ambiente-do-desafio' }
 let respond = async () => ({
   passou: true,
   resultados: [{ id: 'o1', passou: true }],
@@ -24,6 +28,7 @@ let respond = async () => ({
   extraAgora: false,
 })
 mock.module('@sistemazero/studio', () => ({
+  STUDIO_PRO_BUILD_LIMITS: { maxBffRequestBytes: 1 },
   createLocalPersistenceAdapter: () => ({
     load: async () => stored,
     save: async (project: EditableStudioProject) => {
@@ -41,6 +46,7 @@ mock.module('@sistemazero/studio', () => ({
     initial = props.initialProject
     grants = props.grantedBlockIds
     mode = props.initialMode
+    capturar(props)
     useImperativeHandle(props.ref, () => ({
       getProject: () => initial,
       save: async () => {
@@ -75,8 +81,24 @@ mock.module('@sistemazero/studio', () => ({
     return <div>Estúdio da tarefa</div>
   },
 }))
+function capturar(valor: Record<string, unknown>) {
+  props = valor
+}
+mock.module('@sistemazero/studio/challenge-runtime', () => ({
+  createArquipelagoChallengeRuntimeEnvironment: async (opcoes: {
+    context: unknown
+    userId: string
+    request(pedido: unknown, signal: AbortSignal): Promise<unknown>
+  }) => {
+    environmentRequests.push({ context: opcoes.context, userId: opcoes.userId })
+    await opcoes.request({ operation: 'analyze' }, new AbortController().signal)
+    return environment
+  },
+}))
 mock.module('../../src/lib/api', () => ({
-  apiSend: async (_path: string, _method: string, body: unknown) => {
+  apiSend: async (path: string, _method: string, body: unknown) => {
+    paths.push(path)
+    if (path.endsWith('/ambiente')) return { decisao: true }
     expect(saves).toBeGreaterThan(0)
     sends.push(body)
     return respond()
@@ -105,6 +127,9 @@ afterEach(async () => {
   saves = 0
   failSave = false
   sends = []
+  paths = []
+  environmentRequests = []
+  props = {}
   stored = null
   respond = async () => ({
     passou: true,
@@ -189,23 +214,55 @@ test('edits made during verification invalidate displayed feedback', async () =>
   await ui.click('Verificar projeto')
   expect(ui.container.textContent).toContain('O projeto mudou')
 })
-test('C02: o JavaScript em texto abre na Ponte; Python e Pro explicam que ainda não abrem no jogo', async () => {
+test('C02: o JavaScript em texto abre na Ponte com a paleta do jogo e sem ambiente Python', async () => {
   stored = { ...createBlankProjectSnapshot('saved', 'Ondas'), mode: 'bridge' }
   await render()
   expect(mode).toBe('bridge')
-  await fechar()
-  mode = undefined
-  initial = null
-  for (const outro of [{ programmingLanguage: 'python' as const }, { kind: 'pro' as const }]) {
-    stored = { ...createBlankProjectSnapshot('saved', 'Outro'), ...outro } as EditableStudioProject
-    const ui = await render()
-    expect(ui.container.textContent).toContain('ainda não abrem dentro do jogo')
-    expect(mode).toBeUndefined()
-    await fechar()
-  }
+  expect(grants).toEqual(['mover'])
+  expect(props.runtimeEnvironment).toBeUndefined()
+  expect(props.proRuntime).toBeUndefined()
+  expect(environmentRequests).toEqual([])
 })
-async function fechar() {
-  const atual = cleanup
-  cleanup = undefined
-  await atual?.()
-}
+test('C02b: o Python abre com o ambiente do desafio, pedido ao jogo, sem a paleta do JavaScript', async () => {
+  stored = {
+    ...createBlankProjectSnapshot('saved', 'Mira'),
+    programmingLanguage: 'python',
+    mode: 'bridge',
+  } as unknown as EditableStudioProject
+  const ui = await render()
+  await act(async () => {
+    await new Promise((r) => setTimeout(r, 0))
+  })
+  expect(environmentRequests).toEqual([
+    {
+      userId: data.jogadorId,
+      context: {
+        audience: 'kids',
+        desafioId: data.id,
+        revisao: 2,
+        projectId: initial?.id,
+      },
+    },
+  ])
+  expect(paths).toEqual([`/api/arquipelago/desafios/${data.id}/ambiente`])
+  expect(props.runtimeEnvironment).toBe(environment)
+  expect(mode).toBe('bridge')
+  expect(grants).toBeUndefined()
+  expect(props.pythonLevel).toBe(3)
+  await ui.click('Verificar projeto')
+  expect(sends[0]).toMatchObject({ revisao: 2 })
+})
+test('C02b: o Pro abre no código com o compilador do desafio e sem a paleta do JavaScript', async () => {
+  stored = {
+    ...createBlankProjectSnapshot('saved', 'Grade'),
+    kind: 'pro',
+    mode: 'code',
+  } as unknown as EditableStudioProject
+  await render()
+  expect(mode).toBe('code')
+  expect(props.allowedModes).toEqual(['code'])
+  expect(grants).toBeUndefined()
+  expect(props.features).toEqual({ extensions: false, professional: true })
+  expect(typeof (props.proRuntime as { build?: unknown })?.build).toBe('function')
+  expect(environmentRequests).toEqual([])
+})

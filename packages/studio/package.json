@@ -28,6 +28,7 @@
     "./runtime-authority": "./src/studio/runtime-environment.tsx",
     "./public-runtime": "./src/runtime/publicEnvironment.ts",
     "./mastery-review-runtime": "./src/runtime/masteryReviewEnvironment.ts",
+    "./challenge-runtime": "./src/runtime/challengeEnvironment.ts",
     "./project-factory": "./src/core/projectFactory.ts",
     "./authoring-options": "./src/core/authoringOptions.ts",
     "./free-project-options": "./src/core/freeProjectOptions.ts",

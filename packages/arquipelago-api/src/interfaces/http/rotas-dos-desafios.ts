@@ -1,4 +1,8 @@
-import { ILHA_IDS, VerificarDesafioSchema } from '@sistemazero/arquipelago-contracts'
+import {
+  ILHA_IDS,
+  PedirAmbienteDoDesafioSchema,
+  VerificarDesafioSchema,
+} from '@sistemazero/arquipelago-contracts'
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { Elysia } from 'elysia'
 import { z } from 'zod'
@@ -34,6 +38,13 @@ export function rotasDosDesafios(deps: { desafios: ServicoDosDesafios; tokenInte
     .get('/:id', ({ headers, params }) => desafios.abrir(lerJogador(headers), idDe(params)))
     .post('/:id/verificar', ({ headers, params, body }) =>
       desafios.verificar(lerJogador(headers), idDe(params), validar(VerificarDesafioSchema, body)),
+    )
+    .post('/:id/ambiente', ({ headers, params, body }) =>
+      desafios.ambiente(
+        lerJogador(headers),
+        idDe(params),
+        validar(PedirAmbienteDoDesafioSchema, body),
+      ),
     )
     .post('/:id/recompensa-vista', ({ headers, params }) =>
       desafios.recompensaVista(lerJogador(headers), idDe(params)),
