@@ -9,6 +9,7 @@ import {
   type SectionJavaScriptProjectCheck,
 } from '../../../packages/core/src/learning/section-progression'
 import { resolveBlockLevel } from '../../../packages/studio/src/blockly/blockLevels'
+import { evaluateStudioProjectStructure } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
 import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
 import { criarManifesto } from './gerar-manifesto'
 
@@ -40,5 +41,17 @@ test('JSON corresponde à fonte, IR é válido e objetivos cabem no executor', a
       ),
       d.slug,
     ).toBeLessThanOrEqual(40000)
+    // A regra estrutural passa no gabarito e reprova no inicial (a execução é do executor real,
+    // em `packages/studio-runtime/tests/vila-doce-browser.test.ts`).
+    for (const c of checks) {
+      if (isSectionExecutionRule(c.rule)) continue
+      expect(evaluateStudioProjectStructure(c.rule, d.conteudo.gabarito), `${d.slug}/${c.id}`).toBe(
+        true,
+      )
+      expect(
+        evaluateStudioProjectStructure(c.rule, d.conteudo.projetoInicial),
+        `${d.slug}/${c.id}`,
+      ).toBe(false)
+    }
   }
 })

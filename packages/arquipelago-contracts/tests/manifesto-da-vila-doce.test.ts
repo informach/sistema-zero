@@ -34,25 +34,27 @@ test('a Vila Doce é do Inventor e o pacote tem seis quadros e três desafios do
   expect(ilha('vila-doce').posto).toBe('hacker')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
-    'vila-doce-forno-da-vez',
-    'vila-doce-caixa-de-paes',
-    'vila-doce-suco-na-ordem',
-    'vila-doce-doce-esfriou',
-    'vila-doce-bandejas-da-padaria',
+    // A15 (revisão de 31/10/2026): a corrida do Corre, Dino! em seis passos, e três do dia.
+    'vila-doce-corrida-do-entregador-pulo',
+    'vila-doce-corrida-do-entregador-pedras',
+    'vila-doce-corrida-do-entregador-partida',
+    'vila-doce-corrida-do-entregador-batida',
+    'vila-doce-corrida-do-entregador-sorteio',
     'vila-doce-corrida-do-entregador',
-    'vila-doce-corrida-do-entregador-entregas',
-    'vila-doce-corrida-do-entregador-tempo',
-    'vila-doce-corrida-do-entregador-caixa',
+    'vila-doce-corrida-do-entregador-pulo-alto',
+    'vila-doce-corrida-do-entregador-pombos',
+    'vila-doce-corrida-do-entregador-descricao',
   ])
   for (const [i, d] of manifesto.desafios.entries()) {
     expect(d.ilha).toBe('vila-doce')
     expect(d.publico).toBe('kids')
     expect(d.tipo).toBe(i <= 5 ? 'quadro-das-cores' : 'desafio-do-dia')
     expect(d.quadro).toBe(i <= 5 ? i + 1 : null)
-    expect(d.publicar).toBe(false)
+    // A corrida ganhou pulo, gravidade, sorteio e teto: a Vila passa a pedir publicação (§6.28).
+    expect(d.publicar).toBe(true)
     expect(d.conteudo.recompensa).toEqual({
       cor: i <= 5,
-      atracao: i >= 5 ? 'corrida-do-entregador' : d.slug,
+      atracao: 'corrida-do-entregador',
       moedas: i <= 5 ? 20 : 10,
       moedasExtra: i <= 5 ? 10 : 5,
       // A corrida do entregador (quadro 6) dá a receita de brigadeiro no extra (A25).

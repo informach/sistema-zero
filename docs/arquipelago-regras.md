@@ -2502,7 +2502,9 @@ faz o que as seções acima descrevem.
    barreira C01a também são marcados para publicar. Feito (lote 8): os seis quadros do Bosque e
    os desafios do dia do Bosque (menos a noite, que pede um bloco de curso opcional), do Recife,
    do Pico e das Nuvens pedem publicação; Vila Doce, Vale e a noite do Bosque, não. A importação
-   continua com a equipe.
+   continua com a equipe. Feito (lote 9a, 31/10): a Vila Doce virou a corrida do entregador sobre o
+   Corre, Dino! (pulo com gravidade, pedras sorteadas com limites, dificuldade com teto, um passo
+   por quadro) e os nove desafios pedem publicação (`docs/desafios-do-jogo/vila-doce/README.md`).
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
    Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos. Feito

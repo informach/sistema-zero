@@ -89,8 +89,9 @@ laço em grupo seguem sem pedido, porque nesses postos a aplicação de listas �
 (C02). A importação e a barreira C01a continuam com a equipe. C01a impede publicar cobertura impossível. Os blocos de extras e os apoios sem
 fonte continuam visíveis como pendências, sem concessão manual.
 
-A Vila atual retoma eventos, estoque, contagem e estados. Ainda não comprova o conjunto de
-pulo com apoio, colisão e dificuldade do Inventor. Os quadros do Recife e do Pico são retomadas
+A Vila (A15, 31/10/2026) é a corrida do entregador sobre o Corre, Dino!: pulo com gravidade e só
+no chão, pedras num relógio, começar e recomeçar, a batida com área justa, o sorteio com limites e
+a dificuldade com teto, um passo por quadro, todos pedindo publicação. Os quadros do Recife e do Pico são retomadas
 em blocos e os do Vale e das Nuvens não trabalham no ambiente textual nem no Pro. C02 acrescenta
 uma aplicação na linguagem de cada posto (seção abaixo), sem retirar as retomadas.
 
