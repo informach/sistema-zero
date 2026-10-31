@@ -126,6 +126,7 @@ export class ServicoDosDesafios {
             })),
             recompensa: conteudo.recompensa,
             recompensaVista: feito?.recompensaVistaEm != null,
+            extraFeito: feito?.extraConcluidoEm != null,
           },
         ]
       })

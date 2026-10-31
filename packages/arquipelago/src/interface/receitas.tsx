@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { useEstado, useJogo } from '../estado/contexto'
+import { lojaDosDesafios, useDesafios } from '../estado/desafios'
 import { festaAtual, useFesta } from '../estado/festas'
 import type { Festa } from '../sistemas/festas'
 import { ITENS, quantidade } from '../sistemas/itens'
@@ -12,9 +13,12 @@ import {
   podeCozinhar,
   RECEITAS,
   type Receita,
+  type ReceitasDosExtras,
   receitaConhecida,
   receitaEmEpoca,
   receitasConhecidas,
+  receitasDosExtras,
+  SEM_RECEITAS_DOS_EXTRAS,
 } from '../sistemas/receitas'
 
 /** Fazer a receita na loja do jogo (o Zappy conta o que saiu). */
@@ -22,6 +26,7 @@ export function fazerNaLoja(
   loja: ReturnType<typeof useJogo>['loja'],
   r: Receita,
   festa: Festa | null = null,
+  extras: ReceitasDosExtras = SEM_RECEITAS_DOS_EXTRAS,
 ): void {
   const s = loja.getState()
   if (
@@ -31,7 +36,7 @@ export function fazerNaLoja(
     s.tempoPausado ||
     s.tempoSincronizando ||
     salvamentoPausado(s.salvamentoSituacao) ||
-    !receitaConhecida(r, s.salvamento)
+    !receitaConhecida(r, s.salvamento, extras)
   )
     return
   const feito = fazerReceita(s.salvamento, r, festa)
@@ -60,8 +65,11 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
   const festa = useFesta()
   const salvamento = useEstado((s) => s.salvamento)
   const inventario = salvamento.inventario
-  const sabidas = receitasConhecidas(salvamento).filter((r) => r.onde === onde)
-  const faltam = RECEITAS.filter((r) => r.onde === onde && !receitaConhecida(r, salvamento))
+  // As receitas que vieram dos desafios extras (A25), pela lista lida ao abrir o jogo.
+  const dados = useDesafios(lojaDosDesafios(loja, plataforma), (s) => s.dados)
+  const extras = useMemo(() => receitasDosExtras(dados), [dados])
+  const sabidas = receitasConhecidas(salvamento, extras).filter((r) => r.onde === onde)
+  const faltam = RECEITAS.filter((r) => r.onde === onde && !receitaConhecida(r, salvamento, extras))
   return (
     <section className="arq-receitas" aria-label={onde === 'forno' ? 'Assar no forno' : 'Cozinhar'}>
       <h3 className="arq-menu-titulo">{onde === 'forno' ? 'Assar' : 'Receitas'}</h3>
@@ -82,7 +90,7 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
                   className="arq-botao leve"
                   disabled={falta !== null}
                   onClick={() => {
-                    fazerNaLoja(loja, r, festaAtual(plataforma))
+                    fazerNaLoja(loja, r, festaAtual(plataforma), extras)
                   }}
                 >
                   {`${ITENS[r.faz.id]?.emoji ?? ''} ${r.nome}: ${Object.entries(r.precisa)
@@ -90,7 +98,9 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
                     .join(', ')}`}
                 </button>
                 {falta ? <small className="arq-receitas-falta">{falta}</small> : null}
-                <small className="arq-caderno-explica">{dicaDaReceita(r, salvamento)}</small>
+                <small className="arq-caderno-explica">
+                  {dicaDaReceita(r, salvamento, extras)}
+                </small>
               </li>
             )
           })}
@@ -105,7 +115,7 @@ export function ListaDeReceitas({ onde }: { onde: LugarDaReceita }) {
           <ul>
             {faltam.map((r) => (
               <li key={r.id}>
-                <b>{r.nome}</b>: {dicaDaReceita(r, salvamento)}
+                <b>{r.nome}</b>: {dicaDaReceita(r, salvamento, extras)}
               </li>
             ))}
           </ul>

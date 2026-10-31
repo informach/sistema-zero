@@ -108,10 +108,12 @@ export const RECEITAS: Receita[] = [
     origem: { tipo: 'amizade', morador: 'bento', coracoes: 4 },
   },
   {
-    id: 'moqueca-de-legumes',
-    nome: 'Moqueca de legumes',
-    precisa: { tomate: 2, milho: 1, 'leite-de-coco': 1 },
-    faz: { id: 'moqueca-de-legumes', qtd: 1 },
+    // A receita da Maré é a da proposta (§6.28, A6): peixe, coco e limão, no fogão da bancada. A
+    // cesta dela traz os três; a pesca continua devolvendo o peixe ao mar.
+    id: 'peixe-com-coco',
+    nome: 'Peixe com coco',
+    precisa: { peixe: 1, coco: 1, limao: 1 },
+    faz: { id: 'peixe-com-coco', qtd: 1 },
     onde: 'bancada',
     origem: { tipo: 'amizade', morador: 'mare', coracoes: 1 },
   },

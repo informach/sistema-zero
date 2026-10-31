@@ -83,6 +83,8 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
               atracao: 'corrida-do-entregador',
               moedas: moedas.principal,
               moedasExtra: moedas.extra,
+              // O prêmio-objeto do extra, como na proposta: "★ extra: receita de brigadeiro" (A25).
+              ...(variacao === 'corrida' ? { receitaDoExtra: 'brigadeiro' } : {}),
             },
             blocosManuais: { acrescentar: [], retirar: [] },
           },

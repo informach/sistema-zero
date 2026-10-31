@@ -15,7 +15,13 @@ import { ULTIMA_PAGINA } from './final-do-farol'
 import { ITENS } from './itens'
 import { coracoes } from './moradores'
 import { CORACOES_DAS_PAGINAS_DO_ANEL, VIDA_NO_ANEL } from './moradores-do-anel'
-import { dicaDaReceita, RECEITAS, receitaConhecida } from './receitas'
+import {
+  dicaDaReceita,
+  RECEITAS,
+  type ReceitasDosExtras,
+  receitaConhecida,
+  SEM_RECEITAS_DOS_EXTRAS,
+} from './receitas'
 
 /** O filhote na coleção do Vale: do ovo que a Jade entrega ao tricerátopo crescido. */
 function filhoteNaColecao(s: Salvamento) {
@@ -257,16 +263,19 @@ export type EstadoDaReceita =
  * As receitas no diário: as que ela sabe, com o que precisam e onde se fazem, e as que o Bento
  * ainda vai lembrar, com quantos corações faltam.
  */
-export function colecaoDeReceitas(s: Salvamento): EstadoDaReceita[] {
+export function colecaoDeReceitas(
+  s: Salvamento,
+  extras: ReceitasDosExtras = SEM_RECEITAS_DOS_EXTRAS,
+): EstadoDaReceita[] {
   return RECEITAS.map((r): EstadoDaReceita => {
     const emoji = ITENS[r.faz.id]?.emoji ?? ''
-    if (!receitaConhecida(r, s)) {
+    if (!receitaConhecida(r, s, extras)) {
       return {
         id: r.id,
         nome: r.nome,
         emoji,
         sabe: false,
-        dica: dicaDaReceita(r, s),
+        dica: dicaDaReceita(r, s, extras),
       }
     }
     const precisa = Object.entries(r.precisa)
@@ -278,7 +287,7 @@ export function colecaoDeReceitas(s: Salvamento): EstadoDaReceita[] {
       emoji,
       sabe: true,
       precisa,
-      fonte: dicaDaReceita(r, s),
+      fonte: dicaDaReceita(r, s, extras),
       onde:
         r.onde === 'fogueira'
           ? 'Na fogueira da Festa Junina, em junho'

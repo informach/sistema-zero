@@ -55,6 +55,8 @@ test('a Vila Doce é do Inventor e o pacote tem seis quadros e três desafios do
       atracao: i >= 5 ? 'corrida-do-entregador' : d.slug,
       moedas: i <= 5 ? 20 : 10,
       moedasExtra: i <= 5 ? 10 : 5,
+      // A corrida do entregador (quadro 6) dá a receita de brigadeiro no extra (A25).
+      ...(i === 5 ? { receitaDoExtra: 'brigadeiro' } : {}),
     })
     expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
     expect(d.conteudo.objetivos.some((o) => !o.optional)).toBe(true)

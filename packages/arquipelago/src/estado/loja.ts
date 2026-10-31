@@ -10,6 +10,7 @@ import { createStore, type StoreApi } from 'zustand/vanilla'
 import type { Clima } from '../sistemas/clima'
 import { acaoEmCurso, encerraOTempo } from '../sistemas/fim-do-tempo'
 import type { Isca } from '../sistemas/iscas'
+import { trocarItensAntigos } from '../sistemas/itens'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { IdDoPercurso } from '../sistemas/percurso'
 import type { SituacaoDoSalvamento } from '../sistemas/salvar'
@@ -233,7 +234,7 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
       })
     },
     adotar(guardado) {
-      if (guardado.salvamento) set({ salvamento: guardado.salvamento })
+      if (guardado.salvamento) set({ salvamento: trocarItensAntigos(guardado.salvamento) })
     },
     definirModo(modo) {
       if (get().modo !== modo) set({ modo })
