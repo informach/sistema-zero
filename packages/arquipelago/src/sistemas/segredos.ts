@@ -26,8 +26,8 @@ export const SEGREDOS: readonly Segredo[] = [
     id: 'sua-ilha',
     bit: 1,
     ilha: 'sua-ilha',
-    x: 10.3,
-    z: 12.3,
+    x: 8.5,
+    z: 19,
   },
   {
     id: 'bosque',

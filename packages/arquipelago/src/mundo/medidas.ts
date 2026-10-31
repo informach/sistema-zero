@@ -28,13 +28,24 @@ export const QUARTO = { largura: 12, fundo: 8, altura: 4 } as const
 /** A porta nova fica na parede da frente do quarto (a que a plataforma não desenha). */
 export const PORTA = { x: 2.5, largura: 2.2, altura: 3 } as const
 
-export const HORTA = { x: 10.5, z: 1, colunas: 3, linhas: 2, passo: 1.7 } as const
-export const BANCADA = { x: 10, z: -7 } as const
+/**
+ * O chão do lote da casa (31/10/2026, pedido dela: o lugar de construir mais livre): o retângulo
+ * de células de x −15 a 16 e z −14 a 10 é plano e é a área do `LOTE_DA_CASA`. Árvores, moitas,
+ * pedras, flores e trilhas ficam fora do lote grande (`LOTE_GRANDE` em `arte/mundo/terreno.py`).
+ */
+export const CHAO_DO_LOTE = { x0: -15, z0: -14, x1: 16, z1: 10 } as const
+/**
+ * A horta, a bancada e o cata-vento ficam fora do lote, na frente e à direita da casa (antes
+ * ficavam colados na parede do quarto e travavam o lado de crescer). Uma trilha de pedras sai da
+ * beira do lote até eles.
+ */
+export const HORTA = { x: 10.5, z: 15, colunas: 3, linhas: 2, passo: 1.7 } as const
+export const BANCADA = { x: 15, z: 14 } as const
 /**
  * O cata-vento ao lado da horta (pedido da fase4-08, `arte/mundo/cata_vento.py`): onde se escolhe
- * o clima da sua ilha. A hélice olha para a horta (`giro`, o +z do modelo virado para −x).
+ * o clima da sua ilha. A hélice olha para a horta (`giro`, o +z do modelo virado para +x).
  */
-export const CATA_VENTO = { x: 13.9, z: 1, giro: -Math.PI / 2 } as const
+export const CATA_VENTO = { x: 6.8, z: 15, giro: Math.PI / 2 } as const
 export const FAROL = { x: -12, z: -13 } as const
 export const PIER = { x: -5, z: 27, comprimento: 10 } as const
 
@@ -268,7 +279,8 @@ function raioEfetivo(x: number, z: number): number {
 
 /** Perto da casa, da horta e da bancada o chão é plano (dá para construir e andar sem tropeço). */
 function pesoDoPlano(x: number, z: number): number {
-  const casa = Math.max(Math.abs(x - CENTRO_DA_CASA.x) - 9, Math.abs(z - CENTRO_DA_CASA.z) - 8, 0)
+  const l = CHAO_DO_LOTE
+  const casa = Math.max(l.x0 - x, x - l.x1, l.z0 - z, z - l.z1, 0)
   const horta = Math.hypot(x - HORTA.x, z - HORTA.z) - 5
   const bancada = Math.hypot(x - BANCADA.x, z - BANCADA.z) - 3
   const d = Math.min(casa, Math.max(horta, 0), Math.max(bancada, 0))

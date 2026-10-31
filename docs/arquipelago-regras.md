@@ -1568,13 +1568,19 @@ cada espécie ela já prendeu.
 Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodos.ts`, `obra.ts`,
 `pecas.ts`). Plano e decisões: `docs/plans/2026-10-28-arquipelago-modo-construcao.md`.
 
-- **O lote da casa** (`LOTE_DA_CASA`): a grade de 1 célula por unidade, nas coordenadas do mundo,
-  de x -13 a 14 e de z -12 a 8. É onde o chão da sua ilha é plano: em toda célula livre o chão
-  fica entre 0,15 abaixo e 0,02 acima do topo da terra (teste).
-- **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): a varanda, a horta,
-  a bancada, as duas árvores perto da casa, o pé do farol, as cinco moitas do terreno e o
-  morrinho na frente da varanda. Um teste confere que todo colisor do lote (horta, bancada,
-  farol, árvores, moitas) cai numa célula ocupada.
+- **O lote da casa** (`LOTE_DA_CASA`, 31/10/2026, pedido dela: o lugar de construir mais livre e
+  coerente para a casa crescer a partir do quarto): a grade de 1 célula por unidade, nas
+  coordenadas do mundo, de x -15 a 16 e de z -14 a 10 (`CHAO_DO_LOTE` em `mundo/medidas.ts`). É
+  onde o chão da sua ilha é plano: em toda célula livre o chão fica entre 0,15 abaixo e 0,02
+  acima do topo da terra (teste). Não há árvore, moita, pedra, flor nem trilha dentro dele nem no
+  lote grande do Vale: a grama fica livre para a obra.
+- **A horta, a bancada e o cata-vento** saíram de perto da parede do quarto: ficam na frente e à
+  direita da casa, fora do lote grande (horta em x 10,5 e z 15, bancada em x 15 e z 14,
+  cata-vento em x 6,8 e z 15, com a hélice olhando para a horta). Uma trilha de pedras sai da
+  beira do lote para o píer e outra para o cata-vento e a horta. A latinha de minhocas fica ao
+  lado da horta (3 m para o oeste e 2 m para a casa).
+- **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): só a varanda e o pé
+  do farol. Um teste confere que todo colisor do lote cai numa célula ocupada.
 - **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. As paredes da esquerda e do
   fundo são da plataforma (fixas: sem porta nem janela). As da frente e da direita viram paredes
   do kit na primeira obra (travadas: aceitam porta e janela, mas não se apagam), com a porta nova e
@@ -1888,13 +1894,18 @@ integração da V20; voltam junto com o documento próprio e o lote na arte.
 ### 6.16.2c O quintal grande do Vale (E04, 30/10/2026)
 
 A proposta põe o "quintal grande" no Vale. Do posto do Vale em diante (posição 6, Arquiteto), o
-lote da casa cresce 2 m para cada lado: de x -13 a 14 e z -12 a 8 para x -15 a 16 e z -14 a 10
-(`LOTE_DA_CASA_GRANDE`, `loteDaCasa(jornada)`). O chão do anel novo fica na faixa de altura do
-lote de antes (variação até 0,4 m, como o resto do gramado sob a obra). O que está no anel novo
-fica ocupado: a árvore do oeste, os dois pinheiros e o farol. A planta, o aconchego e as visitas
+lote da casa cresce (`LOTE_DA_CASA_GRANDE`, `loteDaCasa(jornada)`; medidas no fim desta seção). O
+chão do anel novo fica na faixa de altura do lote de antes (variação até 0,4 m, como o resto do
+gramado sob a obra). No anel novo só o farol fica ocupado. A planta, o aconchego e as visitas
 dos moradores sempre leem o lote grande, que contém o pequeno: a obra de antes dá o mesmo
 resultado. As chaves e o vento do segredo da sua ilha ficam fora dele (a do banheiro foi para
-x -16,5). Provas: `tests/quintal-grande.test.ts`.
+x -11,5 e z 17,2; o vento do segredo, para x 8,5 e z 19, atrás da horta). Provas:
+`tests/quintal-grande.test.ts`.
+
+Desde 31/10/2026 o lote de sempre é o antigo lote grande (x -15 a 16, z -14 a 10) e o quintal
+grande do Vale vai de x -17 a 16 e z -15 a 12 (o canto sudeste encosta na praia: mais para o
+leste ou para o sul passa da grama). Os dois lotes têm as mesmas ocupadas: a varanda e o farol.
+
 ### 6.16.4 Móveis da cozinha, da sala e do banheiro (salvamento V20, 30/10/2026)
 
 A ferramenta **Móveis** do Construir põe os 21 móveis da arte `arte/casa/comodos.py` nos cômodos

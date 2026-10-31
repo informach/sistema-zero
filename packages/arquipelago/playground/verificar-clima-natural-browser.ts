@@ -51,7 +51,7 @@ try {
   }, baseURL)
   const page = await context.newPage()
   page.on('pageerror', (e) => erros.push(e.message))
-  const em = `${CATA_VENTO.x + 2},${CATA_VENTO.z + 1}`
+  const em = `${CATA_VENTO.x - 2},${CATA_VENTO.z + 1}`
   await page.goto(`${baseURL}/?novo=1&persistir=0&posicao=2&adiantar=130&em=${em}`, {
     waitUntil: 'domcontentloaded',
   })

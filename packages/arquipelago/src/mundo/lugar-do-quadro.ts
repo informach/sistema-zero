@@ -12,7 +12,8 @@ export interface LugarDoQuadro {
 
 /**
  * O Quadro das Cores da sua ilha (C03a, 30/10/2026): os desafios do Faísca, com o Pega-conchas no
- * sexto quadro. Fica na grama, ao lado da trilha de pedras da porta até o píer, olhando para ela.
+ * sexto quadro. Fica na grama, ao lado da trilha de pedras da beira do lote até o píer, olhando
+ * para ela.
  * A sua ilha já tem cor: o cavalete acende as manchas, a ilha não muda.
  */
 export const QUADRO_DA_SUA_ILHA = { x: -1.5, z: 18.5, olharPara: { x: -4, z: 18 } } as const

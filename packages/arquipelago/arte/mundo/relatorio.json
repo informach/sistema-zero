@@ -133,12 +133,12 @@
       "col-cil-moita": 10,
       "col-cil-pedra": 12
     },
-    "kb": 452.1,
+    "kb": 439.0,
     "nos": {
       "chao": 7680,
-      "enfeites": 5640,
+      "enfeites": 5352,
       "espuma": 720
     },
-    "triangulos": 14040
+    "triangulos": 13752
   }
 }
