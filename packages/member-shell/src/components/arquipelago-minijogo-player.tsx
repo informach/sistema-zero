@@ -1,17 +1,36 @@
 'use client'
 import '@sistemazero/studio/styles.css'
 import { MinijogoAbertoSchema } from '@sistemazero/arquipelago-contracts'
+import type { PythonProjectDocument } from '@sistemazero/studio'
 import { StudioProjectPlayer } from '@sistemazero/studio/player'
 import { prepareProjectForHost } from '@sistemazero/studio/project-validation'
 import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { apiSend } from '../lib/api'
 import { sessionFetch } from '../lib/session-fetch'
 
-/** Mesmo player isolado do Estúdio, sem editor ou gravação do projeto aprovado. */
-export function ArquipelagoMinijogoPlayer({ url, onClose }: { url: string; onClose: () => void }) {
+/**
+ * Mesmo player isolado do Estúdio, sem editor ou gravação do projeto aprovado. O minijogo em
+ * Python (o quadro 6 do Recife e do Pico, lacunas de 01/11/2026) roda no ambiente do próprio
+ * desafio: o serviço do jogo confere que a pessoa o concluiu e o Members, que o projeto é do
+ * ambiente do desafio. Só execução; nada de editar, exportar ou terminal.
+ */
+export function ArquipelagoMinijogoPlayer({
+  url,
+  onClose,
+  userId,
+  audience,
+}: {
+  url: string
+  onClose: () => void
+  userId: string
+  audience: 'kids' | 'adult'
+}) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [dados, setDados] = useState<{
     titulo: string
+    desafioId: string
+    revisao?: number
     projeto: NonNullable<Awaited<ReturnType<typeof prepareProjectForHost>>>
   } | null>(null)
   const [erro, setErro] = useState(false)
@@ -36,13 +55,37 @@ export function ArquipelagoMinijogoPlayer({ url, onClose }: { url: string; onClo
         const d = MinijogoAbertoSchema.parse(await r.json())
         const projeto = await prepareProjectForHost(d.projeto)
         if (!projeto) throw new Error('projeto-invalido')
-        if (!controle.signal.aborted) setDados({ titulo: d.titulo, projeto })
+        if (!controle.signal.aborted)
+          setDados({ titulo: d.titulo, desafioId: d.desafioId, revisao: d.revisao, projeto })
       } catch {
         if (!controle.signal.aborted) setErro(true)
       }
     })()
     return () => controle.abort()
   }, [url, rodada])
+  const desafioId = dados?.desafioId
+  const revisao = dados?.revisao
+  const ambientePython = useMemo(() => {
+    if (!desafioId || !revisao) return undefined
+    return (project: PythonProjectDocument, signal: AbortSignal) =>
+      import('@sistemazero/studio/challenge-runtime').then(
+        ({ createArquipelagoChallengeRuntimeEnvironment }) =>
+          createArquipelagoChallengeRuntimeEnvironment({
+            project,
+            userId,
+            context: { audience, desafioId, revisao, projectId: project.id },
+            signal,
+            request: (pedido, sinal) =>
+              apiSend(
+                `/api/arquipelago/desafios/${encodeURIComponent(desafioId)}/ambiente`,
+                'POST',
+                { revisao, pedido },
+                undefined,
+                { signal: AbortSignal.any([sinal, AbortSignal.timeout(15_000)]) },
+              ),
+          }),
+      )
+  }, [desafioId, revisao, userId, audience])
   return (
     <dialog
       ref={dialog}
@@ -79,6 +122,7 @@ export function ArquipelagoMinijogoPlayer({ url, onClose }: { url: string; onClo
             key={rodada}
             project={dados.projeto}
             title={dados.titulo}
+            pythonRuntimeEnvironment={ambientePython}
             onError={() => setErro(true)}
           />
         </div>

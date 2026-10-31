@@ -126,6 +126,7 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
   test('a lista diz a ilha publicada do desafio (B10); sem o desafio no banco, fica sem ilha', async () => {
     await servico.verificar(jogador, desafioId, { revisao: 1, projeto: {} })
     expect((await repo.listar(perfil))[0]?.ilha).toBeUndefined()
+    expect((await repo.abrir(perfil, desafioId))?.revisao).toBeUndefined()
     await conexao.sql`
       insert into arquipelago.desafios
         (id, slug, publico, ilha, tipo, quadro, ordem, situacao, revisao, revisao_publicada,
@@ -134,6 +135,8 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
         2, 1, ${JSON.stringify({ ilha: 'vila-doce' })}::jsonb, ${JSON.stringify(c)}::jsonb, now(), now(), ${perfil})`
     // A ilha publicada vale sobre a do rascunho.
     expect((await repo.listar(perfil))[0]?.ilha).toBe('vila-doce')
+    // A abertura leva a revisão publicada: o minijogo em Python pede o ambiente com ela (lacunas).
+    expect((await repo.abrir(perfil, desafioId))?.revisao).toBe(1)
     await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
   })
   test('reprovado, sem atração e suporte não guardam cópia', async () => {

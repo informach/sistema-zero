@@ -36,6 +36,7 @@ export const PythonProjectPlayer = forwardRef<
   const publication =
     props.published && 'programmingLanguage' in props.published ? props.published : undefined
   const request = props.pythonRuntimeRequest
+  const hostEnvironment = props.pythonRuntimeEnvironment
   const playId = publication?.playId
   const publicationRevision = publication?.revision
   useEffect(() => {
@@ -83,15 +84,19 @@ export const PythonProjectPlayer = forwardRef<
     }
     void (async () => {
       try {
-        if (!playId || !publicationRevision || !request)
-          throw new Error('Reabra a página para carregar a revisão publicada deste jogo.')
-        const environment = await createPublicPythonRuntimeEnvironment({
-          project: props.project,
-          playId,
-          publicationRevision,
-          signal: scope.signal,
-          request,
-        })
+        let environment: Awaited<ReturnType<typeof createPublicPythonRuntimeEnvironment>>
+        if (hostEnvironment) environment = await hostEnvironment(props.project, scope.signal)
+        else {
+          if (!playId || !publicationRevision || !request)
+            throw new Error('Reabra a página para carregar a revisão publicada deste jogo.')
+          environment = await createPublicPythonRuntimeEnvironment({
+            project: props.project,
+            playId,
+            publicationRevision,
+            signal: scope.signal,
+            request,
+          })
+        }
         scope.signal.throwIfAborted()
         instance = createPythonExecutionController({
           instanceId: crypto.randomUUID(),
@@ -181,7 +186,7 @@ export const PythonProjectPlayer = forwardRef<
       if (current.current === instance) current.current = null
       void instance?.dispose()
     }
-  }, [props.project, playId, publicationRevision, request, ref])
+  }, [props.project, playId, publicationRevision, request, hostEnvironment, ref])
 
   // Turtle, Pygame Zero, Pygame-ce and the Raylib extensions draw on the execution canvas.
   const hasTurtle = props.project.installedExtensions.some((extension) =>

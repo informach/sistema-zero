@@ -273,6 +273,7 @@
         },
         "recompensa": {
           "cor": true,
+          "atracao": "bolhas-da-lagoa",
           "moedas": 20,
           "moedasExtra": 10
         },

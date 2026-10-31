@@ -67,7 +67,14 @@ export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
                 ? 'Faça a tecla R recomeçar a rodada: as mudas e as perdidas voltam a zero, coral volta a 0 e a bolha volta para a areia.'
                 : 'R reinicia a rodada: contadores e perdidas zerados, coral 0, jogando ativo e a bolha em (280, 360).',
           },
-          recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
+          // O minijogo vira atração (lacunas, 01/11/2026): o player roda o Python no ambiente do
+          // desafio.
+          recompensa: {
+            cor: true,
+            atracao: 'bolhas-da-lagoa',
+            moedas: moedas.principal,
+            moedasExtra: moedas.extra,
+          },
           blocosManuais: { acrescentar: [], retirar: [] },
         },
       },
