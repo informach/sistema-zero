@@ -183,10 +183,24 @@ try {
     await esperar('Mergulhar na gruta', 'gruta')
     await page.screenshot({ path: path.join(prints, `${tela}-gruta.png`) })
     for (const b of baus) {
-      await levar(page, b.onde)
-      await page.waitForTimeout(1200)
-      // A ilha completa carrega na chegada (no computador do teste, devagar).
-      await esperar('Abrir o baú', b.id, 240_000)
+      // A ilha completa carrega na chegada (no computador do teste, devagar). O baú da nuvem do
+      // balão fica a 14 m do chão das Nuvens: levado antes de o colisor da nuvem chegar, o corpo
+      // cai (o "Abrir o baú" aparece por um instante no caminho). Levar de novo até o corpo ficar
+      // no lugar do baú.
+      for (let tentativa = 1; ; tentativa++) {
+        await levar(page, b.onde)
+        await page.waitForTimeout(1200)
+        await esperar('Abrir o baú', b.id, 240_000)
+        await page.waitForTimeout(3000)
+        const p = await posicao(page)
+        // Caído, o corpo fica bem abaixo do baú (na nuvem do balão, 14 m).
+        const noLugar = p && p.y > b.onde.y - 1
+        const aindaOferece = (await acao.filter({ hasText: 'Abrir o baú' }).count()) > 0
+        if (noLugar && aindaOferece) break
+        if (tentativa >= 6)
+          throw Error(`${b.id}: o corpo não ficou no baú (em ${JSON.stringify(p)})`)
+        await page.waitForTimeout(15_000)
+      }
       await page.screenshot({ path: path.join(prints, `${tela}-${b.id}.png`) })
       await usar()
       await page.waitForFunction((bit) => {
@@ -206,10 +220,29 @@ try {
         const andou = Math.hypot(depois.x - antes.x, depois.z - antes.z)
         if (andou < 1) throw Error(`a cinza não empurrou (${andou.toFixed(2)} m)`)
         await page.screenshot({ path: path.join(prints, `${tela}-cinza.png`) })
+        // Os Lumis de luz (B8): o baú da montaria dá o Brotinho de Luz. Ter aberto o baú é ter o
+        // Lumi, e o álbum mostra ele na seção própria.
+        await page.getByRole('button', { name: 'Abrir o menu', exact: true }).click()
+        await page
+          .getByRole('dialog', { name: 'Menu do jogo' })
+          .getByRole('button', { name: 'Álbum de coleções' })
+          .click()
+        const deLuz = page.locator('section[aria-labelledby="arq-album-lumis-de-luz"]')
+        await deLuz.scrollIntoViewIfNeeded()
+        if ((await deLuz.getByText('Brotinho de Luz', { exact: true }).count()) !== 1) {
+          await page.screenshot({ path: path.join(prints, `${tela}-falhou-album.png`) })
+          throw Error('o álbum não mostra o Brotinho de Luz')
+        }
+        await page.screenshot({ path: path.join(prints, `${tela}-album-lumis-de-luz.png`) })
+        console.log(`${tela}: o álbum mostra o Brotinho de Luz`)
+        await page.getByRole('button', { name: 'Voltar ao jogo' }).first().click()
+        await page.waitForTimeout(1500)
       }
     }
     if (erros.length) throw Error(erros.join('\n'))
-    console.log(`PASS ${tela}: os quatro baús abrem, a gruta oferece o mergulho e a cinza empurra`)
+    console.log(
+      `PASS ${tela}: os quatro baús abrem, a gruta oferece o mergulho, a cinza empurra e o álbum mostra o Lumi de luz`,
+    )
     await context.close()
   }
   console.log(`Prints: ${prints}`)
