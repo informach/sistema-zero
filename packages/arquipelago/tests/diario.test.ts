@@ -158,6 +158,7 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
       'milho-da-fogueira',
       'pipoca-de-festa',
       'manjar-de-coco',
+      'cocada',
       'salada',
       'pipoca',
     ])
@@ -168,7 +169,7 @@ describe('a página da Vila Doce e a coleção de receitas (fase2-12)', () => {
     const bolo = zero.find((r) => r.id === 'bolo-de-fuba')
     expect(bolo && !bolo.sabe && bolo.dica).toContain('com 1 coração de amizade (falta 1)')
     const tudo = colecaoDeReceitas(comBento(500))
-    expect(tudo.filter((r) => r.sabe)).toHaveLength(10)
+    expect(tudo.filter((r) => r.sabe)).toHaveLength(11)
     expect(tudo.find((r) => r.id === 'acai-na-tigela')).toMatchObject({ sabe: false })
     expect(tudo.find((r) => r.id === 'bolo-de-fuba')).toMatchObject({
       precisa: '1 fubá, 1 leite, 1 ovo',

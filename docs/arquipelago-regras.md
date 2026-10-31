@@ -66,7 +66,11 @@ lotes C01b, C02 e C03. Esta barreira não declara esses conteúdos prontos ou pu
 - **Festa de fim de ano**: aprovada pela dona em 30/10/2026, de 20 de dezembro a 6 de janeiro
   (atravessa a virada). Usa o arranjo e a arte que já existiam na Vila, as ideias de roupa da
   época e uma receita nova da festa, o manjar de coco (1 leite de coco e 2 leites, na bancada, fome
-  +30 e diversão +20). A Noite das Lanternas continua sem data e desligada.
+  +30 e diversão +20).
+- **Noite das Lanternas**: aprovada pela dona em 31/10/2026, de 1 a 12 de outubro, terminando no
+  Dia das Crianças. Usa o arranjo e a arte que já existiam na Vila, as peças da aba Festa (lanterna
+  de chão e varal de luz), as roupas da época e uma receita nova da festa, a cocada (2 cocos e
+  1 leite, na bancada, fome +25 e diversão +25).
 - Playground: um jogo novo começa com as pontes das ilhas abertas já vistas (`?chegada=1` mostra a
   cena); `?usado=SEGUNDOS` simula o tempo já usado hoje. Provas:
   `tests/resumo-e-fim-do-tempo.test.ts`, `playground/verificar-descanso-browser.ts` e
@@ -2187,8 +2191,9 @@ O calendário usa o dia real de São Paulo, separado do relógio acelerado do jo
 
 - Carnaval: de sábado à terça-feira de Carnaval (a terça é 47 dias antes da Páscoa gregoriana; `sabadoDeCarnaval` volta três dias). Janela aprovada pela dona em 29/10/2026.
 - Festa Junina: de 1 a 30 de junho, inclusive.
-- Fim de ano: **proposta de 20/12 a 06/01, ainda desativada**. A dona precisa aprovar a janela.
-- Noite das Lanternas: **sem data e fora do calendário**, aguardando decisão da dona.
+- Fim de ano: de 20/12 a 06/01, atravessando a virada. Janela aprovada pela dona em 30/10/2026.
+- Noite das Lanternas: de 1 a 12 de outubro, terminando no Dia das Crianças. Janela aprovada pela
+  dona em 31/10/2026.
 
 A data é relida a cada 30 segundos e ao voltar à aba. Abrir a fogueira e fazer a receita
 também conferem a festa atual, sem esperar essa atualização visual.
@@ -2574,8 +2579,8 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
 - **Café, banca de feira e festa no Construir (B7 e B9):** a aba "Café e feira" abre com a Vila
   Doce; a aba "Festa" só aparece durante uma festa, com as peças dela. Fora da festa, a decoração
   posta continua guardada, sem aparecer nem colidir, e volta na festa seguinte. O que acende
-  (luzes, lanternas, fogueira, estrela) brilha à noite. A Noite das Lanternas continua sem data,
-  então as peças dela ainda não aparecem.
+  (luzes, lanternas, fogueira, estrela) brilha à noite. As peças da Noite das Lanternas aparecem
+  de 1 a 12 de outubro.
 - **Três aparências por objeto na galeria (B8):** a clássica, a retrô e a moderna, com o preço da
   clássica. A retrô usa só as cores da paleta "Doces" do Pinta: é a da Faísca, que ainda não pinta
   no jogo ("prontos da galeria com as cores da paleta"). As versões são posses só do Arquipélago;
@@ -4366,8 +4371,7 @@ são os mesmos do configurador do avatar. Cancelar descarta a prévia não salva
 peça comprada permanece depois da festa. Não há roupa obrigatória nem prêmio por comprar.
 
 Carnaval sugere máscara e coroa de flores; Junina, camiseta listrada e laço. Lanternas e fim
-de ano têm sugestões preparadas, mas continuam sem data automática aprovada. O jogo não
-ativa essas festas por conta própria. Kids e adultos usam suas próprias interfaces e contas.
+de ano têm as sugestões delas, nas janelas aprovadas (1 a 12 de outubro e 20/12 a 06/01). Kids e adultos usam suas próprias interfaces e contas.
 
 ## Primeiros passos com o Zappy (30/10/2026)
 

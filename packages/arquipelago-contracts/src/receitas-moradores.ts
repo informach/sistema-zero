@@ -9,7 +9,7 @@ export type OrigemDaReceita =
   | { tipo: 'inicio' }
   | { tipo: 'amizade'; morador: 'bento' | MoradorDoAnel; coracoes: number }
   | { tipo: 'colecao'; colecao: 'bichos-do-bosque' }
-  | { tipo: 'festa'; festa: 'junina' | 'carnaval' | 'fim-de-ano' }
+  | { tipo: 'festa'; festa: 'junina' | 'carnaval' | 'lanternas' | 'fim-de-ano' }
 
 export interface Receita {
   id: string
@@ -58,6 +58,15 @@ export const RECEITAS: Receita[] = [
     faz: { id: 'manjar-de-coco', qtd: 1 },
     onde: 'bancada',
     origem: { tipo: 'festa', festa: 'fim-de-ano' },
+  },
+  {
+    // O doce da Noite das Lanternas (aprovada pela dona em 31/10/2026: 1 a 12 de outubro).
+    id: 'cocada',
+    nome: 'Cocada',
+    precisa: { coco: 2, leite: 1 },
+    faz: { id: 'cocada', qtd: 1 },
+    onde: 'bancada',
+    origem: { tipo: 'festa', festa: 'lanternas' },
   },
   {
     id: 'salada',
