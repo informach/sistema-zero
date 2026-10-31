@@ -1,5 +1,6 @@
 import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { type LadoDaParede, ladoDaParede, type Planta } from './comodos'
+import type { Entrada } from './entrada'
 import {
   type Aresta,
   adiante,
@@ -21,7 +22,7 @@ import { type Celula, chaveDaCelula, type ParedeDoMeuQuarto } from './lote'
  * parede de eixo x com o dentro em -z gira 0 e com o dentro em +z gira meia volta; de eixo z, com o
  * dentro em -x gira +90° e com o dentro em +x, -90°.
  */
-export type ArquivoDoKit = 'paredes' | 'portas' | 'pisos' | 'telhado'
+export type ArquivoDoKit = 'paredes' | 'portas' | 'pisos' | 'telhado' | 'varanda'
 
 export interface PecaDoKit {
   /** Identidade estável da peça (a mesma peça no mesmo lugar não é recriada). */
@@ -315,4 +316,54 @@ export function colisoresDaObra(
     })
   }
   return caixas
+}
+
+// ------------------------------------------------------------------ a varanda da entrada
+
+/**
+ * Os nós da varanda (`casa-varanda.glb`, 31/10/2026): o deque com as vigas, o degrau, as colunas, os
+ * vasinhos e o lampião (`varanda`) e o toldo (`varanda-toldo`, que sai com o telhado: no Construir e
+ * com a pessoa dentro de casa). Origem no meio da porta, na linha da grade, com o giro da parede.
+ */
+export const NOS_DA_VARANDA = { varanda: 'varanda', toldo: 'varanda-toldo' } as const
+
+/** As peças da varanda na porta de entrada (nenhuma sem entrada). */
+export function pecasDaVaranda(e: Entrada | null): { varanda: PecaDoKit[]; toldo: PecaDoKit[] } {
+  if (!e) return { varanda: [], toldo: [] }
+  return {
+    varanda: [peca('varanda', NOS_DA_VARANDA.varanda, e.meio, e.giro)],
+    toldo: [peca('varanda', NOS_DA_VARANDA.toldo, e.meio, e.giro)],
+  }
+}
+
+/**
+ * Os colisores da varanda no referencial da peça (giro 0: a parede corre em x e o lado de fora é o
+ * +z), as mesmas caixas `col-varanda-*` do `casa-varanda.glb` (o teste confere): o tampo do deque
+ * (de 0,20 a 1,75 da linha da parede), o degrau, as duas colunas do toldo e os dois vasinhos. Todos
+ * só seguram o corpo (a câmera passa, `SO_PARA_O_CORPO`).
+ */
+export const COLISORES_DA_VARANDA: readonly CaixaDaObra[] = [
+  { nome: 'col-varanda-deque', posicao: [0, 0, 0.975], meio: [2.1, 0.05, 0.775] },
+  { nome: 'col-varanda-degrau', posicao: [0, -0.04, 1.97], meio: [1.2, 0.04, 0.2] },
+  { nome: 'col-varanda-coluna-1', posicao: [-1.95, 1.7, 1.6], meio: [0.12, 1.7, 0.12] },
+  { nome: 'col-varanda-coluna-2', posicao: [1.95, 1.7, 1.6], meio: [0.12, 1.7, 0.12] },
+  { nome: 'col-varanda-vaso-1', posicao: [-1.6, 0.36, 0.5], meio: [0.22, 0.36, 0.22] },
+  { nome: 'col-varanda-vaso-2', posicao: [1.6, 0.36, 0.5], meio: [0.22, 0.36, 0.22] },
+]
+
+/** Os colisores da varanda na entrada, no referencial da grade (o giro é sempre de quarto de volta). */
+export function colisoresDaVaranda(e: Entrada | null): CaixaDaObra[] {
+  if (!e) return []
+  const c = Math.round(Math.cos(e.giro))
+  const s = Math.round(Math.sin(e.giro))
+  return COLISORES_DA_VARANDA.map((k) => {
+    const [x, y, z] = k.posicao
+    const [mx, my, mz] = k.meio
+    // O mesmo giro em volta do y do three.js: (x, z) -> (x cos + z sen, -x sen + z cos).
+    return {
+      nome: k.nome,
+      posicao: [e.meio.x + x * c + z * s, y, e.meio.z - x * s + z * c],
+      meio: s === 0 ? [mx, my, mz] : [mz, my, mx],
+    }
+  })
 }

@@ -5,6 +5,12 @@ import { BufferGeometry, Float32BufferAttribute, Plane, Raycaster, Vector2, Vect
 import { CAMERA_DE_OBRA, lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
 import { planta } from '../sistemas/construcao/comodos'
+import {
+  celulasDoRetangulo,
+  entradaDaObra,
+  loteDaObra,
+  retanguloDaVaranda,
+} from '../sistemas/construcao/entrada'
 import { motivoDaPrevia } from '../sistemas/construcao/falas'
 import {
   arrasta,
@@ -13,7 +19,13 @@ import {
   type Previa as PreviaDaRegra,
   toque,
 } from '../sistemas/construcao/ferramentas'
-import { type Aresta, arestaDaChave, celulaEm, type Ponto } from '../sistemas/construcao/grade'
+import {
+  type Aresta,
+  arestaDaChave,
+  arestasDaAbertura,
+  celulaEm,
+  type Ponto,
+} from '../sistemas/construcao/grade'
 import { type Celula, chaveDaCelula, type Lote } from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
 import { noModelo } from './medidas'
@@ -21,12 +33,14 @@ import { noModelo } from './medidas'
 const VERDE = '#3ccf7a'
 const VERMELHO = '#e2475f'
 const AZUL = '#4aa3ff'
+/** A porta de entrada destacada (escolhida ou com o mouse em cima) e a varanda dela. */
+const AMARELO = '#ffc93c'
 /** Tolera a tremida do dedo sem confundir o toque de inspeção com arrastar a câmera. */
 const DISTANCIA_DO_ARRASTO = 6
 
 /** O que a prévia mostra embaixo do dedo (ou do mouse). */
 type Previa =
-  | { tipo: 'arestas'; arestas: Aresta[]; cor: string }
+  | { tipo: 'arestas'; arestas: Aresta[]; cor: string; varanda?: Celula[] }
   | { tipo: 'celulas'; celulas: Celula[]; cor: string }
   | { tipo: 'ponto'; ponto: Ponto }
   | null
@@ -34,10 +48,18 @@ type Previa =
 /** A cor da prévia: vermelho no apagar e no que não dá; azul na porta e na janela; verde no resto. */
 function comCor(f: Ferramenta, p: PreviaDaRegra): Previa {
   if (p.tipo === 'ponto') return p
-  const cor = f === 'apagar' || !p.ok ? VERMELHO : f === 'porta' || f === 'janela' ? AZUL : VERDE
-  return p.tipo === 'arestas'
-    ? { tipo: 'arestas', arestas: p.arestas, cor }
-    : { tipo: 'celulas', celulas: p.celulas, cor }
+  const cor =
+    f === 'apagar' || !p.ok
+      ? VERMELHO
+      : p.tipo === 'arestas' && p.entrada
+        ? AMARELO
+        : f === 'porta' || f === 'janela'
+          ? AZUL
+          : VERDE
+  if (p.tipo === 'celulas') return { tipo: 'celulas', celulas: p.celulas, cor }
+  return p.varanda
+    ? { tipo: 'arestas', arestas: p.arestas, cor, varanda: p.varanda }
+    : { tipo: 'arestas', arestas: p.arestas, cor }
 }
 
 function chaveDaPrevia(p: Previa): string {
@@ -45,7 +67,7 @@ function chaveDaPrevia(p: Previa): string {
   if (p.tipo === 'ponto') return `p${p.ponto.x},${p.ponto.z}`
   const itens =
     p.tipo === 'arestas'
-      ? p.arestas.map((a) => `${a.eixo}${a.x},${a.z}`)
+      ? [...p.arestas.map((a) => `${a.eixo}${a.x},${a.z}`), ...(p.varanda ?? []).map(chaveDaCelula)]
       : p.celulas.map(chaveDaCelula)
   return `${p.tipo}${p.cor}${itens.join(';')}`
 }
@@ -81,6 +103,23 @@ export function ModoConstruir({
   const ferramenta = useConstrucao(construcao, (s) => s.ferramenta)
   const aconchegoAberto = useConstrucao(construcao, (s) => s.aconchegoAberto)
   const celulaObservada = useConstrucao(construcao, (s) => s.celulaObservada)
+  // A porta de entrada escolhida com a Porta fica destacada, com a varanda, até soltar.
+  const entradaEscolhida = useConstrucao(
+    construcao,
+    (s) => s.entradaSelecionada && s.ferramenta === 'porta',
+  )
+  const entrada = useMemo(() => {
+    if (!entradaEscolhida) return null
+    const e = entradaDaObra(obra, lote)
+    return e
+      ? {
+          arestas: arestasDaAbertura(e.abertura),
+          varanda: celulasDoRetangulo(retanguloDaVaranda(e)),
+        }
+      : null
+  }, [entradaEscolhida, obra, lote])
+  // A grade tinge o que ocupa o lote com esta obra (a varanda segue a entrada).
+  const loteDaGrade = useMemo(() => loteDaObra(lote, obra), [lote, obra])
   const comodoObservado = useMemo(() => {
     if (!aconchegoAberto) return undefined
     const p = planta(obra, lote)
@@ -227,6 +266,7 @@ export function ModoConstruir({
         objeto: s.objeto,
         movel: s.movel,
         giro: s.giro,
+        entradaSelecionada: s.entradaSelecionada,
       }
     }
     const horta = () => loja.getState().salvamento.horta
@@ -328,8 +368,10 @@ export function ModoConstruir({
               : null
         if (r) s.aplicar(r)
       } else if (g.tipo === 'toque') {
-        const r = toque(ferramenta, o, lote, g.onde, escolhas(), horta(), projetos()).resultado
-        if (r) s.aplicar(r)
+        const t = toque(ferramenta, o, lote, g.onde, escolhas(), horta(), projetos())
+        // A porta de entrada: tocar nela escolhe ou solta; levada para outra parede, solta.
+        const aplicou = t.resultado ? s.aplicar(t.resultado) : true
+        if (aplicou && t.entrada) s.selecionarEntrada(t.entrada === 'selecionar')
       }
       mostrar(null)
     }
@@ -381,8 +423,18 @@ export function ModoConstruir({
 
   return (
     <group position={[referencial.x, base, referencial.z]} rotation-y={referencial.giro}>
-      <Grade lote={lote} />
+      <Grade lote={loteDaGrade} />
       {comodoObservado && <DestaqueDoComodo celulas={comodoObservado.celulas} />}
+      {entrada ? (
+        <Previa
+          previa={{
+            tipo: 'arestas',
+            arestas: entrada.arestas,
+            cor: AMARELO,
+            varanda: entrada.varanda,
+          }}
+        />
+      ) : null}
       <Previa previa={previa} />
     </group>
   )
@@ -514,6 +566,16 @@ function Previa({ previa }: { previa: Previa }) {
     )
   return (
     <>
+      {previa.varanda?.map((c) => (
+        <mesh
+          key={`v${chaveDaCelula(c)}`}
+          position={[c.x + 0.5, 0.07, c.z + 0.5]}
+          rotation-x={-Math.PI / 2}
+        >
+          <planeGeometry args={[0.96, 0.96]} />
+          <meshBasicMaterial color={previa.cor} transparent opacity={0.3} depthWrite={false} />
+        </mesh>
+      ))}
       {previa.arestas.map((a) => (
         <mesh
           key={`${a.eixo}${a.x},${a.z}`}

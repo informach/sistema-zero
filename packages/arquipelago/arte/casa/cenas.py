@@ -2,7 +2,7 @@
 GLB temporário (para o `faces-coplanares.ts` sem `--separados` conferir as emendas entre vizinhas) e
 renderiza prévias em Cycles. Nada daqui vai para o jogo.
 
-  python -B cenas.py kit [cozinha sala banheiro moveis andar cafe-festas janela-baixa]      # as cenas pedidas
+  python -B cenas.py kit [cozinha sala banheiro moveis andar cafe-festas janela-baixa varanda]   # as cenas pedidas
 
 Variáveis: DIR_PREVIAS (pasta das imagens e dos GLBs temporários; padrão: `arte-casa` no diretório
 temporário), RES (padrão 560), AMOSTRAS (padrão 28),
@@ -518,9 +518,41 @@ def cena_janela_baixa():
     return c
 
 
+def com_varanda(c, x0, y0, cortada=False):
+    """Cômodo 7 × 4 de lambri com a porta de entrada no meio da frente e a varanda do kit
+    (`casa-varanda.glb`, 31/10/2026) com a MESMA posição e giro da parede da porta, como o jogo põe; à
+    direita (x0 + 7) uma segunda porta de fora com a varanda, girada (a entrada que mudou de lugar).
+    Cortada: as paredes da frente e da direita baixas, sem folha e sem toldo (o Construir)."""
+    b = '-baixa' if cortada else ''
+    c.piso('piso-tabua', x0, y0, 7, 5)
+    c.corrida('x', y0, x0, [(f'parede-lambri{b}', 1)] * 2 + [(f'parede-porta-lambri{b}', 3)] +
+              [(f'parede-lambri{b}', 1)] * 2, +1)
+    c.corrida('y', x0 + 7, y0, [(f'parede-lambri{b}', 1)] + [(f'parede-porta-lambri{b}', 3)] +
+              [(f'parede-lambri{b}', 1)], -1)
+    c.corrida('x', y0 + 5, x0, [('parede-lambri', 1)] * 7, -1)
+    c.corrida('y', x0, y0, [('parede-lambri', 1)] * 5, +1)
+    for x, y in ((x0, y0), (x0 + 7, y0), (x0, y0 + 5), (x0 + 7, y0 + 5)):
+        alta = not cortada or (x, y) == (x0, y0 + 5)
+        c.por('quina-lambri' + ('' if alta else '-baixa'), x, y)
+    # A frente (giro 0) e a direita (o giro da parede de lado, 90°).
+    for x, y, giro in ((x0 + 3.5, y0, 0), (x0 + 7, y0 + 2.5, 90)):
+        c.por('varanda', x, y, 0, giro)
+        if not cortada:
+            c.por('varanda-toldo', x, y, 0, giro)
+            c.por('porta', x, y, 0, giro)
+
+
+def cena_varanda():
+    """A varanda da porta de entrada: em pé (x 0) e no Construir, com as paredes cortadas (x 14)."""
+    c = Cena(['casa-paredes.glb', 'casa-portas.glb', 'casa-pisos.glb', 'casa-varanda.glb'])
+    com_varanda(c, 0.0, 0.0)
+    com_varanda(c, 14.0, 0.0, cortada=True)
+    return c
+
+
 CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro,
          'andar': cena_andar, 'andar-parede': cena_andar_parede, 'cafe-festas': cena_cafe_festas,
-         'fachada-andar': cena_fachada_andar, 'janela-baixa': cena_janela_baixa}
+         'fachada-andar': cena_fachada_andar, 'janela-baixa': cena_janela_baixa, 'varanda': cena_varanda}
 
 
 def main():
@@ -564,6 +596,9 @@ VISTAS = {
     'janela-baixa': [((5.0, 1.2, 0.6), (0.3, -1.0, 1.35), 11.5), ((25.0, 1.2, 0.6), (0.3, -1.0, 1.35), 11.5),
                      ((7.5, -6.0, 1.6), (0.3, -1.0, 0.9), 16.0), ((27.5, -6.0, 1.6), (0.3, -1.0, 0.9), 16.0),
                      ((5.4, 0.3, 0.7), (0.3, -1.0, 1.35), 8.8), ((25.4, 0.3, 0.7), (0.3, -1.0, 1.35), 8.8)],
+    # De frente e de lado, como quem chega na casa; e o Construir de cima.
+    'varanda': [((4.5, 0.5, 1.8), (0.55, -1.0, 0.45), 13.0), ((8.0, 2.5, 1.8), (1.0, -0.45, 0.4), 12.0),
+                ((18.5, 1.0, 0.6), (0.35, -1.0, 1.3), 13.0)],
     'cafe-festas': [((6.0, 2.2, 1.0), (0.35, -1.0, 0.55), 12.5), ((2.5, 2.4, 1.0), (0.2, -1.0, 0.5), 5.5),
                     ((9.5, 2.6, 1.6), (-0.2, -1.0, 0.4), 5.5)],
 }

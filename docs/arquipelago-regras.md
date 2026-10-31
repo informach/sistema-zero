@@ -1580,7 +1580,43 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   beira do lote para o píer e outra para o cata-vento e a horta. A latinha de minhocas fica ao
   lado da horta (3 m para o oeste e 2 m para a casa).
 - **Células ocupadas** (não se constrói em cima nem se fecha dentro de casa): só a varanda e o pé
-  do farol. Um teste confere que todo colisor do lote cai numa célula ocupada.
+  do farol. A varanda segue a porta de entrada (abaixo): na obra inicial fica onde sempre esteve
+  (x 0 a 5, z 0 a 2). Um teste confere que todo colisor do lote cai numa célula ocupada.
+- **A porta de entrada** (31/10/2026, pedido dela: a porta de entrada muda de lugar no Construir, e
+  a varanda vai junto; `sistemas/construcao/entrada.ts`): a casa construída sempre tem UMA entrada,
+  a primeira porta de fora na ordem das portas e janelas da obra. Porta de fora é a que tem, em toda
+  a largura, um lado dentro de casa e o outro fora (porta entre dois cômodos ou numa parede solta
+  não conta). O salvamento não mudou: nas obras já salvas a entrada é a porta nova, a primeira da
+  obra inicial. Uma obra antiga sem porta de fora fica sem varanda até ganhar uma; a primeira porta
+  de fora posta vira a entrada, se a varanda dela couber.
+- **A varanda** é uma peça do kit (`casa-varanda.glb`, o mesmo desenho e os mesmos materiais da
+  varanda da casa de antes: deque de tábuas com vigas, degrau, colunas, toldo, vasinhos e o lampião
+  que acende à noite), posta do lado de fora da entrada com a posição e o giro da parede dela. Ocupa
+  5 células ao longo da parede (a porta e uma de cada lado) e 2 de fundo. Ela encosta na parede em
+  toda a largura: as 5 arestas da linha da porta precisam ser parede (a varanda não dobra uma
+  quina). Colide no tampo do deque, no degrau, nas colunas e nos vasinhos, só para o corpo (a câmera
+  passa). O toldo sai junto com o telhado (no Construir e com a pessoa dentro de casa). Na casa
+  construída a varanda e o toldo da casa de antes saem de cena.
+- **Mudar a entrada de lugar:** com a ferramenta Porta, tocar na porta de entrada a escolhe (a porta
+  e a varanda ficam amarelas e a linha de baixo diz "Toque numa parede de fora para levar a entrada e
+  a varanda."); o toque seguinte numa parede de fora leva a porta e a varanda para lá, e a parede de
+  antes fica inteira, sem porta. A prévia mostra a porta e a varanda novas em azul (ou vermelho, com
+  o motivo na linha de baixo). Tocar na entrada de novo, trocar de ferramenta, desfazer ou fechar
+  solta a escolha. Uma janela no caminho vira porta ("A janela virou porta."); uma porta de fora no
+  mesmo lugar vira a entrada. Recusas: a parede não dá para fora ("A entrada vai numa parede que dá
+  para fora."); a varanda não cabe (uma das células fora do lote, dentro de casa, no pé do farol, num
+  canteiro, num caminho ou num objeto, uma parede ou cerca encostando nela, ou a parede não segue de
+  um dos lados da porta: "A varanda não cabe aí. Escolha outra parede de fora."); e as da porta de
+  sempre (sem parede, parede chegando no meio, quadro do Meu quarto, peça pendurada). O Desfazer
+  volta a entrada.
+- **A entrada não se apaga:** o Apagar na porta de entrada, na parede dela ou numa parede que abriria
+  o cômodo dela para fora é recusado: "A casa precisa de uma porta de entrada. Toque nela com a Porta
+  para mudar de lugar.". As outras portas de fora são portas comuns (saem com o Apagar).
+- **O que segue a entrada:** as portas do kit abrem sozinhas perto da criança (a entrada também); o
+  Zappy dos primeiros passos aponta a frente da entrada na casa construída; com o quarto todo tomado
+  por móveis, a criança aparece na frente da entrada. A chegada das visitas continua na frente do
+  lote (x 2,5 e z 11, olhando para a casa) e a trilha de pedra do lote até o píer continua a mesma
+  (são do chão da ilha).
 - **O quarto da plataforma** (x -6 a 6, z -8 a 0) é um cômodo fixo. Na casa construída as quatro
   paredes dele são do kit (31/10/2026, pedido dela: todas aceitam porta e janela) e são travadas:
   aceitam porta e janela, mas não se apagam. A frente e a direita entram na obra inicial, com a
@@ -1624,12 +1660,13 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   uma cortada na mesma linha; nada no T, no cruzamento e na emenda reta.
 - **Colisão:** as paredes em pé (sempre altas, o corte é só desenho), com o vão de 2,2 por 3 de
   cada porta livre, e as quinas. As quatro paredes do quarto colidem pelo kit (uma porta no fundo
-  ou na esquerda deixa o vão livre); da casa de antes só a varanda colide.
+  ou na esquerda deixa o vão livre); a varanda colide pelo kit, na entrada, e da casa de antes nada
+  colide.
 - **A casa construída** (`mundo/obra.tsx`, montada pela `Casa`): enquanto
   `salvamento.construcao.casa` é `null`, a casa é a de antes (`casa.glb`). Com obra, o kit desenha as
   paredes (as quatro do quarto inclusive), as quinas, as portas, as janelas e os pisos dos cômodos
-  novos, e do `casa.glb` ficam só o telhado do quarto e a varanda (a porta nova vira a porta do kit,
-  no mesmo lugar). O `revestimento` (lado de fora da esquerda e do fundo, quinas, alicerce e
+  novos, e do `casa.glb` fica só o telhado do quarto (a porta nova vira a porta do kit, no mesmo
+  lugar, e a varanda é a do kit, na porta de entrada). O `revestimento` (lado de fora da esquerda e do fundo, quinas, alicerce e
   soleira) e as paredes do Meu quarto (`Walls`) saem de cena: o kit já tem tudo isso, e junto eles
   teriam faces no mesmo plano (teste "a casa construída" em `tests/faces-coplanares.test.ts`, com
   as paredes em pé e cortadas). As janelas do kit acendem à noite.
@@ -1638,7 +1675,8 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
 - **Playground:** `?obra=exemplo` começa a casa com a obra de exemplo
   (`src/plataforma/obra-de-exemplo.ts`: um cômodo na frente do quarto e um à direita, com a porta
   nova saindo do quarto). `?obra=fundo` é a mesma com um cômodo atrás do quarto (x 1 a 6, z -12 a
-  -8), ligado por uma porta no fundo.
+  -8), ligado por uma porta no fundo. `?obra=entrada` é a de exemplo com a porta de entrada na frente
+  do cômodo da frente do quarto (a janela em arco virou porta e a frente do quarto ficou sem porta).
 - **Viver e Construir** (`interface/construir.tsx`, loja `estado/construcao.ts`): os dois botões no
   alto da tela aparecem depois que a porta nova abriu, quando nada mais está por cima do jogo.
   Construir para o personagem (`PAINEL_DE_CONSTRUIR` em `painelAberto`); "Pronto", "Viver" ou Esc
@@ -1652,7 +1690,7 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
   inclinação, olhando para (0, -3); os botões giram um oitavo de volta e aproximam ou afastam 4
   (de 8 a 40); a roda aproxima; setas e W A S D andam; Q e E giram; arrastar com o botão direito
   gira e inclina. Ela toma o lugar da câmera do jogo só enquanto o Construir está aberto.
-- **Ferramentas:** Parede (arrastar estica), Porta, Janela (grande, em arco ou redonda), Piso (do
+- **Ferramentas:** Parede (arrastar estica), Porta (e mudar a porta de entrada de lugar), Janela (grande, em arco ou redonda), Piso (do
   cômodo inteiro: tábua, ladrilho ou azulejo), Apagar (arrastar apaga paredes; um toque tira a
   porta ou a janela, e sem ela a parede) e Olhar (arrastar anda pela obra). A prévia mostra em
   verde o que dá (em azul para porta e janela) e em vermelho o que não dá; o Zappy explica a

@@ -32,8 +32,10 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?passos=1` mostra os primeiros passos com o Zappy e `?dicas=1` liga as dicas de primeira vez.
  * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção; `?obra=fundo`, a mesma com
- * um cômodo atrás do quarto e a porta no fundo dele.
- * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa.
+ * um cômodo atrás do quarto e a porta no fundo dele; `?obra=entrada`, a mesma com a porta de entrada
+ * (e a varanda) na frente do cômodo da frente do quarto.
+ * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa
+ * (`?pet=cachorro`, o cachorro: o espaço dos bichos, 31/10/2026).
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
  * `?bento=100` põe a amizade com o Bento (com 100 ele lembrou o bolo de fubá e o forno chega).
  * `?patins=1` põe um par de patins na mochila (o prêmio da entrega pelos telhados).
@@ -100,7 +102,10 @@ if (q.get('novo') === '1') {
   }
 }
 const plataforma = criarPlataformaFalsa({
-  quarto: q.get('pet') === 'passaro' ? { ...QUARTO_DE_EXEMPLO, pet: 'pet-passaro' } : undefined,
+  quarto:
+    q.get('pet') === 'passaro' || q.get('pet') === 'cachorro'
+      ? { ...QUARTO_DE_EXEMPLO, pet: `pet-${q.get('pet')}` }
+      : undefined,
   rotina:
     q.get('rotina') === 'cancelado'
       ? 'cancelado'
@@ -126,7 +131,7 @@ const plataforma = criarPlataformaFalsa({
   adiantarMinutos: Number(q.get('adiantar') ?? 0),
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   convidados: q.get('convidados') === '1',
-  obra: (['exemplo', 'fundo'] as const).find((v) => v === q.get('obra')),
+  obra: (['exemplo', 'fundo', 'entrada'] as const).find((v) => v === q.get('obra')),
   jogos: q.get('jogos') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   adotado: q.get('adotado') === '1',

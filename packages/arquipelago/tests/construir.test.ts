@@ -7,9 +7,16 @@ import {
 } from '../src/estado/construcao'
 import { criarLoja } from '../src/estado/loja'
 import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
+import { entradaDaObra } from '../src/sistemas/construcao/entrada'
 import { falaDaRecusa } from '../src/sistemas/construcao/falas'
+import { toque } from '../src/sistemas/construcao/ferramentas'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
-import { esticarParede, porAbertura, type Recusa } from '../src/sistemas/construcao/obra'
+import {
+  esticarParede,
+  moverEntrada,
+  porAbertura,
+  type Recusa,
+} from '../src/sistemas/construcao/obra'
 
 function montar() {
   const gravados: unknown[] = []
@@ -205,6 +212,9 @@ describe('o modo Construir', () => {
       { motivo: 'fora-de-comodo' },
       { motivo: 'no-quarto' },
       { motivo: 'limite' },
+      { motivo: 'entrada-fora' },
+      { motivo: 'varanda-nao-cabe' },
+      { motivo: 'entrada' },
     ]
     for (const r of recusas) {
       const fala = falaDaRecusa(r)
@@ -212,5 +222,59 @@ describe('o modo Construir', () => {
       expect(fala).not.toMatch(/[!?—…]/)
     }
     expect(falaDaRecusa({ motivo: 'nada' })).toBeNull()
+  })
+
+  test('a porta de entrada: escolher, levar, desfazer e a recusa do apagar', () => {
+    const { loja, construcao } = montar()
+    construcao.getState().abrir()
+    const c = construcao.getState
+    const obra = () => loja.getState().salvamento.construcao.casa ?? LOTE_DA_CASA.obraInicial
+    c().escolher('porta')
+    c().selecionarEntrada(true)
+    expect(c().entradaSelecionada).toBe(true)
+    // Trocar de ferramenta solta.
+    c().escolher('parede')
+    expect(c().entradaSelecionada).toBe(false)
+    c().escolher('porta')
+    c().selecionarEntrada(true)
+    expect(c().aplicar(moverEntrada(obra(), LOTE_DA_CASA, { eixo: 'z', x: 6, z: -5 }))).toBe(true)
+    expect(entradaDaObra(obra(), LOTE_DA_CASA)?.abertura).toEqual({
+      tipo: 'porta',
+      x: 6,
+      z: -6,
+      eixo: 'z',
+    })
+    // O Desfazer volta a entrada para a frente (e solta a escolha).
+    c().desfazer()
+    expect(entradaDaObra(obra(), LOTE_DA_CASA)?.abertura).toEqual(
+      LOTE_DA_CASA.obraInicial.aberturas[0],
+    )
+    expect(c().entradaSelecionada).toBe(false)
+    // O Apagar na entrada: o Zappy diz como mudar de lugar, e nada é gravado.
+    const antes = loja.getState().salvamento
+    const t = toque(
+      'apagar',
+      obra(),
+      LOTE_DA_CASA,
+      { x: 2.5, z: 0.1 },
+      {
+        janela: 'janela-redonda',
+        piso: 'tabua',
+        caminho: 'pedra',
+        objeto: null,
+        movel: null,
+        giro: 0,
+      },
+      [],
+    )
+    expect(t.resultado && c().aplicar(t.resultado)).toBe(false)
+    expect(loja.getState().dica?.texto).toBe(
+      'A casa precisa de uma porta de entrada. Toque nela com a Porta para mudar de lugar.',
+    )
+    expect(loja.getState().salvamento).toBe(antes)
+    // Fechar solta.
+    c().selecionarEntrada(true)
+    c().fechar()
+    expect(c().entradaSelecionada).toBe(false)
   })
 })

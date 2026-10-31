@@ -39,7 +39,12 @@ import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
 import { CHAVE_DOS_FANTASMAS_FALSOS, criarFantasmasFalsos } from './fantasmas-falsos'
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
-import { obraDeExemplo, obraDeExemploComFundo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
+import {
+  obraDeExemplo,
+  obraDeExemploComEntrada,
+  obraDeExemploComFundo,
+  PROJETOS_DE_EXEMPLO,
+} from './obra-de-exemplo'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
 import { criarVisitasAdultasFalsas } from './visitas-adultas-falsas'
@@ -83,9 +88,10 @@ export interface OpcoesDaPlataformaFalsa {
   editarObjeto?: (pedido: PedidoDeFerramenta) => Promise<boolean>
   /**
    * `exemplo`: a casa já começa com a obra de exemplo do modo construção (`obra-de-exemplo.ts`);
-   * `fundo`: a mesma, com um cômodo atrás do quarto e a porta no fundo dele.
+   * `fundo`: a mesma, com um cômodo atrás do quarto e a porta no fundo dele; `entrada`: a mesma, com a
+   * porta de entrada (e a varanda) na frente do cômodo da frente do quarto.
    */
-  obra?: 'exemplo' | 'fundo'
+  obra?: 'exemplo' | 'fundo' | 'entrada'
   /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
   jogos?: 'exemplo'
   /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
@@ -307,7 +313,12 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
     galeria.lembrarCompras(migrarSalvamento(guardado.salvamento))
   }
   if (o.obra) {
-    const obra = o.obra === 'fundo' ? obraDeExemploComFundo() : obraDeExemplo()
+    const obra =
+      o.obra === 'fundo'
+        ? obraDeExemploComFundo()
+        : o.obra === 'entrada'
+          ? obraDeExemploComEntrada()
+          : obraDeExemplo()
     const atual =
       migrarSalvamento(guardado.salvamento) ??
       criarSalvamentoInicial(new Date(agora().getTime() - (o.adiantarMinutos ?? 0) * 60_000))

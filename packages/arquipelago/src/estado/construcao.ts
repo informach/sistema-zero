@@ -118,6 +118,12 @@ export interface EstadoDaConstrucao {
    */
   motivoDaPrevia: string | null
   mostrarMotivo(motivo: string | null): void
+  /**
+   * A porta de entrada escolhida com a Porta (31/10/2026): o próximo toque numa parede de fora leva
+   * a entrada e a varanda para lá. Solta ao trocar de ferramenta, ao desfazer e ao fechar.
+   */
+  entradaSelecionada: boolean
+  selecionarEntrada(sim: boolean): void
   /** A obra que o Construir aberto mexe (escolhida ao abrir: a cabana, se a pessoa está nela). */
   onde: OndeSeConstroi
   cabana: CabanaAoAlcance | null
@@ -212,6 +218,10 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     mostrarMotivo: (motivoDaPrevia) => {
       if (get().motivoDaPrevia !== motivoDaPrevia) set({ motivoDaPrevia })
     },
+    entradaSelecionada: false,
+    selecionarEntrada: (entradaSelecionada) => {
+      if (get().entradaSelecionada !== entradaSelecionada) set({ entradaSelecionada })
+    },
     onde: 'casa',
     cabana: null,
     registrarCabana: (cabana) => set({ cabana }),
@@ -224,7 +234,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     },
     escolher: (ferramenta) => {
       if (!destrancado(loja, comodoDaFerramenta(ferramenta))) return
-      set({ ferramenta, aconchegoAberto: false, motivoDaPrevia: null })
+      set({ ferramenta, aconchegoAberto: false, motivoDaPrevia: null, entradaSelecionada: false })
     },
     escolherJanela: (janela) => {
       if (!destrancado(loja, comodoDaJanela(janela))) return
@@ -285,7 +295,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       const antes = get().antes
       const anterior = antes.at(-1)
       if (!anterior) return
-      set({ antes: antes.slice(0, -1) })
+      set({ antes: antes.slice(0, -1), entradaSelecionada: false })
       mudarObra(loja, anterior, onde)
       ultimaObra = anterior
     },
@@ -304,6 +314,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         aconchegoAberto: false,
         celulaObservada: null,
         motivoDaPrevia: null,
+        entradaSelecionada: false,
         antes: [],
         camera: { ...get().camera, alvo: alvoAoAbrir(onde, cabana), giro: 0 },
       })
@@ -311,7 +322,7 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       s.abrirPainel(PAINEL_DE_CONSTRUIR)
     },
     fechar() {
-      set({ antes: [], motivoDaPrevia: null })
+      set({ antes: [], motivoDaPrevia: null, entradaSelecionada: false })
       ultimaObra = null
       if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) loja.getState().abrirPainel(null)
     },

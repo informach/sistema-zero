@@ -123,6 +123,32 @@ conferência. O consentimento falso é em memória, sem persistir código de tes
 `verificar-visitas-adultas-browser.ts`, com contextos novos para massas independentes, sem
 apagar rascunhos para contornar conflito. V18, física e limite de tempo Kids não mudam.
 
+## O espaço dos bichos (31/10/2026, pedido dela: o personagem atravessava o cachorro do quarto)
+
+- Regras puras em `sistemas/espaco-dos-bichos.ts` (`ESPACO`, `ESPACO_DOS_BICHOS` medido nos GLBs
+  reais, `capsulaDoEspaco`, `corpoQueSegura`, `respeitarFolga`, `empurrando`/`passoDoEmpurrao`,
+  `ladoDoPassinho`/`passoDoPassinho`, `passaroNoAlto`). Cada bicho tem uma cápsula do tamanho do
+  corpo (`ColisorDoEspaco` em `mundo/espaco-dos-bichos.tsx`) no grupo só do corpo (a câmera passa)
+  e o corpo dele leva `BICHO_QUE_SEGURA` no `userData`; quem anda no chão tem pelo menos 0,75 de
+  altura (o degrau automático não sobe nele).
+- Quarto: `PetDoQuartoComEspaco` (no `Quarto` de `casa.tsx`) passa ao `Pet3D` as props opcionais
+  `onPosition` e `avoid` (a criança: perto e à frente, ele para e vira; `nudge` muda, passinho;
+  `lift`, o passarinho sobe) e move uma cápsula cinemática no passo da física. O marcador vazio
+  `pet-do-quarto` dá o lugar e o rumo em `__arquipelagoLerQuarto`.
+- Quem segue (`pet-que-acompanha.tsx`, agora com corpo cinemático e o movimento no passo da física,
+  e `bicho-adotado.tsx`): nunca entra na cápsula dela (`respeitarFolga`), empurrado por 0,5 s dá
+  um passinho para o lado livre (o adotado confere o lado com `intersectionWithShape`), e o
+  passarinho sobe acima da cabeça dela com ela perto (a cápsula sobe junto). O controlador do
+  adotado continua com `EXCLUDE_KINEMATIC`: ele não a vê; ela não o atravessa.
+- ⚠️ O filtro do controlador da criança (`aceitaColisorDoMundo`) decide só pelo `userData`
+  (`corpoQueSegura`: bicho só no modo chão). Dentro da consulta, `corpo.isKinematic()` lança
+  ("recursive use of an object") e o Rapier conta o colisor como sólido: até esta data todo
+  cinemático segurava o corpo dela, e o mundo ficava "emprestado" (o `world.free()` lança).
+- Testes: `tests/espaco-dos-bichos.test.ts` (regras e GLBs) e `tests/espaco-dos-bichos-fisica.test.ts`
+  (Rapier real: para encostada sem subir, fora do chão passa, câmera passa, assimetria, passinho com
+  e sem parede, quem segue ida e volta). Playground: `?pet=cachorro` (ou `passaro`) com
+  `&adotado=1` deixa o bichinho no quarto.
+
 ## Pausa do quarto (30/10/2026, A03a)
 
 `Quarto` em `mundo/casa.tsx`, tanto próprio quanto visitado, propaga `jogoPausado` pelo
@@ -802,8 +828,33 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - `mundo/obra.tsx` (`ObraNoMundo`): desenha a obra com o kit (`src/assets/casa/*.glb`, contrato no
   README de `arte/casa`), cada peça uma cópia do nó; as portas abrem sozinhas perto da pessoa.
   A `Casa` troca a casa de antes pela construída quando há obra (`colisoresDaCasa(aberta, true)`
-  tira as quatro paredes do quarto, as quinas e o alicerce, que passam a ser do kit; fica a
-  varanda).
+  devolve nada: as quatro paredes do quarto, as quinas e o alicerce são do kit, e a varanda vai com
+  a porta de entrada).
+- **A porta de entrada muda de lugar (31/10/2026):** regras em `sistemas/construcao/entrada.ts`
+  (`entradaDaObra`: a primeira porta de fora de `obra.aberturas`, com um lado dentro de casa e o
+  outro fora; `retanguloDaVaranda` 5 × 2 para fora; `ocupadasDaObra`/`loteDaObra`: a varanda entra
+  nas ocupadas; `frenteDaEntrada`). ⚠️ `LOTE_DA_CASA.ocupadas` não tem mais "a varanda" (o lote tem
+  `varanda: true`): `esticarParede`, `esticarCerca`, `pintarCaminho`, `porCanteiro`, `porObjeto` e
+  `porMovel` chamam `loteDaObra` no começo; regra nova que olhe as ocupadas da casa faz o mesmo.
+  `moverEntrada` (`obra.ts`) põe a porta nova como a PRIMEIRA de `aberturas` (o salvamento não mudou:
+  as obras salvas têm a porta nova primeiro); `varandaCabe` exige as 5 arestas da linha da porta em
+  pé e as células livres; recusas novas `entrada-fora`, `varanda-nao-cabe` e `entrada`
+  (`tirarAbertura(obra, a, lote)` e `apagarParede` não tiram a entrada nem a deixam de ser a
+  entrada). No Construir: `toque` da Porta devolve `entrada: 'selecionar' | 'soltar'` e a prévia com
+  `varanda` e `entrada`; a loja tem `entradaSelecionada`/`selecionarEntrada` (solta ao trocar de
+  ferramenta, desfazer e fechar); `ModoConstruir` desenha a entrada escolhida em amarelo e a `Grade`
+  tinge as ocupadas de `loteDaObra`. A peça: `casa-varanda.glb` (`arte/casa/varanda.py`, nós
+  `varanda` e `varanda-toldo`, `col-varanda-*`), `pecasDaVaranda` e `colisoresDaVaranda`
+  (`COLISORES_DA_VARANDA`, iguais aos do GLB; `col-varanda-` em `SO_PARA_O_CORPO`); o
+  `ObraNoMundo` desenha na entrada, o toldo sai com o telhado e o lampião acende à noite
+  (`LuzDoLampiao`). O `casa.glb` ganhou o nó `toldo` (antes dentro do `telhado`): na casa construída
+  a `CascaDoModelo` tira `varanda` e `toldo`. Seguem a entrada: o Zappy dos primeiros passos
+  (`pontoDoGuia`), `portaNoComodo` (porta além da entrada) e o `lugarSeguro` do personagem. A
+  chegada das visitas e a trilha até o píer ficam (chão da ilha). Testes: o bloco "a porta de
+  entrada e a varanda" de `tests/construcao.test.ts`, o da loja em `tests/construir.test.ts`,
+  `tests/casa-varanda.test.ts` (o GLB real) e "a casa construída, entrada ..." em
+  `tests/faces-coplanares.test.ts` (frente, direita, fundo e cômodo novo, com o chão e os telhados).
+  Playground: `?obra=entrada`.
 - **As quatro paredes do quarto (31/10/2026):** o lote da casa tem as quatro em `paredesTravadas`
   (aceitam porta e janela, não se apagam) e a `planta` as põe de pé mesmo fora de `obra.paredes`
   (as obras salvas só têm a frente e a direita: o salvamento não mudou). Não há mais parede fixa
@@ -811,7 +862,7 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   fundo) diz quais não se cortam no Viver (`p.doMeuQuarto`). Na casa construída o `Quarto` não
   desenha o `<Walls>` da plataforma (o componente do `avatar-quarto` não mudou) e a `CascaDoModelo`
   tira o `revestimento` do `casa.glb`; o teste "a casa construída" de `faces-coplanares.test.ts`
-  monta o kit da obra inicial (em pé e cortado) com o telhado e a varanda.
+  monta o kit (em pé e cortado) com o telhado da casa de antes e a varanda do kit em quatro entradas.
 - **A cor e os quadros do Meu quarto:** `mundo/quarto-na-obra.ts` lê o quarto da plataforma (o
   sistema puro não importa o `avatar-quarto`): `coresDoMeuQuarto` (esquerda e fundo, de
   `resolveRoomAppearance`) e `penduradosDoQuarto` (itens `mount: 'wall'`, `wall` ausente = fundo).
@@ -852,7 +903,8 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
   dos próprios modelos por `arte/casa/miniaturas.py` (`src/assets/casa/miniaturas/`); escolha
   nova pede miniatura nova (`tests/miniaturas.test.ts`).
 - Playground: `?obra=exemplo` (`src/plataforma/obra-de-exemplo.ts`; `?obra=fundo` com um cômodo
-  atrás do quarto e a porta no fundo). Conferir no navegador: a
+  atrás do quarto e a porta no fundo; `?obra=entrada` com a porta de entrada na frente do cômodo da
+  frente do quarto). Conferir no navegador: a
   câmera de obra abre sempre igual, então dá para calcular onde cada ponto da grade cai na tela.
 
 ## A galeria de aparências (fase1-13, 29/10/2026)
@@ -1015,8 +1067,9 @@ cômodo novo sem planta quando ela já foi ganha. Modelo e medidas em `arte/obje
 - Bicho adotado: adotar pela conversa com a Capi (tela "adotar" da loja da conversa,
   `adotarPelaCapi`); `mundo/bicho-adotado.tsx` (montado na `Cena`, fora das ilhas) é um corpo
   cinemático com controlador próprio que segue a criança (`sistemas/seguir.ts`) e troca de modelo
-  ao crescer (filhote `*-filhote.glb`, adulto `*.glb`). ⚠️ O controlador da criança e o do bicho
-  usam `EXCLUDE_KINEMATIC`: um passa pelo outro (nenhum outro corpo do jogo é cinemático). Painel
+  ao crescer (filhote `*-filhote.glb`, adulto `*.glb`). O controlador do bicho usa
+  `EXCLUDE_KINEMATIC` (não tropeça nela); desde 31/10/2026 ela não o atravessa (veja "O espaço
+  dos bichos"). Painel
   de cuidar em `interface/bicho.tsx` (`PAINEL_DO_BICHO`, loja `estado/bicho.ts` com as falas e a
   reação que o modelo toca); regras em `sistemas/cuidar.ts`; a queda das medidas roda nos
   `Relogios`, junto com as necessidades. Testes: `tests/cuidar.test.ts`.

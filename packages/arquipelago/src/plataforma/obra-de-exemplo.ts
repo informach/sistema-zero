@@ -2,6 +2,7 @@ import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import {
   esticarParede,
+  moverEntrada,
   porAbertura,
   type Resultado,
   tirarAbertura,
@@ -63,6 +64,17 @@ export function obraDeExemploComFundo(): Obra {
   passo(porAbertura(o, L, 'janela-grande', { eixo: 'x', x: 3, z: -12 }))
   passo(trocarPiso(o, L, { x: 3, z: -10 }, 'ladrilho'))
   return o
+}
+
+/**
+ * A obra de exemplo com a porta de entrada na frente do cômodo da frente do quarto (`?obra=entrada`,
+ * 31/10/2026): a porta e a varanda vão para a parede de fora do cômodo (a janela em arco vira porta),
+ * e a frente do quarto fica inteira, sem porta.
+ */
+export function obraDeExemploComEntrada(): Obra {
+  const r = moverEntrada(obraDeExemplo(), LOTE_DA_CASA, { eixo: 'x', x: -4, z: 3 })
+  if (!r.ok) throw new Error(`obra de exemplo recusada: ${r.motivo}`)
+  return r.obra
 }
 
 const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null, aparencias: [] }

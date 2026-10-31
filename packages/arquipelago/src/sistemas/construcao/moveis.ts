@@ -1,5 +1,6 @@
 import { MOVEIS, type Movel, type MovelNaObra, type Obra } from '@sistemazero/arquipelago-contracts'
 import { type Planta, planta } from './comodos'
+import { loteDaObra } from './entrada'
 import { type Aresta, arestasDaAbertura, chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
 import type { Resultado } from './obra'
@@ -236,11 +237,13 @@ export function movelNoLugar(m: MovelPosto, obra: Obra, p: Planta): boolean {
  */
 export function porMovel(
   obra: Obra,
-  lote: Lote,
+  loteDoLugar: Lote,
   id: Movel,
   canto: Celula,
   giro: number,
 ): Resultado {
+  // A varanda da entrada ocupa o lugar (ela segue a porta de entrada da obra).
+  const lote = loteDaObra(loteDoLugar, obra)
   if (obra.moveis.length >= lote.limites.moveis) return { ok: false, motivo: 'limite' }
   const novo: MovelPosto = { id, x: canto.x, z: canto.z, giro }
   const celulas = celulasDoMovel(novo)

@@ -32,6 +32,12 @@ import {
 import { QUARTO_DE_EXEMPLO } from '../src/plataforma/falsa'
 import { obraDeExemploComFundo } from '../src/plataforma/obra-de-exemplo'
 import { ladoDaParede, planta } from '../src/sistemas/construcao/comodos'
+import {
+  entradaDaObra,
+  frenteDaEntrada,
+  ocupadasDaObra,
+  retanguloDaVaranda,
+} from '../src/sistemas/construcao/entrada'
 import { falaDaRecusa, falaDoAviso, motivoDaPrevia } from '../src/sistemas/construcao/falas'
 import { type Escolhas, toque } from '../src/sistemas/construcao/ferramentas'
 import {
@@ -53,6 +59,7 @@ import {
 import {
   apagarParede,
   esticarParede,
+  moverEntrada,
   porAbertura,
   type Recusa,
   type Resultado,
@@ -62,11 +69,14 @@ import {
 import {
   COLISOR_DA_PAREDE_CORTADA,
   colisoresDaObra,
+  colisoresDaVaranda,
   NADA_CORTADO,
   NO_DA_JANELA,
   pecasDaObra,
+  pecasDaVaranda,
   TUDO_CORTADO,
 } from '../src/sistemas/construcao/pecas'
+import { porCanteiro } from '../src/sistemas/construcao/quintal'
 import {
   paredesCortadasNoViver,
   retanguloDoComodo,
@@ -277,7 +287,12 @@ describe('paredes e cômodos', () => {
       motivo: 'ocupado',
       nome: 'o farol',
     })
-    expect(L.ocupadas.map((o) => o.nome)).toEqual(['a varanda', 'o farol'])
+    // A varanda segue a porta de entrada da obra (31/10/2026): na obra inicial, na frente da porta nova.
+    expect(L.ocupadas.map((o) => o.nome)).toEqual(['o farol'])
+    expect(ocupadasDaObra(inicial(), L)).toEqual([
+      { nome: 'a varanda', ret: { x0: 0, z0: 0, x1: 5, z1: 2 } },
+      ...L.ocupadas,
+    ])
     expect(L.area).toEqual(CHAO_DO_LOTE)
     // Os cantos do lote, longe do quarto, aceitam parede.
     expect(esticarParede(inicial(), L, { x: 10, z: -13 }, { x: 15, z: -13 }).ok).toBe(true)
@@ -580,7 +595,7 @@ describe('as peças do kit', () => {
 })
 
 describe('a casa construída', () => {
-  test('as quatro paredes do quarto colidem pelo kit; da casa de antes só a varanda', () => {
+  test('as quatro paredes do quarto colidem pelo kit; a varanda vai com a porta de entrada', () => {
     const nomes = colisoresDaCasa(true, true).map((c) => c.nome)
     for (const n of [
       'col-parede-frente-1',
@@ -593,7 +608,8 @@ describe('a casa construída', () => {
       'col-floreira-lado',
     ])
       expect(nomes).not.toContain(n)
-    for (const n of ['col-coluna-1', 'col-coluna-2', 'col-cil-vaso-1']) expect(nomes).toContain(n)
+    // Da casa de antes não fica nenhum colisor: a varanda é a do kit, na entrada.
+    expect(nomes).toEqual([])
     const deAntes = colisoresDaCasa(true).map((c) => c.nome)
     for (const n of ['col-parede-frente-1', 'col-parede-esquerda', 'col-parede-fundo'])
       expect(deAntes).toContain(n)
@@ -771,5 +787,262 @@ describe('o corte no Viver e o telhado', () => {
     // Em L: sem telhado.
     const emL = { ...novo, celulas: novo?.celulas.slice(1) ?? [] }
     expect(retanguloDoComodo(emL as never)).toBeNull()
+  })
+})
+
+describe('a porta de entrada e a varanda (31/10/2026)', () => {
+  /** O cômodo da frente do quarto do exemplo (x -6 a -1, z 0 a 3) com a parede da frente dele. */
+  const comComodo = comComodoNaFrente
+
+  test('a entrada é a primeira porta de fora: na obra inicial, a porta nova, com a varanda na frente', () => {
+    const e = entradaDaObra(inicial(), L)
+    expect(e?.indice).toBe(0)
+    expect(e?.abertura).toEqual({ tipo: 'porta', x: 1, z: 0, eixo: 'x' })
+    expect(e?.fora).toBe(1)
+    expect(e?.meio).toEqual({ x: 2.5, z: 0 })
+    expect(e?.giro).toBe(0)
+    expect(e && retanguloDaVaranda(e)).toEqual({ x0: 0, z0: 0, x1: 5, z1: 2 })
+    expect(e && frenteDaEntrada(e, 1.2)).toEqual({ x: 2.5, z: 1.2 })
+    // Uma obra salva antes (a mesma obra inicial): a entrada continua na frente, sem mudar nada.
+    const salva: Obra = JSON.parse(JSON.stringify(L.obraInicial))
+    expect(entradaDaObra(salva, L)?.abertura).toEqual(L.obraInicial.aberturas[0])
+    // A cabana não tem entrada nem varanda.
+    expect(entradaDaObra(inicial(), { ...L, varanda: undefined })).toBeNull()
+  })
+
+  test('porta entre dois cômodos e porta numa parede solta não são de fora', () => {
+    let o = comComodoADireita()
+    o = ok(porAbertura(o, L, 'porta', { eixo: 'z', x: 6, z: -4 }))
+    // A porta do quarto para o cômodo novo: dentro dos dois lados.
+    expect(entradaDaObra({ ...o, aberturas: o.aberturas.slice(1) }, L)).toBeNull()
+    // Uma parede solta no quintal com porta: fora dos dois lados.
+    let solta = ok(esticarParede(inicial(), L, { x: 8, z: 4 }, { x: 13, z: 4 }))
+    solta = ok(porAbertura(solta, L, 'porta', { eixo: 'x', x: 10, z: 4 }))
+    expect(entradaDaObra({ ...solta, aberturas: solta.aberturas.slice(1) }, L)).toBeNull()
+  })
+
+  test('mudar a entrada para o lado direito do quarto: a porta e a varanda vão juntas', () => {
+    const o = inicial()
+    // A parede da direita (x 6): a porta vai no lugar da janela do lado (z -6 a -3), que vira porta.
+    const r = moverEntrada(o, L, { eixo: 'z', x: 6, z: -5 })
+    expect(r).toMatchObject({ ok: true, aviso: 'janela-virou-porta' })
+    const movida = ok(r)
+    expect(movida.aberturas[0]).toEqual({ tipo: 'porta', x: 6, z: -6, eixo: 'z' })
+    // A porta de antes saiu: a parede da frente fica inteira.
+    expect(movida.aberturas.filter((a) => a.tipo === 'porta')).toHaveLength(1)
+    expect(movida.paredes).toEqual(o.paredes)
+    const e = entradaDaObra(movida, L)
+    expect(e?.fora).toBe(1)
+    expect(e?.giro).toBeCloseTo(Math.PI / 2)
+    expect(e && retanguloDaVaranda(e)).toEqual({ x0: 6, z0: -7, x1: 8, z1: -2 })
+    // A frente de antes ficou livre para construir; a varanda nova, não.
+    expect(esticarParede(movida, L, { x: 0, z: 1 }, { x: 4, z: 1 }).ok).toBe(true)
+    expect(esticarParede(movida, L, { x: 7, z: -8 }, { x: 7, z: -1 })).toMatchObject({
+      ok: false,
+      motivo: 'ocupado',
+      nome: 'a varanda',
+    })
+    expect(porCanteiro(movida, L, { x: 6, z: -4 })).toMatchObject({ ok: false, nome: 'a varanda' })
+    expect(porCanteiro(movida, L, { x: 2, z: 1 }).ok).toBe(true)
+    expect(ocupadasDaObra(movida, L)[0]).toEqual({
+      nome: 'a varanda',
+      ret: { x0: 6, z0: -7, x1: 8, z1: -2 },
+    })
+  })
+
+  test('a varanda encosta na parede em toda a largura (não dobra a quina)', () => {
+    // A porta no fim da parede da direita (z -3 a 0): de um lado não há parede para a varanda.
+    expect(moverEntrada(inicial(), L, { eixo: 'z', x: 6, z: -2 })).toMatchObject({
+      ok: false,
+      motivo: 'varanda-nao-cabe',
+    })
+  })
+
+  test('mudar a entrada para o fundo e para um cômodo novo na frente', () => {
+    const fundo = ok(moverEntrada(inicial(), L, { eixo: 'x', x: -2, z: -8 }))
+    const e = entradaDaObra(fundo, L)
+    expect(e?.abertura).toEqual({ tipo: 'porta', x: -3, z: -8, eixo: 'x' })
+    expect(e?.fora).toBe(-1)
+    expect(e?.giro).toBeCloseTo(Math.PI)
+    expect(e && retanguloDaVaranda(e)).toEqual({ x0: -4, z0: -10, x1: 1, z1: -8 })
+    // O cômodo da frente (x -6 a -1, z 0 a 3): a parede da frente dele dá para fora.
+    const comodo = ok(moverEntrada(comComodo(), L, { eixo: 'x', x: -4, z: 3 }))
+    const ec = entradaDaObra(comodo, L)
+    expect(ec?.abertura).toEqual({ tipo: 'porta', x: -5, z: 3, eixo: 'x' })
+    expect(ec && retanguloDaVaranda(ec)).toEqual({ x0: -6, z0: 3, x1: -1, z1: 5 })
+  })
+
+  test('recusas: parede que não dá para fora, varanda que não cabe e as de sempre', () => {
+    // Um cômodo à direita do quarto (x 6 a 9, z -8 a -1).
+    let direita = ok(esticarParede(inicial(), L, { x: 6, z: -8 }, { x: 9, z: -8 }))
+    direita = ok(esticarParede(direita, L, { x: 9, z: -8 }, { x: 9, z: -1 }))
+    direita = ok(esticarParede(direita, L, { x: 9, z: -1 }, { x: 6, z: -1 }))
+    // Entre o quarto e o cômodo: não dá para fora.
+    expect(moverEntrada(direita, L, { eixo: 'z', x: 6, z: -6 })).toMatchObject({
+      ok: false,
+      motivo: 'entrada-fora',
+    })
+    // A parede de fora do cômodo (x 9) dá para fora; a varanda (x 9 a 11) cabe.
+    expect(moverEntrada(direita, L, { eixo: 'z', x: 9, z: -5 }).ok).toBe(true)
+    // Um canteiro na frente: a varanda não cabe.
+    const comCanteiro = ok(porCanteiro(direita, L, { x: 10, z: -4 }))
+    expect(moverEntrada(comCanteiro, L, { eixo: 'z', x: 9, z: -5 })).toMatchObject({
+      ok: false,
+      motivo: 'varanda-nao-cabe',
+    })
+    // Fora do lote: o fundo de um cômodo encostado na beira de trás (z -14).
+    let canto = ok(esticarParede(inicial(), L, { x: 10, z: -14 }, { x: 10, z: -10 }))
+    canto = ok(esticarParede(canto, L, { x: 10, z: -10 }, { x: 15, z: -10 }))
+    canto = ok(esticarParede(canto, L, { x: 15, z: -10 }, { x: 15, z: -14 }))
+    canto = ok(esticarParede(canto, L, { x: 15, z: -14 }, { x: 10, z: -14 }))
+    expect(moverEntrada(canto, L, { eixo: 'x', x: 12, z: -14 })).toMatchObject({
+      ok: false,
+      motivo: 'varanda-nao-cabe',
+    })
+    // A varanda em cima do pé do farol.
+    let perto = ok(esticarParede(inicial(), L, { x: -8, z: -12 }, { x: -8, z: -7 }))
+    perto = ok(esticarParede(perto, L, { x: -8, z: -7 }, { x: -6, z: -7 }))
+    perto = ok(esticarParede(perto, L, { x: -8, z: -12 }, { x: -6, z: -12 }))
+    perto = ok(esticarParede(perto, L, { x: -6, z: -12 }, { x: -6, z: -8 }))
+    expect(moverEntrada(perto, L, { eixo: 'z', x: -8, z: -10 })).toMatchObject({
+      ok: false,
+      motivo: 'varanda-nao-cabe',
+    })
+    // A parede chegando no meio da porta e o quadro do Meu quarto, como na porta de sempre.
+    expect(moverEntrada(comComodo(), L, { eixo: 'x', x: -1, z: 0 })).toMatchObject({
+      ok: false,
+      motivo: 'encontro-de-paredes',
+    })
+    const comQuadro = comPenduradosDoQuarto(L, [{ parede: 'fundo', u: 2, largura: 1 }])
+    expect(moverEntrada(inicial(), comQuadro, { eixo: 'x', x: -4, z: -8 })).toMatchObject({
+      ok: false,
+      motivo: 'quadro-do-quarto',
+    })
+    // Na grama, ou na própria entrada: nada.
+    expect(moverEntrada(inicial(), L, { eixo: 'x', x: 10, z: 5 })).toMatchObject({
+      motivo: 'sem-parede',
+    })
+    expect(moverEntrada(inicial(), L, { eixo: 'x', x: 2, z: 0 })).toMatchObject({ motivo: 'nada' })
+    // As falas novas (sem "—", sem "!", sem pergunta).
+    for (const motivo of ['entrada-fora', 'varanda-nao-cabe', 'entrada'] as const) {
+      const fala = falaDaRecusa({ motivo }) ?? ''
+      expect(fala).not.toMatch(/[—!?]/)
+      expect(motivoDaPrevia({ ok: false, motivo })).toBe(fala)
+    }
+    expect(falaDaRecusa({ motivo: 'entrada-fora' })).toBe(
+      'A entrada vai numa parede que dá para fora.',
+    )
+    expect(falaDaRecusa({ motivo: 'varanda-nao-cabe' })).toBe(
+      'A varanda não cabe aí. Escolha outra parede de fora.',
+    )
+  })
+
+  test('uma janela no caminho vira porta; uma porta de fora no mesmo lugar vira a entrada', () => {
+    // A janela grande da frente (x -5 a -2): a entrada vai para cima dela.
+    const r = moverEntrada(inicial(), L, { eixo: 'x', x: -4, z: 0 })
+    expect(r).toMatchObject({ ok: true, aviso: 'janela-virou-porta' })
+    const o = ok(r)
+    expect(o.aberturas[0]).toEqual({ tipo: 'porta', x: -5, z: 0, eixo: 'x' })
+    expect(o.aberturas.some((a) => a.tipo === 'janela-grande' && a.z === 0)).toBe(false)
+    // Uma porta de fora comum no fundo: mudar a entrada para ela a torna a entrada.
+    const comPorta = ok(porAbertura(inicial(), L, 'porta', { eixo: 'x', x: -2, z: -8 }))
+    expect(entradaDaObra(comPorta, L)?.indice).toBe(0)
+    const virou = ok(moverEntrada(comPorta, L, { eixo: 'x', x: -2, z: -8 }))
+    expect(virou.aberturas.filter((a) => a.tipo === 'porta')).toEqual([
+      { tipo: 'porta', x: -3, z: -8, eixo: 'x' },
+    ])
+  })
+
+  test('a entrada não se apaga; as outras portas de fora, sim', () => {
+    const o = inicial()
+    expect(tirarAbertura(o, { eixo: 'x', x: 2, z: 0 }, L)).toMatchObject({
+      ok: false,
+      motivo: 'entrada',
+    })
+    expect(falaDaRecusa({ motivo: 'entrada' })).toBe(
+      'A casa precisa de uma porta de entrada. Toque nela com a Porta para mudar de lugar.',
+    )
+    // Pelo Apagar do Construir (o toque perto da porta).
+    const t = toque('apagar', o, L, { x: 2.5, z: 0.1 }, ESCOLHAS, [])
+    expect(t.resultado).toMatchObject({ ok: false, motivo: 'entrada' })
+    // Uma porta de fora a mais, no fundo, é porta comum.
+    const comPorta = ok(porAbertura(o, L, 'porta', { eixo: 'x', x: -2, z: -8 }))
+    expect(tirarAbertura(comPorta, { eixo: 'x', x: -2, z: -8 }, L).ok).toBe(true)
+    // Apagar a parede da entrada (num cômodo) ou abrir o cômodo dela para fora: recusado.
+    const comodo = ok(moverEntrada(comComodo(), L, { eixo: 'x', x: -4, z: 3 }))
+    expect(apagarParede(comodo, L, [{ eixo: 'x', x: -4, z: 3 }])).toMatchObject({
+      ok: false,
+      motivo: 'entrada',
+    })
+    expect(apagarParede(comodo, L, [{ eixo: 'z', x: -1, z: 1 }])).toMatchObject({
+      ok: false,
+      motivo: 'entrada',
+    })
+  })
+
+  test('com a Porta: tocar na entrada escolhe, o toque seguinte numa parede de fora leva', () => {
+    const o = inicial()
+    const naEntrada = toque('porta', o, L, { x: 2.4, z: 0.1 }, ESCOLHAS, [])
+    expect(naEntrada.entrada).toBe('selecionar')
+    expect(naEntrada.resultado).toBeNull()
+    expect(naEntrada.previa).toMatchObject({ tipo: 'arestas', entrada: true, ok: true })
+    const escolhida = { ...ESCOLHAS, entradaSelecionada: true }
+    // Tocar de novo solta.
+    expect(toque('porta', o, L, { x: 2.4, z: 0.1 }, escolhida, []).entrada).toBe('soltar')
+    // Numa parede de fora: move (e solta), com a prévia da varanda nova.
+    const leva = toque('porta', o, L, { x: 6.05, z: -4.5 }, escolhida, [])
+    expect(leva.resultado?.ok).toBe(true)
+    expect(leva.entrada).toBe('soltar')
+    expect(leva.previa).toMatchObject({ tipo: 'arestas', ok: true })
+    expect(leva.previa.tipo === 'arestas' && leva.previa.varanda).toHaveLength(10)
+    // Sem a entrada escolhida, a Porta põe porta comum (a de sempre).
+    expect(toque('porta', o, L, { x: 6.05, z: -4.5 }, ESCOLHAS, []).entrada).toBeUndefined()
+  })
+
+  test('desfazer volta a entrada (a obra de antes é a mesma)', () => {
+    // O Desfazer da loja guarda a obra de antes inteira; aqui a regra: voltar à obra de antes
+    // devolve a entrada e a varanda de antes.
+    const antes = inicial()
+    const depois = ok(moverEntrada(antes, L, { eixo: 'z', x: 6, z: -5 }))
+    expect(entradaDaObra(depois, L)?.abertura.eixo).toBe('z')
+    expect(entradaDaObra(antes, L)?.abertura).toEqual(L.obraInicial.aberturas[0])
+    expect(ocupadasDaObra(antes, L)[0]?.ret).toEqual({ x0: 0, z0: 0, x1: 5, z1: 2 })
+  })
+
+  test('numa obra sem porta de fora, a primeira porta de fora vira a entrada, se a varanda cabe', () => {
+    const semPorta: Obra = { ...inicial(), aberturas: inicial().aberturas.slice(1) }
+    expect(entradaDaObra(semPorta, L)).toBeNull()
+    expect(ocupadasDaObra(semPorta, L)).toEqual(L.ocupadas)
+    const comCanteiro = ok(porCanteiro(semPorta, L, { x: 2, z: 1 }))
+    expect(porAbertura(comCanteiro, L, 'porta', { eixo: 'x', x: 2, z: 0 })).toMatchObject({
+      ok: false,
+      motivo: 'varanda-nao-cabe',
+    })
+    const r = ok(porAbertura(semPorta, L, 'porta', { eixo: 'x', x: 2, z: 0 }))
+    expect(entradaDaObra(r, L)?.abertura).toEqual({ tipo: 'porta', x: 1, z: 0, eixo: 'x' })
+  })
+
+  test('a peça e os colisores da varanda seguem a entrada (giro de quarto de volta)', () => {
+    const o = ok(moverEntrada(inicial(), L, { eixo: 'z', x: 6, z: -5 }))
+    const e = entradaDaObra(o, L)
+    const { varanda, toldo } = pecasDaVaranda(e)
+    expect(varanda[0]).toMatchObject({ arquivo: 'varanda', no: 'varanda', x: 6, z: -4.5 })
+    expect(toldo[0]?.no).toBe('varanda-toldo')
+    const caixas = colisoresDaVaranda(e)
+    const deque = caixas.find((c) => c.nome === 'col-varanda-deque')
+    // Para fora em +x: o tampo do deque vai de x 6,2 a 7,75.
+    expect(deque?.posicao[0]).toBeCloseTo(6.975)
+    expect(deque?.posicao[2]).toBeCloseTo(-4.5)
+    expect(deque?.meio).toEqual([0.775, 0.05, 2.1])
+    // Todo colisor da varanda cai dentro das células dela.
+    const ret = e ? retanguloDaVaranda(e) : null
+    for (const c of caixas)
+      if (ret && c.nome !== 'col-varanda-degrau') {
+        expect(c.posicao[0] - c.meio[0]).toBeGreaterThanOrEqual(ret.x0)
+        expect(c.posicao[0] + c.meio[0]).toBeLessThanOrEqual(ret.x1)
+        expect(c.posicao[2] - c.meio[2]).toBeGreaterThanOrEqual(ret.z0)
+        expect(c.posicao[2] + c.meio[2]).toBeLessThanOrEqual(ret.z1)
+      }
+    expect(colisoresDaVaranda(null)).toEqual([])
   })
 })

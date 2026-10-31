@@ -53,6 +53,12 @@ export function falaDaRecusa(r: Recusa): string | null {
       return 'Nessa parede tem uma peça pendurada. Apague a peça primeiro.'
     case 'canteiro-com-planta':
       return 'Esse canteiro tem planta. Colha primeiro e depois apague.'
+    case 'entrada-fora':
+      return 'A entrada vai numa parede que dá para fora.'
+    case 'varanda-nao-cabe':
+      return 'A varanda não cabe aí. Escolha outra parede de fora.'
+    case 'entrada':
+      return 'A casa precisa de uma porta de entrada. Toque nela com a Porta para mudar de lugar.'
     case 'nada':
       return null
   }

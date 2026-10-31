@@ -1689,5 +1689,68 @@
         "materiais": ["acabamento", "vidroJanela"]
       }
     }
+  },
+  "casa-varanda": {
+    "grupo": "kit",
+    "triangulos": 1142,
+    "kb": 65.0,
+    "nos": {
+      "varanda": 982,
+      "varanda-toldo": 160
+    },
+    "vazios": [],
+    "clipes": [],
+    "materiais": [
+      "acabamento",
+      "batente",
+      "copaClara",
+      "deque",
+      "dequeEscuro",
+      "lampiao",
+      "metalEscuro",
+      "telhado",
+      "terracotta"
+    ],
+    "tamanho": [4.8, 4.134, 2.198],
+    "colisores": {
+      "col-varanda-coluna": 2,
+      "col-varanda-degrau": 1,
+      "col-varanda-deque": 1,
+      "col-varanda-vaso": 2
+    },
+    "ancoras": {},
+    "pecas": {
+      "varanda": {
+        "triangulos": 982,
+        "tamanho": [4.3, 3.59, 2.055],
+        "caixa": [[-2.15, -2.17, -0.19], [2.15, -0.115, 3.4]],
+        "materiais": [
+          "acabamento",
+          "batente",
+          "copaClara",
+          "deque",
+          "dequeEscuro",
+          "lampiao",
+          "metalEscuro",
+          "terracotta"
+        ],
+        "nota": "porta de entrada; origem no meio da porta, na linha da grade; fora no -Y",
+        "junto": [
+          "col-varanda-coluna-1",
+          "col-varanda-coluna-2",
+          "col-varanda-degrau",
+          "col-varanda-deque",
+          "col-varanda-vaso-1",
+          "col-varanda-vaso-2"
+        ]
+      },
+      "varanda-toldo": {
+        "triangulos": 160,
+        "tamanho": [4.8, 0.804, 1.907],
+        "caixa": [[-2.4, -1.878, 3.14], [2.4, 0.028, 3.944]],
+        "materiais": ["acabamento", "telhado"],
+        "nota": "a mesma origem e giro da varanda; sai com o telhado"
+      }
+    }
   }
 }

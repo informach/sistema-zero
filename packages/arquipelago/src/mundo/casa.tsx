@@ -5,7 +5,6 @@ import { ROOM_ITEM_INFO, resolveRoomAppearance } from '@sistemazero/avatar-quart
 import { cellToWorld, effectiveFootprint, type Rot } from '@sistemazero/avatar-quarto/quarto/coords'
 import { Floor } from '@sistemazero/avatar-quarto/quarto/floor'
 import { FurniturePiece } from '@sistemazero/avatar-quarto/quarto/furniture-piece'
-import { Pet3D } from '@sistemazero/avatar-quarto/quarto/pet-3d'
 import {
   RoomMotionContext,
   RoomPausedContext,
@@ -25,6 +24,7 @@ import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
+import { PetDoQuartoComEspaco } from './espaco-dos-bichos'
 import { useInterativo } from './interativos'
 import { ALTURA_DA_TERRA, CENTRO_DA_CASA, PORTA, QUARTO } from './medidas'
 import { ComReserva, copiarNo, MODELOS, materiaisDe, useModelo } from './modelos'
@@ -127,7 +127,7 @@ function Quarto({
               />
             ),
           )}
-          <Pet3D
+          <PetDoQuartoComEspaco
             petId={petNoQuarto}
             occupied={ocupadas}
             reducedMotion={menosMovimento}
@@ -267,8 +267,8 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
  * Paredes de fora: a da frente (com a porta) e a do lado, que a plataforma não desenha. A casca
  * inteira colide (paredes, quinas, alicerce, floreiras, vasinhos, colunas e a porta nova, fechada
  * no vão ou aberta para fora): `colisoresDaCasa`. Na casa construída, as quatro paredes do quarto
- * são do kit (`ObraNoMundo`), com as quinas, o alicerce e a soleira, e daqui ficam o telhado e a
- * varanda.
+ * são do kit (`ObraNoMundo`), com as quinas, o alicerce e a soleira, e daqui fica só o telhado: a
+ * varanda e o toldo vão com a porta de entrada, pelo kit (31/10/2026).
  */
 function Casca({ construida }: { construida: boolean }) {
   // No Construir e com a pessoa num cômodo da obra o telhado do quarto sai, como no quarto.
@@ -300,12 +300,15 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
     const paredes = copiarNo(raiz, 'paredes', true)
     const janelas = copiarNo(raiz, 'janelas', true)
     const telhado = copiarNo(raiz, 'telhado', true)
+    // O toldo da varanda é um nó próprio desde 31/10/2026 (antes ia no `telhado`).
+    const toldo = raiz.getObjectByName('toldo') ? copiarNo(raiz, 'toldo', true) : null
     const varanda = copiarNo(raiz, 'varanda', true)
     const revestimento = copiarNo(raiz, 'revestimento')
     return {
       paredes,
       janelas,
       telhado,
+      toldo,
       varanda,
       revestimento,
       translucidos: [...materiaisDe(paredes), ...materiaisDe(janelas)],
@@ -321,6 +324,7 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
       m.needsUpdate = true
     }
     partes.telhado.visible = !dentro
+    if (partes.toldo) partes.toldo.visible = !dentro
   }, [dentro, partes])
   useFrame(() => {
     for (const m of partes.vidros) m.emissiveIntensity = ambiente.noite ? 1.6 : 0
@@ -332,7 +336,9 @@ function CascaDoModelo({ dentro, construida }: { dentro: boolean; construida: bo
       {construida ? null : <primitive object={partes.paredes} />}
       {construida ? null : <primitive object={partes.janelas} />}
       <primitive object={partes.telhado} />
-      <primitive object={partes.varanda} />
+      {/* Na casa construída a varanda (com o toldo) é a do kit, na porta de entrada (`ObraNoMundo`). */}
+      {construida || !partes.toldo ? null : <primitive object={partes.toldo} />}
+      {construida ? null : <primitive object={partes.varanda} />}
     </>
   )
 }

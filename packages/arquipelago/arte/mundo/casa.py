@@ -12,7 +12,10 @@ Nós (contrato com `src/mundo/casa.tsx`):
 - `revestimento`: o lado de fora das paredes da esquerda e do fundo, as quinas e o alicerce.
 - `janelas`: caixilhos, venezianas e floreiras; o vidro usa o material `vidroJanela`, que o jogo
   acende à noite.
-- `telhado`: telhado de duas águas, oitões, chaminé e o toldo da varanda. Some quando você entra.
+- `telhado`: telhado de duas águas, oitões e chaminé. Some quando você entra.
+- `toldo` (31/10/2026; antes ia dentro do `telhado`): o toldo da varanda. Some com o telhado. Na casa
+  construída ele sai junto com a `varanda`: a varanda da porta de entrada é a do kit
+  (`arte/casa/varanda.py`, `casa-varanda.glb`, com o mesmo desenho), que muda de lugar com a entrada.
 - `varanda`: deque, degrau, colunas, vasinhos e o lampião (material `lampiao`, aceso à noite).
 - `porta`: a porta nova, com o pivô na dobradiça (x = 1,4; z = 4). Fechada ela fica no vão; o jogo
   gira em y (negativo abre para fora).
@@ -389,7 +392,8 @@ def main():
         'paredes': paredes(),
         'revestimento': revestimento(),
         'janelas': janelas(),
-        'telhado': telhado() + toldo(),
+        'telhado': telhado(),
+        'toldo': toldo(),
         'varanda': varanda(),
         'porta': (porta(), G(P0, 0, MZ + 0.03)),
     })

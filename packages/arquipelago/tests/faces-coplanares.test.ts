@@ -1,5 +1,6 @@
 import { beforeAll, describe, expect, test } from 'bun:test'
 import { join } from 'node:path'
+import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { Group, type Object3D } from 'three'
 import {
   CADA_NO_SOZINHO,
@@ -27,8 +28,34 @@ import {
   RAIO_DO_ANEL,
 } from '../src/mundo/medidas'
 import { planta } from '../src/sistemas/construcao/comodos'
+import { entradaDaObra } from '../src/sistemas/construcao/entrada'
+import type { Aresta } from '../src/sistemas/construcao/grade'
 import { LOTE_DA_CASA } from '../src/sistemas/construcao/lote'
-import { NADA_CORTADO, pecasDaObra, TUDO_CORTADO } from '../src/sistemas/construcao/pecas'
+import { esticarParede, moverEntrada, type Resultado } from '../src/sistemas/construcao/obra'
+import {
+  NADA_CORTADO,
+  pecasDaObra,
+  pecasDaVaranda,
+  TUDO_CORTADO,
+} from '../src/sistemas/construcao/pecas'
+import { telhadosDaObra } from '../src/sistemas/construcao/telhado'
+
+function semRecusa(r: Resultado): Obra {
+  if (!r.ok) throw new Error(`recusado: ${r.motivo}`)
+  return r.obra
+}
+
+function moverOuFalhar(obra: Obra, a: Aresta): Obra {
+  return semRecusa(moverEntrada(obra, LOTE_DA_CASA, a))
+}
+
+/** O cômodo na frente do quarto (x -6 a -1, z 0 a 3), como o da obra de exemplo. */
+function obraComComodoNaFrente(): Obra {
+  let o: Obra = LOTE_DA_CASA.obraInicial
+  o = semRecusa(esticarParede(o, LOTE_DA_CASA, { x: -6, z: 0 }, { x: -6, z: 3 }))
+  o = semRecusa(esticarParede(o, LOTE_DA_CASA, { x: -6, z: 3 }, { x: -1, z: 3 }))
+  return semRecusa(esticarParede(o, LOTE_DA_CASA, { x: -1, z: 3 }, { x: -1, z: 0 }))
+}
 
 /**
  * Nenhuma face coplanar de materiais diferentes se sobrepõe e nenhuma superfície tem emenda em T:
@@ -217,51 +244,79 @@ describe('faces coplanares e emendas abertas', () => {
 
   // Na casa construída (`Casa` em `mundo/casa.tsx`), as quatro paredes do quarto são do kit (desde
   // 31/10/2026 também o fundo e a esquerda, com as quinas, o alicerce e a soleira) e da casa de
-  // antes ficam o telhado e a varanda; no Construir (paredes cortadas) o telhado sai. Pedido dela
-  // (31/10/2026): a porta principal piscava embaixo, onde o degrau de pedra do kit encontrava o
-  // tampo do deque.
+  // antes fica o telhado; no Construir (paredes cortadas) o telhado sai. A varanda é a do kit
+  // (`casa-varanda.glb`, 31/10/2026), na porta de entrada, que muda de lugar: conferida em várias
+  // entradas (a de sempre, o lado direito, o fundo e um cômodo novo na frente), com o chão da ilha.
+  // Pedido dela (31/10/2026): a porta principal piscava embaixo, onde o degrau de pedra do kit
+  // encontrava o tampo do deque.
+  const ENTRADAS: [string, () => Obra][] = [
+    ['na frente', () => LOTE_DA_CASA.obraInicial],
+    ['no lado direito', () => moverOuFalhar(LOTE_DA_CASA.obraInicial, { eixo: 'z', x: 6, z: -5 })],
+    ['no fundo', () => moverOuFalhar(LOTE_DA_CASA.obraInicial, { eixo: 'x', x: -2, z: -8 })],
+    ['num cômodo novo', () => moverOuFalhar(obraComComodoNaFrente(), { eixo: 'x', x: -4, z: 3 })],
+  ]
   for (const [nome, corte, daCasa] of [
-    ['a casa construída', NADA_CORTADO, ['telhado', 'varanda']],
-    ['a casa construída no Construir', TUDO_CORTADO, ['varanda']],
+    ['a casa construída', NADA_CORTADO, ['telhado']],
+    ['a casa construída no Construir', TUDO_CORTADO, []],
   ] as const)
-    test(`${nome}: o kit das quatro paredes do quarto junto com o que fica da casa de antes`, async () => {
-      const kit = {
-        paredes: await carregarGlb(join(ASSETS, 'casa/casa-paredes.glb')),
-        portas: await carregarGlb(join(ASSETS, 'casa/casa-portas.glb')),
-      }
-      const cena = new Group()
-      const base = ALTURA_DA_TERRA + 0.02
-      const casa = new Group()
-      casa.name = 'casa'
-      casa.position.set(CENTRO_DA_CASA.x, base, CENTRO_DA_CASA.z)
-      for (const filho of (cenas.get('mundo/casa.glb') as Object3D).children)
-        if ((daCasa as readonly string[]).includes(filho.name)) casa.add(filho.clone())
-      cena.add(casa)
-      const obra = LOTE_DA_CASA.obraInicial
-      const pecas = pecasDaObra(obra, planta(obra, LOTE_DA_CASA), corte)
-      // As quatro paredes e as quatro quinas do quarto são do kit.
-      expect(pecas.quinas).toHaveLength(4)
-      expect(pecas.paredes.filter((p) => p.quarto).length).toBe(31 + 3)
-      for (const p of [...pecas.paredes, ...pecas.quinas, ...pecas.folhas]) {
-        const raiz = p.arquivo === 'portas' ? kit.portas : kit.paredes
-        const no = raiz.getObjectByName(p.no)
-        if (!no) throw new Error(`sem o nó ${p.no}`)
-        const g = new Group()
-        g.name = `kit-${p.chave}`
-        g.position.set(p.x, base + (p.y ?? 0), p.z)
-        g.rotation.y = p.giro
-        const copia = no.clone()
-        copia.position.set(0, 0, 0)
-        copia.quaternion.identity()
-        g.add(copia)
-        cena.add(g)
-      }
-      expect(pecas.folhas.length).toBe(corte === NADA_CORTADO ? 1 : 0)
-      // Só entre a casa de antes e o kit: dentro de cada arquivo os testes de cima já conferem.
-      const doKit = (n: string) => n.startsWith('kit-')
-      const entreOsDois: Juntos = (a, b) => doKit(a) !== doKit(b)
-      expect(lista(sobreposicoes(cena, entreOsDois))).toEqual([])
-    })
+    for (const [onde, obraDaEntrada] of ENTRADAS)
+      test(`${nome}, entrada ${onde}: o kit, a varanda do kit, o telhado da casa de antes e o chão`, async () => {
+        const kit = {
+          paredes: await carregarGlb(join(ASSETS, 'casa/casa-paredes.glb')),
+          portas: await carregarGlb(join(ASSETS, 'casa/casa-portas.glb')),
+          pisos: await carregarGlb(join(ASSETS, 'casa/casa-pisos.glb')),
+          varanda: await carregarGlb(join(ASSETS, 'casa/casa-varanda.glb')),
+          telhado: await carregarGlb(join(ASSETS, 'casa/casa-telhado.glb')),
+        }
+        const cena = new Group()
+        const base = ALTURA_DA_TERRA + 0.02
+        const casa = new Group()
+        casa.name = 'casa'
+        casa.position.set(CENTRO_DA_CASA.x, base, CENTRO_DA_CASA.z)
+        for (const filho of (cenas.get('mundo/casa.glb') as Object3D).children)
+          if ((daCasa as readonly string[]).includes(filho.name)) casa.add(filho.clone())
+        cena.add(casa)
+        const terreno = (cenas.get('mundo/terreno.glb') as Object3D).clone()
+        terreno.name = 'terreno'
+        cena.add(terreno)
+        const obra = obraDaEntrada()
+        const p = planta(obra, LOTE_DA_CASA)
+        const pecas = pecasDaObra(obra, p, corte)
+        // As quatro paredes do quarto são do kit.
+        expect(pecas.paredes.filter((x) => x.quarto).length).toBeGreaterThan(30)
+        const entrada = entradaDaObra(obra, LOTE_DA_CASA, p)
+        expect(entrada).not.toBeNull()
+        const varanda = pecasDaVaranda(entrada)
+        const comTelhado = corte === NADA_CORTADO
+        for (const x of [
+          ...pecas.paredes,
+          ...pecas.quinas,
+          ...pecas.folhas,
+          ...pecas.pisos,
+          ...varanda.varanda,
+          // O toldo e os telhados dos cômodos novos saem juntos no Construir.
+          ...(comTelhado ? [...varanda.toldo, ...telhadosDaObra(p)] : []),
+        ]) {
+          const raiz = kit[x.arquivo as keyof typeof kit]
+          const no = raiz?.getObjectByName(x.no)
+          if (!no) throw new Error(`sem o nó ${x.no}`)
+          const g = new Group()
+          g.name = `kit-${x.chave}`
+          g.position.set(x.x, base + (x.y ?? 0), x.z)
+          g.rotation.y = x.giro
+          const copia = no.clone()
+          copia.position.set(0, 0, 0)
+          copia.quaternion.identity()
+          g.add(copia)
+          cena.add(g)
+        }
+        // Só entre grupos diferentes: a varanda contra o resto do kit, o kit contra a casa de antes
+        // e tudo contra o chão (dentro de cada arquivo os testes de cima já conferem).
+        const grupo = (n: string) =>
+          n.startsWith('kit-varanda') ? 'varanda' : n.startsWith('kit-') ? 'kit' : n
+        const entreGrupos: Juntos = (a, b) => grupo(a) !== grupo(b)
+        expect(lista(sobreposicoes(cena, entreGrupos))).toEqual([])
+      })
 })
 
 describe('planos de corte da câmera', () => {

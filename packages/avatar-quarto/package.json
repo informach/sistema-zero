@@ -19,6 +19,7 @@
     "./quarto/geometry": "./src/quarto/geometry.ts",
     "./quarto/materials": "./src/quarto/materials.ts",
     "./quarto/pet-3d": "./src/quarto/pet-3d.tsx",
+    "./quarto/pet-walk": "./src/quarto/pet-walk.ts",
     "./quarto/prims": "./src/quarto/prims.tsx",
     "./quarto/room-glb-model": "./src/quarto/room-glb-model.tsx",
     "./quarto/room-lights": "./src/quarto/room-lights.tsx",
