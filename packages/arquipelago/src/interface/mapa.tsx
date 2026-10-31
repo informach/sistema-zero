@@ -13,6 +13,7 @@ import {
   porcentoDoMapa,
   temMapa,
 } from '../sistemas/mapa-da-ilha'
+import { JanelaDoPainel, useFecharPainel, useNoMenu } from './janela-do-painel'
 import { useVoz } from './voz'
 
 /** A cor de cada ilha aberta no papel (as fechadas ficam cinza). */
@@ -138,13 +139,14 @@ export function MapaPequeno() {
  * de tela). Só olhar; Esc ou "Voltar ao jogo" fecha.
  */
 export function PainelDoMapa() {
-  const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_MAPA)
+  const noMenu = useNoMenu()
+  const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_MAPA) || noMenu
   // Fechado, nada roda (nem a conferência de onde a pessoa está).
   return aberto ? <MapaAberto /> : null
 }
 
 function MapaAberto() {
-  const { loja } = useJogo()
+  const fecharPainel = useFecharPainel()
   const voz = useVoz()
   const jornada = useEstado((s) => s.jornada)
   const visitas = useEstado((s) => s.salvamento.ilhasVisitadas)
@@ -157,57 +159,44 @@ function MapaAberto() {
   const ilhas = ilhasNoMapa(jornada, aqui, visitas)
   const mapas = useEstado((s) => s.salvamento.mapa)
   return (
-    <div className="arq-sobre">
-      <div
-        className="arq-menu arq-cartao arq-quadro arq-mapa"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="arq-mapa-titulo"
-      >
-        <h2 id="arq-mapa-titulo">Mapa do arquipélago</h2>
-        <p className="arq-quadro-sub">
-          {`${visitadasNoMapa(visitas)} de ${ILHAS.length} ilhas visitadas. ${abertasNoMapa(jornada)} abertas para explorar.`}
-        </p>
-        <p>
-          As ilhas preenchidas já receberam sua visita. O contorno colorido mostra onde você pode
-          ir.
-        </p>
-        <PapelDoMapa aqui={aqui} className="arq-mapa-papel" />
-        <MapaDaIlhaAqui ilha={aqui} />
-        <ul className="arq-mapa-lista">
-          {ilhas.map((i) => (
-            <li key={i.ilha.id}>
-              <span
-                className="arq-mapa-cor"
-                aria-hidden="true"
-                style={{ background: i.visitada ? COR_NO_MAPA[i.ilha.id] : CINZA }}
-              />
-              <b>{i.ilha.nome}</b>
-              <small>
-                {i.aberta
-                  ? i.visitada
-                    ? 'Visitada.'
-                    : 'Aberta para explorar.'
-                  : voz.ilhaFechadaNoMapa(i.ilha)}
-                {i.visitada && temMapa(i.ilha.id)
-                  ? ` Mapa ${porcentoDoMapa(i.ilha.id, mapas[i.ilha.id])}% descoberto.`
-                  : ''}
-                {i.aqui ? ' Você está nesta região.' : ''}
-              </small>
-            </li>
-          ))}
-        </ul>
-        <div className="arq-menu-acoes">
-          <button
-            ref={fechar}
-            type="button"
-            className="arq-botao"
-            onClick={() => loja.getState().abrirPainel(null)}
-          >
-            Voltar ao jogo
-          </button>
-        </div>
+    <JanelaDoPainel classes="arq-quadro arq-mapa" rotulo="arq-mapa-titulo">
+      <h2 id="arq-mapa-titulo">Mapa do arquipélago</h2>
+      <p className="arq-quadro-sub">
+        {`${visitadasNoMapa(visitas)} de ${ILHAS.length} ilhas visitadas. ${abertasNoMapa(jornada)} abertas para explorar.`}
+      </p>
+      <p>
+        As ilhas preenchidas já receberam sua visita. O contorno colorido mostra onde você pode ir.
+      </p>
+      <PapelDoMapa aqui={aqui} className="arq-mapa-papel" />
+      <MapaDaIlhaAqui ilha={aqui} />
+      <ul className="arq-mapa-lista">
+        {ilhas.map((i) => (
+          <li key={i.ilha.id}>
+            <span
+              className="arq-mapa-cor"
+              aria-hidden="true"
+              style={{ background: i.visitada ? COR_NO_MAPA[i.ilha.id] : CINZA }}
+            />
+            <b>{i.ilha.nome}</b>
+            <small>
+              {i.aberta
+                ? i.visitada
+                  ? 'Visitada.'
+                  : 'Aberta para explorar.'
+                : voz.ilhaFechadaNoMapa(i.ilha)}
+              {i.visitada && temMapa(i.ilha.id)
+                ? ` Mapa ${porcentoDoMapa(i.ilha.id, mapas[i.ilha.id])}% descoberto.`
+                : ''}
+              {i.aqui ? ' Você está nesta região.' : ''}
+            </small>
+          </li>
+        ))}
+      </ul>
+      <div className="arq-menu-acoes">
+        <button ref={fechar} type="button" className="arq-botao" onClick={fecharPainel}>
+          Voltar ao jogo
+        </button>
       </div>
-    </div>
+    </JanelaDoPainel>
   )
 }

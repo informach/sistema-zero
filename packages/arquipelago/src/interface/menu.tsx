@@ -1,5 +1,5 @@
 import type { FerramentaDaPlataforma, IlhaId } from '@sistemazero/arquipelago-contracts'
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
 import { PAINEL_DO_CADERNO } from '../estado/cartas'
 import { useEstado, useJogo } from '../estado/contexto'
 import { useFarol } from '../estado/farol'
@@ -10,14 +10,18 @@ import { PAINEL_DO_MAPA } from '../sistemas/mapa'
 import { PAINEL_DA_FOTO } from '../sistemas/modo-foto'
 import { PAINEL_DAS_VISITAS } from '../sistemas/visitas'
 import { PAINEL_DOS_CONVIDADOS } from '../sistemas/visitas-dos-moradores'
-import { PAINEL_DO_ALBUM } from './album'
+import { Album, PAINEL_DO_ALBUM } from './album'
+import { CadernoDosLumis } from './caderno-dos-lumis'
 import { ClimaDaSuaIlha } from './clima'
 import { PreferenciasDeConforto } from './conforto'
-import { PAINEL_DO_DIARIO } from './diario'
+import { PainelDosConvidados } from './convidados'
+import { Diario, PAINEL_DO_DIARIO } from './diario'
 import { Icone, type NomeDoIcone } from './icones'
-import { MapaPequeno, useIlhaAqui } from './mapa'
+import { NoMenuContexto } from './janela-do-painel'
+import { MapaPequeno, PainelDoMapa, useIlhaAqui } from './mapa'
 import { CartaoDosPassosNoMenu, FalaDosPassosNoMenu } from './primeiros-passos'
-import { voltarDaVisita } from './visitas'
+import { PainelDasVisitas, voltarDaVisita } from './visitas'
+import { PainelDasVisitasAdultas } from './visitas-adultas'
 import { useVoz } from './voz'
 
 /** As ferramentas da plataforma que o jogo abre por cima dele (as de verdade, nunca cópias). */
@@ -33,7 +37,19 @@ const FERRAMENTAS: ReadonlyArray<{
 ]
 
 type Aviso = { tom: 'ok' | 'atencao'; texto: string } | null
-type Secao = 'inicio' | 'conforto'
+/** A seção de conforto e controles; as outras são os painéis do menu (`PAINEIS_DO_MENU`). */
+const CONFORTO = 'conforto'
+
+/** O painel de cada seção do menu, mostrado no meio dele (no estilo do menu, sem outra janela). */
+const PAINEL_DA_SECAO: Readonly<Record<string, () => ReactNode>> = {
+  [PAINEL_DO_DIARIO]: () => <Diario />,
+  [PAINEL_DO_ALBUM]: () => <Album />,
+  [PAINEL_DO_CADERNO]: () => <CadernoDosLumis />,
+  [PAINEL_DO_MAPA]: () => <PainelDoMapa />,
+  [PAINEL_DOS_CONVIDADOS]: () => <PainelDosConvidados />,
+  [PAINEL_DAS_VISITAS]: () => <PainelDasVisitas />,
+  [PAINEL_DAS_VISITAS_ADULTAS]: () => <PainelDasVisitasAdultas />,
+}
 
 /** Onde a pessoa está, com o artigo certo ("Na sua ilha", "No Bosque dos Bichos"). */
 const NA_ILHA: Readonly<Record<IlhaId, string>> = {
@@ -59,14 +75,18 @@ export function Menu() {
   const visitando = useEstado((s) => s.visita !== null)
   const aberto = useEstado((s) => s.menuAberto)
   const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
-  const [secao, setSecao] = useState<Secao>('inicio')
+  const secao = useEstado((s) => s.secaoDoMenu)
   const [aviso, setAviso] = useState<Aviso>(null)
   const continuar = useRef<HTMLButtonElement>(null)
+  const corpo = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (!aberto) return
-    setSecao('inicio')
-    continuar.current?.focus({ preventScroll: true })
-  }, [aberto])
+    if (aberto && secao === null) continuar.current?.focus({ preventScroll: true })
+  }, [aberto, secao])
+  // Cada seção começa do alto.
+  useEffect(() => {
+    if (secao !== undefined) corpo.current?.scrollTo({ top: 0 })
+  }, [secao])
+  const noMenu = useMemo(() => ({ fechar: () => loja.getState().abrirMenu(false) }), [loja])
   async function abrirFerramenta(ferramenta: FerramentaDaPlataforma) {
     if (loja.getState().ferramentaAberta) return
     setAviso(null)
@@ -98,33 +118,58 @@ export function Menu() {
     loja.getState().abrirMenu(false)
     loja.getState().abrirPainel(painel)
   }
+  const irPara = (s: string | null) => loja.getState().escolherSecaoDoMenu(s)
   const lugares: ReadonlyArray<{
     nome: string
     icone: NomeDoIcone
+    /** A seção que o lugar abre no meio do menu (sem ela, o lugar faz outra coisa). */
+    secao?: string
     fora?: boolean
     ir: () => void
   }> = [
     {
       nome: 'Moradores em casa',
       icone: 'familia',
+      secao: PAINEL_DOS_CONVIDADOS,
       fora: visitando || noFarol,
-      ir: () => abrirPainel(PAINEL_DOS_CONVIDADOS),
+      ir: () => irPara(PAINEL_DOS_CONVIDADOS),
     },
-    { nome: 'Diário', icone: 'diario', ir: () => abrirPainel(PAINEL_DO_DIARIO) },
-    { nome: 'Álbum de coleções', icone: 'album', ir: () => abrirPainel(PAINEL_DO_ALBUM) },
-    { nome: 'Caderno dos Lumis', icone: 'caderno', ir: () => abrirPainel(PAINEL_DO_CADERNO) },
-    { nome: 'Mapa do arquipélago', icone: 'mapa', ir: () => abrirPainel(PAINEL_DO_MAPA) },
+    {
+      nome: 'Diário',
+      icone: 'diario',
+      secao: PAINEL_DO_DIARIO,
+      ir: () => irPara(PAINEL_DO_DIARIO),
+    },
+    {
+      nome: 'Álbum de coleções',
+      icone: 'album',
+      secao: PAINEL_DO_ALBUM,
+      ir: () => irPara(PAINEL_DO_ALBUM),
+    },
+    {
+      nome: 'Caderno dos Lumis',
+      icone: 'caderno',
+      secao: PAINEL_DO_CADERNO,
+      ir: () => irPara(PAINEL_DO_CADERNO),
+    },
+    {
+      nome: 'Mapa do arquipélago',
+      icone: 'mapa',
+      secao: PAINEL_DO_MAPA,
+      ir: () => irPara(PAINEL_DO_MAPA),
+    },
     // Família e irmãos são do Kids: a comunidade adulta não lê `/irmaos`.
     ...(plataforma.publico === 'kids'
       ? [
           {
             nome: visitando ? 'Voltar para a minha casa' : 'Visitar um irmão',
             icone: 'familia' as const,
+            secao: visitando ? undefined : PAINEL_DAS_VISITAS,
             fora: noFarol,
             ir: () => {
+              if (!loja.getState().visita) return irPara(PAINEL_DAS_VISITAS)
               loja.getState().abrirMenu(false)
-              if (loja.getState().visita) voltarDaVisita(loja, pedidos)
-              else loja.getState().abrirPainel(PAINEL_DAS_VISITAS)
+              voltarDaVisita(loja, pedidos)
             },
           },
         ]
@@ -132,11 +177,12 @@ export function Menu() {
           {
             nome: visitando ? 'Voltar para a minha casa' : 'Visitas da comunidade',
             icone: 'familia' as const,
+            secao: visitando ? undefined : PAINEL_DAS_VISITAS_ADULTAS,
             fora: noFarol,
             ir: () => {
+              if (!loja.getState().visita) return irPara(PAINEL_DAS_VISITAS_ADULTAS)
               loja.getState().abrirMenu(false)
-              if (loja.getState().visita) voltarDaVisita(loja, pedidos)
-              else loja.getState().abrirPainel(PAINEL_DAS_VISITAS_ADULTAS)
+              voltarDaVisita(loja, pedidos)
             },
           },
         ]),
@@ -149,8 +195,8 @@ export function Menu() {
           <button
             type="button"
             className="arq-pausa-lugar"
-            aria-current={secao === 'inicio' ? 'page' : undefined}
-            onClick={() => setSecao('inicio')}
+            aria-current={secao === null ? 'page' : undefined}
+            onClick={() => irPara(null)}
           >
             <Icone nome="inicio" />
             Início
@@ -161,6 +207,7 @@ export function Menu() {
               type="button"
               className="arq-pausa-lugar"
               data-lugar={l.icone}
+              aria-current={l.secao !== undefined && secao === l.secao ? 'page' : undefined}
               disabled={ferramentaAberta || l.fora}
               onClick={l.ir}
             >
@@ -171,8 +218,8 @@ export function Menu() {
           <button
             type="button"
             className="arq-pausa-lugar"
-            aria-current={secao === 'conforto' ? 'page' : undefined}
-            onClick={() => setSecao('conforto')}
+            aria-current={secao === CONFORTO ? 'page' : undefined}
+            onClick={() => irPara(CONFORTO)}
           >
             <Icone nome="conforto" />
             Conforto e controles
@@ -187,13 +234,18 @@ export function Menu() {
             {voz.voltar}
           </button>
         </nav>
-        <div className="arq-pausa-corpo">
-          {secao === 'inicio' ? (
+        <div className="arq-pausa-corpo" ref={corpo}>
+          {secao !== null && PAINEL_DA_SECAO[secao] ? (
+            <NoMenuContexto.Provider value={noMenu}>
+              {PAINEL_DA_SECAO[secao]()}
+            </NoMenuContexto.Provider>
+          ) : secao !== CONFORTO ? (
             <Inicio
               continuar={continuar}
               noFarol={noFarol}
               ferramentaAberta={ferramentaAberta}
               abrirPainel={abrirPainel}
+              irPara={irPara}
               abrirFerramenta={(f) => void abrirFerramenta(f)}
               aviso={aviso}
             />
@@ -242,6 +294,7 @@ function Inicio({
   noFarol,
   ferramentaAberta,
   abrirPainel,
+  irPara,
   abrirFerramenta,
   aviso,
 }: {
@@ -249,6 +302,7 @@ function Inicio({
   noFarol: boolean
   ferramentaAberta: boolean
   abrirPainel: (painel: string) => void
+  irPara: (secao: string) => void
   abrirFerramenta: (f: FerramentaDaPlataforma) => void
   aviso: Aviso
 }) {
@@ -296,7 +350,7 @@ function Inicio({
           type="button"
           className="arq-pausa-cartao arq-pausa-diario"
           disabled={ferramentaAberta}
-          onClick={() => abrirPainel(PAINEL_DO_DIARIO)}
+          onClick={() => irPara(PAINEL_DO_DIARIO)}
         >
           <span className="arq-pausa-rotulo">
             <Icone nome="diario" />
@@ -311,7 +365,7 @@ function Inicio({
           type="button"
           className="arq-pausa-cartao"
           disabled={ferramentaAberta}
-          onClick={() => abrirPainel(PAINEL_DO_ALBUM)}
+          onClick={() => irPara(PAINEL_DO_ALBUM)}
         >
           <span className="arq-pausa-rotulo">
             <Icone nome="album" />
