@@ -23,6 +23,12 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
  */
 const bool = (value: boolean): JSExpr => ({ type: 'bool', value })
 const v = (name: string): JSExpr => ({ type: 'var', name })
+const iff = (cond: JSExpr, then: JSStatement[]): JSStatement => ({
+  type: 'if',
+  cond,
+  then,
+  else: [],
+})
 const assign = (name: string, value: boolean): JSStatement => ({
   type: 'assign',
   name,
@@ -36,14 +42,6 @@ const image = (varName: string, asset: string, x: number, y: number): JSStatemen
   y,
   w: 48,
   h: 48,
-})
-/** Um Se sem senão. `then` é o campo da IR, não uma promessa. */
-const se = (cond: JSExpr, corpo: JSStatement[]): JSStatement => ({
-  type: 'if',
-  cond,
-  // biome-ignore lint/suspicious/noThenProperty: campo da árvore de instruções SZIR.
-  then: corpo,
-  else: [],
 })
 const draw = (spriteVar: string): JSStatement => ({
   type: 'g2d:drawSprite',
@@ -132,14 +130,14 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
         type: 'g2d:onOverlap',
         aVar: 'guia',
         bVar: 'farol',
-        body: [se(v('temEstrela'), [assign('aceso', true)])],
+        body: [iff(v('temEstrela'), [assign('aceso', true)])],
       },
       { type: 'g2d:onKey', key: 'Enter', body: [{ type: 'g2d:restart' }] },
     )
     drawing.push(
       draw('estrela'),
       draw('farol'),
-      se(v('aceso'), [label('O farol acendeu.', 20, 70)]),
+      iff(v('aceso'), [label('O farol acendeu.', 20, 70)]),
     )
   }
   drawing.push(draw('guia'))

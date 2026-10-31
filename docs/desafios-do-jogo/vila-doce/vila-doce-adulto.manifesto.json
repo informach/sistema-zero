@@ -2303,7 +2303,6 @@
           {
             "id": "acao",
             "label": "Complete a encomenda com as ações indicadas.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2339,12 +2338,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "forno-certo",
             "label": "O forno errado espera e a encomenda só conta uma vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2411,13 +2410,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2458,7 +2457,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -4195,7 +4195,6 @@
           {
             "id": "acao",
             "label": "Complete a encomenda com as ações indicadas.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4236,12 +4235,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "estoque",
             "label": "Cada pão entregue sai da caixa; caixa vazia espera.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4314,13 +4313,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4366,7 +4365,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -6353,7 +6353,6 @@
           {
             "id": "acao",
             "label": "Complete a encomenda com as ações indicadas.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6394,12 +6393,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "ordem",
             "label": "Não sirva vazio nem pule a laranja, e conte o copo uma vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6504,13 +6503,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6556,7 +6555,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -8851,7 +8851,6 @@
           {
             "id": "acao",
             "label": "Complete a encomenda com as ações indicadas.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8891,12 +8890,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "quente",
             "label": "Espere começar e esfriar; o mesmo doce só sai uma vez.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8973,13 +8972,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9024,7 +9023,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -11201,7 +11201,6 @@
           {
             "id": "acao",
             "label": "Complete a encomenda com as ações indicadas.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11242,12 +11241,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "quantidade",
             "label": "Falta e sobra esperam; aceitar esvazia a bandeja.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11340,13 +11339,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter começa outra rodada.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11392,7 +11391,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -14883,7 +14883,6 @@
           {
             "id": "largada",
             "label": "Enter ou + recoloca o entregador no começo, zera as entregas e inicia o prazo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -14993,12 +14992,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "entregar",
             "label": "Contornar a caixa e chegar a tempo conclui uma entrega e encerra a corrida.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -15107,12 +15106,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "caixa",
             "label": "Encostar na caixa interrompe a corrida sem contar entrega.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -15174,12 +15173,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "prazo",
             "label": "O tempo diminui e, quando chega a zero, a corrida para sem contar entrega.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -15266,13 +15265,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Espaço ou A recoloca o entregador no começo e inicia outra corrida.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -15368,7 +15367,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -20328,7 +20328,6 @@
           {
             "id": "primeira-entrega",
             "label": "A primeira parada conta uma entrega só, mesmo ficando perto dela.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20384,12 +20383,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "ordem",
             "label": "A chegada espera a entrega 1 antes de encerrar a corrida.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20450,12 +20449,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "duas-entregas",
             "label": "Passar pela entrega 1 e depois pela chegada conclui duas entregas, sem repetir os pontos.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20532,13 +20531,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Espaço ou A recoloca o entregador no começo e inicia outra corrida.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -20634,7 +20633,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -25062,7 +25062,6 @@
           {
             "id": "oito-segundos",
             "label": "A corrida começa com oito segundos e termina quando esse prazo acaba.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -25145,13 +25144,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Espaço ou A recoloca o entregador no começo e inicia outra corrida.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -25247,7 +25246,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -30096,7 +30096,6 @@
           {
             "id": "caixa-nova",
             "label": "A caixa nova interrompe a corrida ao encostar, e outra rota permite entregar os doces.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -30209,13 +30208,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar-enter",
             "label": "Extra: Espaço ou A recoloca o entregador no começo e inicia outra corrida.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -30311,7 +30310,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {

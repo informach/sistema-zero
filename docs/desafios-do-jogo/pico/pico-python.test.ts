@@ -16,7 +16,6 @@ test('C02 Pico em Python: JSON corresponde à fonte e cumpre as réguas comuns',
   for (const publico of ['kids', 'adulto'] as const) {
     const manifesto = criarManifestoPython(publico)
     const arquivo = `./pico-python${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`
-    // O arquivo sai do gerador já formatado pelo Biome (`gravar-manifesto.ts`): vale o conteúdo.
     expect(await Bun.file(new URL(arquivo, import.meta.url)).json()).toEqual(manifesto)
     for (const d of manifesto.desafios) {
       expect(d.ilha).toBe('pico')

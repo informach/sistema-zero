@@ -14,7 +14,6 @@ test('C02 Vale em texto: JSON corresponde à fonte e cumpre as réguas comuns', 
   for (const publico of ['kids', 'adulto'] as const) {
     const manifesto = criarManifestoTexto(publico)
     const arquivo = `./vale-texto${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`
-    // O arquivo sai do gerador já formatado pelo Biome (`gravar-manifesto.ts`): vale o conteúdo.
     expect(await Bun.file(new URL(arquivo, import.meta.url)).json()).toEqual(manifesto)
     expect(manifesto.desafios).toHaveLength(1)
     for (const d of manifesto.desafios) {

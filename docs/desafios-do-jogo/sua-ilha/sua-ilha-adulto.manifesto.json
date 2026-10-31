@@ -820,7 +820,6 @@
           {
             "id": "andar",
             "label": "A seta para a direita leva o guia pela areia.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -838,12 +837,12 @@
                 "compare": "greaterThan",
                 "value": 100
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "na-praia",
             "label": "Segurando a seta, o guia para na borda da tela.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -874,13 +873,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça a praia.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -916,7 +915,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -2071,7 +2071,6 @@
           {
             "id": "pegar",
             "label": "No contato, o guia guarda que tem a concha.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2102,12 +2101,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "so-no-contato",
             "label": "Passar por cima da concha não pega; descer até ela pega.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2148,13 +2147,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça a praia.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2190,7 +2189,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -4158,7 +4158,6 @@
           {
             "id": "entregar",
             "label": "Pegue a concha e entregue no balde.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4194,12 +4193,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "sem-concha",
             "label": "Sem a concha, o balde marca que o Nico pediu.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4227,12 +4226,12 @@
                 "compare": "equals",
                 "value": true
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "buscar-e-voltar",
             "label": "Sem a concha o balde espera; buscar a concha e voltar entrega.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4283,13 +4282,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça a praia.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4330,7 +4329,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -6577,7 +6577,6 @@
           {
             "id": "com-rosa",
             "label": "Pela concha rosa, o balde recebe a entrega.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6618,12 +6617,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "cinza-nao-vale",
             "label": "Só com a cinza, o Nico pede a rosa e nada é entregue.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6659,13 +6658,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça a praia.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6711,7 +6710,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -8833,7 +8833,6 @@
           {
             "id": "recomecar",
             "label": "Depois da entrega, Enter traz a praia de volta.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8874,12 +8873,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "concha-volta",
             "label": "Enter devolve a concha para a areia.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8915,13 +8914,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "espaco",
             "label": "Extra: a barra de espaço também recomeça.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8962,7 +8961,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -11210,7 +11210,6 @@
           {
             "id": "cheio",
             "label": "Com as três conchas, o balde fica cheio.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11261,12 +11260,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "faltou-uma",
             "label": "Sem a concha do alto, o balde continua esperando.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11302,13 +11301,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça a praia.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -11364,7 +11363,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {

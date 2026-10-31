@@ -1061,7 +1061,6 @@
           {
             "id": "acao",
             "label": "Espaço acende o vagalume e mantém a luz acesa.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -1097,13 +1096,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça o minijogo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -1144,7 +1143,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -2828,7 +2828,6 @@
           {
             "id": "acao",
             "label": "Pegue a alface e entregue ao coelho.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2864,12 +2863,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "sem-alface",
             "label": "Chegar ao coelho sem alface espera; buscar e voltar entrega.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2920,12 +2919,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "alface-entregue",
             "label": "A alface entregue não pode ser recolhida de novo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2977,13 +2976,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça o minijogo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -3024,7 +3023,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -5291,7 +5291,6 @@
           {
             "id": "acao",
             "label": "Visite as três pegadas na ordem para terminar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -5327,12 +5326,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "sem-atalho",
             "label": "A última pegada só termina depois das anteriores.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -5383,13 +5382,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça o minijogo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -5430,7 +5429,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -7932,7 +7932,6 @@
           {
             "id": "acao",
             "label": "Visite os quatro bichos para contar quatro cuidados.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -7968,12 +7967,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "uma-vez",
             "label": "O mesmo bicho conta uma vez, mesmo saindo e voltando.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8018,13 +8017,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça o minijogo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8065,7 +8064,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -9647,7 +9647,6 @@
           {
             "id": "acao",
             "label": "Espaço começa a travessia e a bandeira marca a chegada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9682,12 +9681,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "parar",
             "label": "Depois da chegada, o guia permanece junto da bandeira.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9746,13 +9745,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "recomecar",
             "label": "Extra: Enter recomeça o minijogo.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -9792,7 +9791,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -19156,7 +19156,6 @@
           {
             "id": "largada",
             "label": "A Largada traz os quatro bichos de volta ao começo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -19273,12 +19272,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "movimento",
             "label": "Os quatro bichos avançam enquanto a corrida está acontecendo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -19346,24 +19345,24 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "sorteio",
             "label": "Cada bicho sorteia um passo curto ou longo dentro do laço.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "loops",
               "withinBlock": "sz_g2d_every_frames",
               "blockType": "sz_g2d_random_x",
               "count": 4
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "fala-cachorro",
             "label": "Ao tocar a chegada, o cachorro diz Ganhei se a corrida ainda estiver acontecendo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -19394,12 +19393,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "fala-gato",
             "label": "Ao tocar a chegada, o gato diz Ganhei se a corrida ainda estiver acontecendo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -19430,12 +19429,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "fala-coelho",
             "label": "Ao tocar a chegada, o coelho diz Ganhei se a corrida ainda estiver acontecendo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -19466,12 +19465,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "fala-porquinho",
             "label": "Ao tocar a chegada, o porquinho diz Ganhei se a corrida ainda estiver acontecendo.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -19502,12 +19501,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "chegada",
             "label": "A corrida tem um vencedor e todos param na chegada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -19601,13 +19600,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "espaco",
             "label": "Extra: o bicho escolhido fica parado e anda quando você aperta espaço.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -19652,7 +19651,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -34293,7 +34293,6 @@
           {
             "id": "pular",
             "label": "Os quatro bichos sobem para passar pelas pedras.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -34405,12 +34404,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "aterrissar",
             "label": "Depois das pedras, os bichos voltam ao chão e a corrida tem um vencedor.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -34522,13 +34521,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "largada-enter",
             "label": "Extra: Espaço ou A também traz os quatro bichos ao começo e inicia outra corrida.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -34645,7 +34644,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -45897,7 +45897,6 @@
           {
             "id": "acender",
             "label": "Espaço ou A ilumina a pista sem tirar os bichos do lugar.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -45972,13 +45971,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "apagar",
             "label": "Extra: aperte Espaço ou A de novo para apagar, e outra vez para acender.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -46030,7 +46029,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
@@ -57921,7 +57921,6 @@
           {
             "id": "ponto-cachorro",
             "label": "A vitória do cachorro soma um ponto no placar dele.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -57950,12 +57949,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "ponto-gato",
             "label": "A vitória do gato soma um ponto no placar dele.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -57984,12 +57983,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "ponto-coelho",
             "label": "A vitória do coelho soma um ponto no placar dele.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -58018,12 +58017,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "ponto-porquinho",
             "label": "A vitória do porquinho soma um ponto no placar dele.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "usesBlock",
               "area": "events",
@@ -58052,12 +58051,12 @@
                   }
                 }
               }
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "vitoria",
             "label": "O placar registra uma única corrida, sem continuar contando depois da chegada.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -58107,12 +58106,12 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "guardar",
             "label": "A Largada preserva as vitórias da corrida anterior.",
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -58163,13 +58162,13 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           },
           {
             "id": "zerar",
             "label": "Extra: Espaço ou A deixa todas as vitórias em zero.",
             "optional": true,
-            "programmingLanguage": "javascript",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -58253,7 +58252,8 @@
                   }
                 }
               ]
-            }
+            },
+            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
