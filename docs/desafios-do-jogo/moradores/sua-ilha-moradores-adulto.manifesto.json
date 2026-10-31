@@ -1318,8 +1318,8 @@
         },
         "recompensa": {
           "cor": false,
-          "moedas": 20,
-          "moedasExtra": 10
+          "moedas": 5,
+          "moedasExtra": 2
         },
         "blocosManuais": {
           "acrescentar": [],

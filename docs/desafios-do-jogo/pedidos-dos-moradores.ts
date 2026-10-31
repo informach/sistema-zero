@@ -1,8 +1,9 @@
 /**
  * Os pedidos dos moradores (A44, revisão de 31/10/2026): o enunciado de cada quadro de retomada do
  * Recife, do Pico, do Vale e das Nuvens é o pedido do morador da ilha, que diz o que ele precisa e
- * não o bloco ou a variável a usar. O texto técnico de antes vira a primeira dica, e o objetivo
- * principal ganha um rótulo específico no lugar do genérico "Complete a ação indicada".
+ * não o bloco ou a variável a usar. O objetivo principal ganha um rótulo específico no lugar do
+ * genérico "Complete a ação indicada". O texto técnico de antes vira a última dica (lacunas,
+ * 01/11/2026, pela Jornada: as dicas ajudam a pensar antes de mostrar o caminho).
  */
 export interface PedidoDoMorador {
   /** O enunciado: o que o morador precisa, em linguagem de criança. */
@@ -119,8 +120,8 @@ export const PEDIDOS_DOS_MORADORES: Record<string, PedidoDoMorador> = {
 }
 
 /**
- * Os pedidos dos minijogos e dos desafios do dia (A44): o enunciado de antes vira a primeira dica
- * (até o teto de cinco), e o pedido do morador entra no lugar. `soKids` deixa o adulto com o texto
+ * Os pedidos dos minijogos e dos desafios do dia (A44): o enunciado de antes vira a última dica
+ * (`dicasNaOrdemDaJornada`), e o pedido do morador entra no lugar. `soKids` deixa o adulto com o texto
  * técnico próprio (os desafios em texto e no Pro já têm um enunciado adulto diferente).
  */
 const PEDIDOS_DOS_MINIJOGOS: Record<string, { pedido: string; soKids?: true }> = {
@@ -241,6 +242,8 @@ const PEDIDOS_DOS_MINIJOGOS: Record<string, { pedido: string; soKids?: true }> =
   },
 }
 
+/** Teto de dicas de um desafio (`LIMITES_DO_DESAFIO.dicas`). */
+const DICAS_MAXIMO = 5
 /** Teto de uma dica no contrato (`LIMITES_DO_DESAFIO.dica`). */
 const DICA_MAXIMA = 300
 /** O enunciado de antes em dicas de até 300 caracteres, cortado entre frases. */
@@ -259,10 +262,38 @@ function emDicas(texto: string): string[] {
   return dicas
 }
 
+/**
+ * As dicas na ordem da Jornada (lacunas, 01/11/2026): primeiro lembrar o objetivo, depois as pistas
+ * de raciocínio e de estrutura (na ordem em que vierem) e, por último, o texto técnico, que mostra o
+ * caminho. Dentro do teto de cinco: o lembrete e o texto técnico ficam, e as pistas cedem lugar.
+ */
+export function dicasNaOrdemDaJornada(
+  objetivo: string,
+  pistas: readonly string[],
+  tecnico: string,
+): string[] {
+  const lembrete = `Lembre o objetivo: ${objetivo}`.slice(0, DICA_MAXIMA)
+  const fim = emDicas(tecnico).slice(0, DICAS_MAXIMO - 1)
+  return [lembrete, ...pistas.slice(0, DICAS_MAXIMO - 1 - fim.length), ...fim]
+}
+
+/** O objetivo principal de um desafio (o primeiro que não é o extra). */
+function objetivoPrincipal(objetivos: readonly { label: string; optional?: true }[]): string {
+  return (objetivos.find((o) => !o.optional) ?? objetivos[0])?.label ?? ''
+}
+
 /** Aplica os pedidos dos minijogos e dos desafios do dia a um manifesto já validado. */
 export function comPedidosDosMoradores<
   M extends {
-    desafios: { slug: string; publico: string; conteudo: { enunciado: string; dicas: string[] } }[]
+    desafios: {
+      slug: string
+      publico: string
+      conteudo: {
+        enunciado: string
+        dicas: string[]
+        objetivos: { label: string; optional?: true }[]
+      }
+    }[]
   },
 >(manifesto: M): M {
   return {
@@ -276,7 +307,11 @@ export function comPedidosDosMoradores<
         conteudo: {
           ...d.conteudo,
           enunciado: p.pedido,
-          dicas: [...emDicas(d.conteudo.enunciado), ...d.conteudo.dicas].slice(0, 5),
+          dicas: dicasNaOrdemDaJornada(
+            objetivoPrincipal(d.conteudo.objetivos),
+            d.conteudo.dicas,
+            d.conteudo.enunciado,
+          ),
         },
       }
     }),

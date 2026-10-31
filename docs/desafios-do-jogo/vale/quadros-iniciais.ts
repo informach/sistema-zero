@@ -5,7 +5,7 @@ import {
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import type { JSStatement } from '../../../packages/studio/src/ir/schema'
-import { PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
+import { dicasNaOrdemDaJornada, PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
 import {
   at,
   baseDoQuadro,
@@ -287,13 +287,17 @@ export function desafiosIniciaisDoVale(publico: PublicoDoDesafio) {
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
-        // A44: o pedido do morador; o texto técnico de antes vira a primeira dica.
+        // A44: o pedido do morador. As dicas na ordem da Jornada (lacunas, 01/11/2026): o objetivo,
+        // a pista, a estrutura e, por último, o texto técnico de antes.
         enunciado: PEDIDOS_DOS_MORADORES[meta.slug]!.pedido,
-        dicas: [
+        dicas: dicasNaOrdemDaJornada(
+          PEDIDOS_DOS_MORADORES[meta.slug]!.objetivo,
+          [
+            meta.dica,
+            'Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas.',
+          ],
           meta.texto,
-          meta.dica,
-          'Cenário, listas e desenho já estão prontos. Complete apenas as regras indicadas.',
-        ],
+        ),
         projetoInicial: projetoDoQuadroVale(quadro, false),
         gabarito: projetoDoQuadroVale(quadro, true),
         objetivos: objetivosDoQuadroVale(quadro),

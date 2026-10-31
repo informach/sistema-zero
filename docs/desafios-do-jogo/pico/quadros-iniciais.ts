@@ -13,7 +13,7 @@ import { createEmptyProject, type Project } from '../../../packages/studio/src/c
 import { generateProjectFiles } from '../../../packages/studio/src/generators/project'
 import { assignStableIdsToIR } from '../../../packages/studio/src/ir/ids'
 import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/ir/schema'
-import { PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
+import { dicasNaOrdemDaJornada, PEDIDOS_DOS_MORADORES } from '../pedidos-dos-moradores'
 import { assetsDoPico } from './projetos'
 
 const n = (value: number): JSExpr => ({ type: 'num', value })
@@ -426,13 +426,17 @@ export function desafiosIniciaisDoPico(publico: PublicoDoDesafio) {
       conteudo: {
         versao: 1,
         titulo: meta.titulo,
-        // A44: o pedido do morador; o texto técnico de antes vira a primeira dica.
+        // A44: o pedido do morador. As dicas na ordem da Jornada (lacunas, 01/11/2026): o objetivo,
+        // a pista, a estrutura e, por último, o texto técnico de antes.
         enunciado: PEDIDOS_DOS_MORADORES[meta.slug]!.pedido,
-        dicas: [
+        dicas: dicasNaOrdemDaJornada(
+          PEDIDOS_DOS_MORADORES[meta.slug]!.objetivo,
+          [
+            meta.dica,
+            'Cenário e movimento já estão prontos. Complete apenas os eventos indicados.',
+          ],
           meta.texto,
-          meta.dica,
-          'Cenário e movimento já estão prontos. Complete apenas os eventos indicados.',
-        ],
+        ),
         projetoInicial: projetoDoQuadroPico(quadro, false),
         gabarito: projetoDoQuadroPico(quadro, true),
         objetivos: objetivosDoQuadroPico(quadro),

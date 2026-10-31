@@ -46,14 +46,15 @@ export const MOEDAS_PADRAO = { principal: 20, extra: 10 } as const
 
 /**
  * Moedas padrão por tipo: o desafio do dia vale menos que um quadro do Quadro das Cores (proposta:
- * "médio"; plano de 28/10/2026).
+ * "médio"; plano de 28/10/2026), e o pedido de morador, um pedido curto, menos ainda (proposta:
+ * fonte "baixa"; lacunas de 01/11/2026).
  */
 export const MOEDAS_PADRAO_POR_TIPO: Readonly<
   Record<TipoDeDesafio, { principal: number; extra: number }>
 > = {
   'quadro-das-cores': MOEDAS_PADRAO,
   'desafio-do-dia': { principal: 10, extra: 5 },
-  'pedido-de-morador': MOEDAS_PADRAO,
+  'pedido-de-morador': { principal: 5, extra: 2 },
 }
 
 /** O desafio do dia nunca pinta a ilha: só o Quadro das Cores devolve a cor. */

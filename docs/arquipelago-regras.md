@@ -3286,6 +3286,8 @@ navegador: `arquipelago/playground/verificar-rotina-browser.ts`.
 | Padrão do prêmio principal | 20 moedas | `arquipelago-contracts/src/desafios.ts`, `MOEDAS_PADRAO.principal` |
 | Padrão do extra | 10 moedas | `MOEDAS_PADRAO.extra` |
 | Padrão do desafio do dia | 10 moedas e mais 5 no extra | `MOEDAS_PADRAO_POR_TIPO['desafio-do-dia']` |
+| Padrão do pedido de morador no Estúdio | 5 moedas e mais 2 no extra (fonte baixa da proposta; lacunas, 01/11/2026) | `MOEDAS_PADRAO_POR_TIPO['pedido-de-morador']` |
+| Ordem das dicas | lembrar o objetivo, pistas e, por último, o texto técnico (Jornada; lacunas, 01/11/2026) | `docs/desafios-do-jogo/pedidos-dos-moradores.ts`, `dicasNaOrdemDaJornada` |
 | Máximo do principal | 100 moedas | `LIMITES_DO_DESAFIO.moedas` |
 | Máximo do extra | 50 moedas | `LIMITES_DO_DESAFIO.moedasExtra` |
 
@@ -3544,7 +3546,7 @@ objeto já vale no projeto azul; a galeria só compra o visual. Catálogo em `ar
 | Pedaços da ilha | 30% ao abrir a ponte; 2,4 s de tinta; borda de 18% | `arquipelago/src/sistemas/cor-da-ilha.ts`, `COR_AO_ABRIR`, `DURACAO_DA_TINTA_S`, `BORDA_DOS_PEDACOS` |
 | Festa da cor | 1,6 s na mancha; 4 s até avisar o serviço | `quadro-das-cores.tsx`, `DURACAO_DA_COR_S`; `arquipelago/src/interface/quadro-das-cores.tsx`, `FESTA_MS` |
 | Limites do cadastro | seção 7.2 | `desafios.ts`, `LIMITES_DO_DESAFIO` |
-| Moedas padrão | 20 e 10; desafio do dia 10 e 5 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
+| Moedas padrão | 20 e 10; desafio do dia 10 e 5; pedido de morador 5 e 2 | `desafios.ts`, `MOEDAS_PADRAO` e `MOEDAS_PADRAO_POR_TIPO` |
 | Máximo de moedas por desafio | 100 e 50 | `desafios.ts`, `LIMITES_DO_DESAFIO.moedas` e `.moedasExtra` |
 | Teto semanal de moedas do jogo | 100 | `members/src/infrastructure/persistence/drizzle/arquipelago-coins.repository.ts`, `ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS` |
 | Preços da galeria | 30 a 70 (seção 9.9) | `arquipelago-contracts/src/galeria.ts`, `GALERIA` |
