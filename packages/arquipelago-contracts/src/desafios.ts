@@ -538,6 +538,17 @@ export const VerificarDesafioSchema = z.strictObject({
 })
 export type VerificarDesafio = z.infer<typeof VerificarDesafioSchema>
 
+/**
+ * O ambiente Python do Estúdio de desafio (C02b): a revisão aberta e o pedido do Estúdio
+ * (`StudioArquipelagoRuntimeRequest`, conferido no Members contra o inicial). A resposta é a
+ * decisão do Members, repassada ao Estúdio, que a confere de novo.
+ */
+export const PedirAmbienteDoDesafioSchema = z.strictObject({
+  revisao: z.number().int().min(1),
+  pedido: z.record(z.string(), z.unknown()),
+})
+export type PedirAmbienteDoDesafio = z.infer<typeof PedirAmbienteDoDesafioSchema>
+
 export const ResultadoDaVerificacaoSchema = z.strictObject({
   passou: z.boolean(),
   resultados: z.array(z.strictObject({ id: z.string(), passou: z.boolean() })),

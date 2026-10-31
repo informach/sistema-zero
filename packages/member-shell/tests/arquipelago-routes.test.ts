@@ -735,3 +735,167 @@ describe('visitas de outras crianças (N08a)', () => {
     ])
   })
 })
+
+describe('Python e Pro no Estúdio de desafio (C02b, 30/10/2026)', () => {
+  const id = '22222222-2222-4222-8222-222222222222'
+  const ctx = (valor: string) => ({ params: Promise.resolve({ id: valor }) })
+  const post = (corpo: unknown, headers: Record<string, string> = {}) =>
+    new Request(`http://kids.test/api/arquipelago/desafios/${id}/pro`, {
+      method: 'POST',
+      headers,
+      body: typeof corpo === 'string' ? corpo : JSON.stringify(corpo),
+    })
+
+  async function nuvens() {
+    const manifesto = await Bun.file(
+      new URL('../../../docs/desafios-do-jogo/nuvens/nuvens-pro.manifesto.json', import.meta.url),
+    ).json()
+    return manifesto.desafios[0].conteudo.projetoInicial as {
+      kind: 'pro'
+      tree: Record<string, unknown>
+      proMeta: { templateId: string }
+    }
+  }
+  const aberto = (projetoInicial: unknown, revisao = 2) => ({
+    status: 200,
+    body: {
+      id,
+      jogadorId: PERFIL,
+      blocosPermitidos: null,
+      revisao,
+      titulo: 'Nuvens',
+      enunciado: 'Monte a grade.',
+      dicas: [],
+      desafioExtra: null,
+      objetivos: [],
+      projetoInicial,
+      ultimosResultados: [],
+      concluido: false,
+    },
+  })
+  const ambienteAntes = {
+    url: process.env.STUDIO_PRO_RUNTIME_URL,
+    token: process.env.STUDIO_PRO_RUNTIME_TOKEN,
+  }
+  afterEach(() => {
+    globalThis.fetch = fetchOriginal
+    if (ambienteAntes.url === undefined) delete process.env.STUDIO_PRO_RUNTIME_URL
+    else process.env.STUDIO_PRO_RUNTIME_URL = ambienteAntes.url
+    if (ambienteAntes.token === undefined) delete process.env.STUDIO_PRO_RUNTIME_TOKEN
+    else process.env.STUDIO_PRO_RUNTIME_TOKEN = ambienteAntes.token
+  })
+
+  test('ambiente: repassa o pedido do Estúdio ao serviço, sem cache', async () => {
+    const { routes, chamadas } = montar({ status: 200, body: { version: 1 } })
+    const corpo = { revisao: 2, pedido: { operation: 'analyze' } }
+    const r = await routes.arquipelagoDesafioAmbiente.POST(
+      new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) }),
+      ctx(id),
+    )
+    expect(r.status).toBe(200)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+    expect(chamadas).toEqual([
+      { caminho: `/arquipelago/desafios/${id}/ambiente`, metodo: 'POST', corpo },
+    ])
+    expect(
+      (
+        await routes.arquipelagoDesafioAmbiente.POST(
+          new Request('http://local', { method: 'POST', body: '{"revisao":1}' }),
+          ctx('x'),
+        )
+      ).status,
+    ).toBe(400)
+    const grande = JSON.stringify({ revisao: 1, pedido: { x: 'a'.repeat(2 * 1024 * 1024) } })
+    expect(
+      (
+        await routes.arquipelagoDesafioAmbiente.POST(
+          new Request('http://local', { method: 'POST', body: grande }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(1)
+  })
+
+  test('Pro: corpo que não é Pro não sai do BFF; o jogo que recusa abrir decide', async () => {
+    const inicial = await nuvens()
+    const { routes, chamadas } = montar({ status: 403, body: { error: { code: 'X' } } })
+    expect((await routes.arquipelagoDesafioPro.POST(post({ revisao: 2 }), ctx(id))).status).toBe(
+      400,
+    )
+    expect(
+      (await routes.arquipelagoDesafioPro.POST(post({ revisao: 2, project: inicial }), ctx('x')))
+        .status,
+    ).toBe(400)
+    expect(chamadas).toEqual([])
+    const r = await routes.arquipelagoDesafioPro.POST(
+      post({ revisao: 2, project: inicial }),
+      ctx(id),
+    )
+    expect(r.status).toBe(403)
+    expect(chamadas.map((c) => [c.caminho, c.metodo])).toEqual([
+      [`/arquipelago/desafios/${id}`, 'GET'],
+    ])
+  })
+
+  test('Pro: outra revisão é 409, desafio que não é Pro é 403, sem executor é 503', async () => {
+    const inicial = await nuvens()
+    globalThis.fetch = (async () => {
+      throw new Error('o executor não deveria ser chamado')
+    }) as unknown as typeof fetch
+    const outra = montar(aberto(inicial, 3))
+    expect(
+      (
+        await outra.routes.arquipelagoDesafioPro.POST(
+          post({ revisao: 2, project: inicial }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(409)
+    const classico = montar(aberto({ files: { 'script.js': '' } }))
+    expect(
+      (
+        await classico.routes.arquipelagoDesafioPro.POST(
+          post({ revisao: 2, project: inicial }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(403)
+    delete process.env.STUDIO_PRO_RUNTIME_URL
+    delete process.env.STUDIO_PRO_RUNTIME_TOKEN
+    const semExecutor = montar(aberto(inicial))
+    expect(
+      (
+        await semExecutor.routes.arquipelagoDesafioPro.POST(
+          post({ revisao: 2, project: inicial }),
+          ctx(id),
+        )
+      ).status,
+    ).toBe(503)
+  })
+
+  test('Pro: o modelo vem do inicial, não do projeto enviado; a execução é do jogador e do desafio', async () => {
+    const inicial = await nuvens()
+    process.env.STUDIO_PRO_RUNTIME_URL = 'https://runtime.test/'
+    process.env.STUDIO_PRO_RUNTIME_TOKEN = 'token-do-executor-de-teste'
+    const enviados: { url: string; corpo: Record<string, unknown> }[] = []
+    globalThis.fetch = (async (url: RequestInfo | URL, init?: RequestInit) => {
+      enviados.push({ url: String(url), corpo: JSON.parse(String(init?.body)) })
+      return Response.json({ ok: false, message: 'Erro de compilação de teste' }, { status: 422 })
+    }) as unknown as typeof fetch
+    const { routes } = montar(aberto(inicial))
+    const trocado = { ...inicial, proMeta: { ...inicial.proMeta, templateId: 'outro-modelo' } }
+    const r = await routes.arquipelagoDesafioPro.POST(
+      post({ revisao: 2, project: trocado }),
+      ctx(id),
+    )
+    expect(r.headers.get('cache-control')).toBe('no-store')
+    expect(((await r.json()) as { error: { message: string } }).error.message).toBe(
+      'Erro de compilação de teste',
+    )
+    expect(enviados).toHaveLength(1)
+    expect(enviados[0]?.url).toBe('https://runtime.test/v1/build')
+    expect(enviados[0]?.corpo.templateId).toBe(inicial.proMeta.templateId)
+    expect(enviados[0]?.corpo.executionId).toMatch(/^arquipelago-[a-f0-9]{48}$/)
+  })
+})

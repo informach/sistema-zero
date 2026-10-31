@@ -156,6 +156,18 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
     `profileId` e `stdin` do objetivo (o `z.object` os descartava). Testes:
     `tests/unit/arquipelago-objectives-c02.test.ts` e `tests/unit/arquipelago-c02-pacotes.test.ts`
     (os quatro pacotes de `docs/desafios-do-jogo` pela análise de verdade).
+    `tests/unit/arquipelago-c02-ambiente.test.ts` confere os projetos Python contra o catálogo
+    PUBLICADO (`022e5b54…`, o seletor de staging e produção).
+  - **C02b (30/10/2026): o ambiente Python do Estúdio de desafio.** `POST /ambiente`
+    `{requester, accountId, audience, projetoInicial, pedido}` → `ArquipelagoRuntimeService`
+    (`application/arquipelago/arquipelago-runtime.service.ts`, ligado só com a política de
+    runtime; sem ela, 424). O pedido é um `StudioArquipelagoRuntimeRequest` (core); passa só o
+    mesmo projeto aberto, Python clássico, no ambiente do INICIAL (`studioProjectContinuityIssue`;
+    extensão a mais é recusada pela política) e o público de quem joga. Autoriza pela política com
+    `CURADORIA_DO_DESAFIO_PYTHON` e as extensões do inicial, capacidades editar, executar e
+    pausar. Não depende do Estúdio Completo. 400 pedido inválido, 403 recusa. Testes:
+    `tests/unit/arquipelago-runtime.service.test.ts` (catálogo publicado e política de verdade) e
+    as rotas em `tests/arquipelago-internal.routes.test.ts`.
   - Testes: `tests/unit/arquipelago-objectives.service.test.ts` (verificador de verdade, executor
     falso, saídas conferidas contra o contrato lido PELO CAMINHO) e as rotas em
     `tests/arquipelago-internal.routes.test.ts`.

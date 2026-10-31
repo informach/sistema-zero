@@ -5,7 +5,7 @@ import type { PrepareProDependencies } from '@sistemazero/studio'
 export function createProToolchainPreparer(
   url: string,
   fetchImpl: (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>,
-  context: Record<string, string> = {},
+  context: Record<string, string | number> = {},
 ): PrepareProDependencies {
   return async ({ project, signal }) => {
     const response = await fetchImpl(url, {

@@ -21,6 +21,7 @@ import {
 import type { PoliticaDeAcesso } from '../../src/domain/acesso'
 import { chaveDasMoedas } from '../../src/domain/desafios'
 import {
+  AmbienteRecusadoError,
   ConferenciaIndisponivelError,
   MembrosIndisponiveisError,
   type PortaDosMembros,
@@ -654,6 +655,61 @@ describe('conferir', () => {
       }),
     )
     expect(salvamento.status).toBe(413)
+  })
+})
+
+describe('ambiente Python do Estúdio de desafio (C02b)', () => {
+  const pedido = { operation: 'analyze', context: { kind: 'arquipelago' } }
+  const pedirAmbiente = (id = BORBOLETA, revisao = 1, headers = crianca()) =>
+    chamar('POST', `/${id}/ambiente`, headers, { revisao, pedido })
+  let autorizar: ReturnType<typeof mock>
+  beforeEach(() => {
+    autorizar = mock(async () => ({ version: 1, decisao: 'do-members' }))
+    membros = membrosDeMentira({
+      lerJogador: async () => ({ posicao, total: 8, blocos }),
+      lerCurriculo: async () => curriculo,
+      autorizarAmbiente: autorizar as unknown as PortaDosMembros['autorizarAmbiente'],
+    })
+    montar()
+  })
+
+  test('repassa ao Members quem joga, o público, o inicial da revisão e o pedido do Estúdio', async () => {
+    const r = await pedirAmbiente()
+    expect(r.status).toBe(200)
+    expect(r.corpo).toEqual({ version: 1, decisao: 'do-members' })
+    expect(autorizar).toHaveBeenCalledWith({
+      requester: PERFIL,
+      accountId: CONTA,
+      audience: 'kids',
+      projetoInicial: projeto,
+      pedido,
+    })
+  })
+
+  test('bloqueado, revisão inexistente ou arquivado: não pede ao Members', async () => {
+    expect((await pedirAmbiente(PONTE)).status).toBe(403)
+    expect((await pedirAmbiente(BORBOLETA, 7)).status).toBe(404)
+    const d = repo.desafios.get(BORBOLETA)
+    if (d) d.situacao = 'arquivado'
+    expect((await pedirAmbiente()).status).toBe(409)
+    expect(autorizar).not.toHaveBeenCalled()
+    expect((await chamar('POST', `/${FAROL}/ambiente`, crianca(), { revisao: 1 })).status).toBe(400)
+  })
+
+  test('recusa do Members vira 403 com a frase dele; Members fora, 424', async () => {
+    autorizar.mockImplementation(async () => {
+      throw new AmbienteRecusadoError('O projeto aberto não é do ambiente deste desafio.')
+    })
+    const recusado = await pedirAmbiente()
+    expect(recusado.status).toBe(403)
+    expect(recusado.corpo.error).toMatchObject({
+      code: 'AMBIENTE_RECUSADO',
+      message: 'O projeto aberto não é do ambiente deste desafio.',
+    })
+    autorizar.mockImplementation(async () => {
+      throw new MembrosIndisponiveisError('rede')
+    })
+    expect((await pedirAmbiente()).status).toBe(424)
   })
 })
 

@@ -139,7 +139,8 @@ duplicados. Geometrias, texturas de materiais e materiais não alterados continu
 | C03b | Integrado no staging local | `ca1ccf83b`, merge `6f2581fbc` | Projeto autoral do Farol depois do final |
 | E04, resto | Pedidos de arte e plano | merge `5a4a5293d` | Segundo andar, terreno e subida final esperam a arte; documento próprio da obra planejado |
 | Q01 | Qualificação local e lista para a dona | este lote | Ciclos de memória das seis ilhas; implantação, importação, conta real e aparelho ficam com a dona |
-| C02 | Integrado no staging local | `79c2df4a9`, `6cf4d7b26`, merge `44492747f` | Python, texto e Pro; executor real nos quatro; o jogo ainda não abre Python nem Pro; release Python com Pygame Zero pendente de publicação |
+| C02 | Integrado no staging local | `79c2df4a9`, `6cf4d7b26`, merge `44492747f`; release ativa `d1a14b2ce` | Python, texto e Pro; executor real nos quatro; Recife e Pico na release Python ativa (17 execuções, 49 conferências na distribuição publicada) |
+| C02b | Integrado no staging local | (este lote) | O jogo abre Python e Pro: contexto `arquipelago` no core e no Estúdio, `/ambiente` no Members e no serviço do jogo, gateway, rotas `ambiente` e `pro` no member-shell; sem depender do Estúdio Completo |
 
 ### Lote de visitas adultas da frente de entrega integral
 

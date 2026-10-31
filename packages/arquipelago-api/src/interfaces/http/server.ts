@@ -60,7 +60,7 @@ import {
   CompraPendenteError,
   CompraSemEspacoError,
 } from '../../domain/insumos.port'
-import { ConferenciaIndisponivelError } from '../../domain/membros.port'
+import { AmbienteRecusadoError, ConferenciaIndisponivelError } from '../../domain/membros.port'
 import { PedidoRecusadoError } from '../../domain/pedidos.port'
 import {
   EventoTempoConflitanteError,
@@ -128,7 +128,7 @@ export const CORPO_DA_EQUIPE = 4 * 1024 * 1024
 
 /** Conferir um desafio leva o projeto do Estúdio da pessoa (até 1,5 milhão de caracteres). */
 export const CORPO_DA_CONFERENCIA = 4 * 1024 * 1024
-const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/verificar$/
+const CONFERIR = /^\/arquipelago\/desafios\/[^/]+\/(verificar|ambiente)$/
 
 /** O teto do corpo pelo caminho: Admin e conferência levam projetos; o resto é pequeno. */
 function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
@@ -285,6 +285,10 @@ export function createServer(deps: DependenciasHttp) {
         const [status, codigo] = resposta[error.motivo]
         set.status = status
         return envelope(codigo, error.message)
+      }
+      if (error instanceof AmbienteRecusadoError) {
+        set.status = 403
+        return envelope('AMBIENTE_RECUSADO', error.message)
       }
       if (error instanceof DesafioNaoEncontradoError) {
         set.status = 404

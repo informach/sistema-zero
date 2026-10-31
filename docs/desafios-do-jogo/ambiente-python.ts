@@ -3,25 +3,26 @@ import { createHash } from 'node:crypto'
 /**
  * C02 (30/10/2026): o ambiente Python dos desafios do Recife e do Pico.
  *
- * ⚠️ Nenhum ambiente publicado tem hoje uma release Python com Pygame Zero e Raylib (a candidata
- * de staging, `2026-10-22-visual-games-3`, só traz a Turtle). Os projetos apontam para a release
- * construída na prova local a partir do vendor verificado (`buildPythonRuntimeDistribution`) e
- * das extensões que o Estúdio declara. A prova (`packages/studio-runtime/tests/
- * desafios-python-smoke.ts`) recalcula a release e recusa rodar se o hash divergir. Quando a dona
- * ativar uma release com Pygame Zero, troque estes quatro valores pela release ativa, regenere os
- * manifestos e rode a prova de novo: o Members recusa o projeto cujo ambiente não está no catálogo.
+ * Os projetos apontam para a release ATIVA em staging e produção desde 29/10/2026,
+ * `2026-10-25-integrated-games-2` (catálogo do Members `022e5b54…`, com Turtle, Pygame Zero,
+ * Pygame-ce e Raylib 2D/3D). A prova (`packages/studio-runtime/tests/desafios-python-smoke.ts`)
+ * baixa a distribuição publicada desta release, confere cada arquivo e o hash do manifesto, e roda
+ * os desafios nela com a imagem do executor publicada. Quando a release ativa mudar, troque estes
+ * valores, regenere os manifestos e rode a prova de novo: o Members recusa o projeto cujo ambiente
+ * não está no catálogo.
  */
 export const AMBIENTE_PYTHON_C02 = {
   profileId: 'python-browser',
-  releaseId: '2026-10-30-c02-qa',
-  manifestSha256: 'e99427f77021904702977f086ff9f9476607d91039da736251c074fe735a3f7a',
+  releaseId: '2026-10-25-integrated-games-2',
+  manifestSha256: '0d27adb3af80195770b95545f3d1a40c4153941d4cf5cfc56f513b95e07371e1',
   pythonVersion: '3.14.2',
 } as const
 
-/** As extensões que a release da prova aprova (as mesmas do `python-mission-smoke.ts`). */
+/** As extensões que a release ativa aprova (o `extensions` do manifesto dela). */
 export const EXTENSOES_DA_RELEASE_C02 = [
   { id: 'python-turtle', versions: ['1.0.0'] },
   { id: 'python-pgzero', versions: ['1.0.0'] },
+  { id: 'python-pygame', versions: ['1.0.0'] },
   { id: 'python-raylib-2d', versions: ['1.0.0'] },
   { id: 'python-raylib-3d', versions: ['1.0.0'] },
 ] as const

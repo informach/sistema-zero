@@ -16,6 +16,7 @@ import { ArquipelagoCourseActivityService } from './application/arquipelago/arqu
 import { ArquipelagoObjectivesService } from './application/arquipelago/arquipelago-objectives.service'
 import { ArquipelagoReadsService } from './application/arquipelago/arquipelago-reads.service'
 import { ArquipelagoRoomService } from './application/arquipelago/arquipelago-room.service'
+import { ArquipelagoRuntimeService } from './application/arquipelago/arquipelago-runtime.service'
 import { BuyAvatarPartService } from './application/avatar/buy-avatar-part.service'
 import { EquipAvatarService } from './application/avatar/equip-avatar.service'
 import { GetAvatarService } from './application/avatar/get-avatar.service'
@@ -1185,6 +1186,9 @@ export async function createApplication(env: Env): Promise<Application> {
       aulas: new ArquipelagoCourseActivityService(new ArquipelagoCourseActivityRepository(db)),
       saldo: gamificationRepo,
       quartos: new ArquipelagoRoomService(roomRepo),
+      ambiente: studioRuntimePolicy
+        ? new ArquipelagoRuntimeService(studioRuntimePolicy)
+        : undefined,
       token: env.ARQUIPELAGO_MEMBERS_TOKEN,
     },
     liveMaterials,

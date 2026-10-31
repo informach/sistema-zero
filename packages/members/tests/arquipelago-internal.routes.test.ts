@@ -3,6 +3,7 @@ import { ValidationError } from '@sistemazero/core/errors'
 import { UnauthorizedError } from '@sistemazero/core/http'
 import { JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
 import { Elysia } from 'elysia'
+import { AccessDeniedError } from '../src/domain/entitlement/entitlement.errors'
 import { KidsJourneyUnavailableError } from '../src/domain/kids-journey/kids-journey.errors'
 import {
   ProjectCheckBusyError,
@@ -30,6 +31,7 @@ function criar(over: {
   aulas?: unknown
   saldo?: unknown
   quartos?: unknown
+  ambiente?: unknown
 }) {
   const staffPreview = mock(over.staffPreview ?? (async () => ({ policyVersion: 4 })))
   const policy = mock(
@@ -57,6 +59,7 @@ function criar(over: {
         aulas: over.aulas as never,
         saldo: over.saldo as never,
         quartos: over.quartos as never,
+        ambiente: over.ambiente as never,
         token: 'configurado' in over ? over.configurado : token,
       }),
     )
@@ -404,5 +407,65 @@ describe('quarto (a visita de um irmão no Arquipélago, 29/10/2026)', () => {
     expect((await app.handle(pedir(`userId=${tom}&audience=bebes`))).status).toBe(400)
     expect(quarto).toHaveBeenCalledTimes(0)
     expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
+  })
+})
+
+describe('ambiente Python do desafio (C02b, 30/10/2026)', () => {
+  const pedidoDeAmbiente = {
+    requester: userId,
+    accountId: userId,
+    audience: 'kids',
+    projetoInicial: projeto,
+    pedido: { operation: 'analyze' },
+  }
+
+  test('exige o token de leitura; corpo malformado é 400; sem o serviço, 424', async () => {
+    const autorizar = mock(async () => ({ version: 1 }))
+    const { app } = criar({ ambiente: { autorizar } })
+    expect((await app.handle(postar('/ambiente', pedidoDeAmbiente, null))).status).toBe(401)
+    expect((await app.handle(postar('/ambiente', pedidoDeAmbiente, tokenDasMoedas))).status).toBe(
+      401,
+    )
+    for (const ruim of [
+      { ...pedidoDeAmbiente, requester: 'x' },
+      { ...pedidoDeAmbiente, audience: 'teen' },
+      { ...pedidoDeAmbiente, pedido: 'texto' },
+    ])
+      expect((await app.handle(postar('/ambiente', ruim))).status).toBe(400)
+    expect(autorizar).toHaveBeenCalledTimes(0)
+    const semServico = criar({})
+    expect((await semServico.app.handle(postar('/ambiente', pedidoDeAmbiente))).status).toBe(424)
+  })
+
+  test('devolve a decisão do serviço; recusa vira 403 e pedido inválido 400', async () => {
+    const autorizar = mock(async () => ({ version: 1 }))
+    const { app } = criar({ ambiente: { autorizar } })
+    const ok = await app.handle(postar('/ambiente', pedidoDeAmbiente))
+    expect(ok.status).toBe(200)
+    expect(await ok.json()).toEqual({ version: 1 })
+    expect(autorizar).toHaveBeenCalledWith(pedidoDeAmbiente)
+    const negado = criar({
+      ambiente: {
+        autorizar: mock(async () => {
+          throw new AccessDeniedError('O projeto aberto não é do ambiente deste desafio.')
+        }),
+      },
+    })
+    const res = await negado.app.handle(postar('/ambiente', pedidoDeAmbiente))
+    expect(res.status).toBe(403)
+    expect(await res.json()).toEqual({
+      error: {
+        code: 'ACCESS_DENIED',
+        message: 'O projeto aberto não é do ambiente deste desafio.',
+      },
+    })
+    const invalido = criar({
+      ambiente: {
+        autorizar: mock(async () => {
+          throw new ValidationError('O pedido do ambiente é inválido.')
+        }),
+      },
+    })
+    expect((await invalido.app.handle(postar('/ambiente', pedidoDeAmbiente))).status).toBe(400)
   })
 })

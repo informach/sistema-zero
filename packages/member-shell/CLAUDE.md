@@ -114,6 +114,16 @@ O jogo mora em pacotes próprios (`docs/arquipelago.md`); aqui só fica a porta 
   Desafios (27/10/2026): `arquipelagoDesafios` (GET, `?ilha=` conferida), `arquipelagoDesafio`
   (GET `:id` uuid), `arquipelagoDesafioVerificar` (POST, corpo até 4 MB, prazo de 165 s no
   gateway; os shims põem `maxDuration = 180`) e `arquipelagoDesafioRecompensaVista` (POST).
+  C02b (30/10/2026): `arquipelagoDesafioAmbiente` (POST, até 2 MB, repasse sem cache ao serviço,
+  a decisão do ambiente Python) e `arquipelagoDesafioPro` (POST `/api/arquipelago/desafios/:id/pro`,
+  o molde de `lesson-pro-runtime.ts`: abre o desafio no serviço com a sessão, exige a mesma
+  revisão, tira o modelo Pro do projeto INICIAL e compila no executor com
+  `opaqueStudioRuntimeExecutionId('arquipelago', jogadorId, id, revisao)`). O diálogo
+  (`arquipelago-challenge-dialog.tsx`) monta o Python por `useArquipelagoChallengeRuntime`
+  (`@sistemazero/studio/challenge-runtime`) e o Pro com o adaptador `proRuntime` nessa rota; a
+  paleta do jogo (`blocosPermitidos`) só vale no JavaScript. Nenhum dos dois usa o Estúdio livre
+  (vendido à parte). Testes: `tests/arquipelago-routes.test.ts` e
+  `tests/fixtures/arquipelago-challenge-dialog.fixture.tsx`.
 - **`components/arquipelago-host.tsx`**: `ArquipelagoHost` lê o manifesto, importa a entrada com
   `webpackIgnore`/`turbopackIgnore` e chama `montarArquipelago`; `criarPlataformaDoArquipelago`
   monta a `Plataforma` do contrato com as MESMAS rotas das telas (avatar, quarto, gamificação) e o
