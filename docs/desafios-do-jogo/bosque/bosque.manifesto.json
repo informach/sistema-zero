@@ -16173,11 +16173,11 @@
         "titulo": "Corrida dos bichos",
         "enunciado": "A Capi organizou uma corrida entre o cachorro, o gato, o coelho e o porquinho. Ela quer uma largada que ponha os quatro no começo, passos sorteados para cada um e um vencedor só: o primeiro a chegar diz Ganhei e todos param.",
         "dicas": [
-          "O cachorro, o gato, o coelho e o porquinho querem correr. Faça Enter dar a largada e colocar os quatro no começo. No controle da tela, use +. Dentro de um laço, sorteie passos curtos ou longos para cada bicho. O primeiro que tocar a chegada deve dizer Ganhei. Nesse momento, todos param.",
-          "Depois, a Largada deve permitir outra corrida.",
+          "Lembre o objetivo: A Largada traz os quatro bichos de volta ao começo.",
           "Use o evento Quando apertar Enter, como na Nave. O botão + do controle faz a mesma coisa.",
           "Você já sorteou posições na Nave. Compare o sorteio com a metade da pista para escolher um passo curto ou longo.",
-          "Guarde se a corrida está acontecendo. Só o primeiro contato com a chegada encerra a corrida."
+          "O cachorro, o gato, o coelho e o porquinho querem correr. Faça Enter dar a largada e colocar os quatro no começo. No controle da tela, use +. Dentro de um laço, sorteie passos curtos ou longos para cada bicho. O primeiro que tocar a chegada deve dizer Ganhei. Nesse momento, todos param.",
+          "Depois, a Largada deve permitir outra corrida."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -26035,10 +26035,11 @@
         "titulo": "Corrida dos bichos: pedras",
         "enunciado": "A Capi pôs pedras na pista da corrida. Ela quer que cada bicho suba antes da pedra e desça depois dela, voltando à sua faixa, e que a corrida continue com um vencedor só.",
         "dicas": [
-          "A corrida já funciona, mas há pedras na pista. Faça cada bicho subir antes da pedra e descer depois dela, voltando à sua faixa. A corrida continua tendo um único vencedor. Use a Largada para testar quantas vezes quiser.",
+          "Lembre o objetivo: Os quatro bichos sobem para passar pelas pedras.",
           "Observe a posição do bicho antes de começar o pulo.",
           "Uma velocidade para cima faz subir. Uma velocidade para baixo faz descer.",
-          "Conte os passos do pulo para subir e descer a mesma distância."
+          "Conte os passos do pulo para subir e descer a mesma distância.",
+          "A corrida já funciona, mas há pedras na pista. Faça cada bicho subir antes da pedra e descer depois dela, voltando à sua faixa. A corrida continua tendo um único vencedor. Use a Largada para testar quantas vezes quiser."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -41029,10 +41030,11 @@
         "titulo": "Corrida dos bichos: noite",
         "enunciado": "Anoiteceu no Bosque e a Capi não enxerga a pista. Ela quer que o espaço clareie a pista sem tirar nenhum bicho do lugar.",
         "dicas": [
-          "Anoiteceu no Bosque. A corrida está pronta, mas a pista está escura. Programe a barra de espaço para diminuir a opacidade da camada noite. No controle da tela, use A. A pista deve ficar visível sem mudar a posição dos bichos.",
+          "Lembre o objetivo: Espaço ou A ilumina a pista sem tirar os bichos do lugar.",
           "A camada noite está desenhada por cima da pista.",
           "Uma opacidade menor deixa aparecer o que está atrás.",
-          "Use o evento Quando apertar espaço."
+          "Use o evento Quando apertar espaço.",
+          "Anoiteceu no Bosque. A corrida está pronta, mas a pista está escura. Programe a barra de espaço para diminuir a opacidade da camada noite. No controle da tela, use A. A pista deve ficar visível sem mudar a posição dos bichos."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -52415,10 +52417,11 @@
         "titulo": "Corrida dos bichos: placar",
         "enunciado": "A Capi quer saber quem ganha mais corridas. Ela quer que só o vencedor de cada corrida ganhe uma vitória no placar, e que as vitórias fiquem guardadas para a próxima largada.",
         "dicas": [
-          "A corrida está pronta e o placar começa em zero. Some uma vitória ao bicho que chegar primeiro. Os outros não ganham ponto. O número não deve continuar subindo depois da chegada. Na próxima Largada, guarde as vitórias anteriores.",
+          "Lembre o objetivo: A vitória do cachorro soma um ponto no placar dele.",
           "Cada bicho tem sua própria variável de vitórias.",
           "Some o ponto no mesmo momento em que o vencedor diz Ganhei.",
-          "Zerar a posição para outra corrida é diferente de zerar o placar."
+          "Zerar a posição para outra corrida é diferente de zerar o placar.",
+          "A corrida está pronta e o placar começa em zero. Some uma vitória ao bicho que chegar primeiro. Os outros não ganham ponto. O número não deve continuar subindo depois da chegada. Na próxima Largada, guarde as vitórias anteriores."
         ],
         "projetoInicial": {
           "formatVersion": 2,

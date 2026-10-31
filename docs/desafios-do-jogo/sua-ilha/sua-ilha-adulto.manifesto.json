@@ -16,9 +16,10 @@
         "titulo": "Passos na areia",
         "enunciado": "O Nico quer mostrar a praia, mas o guia não sai do lugar. Ele quer que as setas levem o guia pela areia, sem passar da borda da tela.",
         "dicas": [
-          "A praia está pronta, mas o guia ainda não sai do lugar. No laço que roda a cada quadro, faça as setas moverem o guia. Ele precisa continuar dentro da praia, sem passar da borda da tela.",
+          "Lembre o objetivo: A seta para a direita leva o guia pela areia.",
           "Use o bloco que move com as setas visto de cima e o bloco que segura o personagem na tela.",
-          "O cenário já está pronto. Complete somente as ações indicadas."
+          "O cenário já está pronto. Complete somente as ações indicadas.",
+          "A praia está pronta, mas o guia ainda não sai do lugar. No laço que roda a cada quadro, faça as setas moverem o guia. Ele precisa continuar dentro da praia, sem passar da borda da tela."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -949,9 +950,10 @@
         "titulo": "A primeira concha",
         "enunciado": "Há uma concha na areia. O Nico quer que o guia pegue a concha ao encostar nela, lembre que está com ela e que a concha saia da areia.",
         "dicas": [
-          "Há uma concha na areia. No contato do guia com a concha, guarde verdadeiro em temConcha e tire a concha da areia. Assim o guia lembra que pegou a concha, e ela não aparece de novo.",
+          "Lembre o objetivo: No contato, o guia guarda que tem a concha.",
           "O evento de contato já está no espaço de blocos. Dentro dele vão duas ações.",
-          "O cenário já está pronto. Complete somente as ações indicadas."
+          "O cenário já está pronto. Complete somente as ações indicadas.",
+          "Há uma concha na areia. No contato do guia com a concha, guarde verdadeiro em temConcha e tire a concha da areia. Assim o guia lembra que pegou a concha, e ela não aparece de novo."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -2224,9 +2226,10 @@
         "titulo": "O balde do Nico",
         "enunciado": "O Nico guarda conchas num balde. Ele quer receber a concha só se o guia estiver com ela; sem concha, ele pede uma.",
         "dicas": [
-          "O Nico guarda as conchas num balde. No contato com o balde, entregue só se o guia tiver a concha: marque entregue e deixe temConcha falso. Sem a concha, use o Senão para marcar pediu, e o Nico pede uma concha.",
+          "Lembre o objetivo: Pegue a concha e entregue no balde.",
           "A informação temConcha decide. O Se entrega, o Senão pede.",
-          "O cenário já está pronto. Complete somente as ações indicadas."
+          "O cenário já está pronto. Complete somente as ações indicadas.",
+          "O Nico guarda as conchas num balde. No contato com o balde, entregue só se o guia tiver a concha: marque entregue e deixe temConcha falso. Sem a concha, use o Senão para marcar pediu, e o Nico pede uma concha."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -4365,9 +4368,10 @@
         "titulo": "A concha rosa",
         "enunciado": "O Nico só quer a concha rosa, que fica mais no alto. Ele quer que o balde aceite só a rosa; com a cinza ou sem nada, ele pede de novo.",
         "dicas": [
-          "Agora há duas conchas. A cinza fica no caminho e já marca temCinza. A rosa fica mais no alto. Pegue a rosa guardando temRosa e tirando a concha da areia. No balde, entregue só com a rosa. Com a cinza ou sem nada, o Senão marca pediu.",
+          "Lembre o objetivo: Pela concha rosa, o balde recebe a entrega.",
           "Só uma das duas informações decide a entrega. A cinza não serve para o Nico.",
-          "O cenário já está pronto. Complete somente as ações indicadas."
+          "O cenário já está pronto. Complete somente as ações indicadas.",
+          "Agora há duas conchas. A cinza fica no caminho e já marca temCinza. A rosa fica mais no alto. Pegue a rosa guardando temRosa e tirando a concha da areia. No balde, entregue só com a rosa. Com a cinza ou sem nada, o Senão marca pediu."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -6747,9 +6751,10 @@
         "titulo": "A maré volta",
         "enunciado": "O Nico quer brincar de novo. Ele quer que o Enter faça a praia voltar como era: a concha na areia, o guia no começo e nada entregue.",
         "dicas": [
-          "O jogo da concha já funciona. Falta recomeçar: complete o evento da tecla Enter para que a praia volte como era, com a concha na areia, o guia no começo e nada entregue.",
+          "Lembre o objetivo: Depois da entrega, Enter traz a praia de volta.",
           "Há um bloco que recomeça o jogo inteiro. Ele vai dentro do evento da tecla Enter.",
-          "O cenário já está pronto. Complete somente as ações indicadas."
+          "O cenário já está pronto. Complete somente as ações indicadas.",
+          "O jogo da concha já funciona. Falta recomeçar: complete o evento da tecla Enter para que a praia volte como era, com a concha na areia, o guia no começo e nada entregue."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -8999,9 +9004,10 @@
         "titulo": "Pega-conchas",
         "enunciado": "O Nico quer as três conchas da praia, inclusive a do alto. Ele quer que o balde só fique cheio quando as três tiverem sido pegas.",
         "dicas": [
-          "Três conchas esperam na praia, uma delas no alto. Cada concha guarda a própria informação quando o guia encosta e sai da areia. O balde só fica cheio se as três foram pegas. Com alguma faltando, o balde continua esperando.",
+          "Lembre o objetivo: Com as três conchas, o balde fica cheio.",
           "Use pegou1, pegou2 e pegou3. Um Se dentro do outro confere as três antes de encher o balde.",
-          "O cenário já está pronto. Complete somente as ações indicadas."
+          "O cenário já está pronto. Complete somente as ações indicadas.",
+          "Três conchas esperam na praia, uma delas no alto. Cada concha guarda a própria informação quando o guia encosta e sai da areia. O balde só fica cheio se as três foram pegas. Com alguma faltando, o balde continua esperando."
         ],
         "projetoInicial": {
           "formatVersion": 2,
