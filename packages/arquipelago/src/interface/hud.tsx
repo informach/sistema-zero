@@ -758,11 +758,14 @@ function Resultado() {
   // Antes do `return` sem resultado: os hooks rodam sempre na mesma ordem.
   const entrarNaSala = useFarol(loja, (f) => f.entrar)
   const continuar = useRef<HTMLButtonElement>(null)
+  const entrar = useRef<HTMLButtonElement>(null)
+  // No alto da subida por fora, o passo seguinte é a sala do alto: o foco vai para ele (N4).
   useEffect(() => {
-    if (r) continuar.current?.focus()
+    if (r) (entrar.current ?? continuar.current)?.focus()
   }, [r])
   if (!r) return null
   const config = PERCURSOS_DO_JOGO[r.percurso]
+  const salaAFrente = r.percurso === 'farol-subida' && r.estrelas.chegada && entrarNaSala
   const estrelas = [
     { ganhou: r.estrelas.chegada, texto: 'Chegou ao fim' },
     {
@@ -828,8 +831,9 @@ function Resultado() {
         <EnvioDoFantasma />
         <div className="arq-menu-acoes">
           {/* No alto da subida por fora, o caminho segue para a sala do Farol (N4). */}
-          {r.percurso === 'farol-subida' && entrarNaSala ? (
+          {salaAFrente ? (
             <button
+              ref={entrar}
               type="button"
               className="arq-botao"
               onClick={() => {
@@ -843,7 +847,7 @@ function Resultado() {
           <button
             type="button"
             className={
-              r.percurso === 'farol-subida' && entrarNaSala ? 'arq-botao leve' : 'arq-botao'
+              salaAFrente ? 'arq-botao leve' : 'arq-botao'
             }
             onClick={() => {
               movimento.pedidoDoPercurso = { acao: 'recomecar', percurso: r.percurso }

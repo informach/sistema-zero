@@ -6,6 +6,10 @@
  * baixo continua sendo o caminho direto ("Subir pela escada de dentro"). No computador e no
  * celular emulado.
  *
+ * Lacunas de 01/11/2026: sem o planador a largada não começa e o Zappy diz o que falta (o vento do
+ * último trecho só leva quem plana); com ele (`?planador=1`), fechando o resultado com Continuar,
+ * a própria varanda oferece "Entrar na sala do alto".
+ *
  * ⚠️ As paradas são alcançadas por teleporte (`__arquipelagoLevar`), não pelos movimentos: o que se
  * prova aqui é o caminho do percurso até o final. Escada, quinas, equilíbrio e vento têm a prova
  * deles em `tests/subida-do-farol.test.ts` e nos testes de modos.
@@ -21,8 +25,8 @@ import path from 'node:path'
 import { chromium, type Page } from 'playwright-core'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { ROTULO_DA_PORTA_DO_FAROL } from '../src/mundo/final-do-farol'
-import { subidaDoFarolNoMundo } from '../src/mundo/subida-do-farol'
-import { PERCURSO_DO_FAROL } from '../src/sistemas/percurso'
+import { ROTULO_DA_VARANDA, subidaDoFarolNoMundo } from '../src/mundo/subida-do-farol'
+import { FALTA_O_PLANADOR_NO_FAROL, PERCURSO_DO_FAROL } from '../src/sistemas/percurso'
 
 const porta = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4531)
 const base = `http://127.0.0.1:${porta}`
@@ -90,6 +94,34 @@ try {
     ...(executavel ? { executablePath: executavel } : { channel: 'chrome' }),
     headless: true,
   })
+  // Sem o planador (num navegador limpo, só no computador): a largada fica no pé do Farol e o
+  // Zappy diz o que falta. O diário local fica nesta aba e não conflita com o jogo novo seguinte.
+  {
+    const contexto = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+    contexto.setDefaultTimeout(120_000)
+    await contexto.addInitScript(() => localStorage.setItem('arquipelago:medir', '1'))
+    const p = await contexto.newPage()
+    await p.goto(`${base}/?novo=1&persistir=0&posicao=8`, { waitUntil: 'networkidle' })
+    await p.waitForFunction(() => typeof (globalThis as Janela).__arquipelagoLevar === 'function')
+    await pularChegadas(p)
+    await p.locator('canvas').click()
+    await p.evaluate(
+      ({ alvo, giro }) =>
+        (globalThis as Janela).__arquipelagoLevar?.(alvo.x, alvo.y + 1.2, alvo.z, giro),
+      { alvo: pontos.largada, giro: pontos.rumoDaLargada + Math.PI },
+    )
+    await p.getByText(PERCURSO_DO_FAROL.rotuloDaLargada).first().waitFor({ timeout: 180_000 })
+    await p.keyboard.press('KeyE')
+    await p.getByText(FALTA_O_PLANADOR_NO_FAROL).first().waitFor({ timeout: 30_000 })
+    assert.equal(
+      await p.getByRole('timer', { name: PERCURSO_DO_FAROL.nome }).count(),
+      0,
+      'a subida começou sem o planador',
+    )
+    await p.screenshot({ path: path.join(prints, 'sem-planador-1280.png') })
+    console.log('1280px: sem o planador, a largada diz o que falta')
+    await contexto.close()
+  }
   for (const tela of [
     { width: 1280, height: 800 },
     { width: 390, height: 844 },
@@ -130,17 +162,24 @@ try {
       return q
     }
 
-    await p.goto(`${base}/?novo=1&persistir=0&posicao=8`, { waitUntil: 'networkidle' })
-    await p.waitForFunction(() => typeof (globalThis as Janela).__arquipelagoLevar === 'function')
-    await pularChegadas(p)
-    await p.locator('canvas').click()
+    const usar = async () => {
+      if (celular) await p.getByRole('button', { name: 'Usar', exact: true }).tap()
+      else await p.keyboard.press('KeyE')
+    }
+    const abrir = async (extra: string) => {
+      await p.goto(`${base}/?novo=1&persistir=0&posicao=8${extra}`, { waitUntil: 'networkidle' })
+      await p.waitForFunction(() => typeof (globalThis as Janela).__arquipelagoLevar === 'function')
+      await pularChegadas(p)
+      await p.locator('canvas').click()
+    }
+
+    await abrir('&planador=1')
 
     // A largada, no pé do Farol.
     await levar(pontos.largada, pontos.rumoDaLargada + Math.PI)
     await esperarPerto(pontos.largada, 1.5)
     await p.getByText(PERCURSO_DO_FAROL.rotuloDaLargada).first().waitFor({ timeout: 180_000 })
-    if (celular) await p.getByRole('button', { name: 'Usar', exact: true }).tap()
-    else await p.keyboard.press('KeyE')
+    await usar()
     await p.getByRole('timer', { name: PERCURSO_DO_FAROL.nome }).waitFor({ timeout: 30_000 })
     await p.screenshot({ path: path.join(prints, `largada-${tela.width}.png`) })
 
@@ -166,8 +205,19 @@ try {
     assert((await resultado.locator('li.ganhou').count()) >= 1, 'sem a estrela da chegada')
     await p.screenshot({ path: path.join(prints, `varanda-resultado-${tela.width}.png`) })
 
-    // A varanda leva à sala do alto, e lá a última página está ao alcance.
-    await resultado.getByRole('button', { name: 'Entrar na sala do alto' }).click()
+    // O foco vai para "Entrar na sala do alto"; fechando com Continuar, a varanda oferece o mesmo
+    // passo, e é por ela que se entra na sala do alto.
+    const entrarNoResultado = resultado.getByRole('button', { name: 'Entrar na sala do alto' })
+    assert.equal(
+      await entrarNoResultado.evaluate((b) => b === document.activeElement),
+      true,
+      'o foco do resultado não está em Entrar na sala do alto',
+    )
+    await resultado.getByRole('button', { name: 'Continuar' }).click()
+    await resultado.waitFor({ state: 'detached', timeout: 30_000 })
+    await p.getByText(ROTULO_DA_VARANDA).first().waitFor({ timeout: 60_000 })
+    await p.screenshot({ path: path.join(prints, `varanda-entrada-${tela.width}.png`) })
+    await usar()
     await p.getByText('Ler a última página').first().waitFor({ timeout: 180_000 })
     const naSala = await posicao()
     assert(naSala.y > 30, `não chegou à sala do alto (y ${naSala.y.toFixed(1)})`)

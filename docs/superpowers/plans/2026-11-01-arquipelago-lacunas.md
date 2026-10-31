@@ -1,0 +1,29 @@
+# Arquipélago: as lacunas do levantamento de 31/10
+
+Origem: [levantamento de 31/10](../../arquipelago-levantamento-proposta-v3-2026-10-31.md). A dona
+pediu em 01/11/2026: "Resolva e implemente as lacunas". Quando a proposta e uma decisão registrada
+divergem, vale a proposta.
+
+Decisões da dona (01/11/2026):
+
+- **Desfazer:**
+  - quadros que dão cor (§7.11.1 e A43);
+  - ilhas e Íris (N15, §6.27 e §6.28.13);
+  - casa (§6.16.2a e objetos com função só no térreo);
+  - cartões dos Lumis por bloco (27/10) e publicação dentro da imagem do serviço (A11).
+- **Entram os desafios 3D;** os cursos-base da Jornada ficam para a produção de cursos.
+- **O que pede arte nova** vira pedido para a sessão com Blender.
+- **O teto do salvamento sobe para 80 KB.**
+
+Cada lote segue o mesmo caminho:
+
+- ramo `arquipelago/lacunas-<lote>`;
+- testes dirigidos, Biome e revisão do diff;
+- commit e merge `--no-ff` no `staging` local.
+
+## Registro
+
+| Lote | Situação | Commit | Notas |
+| --- | --- | --- | --- |
+| L1 | Feito | `9147f387d` (merge `6d2d8a3b6`) | O cenário cheio deixava de fora a horta com os 24 canteiros, os bichos, a posição, as necessidades com dízima e as pontes vistas. Com eles, o pior caso dava 67.588 bytes, acima dos 64 KB. `SALVAMENTO_MAX_BYTES` foi para 80 KB; o corpo da chamada já vai até 96 KB no gateway, no BFF e no serviço. Folga medida: 14,3 KB com o catálogo a 999. Testes: contratos 264 e salvamento do jogo |
+| L2a | Feito | (este lote) | Subida do Farol. A largada pede o planador (`exige` na `ConfigDoPercurso`, conferido na largada e antes do "Correr de novo", sem o corte à toa). Sem ele, o Zappy diz que o último trecho é o vento, que o Floco dá o planador no festival do Pico e que a escada de dentro leva à sala. A varanda tem a própria entrada "Entrar na sala do alto" (o mesmo `entrar` da porta de baixo). No resultado, o botão só aparece com a chegada e recebe o foco. Testes: `subida-do-farol-no-jogo` (planador e demais percursos sem exigência), `subida-do-farol` e `final-do-farol` (27). Tipagem do jogo ok. Navegador (`verificar-subida-ate-o-final-browser.ts`, computador e celular emulado): sem planador não começa; com ele, foco em Entrar, Continuar fecha e a varanda leva à sala do alto (y 41,1) |
