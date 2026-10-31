@@ -58,6 +58,9 @@ const CENTRO = { x: 0, z: 0 }
 /** O corte existente dura 600 ms. A troca acontece no meio opaco. */
 const MEIO_DO_CORTE = 0.3
 
+/** O rótulo da porta de baixo: o caminho direto (a subida por fora é a outra forma de chegar). */
+export const ROTULO_DA_PORTA_DO_FAROL = 'Subir pela escada de dentro'
+
 export function FinalDoFarol() {
   const { loja, pedidos, rastro, plataforma } = useJogo()
   const farol = lojaDoFarol(loja)
@@ -94,8 +97,21 @@ export function FinalDoFarol() {
       loja.getState().abrirPainel(null)
     })
   }, [cortar, farol, loja, pedidos])
+  /** Entra na sala do alto: pela porta de baixo ou pela chegada da subida por fora (N4). */
+  const entrar = useCallback((): boolean => {
+    if (farol.getState().etapa !== 'fora' || farol.getState().corte !== null) return false
+    const s = loja.getState()
+    if (!podeSubirOFarol(s.jornada, s.visita !== null)) {
+      s.dizer(voz.farolFechado)
+      return false
+    }
+    farol.setState({ etapa: 'carregando', menosMovimento: aparelho || preferencia })
+    s.abrirPainel(PAINEL_DO_FINAL)
+    return true
+  }, [farol, loja, voz, aparelho, preferencia])
   useEffect(() => {
     farol.setState({
+      entrar,
       sair,
       mostrarLuz: () =>
         cortar(() => {
@@ -106,9 +122,9 @@ export function FinalDoFarol() {
         }),
     })
     return () => {
-      farol.setState({ sair: null, mostrarLuz: null })
+      farol.setState({ sair: null, mostrarLuz: null, entrar: null })
     }
-  }, [farol, sair, cortar, loja])
+  }, [farol, sair, cortar, loja, entrar])
   useInterativo('porta-do-farol', {
     ...PORTA_DO_FINAL,
     raio: 2,
@@ -118,19 +134,11 @@ export function FinalDoFarol() {
       Math.abs(rastro.y - VOLTA_DO_FAROL.y) < 2 &&
       !loja.getState().visita
         ? podeSubirOFarol(loja.getState().jornada)
-          ? 'Subir o Farol'
+          ? ROTULO_DA_PORTA_DO_FAROL
           : 'Ler o recado do Farol'
         : null,
-    agir: () => {
-      if (farol.getState().etapa !== 'fora' || farol.getState().corte !== null) return
-      const s = loja.getState()
-      if (!podeSubirOFarol(s.jornada, s.visita !== null)) {
-        s.dizer(voz.farolFechado)
-        return
-      }
-      farol.setState({ etapa: 'carregando', menosMovimento: aparelho || preferencia })
-      s.abrirPainel(PAINEL_DO_FINAL)
-    },
+    // A porta é o caminho direto; a subida por fora chega ao mesmo lugar pelo resultado dela.
+    agir: () => void entrar(),
   })
   const dentro = etapa !== 'fora'
   useEffect(() => {

@@ -155,7 +155,7 @@ function FarolDoModelo({ aceso, mostrarFacho }: { aceso: boolean; mostrarFacho: 
   useFrame((_, dt) => {
     const s = loja.getState()
     if (!jogoPausado(s) && document.visibilityState === 'visible') {
-      // Com a Lenda aberta, a porta abre quando a criança chega perto (o "Subir o Farol" está ali).
+      // Com a Lenda aberta, a porta abre quando a criança chega perto (o "Subir pela escada de dentro" está ali).
       const perto =
         podeSubirOFarol(s.jornada, s.visita !== null) &&
         Math.hypot(rastro.x - PORTA_DO_FINAL.x, rastro.z - PORTA_DO_FINAL.z) < PERTO_DA_PORTA

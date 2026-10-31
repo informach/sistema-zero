@@ -13,6 +13,11 @@ export interface EstadoDoFarol {
   /** Callback instalado pelo mundo, para UI e Escape usarem a mesma saída. */
   sair: (() => void) | null
   mostrarLuz: (() => void) | null
+  /**
+   * Entrar na sala do alto (N4, 31/10/2026): a porta de baixo e a chegada da subida por fora levam
+   * ao mesmo lugar. Devolve se a entrada começou.
+   */
+  entrar: (() => boolean) | null
 }
 function criar() {
   return createStore<EstadoDoFarol>(() => ({
@@ -24,6 +29,7 @@ function criar() {
     menosMovimento: false,
     sair: null,
     mostrarLuz: null,
+    entrar: null,
   }))
 }
 const lojas = new WeakMap<LojaDoJogo, ReturnType<typeof criar>>()

@@ -171,7 +171,7 @@ try {
     if (process.env.ARQUIPELAGO_SO_PRIORIDADE !== '1') {
       await page.goto(`${baseURL}/?novo=1&posicao=8&em=-9.2,-10.9,2.2`)
       await pularChegadas(page)
-      await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+      await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
       // Perto da porta, com a Lenda aberta, a porta do farol abre na dobradiça.
       await page.waitForTimeout(1500)
       const pendenciasAntes = await page.locator('.arq-agora li').allTextContents()
@@ -332,7 +332,7 @@ try {
       const memoriaAntes = await lerEstavel()
       // Reentrar e sair com Esc não repete a revelação nem deixa a câmera presa.
       await levar(-9.2, 2.2, -10.9)
-      await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+      await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
       await usar()
       await etapa('sala')
       await page.keyboard.press('Escape')
@@ -346,7 +346,7 @@ try {
       const ciclos = [memoriaDepois]
       for (let ciclo = 0; ciclo < 3; ciclo++) {
         await levar(-9.2, 2.2, -10.9)
-        await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+        await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
         await usar()
         await etapa('sala')
         await page.locator('.arq-corte').waitFor({ state: 'detached' })
@@ -378,7 +378,7 @@ try {
         await page.route('**/*alto-do-farol*.glb', (route) =>
           route.fulfill({ status: 503, body: '' }),
         )
-        await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+        await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
         await usar()
         await page
           .getByText('A sala não abriu agora. Você pode tentar de novo na porta.', { exact: true })
@@ -428,7 +428,7 @@ try {
     const marcaAntes = await page.evaluate(() =>
       localStorage.getItem('arquipelago:passos:kids:perfil-de-teste'),
     )
-    await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+    await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
     await usar()
     await etapa('sala')
     await page.locator('.arq-corte').waitFor({ state: 'detached' })
@@ -460,7 +460,7 @@ try {
     await prepararPagina()
     await page.goto(`${baseURL}/?novo=1&publico=adulto&posicao=8&em=-9.2,-10.9,2.2`)
     await pularChegadas(page)
-    await page.locator('.arq-acao').filter({ hasText: 'Subir o Farol' }).waitFor()
+    await page.locator('.arq-acao').filter({ hasText: 'Subir pela escada de dentro' }).waitFor()
     await usar()
     await etapa('sala')
     await page.locator('.arq-corte').waitFor({ state: 'detached' })

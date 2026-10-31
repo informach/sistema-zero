@@ -755,6 +755,8 @@ function Cronometro() {
 function Resultado() {
   const { loja, movimento, plataforma } = useJogo()
   const r = useEstado((s) => s.resultado)
+  // Antes do `return` sem resultado: os hooks rodam sempre na mesma ordem.
+  const entrarNaSala = useFarol(loja, (f) => f.entrar)
   const continuar = useRef<HTMLButtonElement>(null)
   useEffect(() => {
     if (r) continuar.current?.focus()
@@ -825,9 +827,24 @@ function Resultado() {
         {plataforma.publico === 'kids' ? <RecordesDaFamilia percurso={r.percurso} /> : null}
         <EnvioDoFantasma />
         <div className="arq-menu-acoes">
+          {/* No alto da subida por fora, o caminho segue para a sala do Farol (N4). */}
+          {r.percurso === 'farol-subida' && entrarNaSala ? (
+            <button
+              type="button"
+              className="arq-botao"
+              onClick={() => {
+                fechar()
+                entrarNaSala()
+              }}
+            >
+              Entrar na sala do alto
+            </button>
+          ) : null}
           <button
             type="button"
-            className="arq-botao"
+            className={
+              r.percurso === 'farol-subida' && entrarNaSala ? 'arq-botao leve' : 'arq-botao'
+            }
             onClick={() => {
               movimento.pedidoDoPercurso = { acao: 'recomecar', percurso: r.percurso }
             }}
