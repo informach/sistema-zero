@@ -147,8 +147,11 @@ def parede_porta(familia, altura=H):
     # Soleira: 3 cm acima do piso, 2 cm dentro de cada batente.
     p.append(sem_fundo(caixa(-meio - 0.02 + 0.06, meio + 0.02 - 0.06, -0.15, 0.15, Z0, 0.03, 'batente', bevel=0.01)))
     if lambri:
-        # Degrau de pedra por fora (topo 5 cm acima do piso) e cornija em cima do batente.
-        p.append(sem_fundo(caixa(-1.25, 1.25, -0.5, -0.13, -0.3, 0.05, 'alicerce', bevel=0.03)))
+        # Degrau de pedra por fora e cornija em cima do batente. O topo do degrau fica 3,5 cm acima do
+        # piso: a 5 cm ficava no plano do tampo do deque da varanda da casa (`arte/mundo/casa.py`), que
+        # continua na casa construída, e a porta principal piscava embaixo. A 3,5 fica 1,5 cm abaixo
+        # do deque e 5 mm longe das duas soleiras (a do kit a 3 cm, a da casa a 4 cm).
+        p.append(sem_fundo(caixa(-1.25, 1.25, -0.5, -0.13, -0.3, 0.035, 'alicerce', bevel=0.03)))
         if altura == H:
             p.append(caixa(-1.38, 1.38, -0.22, -0.08, 3.12, 3.3, 'acabamento', bevel=0.02))
     return p
