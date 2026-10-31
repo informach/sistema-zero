@@ -66,14 +66,8 @@
       "fase": "atracado",
       "distancia": 0,
       "comprimento": 680.3725640445855,
-      "prontos": [
-        true,
-        false
-      ],
-      "itinerario": [
-        "sua-ilha",
-        "recife"
-      ],
+      "prontos": [true, false],
+      "itinerario": ["sua-ilha", "recife"],
       "devolvendo": false,
       "visual": {
         "x": -2.4316497174703575,
@@ -94,12 +88,8 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [
-        0
-      ],
-      "buzio": [
-        0
-      ]
+      "estrelinha": [0],
+      "buzio": [0]
     },
     "qualidade": "leve",
     "metaDeQuadros": 60,
@@ -319,14 +309,8 @@
       "fase": "atracado",
       "distancia": 0,
       "comprimento": 680.3725640445855,
-      "prontos": [
-        true,
-        false
-      ],
-      "itinerario": [
-        "sua-ilha",
-        "recife"
-      ],
+      "prontos": [true, false],
+      "itinerario": ["sua-ilha", "recife"],
       "devolvendo": false,
       "visual": {
         "x": -2.3991469114837765,
@@ -347,12 +331,8 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [
-        0
-      ],
-      "buzio": [
-        0
-      ]
+      "estrelinha": [0],
+      "buzio": [0]
     },
     "qualidade": "leve",
     "metaDeQuadros": 60,
@@ -572,14 +552,8 @@
       "fase": "atracado",
       "distancia": 0,
       "comprimento": 680.3725640445855,
-      "prontos": [
-        true,
-        false
-      ],
-      "itinerario": [
-        "sua-ilha",
-        "recife"
-      ],
+      "prontos": [true, false],
+      "itinerario": ["sua-ilha", "recife"],
       "devolvendo": false,
       "visual": {
         "x": -2.386536360562003,
@@ -600,12 +574,8 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [
-        0
-      ],
-      "buzio": [
-        0
-      ]
+      "estrelinha": [0],
+      "buzio": [0]
     },
     "qualidade": "leve",
     "metaDeQuadros": 60,
@@ -825,14 +795,8 @@
       "fase": "atracado",
       "distancia": 0,
       "comprimento": 680.3725640445855,
-      "prontos": [
-        true,
-        false
-      ],
-      "itinerario": [
-        "sua-ilha",
-        "recife"
-      ],
+      "prontos": [true, false],
+      "itinerario": ["sua-ilha", "recife"],
       "devolvendo": false,
       "visual": {
         "x": -2.4346907630294305,
@@ -853,12 +817,8 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [
-        0
-      ],
-      "buzio": [
-        0
-      ]
+      "estrelinha": [0],
+      "buzio": [0]
     },
     "qualidade": "leve",
     "metaDeQuadros": 60,
@@ -1078,14 +1038,8 @@
       "fase": "atracado",
       "distancia": 0,
       "comprimento": 680.3725640445855,
-      "prontos": [
-        true,
-        false
-      ],
-      "itinerario": [
-        "sua-ilha",
-        "recife"
-      ],
+      "prontos": [true, false],
+      "itinerario": ["sua-ilha", "recife"],
       "devolvendo": false,
       "visual": {
         "x": -2.365676633592183,
@@ -1106,12 +1060,8 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [
-        0
-      ],
-      "buzio": [
-        0
-      ]
+      "estrelinha": [0],
+      "buzio": [0]
     },
     "qualidade": "leve",
     "metaDeQuadros": 60,
@@ -1331,14 +1281,8 @@
       "fase": "atracado",
       "distancia": 0,
       "comprimento": 680.3725640445855,
-      "prontos": [
-        true,
-        false
-      ],
-      "itinerario": [
-        "sua-ilha",
-        "recife"
-      ],
+      "prontos": [true, false],
+      "itinerario": ["sua-ilha", "recife"],
       "devolvendo": false,
       "visual": {
         "x": -2.4348469060419102,
@@ -1359,12 +1303,8 @@
       "escalaDoFogo": []
     },
     "luzesDosLumis": {
-      "estrelinha": [
-        0
-      ],
-      "buzio": [
-        0
-      ]
+      "estrelinha": [0],
+      "buzio": [0]
     },
     "qualidade": "leve",
     "metaDeQuadros": 60,
