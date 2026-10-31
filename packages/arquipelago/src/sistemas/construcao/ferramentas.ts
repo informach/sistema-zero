@@ -8,6 +8,7 @@ import type {
   Salvamento,
   TipoDeAbertura,
 } from '@sistemazero/arquipelago-contracts'
+import { celulasDaEscada, escadaNoTerreo } from './andar'
 import { planta } from './comodos'
 import { celulasDoRetangulo, entradaDaObra, ladoDeFora, retanguloDaVaranda } from './entrada'
 import {
@@ -73,6 +74,8 @@ export type Ferramenta =
   | 'apagar'
   /** Moldar o chão do lote da casa (Nuvens em diante): não mexe na obra, e sim no terreno. */
   | 'terreno'
+  /** A escada do andar de cima (Pico em diante): um toque põe o pé dela; o Girar escolhe o rumo. */
+  | 'escada'
 
 export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
 
@@ -185,6 +188,18 @@ export function toque(
   projetos: Salvamento['projetos'] = {},
 ): { resultado: Resultado | null; previa: Previa; entrada?: MudancaNaEntrada } {
   const celula = celulaEm(onde.x, onde.z)
+  // A escada não é obra do térreo: a cena manda o pé para a loja do Construir (`porAEscada`).
+  if (f === 'escada') {
+    const escada = { x: celula.x, z: celula.z, giro: escolhas.giro }
+    return {
+      resultado: null,
+      previa: {
+        tipo: 'celulas',
+        celulas: celulasDaEscada(escada),
+        ok: escadaNoTerreo(escada, obra, lote) === null,
+      },
+    }
+  }
   if (f === 'piso') {
     const p = planta(obra, lote)
     const i = p.comodoDe.get(chaveDaCelula(celula))

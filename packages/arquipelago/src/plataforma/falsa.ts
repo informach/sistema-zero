@@ -43,8 +43,10 @@ import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
 import {
   obraDeExemplo,
+  obraDeExemploComAndar,
   obraDeExemploComEntrada,
   obraDeExemploComFundo,
+  obraEstendidaDeExemplo,
   PROJETOS_DE_EXEMPLO,
 } from './obra-de-exemplo'
 import { CHAVE_DA_OBRA_ESTENDIDA_FALSA, criarObraEstendidaFalsa } from './obra-estendida-falsa'
@@ -95,7 +97,7 @@ export interface OpcoesDaPlataformaFalsa {
    * `fundo`: a mesma, com um cômodo atrás do quarto e a porta no fundo dele; `entrada`: a mesma, com a
    * porta de entrada (e a varanda) na frente do cômodo da frente do quarto.
    */
-  obra?: 'exemplo' | 'fundo' | 'entrada'
+  obra?: 'exemplo' | 'fundo' | 'entrada' | 'andar'
   /** `exemplo`: um minijogo aprovado e um jogo do Mural nas listas (`?jogos=exemplo`, galeria do Farol). */
   jogos?: 'exemplo'
   /** Casa arrumada e moradores conhecidos, apenas para a conferência local. */
@@ -253,6 +255,7 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
   })
   const obraEstendida = criarObraEstendidaFalsa({
     somenteLeitura: () => o.somenteLeitura === true,
+    inicial: o.obra === 'andar' ? obraEstendidaDeExemplo() : undefined,
     persistencia:
       o.persistir && typeof localStorage !== 'undefined'
         ? {
@@ -372,7 +375,9 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ? obraDeExemploComFundo()
         : o.obra === 'entrada'
           ? obraDeExemploComEntrada()
-          : obraDeExemplo()
+          : o.obra === 'andar'
+            ? obraDeExemploComAndar()
+            : obraDeExemplo()
     const atual =
       migrarSalvamento(guardado.salvamento) ??
       criarSalvamentoInicial(new Date(agora().getTime() - (o.adiantarMinutos ?? 0) * 60_000))

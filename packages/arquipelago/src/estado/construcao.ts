@@ -1,4 +1,5 @@
 import {
+  type AndarDeCima,
   BIT_DO_COMODO,
   COMODOS_DA_IRIS,
   type ComodoDaIris,
@@ -21,6 +22,16 @@ import {
   liberado,
   recadoDaTranca,
 } from '../sistemas/chaves-da-casa'
+import {
+  andarDaObra,
+  conferirAndar,
+  FALA_DO_ANDAR,
+  obraDeCima,
+  podeTerAndar,
+  porEscada,
+  type RecusaDoAndar,
+  tirarEscada,
+} from '../sistemas/construcao/andar'
 import { falaDaRecusa, falaDoAviso } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
 import {
@@ -102,6 +113,30 @@ export interface FonteDoTerreno {
   gravar(terreno: Terreno | null): void
 }
 
+/** Onde mora o andar de cima da casa (o documento à parte do serviço). */
+export interface FonteDoAndar {
+  ler(): AndarDeCima | null
+  gravar(andar: AndarDeCima | null): void
+}
+
+/** Em que andar da casa o Construir mexe. */
+export type CamadaDaObra = 'chao' | 'cima'
+
+/** A fala de uma recusa do andar quando é o térreo que mudou (a obra de baixo quebraria a de cima). */
+function falaDoTerreoNoAndar(r: RecusaDoAndar): string {
+  return FALA_DO_ANDAR[r === 'com-coisa' || r === 'parede-no-meio' ? r : 'quebra-o-andar']
+}
+
+/** As ferramentas que valem lá em cima. */
+const FERRAMENTAS_DE_CIMA: readonly Ferramenta[] = [
+  'olhar',
+  'parede',
+  'porta',
+  'janela',
+  'piso',
+  'apagar',
+]
+
 /** A cabana da ilha ativa (registrada por ela) e se a pessoa está no lote ou perto dele. */
 export interface CabanaAoAlcance {
   lote: Lote
@@ -167,6 +202,18 @@ export interface EstadoDaConstrucao {
   /** A casa registra onde mora o terreno (e solta, com `null`). */
   fonteDoTerreno: FonteDoTerreno | null
   registrarTerreno(f: FonteDoTerreno | null): void
+  /** O térreo ou o andar de cima (Pico em diante, com a escada posta). */
+  camada: CamadaDaObra
+  escolherCamada(c: CamadaDaObra): void
+  /** A casa registra onde mora o andar de cima (e solta, com `null`). */
+  fonteDoAndar: FonteDoAndar | null
+  registrarAndar(f: FonteDoAndar | null): void
+  /** Os andares de antes (o Desfazer lá em cima e o da Escada). */
+  antesDoAndar: (AndarDeCima | null)[]
+  /** Põe a escada com o pé na célula (o giro é o do Girar). */
+  porAEscada(pe: Celula): boolean
+  /** Tira a escada (e o andar, que fica vazio). */
+  tirarAEscada(): boolean
   /** Os terrenos de antes (o Desfazer do Terreno, à parte do da obra). */
   antesDoTerreno: (Terreno | null)[]
   /** Sobe ou desce as células no lote da casa (ou faz o Zappy explicar por que não dá). */
@@ -281,6 +328,53 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     escolherMoldar: (moldar) => set({ moldar, ferramenta: 'terreno', aconchegoAberto: false }),
     fonteDoTerreno: null,
     registrarTerreno: (fonteDoTerreno) => set({ fonteDoTerreno }),
+    camada: 'chao',
+    escolherCamada: (camada) => {
+      if (get().camada === camada) return
+      // Lá em cima não há quintal, objeto, móvel, terreno nem escada: a ferramenta volta à Parede.
+      const f = get().ferramenta
+      set({
+        camada,
+        ferramenta: camada === 'cima' && !FERRAMENTAS_DE_CIMA.includes(f) ? 'parede' : f,
+        aconchegoAberto: false,
+        motivoDaPrevia: null,
+        entradaSelecionada: false,
+      })
+    },
+    fonteDoAndar: null,
+    registrarAndar: (fonteDoAndar) => set({ fonteDoAndar }),
+    antesDoAndar: [],
+    porAEscada(pe) {
+      const jogo = loja.getState()
+      const fonte = get().fonteDoAndar
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return false
+      if (!fonte || get().onde !== 'casa' || !podeTerAndar(jogo.jornada)) return false
+      const obra = jogo.salvamento.construcao.casa
+      if (!obra) return false
+      const antes = fonte.ler()
+      const r = porEscada(antes, obra, loteDaCasa(jogo.jornada), pe, get().giro)
+      if (!r.ok) {
+        jogo.dizer(FALA_DO_ANDAR[r.motivo])
+        return false
+      }
+      set({ antesDoAndar: [...get().antesDoAndar, antes].slice(-LEMBRA_PARA_TRAS) })
+      fonte.gravar(r.andar)
+      return true
+    },
+    tirarAEscada() {
+      const jogo = loja.getState()
+      const fonte = get().fonteDoAndar
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR || !fonte) return false
+      const antes = fonte.ler()
+      const r = tirarEscada(antes)
+      if (!r.ok) {
+        jogo.dizer(FALA_DO_ANDAR[r.motivo])
+        return false
+      }
+      set({ antesDoAndar: [...get().antesDoAndar, antes].slice(-LEMBRA_PARA_TRAS) })
+      fonte.gravar(r.andar)
+      return true
+    },
     antesDoTerreno: [],
     moldarTerreno(celulas) {
       const jogo = loja.getState()
@@ -341,6 +435,42 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       }
       const onde = get().onde
       const cabana = get().cabana
+      const fonteDoAndar = onde === 'casa' ? get().fonteDoAndar : null
+      if (get().camada === 'cima' && onde === 'casa') {
+        // Lá em cima: a obra que chega é a de cima (`obraDeCima`), gravada no andar.
+        const antesDoAndar = fonteDoAndar?.ler() ?? null
+        const casa = jogo.salvamento.construcao.casa
+        if (!fonteDoAndar || !antesDoAndar?.escada || !casa) {
+          jogo.dizer(FALA_DO_ANDAR['sem-escada'])
+          return false
+        }
+        const novasEmCima =
+          chavesUsadasNaObra(r.obra) &
+          ~chavesUsadasNaObra(obraDeCima(antesDoAndar)) &
+          ~jogo.salvamento.chaves
+        const trancadoEmCima = COMODOS_DA_IRIS.find((c) => (novasEmCima & BIT_DO_COMODO[c]) !== 0)
+        if (trancadoEmCima) {
+          jogo.dizer(recadoDaTranca(trancadoEmCima))
+          return false
+        }
+        const novo = andarDaObra(r.obra, antesDoAndar.escada)
+        const recusa = conferirAndar(novo, casa, loteDaCasa(jogo.jornada))
+        if (recusa) {
+          jogo.dizer(FALA_DO_ANDAR[recusa])
+          return false
+        }
+        set({ antesDoAndar: [...get().antesDoAndar, antesDoAndar].slice(-LEMBRA_PARA_TRAS) })
+        fonteDoAndar.gravar(novo)
+        if (r.aviso) jogo.dizer(falaDoAviso(r.aviso))
+        return true
+      }
+      // No térreo, a mudança não pode tirar o chão do andar de cima.
+      const andar = fonteDoAndar?.ler() ?? null
+      const quebra = andar?.escada ? conferirAndar(andar, r.obra, loteDaCasa(jogo.jornada)) : null
+      if (quebra) {
+        jogo.dizer(falaDoTerreoNoAndar(quebra))
+        return false
+      }
       const atual = obraDe(loja.getState(), onde, cabana)
       // Nada trancado entra na obra (N11): só o que a chave abriu ou o que a obra já usava.
       const novas =
@@ -366,6 +496,15 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         const fonte = get().fonteDoTerreno
         if (!fonte || lista.length === 0) return
         set({ antesDoTerreno: lista.slice(0, -1) })
+        fonte.gravar(lista.at(-1) ?? null)
+        return
+      }
+      // Lá em cima e com a Escada na mão, o Desfazer volta o andar.
+      if (get().camada === 'cima' || get().ferramenta === 'escada') {
+        const lista = get().antesDoAndar
+        const fonte = get().fonteDoAndar
+        if (!fonte || lista.length === 0) return
+        set({ antesDoAndar: lista.slice(0, -1) })
         fonte.gravar(lista.at(-1) ?? null)
         return
       }
@@ -401,13 +540,22 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         entradaSelecionada: false,
         antes: [],
         antesDoTerreno: [],
+        antesDoAndar: [],
+        camada: 'chao',
         camera: { ...get().camera, alvo: alvoAoAbrir(onde, cabana), giro: 0 },
       })
       s.abrirMenu(false)
       s.abrirPainel(PAINEL_DE_CONSTRUIR)
     },
     fechar() {
-      set({ antes: [], antesDoTerreno: [], motivoDaPrevia: null, entradaSelecionada: false })
+      set({
+        antes: [],
+        antesDoTerreno: [],
+        antesDoAndar: [],
+        camada: 'chao',
+        motivoDaPrevia: null,
+        entradaSelecionada: false,
+      })
       ultimaObra = null
       if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) loja.getState().abrirPainel(null)
     },

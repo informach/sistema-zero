@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { BufferGeometry, Float32BufferAttribute, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import { CAMERA_DE_OBRA, lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
+import { naEscada } from '../sistemas/construcao/andar'
 import { planta } from '../sistemas/construcao/comodos'
 import {
   celulasDoRetangulo,
@@ -360,6 +361,17 @@ export function ModoConstruir({
         if (onde) s.observarComodo(celulaEm(onde.x, onde.z))
       } else if (g.tipo === 'arrasto' && ferramenta === 'terreno') {
         s.moldarTerreno(celulasDoTerreno(o, lote, g.inicio, g.fim).celulas)
+      } else if (
+        g.tipo === 'arrasto' &&
+        ferramenta === 'apagar' &&
+        !g.andou &&
+        s.camada === 'chao' &&
+        naEscada(s.fonteDoAndar?.ler() ?? null, celulaEm(g.inicio.x, g.inicio.z))
+      ) {
+        // Um toque do Apagar na escada tira a escada (com o andar de cima vazio).
+        s.tirarAEscada()
+      } else if (g.tipo === 'toque' && ferramenta === 'escada') {
+        s.porAEscada(celulaEm(g.onde.x, g.onde.z))
       } else if (g.tipo === 'arrasto') {
         const f = ferramenta
         // Sem arrastar: o apagar tira o que está ali; o caminho pinta uma célula.

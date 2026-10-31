@@ -22,7 +22,15 @@ import { type Celula, chaveDaCelula, type ParedeDoMeuQuarto } from './lote'
  * parede de eixo x com o dentro em -z gira 0 e com o dentro em +z gira meia volta; de eixo z, com o
  * dentro em -x gira +90° e com o dentro em +x, -90°.
  */
-export type ArquivoDoKit = 'paredes' | 'portas' | 'pisos' | 'telhado' | 'varanda'
+export type ArquivoDoKit =
+  | 'paredes'
+  | 'portas'
+  | 'pisos'
+  | 'telhado'
+  | 'varanda'
+  /** O andar de cima (E04): pisos de cima, escada, vão e guarda-corpo, e as paredes de cima. */
+  | 'andar'
+  | 'paredes-andar'
 
 export interface PecaDoKit {
   /** Identidade estável da peça (a mesma peça no mesmo lugar não é recriada). */

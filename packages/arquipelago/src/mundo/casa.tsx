@@ -17,11 +17,19 @@ import { lojaDoConforto, useConforto } from '../estado/conforto'
 import { lojaDaConstrucao, PAINEL_DE_CONSTRUIR, useConstrucao } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
 import { quemAcompanha } from '../sistemas/companhia'
+import {
+  ALTURA_DO_ANDAR,
+  loteDeCima,
+  obraDeCima,
+  plantaDeCima,
+  vaoNaParede,
+} from '../sistemas/construcao/andar'
 import { comPenduradosDoQuarto, loteDaCasa } from '../sistemas/construcao/lote'
 import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
 import { FALA_DE_DEITAR, lugarNaCama } from '../sistemas/descanso'
 import { jogoPausado } from '../sistemas/pausa'
 import { obraVisivel, quartoVisivel } from '../sistemas/visitas'
+import { AndarNoConstruir, EscadaDaCasa, useAndarDaCasa } from './andar-de-cima'
 import { colisoresDaCasa, GIRO_DA_PORTA_ABERTA } from './colisao-da-ilha-central'
 import { Colisores } from './colisores'
 import { ModoConstruir } from './construir'
@@ -272,12 +280,13 @@ function PortaDoModelo({ aberta }: { aberta: boolean }) {
  * são do kit (`ObraNoMundo`), com as quinas, o alicerce e a soleira, e daqui fica só o telhado: a
  * varanda e o toldo vão com a porta de entrada, pelo kit (31/10/2026).
  */
-function Casca({ construida }: { construida: boolean }) {
-  // No Construir e com a pessoa num cômodo da obra o telhado do quarto sai, como no quarto.
+function Casca({ construida, comAndar }: { construida: boolean; comAndar: boolean }) {
+  // No Construir e com a pessoa num cômodo da obra o telhado do quarto sai, como no quarto. Com o
+  // andar de cima (E04) ele não aparece: o piso de cima é o teto.
   const { loja } = useJogo()
   const naObra = useConstrucao(lojaDaConstrucao(loja), (s) => s.dentroDaObra)
   const dentro =
-    useEstado((s) => s.dentroDeCasa || s.painelAberto === PAINEL_DE_CONSTRUIR) || naObra
+    useEstado((s) => s.dentroDeCasa || s.painelAberto === PAINEL_DE_CONSTRUIR) || naObra || comAndar
   const aberta = useEstado((s) => s.salvamento.casa.portaNova)
   const colisores = useMemo(() => colisoresDaCasa(aberta, construida), [aberta, construida])
   return (
@@ -445,11 +454,25 @@ export function Casa() {
   // O Construir aberto mexe na casa ou na cabana da ilha (`onde`).
   const aqui = useConstrucao(lojaDaConstrucao(loja), (s) => s.onde === 'casa')
   const construindo = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR) && aqui
+  // O andar de cima (E04, Pico em diante), do documento à parte do serviço.
+  const andar = useAndarDaCasa(lote)
+  const emCima = useConstrucao(lojaDaConstrucao(loja), (s) => s.camada === 'cima') && !!andar
+  const doAndar = useMemo(
+    () =>
+      andar
+        ? {
+            obra: obraDeCima(andar),
+            lote: loteDeCima(lote),
+            naParede: vaoNaParede(andar, plantaDeCima(andar, lote)),
+          }
+        : null,
+    [andar, lote],
+  )
   return (
     <>
       <group position={[CENTRO_DA_CASA.x, BASE, CENTRO_DA_CASA.z]}>
         <Quarto quarto={quarto} construida={obra !== null} construindo={construindo} />
-        <Casca construida={obra !== null} />
+        <Casca construida={obra !== null} comAndar={andar !== null} />
         {obra ? null : <Porta />}
         <Cama quarto={quarto} />
         <RigidBody type="fixed" colliders={false}>
@@ -463,11 +486,24 @@ export function Casa() {
           base={BASE_DA_OBRA}
           construindo={construindo}
           coresDoMeuQuarto={cores}
+          andar={andar}
         />
+      ) : null}
+      {obra && andar?.escada && doAndar ? (
+        <ComReserva reserva={null}>
+          <EscadaDaCasa escada={andar.escada} naParede={doAndar.naParede} base={BASE_DA_OBRA} />
+        </ComReserva>
       ) : null}
       {obra ? <ObjetosDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
       {obra ? <MoveisDaObra obra={obra} base={BASE_DA_OBRA} /> : null}
-      {obra && construindo ? <ModoConstruir lote={lote} obra={obra} base={BASE} /> : null}
+      {obra && construindo && !(emCima && doAndar) ? (
+        <ModoConstruir lote={lote} obra={obra} base={BASE} />
+      ) : null}
+      {/* Lá em cima: a obra de cima, no lote de cima, na altura do piso de cima. */}
+      {obra && construindo && emCima && doAndar ? (
+        <ModoConstruir lote={doAndar.lote} obra={doAndar.obra} base={BASE + ALTURA_DO_ANDAR} />
+      ) : null}
+      <AndarNoConstruir />
       <GanharProjetos />
     </>
   )

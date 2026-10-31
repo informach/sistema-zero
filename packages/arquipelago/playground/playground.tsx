@@ -35,7 +35,9 @@ import { abrirOficinaDeExemplo } from './oficina-de-aparencia'
  * `?convidados=1` prepara uma casa aconchegante e os moradores conhecidos para visitas.
  * `?obra=exemplo` começa a casa com a obra de exemplo do modo construção; `?obra=fundo`, a mesma com
  * um cômodo atrás do quarto e a porta no fundo dele; `?obra=entrada`, a mesma com a porta de entrada
- * (e a varanda) na frente do cômodo da frente do quarto.
+ * (e a varanda) na frente do cômodo da frente do quarto; `?obra=andar`, a mesma com uma sala à
+ * esquerda do quarto, o andar de cima com a escada nela e um morrinho no quintal (E04; com
+ * `?posicao=7` aparecem os dois).
  * `?pet=passaro` usa o passarinho do catálogo no quarto, para conferir movimento e pausa
  * (`?pet=cachorro`, o cachorro: o espaço dos bichos, 31/10/2026).
  * `?bichos=achados` começa com os quatro encontrados para receber o presente na conversa.
@@ -135,7 +137,7 @@ const plataforma = criarPlataformaFalsa({
   adiantarMinutos: Number(q.get('adiantar') ?? 0),
   cartas: (q.get('cartas') as CartasDoPlayground | null) ?? undefined,
   convidados: q.get('convidados') === '1',
-  obra: (['exemplo', 'fundo', 'entrada'] as const).find((v) => v === q.get('obra')),
+  obra: (['exemplo', 'fundo', 'entrada', 'andar'] as const).find((v) => v === q.get('obra')),
   jogos: q.get('jogos') === 'exemplo' ? 'exemplo' : undefined,
   bichos: q.get('bichos') === 'achados' ? 'achados' : undefined,
   adotado: q.get('adotado') === '1',

@@ -13,9 +13,13 @@ export const CHAVE_DA_OBRA_ESTENDIDA_FALSA = 'arquipelago-playground:obra-estend
  */
 export function criarObraEstendidaFalsa(deps: {
   somenteLeitura(): boolean
+  /** A obra com que o playground começa, se nada foi guardado (`?obra=andar`). */
+  inicial?: LeituraDaObraEstendida['obra']
   persistencia?: { ler(): string | null; gravar(dado: string): void }
 }) {
-  let guardada: LeituraDaObraEstendida = { revisao: 0, obra: null }
+  let guardada: LeituraDaObraEstendida = deps.inicial
+    ? { revisao: 1, obra: deps.inicial }
+    : { revisao: 0, obra: null }
   try {
     const bruto = deps.persistencia?.ler()
     const lida = bruto ? LeituraDaObraEstendidaSchema.safeParse(JSON.parse(bruto)) : null
