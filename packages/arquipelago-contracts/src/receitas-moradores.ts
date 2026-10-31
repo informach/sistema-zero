@@ -1,6 +1,6 @@
 import { AMIZADE_MAXIMA } from './salvamento'
 
-export type MoradorDoAnel = 'mare' | 'floco' | 'jade' | 'irie'
+export type MoradorDoAnel = 'mare' | 'floco' | 'jade' | 'irie' | 'nico'
 const coracoes = (amizade: number) => Math.min(AMIZADE_MAXIMA / 100, Math.floor(amizade / 100))
 
 /** Onde a receita se faz: a bancada da ilha (fogão e pia) ou o forno da casa (projeto azul). */

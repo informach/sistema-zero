@@ -26,6 +26,7 @@ import { DescobertasDaIlhaCentral } from './descoberta-da-ilha'
 import { EnquantoFechado } from './enquanto-fechado'
 import { FantasmaFamiliar } from './fantasma-familiar'
 import { Farol } from './farol'
+import { FilhoteQueAcompanha } from './filhote-que-acompanha'
 import { CameraDaFoto } from './foto'
 import { GuiaDoZappyNoMundo } from './guia-do-zappy'
 import { HabitantesDaPraia } from './habitantes-da-praia'
@@ -40,6 +41,7 @@ import {
 } from './medidas'
 import { Medidor } from './medidor'
 import { carregarModelos } from './modelos'
+import { Nico } from './nico'
 import { PetQueAcompanha } from './pet-que-acompanha'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
 import { RetratoDoAvatar } from './retrato-do-avatar'
@@ -103,6 +105,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <IlhaCentral />
           <DescobertasDaIlhaCentral />
           <HabitantesDaPraia />
+          <Nico />
           <ColecoesDaPraia />
           <ChavesDaCasa />
           <SegredoNoAlto segredo={SEGREDO_DA_SUA_ILHA} />
@@ -120,6 +123,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <RetratoDoAvatar />
           <BichoAdotado />
           <PetQueAcompanha />
+          <FilhoteQueAcompanha />
           <Camera />
           <Medidor />
         </Physics>

@@ -1,4 +1,4 @@
-import { PAINEL_DA_MARE, PAINEL_DO_FLOCO } from '../estado/moradores'
+import { PAINEL_DA_MARE, PAINEL_DO_FLOCO, PAINEL_DO_NICO } from '../estado/moradores'
 import { PainelDeAmizadeDoAnel } from './amizade-do-anel'
 
 /** Relação da Maré com a mesma conversa e câmera do mundo. */
@@ -9,4 +9,9 @@ export function PainelDaMare() {
 /** O Floco no palco do Pico Gelado (fase3-06), do mesmo jeito. */
 export function PainelDoFloco() {
   return <PainelDeAmizadeDoAnel quem="floco" painel={PAINEL_DO_FLOCO} />
+}
+
+/** O Nico, carteiro da praia da sua ilha (§6.28, A19), do mesmo jeito. */
+export function PainelDoNico() {
+  return <PainelDeAmizadeDoAnel quem="nico" painel={PAINEL_DO_NICO} />
 }

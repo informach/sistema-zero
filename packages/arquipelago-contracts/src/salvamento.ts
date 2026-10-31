@@ -3,6 +3,7 @@ import {
   BIT_DA_SEGREDO_MAXIMO,
   BIT_DO_COMODO,
   COMPANHIAS,
+  COMPANHIAS_ATE_V20,
   MAPAS_DAS_ILHAS,
   MapaDaIlhaSchema,
 } from './exploracao'
@@ -17,7 +18,7 @@ import { contarCartoes, LIMITES_DA_ROTINA, RotinaSchema } from './rotinas'
  * quem salvou antes. Mudou o formato? Crie a próxima versão, escreva a migração da anterior e
  * mantenha os testes.
  */
-export const VERSAO_SALVAMENTO = 20
+export const VERSAO_SALVAMENTO = 21
 
 const iso = z.iso.datetime({ offset: true })
 const nivel = z.number().min(0).max(100)
@@ -743,7 +744,8 @@ export const SalvamentoAteV16Schema = z.union([
   SalvamentoAteV14Schema.transform(migrarDaV14ParaV16),
 ])
 
-export const MORADORES_DO_ANEL = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie'] as const
+/** Os moradores do salvamento atual (o Nico, carteiro da sua ilha, desde a V21). */
+export const MORADORES_DO_ANEL = ['capi', 'bento', 'mare', 'floco', 'jade', 'irie', 'nico'] as const
 export const SalvamentoV17Schema = z
   .strictObject({
     ...SalvamentoV16Schema.shape,
@@ -794,8 +796,8 @@ export function migrarDaV17(s: SalvamentoV17): SalvamentoV18 {
 }
 
 /** Destino atual, sem atravessar o filtro de aparências da V15 histórica. */
-export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV20 {
-  return migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s)))))
+export function migrarDaV14ParaAtual(s: SalvamentoV14): SalvamentoV21 {
+  return migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(migrarDaV16(migrarDaV14ParaV16(s))))))
 }
 
 export const SalvamentoAteV18Schema = z.union([
@@ -821,7 +823,7 @@ export const SalvamentoV19Schema = z
       .min(0)
       .max(BIT_DA_SEGREDO_MAXIMO * 2 - 1),
     mapa: z.partialRecord(z.enum(MAPAS_DAS_ILHAS), MapaDaIlhaSchema),
-    companhia: z.enum(COMPANHIAS),
+    companhia: z.enum(COMPANHIAS_ATE_V20),
   })
   .superRefine(conferirRotinas)
 export type SalvamentoV19 = z.infer<typeof SalvamentoV19Schema>
@@ -934,11 +936,43 @@ export function migrarDaV19(s: SalvamentoV19): SalvamentoV20 {
   }
 }
 
-export const SalvamentoSchema = z.union([
+export const SalvamentoAteV20Schema = z.union([
   SalvamentoV20Schema,
   SalvamentoAteV19Schema.transform(migrarDaV19),
 ])
-export type Salvamento = SalvamentoV20
+
+/**
+ * V21 (31/10/2026, §6.28): o Nico, carteiro da sua ilha, vira morador com amizade e pedidos (A19),
+ * e o filhote do Vale pode ser a companhia (A7).
+ */
+export const SalvamentoV21Schema = z
+  .strictObject({
+    ...SalvamentoV20Schema.shape,
+    versao: z.literal(21),
+    moradores: z.strictObject({
+      capi: MoradorSchema,
+      bento: MoradorSchema,
+      mare: MoradorSchema,
+      floco: MoradorSchema,
+      jade: MoradorSchema,
+      irie: MoradorSchema,
+      nico: MoradorSchema,
+    }),
+    companhia: z.enum(COMPANHIAS),
+  })
+  .superRefine(conferirRotinas)
+export type SalvamentoV21 = z.infer<typeof SalvamentoV21Schema>
+
+/** O Nico começa sem amizade, como os outros moradores chegaram; a companhia continua a mesma. */
+export function migrarDaV20(s: SalvamentoV20): SalvamentoV21 {
+  return { ...s, versao: 21, moradores: { ...s.moradores, nico: { ...MORADOR_NOVO } } }
+}
+
+export const SalvamentoSchema = z.union([
+  SalvamentoV21Schema,
+  SalvamentoAteV20Schema.transform(migrarDaV20),
+])
+export type Salvamento = SalvamentoV21
 
 /** Teto do documento serializado (o serviço recusa acima disto). */
 export const SALVAMENTO_MAX_BYTES = 64 * 1024
@@ -978,6 +1012,7 @@ export function criarSalvamentoInicial(agora: Date): Salvamento {
       floco: { ...MORADOR_NOVO },
       jade: { ...MORADOR_NOVO },
       irie: { ...MORADOR_NOVO },
+      nico: { ...MORADOR_NOVO },
     },
     bichos: { achados: [], adotado: null },
     construcao: { casa: null, cabanas: {} },

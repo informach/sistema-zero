@@ -5,11 +5,12 @@ import {
   migrarDaV17,
   migrarDaV18,
   migrarDaV19,
+  migrarDaV20,
   migrarSalvamento,
   SALVAMENTO_MAX_BYTES,
   SalvamentoV17Schema,
   SalvamentoV18Schema,
-  SalvamentoV20Schema,
+  SalvamentoV21Schema,
 } from '../src/salvamento'
 import { inicialV17, inicialV18 } from './ajuda-salvamento'
 import { cenariosDeSalvamentoCheio } from './cenario-salvamento-cheio'
@@ -23,9 +24,11 @@ test('V17 permanece estrita e migra sem presumir visitas nem alterar a entrada',
   const antes = structuredClone(antiga)
   expect(SalvamentoV17Schema.parse(antiga)).toEqual(antiga)
   expect(migrarSalvamento(antiga)).toEqual(
-    migrarDaV19(migrarDaV18({ ...antiga, versao: 18, ilhasVisitadas: 0 })),
+    migrarDaV20(migrarDaV19(migrarDaV18({ ...antiga, versao: 18, ilhasVisitadas: 0 }))),
   )
-  expect(migrarSalvamento(antiga)).toEqual(migrarDaV19(migrarDaV18(migrarDaV17(antiga))))
+  expect(migrarSalvamento(antiga)).toEqual(
+    migrarDaV20(migrarDaV19(migrarDaV18(migrarDaV17(antiga)))),
+  )
   expect(antiga).toEqual(antes)
   expect(SalvamentoV17Schema.safeParse({ ...antiga, ilhasVisitadas: 0 }).success).toBe(false)
 })
@@ -45,19 +48,19 @@ test('cada bit tem identidade própria e todas as 256 combinações atravessam J
   for (let mask = 0; mask <= 255; mask++) {
     const salvo = { ...s, ilhasVisitadas: mask }
     expect(migrarSalvamento(JSON.parse(JSON.stringify(salvo)))).toEqual(
-      migrarDaV19(migrarDaV18(salvo)),
+      migrarDaV20(migrarDaV19(migrarDaV18(salvo))),
     )
     for (const id of ILHA_IDS) expect(ilhaVisitada(mask, id)).toBe(Boolean(mask & BIT_DA_ILHA[id]))
   }
   for (const valor of [-1, 256, 0.5, '1', null, undefined, NaN])
     expect(SalvamentoV18Schema.safeParse({ ...s, ilhasVisitadas: valor }).success).toBe(false)
-  expect(migrarSalvamento({ ...s, versao: 21 })).toBeNull()
+  expect(migrarSalvamento({ ...s, versao: 22 })).toBeNull()
 })
 
 test('o cenário cheio com todas as visitas continua dentro de 64 KB UTF-8', () => {
   for (const s of cenariosDeSalvamentoCheio()) {
     const completo = { ...s, ilhasVisitadas: 255 }
-    expect(SalvamentoV20Schema.safeParse(completo).success).toBe(true)
+    expect(SalvamentoV21Schema.safeParse(completo).success).toBe(true)
     expect(Buffer.byteLength(JSON.stringify(completo), 'utf8')).toBeLessThanOrEqual(
       SALVAMENTO_MAX_BYTES,
     )

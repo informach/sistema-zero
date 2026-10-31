@@ -10,6 +10,12 @@ de contar o teto (`ResultadoDoAceite`: `ok`, `limite`, `sem-convite`). `casa` co
 novo depois de ler o salvamento e o quarto, como as visitas adultas. Sem migração nova. Testes no
 bloco "revogação, troca de código e teto" de `tests/db/visitas-de-amigos.test.ts`.
 
+## Salvamento V21 e o Nico nos pedidos (31/10/2026)
+
+A V21 traz `moradores.nico` e a companhia `filhote`. Migração gerada 0020 troca a restrição
+`pedidos_remunerados_morador` para aceitar `nico`. Implantar a migração e a API antes do jogo novo:
+um jogo V21 diante da API anterior teria o salvamento recusado como versão futura.
+
 ## Salvamento V20 (30/10/2026)
 
 Leitura e PUT normalizam até V20 pelo contrato (móveis da casa e galeria do Farol, listas vazias na

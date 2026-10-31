@@ -1,3 +1,4 @@
+import type { Companhia } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useRef } from 'react'
 import { lojaDoBicho, PAINEL_DO_BICHO, useBicho } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
@@ -5,9 +6,10 @@ import { CUIDADO, EMOJI_DO_BICHO, NOME_DO_BICHO, TRUQUE, tristinho } from '../si
 import {
   escolherCompanhia,
   falaDaCompanhia,
+  opcoesDeCompanhia,
   podeEscolherCompanhia,
   quemAcompanha,
-  rotuloDoPet,
+  rotuloDaCompanhia,
 } from '../sistemas/companhia'
 import { type Cuidado, cuidar } from '../sistemas/cuidar'
 import { ITENS, itensVisiveis } from '../sistemas/itens'
@@ -37,6 +39,10 @@ export function PainelDoBicho() {
   const pet = useEstado((s) => s.quarto.pet)
   const escolhe = useEstado((s) => podeEscolherCompanhia(s.salvamento, s.quarto.pet))
   const acompanha = useEstado((s) => quemAcompanha(s.salvamento, s.quarto.pet))
+  const opcoes = useEstado((s) => opcoesDeCompanhia(s.salvamento, s.quarto.pet).join(','))
+    .split(',')
+    .filter((c): c is Companhia => c === 'adotado' || c === 'quarto' || c === 'filhote')
+  const nomeDoFilhote = useEstado((s) => s.salvamento.vale.filhote?.nome ?? null)
   const falas = useBicho(bicho, (s) => s.falas)
   const tela = useBicho(bicho, (s) => s.tela)
   const principal = useRef<HTMLButtonElement>(null)
@@ -48,6 +54,7 @@ export function PainelDoBicho() {
 
   if (!aberto || !adotado) return null
   const nome = adotado.nome
+  const nomes = { adotado: nome, pet, filhote: nomeDoFilhote }
   const pertoDaAgua = movimento.aguas.some(
     (a) => Math.hypot(rastro.x - a.x, rastro.z - a.z) < Math.max(a.raioX, a.raioZ) + PERTO_DA_AGUA,
   )
@@ -156,10 +163,10 @@ export function PainelDoBicho() {
               O banho é perto do lago do Bosque ou dentro de casa.
             </p>
           )}
-          {escolhe && pet ? (
+          {escolhe ? (
             <fieldset className="arq-bicho-companhia">
               <legend>Quem vai com você pela ilha</legend>
-              {(['adotado', 'quarto'] as const).map((c) => (
+              {opcoes.map((c) => (
                 <button
                   key={c}
                   type="button"
@@ -168,10 +175,10 @@ export function PainelDoBicho() {
                   onClick={() => {
                     const s = loja.getState()
                     if (s.salvamento.companhia !== c) s.mudar((v) => escolherCompanhia(v, c))
-                    bicho.getState().responder([falaDaCompanhia(c, nome, pet)], null)
+                    bicho.getState().responder([falaDaCompanhia(c, nomes)], null)
                   }}
                 >
-                  {c === 'adotado' ? nome : rotuloDoPet(pet)}
+                  {rotuloDaCompanhia(c, nomes)}
                 </button>
               ))}
             </fieldset>

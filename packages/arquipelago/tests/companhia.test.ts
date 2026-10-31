@@ -8,13 +8,17 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { adotar } from '../src/sistemas/bichos'
 import {
+  deixarOFilhoteNoVale,
   escolherCompanhia,
   falaDaCompanhia,
+  opcoesDeCompanhia,
   podeEscolherCompanhia,
   quemAcompanha,
+  rotuloDaCompanhia,
   rotuloDoPet,
 } from '../src/sistemas/companhia'
 import { adotarPelaCapi } from '../src/sistemas/conversa-da-capi'
+import { OVO_NOVO } from '../src/sistemas/filhote-do-vale'
 
 const AGORA = new Date('2026-10-30T12:00:00Z')
 
@@ -69,14 +73,39 @@ describe('quem acompanha pela ilha (S01)', () => {
   test('as falas e os rótulos seguem as regras dos textos da criança', () => {
     expect(rotuloDoPet('pet-passaro')).toBe('Passarinho do quarto')
     for (const t of [
-      falaDaCompanhia('adotado', 'Mingau', 'pet-gato'),
-      falaDaCompanhia('quarto', 'Mingau', 'pet-gato'),
+      falaDaCompanhia('adotado', { adotado: 'Mingau', pet: 'pet-gato', filhote: null }),
+      falaDaCompanhia('quarto', { adotado: 'Mingau', pet: 'pet-gato', filhote: null }),
     ]) {
       expect(t).not.toContain('—')
       expect(t).not.toContain('!')
     }
-    expect(falaDaCompanhia('quarto', 'Mingau', 'pet-gato')).toBe(
+    expect(falaDaCompanhia('quarto', { adotado: 'Mingau', pet: 'pet-gato', filhote: null })).toBe(
       'O gato do quarto vai com você. Mingau espera em casa.',
+    )
+  })
+
+  test('o filhote do Vale, nascido e com nome, pode ir junto e voltar ao Vale (A7)', () => {
+    const s = criarSalvamentoInicial(AGORA)
+    expect(opcoesDeCompanhia(s, 'pet-gato')).toEqual(['quarto'])
+    const ovo = { ...s, vale: { ...s.vale, filhote: { ...OVO_NOVO } } }
+    expect(opcoesDeCompanhia(ovo, 'pet-gato')).toEqual(['quarto'])
+    const semNome = { ...s, vale: { ...s.vale, filhote: { ...OVO_NOVO, ovo: 3 } } }
+    expect(opcoesDeCompanhia(semNome, 'pet-gato')).toEqual(['quarto'])
+    const comNome = { ...s, vale: { ...s.vale, filhote: { ...OVO_NOVO, ovo: 3, nome: 'Rex' } } }
+    expect(opcoesDeCompanhia(comNome, 'pet-gato')).toEqual(['quarto', 'filhote'])
+    expect(podeEscolherCompanhia(comNome, 'pet-gato')).toBe(true)
+    expect(quemAcompanha(comNome, 'pet-gato')).toBe('quarto')
+    const comRex = escolherCompanhia(comNome, 'filhote')
+    expect(quemAcompanha(comRex, 'pet-gato')).toBe('filhote')
+    expect(quemAcompanha(comRex, null)).toBe('filhote')
+    expect(deixarOFilhoteNoVale(comRex).companhia).toBe('quarto')
+    const nomes = { adotado: null, pet: 'pet-gato', filhote: 'Rex' }
+    expect(rotuloDaCompanhia('filhote', nomes)).toBe('Rex')
+    expect(falaDaCompanhia('filhote', nomes)).toBe(
+      'Rex vai com você. O gato do quarto espera no quarto.',
+    )
+    expect(falaDaCompanhia('quarto', nomes)).toBe(
+      'O gato do quarto vai com você. Rex brinca no Vale.',
     )
   })
 })

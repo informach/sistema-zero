@@ -544,7 +544,7 @@ export const pedidosRemunerados = arquipelagoSchema.table(
     check('pedidos_remunerados_publico', sql`${t.publico} in ('kids','adulto')`),
     check(
       'pedidos_remunerados_morador',
-      sql`${t.morador} in ('capi','bento','mare','floco','jade','irie')`,
+      sql`${t.morador} in ('capi','bento','mare','floco','jade','irie','nico')`,
     ),
     check(
       'pedidos_remunerados_valores',
