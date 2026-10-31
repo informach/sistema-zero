@@ -1,4 +1,5 @@
 import type { CourseModality } from '@sistemazero/core/course/modality'
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type { LessonBlockContent, LessonBlockKind } from './lesson-block'
 
@@ -120,8 +121,7 @@ export interface Module {
   courseId: string
   title: string
   summary: string | null
-  /** Animação Rive (.riv) da trilha Kids, publicada pelo Admin no R2 público. */
-  riveUrl?: string | null
+  animation?: ModuleAnimation | null
   sortOrder: number
 }
 

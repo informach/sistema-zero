@@ -10,7 +10,7 @@ import { KIDS_LESSON_COPY } from '@sistemazero/member-shell/lib/lesson-copy-kids
 import type { LessonDetailView, VideoBlock } from '@sistemazero/member-shell/lib/types'
 import { createRoot } from 'react-dom/client'
 import manifesto from '../../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-1.manifesto.json'
-import { KidsMascotAnimated } from '../../src/components/kids/mascot-rive'
+import { KidsMascotAnimated } from '../../src/components/kids/mascot-animated'
 import videoGateVoice from '../../src/lib/zappy-video-gate-voice.json'
 
 /**

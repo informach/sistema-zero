@@ -5,7 +5,7 @@ import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import { Gamepad2, Link2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { KidsConfetti } from './kids-confetti'
-import { KidsMascotAnimated } from './mascot-rive'
+import { KidsMascotAnimated } from './mascot-animated'
 
 /**
  * Celebração ao PUBLICAR o jogo no Mural — o clímax do projeto. Overlay com o Zappy comemorando,

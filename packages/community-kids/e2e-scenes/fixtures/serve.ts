@@ -43,11 +43,10 @@ if (!lessonVideoBundle.success) throw new Error(lessonVideoBundle.logs.join('\n'
 const lessonVideoScript = lessonVideoBundle.outputs.find((output) => output.path.endsWith('.js'))
 if (!lessonVideoScript) throw new Error('Bundle da aula com vídeo não foi gerado')
 const trailBundle = await Bun.build({
-  entrypoints: [resolve(import.meta.dir, 'trail-rive-client.tsx')],
+  entrypoints: [resolve(import.meta.dir, 'trail-animation-client.tsx')],
   target: 'browser',
   define: {
     'process.env.NODE_ENV': JSON.stringify('production'),
-    'process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL': '""',
     'process.env': '{}',
   },
   plugins: [
@@ -146,21 +145,16 @@ Bun.serve({
   port: Number(process.env.SCENE_E2E_PORT ?? 5198),
   async fetch(request) {
     const path = new URL(request.url).pathname
-    if (path === '/trail-rive.js') return new Response(trailScript)
+    if (path === '/trail-animation.js') return new Response(trailScript)
     if (path === '/quiz-zappy.js') return new Response(quizScript)
     if (path === '/mascot-idle.js') return new Response(mascotScript)
     if (path === '/zappy/assista-ao-video-v1.mp3')
       return new Response(Bun.file(resolve(app, `public${path}`)))
-    // O Zappy animado do balão (`fala.riv`) e a pose parada que o cobre enquanto carrega.
-    if (/^\/zappy\/[a-z-]+\.(riv|webp)$/.test(path))
-      return new Response(Bun.file(resolve(app, `public${path}`)))
-    if (
-      path === '/rive/rive.wasm' ||
-      path === '/zappy/happy.riv' ||
-      path === '/kids/chest-closed.svg'
-    )
-      return new Response(Bun.file(resolve(app, `public${path}`)))
-    if (path === '/missing.riv') return new Response(null, { status: 404 })
+    // Only owned content-addressed generated artwork is served by this local fixture.
+    if (/^\/edisvg\/[a-zA-Z]+\.[a-f0-9]{12}\.(?:edi-animation\.json|webp)$/.test(path))
+      return new Response(Bun.file(resolve(app, '../edisvg/assets', path.slice('/edisvg/'.length))))
+    if (path === '/zappy/coin.webp') return new Response(Bun.file(resolve(app, `public${path}`)))
+    if (path === '/missing.edi-animation.json') return new Response(null, { status: 404 })
     if (request.method === 'POST' && path.endsWith('/learning-progress'))
       return echoProgress(request, path)
     if (request.method === 'POST' && path.endsWith('/learning-attempts'))
@@ -187,8 +181,8 @@ Bun.serve({
             ? '/project-play.js'
             : path === '/lesson-video'
               ? '/lesson-video.js'
-              : path === '/trail-rive'
-                ? '/trail-rive.js'
+              : path === '/trail-animation'
+                ? '/trail-animation.js'
                 : path === '/quiz-zappy'
                   ? '/quiz-zappy.js'
                   : '/client.js'

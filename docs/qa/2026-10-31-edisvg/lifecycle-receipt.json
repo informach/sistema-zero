@@ -1,0 +1,1039 @@
+{
+  "cases": [
+    {
+      "mode": "desktop",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "mobile",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "offscreen",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "reduced",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "savedata",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "opened",
+      "claims": 0,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "art-failure",
+      "claims": 1,
+      "errors": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:58164/edisvg/chest.7ad28e16f4ea.edi-animation.json"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "claim-error",
+      "claims": 1,
+      "errors": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 503 (Service Unavailable)",
+          "url": "http://127.0.0.1:58164/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "zero-award",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "swap",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    },
+    {
+      "mode": "swap-failure",
+      "claims": 1,
+      "errors": [
+        {
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "url": "http://127.0.0.1:58164/edisvg/happy.d095c3b2f601.edi-animation.json"
+        }
+      ],
+      "passed": true
+    },
+    {
+      "mode": "same-origin",
+      "claims": 1,
+      "errors": [],
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "requests": [
+    {
+      "scenario": "desktop",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "desktop",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "mobile",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "offscreen",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "reduced",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "savedata",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "opened",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 404
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "art-failure",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "claim-error",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 503
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "zero-award",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/thinking.ee7ed2421dca.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/thinking.da45ef208d7b.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "swap",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/happy.d095c3b2f601.edi-animation.json",
+      "status": 404
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/thinking.da45ef208d7b.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/thinking.ee7ed2421dca.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "swap-failure",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg.js",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/chunk-cgqrgvj3.js",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/speaking.6ccf6fa72dcd.webp",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/chest.72c1b1260856.webp",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/happy.6960dd92f981.webp",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/qa/tone.wav",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/chunk-4zqb8975.js",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/speaking.43d68691bc97.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/chest.7ad28e16f4ea.edi-animation.json",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/api/media/module-animation/preview",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/api/members/courses/qa/units/00000000-0000-4000-8000-000000000001/chest/claim",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/zappy/coin.webp",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/chestOpen.1a12a9294876.webp",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/celebrating.8d9847e81192.webp",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/sounds/celebracao.mp3",
+      "status": 200
+    },
+    {
+      "scenario": "same-origin",
+      "path": "/edisvg/celebrating.c140905e2063.edi-animation.json",
+      "status": 200
+    }
+  ]
+}

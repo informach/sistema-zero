@@ -556,58 +556,6 @@ describe('Members HTTP — autoria: cursos (validações de borda)', () => {
 })
 
 describe('Members HTTP — autoria: árvore de conteúdo', () => {
-  test('a animação Rive do módulo é salva, preservada e pode ser removida', async () => {
-    const { app } = buildApp()
-    const course = await createCourse(app, { audience: 'kids' })
-    const riveUrl = 'https://media.example.com/admin/module-rive/nave.riv'
-    const created = await send(app, `/members/admin/courses/${course.id}/modules`, 'POST', {
-      title: 'Nave',
-      summary: null,
-      riveUrl,
-    })
-    expect(created.status).toBe(201)
-    const mod = await readJson(created)
-    expect(mod.riveUrl).toBe(riveUrl)
-
-    // ⚠️ O PATCH SEM a chave preserva: é este caso que guarda o `Object.hasOwn` do
-    // `moduleFields` — sem ele o campo é validado e DESCARTADO em silêncio.
-    const renamed = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
-      title: 'Nave renomeada',
-      summary: null,
-    })
-    expect(renamed.status).toBe(200)
-    expect((await readJson(renamed)).riveUrl).toBe(riveUrl)
-
-    const tree = await readJson(await get(app, `/members/admin/courses/${course.id}`))
-    expect(tree.modules[0].riveUrl).toBe(riveUrl)
-
-    // Caminho relativo, esquema executável e URL que não é `.riv` não passam da
-    // borda, mesmo que o Admin já valide: defesa em profundidade no serviço.
-    // ⚠️ O `.svg` importa — é a sobra da era anterior, e guardá-lo daria um módulo
-    // sem arte indistinguível de "ninguém subiu nada" (o render o descarta).
-    for (const recusado of [
-      '/fora-do-catalogo.riv',
-      'javascript:alert(1)',
-      'https://media.example.com/admin/module-illustrations/nave.svg',
-      'https://media.example.com/admin/module-rive/nave.riv.png',
-    ]) {
-      const invalid = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
-        title: 'Nave renomeada',
-        summary: null,
-        riveUrl: recusado,
-      })
-      expect(invalid.status).toBe(400)
-    }
-
-    const cleared = await send(app, `/members/admin/modules/${mod.id}`, 'PATCH', {
-      title: 'Nave renomeada',
-      summary: null,
-      riveUrl: null,
-    })
-    expect(cleared.status).toBe(200)
-    expect((await readJson(cleared)).riveUrl).toBeNull()
-  })
-
   async function seedTree(app: App) {
     const course = await createCourse(app)
     const mod = await readJson(

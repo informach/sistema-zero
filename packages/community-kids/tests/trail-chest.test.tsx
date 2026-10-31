@@ -34,7 +34,6 @@ const bau = (over: Partial<ModuleChestView> = {}): ModuleChestView => ({
 })
 
 const originalFetch = globalThis.fetch
-const originalChestRiveUrl = process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
 let pedidos: string[] = []
 
 beforeEach(() => {
@@ -44,30 +43,16 @@ beforeEach(() => {
     pedidos.push(String(input))
     return Response.json({ xpAwarded: 25, coinsAwarded: 15 })
   }) as unknown as typeof fetch
-  if (originalChestRiveUrl === undefined) delete process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
-  else process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = originalChestRiveUrl
 })
 
 afterEach(() => {
   cleanup()
   globalThis.fetch = originalFetch
-  if (originalChestRiveUrl === undefined) delete process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
-  else process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = originalChestRiveUrl
 })
 
-function montar(
-  chest: ModuleChestView | null,
-  riveSrc = process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL?.trim() || null,
-) {
+function montar(chest: ModuleChestView | null) {
   return render(
-    <TrailChest
-      courseSlug="meu-curso"
-      moduleId="m1"
-      unitNumber={2}
-      chest={chest}
-      offset={0}
-      riveSrc={riveSrc}
-    />,
+    <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={chest} offset={0} />,
   )
 }
 
@@ -96,7 +81,7 @@ describe('baú da trilha', () => {
     const hover = rule('\\.kids-node-link:hover \\.kids-node\\.kids-node--chest-ready')
     const active = rule('\\.kids-node-link:active \\.kids-node\\.kids-node--chest-ready')
     const label = rule('\\.kids-chest-label')
-    const rive = rule('\\.kids-chest-rive')
+    const artwork = rule('\\.kids-chest-artwork')
 
     expect(base).toContain('box-shadow:')
     expect(base).toContain('inset 0 3px 0')
@@ -119,10 +104,10 @@ describe('baú da trilha', () => {
     expect(active).toContain('--k3d-altura: 2px')
     expect(active).toContain('translate: 0 6px')
     expect(label).toContain('margin-top: 2px')
-    // A arte do Rive não pode preencher o disco inteiro: ela é maior que o SVG
+    // A arte do ediSVG não pode preencher o disco inteiro: ela é maior que o SVG
     // de fallback e pisaria visualmente na borda/na sombra 3D do botão.
-    expect(rive).toContain('width: 72%')
-    expect(rive).toContain('height: 72%')
+    expect(artwork).toContain('width: 72%')
+    expect(artwork).toContain('height: 72%')
   })
 
   test('todos os estados renderizam o mesmo molde de baú 3D', () => {
@@ -132,14 +117,7 @@ describe('baú da trilha', () => {
     ).toBe(true)
 
     rerender(
-      <TrailChest
-        courseSlug="meu-curso"
-        moduleId="m1"
-        unitNumber={2}
-        chest={bau()}
-        offset={0}
-        riveSrc={null}
-      />,
+      <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={bau()} offset={0} />,
     )
     expect(
       container.querySelector('.kids-node--chest-ready')?.classList.contains('kids-node--chest'),
@@ -152,7 +130,6 @@ describe('baú da trilha', () => {
         unitNumber={2}
         chest={bau({ claimed: true })}
         offset={0}
-        riveSrc={null}
       />,
     )
     expect(
@@ -167,14 +144,7 @@ describe('baú da trilha', () => {
     expect(raizDo(container).className).toContain('cursor-not-allowed')
 
     rerender(
-      <TrailChest
-        courseSlug="meu-curso"
-        moduleId="m1"
-        unitNumber={2}
-        chest={bau()}
-        offset={0}
-        riveSrc={null}
-      />,
+      <TrailChest courseSlug="meu-curso" moduleId="m1" unitNumber={2} chest={bau()} offset={0} />,
     )
     expect(raizDo(container).className).not.toContain('cursor-not-allowed')
     expect(screen.getByRole('button').className).toContain('cursor-pointer')
@@ -186,7 +156,6 @@ describe('baú da trilha', () => {
         unitNumber={2}
         chest={bau({ claimed: true })}
         offset={0}
-        riveSrc={null}
       />,
     )
     expect(raizDo(container).className).toContain('cursor-not-allowed')
@@ -197,26 +166,6 @@ describe('baú da trilha', () => {
     montar(bau({ unlocked: false }))
     expect(screen.queryByRole('button')).toBeNull()
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('fechado')
-  })
-
-  test('bloqueado mostra o Rive fechado, sem disparar a abertura', async () => {
-    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
-    montar(bau({ unlocked: false }))
-    await act(async () => {})
-
-    const rive = document.querySelector('[data-chest-rive-src]')
-    expect(rive?.getAttribute('data-chest-rive-opening')).toBe('false')
-    expect(rive?.getAttribute('data-chest-rive-opened')).toBe('false')
-  })
-
-  test('usa o URL recebido do servidor, sem depender de env pública no navegador', async () => {
-    delete process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL
-    montar(bau({ unlocked: false }), 'https://media.example.com/kids/chest-do-servidor.riv')
-    await act(async () => {})
-
-    expect(
-      document.querySelector('[data-chest-rive-src]')?.getAttribute('data-chest-rive-src'),
-    ).toBe('https://media.example.com/kids/chest-do-servidor.riv')
   })
 
   test('liberado é botão e diz o XP antes de abrir, sem prometer moeda', () => {
@@ -282,13 +231,10 @@ describe('baú da trilha', () => {
   })
 
   test('já resgatado nasce aberto e sem botão', () => {
-    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
     montar(bau({ claimed: true }))
     expect(screen.queryByRole('button')).toBeNull()
     expect(screen.getByRole('img').getAttribute('aria-label')).toContain('aberto')
-    expect(
-      document.querySelector('[data-chest-rive-opened]')?.getAttribute('data-chest-rive-opened'),
-    ).toBe('true')
+    expect(document.querySelector('img')?.getAttribute('src')).toContain('/edisvg/chestOpen.')
   })
 
   test('movimento reduzido conclui no SVG aberto, sem esperar animationend', async () => {
@@ -298,53 +244,5 @@ describe('baú da trilha', () => {
     await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
     expect(document.querySelector('.kids-chest-opening')).toBeNull()
     expect(refreshes).toBe(1)
-  })
-
-  test('com Rive pronto, o prêmio espera a chegada ao estado terminal Open', async () => {
-    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
-    montar(bau())
-    await act(async () => {})
-    const globals = globalThis as Record<string, unknown>
-    await act(async () => (globals.chestRivePronto as (() => void) | undefined)?.())
-
-    fireEvent.click(screen.getByRole('button'))
-    await waitFor(() =>
-      expect(
-        document
-          .querySelector('[data-chest-rive-opening]')
-          ?.getAttribute('data-chest-rive-opening'),
-      ).toBe('true'),
-    )
-    expect(screen.queryByRole('dialog')).toBeNull()
-
-    await act(async () => (globals.chestRiveAbriu as (() => void) | undefined)?.())
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
-    expect(
-      document.querySelector('[data-chest-rive-opened]')?.getAttribute('data-chest-rive-opened'),
-    ).toBe('true')
-    expect(refreshes).toBe(1)
-  })
-
-  test('falha do Rive depois do claim espera a animação SVG antes de mostrar o prêmio', async () => {
-    process.env.NEXT_PUBLIC_KIDS_CHEST_RIVE_URL = 'https://media.example.com/kids/chest.riv'
-    montar(bau())
-    await act(async () => {})
-    const globals = globalThis as Record<string, unknown>
-    await act(async () => (globals.chestRivePronto as (() => void) | undefined)?.())
-
-    fireEvent.click(screen.getByRole('button'))
-    await waitFor(() =>
-      expect(
-        document
-          .querySelector('[data-chest-rive-opening]')
-          ?.getAttribute('data-chest-rive-opening'),
-      ).toBe('true'),
-    )
-    await act(async () => (globals.chestRiveFalhou as (() => void) | undefined)?.())
-    expect(screen.queryByRole('dialog')).toBeNull()
-    await waitFor(() => expect(document.querySelector('.kids-chest-opening')).toBeTruthy())
-    fireEvent.animationEnd(document.querySelector('.kids-chest-opening') as Element)
-    await waitFor(() => expect(screen.getByRole('dialog')).toBeTruthy())
-    expect(screen.getByRole('img').getAttribute('aria-label')).toContain('aberto')
   })
 })

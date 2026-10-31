@@ -4,12 +4,12 @@ import { sessionFetch as fetch } from '@sistemazero/member-shell/lib/session-fet
 
 import type { ModuleChestView } from '@sistemazero/member-shell/lib/types'
 import { useRouter } from 'next/navigation'
-import { useCallback, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { cn } from '@/lib/cn'
+import { ChestAnimation } from './chest-animation'
 import { ChestClosedFallback, ChestIcon } from './chest-icon'
 import { ChestReward } from './chest-reward'
-import { ChestRive } from './chest-rive'
 import { useReducedMotion } from './room/use-reduced-motion'
 
 type ChestClaim = { xpAwarded?: number; coinsAwarded?: number }
@@ -31,7 +31,6 @@ export function TrailChest({
   unitNumber,
   chest,
   offset,
-  riveSrc,
 }: {
   courseSlug: string
   moduleId: string
@@ -39,28 +38,27 @@ export function TrailChest({
   /** `null` = o servidor não mandou estado (curso adulto): baú decorativo. */
   chest: ModuleChestView | null
   offset: number
-  /** URL já lida pelo Server Component; nunca depende da env do navegador. */
-  riveSrc: string | null
 }) {
   const router = useRouter()
   const reducedMotion = useReducedMotion()
   const [estado, setEstado] = useState<'parado' | 'solicitando' | 'abrindo'>('parado')
   const [premio, setPremio] = useState<{ xp: number; coins: number } | null>(null)
   const [abertoAgora, setAbertoAgora] = useState(false)
-  const [riveReady, setRiveReady] = useState(false)
+  const [animationReady, setAnimationReady] = useState(false)
   const pendingClaim = useRef<ChestClaim | null>(null)
   // O botão de acionar o baú some ao abrir. Este contêiner sobrevive à troca de
   // estado e recebe o foco de volta quando a criança fecha o prêmio.
   const raiz = useRef<HTMLDivElement>(null)
   const aberto = Boolean(chest?.claimed) || abertoAgora
 
-  /** Conclusão idempotente, compartilhada pelo Rive e pelo SVG de queda. */
+  /** Conclusão idempotente, compartilhada pelo player e pela imagem de reserva. */
   const concluirAbertura = useCallback(() => {
     const body = pendingClaim.current
     if (!body) return
     pendingClaim.current = null
     setEstado('parado')
     setAbertoAgora(true)
+    setAnimationReady(false)
     // `xpAwarded: 0` = outra aba já abriu este baú. Fica aberto, sem festa: a
     // criança não ganhou nada AGORA e a festa mentiria.
     if ((body.xpAwarded ?? 0) > 0 || (body.coinsAwarded ?? 0) > 0) {
@@ -70,8 +68,12 @@ export function TrailChest({
     router.refresh()
   }, [router])
 
-  const riveFailed = useCallback(() => {
-    setRiveReady(false)
+  useEffect(() => {
+    if (estado === 'abrindo' && reducedMotion) concluirAbertura()
+  }, [estado, reducedMotion, concluirAbertura])
+
+  const animationFailed = useCallback(() => {
+    setAnimationReady(false)
     // Se o claim já foi confirmado, `estado === 'abrindo'` faz o SVG assumir a
     // transição e concluir no próprio animationend. A falha não pula a reação.
   }, [])
@@ -109,7 +111,7 @@ export function TrailChest({
         concluirAbertura()
         return
       }
-      // O Rive preloaded abre pela máquina dele; se ele não chegou a tempo, o SVG
+      // A arte pré-carregada abre pela máquina dela; se ele não chegou a tempo, o SVG
       // existente anima e avisa no `animationend`, sem chute de milissegundos.
       setEstado('abrindo')
     } catch {
@@ -123,10 +125,9 @@ export function TrailChest({
   }
   const legenda = aberto ? 'Baú aberto!' : chest?.unlocked ? 'Abrir baú' : 'Baú do módulo'
   const abrindo = estado === 'abrindo'
-  const svgAbrindo = abrindo && !riveReady
+  const svgAbrindo = abrindo && !animationReady
   const bloqueado = !chest?.unlocked && !aberto
   const podeAbrir = Boolean(chest?.unlocked) && !aberto
-  const deveMontarRive = chest !== null
   const semanticaDoBaú =
     bloqueado || aberto
       ? {
@@ -178,24 +179,29 @@ export function TrailChest({
           )}
           onAnimationEnd={svgAbrindo ? terminouSvg : undefined}
         >
-          {aberto ? (
-            <ChestIcon open className={cn('kid-float', riveReady && 'opacity-0')} />
-          ) : (
-            <ChestClosedFallback
-              className={cn(
-                estado === 'parado' && !riveReady && 'kid-float',
-                riveReady && 'opacity-0',
-              )}
+          <span
+            aria-hidden="true"
+            className={cn(
+              'kids-chest-artwork',
+              animationReady && 'opacity-0',
+              estado === 'parado' && !animationReady && 'kid-float',
+            )}
+          >
+            {aberto ? (
+              <ChestIcon open className="size-full" />
+            ) : (
+              <ChestClosedFallback className="size-full" />
+            )}
+          </span>
+          {chest !== null && (
+            <ChestAnimation
+              opening={abrindo && animationReady}
+              opened={aberto}
+              onReady={() => setAnimationReady(true)}
+              onFailed={animationFailed}
+              onOpened={concluirAbertura}
             />
           )}
-          <ChestRive
-            src={deveMontarRive ? riveSrc : null}
-            opening={abrindo && riveReady}
-            opened={aberto}
-            onReady={() => setRiveReady(true)}
-            onFailed={riveFailed}
-            onOpened={concluirAbertura}
-          />
         </span>
         <span
           className={cn(

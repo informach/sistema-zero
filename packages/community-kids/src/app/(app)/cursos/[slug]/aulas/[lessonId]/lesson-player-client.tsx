@@ -26,7 +26,7 @@ import { KidsLessonProgress } from '@/components/kids/kids-lesson-progress'
 import { LessonActionEvidence } from '@/components/kids/lesson-action-evidence'
 import { LessonCelebration } from '@/components/kids/lesson-celebration'
 import { useLessonCompletionRefresh } from '@/components/kids/lesson-completion-refresh'
-import { KidsMascotAnimated, prefetchZappyRive } from '@/components/kids/mascot-rive'
+import { KidsMascotAnimated, prefetchZappyAnimation } from '@/components/kids/mascot-animated'
 import { visibleModules } from '@/components/kids/trail-layout'
 import { UNIT_THEME_CLASS, unitThemeAt } from '@/components/kids/unit-theme'
 import { apiSend } from '@/lib/api'
@@ -96,7 +96,7 @@ export function LessonPlayer({
   // criança esperou a aula inteira para ver. Puxamos ocioso, agora que ela acabou
   // de entrar e vai passar minutos aqui. Best-effort — falhar só devolve o WebP.
   useEffect(() => {
-    prefetchZappyRive()
+    prefetchZappyAnimation()
   }, [])
 
   const requirements = lessonCompletionRequirements({

@@ -1,6 +1,11 @@
 # dependencies (bun install)
 node_modules
 
+# Immutable built-in media is verified and copied from packages/edisvg/assets before app builds.
+packages/admin/public/edisvg/
+packages/community-kids/public/edisvg/
+packages/community/public/edisvg/
+
 # output
 out
 dist

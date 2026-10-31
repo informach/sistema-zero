@@ -1,0 +1,31 @@
+{
+  "format": "edi-web-player-vendor",
+  "version": 1,
+  "sourceRevision": "2fcead2b1bf72c5d6c37fa304a2483a11d9cc8a7",
+  "files": {
+    "edi-web-player.mjs": {
+      "bytes": 598114,
+      "sha256": "0d23ccb8138252537d1d50d738305b741d4ddddd7466e82f62003b239a85860e"
+    },
+    "edi-web-player.d.mts": {
+      "bytes": 300,
+      "sha256": "707d7674e7a1323695428c8f80bf4ffeb16c02bb159fcbe99fc4fc02b967cdaa"
+    },
+    "edi-web-data.mjs": {
+      "bytes": 287680,
+      "sha256": "f46e42fe04e2d486acbb3002cf174cdd2988893c4fbdf2b7febe9e0ebe04f265"
+    },
+    "edi-web-data.d.mts": {
+      "bytes": 347,
+      "sha256": "ca6f8a08c02df653886f9a70d45ff07a80f17d35394226a96c9bc2b64323bce2"
+    },
+    "edi-web-types.d.ts": {
+      "bytes": 1769,
+      "sha256": "6930dfc0dbb0bb6dcda1999e2f566900404cca887e44dd4104f4110907c24c33"
+    },
+    "THIRD_PARTY_LICENSES.txt": {
+      "bytes": 4642,
+      "sha256": "dfa86be80987908a0f0a44d8d54420a705b03d58d910a3ac628a47822bba9e8d"
+    }
+  }
+}

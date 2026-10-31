@@ -1,3 +1,4 @@
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import {
   type CreatorEntryCardView,
   type CreatorStageChecklist,
@@ -504,7 +505,7 @@ export function MissionCard({
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src="/zappy/thinking.webp"
+              src={BUILTIN_ART.thinking.poster.url}
               alt=""
               className={cn(
                 'absolute inset-0 m-auto h-[85%] w-auto object-contain',

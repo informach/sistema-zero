@@ -1,22 +1,9 @@
-// Sobe UM arquivo ao bucket R2 PÚBLICO (o das animações Rive dos apps de aluno) e prova a leitura
-// pelo endereço público, com CORS, a partir da origem do Kids.
-//
-// Nasceu em 01/10/2026 para trocar o `.riv` do baú da trilha: a chave é ENDEREÇADA PELO CONTEÚDO
-// (`<prefixo>/<nome>-<sha256>.riv`), então um arquivo novo é um objeto NOVO e a URL muda junto;
-// quem aponta para ele (a env `NEXT_PUBLIC_KIDS_CHEST_RIVE_URL` do kids) troca de URL em vez de
-// esperar um cache vencer. Por isso o `Cache-Control` é longo e `immutable`, e o script RECUSA
-// sobrescrever uma chave que já existe (use `--force` só se souber o que está fazendo).
-//
-// USO (Bun carrega o .env do cwd — rode de dentro de packages/admin, cujo .env aponta para o
-// bucket de STAGING; para produção, passe `--bucket=` e `--public-url=` do bucket de lá):
-//   bun scripts/r2-put-public.ts <arquivo> --prefix=kids/chest [--nome=chest] [--force]
-//   bun scripts/r2-put-public.ts <arquivo> --key=<chave exata> [--force]
-//
-// Imprime a URL pública no fim. Para `.riv`, confere o cabeçalho do formato antes de subir.
+// Envia um arquivo público imutável e confere conteúdo e CORS na leitura.
+// Use --prefix=<prefixo> ou --key=<chave>; sobrescrita exige --force.
 import { createHash } from 'node:crypto'
 import { basename, extname } from 'node:path'
 import { HeadObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3'
-import { assertRivFile } from '../src/lib/riv-file'
+import { normalizeWebAnimation } from '@sistemazero/edisvg/data'
 import { buildPublicObjectUrl, KIDS_STAGING_ORIGIN } from './r2-cors-public-lib'
 
 const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_PUBLIC_URL } =
@@ -41,8 +28,10 @@ if (!R2_ACCOUNT_ID || !R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !bucket || !
 
 const bytes = new Uint8Array(await Bun.file(arquivo).arrayBuffer())
 if (bytes.length === 0) throw new Error(`${arquivo} está vazio`)
-const extensao = extname(arquivo).toLowerCase()
-if (extensao === '.riv') assertRivFile(bytes)
+const animation = arquivo.toLowerCase().endsWith('.edi-animation.json')
+const extensao = animation ? '.edi-animation.json' : extname(arquivo).toLowerCase()
+if (animation) normalizeWebAnimation(new TextDecoder('utf-8', { fatal: true }).decode(bytes))
+if (extensao === '.riv') throw new Error('Exporte a animação no ediSVG como Animação para web.')
 
 const sha256 = createHash('sha256').update(bytes).digest('hex')
 const key = (() => {
@@ -51,22 +40,19 @@ const key = (() => {
   const prefixo = arg('prefix')
   if (!prefixo)
     throw new Error('passe --prefix=<prefixo> (a chave vira <prefixo>/<nome>-<sha256>) ou --key=')
-  const nome = arg('nome') || basename(arquivo, extname(arquivo))
+  const nome = arg('nome') || basename(arquivo, extensao)
   return `${prefixo.replace(/\/+$/, '')}/${nome}-${sha256}${extensao}`
 })()
 
-// Sem MIME registrado para `.riv`, e o runtime lê por `arrayBuffer()` sem olhar o cabeçalho:
-// `application/octet-stream` de propósito (a mesma decisão do upload do Admin).
-const contentType =
-  extensao === '.riv'
-    ? 'application/octet-stream'
-    : extensao === '.webp'
-      ? 'image/webp'
-      : extensao === '.png'
-        ? 'image/png'
-        : extensao === '.svg'
-          ? 'image/svg+xml'
-          : 'application/octet-stream'
+const contentType = animation
+  ? 'application/json'
+  : extensao === '.webp'
+    ? 'image/webp'
+    : extensao === '.png'
+      ? 'image/png'
+      : extensao === '.svg'
+        ? 'image/svg+xml'
+        : 'application/octet-stream'
 
 const client = new S3Client({
   region: 'auto',

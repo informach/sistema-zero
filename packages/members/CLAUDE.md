@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/members
 
+## Referência neutra de animação dos módulos, 31/10/2026
+
+O módulo usa `animation: ModuleAnimation | null`, validado no contrato do core. POST/PATCH
+aceitam o objeto completo, omissão preserva e null remove. Repositórios, views de equipe/aluno
+e clones preservam a mesma referência. Não conferir só a extensão de uma URL.
+A migration 0143 adiciona jsonb nullable. Ela não apaga a coluna anterior: a migração de mídia e
+a retirada do consumidor antigo precedem o DROP operacional, conforme o plano da migração
+ediSVG. O ORM novo deixa de ler a coluna anterior. Não regenerar snapshots históricos.
+Testes de contrato/HTTP usam repositório em memória; DDL só em Postgres local descartável.
+
+
 ## Vaga de arte: o desenho do Pinta da aula no jogo do Estúdio (29/10/2026, etapa 1)
 
 Design em `docs/plans/2026-10-29-desenho-da-crianca-no-jogo-design.md`. Contrato PURO no core

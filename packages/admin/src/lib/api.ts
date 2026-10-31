@@ -63,6 +63,13 @@ export async function apiSend<T>(
 }
 
 /** Upload multipart (FormData) — o browser define o boundary do content-type. */
-export async function apiUpload<T>(path: string, form: FormData): Promise<T> {
-  return handle<T>(await fetch(path, { method: 'POST', body: form }))
+export async function apiUpload<T>(
+  path: string,
+  form: FormData,
+  options?: { signal?: AbortSignal },
+): Promise<T> {
+  return handle<T>(
+    await fetch(path, { method: 'POST', body: form, signal: options?.signal }),
+    options?.signal,
+  )
 }

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'bun:test'
 
 /**
- * A prévia da animação Rive no editor de curso é WebAssembly, e
+ * O layout da prévia ediSVG no editor de curso usa Yoga em WebAssembly, e
  * `'wasm-unsafe-eval'` é uma KEYWORD à parte: nem `https:` nem `'unsafe-inline'`
  * no `script-src` liberam a compilação de um módulo WASM.
  *
@@ -37,8 +37,8 @@ describe('CSP do painel', () => {
    * fonte nova reprova e força uma decisão consciente — com o custo, aceito, de
    * atualizar esta lista quando o afrouxamento for mesmo desejado.
    *
-   * O painel NÃO precisa do CDN aqui: a prévia do `.riv` lê os bytes pela rota
-   * `/api/media/module-rive/preview`, coberta por `'self'`. Buscar o R2 direto
+   * O painel NÃO precisa do CDN aqui: a prévia do `.edi-animation.json` lê os bytes pela rota
+   * `/api/media/module-animation/preview`, coberta por `'self'`. Buscar o R2 direto
    * exigiria esta lista maior E uma regra de CORS no bucket público.
    */
   it('o connect-src continua estreito — nenhuma fonte além das declaradas', async () => {

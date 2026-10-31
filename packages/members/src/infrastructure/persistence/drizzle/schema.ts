@@ -1,5 +1,6 @@
 import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
 import type { CourseModality } from '@sistemazero/core/course/modality'
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -263,7 +264,7 @@ export const modules = members.table(
       .references(() => courses.id, { onDelete: 'cascade' }),
     title: text('title').notNull(),
     summary: text('summary'),
-    riveUrl: text('rive_url'),
+    animation: jsonb('animation').$type<ModuleAnimation>(),
     sortOrder: integer('sort_order').notNull().default(0),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),

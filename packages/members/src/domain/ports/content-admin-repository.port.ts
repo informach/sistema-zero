@@ -1,4 +1,5 @@
 import type { CourseModality } from '@sistemazero/core/course/modality'
+import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
 import type { CourseJourneyRole } from '@sistemazero/core/journey'
 import type { ArtSlotCourseBlock } from '@sistemazero/core/learning'
 import type {
@@ -77,7 +78,7 @@ export interface ModuleFields {
   title: string
   summary: string | null
   /** Ausente no PATCH preserva a animação atual; null remove. */
-  riveUrl?: string | null
+  animation?: ModuleAnimation | null
 }
 
 export interface LessonFields {

@@ -108,13 +108,27 @@ describe('Audiência (kids) — vitrines e chave-mestra', () => {
   test('detalhe do aluno inclui a ilustração configurada no módulo', async () => {
     const { app, courses, entitlements } = buildApp()
     seedSampleCourse(courses, 'curso-kids', 'published', 'kids')
-    courses.modules[0]!.riveUrl = 'https://media.example.com/admin/module-rive/nave.riv'
+    const animation = {
+      format: 'edi-animation' as const,
+      version: 1 as const,
+      url: 'https://media.example.com/nave.edi-animation.json',
+      title: 'Nave',
+      bytes: 1200,
+      sha256: 'a'.repeat(64),
+      poster: {
+        url: 'https://media.example.com/nave.webp',
+        width: 512,
+        height: 512,
+        sha256: 'b'.repeat(64),
+      },
+    }
+    courses.modules[0]!.animation = animation
     grantLifetime(entitlements, { userId: USER, courseRef: 'curso-kids' })
 
     const response = await get(app, '/members/courses/curso-kids', authHeaders())
     expect(response.status).toBe(200)
     const detail = await readJson(response)
-    expect(detail.modules[0].riveUrl).toBe('https://media.example.com/admin/module-rive/nave.riv')
+    expect(detail.modules[0].animation).toEqual(animation)
   })
 
   test('chave-mestra NÃO abre curso kids (403 no detalhe); matrícula específica abre', async () => {
