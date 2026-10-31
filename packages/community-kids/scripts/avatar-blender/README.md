@@ -43,7 +43,7 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
 
 | Festa | Id | Função | Peça | Cor própria (sem `Color_`) |
 | --- | --- | --- | --- | --- |
-| Carnaval | `hat-08` | `cartolinha` | cartolinha de lantejoula com pluma curta e serpentina na aba, no alto da cabeça | fita, pluma, serpentina |
+| Carnaval | `hat-08` | `cartolinha` | cartolinha de lantejoula com pluma curta e serpentina na aba, com a aba no alto da testa | fita, pluma, serpentina |
 | Carnaval | `top-07` | `colete` | colete de franjas coloridas sobre camiseta com confetes | camiseta, franjas, confetes |
 | Junina | `hat-09` | `palha` | chapéu de palha com dois remendos de chita e aba desfiada | palha, chita (a fita é `Color_`) |
 | Junina | `outfit-07` | `chita` | vestido de chita com babado, barra repesada nas coxas | chita e florzinhas (o babado é `Color_`) |
@@ -60,9 +60,12 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
   do crânio (`Q_OVAL` 1,13 mais fundo que largo, `P_OVAL` 2,25) e a posição, igual em todas as
   partes (o remendo continua colado na copa, a serpentina na aba). O gorro ainda acha a menor altura
   (`menor_altura`) e ganha 7 cm de folga no cocuruto. A altura e a inclinação de cada boca
-  (`Z_CARTOLA`, `Z_PALHA`, `Z_GORRO`) seguem a régua dos chapéus antigos: a cartolinha fica no alto,
-  como a cartola `hat-04`; a palha e o gorro descem até a testa, acima das sobrancelhas, como o boné
-  `hat-02` e o pirata `hat-07`.
+  (`Z_CARTOLA`, `Z_PALHA`, `Z_GORRO`) seguem a régua dos chapéus antigos: a palha e o gorro descem
+  até a testa, acima das sobrancelhas, como o boné `hat-02` e o pirata `hat-07`. A cartolinha tira o
+  tamanho da boca no alto da cabeça, como a cartola `hat-04`, e depois afunda `AFUNDA_CARTOLA`
+  (3,5 cm, pedido da dona) até a aba ficar no alto da testa; para não crescer inteira, só a boca se
+  abre no formato do crânio (`menor_boca`: a planta alarga 1,10 vez na aba e volta ao normal no alto
+  da copa).
 - **A régua dos chapéus.** `conferir_festas.py` mede, em cada uma das seis cabeças, os chapéus
   antigos que ficam na cabeça (`hat-01` a `hat-04`, `hat-06`, `hat-07`; a auréola `hat-05` flutua) e
   os novos: a menor distância até a cabeça (`folga_min`), a folga do topo do crânio até o chapéu
@@ -77,7 +80,7 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
 
   | Chapéu | Escala | `folga_min` | `topo` | Frente | Lado | Nuca | `folga_oco` |
   | --- | --- | --- | --- | --- | --- | --- | --- |
-  | `hat-08` cartolinha | 0,783 | 0,9 cm | 24,5 cm | 12,3 cm | 19,8 cm | 21,2 cm | 9,5 cm |
+  | `hat-08` cartolinha | 0,783 (boca 1,10) | 1,0 cm | 20,9 cm | 17,6 cm | 23,6 cm | 25,1 cm | 9,3 cm |
   | `hat-09` palha | 0,797 | 1,0 cm | 5,6 cm | 23,9 cm | 28,9 cm | 32,4 cm | 7,8 cm |
   | `hat-10` gorro | 0,642 (altura 0,511) | 1,0 cm | 8,8 cm | 17,6 cm | 28,9 cm | 35,1 cm | 8,5 cm |
   | limite (antigos) | | 3 cm | | 23,9 cm | 34,1 cm | 35,7 cm | 10,3 cm |

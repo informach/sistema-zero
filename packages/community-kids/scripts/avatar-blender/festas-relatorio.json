@@ -3,7 +3,7 @@
   "pecas": {
     "hat-08": {
       "triangulos": 3600,
-      "kb": 174.4,
+      "kb": 173.6,
       "materiais": ["Color_", "Fita", "Pluma", "Serpentina", "Serpentina.001"],
       "ossos": ["Head"],
       "cabecas": {
@@ -40,61 +40,61 @@
       },
       "encaixe": {
         "head-01": {
-          "folga_min": 0.009,
-          "topo": 0.245,
-          "frente": 0.123,
-          "lado": 0.198,
-          "nuca": 0.212,
-          "folga_oco": 0.095
+          "folga_min": 0.01,
+          "topo": 0.209,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.251,
+          "folga_oco": 0.093
         },
         "head-02": {
-          "folga_min": 0.009,
-          "topo": 0.245,
-          "frente": 0.123,
-          "lado": 0.198,
-          "nuca": 0.212,
-          "folga_oco": 0.095
+          "folga_min": 0.01,
+          "topo": 0.209,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.251,
+          "folga_oco": 0.093
         },
         "head-03": {
-          "folga_min": 0.009,
-          "topo": 0.245,
-          "frente": 0.123,
-          "lado": 0.198,
-          "nuca": 0.212,
-          "folga_oco": 0.095
+          "folga_min": 0.01,
+          "topo": 0.209,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.251,
+          "folga_oco": 0.093
         },
         "head-04": {
-          "folga_min": 0.009,
-          "topo": 0.245,
-          "frente": 0.123,
-          "lado": 0.198,
-          "nuca": 0.212,
-          "folga_oco": 0.095
+          "folga_min": 0.01,
+          "topo": 0.209,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.251,
+          "folga_oco": 0.093
         },
         "head-05": {
-          "folga_min": 0.009,
-          "topo": 0.245,
-          "frente": 0.123,
-          "lado": 0.198,
-          "nuca": 0.212,
-          "folga_oco": 0.095
+          "folga_min": 0.01,
+          "topo": 0.209,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.251,
+          "folga_oco": 0.093
         },
         "head-06": {
-          "folga_min": 0.009,
-          "topo": 0.245,
-          "frente": 0.123,
-          "lado": 0.198,
-          "nuca": 0.212,
-          "folga_oco": 0.095
+          "folga_min": 0.01,
+          "topo": 0.209,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.251,
+          "folga_oco": 0.093
         }
       },
       "pior": {
-        "folga_min": 0.009,
-        "topo": 0.245,
-        "frente": 0.123,
-        "lado": 0.198,
-        "nuca": 0.212,
-        "folga_oco": 0.095
+        "folga_min": 0.01,
+        "topo": 0.209,
+        "frente": 0.176,
+        "lado": 0.236,
+        "nuca": 0.251,
+        "folga_oco": 0.093
       },
       "reprovados": []
     },

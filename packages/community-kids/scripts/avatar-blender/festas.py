@@ -34,6 +34,7 @@ FORA_TIARA = {'hair-15'}
 Q_OVAL, P_OVAL = 1.13, 2.25
 # Altura (no eixo da cabeça) do centro da boca de cada chapéu; ver a régua em conferir_festas.py.
 Z_CARTOLA, Z_PALHA, Z_GORRO = 2.05, 1.90, 1.88
+AFUNDA_CARTOLA = 0.035  # a cartolinha desce do alto da cabeça até a aba ficar no alto da testa
 
 
 # ── ajudantes ───────────────────────────────────────────────────────────────────────────────
@@ -109,14 +110,43 @@ def menor_altura(pontos, M, oco, s, k0=0.3, k1=2.0, folga=0.012):
     return hi
 
 
-def colocar(o, M, s, oval=True, sz=None):
+def boca_aberta(z, boca):
+    """Quanto a planta abre na altura z (tamanho de referência): `boca` = (b, altura) abre b vezes
+    na boca (z <= 0) e volta a 1 em z = altura, em linha reta. Sem `boca`, 1."""
+    if not boca:
+        return 1.0
+    b, alt = boca
+    return 1 + (b - 1) * np.clip(1 - z / alt, 0, 1)
+
+
+def menor_boca(pontos, M, oco, s, altura, b1=1.6, folga=0.012):
+    """Com o chapéu na escala s, a menor abertura b da boca (`boca_aberta`) para o oco guardar os
+    pontos: o chapéu afunda na cabeça sem crescer inteiro, só a boca se abre no formato do crânio."""
+    p = local(pontos, M)
+    r = raio_oval(p[:, 0], p[:, 1])
+    h = p[:, 2]
+    sel = h > -folga
+    r, h = r[sel], h[sel]
+    lo, hi = 1.0, b1
+    for _ in range(32):
+        mid = (lo + hi) / 2
+        if np.all(oco(r / (s * boca_aberta(h / s, (mid, altura))), h / s)):
+            hi = mid
+        else:
+            lo = mid
+    return hi
+
+
+def colocar(o, M, s, oval=True, sz=None, boca=None):
     """Leva uma parte desenhada no tamanho de referência (planta redonda, boca em z = 0) para a
-    cabeça: escala s (sz na altura, se dada), planta oval do crânio e depois M. Todas as partes
-    passam pela mesma conta, e o que estava colado na copa continua colado."""
+    cabeça: escala s (sz na altura, se dada), boca aberta (`boca_aberta`), planta oval do crânio e
+    depois M. Todas as partes passam pela mesma conta, e o que estava colado na copa continua
+    colado."""
     sz = s if sz is None else sz
     for v in o.data.vertices:
         x, y, z = v.co
         f = s / n_oval(math.atan2(y, x)) if oval and (x or y) else s
+        f *= float(boca_aberta(z, boca))
         v.co = M @ Vector((x * f, y * f, z * sz))
     o.data.update()
 
@@ -252,13 +282,18 @@ def cartolinha():
     # Tamanho de referência (o de 31/10, feito para caber sobre os cabelos); `menor_escala` encolhe.
     R_IN, H_IN = 0.385, 0.40          # oco: cilindro um pouco mais largo em cima
     R_CO, R_BO, T_B, H = 0.405, 0.58, 0.022, 0.43
-    # Boca no alto da cabeça, como a cartola antiga (hat-04): inclinada para trás e de lado.
-    M = Matrix.Translation((0.0, C.y, Z_CARTOLA)) @ Matrix.Rotation(math.radians(-6), 4, 'X') @ Matrix.Rotation(math.radians(-7), 4, 'Y')
+    # O tamanho sai da boca no alto da cabeça, como a cartola antiga (hat-04), inclinada para trás e
+    # de lado. Depois a cartolinha afunda AFUNDA_CARTOLA no eixo dela (a aba no alto da testa, a copa
+    # envolvendo o cocuruto) e, em vez de crescer inteira, abre só a boca no formato do crânio: a
+    # planta alarga b vezes na aba e volta ao normal no alto da copa.
+    M_alto = Matrix.Translation((0.0, C.y, Z_CARTOLA)) @ Matrix.Rotation(math.radians(-6), 4, 'X') @ Matrix.Rotation(math.radians(-7), 4, 'Y')
 
     def oco(r, h):
         return (r < R_IN + 0.02 * np.clip(h / H_IN, 0, 1) - 0.012) & (h < H_IN - 0.012)
-    s = menor_escala(cabecas, M, oco)
-    print('cartolinha: escala', round(s, 3))
+    s = menor_escala(cabecas, M_alto, oco)
+    M = M_alto @ Matrix.Translation((0, 0, -AFUNDA_CARTOLA))
+    boca = (menor_boca(cabecas, M, oco, s, H), H)
+    print('cartolinha: escala', round(s, 3), 'boca', round(boca[0], 3))
     # Copa de lantejoula: anéis com os vértices tremidos e sombra chapada (cada face brilha de um jeito).
     rings = 9
     loop = [(0.0, H_IN), (R_IN + 0.02, H_IN), (R_IN, 0.0), (R_BO, 0.0), (R_BO, T_B)]
@@ -272,12 +307,12 @@ def cartolinha():
             v.co.x *= f
             v.co.y *= f
             v.co.z += random.uniform(-0.006, 0.006)
-    colocar(copa, M, s)
+    colocar(copa, M, s, boca=boca)
     shade(copa, False)
     set_material(copa, metal(mat('Color_', hexrgb('#8e44ad'), 0.3)))
     # Fita dourada na base da copa.
     fita = revolve([(R_CO - 0.004, T_B), (R_CO + 0.016, T_B), (R_CO + 0.016, T_B + 0.075), (R_CO - 0.004, T_B + 0.075)], seg=28)
-    colocar(fita, M, s)
+    colocar(fita, M, s, boca=boca)
     set_material(fita, metal(mat('Fita', hexrgb('#f1c40f'), 0.35)))
     # Pluma curta presa na fita, do lado direito, inclinada para trás.
     base_p = Vector((-0.36, 0.17, T_B + 0.06))
@@ -287,7 +322,7 @@ def cartolinha():
     for v in pena.data.vertices:  # achatada: larga de lado, fina de frente
         d = v.co - base_p
         v.co.x = base_p.x + d.x * 0.45
-    colocar(pena, M, s)
+    colocar(pena, M, s, boca=boca)
     set_material(pena, mat('Pluma', hexrgb('#f8a5c2'), 0.9))
     # Serpentina enrolada na aba (duas voltas largas em torno da aba, cada uma com 26 espirais).
     serps = []
@@ -301,7 +336,7 @@ def cartolinha():
             re, a = R_BO - 0.035, 0.032
             pts_s.append(Vector(((re + a * math.cos(v)) * math.cos(u), (re + a * math.cos(v)) * math.sin(u), T_B / 2 + a * math.sin(v))))
         sp = tube(pts_s, [0.0065] * n, seg=4)
-        colocar(sp, M, s)
+        colocar(sp, M, s, boca=boca)
         set_material(sp, mat('Serpentina', hexrgb(cor), 0.5))
         serps.append(sp)
     # Ponta solta da serpentina caindo da aba, enrolada.
@@ -313,7 +348,7 @@ def cartolinha():
         ang = u + 0.4 * t
         ponta.append(Vector((r * math.cos(ang) + 0.025 * math.cos(9 * t * math.pi), r * math.sin(ang) + 0.025 * math.sin(9 * t * math.pi), -0.12 * t)))
     pt = tube(ponta, [0.0065] * 26, seg=4)
-    colocar(pt, M, s)
+    colocar(pt, M, s, boca=boca)
     set_material(pt, serps[0].data.materials[0])
     serp = join(serps[:1] + [pt], 'Serpentina')
     meshes = [copa, fita, pena, serp, serps[1]]
