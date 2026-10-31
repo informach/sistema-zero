@@ -2505,6 +2505,9 @@ faz o que as seções acima descrevem.
    continua com a equipe. Feito (lote 9a, 31/10): a Vila Doce virou a corrida do entregador sobre o
    Corre, Dino! (pulo com gravidade, pedras sorteadas com limites, dificuldade com teto, um passo
    por quadro) e os nove desafios pedem publicação (`docs/desafios-do-jogo/vila-doce/README.md`).
+   Feito (lote 9f, 31/10, decisão da dona A43): Vale e Nuvens publicam como estão, esperando os
+   cursos do Arquiteto e do Gênio, que chegam antes do lançamento; o que cada desafio espera está
+   em `docs/desafios-do-jogo/publicacao.test.ts`.
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
    Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos. Feito

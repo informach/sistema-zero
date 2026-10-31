@@ -53,7 +53,8 @@ test('os cinco quadros são determinísticos, por público, e preservam o laço 
     for (const d of desafios) {
       expect(d.publico).toBe(publico)
       // C01b: só os quadros sem lista pedem publicação.
-      expect(d.publicar).toBe(d.quadro !== null && d.quadro >= 3)
+      // A43 (decisão da dona, 31/10/2026): os cinco publicam como estão.
+      expect(d.publicar).toBe(true)
       expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
       const temLacoPreparado = d.quadro === 1 || d.quadro === 2
       const loops = (raw: unknown) => {

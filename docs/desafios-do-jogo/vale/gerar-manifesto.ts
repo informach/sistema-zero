@@ -69,8 +69,9 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
             quadro: null,
             ordem: 60 + i,
             // §6.28 A2: o sexto quadro é o desafio na Ponte; o minijogo em blocos continua como
-            // desafio do dia (nunca pinta). Sem fonte na trilha para os blocos: não publica (A1).
-            publicar: false,
+            // desafio do dia (nunca pinta). A43 (decisão da dona, 31/10/2026): publica como está; os
+            // cursos do Arquiteto chegam antes do lançamento, e a barreira C01a confere na importação.
+            publicar: true,
             conteudo: {
               versao: 1,
               ...textos[variacao],

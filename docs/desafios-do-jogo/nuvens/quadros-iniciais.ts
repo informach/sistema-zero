@@ -306,7 +306,9 @@ export function desafiosIniciaisDasNuvens(publico: PublicoDoDesafio) {
       ordem: quadro * 10,
       // C01b: os quadros sem lista têm todas as fontes na trilha; a Colheita da lista (5) espera o
       // ensino de listas e laço, que nas Nuvens é em JavaScript (C02).
-      publicar: quadro <= 4,
+      // A43 (decisão da dona, 31/10/2026): publica como está; os cursos do Gênio chegam antes do
+      // lançamento. A barreira C01a continua valendo na importação.
+      publicar: true,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,

@@ -11232,7 +11232,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 5,
       "ordem": 50,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Colheita da lista",

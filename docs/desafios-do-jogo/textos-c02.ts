@@ -19,8 +19,9 @@ import {
 export function conferirDesafioC02(d: DesafioDoManifesto) {
   expect(d.tipo).toBe('quadro-das-cores')
   expect(d.quadro).toBe(6)
-  // O Vale em texto espera os cursos do Arquiteto (a Ponte não tem fonte ainda; A1).
-  expect(d.publicar).toBe(d.ilha !== 'vale-dos-dinos')
+  // A43 (decisão da dona, 31/10/2026): todos publicam, o Vale em texto também (os cursos do
+  // Arquiteto chegam antes do lançamento; a barreira C01a confere na importação).
+  expect(d.publicar).toBe(true)
   expect(d.conteudo.recompensa.cor).toBe(true)
   expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
   const textos = [
