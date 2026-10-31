@@ -440,7 +440,7 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
 | `POST /tempo` | cliente antigo | 410 `ATUALIZACAO_NECESSARIA`; não registra novos lotes |
 | `POST /tempo/recuperar` | jogador liberado | entrega idempotente dos lotes legados já persistidos; suporte não soma |
 | `POST /tempo/sessao` | perfil Kids liberado, sem suporte | `{sessaoId, sequencia, acao}`; início/pulso/pausa com concessão de até 20 s, contagem e virada de dia pelo servidor |
-| `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis: os do jogo sempre, os de controle pelos blocos conquistados (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
+| `GET /cartas` | jogador liberado | os cartões da rotina dos Lumis pelo posto da Jornada (L7b, 01/11/2026; até então pelos blocos), com o `posto` de cada um (equipe vê todos), e "Aprenda isso em" nos que faltam; Members fora ou não configurado → 424 `PLATAFORMA_INDISPONIVEL` |
 | `GET /desafios`, `GET /desafios/:id`, `POST /desafios/:id/verificar`, `POST /desafios/:id/recompensa-vista` | jogador liberado (com `ARQUIPELAGO_DESAFIOS`) | ver "Jogar os desafios" |
 | `GET /familia/limite?perfis=` | responsável do Kids | o limite diário da família e `algumaCriancaVe` (algum dos perfis da conta, mandados pelo BFF dos pais, vê o jogo pela política de acesso); perfis fora do formato → 400 |
 | `PUT /familia/limite` | responsável do Kids | muda o limite diário da família (padrão 30, de 10 a 240, passo 5) |
