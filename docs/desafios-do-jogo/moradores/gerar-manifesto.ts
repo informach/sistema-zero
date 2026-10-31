@@ -4,6 +4,7 @@ import {
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { gravarManifesto } from '../gravar-manifesto'
+import { PEDIDOS_DAS_ILHAS, type PedidoDaIlha, projetoDoPedidoDaIlha } from './pedidos-das-ilhas'
 import { objetivosDoPedido, PEDIDO_DO_NICO, projetoDoPedido } from './projetos'
 
 /**
@@ -68,7 +69,56 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
   })
 }
 
-if (import.meta.main)
+/**
+ * O pedido de um morador de ilha do anel (lacunas, 01/11/2026): um manifesto por ilha e público,
+ * com o mesmo formato do pedido do Nico (sem cor, 5 e 2 moedas, ordem 80).
+ */
+export function criarManifestoDaIlha(p: PedidoDaIlha, publico: PublicoDoDesafio = 'kids') {
+  const moedas = MOEDAS_PADRAO_POR_TIPO['pedido-de-morador']
+  const t = p.textos[publico]
+  return ManifestoDeDesafiosSchema.parse({
+    formato: 'arquipelago-desafios',
+    versao: 1,
+    escopo: 'ilha',
+    desafios: [
+      {
+        slug: `${p.quem}-${p.slug}${publico === 'adulto' ? '-adulto' : ''}`,
+        publico,
+        ilha: p.ilha,
+        tipo: 'pedido-de-morador',
+        quadro: null,
+        ordem: 80,
+        publicar: true,
+        conteudo: {
+          versao: 1,
+          titulo: p.titulo,
+          enunciado: t.enunciado,
+          dicas: t.dicas,
+          projetoInicial: projetoDoPedidoDaIlha(p, false),
+          gabarito: projetoDoPedidoDaIlha(p, true),
+          objetivos: p.objetivos(),
+          desafioExtra: {
+            titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
+            texto: t.extra,
+          },
+          recompensa: { cor: false, moedas: moedas.principal, moedasExtra: moedas.extra },
+          blocosManuais: { acrescentar: [], retirar: [] },
+        },
+      },
+    ],
+  })
+}
+
+if (import.meta.main) {
+  for (const p of PEDIDOS_DAS_ILHAS)
+    for (const publico of ['kids', 'adulto'] as const)
+      await gravarManifesto(
+        new URL(
+          `./${p.ilha}-moradores${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`,
+          import.meta.url,
+        ),
+        criarManifestoDaIlha(p, publico),
+      )
   for (const publico of ['kids', 'adulto'] as const)
     await gravarManifesto(
       new URL(
@@ -77,3 +127,4 @@ if (import.meta.main)
       ),
       criarManifesto(publico),
     )
+}

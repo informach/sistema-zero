@@ -10,7 +10,8 @@ import {
 } from '../../../packages/core/src/learning/section-progression'
 import { resolveBlockLevel } from '../../../packages/studio/src/blockly/blockLevels'
 import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
-import { criarManifesto } from './gerar-manifesto'
+import { criarManifesto, criarManifestoDaIlha } from './gerar-manifesto'
+import { PEDIDOS_DAS_ILHAS } from './pedidos-das-ilhas'
 
 const manifesto = criarManifesto()
 const raiz = new URL('../../aulas-interativas/', import.meta.url)
@@ -86,4 +87,63 @@ test('textos da criança sem travessão, sem exclamação e sem começar por per
       expect(/^\s*(Qual|Quem|Como|Onde|Quando|Por que|O que)\b.*\?/.test(t), d.slug).toBe(false)
     }
   }
+})
+
+/**
+ * Os pedidos das ilhas do anel (lacunas, 01/11/2026): a primeira atividade de uma ilha reaplica o
+ * que veio antes (Jornada). O Bosque usa só o Faísca; as outras, o Faísca e o Construtor.
+ */
+const TRILHA_ATE_O_CONSTRUTOR = [...TRILHA_DO_FAISCA, 'construtor/nave-contra-asteroides']
+const blocosAteOConstrutor = new Set(
+  TRILHA_ATE_O_CONSTRUTOR.flatMap((curso) => {
+    const dados = JSON.parse(readFileSync(new URL(`${curso}/blocos.json`, raiz), 'utf8'))
+    return dados.blocks ?? dados['2d']
+  }),
+)
+
+test('os pedidos das ilhas: um por ilha do anel, arquivos iguais à fonte, só a trilha de antes', async () => {
+  expect(PEDIDOS_DAS_ILHAS.map((p) => p.ilha).sort()).toEqual(
+    ['bosque', 'nuvens', 'pico', 'recife', 'vale-dos-dinos', 'vila-doce'].sort(),
+  )
+  for (const p of PEDIDOS_DAS_ILHAS)
+    for (const publico of ['kids', 'adulto'] as const) {
+      const m = criarManifestoDaIlha(p, publico)
+      const arquivo = `./${p.ilha}-moradores${publico === 'adulto' ? '-adulto' : ''}.manifesto.json`
+      expect(await Bun.file(new URL(arquivo, import.meta.url)).json()).toEqual(m)
+      const trilha = p.ilha === 'bosque' ? blocosDaTrilha : blocosAteOConstrutor
+      for (const d of m.desafios) {
+        expect(d.tipo).toBe('pedido-de-morador')
+        expect(d.ilha).toBe(p.ilha)
+        expect(d.conteudo.recompensa.cor).toBe(false)
+        expect(d.conteudo.recompensa.moedas).toBe(5)
+        for (const projeto of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
+          const project = projeto as { ir: unknown; blocksState: unknown }
+          expect(SZIRV2Schema.safeParse(project.ir).success, d.slug).toBe(true)
+          const usados = [...new Set(tipos(project.blocksState))]
+          expect(
+            usados.filter((t) => !trilha.has(t)),
+            d.slug,
+          ).toEqual([])
+        }
+        const checks = d.conteudo.objetivos as SectionJavaScriptProjectCheck[]
+        expect(checks.some((c) => c.optional)).toBe(true)
+        expect(checks.every((c) => isSectionExecutionRule(c.rule))).toBe(true)
+        expect(
+          checks.reduce((soma, c) => soma + executionRuleBudgetMs(c.rule as never), 0),
+        ).toBeLessThanOrEqual(15000)
+        if (publico === 'kids')
+          for (const t of [
+            d.conteudo.titulo,
+            d.conteudo.enunciado,
+            ...d.conteudo.dicas,
+            d.conteudo.desafioExtra?.texto ?? '',
+            ...checks.map((c) => c.label),
+          ]) {
+            expect(t, d.slug).not.toMatch(/[—–!]/)
+            expect(/^\s*(Qual|Quem|Como|Onde|Quando|Por que|O que)\b.*\?/.test(t), d.slug).toBe(
+              false,
+            )
+          }
+      }
+    }
 })

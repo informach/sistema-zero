@@ -1,4 +1,5 @@
 import { useFrame } from '@react-three/fiber'
+import { ILHA_DO_PEDIDO, type MoradorDoPedido } from '@sistemazero/arquipelago-contracts'
 import { useEffect, useMemo, useRef } from 'react'
 import {
   BufferAttribute,
@@ -35,12 +36,67 @@ const NOITE_APAGADA = new Color(0.32, 0.34, 0.45)
 const CHEIA = new Color(1, 1, 1)
 export const LUZ_DA_PLACA = { cor: '#ffd98a', intensidade: 2.2, alcance: 5 } as const
 
+/** Como a placa chama o morador ("Pedido da Capi"). */
+const DO_MORADOR: Readonly<Record<MoradorDoPedido, string>> = {
+  capi: 'da Capi',
+  bento: 'do Bento',
+  mare: 'da Maré',
+  floco: 'do Floco',
+  jade: 'da Jade',
+  irie: 'da Iriê',
+  nico: 'do Nico',
+}
+const NOME: Readonly<Record<MoradorDoPedido, string>> = {
+  capi: 'a Capi',
+  bento: 'o Bento',
+  mare: 'a Maré',
+  floco: 'o Floco',
+  jade: 'a Jade',
+  irie: 'a Iriê',
+  nico: 'o Nico',
+}
+
 /**
- * A placa do pedido do Nico (§6.28, A23): o mesmo modelo da placa da ponte, com o pedido escrito.
- * Só aparece com um pedido publicado para a sua ilha. De noite ela fica escura até o pedido ser
- * feito; feito, acende à noite.
+ * Onde fica a placa de um morador do anel: à frente dele e um pouco para o lado (atrás costuma
+ * estar a casa dele), virada para quem chega.
  */
-export function PlacaDoPedido() {
+export function placaAoLadoDoMorador(lugar: {
+  x: number
+  y: number
+  z: number
+  descanso: number
+}): LugarDaPlaca {
+  const frente = 1.2
+  const lado = 1.5
+  const s = Math.sin(lugar.descanso)
+  const c = Math.cos(lugar.descanso)
+  return {
+    x: lugar.x + s * frente + c * lado,
+    y: lugar.y,
+    z: lugar.z + c * frente - s * lado,
+    giro: lugar.descanso,
+  }
+}
+export interface LugarDaPlaca {
+  x: number
+  y: number
+  z: number
+  giro: number
+}
+
+/**
+ * A placa do pedido de um morador (§6.28, A23; em toda ilha desde as lacunas de 01/11/2026): o
+ * mesmo modelo da placa da ponte, com o pedido escrito. Só aparece com um pedido publicado para a
+ * ilha do morador. De noite ela fica escura até o pedido ser feito; feito, acende à noite. Sem
+ * `lugar`, é a do Nico, na praia da sua ilha.
+ */
+export function PlacaDoPedido({
+  quem = 'nico',
+  lugar,
+}: {
+  quem?: MoradorDoPedido
+  lugar?: LugarDaPlaca
+}) {
   const { loja, plataforma } = useJogo()
   const desafios = lojaDosDesafios(loja, plataforma)
   const dados = useDesafios(desafios, (s) => s.dados)
@@ -49,16 +105,36 @@ export function PlacaDoPedido() {
   useEffect(() => {
     if (!visita && !desafios.getState().dados) void desafios.getState().carregar()
   }, [desafios, visita])
-  const pedido = visita ? null : pedidoDoEstudio(dados, 'sua-ilha')
+  const ilha = ILHA_DO_PEDIDO[quem]
+  const pedido = visita ? null : pedidoDoEstudio(dados, ilha)
   if (!pedido) return null
+  const onde = lugar ?? {
+    ...PLACA_DO_NICO,
+    y: alturaDaIlha(PLACA_DO_NICO.x, PLACA_DO_NICO.z),
+  }
   return (
     <ComReserva reserva={null}>
-      <PlacaCarregada titulo={pedido.titulo} acesa={placaDoPedidoAcesa(dados, 'sua-ilha')} />
+      <PlacaCarregada
+        quem={quem}
+        lugar={onde}
+        titulo={pedido.titulo}
+        acesa={placaDoPedidoAcesa(dados, ilha)}
+      />
     </ComReserva>
   )
 }
 
-function PlacaCarregada({ titulo, acesa }: { titulo: string; acesa: boolean }) {
+function PlacaCarregada({
+  quem,
+  lugar,
+  titulo,
+  acesa,
+}: {
+  quem: MoradorDoPedido
+  lugar: LugarDaPlaca
+  titulo: string
+  acesa: boolean
+}) {
   const { ambiente } = useJogo()
   const original = useModelo(URL_DA_PLACA)
   const luz = useRef<PointLight>(null)
@@ -74,11 +150,11 @@ function PlacaCarregada({ titulo, acesa }: { titulo: string; acesa: boolean }) {
     ctx.fillStyle = '#27334c'
     ctx.textAlign = 'center'
     ctx.font = 'bold 44px sans-serif'
-    ctx.fillText('Pedido do Nico', 384, 90)
+    ctx.fillText(`Pedido ${DO_MORADOR[quem]}`, 384, 90)
     ctx.font = '42px sans-serif'
     ctx.fillText(titulo, 384, 180, 720)
     ctx.font = 'italic 36px sans-serif'
-    ctx.fillText(acesa ? 'Feito por você' : 'Converse com o Nico', 384, 290)
+    ctx.fillText(acesa ? 'Feito por você' : `Converse com ${NOME[quem]}`, 384, 290)
     const textura = new CanvasTexture(tela)
     textura.colorSpace = SRGBColorSpace
     const material = new MeshBasicMaterial({ map: textura })
@@ -101,7 +177,7 @@ function PlacaCarregada({ titulo, acesa }: { titulo: string; acesa: boolean }) {
       o.material = material
     })
     return { cena, textura, material, geometrias }
-  }, [original, titulo, acesa])
+  }, [original, titulo, acesa, quem])
   useEffect(
     () => () => {
       desenho.textura.dispose()
@@ -119,11 +195,11 @@ function PlacaCarregada({ titulo, acesa }: { titulo: string; acesa: boolean }) {
     desenho.material.color.copy(noite && !acesa ? NOITE_APAGADA : CHEIA)
     if (luz.current) luz.current.intensity = noite && acesa ? LUZ_DA_PLACA.intensidade : 0
   })
-  const { x, z, giro } = PLACA_DO_NICO
+  const { x, y, z, giro } = lugar
   return (
     <group
-      name="placa-do-pedido-nico"
-      position={[x, alturaDaIlha(x, z), z]}
+      name={`placa-do-pedido-${quem}`}
+      position={[x, y, z]}
       rotation={[0, giro, 0]}
       dispose={null}
     >

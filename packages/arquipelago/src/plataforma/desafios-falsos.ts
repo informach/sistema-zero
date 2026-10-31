@@ -115,6 +115,20 @@ export function criarDesafiosFalsos(
       ordem: 80,
       recompensa: { cor: false, moedas: 20, moedasExtra: 10 },
     },
+    // O pedido da Capi no Estúdio (lacunas, 01/11/2026): a placa fica ao lado dela no Bosque.
+    {
+      ...desafio(
+        '00000000-0000-4000-8000-0000000000f2',
+        0,
+        'A lanterna da cabana',
+        situacao('disponivel'),
+        'bosque',
+      ),
+      tipo: 'pedido-de-morador',
+      quadro: null,
+      ordem: 80,
+      recompensa: { cor: false, moedas: 5, moedasExtra: 2 },
+    },
     // O sexto quadro do Recife, em Python (A2), espera o curso-base do Explorador (A3).
     {
       ...desafio(
