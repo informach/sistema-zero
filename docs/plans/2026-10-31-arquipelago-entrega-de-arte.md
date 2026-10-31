@@ -52,8 +52,13 @@ no primeiro degrau (o piso de 0,286 é estreito para o degrau automático).
   perto do toco. `segredo-dos-patins.test.ts` reprova se aparecer outro lugar de onde ele chegue.
 - Retro da geladeira, do forno e do aquário: as faces do Pinta têm tamanho fixo, então o
   arredondado vem dos acessórios; nos outros seis a forma mudou de fato.
-- Segundo andar: o vão da escada não pode encostar o lado comprido numa parede (fica a uma célula
-  dela); a parede de lambri subida mostra a faixa de pedra no meio da fachada.
+- Segundo andar (resolvido depois): `piso-andar-vao-parede` (em `casa-andar.glb`) é o vão sem o
+  guarda-corpo do lado comprido +x, para encostar na parede, e `casa-paredes-andar.glb` traz as
+  paredes do andar (lambri e lisa, `<nome>-andar`) sem alicerce, com uma cinta branca na emenda.
+  Aceite em `casa-andar.test.ts` (a cápsula sobe com a parede ao lado; sala montada sem faces
+  coplanares nem emendas em T; sem fresta na linha do piso). Folga: entre a parede e o guarda-corpo
+  do outro lado a cápsula passa com cerca de 1 cm de cada lado; subindo torto, ela encosta e
+  desliza na parede.
 - Silhuetas: com 3 mil triângulos somem as peças miúdas (tábuas, cercas, escorregador); a água e
   o gelo ficam opacos; o navio e a caverna (arquivos separados) não entram.
 - Recife: o mastro do navio não foi feito (o navio é outro arquivo); os pináculos sozinhos já

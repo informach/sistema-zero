@@ -21,6 +21,7 @@ vizinha, toda superfície com vão é uma malha em grade, e todas as paredes usa
 (`CORTES_Y` e uma coluna a cada meia célula), então duas vizinhas casam vértice a vértice.
 """
 import random
+from contextlib import contextmanager
 
 from lib_casa import *
 from lib_casa import _objeto, _orientar
@@ -35,6 +36,14 @@ RODAPE_FORA = ([(-0.08, 0.33), (-0.15, 0.33), (-0.15, 0.485), (-0.135, 0.5), (-0
                ['acabamento', 'acabamento', 'acabamento', 'acabamento', None])
 FRISO_DE_CIMA = ([(-0.08, 3.72), (-0.14, 3.72), (-0.16, 3.74), (-0.16, 3.95), (-0.08, 3.95)],
                  ['acabamento', 'acabamento', 'acabamento', 'acabamento', None])
+
+
+# A parede do andar (`no_andar`) começa no topo do piso de cima e não tem alicerce: a cinta cobre por
+# fora a linha entre as duas paredes (de 3,955 a 4,17 no térreo; aqui, de -0,145 a 0,07 do pé), 5 mm
+# acima do friso de cima da parede de baixo (no mesmo plano dele piscaria).
+CINTA = ([(-0.08, -0.145), (-0.15, -0.145), (-0.15, 0.05), (-0.13, 0.07), (-0.08, 0.07)],
+         ['acabamento', 'acabamento', 'acabamento', 'acabamento', None])
+_SEM_BASE = False   # ligado só dentro de `no_andar()`
 
 
 def friso(z):
@@ -92,9 +101,13 @@ def parede(largura, familia, altura=H, vaos=(), paradas_frisos=None, paradas_bai
     p = [parede_grade(u0, u1, -T / 2, T / 2, Z0, altura, list(vaos), frente, 'paredeDentro', 'paredeTopo', frente,
                       cortes_y=cortes, cortes_u=list(meias_celulas(largura)) + list(extras_u))]
     p += faixa(rodape_dentro(1), u0, u1, paradas_rodape, 'rodape')
-    if lambri:
+    if lambri and _SEM_BASE:
+        # Parede do andar: sem alicerce nem rodapé de fora; a cinta cobre a linha do piso de cima.
+        p += faixa(CINTA, u0, u1, (), 'cinta')
+    elif lambri:
         p += faixa(ALICERCE, u0, u1, paradas_baixo, 'alicerce')
         p += faixa(RODAPE_FORA, u0, u1, paradas_baixo, 'rodape-fora')
+    if lambri:
         for z in FRISOS:
             if z + 0.03 > altura:
                 continue
@@ -863,6 +876,28 @@ def colisores_do_vao():
             col_caixa('col-guarda-vao-3', -0.5, 0.5, 0.0, 0.08, ANDAR - 0.1, zt)]
 
 
+LADO_DA_PAREDE_DO_VAO = 'x+'   # o lado comprido sem guarda-corpo do `piso-andar-vao-parede`
+
+
+def piso_andar_vao_parede():
+    """Como o `piso-andar-vao`, mas sem o guarda-corpo do lado comprido +x local (x = +0,5): a escada
+    encosta numa parede na linha x = +0,5 (o corrimão da escada fica do outro lado, em -x). No lugar
+    do guarda-corpo, uma faixa de acabamento de 0,355 a 0,49 cobre, do lado do vão, a linha entre a
+    parede de baixo (até 4,00) e a de cima (de 4,10, ou de 4,00 se for a de baixo subida), e segura
+    por baixo o rodapé da parede de cima, que passa por cima do vão. A face dela fica 4,5 cm à frente
+    da parede (nada no mesmo plano). O guarda-corpo do pé vai até a faixa."""
+    p = balaustrada(0.0, 4.0, -0.495, -0.43, False, fascia=(-0.495, -0.465), postes=(0.04, 1.0, 2.0, 3.0, 3.96))
+    p += balaustrada(-0.43, 0.355, 0.005, 0.07, True, fascia=(0.005, 0.035), postes=(0.0, 0.29))
+    p.append(caixa(0.355, 0.49, 0.0, 4.0, ANDAR - 0.12, ANDAR + 0.02, 'acabamento'))
+    return p
+
+
+def colisores_do_vao_parede():
+    zt = ANDAR + 1.0
+    return [col_caixa('col-guarda-vao-parede-1', -0.5, -0.42, 0.0, 4.0, ANDAR - 0.1, zt),
+            col_caixa('col-guarda-vao-parede-2', -0.5, 0.4, 0.0, 0.08, ANDAR - 0.1, zt)]
+
+
 def guarda_corpo_andar():
     """1 de largura, 1,0 de altura, para a beira do piso de cima sem parede. Como a parede: origem no
     meio da base, na linha da grade, e o +Y local é o lado do piso (o guarda-corpo fica de 0,02 a
@@ -878,10 +913,12 @@ def andar():
         'escada-interna': escada_interna(),
         'piso-andar-vao': piso_andar_vao(),
         'guarda-corpo-andar': guarda_corpo_andar(),
+        'piso-andar-vao-parede': piso_andar_vao_parede(),
     }
     junto = {
         'escada-interna': colisores_da_escada() + ancoras_da_escada(),
         'piso-andar-vao': colisores_do_vao(),
+        'piso-andar-vao-parede': colisores_do_vao_parede(),
         'guarda-corpo-andar': [col_caixa('col-guarda-andar-1', -0.5, 0.5, 0.0, 0.12, ANDAR, ANDAR + 1.0)],
     }
     notas = {
@@ -891,12 +928,68 @@ def andar():
         'escada-interna': '1 × 4; origem no meio do pé, sobe para +Y',
         'piso-andar-vao': '1 × 4; mesma posição e giro da escada',
         'guarda-corpo-andar': '1 célula; origem no meio da base, na linha da grade',
+        'piso-andar-vao-parede': '1 × 4; mesma posição e giro da escada; sem guarda-corpo do lado +x (parede)',
     }
     return nos, junto, notas
 
 
+@contextmanager
+def no_andar():
+    """Monta as paredes do andar com as funções de sempre: o pé da parede no topo do piso (0, e não
+    -0,10), as linhas da grade a partir dele e, no lambri, sem alicerce nem rodapé de fora e com a
+    cinta. Quem chama sobe as peças 4,10."""
+    global Z0, CORTES_Y, CORTES_Y_BAIXA, _SEM_BASE
+    antes = (Z0, CORTES_Y, CORTES_Y_BAIXA, _SEM_BASE)
+    Z0 = 0.0
+    CORTES_Y = (0.0,) + tuple(c for c in antes[1] if c > 0)
+    CORTES_Y_BAIXA = (0.0, HB)
+    _SEM_BASE = True
+    try:
+        yield
+    finally:
+        Z0, CORTES_Y, CORTES_Y_BAIXA, _SEM_BASE = antes
+
+
+def quina_andar(familia, altura=H):
+    """Quina das paredes do andar. Lambri: o pilar branco 1 cm mais largo que o de baixo (0,36), sem
+    o bloco de alicerce, descendo até 3,96 (cobre a ponta da cinta e passa por fora do topo da quina
+    de baixo, que vai a 4,04). Lisa: o pilar de 0,30 de 4,05 (dentro do piso) para cima."""
+    if familia == 'lambri':
+        return [sem_fundo(caixa(-0.18, 0.18, -0.18, 0.18, -0.14, altura + 0.04, 'acabamento', bevel=0.04, segs=2))]
+    return [sem_fundo(caixa(-0.15, 0.15, -0.15, 0.15, -0.05, altura + 0.03, 'acabamento', bevel=0.05, segs=2))]
+
+
+def paredes_do_andar():
+    """As paredes do andar de cima: as mesmas de baixo com o sufixo `-andar`, menos a porta de lambri
+    (não há porta para fora no andar). Cada uma no referencial do térreo (z = 0), com o pé no topo do
+    piso de cima (4,10) e a mesma posição e giro da parede de baixo."""
+    nos, notas = {}, {}
+    with no_andar():
+        for fam in ('lambri', 'lisa'):
+            nos[f'parede-{fam}-andar'] = parede(1, fam)
+            nos[f'parede-{fam}-baixa-andar'] = parede(1, fam, HB)
+            if fam == 'lisa':
+                nos['parede-porta-lisa-andar'] = parede_porta(fam)
+                nos['parede-porta-lisa-baixa-andar'] = parede_porta(fam, HB)
+            nos[f'parede-janela-grande-{fam}-andar'] = janela_grande(fam)
+            nos[f'parede-janela-arco-{fam}-andar'] = janela_arco(fam)
+            nos[f'parede-janela-redonda-{fam}-andar'] = janela_redonda(fam)
+            nos[f'quina-{fam}-andar'] = quina_andar(fam)
+            nos[f'quina-{fam}-baixa-andar'] = quina_andar(fam, HB)
+    for nome, objs in nos.items():
+        lib_ilha.place(objs, loc=(0, 0, ANDAR))
+        if nome.startswith('parede-'):
+            larg = 3 if ('porta' in nome or 'grande' in nome) else 2 if 'arco' in nome else 1
+            notas[nome] = f'{larg} célula(s); origem no meio da base, na linha da grade; pé em 4,10'
+        else:
+            notas[nome] = 'origem no ponto da grade'
+    return nos, notas
+
+
 def main():
+    # GLB=paredes,andar escolhe os grupos pelo nome exato (paredes-andar não é paredes).
     so = os.environ.get('GLB')
+    so = so.split(',') if so else None
     if not so or 'paredes' in so:
         novo()
         nos, notas = paredes()
@@ -915,6 +1008,10 @@ def main():
         novo()
         nos, junto, notas = andar()
         exportar_casa('casa-andar', nos, grupo='kit', notas=notas, junto=junto)
+    if not so or 'paredes-andar' in so:
+        novo()
+        nos, notas = paredes_do_andar()
+        exportar_casa('casa-paredes-andar', nos, grupo='kit', notas=notas)
 
 
 if __name__ == '__main__':

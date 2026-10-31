@@ -375,21 +375,22 @@ def cena_andar():
     """Segundo andar (31/10/2026): sala 4 × 6 com a escada no meio da coluna x = 1..2 (pé em y = 1,
     chegada em y = 5), o piso de cima de tábua em volta do vão, o pé-direito duplo na coluna
     x = 3..4 com o guarda-corpo na beira (linha x = 3) e as paredes de lambri dos dois andares."""
-    c = Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb'])
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb'])
     w, d, h = 4, 6, 4.1
     c.piso('piso-tabua', 0, 0, w, d)
     # O fundo e a esquerda em pé; a frente e a direita cortadas (o corte para ver dentro), nos dois
     # andares, com as quinas do `sala_de`.
-    for z in (0.0, h):
+    # Em cima, as paredes do andar (`-andar`, já com o pé em 4,10: z = 0).
+    for sufixo in ('', '-andar'):
         for i in range(w):
-            c.por('parede-lambri-baixa', i + 0.5, 0, z, 0)
-            c.por('parede-lambri', i + 0.5, d, z, 180)
+            c.por(f'parede-lambri-baixa{sufixo}', i + 0.5, 0, 0, 0)
+            c.por(f'parede-lambri{sufixo}', i + 0.5, d, 0, 180)
         for j in range(d):
-            c.por('parede-lambri', 0, j + 0.5, z, -90)
-            c.por('parede-lambri-baixa', w, j + 0.5, z, 90)
+            c.por(f'parede-lambri{sufixo}', 0, j + 0.5, 0, -90)
+            c.por(f'parede-lambri-baixa{sufixo}', w, j + 0.5, 0, 90)
         for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri-baixa'), (0, d, 'quina-lambri'),
                         (w, d, 'quina-lambri')):
-            c.por(q, x, y, z)
+            c.por(q + sufixo, x, y)
     for i in range(3):
         for j in range(d):
             if i == 1 and 1 <= j < 5:
@@ -400,6 +401,59 @@ def cena_andar():
     # O guarda-corpo na beira do piso de cima (o piso fica em -x: giro +90).
     for j in range(d):
         c.por('guarda-corpo-andar', 3.0, j + 0.5, 0, 90)
+    return c
+
+
+def andar_na_parede(c):
+    """A escada encostada na parede (`piso-andar-vao-parede`): sala 3 × 6 com a escada na coluna
+    x = 2..3, pé em y = 1, e a parede da direita (x = 3) em pé nos dois andares, do lado +x do vão.
+    As paredes de cima não repetem as de baixo (janela sobre parede lisa, parede sobre porta): a
+    linha entre as duas é a mesma para qualquer par."""
+    w, d = 3, 6
+    c.piso('piso-tabua', 0, 0, w, d)
+    baixo = {'fundo': [('parede-janela-grande-lambri', 3)],
+             'esquerda': [('parede-lambri', 1), ('parede-porta-lambri', 3), ('parede-lambri', 1), ('parede-lambri', 1)],
+             'direita': [('parede-lambri', 1)] * 6, 'frente': [('parede-lambri-baixa', 1)] * 3}
+    cima = {'fundo': [('parede-janela-arco-lambri-andar', 2), ('parede-janela-redonda-lambri-andar', 1)],
+            'esquerda': [('parede-janela-grande-lambri-andar', 3)] + [('parede-lambri-andar', 1)] * 3,
+            'direita': [('parede-lambri-andar', 1)] * 6, 'frente': [('parede-lambri-baixa-andar', 1)] * 3}
+    for paredes, sufixo in ((baixo, ''), (cima, '-andar')):
+        c.corrida('x', d, 0, paredes['fundo'], -1)
+        c.corrida('y', 0, 0, paredes['esquerda'], +1)
+        c.corrida('y', w, 0, paredes['direita'], -1)
+        c.corrida('x', 0, 0, paredes['frente'], +1)
+        for x, y, q in ((0, 0, 'quina-lambri'), (w, 0, 'quina-lambri-baixa'), (0, d, 'quina-lambri'),
+                        (w, d, 'quina-lambri')):
+            c.por(q + sufixo, x, y)
+    for i in range(w):
+        for j in range(d):
+            if i == 2 and 1 <= j < 5:
+                continue
+            c.por('piso-andar-tabua', i + 0.5, j + 0.5)
+    c.por('escada-interna', 2.5, 1.0)
+    c.por('piso-andar-vao-parede', 2.5, 1.0)
+    return c
+
+
+def cena_andar_parede():
+    return andar_na_parede(Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb']))
+
+
+def cena_fachada_andar():
+    """Só para a prévia (não entra na conferência das emendas): duas fachadas de lambri de 3 células
+    com dois andares lado a lado. À esquerda, como era antes (a parede de baixo subida 4,10, com o
+    alicerce no meio da fachada); à direita, a parede do andar (`-andar`, sem alicerce, com a cinta)."""
+    c = Cena(['casa-paredes.glb', 'casa-pisos.glb', 'casa-andar.glb', 'casa-paredes-andar.glb'])
+    for x0, de_cima, z in ((0.0, 'parede-lambri', 4.1), (4.0, 'parede-lambri-andar', 0.0)):
+        for i in range(3):
+            c.por('parede-lambri', x0 + i + 0.5, 0, 0, 0)
+            c.por(de_cima, x0 + i + 0.5, 0, z, 0)
+            c.por('piso-tabua', x0 + i + 0.5, 0.5)
+            c.por('piso-andar-tabua', x0 + i + 0.5, 0.5)
+        quina_cima = ('quina-lambri', 4.1) if z else ('quina-lambri-andar', 0.0)
+        for x in (x0, x0 + 3):
+            c.por('quina-lambri', x, 0)
+            c.por(quina_cima[0], x, 0, quina_cima[1])
     return c
 
 
@@ -434,7 +488,8 @@ def cena_cafe_festas():
 
 
 CENAS = {'moveis': cena_moveis, 'kit': cena_kit, 'cozinha': cena_cozinha, 'sala': cena_sala, 'banheiro': cena_banheiro,
-         'andar': cena_andar, 'cafe-festas': cena_cafe_festas}
+         'andar': cena_andar, 'andar-parede': cena_andar_parede, 'cafe-festas': cena_cafe_festas,
+         'fachada-andar': cena_fachada_andar}
 
 
 def main():
@@ -470,6 +525,10 @@ VISTAS = {
     'moveis': [((6.0, 2.2, 0.9), (0.35, -1.0, 0.55), 12.5), ((3.0, 2.4, 0.9), (0.2, -1.0, 0.5), 6.2),
                ((9.5, 2.4, 0.9), (-0.2, -1.0, 0.5), 6.2)],
     'andar': [((2.0, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((1.6, 3.0, 2.6), (0.9, -0.35, 0.45), 7.0)],
+    'andar-parede': [((1.5, 3.0, 3.5), (0.7, -1.0, 0.9), 11.0), ((2.0, 3.0, 4.0), (-0.6, -1.0, 0.5), 8.0),
+                     ((2.4, 3.0, 4.1), (-0.6, -0.4, 1.0), 5.5)],
+    'fachada-andar': [((3.5, 0.0, 4.0), (0.35, -1.0, 0.25), 9.0), ((1.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2),
+                      ((5.5, 0.0, 4.05), (0.3, -1.0, 0.15), 2.2)],
     'cafe-festas': [((6.0, 2.2, 1.0), (0.35, -1.0, 0.55), 12.5), ((2.5, 2.4, 1.0), (0.2, -1.0, 0.5), 5.5),
                     ((9.5, 2.6, 1.6), (-0.2, -1.0, 0.4), 5.5)],
 }
