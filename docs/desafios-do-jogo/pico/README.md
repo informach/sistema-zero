@@ -121,7 +121,6 @@ bun test packages/arquipelago-api/tests/integration/manifestos.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/pico-browser.test.ts packages/studio-runtime/tests/quadros-pico-browser.test.ts
 bun docs/desafios-do-jogo/pico/conferir-browser.ts
-bun docs/desafios-do-jogo/pico/conferir-quadros-browser.ts
 node --max-old-space-size=8192 packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/pico/tsconfig.json
 ```
 

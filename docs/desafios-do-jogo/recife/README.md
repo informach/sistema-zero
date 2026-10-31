@@ -111,7 +111,6 @@ bun test packages/arquipelago-api/tests/integration/manifestos.test.ts
 $env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
 bun test packages/studio-runtime/tests/recife-browser.test.ts packages/studio-runtime/tests/quadros-recife-browser.test.ts
 bun docs/desafios-do-jogo/recife/conferir-browser.ts
-bun docs/desafios-do-jogo/recife/conferir-quadros-browser.ts
 node --max-old-space-size=8192 packages/studio/node_modules/typescript/bin/tsc --noEmit -p docs/desafios-do-jogo/recife/tsconfig.json
 ```
 

@@ -65,31 +65,31 @@ export const PEDIDOS_DOS_MORADORES: Record<string, PedidoDoMorador> = {
       'O Floco quer jogar de novo desde o começo sem fechar o jogo. Ele quer que o Enter leve tudo de volta à fase 1, sem quedas contadas.',
     objetivo: 'O Enter volta o jogo para a fase 1, sem quedas.',
   },
-  // Vale: a Jade.
-  'contagem-da-lista': {
+  // Vale: a Jade (lacunas, 01/11/2026: o Guardião dos ninhos, defesa de torre do Arquiteto).
+  'onda-de-cinza': {
     pedido:
-      'A Jade precisa saber quantos ninhos há no Vale agora, mesmo quando um ninho sai ou volta para a lista. Ela quer recontar do zero a cada vez que apertar o espaço.',
-    objetivo: 'O espaço reconta do zero os ninhos que estão na lista.',
+      'A cinza do vulcão chega em ondas, e a Jade quer se preparar para cada uma. Ela quer que o espaço comece uma onda de cada vez: durante uma onda, outro toque espera.',
+    objetivo: 'O espaço começa uma onda por vez.',
   },
-  'cinza-retirada': {
+  'relogio-da-onda': {
     pedido:
-      'A cinza do vulcão sujou os três ninhos. A Jade quer limpar todos de uma vez com o espaço, sem precisar repetir a mesma ação para cada um.',
-    objetivo: 'O espaço tira a cinza de todos os ninhos da lista.',
+      'Na onda, a cinza desce do vulcão pelo caminho, uma de cada vez. A Jade quer que o relógio solte uma cinza por segundo e que a onda acabe depois da última.',
+    objetivo: 'O relógio solta a cinza da onda, uma por segundo, e a onda acaba.',
   },
-  'folhas-bem-usadas': {
+  'ninho-atingido': {
     pedido:
-      'A Jade tem poucas folhas para cobrir os ninhos. Ela quer escolher um ninho e cobri-lo com uma folha, sem gastar folha num ninho que já está coberto.',
-    objetivo: 'Cada ninho coberto gasta uma folha, e só uma vez.',
+      'A Jade precisa saber quanta cinza chega aos ninhos. Ela quer que cada cinza que encosta no ninho saia do caminho e seja contada.',
+    objetivo: 'A cinza que chega ao ninho sai do caminho e é contada.',
   },
-  'uma-onda-por-vez': {
+  'alcance-da-torre': {
     pedido:
-      'A Jade quer treinar a proteção dos ninhos com uma onda de cinza de cada vez. Enquanto uma onda passa, apertar o espaço de novo não começa outra.',
-    objetivo: 'Só começa uma onda nova quando a anterior terminou.',
+      'A Jade construiu uma torre perto do caminho. Ela quer que a torre limpe toda cinza que entra no alcance dela, antes de chegar ao ninho, e conte um ponto por cinza.',
+    objetivo: 'A torre limpa a cinza do alcance e conta um ponto, e o ninho fica salvo.',
   },
-  'rodada-conferida': {
+  'ondas-que-crescem': {
     pedido:
-      'A Jade confere os três ninhos, um de cada vez. Ela quer fechar a rodada só depois de conferir todos, e contar cada rodada uma vez.',
-    objetivo: 'A rodada fecha só com os três ninhos conferidos, e conta uma vez.',
+      'O vulcão está cada vez mais bravo. A Jade quer que cada onda traga uma cinza a mais que a anterior.',
+    objetivo: 'Cada onda nova tem uma cinza a mais.',
   },
   // Nuvens: a Iriê.
   'reserva-de-agua': {
@@ -172,21 +172,21 @@ const PEDIDOS_DOS_MINIJOGOS: Record<string, { pedido: string; soKids?: true }> =
     pedido:
       'O Floco quer saber quantas vezes o pinguim caiu na água. Ele quer que cada queda some uma no placar das quedas.',
   },
-  // Vale: a Jade.
-  'vale-proteja-os-ninhos': {
+  // Vale: a Jade (lacunas, 01/11/2026: o Guardião dos ninhos pronto, uma regra a mudar).
+  'vale-guardiao-mais-cinzas': {
     pedido:
-      'A cinza do vulcão chega em ondas, e a Jade precisa proteger os ninhos. Ela quer cobrir ninhos com folhas, chamar uma onda de cada vez e, quando a onda passar, contar os ninhos protegidos e os que receberam cinza, numa rodada de três ondas.',
+      'A Jade quer treinar com ondas maiores. Ela quer que cada onda tenha uma cinza a mais do que tem agora, começando com quatro.',
   },
-  'vale-proteja-os-ninhos-ondas': {
+  'vale-guardiao-dois-pontos': {
+    pedido: 'A Jade quer premiar a torre: cada cinza que ela limpa passa a valer dois pontos.',
+  },
+  'vale-guardiao-ondas-contadas': {
     pedido:
-      'A Jade quer uma rodada mais longa, com quatro ondas de cinza em vez de três, e nenhuma onda depois da última.',
+      'A Jade quer uma defesa com fim: só três ondas. Depois da terceira, o espaço não começa outra.',
   },
-  'vale-proteja-os-ninhos-pontos': {
-    pedido: 'A Jade quer premiar quem protege bem: cada ninho protegido passa a valer dois pontos.',
-  },
-  'vale-proteja-os-ninhos-lista': {
+  'vale-guardiao-onda-limpa': {
     pedido:
-      'Um quarto ninho apareceu no Vale, mas a contagem não olha para ele. A Jade quer que as mesmas regras cuidem dos quatro ninhos.',
+      'A Jade quer comemorar as ondas sem cinza nos ninhos. Quando uma onda acaba sem nenhuma cinza no ninho, ela quer cinco pontos de bônus.',
   },
   'vale-guardiao-dos-ninhos-texto': {
     pedido:

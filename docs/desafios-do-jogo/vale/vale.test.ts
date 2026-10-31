@@ -11,7 +11,7 @@ import {
 import { resolveBlockLevel } from '../../../packages/studio/src/blockly/blockLevels'
 import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
 import { criarManifesto } from './gerar-manifesto'
-import { montarProjeto } from './projetos'
+import { montarProjeto, VARIACOES } from './projetos'
 
 test('JSON corresponde à fonte, IR é válido e objetivos cabem no executor', async () => {
   expect(creatorJourneyLevel('architect').reward.blockLevel).toBe('intermediario-3d')
@@ -47,14 +47,15 @@ test('JSON corresponde à fonte, IR é válido e objetivos cabem no executor', a
   }
 })
 
-test('cada variação muda uma regra, além do evento extra', () => {
+test('cada variação do Guardião muda uma regra, além do evento extra (lacunas, 01/11/2026)', () => {
   const semantic = (v: unknown) => JSON.stringify(v, (k, x) => (k === 'id' ? undefined : x))
-  for (const variacao of ['ondas', 'pontos', 'lista'] as const) {
+  for (const variacao of VARIACOES) {
     const a = SZIRV2Schema.parse(montarProjeto(variacao, false).ir).behavior
     const b = SZIRV2Schema.parse(montarProjeto(variacao, true).ir).behavior
-    const eventos = (x: typeof a) => x.events.filter((s) => s.type !== 'g2d:onKey')
-    expect(semantic(eventos(a))).toBe(semantic(eventos(b)))
-    if (variacao === 'pontos') expect(semantic(a.start)).toBe(semantic(b.start))
-    else expect(semantic(a.loops)).toBe(semantic(b.loops))
+    // O começo é o mesmo; muda a regra (num evento ou no laço) e o Enter do extra.
+    expect(semantic(a.start)).toBe(semantic(b.start))
+    const semEnter = (x: typeof a) =>
+      x.events.filter((s) => s.type !== 'g2d:onKey' || s.key !== 'Enter')
+    expect(semantic([semEnter(a), a.loops])).not.toBe(semantic([semEnter(b), b.loops]))
   }
 })

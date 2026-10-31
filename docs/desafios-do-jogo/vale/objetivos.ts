@@ -1,136 +1,101 @@
 import type {
   ExecutionExpectation,
   ExecutionStep,
-  SectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
 import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import type { Variacao } from './projetos'
 
-export const clicar = (path: string, groupPath = 'ninhos'): ExecutionStep => ({
-  action: 'clickTarget',
-  target: { kind: 'sprite', path, groupPath },
+/**
+ * Os objetivos do Guardião dos ninhos (lacunas, 01/11/2026). O relógio solta uma cinza por segundo
+ * e a cinza leva cerca de 1,6 s até o alcance da torre e 3,5 s até o ninho: as esperas deixam
+ * margem para o relógio, que começa quando o jogo abre (não quando a onda começa).
+ */
+export const press = (k: string, holdMs = 30): ExecutionStep => ({
+  action: 'press',
+  key: k,
+  holdMs,
 })
-export const onda = clicar('proxima', 'botoesOnda')
-const wait = (ms = 1200): ExecutionStep => ({ action: 'wait', ms })
-const val = (path: string, value: number | boolean): ExecutionExpectation => ({
-  target: { kind: 'value', path },
-  compare: 'equals',
-  value,
-})
-const cp = (afterStep: number, path: string, value: number | boolean) => ({
-  afterStep,
-  expect: val(path, value),
-})
-type Points = Extract<SectionExecutionRule, { type: 'behavior' }>['checkpoints']
-const regra = (
+export const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
+export const val = (
+  path: string,
+  value: number | boolean,
+  compare: ExecutionExpectation['compare'] = 'equals',
+): ExecutionExpectation => ({ target: { kind: 'value', path }, compare, value })
+export const check = (
   id: string,
   label: string,
   steps: ExecutionStep[],
-  path: string,
-  value: number | boolean,
-  checkpoints: Points = [],
+  expect: ExecutionExpectation,
+  checkpoints: { afterStep: number; expect: ExecutionExpectation }[] = [],
   optional = false,
 ): SectionJavaScriptProjectCheck => ({
   id,
   label,
   programmingLanguage: 'javascript',
-  ...(optional ? { optional: true as const } : {}),
-  rule: { type: 'behavior', steps, expect: val(path, value), checkpoints },
+  ...(optional ? { optional: true } : {}),
+  rule: { type: 'behavior', steps, expect, ...(checkpoints.length ? { checkpoints } : {}) },
 })
-const extra = regra(
-  'enter',
-  'Extra: Enter limpa as ondas e as contagens, como Recomeçar.',
-  [onda, wait(), { action: 'press', key: 'Enter', holdMs: 30 }],
-  'onda',
-  0,
-  [
-    cp(2, 'onda', 1),
-    cp(3, 'comCinza', 0),
-    cp(3, 'protegidos', 0),
-    cp(3, 'pontos', 0),
-    cp(3, 'emOnda', false),
-    cp(3, 'terminou', false),
-  ],
+/** Uma onda de 3 cinzas termina de sair (3 batidas do relógio cabem em 3,8 s). */
+export const ONDA_DE_3 = 3800
+/** Uma onda de 4 cinzas. */
+export const ONDA_DE_4 = 4800
+/** Toda a cinza de uma onda de 3 chega ao alcance da torre (ou ao ninho, sem a torre). */
+export const ONDA_INTEIRA = 8000
+
+export const recomecar = check(
+  'recomecar',
+  'Extra: Enter recomeça a defesa.',
+  [press('Space'), press('Enter')],
+  val('onda', 0),
+  [{ afterStep: 1, expect: val('onda', 1) }],
   true,
 )
+
 export const objetivos: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
-  ninhos: [
-    regra(
-      'cobrir',
-      'Tocar num ninho põe a cobertura só nele, sem somar pontos antes da onda.',
-      [clicar('ninho1'), clicar('ninho1')],
-      'ninho1.data.protegido',
-      true,
-      [cp(2, 'ninho2.data.protegido', false), cp(2, 'pontos', 0)],
+  'mais-cinzas': [
+    check(
+      'mais-cinzas',
+      'Cada onda traz uma cinza a mais: a primeira tem 4.',
+      [press('Space'), wait(ONDA_DE_4 + 600)],
+      val('cinzasNaOnda', 4),
+      [{ afterStep: 1, expect: val('tamanhoDaOnda', 4) }],
     ),
-    regra(
-      'ondas',
-      'Próxima onda começa uma passagem da cinza. Tocar de novo durante a passagem não começa outra.',
-      [onda, onda, wait()],
-      'onda',
-      1,
-      [cp(1, 'emOnda', true), cp(3, 'emOnda', false)],
-    ),
-    regra(
-      'lista',
-      'Cada onda conta todos os ninhos da lista uma vez, separando os protegidos dos que recebem cinza.',
-      [clicar('ninho1'), clicar('ninho1'), onda, wait(), wait(300), onda, wait()],
-      'comCinza',
-      5,
-      [
-        cp(4, 'protegidos', 1),
-        cp(4, 'comCinza', 2),
-        cp(4, 'pontos', 1),
-        cp(5, 'comCinza', 2),
-        cp(7, 'protegidos', 1),
-        cp(7, 'pontos', 1),
-        cp(7, 'onda', 2),
-      ],
-    ),
-    extra,
+    recomecar,
   ],
-  ondas: [
-    regra(
-      'quatro-ondas',
-      'A rodada permite quatro ondas e não começa uma quinta.',
-      [onda, wait(), onda, wait(), onda, wait(), onda, wait(), onda, wait(100)],
-      'onda',
-      4,
-      [
-        cp(6, 'terminou', false),
-        cp(8, 'terminou', true),
-        cp(8, 'comCinza', 12),
-        cp(10, 'emOnda', false),
-      ],
-    ),
-    extra,
-  ],
-  pontos: [
-    regra(
+  'dois-pontos': [
+    check(
       'dois-pontos',
-      'Cada proteção vale dois pontos. Ninho sem cobertura não soma pontos e a contagem não se repete.',
-      [clicar('ninho1'), onda, wait(), wait(300), onda, wait()],
-      'pontos',
-      2,
-      [
-        cp(3, 'pontos', 2),
-        cp(3, 'protegidos', 1),
-        cp(3, 'comCinza', 2),
-        cp(6, 'protegidos', 1),
-        cp(6, 'comCinza', 5),
-      ],
+      'Cada cinza limpa pela torre vale dois pontos.',
+      [press('Space'), wait(ONDA_INTEIRA)],
+      val('pontos', 6),
     ),
-    extra,
+    recomecar,
   ],
-  lista: [
-    regra(
-      'quarto-ninho',
-      'A onda passa pelos quatro ninhos da lista, incluindo o novo, sem contar nenhum duas vezes.',
-      [onda, wait(), wait(300), onda, wait()],
-      'comCinza',
-      8,
-      [cp(2, 'comCinza', 4), cp(3, 'comCinza', 4), cp(5, 'protegidos', 0), cp(5, 'onda', 2)],
+  'ondas-contadas': [
+    check(
+      'tres-ondas',
+      'Depois da terceira onda, Espaço não começa outra.',
+      [
+        press('Space'),
+        wait(ONDA_DE_3),
+        press('Space'),
+        wait(ONDA_DE_4),
+        press('Space'),
+        wait(5800),
+        press('Space'),
+      ],
+      val('onda', 3),
+      [{ afterStep: 5, expect: val('onda', 3) }],
     ),
-    extra,
+    recomecar,
+  ],
+  'onda-limpa': [
+    check(
+      'onda-limpa',
+      'Uma onda sem cinza no ninho ganha 5 pontos de bônus.',
+      [press('Space'), wait(ONDA_INTEIRA)],
+      val('pontos', 8),
+    ),
+    recomecar,
   ],
 }

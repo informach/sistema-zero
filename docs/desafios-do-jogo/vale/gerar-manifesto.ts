@@ -5,51 +5,45 @@ import {
 } from '../../../packages/arquipelago-contracts/src/desafios'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
-import { montarProjeto, VARIACOES, type Variacao } from './projetos'
+import { montarProjeto, TITULO_DAS_VARIACOES, VARIACOES, type Variacao } from './projetos'
 import { desafiosIniciaisDoVale } from './quadros-iniciais'
 
-const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: string[] }> = {
-  ninhos: {
-    titulo: 'Proteja os ninhos',
+/**
+ * Os desafios do dia do Vale (lacunas, 01/11/2026): o Guardião dos ninhos pronto, com uma regra a
+ * mudar em cada um. Substituem o "Proteja os ninhos", que pedia blocos que nenhum posto ensina.
+ */
+const textos: Record<Variacao, { enunciado: string; dicas: string[] }> = {
+  'mais-cinzas': {
     enunciado:
-      'A cinza do vulcão chega em ondas. Complete três regras: tocar num ninho põe uma cobertura de folhas; Próxima onda começa uma passagem da cinza; quando ela passa, percorra a lista de ninhos e conte os protegidos e os que receberam cinza. Cada proteção vale um ponto e dura uma onda. Cada ninho conta uma vez por onda. Durante a passagem, não mude coberturas nem comece outra onda. A rodada tem três ondas. Recomeçar já está pronto.',
+      'A defesa já funciona. Mude a conta das ondas: cada onda passa a ter a onda mais 3 cinzas, e a primeira fica com 4.',
+    dicas: ['Procure tamanhoDaOnda no evento de Espaço.', 'Troque só o número somado à onda.'],
+  },
+  'dois-pontos': {
+    enunciado:
+      'A defesa já funciona. Mude o encontro do alcance com a cinza: cada cinza limpa pela torre passa a valer 2 pontos.',
     dicas: [
-      'Cenário, lista de ninhos, desenho e reinício já estão montados. Complete os espaços dos eventos e do laço.',
-      'Guarde protegido no ninho tocado. Use emOnda para impedir novos cliques durante a passagem.',
-      'Em Para cada ninho no grupo ninhos, confira protegido. Some nas contagens certas e tire a marca para a próxima onda.',
+      'Procure a soma de pontos no encontro do alcance.',
+      'O número de cinzas no ninho não muda.',
     ],
   },
-  ondas: {
-    titulo: 'Proteja os ninhos: mais uma onda',
+  'ondas-contadas': {
     enunciado:
-      'O jogo já funciona com três ondas. Mude somente totalDeOndas para quatro. A quarta onda também precisa passar pela lista inteira. Depois dela, Próxima onda não começa outra passagem.',
+      'A defesa já funciona. A Jade quer só três ondas: em Espaço, só comece uma onda nova quando onda for menor que 3.',
     dicas: [
-      'Procure totalDeOndas em Ao iniciar.',
-      'As regras do botão e do fim da rodada já consultam essa variável.',
-      'Teste quatro passagens e tente começar uma quinta.',
+      'Ponha um Se a mais por dentro do Se de emOnda.',
+      'Compare onda com 3 usando menor que.',
     ],
   },
-  pontos: {
-    titulo: 'Proteja os ninhos: dois pontos',
+  'onda-limpa': {
     enunciado:
-      'O jogo já funciona. Mude apenas os pontos por proteção para dois. Continue contando um ninho protegido por vez. Ninhos sem cobertura não dão pontos.',
+      'A defesa já funciona. No relógio, quando a onda acaba, se atingidos ainda for 0, some 5 em pontos de bônus.',
     dicas: [
-      'Procure a soma dos pontos dentro da passagem pela lista.',
-      'Mude o valor dos pontos, sem mudar as contagens de ninhos.',
-      'Cubra um ninho e deixe os outros sem cobertura para comparar.',
-    ],
-  },
-  lista: {
-    titulo: 'Proteja os ninhos: mais um ninho',
-    enunciado:
-      'O jogo já funciona e ninho4 já aparece. Ele ainda está fora da lista ninhos. Inclua esse ninho no grupo ao iniciar. As mesmas regras da lista devem cuidar dos quatro, sem copiar o laço.',
-    dicas: [
-      'Procure os blocos que acrescentam ninho1, ninho2 e ninho3 ao grupo ninhos.',
-      'Acrescente ninho4 à mesma lista. Ele já tem imagem e marca de proteção.',
-      'Teste a passagem da cinza e o toque no novo ninho.',
+      'O bônus fica dentro do Se que termina a onda.',
+      'Confira atingidos igual a 0 antes de somar.',
     ],
   },
 }
+
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
   return comPedidosDosMoradores(
     ManifestoDeDesafiosSchema.parse({
@@ -62,30 +56,28 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
           const tipo = 'desafio-do-dia' as const
           const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
           return {
-            slug: `vale-proteja-os-ninhos${i === 0 ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+            slug: `vale-guardiao-${variacao}${publico === 'adulto' ? '-adulto' : ''}`,
             publico,
             ilha: 'vale-dos-dinos',
             tipo,
             quadro: null,
             ordem: 60 + i,
-            // §6.28 A2: o sexto quadro é o desafio na Ponte; o minijogo em blocos continua como
-            // desafio do dia (nunca pinta). A43 (decisão da dona, 31/10/2026): publica como está; os
-            // cursos do Arquiteto chegam antes do lançamento, e a barreira C01a confere na importação.
+            // Só blocos da trilha (lacunas, 01/11/2026): pede publicação como os outros.
             publicar: true,
             conteudo: {
               versao: 1,
+              titulo: TITULO_DAS_VARIACOES[variacao],
               ...textos[variacao],
               projetoInicial: montarProjeto(variacao, false),
               gabarito: montarProjeto(variacao, true),
               objetivos: objetivos[variacao],
               desafioExtra: {
                 titulo: 'Mais um desafio',
-                texto:
-                  'Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada.',
+                texto: 'Complete Enter para recomeçar a defesa.',
               },
               recompensa: {
                 cor: false,
-                atracao: 'proteja-os-ninhos',
+                atracao: 'guardiao-dos-ninhos',
                 moedas: moedas.principal,
                 moedasExtra: moedas.extra,
               },

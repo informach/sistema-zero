@@ -41,15 +41,16 @@ test('o Vale dos Dinos é do Arquiteto e o pacote em blocos tem cinco quadros e 
   expect(ilha('vale-dos-dinos').posto).toBe('architect')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
-    'vale-contagem-da-lista',
-    'vale-cinza-retirada',
-    'vale-folhas-bem-usadas',
-    'vale-uma-onda-por-vez',
-    'vale-rodada-conferida',
-    'vale-proteja-os-ninhos',
-    'vale-proteja-os-ninhos-ondas',
-    'vale-proteja-os-ninhos-pontos',
-    'vale-proteja-os-ninhos-lista',
+    // O Guardião dos ninhos, defesa de torre do Arquiteto em blocos da trilha (lacunas, 01/11/2026).
+    'vale-onda-de-cinza',
+    'vale-relogio-da-onda',
+    'vale-ninho-atingido',
+    'vale-alcance-da-torre',
+    'vale-ondas-que-crescem',
+    'vale-guardiao-mais-cinzas',
+    'vale-guardiao-dois-pontos',
+    'vale-guardiao-ondas-contadas',
+    'vale-guardiao-onda-limpa',
   ])
   for (const [i, d] of manifesto.desafios.entries()) {
     const tipo = i < 5 ? 'quadro-das-cores' : 'desafio-do-dia'
@@ -60,7 +61,7 @@ test('o Vale dos Dinos é do Arquiteto e o pacote em blocos tem cinco quadros e 
     expect(d.ordem).toBe(i < 5 ? (i + 1) * 10 : 60 + i - 5)
     expect(d.conteudo.recompensa).toEqual({
       cor: i < 5,
-      atracao: i < 5 ? d.slug : 'proteja-os-ninhos',
+      atracao: i < 5 ? d.slug : 'guardiao-dos-ninhos',
       moedas: MOEDAS_PADRAO_POR_TIPO[tipo].principal,
       moedasExtra: MOEDAS_PADRAO_POR_TIPO[tipo].extra,
     })

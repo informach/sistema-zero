@@ -2578,15 +2578,18 @@ faz o que as seções acima descrevem.
    continua com a equipe. Feito (lote 9a, 31/10): a Vila Doce virou a corrida do entregador sobre o
    Corre, Dino! (pulo com gravidade, pedras sorteadas com limites, dificuldade com teto, um passo
    por quadro) e os nove desafios pedem publicação (`docs/desafios-do-jogo/vila-doce/README.md`).
-   Feito (lote 9f, 31/10, decisão da dona A43): Vale e Nuvens publicam como estão, esperando os
-   cursos do Arquiteto e do Gênio, que chegam antes do lançamento; o que cada desafio espera está
-   em `docs/desafios-do-jogo/publicacao.test.ts`.
+   Feito (lote 9f, 31/10, decisão da dona A43): Vale e Nuvens publicavam como estavam, esperando
+   os cursos do Arquiteto e do Gênio. Desfeito nas lacunas de 01/11/2026: pela Jornada, esses
+   cursos são em JavaScript e não ensinam esses blocos, então os desafios em blocos usam só a
+   trilha dos postos 1 a 3 (o Vale já refeito; as Nuvens no lote seguinte).
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
    Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 ficam em blocos, e desde as lacunas de
    01/11/2026 montam o jogo do gênero do posto, um passo por quadro (Recife: a Mira do Recife,
    com bolha, alvo sorteado, tempo de partida e nova partida; Pico: a Fase do Pico, com pulo
-   com apoio, água que devolve ao começo, próxima fase, fim do jogo e volta à fase 1). Feito
+   com apoio, água que devolve ao começo, próxima fase, fim do jogo e volta à fase 1; Vale: o
+   Guardião dos ninhos, defesa de torre com ondas, relógio, ninho, alcance e ondas que crescem,
+   e os desafios do dia variando o Guardião). Feito
    (lote 8): os desafios C02 viraram o quadro 6 (pintam) e o minijogo em blocos que estava no
    quadro 6 virou desafio do dia. Importar o arquivo em blocos antes do da linguagem.
 3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a

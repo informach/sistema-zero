@@ -60,7 +60,7 @@ export const QUADROS_INICIAIS_DO_PICO = [
 export type QuadroInicialDoPico = 1 | 2 | 3 | 4 | 5
 
 export function projetoDoQuadroPico(quadro: QuadroInicialDoPico, pronto: boolean): Project {
-  return projetoDaFaseEmPassos(quadro, pronto, QUADROS_INICIAIS_DO_PICO[quadro - 1].titulo)
+  return projetoDaFaseEmPassos(quadro, pronto, QUADROS_INICIAIS_DO_PICO[quadro - 1]!.titulo)
 }
 
 const press = (k: string, holdMs = 30): ExecutionStep => ({ action: 'press', key: k, holdMs })
