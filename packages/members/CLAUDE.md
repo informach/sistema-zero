@@ -121,6 +121,10 @@ estas rotas, teste em `tests/arquipelago-internal.routes.test.ts`). Sem o token,
   screenshots})` (o `testObjectives` virou um invólucro com `screenshots: true`; o jogo usa
   `false`, então o cache de 10 min do executor vale). Nada é guardado. Corpo até 4 MB
   (`ARQUIPELAGO_OBJECTIVES_BODY_BYTES` no `bodyLimitForPath`: são dois projetos).
+  A análise Python inicia gabarito e inicial em paralelo, cada qual com seu sandbox e
+  prazo de 150 s, dentro dos 160 s da porta do jogo. Aguarda ambos inclusive em falha
+  inesperada, sem aprovar resultados incompletos. JavaScript mantém a sequência existente.
+  Recusas de formato do projeto viram `PROJETO_INVALIDO`, bloqueando a publicação.
   - `POST /objetivos/analisar` `{audience, projetoInicial, gabarito, objetivos}` →
     `AnaliseDosMembrosSchema`. Só corpo malformado é 400; o resto vira `problemas`: Python Pro
     (`PROJETO_PYTHON_PRO`), gabarito em outro ambiente (`GABARITO_DE_OUTRO_AMBIENTE`: outra

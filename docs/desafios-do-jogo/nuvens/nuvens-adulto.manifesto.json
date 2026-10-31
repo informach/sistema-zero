@@ -56,8 +56,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -1158,8 +1158,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -2704,8 +2704,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -3687,8 +3687,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -5065,8 +5065,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -6416,8 +6416,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -8546,8 +8546,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -9674,8 +9674,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -11274,8 +11274,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -12158,8 +12158,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -13230,7 +13230,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n\n  }, \"nuvens_jardim_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n\n  }, \"nuvens_jardim_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_jardim_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_jardim_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n\n  }, \"nuvens_jardim_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n\n  }, \"nuvens_jardim_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_jardim_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_jardim_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -13256,8 +13256,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -13448,7 +13448,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_jardim_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -13884,7 +13884,7 @@
                                               "id": "nuvens_jardim_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -14337,7 +14337,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_jardim_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_jardim_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_jardim_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_jardim_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_jardim_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_jardim_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_jardim_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_jardim_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -14363,8 +14363,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -14847,7 +14847,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_jardim_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -15669,7 +15669,7 @@
                                               "id": "nuvens_jardim_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -16470,7 +16470,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_rega-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_rega-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_rega-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_rega-forte_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_rega-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_rega-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_rega-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_rega-forte_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -16496,8 +16496,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -16919,7 +16919,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_rega-forte_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -17619,7 +17619,7 @@
                                               "id": "nuvens_rega-forte_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -18072,7 +18072,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 5;\n  }, \"nuvens_rega-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_rega-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_rega-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_rega-forte_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 5;\n  }, \"nuvens_rega-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_rega-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_rega-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_rega-forte_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -18098,8 +18098,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -18582,7 +18582,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_rega-forte_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -19404,7 +19404,7 @@
                                               "id": "nuvens_rega-forte_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -20022,7 +20022,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_sol-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_sol-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_sol-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_sol-forte_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_sol-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_sol-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_sol-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_sol-forte_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -20048,8 +20048,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -20471,7 +20471,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_sol-forte_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -21171,7 +21171,7 @@
                                               "id": "nuvens_sol-forte_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -21624,7 +21624,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_sol-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_sol-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_sol-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          if (sol >= 6) {\n            crescimento = crescimento + 20;\n          } else {\n            crescimento = crescimento + 10;\n          }\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_sol-forte_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_sol-forte_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_sol-forte_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_sol-forte_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          if (sol >= 6) {\n            crescimento = crescimento + 20;\n          } else {\n            crescimento = crescimento + 10;\n          }\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_sol-forte_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -21650,8 +21650,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -22177,7 +22177,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_sol-forte_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -23049,7 +23049,7 @@
                                               "id": "nuvens_sol-forte_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -23697,7 +23697,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_chuva_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_chuva_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_chuva_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_chuva_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_chuva_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_chuva_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n\n  }, \"nuvens_chuva_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_chuva_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -23723,8 +23723,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -24146,7 +24146,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_chuva_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -24846,7 +24846,7 @@
                                               "id": "nuvens_chuva_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },
@@ -25299,7 +25299,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Jardim que floresce</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_chuva_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_chuva_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_chuva_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      agua = agua + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoFlor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_chuva_loops_1\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#efe8ff\");\n  SZGame2D.enableClassicControls(\"auto\");\n  let agua = 0;\n  let sol = 3;\n  let tempo = 0;\n  let crescimento = 0;\n  let florida = false;\n  let recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  const flor = SZGame2D.createSprite({ x: 272, y: 236, w: 96, h: 120, image: \"muda\" });\n  // Quando acontecer\n  SZGame2D.onKey(\"Space\", () => {\n    agua = agua + 3;\n  }, \"nuvens_chuva_events_0\");\n  SZGame2D.onKey(\"ArrowUp\", () => {\n    sol = sol + 3;\n  }, \"nuvens_chuva_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    agua = 0;\n    sol = 3;\n    tempo = 0;\n    crescimento = 0;\n    florida = false;\n    recado = \"Regue e dê sol. A cada segundo a flor usa um de cada para crescer.\";\n  }, \"nuvens_chuva_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"simulacao\", 1)) {\n      tempo = tempo + 1;\n      agua = agua + 1;\n      if (agua > 0) {\n        if (sol > 0) {\n          crescimento = crescimento + 10;\n          agua = agua - 1;\n          sol = sol - 1;\n        }\n      }\n      if (crescimento >= 100) {\n        if (florida === false) {\n          florida = true;\n          recado = \"O jardim floresceu.\";\n        }\n      }\n    }\n  });\n  SZGame2D.gameLoop(function update() {\n    if (crescimento >= 100) {\n      SZGame2D.setImage(flor, \"flor\");\n    } else {\n      if (crescimento >= 40) {\n        SZGame2D.setImage(flor, \"botaoflor\");\n      } else {\n        SZGame2D.setImage(flor, \"muda\");\n      }\n    }\n    SZGame2D.clear();\n    SZGame2D.drawBackdrop(ctx, \"jardim\");\n    SZGame2D.drawLabel(ctx, \"Jardim que floresce\", 18, 32, \"#3b2f6b\", 25, \"left\");\n    SZGame2D.drawLabel(ctx, recado, 18, 61, \"#3b2f6b\", 15, \"left\");\n    SZGame2D.drawScore(ctx, \"Água: \", agua, 18, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Sol: \", sol, 18, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Tempo: \", tempo, 470, 100, \"#3b2f6b\", 18);\n    SZGame2D.drawScore(ctx, \"Crescimento: \", crescimento, 470, 126, \"#3b2f6b\", 18);\n    SZGame2D.drawSprite(ctx, flor);\n    SZGame2D.drawLabel(ctx, \"Espaço ou A rega. Seta para cima dá sol. Enter ou +: recomeçar.\", 18, 455, \"#3b2f6b\", 15, \"left\");\n  }, \"nuvens_chuva_loops_1\");\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -25325,8 +25325,8 @@
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNzAiIHN0cm9rZT0iI2I5YjZjMiIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggODZRMjYgNzYgMjIgNThRNDIgNTggNDggNzhaIiBmaWxsPSIjZGNkYWUyIiBzdHJva2U9IiNhOWE2YjMiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA4MFE3MCA3MCA3NCA1MlE1NCA1MiA0OCA3MloiIGZpbGw9IiNkY2RhZTIiIHN0cm9rZT0iI2E5YTZiMyIgc3Ryb2tlLXdpZHRoPSIzIi8+PC9zdmc+"
             },
             {
-              "id": "nuvens-botaoFlor",
-              "name": "botaoFlor",
+              "id": "nuvens-botaoflor",
+              "name": "botaoflor",
               "kind": "image",
               "source": "library",
               "dataUrl": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5NiIgaGVpZ2h0PSIxMjAiIHZpZXdCb3g9IjAgMCA5NiAxMjAiPjxwYXRoIGQ9Ik00OCAxMThWNDYiIHN0cm9rZT0iIzRmOWE0YSIgc3Ryb2tlLXdpZHRoPSI3IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48cGF0aCBkPSJNNDggOTJRMjQgODQgMjAgNjRRNDIgNjQgNDggODZaIiBmaWxsPSIjNmNkMDZhIiBzdHJva2U9IiMzZjdmM2EiIHN0cm9rZS13aWR0aD0iMyIvPjxwYXRoIGQ9Ik00OCA3OFE3MiA3MCA3NiA1MFE1NCA1MCA0OCA3MloiIGZpbGw9IiM2Y2QwNmEiIHN0cm9rZT0iIzNmN2YzYSIgc3Ryb2tlLXdpZHRoPSIzIi8+PHBhdGggZD0iTTQ4IDE4UTM0IDMwIDM4IDQ2UTQ4IDUyIDU4IDQ2UTYyIDMwIDQ4IDE4WiIgZmlsbD0iI2IwN2NmZiIgc3Ryb2tlPSIjNmE0NWI1IiBzdHJva2Utd2lkdGg9IjMiLz48L3N2Zz4="
@@ -25829,7 +25829,7 @@
                             {
                               "type": "g2d:setImage",
                               "spriteVar": "flor",
-                              "image": "botaoFlor",
+                              "image": "botaoflor",
                               "__id": "nuvens_chuva_loops_1_body_0_else_0_then_0"
                             }
                           ],
@@ -26661,7 +26661,7 @@
                                               "id": "nuvens_chuva_loops_1_body_0_else_0_then_0",
                                               "fields": {
                                                 "SPRITE": "flor",
-                                                "IMAGE": "botaoFlor"
+                                                "IMAGE": "botaoflor"
                                               }
                                             }
                                           },

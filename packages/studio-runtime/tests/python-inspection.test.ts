@@ -4,6 +4,7 @@ import {
   studioPythonExecutionRevision,
 } from '@sistemazero/core/studio/python-execution-content'
 import { StudioPythonInspectionReportSchema } from '@sistemazero/core/studio/python-inspection'
+import { PYTHON_MISSION_LIMITS } from '@sistemazero/core/studio/python-mission-execution'
 import {
   StudioPythonPlaytestRecipeSchema,
   StudioPythonPlaytestReportSchema,
@@ -238,6 +239,58 @@ test('isolated inspection stages only verified bytes and fixed trusted command, 
   expect(
     [...f.written].filter(([path]) => path.endsWith('python-inspection-options.json')),
   ).toHaveLength(1)
+})
+
+test('mission preparation does not expire on the shorter inspection clock', async () => {
+  const f = await fixture()
+  const expired = new AbortController()
+  const reason = new Error('inspection budget expired')
+  expired.abort(reason)
+  const original = AbortSignal.timeout.bind(AbortSignal)
+  const timer = spyOn(AbortSignal, 'timeout').mockImplementation((milliseconds) =>
+    milliseconds === 120_000 ? expired.signal : original(milliseconds),
+  )
+  try {
+    await expect(
+      withIsolatedPythonProject(f.input, async () => 'mission complete', 'mission'),
+    ).resolves.toBe('mission complete')
+    expect(f.counts()).toEqual({ created: 1, destroyed: 1, executed: 0 })
+    await expect(
+      withIsolatedPythonProject(f.input, async () => 'inspection complete'),
+    ).rejects.toBe(reason)
+  } finally {
+    timer.mockRestore()
+  }
+})
+
+test('the mission clock still cancels trusted work and retires its sandbox', async () => {
+  const f = await fixture()
+  const deadline = new AbortController()
+  const started = Promise.withResolvers<void>()
+  const release = Promise.withResolvers<void>()
+  const original = AbortSignal.timeout.bind(AbortSignal)
+  const timer = spyOn(AbortSignal, 'timeout').mockImplementation((milliseconds) =>
+    milliseconds === PYTHON_MISSION_LIMITS.jobMs ? deadline.signal : original(milliseconds),
+  )
+  const reason = new Error('mission budget expired')
+  try {
+    const operation = withIsolatedPythonProject(
+      f.input,
+      async (project) => {
+        started.resolve()
+        await project.step(release.promise)
+      },
+      'mission',
+    )
+    await started.promise
+    deadline.abort(reason)
+    release.resolve()
+    await expect(operation).rejects.toBe(reason)
+    expect(f.counts().destroyed).toBe(1)
+  } finally {
+    release.resolve()
+    timer.mockRestore()
+  }
 })
 
 test('compressed deployments stage logical files through the real registry while retaining full approval metadata', async () => {

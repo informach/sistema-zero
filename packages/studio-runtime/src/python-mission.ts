@@ -6,6 +6,7 @@ import {
 } from '@sistemazero/core/studio/python-mission-execution'
 import {
   inspectPreparedPythonProject,
+  type PreparedPythonProject,
   type PythonProjectPreparationOptions,
   preparedPythonBrowserOptions,
   throwPythonInspectionFailure,
@@ -22,7 +23,7 @@ export async function runIsolatedPythonMissions(
   },
 ) {
   const mission = await verifyPythonMissionRequest(options.mission, options.snapshot)
-  return withIsolatedPythonProject(options, async (project) => {
+  const execute = async (project: PreparedPythonProject) => {
     let operation: 'mission-inspection' | 'mission-options' | 'mission-execute' | 'mission-report' =
       'mission-inspection'
     try {
@@ -110,5 +111,6 @@ export async function runIsolatedPythonMissions(
     } catch (error) {
       throwPythonInspectionFailure(error, operation)
     }
-  })
+  }
+  return withIsolatedPythonProject(options, execute, 'mission')
 }

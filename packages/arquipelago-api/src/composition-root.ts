@@ -17,7 +17,7 @@ import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import { ServicoDosPedidos } from './application/servico-dos-pedidos'
 import type { Env } from './infrastructure/config/env'
-import { MembrosHttp } from './infrastructure/members/membros-http'
+import { MembrosHttp, TEMPO_DA_CONFERENCIA_MS } from './infrastructure/members/membros-http'
 import { MoedasHttp } from './infrastructure/members/moedas-http'
 import { PosseHttp } from './infrastructure/members/posse-http'
 import { withSentryMirror } from './infrastructure/observability/sentry'
@@ -176,7 +176,13 @@ export function createApplication(env: Env): Application {
   return {
     logger,
     async start() {
-      server = app.listen({ hostname: env.HOST, port: env.PORT })
+      // The response can wait for the bounded project check. Keep the socket alive
+      // through that window, as Members does, without allowing an unlimited timeout.
+      server = app.listen({
+        hostname: env.HOST,
+        port: env.PORT,
+        idleTimeout: Math.ceil(TEMPO_DA_CONFERENCIA_MS / 1000) + 10,
+      })
       logger.info('app.started', {
         port: env.PORT,
         appEnv: env.APP_ENV ?? 'dev',
