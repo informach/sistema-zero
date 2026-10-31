@@ -2,6 +2,8 @@
  * Quem acompanha pela ilha (S01) no navegador, com a plataforma falsa e sem banco: o gato do
  * quarto sai com a criança e a segue pela ilha; com o Mingau adotado, ele é a companhia, e no
  * painel dele a criança escolhe o gato do quarto: o Mingau vai esperar em casa e o gato vem.
+ * Com o passarinho (`?pet=passaro`, revisão de 30/10/2026): no menu de pausa nada se mexe, nem o
+ * giro; no celular (movimento reduzido emulado) ele voa sem balançar, no computador balança.
  *
  * No Windows: `bun build playground/verificar-companhia-browser.ts --target=node --external
  * playwright-core --outfile .cache/verificar-companhia-browser.mjs && node .cache/verificar-companhia-browser.mjs`.
@@ -13,7 +15,7 @@ import path from 'node:path'
 import { chromium, type Page } from 'playwright-core'
 
 type P = { x: number; y: number; z: number }
-type Desenho = { posicao: P; petQueAcompanha: P | null }
+type Desenho = { posicao: P; petQueAcompanha: (P & { giro: number }) | null }
 const porta = Number(process.env.ARQUIPELAGO_TEST_PORT ?? 4531)
 const base = `http://127.0.0.1:${porta}`
 const prints = process.env.ARQUIPELAGO_PRINTS ?? path.resolve('.cache/companhia')
@@ -92,6 +94,56 @@ try {
       await petPerto(page)
       await page.screenshot({ path: path.join(prints, `${tipo}-1-gato-acompanha.png`) })
       assert.deepEqual(erros, [])
+      await ctx.close()
+    }
+
+    // ── O passarinho: pausa congela tudo; menos movimento tira o balanço ──────────────────────
+    {
+      const { ctx, page, erros } = await abrir(
+        '/?novo=1&posicao=2&qualidade=leve&em=0,14,2&pet=passaro',
+      )
+      const pet = () =>
+        page.evaluate(
+          () =>
+            (globalThis as { __arquipelagoDesenho?: Desenho }).__arquipelagoDesenho
+              ?.petQueAcompanha ?? null,
+        )
+      const amostras = async (n: number) => {
+        const lista: NonNullable<Awaited<ReturnType<typeof pet>>>[] = []
+        for (let i = 0; i < n; i++) {
+          const p = await pet()
+          assert.ok(p, `${tipo}: sem o passarinho`)
+          lista.push(p)
+          await page.waitForTimeout(150)
+        }
+        return lista
+      }
+      const variacao = (v: number[]) => Math.max(...v) - Math.min(...v)
+      await petPerto(page)
+      await page.waitForTimeout(2500)
+      // Parado perto dela: só a altura pode mudar, e só sem movimento reduzido.
+      const parado = await amostras(12)
+      const balanco = variacao(parado.map((p) => p.y))
+      if (celular) assert.ok(balanco < 0.01, `${tipo}: balançou ${balanco} com menos movimento`)
+      else assert.ok(balanco > 0.05, `${tipo}: não balançou (${balanco})`)
+      // Ela vai longe, ele corre e vira; a pausa vem no meio da corrida.
+      await levar(page, 12, 10)
+      await page.waitForTimeout(250)
+      if (celular) await page.getByRole('button', { name: 'Abrir o menu' }).tap()
+      else await page.keyboard.press('Escape')
+      await page.getByRole('dialog', { name: 'Menu do jogo' }).waitFor()
+      await page.waitForTimeout(300)
+      const pausado = await amostras(8)
+      for (const eixo of ['x', 'y', 'z', 'giro'] as const)
+        assert.ok(
+          variacao(pausado.map((p) => p[eixo])) < 1e-6,
+          `${tipo}: o passarinho mexeu ${eixo} na pausa`,
+        )
+      await page.screenshot({ path: path.join(prints, `${tipo}-0-passarinho-pausa.png`) })
+      assert.deepEqual(erros, [])
+      console.log(
+        `PASS ${tipo}: passarinho ${celular ? 'sem balanço (movimento reduzido)' : `balança ${balanco.toFixed(2)} m`}; parado na pausa`,
+      )
       await ctx.close()
     }
 
