@@ -12,7 +12,7 @@ export const ESTILOS = `
 .arq-hud{position:absolute;inset:0;pointer-events:none}
 .arq-hud > *{pointer-events:auto}
 .arq-cartao{background:rgba(255,255,255,.92);border-radius:14px;box-shadow:0 4px 18px rgba(0,0,0,.16)}
-.arq-necessidades{position:absolute;left:14px;top:14px;padding:10px 12px;display:grid;gap:6px;min-width:170px}.arq-humor-otimo{justify-self:start;white-space:nowrap;font-size:12px;font-weight:700;line-height:1.4;color:#6b4300;background:#ffe9a8;border-radius:99px;padding:1px 9px}.arq-quem .arq-humor-otimo{font-size:10px;padding:0 6px}
+.arq-necessidades{position:absolute;left:14px;top:14px;padding:10px 12px;display:grid;gap:6px;min-width:170px}.arq-banca-prato{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.arq-banca-prato span{flex:1 1 160px}.arq-banca-prato output{min-width:1.5em;text-align:center;font-weight:700}.arq-humor-otimo{justify-self:start;white-space:nowrap;font-size:12px;font-weight:700;line-height:1.4;color:#6b4300;background:#ffe9a8;border-radius:99px;padding:1px 9px}.arq-quem .arq-humor-otimo{font-size:10px;padding:0 6px}
 .arq-nec{display:grid;grid-template-columns:22px 1fr;align-items:center;gap:8px;font-weight:700;font-size:13px}
 .arq-barra{height:9px;border-radius:9px;background:#e7e3d6;overflow:hidden}
 .arq-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}

@@ -4,6 +4,7 @@ import { useEstado, useJogo } from '../estado/contexto'
 import { lojaDaGaleria, useGaleria } from '../estado/galeria'
 import { PAINEL_DA_FEIRA, podeVerAparenciaNaFeira, vitrineDaSemana } from '../sistemas/feira'
 import { salvamentoPausado } from '../sistemas/pausa'
+import { BancaDaFeira } from './banca-da-feira'
 import { type Avisar, CartaoDaGaleria } from './galeria'
 import { InsumosDaFeira } from './insumos'
 import { MINIATURA_DO_OBJETO } from './miniaturas'
@@ -88,6 +89,7 @@ function FeiraAberta() {
             </details>
           </>
         )}
+        <BancaDaFeira />
         <InsumosDaFeira />
         <VestuarioDaFesta />
         <button

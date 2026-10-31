@@ -1,10 +1,12 @@
 import {
   FANTASMA_MAX_BYTES,
   type Insumo,
+  type ItensDaVenda,
   LIMITES_DO_DESAFIO,
   type MetadadosDoDesafio,
   type MoradorDoPedido,
   type PagamentoDaProfissao,
+  type PagamentoDaVenda,
   type PagamentoDoPedido,
   PERCURSOS,
   type PostoDaVila,
@@ -555,6 +557,45 @@ export const pedidosRemunerados = arquipelagoSchema.table(
   ],
 )
 
+/**
+ * A banca da feira (§6.28, A22): uma venda por perfil e dia, até cinco pratos, com a chave
+ * financeira gerada no servidor e o pagamento. O consumo dos pratos acontece sob a trava do save.
+ */
+export const vendasNaFeira = arquipelagoSchema.table(
+  'vendas_na_feira',
+  {
+    chave: uuid().primaryKey(),
+    pagamentoId: uuid().notNull().unique(),
+    jogadorId: uuid()
+      .notNull()
+      .references(() => salvamentos.jogadorId),
+    contaId: uuid().notNull(),
+    publico: varchar({ length: 8 }).$type<PublicoJogo>().notNull(),
+    versao: integer().notNull(),
+    revisaoBase: integer().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    itens: jsonb().$type<ItensDaVenda>().notNull(),
+    moedas: smallint().notNull(),
+    pagamento: varchar({ length: 12 }).$type<PagamentoDaVenda>().notNull(),
+    vendidaEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    uniqueIndex('vendas_na_feira_dia').on(t.jogadorId, t.publico, t.dia),
+    index('vendas_na_feira_pendente')
+      .on(t.jogadorId, t.publico, t.vendidaEm)
+      .where(sql`${t.pagamento} = 'pendente'`),
+    check('vendas_na_feira_publico', sql`${t.publico} in ('kids','adulto')`),
+    check(
+      'vendas_na_feira_valores',
+      sql`${t.versao} = 1 and ${t.revisaoBase} between 1 and 2147483646 and ${t.moedas} between 1 and 10`,
+    ),
+    check(
+      'vendas_na_feira_pagamento',
+      sql`${t.pagamento} in ('pendente','creditado','teto','recusado')`,
+    ),
+  ],
+)
+
 export const schema = {
   mudancasDeAparencia,
   convitesAdultos,
@@ -562,6 +603,7 @@ export const schema = {
   casasDeAmigos,
   fantasmas,
   pedidosRemunerados,
+  vendasNaFeira,
   comprasDeInsumos,
   turnosRemunerados,
   minijogos,

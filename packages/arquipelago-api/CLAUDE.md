@@ -58,6 +58,20 @@ suporte. Resposta `CoresConquistadasSchema`, sem dados pessoais, gabarito ou car
 Testes HTTP reais com repositório em memória em `desafios-do-jogador.test.ts`; regra em
 `tests/unit/desafios.test.ts`. Sem migração, escrita remota ou mudança nas respostas anteriores.
 
+## Banca da feira (§6.28 A22, 31/10/2026)
+
+`GET /feira/vendas/pendentes` e `POST /feira/vender`, o mesmo desenho dos pedidos: identidade
+confiável, recusa suporte, primeira venda exige a Vila Doce na jornada. Migração gerada 0019,
+`vendas_na_feira`: uma venda por perfil/público/dia (até cinco pratos, 1 moeda cada, pão de queijo
+2; teto 10), chave financeira gerada no servidor, consumo dos pratos atômico sob a trava do save e
+crédito fora dela. Recusa compra de insumos pendente. Erros 409 `VENDA_BASE_RECUSADA`,
+`VENDA_REPETIDA` e `VENDA_INCOMPATIVEL`. Teste `tests/db/vendas.test.ts`, variável exclusiva
+`ARQUIPELAGO_VENDAS_TEST_DATABASE_URL`. O jogo trata 404 nas pendências como "sem venda", para
+o cliente novo não travar diante do serviço anterior. Implantar migração e API antes do jogo.
+
+O prêmio-objeto do extra (A25) acrescentou `recompensa.receitaDoExtra` e `extraFeito` na lista.
+O Admin valida o desafio com esquema estrito: implantar o Admin novo junto com a API.
+
 ## Pedidos dos moradores (L07, 30/10/2026)
 
 `GET /pedidos/pendentes` e `POST /pedidos/entregar` usam identidade confiável e recusam suporte.

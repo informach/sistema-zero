@@ -134,6 +134,13 @@
       "when": 1793379687389,
       "tag": "0018_visitas_de_amigos",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1793420328805,
+      "tag": "0019_vendas_na_feira",
+      "breakpoints": true
     }
   ]
 }

@@ -172,6 +172,42 @@ test('pedidos repassam comando e pendências de forma privada, sem cache e com c
   expect(chamadas).toHaveLength(n)
 })
 
+test('vendas da feira repassam comando e pendências sem cache e com corpo limitado', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { pagamento: 'pendente' } })
+  const pendentes = await routes.arquipelagoFeiraVendasPendentes.GET()
+  expect(pendentes.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)?.caminho).toBe('/arquipelago/feira/vendas/pendentes')
+  const corpo = {
+    versao: 1,
+    chave: PERFIL,
+    revisaoBase: 1,
+    dia: '2026-10-31',
+    itens: { 'pao-de-queijo': 2 },
+  }
+  const r = await routes.arquipelagoFeiraVender.POST(
+    new Request('http://local', { method: 'POST', body: JSON.stringify(corpo) }),
+  )
+  expect(r.status).toBe(200)
+  expect(r.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas.at(-1)).toMatchObject({
+    caminho: '/arquipelago/feira/vender',
+    metodo: 'POST',
+    corpo,
+  })
+  const n = chamadas.length
+  expect(
+    (
+      await routes.arquipelagoFeiraVender.POST(
+        new Request('http://local', {
+          method: 'POST',
+          body: JSON.stringify({ texto: 'a'.repeat(1025) }),
+        }),
+      )
+    ).status,
+  ).toBe(400)
+  expect(chamadas).toHaveLength(n)
+})
+
 test('insumos repassam compra e pendência sem cache e limitam o corpo', async () => {
   const { routes, chamadas } = montar({ status: 423, body: { error: { code: 'COMPRA_PENDENTE' } } })
   const pendente = await routes.arquipelagoInsumosPendentes.GET()
