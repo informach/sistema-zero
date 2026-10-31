@@ -1,18 +1,19 @@
 import { projetoPythonClassico } from '../ambiente-python'
 
 /**
- * C02 (30/10/2026): a Mira de bolhas na linguagem do Explorador, Python com Pygame Zero, no tema da
- * missão "Resgate dos Vagalumes". Cada bolha prende um vagalume; clicar nela solta o vagalume e a
- * bolha reaparece numa das três tocas de coral. Repertório do posto: leitura, nomes, valores,
+ * C02 (30/10/2026): a Mira de bolhas na linguagem do Explorador, Python com Pygame Zero. Desde a
+ * revisão de 31/10/2026 (A45) o tema é da própria ilha, e não da missão do posto: na lagoa do
+ * Recife, a Maré solta bolhas com mudas de coral; clicar na bolha planta a muda e a bolha seguinte
+ * sobe de um dos três corais. Repertório do posto: leitura, nomes, valores,
  * indentação, eventos, clique dentro e fora, estado, sorteio e tempo. Sem listas e sem classes:
- * a bolha é um `Rect` do Pygame Zero (ponto e área), e as tocas saem de um `if/elif` com
+ * a bolha é um `Rect` do Pygame Zero (ponto e área), e as corais saem de um `if/elif` com
  * `random.randint`. O desenho é feito com `screen.draw`, sem imagens.
  */
 
-/** Medidas do jogo. A bolha começa na areia e as tocas ficam no alto. */
+/** Medidas do jogo. A bolha começa na areia e as corais ficam no alto. */
 export const RECIFE_PYTHON = {
   inicio: [280, 360],
-  tocas: [
+  corais: [
     [80, 120],
     [280, 80],
     [480, 120],
@@ -23,10 +24,10 @@ export const RECIFE_PYTHON = {
 
 const centro = ([x, y]: readonly [number, number]) =>
   [x + RECIFE_PYTHON.lado / 2, y + RECIFE_PYTHON.lado / 2] as const
-/** Onde clicar para acertar a bolha no começo e em cada toca. */
+/** Onde clicar para acertar a bolha no começo e em cada coral. */
 export const CLIQUES = {
   inicio: centro(RECIFE_PYTHON.inicio),
-  tocas: RECIFE_PYTHON.tocas.map(centro),
+  corais: RECIFE_PYTHON.corais.map(centro),
   agua: [40, 300] as const,
 }
 
@@ -35,15 +36,15 @@ const PARTES = {
     inicial: `def on_mouse_down(pos):
     pass`,
     gabarito: `def on_mouse_down(pos):
-    global resgatados
+    global plantadas
     if jogando and bolha.collidepoint(pos):
-        resgatados = resgatados + 1
-        sortear_toca()`,
+        plantadas = plantadas + 1
+        sortear_coral()`,
   },
   sorteio: {
-    inicial: `def sortear_toca():
+    inicial: `def sortear_coral():
     pass`,
-    gabarito: `def sortear_toca():
+    gabarito: `def sortear_coral():
     numero = random.randint(1, 3)
     if numero == 1:
         bolha.topleft = (80, 120)
@@ -67,9 +68,9 @@ const PARTES = {
     inicial: `def on_key_down(key):
     pass`,
     gabarito: `def on_key_down(key):
-    global resgatados, tempo, jogando
+    global plantadas, tempo, jogando
     if key == keys.R:
-        resgatados = 0
+        plantadas = 0
         tempo = DURACAO
         jogando = True
         bolha.topleft = (280, 360)`,
@@ -83,15 +84,15 @@ export const ERROS_DO_RECIFE_PYTHON = {
     parte: 'clique',
     quebra: ['acertar'],
     codigo: `def on_mouse_down(pos):
-    global resgatados
+    global plantadas
     if jogando:
-        resgatados = resgatados + 1
-        sortear_toca()`,
+        plantadas = plantadas + 1
+        sortear_coral()`,
   },
   'bolha-nao-muda-de-lugar': {
     parte: 'sorteio',
     quebra: ['sortear'],
-    codigo: `def sortear_toca():
+    codigo: `def sortear_coral():
     bolha.topleft = (280, 360)`,
   },
   'relogio-parado': {
@@ -111,9 +112,9 @@ export const ERROS_DO_RECIFE_PYTHON = {
     parte: 'recomecar',
     quebra: ['recomecar'],
     codigo: `def on_key_down(key):
-    global resgatados, tempo, jogando
+    global plantadas, tempo, jogando
     if key == keys.R:
-        resgatados = 0
+        plantadas = 0
         tempo = DURACAO
         jogando = True`,
   },
@@ -133,11 +134,11 @@ export function codigoDoRecife(versao: VersaoDoRecifePython): string {
 
 WIDTH = 640
 HEIGHT = 480
-TITLE = "Resgate dos vagalumes"
+TITLE = "Bolhas da lagoa"
 
 DURACAO = ${RECIFE_PYTHON.duracao}
 bolha = Rect((280, 360), (80, 80))
-resgatados = 0
+plantadas = 0
 tempo = DURACAO
 jogando = True
 
@@ -162,8 +163,8 @@ def draw():
     screen.draw.filled_circle((520, 160), 52, (196, 120, 200))
     screen.draw.filled_circle(bolha.center, 40, (170, 220, 245))
     screen.draw.circle(bolha.center, 40, (255, 255, 255))
-    screen.draw.filled_circle(bolha.center, 10, (255, 230, 90))
-    screen.draw.text("Vagalumes resgatados: " + str(resgatados), (20, 16), fontsize=32)
+    screen.draw.filled_circle(bolha.center, 12, (120, 210, 150))
+    screen.draw.text("Mudas plantadas: " + str(plantadas), (20, 16), fontsize=32)
     screen.draw.text("Tempo: " + str(int(tempo)), (500, 16), fontsize=32)
     if not jogando:
         screen.draw.text("A maré virou. Aperte R para recomeçar.", center=(320, 280), fontsize=36)
@@ -173,7 +174,7 @@ def draw():
 export function montarProjetoPython(versao: VersaoDoRecifePython) {
   return projetoPythonClassico({
     id: 'recife-mira-python',
-    nome: 'Resgate dos vagalumes',
+    nome: 'Bolhas da lagoa',
     fonte: codigoDoRecife(versao),
     extensao: 'python-pgzero',
   })

@@ -11,7 +11,7 @@ const rotulos: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
       'Percorra as linhas e, dentro de cada linha, as colunas. Guarde [coluna, linha] numa lista.',
     ],
     pousar: [
-      'pousar faz o herói parar em cima da plataforma só quando ele cai e cruza o topo.',
+      'pousar faz o Floco parar em cima da plataforma só quando ele cai e cruza o topo.',
       'Teste os casos pequenos: caindo e cruzando, caindo sem chegar, já abaixo do topo e subindo.',
     ],
     proxima: [

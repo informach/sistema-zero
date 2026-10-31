@@ -2,6 +2,8 @@ import { projetoPythonClassico } from '../ambiente-python'
 
 /**
  * C02 (30/10/2026): a Fase de plataforma do Pico na linguagem do Mestre, Python com Pygame Zero.
+ * Desde a revisão de 31/10/2026 (A45) o tema é da ilha, e não da missão do posto: o Floco sobe a
+ * montanha, um trecho da trilha por fase, e precisa do cristal de cada trecho para seguir.
  * As fases são DADOS (listas de linhas de texto, uma letra por célula de 40 pontos) e o jogo
  * pronto anda, pula, cai e troca de fase usando quatro funções que a pessoa completa: ler a fase,
  * resolver a queda num eixo, decidir a próxima fase e, no extra, acrescentar uma terceira fase.
@@ -145,7 +147,7 @@ function trecho(parte: Parte, versao: VersaoDoPicoPython): string {
 export function codigoDoPico(versao: VersaoDoPicoPython): string {
   return `WIDTH = 640
 HEIGHT = 480
-TITLE = "Subida das fases"
+TITLE = "A subida do Floco"
 
 LADO = 40
 GRAVIDADE = 0.5
@@ -177,13 +179,13 @@ def montar(numero):
     saida = saidas[0] if saidas else [15, 10]
     inicio = ler_fase(linhas, "J")
     comeco = inicio[0] if inicio else [1, 10]
-    heroi.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)
+    floco.topleft = (comeco[0] * LADO + 8, comeco[1] * LADO + 8)
     tem_cristal = False
     vy = 0
     no_chao = False
 
 
-heroi = Rect((48, 408), (24, 32))
+floco = Rect((48, 408), (24, 32))
 fase_atual = 0
 venceu = False
 plataformas = []
@@ -206,35 +208,35 @@ def update():
     if venceu:
         return
     if keyboard.left:
-        heroi.x = heroi.x - PASSO
+        floco.x = floco.x - PASSO
     if keyboard.right:
-        heroi.x = heroi.x + PASSO
+        floco.x = floco.x + PASSO
     for plataforma in plataformas:
-        if heroi.colliderect(plataforma):
-            if heroi.centerx < plataforma.centerx:
-                heroi.right = plataforma.left
+        if floco.colliderect(plataforma):
+            if floco.centerx < plataforma.centerx:
+                floco.right = plataforma.left
             else:
-                heroi.left = plataforma.right
-    heroi.x = max(0, min(WIDTH - heroi.width, heroi.x))
+                floco.left = plataforma.right
+    floco.x = max(0, min(WIDTH - floco.width, floco.x))
     if keyboard.space and no_chao:
         vy = PULO
     vy = vy + GRAVIDADE
-    pe_antes = heroi.bottom
+    pe_antes = floco.bottom
     pe_depois = pe_antes + vy
     no_chao = False
     for plataforma in plataformas:
-        if heroi.right > plataforma.left and heroi.left < plataforma.right:
+        if floco.right > plataforma.left and floco.left < plataforma.right:
             pe, nova_vy = pousar(pe_antes, pe_depois, vy, plataforma.top)
             if nova_vy == 0 and vy > 0:
                 pe_depois = pe
                 no_chao = True
     vy = 0 if no_chao else vy
-    heroi.bottom = int(pe_depois)
-    if heroi.bottom > HEIGHT:
+    floco.bottom = int(pe_depois)
+    if floco.bottom > HEIGHT:
         montar(fase_atual)
-    if celula(heroi) in cristais:
+    if celula(floco) in cristais:
         tem_cristal = True
-    if celula(heroi) == saida:
+    if celula(floco) == saida:
         nova = proxima_fase(fase_atual, tem_cristal, True)
         if nova != fase_atual:
             if nova >= len(FASES):
@@ -253,17 +255,18 @@ def draw():
         for coluna, linha in cristais:
             screen.draw.filled_circle((coluna * LADO + 20, linha * LADO + 20), 10, (110, 200, 255))
     screen.draw.filled_rect(Rect((saida[0] * LADO + 8, saida[1] * LADO), (24, 40)), (150, 100, 60))
-    screen.draw.filled_rect(heroi, (70, 90, 160))
-    screen.draw.text("Fase " + str(fase_atual + 1) + " de " + str(len(FASES)), (16, 12), fontsize=30)
+    screen.draw.filled_rect(floco, (245, 250, 255))
+    screen.draw.rect(floco, (60, 90, 140))
+    screen.draw.text("Trecho " + str(fase_atual + 1) + " de " + str(len(FASES)), (16, 12), fontsize=30)
     if venceu:
-        screen.draw.text("Você chegou ao cume.", center=(320, 240), fontsize=44)
+        screen.draw.text("O Floco chegou ao cume.", center=(320, 240), fontsize=44)
 `
 }
 
 export function montarProjetoPython(versao: VersaoDoPicoPython) {
   return projetoPythonClassico({
     id: 'pico-fases-python',
-    nome: 'Subida das fases',
+    nome: 'A subida do Floco',
     fonte: codigoDoPico(versao),
     extensao: 'python-pgzero',
   })
