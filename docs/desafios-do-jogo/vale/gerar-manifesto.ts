@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
 import { desafiosIniciaisDoVale } from './quadros-iniciais'
@@ -50,48 +51,50 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   },
 }
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      ...desafiosIniciaisDoVale(publico),
-      ...VARIACOES.map((variacao, i) => {
-        const tipo = 'desafio-do-dia' as const
-        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-        return {
-          slug: `vale-proteja-os-ninhos${i === 0 ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
-          publico,
-          ilha: 'vale-dos-dinos',
-          tipo,
-          quadro: null,
-          ordem: 60 + i,
-          // §6.28 A2: o sexto quadro é o desafio na Ponte; o minijogo em blocos continua como
-          // desafio do dia (nunca pinta). Sem fonte na trilha para os blocos: não publica (A1).
-          publicar: false,
-          conteudo: {
-            versao: 1,
-            ...textos[variacao],
-            projetoInicial: montarProjeto(variacao, false),
-            gabarito: montarProjeto(variacao, true),
-            objetivos: objetivos[variacao],
-            desafioExtra: {
-              titulo: 'Mais um desafio',
-              texto:
-                'Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada.',
+  return comPedidosDosMoradores(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        ...desafiosIniciaisDoVale(publico),
+        ...VARIACOES.map((variacao, i) => {
+          const tipo = 'desafio-do-dia' as const
+          const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+          return {
+            slug: `vale-proteja-os-ninhos${i === 0 ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+            publico,
+            ilha: 'vale-dos-dinos',
+            tipo,
+            quadro: null,
+            ordem: 60 + i,
+            // §6.28 A2: o sexto quadro é o desafio na Ponte; o minijogo em blocos continua como
+            // desafio do dia (nunca pinta). Sem fonte na trilha para os blocos: não publica (A1).
+            publicar: false,
+            conteudo: {
+              versao: 1,
+              ...textos[variacao],
+              projetoInicial: montarProjeto(variacao, false),
+              gabarito: montarProjeto(variacao, true),
+              objetivos: objetivos[variacao],
+              desafioExtra: {
+                titulo: 'Mais um desafio',
+                texto:
+                  'Faça Enter recomeçar como o botão: limpe ondas, pontos, contagens e coberturas e permita uma nova rodada.',
+              },
+              recompensa: {
+                cor: false,
+                atracao: 'proteja-os-ninhos',
+                moedas: moedas.principal,
+                moedasExtra: moedas.extra,
+              },
+              blocosManuais: { acrescentar: [], retirar: [] },
             },
-            recompensa: {
-              cor: false,
-              atracao: 'proteja-os-ninhos',
-              moedas: moedas.principal,
-              moedasExtra: moedas.extra,
-            },
-            blocosManuais: { acrescentar: [], retirar: [] },
-          },
-        }
-      }),
-    ],
-  })
+          }
+        }),
+      ],
+    }),
+  )
 }
 if (import.meta.main) {
   for (const publico of ['kids', 'adulto'] as const)

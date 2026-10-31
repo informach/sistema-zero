@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
 import { desafiosIniciaisDoPico } from './quadros-iniciais'
@@ -51,49 +52,51 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   },
 }
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      ...desafiosIniciaisDoPico(publico),
-      ...VARIACOES.map((variacao, index) => {
-        const principal = variacao === 'plataforma'
-        const tipo = 'desafio-do-dia' as const
-        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-        return {
-          slug: `pico-fase-de-plataforma${principal ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
-          publico,
-          ilha: 'pico',
-          tipo,
-          quadro: null,
-          ordem: 60 + index,
-          // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
-          // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
-          publicar: true,
-          conteudo: {
-            versao: 1,
-            ...textos[variacao],
-            projetoInicial: montarProjeto(variacao, false),
-            gabarito: montarProjeto(variacao, true),
-            objetivos: objetivos[variacao],
-            desafioExtra: {
-              titulo: 'Mais um desafio',
-              texto:
-                'Faça a seta para cima também pular, como Espaço: só quando o pinguim está no gelo.',
+  return comPedidosDosMoradores(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        ...desafiosIniciaisDoPico(publico),
+        ...VARIACOES.map((variacao, index) => {
+          const principal = variacao === 'plataforma'
+          const tipo = 'desafio-do-dia' as const
+          const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+          return {
+            slug: `pico-fase-de-plataforma${principal ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+            publico,
+            ilha: 'pico',
+            tipo,
+            quadro: null,
+            ordem: 60 + index,
+            // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
+            // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
+            publicar: true,
+            conteudo: {
+              versao: 1,
+              ...textos[variacao],
+              projetoInicial: montarProjeto(variacao, false),
+              gabarito: montarProjeto(variacao, true),
+              objetivos: objetivos[variacao],
+              desafioExtra: {
+                titulo: 'Mais um desafio',
+                texto:
+                  'Faça a seta para cima também pular, como Espaço: só quando o pinguim está no gelo.',
+              },
+              recompensa: {
+                cor: false,
+                atracao: 'fase-de-plataforma',
+                moedas: moedas.principal,
+                moedasExtra: moedas.extra,
+              },
+              blocosManuais: { acrescentar: [], retirar: [] },
             },
-            recompensa: {
-              cor: false,
-              atracao: 'fase-de-plataforma',
-              moedas: moedas.principal,
-              moedasExtra: moedas.extra,
-            },
-            blocosManuais: { acrescentar: [], retirar: [] },
-          },
-        }
-      }),
-    ],
-  })
+          }
+        }),
+      ],
+    }),
+  )
 }
 if (import.meta.main) {
   for (const publico of ['kids', 'adulto'] as const)

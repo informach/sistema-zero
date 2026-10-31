@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
 import { desafiosIniciaisDoRecife } from './quadros-iniciais'
@@ -50,48 +51,50 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   },
 }
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      ...desafiosIniciaisDoRecife(publico),
-      ...VARIACOES.map((variacao, index) => {
-        const tipo = 'desafio-do-dia' as const
-        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-        return {
-          slug: `recife-mira-de-bolhas${variacao === 'mira' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
-          publico,
-          ilha: 'recife',
-          tipo,
-          quadro: null,
-          ordem: 60 + index,
-          // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
-          // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
-          publicar: true,
-          conteudo: {
-            versao: 1,
-            ...textos[variacao],
-            projetoInicial: montarProjeto(variacao, false),
-            gabarito: montarProjeto(variacao, true),
-            objetivos: objetivos[variacao],
-            desafioExtra: {
-              titulo: 'Mais um desafio',
-              texto:
-                'Faça Enter (+ no toque) recomeçar a rodada: devolva a mira ao início, solte os alvos, esconda a bolha e zere os pontos.',
+  return comPedidosDosMoradores(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        ...desafiosIniciaisDoRecife(publico),
+        ...VARIACOES.map((variacao, index) => {
+          const tipo = 'desafio-do-dia' as const
+          const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+          return {
+            slug: `recife-mira-de-bolhas${variacao === 'mira' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+            publico,
+            ilha: 'recife',
+            tipo,
+            quadro: null,
+            ordem: 60 + index,
+            // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
+            // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
+            publicar: true,
+            conteudo: {
+              versao: 1,
+              ...textos[variacao],
+              projetoInicial: montarProjeto(variacao, false),
+              gabarito: montarProjeto(variacao, true),
+              objetivos: objetivos[variacao],
+              desafioExtra: {
+                titulo: 'Mais um desafio',
+                texto:
+                  'Faça Enter (+ no toque) recomeçar a rodada: devolva a mira ao início, solte os alvos, esconda a bolha e zere os pontos.',
+              },
+              recompensa: {
+                cor: false,
+                atracao: 'mira-de-bolhas',
+                moedas: moedas.principal,
+                moedasExtra: moedas.extra,
+              },
+              blocosManuais: { acrescentar: [], retirar: [] },
             },
-            recompensa: {
-              cor: false,
-              atracao: 'mira-de-bolhas',
-              moedas: moedas.principal,
-              moedasExtra: moedas.extra,
-            },
-            blocosManuais: { acrescentar: [], retirar: [] },
-          },
-        }
-      }),
-    ],
-  })
+          }
+        }),
+      ],
+    }),
+  )
 }
 if (import.meta.main)
   for (const publico of ['kids', 'adulto'] as const)

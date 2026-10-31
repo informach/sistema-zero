@@ -14,8 +14,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Pulo com apoio",
-        "enunciado": "A gravidade e o chão já funcionam. Complete Espaço: se noChao for 1, dê velocidade y negativa ao pinguim, marque noChao como 0 e some um em pulos. Teste com -10. Tocar de novo no ar não inicia outro pulo.",
+        "enunciado": "O Floco está ensinando o pinguim a pular no gelo. Ele quer que o espaço faça o pinguim pular só quando os pés estão no chão; no ar, outro toque espera o próximo pouso.",
         "dicas": [
+          "A gravidade e o chão já funcionam. Complete Espaço: se noChao for 1, dê velocidade y negativa ao pinguim, marque noChao como 0 e some um em pulos. Teste com -10. Tocar de novo no ar não inicia outro pulo.",
           "A velocidade, a marca de apoio e a contagem ficam dentro da mesma condição.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -2234,7 +2235,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "O espaço faz o pinguim pular só quando ele está no chão, e conta cada pulo.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -2447,8 +2448,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Freio no gelo",
-        "enunciado": "O deslize está pronto. Complete Espaço para mudar deslizando para 0 e deixar as duas velocidades do pinguim em zero. Outros toques não fazem ele andar nem mudam sua posição. Enter será o extra de uma rodada nova.",
+        "enunciado": "O pinguim escorrega no gelo e não para. O Floco quer que o espaço funcione como um freio: o pinguim para e fica no mesmo lugar, mesmo com outros toques.",
         "dicas": [
+          "O deslize está pronto. Complete Espaço para mudar deslizando para 0 e deixar as duas velocidades do pinguim em zero. Outros toques não fazem ele andar nem mudam sua posição. Enter será o extra de uma rodada nova.",
           "Pare o estado de deslize e a velocidade. Não reinicie o jogo para frear.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -4281,7 +4283,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "O espaço faz o pinguim parar e ficar no lugar.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -4471,8 +4473,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Floco recolhido",
-        "enunciado": "As setas e o desenho já funcionam. Complete o contato do pinguim com floco: quando pegou for zero, marque pegou como 1, esconda o floco e some um em flocos. Ficar no lugar ou voltar não pode contar de novo.",
+        "enunciado": "Um floco de neve caiu no caminho. O Floco quer que o pinguim recolha o floco ao encostar nele, uma vez só, e que o floco suma depois disso.",
         "dicas": [
+          "As setas e o desenho já funcionam. Complete o contato do pinguim com floco: quando pegou for zero, marque pegou como 1, esconda o floco e some um em flocos. Ficar no lugar ou voltar não pode contar de novo.",
           "Use a marca pegou para separar o primeiro contato dos seguintes.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -6489,7 +6492,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "Encostar no floco recolhe e conta o floco uma vez só, e ele some.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -6665,8 +6668,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Mochila de neve",
-        "enunciado": "Complete as setas para adicionar o peso escolhido somente se o total couber na mochila. O limite é 4: peso 1 cabe até 3; peso 2 cabe até 2. Espaço já esvazia a mochila. Recusar uma carga não muda o peso que já estava guardado.",
+        "enunciado": "A mochila do Floco aguenta peso 4. Ele quer pôr cargas de peso 1 ou 2 só quando ainda couberem inteiras, sem colocar metade de uma carga.",
         "dicas": [
+          "Complete as setas para adicionar o peso escolhido somente se o total couber na mochila. O limite é 4: peso 1 cabe até 3; peso 2 cabe até 2. Espaço já esvazia a mochila. Recusar uma carga não muda o peso que já estava guardado.",
           "Confira o espaço para a carga inteira antes de somar.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -8606,7 +8610,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "Cada carga entra inteira só se couber no peso 4 da mochila.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -8813,8 +8817,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Passagem segura",
-        "enunciado": "O contador da neve e o caminho já estão prontos. Complete Espaço para marcar atravessou como 1 e somar um em passagens, apenas quando faltam for zero e atravessou ainda for zero. Antes de liberar ou depois da travessia, o contador de passagens não muda.",
+        "enunciado": "A neve da passagem está cedendo. O Floco quer que o pinguim atravesse só depois que a neve firmar, e uma vez só.",
         "dicas": [
+          "O contador da neve e o caminho já estão prontos. Complete Espaço para marcar atravessou como 1 e somar um em passagens, apenas quando faltam for zero e atravessou ainda for zero. Antes de liberar ou depois da travessia, o contador de passagens não muda.",
           "Confira a liberação da passagem e a marca da travessia, juntas.",
           "Cenário e movimento já estão prontos. Complete apenas os eventos indicados."
         ],
@@ -11647,7 +11652,7 @@
         "objetivos": [
           {
             "id": "acao",
-            "label": "Complete a ação indicada para esta rodada.",
+            "label": "O pinguim atravessa só com a neve firme, e uma vez só.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -19855,8 +19860,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: pulo alto",
-        "enunciado": "O jogo já funciona e apareceu um gelo alto com a bandeira em cima. O pulo atual é fraco demais para chegar lá. Mude apenas a força do pulo na tecla Espaço: a velocidade y passa de -9 para -13. As outras regras continuam iguais.",
+        "enunciado": "O Floco pôs a bandeira num gelo alto, e o pulo do pinguim não chega lá. Ele quer um pulo mais forte, sem mudar as outras regras.",
         "dicas": [
+          "O jogo já funciona e apareceu um gelo alto com a bandeira em cima. O pulo atual é fraco demais para chegar lá. Mude apenas a força do pulo na tecla Espaço: a velocidade y passa de -9 para -13. As outras regras continuam iguais.",
           "Procure a velocidade do pinguim no evento da tecla Espaço.",
           "O valor negativo em y faz o pinguim subir. Um número maior faz subir mais alto.",
           "Teste andando até embaixo do gelo alto e pulando de lá."
@@ -26702,8 +26708,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: floco de neve",
-        "enunciado": "O jogo já funciona e um floco de neve apareceu acima do começo. Ele já está desenhado, mas ainda não pode ser pego. Complete apenas o contato do pinguim com o floco: marque pegouFloco, esconda o floco e some um em flocos, uma vez só. As outras regras continuam iguais.",
+        "enunciado": "Um floco de neve apareceu acima do começo da fase. O Floco quer que o pinguim pegue o floco ao encostar nele, uma vez só, e que ele suma.",
         "dicas": [
+          "O jogo já funciona e um floco de neve apareceu acima do começo. Ele já está desenhado, mas ainda não pode ser pego. Complete apenas o contato do pinguim com o floco: marque pegouFloco, esconda o floco e some um em flocos, uma vez só. As outras regras continuam iguais.",
           "Observe o evento de contato do pinguim com a bandeira.",
           "Use pegouFloco para não contar o mesmo floco duas vezes.",
           "Pule no começo para encostar no floco e pule de novo para conferir que o placar não muda."
@@ -33227,8 +33234,9 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Fase de plataforma: quedas",
-        "enunciado": "O jogo já funciona e o placar agora mostra as quedas. Cair na água já devolve o pinguim ao começo, mas o placar não muda. Complete apenas essa regra: cada queda na água soma uma em quedas. Enter zera o placar.",
+        "enunciado": "O Floco quer saber quantas vezes o pinguim caiu na água. Ele quer que cada queda some uma no placar das quedas.",
         "dicas": [
+          "O jogo já funciona e o placar agora mostra as quedas. Cair na água já devolve o pinguim ao começo, mas o placar não muda. Complete apenas essa regra: cada queda na água soma uma em quedas. Enter zera o placar.",
           "A volta ao começo está no contato do pinguim com o mar.",
           "Some 1 em quedas dentro desse mesmo contato.",
           "Caia no buraco duas vezes e confira o placar."
