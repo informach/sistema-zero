@@ -1,0 +1,47 @@
+{
+  "resultados": [
+    {
+      "variacao": "corrida",
+      "tela": "computador",
+      "entrada": "teclado",
+      "metrosAntesDoTombo": 2,
+      "velocidadeNoFim": -6
+    },
+    {
+      "variacao": "pulo-alto",
+      "tela": "computador",
+      "entrada": "teclado",
+      "metrosAntesDoTombo": 2,
+      "velocidadeNoFim": -7
+    },
+    {
+      "variacao": "pombos",
+      "tela": "computador",
+      "entrada": "teclado",
+      "metrosAntesDoTombo": 2,
+      "velocidadeNoFim": -7
+    },
+    {
+      "variacao": "corrida",
+      "tela": "celular",
+      "entrada": "toque",
+      "metrosAntesDoTombo": 2,
+      "velocidadeNoFim": -6
+    },
+    {
+      "variacao": "pulo-alto",
+      "tela": "celular",
+      "entrada": "toque",
+      "metrosAntesDoTombo": 2,
+      "velocidadeNoFim": -6
+    },
+    {
+      "variacao": "pombos",
+      "tela": "celular",
+      "entrada": "toque",
+      "metrosAntesDoTombo": 2,
+      "velocidadeNoFim": -6
+    }
+  ],
+  "navegadorFechado": true
+}

@@ -1,4 +1,3 @@
-import { farolSvg } from '../../../packages/studio/src/arte/farol-assets'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
 import {
   createEmptyProject,
@@ -9,284 +8,341 @@ import { generateProjectFiles } from '../../../packages/studio/src/generators/pr
 import { assignStableIdsToIR } from '../../../packages/studio/src/ir/ids'
 import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/ir/schema'
 
-export type Variacao = 'corrida' | 'entregas' | 'tempo' | 'caixa'
-export const VARIACOES = ['corrida', 'entregas', 'tempo', 'caixa'] as const
-/** Palco em pontos, velocidade por quadro, prazo em segundos. Caminhos livres acima e abaixo. */
+/**
+ * A corrida do entregador (A15, revisão de 31/10/2026): o jogo do Corre, Dino! do Inventor com o
+ * tema da Vila. O entregador do Bento é o dinossauro do Jogo 2D, as pedras são os obstáculos do
+ * mesmo kit e o fundo é a rua da Vila. Cada quadro deixa uma parte do jogo para completar, na
+ * ordem das aulas do curso: pulo com gravidade, pedras que entram, começar e recomeçar, a batida
+ * com a área justa, o sorteio com limites e a dificuldade com teto. Os desafios do dia partem do
+ * jogo inteiro.
+ */
+export const VARIACOES = [
+  'pulo',
+  'pedras',
+  'partida',
+  'batida',
+  'sorteio',
+  'corrida',
+  'pulo-alto',
+  'pombos',
+  'descricao',
+] as const
+export type Variacao = (typeof VARIACOES)[number]
+
+/** Palco do Corre, Dino!, chão do kit (a 16% da base) e os números da corrida. */
 export const PISTA = {
-  largura: 640,
-  altura: 480,
-  inicioX: 48,
-  inicioY: 270,
-  velocidade: 3,
-  prazo: 12,
-  prazoCurto: 8,
+  largura: 480,
+  altura: 270,
+  /** O pé do entregador parado no chão: 270 − 43 − 56. */
+  chao: 171,
+  x: 70,
+  y: 150,
+  tamanho: 56,
+  pulo: 13,
+  puloFraco: 9,
+  pedra: 36,
+  pedraGrande: 60,
+  velocidade: -5,
+  limite: -9,
+  area: 80,
 } as const
+
+/** O que cada variação deixa para completar; o gabarito liga a parte, o inicial não. */
+type Parte =
+  | 'gravidade'
+  | 'pedras'
+  | 'entrada'
+  | 'batida'
+  | 'sorteio'
+  | 'ritmo'
+  | 'puloForte'
+  | 'pombos'
+  | 'descricao'
+/** O extra opcional de cada variação, que o inicial também não tem. */
+type Extra = 'somDoPulo' | 'efeitos' | 'telaComMetros'
+
+export const PARTE: Record<Variacao, Parte> = {
+  pulo: 'gravidade',
+  pedras: 'pedras',
+  partida: 'entrada',
+  batida: 'batida',
+  sorteio: 'sorteio',
+  corrida: 'ritmo',
+  'pulo-alto': 'puloForte',
+  pombos: 'pombos',
+  descricao: 'descricao',
+}
+export const EXTRA: Record<Variacao, Extra> = {
+  pulo: 'somDoPulo',
+  pedras: 'efeitos',
+  partida: 'telaComMetros',
+  batida: 'efeitos',
+  sorteio: 'somDoPulo',
+  corrida: 'telaComMetros',
+  'pulo-alto': 'somDoPulo',
+  pombos: 'efeitos',
+  descricao: 'telaComMetros',
+}
+
 const n = (value: number): JSExpr => ({ type: 'num', value })
 const s = (value: string): JSExpr => ({ type: 'str', value })
 const v = (name: string): JSExpr => ({ type: 'var', name })
-const b = (value: boolean): JSExpr => ({ type: 'bool', value })
-const set = (name: string, value: JSExpr): JSStatement => ({ type: 'assign', name, value })
-const inc = (name: string, delta: number): JSStatement =>
-  set(name, { type: 'binop', op: delta < 0 ? '-' : '+', left: v(name), right: n(Math.abs(delta)) })
-const eq = (name: string, value: JSExpr): JSExpr => ({
-  type: 'binop',
-  op: '===',
-  left: v(name),
-  right: value,
+const cena = (name: string): JSExpr => ({ type: 'g2d:sceneIs', name })
+const irPara = (name: string): JSStatement => ({ type: 'g2d:setScene', name })
+const sorteio = (min: number, max: number): JSExpr => ({
+  type: 'g2d:randomBetween',
+  min: n(min),
+  max: n(max),
 })
-const iff = (cond: JSExpr, then: JSStatement[], otherwise: JSStatement[] = []): JSStatement => ({
-  type: 'if',
-  cond,
-  then,
-  else: otherwise,
+const somar = (name: string, delta: number): JSStatement => ({
+  type: 'assign',
+  name,
+  // O bloco "somar" do Blockly escreve `x - 1` para um passo negativo.
+  value: { type: 'binop', op: delta < 0 ? '-' : '+', left: v(name), right: n(Math.abs(delta)) },
 })
-const vel = (vx: number, vy = 0): JSStatement => ({
-  type: 'g2d:setVelocity',
-  spriteVar: 'entregador',
-  vx: n(vx),
-  vy: n(vy),
-})
-// Cada ocorrência precisa de um nó próprio para receber um ID distinto no Blockly.
-const apply = (): JSStatement => ({ type: 'g2d:applyVelocity', spriteVar: 'entregador' })
-const draw = (spriteVar: string): JSStatement => ({
-  type: 'g2d:drawSprite',
-  spriteVar,
+const se = (
+  cond: JSExpr,
+  then: JSStatement[],
+  elseif?: { cond: JSExpr; then: JSStatement[] }[],
+): JSStatement => ({ type: 'if', cond, then, ...(elseif ? { elseif } : {}) }) as JSStatement
+/** Um "senão se" do Se (o campo `then` é o da IR). */
+const senaoSe = (cond: JSExpr, then: JSStatement[]) => ({ cond, then })
+const tela = (title: JSExpr, subtitle: JSExpr, hint: string): JSStatement => ({
+  type: 'g2d:showScreen',
   ctxVar: 'ctx',
+  title,
+  subtitle,
+  hint: s(hint),
+  bg: '#5b3a2e',
 })
-const image = (
-  varName: string,
-  image: string,
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): JSStatement => ({ type: 'g2d:createImageSprite', varName, image, x, y, w, h })
-const label = (
-  text: string | JSExpr,
-  x: number,
-  y: number,
-  size = 16,
-  color = '#493c56',
-): JSStatement => ({ type: 'g2d:drawLabel', ctxVar: 'ctx', text, x, y, size, color, align: 'left' })
+
 const svg = (w: number, h: number, body: string) =>
   `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">${body}</svg>`
 const loja = (x: number, cor: string, nome: string) =>
-  `<g transform="translate(${x} 80)"><ellipse cx="64" cy="98" rx="61" ry="7" fill="#73595322"/><rect x="10" y="18" width="108" height="78" rx="12" fill="#fff4d8" stroke="#805953" stroke-width="3"/><path d="M4 26 22 4h84l18 22z" fill="${cor}"/><path d="M7 37h114v17H7z" fill="${cor}"/><path d="M22 37v17m28-17v17m28-17v17m28-17v17" stroke="#fff2de" stroke-width="12"/><rect x="22" y="61" width="27" height="25" rx="6" fill="#9bd6df" stroke="#805953" stroke-width="2"/><rect x="76" y="60" width="27" height="36" rx="8" fill="#c99072"/><text x="64" y="23" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="12" fill="#493c56">${nome}</text></g>`
-const arte: Record<string, string> = {
-  entregador: farolSvg('menino-de-bone'),
-  vila: svg(
-    640,
-    480,
-    `<rect width="640" height="480" rx="18" fill="#fff6e5"/><rect y="80" width="640" height="336" fill="#b9dbb0"/><path d="M0 216h640v184H0zM130 100h416v124H130z" fill="#edd5b5"/><path d="M0 224h640M0 392h640M138 104h400" stroke="#fff5df" stroke-width="4" stroke-dasharray="12 9"/>${loja(10, '#f2b56a', 'BENTO')}${loja(500, '#ca9acb', 'DOCES')}<g fill="#82b58f" stroke="#54846d" stroke-width="2"><circle cx="48" cy="167" r="20"/><circle cx="602" cy="165" r="20"/><circle cx="146" cy="366" r="16"/><circle cx="474" cy="370" r="16"/></g><g fill="#fff2de"><circle cx="42" cy="162" r="4"/><circle cx="608" cy="160" r="4"/></g><path d="M95 297h54m-12-9 12 9-12 9" fill="none" stroke="#ac8669" stroke-width="5" stroke-linecap="round"/>`,
-  ),
-  caixa: svg(
-    62,
-    100,
-    '<ellipse cx="31" cy="93" rx="30" ry="6" fill="#76523933"/><rect x="3" y="4" width="56" height="88" rx="8" fill="#ce9864" stroke="#825a42" stroke-width="4"/><path d="M5 14h52M5 80h52M10 17l42 59M52 17 10 76" stroke="#9d704e" stroke-width="5"/><path d="M12 8h38" stroke="#f2cca0" stroke-width="3"/>',
-  ),
-  entrega: svg(
-    70,
-    84,
-    '<rect x="3" y="3" width="64" height="78" rx="13" fill="#fff8dc" stroke="#9972ae" stroke-width="5"/><ellipse cx="35" cy="62" rx="23" ry="5" fill="#6c516822"/><path d="M16 38h38l-5 25H21z" fill="#f0b06c"/><path d="M15 38c-6-15 11-19 15-14 4-14 25-9 23 5 12 1 10 13 0 13H17z" fill="#f7bfd0"/><circle cx="37" cy="23" r="5" fill="#b84e72"/>',
-  ),
-  primeira: svg(
-    80,
-    84,
-    '<rect x="3" y="3" width="74" height="78" rx="13" fill="#fff8dc" stroke="#67a3a4" stroke-width="5"/><path d="M19 41h42l-5 25H25z" fill="#e6ac73"/><path d="M20 41c0-15 40-15 40 0" fill="#fff2ce" stroke="#ab795d" stroke-width="3"/><text x="40" y="25" text-anchor="middle" font-family="sans-serif" font-size="16" fill="#426c6f">1</text>',
-  ),
-}
-const assets: ProjectAsset[] = Object.entries(arte).map(([name, source]) => ({
-  id: `vila-${name}`,
-  name,
-  kind: 'image',
-  source: 'library',
-  dataUrl: `data:image/svg+xml;base64,${Buffer.from(source).toString('base64')}`,
-}))
-
-/** Só blocos já ensinados no Farol: ir à borda e aplicar o deslocamento até a largada. */
-function largada(variacao: Variacao): JSStatement[] {
-  return [
-    vel(-PISTA.largura, -PISTA.altura),
-    apply(),
-    { type: 'g2d:clampToScreen', spriteVar: 'entregador', ctxVar: 'ctx' },
-    vel(PISTA.inicioX, PISTA.inicioY),
-    apply(),
-    vel(0),
-    set('tempo', n(variacao === 'tempo' ? PISTA.prazoCurto : PISTA.prazo)),
-    set('entregas', n(0)),
-    set('primeiraEntregue', b(false)),
-    set('recado', s('')),
-    set('correndo', b(true)),
-  ]
-}
-const terminar = (recado: string): JSStatement[] => [
-  set('recado', s(recado)),
-  set('correndo', b(false)),
-  vel(0),
+  `<g transform="translate(${x} 96)"><rect x="8" y="22" width="112" height="110" rx="10" fill="#fff4d8" stroke="#805953" stroke-width="3"/><path d="M2 30 20 6h88l18 24z" fill="${cor}"/><path d="M5 40h118v16H5z" fill="${cor}"/><path d="M20 40v16m28-16v16m28-16v16m28-16v16" stroke="#fff2de" stroke-width="11"/><rect x="20" y="66" width="30" height="30" rx="6" fill="#9bd6df" stroke="#805953" stroke-width="2"/><rect x="74" y="66" width="32" height="66" rx="8" fill="#c99072"/><text x="64" y="26" text-anchor="middle" font-family="sans-serif" font-weight="bold" font-size="12" fill="#493c56">${nome}</text></g>`
+/** A rua da Vila Doce: o chão do kit fica em y 227, onde começa a calçada. */
+const VILA = svg(
+  480,
+  270,
+  `<rect width="480" height="270" fill="#bfe6f2"/><g fill="#fff" opacity=".8"><ellipse cx="80" cy="40" rx="34" ry="11"/><ellipse cx="330" cy="30" rx="42" ry="12"/></g>${loja(14, '#f2b56a', 'BENTO')}${loja(176, '#ca9acb', 'DOCES')}${loja(338, '#8fc7a4', 'SUCOS')}<rect y="227" width="480" height="43" fill="#d8c3a5"/><path d="M0 227h480" stroke="#9c7b5f" stroke-width="3"/><g fill="#c7ad8c"><rect x="20" y="240" width="38" height="10" rx="3"/><rect x="110" y="252" width="38" height="10" rx="3"/><rect x="200" y="240" width="38" height="10" rx="3"/><rect x="290" y="252" width="38" height="10" rx="3"/><rect x="380" y="240" width="38" height="10" rx="3"/></g>`,
+)
+const assets: ProjectAsset[] = [
+  {
+    id: 'vila-rua',
+    name: 'vila',
+    kind: 'image',
+    source: 'library',
+    dataUrl: `data:image/svg+xml;base64,${Buffer.from(VILA).toString('base64')}`,
+  },
 ]
 
-export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
-  const corridaPronta = variacao !== 'corrida' || pronto
+const DESCRICAO_COMPLETA =
+  'Leve os doces do Bento pela rua: pule as pedras com Espaço, com a seta para cima ou com um toque na tela.'
+const DESCRICAO_CURTA = 'A corrida do entregador da Vila Doce.'
+
+/** O jogo inteiro, com as partes que faltam desligadas. */
+function jogo(variacao: Variacao, liga: (p: Parte | Extra) => boolean): SZIRV2 {
+  const largadaDoPulo = liga('puloForte') ? PISTA.pulo : PISTA.puloFraco
+  const pedra: JSStatement = {
+    type: 'g2d:spawnObstacle',
+    groupVar: 'pedras',
+    ctxVar: 'ctx',
+    // Os pombos só voam no desafio deles; nos outros, só pedras.
+    shape: variacao === 'pombos' && liga('pombos') ? 'random' : 'rock',
+    x: liga('sorteio') ? sorteio(500, 560) : n(520),
+    // O sorteio com limites (aula 12): o lugar de entrada e o tamanho de cada pedra.
+    size:
+      variacao === 'pulo-alto'
+        ? n(PISTA.pedraGrande)
+        : liga('sorteio')
+          ? sorteio(28, 44)
+          : n(PISTA.pedra),
+    vx: v('velocidade'),
+  }
   const start: JSStatement[] = [
-    { type: 'g2d:setupStage', width: PISTA.largura, height: PISTA.altura, bg: '#fff6e5' },
-    { type: 'g2d:enableClassicControls', mode: 'auto' },
-    { type: 'var', name: 'correndo', value: b(false) },
-    { type: 'var', name: 'tempo', value: n(0) },
-    { type: 'var', name: 'entregas', value: n(0) },
-    { type: 'var', name: 'primeiraEntregue', value: b(false) },
-    { type: 'var', name: 'recado', value: s('Enter ou + dá a largada. Depois, use as setas.') },
-    image('entregador', 'entregador', PISTA.inicioX, PISTA.inicioY, 40, 48),
-    image('caixa', 'caixa', 286, 238, 62, 100),
-    image('destino', 'entrega', 550, 246, 70, 84),
+    { type: 'g2d:setupStage', width: n(PISTA.largura), height: n(PISTA.altura), bg: '#bfe6f2' },
+    {
+      type: 'g2d:setStageDescription',
+      description: liga('descricao') ? DESCRICAO_COMPLETA : DESCRICAO_CURTA,
+    },
+    {
+      type: 'g2d:createDino',
+      varName: 'entregador',
+      x: n(PISTA.x),
+      y: n(PISTA.y),
+      size: n(PISTA.tamanho),
+      color: '#f2a65a',
+    },
+    { type: 'g2d:createGroup', varName: 'pedras' },
+    irPara('inicio'),
+    ...(liga('batida')
+      ? [
+          {
+            type: 'g2d:setHitboxScale',
+            spriteVar: 'entregador',
+            percent: n(PISTA.area),
+          } as JSStatement,
+        ]
+      : []),
+    { type: 'var', name: 'metros', value: n(0) },
+    { type: 'var', name: 'velocidade', value: n(PISTA.velocidade) },
   ]
   const events: JSStatement[] = [
-    {
-      type: 'g2d:onKey',
-      key: 'Enter',
-      body: corridaPronta ? largada(variacao === 'tempo' && !pronto ? 'corrida' : variacao) : [],
-    },
-    { type: 'g2d:onKey', key: 'Space', body: pronto ? largada(variacao) : [] },
-    {
-      type: 'g2d:onOverlap',
-      aVar: 'entregador',
-      bVar: 'caixa',
-      body: corridaPronta
-        ? [iff(v('correndo'), terminar('A caixa ficou no caminho. Tente outra rota.'))]
-        : [],
-    },
-  ]
-  const win = [
-    ...(variacao === 'entregas' && pronto ? [inc('entregas', 1)] : [set('entregas', n(1))]),
-    ...terminar('Entrega feita. Os doces chegaram.'),
-  ]
-  events.push({
-    type: 'g2d:onOverlap',
-    aVar: 'entregador',
-    bVar: 'destino',
-    body: corridaPronta
+    ...(liga('somDoPulo')
       ? [
-          iff(
-            v('correndo'),
-            variacao === 'entregas' && pronto
-              ? [
-                  iff(v('primeiraEntregue'), win, [
-                    set('recado', s('Passe primeiro na entrega 1.')),
-                  ]),
-                ]
-              : win,
-          ),
+          {
+            type: 'g2d:onJump',
+            spriteVar: 'entregador',
+            body: [{ type: 'g2d:playFx', fx: 'jump' }],
+          } as JSStatement,
         ]
-      : [],
-  })
-  const drawings: JSStatement[] = [draw('caixa'), draw('destino'), label('Chegada', 546, 357, 15)]
-  if (variacao === 'entregas') {
-    start.push(image('primeira', 'primeira', 190, 124, 80, 84))
-    drawings.push(draw('primeira'), label('Entrega 1', 192, 116, 15))
-    events.push({
-      type: 'g2d:onOverlap',
-      aVar: 'entregador',
-      bVar: 'primeira',
-      body: pronto
+      : []),
+    {
+      type: 'g2d:onAnyInput',
+      body: liga('entrada')
         ? [
-            iff(v('correndo'), [
-              iff(eq('primeiraEntregue', b(false)), [
-                inc('entregas', 1),
-                set('primeiraEntregue', b(true)),
-                set('recado', s('Agora leve os doces até a chegada.')),
-              ]),
-            ]),
+            se(
+              cena('inicio'),
+              [irPara('jogando')],
+              [senaoSe(cena('fim'), [{ type: 'g2d:restart' }])],
+            ),
           ]
         : [],
-    })
-  }
-  if (variacao === 'caixa') {
-    start.push(image('caixaNova', 'caixa', 430, 124, 62, 100))
-    drawings.push(draw('caixaNova'), label('Caixa nova', 421, 116, 14))
-    events.push({
-      type: 'g2d:onOverlap',
-      aVar: 'entregador',
-      bVar: 'caixaNova',
-      body: pronto
-        ? [iff(v('correndo'), terminar('A caixa nova ficou no caminho. Tente outra rota.'))]
-        : [],
-    })
-  }
-  const source: SZIRV2 = {
+    },
+  ]
+  const batida: JSStatement[] = liga('batida')
+    ? [
+        ...(liga('efeitos')
+          ? [
+              { type: 'g2d:explode', spriteVar: 'pedra', color: '#f2b56a' } as JSStatement,
+              { type: 'g2d:shake', ctxVar: 'ctx', intensity: n(6) } as JSStatement,
+            ]
+          : []),
+        { type: 'g2d:playFx', fx: 'gameover' },
+        irPara('fim'),
+      ]
+    : []
+  const loops: JSStatement[] = [
+    {
+      type: 'g2d:updateEachFrame',
+      body: [
+        { type: 'g2d:clear' },
+        { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'vila' },
+        se(
+          cena('jogando'),
+          [
+            ...(liga('gravidade')
+              ? [
+                  { type: 'g2d:applyGravity', spriteVar: 'entregador' } as JSStatement,
+                  {
+                    type: 'g2d:controlDino',
+                    spriteVar: 'entregador',
+                    ctxVar: 'ctx',
+                    jump: n(largadaDoPulo),
+                  } as JSStatement,
+                ]
+              : []),
+            { type: 'g2d:drawSprite', spriteVar: 'entregador', ctxVar: 'ctx' },
+            { type: 'g2d:updateGroup', groupVar: 'pedras' },
+            { type: 'g2d:drawGroup', groupVar: 'pedras', ctxVar: 'ctx' },
+            {
+              type: 'g2d:onSpriteGroupOverlap',
+              spriteVar: 'entregador',
+              groupVar: 'pedras',
+              itemName: 'pedra',
+              body: batida,
+            },
+            {
+              type: 'g2d:pruneOffscreen',
+              groupVar: 'pedras',
+              ctxVar: 'ctx',
+              itemName: 'pedra',
+              body: [],
+            },
+            {
+              type: 'g2d:drawScore',
+              ctxVar: 'ctx',
+              label: 'Metros: ',
+              value: v('metros'),
+              x: n(12),
+              y: n(30),
+              color: '#493c56',
+              size: n(22),
+            },
+          ],
+          [
+            senaoSe(cena('inicio'), [
+              tela(
+                s('A corrida do entregador'),
+                s('Leve os doces do Bento pela rua.'),
+                'Aperte uma tecla ou toque na tela para começar',
+              ),
+            ]),
+            senaoSe(cena('fim'), [
+              tela(
+                s('Fim da corrida'),
+                s('Uma pedra derrubou o entregador.'),
+                'Aperte uma tecla ou toque para correr de novo',
+              ),
+              ...(liga('telaComMetros')
+                ? [
+                    {
+                      type: 'g2d:drawScore',
+                      ctxVar: 'ctx',
+                      label: 'Metros: ',
+                      value: v('metros'),
+                      x: n(190),
+                      y: n(240),
+                      color: '#fff4d8',
+                      size: n(22),
+                    } as JSStatement,
+                  ]
+                : []),
+            ]),
+          ],
+        ),
+      ],
+    },
+    {
+      type: 'g2d:everySeconds',
+      seconds: n(1.4),
+      body: [
+        se(cena('jogando'), [
+          ...(liga('pedras') ? [pedra] : []),
+          // A dificuldade com teto (aula 13 do Corre, Dino!): cada pedra nova deixa a próxima
+          // mais rápida, até o limite.
+          ...(liga('ritmo')
+            ? [
+                se({ type: 'binop', op: '>', left: v('velocidade'), right: n(PISTA.limite) }, [
+                  somar('velocidade', -1),
+                ]),
+              ]
+            : []),
+        ]),
+      ],
+    },
+    {
+      type: 'g2d:everySeconds',
+      seconds: n(1),
+      body: [se(cena('jogando'), [somar('metros', 1)])],
+    },
+  ]
+  return {
     version: 2,
     html: [],
     css: [],
     extensions: [{ extensionId: 'game-2d' }],
-    behavior: {
-      start,
-      events,
-      loops: [
-        {
-          type: 'g2d:everySeconds',
-          seconds: 1,
-          key: 'relogio',
-          body: corridaPronta
-            ? [
-                iff(v('correndo'), [
-                  inc('tempo', -1),
-                  iff(eq('tempo', n(0)), terminar('O tempo acabou. Tente de novo.')),
-                ]),
-              ]
-            : [],
-        },
-        {
-          type: 'g2d:updateEachFrame',
-          body: [
-            ...(corridaPronta
-              ? [
-                  iff(v('correndo'), [
-                    {
-                      type: 'g2d:topDown',
-                      spriteVar: 'entregador',
-                      speed: PISTA.velocidade,
-                    } as JSStatement,
-                    {
-                      type: 'g2d:clampToScreen',
-                      spriteVar: 'entregador',
-                      ctxVar: 'ctx',
-                    } as JSStatement,
-                  ]),
-                ]
-              : []),
-            { type: 'g2d:clear' },
-            { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'vila' },
-            label('A corrida do entregador', 16, 30, 24),
-            label('Leve os doces do Bento. Use as setas e contorne as caixas.', 16, 60, 15),
-            ...drawings,
-            draw('entregador'),
-            label(v('recado'), 16, 413, 16),
-            label('Largada: Enter ou +', 16, 444, 19),
-            label('Extra: Espaço ou A recomeça.', 16, 470, 17),
-            {
-              type: 'g2d:drawScore',
-              ctxVar: 'ctx',
-              label: 'Tempo: ',
-              value: v('tempo'),
-              x: 286,
-              y: 444,
-              size: 17,
-              color: '#493c56',
-            },
-            {
-              type: 'g2d:drawScore',
-              ctxVar: 'ctx',
-              label: 'Entregas: ',
-              value: v('entregas'),
-              x: 448,
-              y: 444,
-              size: 17,
-              color: '#493c56',
-            },
-          ],
-        },
-      ],
-    },
+    behavior: { start, events, loops },
   }
-  const ir = assignStableIdsToIR(source, `vila_${variacao}`)
+}
+
+export function montarProjeto(variacao: Variacao, pronto: boolean): Project {
+  const falta = PARTE[variacao]
+  const extra = EXTRA[variacao]
+  const ir = assignStableIdsToIR(
+    jogo(variacao, (p) => pronto || (p !== falta && p !== extra)),
+    `vila_${variacao.replace('-', '_')}`,
+  )
   const name = 'A corrida do entregador'
   return {
     ...createEmptyProject(`vila-doce-${variacao}`, name),

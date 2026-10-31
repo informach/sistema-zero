@@ -62,8 +62,6 @@ nativeTest(
         await writeFile(join(dir, file), source)
       }
       for (const d of manifesto.desafios) {
-        const novo = d.quadro !== null && d.quadro <= 5
-        if (process.env.SZ_VILA_QUADROS_NOVOS === '1' && !novo) continue
         if (
           process.env.SZ_VILA_DOCE_SCENARIO &&
           !d.slug.endsWith(process.env.SZ_VILA_DOCE_SCENARIO)
@@ -73,108 +71,37 @@ nativeTest(
           { name: 'gabarito', project: d.conteudo.gabarito as Project, passes: true },
           { name: 'projetoInicial', project: d.conteudo.projetoInicial as Project, passes: false },
         ]
-        if (!novo) {
-          const semExtra = structuredClone(d.conteudo.gabarito) as Project
-          const extra = (semExtra.ir as SZIRV2).behavior.events.find(
-            (s) => s.type === 'g2d:onKey' && s.key === 'Space',
-          )
-          if (extra?.type !== 'g2d:onKey') throw Error('Atalho de reinício ausente')
-          extra.body = []
-          scenarios.push({
-            name: 'sem-reinicio-extra',
-            project: semExtra,
-            ids: ['recomecar-enter'],
-            passes: false,
-          })
+        // Mutações do gabarito que tiram só a regra de um objetivo.
+        const mutar = (name: string, ids: string[], change: (s: JSStatement) => void) => {
+          const project = structuredClone(d.conteudo.gabarito) as Project
+          const behavior = (project.ir as SZIRV2).behavior
+          for (const area of [behavior.start, behavior.events, behavior.loops]) visit(area, change)
+          scenarios.push({ name, project, ids, passes: false })
         }
-        const broken = structuredClone(d.conteudo.gabarito) as Project
-        const behavior = (broken.ir as SZIRV2).behavior
-        if (novo) {
-          const ids = ['forno-certo', 'estoque', 'ordem', 'quente', 'quantidade']
-          // Remove a condição ensinada, sem mudar cenário, entrada ou julgador.
-          visit(behavior.events, (s) => {
-            if (s.type === 'if') s.cond = { type: 'bool', value: true }
+        if (d.slug.endsWith('-pulo'))
+          mutar('sem-controle', ['pular'], (s) => {
+            if (s.type !== 'if') return
+            const i = s.then.findIndex((t) => t.type === 'g2d:controlDino')
+            if (i >= 0) s.then.splice(i, 1)
           })
-          scenarios.push({
-            name: 'sem-condicoes',
-            project: broken,
-            ids: [ids[d.quadro! - 1]!],
-            passes: false,
+        if (d.slug.endsWith('-partida'))
+          mutar('sem-recomeco', ['recomecar'], (s) => {
+            if (s.type === 'if' && 'elseif' in s && s.cond.type === 'g2d:sceneIs')
+              if (s.cond.name === 'inicio' && s.then[0]?.type === 'g2d:setScene')
+                (s as { elseif?: unknown }).elseif = undefined
           })
-          const semReinicio = structuredClone(d.conteudo.gabarito) as Project
-          const enter = (semReinicio.ir as SZIRV2).behavior.events.find(
-            (s) => s.type === 'g2d:onKey' && s.key === 'Enter',
-          )
-          if (enter?.type !== 'g2d:onKey') throw Error('Enter ausente')
-          enter.body = []
-          scenarios.push({
-            name: 'sem-reinicio',
-            project: semReinicio,
-            ids: ['recomecar'],
-            passes: false,
+        if (d.slug.endsWith('-pedras'))
+          mutar('pedra-parada', ['pedra-alcanca'], (s) => {
+            if (s.type === 'g2d:spawnObstacle') s.vx = { type: 'num', value: 0 }
           })
-        } else if (d.tipo === 'quadro-das-cores') {
-          const timer = behavior.loops.find((s) => s.type === 'g2d:everySeconds')
-          if (timer?.type !== 'g2d:everySeconds') throw Error('Relógio ausente')
-          timer.body = []
-          scenarios.push({
-            name: 'tempo-congelado',
-            project: broken,
-            ids: ['prazo'],
-            passes: false,
-          })
-          const passing = structuredClone(d.conteudo.gabarito) as Project
-          const contact = (passing.ir as SZIRV2).behavior.events.find(
-            (s) => s.type === 'g2d:onOverlap' && s.bVar === 'caixa',
-          )
-          if (contact?.type !== 'g2d:onOverlap') throw Error('Contato ausente')
-          contact.body = []
-          scenarios.push({
-            name: 'atravessa-caixa',
-            project: passing,
-            ids: ['caixa'],
-            passes: false,
-          })
-        } else if (d.slug.endsWith('entregas')) {
-          visit(behavior.events, (s) => {
-            if (s.type === 'assign' && s.name === 'primeiraEntregue')
-              s.value = { type: 'bool', value: false }
-          })
-          scenarios.push({
-            name: 'conta-a-mesma-parada',
-            project: broken,
-            ids: ['primeira-entrega'],
-            passes: false,
-          })
-        } else if (d.slug.endsWith('tempo')) {
-          visit(behavior.events, (s) => {
-            if (s.type === 'assign' && s.name === 'tempo') s.value = { type: 'num', value: 12 }
-          })
-          scenarios.push({
-            name: 'prazo-antigo',
-            project: broken,
-            ids: ['oito-segundos'],
-            passes: false,
-          })
-        } else {
-          const contact = behavior.events.find(
-            (s) => s.type === 'g2d:onOverlap' && s.bVar === 'caixaNova',
-          )
-          if (contact?.type !== 'g2d:onOverlap') throw Error('Contato novo ausente')
-          contact.body = []
-          scenarios.push({
-            name: 'atravessa-caixa-nova',
-            project: broken,
-            ids: ['caixa-nova'],
-            passes: false,
-          })
-        }
         for (const scenario of scenarios) {
           const project = scenario.project
           const objectives = d.conteudo.objetivos
             .filter((o) => isSectionExecutionRule(o.rule))
             .filter((o) => !scenario.ids || scenario.ids.includes(o.id))
             .map((o) => ({ id: o.id, rule: o.rule as SectionExecutionRule }))
+          // Os desafios só com regras de estrutura (os pombos e a descrição) não rodam aqui.
+          if (objectives.length === 0) continue
           const files = generateProjectFiles({ ir: project.ir!, projectName: project.name })
           if (!scenario.ids) expect(files).toEqual(project.files)
           await writeFile(
