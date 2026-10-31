@@ -11,6 +11,7 @@ import { lojaDaGaleria } from '../estado/galeria'
 import { ITENS } from '../sistemas/itens'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { VendaRecusadaNoServicoError } from '../sistemas/salvar'
+import { FALA_DO_TETO } from '../sistemas/teto-semanal'
 
 /** O dia da última venda neste aparelho (só para a tela; quem decide é o serviço). */
 const chaveDaVenda = (perfil: string) => `arquipelago:venda-do-dia:${perfil}`
@@ -29,7 +30,7 @@ function guardarVendaDoDia(perfil: string, dia: string) {
 
 export const FALAS_DA_BANCA = {
   vendeu: (moedas: number) => `Vendido na banca. Você ganhou ${moedas} moedas.`,
-  teto: 'Vendido na banca. O limite de moedas desta semana já foi alcançado.',
+  teto: `Vendido na banca. ${FALA_DO_TETO}`,
   pendente: 'Vendido na banca. As moedas ainda aguardam confirmação.',
   recusado:
     'Os pratos foram vendidos, mas não foi possível confirmar as moedas. Peça ajuda à equipe.',

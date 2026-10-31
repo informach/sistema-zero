@@ -6,6 +6,7 @@ import {
   pertenceAoPerfil,
   soDoKids,
 } from '../src/components/arquipelago-host'
+import { NOME_DA_FERRAMENTA } from '../src/components/arquipelago-porta'
 
 const fetchOriginal = globalThis.fetch
 afterEach(() => {
@@ -211,6 +212,10 @@ describe('a porta da plataforma para o jogo', () => {
     expect(await p.lerQuarto()).toEqual(state)
     expect(await p.salvarQuarto(state)).toEqual(state)
     expect(pedidos.at(-1)).toMatchObject({ method: 'PUT', body: JSON.stringify(state) })
+  })
+
+  test('arrumar o quarto no jogo usa o editor da plataforma, com nome na porta (A10)', () => {
+    expect(NOME_DA_FERRAMENTA.quarto).toBe('o seu quarto')
   })
 
   test('o serviço só alcança as rotas do jogo', async () => {

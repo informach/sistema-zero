@@ -148,10 +148,19 @@ test.skipIf(!jogoUrl || !membersUrl)(
       expect(limitado.guardado.salvamento?.moradores.capi.amizade).toBe(30)
       expect(limitado.guardado.salvamento?.inventario.alface).toBe(1)
       const chamadas = chaves.length
+      // Na mesma semana, a retomada não cobra de novo.
+      expect((await api.entregar(jogador, capi)).pagamento).toBe('teto')
+      expect(chaves).toHaveLength(chamadas)
+      // Numa semana seguinte do jogo o crédito volta com a mesma chave (A32). A carteira real
+      // ainda está na mesma semana do relógio dela e recusa pelo teto: nada é creditado em dobro.
       data = new Date(agora.getTime() + 8 * 86_400_000)
+      const idDoCapi = (await repo.ler(dono, capi.chave))!.entrega.pagamentoId
+      expect((await api.entregar(jogador, capi)).pagamento).toBe('teto')
+      expect(chaves).toHaveLength(chamadas + 1)
+      expect(chaves.at(-1)).toBe(idDoCapi)
       expect((await api.entregar(jogador, capi)).pagamento).toBe('teto')
       expect((await api.entregar(jogador, pedido)).pagamento).toBe('creditado')
-      expect(chaves).toHaveLength(chamadas)
+      expect(chaves).toHaveLength(chamadas + 1)
       const [wallet] =
         await members.sql`select coin_balance from members.gamification_profiles where user_id=${id} and audience=${audience}`
       expect(wallet).toMatchObject({ coin_balance: 100 })

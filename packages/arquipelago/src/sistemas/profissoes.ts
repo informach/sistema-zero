@@ -7,6 +7,7 @@ import {
   type SessaoDaProfissao,
   SessaoDaProfissaoSchema,
 } from '@sistemazero/arquipelago-contracts'
+import { FALA_DO_TETO } from './teto-semanal'
 
 export interface GuardaDosTurnos {
   getItem(chave: string): string | null
@@ -64,7 +65,7 @@ export function recadoDoPagamento(sessao: SessaoDaProfissao): string {
     case 'creditado':
       return `${sessao.moedas} moedas confirmadas pelo turno de hoje.`
     case 'teto':
-      return 'O limite semanal foi alcançado. As moedas estão guardadas para uma próxima semana.'
+      return FALA_DO_TETO
     case 'pendente':
       return 'O turno foi guardado. As moedas serão retomadas quando você abrir um balcão.'
     case 'aguardando':

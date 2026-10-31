@@ -5,7 +5,7 @@ import {
   SalvamentoSchema,
   VenderNaFeiraSchema,
 } from '@sistemazero/arquipelago-contracts'
-import { and, asc, eq } from 'drizzle-orm'
+import { and, asc, eq, ne } from 'drizzle-orm'
 import { CompraPendenteError, type DonoDaCompra } from '../../../domain/insumos.port'
 import {
   type RepositorioDasVendas,
@@ -30,6 +30,7 @@ function ler(r: Linha, dono: DonoDaCompra): VendaFeita {
     }),
     pagamentoId: r.pagamentoId,
     pagamento: r.pagamento,
+    tetoSemana: r.tetoSemana,
     moedas: r.moedas,
   }
 }
@@ -148,16 +149,41 @@ export class DrizzleRepositorioDasVendas implements RepositorioDasVendas {
   async confirmarPagamento(
     dono: DonoDaCompra,
     chave: string,
-    creditar: Parameters<RepositorioDasVendas['confirmarPagamento']>[2],
+    semana: string,
+    creditar: Parameters<RepositorioDasVendas['confirmarPagamento']>[3],
   ) {
     await this.db.transaction(async (tx) => {
       const [linha] = await tx.select().from(vendas).where(eq(vendas.chave, chave)).for('update')
       if (!linha) throw new VendaRecusadaError('incompativel')
       const venda = ler(linha, dono)
-      if (venda.pagamento !== 'pendente') return
+      const espera =
+        venda.pagamento === 'pendente' ||
+        (venda.pagamento === 'teto' && venda.tetoSemana !== null && venda.tetoSemana < semana)
+      if (!espera) return
       // Como nos pedidos: só a linha deste crédito fica retida durante o S2S, não o save.
       const pagamento = await creditar(venda)
-      await tx.update(vendas).set({ pagamento }).where(eq(vendas.chave, chave))
+      await tx
+        .update(vendas)
+        .set({ pagamento, tetoSemana: pagamento === 'teto' ? semana : null })
+        .where(eq(vendas.chave, chave))
     })
+  }
+  async esperandoOTeto(dono: DonoDaCompra, semana: string, limite: number) {
+    const linhas = await this.db
+      .select()
+      .from(vendas)
+      .where(
+        and(
+          eq(vendas.jogadorId, dono.jogadorId),
+          eq(vendas.publico, dono.publico),
+          eq(vendas.pagamento, 'teto'),
+          ne(vendas.tetoSemana, semana),
+        ),
+      )
+      .orderBy(asc(vendas.vendidaEm), asc(vendas.chave))
+      .limit(limite)
+    return linhas
+      .filter((r) => r.tetoSemana !== null && r.tetoSemana < semana)
+      .map((r) => ler(r, dono))
   }
 }

@@ -247,18 +247,30 @@ test.skipIf(!url)(
   },
 )
 
-test.skipIf(!url)('teto é terminal e não cobra de novo', async () => {
+test.skipIf(!url)('teto espera a semana seguinte (A32), com a mesma chave', async () => {
   const { dono, comando } = await perfil()
-  let n = 0
+  const chaves: string[] = []
+  let resposta: 'teto' | 'creditado' = 'teto'
   const moedas: PortaDasMoedas = {
-    creditar: async () => {
-      n++
-      return { situacao: 'teto' }
+    creditar: async (p) => {
+      chaves.push(p.key)
+      return { situacao: resposta }
     },
   }
   expect((await servico(moedas).vender(jogador(dono), comando)).pagamento).toBe('teto')
   expect((await servico(moedas).vender(jogador(dono), comando)).pagamento).toBe('teto')
-  expect(n).toBe(1)
+  await servico(moedas).pendentes(jogador(dono))
+  expect(chaves).toHaveLength(1)
+  resposta = 'creditado'
+  const segunda = new Date('2026-11-02T12:00:00Z')
+  await servico(moedas, segunda).pendentes(jogador(dono))
+  expect(chaves).toEqual([chaves[0]!, chaves[0]!])
+  expect((await repo.ler(dono, comando.chave))?.venda).toMatchObject({
+    pagamento: 'creditado',
+    tetoSemana: null,
+  })
+  await servico(moedas, segunda).pendentes(jogador(dono))
+  expect(chaves).toHaveLength(2)
 })
 
 test.skipIf(!url)(

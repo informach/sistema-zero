@@ -13,6 +13,7 @@ import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
 import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import { ServicoDosPedidos } from '../../src/application/servico-dos-pedidos'
+import { semanaDeSaoPaulo } from '../../src/domain/desafios'
 import { CompraPendenteError, type DonoDaCompra } from '../../src/domain/insumos.port'
 import { MoedasIndisponiveisError, type PortaDasMoedas } from '../../src/domain/moedas.port'
 import { PedidoRecusadoError } from '../../src/domain/pedidos.port'
@@ -270,26 +271,73 @@ test.skipIf(!url)(
 )
 
 test.skipIf(!url)(
-  'teto é terminal sem apagar amizade/cesta nem cobrar de novo em outra semana',
+  'teto espera a semana seguinte (A32): sem apagar amizade/cesta, mesma chave, uma vez',
   async () => {
     const { dono, comando } = await perfil()
-    let n = 0
+    const chaves: string[] = []
+    let resposta: 'teto' | 'creditado' = 'teto'
     const moedas: PortaDasMoedas = {
-      creditar: async () => {
-        n++
-        return { situacao: 'teto' }
+      creditar: async (p) => {
+        chaves.push(p.key)
+        return { situacao: resposta }
       },
     }
     const r = await servico(moedas).entregar(jogador(dono), comando)
     expect(r.pagamento).toBe('teto')
     expect(r.guardado.salvamento?.moradores.bento.pedido?.entregue).toBe(true)
-    expect(
-      (await servico(moedas, new Date('2026-11-02T12:00:00Z')).entregar(jogador(dono), comando))
-        .pagamento,
-    ).toBe('teto')
-    expect(n).toBe(1)
+    // Na mesma semana, nem a retomada nem a abertura cobram de novo.
+    expect((await servico(moedas).entregar(jogador(dono), comando)).pagamento).toBe('teto')
+    await servico(moedas).pendentes(jogador(dono))
+    expect(chaves).toHaveLength(1)
+    // Na semana seguinte, a abertura credita com a mesma chave; depois não insiste.
+    resposta = 'creditado'
+    const segunda = new Date('2026-11-02T12:00:00Z')
+    expect((await servico(moedas, segunda).pendentes(jogador(dono))).pedidos).toEqual([])
+    expect(chaves).toHaveLength(2)
+    expect(chaves[1]).toBe(chaves[0])
+    expect((await repo.ler(dono, comando.chave))?.entrega).toMatchObject({
+      pagamento: 'creditado',
+      tetoSemana: null,
+    })
+    await servico(moedas, segunda).pendentes(jogador(dono))
+    expect(chaves).toHaveLength(2)
   },
 )
+
+test.skipIf(!url)('teto de novo na semana seguinte guarda a semana nova', async () => {
+  const { dono, comando } = await perfil()
+  let n = 0
+  const moedas: PortaDasMoedas = {
+    creditar: async () => {
+      n++
+      return { situacao: 'teto' }
+    },
+  }
+  await servico(moedas).entregar(jogador(dono), comando)
+  expect((await repo.ler(dono, comando.chave))?.entrega.tetoSemana).toBe('2026-10-26')
+  await servico(moedas, new Date('2026-11-03T12:00:00Z')).pendentes(jogador(dono))
+  expect(n).toBe(2)
+  expect((await repo.ler(dono, comando.chave))?.entrega.tetoSemana).toBe('2026-11-02')
+  // Carteira fora na abertura: continua esperando, e a criança abre o jogo normalmente.
+  const fora: PortaDasMoedas = {
+    creditar: async () => {
+      throw new MoedasIndisponiveisError()
+    },
+  }
+  expect(
+    (await servico(fora, new Date('2026-11-10T12:00:00Z')).pendentes(jogador(dono))).pedidos,
+  ).toEqual([])
+  expect((await repo.ler(dono, comando.chave))?.entrega.tetoSemana).toBe('2026-11-02')
+})
+
+test.skipIf(!url)('a semana da migração é a mesma do jogo, na virada de domingo', async () => {
+  // 2026-11-02T02:00Z ainda é domingo, 1º de novembro, em São Paulo.
+  const quando = new Date('2026-11-02T02:00:00Z')
+  const [linha] = await db.sql<{ semana: string }[]>`
+    select to_char(date_trunc('week', ${quando.toISOString()}::timestamptz at time zone 'America/Sao_Paulo'), 'YYYY-MM-DD') as semana`
+  expect(linha?.semana).toBe(semanaDeSaoPaulo(quando))
+  expect(linha?.semana).toBe('2026-10-26')
+})
 
 test.skipIf(!url)(
   'recusa dono, dia, revisão, pedido desconhecido e insumo pendente sem consumo',

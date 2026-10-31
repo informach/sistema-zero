@@ -85,13 +85,31 @@ async function usarMoldaGuardada(p: Page) {
     return m.ativas === 1 && m.molda > n
   }, antes)
 }
+/** "Usar uma criação minha" (A30): a lista da conta só traz o que cabe no molde. */
+async function usarDaConta(p: Page) {
+  const antes = await p.evaluate(() => (globalThis as Janela).__arquipelagoAparencias.pinta)
+  await p.getByRole('button', { name: 'Ver as que cabem neste molde', exact: true }).click()
+  await p.getByRole('button', { name: /Geladeira redonda/ }).waitFor()
+  await p.getByRole('button', { name: /Geladeira de listras/ }).click()
+  await p.waitForFunction((n) => {
+    const m = (globalThis as Janela).__arquipelagoAparencias
+    return m.ativas === 1 && m.pinta > n
+  }, antes)
+  // A escolhida passa para "Suas aparências" e sai da lista da conta.
+  await p.getByRole('button', { name: /Geladeira de listras/ }).waitFor({ state: 'detached' })
+}
+/**
+ * Para onde a câmera olha (z). No celular, mais para baixo: o painel de construir (com as chaves da
+ * casa) cobre a metade de baixo da tela, e a geladeira precisa ficar acima dele.
+ */
+let alvoZ = 5
 async function enquadrar(p: Page, distancia: number) {
   await p.getByRole('button', { name: /Construir/ }).click()
   await p.getByRole('button', { name: /Olhar/ }).click()
   await esperarCamera(p, 0, -3, distancia)
   // Arrasta pelo controle real. A câmera começa no alvo (0,-3); a geladeira está em (-4.5,2.5).
   const dx = (4.5 * 700) / distancia
-  const dy = (-8 * 700) / distancia
+  const dy = (-(alvoZ + 3) * 700) / distancia
   for (let i = 0; i < 3; i++) {
     await p.mouse.move(100, 360)
     await p.mouse.down()
@@ -101,7 +119,7 @@ async function enquadrar(p: Page, distancia: number) {
   if (distancia === 24)
     for (let i = 0; i < 2; i++)
       await p.getByRole('button', { name: 'Aproximar', exact: true }).click()
-  await esperarCamera(p, -4.5, 5, 16)
+  await esperarCamera(p, -4.5, alvoZ, 16)
 }
 async function esperarCamera(p: Page, x: number, z: number, d: number) {
   await p.waitForFunction(
@@ -114,8 +132,8 @@ async function esperarCamera(p: Page, x: number, z: number, d: number) {
 }
 function pontoDaGeladeira(largura: number, altura: number) {
   const camera = new PerspectiveCamera(55, largura / altura, 0.1, 600)
-  camera.position.set(-4.5, 1.02 + Math.sin(0.95) * 16, 5 + Math.cos(0.95) * 16)
-  camera.lookAt(-4.5, 1.02, 5)
+  camera.position.set(-4.5, 1.02 + Math.sin(0.95) * 16, alvoZ + Math.cos(0.95) * 16)
+  camera.lookAt(-4.5, 1.02, alvoZ)
   camera.updateMatrixWorld(true)
   const ponto = new Vector3(-4.5, 1.02, 2.5).project(camera)
   return { x: ((ponto.x + 1) * largura) / 2, y: ((1 - ponto.y) * altura) / 2 }
@@ -139,6 +157,7 @@ try {
   })
   for (const mobile of [false, true]) {
     const nome = mobile ? 'celular' : 'computador'
+    alvoZ = mobile ? 8 : 5
     const viewport = mobile ? { width: 390, height: 844 } : { width: 1280, height: 720 }
     const contexto = await browser.newContext({
       viewport,
@@ -200,9 +219,11 @@ try {
     await p.getByRole('button', { name: 'Comprar', exact: true }).click()
     await esperarAtivas(p, 0)
     await usarMoldaGuardada(p)
+    await usarDaConta(p)
+    await p.screenshot({ path: path.join(prints, `${nome}-05-criacao-da-conta.png`) })
     const medicao = await p.evaluate(() => (globalThis as Janela).__arquipelagoAparencias)
     assert.equal(medicao.carregadas - medicao.liberadas, 1)
-    assert.ok(medicao.molda >= 3 && medicao.pinta >= 1)
+    assert.ok(medicao.molda >= 3 && medicao.pinta >= 2)
     await fecharObjeto(p)
     await p.waitForTimeout(1800)
     for (const falha of ['falha', 'sem-metodo']) {
@@ -219,7 +240,17 @@ try {
       viewport,
       medicao,
       erros,
-      casos: ['colocar', 'Molda', 'Pinta', 'trocar', 'mesmo id', 'galeria', 'falha', 'sem método'],
+      casos: [
+        'colocar',
+        'Molda',
+        'Pinta',
+        'trocar',
+        'mesmo id',
+        'galeria',
+        'criação da conta',
+        'falha',
+        'sem método',
+      ],
     })
     await contexto.close()
   }

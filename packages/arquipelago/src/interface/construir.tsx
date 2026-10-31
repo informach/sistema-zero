@@ -18,6 +18,7 @@ import {
   useConstrucao,
 } from '../estado/construcao'
 import { useEstado, useJogo } from '../estado/contexto'
+import { arrumarOQuarto } from '../estado/quarto'
 import {
   chaveDoComodo,
   comodoDaFerramenta,
@@ -197,7 +198,8 @@ export function ModosDoJogo() {
 
 /** A barra do Construir: as ferramentas, as escolhas de janela e piso, a câmera e o Desfazer. */
 export function BarraDeConstruir() {
-  const { loja } = useJogo()
+  const { loja, plataforma } = useJogo()
+  const ferramentaAberta = useEstado((s) => s.ferramentaAberta)
   const construcao = lojaDaConstrucao(loja)
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DE_CONSTRUIR)
   const atual = useConstrucao(construcao, (s) => s.ferramenta)
@@ -325,6 +327,15 @@ export function BarraDeConstruir() {
               onClick={() => s().girarObjeto()}
             >
               ⟳ Girar
+            </button>
+            {/* O quarto é o da plataforma (A10): arrumar abre o editor do Meu Quarto. */}
+            <button
+              type="button"
+              className="arq-botao leve"
+              disabled={ferramentaAberta}
+              onClick={() => void arrumarOQuarto(loja, plataforma)}
+            >
+              🛏️ Meu quarto
             </button>
           </fieldset>
           {/* Uma fileira só, que rola para o lado: a barra não cobre o cômodo (no celular, a tela). */}

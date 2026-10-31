@@ -158,7 +158,9 @@ export class ServicoDoJogo {
 
   /**
    * Aparência da galeria só entra paga e no objeto dela: o jogo nunca a ganha de graça escrevendo
-   * no salvamento. Sem nenhuma da galeria, nada é lido.
+   * no salvamento. Sem nenhuma da galeria, nada é lido. As que já estavam guardadas foram
+   * conferidas quando entraram: só as novas vão ao Members (§6.28, A16), e o salvamento de todo
+   * dia não depende dele.
    */
   private async conferirGaleria(jogador: Jogador, salvamento: Salvamento): Promise<void> {
     const pedidas = new Set<string>()
@@ -170,8 +172,22 @@ export class ServicoDoJogo {
       }
     }
     if (pedidas.size === 0) return
+    for (const id of await this.galeriaJaGuardada(jogador)) pedidas.delete(id)
+    if (pedidas.size === 0) return
     const pagas = this.aparenciasPagas ? await this.aparenciasPagas(jogador) : new Set<string>()
     for (const id of pedidas) if (!pagas.has(id)) throw new AparenciaNaoCompradaError()
+  }
+
+  /** As aparências da galeria do salvamento guardado, cada uma no seu objeto. */
+  private async galeriaJaGuardada(jogador: Jogador): Promise<Set<string>> {
+    const ja = new Set<string>()
+    const linha = await this.repo.lerSalvamento(jogador.id)
+    const guardado = linha ? migrarSalvamento(linha.dados) : null
+    for (const [objeto, p] of Object.entries(guardado?.projetos ?? {})) {
+      for (const a of p?.aparencias ?? [])
+        if (a.origem === 'galeria' && aparenciaDaGaleria(a.id)?.objeto === objeto) ja.add(a.id)
+    }
+    return ja
   }
 
   private exigirLiberado(jogador: Jogador): void {

@@ -104,6 +104,8 @@ export interface EstadoDoJogo {
   adotar(guardado: SalvamentoGuardado): void
   definirModo(modo: EstadoDoJogo['modo']): void
   definirAvatar(avatar: AvatarDoJogo): void
+  /** O quarto da plataforma, relido (§6.28, A10): mudou lá, muda aqui. */
+  definirQuarto(quarto: QuartoDoJogo): void
   definirCorrida(corrida: CorridaNaTela | null): void
   mostrarResultado(resultado: ResultadoDaCorrida | null): void
   acharConstelacao(indice: number): void
@@ -241,6 +243,9 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     },
     definirAvatar(avatar) {
       set({ avatar })
+    },
+    definirQuarto(quarto) {
+      set({ quarto })
     },
     definirCorrida(corrida) {
       const atual = get().corrida

@@ -95,6 +95,19 @@ describe('o cartão da galeria', () => {
       { aparencia: daGaleria, rotulo: GELADEIRA.nome, emUso: false },
     ])
     expect(aparenciasQueEleTem('geladeira', vazio, [])).toEqual([])
+    // Duas pinturas guardadas têm nomes diferentes na lista.
+    const duas = {
+      ...vazio,
+      aparencia: { origem: 'pinta' as const, id: 'b' },
+      aparencias: [
+        { origem: 'pinta' as const, id: 'a' },
+        { origem: 'pinta' as const, id: 'b' },
+      ],
+    }
+    expect(aparenciasQueEleTem('geladeira', duas, []).map((o) => o.rotulo)).toEqual([
+      'Pintada no Pinta',
+      'Pintada no Pinta 2',
+    ])
   })
 })
 

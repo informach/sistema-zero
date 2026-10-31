@@ -38,6 +38,7 @@ const TEXTOS: Record<
 
 export const NOME_DA_FERRAMENTA = {
   avatar: 'o avatar',
+  quarto: 'o seu quarto',
   pinta: 'o Pinta',
   molda: 'o Molda',
   estudio: 'o Estúdio',

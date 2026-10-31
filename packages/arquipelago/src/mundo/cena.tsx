@@ -44,6 +44,7 @@ import { carregarModelos } from './modelos'
 import { Nico } from './nico'
 import { PetQueAcompanha } from './pet-que-acompanha'
 import { MonitorDeQualidade, QualidadeDaCena, useQualidade } from './qualidade-da-cena'
+import { QuartoRelido } from './quarto-relido'
 import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
 import { RoupasConquistadas } from './roupas-conquistadas'
@@ -133,6 +134,7 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
         <RotinaDosLumis />
         <EnquantoFechado />
         <RoupasConquistadas />
+        <QuartoRelido />
       </Suspense>
     </Canvas>
   )

@@ -34,7 +34,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { adotar } from '../sistemas/bichos'
 import { MORADORES_CONVIDAVEIS } from '../sistemas/visitas-dos-moradores'
-import { lerAparenciaFalsa } from './aparencias-falsas'
+import { lerAparenciaFalsa, listarCriacoesQueCabemFalsas } from './aparencias-falsas'
 import { type CartasDoPlayground, respostaDasCartas } from './cartas-falsas'
 import { criarDesafiosFalsos, type DiaDoPlayground } from './desafios-falsos'
 import { criarFamiliaFalsa, type FamiliaDoPlayground } from './familia-falsa'
@@ -552,6 +552,12 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       ? {}
       : {
           lerAparencia: o.aparencias === 'falha' ? async () => null : lerAparenciaFalsa,
+          listarCriacoesQueCabem:
+            o.aparencias === 'falha'
+              ? async () => {
+                  throw new Error('As criações não responderam.')
+                }
+              : listarCriacoesQueCabemFalsas,
         }),
     publico,
     perfil: { id: 'perfil-de-teste', primeiroNome: 'Lia' },
@@ -750,6 +756,26 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
       },
     },
     abrirFerramenta: async (pedido) => {
+      // O editor do Meu Quarto (A10): no playground não há editor; devolve o quarto como está,
+      // com um móvel girado para a mudança aparecer na casa.
+      if (pedido.ferramenta === 'quarto') {
+        if (o.somenteLeitura) return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
+        if (pedido.proposito !== 'arrumar')
+          return { situacao: 'indisponivel', motivo: 'pedido-invalido' }
+        const [primeiro, ...resto] = quarto.placedItems
+        if (primeiro)
+          quarto = {
+            ...quarto,
+            placedItems: [
+              {
+                ...primeiro,
+                rot: (((primeiro.rot ?? 0) + 1) % 4) as 0 | 1 | 2 | 3,
+              },
+              ...resto,
+            ],
+          }
+        return { situacao: 'quarto-pronto', quarto: structuredClone(quarto) }
+      }
       if (pedido.ferramenta === 'avatar') {
         if (o.somenteLeitura) return { situacao: 'indisponivel', motivo: 'acesso-necessario' }
         if (

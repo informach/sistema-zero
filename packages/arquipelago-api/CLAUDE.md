@@ -1,5 +1,23 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Teto semanal com uma regra só e salvamento sem Members (A32 e A16, 31/10/2026)
+
+O que passa do teto semanal espera a semana seguinte e nunca se perde, em tudo o que paga moedas.
+Desafios e turnos já faziam assim; pedidos e vendas passaram a fazer. A migração gerada 0021,
+`teto_espera_a_semana`, acrescenta `teto_semana` a `pedidos_remunerados` e `vendas_na_feira`
+(obrigatória só com `teto`, índice parcial `*_teto_espera`) e marca com a semana de São Paulo os
+que já tinham batido no teto, para eles também voltarem. `GET /pedidos/pendentes` e
+`GET /feira/vendas/pendentes` (o jogo chama na abertura) creditam de novo um teto de semana
+anterior por abertura, com a mesma chave; carteira fora só registra aviso. Na mesma semana nem a
+retomada nem a abertura chamam a carteira. Testes em `tests/db/pedidos.test.ts`,
+`tests/db/vendas.test.ts` e `pedidos-members.test.ts` (carteira real: o Members não grava a chave
+recusada pelo teto, então a tentativa seguinte pode pagar).
+
+O salvamento só consulta a posse da galeria no Members para as aparências da galeria que ainda não
+estavam no salvamento guardado (A16): as que já estavam foram conferidas quando entraram. O save de
+todo dia não depende do Members; uma aparência nova com o Members fora continua recusada (424).
+Teste em `tests/integration/galeria.test.ts`. Implantar a migração e a API antes do jogo.
+
 ## Visitas entre amigos: revogação, troca e teto (N08a, R01 a R03, 31/10/2026)
 
 O aceite vale para o convite que o originou. `apagarConvite` e `gerarConvite` (troca de código)
@@ -96,7 +114,7 @@ o direito adquirido sem exigir novamente a ilha, a data atual ou a revisão anti
 Consumo, amizade, cesta e crédito pendente são atômicos sob a trava do save. A entrega recusa
 compra de insumos pendente. Depois, só a linha do crédito fica travada durante o S2S de cinco
 segundos. Crédito pendente permite PUT normal. O Members confirma idempotência e teto semanal.
-Teto confirmado é terminal; resposta perdida conserva a chave. Replay devolve o save atual.
+Teto espera a semana seguinte (A32, abaixo); resposta perdida conserva a chave. Replay devolve o save atual.
 Catálogo e itens persistidos são conferidos pelo serviço, mas save do cliente não prova a origem
 histórica de cada item. Nenhuma alteração de V18 ou variável nova.
 

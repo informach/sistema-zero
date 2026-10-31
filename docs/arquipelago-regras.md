@@ -1692,7 +1692,13 @@ Arquivos: `arquipelago/src/sistemas/construcao/` (`lote.ts`, `grade.ts`, `comodo
     lareira e a banda não têm faces) e "Modelar no
     Molda" (abre no posto Explorador(a) de Mundos, `POSICAO_DO_MOLDA`) pedem `abrirFerramenta` com
     `proposito: 'objeto'` e o molde do contrato. Pronto: a aparência fica guardada (`aparencia` com
-    a origem e o id da criação). "Usar uma criação minha" entra com o cartão dele.
+    a origem e o id da criação). "Usar uma criação minha" (A30, `interface/criacoes-que-cabem.tsx`):
+    "Ver as que cabem neste molde" pede à plataforma (`listarCriacoesQueCabem`, opcional no
+    contrato) as criações da conta, das ferramentas que o posto já abriu, que o jogo aceitaria: o
+    desenho do Pinta no tamanho exato da planificação e o modelo do Molda dentro do teto de
+    triângulos (as 12 mais novas de cada ferramenta são conferidas). A escolhida vira a aparência
+    em uso, como a feita agora; as que já estão em "Suas aparências" não se repetem, e duas do
+    mesmo tipo ali ganham número ("Pintada no Pinta 2").
   - **Da galeria** (fase1-13, 29/10/2026; o terceiro cartão, ao lado do Pinta e do Molda): a
     aparência pronta, comprada com moedas Zappy. Regras na seção 9.9.
     - O cartão mostra a miniatura (`MINIATURA_DO_OBJETO`), o nome, o preço e o saldo ("Você tem
@@ -2443,7 +2449,9 @@ faz o que as seções acima descrevem.
 9. **Terceira estrela (A9):** "achar o segredo" do percurso, no lugar de "pegar todos os itens".
 10. **Quarto (A10):** "mudou no jogo, muda na plataforma, e o contrário". Primeiro o jogo relê o
     quarto quando a criança volta para ele; depois, mexer nos móveis do quarto no jogo grava pela
-    mesma rota da plataforma.
+    mesma rota da plataforma. Feito (lote 7): ao entrar em casa o jogo relê o quarto (no máximo a
+    cada 15 s, `estado/quarto.ts`), e "🛏️ Meu quarto" no modo construir abre o editor do Meu Quarto
+    da plataforma por cima do jogo (ferramenta `quarto`); ao voltar, o jogo recebe o quarto relido.
 
 **Regras e técnica (registrado)**
 
@@ -2451,7 +2459,11 @@ faz o que as seções acima descrevem.
     dentro da imagem do `arquipelago-api`; voltar uma versão é reimplantar o serviço. Diferença
     técnica da proposta, aceita.
 12. **Teto semanal (A32):** uma regra só para tudo o que passa do teto: espera a semana seguinte e
-    nunca se perde (os pedidos deixam de perder o excedente).
+    nunca se perde (os pedidos deixam de perder o excedente). Feito (lote 7): pedidos e vendas
+    guardam a semana do teto e o serviço credita de novo, com a mesma chave, quando o jogo abre numa
+    semana seguinte (inclusive os que já tinham batido no teto antes); a fala é uma só
+    (`sistemas/teto-semanal.ts`). O salvamento só consulta o Members pelas aparências da galeria
+    novas (A16).
 
 **Arte**
 
