@@ -77,14 +77,18 @@ CERCADO = (2.4, -9.2)
 LOTE_DA_CABANA = {'x0': -18, 'z0': -4, 'x1': -12, 'z1': 4}
 # O segredo dos patins (31/10/2026, pedido dela): na ponta de campo, ao norte do lote da cabana, uma pista
 # suspensa de tábuas (6,6 m retos, 1,2 de largura, com corrimão de corda dos lados) a 4,5 m do chão e, depois
-# de um vão de 3,8 m (a pé, o pulo correndo vence 3,26; de patins, 4,24), o toco alto do segredo, na mesma
-# altura, com a âncora `segredo-patins` em cima. Sobe-se à pista pela escada de mão (`escada-2-*`, modo
-# escada) no lado de cá. O toco fica longe de tudo o que se pisa alto: do chão e das moitas ninguém
-# alcança 4,5 m, e do deque mais perto (o da T3, a 4,8 m do chão) o vão é de 6 m, além do pulo de
-# patins e do voo do planador (desce 1 m a cada 3: do alto do pulo no deque chega a uns 5,4 m). Só o
-# próprio salto da pista, com o planador aberto, também chega lá (ele avança 4,5 m caindo o pulo).
-SEGREDO_DOS_PATINS = dict(toco=(-17.0, 5.2), raio=1.0, rumo=(0.9, 0.44), vao=3.8, pista=6.6, largura=1.2,
-                          altura=4.5, escada_de_ponta=0.6)
+# de um vão de 3,8 m, o toco alto do segredo, 0,45 m mais alto que a pista (`acima`, ajuste aprovado em
+# 31/10/2026), com a âncora `segredo-patins` em cima. Pela trajetória do corpo (`CORPO.pulo`, a gravidade
+# 24), para chegar 0,45 m acima: a pé, correndo (4,6 m/s), o meio do corpo anda 2,98 m, 3,68 m com o pé
+# redondo pegando as duas bordas (`alcanceMaximoDoPulo`); de patins (5,98 m/s), 3,88 m só com o meio do
+# corpo. Com as bordas na mesma altura, 3,8 m ficava abaixo dos 3,95 do pulo a pé com a ajuda do corpo. Sobe-se à pista pela escada de mão (`escada-2-*`, modo
+# escada) no lado de cá. Do chão, das moitas e dos deques ninguém chega pulando. O planador (o modo
+# planar: abre no alto do pulo, ainda sobe uns 4 cm e só depois desce a 1,8 m/s) chega da própria pista
+# (qualquer beirada que o pulo alcança, ele também) e do deque da T3 e da ponte ao lado (a 6,5 e 8,7 m;
+# o voo de lá vai a uns 8,7 m). O toco foi 1 m para o norte (menos voo da ponte) com a pista girada para
+# a ponta de cá continuar no mesmo lugar; `tests/segredo-dos-patins.test.ts` registra o limite.
+SEGREDO_DOS_PATINS = dict(toco=(-17.0, 6.2), raio=1.0, rumo=(0.931, 0.365), vao=3.8, pista=6.6, largura=1.2,
+                          altura=4.5, acima=0.45, escada_de_ponta=0.6)
 # A casa na árvore no deque da T1 (física viva, etapa 5). `lado` é o ângulo (chão do Blender) do
 # tronco para o meio da casa; `largura` vai na direção do tronco para fora, `fundo` em volta do
 # tronco. A porta fica na parede de +y local (a do lado da escada), com o meio em `porta_x`: a parede
@@ -607,9 +611,12 @@ def segredo_dos_patins(col):
     dentro = (lx - nx * (0.7 + 0.06), lz - nz * (0.7 + 0.06))
     anc = [ancora('escada-2-base', lx - nx * 0.0, lz - nz * 0.0, TOPO), ancora('escada-2-topo', lx, lz, h),
            ancora('escada-2-saida', dentro[0], dentro[1], h)]
-    # O toco alto do segredo: casca de árvore, o tampo de anéis e musgo, e a bandeirinha com a estrela.
+    # O toco alto do segredo (0,45 m acima da pista): casca de árvore, o tampo de anéis e musgo, e a
+    # bandeirinha com a estrela.
     r = sp['raio']
-    p.append(cyl(r, h - TOPO - 0.08, (tx, -tz, TOPO + (h - TOPO - 0.08) / 2), 'tronco', verts=14, r2=r * 0.94))
+    h = h + sp['acima']
+    # O pé desce 0,6 abaixo do tampo: o lado de fora fica em cima da praia.
+    p.append(cyl(r, h - TOPO + 0.52, (tx, -tz, TOPO - 0.6 + (h - TOPO + 0.52) / 2), 'tronco', verts=14, r2=r * 0.94))
     p.append(cyl(r * 0.96, 0.08, (tx, -tz, h - 0.04), 'troncoClaro', verts=14))
     p.append(torus(r * 0.6, 0.025, (tx, -tz, h + 0.005), 'tronco', seg=14, rseg=3))
     for k in range(5):

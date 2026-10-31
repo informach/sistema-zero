@@ -27,13 +27,14 @@
     "triangulos": 1208
   },
   "casa": {
-    "kb": 352.5,
+    "kb": 353.8,
     "nos": {
       "janelas": 1700,
       "paredes": 936,
       "porta": 596,
       "revestimento": 784,
-      "telhado": 1876,
+      "telhado": 1716,
+      "toldo": 160,
       "varanda": 982
     },
     "triangulos": 6874

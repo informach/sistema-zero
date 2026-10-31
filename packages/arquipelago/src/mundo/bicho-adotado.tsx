@@ -17,6 +17,20 @@ import porquinhoGlb from '../assets/bichos/porquinho.glb'
 import { lojaDoBicho, PAINEL_DO_BICHO } from '../estado/bicho'
 import { useEstado, useJogo } from '../estado/contexto'
 import { quemAcompanha } from '../sistemas/companhia'
+import { CORPO as CORPO_DELA } from '../sistemas/corpo'
+import {
+  BICHO_QUE_SEGURA,
+  comecarPassinho,
+  criarEmpurrao,
+  distanciaMinima,
+  empurrando,
+  espacoDoBicho,
+  ladoDoPassinho,
+  passoDoEmpurrao,
+  passoDoPassinho,
+  pedidoNoChao,
+  respeitarFolga,
+} from '../sistemas/espaco-dos-bichos'
 import { jogoPausado } from '../sistemas/pausa'
 import {
   atrasDela,
@@ -28,6 +42,7 @@ import {
 import { suavizarAngulo } from '../sistemas/zappy'
 import { duracaoDoClipe, olhosNoInstante, PISCAR, trocarClipe, useCopiaAnimada } from './animado'
 import { ESCALA_DOS_BICHOS, URL_DO_FILHOTE } from './bichos-do-bosque'
+import { ColisorDoEspaco } from './espaco-dos-bichos'
 import { useInterativo } from './interativos'
 import { alturaDaIlha, GRAVIDADE, PASSO_DA_FISICA } from './medidas'
 import { ComReserva } from './modelos'
@@ -98,7 +113,7 @@ function CorpoDoBicho({
   /** Não é a companhia agora: anda até a frente de casa e espera lá. */
   emCasa: boolean
 }) {
-  const { loja, rastro, movimento, pedidos } = useJogo()
+  const { loja, rastro, movimento, pedidos, controle } = useJogo()
   const { world, rapier } = useRapier()
   const corpo = useRef<RapierRigidBody>(null)
   const colisor = useRef<RapierCollider>(null)
@@ -131,6 +146,12 @@ function CorpoDoBicho({
   const reacaoAte = useRef(0)
   const piscarEm = useRef<number>(PISCAR.aCada)
   const relogio = useRef(0)
+  /** O espaço dele (só segura o corpo dela; o controlador dele continua sem ver a criança). */
+  const espaco = espacoDoBicho(`${id}-${fase}`)
+  const minimo = distanciaMinima(espaco.raio)
+  const empurrao = useRef(criarEmpurrao())
+  const pedido = useRef({ x: 0, z: 0 })
+  const forma = useMemo(() => new rapier.Capsule(CORPO.meiaAltura, CORPO.raio), [rapier])
 
   const kcc = useMemo(() => {
     const c = world.createCharacterController(FOLGA)
@@ -193,6 +214,33 @@ function CorpoDoBicho({
       desloc.current.x = seguir.current.vx * dt
       desloc.current.y = velY.current * dt
       desloc.current.z = seguir.current.vz * dt
+      // O espaço dos bichos: a criança empurrando por meio segundo, um passinho para o lado livre;
+      // e nunca entrar na cápsula dela (o controlador dele não a vê: EXCLUDE_KINEMATIC).
+      const pe = pos.current.y - DO_CENTRO_AO_PE - FOLGA
+      const bicho = { x: pos.current.x, z: pos.current.z, pe }
+      const crianca = { x: rastro.x, z: rastro.z, pe: rastro.y - CORPO_DELA.doCentroAoPe }
+      pedidoNoChao(controle.eixoX, controle.eixoZ, rastro.giro, pedido.current)
+      if (
+        passoDoEmpurrao(
+          empurrao.current,
+          empurrando(bicho, espaco.raio, crianca, pedido.current),
+          dt,
+        )
+      ) {
+        const livre = (x: number, z: number) =>
+          world.intersectionWithShape(
+            { x, y: pos.current.y + 0.1, z },
+            { x: 0, y: 0, z: 0, w: 1 },
+            forma,
+            rapier.QueryFilterFlags.EXCLUDE_KINEMATIC | rapier.QueryFilterFlags.EXCLUDE_SENSORS,
+            undefined,
+            col,
+          ) === null
+        const lado = ladoDoPassinho(bicho, crianca, pedido.current, livre)
+        if (lado) comecarPassinho(empurrao.current, lado)
+      }
+      passoDoPassinho(empurrao.current, dt, desloc.current)
+      respeitarFolga(bicho, desloc.current, crianca, minimo, dt)
       kcc.computeColliderMovement(
         col,
         desloc.current,
@@ -249,11 +297,13 @@ function CorpoDoBicho({
       ref={corpo}
       type="kinematicPosition"
       colliders={false}
+      userData={BICHO_QUE_SEGURA}
       position={[inicial.x, inicial.y, inicial.z]}
       enabledRotations={[false, false, false]}
     >
       <CapsuleCollider ref={colisor} args={[CORPO.meiaAltura, CORPO.raio]} />
-      <group ref={visual} position={[0, -DO_CENTRO_AO_PE - FOLGA, 0]}>
+      <ColisorDoEspaco espaco={espaco} pe={-DO_CENTRO_AO_PE - FOLGA} />
+      <group ref={visual} name="bicho-adotado" position={[0, -DO_CENTRO_AO_PE - FOLGA, 0]}>
         <group ref={raiz} scale={ESCALA_DOS_BICHOS}>
           <primitive object={cena} />
         </group>

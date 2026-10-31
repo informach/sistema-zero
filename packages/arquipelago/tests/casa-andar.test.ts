@@ -2,7 +2,8 @@ import { beforeAll, describe, expect, test } from 'bun:test'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import type { RapierContext } from '@react-three/rapier'
-import { Box3, type Mesh, type Object3D } from 'three'
+import { Box3, Group, type Mesh, type Object3D, Raycaster, Vector3 } from 'three'
+import { emendasAbertas, sobreposicoes } from '../scripts/faces-coplanares'
 import { bordaQueCabe, type ColisorDaIlha, lerColisores } from '../src/mundo/colisores-da-ilha'
 import { GRAVIDADE, PASSO_DA_FISICA } from '../src/mundo/medidas'
 import { CORPO } from '../src/sistemas/corpo'
@@ -20,10 +21,16 @@ import { carregarGlb, topoEm } from './ajuda-colisores'
  * topo em 4,10, a escada interna de 14 degraus, o vão com guarda-corpo e o guarda-corpo da beira.
  * A escada é subida pela cápsula real do corpo (`CORPO`) com o controlador do Rapier configurado
  * como o do personagem, contra os colisores lidos do GLB: andando (a rampa de colisão) e no modo
- * escada (âncoras `escada-1-*`, como a escada do Bosque). No jogo: x igual, y para cima, z = -y do Blender (a escada sobe
- * para -z).
+ * escada (âncoras `escada-1-*`, como a escada do Bosque). No jogo: x igual, y para cima, z = -y
+ * do Blender (a escada sobe para -z).
+ *
+ * Desde 31/10/2026: o `piso-andar-vao-parede` (sem o guarda-corpo do lado +x, para a escada
+ * encostar numa parede) e as paredes do andar (`casa-paredes-andar.glb`, sem alicerce, com a
+ * cinta na linha do piso), montados como em `cenas.py` (`andar_na_parede`) e conferidos com a
+ * mesma busca de faces coplanares e emendas em T do `scripts/faces-coplanares.ts`.
  */
-const ARQUIVO = join(import.meta.dir, '..', 'src', 'assets', 'casa', 'casa-andar.glb')
+const CASA = join(import.meta.dir, '..', 'src', 'assets', 'casa')
+const ARQUIVO = join(CASA, 'casa-andar.glb')
 const ANDAR = 4.1
 const DEGRAUS = 14
 
@@ -56,7 +63,8 @@ function ancora(nome: string) {
 }
 
 const daEscada = () => colisores.filter((c) => c.nome.startsWith('col-escada-reta-'))
-const doVao = () => colisores.filter((c) => c.nome.startsWith('col-guarda-vao-'))
+const doVao = () => colisores.filter((c) => /^col-guarda-vao-\d+$/.test(c.nome))
+const doVaoNaParede = () => colisores.filter((c) => c.nome.startsWith('col-guarda-vao-parede-'))
 
 function materiais(nome: string): string[] {
   const nomes = new Set<string>()
@@ -126,25 +134,25 @@ describe('o segundo andar da casa', () => {
     expect(col && col.posicao[1] + col.meio[1]).toBeCloseTo(ANDAR + 1, 3)
   })
 
-  for (const comModoEscada of [false, true])
-    test(
-      comModoEscada
-        ? 'a cápsula do corpo sobe a escada no modo escada e sai no piso de cima'
-        : 'a cápsula do corpo sobe a escada andando e chega no piso de cima',
-      () => {
-        const r = subir(comModoEscada)
+  for (const naParede of [false, true])
+    for (const comModoEscada of [false, true])
+      test(`${
+        comModoEscada
+          ? 'a cápsula do corpo sobe a escada no modo escada e sai no piso de cima'
+          : 'a cápsula do corpo sobe a escada andando e chega no piso de cima'
+      }${naParede ? ', encostada na parede (piso-andar-vao-parede)' : ''}`, () => {
+        const r = subir(comModoEscada, naParede)
         expect(r.passouPeloModoEscada).toBe(comModoEscada)
         expect(r.modo).toBe('chao')
         expect(r.pe).toBeCloseTo(ANDAR, 1)
         expect(Math.abs(r.pe - ANDAR)).toBeLessThan(0.05)
         expect(r.z).toBeLessThan(-4.3)
         expect(Math.abs(r.x)).toBeLessThan(0.05)
-      },
-    )
+      })
 })
 
 /** Sobe com a entrada "para a frente" (para -z) por até 12 s; devolve onde o corpo parou. */
-function subir(comModoEscada: boolean) {
+function subir(comModoEscada: boolean, naParede = false) {
   const world = new R.World({ x: 0, y: -GRAVIDADE, z: 0 })
   try {
     world.timestep = PASSO_DA_FISICA
@@ -164,7 +172,10 @@ function subir(comModoEscada: boolean) {
     caixa(0.5, 3, ANDAR - 0.1, ANDAR, -4, 0)
     caixa(-3, 3, ANDAR - 0.1, ANDAR, 0, 3)
     // Os colisores da escada e do vão, do GLB, com a borda arredondada do jogo (`ilha-completa.tsx`).
-    for (const c of [...daEscada(), ...doVao()]) {
+    // Encostada na parede: a parede do kit na linha x = +0,5 (de 0,40 a 0,60, os dois andares; o
+    // colisor das paredes é do jogo, `pecas.ts`) e o vão sem o guarda-corpo desse lado.
+    if (naParede) caixa(0.4, 0.6, -1, 2 * ANDAR, -6, 2)
+    for (const c of [...daEscada(), ...(naParede ? doVaoNaParede() : doVao())]) {
       const [x, y, z] = c.meio
       const b = bordaQueCabe(x, y, z)
       world.createCollider(
@@ -264,3 +275,170 @@ function subir(comModoEscada: boolean) {
     world.free()
   }
 }
+
+// ---------------------------------------------------------------- a escada na parede e as paredes do andar
+const PAREDES_DO_ANDAR = [
+  ...['lambri', 'lisa'].flatMap((f) => [
+    `parede-${f}-andar`,
+    `parede-${f}-baixa-andar`,
+    `parede-janela-grande-${f}-andar`,
+    `parede-janela-arco-${f}-andar`,
+    `parede-janela-redonda-${f}-andar`,
+    `quina-${f}-andar`,
+    `quina-${f}-baixa-andar`,
+  ]),
+  'parede-porta-lisa-andar',
+  'parede-porta-lisa-baixa-andar',
+]
+
+describe('a escada na parede e as paredes do andar', () => {
+  const fontes = new Map<string, Object3D>()
+  beforeAll(async () => {
+    for (const a of [
+      'casa-paredes.glb',
+      'casa-pisos.glb',
+      'casa-andar.glb',
+      'casa-paredes-andar.glb',
+    ])
+      for (const o of [...(await carregarGlb(join(CASA, a))).children]) fontes.set(o.name, o)
+  })
+
+  test('o vão na parede: sem guarda-corpo nem colisor do lado +x', () => {
+    const vao = fontes.get('piso-andar-vao-parede') as Object3D
+    // Corrimão, postes e balaústres (`batente` e os balaústres de `acabamento`) ficam antes da faixa
+    // que encosta na parede (0,355); só a faixa entra na parede (até 0,49, a linha é 0,50).
+    const c = new Box3().setFromObject(vao)
+    expect(c.max.x).toBeLessThanOrEqual(0.49 + 1e-3)
+    vao.traverse((o) => {
+      const m = o as Mesh
+      if (!m.isMesh) return
+      const mats = (Array.isArray(m.material) ? m.material : [m.material]).map((x) => x.name)
+      if (mats.includes('batente'))
+        expect(new Box3().setFromObject(m).max.x).toBeLessThanOrEqual(0.356)
+    })
+    const cols = doVaoNaParede()
+    expect(cols.map((x) => x.nome).sort()).toEqual([
+      'col-guarda-vao-parede-1',
+      'col-guarda-vao-parede-2',
+    ])
+    for (const col of cols) {
+      expect(col.posicao[0] + col.meio[0]).toBeLessThanOrEqual(0.4 + 1e-3)
+      expect(col.posicao[1] + col.meio[1]).toBeCloseTo(ANDAR + 1, 3)
+    }
+  })
+
+  test('as paredes do andar: sem alicerce, de 3,96 (cinta e quina) para cima, o pé da parede em 4,10', () => {
+    for (const nome of PAREDES_DO_ANDAR) {
+      const o = fontes.get(nome) as Object3D
+      expect({ nome, tem: !!o }).toEqual({ nome, tem: true })
+      const c = new Box3().setFromObject(o)
+      expect(c.min.y).toBeGreaterThanOrEqual(3.95)
+      o.traverse((m) => {
+        const malha = m as Mesh
+        if (!malha.isMesh) return
+        for (const x of Array.isArray(malha.material) ? malha.material : [malha.material]) {
+          expect({ nome, m: x.name }).not.toEqual({ nome, m: 'alicerce' })
+          if (x.name === 'paredeDentro' || x.name === 'parede' || x.name === 'paredeVerso')
+            expect(new Box3().setFromObject(malha).min.y).toBeGreaterThanOrEqual(ANDAR - 1e-3)
+        }
+      })
+    }
+  })
+
+  /** A sala 3 × 6 de `cenas.py` (`andar_na_parede`): escada encostada na parede x = 3, e as paredes
+   * de cima diferentes das de baixo. Posição e giro como os do Blender (giro em z = giro em y). */
+  function salaComAEscadaNaParede(): Group {
+    const sala = new Group()
+    let n = 0
+    const por = (nome: string, x: number, y: number, giro = 0) => {
+      const fonte = fontes.get(nome)
+      if (!fonte) throw new Error(`sem o nó ${nome}`)
+      const g = new Group()
+      g.name = `${nome}#${n++}`
+      g.position.set(x, 0, -y)
+      g.rotation.y = (giro * Math.PI) / 180
+      g.add(fonte.clone(true))
+      sala.add(g)
+    }
+    const corrida = (eixo: 'x' | 'y', fixo: number, pecas: [string, number][], dentro: 1 | -1) => {
+      let pos = 0
+      const giro = eixo === 'x' ? (dentro > 0 ? 0 : 180) : dentro > 0 ? -90 : 90
+      for (const [nome, larg] of pecas) {
+        const c = pos + larg / 2
+        if (eixo === 'x') por(nome, c, fixo, giro)
+        else por(nome, fixo, c, giro)
+        pos += larg
+      }
+    }
+    const w = 3
+    const d = 6
+    for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) por('piso-tabua', i + 0.5, j + 0.5)
+    const vezes = (nome: string, k: number) =>
+      Array.from({ length: k }, () => [nome, 1] as [string, number])
+    const baixo = {
+      fundo: [['parede-janela-grande-lambri', 3]] as [string, number][],
+      esquerda: [
+        ['parede-lambri', 1],
+        ['parede-porta-lambri', 3],
+        ...vezes('parede-lambri', 2),
+      ] as [string, number][],
+      direita: vezes('parede-lambri', 6),
+      frente: vezes('parede-lambri-baixa', 3),
+    }
+    const cima = {
+      fundo: [
+        ['parede-janela-arco-lambri-andar', 2],
+        ['parede-janela-redonda-lambri-andar', 1],
+      ] as [string, number][],
+      esquerda: [['parede-janela-grande-lambri-andar', 3], ...vezes('parede-lambri-andar', 3)] as [
+        string,
+        number,
+      ][],
+      direita: vezes('parede-lambri-andar', 6),
+      frente: vezes('parede-lambri-baixa-andar', 3),
+    }
+    for (const [paredes, sufixo] of [
+      [baixo, ''],
+      [cima, '-andar'],
+    ] as const) {
+      corrida('x', d, paredes.fundo, -1)
+      corrida('y', 0, paredes.esquerda, 1)
+      corrida('y', w, paredes.direita, -1)
+      corrida('x', 0, paredes.frente, 1)
+      for (const [x, y, q] of [
+        [0, 0, 'quina-lambri'],
+        [w, 0, 'quina-lambri-baixa'],
+        [0, d, 'quina-lambri'],
+        [w, d, 'quina-lambri'],
+      ] as const)
+        por(`${q}${sufixo}`, x, y)
+    }
+    for (let i = 0; i < w; i++)
+      for (let j = 0; j < d; j++)
+        if (!(i === 2 && j >= 1 && j < 5)) por('piso-andar-tabua', i + 0.5, j + 0.5)
+    por('escada-interna', 2.5, 1)
+    por('piso-andar-vao-parede', 2.5, 1)
+    sala.updateMatrixWorld(true)
+    return sala
+  }
+
+  test('montada com a parede de lambri na linha do lado +x: nenhuma face coplanar nem emenda em T', () => {
+    const sala = salaComAEscadaNaParede()
+    const par = (x: { a: string; b: string }) => `${x.a} x ${x.b}`
+    expect(sobreposicoes(sala).map(par)).toEqual([])
+    expect(emendasAbertas(sala).map(par)).toEqual([])
+  })
+
+  test('sem fresta entre a parede de baixo e a de cima: por fora, a cinta tapa a linha do piso', () => {
+    const sala = salaComAEscadaNaParede()
+    const raios = new Raycaster()
+    // A parede da direita (x = 3), vista de fora (+x), na altura entre as duas paredes e um pouco
+    // acima e abaixo: o primeiro que o raio encontra fica na fachada (x >= 3,10) ou na frente dela.
+    for (let z = 0.5; z < 6; z += 0.5)
+      for (const h of [3.9, 3.98, 4.02, 4.05, 4.08, 4.12, 4.2]) {
+        raios.set(new Vector3(5, h, -z), new Vector3(-1, 0, 0))
+        const hit = raios.intersectObject(sala, true)[0]
+        expect({ z, h, x: hit && hit.point.x >= 3.1 - 1e-3 }).toEqual({ z, h, x: true })
+      }
+  })
+})

@@ -2,6 +2,7 @@ import type { Obra } from '@sistemazero/arquipelago-contracts'
 import { LOTE_DA_CASA } from '../sistemas/construcao/lote'
 import {
   esticarParede,
+  moverEntrada,
   porAbertura,
   type Resultado,
   tirarAbertura,
@@ -43,6 +44,37 @@ export function obraDeExemplo(): Obra {
   passo(porObjeto(o, L, PROJETOS_DE_EXEMPLO, 'planta-interior', { x: 7, z: -3 }, 0))
   passo(porObjeto(o, L, PROJETOS_DE_EXEMPLO, 'casinha', { x: -12, z: 6 }, 0))
   return o
+}
+
+/**
+ * A obra de exemplo com um cômodo atrás do quarto (x 1 a 6, z -12 a -8), ligado a ele por uma porta
+ * no fundo (`?obra=fundo`): para conferir o fundo do quarto desenhado pelo kit e a porta nele.
+ */
+export function obraDeExemploComFundo(): Obra {
+  const L = LOTE_DA_CASA
+  let o = obraDeExemplo()
+  const passo = (r: Resultado) => {
+    if (!r.ok) throw new Error(`obra de exemplo recusada: ${r.motivo}`)
+    o = r.obra
+  }
+  passo(esticarParede(o, L, { x: 1, z: -8 }, { x: 1, z: -12 }))
+  passo(esticarParede(o, L, { x: 1, z: -12 }, { x: 6, z: -12 }))
+  passo(esticarParede(o, L, { x: 6, z: -12 }, { x: 6, z: -8 }))
+  passo(porAbertura(o, L, 'porta', { eixo: 'x', x: 3, z: -8 }))
+  passo(porAbertura(o, L, 'janela-grande', { eixo: 'x', x: 3, z: -12 }))
+  passo(trocarPiso(o, L, { x: 3, z: -10 }, 'ladrilho'))
+  return o
+}
+
+/**
+ * A obra de exemplo com a porta de entrada na frente do cômodo da frente do quarto (`?obra=entrada`,
+ * 31/10/2026): a porta e a varanda vão para a parede de fora do cômodo (a janela em arco vira porta),
+ * e a frente do quarto fica inteira, sem porta.
+ */
+export function obraDeExemploComEntrada(): Obra {
+  const r = moverEntrada(obraDeExemplo(), LOTE_DA_CASA, { eixo: 'x', x: -4, z: 3 })
+  if (!r.ok) throw new Error(`obra de exemplo recusada: ${r.motivo}`)
+  return r.obra
 }
 
 const GANHO = { ganhoEm: '2026-10-28T12:00:00.000Z', aparencia: null, aparencias: [] }

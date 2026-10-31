@@ -27,6 +27,10 @@ OFFICIAL = {
     'acc-colar': 'acc-09', 'acc-cachecol': 'acc-10', 'enfeite-laco': 'enfeite-01',
     'enfeite-tiara': 'enfeite-02', 'enfeite-flores': 'enfeite-03',
     'enfeite-presilhas': 'enfeite-04', 'enfeite-gatinho': 'enfeite-05',
+    # Roupas de festa (festas.py, 31/10/2026)
+    'hat-cartolinha': 'hat-08', 'top-colete': 'top-07', 'hat-palha': 'hat-09',
+    'outfit-chita': 'outfit-07', 'enfeite-lanternas': 'enfeite-06', 'top-capa': 'top-08',
+    'hat-gorro': 'hat-10', 'top-sueter': 'top-09',
 }
 
 

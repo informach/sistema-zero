@@ -66,6 +66,8 @@ const SO_PARA_O_CORPO = [
   'col-cerca-',
   // Os objetos da casa (geladeira, casinha): a câmera vê por cima deles.
   'col-objeto-',
+  // A varanda da porta de entrada da casa construída: deque, degrau, colunas e vasinhos.
+  'col-varanda-',
 ]
 
 export function soParaOCorpo(nome: string): boolean {

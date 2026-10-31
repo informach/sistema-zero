@@ -14,6 +14,7 @@ import {
 import { ITENS } from '../itens'
 import { coracoes } from '../moradores'
 import { planta } from './comodos'
+import { loteDaObra } from './entrada'
 import { chaveDaAresta, chavesDosTrechos } from './grade'
 import { type Celula, chaveDaCelula, type Lote, naArea, noFixo, ocupante } from './lote'
 import { celulasDosMoveisAltos } from './moveis'
@@ -77,12 +78,14 @@ export function cantoNoToque(id: ObjetoDaCasa, giro: number, c: Celula): Celula 
  */
 export function porObjeto(
   obra: Obra,
-  lote: Lote,
+  loteDoLugar: Lote,
   projetos: Salvamento['projetos'],
   id: ObjetoDaCasa,
   canto: Celula,
   giro: number,
 ): Resultado {
+  // A varanda da entrada ocupa o lugar (ela segue a porta de entrada da obra).
+  const lote = loteDaObra(loteDoLugar, obra)
   if (!projetos[id]) return { ok: false, motivo: 'sem-projeto' }
   const novo = { id, x: canto.x, z: canto.z, giro }
   const celulas = celulasDoObjeto(novo)

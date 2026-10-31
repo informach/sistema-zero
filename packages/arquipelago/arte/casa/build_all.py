@@ -37,6 +37,8 @@ TETO_TRIS_FESTA_PADRAO = 1500
 PAREDES = [f'{t}-{f}' for f in ('lambri', 'lisa') for t in (
     'parede', 'parede-porta', 'parede-janela-grande', 'parede-janela-arco', 'parede-janela-redonda', 'quina')]
 PAREDES += [f'{t}-{f}-baixa' for f in ('lambri', 'lisa') for t in ('parede', 'parede-porta', 'quina')]
+# As janelas na parede cortada (31/10/2026): no Construir a janela vira a janela baixa da família.
+PAREDES += [f'parede-janela-{t}-{f}-baixa' for f in ('lambri', 'lisa') for t in ('grande', 'arco', 'redonda')]
 CONTRATO = {
     'casa-paredes': {'nos': PAREDES, 'materiais': ['vidroJanela', 'parede', 'paredeDentro', 'paredeVerso',
                                                    'paredeTopo']},
@@ -54,9 +56,14 @@ CONTRATO = {
     'casa-banheiro': {'nos': ['banheira', 'pia-banheiro', 'espelho', 'vaso-sanitario', 'box-chuveiro', 'tapetinho',
                               'toalheiro']},
     'casa-andar': {'nos': ['piso-andar-tabua', 'piso-andar-ladrilho', 'piso-andar-azulejo', 'escada-interna',
-                           'piso-andar-vao', 'guarda-corpo-andar'],
+                           'piso-andar-vao', 'guarda-corpo-andar', 'piso-andar-vao-parede'],
                    'vazios': ['escada-1-base', 'escada-1-topo', 'escada-1-saida'],
                    'materiais': ['telhadoForro']},
+    'casa-paredes-andar': {'nos': [f'{t}-{f}-andar' for f in ('lambri', 'lisa') for t in (
+        'parede', 'parede-janela-grande', 'parede-janela-arco', 'parede-janela-redonda', 'quina')]
+        + [f'{t}-{f}-baixa-andar' for f in ('lambri', 'lisa') for t in ('parede', 'quina')]
+        + ['parede-porta-lisa-andar', 'parede-porta-lisa-baixa-andar'],
+        'materiais': ['vidroJanela', 'parede', 'paredeDentro', 'paredeVerso', 'paredeTopo']},
     'casa-cafe': {'nos': ['cafe-mesa-redonda', 'cafe-cadeira', 'cafe-balcao', 'cafe-vitrine-doces',
                           'cafe-lousa-cardapio', 'cafe-banca-feira', 'cafe-caixote'],
                   'materiais': ['vidroArmario', 'placaFace']},
@@ -66,10 +73,16 @@ CONTRATO = {
                             'festa-fim-de-ano-estrela-janela', 'festa-lanternas-lanterna-chao',
                             'festa-lanternas-varal-de-luz'],
                     'materiais': ['luz', 'fogo', 'brasa', 'estrela', 'lanternaAmarela', 'lanternaRosa']},
+    # A varanda da porta de entrada (31/10/2026): o desenho e os materiais da varanda do casa.glb.
+    'casa-varanda': {'nos': ['varanda', 'varanda-toldo'],
+                     'materiais': ['lampiao', 'deque', 'dequeEscuro', 'telhado', 'acabamento']},
 }
-NOVOS = ('casa-andar', 'casa-cafe', 'casa-festas')
-# Os colisores do segundo andar (nós `col-*` de primeiro nível, no referencial da peça).
-COLISORES = {'casa-andar': {'col-escada-reta': 15, 'col-guarda-vao': 3, 'col-guarda-andar': 1}}
+NOVOS = ('casa-andar', 'casa-paredes-andar', 'casa-cafe', 'casa-festas', 'casa-varanda')
+# Os colisores do segundo andar e da varanda (nós `col-*` de primeiro nível, no referencial da peça).
+COLISORES = {'casa-andar': {'col-escada-reta': 15, 'col-guarda-vao': 3, 'col-guarda-andar': 1,
+                            'col-guarda-vao-parede': 2},
+             'casa-varanda': {'col-varanda-deque': 1, 'col-varanda-degrau': 1, 'col-varanda-coluna': 2,
+                              'col-varanda-vaso': 2}}
 
 
 def footprint(nota):
@@ -84,7 +97,7 @@ if os.path.exists(REL):
     os.remove(REL)
 env = dict(os.environ, PYTHONDONTWRITEBYTECODE='1')
 env.pop('GLB', None)
-for script in ('kit.py', 'comodos.py', 'cafe.py', 'festas.py'):
+for script in ('kit.py', 'comodos.py', 'cafe.py', 'festas.py', 'varanda.py'):
     r = subprocess.run([sys.executable, '-B', os.path.join(AQUI, script)], cwd=AQUI, capture_output=True, text=True,
                        env=env)
     linhas = [ln for ln in r.stdout.splitlines() if ln.startswith('EXPORTADO')]
@@ -142,13 +155,15 @@ else:
 if os.environ.get('CENAS'):
     pasta = os.environ.get('DIR_PREVIAS') or os.path.join(tempfile.gettempdir(), 'arte-casa')
     r = subprocess.run([sys.executable, '-B', os.path.join(AQUI, 'cenas.py'), 'kit', 'cozinha', 'sala', 'banheiro',
-                        'moveis', 'andar', 'cafe-festas'], cwd=AQUI, capture_output=True, text=True,
+                        'moveis', 'andar', 'andar-parede', 'cafe-festas', 'janela-baixa', 'varanda'], cwd=AQUI,
+                       capture_output=True, text=True,
                        env=dict(env, DIR_PREVIAS=pasta, SO_GLB=os.environ.get('SO_GLB', '1')))
     if r.returncode != 0:
         print(r.stderr[-3000:])
         sys.exit('falhou: cenas')
     if bun:
-        for nome in ('kit', 'cozinha', 'sala', 'banheiro', 'moveis', 'andar', 'cafe-festas'):
+        for nome in ('kit', 'cozinha', 'sala', 'banheiro', 'moveis', 'andar', 'andar-parede', 'cafe-festas',
+                     'janela-baixa', 'varanda'):
             r = subprocess.run([bun, 'scripts/faces-coplanares.ts', os.path.join(pasta, f'cena-{nome}.glb')],
                                cwd=PACOTE, capture_output=True, text=True)
             # O fogão a lenha da cena da cozinha vem de arte/itens: os pares só dele não contam aqui.
