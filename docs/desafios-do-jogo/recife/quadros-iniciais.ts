@@ -226,7 +226,7 @@ function fonteDoQuadro(quadro: QuadroInicialDoRecife, pronto: boolean): SZIRV2 {
             ]),
             { type: 'g2d:clear' },
             { type: 'g2d:drawBackdrop', ctxVar: 'ctx', image: 'recife' },
-            label(QUADROS_INICIAIS_DO_RECIFE[quadro - 1].titulo, 18, 32, 24),
+            label(QUADROS_INICIAIS_DO_RECIFE[quadro - 1]!.titulo, 18, 32, 24),
             label('Setas mexem a mira. Espaço ou A solta a bolha.', 18, 60),
             draw('alvo'),
             draw('mira'),
@@ -260,7 +260,7 @@ function fonteDoQuadro(quadro: QuadroInicialDoRecife, pronto: boolean): SZIRV2 {
 }
 
 export function projetoDoQuadroRecife(quadro: QuadroInicialDoRecife, pronto: boolean): Project {
-  const meta = QUADROS_INICIAIS_DO_RECIFE[quadro - 1]
+  const meta = QUADROS_INICIAIS_DO_RECIFE[quadro - 1]!
   const ir = assignStableIdsToIR(fonteDoQuadro(quadro, pronto), `recife_quadro_${quadro}`)
   return {
     ...createEmptyProject(`recife-${meta.slug}`, meta.titulo),

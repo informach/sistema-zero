@@ -6,27 +6,14 @@ import { inventarioDeRepertorio } from './repertorio-local'
  * sem bloco manual. A barreira C01a confere de novo no serviço, com o repertório do Members.
  */
 /**
- * A43 (decisão da dona, 31/10/2026): o Vale e as Nuvens publicam como estão, porque os cursos do
+ * Lacunas (01/11/2026, pela Jornada): o Vale saiu desta lista, refeito só com blocos da trilha.
+ * A43 (decisão da dona, 31/10/2026): o Vale e as Nuvens publicavam como estavam, porque os cursos do
  * Arquiteto e do Gênio que ensinam esses blocos chegam antes do lançamento oficial. A lista diz
  * exatamente o que cada um espera; um bloco novo sem fonte reprova (não se esconde aqui). A
  * barreira C01a do serviço continua conferindo na importação, com o repertório do Members.
  */
 const GRUPO_E_LISTA = ['sz_g2d_add_to_group', 'sz_g2d_for_each_in_group']
-const PROTEJA_OS_NINHOS = [
-  ...GRUPO_E_LISTA,
-  'sz_g2d_on_group_click',
-  'sz_g2d_set_opacity',
-  'sz_g2d_set_sprite_data',
-  'sz_g2d_sprite_data',
-  'sz_val_logic',
-]
 const ESPERAM_OS_CURSOS: Record<string, string[]> = {
-  'vale-contagem-da-lista': [...GRUPO_E_LISTA, 'sz_g2d_set_opacity'],
-  'vale-cinza-retirada': [...GRUPO_E_LISTA, 'sz_g2d_set_opacity'],
-  'vale-proteja-os-ninhos': PROTEJA_OS_NINHOS,
-  'vale-proteja-os-ninhos-ondas': PROTEJA_OS_NINHOS,
-  'vale-proteja-os-ninhos-pontos': PROTEJA_OS_NINHOS,
-  'vale-proteja-os-ninhos-lista': PROTEJA_OS_NINHOS,
   'nuvens-colheita-da-lista': GRUPO_E_LISTA,
 }
 

@@ -45,21 +45,10 @@ test('fontes opcionais não comprovam repertório universal e cursos futuros nã
     'construtor/nave-contra-asteroides',
     'inventor/corre-dino',
   ])
-  // Desde C01b o Recife não usa clique em grupo; o Proteja os ninhos do Vale ainda usa.
-  const vale = inventario.find(
-    (d) =>
-      d.ilha === 'vale-dos-dinos' && d.cobertura.some((c) => c.bloco === 'sz_g2d_on_group_click'),
-  )!
-  const click = vale.cobertura.find((c) => c.bloco === 'sz_g2d_on_group_click')!
-  expect(click.trilha).toEqual([])
-  expect(click.opcionais).toContain('faisca/cade-todo-mundo')
-  expect(vale.semFonteNaTrilha).toContain(click.bloco)
-  // A43: publica mesmo assim, esperando os cursos do Arquiteto (a barreira C01a confere).
-  expect(vale.publicarAutomaticamente).toBe(true)
-  const lista = inventario.find((d) => d.slug === 'vale-contagem-da-lista')!
-  expect(lista.classificacao).toBe('apoio-preparado-em-blocos')
-  expect(lista.tiposJaPresentes).toContain('sz_g2d_for_each_in_group')
-  expect(lista.semFonteNaTrilha).toContain('sz_g2d_for_each_in_group')
+  // Lacunas (01/11/2026, pela Jornada): o Vale usa só blocos da trilha, sem clique em grupo nem
+  // lista; nenhum posto ensina esses blocos.
+  for (const d of inventario.filter((d) => d.ilha === 'vale-dos-dinos'))
+    expect(d.semFonteNaTrilha, d.slug).toEqual([])
 })
 test('os quadros do Bosque não exigem extra, e só Noite usa opacidade de fonte opcional', () => {
   for (const d of inventario.filter((d) => d.ilha === 'bosque')) {
