@@ -1,5 +1,6 @@
 import { descricaoDoTrabalhoLumi } from '@sistemazero/arquipelago-contracts'
 import { type ReactNode, useEffect, useRef } from 'react'
+import iconeDoPeixe from '../assets/icones/peixe.png'
 import { useEstado, useJogo } from '../estado/contexto'
 import {
   albumDoSalvamento,
@@ -147,6 +148,9 @@ function Lumi({ l }: { l: LumiDoAlbum }) {
  * Lumis presos, cada seção com quantos tem e quantos faltam. Só lê o salvamento; nada aqui muda o
  * jogo, e o que falta nunca se perde.
  */
+/** O ícone dos peixes do aquário (miniaturas próprias de cada um ficam para a arte). */
+const MINIATURA_DO_PEIXE = new URL(iconeDoPeixe, import.meta.url).href
+
 export function Album() {
   const { loja } = useJogo()
   const aberto = useEstado((s) => s.painelAberto === PAINEL_DO_ALBUM)
@@ -238,6 +242,29 @@ export function Album() {
             <li key={item.id} className="arq-quadro-corpo">
               <b>{item.nome}</b>
               <span>{item.achado ? 'Encontrado.' : item.dica}</span>
+            </li>
+          ))}
+        </Secao>
+        <Secao
+          id="peixes-do-recife"
+          nome="Peixes do Recife"
+          conta={a.peixesDoRecife.conta}
+          explica="Cada coral replantado na lagoa traz um peixe ao aquário de casa."
+        >
+          {a.peixesDoRecife.itens.map((p) => (
+            <li key={p.id} className={`arq-diario-bicho${p.encontrado ? '' : ' escondido'}`}>
+              <img
+                className={`arq-album-miniatura${p.encontrado ? '' : ' silhueta'}`}
+                src={MINIATURA_DO_PEIXE}
+                alt=""
+                draggable={false}
+              />
+              <div className="arq-quadro-corpo">
+                <b>{p.nome}</b>
+                <span className="arq-quadro-estado">
+                  {p.encontrado ? 'Mora no seu aquário.' : p.dica}
+                </span>
+              </div>
             </li>
           ))}
         </Secao>

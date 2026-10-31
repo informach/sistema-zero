@@ -30,8 +30,10 @@ export interface ConfigDoPercurso {
   falaDasTresEstrelas: string
   /** Abaixo disto ganha a estrela do tempo. */
   tempoAlvoMs: number
-  /** Quantas coisas estão espalhadas (pegar todas é a terceira estrela). */
+  /** Quantas coisas estão espalhadas; uma delas é o segredo (a terceira estrela, §6.28 A9). */
   vagalumes: number
+  /** O segredo do percurso na fala e no resultado ("o vagalume escondido"). */
+  escondido: string
   /**
    * O nome delas (a estrela, o cronômetro e o resultado), o símbolo do cronômetro e se a palavra é
    * feminina ("as fitas", "pegas").
@@ -63,7 +65,8 @@ export const PERCURSO_DAS_COPAS = {
   rotuloDaLargada: 'Começar o percurso nas copas',
   falaDoComeco: 'Valendo. Suba a escada e siga pelas copas até o escorregador.',
   falaDoFim: 'O percurso parou. A placa ao pé da escada começa de novo quando você quiser.',
-  falaDasTresEstrelas: 'Três estrelas. Você voou pelas copas.',
+  falaDasTresEstrelas: 'Três estrelas. Você voou pelas copas e achou o vagalume escondido.',
+  escondido: 'o vagalume escondido',
   /**
    * Abaixo disto ganha a estrela do tempo. O caminho tem uns 42 m (escada, três pontes, a volta
    * nos deques e o escorregador): correndo sem errar dá uns 9 s e andando uns 19 s (velocidades de
@@ -98,7 +101,8 @@ export const PERCURSO_DOS_TELHADOS = {
   falaDoComeco:
     'Valendo. Suba nos caixotes e leve o bolo pelos telhados até o terraço da sorveteria.',
   falaDoFim: 'A entrega parou. Os caixotes começam de novo quando você quiser.',
-  falaDasTresEstrelas: 'Três estrelas. O bolo chegou voando e inteiro.',
+  falaDasTresEstrelas: 'Três estrelas. O bolo chegou voando e você achou o confeito escondido.',
+  escondido: 'o confeito escondido',
   /**
    * O caminho tem uns 19 m no plano (da largada aos caixotes, às três casinhas e ao terraço), com
    * quatro pulos de 0,8 a 1 m para cima: correndo (`CORPO.correr`) são uns 4 s mais os pulos, e
@@ -129,7 +133,8 @@ export const PERCURSO_DO_CUME = {
   rotuloDaLargada: 'Começar a subida ao cume',
   falaDoComeco: 'Valendo. Suba a trilha em volta da montanha até a bandeira do cume.',
   falaDoFim: 'A subida parou. Nas bandeirinhas da trilha dá para começar de novo quando quiser.',
-  falaDasTresEstrelas: 'Três estrelas. Você chegou ao cume com todos os flocos de neve.',
+  falaDasTresEstrelas: 'Três estrelas. Você chegou ao cume e achou o floco de neve escondido.',
+  escondido: 'o floco de neve escondido',
   /**
    * O caminho tem uns 31 m (1,7 m até a trilha, 27,4 m de trilha pela linha do meio, medidos no
    * Blender, e o platô até a bandeira): correndo (`CORPO.correr`) são uns 7 s e andando uns 14 s.
@@ -165,7 +170,8 @@ export const PERCURSO_DOS_SALTOS = {
   falaDoComeco:
     'Valendo. Suba os degraus de nuvem e pule de plataforma em plataforma até a mais alta.',
   falaDoFim: 'Os saltos pararam. Nos degraus de nuvem dá para começar de novo quando quiser.',
-  falaDasTresEstrelas: 'Três estrelas. Você pulou de nuvem em nuvem com todas as fitas.',
+  falaDasTresEstrelas: 'Três estrelas. Você pulou de nuvem em nuvem e achou a fita escondida.',
+  escondido: 'a fita escondida',
   /**
    * Cada salto entre plataformas só cabe quando a de trás está no alto e a da frente embaixo, numa
    * janela a cada 10 s, e a plataforma 1 só recebe do degrau quando está embaixo. Sem perder
@@ -195,7 +201,8 @@ export const PERCURSO_DO_BALAO = {
   rotuloDaLargada: 'Passe de balão pela argola vermelha',
   falaDoComeco: 'Valendo. Passe pelas seis argolas do arco-íris na ordem, da vermelha à roxa.',
   falaDoFim: 'A corrida parou. A argola vermelha começa de novo quando você passar por ela.',
-  falaDasTresEstrelas: 'Três estrelas. Você voou pelo arco-íris inteiro com todas as fitas.',
+  falaDasTresEstrelas: 'Três estrelas. Você voou pelo arco-íris inteiro e achou a fita escondida.',
+  escondido: 'a fita escondida',
   /**
    * Um piloto que não erra, pelas regras do balão, faz a volta em uns 29 s (o teste da corrida
    * mede): 45 s dá a estrela a quem pilota com calma, sem precisar ser perfeito.
@@ -223,7 +230,8 @@ export const PERCURSO_DA_PRAIA = {
   rotuloDaLargada: 'Começar a volta pela praia',
   falaDoComeco: 'Valendo. Siga pela areia de pedra em pedra até a pedra grande do oeste.',
   falaDoFim: 'A volta parou. A pedra do leste começa de novo quando você quiser.',
-  falaDasTresEstrelas: 'Três estrelas. Você deu a volta na praia com todas as conchas.',
+  falaDasTresEstrelas: 'Três estrelas. Você deu a volta na praia e achou a concha escondida.',
+  escondido: 'a concha escondida',
   /**
    * A volta tem uns 70 m de areia (o teste mede pelas paradas): correndo são uns 16 s e andando
    * uns 32 s. 26 s deixa a estrela para quem corre a maior parte, parando para pegar as conchas.
@@ -257,7 +265,8 @@ export const PERCURSO_DOS_CORAIS = {
   rotuloDaLargada: 'Começar os pulos nos corais',
   falaDoComeco: 'Valendo. Pule de coral em coral em volta da lagoa até o último do arco.',
   falaDoFim: 'Os pulos pararam. O primeiro coral do arco começa de novo quando você quiser.',
-  falaDasTresEstrelas: 'Três estrelas. Você pulou o arco inteiro com todas as pérolas.',
+  falaDasTresEstrelas: 'Três estrelas. Você pulou o arco inteiro e achou a pérola escondida.',
+  escondido: 'a pérola escondida',
   /**
    * Onze pulos de uns 2,2 m entre os topos (o teste mede): quem mira e pula sem cair leva uns
    * 16 s. 22 s deixa a estrela para quem não cai, sem exigir correr.
@@ -283,7 +292,8 @@ export const PERCURSO_DAS_PEGADAS = {
   rotuloDaLargada: 'Começar a trilha das pedras',
   falaDoComeco: 'Valendo. Passe pelas pedras do vulcão na ordem, a pé ou montado no dino.',
   falaDoFim: 'A trilha parou. A primeira pedra começa de novo quando você quiser.',
-  falaDasTresEstrelas: 'Três estrelas. Você passou por todas as pedras com todos os fósseis.',
+  falaDasTresEstrelas: 'Três estrelas. Você passou por todas as pedras e achou o fóssil escondido.',
+  escondido: 'o fóssil escondido',
   /**
    * Seis trechos de uns 5 m entre as pedras (o teste mede): correndo a pé são uns 8 s, montado
    * menos. 12 s dá a estrela a quem corre sem parar ou vai no dino com calma.
@@ -356,15 +366,56 @@ export interface Corrida {
   /** O último deque alcançado (−1 = nenhum ainda). */
   deque: number
   pegos: boolean[]
+  /** Qual das coisas é o segredo (−1 = nenhum: a estrela pede todas, como antes). */
+  segredo: number
 }
 
-export function criarCorrida(vagalumes: number): Corrida {
+export function criarCorrida(vagalumes: number, segredo = -1): Corrida {
   return {
     situacao: 'correndo',
     tempoMs: 0,
     deque: -1,
     pegos: Array.from({ length: vagalumes }, () => false),
+    segredo: segredo >= 0 && segredo < vagalumes ? segredo : -1,
   }
+}
+
+/**
+ * O segredo do percurso (§6.28, A9: a terceira estrela é "achar o segredo"): a coisa mais longe da
+ * linha entre a largada e a chegada, que fica escondida e só aparece de perto (`SEGREDO.apareceA`).
+ * Todas as coisas do percurso já são alcançáveis (os testes medem); o segredo só não se mostra.
+ */
+export const SEGREDO = { apareceA: 3 } as const
+
+export function indiceDoSegredo(
+  inicio: { x: number; z: number },
+  fim: { x: number; z: number },
+  coisas: readonly { x: number; z: number }[],
+): number {
+  const vx = fim.x - inicio.x,
+    vz = fim.z - inicio.z
+  const l = Math.hypot(vx, vz)
+  let melhor = -1,
+    maior = -1
+  coisas.forEach((p, i) => {
+    const d =
+      l < 1e-6
+        ? Math.hypot(p.x - inicio.x, p.z - inicio.z)
+        : Math.abs((p.x - inicio.x) * vz - (p.z - inicio.z) * vx) / l
+    if (d >= maior) {
+      maior = d
+      melhor = i
+    }
+  })
+  return melhor
+}
+
+/** O segredo aparece quando o corpo chega perto dele (no plano e sem muita diferença de altura). */
+export function segredoAparece(
+  p: { x: number; y: number; z: number },
+  corpo: { x: number; y: number; z: number },
+): boolean {
+  return Math.hypot(p.x - corpo.x, p.z - corpo.z) <= SEGREDO.apareceA && Math.abs(p.y - corpo.y) < 3
 }
 
 export function vagalumesPegos(c: Corrida): number {
@@ -467,7 +518,11 @@ export function estrelasDaCorrida(
   return {
     chegada: c.situacao === 'chegou',
     tempo: c.situacao === 'chegou' && c.tempoMs <= config.tempoAlvoMs,
-    vagalumes: c.situacao === 'chegou' && vagalumesPegos(c) === c.pegos.length,
+    // A terceira estrela é o segredo (A9). O campo guardado continua `vagalumes`: quem já tinha a
+    // estrela por pegar todas continua com ela (cada estrela fica para sempre).
+    vagalumes:
+      c.situacao === 'chegou' &&
+      (c.segredo >= 0 ? c.pegos[c.segredo] === true : vagalumesPegos(c) === c.pegos.length),
   }
 }
 
