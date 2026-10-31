@@ -15,11 +15,11 @@ import type { RepositorioDaFamilia } from '../domain/familia.port'
 import type { Jogador, Responsavel } from '../domain/jogador'
 import type { RepositorioDoJogo } from '../domain/repositorio.port'
 import {
+  criacoesDaSemana,
   desafiosDaSemana,
   diasDeVoltaAoCurso,
   type Janela,
   janelaDaSemana,
-  objetosCriados,
 } from '../domain/semana-da-familia'
 import { AcessoBloqueadoError, SomenteLeituraError } from './erros'
 import type { LeiturasDosMembros } from './leituras-dos-membros'
@@ -62,11 +62,12 @@ export class ServicoDaFamilia {
       return { ...base, algumaCriancaVe: false, criancas: [], aindaSemJogo: [] }
     const daConta = new Set(await this.deps.familia.perfisDaConta(responsavel.contaId, veem))
     const jogaram = veem.filter((id) => daConta.has(id))
-    const [tempos, salvamentos, sessoes] = await Promise.all([
+    // Meia-noite UTC do primeiro dia vem antes da de São Paulo; o dia certo é filtrado depois.
+    const desde = new Date(`${janela.inicio}T00:00:00Z`)
+    const [tempos, aparencias, sessoes] = await Promise.all([
       this.deps.familia.tempoNaJanela(jogaram, janela.inicio, janela.fim),
-      this.deps.familia.salvamentos(jogaram),
-      // Meia-noite UTC do primeiro dia vem antes da de São Paulo; o dia certo é filtrado depois.
-      this.deps.familia.sessoesNaJanela(jogaram, new Date(`${janela.inicio}T00:00:00Z`), agora),
+      this.deps.familia.aparenciasNaJanela(jogaram, desde, agora),
+      this.deps.familia.sessoesNaJanela(jogaram, desde, agora),
     ])
     const aulas = await this.aulasDepoisDeJogar(sessoes, agora)
     const criancas = await Promise.all(
@@ -74,7 +75,7 @@ export class ServicoDaFamilia {
         async (id): Promise<SemanaDaCrianca> => ({
           perfilId: id,
           desafios: await this.desafios(responsavel, id, janela),
-          objetos: salvamentos.has(id) ? objetosCriados(salvamentos.get(id)) : null,
+          objetos: criacoesDaSemana(aparencias.get(id) ?? [], janela),
           tempoLivre: tempos.get(id) ?? { segundos: 0, dias: 0 },
           voltaAoCurso: aulas
             ? { dias: diasDeVoltaAoCurso(sessoes.get(id) ?? [], aulas.get(id) ?? [], janela) }

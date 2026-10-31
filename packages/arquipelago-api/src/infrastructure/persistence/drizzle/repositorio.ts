@@ -1,7 +1,10 @@
 import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
 import { and, eq, sql } from 'drizzle-orm'
 import { CompraPendenteError } from '../../../domain/insumos.port'
-import { mudancasDeAparencia as detectarMudancas } from '../../../domain/mudancas-de-aparencia'
+import {
+  mudancasDeAparencia as detectarMudancas,
+  marcaDaCriacao,
+} from '../../../domain/mudancas-de-aparencia'
 import type {
   RepositorioDoJogo,
   ResultadoDaGravacao,
@@ -92,6 +95,7 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
           await tx.insert(mudancasDeAparencia).values(
             mudancas.map((m) => ({
               ...m,
+              criacao: marcaDaCriacao(e.jogadorId, m.criacao),
               jogadorId: e.jogadorId,
               revisao: guardado.revisao,
               publico: e.publico,

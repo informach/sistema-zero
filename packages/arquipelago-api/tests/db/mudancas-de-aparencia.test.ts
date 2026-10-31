@@ -6,6 +6,7 @@ import {
 } from '@sistemazero/arquipelago-contracts'
 import { SomenteLeituraError } from '../../src/application/erros'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
+import { marcaDaCriacao } from '../../src/domain/mudancas-de-aparencia'
 import {
   createDbConnection,
   type DbConnection,
@@ -63,6 +64,8 @@ describe.skipIf(!url)('mudanças atômicas de aparência no Postgres descartáve
     expect(linhas[0]?.origem).toBe('molda')
     expect(new Date(linhas[0]?.registrado_em)).toEqual(outubro)
     expect(JSON.stringify(linhas)).not.toContain('desenho-privado')
+    // A33: só a marca da aparência, para o cartão dos pais contar criações distintas.
+    expect(linhas[0]?.criacao).toBe(marcaDaCriacao(idMedicao(1), 'desenho-privado'))
     await gravar(1, 2, com('molda'))
     expect(await eventos(1)).toHaveLength(1)
     await gravar(1, 3, com('pinta'))

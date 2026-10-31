@@ -200,30 +200,30 @@ describe('a semana da família', () => {
     expect((await semana(LIA)).criancas[0]?.desafios?.deIlhasAnteriores).toBeNull()
   })
 
-  test('os objetos com aparência do Pinta e do Molda', async () => {
+  test('as criações do Pinta e do Molda postas no jogo nesta semana (A33)', async () => {
     await jogar(LIA)
     const linha = repo.salvamentos.get(LIA)
     if (!linha) throw new Error('sem salvamento')
     const dados = linha.dados as ReturnType<typeof criarSalvamentoInicial>
-    repo.salvamentos.set(LIA, {
-      ...linha,
-      dados: {
+    const p1 = { origem: 'pinta' as const, id: 'p1' }
+    const m1 = { origem: 'molda' as const, id: 'm1' }
+    // A mesma pintura na geladeira e no forno conta uma vez.
+    const r = await chamar('PUT', '/arquipelago/salvamento', crianca(LIA, CONTA), {
+      revisaoBase: linha.revisao,
+      salvamento: {
         ...dados,
         projetos: {
-          geladeira: {
-            ganhoEm: AGORA.toISOString(),
-            aparencia: { origem: 'pinta', id: 'p1' },
-            aparencias: [{ origem: 'pinta', id: 'p1' }],
-          },
-          casinha: {
-            ganhoEm: AGORA.toISOString(),
-            aparencia: { origem: 'molda', id: 'm1' },
-            aparencias: [{ origem: 'molda', id: 'm1' }],
-          },
+          geladeira: { ganhoEm: AGORA.toISOString(), aparencia: p1, aparencias: [p1] },
+          forno: { ganhoEm: AGORA.toISOString(), aparencia: p1, aparencias: [p1] },
+          casinha: { ganhoEm: AGORA.toISOString(), aparencia: m1, aparencias: [m1] },
         },
       },
     })
+    expect(r.status).toBe(200)
     expect((await semana(LIA)).criancas[0]?.objetos).toEqual({ pinta: 1, molda: 1 })
+    // O que foi posto antes da janela não conta mais.
+    for (const aplicada of repo.aparencias) aplicada.registradoEm = new Date('2026-10-01T15:00:00Z')
+    expect((await semana(LIA)).criancas[0]?.objetos).toEqual({ pinta: 0, molda: 0 })
   })
 
   test('só o responsável lê: a criança e perfis fora do formato recebem recusa', async () => {

@@ -41,8 +41,9 @@ export const SemanaDaCriancaSchema = z.strictObject({
     })
     .nullable(),
   /**
-   * Projetos azuis com a aparência feita por ela, desde sempre (o salvamento não guarda a data);
-   * `null` = o salvamento não pôde ser lido.
+   * As criações do Pinta e do Molda que ela pôs em objetos do jogo na janela, cada uma contada
+   * uma vez (A33, 31/10/2026; antes eram os objetos desde o começo, pelo salvamento). `null` = o
+   * serviço não tem o número.
    */
   objetos: z.strictObject({ pinta: QUANTOS, molda: QUANTOS }).nullable(),
   /** Tempo livre no jogo na janela, em segundos, e em quantos dias ela jogou. */

@@ -1,0 +1,2 @@
+ALTER TABLE "arquipelago"."mudancas_de_aparencia" ADD COLUMN "criacao" varchar(80);--> statement-breakpoint
+CREATE INDEX "mudancas_aparencia_jogador_idx" ON "arquipelago"."mudancas_de_aparencia" USING btree ("jogador_id","registrado_em");

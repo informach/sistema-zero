@@ -74,8 +74,8 @@ export function ladrilhosDaSemana(c: Crianca, limiteDiarioMinutos: number): Ladr
     ladrilhos.push({
       chave: 'objetos',
       valor: String(pinta + molda),
-      rotulo: `${pinta + molda === 1 ? 'objeto' : 'objetos'} com a aparência criada por ${c.nome}`,
-      detalhe: `${pinta} no Pinta e ${molda} no Molda, desde o começo`,
+      rotulo: `${pinta + molda === 1 ? 'criação' : 'criações'} de ${c.nome} nos objetos do jogo`,
+      detalhe: `${pinta} do Pinta e ${molda} do Molda, esta semana`,
     })
   }
   const { segundos, dias } = c.tempoLivre
