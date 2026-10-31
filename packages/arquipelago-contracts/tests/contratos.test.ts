@@ -254,39 +254,33 @@ describe('salvamento V2 (percursos)', () => {
   })
 
   test('guarda as três estrelas e o melhor tempo de cada percurso', () => {
+    // Na V22 em tupla: a chegada (1) e a terceira (4), e o tempo.
     const s = {
       ...criarSalvamentoInicial(agora),
-      percursos: {
-        'bosque-copas': {
-          estrelas: { chegada: true, tempo: false, vagalumes: true },
-          melhorTempoMs: 41_250,
-        },
-      },
+      percursos: { 'bosque-copas': [5, 41_250] as [number, number] },
     }
     expect(migrarSalvamento(s)).toEqual(s)
   })
 
   test('percurso desconhecido, estrela a mais ou tempo inválido são recusados', () => {
     const base = criarSalvamentoInicial(agora)
-    const resultado = {
-      estrelas: { chegada: true, tempo: true, vagalumes: true },
-      melhorTempoMs: 30_000,
-    }
-    expect(migrarSalvamento({ ...base, percursos: { 'pico-trilha': resultado } })).toBeNull()
+    expect(migrarSalvamento({ ...base, percursos: { 'pico-trilha': [7, 30_000] } })).toBeNull()
+    // Uma estrela a mais (o bit 8) ou o formato de antes, por extenso, na V22.
+    expect(migrarSalvamento({ ...base, percursos: { 'bosque-copas': [15, 30_000] } })).toBeNull()
     expect(
       migrarSalvamento({
         ...base,
         percursos: {
-          'bosque-copas': { ...resultado, estrelas: { ...resultado.estrelas, quarta: true } },
+          'bosque-copas': {
+            estrelas: { chegada: true, tempo: true, vagalumes: true },
+            melhorTempoMs: 30_000,
+          },
         },
       }),
     ).toBeNull()
     for (const melhorTempoMs of [-1, 1.5, 60 * 60 * 1000 + 1]) {
       expect(
-        migrarSalvamento({
-          ...base,
-          percursos: { 'bosque-copas': { ...resultado, melhorTempoMs } },
-        }),
+        migrarSalvamento({ ...base, percursos: { 'bosque-copas': [7, melhorTempoMs] } }),
       ).toBeNull()
     }
   })

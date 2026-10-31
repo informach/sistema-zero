@@ -10,6 +10,7 @@ import {
   ObraDaCasaSchema,
   type PisoDaCasa,
   type PisoDoQuintal,
+  type Terreno,
 } from '@sistemazero/arquipelago-contracts'
 import { useStore } from 'zustand'
 import { createStore, type StoreApi } from 'zustand/vanilla'
@@ -22,9 +23,16 @@ import {
 } from '../sistemas/chaves-da-casa'
 import { falaDaRecusa } from '../sistemas/construcao/falas'
 import type { Ferramenta, TipoDeJanela } from '../sistemas/construcao/ferramentas'
-import { type Celula, LOTE_DA_CASA, type Lote, OBRA_VAZIA } from '../sistemas/construcao/lote'
+import {
+  type Celula,
+  LOTE_DA_CASA,
+  type Lote,
+  loteDaCasa,
+  OBRA_VAZIA,
+} from '../sistemas/construcao/lote'
 import type { Resultado } from '../sistemas/construcao/obra'
 import { hortaComOQuintal } from '../sistemas/construcao/quintal'
+import { FALA_DO_TERRENO, moldarCelulas, podeMoldarOTerreno } from '../sistemas/construcao/terreno'
 import { salvamentoPausado } from '../sistemas/pausa'
 import type { EstadoDoJogo, LojaDoJogo } from './loja'
 
@@ -79,17 +87,41 @@ export const CAMERA_DE_OBRA = {
 /** Onde está a obra que o Construir mexe: a casa, ou a cabana de uma ilha. */
 export type OndeSeConstroi = Lote['id']
 
+/**
+ * Onde mora a obra de uma cabana que não está no salvamento (o iglu do Pico, no documento à parte
+ * do serviço): ler e gravar passam por ela.
+ */
+export interface FonteDaObra {
+  ler(): Obra | null
+  gravar(obra: Obra): void
+}
+
+/** Onde mora o terreno moldado do lote da casa (o documento à parte do serviço). */
+export interface FonteDoTerreno {
+  ler(): Terreno | null
+  gravar(terreno: Terreno | null): void
+}
+
 /** A cabana da ilha ativa (registrada por ela) e se a pessoa está no lote ou perto dele. */
 export interface CabanaAoAlcance {
   lote: Lote
   perto: boolean
+  /** A obra fora do salvamento (o iglu); sem ela, a cabana é a de `construcao.cabanas`. */
+  fonte?: FonteDaObra
 }
 
-/** A obra de cada lugar no salvamento (a casa, ou a cabana da ilha). */
-export function obraDe(s: EstadoDoJogo, onde: OndeSeConstroi): Obra | null {
-  return onde === 'casa'
-    ? s.salvamento.construcao.casa
-    : (s.salvamento.construcao.cabanas[onde] ?? null)
+/**
+ * A obra de cada lugar: a casa e as cabanas do salvamento, ou a da cabana registrada com fonte
+ * própria (o iglu).
+ */
+export function obraDe(
+  s: EstadoDoJogo,
+  onde: OndeSeConstroi,
+  cabana?: CabanaAoAlcance | null,
+): Obra | null {
+  if (onde === 'casa') return s.salvamento.construcao.casa
+  if (cabana?.fonte && cabana.lote.id === onde) return cabana.fonte.ler()
+  return onde === 'pico' ? null : (s.salvamento.construcao.cabanas[onde] ?? null)
 }
 
 export interface EstadoDaConstrucao {
@@ -117,6 +149,16 @@ export interface EstadoDaConstrucao {
   cabana: CabanaAoAlcance | null
   /** A ilha ativa registra a cabana dela (e solta, com `null`, ao sair). */
   registrarCabana(c: CabanaAoAlcance | null): void
+  /** O Terreno sobe (`1`) ou desce (`-1`) o chão. */
+  moldar: 1 | -1
+  escolherMoldar(passo: 1 | -1): void
+  /** A casa registra onde mora o terreno (e solta, com `null`). */
+  fonteDoTerreno: FonteDoTerreno | null
+  registrarTerreno(f: FonteDoTerreno | null): void
+  /** Os terrenos de antes (o Desfazer do Terreno, à parte do da obra). */
+  antesDoTerreno: (Terreno | null)[]
+  /** Sobe ou desce as células no lote da casa (ou faz o Zappy explicar por que não dá). */
+  moldarTerreno(celulas: readonly Celula[]): boolean
   definirPertoDaCabana(perto: boolean): void
   definirDentroDaObra(dentro: boolean): void
   escolher(f: Ferramenta): void
@@ -154,7 +196,17 @@ export function lojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
  * Grava a obra de um lugar. Na casa, a horta segue os canteiros do quintal (`hortaComOQuintal`); a
  * cabana não tem canteiro.
  */
-function mudarObra(loja: LojaDoJogo, obra: Obra, onde: OndeSeConstroi) {
+function mudarObra(
+  loja: LojaDoJogo,
+  obra: Obra,
+  onde: OndeSeConstroi,
+  cabana?: CabanaAoAlcance | null,
+) {
+  if (onde !== 'casa' && cabana?.fonte && cabana.lote.id === onde) {
+    cabana.fonte.gravar(obra)
+    return
+  }
+  if (onde === 'pico') return
   loja.getState().mudar((s) =>
     onde === 'casa'
       ? {
@@ -205,6 +257,27 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
     onde: 'casa',
     cabana: null,
     registrarCabana: (cabana) => set({ cabana }),
+    moldar: 1,
+    escolherMoldar: (moldar) => set({ moldar, ferramenta: 'terreno', aconchegoAberto: false }),
+    fonteDoTerreno: null,
+    registrarTerreno: (fonteDoTerreno) => set({ fonteDoTerreno }),
+    antesDoTerreno: [],
+    moldarTerreno(celulas) {
+      const jogo = loja.getState()
+      const fonte = get().fonteDoTerreno
+      if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return false
+      if (!fonte || get().onde !== 'casa' || !podeMoldarOTerreno(jogo.jornada)) return false
+      const antes = fonte.ler()
+      const obra = jogo.salvamento.construcao.casa
+      const r = moldarCelulas(antes, obra, loteDaCasa(jogo.jornada), celulas, get().moldar)
+      if (!r.ok) {
+        jogo.dizer(FALA_DO_TERRENO[r.motivo])
+        return false
+      }
+      set({ antesDoTerreno: [...get().antesDoTerreno, antes].slice(-LEMBRA_PARA_TRAS) })
+      fonte.gravar(r.terreno)
+      return true
+    },
     definirPertoDaCabana: (perto) => {
       const c = get().cabana
       if (c && c.perto !== perto) set({ cabana: { ...c, perto } })
@@ -247,7 +320,8 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
         return false
       }
       const onde = get().onde
-      const atual = obraDe(loja.getState(), onde)
+      const cabana = get().cabana
+      const atual = obraDe(loja.getState(), onde, cabana)
       // Nada trancado entra na obra (N11): só o que a chave abriu ou o que a obra já usava.
       const novas =
         chavesUsadasNaObra(r.obra) & ~chavesUsadasNaObra(atual) & ~jogo.salvamento.chaves
@@ -258,24 +332,34 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       }
       const historico = atual === ultimaObra ? get().antes : []
       if (atual) set({ antes: [...historico, atual].slice(-LEMBRA_PARA_TRAS) })
-      mudarObra(loja, r.obra, onde)
+      mudarObra(loja, r.obra, onde, cabana)
       ultimaObra = r.obra
       return true
     },
     desfazer() {
       const jogo = loja.getState()
       if (!podeConstruir(jogo) || jogo.painelAberto !== PAINEL_DE_CONSTRUIR) return
+      // Com o Terreno na mão, o Desfazer volta o chão (a obra tem o histórico dela).
+      if (get().ferramenta === 'terreno') {
+        const lista = get().antesDoTerreno
+        const fonte = get().fonteDoTerreno
+        if (!fonte || lista.length === 0) return
+        set({ antesDoTerreno: lista.slice(0, -1) })
+        fonte.gravar(lista.at(-1) ?? null)
+        return
+      }
       const onde = get().onde
-      if (obraDe(jogo, onde) !== ultimaObra) {
+      const cabana = get().cabana
+      if (obraDe(jogo, onde, cabana) !== ultimaObra) {
         set({ antes: [] })
-        ultimaObra = obraDe(jogo, onde)
+        ultimaObra = obraDe(jogo, onde, cabana)
         return
       }
       const antes = get().antes
       const anterior = antes.at(-1)
       if (!anterior) return
       set({ antes: antes.slice(0, -1) })
-      mudarObra(loja, anterior, onde)
+      mudarObra(loja, anterior, onde, cabana)
       ultimaObra = anterior
     },
     abrir() {
@@ -283,23 +367,24 @@ export function criarLojaDaConstrucao(loja: LojaDoJogo): LojaDaConstrucao {
       if (!podeConstruir(s)) return
       const cabana = get().cabana
       const onde: OndeSeConstroi = cabana?.perto ? cabana.lote.id : 'casa'
-      if (!obraDe(s, onde)) {
+      if (!obraDe(s, onde, cabana)) {
         const inicial = onde === 'casa' ? LOTE_DA_CASA.obraInicial : OBRA_VAZIA
-        mudarObra(loja, structuredClone(inicial), onde)
+        mudarObra(loja, structuredClone(inicial), onde, cabana)
       }
-      ultimaObra = obraDe(loja.getState(), onde)
+      ultimaObra = obraDe(loja.getState(), onde, cabana)
       set({
         onde,
         aconchegoAberto: false,
         celulaObservada: null,
         antes: [],
+        antesDoTerreno: [],
         camera: { ...get().camera, alvo: alvoAoAbrir(onde, cabana), giro: 0 },
       })
       s.abrirMenu(false)
       s.abrirPainel(PAINEL_DE_CONSTRUIR)
     },
     fechar() {
-      set({ antes: [] })
+      set({ antes: [], antesDoTerreno: [] })
       ultimaObra = null
       if (loja.getState().painelAberto === PAINEL_DE_CONSTRUIR) loja.getState().abrirPainel(null)
     },

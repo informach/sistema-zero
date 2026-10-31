@@ -24,8 +24,14 @@ export interface Celula {
   z: number
 }
 
+/**
+ * Onde se constrói: a casa, uma cabana do salvamento (o Bosque) ou o iglu do Pico (E04), cuja obra
+ * mora no documento à parte do serviço (`obra-estendida`).
+ */
+export type IdDoLote = 'casa' | IlhaComCabana | 'pico'
+
 export interface Lote {
-  id: 'casa' | IlhaComCabana
+  id: IdDoLote
   /** Onde dá para construir. */
   area: Retangulo
   /** O que já está no lugar (não se constrói em cima nem se fecha dentro de casa). */

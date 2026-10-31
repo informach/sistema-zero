@@ -35,6 +35,7 @@ import {
   ehDeParede,
   moveisDoCatalogo,
 } from '../sistemas/construcao/moveis'
+import { podeMoldarOTerreno } from '../sistemas/construcao/terreno'
 import { PainelDeAconchego } from './aconchego'
 import { Icone } from './icones'
 import {
@@ -84,6 +85,12 @@ const FERRAMENTAS: ReadonlyArray<{ id: Ferramenta; nome: string; emoji: string; 
     nome: 'Canteiro',
     emoji: '🌱',
     dica: 'Toque no quintal para pôr um canteiro. Ele planta e rega como a horta.',
+  },
+  {
+    id: 'terreno',
+    nome: 'Terreno',
+    emoji: '⛰️',
+    dica: 'Toque ou arraste no quintal para subir ou descer o chão, meio metro por vez. A casa, os caminhos e o que está posto ficam no plano.',
   },
   {
     id: 'apagar',
@@ -221,7 +228,11 @@ export function BarraDeConstruir() {
   const projetos = useEstado((s) => s.salvamento.projetos)
   const postos = useEstado((s) => s.salvamento.construcao.casa?.objetos ?? NENHUM_OBJETO)
   const ganhos = OBJETOS_DA_CASA.filter((id) => projetos[id])
-  const podeDesfazer = useConstrucao(construcao, (s) => s.antes.length > 0)
+  // O Terreno tem o Desfazer dele (o chão moldado não é obra).
+  const podeDesfazer = useConstrucao(construcao, (s) =>
+    s.ferramenta === 'terreno' ? s.antesDoTerreno.length > 0 : s.antes.length > 0,
+  )
+  const moldar = useConstrucao(construcao, (s) => s.moldar)
   // Na cabana não vão canteiro, objeto nem móvel: a horta, os projetos azuis e os móveis são da casa.
   const naCabana = useConstrucao(construcao, (s) => s.onde !== 'casa')
   // O iglu do Pico (E04) não tem cerca nem caminho: o lote dele diz o que cabe.
@@ -240,7 +251,7 @@ export function BarraDeConstruir() {
           !(f.id === 'cerca' && limitesDaCabana?.trechosDeCerca === 0) &&
           !(f.id === 'caminho' && limitesDaCabana?.caminhos === 0),
       )
-    : FERRAMENTAS
+    : FERRAMENTAS.filter((f) => f.id !== 'terreno' || podeMoldarOTerreno(jornada))
   if (!aberto) return null
   const s = () => construcao.getState()
   const dica = FERRAMENTAS.find((f) => f.id === atual)?.dica
@@ -361,6 +372,27 @@ export function BarraDeConstruir() {
             ))}
           </fieldset>
         </>
+      ) : null}
+      {atual === 'terreno' ? (
+        <fieldset className="arq-obra-escolhas">
+          <legend className="arq-sr">Subir ou descer o chão</legend>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={moldar === 1}
+            onClick={() => s().escolherMoldar(1)}
+          >
+            ⬆ Subir
+          </button>
+          <button
+            type="button"
+            className="arq-botao leve"
+            aria-pressed={moldar === -1}
+            onClick={() => s().escolherMoldar(-1)}
+          >
+            ⬇ Descer
+          </button>
+        </fieldset>
       ) : null}
       {atual === 'caminho' ? (
         <fieldset className="arq-obra-escolhas">

@@ -50,6 +50,7 @@ import {
   pintarCaminho,
   porCanteiro,
 } from './quintal'
+import { celulasPlanas, podeMoldar } from './terreno'
 
 /**
  * O que cada ferramenta do Construir faz com o dedo (ou o mouse): arrastar (parede, cerca,
@@ -68,6 +69,8 @@ export type Ferramenta =
   | 'objeto'
   | 'movel'
   | 'apagar'
+  /** Moldar o chão do lote da casa (Nuvens em diante): não mexe na obra, e sim no terreno. */
+  | 'terreno'
 
 export type TipoDeJanela = Exclude<TipoDeAbertura, 'porta'>
 
@@ -80,6 +83,8 @@ export interface Escolhas {
   /** O móvel escolhido na ferramenta Móveis (o giro é o mesmo; a peça de parede acha a parede). */
   movel: Movel | null
   giro: number
+  /** O Terreno sobe (`1`) ou desce (`-1`) o chão. */
+  moldar?: 1 | -1
 }
 
 export interface NoChao {
@@ -89,7 +94,20 @@ export interface NoChao {
 
 /** A ferramenta trabalha arrastando (as outras, com um toque). */
 export function arrasta(f: Ferramenta): boolean {
-  return f === 'parede' || f === 'cerca' || f === 'caminho' || f === 'apagar'
+  return f === 'parede' || f === 'cerca' || f === 'caminho' || f === 'apagar' || f === 'terreno'
+}
+
+/** As células que o Terreno molda num arrasto (ou num toque) e a prévia delas. */
+export function celulasDoTerreno(
+  obra: Obra,
+  lote: Lote,
+  a: NoChao,
+  b: NoChao,
+): { celulas: Celula[]; previa: Previa } {
+  const celulas = celulasDoArrasto(celulaEm(a.x, a.z), celulaEm(b.x, b.z))
+  const planas = celulasPlanas(obra, lote)
+  const ok = celulas.some((c) => podeMoldar(c, lote, planas))
+  return { celulas, previa: { tipo: 'celulas', celulas, ok } }
 }
 
 /** Até onde do meio de uma aresta um toque do apagar ainda é nela (senão é na célula). */
@@ -109,6 +127,8 @@ export function arrasto(
   b: NoChao,
   escolhas: Escolhas,
 ): { resultado: Resultado | null; previa: Previa } {
+  // O terreno não é obra: a cena manda as células para a loja do Construir (`moldarTerreno`).
+  if (f === 'terreno') return { resultado: null, previa: celulasDoTerreno(obra, lote, a, b).previa }
   if (f === 'caminho') {
     const celulas = celulasDoArrasto(celulaEm(a.x, a.z), celulaEm(b.x, b.z))
     const r = pintarCaminho(obra, lote, celulas, escolhas.caminho)

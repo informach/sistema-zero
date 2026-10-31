@@ -61,14 +61,8 @@ test('recordes das Nuvens, constelações, final e clima atravessam JSON', () =>
     farol: { pagina: true, concluido: true, galeria: [] },
     clima: 'chuva' as const,
     percursos: {
-      'nuvens-saltos': {
-        estrelas: { chegada: true, tempo: false, vagalumes: true },
-        melhorTempoMs: 60001,
-      },
-      'nuvens-balao': {
-        estrelas: { chegada: true, tempo: true, vagalumes: false },
-        melhorTempoMs: 42000,
-      },
+      'nuvens-saltos': [5, 60001] as [number, number],
+      'nuvens-balao': [3, 42000] as [number, number],
     },
   }
   expect(migrarSalvamento(JSON.parse(JSON.stringify(salvo)))).toEqual(salvo)

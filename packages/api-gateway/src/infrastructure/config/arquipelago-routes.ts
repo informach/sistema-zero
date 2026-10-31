@@ -148,6 +148,16 @@ export function arquipelagoGateway(opts: {
         pathPattern,
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' },
       })),
+      // A obra estendida (E04 e B14): o documento de até 32 KB e a revisão. O jogo grava com
+      // espera de 800 ms entre mudanças; o teto por minuto cobre a criança construindo sem parar.
+      {
+        ...jogador,
+        id: 'arquipelago-obra-estendida',
+        methods: ['GET', 'PUT'],
+        pathPattern: '/arquipelago/obra-estendida',
+        maxBodyBytes: 33 * 1024,
+        rateLimit: { max: 120, windowMs: 60_000, by: 'principal' },
+      },
       {
         ...jogador,
         id: 'arquipelago-irmaos',

@@ -2,6 +2,7 @@ import { LUMIS, type LumiId, type PublicoJogo } from '@sistemazero/arquipelago-c
 import { montarArquipelago } from '../src/entrada'
 import { marcarAberturaVista } from '../src/estado/abertura'
 import { definirFestaDoPlayground } from '../src/estado/festas'
+import { chaveDaObraEstendida } from '../src/estado/obra-estendida'
 import { medicaoDasAparencias } from '../src/mundo/carregar-aparencia'
 import { PORTOS_DA_ARTE } from '../src/mundo/portos-da-arte'
 import type { CartasDoPlayground } from '../src/plataforma/cartas-falsas'
@@ -15,6 +16,7 @@ import {
 } from '../src/plataforma/falsa'
 import type { FamiliaDoPlayground } from '../src/plataforma/familia-falsa'
 import { CHAVE_DOS_FANTASMAS_FALSOS } from '../src/plataforma/fantasmas-falsos'
+import { CHAVE_DA_OBRA_ESTENDIDA_FALSA } from '../src/plataforma/obra-estendida-falsa'
 import { chaveDaAbertura } from '../src/sistemas/abertura'
 import { chaveDasDicas } from '../src/sistemas/dicas'
 import { lerFesta } from '../src/sistemas/festas'
@@ -91,7 +93,9 @@ if (q.get('novo') === '1') {
   localStorage.removeItem(CHAVE_DOS_FANTASMAS_FALSOS)
   localStorage.removeItem('arquipelago-playground')
   localStorage.removeItem(CHAVE_DA_GALERIA)
+  localStorage.removeItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA)
   for (const publico of ['kids', 'adulto']) {
+    localStorage.removeItem(chaveDaObraEstendida(publico, 'perfil-de-teste'))
     localStorage.removeItem(`${CHAVE_DAS_PROFISSOES}:${publico}`)
     localStorage.removeItem(`arquipelago:cores:v1:${publico}:perfil-de-teste`)
     for (const posto of ['padaria', 'sorveteria', 'sucos'])

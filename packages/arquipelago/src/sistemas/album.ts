@@ -12,6 +12,7 @@ import {
   type ObjetoDaCasa,
   PERCURSOS,
   type PercursoId,
+  resultadoDoPercurso,
   type Salvamento,
 } from '@sistemazero/arquipelago-contracts'
 import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
@@ -91,6 +92,7 @@ export const ILHA_DO_PERCURSO: Readonly<Record<PercursoId, IlhaId>> = {
   'praia-pedras': 'sua-ilha',
   'recife-corais': 'recife',
   'vale-pegadas': 'vale-dos-dinos',
+  'farol-subida': 'farol',
 }
 
 export interface EstrelaDoPercurso {
@@ -115,7 +117,7 @@ export function percursosDoAlbum(s: Salvamento): {
 } {
   const itens = PERCURSOS.map((id): PercursoDoAlbum => {
     const config = PERCURSOS_DO_JOGO[id]
-    const r = s.percursos[id]
+    const r = resultadoDoPercurso(s.percursos, id)
     return {
       id,
       nome: config.nome,

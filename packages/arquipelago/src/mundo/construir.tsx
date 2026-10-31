@@ -8,6 +8,7 @@ import { planta } from '../sistemas/construcao/comodos'
 import {
   arrasta,
   arrasto,
+  celulasDoTerreno,
   type Ferramenta,
   type Previa as PreviaDaRegra,
   toque,
@@ -302,6 +303,8 @@ export function ModoConstruir({
       if (g.tipo === 'olhar' && !g.girar && !g.andou) {
         const onde = noChao(e)
         if (onde) s.observarComodo(celulaEm(onde.x, onde.z))
+      } else if (g.tipo === 'arrasto' && ferramenta === 'terreno') {
+        s.moldarTerreno(celulasDoTerreno(o, lote, g.inicio, g.fim).celulas)
       } else if (g.tipo === 'arrasto') {
         const f = ferramenta
         // Sem arrastar: o apagar tira o que está ali; o caminho pinta uma célula.
@@ -465,7 +468,14 @@ function Previa({ previa }: { previa: Previa }) {
             rotation-x={-Math.PI / 2}
           >
             <planeGeometry args={[0.96, 0.96]} />
-            <meshBasicMaterial color={previa.cor} transparent opacity={0.4} depthWrite={false} />
+            {/* Sem teste de profundidade: a prévia aparece também em cima do chão moldado. */}
+            <meshBasicMaterial
+              color={previa.cor}
+              transparent
+              opacity={0.4}
+              depthWrite={false}
+              depthTest={false}
+            />
           </mesh>
         ))}
       </>

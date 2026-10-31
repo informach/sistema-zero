@@ -42,6 +42,7 @@ import { CHAVE_DOS_FANTASMAS_FALSOS, criarFantasmasFalsos } from './fantasmas-fa
 import { criarGaleriaFalsa, type OpcoesDaGaleriaFalsa } from './galeria-falsa'
 import { criarInsumosFalsos, type RegistroDeInsumosFalso } from './insumos-falsos'
 import { obraDeExemplo, PROJETOS_DE_EXEMPLO } from './obra-de-exemplo'
+import { CHAVE_DA_OBRA_ESTENDIDA_FALSA, criarObraEstendidaFalsa } from './obra-estendida-falsa'
 import { criarPedidosFalsos, type RegistroDePedidoFalso } from './pedidos-falsos'
 import { criarProfissoesFalsas } from './profissoes-falsas'
 import { criarVendasFalsas, type RegistroDeVendaFalsa } from './vendas-falsas'
@@ -238,6 +239,16 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         ? {
             ler: () => localStorage.getItem(CHAVE_DOS_FANTASMAS_FALSOS),
             gravar: (dado) => localStorage.setItem(CHAVE_DOS_FANTASMAS_FALSOS, dado),
+          }
+        : undefined,
+  })
+  const obraEstendida = criarObraEstendidaFalsa({
+    somenteLeitura: () => o.somenteLeitura === true,
+    persistencia:
+      o.persistir && typeof localStorage !== 'undefined'
+        ? {
+            ler: () => localStorage.getItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA),
+            gravar: (dado) => localStorage.setItem(CHAVE_DA_OBRA_ESTENDIDA_FALSA, dado),
           }
         : undefined,
   })
@@ -615,6 +626,8 @@ export function criarPlataformaFalsa(o: OpcoesDaPlataformaFalsa = {}): Plataform
         if (daVisitaAdulta) return daVisitaAdulta
         const doFantasma = fantasmas.buscar(caminho, metodo, opcoes?.corpo)
         if (doFantasma) return doFantasma
+        const daObraEstendida = obraEstendida.buscar(caminho, metodo, opcoes?.corpo)
+        if (daObraEstendida) return daObraEstendida
         const dosInsumos = insumos.buscar(caminho, metodo, opcoes?.corpo)
         if (dosInsumos) return dosInsumos
         const dosPedidos = pedidos.buscar(caminho, metodo, opcoes?.corpo)

@@ -310,6 +310,37 @@ export const PERCURSO_DAS_PEGADAS = {
   emOrdem: true,
 } as const satisfies ConfigDoPercurso
 
+/**
+ * A subida final por fora do Farol (E04, a Lenda; arte de 31/10/2026): a escada, as duas quinas, a
+ * viga de equilíbrio e o vento até o mirante, com o planador, até a varanda. Usa os movimentos já
+ * aprendidos. As paradas vão na ordem (cada trecho pede o movimento dele).
+ */
+export const PERCURSO_DO_FAROL = {
+  id: 'farol-subida',
+  nome: 'Subida do Farol',
+  rotuloDaLargada: 'Começar a subida do Farol',
+  falaDoComeco:
+    'Valendo. Suba por fora do Farol com tudo o que você aprendeu: a escada, as quinas, o equilíbrio e o vento com o planador.',
+  falaDoFim: 'A subida parou. O pé do Farol começa de novo quando você quiser.',
+  falaDasTresEstrelas:
+    'Três estrelas. Você chegou à varanda do Farol e achou o vagalume escondido.',
+  escondido: 'o vagalume escondido',
+  /**
+   * Seis trechos com um modo cada (o teste da arte mede os vãos): quem não cai leva uns 40 s,
+   * contando o planador no vento. 60 s deixa a estrela para quem sobe sem cair.
+   */
+  tempoAlvoMs: 60_000,
+  vagalumes: 5,
+  coletavel: { varios: 'vagalumes', Varios: 'Vagalumes', simbolo: '✨' },
+  raioDoVagalume: 0.9,
+  raioDaChegada: 1.4,
+  folgaDoDeque: 0.4,
+  distanciaParaDesistir: 8,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+  emOrdem: true,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
 export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
@@ -320,6 +351,7 @@ export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>>
   'praia-pedras': PERCURSO_DA_PRAIA,
   'recife-corais': PERCURSO_DOS_CORAIS,
   'vale-pegadas': PERCURSO_DAS_PEGADAS,
+  'farol-subida': PERCURSO_DO_FAROL,
 }
 
 /** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */

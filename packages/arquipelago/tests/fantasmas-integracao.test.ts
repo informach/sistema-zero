@@ -81,10 +81,7 @@ test('captura só envia depois do save confirmado, sem modificar prêmio ou inve
       ...s,
       percursos: {
         ...s.percursos,
-        'bosque-copas': {
-          melhorTempoMs: 100,
-          estrelas: { chegada: true, tempo: false, vagalumes: false },
-        },
+        'bosque-copas': [1, 100] as [number, number],
       },
     }))
     const inventario = p.loja.getState().salvamento.inventario
@@ -126,10 +123,7 @@ test('resposta de upload perdida mantém diário e reabertura confirma o mesmo a
       ...s,
       percursos: {
         ...s.percursos,
-        'bosque-copas': {
-          melhorTempoMs: 100,
-          estrelas: { chegada: true, tempo: false, vagalumes: false },
-        },
+        'bosque-copas': [1, 100] as [number, number],
       },
     }))
     await c.terminar('bosque-copas', 100, { ...pose, x: 1 })
@@ -292,10 +286,7 @@ test('fechar durante a leitura do recorde não inicia um upload tardio e conserv
     ...s,
     percursos: {
       ...s.percursos,
-      'bosque-copas': {
-        melhorTempoMs: 100,
-        estrelas: { chegada: true, tempo: false, vagalumes: false },
-      },
+      'bosque-copas': [1, 100] as [number, number],
     },
   }))
   const armazem = await criarArmazemDosFantasmas(p.perfil)

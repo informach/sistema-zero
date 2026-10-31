@@ -23,6 +23,7 @@ import {
   PERCURSOS,
   type PlantaDoCeu,
   POSTOS_DA_VILA,
+  type ResultadoCompacto,
   SEMENTES_DO_CEU,
   VAGAS_DA_GALERIA_DO_FAROL,
 } from '../src'
@@ -85,10 +86,8 @@ export function cenariosDeSalvamentoCheio(inventario?: Record<string, number>) {
   }))
   const projeto = { ganhoEm: AGORA.toISOString(), aparencia: aparencias[0], aparencias }
   const turno = { pagoEm: '2026-10-29', melhor: 3, vezes: 9999 }
-  const percurso = {
-    estrelas: { chegada: true, tempo: true, vagalumes: true },
-    melhorTempoMs: 3_599_999,
-  }
+  // V22: o percurso em tupla, com as três estrelas e o maior tempo que se guarda.
+  const percurso: ResultadoCompacto = [7, 3_599_999]
   // O filhote do Vale mais pesado (V15): nome de 16 letras, as três datas e dois dígitos nos dias.
   const filhote = {
     ovo: DIAS_PARA_CHOCAR,

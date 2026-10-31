@@ -105,6 +105,7 @@ const CAMINHOS_DO_JOGO = new Set([
   '/irmaos',
   '/amigos',
   '/fantasmas',
+  '/obra-estendida',
   '/visitas-adultas/convite',
   '/visitas-adultas/abrir',
   '/visitas-adultas/conferir',
