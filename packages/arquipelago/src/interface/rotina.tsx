@@ -480,9 +480,13 @@ export function PainelDaRotina() {
             {ultima ? (
               <details className="arq-rotina-ultima" open={Boolean(ultima.erro)}>
                 <summary>
-                  {ultima.erro
-                    ? 'Da última vez, a rotina parou no meio'
-                    : 'Da última vez, a rotina foi até o fim'}
+                  {ultima.origem === 'fechado'
+                    ? ultima.erro
+                      ? 'Enquanto você estava fora, a rotina parou no meio'
+                      : 'Enquanto você estava fora, a rotina foi até o fim'
+                    : ultima.erro
+                      ? 'Da última vez, a rotina parou no meio'
+                      : 'Da última vez, a rotina foi até o fim'}
                 </summary>
                 {ultima.erro ? <p className="arq-aviso atencao">{ultima.erro}</p> : null}
                 <ol>

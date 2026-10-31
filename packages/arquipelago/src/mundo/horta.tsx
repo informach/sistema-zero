@@ -11,7 +11,15 @@ import { type Clima, climaEfetivo, FALA_DO_BONUS, pedeAgua, regarComSede } from 
 import { falaDoGanho } from '../sistemas/construcao/projeto-azul'
 import { celulaDoCanteiro } from '../sistemas/construcao/quintal'
 import { corDaSuaIlha } from '../sistemas/cor-da-sua-ilha'
-import { type Estagio, estagio, geladeiraEm, plantar, progresso, regar } from '../sistemas/horta'
+import {
+  type Estagio,
+  estagio,
+  falaDeQuandoColhe,
+  geladeiraEm,
+  plantar,
+  progresso,
+  regar,
+} from '../sistemas/horta'
 import { ITENS, quantidade, remover } from '../sistemas/itens'
 import { colherNaIlha } from '../sistemas/primeiro-pedido'
 import { hortaVisivel } from '../sistemas/visitas'
@@ -110,7 +118,9 @@ function Canteiro({
           const novo = regar(c, agoraData)
           if (!novo) return s
           horta[indice] = novo
-          loja.getState().dizer('Regado. Daqui a pouco começa a crescer.')
+          loja
+            .getState()
+            .dizer(`Regado. ${falaDeQuandoColhe(novo, agoraData.getTime(), geladeiraEm(s)) ?? ''}`)
           return { ...s, horta }
         }
         // Crescendo, ela pode estar pedindo água (fase4-08): regar adianta o crescimento.
@@ -148,6 +158,28 @@ function Canteiro({
       })
     },
   )
+
+  // Crescendo: quanto falta, no tempo de verdade (A14, o relógio da horta). De fundo, para não
+  // tomar o Plantar, o Regar ou o Colher do canteiro do lado.
+  useInterativo(`canteiro-${canteiro.id}:quando-colhe`, {
+    x,
+    z,
+    raio: 1.8,
+    deFundo: true,
+    rotulo: () => {
+      const s = loja.getState()
+      const c = s.salvamento.horta[indice]
+      if (s.visita || !c) return null
+      const f = estagio(c, Date.now(), geladeiraEm(s.salvamento))
+      return f === 'brotando' || f === 'crescendo' ? 'Ver quando colhe' : null
+    },
+    agir: () => {
+      const s = loja.getState()
+      const c = s.salvamento.horta[indice]
+      const fala = c && falaDeQuandoColhe(c, Date.now(), geladeiraEm(s.salvamento))
+      if (fala) s.dizer(fala)
+    },
+  })
 
   return (
     <group position={[x, ALTURA_DA_TERRA, z]} scale={escala}>

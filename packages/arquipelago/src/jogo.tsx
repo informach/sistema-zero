@@ -80,6 +80,7 @@ async function carregar(plataforma: Plataforma): Promise<Situacao> {
     quarto: QuartoSchema.safeParse(quarto).success ? quarto : QUARTO_VAZIO,
     avatar,
     acesso,
+    fechadoDesde: guardado.atualizadoEm ? Date.parse(guardado.atualizadoEm) : null,
     aoMudar: (s) => fila?.guardar(s),
   })
   if (!acesso.somenteLeitura) {

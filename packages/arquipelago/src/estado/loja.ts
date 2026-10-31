@@ -83,6 +83,12 @@ export interface EstadoDoJogo {
    * horta dele, e NADA é gravado (o `mudar` não faz nada). Não é salvo: recarregar volta para casa.
    */
   visita: Visita | null
+  /**
+   * Quando o jogo foi salvo pela última vez antes desta abertura (ms), para o que acontece com ele
+   * fechado (`sistemas/jogo-fechado.ts`); `null` depois de usado ou num jogo novo.
+   */
+  fechadoDesde: number | null
+  esquecerFechado(): void
   /** Muda o salvamento (a fila de salvamento grava depois). Na visita, não muda nada. */
   mudar(fn: (s: Salvamento) => Salvamento): void
   dizer(texto: string): void
@@ -116,6 +122,8 @@ export interface DadosIniciais {
   quarto: QuartoDoJogo
   avatar: AvatarDoJogo
   acesso: Acesso
+  /** O `atualizadoEm` do salvamento lido do serviço, em ms. */
+  fechadoDesde?: number | null
   aoMudar(s: Salvamento): void
 }
 
@@ -161,6 +169,10 @@ export function criarLoja(d: DadosIniciais): LojaDoJogo {
     isca: null,
     descanso: null,
     visita: null,
+    fechadoDesde: d.fechadoDesde ?? null,
+    esquecerFechado() {
+      set({ fechadoDesde: null })
+    },
     mudar(fn) {
       if (get().acesso.somenteLeitura || salvamentoPausado(get().salvamentoSituacao)) return
       // Na casa do irmão só se olha: nada do jogo dela muda (e nada do dele, que nem está aqui).

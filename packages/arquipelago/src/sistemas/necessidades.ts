@@ -41,3 +41,24 @@ export const RITMO = { otimo: 1.1, bem: 1, cansado: 1 } as const satisfies Recor
 export function ritmo(n: Necessidades): number {
   return RITMO[humor(n)]
 }
+
+/** O humor ótimo na tela (A20): o selo da HUD, a explicação e a fala quando ele chega. */
+export const HUMOR_OTIMO = {
+  selo: 'Humor ótimo',
+  explicacao:
+    'Com fome, energia e diversão bem cuidadas, você anda um pouco mais rápido e a colheita pode vir com um a mais.',
+  fala: 'Humor ótimo. Com fome, energia e diversão bem cuidadas, você anda um pouco mais rápido e a colheita pode vir com um a mais.',
+  /** A fala não se repete antes disto (o humor pode oscilar na beira dos 60). */
+  falaACadaMs: 10 * 60 * 1000,
+} as const
+
+/** O humor acabou de ficar ótimo e dá para falar de novo? (`antes` nulo: a primeira olhada.) */
+export function deveFalarDoHumor(
+  antes: boolean | null,
+  agora: boolean,
+  ultimaFalaMs: number | null,
+  agoraMs: number,
+): boolean {
+  if (antes !== false || !agora) return false
+  return ultimaFalaMs === null || agoraMs - ultimaFalaMs >= HUMOR_OTIMO.falaACadaMs
+}

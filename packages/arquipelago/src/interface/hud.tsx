@@ -27,7 +27,7 @@ import { ehIsca, falaDaIscaEscolhida, iscaValendo, NOME_NA_FALA } from '../siste
 import { ITENS, itensDaBarra, remover } from '../sistemas/itens'
 import { PAINEL_DA_LUNETA } from '../sistemas/luneta'
 import { hudEscondido, PAINEL_DA_FOTO, podeEntrarNaFoto } from '../sistemas/modo-foto'
-import { comer } from '../sistemas/necessidades'
+import { comer, deveFalarDoHumor, HUMOR_OTIMO, humor } from '../sistemas/necessidades'
 import { comPatins, FALA_DE_CALCAR, FALA_DE_DESCALCAR, ID_DOS_PATINS } from '../sistemas/patins'
 import { jogoPausado, salvamentoPausado } from '../sistemas/pausa'
 import {
@@ -81,7 +81,20 @@ import { useVoz } from './voz'
 
 /** As três necessidades, com o ícone e a cor fixa de cada uma (cor nunca é o único sinal). */
 function Necessidades() {
+  const { loja } = useJogo()
   const n = useEstado((s) => s.salvamento.necessidades)
+  // O humor ótimo aparece (A20): o selo embaixo das barras e uma fala quando ele chega.
+  const otimo = humor(n) === 'otimo'
+  const antes = useRef<boolean | null>(null)
+  const ultimaFala = useRef<number | null>(null)
+  useEffect(() => {
+    const agora = Date.now()
+    if (deveFalarDoHumor(antes.current, otimo, ultimaFala.current, agora)) {
+      ultimaFala.current = agora
+      loja.getState().dizer(HUMOR_OTIMO.fala)
+    }
+    antes.current = otimo
+  }, [otimo, loja])
   const linhas = [
     { icone: 'fome', nome: 'Fome', v: n.fome, cor: 'fome' },
     { icone: 'energia', nome: 'Energia', v: n.energia, cor: 'energia' },
@@ -102,6 +115,12 @@ function Necessidades() {
           <span className="arq-sr">{`${l.nome}: ${Math.round(l.v)} de 100`}</span>
         </div>
       ))}
+      {otimo ? (
+        <span className="arq-humor-otimo" title={HUMOR_OTIMO.explicacao}>
+          {HUMOR_OTIMO.selo}
+          <span className="arq-sr">{`. ${HUMOR_OTIMO.explicacao}`}</span>
+        </span>
+      ) : null}
     </div>
   )
 }
@@ -184,6 +203,9 @@ function IlhaAgora() {
   )
 }
 
+export const EXPLICACAO_DO_RELOGIO =
+  'Um dia no Arquipélago dura 16 minutos. A horta e os pedidos dos moradores seguem o relógio de verdade.'
+
 function Relogio() {
   const criadoEm = useEstado((s) => Date.parse(s.salvamento.criadoEm))
   const [agora, setAgora] = useState(() => Date.now())
@@ -196,7 +218,8 @@ function Relogio() {
   const m = momentoDoDia(agora, criadoEm)
   const icone = clima === 'chuva' ? 'chuva' : m.noite ? 'lua' : (clima ?? 'sol')
   return (
-    <div className="arq-relogio arq-vidro">
+    // Três relógios, um na tela (A14): o dia do jogo aqui; a horta e os pedidos, no de verdade.
+    <div className="arq-relogio arq-vidro" title={EXPLICACAO_DO_RELOGIO}>
       <Icone nome={icone} tamanho={22} />
       <span>
         <b>{relogio(m)}</b>
