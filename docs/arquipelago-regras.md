@@ -2396,6 +2396,61 @@ anotadas para não serem refeitas por engano:
 - **A chave de cada cômodo (N11), os segredos (N12), a companhia (S01), o iglu (adiado) e o
   quintal grande:** mínimos coerentes descritos nas seções §6.16.2a a §6.16.2c, §6.24 e §6.26.
 
+### 6.28 Decisões da revisão da proposta v3 (30/10/2026)
+
+A dona aprovou em 30/10/2026 as 16 recomendações do levantamento
+`docs/arquipelago-levantamento-proposta-v3-2026-10-30.md` (seções 9 e 10; os números A e B são de
+lá). Regra geral: seguir a proposta como está escrita; registrar a diferença só quando ela é
+técnica ou quando a proposta não impõe uma forma. Até cada item ser implementado, o código ainda
+faz o que as seções acima descrevem.
+
+**Conteúdo e pedagogia**
+
+1. **Publicação (A1):** os seis quadros do Bosque são publicados como estão (todos os blocos têm
+   fonte nos cursos). A Vila Doce só depois de a corrida do entregador ganhar pulo, gravidade,
+   obstáculos sorteados e dificuldade com teto (A15). Os desafios do dia em blocos que passam na
+   barreira C01a também são marcados para publicar.
+2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
+   cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
+   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos.
+3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a
+   pessoa concluiu o curso do posto que ensina essa linguagem (a mesma regra "o desafio só usa o
+   que a pessoa já conquistou" dos blocos).
+
+**História e ilhas (seguir a proposta)**
+
+4. **Página do Recife (A4):** volta à frase da ficha, "Mapas sem fim não levam ninguém a lugar
+   nenhum." A narrativa nova da fase3-02 sai: ela resolvia o medo da Íris antes do final.
+5. **Pinta (A5):** no jogo, abre no Construtor, como na proposta e no Estúdio livre da plataforma.
+   Na Faísca, a aparência vem pronta da galeria.
+6. **Peixe com coco (A6):** a receita do Maré volta a ser peixe com coco (peixe, coco e limão, no
+   fogão), no lugar da moqueca de legumes. O modelo `peixe-com-coco` já existe.
+7. **Dino de estimação em casa (A7):** o filhote do Vale pode ir para casa e acompanhar a criança,
+   como companhia.
+8. **Ninhos do Vale (A8):** as ondas de cinza do vulcão chegam aos ninhos e a criança as afasta com
+   a lanterna, sem dano (a mesma tensão boa da noite). Efeito no código, sem arte nova.
+9. **Terceira estrela (A9):** "achar o segredo" do percurso, no lugar de "pegar todos os itens".
+10. **Quarto (A10):** "mudou no jogo, muda na plataforma, e o contrário". Primeiro o jogo relê o
+    quarto quando a criança volta para ele; depois, mexer nos móveis do quarto no jogo grava pela
+    mesma rota da plataforma.
+
+**Regras e técnica (registrado)**
+
+11. **Admin e publicação (A11):** o Admin do jogo fica em `packages/admin` e o jogo é publicado
+    dentro da imagem do `arquipelago-api`; voltar uma versão é reimplantar o serviço. Diferença
+    técnica da proposta, aceita.
+12. **Teto semanal (A32):** uma regra só para tudo o que passa do teto: espera a semana seguinte e
+    nunca se perde (os pedidos deixam de perder o excedente).
+
+**Arte**
+
+13. **Ilhas de posto alto (B2):** maiores e mais altas só na silhueta (Vale e Nuvens), junto com o
+    ajuste das silhuetas (B1). A ilha completa não muda de tamanho.
+14. **Lumis raros (B12):** primeiro como variação de cor e brilho no código, sem modelo novo.
+    Nunca sorteados em troca de moeda.
+15. **Bolsa do Nico (B15):** não por enquanto; a conversa e os pedidos (A19) dão o papel de carteiro.
+16. **Roupas de festa (B16):** não por enquanto; as peças existentes passam a ser conquistadas (A21).
+
 ## 7. Desafios
 
 Arquivos principais:
