@@ -10,8 +10,9 @@ import { ManifestoDeDesafiosSchema } from '../src/desafios'
 
 const inventario = inventarioDeRepertorio()
 test('inventário reproduz os arquivos locais sem confundir duas versões com atividades distintas', () => {
-  expect(inventario).toHaveLength(122)
-  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(61)
+  // 128 desde as lacunas de 01/11/2026: o desafio do dia da sua ilha (três, nos dois públicos).
+  expect(inventario).toHaveLength(128)
+  expect(inventario.filter((d) => d.publico === 'kids')).toHaveLength(64)
   expect(
     JSON.parse(
       readFileSync(
@@ -113,7 +114,8 @@ test('públicos têm o mesmo repertório e nenhum manifesto força concessão ma
 })
 test('o Pega-conchas da sua ilha usa só a trilha do Faísca e pede publicação (C03a)', () => {
   const daSuaIlha = inventario.filter((d) => d.ilha === 'sua-ilha')
-  expect(daSuaIlha).toHaveLength(12)
+  // Os seis quadros e as três variações do desafio do dia (lacunas, 01/11/2026), nos dois públicos.
+  expect(daSuaIlha).toHaveLength(18)
   for (const d of daSuaIlha) {
     expect(d.posto, d.slug).toBe(1)
     expect(d.semFonteNaTrilha, d.slug).toEqual([])

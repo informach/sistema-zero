@@ -3121,28 +3121,31 @@ Arquivos: `arquipelago-api/src/domain/desafio-do-dia.ts` (regra pura, `escolherD
 Arquivo: `arquipelago-contracts/src/cartas-lumi.ts`, constante `CARTAS_LUMI`. O catálogo fica no
 código, não no Admin, porque o que cada cartão faz na rotina é código do jogo.
 
-| Cartão | Tipo | Bloco do Estúdio que libera |
-|---|---|---|
-| Quando amanhecer | quando | nenhum, sempre disponível |
-| Quando anoitecer | quando | nenhum, sempre disponível |
-| Voar até | ação | nenhum, sempre disponível |
-| Regar | ação | nenhum, sempre disponível |
-| Colher | ação | nenhum, sempre disponível |
-| Guardar tudo | ação | nenhum, sempre disponível |
-| Repetir | controle | `sz_js_repeat` |
-| Para cada | controle | `sz_js_for_each` |
-| Enquanto | controle | `sz_js_while` |
-| Se | controle | `sz_js_if_else` |
-| Escolha | controle | `sz_js_switch` |
-| Esperar | controle | `sz_js_set_timeout_seconds` |
-| Guardar na memória | controle | `sz_js_var_create` |
-| Contar mais um | controle | `sz_js_var_increment` |
+Desde as lacunas de 01/11/2026 os cartões chegam pelo POSTO da Jornada, como a proposta diz
+("Mais postos, mais cartões: repetição no começo, condições e variáveis depois"); isso desfaz a
+decisão de 27/10, que liberava cada cartão pelo bloco conquistado num curso. O bloco continua
+dizendo qual bloco do Estúdio o cartão veste (o "Aprenda isso em" e o teste do Members usam).
 
-- **Quem tem cada cartão** (`cartaConquistada`):
-  - cartões sem bloco ficam com todos;
-  - cartões de controle ficam com quem conquistou o bloco num curso, com a mesma fonte dos
-    desafios;
-  - a equipe tem todos.
+| Cartão | Tipo | Posto em que chega | Bloco do Estúdio que veste |
+|---|---|---|---|
+| Quando amanhecer | quando | 1 (Faísca) | nenhum |
+| Quando anoitecer | quando | 1 | nenhum |
+| Voar até | ação | 1 | nenhum |
+| Regar | ação | 1 | nenhum |
+| Colher | ação | 1 | nenhum |
+| Guardar tudo | ação | 1 | nenhum |
+| Repetir | controle | 1 | `sz_js_repeat` |
+| Para cada | controle | 2 | `sz_js_for_each` |
+| Esperar | controle | 2 | `sz_js_set_timeout_seconds` |
+| Enquanto | controle | 3 | `sz_js_while` |
+| Se | controle | 4 | `sz_js_if_else` |
+| Escolha | controle | 5 | `sz_js_switch` |
+| Guardar na memória | controle | 6 | `sz_js_var_create` |
+| Contar mais um | controle | 6 | `sz_js_var_increment` |
+
+- **Quem tem cada cartão** (`cartaConquistada`): quem está na posição do posto do cartão ou
+  depois (a posição vem do Members, como a das ilhas); a equipe tem todos. A resposta traz o
+  `posto` de cada cartão.
 - **A rota** é `GET /arquipelago/cartas` (`arquipelago-api/src/application/servico-das-cartas.ts`).
   Ela exige a política de acesso liberada. Para os cartões que faltam, ela traz o "Aprenda isso
   em".
@@ -3169,16 +3172,16 @@ Arquivos: `arquipelago/src/sistemas/caderno-dos-lumis.ts` (regra pura),
 
 - **Abrir:** no menu do jogo, "📒 Caderno dos Lumis". O menu fecha e o caderno abre por cima; o
   personagem fica parado (`painelAberto`). Esc ou "Voltar ao jogo" fecha.
-- **Cada abertura lê `GET /cartas` de novo**, porque um curso concluído no meio do jogo libera
+- **Cada abertura lê `GET /cartas` de novo**, porque um posto novo no meio do jogo libera
   cartões novos. Quem tem cada cartão vem sempre do serviço; o jogo só arruma para a tela.
 - **Três seções, nesta ordem:** Quando ("A hora em que a rotina começa."), Ação ("O que o Lumi faz
-  na ilha.") e Controle ("Os mesmos blocos do Estúdio. Cada um chega quando você aprende o bloco
-  num curso."). Cada seção mostra quantos cartões estão prontos ("Controle: 2 de 8"), e o topo
+  na ilha.") e Controle ("Os mesmos blocos do Estúdio. Cada um chega num posto da Jornada."). Cada seção mostra quantos cartões estão prontos ("Controle: 2 de 8"), e o topo
   diz "Você tem 8 de 14 cartões. Com eles você vai montar as rotinas dos Lumis.".
 - **Cada cartão:** nome, o que faz e a situação:
   - na mão: "Pronto para usar";
-  - faltando, com curso: "Aprenda isso em:" e o primeiro curso da lista do serviço (o do posto
-    mais cedo);
+  - faltando: "Chega quando Pico Gelado abrir." (a ilha do posto do cartão) e, com curso, "O
+    bloco dele está em:" e o primeiro curso da lista do serviço; sem o `posto` (serviço de
+    antes), "Aprenda isso em:" e o curso;
   - faltando, sem curso publicado que ensine o bloco: "Nenhum curso ensina este cartão por
     enquanto.".
 - **Fechado:** 403 (jogo bloqueado para a pessoa) diz "O caderno ainda não abriu para você.".

@@ -47,12 +47,13 @@ import {
 
 const AGORA = new Date('2026-10-29T12:00:00Z')
 const TODOS = new Set(CARTAS_LUMI.map((c) => c.id))
-/** O que a pessoa do playground tem (`cartas-falsas.ts`): os de sempre, Repetir e Se. */
-const ALGUNS = new Set([
-  ...CARTAS_LUMI.filter((c) => c.tipo !== 'controle').map((c) => c.id),
-  'repetir',
-  'se',
-])
+/**
+ * O que a pessoa do playground tem (`cartas-falsas.ts`): quem está no quarto posto tem os cartões
+ * que chegam até ele (os cartões chegam pelo posto desde as lacunas de 01/11/2026).
+ */
+const ALGUNS = new Set(CARTAS_LUMI.filter((c) => c.posto <= 4).map((c) => c.id))
+/** Quem está no primeiro posto: os do jogo e o Repetir (repetição no começo). */
+const DO_PRIMEIRO_POSTO = new Set(CARTAS_LUMI.filter((c) => c.posto === 1).map((c) => c.id))
 
 /** O exemplo da proposta: quando amanhecer, voar até a horta, para cada canteiro regar e, se
  * está maduro, colher, voar até a geladeira e guardar tudo. */
@@ -105,9 +106,10 @@ describe('validar a rotina', () => {
   })
 
   test('cartão de controle travado diz qual e de onde vem; sem a leitura do serviço, não confere', () => {
-    expect(validarRotina(ROTINA_DO_QUINDIM, ALGUNS)?.motivo).toBe(
-      'O cartão Para cada ainda não está com você. Ele chega quando você aprende o bloco num curso.',
+    expect(validarRotina(ROTINA_DO_QUINDIM, DO_PRIMEIRO_POSTO)?.motivo).toBe(
+      'O cartão Para cada ainda não está com você. Ele chega num posto mais adiante da Jornada.',
     )
+    expect(validarRotina(ROTINA_DO_QUINDIM, ALGUNS)).toBeNull()
     expect(validarRotina(ROTINA_DO_QUINDIM, null)?.motivo).toBe(TEXTOS_DA_ROTINA.cartasForaDoAr)
     // Sem cartão de controle, a rotina vale até sem a leitura do serviço.
     const simples: CartaoDaRotina[] = [{ c: 'quando-amanhecer' }, { c: 'voar-ate', a: 'horta' }]

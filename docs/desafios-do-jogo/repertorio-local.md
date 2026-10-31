@@ -1,6 +1,6 @@
 # Inventário de repertório dos desafios
 
-Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 61 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
+Gerado por `bun docs/desafios-do-jogo/repertorio-local.ts`. Mesmas regras e projetos nos dois públicos, com textos próprios. São 64 atividades, cada uma em Kids e adulto. Fonte de publicação e posse de blocos: Members. Este inventário só confere arquivos locais.
 
 Tipos já presentes não provam compreensão, e tipos novos não são a única evidência de mudança: alterar um valor ou uma condição pode manter o mesmo tipo. A prova pedagógica continua sendo o executor com inicial, gabarito e negativos.
 
@@ -14,6 +14,9 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | sua-ilha | A concha rosa | aplicacao-em-blocos | Pela concha rosa, o balde recebe a entrega.; Só com a cinza, o Nico pede a rosa e nada é entregue. | Nenhum neste recorte | pedida |
 | sua-ilha | A maré volta | aplicacao-em-blocos | Depois da entrega, Enter traz a praia de volta.; Enter devolve a concha para a areia. | Nenhum neste recorte | pedida |
 | sua-ilha | Pega-conchas | aplicacao-em-blocos | Com as três conchas, o balde fica cheio.; Sem a concha do alto, o balde continua esperando. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas: o aviso do Nico | aplicacao-em-blocos | Sem a concha do alto o Nico avisa; buscando a do alto, o balde enche. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas: só a rosa | aplicacao-em-blocos | Só com a concha rosa, o balde fica cheio. | Nenhum neste recorte | pedida |
+| sua-ilha | Pega-conchas: esvaziar o balde | aplicacao-em-blocos | Com o balde cheio, a barra de espaço esvazia. | Nenhum neste recorte | pedida |
 | bosque | Pinhas caindo | retomada-em-blocos | Depois da largada, pinhas caem no grupo das pinhas.; As pinhas nascem no relógio da partida, no grupo pinhas. | Nenhum neste recorte | pedida |
 | bosque | Bolotas para o alto | retomada-em-blocos | Na partida, espaço joga uma bolota no grupo das bolotas.; A bolota só sai durante a partida. | Nenhum neste recorte | pedida |
 | bosque | Quebrar as pinhas | retomada-em-blocos | Uma bolota que encontra uma pinha soma um ponto.; No encontro, a bolota e a pinha saem dos grupos delas. | Nenhum neste recorte | pedida |

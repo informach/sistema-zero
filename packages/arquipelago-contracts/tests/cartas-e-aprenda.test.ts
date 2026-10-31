@@ -18,14 +18,27 @@ describe('cartões dos Lumis', () => {
     for (const c of CARTAS_LUMI) expect(c.bloco === null).toBe(c.tipo !== 'controle')
   })
 
-  test('cartão do jogo vale para todos; o de controle só com o bloco; equipe vê todos', () => {
+  test('os cartões chegam pelo posto: repetição no começo, condições e variáveis depois', () => {
+    const posto = (id: string) => CARTAS_LUMI.find((c) => c.id === id)?.posto ?? 0
+    // Os do jogo e o Repetir já no primeiro posto (lacunas, 01/11/2026, pela proposta).
+    for (const c of CARTAS_LUMI.filter((c) => c.tipo !== 'controle')) expect(c.posto).toBe(1)
+    expect(posto('repetir')).toBe(1)
+    const repeticao = Math.max(posto('repetir'), posto('para-cada'), posto('enquanto'))
+    const condicoes = Math.min(posto('se'), posto('escolha'))
+    const variaveis = Math.min(posto('guardar-na-memoria'), posto('contar'))
+    expect(repeticao).toBeLessThan(condicoes)
+    expect(condicoes).toBeLessThan(variaveis)
+    for (const c of CARTAS_LUMI) expect(c.posto >= 1 && c.posto <= 8, c.id).toBe(true)
+  })
+
+  test('cartão do primeiro posto vale para todos; os outros pela posição; equipe vê todos', () => {
     const regar = CARTAS_LUMI.find((c) => c.id === 'regar')
-    const repetir = CARTAS_LUMI.find((c) => c.id === 'repetir')
-    if (!regar || !repetir) throw new Error('catálogo sem os cartões esperados')
-    expect(cartaConquistada(regar, new Set())).toBe(true)
-    expect(cartaConquistada(repetir, new Set())).toBe(false)
-    expect(cartaConquistada(repetir, new Set(['sz_js_repeat']))).toBe(true)
-    expect(cartaConquistada(repetir, 'todos')).toBe(true)
+    const se = CARTAS_LUMI.find((c) => c.id === 'se')
+    if (!regar || !se) throw new Error('catálogo sem os cartões esperados')
+    expect(cartaConquistada(regar, 1)).toBe(true)
+    expect(cartaConquistada(se, se.posto - 1)).toBe(false)
+    expect(cartaConquistada(se, se.posto)).toBe(true)
+    expect(cartaConquistada(se, 'todos')).toBe(true)
   })
 })
 
