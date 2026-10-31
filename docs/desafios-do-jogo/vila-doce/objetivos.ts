@@ -3,10 +3,7 @@ import type {
   ExecutionStep,
   SectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
-import type {
-  ProjectBlockPattern,
-  SectionJavaScriptProjectCheck,
-} from '../../../packages/core/src/learning/section-progression'
+import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import { EXTRA, PISTA, type Variacao } from './projetos'
 
 /** Qualquer tecla começa a corrida (o evento é "qualquer tecla ou toque"). */
@@ -41,14 +38,14 @@ const behavior = (
 const estrutura = (
   id: string,
   label: string,
-  rule: ProjectBlockPattern & { count?: number },
+  rule: Omit<Extract<SectionJavaScriptProjectCheck['rule'], { type: 'usesBlock' }>, 'type'>,
   optional = false,
 ): SectionJavaScriptProjectCheck => ({
   id,
   label,
   programmingLanguage: 'javascript',
   ...(optional ? { optional: true as const } : {}),
-  rule: { type: 'usesBlock', ...rule } as SectionJavaScriptProjectCheck['rule'],
+  rule: { type: 'usesBlock', ...rule },
 })
 const numero = (min: number, max: number) => ({
   blockType: 'sz_val_number',

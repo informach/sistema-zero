@@ -11,10 +11,7 @@ import type {
   ExecutionStep,
   SectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
-import type {
-  ProjectBlockPattern,
-  SectionJavaScriptProjectCheck,
-} from '../../../packages/core/src/learning/section-progression'
+import type { SectionJavaScriptProjectCheck } from '../../../packages/core/src/learning/section-progression'
 import { buildWorkspaceStateFromIR } from '../../../packages/studio/src/blockly/workspaceState'
 import {
   createEmptyProject,
@@ -414,14 +411,14 @@ const behavior = (
 const estrutura = (
   id: string,
   label: string,
-  rule: ProjectBlockPattern & { count?: number },
+  rule: Omit<Extract<SectionJavaScriptProjectCheck['rule'], { type: 'usesBlock' }>, 'type'>,
   optional = false,
 ): SectionJavaScriptProjectCheck => ({
   id,
   label,
   programmingLanguage: 'javascript',
   ...(optional ? { optional: true as const } : {}),
-  rule: { type: 'usesBlock', ...rule } as SectionJavaScriptProjectCheck['rule'],
+  rule: { type: 'usesBlock', ...rule },
 })
 const jogandoCond = { blockType: 'sz_g2d_scene_is', fields: { SCENE: 'jogando' } }
 
