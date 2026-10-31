@@ -1,7 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  CELULAS_MOLDADAS_MAXIMO,
   criarSalvamentoInicial,
+  OBJETOS_DA_CASA,
+  OBRA_ESTENDIDA_MAX_BYTES,
   type ObraEstendida,
+  ObraEstendidaSchema,
   type Plataforma,
   type RespostaDoServico,
 } from '@sistemazero/arquipelago-contracts'
@@ -15,6 +19,8 @@ import {
 } from '../src/estado/obra-estendida'
 import { criarPlataformaFalsa } from '../src/plataforma/falsa'
 import { criarObraEstendidaFalsa } from '../src/plataforma/obra-estendida-falsa'
+import { loteDeCima } from '../src/sistemas/construcao/andar'
+import { LOTE_DA_CASA_GRANDE, loteDaCabana } from '../src/sistemas/construcao/lote'
 
 /** A obra estendida (E04 e B14): troca por revisão, pausa antes de gravar e o que não chegou. */
 
@@ -263,5 +269,57 @@ describe('obra estendida falsa', () => {
     expect(falsa.buscar('/fantasmas', 'GET')).toBeNull()
     const reaberta = criarObraEstendidaFalsa({ somenteLeitura: () => false, persistencia })
     expect(reaberta.buscar('/obra-estendida', 'GET')?.corpo).toEqual({ revisao: 1, obra })
+  })
+})
+
+describe('o documento cheio da obra estendida (plano do E04, "Verificação prevista")', () => {
+  test('a maior obra que o jogo deixa fazer (iglu, andar e terreno nos tetos) cabe nos 32 KB', () => {
+    // Os tetos do jogo: o lote do iglu (o de toda cabana), o lote de cima e as células moldadas.
+    // As coordenadas e o comprimento são os mais compridos do contrato (-60 e 60), para o JSON
+    // ser o maior possível; os objetos vão todos, embora a cabana não os use.
+    const cabana = loteDaCabana('pico', { x0: -60, z0: -60, x1: 60, z1: 60 }).limites
+    const cima = loteDeCima(LOTE_DA_CASA_GRANDE).limites
+    const cel = (i: number) => ({ x: -60 + (i % 121), z: -60 + Math.floor(i / 121) })
+    const trechos = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ ...cel(i), eixo: 'x' as const, n: 60 }))
+    const janelas = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({
+        tipo: 'janela-redonda' as const,
+        ...cel(i),
+        eixo: 'x' as const,
+      }))
+    const pisos = (n: number) =>
+      Array.from({ length: n }, (_, i) => ({ ...cel(i), tipo: 'ladrilho' as const }))
+    const cheia: ObraEstendida = {
+      versao: 1,
+      iglu: {
+        paredes: trechos(cabana.trechosDeParede),
+        aberturas: janelas(cabana.aberturas),
+        pisos: pisos(cabana.pisos),
+        objetos: OBJETOS_DA_CASA.map((id, i) => ({ ...cel(i), id, giro: 3 })),
+        cercas: trechos(cabana.trechosDeCerca),
+        caminhos: Array.from({ length: cabana.caminhos }, (_, i) => ({
+          ...cel(i),
+          tipo: 'pedra' as const,
+        })),
+        canteiros: Array.from({ length: cabana.canteiros }, (_, i) => cel(i)),
+        moveis: [],
+      },
+      andar: {
+        escada: { x: -60, z: -60, giro: 3 },
+        paredes: trechos(cima.trechosDeParede),
+        aberturas: janelas(cima.aberturas),
+        pisos: pisos(cima.pisos),
+      },
+      terreno: {
+        alturas: Array.from({ length: CELULAS_MOLDADAS_MAXIMO }, (_, i) => {
+          const c = cel(i)
+          return [c.x, c.z, 3] as [number, number, number]
+        }),
+      },
+    }
+    const bytes = new TextEncoder().encode(JSON.stringify(cheia)).byteLength
+    expect(ObraEstendidaSchema.safeParse(cheia).success).toBe(true)
+    expect(bytes).toBeLessThanOrEqual(OBRA_ESTENDIDA_MAX_BYTES)
   })
 })

@@ -12,7 +12,13 @@ import telhadoGlb from '../assets/casa/casa-telhado.glb'
 import varandaGlb from '../assets/casa/casa-varanda.glb'
 import { lojaDaConstrucao, useConstrucao } from '../estado/construcao'
 import { useJogo } from '../estado/contexto'
-import { ALTURA_DO_ANDAR, pecasDoAndar, plantaDeCima } from '../sistemas/construcao/andar'
+import {
+  ALTURA_DO_ANDAR,
+  caixaDeAntesDoAndar,
+  pecasDoAndar,
+  pecasVisiveisDoAndar,
+  plantaDeCima,
+} from '../sistemas/construcao/andar'
 import { type Planta, planta } from '../sistemas/construcao/comodos'
 import { type Entrada, entradaDaObra } from '../sistemas/construcao/entrada'
 import { arestaDaChave, chavesDosTrechos } from '../sistemas/construcao/grade'
@@ -377,7 +383,8 @@ export function ObraNoMundo({
     ...varanda.varanda,
     // O toldo sai com o telhado (senão tapa a vista de dentro e do Construir).
     ...(comTelhado ? [...telhados, ...varanda.toldo] : []),
-    ...(comAndar && deCima ? deCima.pecas : []),
+    // A escada fica de pé no térreo: aparece mesmo com o resto do andar escondido.
+    ...(deCima ? pecasVisiveisDoAndar(deCima, comAndar) : []),
     ...(comAndar && deCima && comTelhadoDeCima ? deCima.telhados : []),
   ]
   const folhas = [...pecas.folhas, ...(comAndar && deCima ? deCima.folhas : [])]
@@ -476,6 +483,20 @@ function FormaDeAntes({ peca }: { peca: PecaDoKit }) {
         <mesh position={[0, 0, 0.975]}>
           <boxGeometry args={[4.2, 0.1, 1.55]} />
           <meshStandardMaterial color="#c08a5a" />
+        </mesh>
+      </group>
+    )
+  }
+  if (peca.arquivo === 'andar' || peca.arquivo === 'paredes-andar') {
+    const c = caixaDeAntesDoAndar(peca)
+    if (!c) return null
+    const cor =
+      peca.arquivo === 'andar' ? '#c9a87a' : peca.no.includes('lambri') ? '#fbe7d2' : '#f1ece2'
+    return (
+      <group position={[peca.x, 0, peca.z]} rotation-y={peca.giro}>
+        <mesh position={[0, c.y, 0]}>
+          <boxGeometry args={[c.largura, c.altura, c.fundo]} />
+          <meshStandardMaterial color={cor} />
         </mesh>
       </group>
     )

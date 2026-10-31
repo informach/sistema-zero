@@ -28,6 +28,10 @@ import { carregarGlb, topoEm } from './ajuda-colisores'
  * encostar numa parede) e as paredes do andar (`casa-paredes-andar.glb`, sem alicerce, com a
  * cinta na linha do piso), montados como em `cenas.py` (`andar_na_parede`) e conferidos com a
  * mesma busca de faces coplanares e emendas em T do `scripts/faces-coplanares.ts`.
+ *
+ * B7c: a porta de lambri do andar (`parede-porta-lambri-andar` e a `-baixa-andar`), no molde da
+ * `parede-porta-lambri` do térreo, sem alicerce nem degrau de pedra, montada como a cena
+ * `andar-porta` de `cenas.py`.
  */
 const CASA = join(import.meta.dir, '..', 'src', 'assets', 'casa')
 const ARQUIVO = join(CASA, 'casa-andar.glb')
@@ -289,6 +293,9 @@ const PAREDES_DO_ANDAR = [
   ]),
   'parede-porta-lisa-andar',
   'parede-porta-lisa-baixa-andar',
+  // A porta de lambri do andar (B7c): do cômodo de cima para o piso aberto.
+  'parede-porta-lambri-andar',
+  'parede-porta-lambri-baixa-andar',
 ]
 
 describe('a escada na parede e as paredes do andar', () => {
@@ -296,6 +303,7 @@ describe('a escada na parede e as paredes do andar', () => {
   beforeAll(async () => {
     for (const a of [
       'casa-paredes.glb',
+      'casa-portas.glb',
       'casa-pisos.glb',
       'casa-andar.glb',
       'casa-paredes-andar.glb',
@@ -441,4 +449,123 @@ describe('a escada na parede e as paredes do andar', () => {
         expect({ z, h, x: hit && hit.point.x >= 3.1 - 1e-3 }).toEqual({ z, h, x: true })
       }
   })
+  test('a porta de lambri do andar: o molde da do térreo, sem degrau de pedra, a cinta parando no vão', () => {
+    const terreo = new Box3().setFromObject(fontes.get('parede-porta-lambri') as Object3D)
+    for (const [nome, alta] of [
+      ['parede-porta-lambri-andar', true],
+      ['parede-porta-lambri-baixa-andar', false],
+    ] as const) {
+      const o = fontes.get(nome) as Object3D
+      const c = new Box3().setFromObject(o)
+      // Três células, origem no meio da base, na linha da grade, como a do térreo.
+      expect(c.min.x).toBeCloseTo(terreo.min.x, 3)
+      expect(c.max.x).toBeCloseTo(terreo.max.x, 3)
+      // Sem o degrau de pedra (que vai a 0,5 por fora): por fora, só a cornija (até 0,22) e o batente.
+      expect(c.max.z).toBeLessThanOrEqual(0.22 + 1e-3)
+      expect(c.max.y).toBeCloseTo(alta ? ANDAR + 4 : ANDAR + 1.02, 2)
+      const mats = new Set<string>()
+      o.traverse((m) => {
+        const malha = m as Mesh
+        if (!malha.isMesh) return
+        const nomes = (Array.isArray(malha.material) ? malha.material : [malha.material]).map(
+          (x) => x.name,
+        )
+        for (const x of nomes) mats.add(x)
+      })
+      expect([...mats].sort()).toEqual(
+        expect.arrayContaining(['acabamento', 'batente', 'parede', 'paredeDentro']),
+      )
+      expect(mats.has('alicerce')).toBe(false)
+      // O vão aberto: um raio de fora para dentro no meio da porta, da soleira (4,13) até a verga
+      // (3,0), não bate em nada da parede. Em 0,05 ele passaria pela cinta (até 0,07), se ela não
+      // parasse no vão.
+      const raios = new Raycaster()
+      // Embaixo, a soleira: de cima, o meio do vão bate nela, em 4,13, no batente.
+      raios.set(new Vector3(0, ANDAR + 2, 0), new Vector3(0, -1, 0))
+      const soleira = raios.intersectObject(o, true)[0]
+      expect(soleira?.point.y).toBeCloseTo(ANDAR + 0.03, 3)
+      expect(((soleira?.object as Mesh).material as { name: string }).name).toBe('batente')
+      for (const h of alta ? [0.05, 0.3, 1, 2, 2.9] : [0.05, 0.3, 0.9])
+        for (const x of [-0.9, 0, 0.9]) {
+          raios.set(new Vector3(x, ANDAR + h, 2), new Vector3(0, 0, -1))
+          expect({ nome, x, h, bate: raios.intersectObject(o, true).length }).toEqual({
+            nome,
+            x,
+            h,
+            bate: 0,
+          })
+        }
+    }
+  })
+
+  /** A casa 4 × 6 de dois andares de `cenas.py` (`andar_porta`): em cima, o cômodo de y = 3 a 6 com
+   * a porta de lambri do andar para o piso aberto (em pé com a folha, ou cortada), as pontas em T. */
+  function casaComAPortaDeLambri(cortada: boolean): Group {
+    const casa = new Group()
+    let n = 0
+    const por = (nome: string, x: number, y: number, giro = 0, z = 0) => {
+      const fonte = fontes.get(nome)
+      if (!fonte) throw new Error(`sem o nó ${nome}`)
+      const g = new Group()
+      g.name = `${nome}#${n++}`
+      g.position.set(x, z, -y)
+      g.rotation.y = (giro * Math.PI) / 180
+      g.add(fonte.clone(true))
+      casa.add(g)
+    }
+    const corrida = (eixo: 'x' | 'y', fixo: number, pecas: [string, number][], dentro: 1 | -1) => {
+      let pos = 0
+      const giro = eixo === 'x' ? (dentro > 0 ? 0 : 180) : dentro > 0 ? -90 : 90
+      for (const [nome, larg] of pecas) {
+        const c = pos + larg / 2
+        if (eixo === 'x') por(nome, c, fixo, giro)
+        else por(nome, fixo, c, giro)
+        pos += larg
+      }
+    }
+    const w = 4
+    const d = 6
+    const vezes = (nome: string, k: number) =>
+      Array.from({ length: k }, () => [nome, 1] as [string, number])
+    for (let i = 0; i < w; i++) for (let j = 0; j < d; j++) por('piso-tabua', i + 0.5, j + 0.5)
+    for (const sufixo of ['', '-andar']) {
+      corrida('x', d, vezes(`parede-lambri${sufixo}`, w), -1)
+      corrida('y', 0, vezes(`parede-lambri${sufixo}`, d), 1)
+      corrida('y', w, vezes(`parede-lambri${sufixo}`, d), -1)
+      corrida('x', 0, vezes(`parede-lambri-baixa${sufixo}`, w), 1)
+      for (const [x, y] of [
+        [0, 0],
+        [w, 0],
+        [0, d],
+        [w, d],
+      ] as const)
+        por(`quina-lambri${sufixo}`, x, y)
+    }
+    for (let i = 0; i < w; i++)
+      for (let j = 0; j < d; j++) por('piso-andar-tabua', i + 0.5, j + 0.5)
+    const baixa = cortada ? '-baixa' : ''
+    corrida(
+      'x',
+      3,
+      [
+        [`parede-porta-lambri${baixa}-andar`, 3],
+        [`parede-lambri${baixa}-andar`, 1],
+      ],
+      1,
+    )
+    if (!cortada) {
+      por('porta', 1.5, 3, 0, ANDAR)
+      corrida('x', 3, vezes('parede-lisa', w), 1)
+    }
+    casa.updateMatrixWorld(true)
+    return casa
+  }
+
+  for (const cortada of [false, true])
+    test(`a porta de lambri do andar ${cortada ? 'cortada' : 'em pé'} montada: nenhuma face coplanar nem emenda em T`, () => {
+      const casa = casaComAPortaDeLambri(cortada)
+      const par = (x: { a: string; b: string }) => `${x.a} x ${x.b}`
+      expect(sobreposicoes(casa).map(par)).toEqual([])
+      expect(emendasAbertas(casa).map(par)).toEqual([])
+    })
 })

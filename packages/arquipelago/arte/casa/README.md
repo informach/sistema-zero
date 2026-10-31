@@ -48,7 +48,7 @@ mesmo): depois do `build_all.py`, volte com `git checkout` os GLBs que você nã
 | `festas.py` | `casa-festas.glb` (decoração de festa; importa a `lib_festas` e os modelos da fogueira, da lanterna e da máscara de `arte/festas`) |
 | `varanda.py` | `casa-varanda.glb` (31/10/2026): a varanda da porta de entrada da casa construída, com o desenho e os materiais da varanda do `casa.glb` e os colisores `col-varanda-*` (contrato abaixo) |
 | `miniaturas.py` | `src/assets/casa/miniaturas/<id>.png` (160 px, fundo transparente): cada janela no meio de uma parede de lambri, cada piso e caminho numa grade, cada objeto de `src/assets/objetos` e cada móvel dos cômodos (`movel-<nó>.png`, 30/10/2026) e, desde 31/10/2026, cada peça do café e da decoração de festa (também `movel-<nó>.png`), com o enquadramento e a luz dos ícones dos itens (`arte/itens/render.py`). Refaça depois de mudar uma dessas peças; `tests/miniaturas.test.ts` confere que há uma por escolha |
-| `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis, segundo andar `andar`, a escada encostada na parede `andar-parede`, vitrine do café e das festas `cafe-festas`, as janelas na parede cortada `janela-baixa`, a varanda na porta de entrada da frente e na de lado, em pé e cortada, `varanda`): GLB temporário e prévias |
+| `cenas.py` | cenas de conferência (kit encaixado, cozinha, sala, banheiro, vitrine dos móveis, segundo andar `andar`, a escada encostada na parede `andar-parede`, a porta de lambri do andar em pé e cortada `andar-porta`, vitrine do café e das festas `cafe-festas`, as janelas na parede cortada `janela-baixa`, a varanda na porta de entrada da frente e na de lado, em pé e cortada, `varanda`): GLB temporário e prévias |
 | `build_all.py` | roda tudo e confere |
 
 ## Medidas que o modo construir usa
@@ -175,9 +175,9 @@ já na altura certa.
 | vão da escada no meio da sala | `piso-andar-vao` (guarda-corpo nos três lados) | `casa-andar.glb` |
 | vão da escada encostada na parede | `piso-andar-vao-parede` (sem o lado +x) | `casa-andar.glb` |
 | beira do piso sem parede | `guarda-corpo-andar` | `casa-andar.glb` |
-| paredes | o nome da parede de baixo + `-andar` (lambri e lisa, cheias, cortadas e com janela; porta só na lisa) | `casa-paredes-andar.glb` |
+| paredes | o nome da parede de baixo + `-andar` (lambri e lisa, cheias, cortadas, com janela e com porta) | `casa-paredes-andar.glb` |
 | quinas | `quina-lambri-andar`, `quina-lisa-andar` e as `-baixa-andar` | `casa-paredes-andar.glb` |
-| folha da porta | `porta-interna` de sempre, com z = 4,10 | `casa-portas.glb` |
+| folha da porta | `porta-interna` (na lisa) ou `porta` (no lambri) de sempre, com z = 4,10 | `casa-portas.glb` |
 | telhado | as peças de sempre, com 4,10 a mais em z | `casa-telhado.glb` |
 
 - **Pisos de cima** (`piso-andar-tabua`, `-ladrilho`, `-azulejo`): os pisos da casa subidos: 1 × 1,
@@ -244,8 +244,15 @@ já na altura certa.
   baixo, de 3,96 para cima, por fora do topo da quina de baixo), `quina-lambri-baixa-andar`, e as
   `lisa` correspondentes, com `parede-porta-lisa-andar` e `parede-porta-lisa-baixa-andar` (a folha
   `porta-interna` vai com z = 4,10). A lisa não tinha alicerce, mas a versão de andar começa
-  também em 4,10 (em cima do piso), pelo mesmo motivo das emendas. Não há porta de lambri no
-  andar (daria para fora, no ar).
+  também em 4,10 (em cima do piso), pelo mesmo motivo das emendas.
+- **Porta de lambri do andar** (31/10/2026, B7c): `parede-porta-lambri-andar` e
+  `parede-porta-lambri-baixa-andar`, a porta do cômodo de cima para o piso aberto (o lambri, -Y,
+  fica do lado do piso aberto, como a de baixo fica do lado de fora). O molde é a
+  `parede-porta-lambri` do térreo e as portas lisas do andar: três células, o vão de 2,2 × 3,0, o
+  batente, a soleira (de 4,10 a 4,13) e a cornija por fora; sem alicerce nem degrau de pedra, com a
+  cinta, que para no vão (a ponta dela entra no batente). A folha é a `porta` do `casa-portas.glb`,
+  com a mesma posição e giro e z = 4,10. Nunca dá para fora da casa: o jogo só põe porta no andar
+  com piso dos dois lados.
 
 ## Café, banca de feira e festas: contrato (31/10/2026)
 
@@ -314,7 +321,7 @@ As regras do README de `arte/mundo` valem aqui, e mais as das peças que se repe
 Conferir: `bun scripts/faces-coplanares.ts --separados src/assets/casa/<arquivo>.glb` em cada GLB
 (o `build_all.py` já roda; `tests/faces-coplanares.test.ts` cobre `casa-andar`, `casa-cafe` e
 `casa-festas`, `casa-paredes-andar` e `casa-paredes`, e a varanda montada na casa construída) e, nas cenas
-montadas, o mesmo sem `--separados` (`CENAS=1`, com as cenas `andar`, `andar-parede`, `cafe-festas`,
+montadas, o mesmo sem `--separados` (`CENAS=1`, com as cenas `andar`, `andar-parede`, `andar-porta`, `cafe-festas`,
 `janela-baixa` e `varanda`). Na cena da cozinha, o fogão a lenha de `arte/itens` acusa pares só dele (lenha,
 fogo e chapa); as peças daqui não acusam nada.
 
@@ -485,7 +492,7 @@ A altura do lambri conta o alicerce, que desce até -0,30 (dentro do chão da il
 Colisores: `col-escada-reta-1` a `-15`, `col-guarda-vao-1` a `-3`, `col-guarda-andar-1`,
 `col-guarda-vao-parede-1` e `-2`. Âncoras: `escada-1-base`, `escada-1-topo`, `escada-1-saida`.
 
-### `casa-paredes-andar.glb` (6.970 triângulos, 290 KB)
+### `casa-paredes-andar.glb` (7.518 triângulos, 323 KB)
 
 Altura contada do pé da cinta (3,955) ou da quina (3,96); a parede em si vai de 4,10 a 8,10.
 
@@ -507,6 +514,8 @@ Altura contada do pé da cinta (3,955) ou da quina (3,96); a parede em si vai de
 | `parede-janela-redonda-lisa-andar` | 1 | 1,00 × 4,00 × 0,30 | 632 |
 | `quina-lisa-andar` | ponto | 0,30 × 4,08 × 0,30 | 106 |
 | `quina-lisa-baixa-andar` | ponto | 0,30 × 1,08 × 0,30 | 106 |
+| `parede-porta-lambri-andar` | 3 | 3,00 × 4,15 × 0,39 | 394 |
+| `parede-porta-lambri-baixa-andar` | 3 | 3,00 × 1,17 × 0,34 | 154 |
 
 ### `casa-varanda.glb` (1.142 triângulos, 65 KB)
 

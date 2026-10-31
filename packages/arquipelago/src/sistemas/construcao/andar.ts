@@ -36,8 +36,9 @@ import { telhadosDaObra } from './telhado'
  *   beira de uma célula de piso, e todo cômodo de cima fica em cima do piso.
  * - Onde o piso termina sem parede, o guarda-corpo segura.
  * - A porta de cima tem piso dos dois lados (entre cômodos, ou de um cômodo para o piso aberto),
- *   nunca para o ar. O kit não tem a porta de lambri do andar: a do piso aberto usa a lisa do
- *   andar (pedido de arte em `docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md`).
+ *   nunca para o ar. Como no térreo, a família vem do lado da parede (`ladoDaParede`): entre
+ *   cômodos, a porta lisa do andar (folha `porta-interna`); do cômodo para o piso aberto, a de
+ *   lambri do andar (`parede-porta-lambri-andar`, folha `porta`, B7c), com o lambri no piso aberto.
  */
 export const POSICAO_DO_ANDAR = 5
 /** A altura do piso de cima, a partir do piso de baixo (o topo das peças do andar). */
@@ -388,8 +389,6 @@ export function noDoAndar(no: string): string {
   // O kit não tem a janela cortada do andar: no corte, a parede baixa lisa do mesmo lado.
   const baixa = /^parede-janela-[a-z]+-(lambri|lisa)-baixa$/.exec(no)
   if (baixa) return `parede-${baixa[1]}-baixa-andar`
-  // Nem a porta de lambri (a do cômodo para o piso aberto): vai a lisa do andar.
-  if (no.startsWith('parede-porta-lambri')) return `${no.replace('lambri', 'lisa')}-andar`
   return `${no}-andar`
 }
 
@@ -442,6 +441,38 @@ export function caixasDosGuardaCorpos(guardas: readonly PecaDoKit[]): CaixaDaObr
       meio: emX ? [0.5, 0.5, 0.04] : [0.04, 0.5, 0.5],
     }
   })
+}
+
+/**
+ * O que do andar se desenha: inteiro (lá em cima, de fora de casa ou na camada de cima do Construir)
+ * ou só a escada, que fica de pé no térreo (com a criança dentro de casa embaixo e no Construir do
+ * térreo, onde a ferramenta Escada a põe; sem ela, a escada ficava invisível e se subia no ar).
+ */
+export function pecasVisiveisDoAndar(d: PecasDoAndar, inteiro: boolean): PecaDoKit[] {
+  return inteiro ? d.pecas : d.pecas.filter((x) => x.no === 'escada-interna')
+}
+
+/**
+ * A caixa simples de uma peça do andar enquanto o kit do andar não chega (a reserva da obra): o piso
+ * de cima como uma laje fina na altura dele, e as paredes e quinas de cima em cima dele (as `-baixa`
+ * com 1,0). A escada, o vão e o guarda-corpo esperam o arquivo. Antes, a reserva tratava tudo como
+ * parede de baixo: cada piso de cima virava uma caixa de 4 m no térreo, e a casa aparecia como um
+ * bloco cinza (31/10/2026, B7c). `y` é o meio da caixa, a partir do piso de baixo.
+ */
+export function caixaDeAntesDoAndar(
+  peca: Pick<PecaDoKit, 'arquivo' | 'no'>,
+): { largura: number; altura: number; fundo: number; y: number } | null {
+  if (peca.arquivo === 'andar') {
+    if (!/^piso-andar-(tabua|ladrilho|azulejo)$/.test(peca.no)) return null
+    return { largura: 1, altura: 0.1, fundo: 1, y: ALTURA_DO_ANDAR - 0.05 }
+  }
+  if (peca.arquivo !== 'paredes-andar') return null
+  const altura = peca.no.endsWith('-baixa-andar') ? 1 : 4
+  const y = ALTURA_DO_ANDAR + altura / 2
+  if (peca.no.startsWith('quina')) return { largura: 0.36, altura, fundo: 0.36, y }
+  const largura =
+    peca.no.includes('porta') || peca.no.includes('grande') ? 3 : peca.no.includes('arco') ? 2 : 1
+  return { largura, altura, fundo: 0.2, y }
 }
 
 export interface PecasDoAndar {

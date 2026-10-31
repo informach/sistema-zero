@@ -62,7 +62,9 @@ CONTRATO = {
     'casa-paredes-andar': {'nos': [f'{t}-{f}-andar' for f in ('lambri', 'lisa') for t in (
         'parede', 'parede-janela-grande', 'parede-janela-arco', 'parede-janela-redonda', 'quina')]
         + [f'{t}-{f}-baixa-andar' for f in ('lambri', 'lisa') for t in ('parede', 'quina')]
-        + ['parede-porta-lisa-andar', 'parede-porta-lisa-baixa-andar'],
+        + ['parede-porta-lisa-andar', 'parede-porta-lisa-baixa-andar']
+        # A porta de lambri do andar (B7c): do cômodo de cima para o piso aberto.
+        + ['parede-porta-lambri-andar', 'parede-porta-lambri-baixa-andar'],
         'materiais': ['vidroJanela', 'parede', 'paredeDentro', 'paredeVerso', 'paredeTopo']},
     'casa-cafe': {'nos': ['cafe-mesa-redonda', 'cafe-cadeira', 'cafe-balcao', 'cafe-vitrine-doces',
                           'cafe-lousa-cardapio', 'cafe-banca-feira', 'cafe-caixote'],
@@ -155,15 +157,16 @@ else:
 if os.environ.get('CENAS'):
     pasta = os.environ.get('DIR_PREVIAS') or os.path.join(tempfile.gettempdir(), 'arte-casa')
     r = subprocess.run([sys.executable, '-B', os.path.join(AQUI, 'cenas.py'), 'kit', 'cozinha', 'sala', 'banheiro',
-                        'moveis', 'andar', 'andar-parede', 'cafe-festas', 'janela-baixa', 'varanda'], cwd=AQUI,
+                        'moveis', 'andar', 'andar-parede', 'andar-porta', 'cafe-festas', 'janela-baixa', 'varanda'],
+                       cwd=AQUI,
                        capture_output=True, text=True,
                        env=dict(env, DIR_PREVIAS=pasta, SO_GLB=os.environ.get('SO_GLB', '1')))
     if r.returncode != 0:
         print(r.stderr[-3000:])
         sys.exit('falhou: cenas')
     if bun:
-        for nome in ('kit', 'cozinha', 'sala', 'banheiro', 'moveis', 'andar', 'andar-parede', 'cafe-festas',
-                     'janela-baixa', 'varanda'):
+        for nome in ('kit', 'cozinha', 'sala', 'banheiro', 'moveis', 'andar', 'andar-parede', 'andar-porta',
+                     'cafe-festas', 'janela-baixa', 'varanda'):
             r = subprocess.run([bun, 'scripts/faces-coplanares.ts', os.path.join(pasta, f'cena-{nome}.glb')],
                                cwd=PACOTE, capture_output=True, text=True)
             # O fogão a lenha da cena da cozinha vem de arte/itens: os pares só dele não contam aqui.
