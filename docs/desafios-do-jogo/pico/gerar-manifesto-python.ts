@@ -67,7 +67,14 @@ export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
                 ? 'Complete melhor(tempos): ela devolve o menor tempo da lista, para o fim do jogo mostrar o trecho mais rápido.'
                 : 'Implemente melhor(tempos), que retorna o menor valor da lista de tempos dos trechos.',
           },
-          recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
+          // O minijogo vira atração (lacunas, 01/11/2026): o player roda o Python no ambiente do
+          // desafio.
+          recompensa: {
+            cor: true,
+            atracao: 'subida-do-floco',
+            moedas: moedas.principal,
+            moedasExtra: moedas.extra,
+          },
           blocosManuais: { acrescentar: [], retirar: [] },
         },
       },

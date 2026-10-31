@@ -443,3 +443,25 @@ test('input submission is single-flight and late rejection after unmount does no
   })
   expect(errors).toBe(0)
 })
+
+test('a host-built environment plays without a community publication and never asks the public route', async () => {
+  const f = await setup()
+  const publico = spyOn(publicEnvironment, 'createPublicPythonRuntimeEnvironment')
+  const pedidos: string[] = []
+  let ready = 0
+  render(
+    <PythonProjectPlayer
+      project={f.project}
+      pythonRuntimeEnvironment={async (project) => {
+        pedidos.push(project.id)
+        return f.environment
+      }}
+      onReady={() => {
+        ready++
+      }}
+    />,
+  )
+  await waitFor(() => expect(ready).toBe(1))
+  expect(pedidos).toEqual([f.project.id])
+  expect(publico).not.toHaveBeenCalled()
+})

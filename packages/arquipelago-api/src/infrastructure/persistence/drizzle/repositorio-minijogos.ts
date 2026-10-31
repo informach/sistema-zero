@@ -67,20 +67,23 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
     }))
   }
   async abrir(jogadorId: string, desafioId: string) {
-    const [v] = await this.db
-      .select()
+    const [linha] = await this.db
+      .select({ minijogo: minijogos, revisao: desafios.revisaoPublicada })
       .from(minijogos)
+      .leftJoin(desafios, eq(desafios.id, minijogos.desafioId))
       .where(and(eq(minijogos.jogadorId, jogadorId), eq(minijogos.desafioId, desafioId)))
-    return v
-      ? MinijogoAbertoSchema.parse({
-          desafioId: v.desafioId,
-          titulo: v.titulo,
-          projeto: JSON.parse(v.projeto),
-          aprovadoEm: v.aprovadoEm.toISOString(),
-          atualizadoEm: v.atualizadoEm.toISOString(),
-          capa: capaQueCabe(v.capa),
-        })
-      : null
+    if (!linha) return null
+    const v = linha.minijogo
+    return MinijogoAbertoSchema.parse({
+      desafioId: v.desafioId,
+      titulo: v.titulo,
+      projeto: JSON.parse(v.projeto),
+      aprovadoEm: v.aprovadoEm.toISOString(),
+      atualizadoEm: v.atualizadoEm.toISOString(),
+      capa: capaQueCabe(v.capa),
+      // O minijogo em Python pede o ambiente do desafio com a revisão publicada (lacunas).
+      ...(linha.revisao ? { revisao: linha.revisao } : {}),
+    })
   }
   async pertenceAConta(jogadorId: string, contaId: string) {
     return (

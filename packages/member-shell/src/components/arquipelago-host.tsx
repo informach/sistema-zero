@@ -670,6 +670,8 @@ export function ArquipelagoHost(props: {
           <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
             <MinijogoPlayer
               url={`${BASE}/minijogos/${minijogo}`}
+              userId={id}
+              audience={publico === 'kids' ? 'kids' : 'adult'}
               onClose={() => {
                 setMinijogo(null)
                 pendente.current?.({ situacao: 'cancelado' })
