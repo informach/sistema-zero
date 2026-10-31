@@ -402,6 +402,34 @@ export const PERCURSO_DA_MONTARIA = {
   corteVoltaMs: 340,
 } as const satisfies ConfigDoPercurso
 
+/**
+ * A volta das boias (lacunas, 01/11/2026, `sistemas/regata.ts`): a regata do barco do cais da sua
+ * ilha em volta dela e de volta, remando e guiando para os lados para pegar oito boias de presente,
+ * uma escondida.
+ */
+export const PERCURSO_DA_REGATA = {
+  id: 'barco-regata',
+  nome: 'Volta das boias',
+  rotuloDaLargada: 'Volta das boias, no cais da sua ilha',
+  falaDoComeco: 'Valendo. Reme e guie o barco para pegar as boias de presente.',
+  falaDoFim: 'A regata parou. O cais da sua ilha começa de novo quando você quiser.',
+  falaDasTresEstrelas: 'Três estrelas. Você deu a volta remando e achou a boia escondida.',
+  escondido: 'a boia escondida',
+  /**
+   * Uns 1.200 m: sem remar, a 12 m/s, uns 100 s; remando o tempo todo, uns 75 s. 90 s dá a estrela
+   * a quem rema boa parte da volta.
+   */
+  tempoAlvoMs: 90_000,
+  vagalumes: 8,
+  coletavel: { varios: 'boias', Varios: 'Boias', simbolo: '🛟', feminino: true },
+  raioDoVagalume: 1.6,
+  raioDaChegada: 2,
+  folgaDoDeque: 0,
+  distanciaParaDesistir: 0,
+  corteSaiMs: 260,
+  corteVoltaMs: 340,
+} as const satisfies ConfigDoPercurso
+
 /** Cada percurso pelo id (a tela do resultado e o cronômetro leem daqui). */
 export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>> = {
   'bosque-copas': PERCURSO_DAS_COPAS,
@@ -415,6 +443,7 @@ export const PERCURSOS_DO_JOGO: Readonly<Record<IdDoPercurso, ConfigDoPercurso>>
   'farol-subida': PERCURSO_DO_FAROL,
   'pico-treno': PERCURSO_DO_TRENO,
   'vale-montaria': PERCURSO_DA_MONTARIA,
+  'barco-regata': PERCURSO_DA_REGATA,
 }
 
 /** "Os 5 vagalumes", "As 4 fitas do arco-íris" (a estrela de pegar todas). */

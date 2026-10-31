@@ -10,7 +10,7 @@ export const MODO_BARCO: ModoDeMovimento = {
   passo(c, e) {
     const v = c.barco
     if (!v) return 'chao'
-    passoDaTravessia(v, e.dt, e.parado)
+    passoDaTravessia(v, e.dt, e.parado, e.pedidoX, e.pedidoZ)
     c.velY = c.velPedida = c.correnteza = 0
     c.vel.x = c.vel.z = 0
     c.nadando = false

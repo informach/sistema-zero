@@ -173,8 +173,8 @@ describe('a corrida da montaria pela praia do Vale', () => {
       raio.set(new Vector3(x, 30, z), new Vector3(0, -1, 0))
       return raio.intersectObjects(terreno, false)[0]?.point.y ?? null
     }
-    const colisores = lerColisores(raiz).filter(
-      (c: ColisorDaIlha) => !c.nome.startsWith('col-terreno') && c.posicao[1] < 4,
+    const colisores = lerColisores(raiz).flatMap((c: ColisorDaIlha) =>
+      c.forma !== 'malha' && !c.nome.startsWith('col-terreno') && c.posicao[1] < 4 ? [c] : [],
     )
     const folga = MONTARIA.raio + 0.3
     const livre = (x: number, z: number) =>

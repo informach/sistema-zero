@@ -68,6 +68,18 @@ export function PainelDoBarco() {
               Ir para {ilha(destino).nome}
             </button>
           ))}
+          {/* A volta das boias (lacunas, 01/11/2026): a regata, do cais da sua ilha. */}
+          {origem === 'sua-ilha' && destinos.length > 0 ? (
+            <button
+              type="button"
+              className="arq-botao"
+              onClick={() => {
+                if (!movimento.embarcarNaRegata?.()) definirErro(true)
+              }}
+            >
+              Volta das boias
+            </button>
+          ) : null}
           <button
             ref={destinos.length === 0 ? primeiro : undefined}
             type="button"
