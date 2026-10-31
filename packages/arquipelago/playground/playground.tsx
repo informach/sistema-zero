@@ -107,7 +107,9 @@ if (q.get('novo') === '1') {
       localStorage.removeItem(`arquipelago:profissoes:v1:${publico}:perfil-de-teste:${posto}`)
   }
 }
+const festa = lerFesta(q.get('festa'))
 const plataforma = criarPlataformaFalsa({
+  ...(festa ? { festa } : {}),
   quarto:
     q.get('pet') === 'passaro' || q.get('pet') === 'cachorro'
       ? { ...QUARTO_DE_EXEMPLO, pet: `pet-${q.get('pet')}` }
@@ -177,7 +179,6 @@ const plataforma = criarPlataformaFalsa({
 })
 // `?cores=sem-conquistas|fora-do-ar|arquivadas|desligado|antigo` confere a reserva da pintura.
 if (q.has('cores')) configurarCoresDoPlayground(plataforma, q.get('cores') ?? '')
-const festa = lerFesta(q.get('festa'))
 if (festa) definirFestaDoPlayground(plataforma, festa)
 if (q.get('perder-pulso') === '1') {
   const buscar = plataforma.servico.buscar
