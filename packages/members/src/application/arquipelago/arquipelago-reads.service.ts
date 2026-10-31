@@ -22,6 +22,8 @@ export interface JogadorDoJogo {
   total: number
   /** Blocos do Estúdio conquistados nos cursos (a mesma união do Estúdio livre, só leitura). */
   blocos: string[]
+  /** Os postos cujo curso-base (2D) a pessoa concluiu (A3 do Arquipélago). */
+  cursosBase: string[]
 }
 
 export interface CursoComBlocos {
@@ -38,6 +40,8 @@ export interface CursoComBlocos {
 export interface CurriculoDeBlocos {
   versao: number
   cursos: CursoComBlocos[]
+  /** O curso-base (2D) de cada posto, publicado (A3 e A24 do Arquipélago). */
+  cursosBase: { posto: string; courseId: string; titulo: string; slug: string }[]
   /** Rótulo e categoria de cada bloco do catálogo do Estúdio (para mostrar e para conferir ids). */
   catalogo: { type: string; rotulo: string; categoria: string }[]
 }
@@ -71,13 +75,16 @@ export class ArquipelagoReadsService {
         posicao: JOURNEY_LEVEL_SLUGS.indexOf(view.earned.level) + 1,
         total: POSICOES,
         blocos: (await blocos).blocks,
+        cursosBase: cursosBaseConcluidos(view.curriculum),
       }
     }
-    const posicao = adultJourneyPosition(await this.deps.adultJourney.get(input.userId))
+    const adulto = await this.deps.adultJourney.get(input.userId)
+    const posicao = adultJourneyPosition(adulto)
     return {
       posicao: posicao?.position ?? 1,
       total: posicao?.total ?? POSICOES,
       blocos: (await blocos).blocks,
+      cursosBase: cursosBaseConcluidos(adulto.curriculum),
     }
   }
 
@@ -106,9 +113,18 @@ export class ArquipelagoReadsService {
         blocos,
       })
     }
+    // O curso-base (2D) de cada posto, publicado, mesmo sem blocos (A3 e A24 do Arquipélago).
+    const publicados = new Map(cursos.map((c) => [c.id, c]))
+    const cursosBase = (politica.curriculum?.stages ?? []).flatMap((stage) => {
+      const curso = publicados.get(stage.base2dCourseId)
+      return curso
+        ? [{ posto: stage.level, courseId: curso.id, titulo: curso.title, slug: curso.slug }]
+        : []
+    })
     return {
       versao: politica.version,
       cursos: comBlocos,
+      cursosBase,
       catalogo: SERVER_BLOCK_CATALOG.map((b) => ({
         type: b.type,
         rotulo: b.label,
@@ -116,6 +132,16 @@ export class ArquipelagoReadsService {
       })),
     }
   }
+}
+
+/**
+ * Os postos cujo curso-base (o 2D da trilha) a pessoa concluiu: o Arquipélago abre o desafio na
+ * linguagem do posto (Python, Ponte, Pro) só com ele (§6.28, A3). Sem currículo, nenhum.
+ */
+export function cursosBaseConcluidos(
+  curriculo: { stages: readonly { level: string; base2d: { state: string } }[] } | null | undefined,
+): string[] {
+  return (curriculo?.stages ?? []).filter((s) => s.base2d.state === 'completed').map((s) => s.level)
 }
 
 /** O lugar mais cedo do curso no currículo: o posto da trilha, ou a Maestria (sem posto). */

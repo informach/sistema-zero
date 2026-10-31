@@ -7,9 +7,9 @@
       "slug": "vale-guardiao-dos-ninhos-texto",
       "publico": "kids",
       "ilha": "vale-dos-dinos",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
       "publicar": false,
       "conteudo": {
         "versao": 1,
@@ -9541,9 +9541,9 @@
           "texto": "Faça a tecla R recomeçar a partida: sem ondas, sem nuvens e com as contagens zeradas."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

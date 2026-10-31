@@ -5,16 +5,20 @@ import { diaDeSaoPaulo, type SituacaoParaAPessoa } from '@sistemazero/arquipelag
  * As regras puras de quem joga um desafio (decisão de 27/10/2026):
  * - feito continua feito (não recalcula nada depois de concluído);
  * - a ilha precisa estar aberta pelo posto;
- * - todos os blocos exigidos precisam estar entre os conquistados nos cursos.
+ * - todos os blocos exigidos precisam estar entre os conquistados nos cursos;
+ * - na linguagem do posto (Python, Ponte, Pro), o curso-base do posto concluído (§6.28, A3).
  */
 export function situacaoDoDesafio(e: {
   concluido: boolean
   ilhaAberta: boolean
   blocosExigidos: readonly string[]
   blocos: ReadonlySet<string> | 'todos'
+  /** Desafio na linguagem do posto sem o curso-base do posto concluído. */
+  faltaCurso?: boolean
 }): { situacao: SituacaoParaAPessoa; faltam: string[] } {
   if (e.concluido) return { situacao: 'concluido', faltam: [] }
   if (!e.ilhaAberta) return { situacao: 'ilha-fechada', faltam: [] }
+  if (e.faltaCurso) return { situacao: 'falta-curso', faltam: [] }
   const blocos = e.blocos
   const faltam = blocos === 'todos' ? [] : e.blocosExigidos.filter((b) => !blocos.has(b))
   return { situacao: faltam.length > 0 ? 'faltam-blocos' : 'disponivel', faltam }

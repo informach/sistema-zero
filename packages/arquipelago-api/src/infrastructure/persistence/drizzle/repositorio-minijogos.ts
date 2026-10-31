@@ -4,7 +4,7 @@ import {
   MinijogoAbertoSchema,
   ProjetoDoMinijogoSchema,
 } from '@sistemazero/arquipelago-contracts'
-import { and, desc, eq, lte } from 'drizzle-orm'
+import { and, desc, eq, lte, sql } from 'drizzle-orm'
 import type { RepositorioDosMinijogos } from '../../../domain/minijogos.port'
 import type { Database } from './db'
 import { minijogos, perfisDaConta } from './schema'
@@ -30,7 +30,14 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
       })
       .onConflictDoUpdate({
         target: [minijogos.jogadorId, minijogos.desafioId],
-        set: { projeto, capa, titulo: e.titulo, atualizadoEm: e.agora },
+        set: {
+          projeto,
+          capa,
+          titulo: e.titulo,
+          atualizadoEm: e.agora,
+          // Mais um envio do mesmo minijogo (A26, os reenvios na medição).
+          envios: sql`${minijogos.envios} + 1`,
+        },
         setWhere: lte(minijogos.atualizadoEm, e.agora),
       })
   }

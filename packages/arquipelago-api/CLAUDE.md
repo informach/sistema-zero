@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Desafios na plataforma: curso, "Aprenda isso em", medição e pedido de morador (lote 8, 31/10/2026)
+
+- **A3:** `situacaoDoDesafio` ganhou `falta-curso` (depois da ilha, antes dos blocos): o desafio
+  fora dos blocos (Python, Ponte, Pro, por `linguagemDoProjeto` do projeto inicial) pede o
+  curso-base do posto da ilha entre os `cursosBase` que o Members devolve no jogador. A equipe vê
+  tudo. Members anterior (sem o campo) = nenhum curso-base.
+- **A24:** a lista traz `aprenda` em todo desafio (`aprendaODesafio`): o curso-base do posto na
+  linguagem do posto, ou o curso mais adiantado entre os blocos exigidos.
+- **A26:** `POST .../verificar` aceita `dicas` (opcional, até o teto de dicas). A migração 0022
+  `medicao_da_aprendizagem` conta `tentativas` e guarda a maior quantidade de `dicas` em
+  `desafio_progresso`, grava as duas na conclusão (`desafios_concluidos`, nulas antes) e conta
+  `envios` nos `minijogos`. A medição ganhou `aprendizagem` (conclusões medidas, acerto na
+  primeira, tentativas, sem dica, dicas, rotinas guardadas e as que rodam até o fim sem erro,
+  reenvios e, pelo Members `GET /members/internal/arquipelago/compras`, compras e moedas). Cada
+  número com a régua do grupo mínimo; compras sem o Members ficam em `semFonte`.
+- **Ordem de implantação:** os contratos são estritos. Primeiro a migração e a API (aceitam os
+  campos novos como opcionais), depois o Members (manda `cursosBase` e responde `/compras`), o
+  Admin e o member-shell (manda `dicas`).
+
 ## Teto semanal com uma regra só e salvamento sem Members (A32 e A16, 31/10/2026)
 
 O que passa do teto semanal espera a semana seguinte e nunca se perde, em tudo o que paga moedas.

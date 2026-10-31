@@ -2426,13 +2426,22 @@ faz o que as seções acima descrevem.
 1. **Publicação (A1):** os seis quadros do Bosque são publicados como estão (todos os blocos têm
    fonte nos cursos). A Vila Doce só depois de a corrida do entregador ganhar pulo, gravidade,
    obstáculos sorteados e dificuldade com teto (A15). Os desafios do dia em blocos que passam na
-   barreira C01a também são marcados para publicar.
+   barreira C01a também são marcados para publicar. Feito (lote 8): os seis quadros do Bosque e
+   os desafios do dia do Bosque (menos a noite, que pede um bloco de curso opcional), do Recife,
+   do Pico e das Nuvens pedem publicação; Vila Doce, Vale e a noite do Bosque, não. A importação
+   continua com a equipe.
 2. **A cor vem também da linguagem do posto (A2):** do Explorador em diante, o sexto quadro de
    cada ilha (o minijogo da ficha) é feito na linguagem do posto: Python no Recife e no Pico, a
-   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos.
+   Ponte no Vale e o Pro nas Nuvens. Os quadros 1 a 5 continuam retomadas em blocos. Feito
+   (lote 8): os desafios C02 viraram o quadro 6 (pintam) e o minijogo em blocos que estava no
+   quadro 6 virou desafio do dia. Importar o arquivo em blocos antes do da linguagem.
 3. **Python e Pro pedem o curso (A3):** o desafio na linguagem do posto só aparece depois que a
    pessoa concluiu o curso do posto que ensina essa linguagem (a mesma regra "o desafio só usa o
-   que a pessoa já conquistou" dos blocos).
+   que a pessoa já conquistou" dos blocos). Feito (lote 8): o curso é o curso-base (2D) do posto
+   da ilha; o Members informa os concluídos (`cursosBase` do jogador) e o de cada posto
+   (`cursosBase` do currículo). Sem ele, a situação é `falta-curso`: o quadro aparece trancado com
+   "Abre depois do curso" e o nome dele. A linguagem sai do projeto inicial
+   (`linguagemDoProjeto`).
 
 **História e ilhas (seguir a proposta)**
 
@@ -2493,7 +2502,9 @@ abaixo são as do serviço.
 
 - **Tipos** (`TIPOS_DE_DESAFIO`): `quadro-das-cores`, `desafio-do-dia`, `pedido-de-morador`. O
   Quadro das Cores tem um número de quadro. O desafio do dia tem a escolha de cada dia e nunca
-  pinta a ilha (7.12). Regra própria para o pedido de morador não encontrada no código.
+  pinta a ilha (7.12). O pedido de morador (§6.28, A23) também não pinta nem entra no desafio do
+  dia: o morador da ilha oferece na conversa ("Pedido no Estúdio") e, feito, a placa ao lado dele
+  acende à noite. Conteúdo em `docs/desafios-do-jogo/moradores/`.
 - **Seis quadros por ilha** (`QUADROS_POR_ILHA = 6`).
   - Só o Quadro das Cores tem número de quadro, de 1 a 6, e ele sempre tem
     (`MetadadosDoDesafioSchema`).
@@ -2587,6 +2598,9 @@ Arquivo: `arquipelago-contracts/src/aprenda.ts`, função `aprendaIssoEm`.
   último. No mesmo posto, a ordem é pelo título.
 - **De onde vêm os cursos:** do currículo do Members (`GET /curriculo-de-blocos`). Só entram cursos
   publicados que liberam algum bloco.
+- **No desafio que já se pode fazer (A24, 31/10/2026):** a lista traz `aprenda`
+  (`aprendaODesafio`), e o quadro mostra "Aprenda isso em" com o curso: na linguagem do posto, o
+  curso-base do posto; em blocos, o curso mais adiantado entre os blocos exigidos.
 
 Para a equipe, `coberturaDosBlocos` dá três avisos por bloco exigido:
 

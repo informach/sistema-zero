@@ -439,7 +439,8 @@ export function desafiosIniciaisDoBosque(publico: PublicoDoDesafio): DesafioDoMa
       tipo: 'quadro-das-cores',
       quadro,
       ordem: quadro * 10,
-      publicar: false,
+      // §6.28 A1: o Bosque publica como está (todos os blocos têm fonte nos cursos).
+      publicar: true,
       conteudo: {
         versao: 1,
         titulo: meta.titulo,

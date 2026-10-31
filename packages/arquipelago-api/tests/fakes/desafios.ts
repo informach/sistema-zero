@@ -228,11 +228,23 @@ export class JogadorNosDesafiosEmMemoria implements RepositorioDoJogadorNosDesaf
     return this.progressos.get(`${jogadorId}:${desafioId}`) ?? null
   }
 
+  /** Tentativas e dicas por jogador e desafio, e o que a conclusão gravou (A26). */
+  readonly medidas = new Map<string, { tentativas: number; dicas: number }>()
+  readonly medidasDaConclusao = new Map<string, { tentativas: number; dicas: number }>()
+
   async guardarTentativa(e: Parameters<RepositorioDoJogadorNosDesafios['guardarTentativa']>[0]) {
-    this.progressos.set(`${e.jogadorId}:${e.desafioId}`, {
+    const chave = `${e.jogadorId}:${e.desafioId}`
+    this.progressos.set(chave, {
       revisao: e.revisao,
       ultimosResultados: e.resultados,
     })
+    const antes = this.medidas.get(chave)
+    const agora = {
+      tentativas: (antes?.tentativas ?? 0) + 1,
+      dicas: Math.max(antes?.dicas ?? 0, e.dicas),
+    }
+    this.medidas.set(chave, agora)
+    return agora
   }
 
   async concluir(e: Parameters<RepositorioDoJogadorNosDesafios['concluir']>[0]) {
@@ -240,6 +252,7 @@ export class JogadorNosDesafiosEmMemoria implements RepositorioDoJogadorNosDesaf
     if (this.concluidos.has(chave)) return false
     const m = this.desafios.get(e.desafioId)?.metadados
     if (!m) throw new Error('desafio inexistente')
+    this.medidasDaConclusao.set(chave, { tentativas: e.tentativas, dicas: e.dicas })
     this.concluidos.set(chave, {
       jogadorId: e.jogadorId,
       publico: e.publico,

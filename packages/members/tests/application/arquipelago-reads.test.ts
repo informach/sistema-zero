@@ -71,7 +71,36 @@ describe('jogador', () => {
       posicao: JOURNEY_LEVEL_SLUGS.indexOf('hacker') + 1,
       total: 8,
       blocos: ['move_right'],
+      cursosBase: [],
     })
+  })
+
+  test('cursos-base concluídos (A3): os postos com o 2D da trilha concluído, nos dois públicos', async () => {
+    const trilha = {
+      stages: [
+        { level: 'coder', base2d: { state: 'completed' } },
+        { level: 'hacker', base2d: { state: 'available' } },
+        { level: 'explorer', base2d: { state: 'completed' } },
+      ],
+    }
+    const s = servico({
+      kidsJourney: {
+        get: mock(async () => ({ earned: { level: 'explorer' }, curriculum: trilha })),
+        publishedCurriculum: mock(),
+      },
+      adultJourney: {
+        get: mock(async () => ({ configured: true, stages: [], curriculum: trilha })),
+        policy: mock(),
+      },
+    })
+    expect((await s.jogador({ userId: A, accountId: B, audience: 'kids' })).cursosBase).toEqual([
+      'coder',
+      'explorer',
+    ])
+    expect((await s.jogador({ userId: A, accountId: A, audience: 'adult' })).cursosBase).toEqual([
+      'coder',
+      'explorer',
+    ])
   })
 
   test('adulto: posição da etapa (a primeira não concluída)', async () => {
@@ -102,6 +131,10 @@ describe('currículo de blocos', () => {
         papel: 'power',
         blocos: ['move_right', 'jump'],
       },
+    ])
+    // O curso-base de cada posto, publicado (o do explorer não está publicado e fica de fora).
+    expect(r.cursosBase).toEqual([
+      { posto: 'coder', courseId: A, titulo: 'Curso a', slug: 'curso-a' },
     ])
     expect(r.catalogo.length).toBeGreaterThan(50)
     expect(r.catalogo[0]).toMatchObject({ type: expect.any(String), rotulo: expect.any(String) })

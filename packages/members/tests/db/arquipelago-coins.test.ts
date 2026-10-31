@@ -163,3 +163,55 @@ test.skipIf(!url)(
     expect(row).toMatchObject({ coin_balance: 150, lifetime_coins_earned: 150 })
   },
 )
+
+test.skipIf(!url)(
+  'A26: o resumo das compras soma só os débitos do jogo, pelo dia de São Paulo',
+  async () => {
+    const repo = new ArquipelagoCoinsRepository(connection.db)
+    // Um ano sem nenhum outro teste: o resumo é de todo o banco.
+    const credito = new Date('2031-03-10T12:00:00Z')
+    const pessoas = [randomUUID(), randomUUID()]
+    for (const userId of pessoas)
+      await repo.movimentar(
+        {
+          userId,
+          accountId: userId,
+          audience: 'adult',
+          key: randomUUID(),
+          operation: 'credit',
+          amount: 50,
+        },
+        credito,
+      )
+    const debitar = (userId: string, amount: number, quando: Date) =>
+      repo.movimentar(
+        {
+          userId,
+          accountId: userId,
+          audience: 'adult',
+          key: randomUUID(),
+          operation: 'debit',
+          amount,
+        },
+        quando,
+      )
+    await debitar(pessoas[0]!, 30, credito)
+    // 02:30 UTC do dia 11 ainda é dia 10 em São Paulo.
+    await debitar(pessoas[1]!, 10, new Date('2031-03-11T02:30:00Z'))
+    await debitar(pessoas[1]!, 5, new Date('2031-03-11T12:00:00Z'))
+    expect(
+      await repo.resumoDasCompras({ audience: 'adult', de: '2031-03-10', ate: '2031-03-10' }),
+    ).toEqual({
+      quantidade: 2,
+      pessoas: 2,
+      moedas: 40,
+    })
+    expect(
+      await repo.resumoDasCompras({ audience: 'kids', de: '2031-03-10', ate: '2031-03-11' }),
+    ).toEqual({
+      quantidade: 0,
+      pessoas: 0,
+      moedas: 0,
+    })
+  },
+)

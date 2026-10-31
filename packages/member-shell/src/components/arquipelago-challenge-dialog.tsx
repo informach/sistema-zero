@@ -42,6 +42,10 @@ export function ArquipelagoChallengeDialog({
     () => desafio.dicas.map((text) => ({ id: crypto.randomUUID(), text })),
     [desafio.dicas],
   )
+  // As dicas abrem uma por vez; quantas ela abriu vai com a conferência (A26, a medição).
+  const [openHints, setOpenHints] = useState(0)
+  const openHintsRef = useRef(0)
+  openHintsRef.current = openHints
   const [prepared, setPrepared] = useState<Prepared | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
@@ -164,7 +168,7 @@ export function ArquipelagoChallengeDialog({
       const raw = await apiSend(
         `/api/arquipelago/desafios/${desafio.id}/verificar`,
         'POST',
-        { revisao: desafio.revisao, projeto: project },
+        { revisao: desafio.revisao, projeto: project, dicas: openHintsRef.current },
         undefined,
         { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(170_000)]) },
       )
@@ -224,11 +228,21 @@ export function ArquipelagoChallengeDialog({
       <details className="max-h-[30vh] overflow-y-auto border-b border-border p-3">
         <summary className="cursor-pointer font-medium">O desafio e as dicas</summary>
         <p className="mt-2 whitespace-pre-wrap">{desafio.enunciado}</p>
-        {hints.map((d) => (
+        {hints.slice(0, openHints).map((d) => (
           <p key={d.id} className="mt-2 text-sm">
             {d.text}
           </p>
         ))}
+        {openHints < hints.length ? (
+          <Button
+            variant="outline"
+            size="sm"
+            className="mt-2"
+            onClick={() => setOpenHints((n) => Math.min(n + 1, hints.length))}
+          >
+            {openHints === 0 ? 'Ver uma dica' : 'Ver outra dica'}
+          </Button>
+        ) : null}
         {desafio.desafioExtra && (
           <p className="mt-2 text-sm">
             <strong>{desafio.desafioExtra.titulo}: </strong>

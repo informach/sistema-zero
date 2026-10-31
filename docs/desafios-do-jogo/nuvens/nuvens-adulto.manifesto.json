@@ -13206,8 +13206,8 @@
       "slug": "nuvens-jardim-que-floresce-adulto",
       "publico": "adulto",
       "ilha": "nuvens",
-      "tipo": "quadro-das-cores",
-      "quadro": 6,
+      "tipo": "desafio-do-dia",
+      "quadro": null,
       "ordem": 60,
       "publicar": true,
       "conteudo": {
@@ -16431,10 +16431,10 @@
           "texto": "Faça a tecla Enter recomeçar o jardim: água, tempo e crescimento voltam a zero, o sol volta a três e o jardim deixa de estar florido."
         },
         "recompensa": {
-          "cor": true,
+          "cor": false,
           "atracao": "jardim-que-floresce",
-          "moedas": 20,
-          "moedasExtra": 10
+          "moedas": 10,
+          "moedasExtra": 5
         },
         "blocosManuais": {
           "acrescentar": [],
@@ -16449,7 +16449,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: rega forte",
@@ -20001,7 +20001,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: sol forte",
@@ -23676,7 +23676,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim que floresce: chuva",

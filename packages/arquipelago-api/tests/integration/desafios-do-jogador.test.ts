@@ -74,7 +74,7 @@ const vista = [
   { id: 'o2', label: 'Pousa devagar', kind: 'game' as const, optional: true as const },
 ]
 
-const curriculo: CurriculoDeBlocos = {
+const CURRICULO: CurriculoDeBlocos = {
   versao: 1,
   cursos: [
     {
@@ -94,6 +94,8 @@ let agora: Date
 let politica: PoliticaDeAcesso
 let modo: ModoDosDesafios
 let blocos: string[]
+let curriculo: CurriculoDeBlocos
+let cursosBase: string[]
 let posicao: number
 let verificar: ReturnType<typeof mock>
 let creditar: ReturnType<typeof mock>
@@ -155,6 +157,8 @@ beforeEach(() => {
   modo = 'aberto'
   blocos = ['sz_js_repeat']
   posicao = 2
+  curriculo = CURRICULO
+  cursosBase = []
   verificar = mock(async () => ({
     passou: true,
     resultados: [
@@ -164,7 +168,7 @@ beforeEach(() => {
   }))
   creditar = mock(async () => ({ situacao: 'creditado' as const }))
   membros = membrosDeMentira({
-    lerJogador: async () => ({ posicao, total: 8, blocos }),
+    lerJogador: async () => ({ posicao, total: 8, blocos, cursosBase }),
     lerCurriculo: async () => curriculo,
     verificarObjetivos: verificar as unknown as PortaDosMembros['verificarObjetivos'],
   })
@@ -361,6 +365,41 @@ describe('lista da ilha', () => {
     ])
   })
 
+  test('A24: o "Aprenda isso em" vem também no desafio disponível', async () => {
+    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    const borboleta = r.desafios.find((d) => d.id === BORBOLETA)
+    expect(borboleta?.situacao).toBe('disponivel')
+    expect(borboleta?.aprenda).toEqual([
+      { courseId: CURSO, titulo: 'Repetições', slug: 'repeticoes', posto: 'coder' },
+    ])
+  })
+
+  test('A3: a linguagem do posto espera o curso-base do posto, e o mostra', async () => {
+    const PYTHON = 'dddddddd-dddd-4ddd-8ddd-dddddddddddd'
+    publicar(
+      PYTHON,
+      metadados({ slug: 'python', quadro: 6 }),
+      conteudo('Em Python', { projetoInicial: { ...projeto, programmingLanguage: 'python' } }),
+      [],
+    )
+    curriculo = {
+      ...curriculo,
+      cursosBase: [{ posto: 'coder', courseId: CURSO, titulo: 'Curso-base', slug: 'base' }],
+    }
+    montar()
+    const sem = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    const trancado = sem.desafios.find((d) => d.id === PYTHON)
+    expect(trancado?.situacao).toBe('falta-curso')
+    expect(trancado?.aprenda?.map((c) => c.titulo)).toEqual(['Curso-base'])
+    expect((await chamar('GET', `/${PYTHON}`, crianca())).corpo.situacao).toBe('falta-curso')
+    // O desafio em blocos da mesma ilha não muda.
+    expect(sem.desafios.find((d) => d.id === BORBOLETA)?.situacao).toBe('disponivel')
+    cursosBase = ['coder']
+    montar()
+    const com = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    expect(com.desafios.find((d) => d.id === PYTHON)?.situacao).toBe('disponivel')
+  })
+
   test('equipe vê todas as ilhas abertas e todos os blocos', async () => {
     const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', daEquipe)).corpo)
     expect(r.desafios.every((d) => d.situacao === 'disponivel')).toBe(true)
@@ -497,6 +536,29 @@ describe('conferir', () => {
     expect(repo.concluidos.size).toBe(0)
     expect(repo.progressos.get(`${PERFIL}:${BORBOLETA}`)?.revisao).toBe(1)
     expect(creditar).not.toHaveBeenCalled()
+  })
+
+  test('A26: a conclusão guarda as tentativas e as dicas abertas até ela', async () => {
+    verificar.mockImplementationOnce(async () => ({
+      passou: false,
+      resultados: [
+        { id: 'o1', passou: false },
+        { id: 'o2', passou: false },
+      ],
+    }))
+    const caminho = `/${BORBOLETA}/verificar`
+    expect(
+      (await chamar('POST', caminho, crianca(), { revisao: 1, projeto, dicas: 1 })).status,
+    ).toBe(200)
+    expect((await chamar('POST', caminho, crianca(), { revisao: 1, projeto })).status).toBe(200)
+    expect(repo.medidasDaConclusao.get(`${PERFIL}:${BORBOLETA}`)).toEqual({
+      tentativas: 2,
+      dicas: 1,
+    })
+    // Dicas além do teto do desafio: pedido recusado, nada guardado.
+    expect(
+      (await chamar('POST', caminho, crianca(), { revisao: 1, projeto, dicas: 99 })).status,
+    ).toBe(400)
   })
 
   test('teto semanal: o prêmio espera e chega na semana seguinte', async () => {

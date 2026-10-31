@@ -68,7 +68,9 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
     tipo: variacao === 'corrida' ? 'quadro-das-cores' : 'desafio-do-dia',
     quadro: variacao === 'corrida' ? 6 : null,
     ordem: 60 + index,
-    publicar: false,
+    // §6.28 A1: publica o quadro 6 e os desafios do dia com todas as fontes na trilha; a noite
+    // pede a transparência, que só um curso opcional ensina.
+    publicar: variacao !== 'noite',
     conteudo: {
       versao: 1,
       titulo: textos[variacao].titulo,

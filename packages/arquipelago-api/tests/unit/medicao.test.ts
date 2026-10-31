@@ -1,10 +1,12 @@
 import { describe, expect, test } from 'bun:test'
+import { criarSalvamentoInicial, LUMIS } from '@sistemazero/arquipelago-contracts'
 import {
   PeriodoDaMedicaoInvalidoError,
   ServicoDaMedicao,
 } from '../../src/application/servico-da-medicao'
 import {
   type AgregadosDaMedicao,
+  contarRotinas,
   montarMedicao,
   protegerContagem,
   protegerCoorte,
@@ -215,5 +217,71 @@ describe('volta ao curso na Medição (mesma regra e rota do cartão dos pais)',
       publico: 'adulto',
     })
     expect(r.voltaAoCurso).toBeUndefined()
+  })
+})
+
+describe('A26: como se aprende no jogo', () => {
+  const filtro = { de: '2026-10-01', ate: '2026-10-28', publico: 'kids' as const }
+  const agora = new Date('2026-10-29T12:00:00Z')
+  const aprendizagem = {
+    conclusoesMedidas: { quantidade: 30, pessoas: 8 },
+    acertoNaPrimeira: { quantidade: 12, pessoas: 6 },
+    tentativas: { quantidade: 70, pessoas: 8 },
+    semDica: { quantidade: 4, pessoas: 3 },
+    dicas: { quantidade: 25, pessoas: 8 },
+    reenvios: { quantidade: 9, pessoas: 5 },
+  }
+
+  test('cada número protege grupos pequenos; compras só com o Members', () => {
+    const sem = montarMedicao(filtro, { ...dados, aprendizagem }, '2026-10-29', agora)
+    expect(sem.aprendizagem).toMatchObject({
+      conclusoesMedidas: { situacao: 'disponivel', valor: 30 },
+      acertoNaPrimeira: { situacao: 'disponivel', valor: 12 },
+      tentativas: { situacao: 'disponivel', valor: 70 },
+      semDica: { situacao: 'poucos-dados', valor: null },
+      reenvios: { situacao: 'disponivel', valor: 9 },
+      rotinas: { situacao: 'poucos-dados', valor: null },
+    })
+    expect(sem.aprendizagem?.compras).toBeUndefined()
+    expect(sem.semFonte).toContain('compras')
+    const com = montarMedicao(filtro, { ...dados, aprendizagem }, '2026-10-29', agora, null, {
+      compras: { quantidade: 11, pessoas: 7, moedas: 540 },
+      rotinas: {
+        rotinas: { quantidade: 9, pessoas: 6 },
+        funcionam: { quantidade: 7, pessoas: 5 },
+      },
+    })
+    expect(com.aprendizagem?.compras).toEqual({ situacao: 'disponivel', valor: 11 })
+    expect(com.aprendizagem?.moedasNasCompras).toEqual({ situacao: 'disponivel', valor: 540 })
+    expect(com.aprendizagem?.rotinasQueFuncionam).toEqual({ situacao: 'disponivel', valor: 7 })
+    expect(com.semFonte).not.toContain('compras')
+    // Repositório anterior, sem a aprendizagem: nada novo aparece e compras segue sem fonte.
+    expect(montarMedicao(filtro, dados, '2026-10-29', agora).aprendizagem).toBeUndefined()
+  })
+
+  test('rotina que vai até o fim funciona; a que para no meio não; salvamento ilegível sai', () => {
+    const [um, dois] = LUMIS
+    const s = criarSalvamentoInicial(agora)
+    const salvamento = {
+      ...s,
+      lumis: { [um!]: 1, [dois!]: 1 },
+      rotinas: {
+        [um!]: [{ c: 'quando-amanhecer' }, { c: 'voar-ate', a: 'horta' }, { c: 'regar' }],
+        // Regar longe da horta para a rotina no meio.
+        [dois!]: [{ c: 'quando-amanhecer' }, { c: 'regar' }],
+      },
+    }
+    expect(
+      contarRotinas(
+        [
+          { jogadorId: 'a', dados: salvamento },
+          { jogadorId: 'b', dados: { versao: 999 } },
+        ],
+        agora,
+      ),
+    ).toEqual({
+      rotinas: { quantidade: 2, pessoas: 1 },
+      funcionam: { quantidade: 1, pessoas: 1 },
+    })
   })
 })

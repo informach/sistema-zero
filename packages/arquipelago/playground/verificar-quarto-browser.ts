@@ -79,7 +79,8 @@ try {
     await page.waitForFunction(
       () => ((globalThis as Inspecao).__arquipelagoLerQuarto?.().length ?? 0) > 50,
     )
-    const ler = () => page.evaluate(() => (globalThis as Inspecao).__arquipelagoLerQuarto?.() ?? [])
+    const ler = (): Promise<Pose[]> =>
+      page.evaluate(() => (globalThis as Inspecao).__arquipelagoLerQuarto?.() ?? [])
     const antes = await ler()
     await page.getByRole('button', { name: /Construir/ }).click()
     await page.getByRole('button', { name: /Móveis/ }).click()

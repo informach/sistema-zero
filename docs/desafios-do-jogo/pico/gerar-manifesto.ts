@@ -58,17 +58,18 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
       ...desafiosIniciaisDoPico(publico),
       ...VARIACOES.map((variacao, index) => {
         const principal = variacao === 'plataforma'
-        const tipo = principal ? 'quadro-das-cores' : 'desafio-do-dia'
+        const tipo = 'desafio-do-dia' as const
         const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
         return {
           slug: `pico-fase-de-plataforma${principal ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
           publico,
           ilha: 'pico',
           tipo,
-          quadro: principal ? 6 : null,
+          quadro: null,
           ordem: 60 + index,
-          // C01b: o principal pede publicação (fontes na trilha); as variações ficam como estavam.
-          publicar: variacao === 'plataforma',
+          // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
+          // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
+          publicar: true,
           conteudo: {
             versao: 1,
             ...textos[variacao],
@@ -81,7 +82,7 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
                 'Faça a seta para cima também pular, como Espaço: só quando o pinguim está no gelo.',
             },
             recompensa: {
-              cor: principal,
+              cor: false,
               atracao: 'fase-de-plataforma',
               moedas: moedas.principal,
               moedasExtra: moedas.extra,

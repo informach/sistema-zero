@@ -30,6 +30,7 @@ function criar(over: {
   objetivos?: unknown
   aulas?: unknown
   saldo?: unknown
+  compras?: unknown
   quartos?: unknown
   ambiente?: unknown
 }) {
@@ -58,6 +59,7 @@ function criar(over: {
         objetivos: (over.objetivos ?? { analisar: mock(), verificar: mock() }) as never,
         aulas: over.aulas as never,
         saldo: over.saldo as never,
+        compras: over.compras as never,
         quartos: over.quartos as never,
         ambiente: over.ambiente as never,
         token: 'configurado' in over ? over.configurado : token,
@@ -377,6 +379,37 @@ describe('saldo (a galeria do Arquipélago, 29/10/2026)', () => {
     expect((await app.handle(pedir(q, tokenDasMoedas))).status).toBe(401)
     expect((await app.handle(pedir(`userId=x&accountId=${lia}&audience=kids`))).status).toBe(400)
     expect(getBalance).toHaveBeenCalledTimes(0)
+    expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
+  })
+})
+
+describe('compras (a medição do Arquipélago, A26)', () => {
+  const pedir = (query: string, chave = token) =>
+    new Request(`http://local/members/internal/arquipelago/compras?${query}`, {
+      headers: { 'x-arquipelago-token': chave },
+    })
+
+  test('soma as compras do período no público pedido; só agregados', async () => {
+    const resumoDasCompras = mock(async () => ({ quantidade: 4, pessoas: 3, moedas: 180 }))
+    const { app } = criar({ compras: { resumoDasCompras } })
+    const res = await app.handle(pedir('audience=kids&de=2026-10-01&ate=2026-10-28'))
+    expect(res.status).toBe(200)
+    expect(await res.json()).toEqual({ quantidade: 4, pessoas: 3, moedas: 180 })
+    expect(resumoDasCompras).toHaveBeenCalledWith({
+      audience: 'kids',
+      de: '2026-10-01',
+      ate: '2026-10-28',
+    })
+  })
+
+  test('token das moedas não lê; período invertido ou longo é 400; sem a leitura, 424', async () => {
+    const resumoDasCompras = mock(async () => ({ quantidade: 0, pessoas: 0, moedas: 0 }))
+    const { app } = criar({ compras: { resumoDasCompras } })
+    const q = 'audience=kids&de=2026-10-01&ate=2026-10-28'
+    expect((await app.handle(pedir(q, tokenDasMoedas))).status).toBe(401)
+    expect((await app.handle(pedir('audience=kids&de=2026-10-28&ate=2026-10-01'))).status).toBe(400)
+    expect((await app.handle(pedir('audience=kids&de=2026-01-01&ate=2026-10-01'))).status).toBe(400)
+    expect(resumoDasCompras).toHaveBeenCalledTimes(0)
     expect((await criar({}).app.handle(pedir(q))).status).toBe(424)
   })
 })

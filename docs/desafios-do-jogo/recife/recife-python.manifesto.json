@@ -7,10 +7,10 @@
       "slug": "recife-mira-de-bolhas-python",
       "publico": "kids",
       "ilha": "recife",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
-      "publicar": false,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Mira de bolhas: resgate dos vagalumes",
@@ -271,9 +271,9 @@
           "texto": "Faça a tecla R recomeçar a rodada: resgatados volta a zero, o tempo volta ao começo e a bolha volta para a areia."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

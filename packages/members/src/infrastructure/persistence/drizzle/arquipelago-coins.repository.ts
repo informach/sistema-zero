@@ -25,6 +25,32 @@ export const ARQUIPELAGO_TETO_SEMANAL_DE_MOEDAS = 100
 export class ArquipelagoCoinsRepository {
   constructor(private readonly db: Database) {}
 
+  /**
+   * As compras do jogo (débitos `arquipelago_debit`) entre dois dias de São Paulo, inclusive: só
+   * a soma, para a medição da equipe (A26 do Arquipélago).
+   */
+  async resumoDasCompras(input: { audience: 'kids' | 'adult'; de: string; ate: string }) {
+    const [linha] = await this.db
+      .select({
+        quantidade: sql<number>`count(*)::int`,
+        pessoas: sql<number>`count(distinct ${coinEvents.userId})::int`,
+        moedas: sql<number>`coalesce(-sum(${coinEvents.amount}), 0)::int`,
+      })
+      .from(coinEvents)
+      .where(
+        and(
+          eq(coinEvents.audience, input.audience),
+          eq(coinEvents.sourceType, 'arquipelago_debit'),
+          sql`timezone('America/Sao_Paulo', ${coinEvents.createdAt})::date between ${input.de}::date and ${input.ate}::date`,
+        ),
+      )
+    return {
+      quantidade: linha?.quantidade ?? 0,
+      pessoas: linha?.pessoas ?? 0,
+      moedas: linha?.moedas ?? 0,
+    }
+  }
+
   async movimentar(input: MovimentoArquipelago, now = new Date()) {
     if (!Number.isSafeInteger(input.amount) || input.amount < 1 || input.amount > 1_000_000)
       throw new Error('Valor de moedas inválido')

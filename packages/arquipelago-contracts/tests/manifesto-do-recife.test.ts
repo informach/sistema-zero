@@ -32,7 +32,7 @@ function tipos(value: unknown): string[] {
     ...Object.values(o).flatMap(tipos),
   ]
 }
-test('o Recife Coral é do Explorador e o pacote tem seis quadros e três desafios do dia', () => {
+test('o Recife Coral é do Explorador e o pacote em blocos tem cinco quadros e quatro desafios do dia (o sexto quadro é na linguagem do posto, §6.28 A2)', () => {
   expect(ilha('recife').posto).toBe('explorer')
   expect(manifesto.escopo).toBe('ilha')
   expect(manifesto.desafios.map((d) => d.slug)).toEqual([
@@ -49,13 +49,13 @@ test('o Recife Coral é do Explorador e o pacote tem seis quadros e três desafi
   for (const [i, d] of manifesto.desafios.entries()) {
     expect(d.ilha).toBe('recife')
     expect(d.publico).toBe('kids')
-    expect(d.tipo).toBe(i < 6 ? 'quadro-das-cores' : 'desafio-do-dia')
-    expect(d.quadro).toBe(i < 6 ? i + 1 : null)
+    expect(d.tipo).toBe(i < 5 ? 'quadro-das-cores' : 'desafio-do-dia')
+    expect(d.quadro).toBe(i < 5 ? i + 1 : null)
     expect(d.conteudo.recompensa).toEqual({
-      cor: i < 6,
+      cor: i < 5,
       atracao: i < 5 ? d.slug : 'mira-de-bolhas',
-      moedas: i < 6 ? 20 : 10,
-      moedasExtra: i < 6 ? 10 : 5,
+      moedas: i < 5 ? 20 : 10,
+      moedasExtra: i < 5 ? 10 : 5,
     })
     expect(d.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
     expect(d.conteudo.objetivos.some((o) => !o.optional)).toBe(true)

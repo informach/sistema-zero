@@ -7,10 +7,10 @@
       "slug": "nuvens-jardim-em-grade-pro-adulto",
       "publico": "adulto",
       "ilha": "nuvens",
-      "tipo": "desafio-do-dia",
-      "quadro": null,
-      "ordem": 70,
-      "publicar": false,
+      "tipo": "quadro-das-cores",
+      "quadro": 6,
+      "ordem": 60,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Jardim em grade: modelo, custo e persistência",
@@ -431,9 +431,9 @@
           "texto": "Implemente remover: libera a célula e devolve Math.floor(CUSTO / 2); célula vazia não muda. Shift e clique usa a regra."
         },
         "recompensa": {
-          "cor": false,
-          "moedas": 10,
-          "moedasExtra": 5
+          "cor": true,
+          "moedas": 20,
+          "moedasExtra": 10
         },
         "blocosManuais": {
           "acrescentar": [],

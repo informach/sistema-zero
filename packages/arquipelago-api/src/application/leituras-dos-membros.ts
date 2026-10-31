@@ -74,6 +74,24 @@ export class LeiturasDosMembros {
    * A hora das aulas concluídas de cada pessoa (id em minúsculas) entre `de` e `ate`. Sem cache:
    * só a área dos pais pergunta. Falha ou formato estranho: `PlataformaIndisponivelError`.
    */
+  /** As compras do jogo no período (A26); Members fora ou desligado: `null`. */
+  async compras(
+    publico: 'kids' | 'adulto',
+    de: string,
+    ate: string,
+  ): Promise<{ quantidade: number; pessoas: number; moedas: number } | null> {
+    if (!this.membros) return null
+    try {
+      return await this.membros.lerCompras({
+        audience: publico === 'kids' ? 'kids' : 'adult',
+        de,
+        ate,
+      })
+    } catch {
+      return null
+    }
+  }
+
   async aulasConcluidas(
     usuarios: readonly string[],
     de: Date,

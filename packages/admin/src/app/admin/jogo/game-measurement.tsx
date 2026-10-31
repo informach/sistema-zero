@@ -17,7 +17,7 @@ const semFonte: Record<RelatorioDaMedicao['semFonte'][number], string> = {
   'volta-adulto':
     'Volta dos adultos: o histórico de dias de jogo ainda não é registrado para esta comunidade.',
   compras:
-    'Objetos comprados: a origem galeria não comprova compra. O histórico de aquisições não está integrado a esta medição.',
+    'Compras na galeria: a leitura das compras no Members não respondeu agora (ou o serviço ainda não mede como se aprende).',
   minijogos:
     'Minijogos aprovados: a fonte de aprovações não está disponível nesta versão do serviço.',
   'curso-24h':
@@ -33,6 +33,58 @@ export function measurementNumber(n: NumeroDaMedicao): string {
       : 'Poucos dados'
 }
 const dateLabel = (v: string) => v.split('-').reverse().join('/')
+
+/** Uma média com uma casa, só quando os dois números puderam ser mostrados. */
+function media(total: NumeroDaMedicao, vezes: NumeroDaMedicao): string | null {
+  if (total.situacao !== 'disponivel' || vezes.situacao !== 'disponivel' || vezes.valor === 0)
+    return null
+  return (total.valor / vezes.valor).toLocaleString('pt-BR', { maximumFractionDigits: 1 })
+}
+
+/**
+ * Como se aprende no jogo (§6.28, A26): tentativas e dicas até concluir, acerto na primeira,
+ * rotinas dos Lumis que funcionam, reenvios de minijogo e compras na galeria.
+ */
+function Aprendizagem({ a }: { a: NonNullable<RelatorioDaMedicao['aprendizagem']> }) {
+  const tentativas = media(a.tentativas, a.conclusoesMedidas)
+  const dicas = media(a.dicas, a.conclusoesMedidas)
+  const linhas: [string, NumeroDaMedicao, string | null][] = [
+    ['Conclusões medidas', a.conclusoesMedidas, null],
+    ['Acertos na primeira tentativa', a.acertoNaPrimeira, null],
+    ['Tentativas até concluir', a.tentativas, tentativas ? `${tentativas} por conclusão` : null],
+    ['Conclusões sem abrir dica', a.semDica, null],
+    ['Dicas abertas até concluir', a.dicas, dicas ? `${dicas} por conclusão` : null],
+    ['Rotinas dos Lumis montadas', a.rotinas, 'Guardadas hoje, em qualquer período'],
+    ['Rotinas que funcionam', a.rotinasQueFuncionam, 'Rodam até o fim sem erro'],
+    ['Reenvios de minijogo', a.reenvios, null],
+    ...(a.compras
+      ? [['Compras na galeria', a.compras, null] as [string, NumeroDaMedicao, null]]
+      : []),
+    ...(a.moedasNasCompras
+      ? [['Moedas gastas na galeria', a.moedasNasCompras, null] as [string, NumeroDaMedicao, null]]
+      : []),
+  ]
+  return (
+    <section aria-label="Como se aprende no jogo" className="space-y-3">
+      <h3 className="font-semibold">Como se aprende no jogo</h3>
+      <p className="text-sm text-muted-foreground">
+        Conclusões de desafios no período, medidas desde 31/10/2026: tentativas e dicas abertas até
+        concluir. As rotinas são as guardadas hoje.
+      </p>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-3">
+        {linhas.map(([titulo, numero, nota]) => (
+          <article key={titulo} className="min-w-0 rounded-xl border border-border bg-card p-4">
+            <h4 className="text-sm text-muted-foreground">{titulo}</h4>
+            <p className="mt-2 break-words text-lg font-semibold tabular-nums">
+              {measurementNumber(numero)}
+            </p>
+            {nota ? <p className="mt-1 text-xs text-muted-foreground">{nota}</p> : null}
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 export function GameMeasurement({
   publico,
@@ -253,6 +305,7 @@ export function GameMeasurement({
               ))}
             </div>
           </section>
+          {report.aprendizagem ? <Aprendizagem a={report.aprendizagem} /> : null}
           <div className="min-w-0 space-y-3 rounded-xl border border-border bg-card p-3 sm:p-5">
             <h3 className="font-semibold">Volta ao jogo</h3>
             <p className="text-sm text-muted-foreground">

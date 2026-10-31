@@ -11,6 +11,7 @@ import {
   manchasAcesas,
   motivoDoErro,
   novosFeitos,
+  ondeAprender,
   oQueFalta,
   quadrosDaIlha,
 } from '../src/sistemas/quadro-das-cores'
@@ -73,7 +74,11 @@ describe('quadrosDaIlha', () => {
   })
 
   test('o que falta: ilha fechada ou o primeiro curso de cada bloco, sem repetir', () => {
-    expect(oQueFalta(d({ situacao: 'ilha-fechada' }))).toEqual({ ilhaFechada: true, cursos: [] })
+    expect(oQueFalta(d({ situacao: 'ilha-fechada' }))).toEqual({
+      ilhaFechada: true,
+      faltaCurso: false,
+      cursos: [],
+    })
     expect(
       oQueFalta(
         d({
@@ -85,7 +90,20 @@ describe('quadrosDaIlha', () => {
           ],
         }),
       ),
-    ).toEqual({ ilhaFechada: false, cursos: ['Repetições'] })
+    ).toEqual({ ilhaFechada: false, faltaCurso: false, cursos: ['Repetições'] })
+  })
+
+  test('A3 e A24: a linguagem do posto espera o curso-base; o disponível diz onde se aprende', () => {
+    expect(oQueFalta(d({ situacao: 'falta-curso', aprenda: [CURSO] }))).toEqual({
+      ilhaFechada: false,
+      faltaCurso: true,
+      cursos: ['Repetições'],
+    })
+    expect(oQueFalta(d({ situacao: 'falta-curso' })).cursos).toEqual([])
+    expect(ondeAprender(d({ situacao: 'disponivel', aprenda: [CURSO] }))).toBe(
+      'Aprenda isso em: Repetições',
+    )
+    expect(ondeAprender(d({ situacao: 'disponivel' }))).toBeNull()
   })
 
   test('resposta estranha não passa; erros viram motivo', () => {

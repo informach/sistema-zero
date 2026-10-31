@@ -7,6 +7,7 @@ import { type MoradorDoAnel, VIDA_NO_ANEL } from '../sistemas/moradores-do-anel'
 import { salvamentoPausado } from '../sistemas/pausa'
 import { Coracoes, Presentes } from './capi'
 import { entregarPedidoPeloPainel } from './entrega-do-pedido'
+import { PedidoDoEstudio } from './pedido-do-estudio'
 
 /** Mesma conversa do mundo, agora com amizade, presentes e pedidos reais. */
 export function PainelDeAmizadeDoAnel({ quem, painel }: { quem: MoradorDoAnel; painel: string }) {
@@ -102,6 +103,7 @@ export function PainelDeAmizadeDoAnel({ quem, painel }: { quem: MoradorDoAnel; p
               </div>
             )
           )}
+          <PedidoDoEstudio quem={quem} />
           <div className="arq-menu-acoes">
             {pedido && !falta && (
               <button

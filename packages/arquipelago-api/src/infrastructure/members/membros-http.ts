@@ -3,6 +3,7 @@ import {
   AnaliseDosMembrosSchema,
   type AulasConcluidasDosMembros,
   AulasConcluidasDosMembrosSchema,
+  ComprasDosMembrosSchema,
   type CurriculoDeBlocos,
   CurriculoDeBlocosSchema,
   type JogadorDosMembros,
@@ -87,6 +88,14 @@ export class MembrosHttp implements PortaDosMembros {
     return validar(
       QuartoDosMembrosSchema,
       await this.ler(`/members/internal/arquipelago/quarto?${q}`, signal),
+    )
+  }
+
+  async lerCompras(pergunta: Parameters<PortaDosMembros['lerCompras']>[0]) {
+    const q = new URLSearchParams(pergunta)
+    return validar(
+      ComprasDosMembrosSchema,
+      await this.ler(`/members/internal/arquipelago/compras?${q}`),
     )
   }
 
