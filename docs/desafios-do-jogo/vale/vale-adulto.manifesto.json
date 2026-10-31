@@ -10,7 +10,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 1,
       "ordem": 10,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Contagem da lista",
@@ -2330,7 +2330,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 2,
       "ordem": 20,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Cinza retirada",
@@ -13930,7 +13930,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 60,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos",
@@ -20502,7 +20502,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 61,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos: mais uma onda",
@@ -27732,7 +27732,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos: dois pontos",
@@ -34949,7 +34949,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 63,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Proteja os ninhos: mais um ninho",

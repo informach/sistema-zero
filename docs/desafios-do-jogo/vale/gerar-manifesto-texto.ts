@@ -50,12 +50,13 @@ export function criarManifestoTexto(publico: PublicoDoDesafio = 'kids') {
           publico,
           ilha: 'vale-dos-dinos',
           // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
-          // curso-base do posto concluído (A3). Não publica ainda (A1): a Ponte deriva blocos que
-          // só terão fonte com os cursos do Arquiteto, e a barreira C01a recusaria.
+          // curso-base do posto concluído (A3). A43 (decisão da dona, 31/10/2026): publica como
+          // está; a Ponte deriva blocos que terão fonte com os cursos do Arquiteto, que chegam
+          // antes do lançamento, e a barreira C01a confere na importação.
           tipo: 'quadro-das-cores',
           quadro: 6,
           ordem: 60,
-          publicar: false,
+          publicar: true,
           conteudo: {
             versao: 1,
             ...textos[publico],

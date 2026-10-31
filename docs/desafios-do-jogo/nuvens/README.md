@@ -23,7 +23,9 @@ não. `recompensa.atracao` é `jardim-que-floresce`. Revisão C01b de 30/10: sem
 "e" lógico nem opacidade (só apareciam em cursos extras ou fora da trilha), o Jardim e os quadros
 1 a 4 pedem publicação (`publicar: true`). A Colheita da lista (quadro 5) depende de lista e laço
 em grupo, que nenhum curso em blocos da trilha ensina; nas Nuvens isso vem em JavaScript (C02),
-então ela segue com `publicar: false`, como as três variações. Não houve publicação remota.
+e, por decisão da dona (A43, 31/10/2026), publica como está (`publicar: true`), porque os cursos do
+Gênio chegam antes do lançamento oficial. O que ela espera está em `../publicacao.test.ts`, e a
+barreira C01a continua conferindo na importação. Não houve publicação remota.
 
 ## Cinco quadros complementares (L03)
 

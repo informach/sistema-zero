@@ -26,8 +26,12 @@ test('inventário reproduz os arquivos locais sem confundir duas versões com at
       'utf8',
     ),
   ).toBe(relatorioDeRepertorio())
-  // C01b: só pede publicação o que tem todas as fontes na trilha.
-  for (const d of inventario.filter((d) => d.publicarAutomaticamente))
+  // C01b: só pede publicação o que tem todas as fontes na trilha. A43 (decisão da dona,
+  // 31/10/2026): o Vale e as Nuvens publicam esperando os cursos do Arquiteto e do Gênio; a lista
+  // exata do que cada um espera fica em `docs/desafios-do-jogo/publicacao.test.ts`.
+  for (const d of inventario.filter(
+    (d) => d.publicarAutomaticamente && d.ilha !== 'vale-dos-dinos' && d.ilha !== 'nuvens',
+  ))
     expect(d.semFonteNaTrilha, d.slug).toEqual([])
 })
 test('fontes opcionais não comprovam repertório universal e cursos futuros não são inventados', () => {
@@ -49,7 +53,8 @@ test('fontes opcionais não comprovam repertório universal e cursos futuros nã
   expect(click.trilha).toEqual([])
   expect(click.opcionais).toContain('faisca/cade-todo-mundo')
   expect(vale.semFonteNaTrilha).toContain(click.bloco)
-  expect(vale.publicarAutomaticamente).toBe(false)
+  // A43: publica mesmo assim, esperando os cursos do Arquiteto (a barreira C01a confere).
+  expect(vale.publicarAutomaticamente).toBe(true)
   const lista = inventario.find((d) => d.slug === 'vale-contagem-da-lista')!
   expect(lista.classificacao).toBe('apoio-preparado-em-blocos')
   expect(lista.tiposJaPresentes).toContain('sz_g2d_for_each_in_group')

@@ -10,7 +10,7 @@
       "tipo": "quadro-das-cores",
       "quadro": 6,
       "ordem": 60,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Defesa do Vale: ondas e alcance",

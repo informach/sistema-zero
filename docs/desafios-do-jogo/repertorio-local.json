@@ -5430,7 +5430,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5478,7 +5478,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5663,7 +5663,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "cobrir",
@@ -5738,7 +5738,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quatro-ondas",
@@ -5804,7 +5804,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "dois-pontos",
@@ -5870,7 +5870,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quarto-ninho",
@@ -5936,7 +5936,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -5984,7 +5984,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -6169,7 +6169,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "cobrir",
@@ -6244,7 +6244,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quatro-ondas",
@@ -6310,7 +6310,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "dois-pontos",
@@ -6376,7 +6376,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "quarto-ninho",
@@ -6629,7 +6629,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
@@ -7064,7 +7064,7 @@
       "classificacao": "apoio-preparado-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acao",
