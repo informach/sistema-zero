@@ -13,7 +13,12 @@ hat-04, hat-06 e hat-07; a auréola hat-05 flutua e fica de fora). Para cada cab
               cujo raio, saindo do centro da cabeça, acha o chapéu a até 15 cm, medido do topo do
               crânio para baixo, na frente (até 25° do meio), dos lados (65° a 115°) e na nuca
               (além de 155°);
-  folga_oco = mediana dessas distâncias nos pontos cobertos (a folga até o couro).
+  folga_oco = mediana dessas distâncias nos pontos cobertos (a folga até o couro);
+  rosto     = menor distância até as sobrancelhas e os olhos (todas as variantes `eyebrow-*` e
+              `eyes-*`): a aba não encosta neles.
+A cartola antiga hat-04 foi afundada por `ajustes.py` (pedido da dona) e é conferida do mesmo jeito
+(`AJUSTADAS`); ela continua medida na régua, mas não entra nos limites da descida (nunca foi o
+maior valor deles).
 
 Tiara (enfeite não esconde o cabelo): conferida contra os cabelos `hair-01` a `hair-18` e as
 cabeças. Para cada par (peça, alvo) conta:
@@ -26,8 +31,10 @@ Ponto a menos de 6 mm da superfície conta como encostado, não dentro.
 Critério: chapéu, nas seis cabeças, atravessa zero; folga_min de no máximo 3 cm (não flutua: o boné
 hat-02, o mais folgado dos antigos que encostam no crânio, tem 2,7 cm; o pirata hat-07 flutua a
 7,3 cm e fica só registrado); frente, lado, nuca e folga_oco no máximo o maior valor dos antigos
-que cobrem o crânio (hat-02, hat-03, hat-04 e hat-07), então o chapéu não desce mais que eles na
-testa (fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles. Tiara,
+que cobrem o crânio (hat-02, hat-03 e hat-07), então o chapéu não desce mais que eles na testa
+(fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles; rosto de pelo
+menos 6 mm (não encosta nas sobrancelhas nem nos olhos). Vale para os chapéus novos e para a hat-04
+ajustada. Tiara,
 com as cabeças, zero; com cada cabelo, zero, a não ser que TODOS os enfeites que já existem
 (enfeite-01 a enfeite-05) também o atravessem: esses cabelos ficam registrados com os números dos
 antigos ao lado.
@@ -46,7 +53,8 @@ NOVAS = {'hat-08': 'hat', 'hat-09': 'hat', 'hat-10': 'hat', 'enfeite-06': 'enfei
          'top-07': 'top', 'outfit-07': 'outfit', 'top-08': 'top', 'top-09': 'top'}
 REFERENCIAS = {'hat': ['hat-01', 'hat-02', 'hat-03', 'hat-04', 'hat-06', 'hat-07'],
                'enfeite': ['enfeite-01', 'enfeite-02', 'enfeite-03', 'enfeite-04', 'enfeite-05']}
-COBREM = ['hat-02', 'hat-03', 'hat-04', 'hat-07']  # antigos que cobrem o crânio: a régua da descida
+COBREM = ['hat-02', 'hat-03', 'hat-07']  # antigos que cobrem o crânio: a régua da descida
+AJUSTADAS = ['hat-04']  # peças do pacote ajustadas por ajustes.py, conferidas como os chapéus novos
 FOLGA_MAX = 0.03
 DESCIDA = ['frente', 'lado', 'nuca', 'folga_oco']
 CABELOS = [f'hair-{i:02d}' for i in range(1, 19)]
@@ -60,7 +68,7 @@ UP, DOWN = Vector((0, 0, 1)), Vector((0, 0, -1))
 
 def caminho(pid):
     novo = os.path.join(OUT, f'{pid}.glb')
-    return novo if pid in NOVAS and os.path.exists(novo) else os.path.join(PARTS, f'{pid}.glb')
+    return novo if (pid in NOVAS or pid in AJUSTADAS) and os.path.exists(novo) else os.path.join(PARTS, f'{pid}.glb')
 
 
 def importar(pid):
@@ -177,8 +185,34 @@ def pior(linhas):
     return out
 
 
+def rosto(peca, faces):
+    """Menor distância da peça até as sobrancelhas e os olhos, e qual deles chega mais perto."""
+    V, F, _ = peca
+    pb = BVHTree.FromPolygons(V, F)
+    return min((round(min(pb.find_nearest(p)[3] for p in fv), 3), fid) for fid, fv in faces.items())
+
+
+def conferir_chapeu(pid, malha, cabecas, faces, limites):
+    cruz = {h: conferir(malha, cabecas[h]) for h in CABECAS}
+    enc = {h: encaixe(malha, cabecas[h]) for h in CABECAS}
+    p = pior(enc)
+    dist, perto = rosto(malha, faces)
+    ruins = [f'atravessa {h}' for h, r in cruz.items() if total(r) > 0]
+    ruins += [f'{k} {p[k]} > {lim}' for k, lim in limites.items() if p[k] is not None and p[k] > lim]
+    if p['folga_min'] is None or p['frente'] is None:
+        ruins.append('não cobre o crânio')
+    if dist < EPS:
+        ruins.append(f'encosta em {perto}')
+    print(f'{pid}: atravessa {sum(total(r) for r in cruz.values())} vértices das cabeças;', p,
+          f'rosto {dist} ({perto})', '| REPROVADO: ' + '; '.join(ruins) if ruins else '| ok')
+    return dict(cabecas=cruz, encaixe=enc, pior=p, rosto=dict(distancia=dist, mais_perto=perto),
+                reprovados=ruins)
+
+
 def main():
     cabecas = {h: importar(h)[0] for h in CABECAS}
+    faces = {f[:-4]: importar(f[:-4])[0][0] for f in sorted(os.listdir(PARTS))
+             if f.startswith(('eyebrow-', 'eyes-')) and f.endswith('.glb')}
     cabelos = {h: importar(h)[0] for h in CABELOS}
     relatorio = {'criterio': __doc__.split('Critério: ')[1].split('\n\nUso')[0].replace('\n', ' '), 'pecas': {}}
     # Régua dos chapéus antigos (contra as cabeças) e dos enfeites antigos (contra os cabelos).
@@ -201,17 +235,8 @@ def main():
         malha, medida = importar(pid)
         item = dict(medida)
         if cat == 'hat':
-            cruz = {h: conferir(malha, cabecas[h]) for h in CABECAS}
-            enc = {h: encaixe(malha, cabecas[h]) for h in CABECAS}
-            p = pior(enc)
-            ruins = [f'atravessa {h}' for h, r in cruz.items() if total(r) > 0]
-            ruins += [f'{k} {p[k]} > {lim}' for k, lim in limites.items() if p[k] is not None and p[k] > lim]
-            if p['folga_min'] is None or p['frente'] is None:
-                ruins.append('não cobre o crânio')
-            item.update(cabecas=cruz, encaixe=enc, pior=p, reprovados=ruins)
-            print(f'{pid}: atravessa {sum(total(r) for r in cruz.values())} vértices das cabeças;', p,
-                  '| REPROVADO: ' + '; '.join(ruins) if ruins else '| ok')
-            falhou |= bool(ruins)
+            item.update(conferir_chapeu(pid, malha, cabecas, faces, limites))
+            falhou |= bool(item['reprovados'])
         elif cat == 'enfeite':
             linhas, excecoes, ruins = {}, {}, []
             for h in CABELOS + CABECAS:
@@ -232,6 +257,13 @@ def main():
             falhou |= bool(ruins)
         print(f'{pid}: {medida["triangulos"]} triângulos, {medida["kb"]} KB, materiais {medida["materiais"]}')
         relatorio['pecas'][pid] = item
+    relatorio['ajustadas'] = {}
+    for pid in AJUSTADAS:
+        malha, medida = importar(pid)
+        item = dict(medida, **conferir_chapeu(pid, malha, cabecas, faces, limites))
+        falhou |= bool(item['reprovados'])
+        print(f'{pid}: {medida["triangulos"]} triângulos, {medida["kb"]} KB, materiais {medida["materiais"]}')
+        relatorio['ajustadas'][pid] = item
     relatorio['regua_chapeus'] = dict(antigos=regua, cobrem_o_cranio=COBREM, limites=limites)
     relatorio['referencias'] = {rid: {h: total(r) for h, r in linhas.items()} for rid, linhas in refs.items()}
     caminho_rel = os.path.join(HERE, 'festas-relatorio.json')

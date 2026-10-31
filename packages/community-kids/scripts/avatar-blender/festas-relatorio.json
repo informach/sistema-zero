@@ -1,9 +1,9 @@
 {
-  "criterio": "chapéu, nas seis cabeças, atravessa zero; folga_min de no máximo 3 cm (não flutua: o boné hat-02, o mais folgado dos antigos que encostam no crânio, tem 2,7 cm; o pirata hat-07 flutua a 7,3 cm e fica só registrado); frente, lado, nuca e folga_oco no máximo o maior valor dos antigos que cobrem o crânio (hat-02, hat-03, hat-04 e hat-07), então o chapéu não desce mais que eles na testa (fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles. Tiara, com as cabeças, zero; com cada cabelo, zero, a não ser que TODOS os enfeites que já existem (enfeite-01 a enfeite-05) também o atravessem: esses cabelos ficam registrados com os números dos antigos ao lado.",
+  "criterio": "chapéu, nas seis cabeças, atravessa zero; folga_min de no máximo 3 cm (não flutua: o boné hat-02, o mais folgado dos antigos que encostam no crânio, tem 2,7 cm; o pirata hat-07 flutua a 7,3 cm e fica só registrado); frente, lado, nuca e folga_oco no máximo o maior valor dos antigos que cobrem o crânio (hat-02, hat-03 e hat-07), então o chapéu não desce mais que eles na testa (fica acima das sobrancelhas), nas orelhas e na nuca, nem fica mais folgado que eles; rosto de pelo menos 6 mm (não encosta nas sobrancelhas nem nos olhos). Vale para os chapéus novos e para a hat-04 ajustada. Tiara, com as cabeças, zero; com cada cabelo, zero, a não ser que TODOS os enfeites que já existem (enfeite-01 a enfeite-05) também o atravessem: esses cabelos ficam registrados com os números dos antigos ao lado.",
   "pecas": {
     "hat-08": {
       "triangulos": 3600,
-      "kb": 173.6,
+      "kb": 173.4,
       "materiais": ["Color_", "Fita", "Pluma", "Serpentina", "Serpentina.001"],
       "ossos": ["Head"],
       "cabecas": {
@@ -40,61 +40,65 @@
       },
       "encaixe": {
         "head-01": {
-          "folga_min": 0.01,
-          "topo": 0.209,
+          "folga_min": 0.015,
+          "topo": 0.189,
           "frente": 0.176,
-          "lado": 0.236,
+          "lado": 0.271,
           "nuca": 0.251,
-          "folga_oco": 0.093
+          "folga_oco": 0.098
         },
         "head-02": {
-          "folga_min": 0.01,
-          "topo": 0.209,
+          "folga_min": 0.015,
+          "topo": 0.189,
           "frente": 0.176,
-          "lado": 0.236,
+          "lado": 0.271,
           "nuca": 0.251,
-          "folga_oco": 0.093
+          "folga_oco": 0.098
         },
         "head-03": {
-          "folga_min": 0.01,
-          "topo": 0.209,
+          "folga_min": 0.015,
+          "topo": 0.189,
           "frente": 0.176,
-          "lado": 0.236,
+          "lado": 0.271,
           "nuca": 0.251,
-          "folga_oco": 0.093
+          "folga_oco": 0.098
         },
         "head-04": {
-          "folga_min": 0.01,
-          "topo": 0.209,
+          "folga_min": 0.015,
+          "topo": 0.189,
           "frente": 0.176,
-          "lado": 0.236,
+          "lado": 0.271,
           "nuca": 0.251,
-          "folga_oco": 0.093
+          "folga_oco": 0.098
         },
         "head-05": {
-          "folga_min": 0.01,
-          "topo": 0.209,
+          "folga_min": 0.015,
+          "topo": 0.189,
           "frente": 0.176,
-          "lado": 0.236,
+          "lado": 0.271,
           "nuca": 0.251,
-          "folga_oco": 0.093
+          "folga_oco": 0.098
         },
         "head-06": {
-          "folga_min": 0.01,
-          "topo": 0.209,
+          "folga_min": 0.015,
+          "topo": 0.189,
           "frente": 0.176,
-          "lado": 0.236,
+          "lado": 0.271,
           "nuca": 0.251,
-          "folga_oco": 0.093
+          "folga_oco": 0.098
         }
       },
       "pior": {
-        "folga_min": 0.01,
-        "topo": 0.209,
+        "folga_min": 0.015,
+        "topo": 0.189,
         "frente": 0.176,
-        "lado": 0.236,
+        "lado": 0.271,
         "nuca": 0.251,
-        "folga_oco": 0.093
+        "folga_oco": 0.098
+      },
+      "rosto": {
+        "distancia": 0.132,
+        "mais_perto": "eyebrow-05"
       },
       "reprovados": []
     },
@@ -201,6 +205,10 @@
         "nuca": 0.324,
         "folga_oco": 0.078
       },
+      "rosto": {
+        "distancia": 0.061,
+        "mais_perto": "eyebrow-05"
+      },
       "reprovados": []
     },
     "hat-10": {
@@ -297,6 +305,10 @@
         "lado": 0.289,
         "nuca": 0.351,
         "folga_oco": 0.085
+      },
+      "rosto": {
+        "distancia": 0.083,
+        "mais_perto": "eyebrow-05"
       },
       "reprovados": []
     },
@@ -717,6 +729,109 @@
       ]
     }
   },
+  "ajustadas": {
+    "hat-04": {
+      "triangulos": 720,
+      "kb": 51.4,
+      "materiais": ["Hat"],
+      "ossos": ["Head"],
+      "cabecas": {
+        "head-01": {
+          "dentro": 0,
+          "acima": 0,
+          "enterra": 0
+        },
+        "head-02": {
+          "dentro": 0,
+          "acima": 0,
+          "enterra": 0
+        },
+        "head-03": {
+          "dentro": 0,
+          "acima": 0,
+          "enterra": 0
+        },
+        "head-04": {
+          "dentro": 0,
+          "acima": 0,
+          "enterra": 0
+        },
+        "head-05": {
+          "dentro": 0,
+          "acima": 0,
+          "enterra": 0
+        },
+        "head-06": {
+          "dentro": 0,
+          "acima": 0,
+          "enterra": 0
+        }
+      },
+      "encaixe": {
+        "head-01": {
+          "folga_min": 0.008,
+          "topo": 0.483,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.282,
+          "folga_oco": 0.087
+        },
+        "head-02": {
+          "folga_min": 0.008,
+          "topo": 0.483,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.282,
+          "folga_oco": 0.087
+        },
+        "head-03": {
+          "folga_min": 0.008,
+          "topo": 0.483,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.282,
+          "folga_oco": 0.087
+        },
+        "head-04": {
+          "folga_min": 0.008,
+          "topo": 0.483,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.282,
+          "folga_oco": 0.087
+        },
+        "head-05": {
+          "folga_min": 0.008,
+          "topo": 0.483,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.282,
+          "folga_oco": 0.087
+        },
+        "head-06": {
+          "folga_min": 0.008,
+          "topo": 0.483,
+          "frente": 0.176,
+          "lado": 0.236,
+          "nuca": 0.282,
+          "folga_oco": 0.087
+        }
+      },
+      "pior": {
+        "folga_min": 0.008,
+        "topo": 0.483,
+        "frente": 0.176,
+        "lado": 0.236,
+        "nuca": 0.282,
+        "folga_oco": 0.087
+      },
+      "rosto": {
+        "distancia": 0.131,
+        "mais_perto": "eyebrow-05"
+      },
+      "reprovados": []
+    }
+  },
   "regua_chapeus": {
     "antigos": {
       "hat-01": {
@@ -744,12 +859,12 @@
         "folga_oco": 0.048
       },
       "hat-04": {
-        "folga_min": 0.001,
-        "topo": 0.616,
-        "frente": 0.049,
-        "lado": 0.137,
-        "nuca": 0.17,
-        "folga_oco": 0.049
+        "folga_min": 0.008,
+        "topo": 0.483,
+        "frente": 0.176,
+        "lado": 0.236,
+        "nuca": 0.282,
+        "folga_oco": 0.087
       },
       "hat-06": {
         "folga_min": 0.0,
@@ -768,7 +883,7 @@
         "folga_oco": 0.098
       }
     },
-    "cobrem_o_cranio": ["hat-02", "hat-03", "hat-04", "hat-07"],
+    "cobrem_o_cranio": ["hat-02", "hat-03", "hat-07"],
     "limites": {
       "frente": 0.239,
       "lado": 0.341,

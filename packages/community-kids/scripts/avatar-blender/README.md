@@ -28,6 +28,7 @@ Cada arquivo agrupa uma família, e o nome da função vai depois de `--`:
 /tmp/blender-venv/bin/python rosto.py -- redondo gatinho sardas bochecha colar cachecol
 /tmp/blender-venv/bin/python rostos.py -- sorrisos cilios brilho sobrancelha nariz
 /tmp/blender-venv/bin/python festas.py -- cartolinha colete palha chita lanternas capa gorro sueter
+/tmp/blender-venv/bin/python ajustes.py -- cartola
 /tmp/blender-venv/bin/python conferir_festas.py
 ```
 
@@ -63,27 +64,42 @@ Uma peça de cabeça e uma de corpo por festa, todas em `festas.py`:
   (`Z_CARTOLA`, `Z_PALHA`, `Z_GORRO`) seguem a régua dos chapéus antigos: a palha e o gorro descem
   até a testa, acima das sobrancelhas, como o boné `hat-02` e o pirata `hat-07`. A cartolinha tira o
   tamanho da boca no alto da cabeça, como a cartola `hat-04`, e depois afunda `AFUNDA_CARTOLA`
-  (3,5 cm, pedido da dona) até a aba ficar no alto da testa; para não crescer inteira, só a boca se
-  abre no formato do crânio (`menor_boca`: a planta alarga 1,10 vez na aba e volta ao normal no alto
-  da copa).
+  (5,5 cm, pedido da dona) até a aba ficar no alto da testa, a 13 cm das sobrancelhas; para não
+  crescer inteira, só a boca se abre no formato do crânio (`menor_boca`: a planta alarga 1,17 vez na
+  aba e volta ao normal no alto da copa).
 - **A régua dos chapéus.** `conferir_festas.py` mede, em cada uma das seis cabeças, os chapéus
   antigos que ficam na cabeça (`hat-01` a `hat-04`, `hat-06`, `hat-07`; a auréola `hat-05` flutua) e
   os novos: a menor distância até a cabeça (`folga_min`), a folga do topo do crânio até o chapéu
   (`topo`), quanto o chapéu desce na frente, dos lados e na nuca (o ponto mais baixo do couro cujo
-  raio, saindo do centro da cabeça, acha o chapéu a até 15 cm) e a mediana dessa folga
-  (`folga_oco`). O chapéu novo passa com zero vértices atravessando as cabeças, `folga_min` até
-  3 cm (o boné `hat-02`, o mais folgado dos antigos que encostam, tem 2,7) e descida e folga no
-  máximo iguais às dos antigos que cobrem o crânio (`hat-02`, `hat-03`, `hat-04`, `hat-07`). Os
-  números de cada chapéu, os dos antigos e os limites ficam em `festas-relatorio.json`
-  (`pecas.<id>.encaixe`, `regua_chapeus`); o script grava o relatório já no formato do biome do
-  monorepo.
+  raio, saindo do centro da cabeça, acha o chapéu a até 15 cm), a mediana dessa folga
+  (`folga_oco`) e a distância até as sobrancelhas e os olhos (`rosto`, todas as variantes
+  `eyebrow-*` e `eyes-*`). O chapéu novo passa com zero vértices atravessando as cabeças,
+  `folga_min` até 3 cm (o boné `hat-02`, o mais folgado dos antigos que encostam, tem 2,7), descida
+  e folga no máximo iguais às dos antigos que cobrem o crânio (`hat-02`, `hat-03`, `hat-07`) e
+  `rosto` de pelo menos 6 mm. Os números de cada chapéu, os dos antigos e os limites ficam em
+  `festas-relatorio.json` (`pecas.<id>`, `ajustadas.hat-04`, `regua_chapeus`); o script grava o
+  relatório já no formato do biome do monorepo.
 
   | Chapéu | Escala | `folga_min` | `topo` | Frente | Lado | Nuca | `folga_oco` |
   | --- | --- | --- | --- | --- | --- | --- | --- |
-  | `hat-08` cartolinha | 0,783 (boca 1,10) | 1,0 cm | 20,9 cm | 17,6 cm | 23,6 cm | 25,1 cm | 9,3 cm |
+  | `hat-08` cartolinha | 0,783 (boca 1,17) | 1,5 cm | 18,9 cm | 17,6 cm | 27,1 cm | 25,1 cm | 9,8 cm |
   | `hat-09` palha | 0,797 | 1,0 cm | 5,6 cm | 23,9 cm | 28,9 cm | 32,4 cm | 7,8 cm |
   | `hat-10` gorro | 0,642 (altura 0,511) | 1,0 cm | 8,8 cm | 17,6 cm | 28,9 cm | 35,1 cm | 8,5 cm |
+  | `hat-04` cartola (ajustada) | boca 1,55 | 0,8 cm | 48,3 cm | 17,6 cm | 23,6 cm | 28,2 cm | 8,7 cm |
   | limite (antigos) | | 3 cm | | 23,9 cm | 34,1 cm | 35,7 cm | 10,3 cm |
+
+- **A cartola do pacote também afunda (`ajustes.py -- cartola`, pedido da dona).** A `hat-04` não
+  tem script de origem: `ajustes.py` importa o GLB atual de `parts/`, mexe só na posição dos
+  vértices e exporta pelo `export` de sempre (com o `reordenar.py`). Nó `Hat.004`, malha `Hat`,
+  material `Hat` (a mesma textura, rugosidade e especular), UV e pesos (só a cabeça) ficam como
+  vieram. A copa do pacote ficava 6,6 cm atrás do meio do crânio: a boca é centrada nele, a peça
+  afunda `AFUNDA_HAT04` (11 cm) no eixo dela até a aba ficar no alto da testa, como a da cartolinha,
+  e a boca se abre na planta oval do crânio (`menor_boca_malha`: a menor abertura, 1,55 vez, em que
+  ela não cruza nem chega a menos de 8 mm de nenhuma das seis cabeças). A copa abre metade disso no
+  alto (`ABRE_NO_ALTO`) e sobe reta; o anel de baixo da aba, que estreitava a boca, encosta por
+  dentro da copa; a aba mantém a largura para fora. A função recusa uma peça já afundada: para
+  refazer, `AJUSTE_ORIGEM` aponta a cópia original do pacote (no git, commit `9968ca967`). Ela
+  continua medida na régua, mas saiu dos limites da descida (nunca foi o maior valor deles).
 
 - **A tiara cabe sobre os cabelos.** Enfeite não esconde o cabelo: o arco de `enfeite-06` é medido
   contra os próprios cabelos (`FORA_TIARA`) e as cabeças. `conferir_festas.py` aceita um cabelo que
