@@ -6840,7 +6840,7 @@
         },
         {
           "id": "decide",
-          "descricao": "Um Se decide o que acontece."
+          "descricao": "Um Se usa essa informação para decidir o que acontece."
         },
         {
           "id": "recomeca",
@@ -6903,7 +6903,7 @@
         },
         {
           "id": "decide",
-          "descricao": "Um Se decide o que acontece."
+          "descricao": "Um Se usa essa informação para decidir o que acontece."
         },
         {
           "id": "recomeca",
