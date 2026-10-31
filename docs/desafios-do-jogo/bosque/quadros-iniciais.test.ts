@@ -6,6 +6,7 @@ import {
   isSectionExecutionRule,
 } from '../../../packages/core/src/learning/project-execution'
 import { isSectionCompletion } from '../../../packages/core/src/learning/section-progression'
+import { evaluateStudioProjectStructure } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
 import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
 import { desafiosIniciaisDoBosque } from './quadros-iniciais'
 
@@ -28,9 +29,10 @@ const faisca = new Set([
   ...blocos('faisca/desafio-primeiro-jogo'),
   ...blocos('faisca/o-jardim-secreto'),
 ])
+// A42 (31/10/2026): os cinco quadros são a chuva de pinhas, com o repertório da Nave.
 const construtor = new Set([...faisca, ...blocos('construtor/nave-contra-asteroides')])
 
-test('os cinco quadros são determinísticos, por público, e só usam o repertório declarado', () => {
+test('os cinco quadros são determinísticos, por público, e só usam o repertório até o Construtor', () => {
   for (const publico of ['kids', 'adulto'] as const) {
     const desafios = desafiosIniciaisDoBosque(publico)
     expect(desafios).toEqual(desafiosIniciaisDoBosque(publico))
@@ -50,7 +52,7 @@ test('os cinco quadros são determinísticos, por público, e só usam o repert�
       for (const raw of [d.conteudo.projetoInicial, d.conteudo.gabarito]) {
         const p = raw as { ir: unknown; blocksState: unknown }
         expect(SZIRV2Schema.safeParse(p.ir).success, d.slug).toBe(true)
-        const repertorio = d.quadro! <= 3 ? faisca : construtor
+        const repertorio = construtor
         expect(
           [...new Set(tipos(p.blocksState))].filter((t) => !repertorio.has(t)),
           d.slug,
@@ -63,7 +65,14 @@ test('os cinco quadros são determinísticos, por público, e só usam o repert�
         isSectionCompletion({ version: 1, blockIds: [], projectChecks: d.conteudo.objetivos }),
         d.slug,
       ).toBe(true)
-      expect(d.conteudo.objetivos.every((c) => isSectionExecutionRule(c.rule))).toBe(true)
+      // Cada quadro tem uma regra que roda o jogo; as de estrutura passam no gabarito e reprovam
+      // no inicial.
+      expect(d.conteudo.objetivos.some((c) => isSectionExecutionRule(c.rule))).toBe(true)
+      for (const c of d.conteudo.objetivos) {
+        if (isSectionExecutionRule(c.rule)) continue
+        expect(evaluateStudioProjectStructure(c.rule, d.conteudo.gabarito), c.id).toBe(true)
+        expect(evaluateStudioProjectStructure(c.rule, d.conteudo.projetoInicial), c.id).toBe(false)
+      }
       expect(
         d.conteudo.objetivos.reduce(
           (n, c) => n + (isSectionExecutionRule(c.rule) ? executionRuleBudgetMs(c.rule) : 0),
