@@ -354,3 +354,17 @@ test('os textos do álbum e do modo foto não usam travessão nem exclamação',
     expect(t).not.toContain('!')
   }
 })
+
+describe('os peixes do Recife no álbum (§6.28, A40)', () => {
+  test('um peixe por coral replantado, os mesmos do aquário', async () => {
+    const { peixesDoRecifeDoAlbum } = await import('../src/sistemas/album')
+    const { criarSalvamentoInicial: criar } = await import('@sistemazero/arquipelago-contracts')
+    const s = criar(new Date('2026-10-31T12:00:00Z'))
+    expect(peixesDoRecifeDoAlbum(s).conta).toEqual({ tem: 0, total: 4, faltam: 4 })
+    const comDois = { ...s, recife: { ...s.recife, corais: 0b0101 } }
+    const r = peixesDoRecifeDoAlbum(comDois)
+    expect(r.conta).toEqual({ tem: 2, total: 4, faltam: 2 })
+    expect(r.itens.map((p) => p.encontrado)).toEqual([true, false, true, false])
+    expect(r.itens[1]?.dica).toBe('Replante o coral cérebro na lagoa do Recife.')
+  })
+})

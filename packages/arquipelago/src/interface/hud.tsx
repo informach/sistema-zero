@@ -35,7 +35,6 @@ import {
   formatarTempo,
   PERCURSO_DAS_COPAS,
   PERCURSOS_DO_JOGO,
-  todasAsColetaveis,
 } from '../sistemas/percurso'
 import { COMO_USAR_O_PLANADOR, ID_DO_PLANADOR } from '../sistemas/planador'
 import { primeiroPedido } from '../sistemas/primeiro-pedido'
@@ -768,7 +767,7 @@ function Resultado() {
     },
     {
       ganhou: r.estrelas.vagalumes,
-      texto: todasAsColetaveis(config, r.totalDeVagalumes),
+      texto: `Achou ${config.escondido}`,
     },
   ]
   const fechar = () => loja.getState().mostrarResultado(null)

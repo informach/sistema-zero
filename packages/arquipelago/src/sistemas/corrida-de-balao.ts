@@ -7,7 +7,7 @@
  */
 import { MELHOR_TEMPO_MAXIMO_MS } from '@sistemazero/arquipelago-contracts'
 import type { Ponto } from './cipo'
-import { type Corrida, criarCorrida } from './percurso'
+import { type Corrida, criarCorrida, indiceDoSegredo } from './percurso'
 
 /** As argolas, em metros, no referencial da ilha (o meio dela em x = z = 0, y no tampo). */
 export const ARGOLAS = {
@@ -122,7 +122,8 @@ export function passoDaCorridaDeBalao(
   if (!c) {
     const primeira = argolas[0]
     if (!primeira || !passouPelaArgola(primeira, de, ate)) return null
-    const nova = criarCorrida(fitas.length)
+    const ultima = argolas.at(-1) ?? primeira
+    const nova = criarCorrida(fitas.length, indiceDoSegredo(primeira, ultima, fitas))
     nova.deque = 0
     estado.corrida = nova
     return { tipo: 'comecou' }

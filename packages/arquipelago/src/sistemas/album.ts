@@ -15,6 +15,7 @@ import { ACHADOS_DO_RECIFE, type AchadoDoRecife } from './achados-do-recife'
 import { colecaoDaPraia } from './colecoes-da-praia'
 import { colecaoDaIlha } from './colecoes-das-ilhas'
 import { rotuloDaAparencia } from './construcao/galeria'
+import { coralReplantado, PONTOS_DOS_CORAIS } from './corais-do-recife'
 import {
   colecaoDeReceitas,
   colecaoDoBosque,
@@ -22,7 +23,7 @@ import {
   type EstadoDoBicho,
 } from './diario'
 import { ESPECIES_DE_LUMI } from './lumis'
-import { formatarTempo, PERCURSOS_DO_JOGO, todasAsColetaveis } from './percurso'
+import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
 import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS } from './segredos'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
@@ -122,7 +123,8 @@ export function percursosDoAlbum(s: Salvamento): {
         },
         {
           ganhou: r?.estrelas.vagalumes ?? false,
-          texto: todasAsColetaveis(config, config.vagalumes),
+          // A terceira estrela é o segredo do percurso (§6.28, A9).
+          texto: `Achar ${config.escondido}`,
         },
       ],
       melhorTempo: r ? formatarTempo(r.melhorTempoMs) : null,
@@ -230,6 +232,29 @@ export function segredosDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: Se
   return { conta: contar(itens.filter((i) => i.achado).length, itens.length), itens }
 }
 
+// ── Os peixes do Recife (§6.28, A40) ────────────────────────────────────────────────────────────
+
+export interface PeixeDoRecifeDoAlbum {
+  id: string
+  nome: string
+  encontrado: boolean
+  dica: string
+}
+
+/** Um peixe por coral replantado na lagoa do Recife: os mesmos do aquário de casa. */
+export function peixesDoRecifeDoAlbum(s: Salvamento): {
+  conta: ContaDaSecao
+  itens: PeixeDoRecifeDoAlbum[]
+} {
+  const itens = PONTOS_DOS_CORAIS.map((p, i) => ({
+    id: `peixe-do-${p.tipo}`,
+    nome: `Peixe do ${p.nome}`,
+    encontrado: coralReplantado(s.recife.corais, i),
+    dica: `Replante o ${p.nome} na lagoa do Recife.`,
+  }))
+  return { conta: contar(itens.filter((p) => p.encontrado).length, itens.length), itens }
+}
+
 // ── O álbum inteiro ─────────────────────────────────────────────────────────────────────────────
 
 export function albumDoSalvamento(s: Salvamento) {
@@ -266,6 +291,7 @@ export function albumDoSalvamento(s: Salvamento) {
       conta: contar(achados.filter((a) => a.achado).length, achados.length),
       itens: achados,
     },
+    peixesDoRecife: peixesDoRecifeDoAlbum(s),
     segredos: segredosDoAlbum(s),
     bichos: bichosDoAlbum(s),
     receitas: receitasDoAlbum(s),
