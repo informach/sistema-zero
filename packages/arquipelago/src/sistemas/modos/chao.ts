@@ -1,4 +1,5 @@
 import { dentroDaAgua } from '../agua'
+import { empurraoDasAreas } from '../cinza-quente'
 import { CORPO } from '../corpo'
 import { correnteza } from '../correnteza'
 import { ESCALADA } from '../escalada'
@@ -58,6 +59,8 @@ export function decidirNado(nadando: boolean, noChao: boolean, naAgua: number): 
  */
 /** A velocidade da correnteza do passo (sem alocar no laço da física). */
 const agua = { x: 0, z: 0 }
+/** O empurrão da cinza quente do passo (B11). */
+const empurrao = { x: 0, z: 0 }
 
 export const MODO_CHAO: ModoDeMovimento = {
   id: 'chao',
@@ -116,9 +119,11 @@ export const MODO_CHAO: ModoDeMovimento = {
       agua.x = 0
       agua.z = 0
     }
-    c.desloc.x = (vx + agua.x) * e.dt
+    // A cinza quente do Vale empurra para fora quem vai a pé (montado é outro modo).
+    empurraoDasAreas(mundo.empurroes, e.p.x, e.p.y, e.p.z, empurrao)
+    c.desloc.x = (vx + agua.x + empurrao.x) * e.dt
     c.desloc.y = c.velY * e.dt
-    c.desloc.z = (vz + agua.z) * e.dt
+    c.desloc.z = (vz + agua.z + empurrao.z) * e.dt
     return 'chao'
   },
   depois(c, e, mundo, mov, pisou, aviso) {

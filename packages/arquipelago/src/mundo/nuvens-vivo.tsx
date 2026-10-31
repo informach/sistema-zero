@@ -16,6 +16,7 @@ import { JardimDoCeu } from './jardim-do-ceu'
 import { ALTURA_DAS_NUVENS, giroDaIlha } from './medidas'
 import { ComReserva } from './modelos'
 import { FOLGA_DA_VOLTA, saltosNoModelo, tamposDosSaltos } from './saltos-das-nuvens'
+import { SegredoNaIlha } from './segredos-dos-movimentos'
 
 /** Os pés a menos disto do chão das Nuvens, pisando, contam como queda dos saltos. */
 const CHAO_DAS_NUVENS = 0.3
@@ -77,6 +78,7 @@ export function NuvensVivo({
       <CorridaDeBalao meio={meio} giro={giro} />
       <ConstelacoesDasNuvens meio={meio} giro={giro} />
       <JardimDoCeu modelo={preparada.modelo} meio={meio} giro={giro} />
+      <SegredoNaIlha id="balao" modelo={preparada.modelo} meio={meio} giro={giro} />
       {saltos ? (
         <CorridaNaIlha
           ilhaId={ilha.id}

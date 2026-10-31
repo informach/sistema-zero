@@ -29,7 +29,7 @@ import { cresceu } from './filhote-do-vale'
 import { achouFossil, NOME_DO_FOSSIL, TEXTOS_DOS_FOSSEIS } from './fosseis'
 import { ESPECIES_DE_LUMI } from './lumis'
 import { formatarTempo, PERCURSOS_DO_JOGO } from './percurso'
-import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS } from './segredos'
+import { SEGREDOS, segredoAchado, TEXTOS_DOS_SEGREDOS, TODOS_OS_SEGREDOS } from './segredos'
 
 export { ESPECIES_DE_LUMI, type EspecieDeLumi } from './lumis'
 
@@ -225,13 +225,20 @@ export interface SegredoDoAlbum {
 }
 
 export function segredosDoAlbum(s: Salvamento): { conta: ContaDaSecao; itens: SegredoDoAlbum[] } {
-  const itens = SEGREDOS.map((g) => {
+  const itens = TODOS_OS_SEGREDOS.map((g) => {
     const achado = segredoAchado(s.segredos, g)
+    const doVento = SEGREDOS.some((v) => v.id === g.id)
     return {
       id: g.id,
       ilha: ILHAS.find((i) => i.id === g.ilha)?.nome ?? g.ilha,
       achado,
-      texto: achado ? 'Baú da Íris achado no alto do vento.' : TEXTOS_DOS_SEGREDOS.dica,
+      texto: achado
+        ? doVento
+          ? 'Baú da Íris achado no alto do vento.'
+          : 'Baú da Íris achado.'
+        : 'dica' in g
+          ? g.dica
+          : TEXTOS_DOS_SEGREDOS.dica,
     }
   })
   return { conta: contar(itens.filter((i) => i.achado).length, itens.length), itens }

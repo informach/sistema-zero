@@ -11,6 +11,7 @@ import type {
 } from '../../estado/contexto'
 import type { Voo } from '../balao'
 import type { Travessia } from '../barco'
+import type { AreaQueEmpurra } from '../cinza-quente'
 import type { Ponto } from '../cipo'
 import type { RodaDeNado } from '../correnteza'
 import { criarAgarrado, type FimDaEscalada } from '../escalada'
@@ -204,6 +205,8 @@ export interface MundoDoMovimento {
   correntes?: CorrenteDeAr[]
   /** O dino de montaria do Vale, com a ilha ativa. */
   montaria?: MontariaViva | null
+  /** As áreas que empurram quem vai a pé (a cinza quente do Vale, B11). */
+  empurroes?: AreaQueEmpurra[]
   /** Para onde a câmera olha no balanço. */
   foco: Ponto
 }

@@ -50,6 +50,7 @@ import { QuartoRelido } from './quarto-relido'
 import { RetratoDoAvatar } from './retrato-do-avatar'
 import { RotinaDosLumis } from './rotina-dos-lumis'
 import { RoupasConquistadas } from './roupas-conquistadas'
+import { MergulhoDaGruta, SegredoDoCipo } from './segredos-da-sua-ilha'
 import { SegredoNoAlto } from './segredos-das-ilhas'
 
 /** O segredo da sua ilha (N12): o baú no alto do vento. */
@@ -114,6 +115,8 @@ function CenaComQualidade({ aoFalhar }: { aoFalhar: (e: unknown) => void }) {
           <ColecoesDaPraia />
           <ChavesDaCasa />
           <SegredoNoAlto segredo={SEGREDO_DA_SUA_ILHA} />
+          <SegredoDoCipo />
+          <MergulhoDaGruta />
           <Casa />
           <ConvidadosDaCasa />
           <Horta />
