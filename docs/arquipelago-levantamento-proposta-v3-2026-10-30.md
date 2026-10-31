@@ -529,6 +529,11 @@ uma. Aceite: o teste de miniaturas e o do construir. Aparecer só durante a fest
 
 ### B11. Segredos para os outros movimentos (ajuste nas ilhas antigas)
 
+> **Atualizado em 30/10/2026:** as medidas de cada movimento e os lugares revistos estão em
+> `docs/plans/2026-10-30-arquipelago-pedidos-de-arte.md` ("As medidas dos movimentos para os
+> segredos"). Montaria e balão só existem nas próprias ilhas, e cipó e mergulho precisam de código
+> para funcionar na sua ilha; a tabela abaixo é a versão anterior.
+
 Hoje os quatro baús só se alcançam pelo planador. A proposta quer que cada movimento novo abra um
 lugar numa ilha anterior. Pedido: um lugar por movimento, com a âncora `segredo-<movimento>` onde
 o baú fica e a geometria mínima para que **só** aquele movimento chegue lá:
@@ -557,6 +562,9 @@ Duas formas, à sua escolha:
 Em qualquer caso, nunca sorteado em troca de moeda (A28).
 
 ### B13. Atalhos da corrida pelos telhados (Vila Doce), só se o A41 não bastar
+
+> **Conferido em 30/10/2026:** os telhados atuais não têm atalho (vãos de mais de 5 m com 1,6 m de
+> subida). O A41 depende desta arte; especificação final no documento de pedidos de arte.
 
 Se os telhados atuais não ligarem pontos da corrida por um caminho mais curto, acrescentar em
 `ilhas/vila-doce.glb` duas pontes de telhado (tábuas de 0,8 m de largura entre dois telhados) e
