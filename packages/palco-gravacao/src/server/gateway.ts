@@ -58,10 +58,35 @@ export async function login(email: string, password: string): Promise<AuthTokens
   return data?.tokens?.accessToken && data.tokens.refreshToken ? data.tokens : null
 }
 
+type RefreshResult = AuthTokens | 'invalid' | 'unavailable'
+
+/**
+ * As renovações em andamento e as recém-feitas, por refresh token: o auth trata um refresh já
+ * usado como roubo e derruba a sessão inteira, então pedidos que chegam juntos com o token
+ * vencido (a navegação e a posição do vídeo, no meio de uma tomada) esperam a mesma renovação.
+ */
+const refreshes: Map<string, { at: number; result: Promise<RefreshResult> }> = ((
+  globalThis as { __palcoRefreshes?: Map<string, { at: number; result: Promise<RefreshResult> }> }
+).__palcoRefreshes ??= new Map())
+const REFRESH_REUSE_MS = 30_000
+
 /** Renova a sessão. `unavailable`: o auth não respondeu (a sessão continua). */
-export async function refresh(
-  refreshToken: string,
-): Promise<AuthTokens | 'invalid' | 'unavailable'> {
+export function refresh(refreshToken: string): Promise<RefreshResult> {
+  const now = Date.now()
+  for (const [token, entry] of refreshes)
+    if (now - entry.at > REFRESH_REUSE_MS) refreshes.delete(token)
+  const known = refreshes.get(refreshToken)
+  if (known) return known.result
+  const result = rotate(refreshToken).then((value) => {
+    // Uma falha passageira pode ser tentada de novo no próximo pedido.
+    if (value === 'unavailable') refreshes.delete(refreshToken)
+    return value
+  })
+  refreshes.set(refreshToken, { at: now, result })
+  return result
+}
+
+async function rotate(refreshToken: string): Promise<RefreshResult> {
   const res = await gatewayFetch('/auth/refresh', {
     method: 'POST',
     body: { refreshToken },

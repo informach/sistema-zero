@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
+import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
 import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
 
@@ -104,10 +105,44 @@ describe('rotas da aula no palco', () => {
       blockId: 'b1',
     })
     const now = new Date('2026-11-01T12:00:00Z')
-    expect(bffAnswer('POST', ['blocks', 'b1', 'studio-submission'], now)).toEqual({
+    expect(bffAnswer('POST', ['blocks', 'b1', 'studio-submission'], undefined, now)).toEqual({
       kind: 'json',
       status: 200,
       body: { submittedAt: '2026-11-01T12:00:00.000Z', gamification: null },
+    })
+  })
+
+  test('o vídeo e o quiz recebem a resposta que a tela lê, sem guardar nada', () => {
+    const now = new Date('2026-11-01T12:00:00Z')
+    expect(
+      bffAnswer(
+        'POST',
+        ['blocks', 'v1', 'learning-progress'],
+        { revision: 'r1', answers: { watched: [[0, 10]] }, hintsUsed: 0, positionSeconds: 10 },
+        now,
+      ),
+    ).toEqual({
+      kind: 'json',
+      status: 200,
+      body: {
+        blockId: 'v1',
+        revision: 'r1',
+        positionSeconds: 10,
+        answers: { watched: [[0, 10]] },
+        hintsUsed: 0,
+        attemptsCount: 0,
+        result: null,
+        updatedAt: '2026-11-01T12:00:00.000Z',
+      },
+    })
+    const quiz = bffAnswer('POST', ['blocks', 'q1', 'quiz-attempts'], { answers: { p1: ['a'] } })
+    expect(quiz).toMatchObject({
+      body: {
+        passed: true,
+        questions: [
+          { questionId: 'p1', correct: true, correctChoiceIds: ['a'], explanation: null },
+        ],
+      },
     })
   })
 
@@ -131,6 +166,15 @@ describe('entrada e endereço', () => {
     expect(staffFromClaims({ ...base, act: { sub: 'a', mode: 'readonly' } })).toBeNull()
     expect(staffFromClaims({ ...base, kids: { kind: 'parent' } })).toBeNull()
     expect(staffFromClaims({ ...base, typ: 'refresh' })).toBeNull()
+    expect(staffFromClaims({ ...base, typ: undefined })).toBeNull()
+    expect(staffFromClaims({ ...base, desktop: { sessionId: 'd1' } })).toBeNull()
+  })
+
+  test('depois de entrar, volta só para um caminho do próprio palco', () => {
+    const origin = 'https://palco.example'
+    expect(safeReturn('/aulas/c/a?tomada=1', origin)).toBe('/aulas/c/a?tomada=1')
+    const evils = ['//evil.com', '/\\evil.com', '/\t/evil.com', '/\n/evil.com', 'https://evil.com']
+    for (const evil of evils) expect(safeReturn(evil, origin)).toBe('/')
   })
 
   test('o endereço de uma aula do Kids vira a mesma aula no palco', () => {

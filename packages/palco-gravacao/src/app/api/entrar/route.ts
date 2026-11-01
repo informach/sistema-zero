@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { safeReturn } from '~/lib/safe-return'
 import { setSessionCookies } from '~/server/cookies'
 import { login } from '~/server/gateway'
 import { verifyAccess } from '~/server/session'
@@ -12,7 +13,7 @@ export async function POST(req: Request): Promise<Response> {
   const email = String(form?.get('email') ?? '').trim()
   const password = String(form?.get('senha') ?? '')
   const volta = String(form?.get('volta') ?? '/')
-  const back = volta.startsWith('/') && !volta.startsWith('//') ? volta : '/'
+  const back = safeReturn(volta, new URL(req.url).origin)
   const fail = (motivo: string) => {
     const url = new URL('/entrar', req.url)
     url.searchParams.set('erro', motivo)

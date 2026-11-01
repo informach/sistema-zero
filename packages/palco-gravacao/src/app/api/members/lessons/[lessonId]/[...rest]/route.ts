@@ -13,7 +13,13 @@ async function answer(req: Request, ctx: Ctx): Promise<Response> {
   const access = await staffAccess()
   if (!access) return Response.json({ error: { code: 'UNAUTHORIZED' } }, { status: 401 })
   const { lessonId, rest } = await ctx.params
-  const result = bffAnswer(req.method, rest)
+  const body =
+    req.method === 'POST' ? ((await req.json().catch(() => undefined)) as unknown) : undefined
+  const result = bffAnswer(
+    req.method,
+    rest,
+    body && typeof body === 'object' ? (body as Record<string, unknown>) : undefined,
+  )
   if (result.kind === 'json') return Response.json(result.body, { status: result.status })
   if (result.kind === 'studio-context') {
     const context = studioContextOf(lessonId, result.blockId)
@@ -24,7 +30,6 @@ async function answer(req: Request, ctx: Ctx): Promise<Response> {
           { status: 409 },
         )
   }
-  const body = await req.json().catch(() => undefined)
   const res = await gatewayFetch(paths.projectCheck(lessonId, result.sectionId), {
     method: 'POST',
     body,

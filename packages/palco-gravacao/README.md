@@ -53,6 +53,15 @@ Definição em `.railway/staging-services/palco-gravacao.json` (o `railway.ts` l
 staging). O CI publica o palco junto de toda mudança que publica o Kids, depois que o id do
 serviço está no mapa `SVC_ID` de `.github/workflows/ci.yml`.
 
+**Ordem da primeira subida.** O CI do staging só aceita ajustes de build e deploy em serviços que
+já existem; criar um é recusado e trava o deploy de todos. Então, antes do merge em `staging`:
+1. `railway config plan` no staging com este código mostra só "Create service palco-gravacao";
+2. a criação é feita por `railway config apply` nesse mesmo plano (mesma origem, réplicas e
+   build da definição);
+3. as variáveis entram no serviço, com referência às do `community-kids` do staging;
+4. o id do serviço entra no `SVC_ID` de `ci.yml`, e o plano volta a não ter mudanças;
+5. só então o merge.
+
 ## Limites conhecidos
 
 - Os vídeos da aula (Vimeo, YouTube) não são controlados pelo robô.
@@ -60,3 +69,7 @@ serviço está no mapa `SVC_ID` de `.github/workflows/ci.yml`.
   outra.
 - Ainda não há verbos para trocar um campo ou um número de um bloco nem para encaixar dentro de
   um bloco; esses gestos são marcados à mão no EdiAula.
+- Estúdio em Python não funciona no palco: a conferência e o ambiente do Python pedem o vínculo
+  do projeto na conta, que o palco não cria. As aulas com blocos e JavaScript funcionam.
+- Quiz respondido no palco passa sempre: as respostas certas só o members conhece, e conferir
+  ali gravaria uma tentativa.

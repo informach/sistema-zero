@@ -237,7 +237,8 @@ Entra com a conta da equipe. Só a conferência do projeto vai ao members, como 
 não guarda progresso nem prêmio da equipe. A definição fica em `.railway/staging-services/`, que
 o `railway.ts` lê apenas no staging, então a produção não ganha o serviço. As variáveis têm os
 mesmos valores do `community-kids` do staging (ver `.railway/variables.ts`). O CI só faz o deploy
-dele depois que o id do serviço entra no mapa `SVC_ID` de `ci.yml`. Detalhes em
+dele depois que o id do serviço entra no mapa `SVC_ID` de `ci.yml`. O serviço é criado antes do
+merge que o declara (o gate do staging recusa criar), na ordem do
 `packages/palco-gravacao/README.md`.
 
 ## Custo do staging
