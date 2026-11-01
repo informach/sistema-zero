@@ -8,6 +8,7 @@ import { ServicoDaMedicao } from './application/servico-da-medicao'
 import { ServicoDaObraEstendida } from './application/servico-da-obra-estendida'
 import { ServicoDasCartas } from './application/servico-das-cartas'
 import { ServicoDasProfissoes } from './application/servico-das-profissoes'
+import { ServicoDasRevisoesHumanas } from './application/servico-das-revisoes-humanas'
 import { ServicoDasRoupas } from './application/servico-das-roupas'
 import { ServicoDasVendas } from './application/servico-das-vendas'
 import { ServicoDasVisitas } from './application/servico-das-visitas'
@@ -39,6 +40,7 @@ import { DrizzleRepositorioDosMinijogos } from './infrastructure/persistence/dri
 import { DrizzleRepositorioDaObraEstendida } from './infrastructure/persistence/drizzle/repositorio-obra-estendida'
 import { DrizzleRepositorioDosPedidos } from './infrastructure/persistence/drizzle/repositorio-pedidos'
 import { DrizzleRepositorioDasProfissoes } from './infrastructure/persistence/drizzle/repositorio-profissoes'
+import { DrizzleRepositorioDasRevisoesHumanas } from './infrastructure/persistence/drizzle/repositorio-revisoes-humanas'
 import { RepositorioDeSessoesDeTempo } from './infrastructure/persistence/drizzle/repositorio-sessoes-tempo'
 import { DrizzleRepositorioDasVendas } from './infrastructure/persistence/drizzle/repositorio-vendas'
 import { DrizzleRepositorioDasVisitasAdultas } from './infrastructure/persistence/drizzle/repositorio-visitas-adultas'
@@ -90,8 +92,10 @@ export function createApplication(env: Env): Application {
     env.MEMBERS_URL && env.ARQUIPELAGO_COINS_TOKEN
       ? new MoedasHttp({ url: env.MEMBERS_URL, token: env.ARQUIPELAGO_COINS_TOKEN })
       : null
+  const repositorioDasRevisoes = new DrizzleRepositorioDasRevisoesHumanas(connection.db)
   const desafios = new ServicoDosDesafios({
     minijogos: new DrizzleRepositorioDosMinijogos(connection.db),
+    revisoes: repositorioDasRevisoes,
     politica,
     modo: env.ARQUIPELAGO_DESAFIOS,
     repo: new DrizzleRepositorioDoJogadorNosDesafios(connection.db),
@@ -180,6 +184,10 @@ export function createApplication(env: Env): Application {
       logger,
     }),
     minijogos: new ServicoDosMinijogos(new DrizzleRepositorioDosMinijogos(connection.db), politica),
+    revisoes: new ServicoDasRevisoesHumanas({
+      repo: repositorioDasRevisoes,
+      minijogos: new DrizzleRepositorioDosMinijogos(connection.db),
+    }),
     medicao: new ServicoDaMedicao(
       new DrizzleRepositorioDaMedicao(connection.db),
       undefined,

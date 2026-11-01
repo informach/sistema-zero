@@ -67,6 +67,8 @@ export interface RepositorioDaMedicao {
   ): Promise<{ jogadorId: string; dados: unknown }[]>
   /** O fim de cada sessão que contou tempo entre `de` e `ate`, por pessoa. */
   finsDeSessao(de: Date, ate: Date): Promise<Map<string, Date[]>>
+  /** O fim de cada dia de jogo do adulto entre `de` e `ate`, por pessoa (lacunas, 01/11/2026). */
+  finsDosDiasDeJogo?(de: Date, ate: Date): Promise<Map<string, Date[]>>
 }
 
 const poucos: NumeroDaMedicao = { situacao: 'poucos-dados', valor: null }
@@ -164,9 +166,10 @@ export function montarMedicao(
   return {
     periodo: filtro,
     calculadoEm: agora.toISOString(),
+    // O adulto também, pelos dias de jogo (lacunas, 01/11/2026).
     volta: {
-      situacao: filtro.publico === 'kids' ? 'disponivel' : 'sem-fonte',
-      coortes: filtro.publico === 'kids' ? dados.coortes.map((c) => protegerCoorte(c, hoje)) : [],
+      situacao: 'disponivel',
+      coortes: dados.coortes.map((c) => protegerCoorte(c, hoje)),
     },
     criacao: {
       pintaMolda: protegerContagem(dados.pintaMolda),
@@ -211,11 +214,13 @@ export function montarMedicao(
         }
       : {}),
     semFonte: [
-      ...(filtro.publico === 'adulto' ? ['volta-adulto' as const] : []),
       ...(compras && a ? [] : ['compras' as const]),
       ...(dados.minijogos ? [] : ['minijogos' as const]),
       ...(volta ? [] : ['curso-24h' as const]),
       'conclusoes-curso',
+      // Sem fonte no jogo (lacunas, item 28): a satisfação dos pais e a permanência na assinatura.
+      ...(filtro.publico === 'kids' ? ['satisfacao-dos-pais' as const] : []),
+      'permanencia',
     ],
   }
 }

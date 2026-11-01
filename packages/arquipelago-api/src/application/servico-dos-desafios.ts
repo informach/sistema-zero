@@ -26,6 +26,7 @@ import { decidirAcesso, type PoliticaDeAcesso } from '../domain/acesso'
 import { type CandidatoDoDia, escolherDesafioDoDia } from '../domain/desafio-do-dia'
 import {
   chaveDasMoedas,
+  eVersao2,
   passouNosObrigatorios,
   semanaDeSaoPaulo,
   situacaoDoDesafio,
@@ -39,6 +40,7 @@ import type { Jogador } from '../domain/jogador'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
 import type { RepositorioDosMinijogos } from '../domain/minijogos.port'
 import type { PortaDasMoedas } from '../domain/moedas.port'
+import type { RepositorioDasRevisoesHumanas } from '../domain/revisoes-humanas.port'
 import {
   AcessoBloqueadoError,
   DesafioBloqueadoError,
@@ -74,6 +76,8 @@ export class ServicoDosDesafios {
       moedas: PortaDasMoedas | null
       logger: Logger
       minijogos?: RepositorioDosMinijogos
+      /** A fila da revisão humana da Lenda (lacunas, 01/11/2026). */
+      revisoes?: RepositorioDasRevisoesHumanas
       agora?: () => Date
     },
   ) {}
@@ -100,6 +104,8 @@ export class ServicoDosDesafios {
     const feitos = new Map(conclusoes.map((c) => [c.desafioId, c]))
     const rotulos = new Map(curriculo.catalogo.map((b) => [b.type, b.rotulo]))
     const doDia = await this.doDia(jogador, publicados, feitos, regua)
+    // A revisão humana da Lenda (lacunas, 01/11/2026): uma leitura, usada nos desafios que pedem.
+    const revisoes = this.deps.revisoes ? await this.deps.revisoes.daPessoa(jogador.id) : null
     // Com `?ilha=`, o desafio do dia de outra ilha vem junto (o cartão do dia precisa dele).
     const desafios = publicados
       .filter((d) => !ilha || d.metadados.ilha === ilha || d.id === doDia?.id)
@@ -142,6 +148,9 @@ export class ServicoDosDesafios {
             recompensa: conteudo.recompensa,
             recompensaVista: feito?.recompensaVistaEm != null,
             extraFeito: feito?.extraConcluidoEm != null,
+            ...(conteudo.recompensa.revisaoHumana && revisoes
+              ? { revisaoHumana: revisoes.get(d.id) ?? null }
+              : {}),
           },
         ]
       })
@@ -316,6 +325,18 @@ export class ServicoDosDesafios {
       return { passou: passou.principal, resultados, concluidoAgora: false, extraAgora: false }
 
     const agora = this.agora()
+    // Lenda (lacunas, 01/11/2026): a versão 2 e a volta à revisão humana comparam com o aprovado
+    // guardado, lido antes de o envio de agora o trocar. Reenviar o mesmo jogo não conta.
+    const lenda = conteudo.recompensa.extraNaVersao2 || conteudo.recompensa.revisaoHumana
+    const versao2 =
+      lenda && feito && conteudo.recompensa.atracao && this.deps.minijogos
+        ? eVersao2({
+            jaAprovado: true,
+            passouAgora: passou.principal,
+            aprovadoGuardado: (await this.deps.minijogos.abrir(jogador.id, id))?.projeto,
+            enviado: copia,
+          })
+        : false
     if (passou.principal && conteudo.recompensa.atracao && this.deps.minijogos)
       await this.deps.minijogos.guardar({
         jogador,
@@ -348,9 +369,26 @@ export class ServicoDosDesafios {
     // O desafio do dia de hoje passou: "Amanhã tem outro" (vale também para quem refaz).
     if (passou.principal)
       await this.deps.repo.marcarDesafioDoDiaFeito(jogador.id, diaDeSaoPaulo(agora), id, agora)
-    // O extra vale com o principal passando junto (e uma vez só).
+    if (
+      passou.principal &&
+      conteudo.recompensa.revisaoHumana &&
+      this.deps.revisoes &&
+      (!feito || versao2)
+    )
+      await this.deps.revisoes.enviar({
+        jogadorId: jogador.id,
+        desafioId: id,
+        publico: jogador.publico,
+        titulo: conteudo.titulo,
+        agora,
+      })
+    // O extra vale com o principal passando junto (e uma vez só). Na versão 2, o extra é o envio
+    // mudado depois da aprovação, com os objetivos opcionais (se houver) passando junto.
+    const extraPassou = conteudo.recompensa.extraNaVersao2
+      ? Boolean(versao2) && (passou.extra || !conteudo.objetivos.some((o) => o.optional))
+      : passou.extra
     const extraAgora =
-      passou.principal && passou.extra
+      passou.principal && extraPassou
         ? await this.deps.repo.marcarExtra(jogador.id, id, agora)
         : false
     if (concluidoAgora || extraAgora) {

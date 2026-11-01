@@ -19,7 +19,8 @@ critérios são a lista de objetivos:
 | No encontro, o jogo guarda uma informação | Causal: uma variável do início recebe outro valor no encontro |
 | Um Se usa essa informação para decidir o que acontece | Causal: depois da lembrança, o Se escolhe um ramo que age e antes não agia |
 | Uma tecla recomeça o jogo | Causal: recomeçar que roda dentro de uma tecla |
-| Extra: algo sai da tela quando é pego | Causal: tirar um desenho, em código que roda, dentro do encontro |
+| O jogo combina os três postos de blocos (Lenda) | Causal: decisão do Faísca, grupo criado por relógio com encontro do Construtor, gravidade com pulo do Inventor |
+| Extra: versão 2 | Serviço do jogo: um envio que passa depois da aprovação, com o jogo mudado em relação ao aprovado |
 
 "Causal" é a regra `gameCausality` do core (`packages/core/src/learning/game-causality.ts`, revisão
 de 30/10/2026). Antes eram regras de presença de bloco, e um projeto com cada evento dentro de um
@@ -28,21 +29,31 @@ falso`), num laço que repete zero vezes ou desativado não conta; o teste traz 
 tudo em `Se falso`, encontro morto, condição que nunca produz a consequência, Se ao contrário da
 lembrança e tecla que não reinicia.
 
-Nenhum critério pede nome de variável, desenho ou regra pronta. O gabarito (levar a estrela até
-o farol para acender) é só um exemplo; o teste confere que outra ideia, com outros nomes e
-desenhos, também cumpre. Todos os blocos vêm da trilha do Faísca, para valer a qualquer pessoa
-que chegou ao fim.
+Nenhum critério pede nome de variável, desenho ou regra pronta. O gabarito é só um exemplo: o
+guia corre e pula como o Dino, pedras criadas por relógio rolam pelo chão, e levar a estrela até
+o farol acende a luz. O teste confere que outra ideia, com outros nomes e desenhos, também cumpre.
+Os blocos vêm dos três postos de blocos (Faísca, Construtor e Inventor).
 
-No jogo, o cavalete fica do lado oeste do Farol, fora dos lotes da casa e longe da porta e da
-Íris (`QUADRO_DO_FAROL`), e só aparece depois do final (`farol.concluido`). O painel mostra só
-esse quadro.
+## A Lenda (lacunas, 01/11/2026)
 
-```powershell
-bun docs/desafios-do-jogo/farol/gerar-manifesto.ts
-bun test docs/desafios-do-jogo/farol
-$env:SZ_CHECK_CHROMIUM='C:/Program Files/Google/Chrome/Application/chrome.exe'
-cd packages/studio-runtime; bun test tests/farol-autoral-browser.test.ts --timeout 900000
-```
+A Jornada pede, no projeto autoral, "definir público, objetivo e três funcionalidades", "combinar
+mecânicas já aprendidas", "testar com outra pessoa", "entregar versão 2" e "uma revisão humana por
+projeto final, com retorno acionável e nova tentativa". No jogo:
+
+- **Combinação:** nos blocos e na Ponte, o critério `combina` (regra `gameCausality`, passo
+  `combination`, no core) confere as mecânicas dos três postos de blocos em código que roda.
+- **Ficha:** no Python e no Pro, o jogo começa só com a janela e o guia andando, sem estrela nem
+  pontos; a ficha no começo do código guarda o objetivo e as três funcionalidades. Os critérios
+  automáticos valem para qualquer ideia: a ficha preenchida, o jogo que aguenta setas, espaço e
+  clique sem erro, e o R que leva o guia de volta ao começo. Julgar o jogo inventado é da equipe.
+- **Versão 2:** `recompensa.extraNaVersao2`. O extra vale num envio que passa depois da aprovação,
+  com o jogo mudado em relação ao aprovado guardado no fliperama (mover um bloco ou salvar de novo
+  não conta). O serviço compara antes de guardar o envio novo (`eVersao2`, `domain/desafios.ts`).
+- **Revisão humana:** `recompensa.revisaoHumana`. Cada envio aprovado entra na fila "Projetos da
+  Lenda" da Sala do Professor (`/admin/professor/lenda`, tabela `revisoes_humanas`, migration
+  0025). A equipe joga a cópia aprovada e responde `conferido` ou `nova-tentativa` com um retorno;
+  o número do envio trava a resposta (um envio novo antes dela dá 409). A pessoa vê o estado e o
+  retorno no cartão do Farol, e o botão vira "Fazer a versão 2" enquanto o extra não sai.
 
 ## Em cada linguagem conquistada (A29, revisão de 31/10/2026)
 
@@ -61,11 +72,10 @@ posto onde a linguagem começa. O painel do Farol mostra as quatro e marca a da 
 já aberta (`quadroSugeridoNoFarol`), enquanto nenhuma foi feita. O enunciado é o pedido da Íris.
 
 A Ponte é o mesmo projeto dos blocos, lido do JavaScript, com os mesmos critérios causais. No
-Python e no Pro, a cena vem pronta (o guia à esquerda, andando com as setas, e a estrela no caminho
-dele) e o jogo é da pessoa; os critérios rodam o jogo de verdade: passar pela estrela soma um ponto
-uma vez só, R leva o guia ao começo e, depois do R, a estrela pode ser pega de novo com os pontos
-do zero. O andar vem pronto porque é ele que separa recomeçar de nunca ter saído do lugar. O
-executor real recusa contar sem lembrar, não recomeçar e recomeçar sem esquecer a estrela.
+Python e no Pro, o cenário é aberto (seção "A Lenda"): os critérios rodam o jogo de verdade e
+leem a ficha, o jogo jogado com setas, espaço e clique, e o guia depois do R. O andar vem pronto
+porque é ele que separa recomeçar de nunca ter saído do lugar. O executor real recusa a ficha
+vazia, um jogo que quebra no espaço e um R que não recomeça.
 
 ```powershell
 bun docs/desafios-do-jogo/farol/gerar-manifesto-linguagens.ts

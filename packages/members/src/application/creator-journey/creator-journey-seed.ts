@@ -240,6 +240,10 @@ export function buildCreatorJourneySeed(
           existingSlug: EXISTING_EXTRAS[extra.title],
         }),
       }))
+      // Pela Jornada (lacunas, 01/11/2026): o Pensa depois do par do Construtor; a Ponte depois do
+      // curso de introdução à linguagem (o curso-base do Explorador, o primeiro em Python); o Pro
+      // no Gênio. Quem já tinha recebido antes continua com ela: as capacidades ganhas ficam
+      // gravadas (Kids em `kids_journey_earned`, adulto em `freezeGranted`).
       const grants: CreatorJourneyCurriculum['stages'][number]['grants'] =
         index === 0
           ? [
@@ -247,10 +251,12 @@ export function buildCreatorJourneySeed(
               { after: 'base3d', capabilities: ['molda'] },
             ]
           : index === 1
-            ? [{ after: 'pair', capabilities: ['ai', 'pensa', 'bridge'] }]
+            ? [{ after: 'pair', capabilities: ['ai', 'pensa'] }]
             : index === 3
-              ? [{ after: 'base2d', capabilities: ['pro'] }]
-              : []
+              ? [{ after: 'base2d', capabilities: ['bridge'] }]
+              : index === 6
+                ? [{ after: 'base2d', capabilities: ['pro'] }]
+                : []
       return {
         level: post,
         title: stage.name,

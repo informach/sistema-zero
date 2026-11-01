@@ -1,4 +1,5 @@
 import {
+  type AdultJourneyPolicy,
   adultJourneyPosition,
   type CreatorJourneyCurriculum,
   creatorJourneyCoursePlacements,
@@ -84,17 +85,24 @@ export class ArquipelagoReadsService {
       posicao: posicao?.position ?? 1,
       total: posicao?.total ?? POSICOES,
       blocos: (await blocos).blocks,
-      cursosBase: cursosBaseConcluidos(adulto.curriculum),
+      // Política adulta sem currículo (lacunas, 01/11/2026): os cursos-base saem das etapas.
+      cursosBase: adulto.curriculum
+        ? cursosBaseConcluidos(adulto.curriculum)
+        : cursosBaseDasEtapasConcluidos(adulto.stages),
     }
   }
 
   async curriculoDeBlocos(audience: CourseAudience): Promise<CurriculoDeBlocos> {
     const [politica, cursos] = await Promise.all([
       audience === 'kids'
-        ? this.deps.kidsJourney.publishedCurriculum()
-        : this.deps.adultJourney
-            .policy()
-            .then((p) => ({ version: p.version, curriculum: p.policy.curriculum ?? null })),
+        ? this.deps.kidsJourney
+            .publishedCurriculum()
+            .then((p) => ({ ...p, stages: null as AdultJourneyPolicy['stages'] | null }))
+        : this.deps.adultJourney.policy().then((p) => ({
+            version: p.version,
+            curriculum: p.policy.curriculum ?? null,
+            stages: p.policy.stages,
+          })),
       this.deps.courses.listPublishedCourses(audience),
     ])
     const comBlocos: CursoComBlocos[] = []
@@ -115,10 +123,16 @@ export class ArquipelagoReadsService {
     }
     // O curso-base (2D) de cada posto, publicado, mesmo sem blocos (A3 e A24 do Arquipélago).
     const publicados = new Map(cursos.map((c) => [c.id, c]))
-    const cursosBase = (politica.curriculum?.stages ?? []).flatMap((stage) => {
-      const curso = publicados.get(stage.base2dCourseId)
+    // Sem currículo, a política adulta antiga: o curso-base de cada posto é o da etapa dele.
+    const bases: { posto: string; courseId: string }[] = politica.curriculum
+      ? politica.curriculum.stages.map((s) => ({ posto: s.level, courseId: s.base2dCourseId }))
+      : politica.stages
+        ? cursosBaseDasEtapas(politica.stages)
+        : []
+    const cursosBase = bases.flatMap((base) => {
+      const curso = publicados.get(base.courseId)
       return curso
-        ? [{ posto: stage.level, courseId: curso.id, titulo: curso.title, slug: curso.slug }]
+        ? [{ posto: base.posto, courseId: curso.id, titulo: curso.title, slug: curso.slug }]
         : []
     })
     return {
@@ -142,6 +156,40 @@ export function cursosBaseConcluidos(
   curriculo: { stages: readonly { level: string; base2d: { state: string } }[] } | null | undefined,
 ): string[] {
   return (curriculo?.stages ?? []).filter((s) => s.base2d.state === 'completed').map((s) => s.level)
+}
+
+/**
+ * A política adulta sem currículo (lacunas, 01/11/2026): as etapas, em ordem, são os postos (a mesma
+ * conta da posição do adulto no jogo, `adultJourneyPosition`), e o curso-base de cada posto é o
+ * primeiro curso que a etapa pede concluído. Sem isso, Python, Ponte e Pro (e o Farol) ficavam
+ * trancados para os adultos.
+ */
+export function cursosBaseDasEtapas(
+  stages: readonly { requirements?: readonly { courseId: string; milestone: string }[] }[],
+): { posto: JourneyLevelSlug; courseId: string }[] {
+  return stages.flatMap((stage, i) => {
+    const posto = JOURNEY_LEVEL_SLUGS[i]
+    const base = stage.requirements?.find((r) => r.milestone === 'complete')
+    return posto && base ? [{ posto, courseId: base.courseId }] : []
+  })
+}
+
+/** Os postos cujo curso-base da etapa a pessoa concluiu (o curso não está entre os que faltam). */
+export function cursosBaseDasEtapasConcluidos(
+  stages: readonly {
+    requirements?: readonly { courseId: string; milestone: string }[]
+    missing?: readonly { courseId: string; milestone: string }[]
+  }[],
+): string[] {
+  return stages.flatMap((stage, i) => {
+    const posto = JOURNEY_LEVEL_SLUGS[i]
+    const base = stage.requirements?.find((r) => r.milestone === 'complete')
+    if (!posto || !base) return []
+    const falta = (stage.missing ?? []).some(
+      (m) => m.courseId === base.courseId && m.milestone === 'complete',
+    )
+    return falta ? [] : [posto]
+  })
 }
 
 /** O lugar mais cedo do curso no currículo: o posto da trilha, ou a Maestria (sem posto). */

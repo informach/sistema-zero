@@ -14,6 +14,7 @@ export const GAME_CAUSALITY_STEP_LABELS: Record<GameCausalityStep, string> = {
   decision: 'Um Se usa o que foi guardado',
   restart: 'Uma tecla recomeça o jogo',
   removal: 'Algo sai da tela num encontro',
+  combination: 'Combina mecânicas de três postos (Faísca, Construtor e Inventor)',
 }
 
 export function describeGameCausality(rule: GameCausalityRule): string {

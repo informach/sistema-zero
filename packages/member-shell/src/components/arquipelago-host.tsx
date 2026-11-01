@@ -12,6 +12,7 @@ import {
   type MoldeDoVestuario,
   MoldeDoVestuarioSchema,
   type MontagemDoArquipelago,
+  negociarVersao,
   PERCURSOS,
   type PedidoDeFerramenta,
   type Plataforma,
@@ -270,13 +271,18 @@ function corpoJson(metodo: string, corpo: unknown): RequestInit {
  * rotas das telas da plataforma; o resto vai ao serviço do jogo pelo repasse.
  */
 export function criarPlataformaDoArquipelago(opcoes: {
+  /**
+   * A versão negociada com o jogo (A35). O host monta a porta dessa versão: hoje só existe a 1;
+   * quando vier a 2, o que mudar nela fica atrás desta versão e o jogo v1 recebe a porta v1.
+   */
+  versao?: number
   publico: PublicoJogo
   perfil: { id: string; primeiroNome: string }
   voltarPara: string
   abrirFerramenta?: (pedido: PedidoDeFerramenta) => Promise<ResultadoDeFerramenta>
 }): Plataforma {
   return {
-    versaoContrato: VERSAO_CONTRATO_PLATAFORMA,
+    versaoContrato: opcoes.versao ?? VERSAO_CONTRATO_PLATAFORMA,
     publico: opcoes.publico,
     perfil: opcoes.perfil,
     lerAparencia: (id, sinal) => lerAparenciaDaConta(opcoes.perfil.id, id, sinal),
@@ -506,13 +512,16 @@ export function ArquipelagoHost(props: {
         /* webpackIgnore: true */ /* turbopackIgnore: true */ url
       )) as ModuloDoArquipelago
       if (!vivo || !elemento.current) return
-      if (!versaoCompativel(modulo.versaoContrato)) {
+      // A35: o lado novo entrega ao antigo a porta da versão antiga (a menor das duas).
+      const versao = negociarVersao(modulo.versaoContrato)
+      if (versao === null) {
         setEstado('indisponivel')
         return
       }
       montagem = modulo.montarArquipelago(
         elemento.current,
         criarPlataformaDoArquipelago({
+          versao,
           publico,
           perfil: { id, primeiroNome },
           voltarPara,

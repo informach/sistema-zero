@@ -38,6 +38,44 @@ export function passouNosObrigatorios(
   }
 }
 
+/**
+ * O que é o jogo num projeto do Estúdio, para saber se uma versão mudou: as instruções (sem os ids
+ * dos blocos), os arquivos, a árvore do Pro e os materiais. Mover um bloco de lugar, renomear o
+ * projeto ou salvar de novo não muda o jogo.
+ */
+function essenciaDoJogo(projeto: unknown): string {
+  const p = (projeto ?? {}) as Record<string, unknown>
+  const semIds = (valor: unknown): unknown =>
+    Array.isArray(valor)
+      ? valor.map(semIds)
+      : valor && typeof valor === 'object'
+        ? Object.fromEntries(
+            Object.keys(valor as object)
+              .filter((k) => k !== '__id')
+              .sort()
+              .map((k) => [k, semIds((valor as Record<string, unknown>)[k])]),
+          )
+        : valor
+  const materiais = Array.isArray(p.assets)
+    ? (p.assets as Record<string, unknown>[]).map((a) => [a.name, a.dataUrl, a.libId])
+    : []
+  return JSON.stringify(semIds({ ir: p.ir, files: p.files, tree: p.tree, materiais }))
+}
+
+/**
+ * A versão 2 da Lenda (lacunas, 01/11/2026): o extra vale num envio que passa nos critérios
+ * depois de o desafio já estar aprovado, com o jogo mudado em relação ao aprovado guardado.
+ */
+export function eVersao2(e: {
+  jaAprovado: boolean
+  passouAgora: boolean
+  aprovadoGuardado: unknown
+  enviado: unknown
+}): boolean {
+  if (!e.jaAprovado || !e.passouAgora || e.aprovadoGuardado == null) return false
+  return essenciaDoJogo(e.aprovadoGuardado) !== essenciaDoJogo(e.enviado)
+}
+
 /** Espaço de nomes das chaves de moedas do Arquipélago (UUIDv5 fixo). */
 const NAMESPACE = 'a3f1c2d4-5b6e-4f70-8a91-b2c3d4e5f607'
 
