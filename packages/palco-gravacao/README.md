@@ -70,7 +70,10 @@ trocando só os dois endereços internos pelo gateway público (a rede interna d
 ao computador):
 
 ```sh
-railway run --service palco-gravacao --environment staging -- env   GATEWAY_URL=https://<gateway do staging>   JWT_JWKS_URL=https://<gateway do staging>/auth/.well-known/jwks.json   NODE_ENV=production npx next start -p 3010
+railway run --service palco-gravacao --environment staging -- env \
+  GATEWAY_URL=https://<gateway do staging> \
+  JWT_JWKS_URL=https://<gateway do staging>/auth/.well-known/jwks.json \
+  NODE_ENV=production npx next start -p 3010
 ```
 
 O passo a passo de uma gravação está no README do EdiAula ("Gravar uma aula do Sistema Zero,
