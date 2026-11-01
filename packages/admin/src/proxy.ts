@@ -70,5 +70,9 @@ export const config = {
   // `api/media` fica FORA do matcher: o proxy buffeia o corpo (limite ~10MB) e
   // estrangularia uploads multipart; essas rotas têm guard de sessão próprio
   // (com a mesma checagem anti-CSRF dentro do `requireMediaSession`).
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|api/media).*)'],
+  // S2S publication endpoints authenticate with their dedicated tokens before reading a
+  // bounded body. Bypass the proxy buffer, as for uploads, to preserve large course captures.
+  matcher: [
+    '/((?!_next/static|_next/image|favicon.ico|api/media|api/internal/course-publication(?:/|$)).*)',
+  ],
 }

@@ -34,7 +34,7 @@ export function getWhitelistDomains(): string[] {
   return parseWhitelistDomains(getEnv().VIMEO_WHITELIST_DOMAINS ?? '')
 }
 
-async function vimeoFetch<T>(
+export async function vimeoFetch<T>(
   path: string,
   init: RequestInit = {},
   options: { skipJsonParse?: boolean } = {},

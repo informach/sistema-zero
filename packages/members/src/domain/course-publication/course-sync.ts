@@ -2,7 +2,9 @@ import { createHash } from 'node:crypto'
 import { type LessonDraftDocument, remapStudioExampleContent } from '@sistemazero/core/learning'
 import type { Course, Lesson, Module } from '../course/course'
 import { remapBlockAttachmentIds } from '../course/lesson-block'
-import { stableJson } from '../shared/stable-json'
+import { canonicalJson } from '../shared/stable-json'
+import type { PreparedCourseKnowledge } from './knowledge'
+import { type CoursePromotionMedia, promotedCourseSource } from './promotion'
 
 export type Environment = 'staging' | 'production' | 'local'
 export type CourseRow = Course
@@ -28,10 +30,14 @@ export interface CourseSnapshot {
 }
 export interface Snapshot {
   environment: Environment
+  operation?: 'copy-adult' | 'promote-kids'
+  sourceEnvironment?: Environment
   source: CourseSnapshot
   target: CourseSnapshot
 }
 export interface MediaProof {
+  promotion?: CoursePromotionMedia
+  knowledge?: PreparedCourseKnowledge
   environment: Environment
   sourceHash: string
   checkedAt: string
@@ -49,10 +55,11 @@ interface IdentityMap {
   sections: Record<string, string>
   attachments: Record<string, string>
 }
-export const hash = (value: unknown) => createHash('sha256').update(stableJson(value)).digest('hex')
-export const same = (left: unknown, right: unknown) => stableJson(left) === stableJson(right)
+export const hash = (value: unknown) =>
+  createHash('sha256').update(canonicalJson(value)).digest('hex')
+export const same = (left: unknown, right: unknown) => canonicalJson(left) === canonicalJson(right)
 export const sourceHash = (snapshot: Snapshot) =>
-  hash({ environment: snapshot.environment, source: snapshot.source })
+  hash({ environment: snapshot.sourceEnvironment ?? snapshot.environment, source: snapshot.source })
 const newId = (target: string, kind: string, source: string) => {
   const h = hash(['course-audience-sync-v1', target, kind, source])
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`
@@ -81,6 +88,23 @@ export function missingAdultTarget(
     },
     modules: [],
     lessons: [],
+  }
+}
+export function missingKidsTarget(
+  source: CourseRow,
+  slug: string,
+  environment: Environment,
+): CourseSnapshot {
+  const target = missingAdultTarget(source, slug, environment)
+  return {
+    ...target,
+    course: {
+      ...target.course,
+      id: newId(source.id, 'kids-course', `${environment}:${slug}`),
+      audience: 'kids',
+      careerSlot: source.careerSlot,
+      journeyRole: source.journeyRole,
+    },
   }
 }
 const withoutPlans = (document: LessonDraftDocument) => ({ ...document, plannedVideos: [] })
@@ -149,13 +173,32 @@ function identify(
 }
 
 export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
-  const { source, target, environment } = snapshot
+  const { target, environment } = snapshot
+  const operation = snapshot.operation ?? 'copy-adult'
   if (
-    source.course.id === target.course.id ||
-    source.course.audience !== 'kids' ||
-    target.course.audience !== 'adult'
+    operation === 'promote-kids' &&
+    (environment !== 'production' || snapshot.sourceEnvironment !== 'staging')
   )
-    throw new Error('A sincronização exige cursos distintos Kids e adulto')
+    throw new Error('A promoção exige origem staging e destino produção')
+  if (
+    operation === 'copy-adult' &&
+    snapshot.sourceEnvironment &&
+    snapshot.sourceEnvironment !== environment
+  )
+    throw new Error('A cópia entre públicos precisa permanecer no mesmo ambiente')
+  if (media && operation === 'promote-kids' && !media.promotion)
+    throw new Error('As transferências para produção ainda não foram preparadas')
+  if (media?.promotion && operation !== 'promote-kids')
+    throw new Error('Uma cópia local não aceita transferências de outro ambiente')
+  const source = media?.promotion
+    ? promotedCourseSource(snapshot.source, media.promotion)
+    : snapshot.source
+  if (
+    (operation === 'copy-adult' && source.course.id === target.course.id) ||
+    source.course.audience !== 'kids' ||
+    target.course.audience !== (operation === 'promote-kids' ? 'kids' : 'adult')
+  )
+    throw new Error('A sincronização exige origem Kids e o público de destino correto')
   if (
     source.course.status !== 'published' ||
     source.course.modality !== 'recorded' ||
@@ -317,7 +360,10 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
   const metadata = structuredClone(source.course.metadata ?? {})
   delete metadata.contentMirror
   delete metadata.clonedFrom
-  const url = adultSalesUrl(metadata.salesPageUrl, target.course.metadata?.salesPageUrl)
+  const url =
+    operation === 'promote-kids'
+      ? (metadata.salesPageUrl ?? target.course.metadata?.salesPageUrl)
+      : adultSalesUrl(metadata.salesPageUrl, target.course.metadata?.salesPageUrl)
   if (url) metadata.salesPageUrl = url
   else delete metadata.salesPageUrl
   if (metadata.creatorSeed) {
@@ -333,10 +379,12 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     ...source.course,
     id: targetId,
     slug: target.course.slug,
-    audience: 'adult',
-    careerSlot: target.course.careerSlot,
+    audience: operation === 'promote-kids' ? 'kids' : 'adult',
+    careerSlot: operation === 'promote-kids' ? source.course.careerSlot : target.course.careerSlot,
     journeyRole:
-      source.course.careerSlot === null ? source.course.journeyRole : target.course.journeyRole,
+      operation === 'promote-kids' || source.course.careerSlot === null
+        ? source.course.journeyRole
+        : target.course.journeyRole,
     version: target.course.version,
     createdAt: target.course.createdAt,
     metadata,
@@ -357,6 +405,7 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     ) ||
     lessonPlans.some((l) => l.changed)
   const body = {
+    operation,
     environment,
     snapshotHash: hash(snapshot),
     sourceHash: sourceHash(snapshot),

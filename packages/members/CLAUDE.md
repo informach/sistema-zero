@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/members
 
+## Publicação de cursos pelo Admin (01/11/2026)
+
+`application/course-publication` reúne o serviço, o worker e o processador da promoção.
+`copy-adult` copia dentro do ambiente; `promote-kids` parte de staging e tem um único trabalho
+persistido em produção. Não executar shell na requisição nem copiar bancos de alunos.
+O operador `scripts/publish-course.ts` reutiliza o serviço canônico, com entrada JSON limitada.
+
+Prévia e aprovação usam versão e hashes de origem/destino. Recursos ficam em tarefas duráveis;
+publicação de grade, fontes do tutor e conclusão do trabalho são atômicas. Lease de 90 segundos,
+renovação a cada 20, prazo de duas horas e adiamento de recurso por 30 segundos. Cancelamento,
+perda de posse e edição concorrente impedem a publicação. Migrations 0145 a 0148.
+
+As portas privadas de mídia vivem no Admin; Members continua sem domínio público. Promoção e
+leitura da origem atravessam relays de Admin com destino fixo, tokens distintos e limites de
+corpo. A origem só sai para um trabalho aprovado e atual. Nunca expor capturas, transcrições,
+credenciais ou respostas do professor no DTO do navegador. Configuração parcial deve falhar.
+Os testes de banco recusam destinos fora dos bancos locais nomeados explicitamente.
+Guia operacional e variáveis: `docs/operations/publicar-cursos.md`.
+
 ## Sincronizar curso Kids para adulto (01/11/2026)
 
 Operador em `scripts/release/sync-course-audiences.ts`; a entrada Railway em

@@ -94,6 +94,10 @@ export function keyDaVoz(roteiro: string, voiceId: string): string {
     .digest('hex')
   return `aulas/voz/${hash.slice(0, 32)}.mp3`
 }
+/** Cache signature only. It neither requires an API key nor synthesizes an empty utterance. */
+export function perfilDaVozDoZappy(): string {
+  return keyDaVoz('', getEnv().ELEVENLABS_VOICE_ID || VOZ_PADRAO)
+}
 
 export interface GeracaoDeVoz {
   /** O dicionário para gravar no bloco: `texto falado → URL`. */

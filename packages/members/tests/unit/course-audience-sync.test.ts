@@ -1,11 +1,12 @@
 import { describe, expect, test } from 'bun:test'
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { defaultLessonSection, type LessonDraftDocument } from '@sistemazero/core/learning'
 import {
   adultSalesUrl,
   hash,
   type MediaProof,
   missingAdultTarget,
+  missingKidsTarget,
   planCourseSync,
   type Snapshot,
   sourceHash,
@@ -14,6 +15,98 @@ import {
   readPublicationSnapshot,
   storePublicationSnapshot,
 } from '../../src/domain/course-publication/jobs'
+import { canonicalJson, stableJson } from '../../src/domain/shared/stable-json'
+
+describe('promoção do Kids staging para produção', () => {
+  test('a impressão não depende do idioma do servidor e mantém as identidades já derivadas', () => {
+    const value = { é: 1, z: 2, A: 3, a: 4 }
+    expect(canonicalJson(value)).toBe('{"A":3,"a":4,"z":2,"é":1}')
+    const identity = ['course-audience-sync-v1', 'destino', 'lesson', 'origem']
+    expect(hash(identity)).toBe(createHash('sha256').update(stableJson(identity)).digest('hex'))
+  })
+  test('mantém identidade de destino e remapeia mídias explícitas, planejamentos e oferta', () => {
+    const snapshot = fixture()
+    snapshot.environment = 'production'
+    snapshot.sourceEnvironment = 'staging'
+    snapshot.operation = 'promote-kids'
+    snapshot.target.course.audience = 'kids'
+    snapshot.source.course.careerSlot = 2
+    snapshot.source.course.coverImageUrl = 'https://stage.test/capa.png'
+    snapshot.source.course.metadata!.salesPageUrl = 'https://oferta-staging.test/kids/busca'
+    const lesson = snapshot.source.lessons[0]!
+    lesson.draft = null
+    const block = lesson.published.blocks[0]!
+    block.content = {
+      kind: 'video',
+      provider: 'vimeo',
+      src: '1000',
+      captions: [{ lang: 'pt', url: 'https://stage.test/a.vtt' }],
+    }
+    lesson.published.plannedVideos = [
+      { blockId: block.id, instructions: 'Vídeo da aula', videoId: '1000' },
+    ]
+    lesson.published.attachments = [
+      {
+        id: randomUUID(),
+        label: 'Passo a passo',
+        url: 'r2priv:curso.pdf',
+        fileType: 'application/pdf',
+        sizeBytes: 100,
+        zappyStudentNotebook: true,
+      },
+    ]
+    lesson.draft = { revision: 'rascunho-publicado', document: structuredClone(lesson.published) }
+    const before = structuredClone(snapshot)
+    const media: MediaProof = {
+      environment: 'production',
+      sourceHash: sourceHash(snapshot),
+      checkedAt: new Date().toISOString(),
+      readyVideoIds: ['2000'],
+      voices: {},
+      generated: 0,
+      reused: 0,
+      promotion: {
+        origin: {
+          publicBaseUrl: 'https://stage.test',
+          publicBucket: 'testes',
+          privateBucket: 'testes-privado',
+        },
+        replacements: {
+          'https://stage.test/capa.png': 'https://prod.test/capa.png',
+          'https://stage.test/a.vtt': 'https://prod.test/a.vtt',
+          'r2priv:curso.pdf': 'r2priv:producao/curso.pdf',
+          'https://player.vimeo.com/video/1000': 'https://player.vimeo.com/video/2000?h=novo',
+        },
+        videos: { '1000': 'https://player.vimeo.com/video/2000?h=novo' },
+        salesPageUrl: 'https://sistemazero.com.br/kids/busca',
+      },
+    }
+    const plan = planCourseSync(snapshot, media)
+    expect(plan.course.id).toBe(snapshot.target.course.id)
+    expect(plan.course.audience).toBe('kids')
+    expect(plan.course.careerSlot).toBe(2)
+    expect(plan.course.coverImageUrl).toBe('https://prod.test/capa.png')
+    expect(plan.course.metadata?.salesPageUrl).toBe('https://sistemazero.com.br/kids/busca')
+    expect(plan.lessons[0]!.document.plannedVideos[0]!.videoId).toBe('2000')
+    expect(plan.lessons[0]!.document.attachments[0]!.url).toBe('r2priv:producao/curso.pdf')
+    expect(plan.lessons[0]!.document.blocks[0]!.content.src).toBe(
+      'https://player.vimeo.com/video/2000?h=novo',
+    )
+    expect(JSON.stringify(plan.lessons)).not.toContain('stage.test')
+    expect(snapshot).toEqual(before)
+    delete media.promotion!.replacements['https://stage.test/a.vtt']
+    expect(() => planCourseSync(snapshot, media)).toThrow('mídia ainda não foi preparada')
+  })
+  test('recusa destinos fora do fluxo e prepara identidade estável para curso ausente', () => {
+    const snapshot = fixture()
+    snapshot.operation = 'promote-kids'
+    expect(() => planCourseSync(snapshot)).toThrow('staging')
+    const first = missingKidsTarget(snapshot.source.course, 'busca', 'production')
+    expect(first).toEqual(missingKidsTarget(snapshot.source.course, 'busca', 'production'))
+    expect(first.course.audience).toBe('kids')
+    expect(first.course.id).not.toBe(snapshot.source.course.id)
+  })
+})
 
 export function fixture(): Snapshot {
   const now = new Date('2026-11-01T10:00:00Z')

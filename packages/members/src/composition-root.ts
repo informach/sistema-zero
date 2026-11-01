@@ -29,6 +29,13 @@ import {
   LessonAdminService,
   ModuleAdminService,
 } from './application/content-admin/content-admin.service'
+import { CoursePromotionProcessor } from './application/course-publication/course-promotion.processor'
+import {
+  CoursePromotionService,
+  CoursePromotionSourceService,
+} from './application/course-publication/course-promotion.service'
+import { CoursePublicationService } from './application/course-publication/course-publication.service'
+import { CoursePublicationWorker } from './application/course-publication/course-publication.worker'
 import {
   CommitCreationUploadService,
   CompactCreationTombstonesService,
@@ -135,12 +142,19 @@ import {
 } from './application/validate-certificate/validate-certificate.service'
 import { ZappyHistoryService } from './application/zappy/zappy-history.service'
 import { ZappyKnowledgeService } from './application/zappy/zappy-knowledge.service'
+import { readPublicationSource } from './domain/course-publication/jobs'
 import type { LiveRewardsPort } from './domain/ports/live-rewards.port'
 import type { MasteryOwner } from './domain/ports/mastery-repository.port'
 import { createStudioRuntimeHosts } from './domain/studio/runtime-hosts'
 import { createStudioRuntimePolicy } from './domain/studio/runtime-policy'
 import type { Env } from './infrastructure/config/env'
 import { loadStudioAuthoringPolicy } from './infrastructure/config/studio-authoring-policy'
+import { createAdminPublicationMediaClient } from './infrastructure/course-publication/admin-media.client'
+import { createAdminCourseTransferClient } from './infrastructure/course-publication/admin-transfer.client'
+import {
+  createCoursePromotionPeerClient,
+  createCoursePromotionSourceClient,
+} from './infrastructure/course-publication/promotion-peer.client'
 import { createAuthHttpGateway } from './infrastructure/gateways/auth-http.gateway'
 import { createCatalogHttpGateway } from './infrastructure/gateways/catalog-http.gateway'
 import { FunnelChallengeAnalyticsGateway } from './infrastructure/gateways/funnel-challenge-analytics.gateway'
@@ -169,6 +183,7 @@ import { DrizzleChallengeConfigRepository } from './infrastructure/persistence/d
 import { DrizzleChallengeLifecycleRepository } from './infrastructure/persistence/drizzle/challenge-lifecycle.repository'
 import { DrizzleContentAdminRepository } from './infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from './infrastructure/persistence/drizzle/course.repository'
+import { DrizzleCoursePublicationRepository } from './infrastructure/persistence/drizzle/course-publication.repository'
 import { DrizzleCourseRatingRepository } from './infrastructure/persistence/drizzle/course-rating.repository'
 import { DrizzleCreationCleanupRepository } from './infrastructure/persistence/drizzle/creation-cleanup.repository'
 import { DrizzleCreationsRepository } from './infrastructure/persistence/drizzle/creations.repository'
@@ -221,6 +236,7 @@ import { DrizzleZappyRepository } from './infrastructure/persistence/drizzle/zap
 import { DrizzleZappyKnowledgeRepository } from './infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { EncryptedRankingCursorCodec } from './infrastructure/security/ranking-cursor.codec'
 import { studioAiVaultConfig } from './infrastructure/security/studio-ai-vault-config'
+import { parsePublicationSource } from './interfaces/http/course-publication-source.dtos'
 import { parsePublishedLessonBlock } from './interfaces/http/lesson-draft.dtos'
 import { createServer } from './interfaces/http/server'
 
@@ -291,6 +307,74 @@ export async function createApplication(env: Env): Promise<Application> {
     ssl: env.DATABASE_SSL,
   })
   const db = connection.db
+  const publicationConfigured = Boolean(
+    env.COURSE_PUBLICATION_ENVIRONMENT &&
+      env.COURSE_PUBLICATION_ADMIN_URL &&
+      env.COURSE_PUBLICATION_MEDIA_TOKEN,
+  )
+  const publicationRepository = new DrizzleCoursePublicationRepository(db, {
+    parseBlock: parsePublishedLessonBlock,
+    policy: studioAuthoringPolicy,
+  })
+  const productionPeer =
+    env.COURSE_PUBLICATION_PRODUCTION_ADMIN_URL && env.COURSE_PUBLICATION_PEER_TOKEN
+      ? createCoursePromotionPeerClient({
+          url: env.COURSE_PUBLICATION_PRODUCTION_ADMIN_URL,
+          token: env.COURSE_PUBLICATION_PEER_TOKEN,
+          throughAdmin: true,
+        })
+      : undefined
+  const sourcePeer =
+    env.COURSE_PUBLICATION_STAGING_ADMIN_URL && env.COURSE_PUBLICATION_SOURCE_TOKEN
+      ? createCoursePromotionSourceClient({
+          url: env.COURSE_PUBLICATION_STAGING_ADMIN_URL,
+          token: env.COURSE_PUBLICATION_SOURCE_TOKEN,
+          throughAdmin: true,
+          decodeSource: (value) => readPublicationSource(parsePublicationSource(value)),
+        })
+      : undefined
+  const publicationService = publicationConfigured
+    ? new CoursePublicationService(
+        publicationRepository,
+        env.COURSE_PUBLICATION_ENVIRONMENT!,
+        productionPeer,
+      )
+    : undefined
+  const publicationMedia =
+    env.COURSE_PUBLICATION_ADMIN_URL &&
+    env.COURSE_PUBLICATION_MEDIA_TOKEN &&
+    env.COURSE_PUBLICATION_ENVIRONMENT
+      ? createAdminPublicationMediaClient({
+          url: env.COURSE_PUBLICATION_ADMIN_URL,
+          token: env.COURSE_PUBLICATION_MEDIA_TOKEN,
+          environment: env.COURSE_PUBLICATION_ENVIRONMENT,
+        })
+      : undefined
+  const transferMedia =
+    sourcePeer && env.COURSE_PUBLICATION_ADMIN_URL && env.COURSE_PUBLICATION_MEDIA_TOKEN
+      ? createAdminCourseTransferClient({
+          url: env.COURSE_PUBLICATION_ADMIN_URL,
+          token: env.COURSE_PUBLICATION_MEDIA_TOKEN,
+        })
+      : undefined
+  const promotionProcessor =
+    publicationMedia && transferMedia && sourcePeer
+      ? new CoursePromotionProcessor(
+          publicationRepository,
+          publicationMedia,
+          transferMedia,
+          sourcePeer,
+        )
+      : undefined
+  const publicationWorker = publicationMedia
+    ? new CoursePublicationWorker(
+        publicationRepository,
+        publicationMedia,
+        (jobId, error) =>
+          logger.error('course_publication.failed', { jobId, error: serializeError(error) }),
+        promotionProcessor,
+      )
+    : undefined
   const clock = () => new Date()
 
   // Adapters
@@ -1169,6 +1253,26 @@ export async function createApplication(env: Env): Promise<Application> {
     () => clock().getTime(),
   )
   const server = createServer({
+    coursePromotion:
+      sourcePeer && env.COURSE_PUBLICATION_PEER_TOKEN
+        ? {
+            service: new CoursePromotionService(publicationRepository),
+            token: env.COURSE_PUBLICATION_PEER_TOKEN,
+            enabled: Boolean(promotionProcessor),
+          }
+        : undefined,
+    coursePromotionSource:
+      productionPeer && env.COURSE_PUBLICATION_SOURCE_TOKEN
+        ? {
+            service: new CoursePromotionSourceService(publicationRepository, productionPeer),
+            token: env.COURSE_PUBLICATION_SOURCE_TOKEN,
+          }
+        : undefined,
+    coursePublication: {
+      service: publicationService,
+      requireAdminEnabled: env.REQUIRE_ADMIN,
+      internalToken: env.INTERNAL_API_TOKEN,
+    },
     arquipelagoCoins: {
       repository: new ArquipelagoCoinsRepository(db),
       inventory: new ArquipelagoInventoryRepository(db),
@@ -1555,6 +1659,7 @@ export async function createApplication(env: Env): Promise<Application> {
   return {
     logger,
     async start() {
+      publicationWorker?.start()
       if (studioBuilder.executionAvailable || studioBuilder.adultExecutionAvailable)
         studioBuilderCoordinator.start()
       stopLiveRecording = liveRecording?.start()
@@ -1627,6 +1732,7 @@ export async function createApplication(env: Env): Promise<Application> {
       logger.info('http.listening', { port: env.PORT, host: env.HOST })
     },
     async stop() {
+      await publicationWorker?.stop()
       // Timers primeiro: nenhum ciclo novo começa enquanto o resto desliga.
       if (liveDeadlineTimer) clearInterval(liveDeadlineTimer)
       if (broadcastTimer) clearInterval(broadcastTimer)

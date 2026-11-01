@@ -276,10 +276,13 @@ export const coursePublicationJobs = members.table(
     version: integer('version').notNull().default(0),
     snapshot: jsonb('snapshot').$type<StoredPublicationSnapshot>().notNull(),
     snapshotHash: varchar('snapshot_hash', { length: 64 }).notNull(),
+    sourceHash: varchar('source_hash', { length: 64 }),
     planHash: varchar('plan_hash', { length: 64 }).notNull(),
     preview: jsonb('preview').$type<CoursePublicationPreview>().notNull(),
     leaseToken: uuid('lease_token'),
     leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    availableAt: timestamp('available_at', { withTimezone: true }).notNull().defaultNow(),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }),
     error: text('error'),
     result: jsonb('result').$type<Record<string, unknown>>(),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -287,7 +290,16 @@ export const coursePublicationJobs = members.table(
   },
   (table) => [
     uniqueIndex('course_publication_request_uq').on(table.actorId, table.requestKey),
-    index('course_publication_queue_idx').on(table.status, table.leaseUntil, table.createdAt),
+    index('course_publication_queue_idx').on(
+      table.status,
+      table.availableAt,
+      table.leaseUntil,
+      table.createdAt,
+    ),
+    check(
+      'course_publication_promotion_source',
+      sql`${table.operation} <> 'promote-kids' or ${table.sourceHash} is not null`,
+    ),
     check('course_publication_operation', sql`${table.operation} in ('copy-adult','promote-kids')`),
     check(
       'course_publication_status',
@@ -323,7 +335,7 @@ export const coursePublicationTasks = members.table(
     index('course_publication_task_queue_idx').on(table.jobId, table.status, table.createdAt),
     check(
       'course_publication_task_kind',
-      sql`${table.kind} in ('media-plan','voice','video','r2-copy','vimeo-copy')`,
+      sql`${table.kind} in ('media-plan','voice','video','knowledge','r2-copy','vimeo-copy')`,
     ),
     check(
       'course_publication_task_status',

@@ -3,6 +3,7 @@ import type {
   CoursePublicationPreview,
   CoursePublicationStatus,
 } from '@sistemazero/core/course/publication'
+import { DomainError } from '../shared/errors'
 import type { CourseSyncPlan, Snapshot } from './course-sync'
 
 export function coursePublicationPreview(
@@ -14,7 +15,7 @@ export function coursePublicationPreview(
       id: snapshot.source.course.id,
       title: snapshot.source.course.title,
       slug: snapshot.source.course.slug,
-      environment: snapshot.environment,
+      environment: snapshot.sourceEnvironment ?? snapshot.environment,
     },
     target: {
       id: plan.course.id,
@@ -42,7 +43,9 @@ export function storePublicationSnapshot(snapshot: Snapshot): StoredPublicationS
   return JSON.parse(JSON.stringify(snapshot)) as StoredPublicationSnapshot
 }
 /** Only database row timestamps are hydrated. Dates inside projects remain authored strings. */
-export function readPublicationSnapshot(stored: StoredPublicationSnapshot): Snapshot {
+export function readPublicationSource(
+  source: StoredPublicationSnapshot['source'],
+): Snapshot['source'] {
   const date = (value: string) => {
     const parsed = new Date(value)
     if (!Number.isFinite(parsed.getTime()) || parsed.toISOString() !== value)
@@ -58,25 +61,29 @@ export function readPublicationSnapshot(stored: StoredPublicationSnapshot): Snap
     updatedAt: string
     archivedAt: string | null
   }) => ({ ...rowDates(row), archivedAt: row.archivedAt ? date(row.archivedAt) : null })
-  const tree = (source: StoredPublicationSnapshot['source']): Snapshot['source'] => {
-    const { archivedModules, archivedLessons, ...active } = source
-    return {
-      ...active,
-      course: { ...source.course, ...rowDates(source.course) },
-      modules: source.modules.map((row) => ({ ...row, ...archivedDates(row) })),
-      lessons: source.lessons.map((lesson) => ({
-        ...lesson,
-        row: { ...lesson.row, ...archivedDates(lesson.row) },
-      })),
-      ...(archivedModules
-        ? { archivedModules: archivedModules.map((row) => ({ ...row, ...archivedDates(row) })) }
-        : {}),
-      ...(archivedLessons
-        ? { archivedLessons: archivedLessons.map((row) => ({ ...row, ...archivedDates(row) })) }
-        : {}),
-    }
+  const { archivedModules, archivedLessons, ...active } = source
+  return {
+    ...active,
+    course: { ...source.course, ...rowDates(source.course) },
+    modules: source.modules.map((row) => ({ ...row, ...archivedDates(row) })),
+    lessons: source.lessons.map((lesson) => ({
+      ...lesson,
+      row: { ...lesson.row, ...archivedDates(lesson.row) },
+    })),
+    ...(archivedModules
+      ? { archivedModules: archivedModules.map((row) => ({ ...row, ...archivedDates(row) })) }
+      : {}),
+    ...(archivedLessons
+      ? { archivedLessons: archivedLessons.map((row) => ({ ...row, ...archivedDates(row) })) }
+      : {}),
   }
-  return { ...stored, source: tree(stored.source), target: tree(stored.target) }
+}
+export function readPublicationSnapshot(stored: StoredPublicationSnapshot): Snapshot {
+  return {
+    ...stored,
+    source: readPublicationSource(stored.source),
+    target: readPublicationSource(stored.target),
+  }
 }
 
 export interface CoursePublicationSeed {
@@ -91,14 +98,14 @@ export interface CoursePublicationSeed {
 }
 export interface PublicationTaskSeed {
   id: string
-  kind: 'media-plan' | 'voice' | 'video' | 'r2-copy' | 'vimeo-copy'
+  kind: 'media-plan' | 'voice' | 'video' | 'knowledge' | 'r2-copy' | 'vimeo-copy'
   input: Record<string, unknown>
 }
 export const publicationTerminal = (status: CoursePublicationStatus) =>
   ['completed', 'failed', 'cancelled'].includes(status)
-export class CoursePublicationConflictError extends Error {
+export class CoursePublicationConflictError extends DomainError {
   readonly code = 'COURSE_PUBLICATION_CONFLICT'
 }
-export class CoursePublicationLeaseError extends Error {
+export class CoursePublicationLeaseError extends DomainError {
   readonly code = 'COURSE_PUBLICATION_LEASE_LOST'
 }

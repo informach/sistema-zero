@@ -16,17 +16,17 @@ export class InvalidJsonBodyError extends Error {
  * Lê JSON contando bytes do stream. O Content-Length só permite falhar cedo:
  * requests podem omiti-lo ou fornecê-lo incorretamente.
  */
-export async function readJsonBodyWithLimit(
+export async function readTextBodyWithLimit(
   request: Pick<Request, 'headers' | 'body'>,
   maxBytes: number,
   signal?: AbortSignal,
-): Promise<unknown> {
+): Promise<string> {
   signal?.throwIfAborted()
   const declaredLength = Number(request.headers.get('content-length'))
   if (Number.isFinite(declaredLength) && declaredLength > maxBytes) {
     throw new RequestBodyTooLargeError(maxBytes)
   }
-  if (!request.body) throw new InvalidJsonBodyError()
+  if (!request.body) return ''
 
   const reader = request.body.getReader()
   let rejectAbort!: (reason: unknown) => void
@@ -68,8 +68,18 @@ export async function readJsonBodyWithLimit(
     bytes.set(chunk, offset)
     offset += chunk.byteLength
   }
+  return new TextDecoder().decode(bytes)
+}
+
+/** Same bounded reader for JSON consumers; raw-body/HMAC consumers retain the original text. */
+export async function readJsonBodyWithLimit(
+  request: Pick<Request, 'headers' | 'body'>,
+  maxBytes: number,
+  signal?: AbortSignal,
+): Promise<unknown> {
+  const text = await readTextBodyWithLimit(request, maxBytes, signal)
   try {
-    return JSON.parse(new TextDecoder().decode(bytes))
+    return JSON.parse(text)
   } catch {
     throw new InvalidJsonBodyError()
   }

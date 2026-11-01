@@ -4,7 +4,9 @@ import {
   type CourseSyncPlan,
   same,
 } from '../../../domain/course-publication/course-sync'
+import type { PreparedCourseKnowledge } from '../../../domain/course-publication/knowledge'
 import type { ZappyKnowledgeSourceType } from '../../../domain/ports/zappy-knowledge-repository.port'
+import { prepareZappyKnowledgeSource } from '../../../domain/zappy/knowledge-source'
 import type { Database } from './db'
 import { zappyKnowledgeChunks, zappyKnowledgeSources } from './schema'
 import { DrizzleZappyKnowledgeRepository } from './zappy-knowledge.repository'
@@ -17,8 +19,11 @@ export async function syncCourseKnowledge(
   plan: CourseSyncPlan,
   source: CourseSnapshot,
   checkOnly = false,
+  prepared?: PreparedCourseKnowledge,
 ) {
   const sourceCourseId = source.course.id
+  if (plan.operation === 'promote-kids' && !prepared)
+    throw new Error('A promoção exige material do Zappy preparado para produção')
   const expected = new Map<string, ZappyKnowledgeSourceType>()
   for (const lesson of source.lessons) {
     for (const block of lesson.published.blocks) {
@@ -30,10 +35,24 @@ export async function syncCourseKnowledge(
       if (attachment.zappyStudentNotebook)
         expected.set(`attachment:${attachment.id}`, 'student-notebook')
   }
-  const sourceRows = await tx
-    .select()
-    .from(zappyKnowledgeSources)
-    .where(eq(zappyKnowledgeSources.courseId, sourceCourseId))
+  if (
+    prepared &&
+    (prepared.sourceHash !== plan.sourceHash ||
+      prepared.sources.length !== expected.size ||
+      new Set(prepared.sources.map((row) => `${row.sourceRef}:${row.sourceType}`)).size !==
+        expected.size)
+  )
+    throw new Error('As fontes preparadas do Zappy não correspondem à origem')
+  const sourceRows = prepared
+    ? []
+    : await tx
+        .select()
+        .from(zappyKnowledgeSources)
+        .where(eq(zappyKnowledgeSources.courseId, sourceCourseId))
+  const preparedByRef = new Map(
+    prepared?.sources.map((row) => [`${row.sourceRef}:${row.sourceType}`, row]),
+  )
+  const sourceByRef = new Map(sourceRows.map((row) => [`${row.sourceRef}:${row.sourceType}`, row]))
   const mirror = plan.course.metadata?.contentMirror as {
     blocks: Record<string, string>
     attachments: Record<string, string>
@@ -51,10 +70,40 @@ export async function syncCourseKnowledge(
   let copied = 0
   const ready = []
   for (const [ref, type] of expected) {
-    const row = sourceRows.find((item) => item.sourceRef === ref && item.sourceType === type)
+    if (prepared) {
+      const entry = preparedByRef.get(`${ref}:${type}`)
+      const authority =
+        plan.operation === 'promote-kids'
+          ? {
+              courseId: sourceCourseId,
+              blockId: ref.startsWith('block:') ? ref.slice('block:'.length) : null,
+            }
+          : await repository.sourceAuthorityForRef(ref)
+      if (
+        !entry ||
+        entry.sourceType !== type ||
+        !authority ||
+        authority.courseId !== sourceCourseId
+      )
+        throw new Error('Fonte preparada do Zappy sem autoridade na origem')
+      const data = prepareZappyKnowledgeSource(type, entry.content)
+      if (data.status !== 'ready' && data.status !== 'empty')
+        throw new Error('O conteúdo preparado do Zappy ainda não está pronto')
+      ready.push({
+        sourceRef: ref,
+        sourceType: type,
+        blockId: authority.blockId,
+        contentHash: data.contentHash,
+        status: data.status,
+        chunks: data.chunks,
+      })
+      continue
+    }
+    const row = sourceByRef.get(`${ref}:${type}`)
     const authority = await repository.sourceAuthorityForRef(ref)
     if (
       !row ||
+      row.sourceType !== type ||
       !authority ||
       authority.courseId !== sourceCourseId ||
       authority.blockRevision !== row.blockRevision ||

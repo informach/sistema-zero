@@ -16,6 +16,21 @@ export function parseWhitelistDomains(raw: string): string[] {
     .filter(Boolean)
 }
 
+/** Vimeo stores the www alias as its base domain; other subdomains remain distinct. */
+export function canonicalVimeoDomains(domains: readonly string[]): string[] {
+  return [
+    ...new Set(
+      domains.map((domain) =>
+        domain
+          .trim()
+          .toLowerCase()
+          .replace(/^www\./, '')
+          .replace(/\.$/, ''),
+      ),
+    ),
+  ].sort()
+}
+
 /** Prioriza caption PT > qualquer PT > ativo > primeiro (régua da referência). */
 export function pickTranscriptTrack<T extends { language: string; type: string; active: boolean }>(
   tracks: T[],

@@ -1,6 +1,6 @@
 # Mídias da promoção de cursos
 
-Base local de inventário, remapeamento e cópia R2. O fluxo completo de promoção entre ambientes ainda não está concluído. Nenhum curso ou registro de aluno foi alterado nesta qualificação.
+Inventário, remapeamento e cópia integrados ao worker durável. A promoção foi exercitada com dois bancos locais separados. As provas de provedores reais abaixo usam somente recursos temporários, sem alterar cursos ou registros de alunos.
 
 ## Inventário e remapeamento
 
@@ -31,4 +31,14 @@ Documentação primária consultada: [compatibilidade S3 do R2, CopyObject](http
 
 Testes causais cobrem resposta perdida, origem alterada, recusa entre HEAD e cópia, destino alheio, tamanho divergente, destinos por versão, referências duplicadas e escapes. Typechecks completos Core e Admin aprovados durante o desenvolvimento. A prova real é pequena: não mede desempenho de cursos grandes.
 
-Ainda faltam o worker durável, suas rotas e o acompanhamento no Admin, a cópia Vimeo incorporada ao fluxo com reconciliação, a geração de voz e preparação de conhecimento no destino, a conferência dos hashes de cada pacote ediSVG e a publicação integrada. O ediSVG atual normaliza imagem, áudio e fonte dentro do próprio JSON; copiar seu payload preserva essas dependências embutidas, além do poster separado. O worker deverá conferir esses bytes contra a referência do módulo antes de publicar.
+O worker, suas rotas, o acompanhamento no Admin, a preparação de voz e conhecimento no destino e a publicação integrada estão implementados e conferidos localmente. O ediSVG mantém imagem, áudio e fonte incorporados no JSON; a preparação confere payload, poster, tamanho, SHA e validador portátil antes de publicar. A prova do navegador tem provedores externos determinísticos e está em `2026-11-01-publicacao-cursos/README.md`.
+
+## Cópia Vimeo real
+
+O adapter real foi executado com a configuração do Admin de produção e um vídeo de origem disponível. A cópia nativa preservou os arquivos e as transcrições, recebeu a pasta e a whitelist de produção e passou na reconferência de privacidade e endereço. Repetir a preparação reutilizou o mesmo vídeo. A busca paginada encontrou o marcador exato, sem depender de indexação textual.
+
+A qualificação revelou duas diferenças concretas do provedor: a whitelist canonicaliza `www`, e a seleção de campos da lista usa `uri,name`, não `data.uri,data.name`. Ambos foram corrigidos no adapter. O registro usa reserva e fases privadas imutáveis `.video` e `.complete`, com reconciliação de resposta perdida.
+
+Resultado final privado em `.cache/course-audience-sync/video-real-adapter-r4.log`: PASS, marcador encontrado, reutilização confirmada, uma cópia e três registros temporários removidos, ausência conferida e origem inalterada. As tentativas negativas anteriores também tiveram os recursos removidos; os logs foram conservados.
+
+Isso comprova os adapters reais e a composição local do fluxo, sem representar uma promoção integral de um curso real nem uma medição de desempenho com muitos vídeos. A publicação de Cadê staging sobre produção não foi usada como teste, pois o material de produção foi atualizado pela dona.

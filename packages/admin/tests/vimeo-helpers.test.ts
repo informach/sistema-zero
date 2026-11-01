@@ -1,11 +1,24 @@
 import { describe, expect, test } from 'bun:test'
 import {
+  canonicalVimeoDomains,
   parseSafeEmbedUrl,
   parseWhitelistDomains,
   pickTranscriptTrack,
 } from '../src/lib/vimeo-helpers'
 
 describe('parseWhitelistDomains', () => {
+  test('o alias www normalizado pelo Vimeo não vira um domínio excedente ou ausente', () => {
+    expect(
+      canonicalVimeoDomains([
+        'www.sistemazero.com.br',
+        'sistemazero.com.br',
+        'Kids.SistemaZero.com.br',
+      ]),
+    ).toEqual(['kids.sistemazero.com.br', 'sistemazero.com.br'])
+    expect(canonicalVimeoDomains(['outro.sistemazero.com.br'])).not.toEqual(
+      canonicalVimeoDomains(['sistemazero.com.br']),
+    )
+  })
   test('normaliza protocolo/path/espaços e descarta vazios', () => {
     expect(
       parseWhitelistDomains('https://sistemazero.com.br/app, www.x.com , ,localhost:3000'),

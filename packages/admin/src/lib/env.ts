@@ -23,6 +23,16 @@ const EnvSchema = z
   .object({
     GATEWAY_URL: z.string().url().default('http://localhost:3000'),
     MEMBER_SHELL_HMAC_SECRET: z.string().min(24).optional(),
+    COURSE_PUBLICATION_MEDIA_TOKEN: z.string().min(32).optional(),
+    COURSE_PUBLICATION_ENVIRONMENT: z.enum(['local', 'staging', 'production']).optional(),
+    COURSE_PUBLICATION_MEMBERS_URL: z.url().optional(),
+    COURSE_PUBLICATION_PEER_TOKEN: z.string().min(32).optional(),
+    COURSE_PUBLICATION_SOURCE_TOKEN: z.string().min(32).optional(),
+    COURSE_PROMOTION_SOURCE_PUBLIC_URL: z.url().optional(),
+    COURSE_PROMOTION_SOURCE_BUCKET: z.string().min(1).optional(),
+    COURSE_PROMOTION_SOURCE_PRIVATE_BUCKET: z.string().min(1).optional(),
+    COURSE_PROMOTION_SOURCE_FUNNEL_URL: z.url().optional(),
+    COURSE_PROMOTION_TARGET_FUNNEL_URL: z.url().optional(),
     // Verificação do access JWT — HS256 (segredo compartilhado; dev/local) e/ou
     // RS256 via JWKS (PRODUÇÃO: o auth emite RS256 e não há segredo HS256 lá —
     // aponte p/ o gateway: <GATEWAY_URL>/auth/.well-known/jwks.json).
@@ -85,6 +95,68 @@ const EnvSchema = z
     // Pasta (project) do Vimeo onde os vídeos entram: dev=Testes, prod=Comunidade Sistema Zero.
     VIMEO_FOLDER_ID: z.string().optional(),
   })
+  .refine(
+    (env) => {
+      const values = [
+        env.COURSE_PUBLICATION_MEMBERS_URL,
+        env.COURSE_PUBLICATION_PEER_TOKEN,
+        env.COURSE_PUBLICATION_SOURCE_TOKEN,
+      ]
+      if (values.every((value) => !value)) return true
+      if (
+        !env.COURSE_PUBLICATION_MEMBERS_URL ||
+        !env.COURSE_PUBLICATION_MEDIA_TOKEN ||
+        env.COURSE_PUBLICATION_MEDIA_TOKEN === env.COURSE_PUBLICATION_PEER_TOKEN ||
+        env.COURSE_PUBLICATION_MEDIA_TOKEN === env.COURSE_PUBLICATION_SOURCE_TOKEN
+      )
+        return false
+      return env.COURSE_PUBLICATION_ENVIRONMENT === 'staging'
+        ? Boolean(env.COURSE_PUBLICATION_SOURCE_TOKEN && !env.COURSE_PUBLICATION_PEER_TOKEN)
+        : env.COURSE_PUBLICATION_ENVIRONMENT === 'production' &&
+            Boolean(env.COURSE_PUBLICATION_PEER_TOKEN && !env.COURSE_PUBLICATION_SOURCE_TOKEN)
+    },
+    {
+      message:
+        'Configure a porta de publicação do Admin com o Members do mesmo ambiente e um token próprio.',
+      path: ['COURSE_PUBLICATION_MEMBERS_URL'],
+    },
+  )
+  .refine(
+    (env) => {
+      const values = [
+        env.COURSE_PROMOTION_SOURCE_PUBLIC_URL,
+        env.COURSE_PROMOTION_SOURCE_BUCKET,
+        env.COURSE_PROMOTION_SOURCE_PRIVATE_BUCKET,
+        env.COURSE_PROMOTION_SOURCE_FUNNEL_URL,
+        env.COURSE_PROMOTION_TARGET_FUNNEL_URL,
+      ]
+      return (
+        values.every((value) => !value) ||
+        (values.every(Boolean) &&
+          env.COURSE_PUBLICATION_ENVIRONMENT === 'production' &&
+          Boolean(
+            env.R2_BUCKET &&
+              env.R2_PUBLIC_URL &&
+              env.R2_PRIVATE_BUCKET &&
+              env.VIMEO_ACCESS_TOKEN &&
+              env.VIMEO_FOLDER_ID &&
+              env.VIMEO_WHITELIST_DOMAINS,
+          ))
+      )
+    },
+    {
+      message: 'Configure a promoção completa somente no Admin de produção.',
+      path: ['COURSE_PROMOTION_SOURCE_PUBLIC_URL'],
+    },
+  )
+  .refine(
+    (env) =>
+      Boolean(env.COURSE_PUBLICATION_MEDIA_TOKEN) === Boolean(env.COURSE_PUBLICATION_ENVIRONMENT),
+    {
+      message: 'Configure ambiente e token da publicação de cursos juntos.',
+      path: ['COURSE_PUBLICATION_ENVIRONMENT'],
+    },
+  )
   // Sem nenhuma forma de verificar o token, toda sessão seria inválida em silêncio.
   .refine((e) => Boolean(e.JWT_HS256_SECRET || e.JWT_JWKS_URL), {
     message:

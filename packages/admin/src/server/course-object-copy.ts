@@ -13,6 +13,7 @@ export interface StoredCourseObject {
   contentType?: string
   cacheControl?: string
   contentDisposition?: string
+  contentEncoding?: string
 }
 export interface CourseObjectCopyInput {
   source: CourseObjectVersion

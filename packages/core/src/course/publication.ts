@@ -1,5 +1,8 @@
 import { z } from 'zod'
 
+export * from './publication-tasks'
+export * from './publication-transfer'
+
 export const CoursePublicationOperationSchema = z.enum(['copy-adult', 'promote-kids'])
 export const CoursePublicationStatusSchema = z.enum([
   'preview',
@@ -59,4 +62,14 @@ export type CoursePublicationJobView = z.infer<typeof CoursePublicationJobViewSc
 export const CoursePublicationCommandSchema = z.strictObject({
   version: z.number().int().nonnegative(),
   planHash: z.string().regex(/^[a-f0-9]{64}$/),
+})
+export const CoursePublicationPrepareSchema = z.strictObject({
+  operation: CoursePublicationOperationSchema.default('copy-adult'),
+  sourceCourseId: z.uuid(),
+  targetSlug: z
+    .string()
+    .min(1)
+    .max(200)
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  requestKey: z.uuid(),
 })

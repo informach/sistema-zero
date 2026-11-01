@@ -1030,6 +1030,20 @@
       "when": 1793539440873,
       "tag": "0146_course-publication-jobs",
       "breakpoints": true
+    },
+    {
+      "idx": 147,
+      "version": "7",
+      "when": 1793543431732,
+      "tag": "0147_course-publication-knowledge",
+      "breakpoints": true
+    },
+    {
+      "idx": 148,
+      "version": "7",
+      "when": 1793547014966,
+      "tag": "0148_course-publication-promotion",
+      "breakpoints": true
     }
   ]
 }

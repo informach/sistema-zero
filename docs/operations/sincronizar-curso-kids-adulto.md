@@ -24,7 +24,15 @@ Extratos didáticos válidos e atuais do tutor são reaproveitados por meio do r
 
 O programa é sempre copiado da versão publicada. Um rascunho diferente bloqueia a operação, exceto pela data interna `initialProject.updatedAt` do Estúdio, que pode mudar ao abrir o editor. Essa exceção não alcança código, arquivos, exemplos, blocos ou falas. A data copiada continua sendo a publicada.
 
-## Execução
+## Pelo Admin e pelo trabalho durável
+
+A operação habitual passa a ser **Mais ações → Publicar e atualizar no adulto**, na lista de cursos Kids. Ela prepara a mídia e o material do Zappy no próprio ambiente, mostra a prévia e publica depois da aprovação explícita. Curso ausente é criado. Ver `publicar-cursos.md` para promoção entre ambientes, configuração, retomada e operador do mesmo serviço.
+
+Os extratos também podem ser preparados a partir do material publicado quando o índice da origem não existe. A aplicação instala as fontes e os trechos do destino na mesma transação do curso. O operador direto abaixo mantém a conferência do índice de origem e serve para intervenções e auditorias que já usam seus recibos privados.
+
+Planos antigos precisam ser preparados novamente após a adoção do hash canônico desta funcionalidade. Não reutilizar `prepared.json` de uma versão anterior do sincronizador.
+
+## Execução do operador direto
 
 A regra pura fica em `members/src/domain/course-publication/course-sync.ts`, o executor transacional em `members/src/infrastructure/persistence/drizzle/course-sync.ts` e a adaptação Railway em `members/scripts/course-audience-sync/run.ts`. O executor recebe o parser canônico e a política da composição. O comando empacota a mesma regra local, mantendo os publicadores e a política nos módulos implantados. A aplicação não deve executar o comando ou abrir um shell para publicar.
 

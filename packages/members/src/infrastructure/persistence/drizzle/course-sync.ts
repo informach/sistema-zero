@@ -7,6 +7,7 @@ import {
   hash,
   type MediaProof,
   missingAdultTarget,
+  missingKidsTarget,
   planCourseSync,
   type Snapshot,
   same,
@@ -23,6 +24,7 @@ type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 export interface CourseSyncDependencies {
   parseBlock: (value: unknown) => LessonBlockContent
   policy?: StudioAuthoringPolicy
+  promotionSource?: { environment: 'staging'; content: Snapshot['source'] }
 }
 export interface SyncRequest {
   actorId: string
@@ -34,12 +36,70 @@ export interface SyncRequest {
   media?: MediaProof
 }
 
-/** Reads only. No get-or-create draft operation is called during the inventory. */
+/** Current published tree, with archived identities retained only for matching/history. */
+export async function readCourseSnapshot(
+  tx: Transaction,
+  course: Snapshot['source']['course'],
+  parseBlock: CourseSyncDependencies['parseBlock'],
+): Promise<Snapshot['source']> {
+  const drafts = new DrizzleLessonDraftRepository(tx, parseBlock)
+  const moduleRows = await tx
+    .select()
+    .from(modules)
+    .where(eq(modules.courseId, course.id))
+    .orderBy(asc(modules.sortOrder))
+  const lessonRows = await tx
+    .select()
+    .from(lessons)
+    .where(eq(lessons.courseId, course.id))
+    .orderBy(asc(lessons.moduleId), asc(lessons.sortOrder))
+  const snapshots: Snapshot['source']['lessons'] = []
+  for (const row of lessonRows) {
+    if (row.archivedAt) continue
+    const published = await drafts.readPublished(row.id)
+    const [draft] = await tx.select().from(lessonDrafts).where(eq(lessonDrafts.lessonId, row.id))
+    snapshots.push({
+      row,
+      published: published.document,
+      publishedRevision: published.revision,
+      draft: draft ? { revision: draft.revision, document: draft.document } : null,
+    })
+  }
+  return {
+    course,
+    modules: moduleRows.filter((m) => !m.archivedAt),
+    lessons: snapshots,
+    archivedModules: moduleRows.filter((m) => m.archivedAt),
+    archivedLessons: lessonRows.filter((l) => l.archivedAt),
+  }
+}
+
+/** Reads only. The external source is accepted solely from the trusted promotion composition. */
 export async function readSyncSnapshot(
   tx: Transaction,
   request: Pick<SyncRequest, 'environment' | 'sourceSlug' | 'targetSlug'>,
   parseBlock: CourseSyncDependencies['parseBlock'],
+  promotionSource?: CourseSyncDependencies['promotionSource'],
 ): Promise<Snapshot> {
+  if (promotionSource) {
+    if (
+      request.environment !== 'production' ||
+      promotionSource.environment !== 'staging' ||
+      promotionSource.content.course.slug !== request.sourceSlug ||
+      promotionSource.content.missing
+    )
+      throw new Error('Origem externa inválida para a promoção')
+    const [target] = await tx.select().from(courses).where(eq(courses.slug, request.targetSlug))
+    return {
+      environment: 'production',
+      sourceEnvironment: 'staging',
+      operation: 'promote-kids',
+      source: promotionSource.content,
+      target: target
+        ? await readCourseSnapshot(tx, target, parseBlock)
+        : missingKidsTarget(promotionSource.content.course, request.targetSlug, 'production'),
+    }
+  }
   const rows = await tx
     .select()
     .from(courses)
@@ -47,39 +107,8 @@ export async function readSyncSnapshot(
     .orderBy(asc(courses.id))
   if (!rows.length || request.sourceSlug === request.targetSlug)
     throw new Error('Informe uma origem existente e slugs distintos')
-  const drafts = new DrizzleLessonDraftRepository(tx, parseBlock)
   const trees: Snapshot['source'][] = []
-  for (const course of rows) {
-    const moduleRows = await tx
-      .select()
-      .from(modules)
-      .where(eq(modules.courseId, course.id))
-      .orderBy(asc(modules.sortOrder))
-    const lessonRows = await tx
-      .select()
-      .from(lessons)
-      .where(eq(lessons.courseId, course.id))
-      .orderBy(asc(lessons.moduleId), asc(lessons.sortOrder))
-    const snapshots = []
-    for (const row of lessonRows) {
-      if (row.archivedAt) continue
-      const published = await drafts.readPublished(row.id)
-      const [draft] = await tx.select().from(lessonDrafts).where(eq(lessonDrafts.lessonId, row.id))
-      snapshots.push({
-        row,
-        published: published.document,
-        publishedRevision: published.revision,
-        draft: draft ? { revision: draft.revision, document: draft.document } : null,
-      })
-    }
-    trees.push({
-      course,
-      modules: moduleRows.filter((m) => !m.archivedAt),
-      lessons: snapshots,
-      archivedModules: moduleRows.filter((m) => m.archivedAt),
-      archivedLessons: lessonRows.filter((l) => l.archivedAt),
-    })
-  }
+  for (const course of rows) trees.push(await readCourseSnapshot(tx, course, parseBlock))
   const source = trees.find((t) => t.course.slug === request.sourceSlug)
   if (!source) throw new Error('Curso Kids não encontrado')
   const target =
@@ -91,7 +120,7 @@ export async function readSyncSnapshot(
 export async function executeCourseSync(
   db: Database,
   request: SyncRequest,
-  { parseBlock, policy }: CourseSyncDependencies,
+  { parseBlock, policy, promotionSource }: CourseSyncDependencies,
 ) {
   if (!['plan', 'apply', 'verify'].includes(request.mode)) throw new Error('Modo inválido')
   return db.transaction(async (tx) => {
@@ -104,7 +133,12 @@ export async function executeCourseSync(
       const locked = await tx
         .select({ id: courses.id })
         .from(courses)
-        .where(inArray(courses.slug, [request.sourceSlug, request.targetSlug]))
+        .where(
+          inArray(
+            courses.slug,
+            promotionSource ? [request.targetSlug] : [request.sourceSlug, request.targetSlug],
+          ),
+        )
         .orderBy(asc(courses.id))
         .for('update')
       await tx
@@ -119,11 +153,17 @@ export async function executeCourseSync(
         .orderBy(asc(lessons.id))
         .for('update')
     }
-    const snapshot = await readSyncSnapshot(tx, request, parseBlock)
+    const snapshot = await readSyncSnapshot(tx, request, parseBlock, promotionSource)
     const plan = planCourseSync(snapshot, request.media)
     if (request.mode === 'plan') return { snapshot, plan }
     if (request.mode === 'verify') {
-      const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source, true)
+      const knowledge = await syncCourseKnowledge(
+        tx,
+        plan,
+        snapshot.source,
+        true,
+        request.media?.knowledge,
+      )
       if (plan.changed || !knowledge.unchanged)
         throw new Error('O conteúdo ou o material do Zappy ainda difere da origem')
       return { snapshot, plan, knowledge }
@@ -138,7 +178,13 @@ export async function executeCourseSync(
     )
       throw new Error('A conferência de mídia precisa ter menos de 30 minutos')
     if (!plan.changed) {
-      const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source)
+      const knowledge = await syncCourseKnowledge(
+        tx,
+        plan,
+        snapshot.source,
+        false,
+        request.media?.knowledge,
+      )
       return {
         applied: !knowledge.unchanged,
         contentChanged: false,
@@ -268,8 +314,14 @@ export async function executeCourseSync(
     }
     if (!(await content.updateCourse({ ...plan.course, updatedAt: now })))
       throw new Error('O curso adulto mudou durante a sincronização')
-    const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source)
-    const after = await readSyncSnapshot(tx, request, parseBlock)
+    const knowledge = await syncCourseKnowledge(
+      tx,
+      plan,
+      snapshot.source,
+      false,
+      request.media?.knowledge,
+    )
+    const after = await readSyncSnapshot(tx, request, parseBlock, promotionSource)
     if (!same(snapshot.source, after.source)) throw new Error('A origem Kids foi alterada')
     const verify = planCourseSync(after, request.media)
     if (verify.changed)

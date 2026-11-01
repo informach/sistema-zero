@@ -3,9 +3,24 @@ import {
   InvalidJsonBodyError,
   RequestBodyTooLargeError,
   readJsonBodyWithLimit,
+  readTextBodyWithLimit,
 } from './read-json-body'
 
 describe('readJsonBodyWithLimit', () => {
+  test('a leitura para HMAC conserva o texto original e conta UTF-8, sem reserializar', async () => {
+    const text = '{ "nome": "ação" }\n'
+    const request = () => new Request('https://example.test', { method: 'POST', body: text })
+    expect(await readTextBodyWithLimit(request(), new TextEncoder().encode(text).byteLength)).toBe(
+      text,
+    )
+    await expect(readTextBodyWithLimit(request(), text.length)).rejects.toBeInstanceOf(
+      RequestBodyTooLargeError,
+    )
+    expect(await readTextBodyWithLimit(new Request('https://example.test'), 10)).toBe('')
+    await expect(
+      readJsonBodyWithLimit(new Request('https://example.test'), 10),
+    ).rejects.toBeInstanceOf(InvalidJsonBodyError)
+  })
   test('conta bytes reais do stream e diferencia JSON inválido', async () => {
     await expect(
       readJsonBodyWithLimit(

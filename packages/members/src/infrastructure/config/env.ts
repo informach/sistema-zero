@@ -40,6 +40,13 @@ const EnvSchema = z
     // para o private networking do Railway (`members.railway.internal` resolve
     // IPv6; um bind `0.0.0.0` fica inalcançável). Espelha o payments.
     HOST: z.string().min(1).default('::'),
+    COURSE_PUBLICATION_ENVIRONMENT: z.enum(['local', 'staging', 'production']).optional(),
+    COURSE_PUBLICATION_ADMIN_URL: z.string().url().optional(),
+    COURSE_PUBLICATION_MEDIA_TOKEN: z.string().min(32).optional(),
+    COURSE_PUBLICATION_PRODUCTION_ADMIN_URL: z.url().optional(),
+    COURSE_PUBLICATION_STAGING_ADMIN_URL: z.url().optional(),
+    COURSE_PUBLICATION_PEER_TOKEN: z.string().min(32).optional(),
+    COURSE_PUBLICATION_SOURCE_TOKEN: z.string().min(32).optional(),
     // Conteúdo de aula (blocos) pode ser maior que um login — 64 KB.
     MAX_REQUEST_BODY_BYTES: z.coerce
       .number()
@@ -258,6 +265,65 @@ const EnvSchema = z
       .optional()
       .transform((value) => normalizeAvatarPhotoPrefixes(value)),
   })
+  .refine(
+    (env) => {
+      const values = [
+        env.COURSE_PUBLICATION_PRODUCTION_ADMIN_URL,
+        env.COURSE_PUBLICATION_STAGING_ADMIN_URL,
+        env.COURSE_PUBLICATION_PEER_TOKEN,
+        env.COURSE_PUBLICATION_SOURCE_TOKEN,
+      ]
+      if (values.every((value) => !value)) return true
+      if (
+        env.NODE_ENV === 'production' &&
+        [
+          env.COURSE_PUBLICATION_PRODUCTION_ADMIN_URL,
+          env.COURSE_PUBLICATION_STAGING_ADMIN_URL,
+        ].some((value) => value && new URL(value).protocol !== 'https:')
+      )
+        return false
+      if (
+        !env.COURSE_PUBLICATION_ADMIN_URL ||
+        !env.COURSE_PUBLICATION_MEDIA_TOKEN ||
+        !env.COURSE_PUBLICATION_PEER_TOKEN ||
+        !env.COURSE_PUBLICATION_SOURCE_TOKEN ||
+        env.COURSE_PUBLICATION_SOURCE_TOKEN === env.COURSE_PUBLICATION_PEER_TOKEN ||
+        env.COURSE_PUBLICATION_MEDIA_TOKEN === env.COURSE_PUBLICATION_PEER_TOKEN ||
+        env.COURSE_PUBLICATION_MEDIA_TOKEN === env.COURSE_PUBLICATION_SOURCE_TOKEN
+      )
+        return false
+      return env.COURSE_PUBLICATION_ENVIRONMENT === 'staging'
+        ? Boolean(
+            env.COURSE_PUBLICATION_PRODUCTION_ADMIN_URL &&
+              !env.COURSE_PUBLICATION_STAGING_ADMIN_URL,
+          )
+        : env.COURSE_PUBLICATION_ENVIRONMENT === 'production' &&
+            Boolean(
+              env.COURSE_PUBLICATION_STAGING_ADMIN_URL &&
+                !env.COURSE_PUBLICATION_PRODUCTION_ADMIN_URL,
+            )
+    },
+    {
+      message:
+        'Configure a porta entre staging e produção com URLs e tokens próprios para cada direção.',
+      path: ['COURSE_PUBLICATION_PEER_TOKEN'],
+    },
+  )
+  .refine(
+    (env) => {
+      const count = [
+        env.COURSE_PUBLICATION_ENVIRONMENT,
+        env.COURSE_PUBLICATION_ADMIN_URL,
+        env.COURSE_PUBLICATION_MEDIA_TOKEN,
+      ].filter(Boolean).length
+      return count === 0 || count === 3
+    },
+    {
+      message:
+        'Configure ambiente, URL do Admin e token de mídia juntos para a publicação de cursos.',
+      path: ['COURSE_PUBLICATION_ADMIN_URL'],
+    },
+  )
   .refine(
     (env) =>
       env.STUDIO_AUTHORING_POLICY_JSON === undefined ||

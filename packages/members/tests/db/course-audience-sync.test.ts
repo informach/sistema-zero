@@ -1,9 +1,28 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
 import { randomUUID } from 'node:crypto'
+import { CourseTransferPendingError } from '@sistemazero/core/course/publication'
 import { defaultLessonSection, type LessonDraftDocument } from '@sistemazero/core/learning'
+import { chaveDeVoz } from '@sistemazero/core/learning/scene'
 import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { Elysia } from 'elysia'
+import { CoursePromotionProcessor } from '../../src/application/course-publication/course-promotion.processor'
+import {
+  CoursePromotionService,
+  CoursePromotionSourceService,
+} from '../../src/application/course-publication/course-promotion.service'
+import { CoursePublicationService } from '../../src/application/course-publication/course-publication.service'
+import { CoursePublicationWorker } from '../../src/application/course-publication/course-publication.worker'
 import { hash, type MediaProof, sourceHash } from '../../src/domain/course-publication/course-sync'
+import { readPublicationSource } from '../../src/domain/course-publication/jobs'
+import type {
+  CoursePublicationMediaPort,
+  CoursePublicationTransferPort,
+} from '../../src/domain/ports/course-publication.port'
+import {
+  createCoursePromotionPeerClient,
+  createCoursePromotionSourceClient,
+} from '../../src/infrastructure/course-publication/promotion-peer.client'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
 import { DrizzleCoursePublicationRepository } from '../../src/infrastructure/persistence/drizzle/course-publication.repository'
@@ -16,6 +35,7 @@ import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persisten
 import { DrizzleProgressRepository } from '../../src/infrastructure/persistence/drizzle/progress.repository'
 import {
   coursePublicationJobs,
+  coursePublicationTasks,
   courses,
   lessonBlocks,
   lessonCompletions,
@@ -26,7 +46,15 @@ import {
   zappyKnowledgeSources,
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
+import { parsePublicationSource } from '../../src/interfaces/http/course-publication-source.dtos'
+import { buildErrorResponse } from '../../src/interfaces/http/error-handler'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
+import {
+  coursePromotionPeerRoutes,
+  coursePromotionSourceRoutes,
+} from '../../src/interfaces/http/routes/course-promotion-peer.routes'
+import { coursePublicationRoutes } from '../../src/interfaces/http/routes/course-publication.routes'
+import { silentLogger } from '../fakes/in-memory'
 
 const executeCourseSync = (
   db: Parameters<typeof executeWithDependencies>[0],
@@ -236,6 +264,498 @@ describe.skipIf(!conn)('sincronização transacional de curso no Postgres', () =
     await repo.create(seed)
     return { ...f, repo, seed }
   }
+  test('worker promove em duas fases, espera o provedor sem falhar e publica mídia e tutor juntos', async () => {
+    const f = await publicationFixture()
+    await f.db.update(courses).set({ audience: 'kids' }).where(eq(courses.id, f.target))
+    await f.db
+      .update(courses)
+      .set({
+        coverImageUrl: 'https://stage.test/capa.png',
+        metadata: { banner: 'https://stage.test/banner.png' },
+      })
+      .where(eq(courses.id, f.source))
+    const source = await f.repo.sourceForPromotion(f.source)
+    const promotion = new CoursePromotionService(f.repo)
+    const job = await promotion.prepare({
+      source,
+      sourceHash: hash({ environment: 'staging', source }),
+      actorId: f.request.actorId,
+      requestKey: randomUUID(),
+      targetSlug: f.request.targetSlug,
+    })
+    await f.repo.approve(job.id, job.version, job.planHash)
+    const block = source.lessons[0]!.published.blocks[0]!
+    const text = String(block.content.text)
+    const media: CoursePublicationMediaPort = {
+      plan: async () => ({
+        profileHash: 'a'.repeat(64),
+        voices: { [block.id]: [`voice:${hash(text)}`] },
+        tasks: [
+          { id: `voice:${hash(text)}`, input: { kind: 'voice', speechText: text } },
+          {
+            id: `knowledge:${hash(text)}`,
+            input: {
+              kind: 'knowledge',
+              sourceRef: `block:${block.id}`,
+              sourceType: 'rich-text',
+              extraction: { kind: 'text', content: text },
+            },
+          },
+        ],
+      }),
+      execute: async (task) =>
+        task.kind === 'voice'
+          ? {
+              kind: 'voice',
+              key: chaveDeVoz(task.speechText),
+              url: 'https://prod.test/voice.mp3',
+              generated: false,
+            }
+          : task.kind === 'knowledge'
+            ? {
+                kind: 'knowledge',
+                sourceRef: task.sourceRef,
+                sourceType: task.sourceType,
+                content: text,
+              }
+            : { kind: 'video', videoId: task.videoId },
+    }
+    let waiting = true,
+      verifications = 0
+    const transfer: CoursePublicationTransferPort = {
+      context: async () => ({
+        version: 1,
+        profileHash: 'b'.repeat(64),
+        origin: {
+          publicBaseUrl: 'https://stage.test',
+          publicBucket: 'stage',
+          privateBucket: 'stage-private',
+        },
+      }),
+      execute: async (task) => {
+        if (task.kind !== 'r2-copy') throw new Error('fixture')
+        if (waiting && task.key === 'capa.png') throw new CourseTransferPendingError('transcode')
+        return {
+          kind: 'r2-copy',
+          visibility: task.visibility,
+          sourceKey: task.key,
+          sourceEtag: 'v1',
+          bytes: 42,
+          destinationKey: `copy/${task.key}`,
+          destinationEtag: 'copy-v1',
+          url: `https://prod.test/copy/${task.key}`,
+        }
+      },
+      verify: async () => {
+        verifications++
+      },
+    }
+    const origin = {
+      read: async () => ({ source, sourceHash: hash({ environment: 'staging', source }) }),
+    }
+    const failures: unknown[] = []
+    const worker = () =>
+      new CoursePublicationWorker(
+        f.repo,
+        media,
+        (_id, error) => failures.push(error),
+        new CoursePromotionProcessor(f.repo, media, transfer, origin),
+      )
+    await worker().runOnce()
+    expect(failures).toHaveLength(0)
+    expect((await f.repo.view(job.id))?.status).toBe('preparing')
+    expect((await f.repo.view(job.id))?.tasks).toEqual({ completed: 1, total: 2 })
+    expect(await f.repo.claim()).toBeNull()
+    expect((await f.db.select().from(courses).where(eq(courses.id, f.target)))[0]!.status).toBe(
+      'draft',
+    )
+    waiting = false
+    await f.db
+      .update(coursePublicationTasks)
+      .set({ updatedAt: new Date(0) })
+      .where(eq(coursePublicationTasks.jobId, job.id))
+    await f.db
+      .update(coursePublicationJobs)
+      .set({ availableAt: new Date(0) })
+      .where(eq(coursePublicationJobs.id, job.id))
+    await worker().runOnce()
+    expect(failures).toEqual([])
+    expect((await f.repo.view(job.id))?.status).toBe('completed')
+    const target = (await f.db.select().from(courses).where(eq(courses.id, f.target)))[0]!
+    expect(target.status).toBe('published')
+    expect(target.coverImageUrl).toBe('https://prod.test/copy/capa.png')
+    expect(verifications).toBe(2)
+    expect(
+      (await f.db.select().from(courses).where(eq(courses.id, f.source)))[0]!.coverImageUrl,
+    ).toBe('https://stage.test/capa.png')
+    expect(
+      await f.db
+        .select()
+        .from(zappyKnowledgeSources)
+        .where(eq(zappyKnowledgeSources.courseId, f.target)),
+    ).toHaveLength(1)
+  }, 30_000)
+  test('tarefas e mudança de fase são atômicas no Postgres', async () => {
+    const f = await publicationFixture()
+    await f.repo.approve(f.seed.id, 0, f.seed.planHash)
+    const claim = (await f.repo.claim())!
+    await f.repo.initializeTasks(claim, [{ id: 'plan', kind: 'media-plan', input: {} }])
+    const root = await f.repo.planTask(claim)
+    expect(
+      await rejected(
+        f.repo.initializeTasks(
+          claim,
+          [{ id: 'voice:test', kind: 'voice', input: { kind: 'voice' } }],
+          { taskId: randomUUID(), result: { phase: 'media' } },
+        ),
+      ),
+    ).toBeInstanceOf(Error)
+    expect(
+      await f.db
+        .select()
+        .from(coursePublicationTasks)
+        .where(eq(coursePublicationTasks.jobId, f.seed.id)),
+    ).toHaveLength(1)
+    expect((await f.repo.planTask(claim)).result).toBeNull()
+    await f.repo.initializeTasks(claim, [], { taskId: root.id, result: { phase: 'media' } })
+    expect((await f.repo.planTask(claim)).result).toEqual({ phase: 'media' })
+    await f.repo.cancel(f.seed.id, (await f.repo.view(f.seed.id))!.version)
+  }, 30_000)
+  test('a porta entre ambientes só exporta captura aprovada e recusa origem alterada ou cancelada', async () => {
+    const f = await publicationFixture()
+    await f.db.update(courses).set({ audience: 'kids' }).where(eq(courses.id, f.target))
+    const errors = () =>
+      new Elysia().onError({ as: 'global' }, ({ code, error, set }) => {
+        const result = buildErrorResponse({ code, error, logger: silentLogger })
+        set.status = result.status
+        return result.body
+      })
+    const token = 'production-peer-test-only-token-123456789'
+    const exportToken = 'staging-export-test-only-token-1234567890'
+    const production = errors().use(
+      coursePromotionPeerRoutes({
+        service: new CoursePromotionService(f.repo),
+        token,
+        enabled: true,
+      }),
+    )
+    const peer = createCoursePromotionPeerClient(
+      { url: 'http://production.local', token },
+      (input, init) => production.handle(new Request(input, init)),
+    )
+    const staging = errors().use(
+      coursePromotionSourceRoutes({
+        service: new CoursePromotionSourceService(f.repo, peer),
+        token: exportToken,
+      }),
+    )
+    const sourceClient = createCoursePromotionSourceClient(
+      {
+        url: 'http://staging.local',
+        token: exportToken,
+        decodeSource: (value) => readPublicationSource(parsePublicationSource(value)),
+      },
+      (input, init) => staging.handle(new Request(input, init)),
+    )
+    const source = await f.repo.sourceForPromotion(f.source)
+    expect(await peer.available()).toBe(true)
+    const prepared = await peer.prepare({
+      source,
+      sourceHash: hash({ environment: 'staging', source }),
+      actorId: f.request.actorId,
+      requestKey: randomUUID(),
+      targetSlug: f.request.targetSlug,
+    })
+    expect(prepared.preview.source.environment).toBe('staging')
+    expect(prepared.preview.target.environment).toBe('production')
+    expect(prepared.operation).toBe('promote-kids')
+    expect(
+      await rejected(sourceClient.read(prepared.id, new AbortController().signal)),
+    ).toMatchObject({ code: 'COURSE_PUBLICATION_CONFLICT' })
+    expect(
+      (
+        await production.handle(
+          new Request(`http://local/members/internal/course-promotions/bindings/${prepared.id}`, {
+            headers: { 'x-course-source-token': exportToken },
+          }),
+        )
+      ).status,
+    ).toBe(401)
+    const approved = await peer.command(prepared.id, 'approve', prepared.version, prepared.planHash)
+    try {
+      const capture = await sourceClient.read(prepared.id, new AbortController().signal)
+      expect(hash(capture.source)).toBe(hash(source))
+      await f.db.update(courses).set({ title: 'Edição posterior' }).where(eq(courses.id, f.source))
+      expect(
+        await rejected(sourceClient.read(prepared.id, new AbortController().signal)),
+      ).toMatchObject({ code: 'COURSE_PUBLICATION_CONFLICT' })
+    } finally {
+      await peer.command(prepared.id, 'cancel', approved.version, approved.planHash)
+    }
+    expect(
+      await rejected(sourceClient.read(prepared.id, new AbortController().signal)),
+    ).toMatchObject({ code: 'COURSE_PUBLICATION_CONFLICT' })
+  }, 30_000)
+  test('a captura privada confere a grade e o adiamento respeita prazo persistido do banco', async () => {
+    const f = await publicationFixture()
+    const source = await f.repo.sourceForPromotion(f.source)
+    const raw = JSON.parse(JSON.stringify(source))
+    expect(hash(readPublicationSource(parsePublicationSource(raw)))).toBe(hash(source))
+    raw.modules[0].courseId = randomUUID()
+    expect(() => parsePublicationSource(raw)).toThrow('grade')
+    await f.repo.approve(f.seed.id, 0, f.seed.planHash)
+    const first = (await f.repo.claim())!
+    await f.repo.release(first, 60)
+    expect(await f.repo.claim()).toBeNull()
+    await f.db
+      .update(coursePublicationJobs)
+      .set({ availableAt: new Date(0) })
+      .where(eq(coursePublicationJobs.id, f.seed.id))
+    const next = (await f.repo.claim())!
+    expect(next.id).toBe(f.seed.id)
+    await f.db
+      .update(coursePublicationJobs)
+      .set({ deadlineAt: new Date(0) })
+      .where(eq(coursePublicationJobs.id, f.seed.id))
+    expect(await rejected(f.repo.renew(next))).toMatchObject({
+      code: 'COURSE_PUBLICATION_LEASE_LOST',
+    })
+    expect(await f.repo.claim()).toBeNull()
+    expect((await f.repo.view(f.seed.id))?.status).toBe('failed')
+    expect((await f.repo.view(f.seed.id))?.error).toContain('duas horas')
+  }, 30_000)
+  test('promove uma origem externa com o mesmo ID e slug, sem tocar na origem física e exigindo material do tutor', async () => {
+    const f = await fixture()
+    const original = await executeCourseSync(f.db, f.request)
+    await f.db.update(courses).set({ audience: 'kids' }).where(eq(courses.id, f.target))
+    const source = structuredClone(original.snapshot!.source)
+    // Different databases can legitimately have identical seeded IDs and slugs.
+    source.course.id = f.target
+    source.course.slug = f.request.targetSlug
+    source.modules.forEach((module) => {
+      module.courseId = f.target
+    })
+    source.lessons.forEach((lesson) => {
+      lesson.row.courseId = f.target
+    })
+    const dependencies = {
+      parseBlock: parsePublishedLessonBlock,
+      promotionSource: { environment: 'staging' as const, content: source },
+    }
+    const request: SyncRequest = {
+      ...f.request,
+      environment: 'production',
+      sourceSlug: f.request.targetSlug,
+    }
+    const initial = await executeWithDependencies(f.db, request, dependencies)
+    const media: MediaProof = {
+      environment: 'production',
+      sourceHash: sourceHash(initial.snapshot!),
+      checkedAt: new Date().toISOString(),
+      readyVideoIds: [],
+      voices: {},
+      generated: 0,
+      reused: 0,
+      promotion: {
+        origin: {
+          publicBaseUrl: 'https://stage.test',
+          publicBucket: 'testes',
+          privateBucket: 'testes-privado',
+        },
+        replacements: {},
+        videos: {},
+      },
+    }
+    const plan = await executeWithDependencies(f.db, { ...request, media }, dependencies)
+    expect(
+      await rejected(
+        executeWithDependencies(
+          f.db,
+          { ...request, mode: 'apply', media, expectedPlanHash: plan.plan!.planHash },
+          dependencies,
+        ),
+      ),
+    ).toBeInstanceOf(Error)
+    const [unmodified] = await f.db.select().from(courses).where(eq(courses.id, f.target))
+    expect(unmodified!.status).toBe('draft')
+    const block = source.lessons[0]!.published.blocks[0]!
+    media.knowledge = {
+      sourceHash: media.sourceHash,
+      sources: [
+        {
+          sourceRef: `block:${block.id}`,
+          sourceType: 'rich-text',
+          content: String(block.content.text),
+        },
+      ],
+    }
+    const fresh = await executeWithDependencies(f.db, { ...request, media }, dependencies)
+    const [sourceBefore] = await f.db.select().from(courses).where(eq(courses.id, f.source))
+    expect(
+      await executeWithDependencies(
+        f.db,
+        { ...request, mode: 'apply', media, expectedPlanHash: fresh.plan!.planHash },
+        dependencies,
+      ),
+    ).toMatchObject({
+      verified: true,
+      coursePublished: true,
+      targetCourseId: f.target,
+      knowledge: { copied: 1 },
+    })
+    const [sourceAfter] = await f.db.select().from(courses).where(eq(courses.id, f.source))
+    expect(hash(sourceAfter)).toBe(hash(sourceBefore))
+    const verified = await executeWithDependencies(
+      f.db,
+      { ...request, mode: 'verify', media },
+      dependencies,
+    )
+    expect(verified.plan!.changed).toBe(false)
+    expect(verified.snapshot!.target.lessons[0]!.row.id).toBe(f.tl)
+  }, 30_000)
+  test('rotas reais conferem identidade, prévia, versão e cancelamento no Postgres', async () => {
+    const f = await publicationFixture()
+    const app = new Elysia()
+      .onError({ as: 'global' }, ({ code, error, set }) => {
+        const response = buildErrorResponse({ code, error, logger: silentLogger })
+        set.status = response.status
+        return response.body
+      })
+      .use(
+        coursePublicationRoutes({
+          service: new CoursePublicationService(f.repo, 'local'),
+          internalToken: 'publication-internal-test',
+          requireAdminEnabled: true,
+        }),
+      )
+    const request = (
+      path: string,
+      body?: unknown,
+      role = 'admin',
+      token = 'publication-internal-test',
+    ) =>
+      app.handle(
+        new Request(`http://local/members/admin/course-publications${path}`, {
+          method: body === undefined ? 'GET' : 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-internal-token': token,
+            'x-auth-user-id': f.request.actorId,
+            'x-auth-user-role': role,
+            'x-auth-user-status': 'active',
+          },
+          ...(body === undefined ? {} : { body: JSON.stringify(body) }),
+        }),
+      )
+    expect((await request('/capabilities', undefined, 'staff')).status).toBe(200)
+    const input = {
+      sourceCourseId: f.source,
+      targetSlug: f.request.targetSlug,
+      requestKey: randomUUID(),
+    }
+    expect((await request('/preview', input, 'staff')).status).toBe(403)
+    expect((await request('/preview', input, 'admin', 'wrong')).status).toBe(401)
+    expect((await request('/preview', { ...input, actorId: randomUUID() })).status).toBe(400)
+    const response = await request('/preview', input)
+    expect(response.status).toBe(201)
+    const view = (await response.json()) as {
+      id: string
+      version: number
+      planHash: string
+      status: string
+    }
+    expect(view.status).toBe('preview')
+    expect(JSON.stringify(view)).not.toContain('snapshot')
+    expect(JSON.stringify(view)).not.toContain('leaseToken')
+    expect(
+      (await request(`/${view.id}/approve`, { version: view.version, planHash: '0'.repeat(64) }))
+        .status,
+    ).toBe(409)
+    expect(
+      (await request(`/${view.id}/approve`, { version: view.version, planHash: view.planHash }))
+        .status,
+    ).toBe(200)
+    const approved = (await f.repo.view(view.id))!
+    expect(
+      (
+        await request(`/${view.id}/cancel`, {
+          version: approved.version,
+          planHash: approved.planHash,
+        })
+      ).status,
+    ).toBe(200)
+    expect((await f.repo.view(view.id))?.status).toBe('cancelled')
+  }, 30_000)
+  test('worker prepara, falha sem alterar o destino e retoma com publicação e índice atômicos', async () => {
+    const f = await publicationFixture()
+    const block = f.seed.snapshot.source.lessons[0]!.published.blocks[0]!
+    const voiceKey = `voice:${'a'.repeat(64)}`
+    const knowledgeKey = `knowledge:${'b'.repeat(64)}`
+    const text = String(block.content.text)
+    let unavailable = true,
+      voiceCalls = 0
+    const media: CoursePublicationMediaPort = {
+      plan: async () => ({
+        profileHash: 'c'.repeat(64),
+        tasks: [
+          { id: voiceKey, input: { kind: 'voice', speechText: text } },
+          {
+            id: knowledgeKey,
+            input: {
+              kind: 'knowledge',
+              sourceRef: `block:${block.id}`,
+              sourceType: 'rich-text',
+              extraction: { kind: 'text', content: text },
+            },
+          },
+        ],
+        voices: { [block.id]: [voiceKey] },
+      }),
+      execute: async (task) => {
+        if (task.kind === 'voice') {
+          voiceCalls++
+          return {
+            kind: 'voice',
+            key: chaveDeVoz(task.speechText),
+            url: 'https://assets.example/voz.mp3',
+            generated: false,
+          }
+        }
+        if (unavailable) throw new Error('Serviço indisponível, dado privado')
+        if (task.kind !== 'knowledge') throw new Error('Tarefa inesperada')
+        return {
+          kind: 'knowledge',
+          sourceRef: task.sourceRef,
+          sourceType: task.sourceType,
+          content: text,
+        }
+      },
+    }
+    await f.repo.approve(f.seed.id, 0, f.seed.planHash)
+    const worker = new CoursePublicationWorker(f.repo, media)
+    await worker.runOnce()
+    const failed = (await f.repo.view(f.seed.id))!
+    expect(failed.status).toBe('failed')
+    expect(failed.error).not.toContain('dado privado')
+    const [before] = await f.db.select().from(courses).where(eq(courses.id, f.target))
+    expect(before!.status).toBe('draft')
+    unavailable = false
+    await f.repo.resume(f.seed.id, failed.version, failed.planHash)
+    await new CoursePublicationWorker(f.repo, media).runOnce()
+    expect((await f.repo.view(f.seed.id))?.status).toBe('completed')
+    const [after] = await f.db.select().from(courses).where(eq(courses.id, f.target))
+    expect(after!.status).toBe('published')
+    expect(
+      await f.db
+        .select()
+        .from(zappyKnowledgeSources)
+        .where(eq(zappyKnowledgeSources.courseId, f.target)),
+    ).toHaveLength(1)
+    expect(voiceCalls).toBeGreaterThan(0)
+    expect(await rejected(f.repo.resume(f.seed.id, failed.version, failed.planHash))).toMatchObject(
+      { code: 'COURSE_PUBLICATION_CONFLICT' },
+    )
+  }, 30_000)
   test('o trabalho durável é idempotente e só um processo consegue assumir a execução', async () => {
     const f = await publicationFixture()
     expect(await f.repo.create(f.seed)).toBe(f.seed.id)
@@ -536,6 +1056,44 @@ describe.skipIf(!conn)('sincronização transacional de curso no Postgres', () =
     const error = await rejected(executeCourseSync(f.db, await prepared(f.request)))
     expect(error).toMatchObject({ message: expect.stringContaining('conteúdo do Zappy') })
     expect(hash(await executeCourseSync(f.db, f.request))).toBe(hash(before))
+  }, 30_000)
+  test('instala material preparado sem depender de índice prévio nem alterar o índice da origem', async () => {
+    const f = await fixture()
+    const first = await executeCourseSync(f.db, f.request)
+    const sourceBlock = first.snapshot!.source.lessons[0]!.published.blocks[0]!
+    await f.db.delete(zappyKnowledgeSources).where(eq(zappyKnowledgeSources.courseId, f.source))
+    const request = await prepared(f.request)
+    request.media.knowledge = {
+      sourceHash: request.media.sourceHash,
+      sources: [
+        {
+          sourceRef: `block:${sourceBlock.id}`,
+          sourceType: 'rich-text',
+          content: String(sourceBlock.content.text),
+        },
+      ],
+    }
+    const plan = await executeCourseSync(f.db, { ...f.request, media: request.media })
+    request.expectedPlanHash = plan.plan!.planHash
+    expect(await executeCourseSync(f.db, request)).toMatchObject({
+      verified: true,
+      knowledge: { copied: 1 },
+    })
+    expect(
+      await f.db
+        .select()
+        .from(zappyKnowledgeSources)
+        .where(eq(zappyKnowledgeSources.courseId, f.source)),
+    ).toHaveLength(0)
+    const [indexed] = await f.db
+      .select()
+      .from(zappyKnowledgeSources)
+      .where(eq(zappyKnowledgeSources.courseId, f.target))
+    const chunks = await f.db
+      .select()
+      .from(zappyKnowledgeChunks)
+      .where(eq(zappyKnowledgeChunks.sourceId, indexed!.id))
+    expect(chunks[0]?.content).toBe(String(sourceBlock.content.text))
   }, 30_000)
   test('repara o índice ausente sem republicar o curso e as aulas', async () => {
     const f = await fixture()
