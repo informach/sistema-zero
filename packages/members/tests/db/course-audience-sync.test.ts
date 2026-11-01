@@ -6,6 +6,7 @@ import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import { hash, type MediaProof, sourceHash } from '../../src/domain/course-publication/course-sync'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
+import { DrizzleCoursePublicationRepository } from '../../src/infrastructure/persistence/drizzle/course-publication.repository'
 import {
   executeCourseSync as executeWithDependencies,
   type SyncRequest,
@@ -14,6 +15,7 @@ import { createDbConnection } from '../../src/infrastructure/persistence/drizzle
 import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleProgressRepository } from '../../src/infrastructure/persistence/drizzle/progress.repository'
 import {
+  coursePublicationJobs,
   courses,
   lessonBlocks,
   lessonCompletions,
@@ -59,6 +61,8 @@ describe.skipIf(!conn)('sincronização transacional de curso no Postgres', () =
       ).pathname.replace(/^\/([A-Z]:)/, '$1'),
       migrationsTable: 'members_migrations',
     })
+    // This URL is guarded above and belongs only to the disposable course publication tests.
+    await conn.db.delete(coursePublicationJobs)
   }, 120_000)
   afterAll(async () => {
     await conn?.close()
@@ -191,6 +195,112 @@ describe.skipIf(!conn)('sincronização transacional de curso no Postgres', () =
     if (!result.plan) throw new Error('Plano ausente')
     return { ...request, mode: 'apply' as const, media, expectedPlanHash: result.plan.planHash }
   }
+  async function publicationFixture() {
+    const f = await fixture()
+    const initial = await executeCourseSync(f.db, f.request)
+    if (!initial.snapshot || !initial.plan) throw new Error('Prévia ausente')
+    const snapshot = initial.snapshot,
+      plan = initial.plan
+    const repo = new DrizzleCoursePublicationRepository(f.db, {
+      parseBlock: parsePublishedLessonBlock,
+    })
+    const seed = {
+      id: randomUUID(),
+      requestKey: randomUUID(),
+      actorId: f.request.actorId,
+      operation: 'copy-adult' as const,
+      snapshot,
+      snapshotHash: hash(snapshot),
+      planHash: plan.planHash,
+      preview: {
+        source: {
+          id: f.source,
+          title: snapshot.source.course.title,
+          slug: f.request.sourceSlug,
+          environment: 'local' as const,
+        },
+        target: {
+          id: f.target,
+          title: plan.course.title,
+          slug: f.request.targetSlug,
+          environment: 'local' as const,
+          audience: 'adult' as const,
+          exists: true,
+        },
+        modules: plan.modules.length,
+        lessons: plan.lessons.length,
+        retiredModules: plan.retirements.modules.length,
+        retiredLessons: plan.retirements.lessons.length,
+      },
+    }
+    await repo.create(seed)
+    return { ...f, repo, seed }
+  }
+  test('o trabalho durável é idempotente e só um processo consegue assumir a execução', async () => {
+    const f = await publicationFixture()
+    expect(await f.repo.create(f.seed)).toBe(f.seed.id)
+    await f.repo.approve(f.seed.id, 0, f.seed.planHash)
+    const other = createDbConnection(url!, { max: 1 })
+    try {
+      const second = new DrizzleCoursePublicationRepository(other.db, {
+        parseBlock: parsePublishedLessonBlock,
+      })
+      const claims = await Promise.all([f.repo.claim(), second.claim()])
+      expect(claims.filter(Boolean)).toHaveLength(1)
+      const claim = claims.find((c) => c !== null)!
+      expect((await f.repo.view(f.seed.id))?.status).toBe('preparing')
+      const captured = await f.repo.capture(f.seed.id)
+      expect(captured?.snapshot.source.course.createdAt).toBeInstanceOf(Date)
+      await f.repo.initializeTasks(claim, [
+        { id: 'media-plan', kind: 'media-plan', input: {} },
+        { id: 'voice-1', kind: 'voice', input: { speech: 'Observe o jogo.' } },
+      ])
+      const planTask = await f.repo.nextTask(claim)
+      expect(planTask?.kind).toBe('media-plan')
+      await f.repo.finishTask(claim, planTask!.id, { taskKeys: ['voice-1'] })
+      const task = await f.repo.nextTask(claim)
+      expect(task?.kind).toBe('voice')
+      const media = (await prepared(f.request)).media
+      expect(await rejected(f.repo.publishMirror(claim, media))).toMatchObject({
+        message: expect.stringContaining('ainda não terminou'),
+      })
+      await f.repo.finishTask(claim, task!.id, { voiceUrl: 'https://assets.example/audio.mp3' })
+      await f.repo.publishMirror(claim, media)
+      const view = await f.repo.view(f.seed.id)
+      expect(view).toMatchObject({ status: 'completed', tasks: { completed: 1, total: 1 } })
+      expect(Object.keys(view!)).not.toContain('snapshot')
+      expect(Object.keys(view!)).not.toContain('leaseToken')
+      expect(await rejected(f.repo.finishTask(claim, task!.id, {}))).toMatchObject({
+        code: 'COURSE_PUBLICATION_LEASE_LOST',
+      })
+    } finally {
+      await other.close()
+    }
+  }, 30_000)
+  test('cancelamento e lease vencido impedem o processo antigo de gravar', async () => {
+    const f = await publicationFixture()
+    await f.repo.approve(f.seed.id, 0, f.seed.planHash)
+    const old = await f.repo.claim()
+    expect(old).not.toBeNull()
+    await f.db
+      .update(coursePublicationJobs)
+      .set({ leaseUntil: new Date(0) })
+      .where(eq(coursePublicationJobs.id, f.seed.id))
+    expect(await rejected(f.repo.renew(old!))).toMatchObject({
+      code: 'COURSE_PUBLICATION_LEASE_LOST',
+    })
+    const next = await f.repo.claim()
+    expect(next?.token).not.toBe(old?.token)
+    const view = await f.repo.view(f.seed.id)
+    await f.repo.cancel(f.seed.id, view!.version)
+    expect(await rejected(f.repo.initializeTasks(next!, []))).toMatchObject({
+      code: 'COURSE_PUBLICATION_LEASE_LOST',
+    })
+    expect((await f.repo.view(f.seed.id))?.status).toBe('cancelled')
+    expect((await f.db.select().from(courses).where(eq(courses.id, f.target)))[0]?.status).toBe(
+      'draft',
+    )
+  }, 30_000)
   test('publica, mantém o progresso e os IDs e a repetição não escreve', async () => {
     const f = await fixture(),
       userId = randomUUID()

@@ -10,6 +10,10 @@ import {
   type Snapshot,
   sourceHash,
 } from '../../src/domain/course-publication/course-sync'
+import {
+  readPublicationSnapshot,
+  storePublicationSnapshot,
+} from '../../src/domain/course-publication/jobs'
 
 export function fixture(): Snapshot {
   const now = new Date('2026-11-01T10:00:00Z')
@@ -134,6 +138,22 @@ export function proof(snapshot: Snapshot): MediaProof {
 }
 
 describe('sincronizar curso publicado entre públicos', () => {
+  test('o registro durável hidrata só as datas das linhas, preservando strings dentro dos projetos', () => {
+    const snapshot = fixture()
+    const project = { createdAt: '2026-10-31T00:00:00Z', updatedAt: '2026-11-01T00:00:00Z' }
+    snapshot.source.lessons[0]!.published.blocks[0]!.content.initialProject = project
+    snapshot.source.archivedModules = [
+      { ...snapshot.source.modules[0]!, archivedAt: new Date('2026-11-01T00:00:00Z') },
+    ]
+    const stored = storePublicationSnapshot(snapshot)
+    const hydrated = readPublicationSnapshot(stored)
+    expect(hydrated.source.course.createdAt).toBeInstanceOf(Date)
+    expect(hydrated.source.archivedModules?.[0]?.archivedAt).toBeInstanceOf(Date)
+    expect(hydrated.source.lessons[0]!.published.blocks[0]!.content.initialProject).toEqual(project)
+    expect(hash(hydrated)).toBe(hash(snapshot))
+    stored.source.course.createdAt = 'ontem'
+    expect(() => readPublicationSnapshot(stored)).toThrow('Data inválida')
+  })
   test('publica seguindo módulo e aula, mesmo quando o inventário chega em outra ordem', () => {
     const snapshot = fixture()
     const module = {
