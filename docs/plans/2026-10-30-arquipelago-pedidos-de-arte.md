@@ -251,6 +251,24 @@ Aceite: um teste que lê os GLBs e confere os alvos de altura (com 1 m de toler�
 com uma malha e até 3 mil triângulos, e a diferença de altura e largura entre a silhueta e a ilha
 completa abaixo de 5%.
 
+**Revisto em 01/11/2026 (lacunas, L11a):** com os alvos acima, a Vila (12) e o Recife (9) ficavam
+abaixo do Bosque (14,4), e a ordem pela altura não seguia o posto. Feito: a torre de doces da Vila
+virou um espeto de doces até 15,5 m e os pináculos do Recife viraram rocha de recife coberta de
+coral, o mais alto a 16,8 m. A escada ficou Bosque 14,4, Vila 15,5, Recife 16,8, Pico 18,2, Vale
+19,8 e Nuvens 24, nas duas versões (`tests/silhuetas-das-ilhas.test.ts` confere a subida, com
+degrau de pelo menos 1 m, e `tests/marcos-das-ilhas.test.ts` os alvos).
+
+### Feitos nas lacunas (01/11/2026, L11)
+
+- **GLB médio de cada ilha** (as ilhas em três versões): `arte/ilhas/medias.py`, a partir da
+  completa; o jogo liga as seis (`tests/ilhas-medias.test.ts`, `docs/qa/2026-11-01-ilhas-medias/`).
+- **Ilhas mais altas pelo posto**: acima.
+- **Bicho da Vila Doce para a luneta**: a ovelhinha de algodão-doce (`arte/bichos/vila.py`); a
+  luneta mostra um bicho de cada ilha correndo e o Lumi de luz da família
+  (`docs/qa/2026-11-01-luneta-bichos/`).
+- **Arte 2D da corrida da Vila**: telhados, chaminés e bolo dourado, em imagens
+  (`docs/desafios-do-jogo/vila-doce/`, `docs/qa/2026-11-01-vila-telhados/`).
+
 ### As medidas dos movimentos para os segredos (B11)
 
 Tiradas do código em 30/10/2026 (`mundo/medidas.ts`, `sistemas/corpo.ts`, `sistemas/movimento.ts`,
