@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { defaultProjectControls } from '@sistemazero/studio/controls'
 import { act, fireEvent, render, screen } from '@testing-library/react'
 import { type ComponentProps, createRef, useState } from 'react'
+import { readStylesheet } from '../../ui/scripts/read-stylesheet.mjs'
 import {
   CtrlBar,
   DPad,
@@ -227,7 +228,7 @@ describe('a tira SELECT / START', () => {
 
 describe('a seta gravada na cruz precisa CONTRASTAR com a cruz', () => {
   const raizDoPacote = new URL('..', import.meta.url)
-  const css = readFileSync(new URL('src/app/globals.css', raizDoPacote), 'utf8')
+  const css = readStylesheet(new URL('src/app/globals.css', raizDoPacote))
   const componente = readFileSync(
     new URL('../member-shell/src/components/creator/console-controls.tsx', raizDoPacote),
     'utf8',

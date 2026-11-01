@@ -2,7 +2,6 @@
 
 import { lessonCompletionRequirements } from '@sistemazero/core/learning'
 import type { LiveRoomView } from '@sistemazero/core/live'
-import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -11,6 +10,7 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
+import { CreatorLessonBlocks } from '@sistemazero/member-shell/components/lesson-ui/blocks'
 import { LiveClassroom } from '@sistemazero/member-shell/components/live/live-classroom'
 import {
   LiveLessonClosed,
@@ -174,7 +174,7 @@ function AdultLiveLessonPlayer({
           completeBlocked && !lesson.completed ? 'Termine as atividades para concluir' : null
         }
         onSectionChange={onSectionChange}
-        renderBlocks={(blocks) => <LessonBlocks blocks={blocks} />}
+        renderBlocks={(blocks) => <CreatorLessonBlocks blocks={blocks} enableStudioShare={false} />}
       />
     </LessonPlayerProvider>
   )

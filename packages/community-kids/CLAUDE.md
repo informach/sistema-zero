@@ -2470,7 +2470,7 @@ tela sem saída. A página não precisa mais buscar gamificação para desempata
 
 **Ouvir a orientação (08/10/2026):** `videoGateAudioUrl` no contexto do player fornece o MP3
 `/zappy/assista-ao-video-v1.mp3`, gravado com a voz própria do Zappy. O registro de geração está
-em `src/lib/zappy-video-gate-voice.json`; um teste confere que seu texto corresponde ao aviso.
+em `packages/member-shell/src/lib/zappy-video-gate-voice.json`; um teste confere que seu texto corresponde ao aviso.
 O botão compartilhado `ZappyOuvirButton` aparece abaixo da explicação, sem autoplay, e disputa
 o mesmo foco de áudio do vídeo. A chave por seção encerra a fala ao mudar de parte sem remontar
 a atividade. Ouvir não altera progresso nem libera a tranca. Ao mudar texto ou voz, gerar outro

@@ -1,8 +1,7 @@
 'use client'
 
 import { lessonCompletionRequirements } from '@sistemazero/core/learning'
-
-import { LessonBlocks } from '@sistemazero/member-shell/components/lesson-blocks'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
 import {
   type LessonPlayerContextValue,
   LessonPlayerProvider,
@@ -12,15 +11,23 @@ import {
   LessonSections,
   useLessonLearning,
 } from '@sistemazero/member-shell/components/lesson-sections'
+import { LessonActionEvidence } from '@sistemazero/member-shell/components/lesson-ui/action-evidence'
+import { CreatorBackButton } from '@sistemazero/member-shell/components/lesson-ui/back-button'
+import { CreatorLessonBlocks } from '@sistemazero/member-shell/components/lesson-ui/blocks'
+import { LessonCelebration } from '@sistemazero/member-shell/components/lesson-ui/celebration'
+import { ZappyAnimated } from '@sistemazero/member-shell/components/lesson-ui/mascot-animated'
 import { upToDateWorkspaceIds } from '@sistemazero/member-shell/lib/lesson-draft-cloud'
 import { lessonDraftCloudFor } from '@sistemazero/member-shell/lib/lesson-draft-transport'
-import type { LessonCompleteResult } from '@sistemazero/member-shell/lib/types'
+import type {
+  CourseProgressView,
+  GamificationDelta,
+  LessonCompleteResult,
+} from '@sistemazero/member-shell/lib/types'
 import { useLessonRefresh } from '@sistemazero/member-shell/lib/use-lesson-refresh'
-import { Button } from '@sistemazero/ui/button'
+import videoGateVoice from '@sistemazero/member-shell/lib/zappy-video-gate-voice.json'
 import { EdgePanelHandle } from '@sistemazero/ui/edge-panel-handle'
 import { Spinner } from '@sistemazero/ui/spinner'
-import { CheckCircle2, ChevronLeft, X } from 'lucide-react'
-import Link from 'next/link'
+import { CheckCircle2, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useCallback, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -84,6 +91,12 @@ export function LessonPlayer({
     missing('LEARNING_GATE_INCOMPLETE') || missing('SECTION_GATE_INCOMPLETE')
   const blockedByPinta = missing('PINTA_GATE_NOT_SUBMITTED')
 
+  const [celebration, setCelebration] = useState<{
+    progress: CourseProgressView
+    progressAfter: CourseProgressView
+    publicationPending: boolean
+    gamification: GamificationDelta | null
+  } | null>(null)
   const [completing, setCompleting] = useState(false)
   const [outlineOpen, setOutlineOpen] = useState(false)
   const [sectionPosition, setSectionPosition] = useState<{ index: number; total: number } | null>(
@@ -122,13 +135,16 @@ export function LessonPlayer({
         : await sendCompletion()
       gamification?.reward(result.gamification)
       completedRef.current = true
-      toast.success(
-        result.gamification?.xpAwarded
-          ? `Aula concluída! +${result.gamification.xpAwarded} XP`
-          : 'Aula concluída!',
-      )
-      if (nextLessonHref) router.push(nextLessonHref)
-      router.refresh()
+      setCelebration({
+        progress: course.progress,
+        progressAfter: result,
+        publicationPending:
+          !course.curriculum &&
+          typeof course.careerSlot === 'number' &&
+          result.percent === 100 &&
+          course.milestones?.showcased === false,
+        gamification: result.gamification ?? null,
+      })
     } catch (error) {
       const apiError = error as ApiError
       toast.error(apiError.message || 'Não foi possível concluir a aula. Tente novamente.')
@@ -140,8 +156,10 @@ export function LessonPlayer({
     lesson.sections,
     lessonDrafts,
     sectionPosition?.index,
-    nextLessonHref,
-    router,
+    course.progress,
+    course.curriculum,
+    course.careerSlot,
+    course.milestones?.showcased,
     gamification,
   ])
 
@@ -149,6 +167,17 @@ export function LessonPlayer({
     () => ({
       lessonId: lesson.id,
       dialogueMascot: lessonZappy,
+      showActivityRequirement: false,
+      renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
+      videoGateMascot: <ZappyAnimated expression="happy" className="size-20 sm:size-24" />,
+      videoGateAudioUrl: videoGateVoice.url,
+      renderInstruction: (text, pose = 'speaking', speech) => (
+        <DialogueBlockView
+          content={{ kind: 'dialogue', text, pose }}
+          speech={speech}
+          mascot={<ZappyAnimated expression={pose} className="size-16 sm:size-20" />}
+        />
+      ),
       courseSlug: course.slug,
       viewerWatermark,
       viewerId,
@@ -174,15 +203,20 @@ export function LessonPlayer({
   )
 
   const completionAction = lesson.completed ? (
-    <span className="inline-flex items-center gap-2 font-semibold text-accent text-sm">
-      <CheckCircle2 className="size-4" />
+    <span className="inline-flex items-center gap-2 font-extrabold text-[0.9375rem]">
+      <CheckCircle2 className="size-5 text-(--success-foreground)" aria-hidden />
       Aula concluída
     </span>
   ) : (
-    <Button onClick={() => complete()} disabled={completing || completeBlocked}>
-      {completing ? <Spinner /> : <CheckCircle2 className="size-4" />}
+    <button
+      type="button"
+      className="sz-btn-gradient h-12 gap-2 px-7 text-base disabled:cursor-not-allowed disabled:opacity-55"
+      onClick={() => complete()}
+      disabled={completing || completeBlocked}
+    >
+      {completing ? <Spinner /> : <CheckCircle2 className="size-5" aria-hidden />}
       Concluir aula
-    </Button>
+    </button>
   )
   // Em TEXTO: vira um item da faixa "o que falta para seguir" do rodapé (`LessonSectionStatus`),
   // só quando a parte não tem itens próprios (aula legada, equipe).
@@ -204,27 +238,22 @@ export function LessonPlayer({
     <LessonPlayerProvider value={playerContext}>
       {/* `sz-aula-adulto`: gancho do fundo alternativo da aula (a régua do Pen), aplicado no
           invólucro do app pelo `globals.css` sem mexer no layout. */}
-      <div className="sz-aula-adulto flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-0">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-0">
         {/* Conteúdo principal */}
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 md:gap-4">
-            <Link
-              href={courseHref}
-              aria-label={`Voltar ao curso ${course.title}`}
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-card text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-ring"
-            >
-              <ChevronLeft className="size-5" />
-            </Link>
+            <CreatorBackButton href={courseHref} label={`Voltar ao curso ${course.title}`} />
             <div className="min-w-0 flex-1">
-              <LessonProgressBar progress={lesson.sectionProgress} compact />
+              <LessonProgressBar
+                progress={lesson.sectionProgress}
+                position={sectionPosition}
+                activities={blockedByComingSoon ? [] : requirements}
+                compact
+              />
             </div>
-            {sectionPosition ? (
-              <span className="shrink-0 text-sm font-semibold tabular-nums">
-                Seção {sectionPosition.index + 1} de {sectionPosition.total}
-              </span>
-            ) : null}
           </div>
           <LessonSections
+            kids
             key={`${viewerId}:${lesson.id}`}
             lesson={lesson}
             lessonTitle={lesson.title}
@@ -233,11 +262,7 @@ export function LessonPlayer({
             completionAction={completionAction}
             completionMessage={completionMessage}
             renderBlocks={(blocks) => (
-              <LessonBlocks
-                enableHelpLinks
-                blocks={blocks}
-                enableStudioShare={creationSharingEnabled}
-              />
+              <CreatorLessonBlocks blocks={blocks} enableStudioShare={creationSharingEnabled} />
             )}
           />
         </div>
@@ -248,7 +273,7 @@ export function LessonPlayer({
           open={outlineOpen}
           openOffset="var(--lesson-outline-width)"
           label={outlineOpen ? 'Esconder lista de aulas' : 'Mostrar lista de aulas'}
-          controlsId="adult-lesson-outline"
+          controlsId="kids-lesson-outline"
           onToggle={() => setOutlineOpen((open) => !open)}
           className="z-[62] border-border bg-card text-foreground lg:z-[42]"
         />
@@ -265,11 +290,11 @@ export function LessonPlayer({
           )}
         />
         <aside
-          id="adult-lesson-outline"
+          id="kids-lesson-outline"
           aria-hidden={!outlineOpen}
           inert={!outlineOpen}
           className={cn(
-            'sz-lesson-outline fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
+            'fixed inset-y-0 right-0 z-[61] flex w-(--lesson-outline-width) flex-col overflow-hidden border-border border-l bg-card transition-transform duration-300 ease-in-out motion-reduce:transition-none lg:z-40',
             !outlineOpen ? 'pointer-events-none translate-x-full' : 'translate-x-0',
           )}
         >
@@ -290,6 +315,20 @@ export function LessonPlayer({
           />
         </aside>
       </div>
+      {celebration ? (
+        <LessonCelebration
+          progressBefore={celebration.progress}
+          progressAfter={celebration.progressAfter}
+          publicationPending={celebration.publicationPending}
+          gamification={celebration.gamification}
+          nextHref={nextLessonHref}
+          courseHref={courseHref}
+          onClose={() => {
+            setCelebration(null)
+            router.refresh()
+          }}
+        />
+      ) : null}
     </LessonPlayerProvider>
   )
 }

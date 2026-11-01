@@ -58,7 +58,8 @@
     "./components/cosmetics/room/use-responsive-zoom": "./src/components/cosmetics/room/use-responsive-zoom.ts",
     "./components/cosmetics/room/walls": "./src/components/cosmetics/room/walls.tsx",
     "./components/creator/use-fullscreen": "./src/components/creator/use-fullscreen.ts",
-    "./components/creator/gamepad-fullscreen": "./src/components/creator/gamepad-fullscreen.ts"
+    "./components/creator/gamepad-fullscreen": "./src/components/creator/gamepad-fullscreen.ts",
+    "./lib/zappy-video-gate-voice.json": "./src/lib/zappy-video-gate-voice.json"
   },
   "scripts": {
     "typecheck": "tsc --noEmit",

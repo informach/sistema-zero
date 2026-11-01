@@ -20,7 +20,7 @@
 /* Paleta canônica (`@sistemazero/ui`): os `--sz-community-*` de onde os `--pen-*` abaixo
    derivam. ⚠️ Valor Pen NÃO se repete aqui — ele nasce no registro de `packages/ui/src/tokens`
    e a cor escolhida no perfil chega por `data-sz-palette` no <html>. */
-@import "@sistemazero/ui/community-kids-theme.css";
+@import "@sistemazero/ui/theme-kids.css";
 @import "./cosmetics-adult.css";
 /* Componentes compartilhados (@sistemazero/ui) — o scanner precisa ver as classes deles. */
 @source "../../../ui/src";

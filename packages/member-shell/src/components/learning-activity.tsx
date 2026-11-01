@@ -277,7 +277,7 @@ function Activity({
         data-chip={a.type === 'project-play' ? 'project-play' : 'html'}
       >
         <Gamepad2 size={14} aria-hidden />
-        Brinque
+        Jogue
       </p>
       <h3 id={`${id}-title`} className="sz-display font-semibold text-xl">
         {content.title}

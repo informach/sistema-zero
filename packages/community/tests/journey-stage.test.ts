@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { createElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { readStylesheet } from '../../ui/scripts/read-stylesheet.mjs'
 import { JourneyRibbon, StageChip, StageFace } from '../src/components/community/journey/stage'
 import {
   normalizeJourney,
@@ -91,9 +92,8 @@ describe('a cor e o nome da etapa', () => {
       expect(css).toContain(`--etapa-${position}:`)
     expect(css).toContain('--etapa-lenda:')
     expect(css).toContain('--etapa-lenda-tinta:')
-    const kids = readFileSync(
+    const kids = readStylesheet(
       join(import.meta.dir, '..', '..', 'community-kids', 'src', 'app', 'globals.css'),
-      'utf8',
     )
     // As cinco cores literais do Kids aparecem iguais aqui (as duas da marca vêm de tokens).
     for (const value of [

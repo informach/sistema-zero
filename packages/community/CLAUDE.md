@@ -1,11 +1,20 @@
 # CLAUDE.md — @sistemazero/community
 
-## Reservas ediSVG do Zappy, 31/10/2026
+## Aula idêntica ao Kids, 31/10/2026
 
-`lesson-zappy.tsx` usa as reservas de `@sistemazero/edisvg/builtins`, exportadas das artes
-editáveis. Continua estático por desempenho, com a fala e o botão Ouvir acessíveis. Não baixar
-o motor para uma imagem parada. Dev/build sincronizam e conferem os recursos hashados do pacote
-edisvg em public/edisvg. O app não importa imagens de outra aplicação.
+A apresentação da aula vem de `member-shell/components/lesson-ui`: blocos, quiz, mascote,
+lista de aulas, avaliação, celebração e botão de voltar. O Zappy usa o mesmo player ediSVG
+ligado ao estado real do botão Ouvir. Economia de dados e movimento reduzido preservam a
+reserva estática. Não criar uma segunda apresentação adulta desses elementos.
+
+O tema canônico mora em `ui/src/styles/creator-theme.css`. O gerador `lesson-theme.mjs`
+compõe `globals.generated.css` com seletores mutuamente exclusivos: a aula recebe o tema
+Kids e a navegação de volta restaura o tema adulto, sem efeito React que troque o documento.
+Dev/build conferem que a saída está atualizada. Após editar qualquer fonte, executar
+`bun run lesson-theme:gen` na raiz. Nunito e Baloo usam carregamento sob demanda.
+Identidade, acesso, rascunhos e divulgação continuam usando a conta e o público adultos.
+Recursos de aula e ediSVG são sincronizados localmente antes de dev/build, sem buscar
+arquivos de outra aplicação.
 
 
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**

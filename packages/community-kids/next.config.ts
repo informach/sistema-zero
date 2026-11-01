@@ -139,6 +139,8 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // The same release identity in HTML, RSC and static assets prevents mixed versions.
+  deploymentId: process.env.RAILWAY_GIT_COMMIT_SHA || undefined,
   reactStrictMode: true,
   // Deploy em container (Railway): `.next/standalone` com server.js mínimo.
   output: 'standalone',

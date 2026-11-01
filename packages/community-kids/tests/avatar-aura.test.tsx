@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { readStylesheet } from '../../ui/scripts/read-stylesheet.mjs'
 import { AvatarWithAura } from '../src/components/kids/avatar-with-aura'
 import { LEVEL_ORDER } from '../src/lib/level-info'
 
@@ -38,7 +39,7 @@ describe('AvatarWithAura', () => {
   })
 
   test('todo nível tem a cor no globals.css, e o anel tem regra por tamanho', () => {
-    const css = readFileSync(join(import.meta.dir, '..', 'src', 'app', 'globals.css'), 'utf8')
+    const css = readStylesheet(join(import.meta.dir, '..', 'src', 'app', 'globals.css'))
     for (const slug of LEVEL_ORDER) expect(css).toContain(`--level-${slug}:`)
     for (const rule of ['.kids-aura {', '.kids-aura-sm {', '.kids-aura-lg {', '.kids-aura-xl {'])
       expect(css).toContain(rule)

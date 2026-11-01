@@ -85,7 +85,9 @@
     "build:helpdesk-app": "cd packages/helpdesk-app && bun run build",
     "start:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app start",
     "typecheck:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app typecheck",
-    "test:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app test"
+    "test:helpdesk-app": "bun run --filter @sistemazero/helpdesk-app test",
+    "lesson-theme:gen": "bun packages/ui/scripts/lesson-theme.mjs packages/community/src/app/globals.css packages/community/src/app/globals.generated.css",
+    "lesson-theme:check": "bun packages/ui/scripts/lesson-theme.mjs packages/community/src/app/globals.css packages/community/src/app/globals.generated.css --check"
   },
   "devDependencies": {
     "@biomejs/biome": "2.4.16",

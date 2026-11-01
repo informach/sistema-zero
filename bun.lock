@@ -1105,6 +1105,7 @@
       "devDependencies": {
         "@types/react": "^19",
         "@types/react-dom": "^19",
+        "postcss": "8.5.23",
         "typescript": "^5.7.0",
       },
       "peerDependencies": {

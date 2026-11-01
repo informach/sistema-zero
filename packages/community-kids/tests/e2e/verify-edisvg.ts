@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http'
 import { basename, resolve } from 'node:path'
 import { chromium, expect, type Page } from '@playwright/test'
+import { readStylesheet } from '../../../ui/scripts/read-stylesheet.mjs'
 
 /** Local Chromium measurement. This does not emulate a slower phone CPU. */
 async function measureAnimation(page: Page) {
@@ -76,7 +77,7 @@ const modules = new Map<string, Uint8Array>(
 )
 const assetsFolder = resolve(import.meta.dirname, '../../../edisvg/assets')
 const manifest = JSON.parse(await readFile(resolve(assetsFolder, 'manifest.json'), 'utf8'))
-const css = await readFile(resolve(import.meta.dirname, '../../src/app/globals.css'), 'utf8')
+const css = readStylesheet(resolve(import.meta.dirname, '../../src/app/globals.css'))
 const shakeStart = css.indexOf('@keyframes kids-chest-shake')
 const shakeEnd = css.indexOf('}', css.indexOf('.kids-chest-opening', shakeStart)) + 1
 assert.ok(shakeStart >= 0 && shakeEnd > shakeStart)

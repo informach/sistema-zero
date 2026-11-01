@@ -1,0 +1,395 @@
+'use client'
+
+import { CertificateBlockView } from '@sistemazero/member-shell/components/certificate-block'
+import { DialogueBlockView } from '@sistemazero/member-shell/components/dialogue-block'
+import { EbookBlockView } from '@sistemazero/member-shell/components/ebook/ebook-block'
+import { useLessonPlayer } from '@sistemazero/member-shell/components/lesson-player-context'
+import { LessonVideo } from '@sistemazero/member-shell/components/lesson-video'
+import { MaterialsBlockView } from '@sistemazero/member-shell/components/materials-block'
+import { PintaBlockView } from '@sistemazero/member-shell/components/pinta/pinta-block'
+import { StudioBlockView } from '@sistemazero/member-shell/components/studio/studio-block'
+import type { StudioShareResult } from '@sistemazero/studio'
+import {
+  Award,
+  Backpack,
+  BookOpenText,
+  Clapperboard,
+  Code2,
+  Gamepad2,
+  Hammer,
+  Headphones,
+  ListChecks,
+  type LucideIcon,
+  MessageCircle,
+  Palette,
+} from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { useState } from 'react'
+import { cn } from '../../lib/cn'
+import { parseLessonBlock } from '../../lib/lesson-block-content'
+import { isLessonPath } from '../../lib/lesson-path'
+import { renderMarkdown } from '../../lib/markdown'
+import type {
+  AudioBlock,
+  ComingSoonBlock,
+  EmbedBlock,
+  ImageBlock,
+  LessonBlockView,
+  MaterialsBlock,
+  RichTextBlock,
+  StudioBlock,
+  VideoBlock,
+} from '../../lib/types'
+import { ZappyStill } from './mascot'
+import { ZappyAnimated } from './mascot-animated'
+import { MuralCelebration } from './mural-celebration'
+import { LessonQuiz } from './quiz'
+
+/**
+ * Apresentação canônica das aulas Kids e adultas. Cada atividade usa a mesma
+ * moldura, chip, controles e mascote. Identidade e acesso são fornecidos pelo host.
+ * Segurança:
+ * nunca interpolamos `src` cru em embed de vídeo — extraímos o ID e montamos
+ * a URL canônica (youtube-nocookie/player.vimeo, na allowlist da CSP); HTML
+ * arbitrário só roda em iframe `sandbox` SEM allow-same-origin; rich_text é
+ * markdown renderizado de forma controlada (conversor puro/testado).
+ */
+export function CreatorLessonBlocks({
+  blocks,
+  enableStudioShare = true,
+}: {
+  blocks: LessonBlockView[]
+  enableStudioShare?: boolean
+}) {
+  const ordered = [...blocks].sort((a, b) => a.sortOrder - b.sortOrder)
+  return (
+    <div className="flex flex-col gap-8">
+      {ordered.map((block) => (
+        <BlockRenderer key={block.id} block={block} enableStudioShare={enableStudioShare} />
+      ))}
+    </div>
+  )
+}
+
+/**
+ * Chip de atividade (cores da marca via temas de unidade — mapa literal). Desenho das
+ * telas-modelo (11/09/2026): cor SÓLIDA por tipo de atividade (Assista azul, Responda
+ * laranja, Crie verde), sem o gradiente que o "Crie" usava, e o rótulo em Nunito.
+ */
+function BlockChip({
+  icon: Icon,
+  label,
+  themeClass,
+}: {
+  icon: LucideIcon
+  label: string
+  themeClass: 'kids-unit-cyan' | 'kids-unit-lime' | 'kids-unit-verde' | 'kids-unit-muted'
+}) {
+  return (
+    <span
+      className={cn(
+        themeClass,
+        'inline-flex items-center gap-1.5 self-start rounded-full px-3 py-1.5 font-extrabold text-xs uppercase tracking-[0.08em]',
+        '[background-color:var(--unit-bg)] text-(--unit-fg)',
+      )}
+    >
+      <Icon className="size-3.5" aria-hidden />
+      {label}
+    </span>
+  )
+}
+
+function BlockRenderer({
+  block,
+  enableStudioShare,
+}: {
+  block: LessonBlockView
+  enableStudioShare: boolean
+}) {
+  const parsed = parseLessonBlock(block)
+  if (!parsed) return null
+  const { content } = parsed
+
+  switch (content.kind) {
+    case 'rich_text':
+      return <RichText content={content} />
+    case 'dialogue':
+      return (
+        <div className="kids-unit-cyan flex flex-col gap-3">
+          <BlockChip icon={MessageCircle} label="O Zappy fala" themeClass="kids-unit-cyan" />
+          <DialogueBlockView
+            content={content}
+            mascot={
+              /* ⚠️ MUDO, sempre, seja qual for a pose que a autora escolher. Este
+                 balão é ESTADO: o texto fica na tela enquanto a criança lê, e uma
+                 aula tem vários. Com som, avançar de seção viraria um chime atrás
+                 do outro — e a autora pode marcar a pose `celebrating` aqui, que
+                 na régua geral toca. O movimento fica; o barulho não. */
+              <ZappyAnimated
+                expression={content.pose ?? 'speaking'}
+                className="size-16 sm:size-24"
+              />
+            }
+          />
+        </div>
+      )
+    case 'video':
+      return <Video content={content} />
+    case 'image':
+      return <ImageView content={content} />
+    case 'audio':
+      return <Audio content={content} />
+    case 'quiz':
+      return (
+        <div className="kids-unit-lime flex flex-col gap-3">
+          <BlockChip icon={ListChecks} label="Responda" themeClass="kids-unit-lime" />
+          <LessonQuiz blockId={block.id} content={content} quizState={block.quizState ?? null} />
+        </div>
+      )
+    case 'embed':
+      return <Embed content={content} />
+    case 'ebook':
+      return (
+        <div className="flex flex-col gap-3">
+          <BlockChip icon={BookOpenText} label="Leia o livro" themeClass="kids-unit-cyan" />
+          <EbookBlockView blockId={block.id} content={content} />
+        </div>
+      )
+    case 'certificate':
+      return (
+        <div className="kids-unit-lime flex flex-col gap-3">
+          <BlockChip icon={Award} label="Conquiste" themeClass="kids-unit-lime" />
+          <CertificateBlockView blockId={block.id} content={content} />
+        </div>
+      )
+    case 'studio':
+      return <CreatorStudioBlock block={block} content={content} enableShare={enableStudioShare} />
+    case 'pinta':
+      return (
+        <div className="kids-unit-verde flex flex-col gap-3">
+          <BlockChip icon={Palette} label="Desenhe" themeClass="kids-unit-verde" />
+          <PintaBlockView
+            blockId={block.id}
+            content={content}
+            pintaState={block.pintaState ?? null}
+          />
+        </div>
+      )
+    case 'coming_soon':
+      return <ComingSoon content={content} />
+    case 'materials':
+      return <Materials blockId={block.id} blockRevision={block.blockRevision} content={content} />
+    default:
+      return null
+  }
+}
+
+/**
+ * **Materiais complementares.** O que era o `<details>` "Materiais de apoio", pregado no pé de
+ * toda seção, virou um bloco: ele aparece no ponto em que a autora o colocou e a ordem dos
+ * itens é a que ela montou.
+ *
+ * ⚠️ O DESENHO vem do `MaterialsBlockView` do member-shell (um só, para os dois apps) e quem
+ * o veste é o `globals.css` daqui, pelos ganchos `sz-lesson-materials*`. Aqui só entra o chip,
+ * como em todo bloco do kids. O chip é **"Consulte"** desde 07/10/2026 (decisão da dona): UM nome
+ * que serve para tudo o que o bloco junta (o Passo a passo do projeto para baixar, um link do Como fazer,
+ * um vídeo de apoio, um recado). "Baixe" (06/10) mentia quando o item era um link, e cada aula tem
+ * UM bloco de materiais só, que mistura os tipos.
+ */
+function Materials({
+  blockId,
+  blockRevision,
+  content,
+}: {
+  blockId: string
+  blockRevision?: string
+  content: MaterialsBlock
+}) {
+  return (
+    <div className="kids-unit-cyan flex flex-col gap-3">
+      <BlockChip icon={Backpack} label="Consulte" themeClass="kids-unit-cyan" />
+      <MaterialsBlockView blockId={blockId} blockRevision={blockRevision} content={content} />
+    </div>
+  )
+}
+
+/**
+ * Bloco "em breve": a aula ainda está sendo montada pela professora. Quando ele
+ * existe, é o ÚNICO bloco que chega à criança (o members segura os outros e os
+ * anexos) e o "Concluir aula" fica desabilitado. Aqui é só o recado — o portão
+ * de verdade é o backend.
+ */
+function ComingSoon({ content }: { content: ComingSoonBlock }) {
+  return (
+    <div className="kids-unit-muted flex flex-col gap-3">
+      {/* Chip NEUTRO de propósito: os coloridos são de ATIVIDADE (Assista, Responda,
+          Crie), e dar a um deles o estado em que não há nada a fazer seria prometer
+          uma. A moldura tracejada já diz "em obras". */}
+      <BlockChip icon={Hammer} label="Em breve" themeClass="kids-unit-muted" />
+      <div className="flex flex-col items-center gap-3 rounded-2xl border-(--unit) border-2 border-dashed bg-card px-6 py-10 text-center">
+        {/* Dormindo, não pensativo: aqui não há dúvida a resolver, a aula ainda
+            não existe. Pensativo é para erro e carregamento. */}
+        <ZappyStill expression="sleeping" className="size-20" />
+        {/* O título precisa ser verdade mesmo quando a autora escreve o recado dela
+            ("essa aula chega em setembro") — por isso não promete "quase pronta". */}
+        <p className="sz-display text-lg">Essa aula ainda está sendo preparada</p>
+        {/* Numa aula "em breve" este parágrafo é o CONTEÚDO INTEIRO da aula — não pode
+            ficar tipografado como legenda secundária (`text-sm text-muted-foreground`). */}
+        <p className="max-w-md text-base text-foreground">
+          {content.message?.trim() ||
+            'Estou terminando de montar tudo com muito carinho pra você. Volte daqui a pouquinho que ela vai estar te esperando! 🚀'}
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Bloco Estúdio na aula kids: o editor embarcado + a CELEBRAÇÃO ao publicar no Mural. O botão
+ * "Compartilhar" aparece SÓ na ÚLTIMA aula do projeto (`showcase.enabled` — vitrine marcada pelo
+ * admin); nas intermediárias a criança desenvolve sem publicar. Ao publicar, `onShared` traz os
+ * links e abre o overlay do Zappy (no lugar da tela de sucesso sóbria do editor).
+ */
+export function CreatorStudioBlock({
+  block,
+  content,
+  fillHeight,
+  enableShare = true,
+}: {
+  block: LessonBlockView
+  content: StudioBlock
+  /** Modo criação guiada: o editor preenche a coluna ao lado do vídeo. */
+  fillHeight?: boolean
+  enableShare?: boolean
+}) {
+  const router = useRouter()
+  const player = useLessonPlayer()
+  const [shared, setShared] = useState<StudioShareResult | null>(null)
+  // Ao fechar a celebração do Mural, REVALIDA os dados do servidor: publicar pode ter
+  // feito o aluno SUBIR DE NÍVEL (marco course_showcased já gravado no members), e o
+  // refresh re-busca a gamificação do layout → o LevelUpWatcher acende a festa do rank
+  // logo em seguida (sequência: "no Mural!" → "subiu de nível!").
+  // Pelo agendador do player quando há um (junta pedidos e espera a atividade ampliada fechar).
+  function closeShare() {
+    setShared(null)
+    if (player?.refreshAfterStudio) player.refreshAfterStudio()
+    else router.refresh()
+  }
+  return (
+    <div className={cn('kids-unit-verde flex flex-col gap-3', fillHeight && 'min-h-0 flex-1')}>
+      <BlockChip icon={Code2} label="Crie" themeClass="kids-unit-verde" />
+      <StudioBlockView
+        blockId={block.id}
+        content={content}
+        studioState={block.studioState ?? null}
+        enableShare={enableShare && Boolean(content.showcase?.enabled)}
+        onShared={setShared}
+        fillHeight={fillHeight}
+      />
+      {shared ? <MuralCelebration result={shared} onClose={closeShare} /> : null}
+    </div>
+  )
+}
+
+// ── rich_text: markdown SIMPLES renderizado de forma controlada (sem HTML cru) ─
+function RichText({ content }: { content: RichTextBlock }) {
+  // Um link para o "Como fazer" escrito no texto da aula leva o caminho DESTA aula de volta
+  // (`?voltar=`), para o tutorial oferecer "Voltar para a aula". Fora de aula, sem `voltar`.
+  const pathname = usePathname()
+  const markdown = content.markdown ?? ''
+  if (!markdown) return null
+  return (
+    <div className="lesson-prose">
+      {renderMarkdown(markdown, {
+        ...(isLessonPath(pathname) ? { helpReturnPath: pathname } : {}),
+      })}
+    </div>
+  )
+}
+
+// ── video: URL canônica por provider (nunca interpola o src cru em iframe) ────
+/** Moldura kids dos players: só os cantos redondos. O vídeo já mora num cartão
+ *  branco (telas-modelo de 11/09/2026), e o fio colorido com a sombra dura de antes
+ *  sobrava ali dentro; a largura que ele comia volta para o vídeo. */
+function VideoFrame({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="kids-unit-cyan flex flex-col gap-3">
+      <BlockChip icon={Clapperboard} label="Assista" themeClass="kids-unit-cyan" />
+      <div className="overflow-hidden rounded-2xl">{children}</div>
+    </div>
+  )
+}
+
+function Video({ content }: { content: VideoBlock }) {
+  if (!content.src) return null
+  return (
+    <VideoFrame>
+      <LessonVideo content={content} />
+    </VideoFrame>
+  )
+}
+
+function ImageView({ content }: { content: ImageBlock }) {
+  if (!content.url) return null
+  return (
+    <figure className="kids-unit-lime">
+      {/* aspect-ratio reserva a altura ANTES do load → sem layout shift (CLS) empurrando
+          o texto/botão "Concluir aula" enquanto a imagem baixa no tablet da criança. */}
+      <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl bg-muted">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={content.url}
+          alt={content.alt ?? ''}
+          width={4}
+          height={3}
+          className="size-full object-contain"
+        />
+      </div>
+      {content.caption ? (
+        <figcaption className="mt-3 text-center font-semibold text-muted-foreground text-sm [font-family:var(--font-display)]">
+          {content.caption}
+        </figcaption>
+      ) : null}
+    </figure>
+  )
+}
+
+function Audio({ content }: { content: AudioBlock }) {
+  if (!content.url) return null
+  return (
+    <div className="kids-unit-lime flex flex-col gap-3">
+      <BlockChip icon={Headphones} label="Escute" themeClass="kids-unit-lime" />
+      {/* biome-ignore lint/a11y/useMediaCaption: áudio de aula sem faixa de legenda disponível */}
+      <audio controls preload="metadata" src={content.url} className="w-full" />
+    </div>
+  )
+}
+
+// ── embed: html roda APENAS em iframe sandbox (sem allow-same-origin) ─────────
+// Autoria v3: sempre largura total em 16:9. `content.sandbox` é IGNORADO de
+// propósito: o renderer fixa `allow-scripts` — honrar tokens por bloco abriria
+// a porta p/ allow-same-origin.
+function Embed({ content }: { content: EmbedBlock }) {
+  if (!content.html) return <UnsupportedBlock label="Conteúdo interativo não suportado" />
+  return (
+    <div className="kids-unit-verde flex flex-col gap-3">
+      <BlockChip icon={Gamepad2} label="Jogue" themeClass="kids-unit-verde" />
+      <div className="overflow-hidden rounded-2xl">
+        <iframe
+          srcDoc={content.html}
+          title="Conteúdo interativo"
+          sandbox="allow-scripts"
+          className="aspect-video w-full bg-black"
+        />
+      </div>
+    </div>
+  )
+}
+
+function UnsupportedBlock({ label }: { label: string }) {
+  return (
+    <div className="flex items-center justify-center rounded-2xl border-2 border-border border-dashed py-10 text-muted-foreground text-sm">
+      {label}
+    </div>
+  )
+}

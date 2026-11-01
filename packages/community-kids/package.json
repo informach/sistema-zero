@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "bun ../edisvg/scripts/sync-assets.ts public && node ../member-shell/scripts/sync-live-camera-assets.mjs public/live-camera && next dev -p 3008",
-    "build": "bun ../edisvg/scripts/sync-assets.ts public && node ../member-shell/scripts/sync-live-camera-assets.mjs public/live-camera && next build",
+    "dev": "node ../member-shell/scripts/sync-lesson-assets.mjs public && bun ../edisvg/scripts/sync-assets.ts public && node ../member-shell/scripts/sync-live-camera-assets.mjs public/live-camera && next dev -p 3008",
+    "build": "node ../member-shell/scripts/sync-lesson-assets.mjs public && bun ../edisvg/scripts/sync-assets.ts public && node ../member-shell/scripts/sync-live-camera-assets.mjs public/live-camera && next build",
     "start": "next start -p 3008",
     "typecheck": "tsc --noEmit",
     "test": "bun test tests",

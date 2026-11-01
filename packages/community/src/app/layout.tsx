@@ -6,7 +6,8 @@ import { Atkinson_Hyperlegible_Next, Bricolage_Grotesque, Silkscreen } from 'nex
 import { cookies } from 'next/headers'
 import { Providers } from '@/components/providers'
 import { PALETTE_COOKIE } from '@/lib/cookies'
-import './globals.css'
+import { lessonBodyFont, lessonDisplayFont } from '@/lib/lesson-fonts'
+import './globals.generated.css'
 
 export const metadata: Metadata = {
   title: 'Comunidade | Sistema Zero',
@@ -66,7 +67,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="pt-BR"
       suppressHydrationWarning
       data-sz-palette={await paletteAtual()}
-      className={`${atkinson.variable} ${bricolage.variable} ${silkscreen.variable} ${GeistMono.variable}`}
+      className={`${atkinson.variable} ${bricolage.variable} ${silkscreen.variable} ${GeistMono.variable} ${lessonBodyFont.variable} ${lessonDisplayFont.variable}`}
     >
       <body
         suppressHydrationWarning

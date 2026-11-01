@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Apresentação de aula compartilhada, 31/10/2026
+
+`components/lesson-ui` é a fonte de apresentação das aulas Kids e adultas. Os hosts fornecem
+apenas seus dados e permissões. O compartilhamento não altera a identidade das chamadas nem
+libera compartilhamento de Estúdio nas oficinas. O diálogo usa o estado de voz real do player,
+e a imagem estática e a animada vêm da mesma exportação ediSVG. O tema de aula é canônico no
+UI; o host adulto o seleciona somente quando `.sz-lesson-ui` está montado. Os recursos de
+celebração moram em `assets/lesson`, copiados por `scripts/sync-lesson-assets.mjs` nos builds.
+A avaliação Kids recebe só os dados do perfil; o host adulto passa nome da própria conta e
+idade nula. O progresso prioriza o resultado do servidor e usa a posição apenas sem esse dado.
+
 ## Reservas de arte compartilhadas, 31/10/2026
 
 As poses do Pensa e da porta do Arquipélago vêm de `@sistemazero/edisvg/builtins`.

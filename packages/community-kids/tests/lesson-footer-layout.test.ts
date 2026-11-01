@@ -1,9 +1,12 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+import { readStylesheet } from '../../ui/scripts/read-stylesheet.mjs'
 
 const source = (relativePath: string) =>
-  readFileSync(resolve(import.meta.dir, '..', relativePath), 'utf8')
+  relativePath.endsWith('.css')
+    ? readStylesheet(resolve(import.meta.dir, '..', relativePath))
+    : readFileSync(resolve(import.meta.dir, '..', relativePath), 'utf8')
 
 describe('rodapé da aula entre os menus abertos', () => {
   test('Kids usa a mesma largura do menu e recua somente no desktop', () => {
@@ -34,8 +37,10 @@ describe('rodapé da aula entre os menus abertos', () => {
     expect(kidsPlayer).toContain('transition-transform duration-300')
     expect(kidsPlayer).toContain('w-(--lesson-outline-width)')
     expect(kidsCss).toContain('--lesson-outline-width: min(20rem, 90vw)')
-    expect(kidsPlayer).toContain('lg:max-h-none lg:min-h-0 lg:flex-1')
-    expect(kidsPlayer).toContain('lg:rounded-none lg:border-0')
+    const outline = source('../member-shell/src/components/lesson-ui/outline.tsx')
+    expect(kidsPlayer).toContain('<LessonOutlineContent')
+    expect(outline).toContain('lg:max-h-none lg:min-h-0 lg:flex-1')
+    expect(outline).toContain('lg:rounded-none lg:border-0')
     expect(kidsPlayer).toContain('transition-opacity duration-300 motion-reduce:transition-none')
     expect(kidsPlayer).not.toContain("outlineCollapsed && 'hidden'")
     expect(kidsCss).toContain('transition: padding-right 0.3s ease-in-out')
@@ -47,13 +52,13 @@ describe('rodapé da aula entre os menus abertos', () => {
   })
 
   test('a lista Adulto acompanha o rodapé e conserva a leitura da aula', () => {
-    const adultCss = source('../community/src/app/globals.css')
+    const adultCss = source('../community/src/app/globals.generated.css')
     const adultPlayer = source(
       '../community/src/app/(app)/cursos/[slug]/aulas/[lessonId]/lesson-player-client.tsx',
     )
     const adultOutline = source('../community/src/components/community/lesson-outline-content.tsx')
 
-    expect(adultPlayer).toContain('id="adult-lesson-outline"')
+    expect(adultPlayer).toContain('id="kids-lesson-outline"')
     expect(adultPlayer).toContain('inert={!outlineOpen}')
     expect(adultPlayer).toContain('translate-x-full')
     expect(adultPlayer).toContain('transition-transform duration-300')
@@ -62,16 +67,18 @@ describe('rodapé da aula entre os menus abertos', () => {
     expect(adultPlayer).toContain('openOffset="var(--lesson-outline-width)"')
     expect(adultCss).toContain('--lesson-outline-width: min(20rem, 90vw)')
     expect(adultPlayer).toContain('<LessonOutlineContent')
-    expect(adultOutline).toContain('scrollbar-subtle min-h-0 flex-1 overflow-y-auto')
-    expect(adultOutline).not.toContain('max-h-[28rem]')
-    expect(adultOutline).toContain('lg:rounded-none lg:border-0 lg:shadow-none')
+    expect(adultOutline).toContain('SharedOutline')
+    const sharedOutline = source('../member-shell/src/components/lesson-ui/outline.tsx')
+    expect(sharedOutline).toContain('overflow-y-auto')
+    expect(sharedOutline).toContain('lg:max-h-none lg:min-h-0 lg:flex-1')
+    expect(sharedOutline).toContain('lg:rounded-none lg:border-0')
     expect(adultPlayer).toContain('transition-opacity duration-300 motion-reduce:transition-none')
     expect(adultPlayer).not.toContain("!outlineOpen && 'hidden'")
-    expect(adultCss).toContain('.sz-app:has(.sz-aula-adulto) > main')
+    expect(adultCss).toContain(':where(body:has(.sz-lesson-ui)) .kids-aula')
     expect(adultCss).toContain('max-width: none')
-    expect(adultCss).toContain('padding-right: calc(1.5rem + var(--lesson-outline-width))')
+    expect(adultCss).toContain('padding-right: calc(2rem + var(--lesson-outline-width))')
     expect(adultCss).toContain(
-      '.sz-aula-adulto:has(#adult-lesson-outline:not([aria-hidden="true"])) .sz-lesson-nav-immersive',
+      '.kids-aula:has(#kids-lesson-outline:not([aria-hidden="true"])) .sz-lesson-nav-immersive',
     )
     expect(adultCss).toContain('right: var(--lesson-outline-width)')
   })
@@ -83,14 +90,14 @@ describe('o rodapé fixo diz à página quanto ele mede (30/09/2026)', () => {
   test('o member-shell publica `--sz-lesson-nav-height` e os dois apps reservam a partir dela', () => {
     const shell = source('../member-shell/src/components/lesson-sections.tsx')
     const kidsCss = source('src/app/globals.css')
-    const adultCss = source('../community/src/app/globals.css')
+    const adultCss = source('../community/src/app/globals.generated.css')
     expect(shell).toMatch(/raiz\.style\.setProperty\(\s*'--sz-lesson-nav-height'/)
     expect(shell).toContain('new ResizeObserver(publicar)')
     expect(shell).toContain("raiz.style.removeProperty('--sz-lesson-nav-height')")
     expect(kidsCss).toContain('.kids-aula:has(.sz-lesson-nav-immersive) {')
     // O biome quebra o `calc` em linhas: comparar sem os espaços.
     expect(kidsCss.replace(/\s+/g, ' ')).toContain(
-      'var(--sz-lesson-nav-height, 7rem) + 3.5rem + env(safe-area-inset-bottom) + 1.5rem',
+      'var(--sz-lesson-nav-height, 7rem) + var(--sz-lesson-tabs-height, calc(3.5rem + env(safe-area-inset-bottom))) + 1.5rem',
     )
     expect(kidsCss).toContain('padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);')
     expect(adultCss).toContain('padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);')

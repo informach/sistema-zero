@@ -145,3 +145,31 @@ test('idle downloads are evicted in recency order instead of retaining every art
     await server.stop()
   }
 })
+
+test('a new content-hash URL loads fresh bytes while the previous version remains cached', async () => {
+  const calls = new Map<string, number>()
+  const server = await serve((request, response) => {
+    const path = request.url ?? ''
+    calls.set(path, (calls.get(path) ?? 0) + 1)
+    response.setHeader('cache-control', 'public, max-age=31536000, immutable')
+    response.end(path.includes('bbbb') ? 'arte nova' : 'arte anterior')
+  })
+  try {
+    const oldUrl = new URL('happy.aaaaaaaaaaaa.edi-animation.json', server.url).href
+    const newUrl = new URL('happy.bbbbbbbbbbbb.edi-animation.json', server.url).href
+    for (const [url, content] of [
+      [oldUrl, 'arte anterior'],
+      [newUrl, 'arte nova'],
+      [oldUrl, 'arte anterior'],
+      [newUrl, 'arte nova'],
+    ]) {
+      const artwork = acquireArtwork(url!)
+      assert.equal(await artwork.content, content)
+      artwork.release()
+    }
+    assert.equal(calls.get('/happy.aaaaaaaaaaaa.edi-animation.json'), 1)
+    assert.equal(calls.get('/happy.bbbbbbbbbbbb.edi-animation.json'), 1)
+  } finally {
+    await server.stop()
+  }
+})

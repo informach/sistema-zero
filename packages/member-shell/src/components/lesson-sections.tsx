@@ -914,7 +914,7 @@ function LessonSectionsContent({
         id={`lesson-block-${block.id}`}
         tabIndex={-1}
         // `sz-lesson-block`: gancho ESTÁVEL do tema do kids (cada bloco vira um cartão
-        // lá). Sem regra aqui: a comunidade adulta não carrega aquele CSS.
+        // lá). Sem regra aqui: os dois hosts carregam o tema canônico da aula.
         className="sz-lesson-block space-y-2 scroll-mt-6 outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
         {player?.showActivityRequirement !== false && requirement && (
