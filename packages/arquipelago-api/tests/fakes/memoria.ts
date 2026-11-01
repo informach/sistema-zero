@@ -18,6 +18,11 @@ export class RepositorioEmMemoria implements RepositorioDoJogo {
   readonly eventos = new Map<string, { segundos: number; dia: string; diaEfetivo: string }>()
   /** As aparências aplicadas a cada gravação aceita, como o Drizzle registra (A33). */
   readonly aparencias: (AparenciaAplicada & { jogadorId: string })[] = []
+  /** Os dias de jogo do adulto (lacunas, 01/11/2026), na ordem em que foram marcados. */
+  readonly diasDeJogo: { jogadorId: string; dia: string }[] = []
+  async marcarDiaDeJogo(jogadorId: string, _publico: string, dia: string) {
+    this.diasDeJogo.push({ jogadorId, dia })
+  }
 
   async lerSalvamento(jogadorId: string) {
     return this.salvamentos.get(jogadorId) ?? null

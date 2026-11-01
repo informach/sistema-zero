@@ -47,7 +47,7 @@ export class ServicoDaMedicao {
     if (!filtro.success || filtro.data.ate > hoje) throw new PeriodoDaMedicaoInvalidoError()
     const [dados, volta, comRotina, compras] = await Promise.all([
       this.repo.agregar(filtro.data, hoje),
-      filtro.data.publico === 'kids' ? this.voltaAoCurso(filtro.data, agora) : null,
+      this.voltaAoCurso(filtro.data, agora),
       this.repo.salvamentosComRotina?.(filtro.data.publico) ?? null,
       this.leituras?.ligadas()
         ? (this.leituras.compras?.(filtro.data.publico, filtro.data.de, filtro.data.ate) ?? null)
@@ -71,10 +71,14 @@ export class ServicoDaMedicao {
     const janela: Janela = { inicio: filtro.de, fim: filtro.ate }
     try {
       // Meia-noite UTC vem antes da de São Paulo; o dia certo é filtrado logo abaixo.
-      const todas = await this.repo.finsDeSessao(
-        new Date(`${filtro.de}T00:00:00Z`),
-        new Date(Date.parse(`${filtro.ate}T00:00:00Z`) + 2 * DIA_MS),
-      )
+      // O adulto não tem sessões: o fim de cada dia de jogo faz o papel delas (lacunas).
+      const de = new Date(`${filtro.de}T00:00:00Z`)
+      const ate = new Date(Date.parse(`${filtro.ate}T00:00:00Z`) + 2 * DIA_MS)
+      const todas =
+        filtro.publico === 'adulto'
+          ? await this.repo.finsDosDiasDeJogo?.(de, ate)
+          : await this.repo.finsDeSessao(de, ate)
+      if (!todas) return null
       const fins = new Map<string, Date[]>()
       for (const [pessoa, lista] of todas) {
         const contam = lista.filter(

@@ -103,6 +103,47 @@ describe('jogador', () => {
     ])
   })
 
+  test('adulto sem currículo: os cursos-base saem das etapas (lacunas, 01/11/2026)', async () => {
+    const pede = (courseId: string) => ({ courseId, milestone: 'complete' as const })
+    const s = servico({
+      adultJourney: {
+        get: mock(async () => ({
+          configured: true,
+          stages: [
+            { id: 'a', title: 'A', completed: true, requirements: [pede(A)], missing: [] },
+            {
+              id: 'b',
+              title: 'B',
+              completed: false,
+              requirements: [pede(B), pede(C)],
+              missing: [pede(C)],
+            },
+            { id: 'c', title: 'C', completed: false, requirements: [pede(D)], missing: [pede(D)] },
+          ],
+        })),
+        policy: mock(async () => ({
+          version: 3,
+          policy: {
+            stages: [
+              { id: 'a', requirements: [pede(A)] },
+              { id: 'b', requirements: [{ courseId: C, milestone: 'showcase' }, pede(B)] },
+            ],
+          },
+        })),
+      },
+    })
+    // A etapa 1 (posto 1) concluiu o curso dela; na 2, o curso-base (B) está feito e só falta outro.
+    expect((await s.jogador({ userId: A, accountId: A, audience: 'adult' })).cursosBase).toEqual([
+      JOURNEY_LEVEL_SLUGS[0],
+      JOURNEY_LEVEL_SLUGS[1],
+    ])
+    // O catálogo dos cursos-base: o primeiro curso concluído pedido por etapa, se publicado.
+    expect((await s.curriculoDeBlocos('adult')).cursosBase).toEqual([
+      { posto: JOURNEY_LEVEL_SLUGS[0], courseId: A, titulo: 'Curso a', slug: 'curso-a' },
+      { posto: JOURNEY_LEVEL_SLUGS[1], courseId: B, titulo: 'Curso b', slug: 'curso-b' },
+    ])
+  })
+
   test('adulto: posição da etapa (a primeira não concluída)', async () => {
     const r = await servico().jogador({ userId: A, accountId: A, audience: 'adult' })
     expect(r.posicao).toBe(2)
