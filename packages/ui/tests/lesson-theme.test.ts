@@ -76,3 +76,20 @@ test('different animations cannot silently replace an animation outside the less
     ),
   ).not.toThrow()
 })
+
+test('universal rules style the document scrollbar as well as nested scroll areas', () => {
+  const source =
+    '* { box-sizing: border-box } *::-webkit-scrollbar { width: 14px } @supports not selector(::-webkit-scrollbar) { * { scrollbar-width: thin } }'
+  const creator = gateStylesheet(source, true)
+  const regular = gateStylesheet(source)
+  expect(creator).toContain(
+    '*:where(html:has(.sz-lesson-ui), html:has(.sz-lesson-ui) *)::-webkit-scrollbar',
+  )
+  expect(
+    creator.match(/\*:where\(html:has\(\.sz-lesson-ui\), html:has\(\.sz-lesson-ui\) \*\)/g),
+  ).toHaveLength(3)
+  expect(regular).toContain(
+    '*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *)::-webkit-scrollbar',
+  )
+  expect(creator).not.toContain(':where(body:has(.sz-lesson-ui)) *::-webkit-scrollbar')
+})
