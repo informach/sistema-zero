@@ -35,7 +35,7 @@ interface Marco {
 const MARCOS: Record<string, Marco> = {
   'vila-doce': {
     arquivo: 'vila-doce.glb',
-    alvo: 12,
+    alvo: 15.5,
     soma: 0,
     no: 'marco-torre-de-doces',
     caixa: [-18.67, 13.816, -13.79, 15.01],
@@ -43,7 +43,7 @@ const MARCOS: Record<string, Marco> = {
   },
   recife: {
     arquivo: 'recife.glb',
-    alvo: 9,
+    alvo: 16.8,
     soma: 0,
     no: 'marco-pinaculos',
     caixa: [-21.553, 15.503, -16.252, 15.038],
