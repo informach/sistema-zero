@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { gravarManifesto } from '../gravar-manifesto'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivosDasNuvensPro } from './pro-objetivos'
@@ -38,48 +39,50 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 
 export function criarManifestoPro(publico: PublicoDoDesafio = 'kids') {
   const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
-  return comPedidosDosMoradores(
-    ManifestoDeDesafiosSchema.parse({
-      formato: 'arquipelago-desafios',
-      versao: 1,
-      escopo: 'ilha',
-      desafios: [
-        {
-          slug: `nuvens-jardim-em-grade-pro${publico === 'adulto' ? '-adulto' : ''}`,
-          publico,
-          ilha: 'nuvens',
-          // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
-          // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
-          tipo: 'quadro-das-cores',
-          quadro: 6,
-          ordem: 60,
-          publicar: true,
-          conteudo: {
-            versao: 1,
-            ...textos[publico],
-            projetoInicial: montarProjetoPro('inicial'),
-            gabarito: montarProjetoPro('gabarito'),
-            objetivos: objetivosDasNuvensPro(publico),
-            desafioExtra: {
-              titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
-              texto:
-                publico === 'kids'
-                  ? 'Complete plantasPorTipo: conte quantas flores e quantas árvores o jardim tem.'
-                  : 'Implemente plantasPorTipo: retorna { flor, arvore } com a contagem de cada tipo.',
+  return comApresentacao(
+    comPedidosDosMoradores(
+      ManifestoDeDesafiosSchema.parse({
+        formato: 'arquipelago-desafios',
+        versao: 1,
+        escopo: 'ilha',
+        desafios: [
+          {
+            slug: `nuvens-jardim-em-grade-pro${publico === 'adulto' ? '-adulto' : ''}`,
+            publico,
+            ilha: 'nuvens',
+            // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+            // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
+            tipo: 'quadro-das-cores',
+            quadro: 6,
+            ordem: 60,
+            publicar: true,
+            conteudo: {
+              versao: 1,
+              ...textos[publico],
+              projetoInicial: montarProjetoPro('inicial'),
+              gabarito: montarProjetoPro('gabarito'),
+              objetivos: objetivosDasNuvensPro(publico),
+              desafioExtra: {
+                titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
+                texto:
+                  publico === 'kids'
+                    ? 'Complete plantasPorTipo: conte quantas flores e quantas árvores o jardim tem.'
+                    : 'Implemente plantasPorTipo: retorna { flor, arvore } com a contagem de cada tipo.',
+              },
+              // O jogo aprovado vai para o fliperama (lacunas, 01/11/2026): o minijogo compila pela
+              // rota Pro do próprio desafio e toca o artefato, sem o WebContainer na página do jogo.
+              recompensa: {
+                cor: true,
+                atracao: 'jardim-das-nuvens',
+                moedas: moedas.principal,
+                moedasExtra: moedas.extra,
+              },
+              blocosManuais: { acrescentar: [], retirar: [] },
             },
-            // O jogo aprovado vai para o fliperama (lacunas, 01/11/2026): o minijogo compila pela
-            // rota Pro do próprio desafio e toca o artefato, sem o WebContainer na página do jogo.
-            recompensa: {
-              cor: true,
-              atracao: 'jardim-das-nuvens',
-              moedas: moedas.principal,
-              moedasExtra: moedas.extra,
-            },
-            blocosManuais: { acrescentar: [], retirar: [] },
           },
-        },
-      ],
-    }),
+        ],
+      }),
+    ),
   )
 }
 

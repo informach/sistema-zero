@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { objetivos } from './objetivos'
 import { EXTRA, montarProjeto, VARIACOES, type Variacao } from './projetos'
 
@@ -107,47 +108,49 @@ const EXTRAS = {
 } as const
 
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: VARIACOES.map((variacao, index) => {
-      const quadro = index < 6 ? index + 1 : null
-      const tipo = quadro ? 'quadro-das-cores' : 'desafio-do-dia'
-      const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-      const slug =
-        variacao === 'corrida' ? 'corrida-do-entregador' : `corrida-do-entregador-${variacao}`
-      return {
-        slug: `vila-doce-${slug}${publico === 'adulto' ? '-adulto' : ''}`,
-        publico,
-        ilha: 'vila-doce',
-        tipo,
-        quadro,
-        ordem: (index + 1) * 10,
-        // A15 feito: a corrida tem pulo, gravidade, pedras sorteadas e dificuldade com teto, e todo
-        // bloco tem fonte nos cursos até o Inventor (§6.28, item 1). A barreira C01a continua no
-        // serviço, na importação.
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[variacao],
-          projetoInicial: montarProjeto(variacao, false),
-          gabarito: montarProjeto(variacao, true),
-          objetivos: objetivos[variacao],
-          desafioExtra: { titulo: 'Mais um desafio', texto: EXTRAS[EXTRA[variacao]] },
-          recompensa: {
-            cor: quadro !== null,
-            atracao: 'corrida-do-entregador',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-            // O prêmio-objeto do extra, como na proposta: "★ extra: receita de brigadeiro" (A25).
-            ...(variacao === 'corrida' ? { receitaDoExtra: 'brigadeiro' } : {}),
+  return comApresentacao(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: VARIACOES.map((variacao, index) => {
+        const quadro = index < 6 ? index + 1 : null
+        const tipo = quadro ? 'quadro-das-cores' : 'desafio-do-dia'
+        const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+        const slug =
+          variacao === 'corrida' ? 'corrida-do-entregador' : `corrida-do-entregador-${variacao}`
+        return {
+          slug: `vila-doce-${slug}${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'vila-doce',
+          tipo,
+          quadro,
+          ordem: (index + 1) * 10,
+          // A15 feito: a corrida tem pulo, gravidade, pedras sorteadas e dificuldade com teto, e todo
+          // bloco tem fonte nos cursos até o Inventor (§6.28, item 1). A barreira C01a continua no
+          // serviço, na importação.
+          publicar: true,
+          conteudo: {
+            versao: 1,
+            ...textos[variacao],
+            projetoInicial: montarProjeto(variacao, false),
+            gabarito: montarProjeto(variacao, true),
+            objetivos: objetivos[variacao],
+            desafioExtra: { titulo: 'Mais um desafio', texto: EXTRAS[EXTRA[variacao]] },
+            recompensa: {
+              cor: quadro !== null,
+              atracao: 'corrida-do-entregador',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+              // O prêmio-objeto do extra, como na proposta: "★ extra: receita de brigadeiro" (A25).
+              ...(variacao === 'corrida' ? { receitaDoExtra: 'brigadeiro' } : {}),
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          blocosManuais: { acrescentar: [], retirar: [] },
-        },
-      }
+        }
+      }),
     }),
-  })
+  )
 }
 if (import.meta.main) {
   for (const publico of ['kids', 'adulto'] as const)

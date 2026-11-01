@@ -187,6 +187,15 @@ export function Camera() {
   /** O último pedido de recentralizar já atendido (tecla C, analógico direito). */
   const recentrarVisto = useRef(controle.recentrar)
 
+  // O botão direito também gira a câmera; soltá-lo abria o menu do navegador por cima do jogo
+  // (retorno de quem testou, 01/11/2026). Vale em todo modo: andar, luneta e Farol.
+  useEffect(() => {
+    const el = gl.domElement
+    const semMenu = (e: Event) => e.preventDefault()
+    el.addEventListener('contextmenu', semMenu)
+    return () => el.removeEventListener('contextmenu', semMenu)
+  }, [gl])
+
   useEffect(() => {
     if (construindo || naLuneta || noFarol) return
     const el = gl.domElement
@@ -317,7 +326,7 @@ export function Camera() {
         .dizer(
           toque
             ? 'Arraste a tela com um dedo para girar a câmera. Com dois dedos, chegue mais perto ou mais longe.'
-            : 'Arraste a tela com o mouse para girar a câmera. A rodinha chega mais perto ou mais longe.',
+            : 'Arraste a tela com o mouse, com qualquer botão, para girar a câmera. A rodinha chega mais perto ou mais longe.',
         )
       mexeu.current = true
       gravarDica()

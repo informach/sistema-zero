@@ -1,5 +1,23 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Estúdio de desafio: portais no diálogo e coluna Missão (01/11/2026)
+
+Retorno de quem testou a sua ilha: no desafio, os campos dos blocos não aceitavam digitação, a
+lista não abria e o botão direito não fazia nada. Causa: o `<dialog>` aberto com `showModal()`
+deixa inerte tudo o que fica fora dele, e os portais do Blockly e os menus do Studio moravam no
+`document.body`. `arquipelago-challenge-dialog.tsx` passa o próprio diálogo ao
+`StudioPortalContainerProvider` do Studio (ver o CLAUDE.md de lá); o Studio põe ali os portais do
+Blockly e os menus. ⚠️ Outro diálogo modal com Studio dentro precisa do mesmo provider. A rotina
+dos Lumis (Blockly cru, sem Studio) segue com `arquipelago-rotina/blockly-dialog.ts`.
+
+A coluna **Missão** (à esquerda no computador, `lg:w-72`; primeira de duas abas no celular,
+Missão e Estúdio, por cima do Estúdio montado para ele não remontar) mostra o pedido, o print
+"Como fica" (`desafio.imagem`, opcional), os objetivos com marca de feito (a dica do objetivo só
+depois de verificar e faltar), o extra e as dicas. Recolher fica no `localStorage`
+(`sz:arquipelago:missao-recolhida`); o balão de primeira vez (Zappy só no Kids) em
+`sz:arquipelago:missao-balao-visto`. O rodapé mantém o progresso e "Verificar projeto". Testes:
+`tests/fixtures/arquipelago-challenge-dialog.fixture.tsx`.
+
 ## Minijogo Python na área dos pais, 31/10/2026
 
 A prévia usa POST no mesmo BFF familiar da leitura, com o id do desafio na query. A grade

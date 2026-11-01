@@ -16,6 +16,7 @@ import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import type { EditableStudioProject as Project } from '../src/core/editableProject'
 import { DemoHostChrome, HOST_DEMO } from './hostChromeDemo'
 import { E2E_AUTOSAVE_MS } from './initialQuery'
+import { DemoModalDialog, MODAL_DEMO } from './modalHarness'
 import moldaDemoAssets from './moldaDemoAssets.json'
 
 // Só para os e2e da gravação de SAÍDA (`?autosave-ms=600000`): segura o autosave do editor
@@ -519,5 +520,10 @@ export function App({ demoMission }: { demoMission: string | null }): JSX.Elemen
     )
   // `?host=1` liga o chrome de HOST de mentira (ver hostChromeDemo.tsx): UM Provider cobre
   // lista e editor, como o kids faz.
-  return HOST_DEMO ? <DemoHostChrome>{screen}</DemoHostChrome> : screen
+  const comHost = HOST_DEMO ? <DemoHostChrome>{screen}</DemoHostChrome> : screen
+  return MODAL_DEMO && view.name === 'editor' ? (
+    <DemoModalDialog>{comHost}</DemoModalDialog>
+  ) : (
+    comHost
+  )
 }

@@ -27,6 +27,7 @@ export type Anel =
   | 'relogio'
   | 'quadro'
   | 'desafio-de-hoje'
+  | 'quadro-como'
 
 /** Para onde o Zappy voa no mundo (resolvido pela tela com os interativos registrados). */
 export type Guia =
@@ -200,7 +201,7 @@ export const PASSOS: readonly Passo[] = [
     id: 'olhar',
     capitulo: 2,
     fala: porEntrada({
-      teclado: 'Agora olhe em volta. Arraste a tela com o mouse.',
+      teclado: 'Agora olhe em volta. Arraste a tela com o mouse, com qualquer botão.',
       toque: 'Agora olhe em volta. Arraste o dedo na tela, longe dos botões.',
       controle: 'Agora olhe em volta com a alavanca da direita.',
     }),

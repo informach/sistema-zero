@@ -1,5 +1,19 @@
 # @sistemazero/studio
 
+## Studio dentro de um diálogo modal: `StudioPortalContainerProvider` (01/11/2026)
+
+O `Menu` e o `Modal` portalavam para o `document.body`, e o Blockly também põe lá o editor de
+campo, a lista de opções, o menu do botão direito e a dica. Dentro de um `<dialog>` com
+`showModal()` (o Estúdio de desafio do Arquipélago) tudo isso ficava inerte. O host agora passa o
+contêiner: `StudioPortalContainerProvider` (`studio/portal-container.tsx`, exportado no índice).
+Sem ele, nada muda (`document.body`). Com ele, `Menu` e `Modal` portalam ali, e o `BlocklyPanel`
+e o `PythonBlocklyEditor` chamam `blocklyPortalsInside` (`blockly/dialogPortals.ts`): um plano
+fixo, sem tamanho, no canto da janela, dentro do contêiner, que recebe os portais e vira o
+`setParentContainer` do Blockly; contagem por contêiner (largo e estreito podem montar juntos) e
+o último a sair devolve tudo. Prova: e2e `e2e/modal-dialog-portals.spec.ts` com o playground em
+`?modal=1` (`playground/modalHarness.tsx`); sem o provider, o "Colar blocos" do botão direito
+aparece e não aceita clique. Teste do `Menu`: `ui-internal/Menu.portal.test.tsx`.
+
 ## Teclas dos controles de toque do Jogo 2D (29/10/2026)
 
 Os botões do pad também entregam a borda à tecla canônica: direções para setas, A para

@@ -365,6 +365,26 @@ describe('lista da ilha', () => {
     ])
   })
 
+  test('o cartão do Quadro: a linha "o que se faz" e a miniatura chegam à lista e à abertura', async () => {
+    const imagem = 'data:image/webp;base64,AAAA'
+    publicar(
+      BORBOLETA,
+      metadados({}),
+      conteudo('A borboleta que voa', { resumo: 'Leve a borboleta até a flor.', imagem }),
+      ['sz_js_repeat'],
+    )
+    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    const borboleta = r.desafios.find((d) => d.id === BORBOLETA)
+    expect(borboleta?.resumo).toBe('Leve a borboleta até a flor.')
+    expect(borboleta?.imagem).toBe(imagem)
+    // Sem a linha escrita, a primeira frase do enunciado.
+    expect(r.desafios.find((d) => d.id === PONTE)?.resumo).toBe('Faça a borboleta voar até a flor.')
+    const aberto = DesafioAbertoSchema.parse(
+      (await chamar('GET', `/${BORBOLETA}`, crianca())).corpo,
+    )
+    expect(aberto.imagem).toBe(imagem)
+  })
+
   test('A24: o "Aprenda isso em" vem também no desafio disponível', async () => {
     const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
     const borboleta = r.desafios.find((d) => d.id === BORBOLETA)

@@ -24,6 +24,13 @@ Registro completo: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`. N
 - Testes de banco: Postgres descartável (`arquipelago_test_*`); sem as variáveis, eles pulam em
   silêncio.
 
+## Linha e print do desafio (01/11/2026)
+
+`ServicoDosDesafios.listar` põe `resumo` (`resumoDoDesafio` do contrato) em todo desafio e
+`imagem` só nos do Quadro das Cores de ilha aberta (a lista inteira levaria uns 180 KB de prints a cada leitura); `abrir` leva `imagem`.
+Sem migração: os campos moram no conteúdo publicado. Implantar antes de importar os manifestos
+novos. Teste em `tests/integration/desafios-do-jogador.test.ts`.
+
 ## Revisão publicada dos minijogos, 01/11/2026
 
 A abertura inclui `revisao` para projetos Python e para `kind: pro`: o primeiro pede o

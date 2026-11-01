@@ -48,6 +48,71 @@ function Premio({ d }: { d: DesafioNaLista | null }) {
   return partes ? <p className="arq-quadro-premio">{`Prêmio: ${partes}.${extra}`}</p> : null
 }
 
+/** As cores das seis manchas do cavalete, na ordem dos quadros. */
+const CORES_DAS_MANCHAS = [
+  '#ff7a6b',
+  '#ffc93c',
+  '#7fd36b',
+  '#4fc3e8',
+  '#7b61ff',
+  '#ff8fc8',
+] as const
+/** Onde cada mancha fica na tela do cavalete (centro x, y e raio). */
+const MANCHAS = [
+  [40, 30, 11],
+  [70, 26, 10],
+  [98, 32, 11],
+  [44, 58, 10],
+  [74, 56, 12],
+  [100, 60, 10],
+] as const
+
+/**
+ * "Como funciona" (retorno de quem testou, 01/11/2026): o cavalete com as seis manchas, as da
+ * ilha já pintadas, e a explicação em uma frase. Abre sozinho até o primeiro desafio feito;
+ * depois fica recolhido num botão.
+ */
+function ComoFunciona({ pintadas, aberto }: { pintadas: readonly number[]; aberto: boolean }) {
+  return (
+    <details className="arq-quadro-como" open={aberto}>
+      <summary>Como funciona</summary>
+      <div className="arq-quadro-como-corpo">
+        <svg viewBox="0 0 140 120" width="112" height="96" aria-hidden="true">
+          <path
+            d="M40 112 62 14M100 112 78 14M70 20v96"
+            stroke="#8a5a2b"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+          <rect
+            x="22"
+            y="12"
+            width="96"
+            height="66"
+            rx="6"
+            fill="#fffaf0"
+            stroke="#8a5a2b"
+            strokeWidth="4"
+          />
+          {MANCHAS.map(([x, y, r], i) => (
+            <circle
+              key={x * 1000 + y}
+              cx={x}
+              cy={y}
+              r={r}
+              fill={pintadas.includes(i + 1) ? CORES_DAS_MANCHAS[i] : '#d9d6cc'}
+            />
+          ))}
+        </svg>
+        <p>
+          Cada quadro é um minijogo para programar no Estúdio. Fez um, uma mancha do cavalete ganha
+          cor e um pedaço da ilha também.
+        </p>
+      </div>
+    </details>
+  )
+}
+
 function CartaoDoQuadro({
   q,
   corConquistada,
@@ -69,11 +134,14 @@ function CartaoDoQuadro({
       <span className="arq-quadro-numero" aria-hidden="true">
         {corConquistada ? '✓' : q.numero}
       </span>
-      <div className="arq-quadro-corpo">
+      <div className={`arq-quadro-corpo ${d?.imagem ? 'com-imagem' : ''}`}>
+        {/* A miniatura "Como fica": o jogo resolvido pelo gabarito (01/11/2026). */}
+        {d?.imagem ? <img className="arq-quadro-mini" src={d.imagem} alt="" /> : null}
         {sugerido ? (
           <span className="arq-quadro-hoje-selo">Na linguagem que você aprendeu por último</span>
         ) : null}
         <b>{titulo}</b>
+        {d?.resumo ? <span className="arq-quadro-resumo">{d.resumo}</span> : null}
         {corConquistada ? <span className="arq-quadro-estado">Cor de volta</span> : null}
         {q.estado === 'feito' && !corConquistada ? (
           <span className="arq-quadro-estado">Desafio concluído</span>
@@ -282,6 +350,12 @@ export function PainelDoQuadro() {
               ? `${nome}: ${feitos} de ${QUADROS_POR_ILHA} cores de volta.`
               : `Cada desafio feito devolve um pedaço da cor do ${nome}.`}
         </p>
+        {ilhaId !== 'farol' && quadros ? (
+          <ComoFunciona
+            pintadas={cores.ilhas.find((i) => i.id === ilhaId)?.quadros ?? []}
+            aberto={!cores.ilhas.some((i) => i.quadros.length > 0)}
+          />
+        ) : null}
         {dados && quadros ? (
           <CartaoDeHoje
             dados={dados}

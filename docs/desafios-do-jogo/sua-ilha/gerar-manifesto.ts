@@ -4,6 +4,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import {
   objetivosDaVariacao,
@@ -93,13 +94,15 @@ export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
       },
     }),
   )
-  return comPedidosDosMoradores(
-    ManifestoDeDesafiosSchema.parse({
-      formato: 'arquipelago-desafios',
-      versao: 1,
-      escopo: 'ilha',
-      desafios: [...desafios, ...doDiaDaSuaIlha],
-    }),
+  return comApresentacao(
+    comPedidosDosMoradores(
+      ManifestoDeDesafiosSchema.parse({
+        formato: 'arquipelago-desafios',
+        versao: 1,
+        escopo: 'ilha',
+        desafios: [...desafios, ...doDiaDaSuaIlha],
+      }),
+    ),
   )
 }
 

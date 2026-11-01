@@ -86,14 +86,30 @@ export function criarDesafiosFalsos(
     ),
     desafio('00000000-0000-4000-8000-0000000000a3', 3, 'As flores do lago', 'concluido'),
     // Feito o quadro 4 da sua ilha: só a praia tem cor de quadro (casa, horta e píer seguem A17).
-    desafio('00000000-0000-4000-8000-0000000000b1', 4, 'A concha rosa', 'concluido', 'sua-ilha'),
-    desafio(
-      '00000000-0000-4000-8000-0000000000b2',
-      2,
-      'A primeira concha',
-      'disponivel',
-      'sua-ilha',
-    ),
+    {
+      ...desafio(
+        '00000000-0000-4000-8000-0000000000b1',
+        4,
+        'A concha rosa',
+        'concluido',
+        'sua-ilha',
+      ),
+      resumo: 'Faça o balde aceitar só a concha rosa.',
+    },
+    // O cartão do Quadro (01/11/2026): a linha "o que se faz" e a miniatura "Como fica" (o print
+    // do gabarito, o mesmo de `docs/desafios-do-jogo/apresentacao/imagens`).
+    {
+      ...desafio(
+        '00000000-0000-4000-8000-0000000000b2',
+        2,
+        'A primeira concha',
+        'disponivel',
+        'sua-ilha',
+      ),
+      resumo: 'Faça o guia pegar a concha ao encostar nela.',
+      imagem:
+        'data:image/webp;base64,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',
+    },
     desafio(
       '00000000-0000-4000-8000-0000000000c1',
       1,
