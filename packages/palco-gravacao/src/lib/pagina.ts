@@ -16,6 +16,14 @@ export interface PaginaDoPalco {
   rolagem(bloco: string): { de: Alvo; para: Alvo } | 'visivel' | null
   /** Algum botão visível com este texto. */
   temBotao(texto: string): boolean
+  /**
+   * Um bloco pelo começo do texto dele, como aparece na tela ("Deixar o sprite" acha "Deixar o
+   * sprite jogador com 50% de visibilidade"): na paleta, pego pela borda esquerda, ou na área de
+   * trabalho, pelo meio.
+   */
+  bloco(texto: string, area: 'paleta' | 'area'): Alvo | null
+  /** O ponto logo abaixo de um bloco da área de trabalho, onde outro bloco encaixa embaixo dele. */
+  abaixo(bloco: string): Alvo | null
 }
 
 let marks = 0
@@ -42,18 +50,27 @@ const fold = (s: string): string =>
 /** A área de trabalho principal do Estúdio (a paleta é outro SVG). */
 const areaDeTrabalho = (doc: Document): SVGSVGElement | null => doc.querySelector('svg.blocklySvg')
 
-/** Os blocos da área de trabalho cujo próprio texto (sem os blocos de dentro) contém `alvo`. */
-function blocosCom(doc: Document, alvo: string): Element[] {
-  const area = areaDeTrabalho(doc)
-  if (!area) return []
-  const wanted = fold(alvo)
-  return [...area.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter((block) => {
-    const own = [...block.querySelectorAll('text.blocklyText')]
+/** O texto que é do próprio bloco, sem o dos blocos encaixados nele. */
+const textoProprio = (block: Element): string =>
+  fold(
+    [...block.querySelectorAll('text.blocklyText')]
       .filter((t) => t.closest('.blocklyDraggable') === block)
       .map(texto)
       .join(' ')
-    return fold(own).includes(wanted)
-  })
+      .replace(/▾/g, ''),
+  )
+
+/**
+ * Os blocos visíveis da área de trabalho ou da paleta cujo texto começa com `alvo` (ou o contém,
+ * quando nenhum começa).
+ */
+function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'): Element[] {
+  const raiz = onde === 'area' ? areaDeTrabalho(doc) : doc.querySelector('svg.blocklyFlyout')
+  if (!raiz) return []
+  const wanted = fold(alvo)
+  const blocos = [...raiz.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(visivel)
+  const comecam = blocos.filter((b) => textoProprio(b).startsWith(wanted))
+  return comecam.length ? comecam : blocos.filter((b) => textoProprio(b).includes(wanted))
 }
 
 /** Os textos que são do próprio bloco, não dos blocos encaixados nele. */
@@ -110,8 +127,11 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         const label = textosDe(block).find((t) => fold(texto(t)) === wanted)
         if (!label) continue
         const r = label.getBoundingClientRect()
-        // O espaço vazio começa logo depois do rótulo: o bloco solto ali encaixa.
-        return pontoEm(block, r.right + 16, r.top + r.height / 2)
+        const area = areaDeTrabalho(doc)
+        if (!area) return null
+        // O espaço vazio começa logo depois do rótulo: o bloco solto ali encaixa. O ponto é da área
+        // de trabalho, porque fica fora da caixa do bloco quando o espaço está vazio.
+        return pontoEm(area, r.right + 16, r.top + r.height / 2)
       }
       return null
     },
@@ -144,6 +164,28 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         y: Math.min(view.bottom - 4, Math.max(view.top + 4, start.y + dy)),
       }
       return { de: pontoEm(area, start.x, start.y), para: pontoEm(area, end.x, end.y) }
+    },
+
+    bloco(texto, onde) {
+      const block = blocosCom(doc, texto, onde)[0]
+      if (!block) return null
+      const r = block.getBoundingClientRect()
+      // Da paleta, o bloco é pego pela borda esquerda, como uma pessoa pega; na área, apontado no meio.
+      return onde === 'paleta'
+        ? pontoEm(block, r.left + Math.min(12, r.width / 4), r.top + Math.min(r.height / 2, 18))
+        : pontoEm(block, r.left + r.width / 2, r.top + Math.min(r.height / 2, 18))
+    },
+
+    abaixo(texto) {
+      const area = areaDeTrabalho(doc)
+      const block = blocosCom(doc, texto)[0]
+      if (!area || !block) return null
+      // O caminho do próprio bloco, sem os de dentro: o encaixe de baixo fica no fim dele.
+      const path = [...block.querySelectorAll('path.blocklyPath')].find(
+        (p) => p.closest('.blocklyDraggable') === block,
+      )
+      const r = (path ?? block).getBoundingClientRect()
+      return pontoEm(area, r.left + 12, r.bottom + 10)
     },
 
     temBotao(nome) {

@@ -95,9 +95,9 @@ export const VERBOS: Verbo[] = [
     descricao: 'Abre as categorias da paleta do Estúdio, uma depois da outra.',
   },
   {
-    verbo: 'arrastar',
-    exemplo: 'arrastar "mover" para "quando começar"',
-    descricao: 'Leva um bloco da paleta para baixo de um bloco da área de trabalho.',
+    verbo: 'encaixar abaixo',
+    exemplo: 'encaixar "Somar 1" abaixo de "Deixar o sprite"',
+    descricao: 'Leva um bloco da paleta para logo abaixo de um bloco da área de trabalho.',
   },
   {
     verbo: 'verificar projeto',
@@ -111,6 +111,16 @@ export const VERBOS: Verbo[] = [
       'Clica em Enviar meu projeto (ou Enviar de novo) e confirma: no palco nada é enviado.',
   },
   { verbo: 'apontar livro', exemplo: 'apontar livro', descricao: 'Aponta o livro 3D do caderno.' },
+  {
+    verbo: 'apontar encaixe',
+    exemplo: 'apontar encaixe em "Quando clicar ou tocar"',
+    descricao: 'Aponta o espaço ao lado de "fazer" de um bloco (outro rótulo: no "senão").',
+  },
+  {
+    verbo: 'apontar zappy',
+    exemplo: 'apontar zappy',
+    descricao: 'Aponta o Zappy ao lado da fala dele na experiência.',
+  },
   {
     verbo: 'apontar paleta',
     exemplo: 'apontar paleta',
@@ -133,8 +143,8 @@ export const VERBOS: Verbo[] = [
     descricao: 'Aponta um ponto do jogo na pré-visualização, como o placar.',
   },
   {
-    verbo: 'rolar até',
-    exemplo: 'rolar até "Quando acontecer"',
+    verbo: 'arrastar até',
+    exemplo: 'arrastar até "Quando acontecer"',
     descricao:
       'Arrasta um espaço vazio da área de trabalho até o bloco aparecer (nada, se ele já está à vista).',
   },
@@ -322,8 +332,18 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
         alvo: { bloco: { texto: c, area: 'toolbox' as const } },
       }))
 
-  const arrastar = /^arrastar ["“]([^"”]+)["”] para ["“]([^"”]+)["”]$/i.exec(texto)
-  if (arrastar?.[1] && arrastar[2])
+  // "arrastar "A" para "B"" é o verbo do EdiAula para qualquer página: com blocos, "encaixar".
+  const arrastar = /^encaixar ["“]([^"”]+)["”] abaixo de ["“]([^"”]+)["”]$/i.exec(texto)
+  if (arrastar?.[1] && arrastar[2]) {
+    // Com a página, os blocos são achados pelo começo do texto; sem ela, pelo texto inteiro.
+    if (pagina) {
+      const origem = pagina.bloco(arrastar[1], 'paleta')
+      const destino = pagina.abaixo(arrastar[2])
+      if (!origem)
+        throw new Error(`Não achei o bloco "${arrastar[1]}" na paleta. Abra a categoria antes.`)
+      if (!destino) throw new Error(`Não achei o bloco "${arrastar[2]}" na área de trabalho.`)
+      return [{ fazer: 'arrastar', alvo: origem, para: destino }]
+    }
     return [
       {
         fazer: 'arrastar',
@@ -331,6 +351,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
         para: { bloco: { texto: arrastar[2], area: 'workspace', abaixo: true } },
       },
     ]
+  }
 
   if (f === 'verificar projeto')
     return [
@@ -359,14 +380,29 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (f === 'apontar paleta') return [{ fazer: 'apontar', alvo: { seletor: '.blocklyToolbox' } }]
   if (f === 'compartilhar') return [{ fazer: 'clicar', alvo: { rotulo: 'Compartilhar' } }]
   const apontarBloco = /^apontar bloco ["“]([^"”]+)["”]$/i.exec(texto)
-  if (apontarBloco?.[1])
-    return [{ fazer: 'apontar', alvo: { bloco: { texto: apontarBloco[1], area: 'workspace' } } }]
+  if (apontarBloco?.[1]) {
+    const alvo = precisaDaPagina(pagina).bloco(apontarBloco[1], 'area')
+    if (!alvo) throw new Error(`Não achei o bloco "${apontarBloco[1]}" na área de trabalho.`)
+    return [{ fazer: 'apontar', alvo }]
+  }
+  const apontarEncaixe = /^apontar encaixe em ["“]([^"”]+)["”](?: no ["“]([^"”]+)["”])?$/i.exec(
+    texto,
+  )
+  if (apontarEncaixe?.[1]) {
+    const rotulo = apontarEncaixe[2] ?? 'fazer'
+    const alvo = precisaDaPagina(pagina).encaixe(apontarEncaixe[1], rotulo)
+    if (!alvo) throw new Error(`Não achei o espaço de "${rotulo}" no bloco "${apontarEncaixe[1]}".`)
+    return [{ fazer: 'apontar', alvo }]
+  }
+  if (f === 'apontar zappy')
+    return [{ fazer: 'apontar', alvo: { seletor: '.sz-scene-console-fala > div > :first-child' } }]
   const previa = /^(tocar|apontar) pr[eé]via ?(.*)$/i.exec(texto)
   if (previa?.[1]) {
     const alvo = naPrevia(pagina, jogos, (previa[2] ?? '').trim())
     return [{ fazer: fold(previa[1]) === 'tocar' ? 'clicar' : 'apontar', alvo }]
   }
-  const rolar = /^rolar at[eé] ["“]([^"”]+)["”]$/i.exec(texto)
+  // "rolar até" é o do EdiAula (rola a página): a área do Estúdio se arrasta.
+  const rolar = /^arrastar at[eé] ["“]([^"”]+)["”]$/i.exec(texto)
   if (rolar?.[1]) {
     const rolagem = precisaDaPagina(pagina).rolagem(rolar[1])
     if (!rolagem) throw new Error(`Não achei o bloco "${rolar[1]}" na área de trabalho.`)
@@ -382,9 +418,10 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const rotulo = encaixar[3] ?? 'fazer'
     const destino = precisaDaPagina(pagina).encaixe(encaixar[2], rotulo)
     if (!destino) throw new Error(`Não achei o espaço de "${rotulo}" no bloco "${encaixar[2]}".`)
-    return [
-      { fazer: 'arrastar', alvo: { bloco: { texto: encaixar[1], area: 'flyout' } }, para: destino },
-    ]
+    const origem = precisaDaPagina(pagina).bloco(encaixar[1], 'paleta')
+    if (!origem)
+      throw new Error(`Não achei o bloco "${encaixar[1]}" na paleta. Abra a categoria antes.`)
+    return [{ fazer: 'arrastar', alvo: origem, para: destino }]
   }
   const trocar = /^trocar ["“]([^"”]+)["”] por ["“]([^"”]*)["”](?: em ["“]([^"”]+)["”])?$/i.exec(
     texto,
