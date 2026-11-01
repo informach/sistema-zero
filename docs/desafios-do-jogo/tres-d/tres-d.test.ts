@@ -70,7 +70,8 @@ for (const d of DESAFIOS_3D)
         for (const asset of projeto.assets) {
           const sha = courseModelSha(asset)
           expect(sha, asset.name).not.toBeNull()
-          expect(registro, asset.name).toContain(`'${sha}'`)
+          // O import do modelo, que não depende de o Biome tirar as aspas da chave.
+          expect(registro, asset.name).toContain(`./m-${sha}.generated'`)
         }
       }
       // O inicial deixa os dois encontros vazios; o gabarito os preenche.

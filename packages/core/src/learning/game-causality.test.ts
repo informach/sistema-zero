@@ -440,7 +440,10 @@ describe('combinação de três postos (lacunas, 01/11/2026)', () => {
         ...(extra.events ?? []),
       ],
       [{ type: 'var', name: 'pegou', value: bool(false) }, grupo, ...(extra.start ?? [])],
-      [{ type: 'g2d:updateEachFrame', body: [relogio([criar]), gravidade, dino] }, ...(extra.loops ?? [])],
+      [
+        { type: 'g2d:updateEachFrame', body: [relogio([criar]), gravidade, dino] },
+        ...(extra.loops ?? []),
+      ],
     )
 
   test('decisão do Faísca, grupo com relógio do Construtor e pulo do Inventor: combina', () => {

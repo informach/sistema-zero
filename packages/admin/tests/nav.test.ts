@@ -24,6 +24,7 @@ describe('nav — grupos e helpers de seção', () => {
       'Encontros',
       'Projetos',
       'Maestrias',
+      'Projetos da Lenda',
       'Recados',
       'Moderação',
       'Alunos',
