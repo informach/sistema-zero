@@ -1,5 +1,5 @@
 /* Gerado por packages/ui/scripts/lesson-theme.mjs. Não editar.
- * Fontes SHA-256: a859777a353f37811c1b3663cfcbdb9a47eef8bbdac81da142910c18c63fd1b3
+ * Fontes SHA-256: 673ec9cdec6fc1a1caa18ccb87967c6930bd7f5d990115f35a6d2508fcd3e167
  */
 @import "tailwindcss";
 /* Tokens + @theme do Estúdio DENTRO do pipeline Tailwind (registra as cores sz para o
@@ -88,8 +88,15 @@
   --shadow-sm: 0 0 #0000;
   /* A menor letra da comunidade adulta é de 15 px: com a base de 18 px, o `text-xs` (0,75rem)
      dos componentes compartilhados daria 13,5 px. */
-  --text-xs: 0.85rem;
+  --text-xs: calc(0.85 * var(--sz-community-rem, 1rem));
   --text-xs--line-height: 1.45;
+}
+
+/* A aula compartilha a raiz de 16px do Kids; a navegação conserva o ritmo adulto de 18px.
+   O gerador leva esta regra só para a ilha de tema, sem alterar o conteúdo da aula. */
+:root:where(:not(:has(.sz-lesson-ui))):has(.sz-lesson-ui),
+:root:has(.sz-lesson-ui) :where(.sz-community-chrome) {
+  --sz-community-rem: 1.125rem;
 }
 
 /* ============================================================
@@ -98,8 +105,10 @@
    O tema Pink (abaixo) redefine só os primitivos `--pen-*` e `--topo-*`; os tokens
    semânticos apontam para eles. Contraste medido: texto ≥ 4,5:1, borda de campo ≥ 3:1.
    ============================================================ */
-:root:where(:not(:has(.sz-lesson-ui))) {
+:root:where(:not(:has(.sz-lesson-ui))),
+:where(.sz-community-chrome) {
   color-scheme: light;
+  --sz-community-rem: 1rem;
 
   --pen-chao: var(--sz-community-ground);
   --pen-chao-alt: var(--sz-community-ground-alt);
@@ -242,7 +251,7 @@
     monospace;
 
   /* Cartão com 24 px e botão do `Button` em pílula (a régua do Pen). */
-  --radius: 1.25rem;
+  --radius: calc(1.25 * var(--sz-community-rem, 1rem));
 }
 
 /* ============================================================
@@ -253,7 +262,8 @@
    voltam a não existir (`initial`), e o Estúdio usa os valores de sempre em vez de um claro pela
    metade.
    ============================================================ */
-:root:where(:not(:has(.sz-lesson-ui))) {
+:root:where(:not(:has(.sz-lesson-ui))),
+:where(.sz-community-chrome) {
   --sz-tool-bg: var(--pen-chao);
   --sz-tool-surface: var(--pen-cartao);
   --sz-tool-surface-2: var(--pen-sup2);
@@ -266,8 +276,8 @@
   --sz-tool-on-cta: #ffffff;
   --sz-tool-cta-gradient: linear-gradient(90deg, var(--pen-acao), var(--pen-acao));
 }
-:where(body:not(:has(.sz-lesson-ui))) [data-sz-theme="dark"],
-:where(body:not(:has(.sz-lesson-ui))) [data-pinta-theme="dark"] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) [data-sz-theme="dark"],
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) [data-pinta-theme="dark"] {
   --sz-tool-bg: initial;
   --sz-tool-surface: initial;
   --sz-tool-surface-2: initial;
@@ -283,110 +293,110 @@
 
 /* A aula mora no fundo alternativo do Pen: o chão da página inteira troca quando o player está
    na tela. `:has()` para não mexer no layout do app só por isso. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-app:has(.sz-aula-adulto) {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-app:has(.sz-aula-adulto) {
   background-color: var(--background-alt);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-app:has(.sz-aula-adulto) > main {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-app:has(.sz-aula-adulto) > main {
   max-width: none;
   /* O que o rodapé fixo mede (`--sz-lesson-nav-height`, do member-shell) e não um número fixo:
      com a faixa "o que falta para seguir" ele cresceu (review do lote 2). */
-  padding-bottom: calc(var(--sz-lesson-nav-height, 7rem) + 1.5rem);
+  padding-bottom: calc(var(--sz-lesson-nav-height, calc(7 * var(--sz-community-rem, 1rem))) + calc(1.5 * var(--sz-community-rem, 1rem)));
 }
 /* ── A SALA AO VIVO (cursos ao vivo, 14/10/2026) ──────────────────────────────────────────────
    A sala é a aula com a TRANSMISSÃO fixa no alto da coluna da esquerda (`sz-lesson-stage`, que
    gruda abaixo do cabeçalho fixo) e a barra da chamada (`sz-live-controls`) acima do rodapé
    da aula; a barra publica a altura em `--sz-live-bar-height` e a página reserva as duas. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto {
   /* A sala ao vivo tem a barra compacta do topo (`CommunityTopBar compact`, 3,4rem e a borda) em
      toda largura: a transmissão gruda logo abaixo dela. */
-  --sz-lesson-stage-top: 3.9rem;
+  --sz-lesson-stage-top: calc(3.9 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-app:has(.sz-live-controls) > main {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-app:has(.sz-live-controls) > main {
   padding-bottom: calc(
-    var(--sz-lesson-nav-height, 7rem) +
-    var(--sz-live-bar-height, 5rem) +
-    1.5rem
+    var(--sz-lesson-nav-height, calc(7 * var(--sz-community-rem, 1rem))) +
+    var(--sz-live-bar-height, calc(5 * var(--sz-community-rem, 1rem))) +
+    calc(1.5 * var(--sz-community-rem, 1rem))
   );
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-stage.sticky {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-stage.sticky {
   background-color: var(--background-alt);
-  box-shadow: 0 -0.75rem 0 var(--background-alt);
+  box-shadow: 0 calc(-0.75 * var(--sz-community-rem, 1rem)) 0 var(--background-alt);
 }
-:where(body:not(:has(.sz-lesson-ui))) main:has(.sz-aula-adulto) {
-  --lesson-outline-width: min(20rem, 90vw);
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) main:has(.sz-aula-adulto) {
+  --lesson-outline-width: min(calc(20 * var(--sz-community-rem, 1rem)), 90vw);
 }
 
 /* Lista de aulas na mesma identidade dos cartões adultos, em todas as cores do perfil. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-outline {
-  box-shadow: -0.5rem 0 1.5rem color-mix(in srgb, var(--foreground) 8%, transparent);
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-outline {
+  box-shadow: calc(-0.5 * var(--sz-community-rem, 1rem)) 0 calc(1.5 * var(--sz-community-rem, 1rem)) color-mix(in srgb, var(--foreground) 8%, transparent);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-header {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-header {
   border-bottom: 1px solid var(--border);
   background: var(--background-alt);
-  padding: 1.25rem;
+  padding: calc(1.25 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-title {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-title {
   font-family: var(--font-display), sans-serif;
-  font-size: 1.05rem;
+  font-size: calc(1.05 * var(--sz-community-rem, 1rem));
   font-weight: 700;
   line-height: 1.3;
   overflow-wrap: anywhere;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-list {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-list {
   overscroll-behavior: contain;
-  padding: 0.5rem 0.75rem 1.25rem;
+  padding: calc(0.5 * var(--sz-community-rem, 1rem)) calc(0.75 * var(--sz-community-rem, 1rem)) calc(1.25 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-module + .sz-lesson-outline-module {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-module + .sz-lesson-outline-module {
   border-top: 1px solid var(--border);
-  margin-top: 0.75rem;
-  padding-top: 0.5rem;
+  margin-top: calc(0.75 * var(--sz-community-rem, 1rem));
+  padding-top: calc(0.5 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-module-title {
-  padding: 0.75rem 0.5rem 0.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-module-title {
+  padding: calc(0.75 * var(--sz-community-rem, 1rem)) calc(0.5 * var(--sz-community-rem, 1rem)) calc(0.5 * var(--sz-community-rem, 1rem));
   color: var(--muted-foreground);
-  font-size: 0.85rem;
+  font-size: calc(0.85 * var(--sz-community-rem, 1rem));
   font-weight: 700;
   line-height: 1.4;
   overflow-wrap: anywhere;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-link {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-link {
   display: flex;
   align-items: flex-start;
-  gap: 0.65rem;
-  min-height: 2.75rem;
-  margin-block: 0.25rem;
+  gap: calc(0.65 * var(--sz-community-rem, 1rem));
+  min-height: calc(2.75 * var(--sz-community-rem, 1rem));
+  margin-block: calc(0.25 * var(--sz-community-rem, 1rem));
   border: 1px solid transparent;
-  border-radius: 0.65rem;
-  padding: 0.65rem 0.75rem;
+  border-radius: calc(0.65 * var(--sz-community-rem, 1rem));
+  padding: calc(0.65 * var(--sz-community-rem, 1rem)) calc(0.75 * var(--sz-community-rem, 1rem));
   color: var(--foreground);
-  font-size: 0.85rem;
+  font-size: calc(0.85 * var(--sz-community-rem, 1rem));
   line-height: 1.45;
   overflow-wrap: anywhere;
   transition:
     background-color 150ms,
     border-color 150ms;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-link > svg {
-  margin-top: 0.15rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-link > svg {
+  margin-top: calc(0.15 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-link[href]:hover {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-link[href]:hover {
   background: var(--muted);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-link[href]:focus-visible {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-link[href]:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: 2px;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-link[aria-current="page"] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-link[aria-current="page"] {
   border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
   background: color-mix(in srgb, var(--primary) 9%, var(--card));
   box-shadow: inset 3px 0 0 var(--primary);
   font-weight: 700;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-locked {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-locked {
   cursor: not-allowed;
   color: var(--muted-foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-outline-completed {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-outline-completed {
   color: var(--pen-ok-texto);
 }
 
@@ -394,37 +404,37 @@
    O fundo alternativo e os cartões de cada bloco continuam. Só o chrome externo
    mudou: o título é acessível, mas não ocupa espaço visual, e a navegação fica
    fixa na base. Regras fora de camada vencem as utilitárias do member-shell. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-block:has(> div > .lesson-prose) {
-  border-radius: 1.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-block:has(> div > .lesson-prose) {
+  border-radius: calc(1.5 * var(--sz-community-rem, 1rem));
   background: var(--card);
-  padding: 1.5rem;
+  padding: calc(1.5 * var(--sz-community-rem, 1rem));
 }
 /* A cena de aula (demonstração e experimentação) desenhava o cartão dela mesma; agora o
    cartão é do BLOCO, como no kids, e o gancho `sz-lesson-scene` diz qual bloco é esse. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-block:has(.sz-lesson-scene) {
-  border-radius: 1.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-block:has(.sz-lesson-scene) {
+  border-radius: calc(1.5 * var(--sz-community-rem, 1rem));
   background: var(--card);
-  padding: 1.5rem;
+  padding: calc(1.5 * var(--sz-community-rem, 1rem));
 }
 /* "ASSISTA AO VÍDEO PRIMEIRO" (03/10/2026, opção do curso) e o VÍDEO FLUTUANTE sobre a atividade
    ampliada. O member-shell dá a estrutura; aqui eles ganham o cartão do Pen, sóbrio, sem o
    mascote do kids. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-gate-veil {
-  border-radius: 1.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-gate-veil {
+  border-radius: calc(1.5 * var(--sz-community-rem, 1rem));
   background: color-mix(in oklab, var(--background-alt) 80%, transparent);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-gate-card {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-gate-card {
   border: 0;
-  border-radius: 1.5rem;
+  border-radius: calc(1.5 * var(--sz-community-rem, 1rem));
   background: var(--card);
   box-shadow: 0 8px 22px rgba(28, 48, 90, 0.1);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-gate-done {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-gate-done {
   border: 0;
   background: var(--card);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-float {
-  border-radius: 1rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-float {
+  border-radius: calc(1 * var(--sz-community-rem, 1rem));
   box-shadow:
     0 0 0 1px var(--border),
     0 18px 40px rgba(28, 48, 90, 0.24);
@@ -433,184 +443,184 @@
    (`SectionProjectCheck`) só trazia a estrutura: aqui ele veste a bancada clara, com cada objetivo
    numa linha de 44 px, o feito no verde de sucesso e o extra no amarelo de aviso. O estado nunca é
    só cor: o ícone e a palavra seguem no componente. Fora de camada, como o resto da aula. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objectives {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objectives {
   border: 1px solid var(--border);
-  border-radius: 1.25rem;
+  border-radius: calc(1.25 * var(--sz-community-rem, 1rem));
   background: var(--card);
   box-shadow: 0 4px 0 var(--degrau-claro);
-  padding: 0.75rem 1rem;
+  padding: calc(0.75 * var(--sz-community-rem, 1rem)) calc(1 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objectives-title {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objectives-title {
   font-family: var(--font-display), system-ui, sans-serif;
-  font-size: 1.0625rem;
+  font-size: calc(1.0625 * var(--sz-community-rem, 1rem));
   font-weight: 700;
   color: var(--foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objective {
-  min-height: 2.75rem;
-  padding: 0.55rem 0.8rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objective {
+  min-height: calc(2.75 * var(--sz-community-rem, 1rem));
+  padding: calc(0.55 * var(--sz-community-rem, 1rem)) calc(0.8 * var(--sz-community-rem, 1rem));
   border: 1px solid transparent;
-  border-radius: 0.875rem;
+  border-radius: calc(0.875 * var(--sz-community-rem, 1rem));
   background: var(--acao-tint);
-  font-size: 0.95rem;
+  font-size: calc(0.95 * var(--sz-community-rem, 1rem));
   color: var(--foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objective[data-extra] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objective[data-extra] {
   background: var(--aviso-tint);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objective[data-state="passed"] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objective[data-state="passed"] {
   background: var(--sucesso-tint);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objective[data-state="passed"] .sz-lesson-objective-icon {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objective[data-state="passed"] .sz-lesson-objective-icon {
   color: var(--pen-ok-texto);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objective[data-state="failed"] .sz-lesson-objective-icon {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objective[data-state="failed"] .sz-lesson-objective-icon {
   color: var(--pen-acao);
 }
 /* Mexeu no projeto depois de verificar: o resultado é de antes da mudança. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objective[data-stale] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objective[data-stale] {
   border-style: dashed;
   border-color: var(--border);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objectives-extras-title {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objectives-extras-title {
   font-weight: 700;
   color: var(--foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objectives-xp {
-  padding: 0.2rem 0.7rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objectives-xp {
+  padding: calc(0.2 * var(--sz-community-rem, 1rem)) calc(0.7 * var(--sz-community-rem, 1rem));
   border-radius: 9999px;
   background: var(--aviso-tint);
   color: var(--aviso-texto);
   font-weight: 700;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objectives-feedback {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objectives-feedback {
   font-weight: 700;
   color: var(--foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-objectives-feedback[data-tone="ok"] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-objectives-feedback[data-tone="ok"] {
   color: var(--pen-ok-texto);
 }
 /* MATERIAIS COMPLEMENTARES. O bloco também ganha cartão, como o texto e a cena — ele é uma
    lista, e sem moldura ela se mistura ao parágrafo de cima. O desenho é o mesmo componente do
    kids (`MaterialsBlockView`, sem cor por dentro); aqui ele sai sóbrio. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-block:has(.sz-lesson-materials) {
-  border-radius: 1.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-block:has(.sz-lesson-materials) {
+  border-radius: calc(1.5 * var(--sz-community-rem, 1rem));
   background: var(--card);
-  padding: 1.5rem;
+  padding: calc(1.5 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-materials {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-materials {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  gap: calc(0.75 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-materials-title {
-  font-size: 1rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-materials-title {
+  font-size: calc(1 * var(--sz-community-rem, 1rem));
   font-weight: 600;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-materials-list {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-materials-list {
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: calc(0.375 * var(--sz-community-rem, 1rem));
 }
 /* ⚠️ `min-width: 0` é load-bearing: o rótulo do arquivo trunca, e sem ele um nome comprido
    empurra a linha e a página rola de lado no celular. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: calc(0.25 * var(--sz-community-rem, 1rem));
   min-width: 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-action {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-action {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: calc(0.5 * var(--sz-community-rem, 1rem));
   width: 100%;
-  min-height: 2.75rem;
-  padding: 0.375rem 0.5rem;
-  border-radius: 0.5rem;
+  min-height: calc(2.75 * var(--sz-community-rem, 1rem));
+  padding: calc(0.375 * var(--sz-community-rem, 1rem)) calc(0.5 * var(--sz-community-rem, 1rem));
+  border-radius: calc(0.5 * var(--sz-community-rem, 1rem));
   text-align: left;
   /* ⚠️ São `--interactive-text`/`--interactive-text-hover`, NÃO `--interactive`: o par sem sufixo
      não existe neste app, e a cor cairia calada no `foreground` — um link que não parece link. */
   color: var(--interactive-text);
   transition: background-color 0.15s ease;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-action:hover {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-action:hover {
   background: color-mix(in oklab, var(--muted) 60%, transparent);
   color: var(--interactive-text-hover);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-action:disabled {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-action:disabled {
   opacity: 0.6;
   pointer-events: none;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-icon {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-icon {
   display: grid;
   place-items: center;
   flex-shrink: 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-copy {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-copy {
   display: flex;
   flex: 1;
   flex-direction: column;
   min-width: 0;
-  gap: 0.125rem;
+  gap: calc(0.125 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-label {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-label {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-required {
-  font-size: 0.75rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-required {
+  font-size: calc(0.75 * var(--sz-community-rem, 1rem));
   font-weight: 700;
   color: var(--primary);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-meta {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-meta {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.75rem;
+  font-size: calc(0.75 * var(--sz-community-rem, 1rem));
   text-transform: uppercase;
   color: var(--muted-foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-cta {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-cta {
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  min-width: 4.75rem;
-  min-height: 2rem;
-  padding: 0.375rem 0.625rem;
+  min-width: calc(4.75 * var(--sz-community-rem, 1rem));
+  min-height: calc(2 * var(--sz-community-rem, 1rem));
+  padding: calc(0.375 * var(--sz-community-rem, 1rem)) calc(0.625 * var(--sz-community-rem, 1rem));
   border: 1px solid currentColor;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: calc(0.75 * var(--sz-community-rem, 1rem));
   font-weight: 700;
   line-height: 1.15;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-note {
-  font-size: 0.875rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-note {
+  font-size: calc(0.875 * var(--sz-community-rem, 1rem));
   color: var(--muted-foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-figure img {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-figure img {
   width: 100%;
-  border-radius: 0.75rem;
+  border-radius: calc(0.75 * var(--sz-community-rem, 1rem));
   border: 1px solid var(--border);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-figure figcaption {
-  margin-top: 0.375rem;
-  font-size: 0.875rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-figure figcaption {
+  margin-top: calc(0.375 * var(--sz-community-rem, 1rem));
+  font-size: calc(0.875 * var(--sz-community-rem, 1rem));
   color: var(--muted-foreground);
 }
 /* A caixa reserva a altura ANTES de o iframe carregar — sem pulo de layout. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-video {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-video {
   position: relative;
   aspect-ratio: 16 / 9;
   width: 100%;
   overflow: hidden;
-  border-radius: 0.75rem;
+  border-radius: calc(0.75 * var(--sz-community-rem, 1rem));
   border: 1px solid var(--border);
   background: var(--muted);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-lesson-material-video iframe {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lesson-material-video iframe {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -619,13 +629,13 @@
 }
 
 /* Os botões mantêm a pele adulta; a barra ocupa a largura da viewport. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav {
   border: 0;
-  border-radius: 1.5rem;
+  border-radius: calc(1.5 * var(--sz-community-rem, 1rem));
   background: var(--card);
-  padding: 0.75rem 1rem;
+  padding: calc(0.75 * var(--sz-community-rem, 1rem)) calc(1 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav-immersive {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav-immersive {
   position: fixed;
   inset-inline: 0;
   bottom: 0;
@@ -634,34 +644,34 @@
   overflow-y: auto;
   border-top: 1px solid var(--border);
   border-radius: 0;
-  padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+  padding: calc(0.75 * var(--sz-community-rem, 1rem)) calc(1 * var(--sz-community-rem, 1rem)) calc(calc(0.75 * var(--sz-community-rem, 1rem)) + env(safe-area-inset-bottom));
 }
 @media (min-width: 1024px) {
-  :where(body:not(:has(.sz-lesson-ui))) main:has(.sz-aula-adulto) {
-    --lesson-outline-width: 18rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) main:has(.sz-aula-adulto) {
+    --lesson-outline-width: calc(18 * var(--sz-community-rem, 1rem));
   }
-  :where(body:not(:has(.sz-lesson-ui))) main:has(.sz-aula-adulto) {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) main:has(.sz-aula-adulto) {
     transition: padding-right 0.3s ease-in-out;
   }
-  :where(body:not(:has(.sz-lesson-ui))) main:has(#adult-lesson-outline:not([aria-hidden="true"])) {
-    padding-right: calc(1.5rem + var(--lesson-outline-width));
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) main:has(#adult-lesson-outline:not([aria-hidden="true"])) {
+    padding-right: calc(calc(1.5 * var(--sz-community-rem, 1rem)) + var(--lesson-outline-width));
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav-immersive {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav-immersive {
     transition: right 0.3s ease-in-out;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto:has(#adult-lesson-outline:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto:has(#adult-lesson-outline:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
     right: var(--lesson-outline-width);
   }
 }
 @media (min-width: 1024px) and (prefers-reduced-motion: reduce) {
-  :where(body:not(:has(.sz-lesson-ui))) main:has(.sz-aula-adulto),
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav-immersive {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) main:has(.sz-aula-adulto),
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav-immersive {
     transition: none;
   }
 }
 
 @layer base {
-  *:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *) {
+  *:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *) {
     @apply border-border outline-ring/50;
   }
   /* ⭐ A LETRA BASE É DE 18 PX (direção de arte de 18/10/2026: adultos iniciantes, com o leitor de 50
@@ -670,24 +680,31 @@
      os outros componentes compartilhados medem em rem e crescem juntos, sem mudar o layout que dividem com o Kids. As ferramentas de tela
      cheia (Estúdio, Pinta, Molda, Pensa e o avatar) são editores densos desenhados na base de
      16 px e voltam a ela. */
-  html:where(:not(:has(.sz-lesson-ui))) {
+  html:where(:not(:has(.sz-lesson-ui))),
+:where(.sz-community-chrome) {
     font-size: 112.5%;
   }
   html:where(:not(:has(.sz-lesson-ui))):has(.sz-app[data-embedded="true"]),
-html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
+html:has(.sz-app[data-embedded="true"]) :where(.sz-community-chrome),
+html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]),
+html:has([data-sz-public-player]) :where(.sz-community-chrome) {
     font-size: 100%;
     /* O `text-xs` maior (15 px) é da pele: nos editores volta ao padrão do Tailwind. */
-    --text-xs: 0.75rem;
+    --text-xs: calc(0.75 * var(--sz-community-rem, 1rem));
     --text-xs--line-height: calc(1 / 0.75);
   }
   /* A tela de ferramenta fechada mora na rota da ferramenta, mas é uma página da comunidade: volta à
      letra de 18 px (`tool-notice.tsx`). */
-  html:where(:not(:has(.sz-lesson-ui))):has(.sz-app[data-embedded="true"] [data-sz-tool-notice]) {
+  html:where(:not(:has(.sz-lesson-ui))):has(.sz-app[data-embedded="true"] [data-sz-tool-notice]),
+html:has(.sz-app[data-embedded="true"] [data-sz-tool-notice]) :where(.sz-community-chrome) {
     font-size: 112.5%;
-    --text-xs: 0.85rem;
+    --text-xs: calc(0.85 * var(--sz-community-rem, 1rem));
     --text-xs--line-height: 1.45;
   }
-  body:where(:not(:has(.sz-lesson-ui))) {
+  body:where(:not(:has(.sz-lesson-ui))),
+:where(.sz-community-chrome) {
+    font-size: var(--sz-community-rem, calc(1 * var(--sz-community-rem, 1rem)));
+    --spacing: calc(0.25 * var(--sz-community-rem, calc(1 * var(--sz-community-rem, 1rem))));
     --font-sans:
       var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
       Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -702,13 +719,13 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
     line-height: 1.6;
     @apply bg-background text-foreground;
   }
-  :where(body:not(:has(.sz-lesson-ui))) a[href],
-:where(body:not(:has(.sz-lesson-ui))) button:not(:disabled),
-:where(body:not(:has(.sz-lesson-ui))) [role="button"]:not([aria-disabled="true"]) {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) a[href],
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) button:not(:disabled),
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) [role="button"]:not([aria-disabled="true"]) {
     cursor: pointer;
   }
-  :where(body:not(:has(.sz-lesson-ui))) button:disabled,
-:where(body:not(:has(.sz-lesson-ui))) [aria-disabled="true"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) button:disabled,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) [aria-disabled="true"] {
     cursor: not-allowed;
   }
 }
@@ -719,16 +736,16 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
 
 /* O `Button` variant="default" vira a pílula chapada do Pen. FORA de camada de propósito: tem de
    vencer as utilitárias do componente (`rounded-lg`, `[a]:hover:bg-primary/80`). */
-:where(body:not(:has(.sz-lesson-ui))) button.bg-primary.text-primary-foreground,
-:where(body:not(:has(.sz-lesson-ui))) a.bg-primary.text-primary-foreground {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) button.bg-primary.text-primary-foreground,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) a.bg-primary.text-primary-foreground {
   background-image: none;
   background-color: var(--primary);
   color: var(--primary-foreground);
-  border-radius: 0.6rem;
+  border-radius: calc(0.6 * var(--sz-community-rem, 1rem));
   transition: background-color 0.15s ease;
 }
-:where(body:not(:has(.sz-lesson-ui))) button.bg-primary.text-primary-foreground:hover:not(:disabled),
-:where(body:not(:has(.sz-lesson-ui))) a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) button.bg-primary.text-primary-foreground:hover:not(:disabled),
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) a.bg-primary.text-primary-foreground:hover:not([aria-disabled="true"]) {
   background-color: var(--primary-hover);
 }
 /* Estúdio à noite: nas páginas da comunidade (e nos diálogos que elas abrem) a ação principal do
@@ -737,7 +754,9 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
    da pessoa, não ação. A aula, a sala ao vivo, as ferramentas de tela
    cheia e o jogo público são peças do Kids e seguem com a cor de ação de lá. */
 :root:where(:not(:has(.sz-lesson-ui))):not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
-  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]) {
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]),
+:root:not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]) :where(.sz-community-chrome) {
   background-color: var(--cta);
   color: var(--cta-tinta);
   box-shadow: 0 3px 0 var(--cta-degrau);
@@ -746,14 +765,21 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
   [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):is(
     button:hover:not(:disabled),
     a:hover:not([aria-disabled="true"])
-  ) {
+  ),
+:root:not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):is(
+    button:hover:not(:disabled),
+    a:hover:not([aria-disabled="true"])
+  ) :where(.sz-community-chrome) {
   background-color: var(--dourado);
   color: var(--cta-tinta);
 }
 /* O anel de foco do `Button` é um `ring` (box-shadow), que o degrau acima apaga: o foco volta como
    contorno. A resposta escolhida (`aria-pressed`) é seleção, não ação, e fica com a cor da pessoa. */
 :root:where(:not(:has(.sz-lesson-ui))):not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
-  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):focus-visible {
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):focus-visible,
+:root:not(:has(.sz-aula-adulto, .sz-app[data-embedded="true"], [data-sz-public-player]))
+  [data-slot="button"].bg-primary.text-primary-foreground:not([aria-pressed]):focus-visible :where(.sz-community-chrome) {
   outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
@@ -762,40 +788,40 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
   /* CTA fora do `Button` (links e spans), com o mesmo desenho. Em `@layer components` para o
      `h-*`/`px-*`/`text-*` de quem usa valer: solta no arquivo, a classe vencia as utilitárias em
      silêncio (a mesma armadilha que o kids já corrigiu). */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-gradient {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-gradient {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    gap: calc(0.5 * var(--sz-community-rem, 1rem));
     font-family: inherit;
     font-weight: 700;
-    font-size: 1rem;
-    padding: 0 1.3rem;
-    min-height: 2.8rem;
-    border-radius: 0.6rem;
+    font-size: calc(1 * var(--sz-community-rem, 1rem));
+    padding: 0 calc(1.3 * var(--sz-community-rem, 1rem));
+    min-height: calc(2.8 * var(--sz-community-rem, 1rem));
+    border-radius: calc(0.6 * var(--sz-community-rem, 1rem));
     border: 0;
     background-color: var(--primary);
     color: var(--primary-foreground);
     cursor: pointer;
     transition: background-color 0.15s ease;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-gradient:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-gradient:hover {
     background-color: var(--primary-hover);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-gradient svg {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-gradient svg {
     stroke: currentColor;
   }
 }
 
 /* Barra de progresso (cards de curso + player): trilho claro e preenchimento na cor de ação. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-progress {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-progress {
   position: relative;
-  height: 0.6rem;
+  height: calc(0.6 * var(--sz-community-rem, 1rem));
   background: var(--muted);
   border-radius: 9999px;
   overflow: hidden;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-progress > span {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-progress > span {
   display: block;
   height: 100%;
   background-color: var(--primary);
@@ -803,165 +829,165 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
 }
 
 /* Divisória simples na cor da linha do Pen. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-divider {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-divider {
   height: 1px;
   background: var(--border);
   border: 0;
-  margin: 1.5rem 0;
+  margin: calc(1.5 * var(--sz-community-rem, 1rem)) 0;
 }
 
 /* Títulos na Bricolage Grotesque (direção de arte de 18/10/2026; antes, Geist Mono). */
-:where(body:not(:has(.sz-lesson-ui))) .sz-display {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-display {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.01em;
   line-height: 1.15;
 }
 /* Número em destaque (nota do quiz, número do módulo): na cor de ação, sem degradê. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-display-grad {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-display-grad {
   color: var(--primary);
 }
 
 /* Esconde o reveal nativo de senha (usamos o toggle próprio Eye/EyeOff) */
-:where(body:not(:has(.sz-lesson-ui))) input[type="password"]::-ms-reveal,
-:where(body:not(:has(.sz-lesson-ui))) input[type="password"]::-ms-clear {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) input[type="password"]::-ms-reveal,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) input[type="password"]::-ms-clear {
   display: none;
 }
-:where(body:not(:has(.sz-lesson-ui))) input[type="password"]::-webkit-credentials-auto-fill-button,
-:where(body:not(:has(.sz-lesson-ui))) input[type="password"]::-webkit-strong-password-auto-fill-button {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) input[type="password"]::-webkit-credentials-auto-fill-button,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) input[type="password"]::-webkit-strong-password-auto-fill-button {
   display: none !important;
 }
 
 /* Prosa de aula (blocos rich_text renderizados como leitura) */
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose {
   line-height: 1.7;
-  font-size: 1.05rem;
+  font-size: calc(1.05 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose h1,
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose h2,
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose h3 {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose h1,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose h2,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose h3 {
   font-family: var(--font-display);
   font-weight: 700;
   letter-spacing: -0.01em;
   margin: 1.5em 0 0.5em;
   line-height: 1.25;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose h1 {
-  font-size: 1.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose h1 {
+  font-size: calc(1.5 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose h2 {
-  font-size: 1.25rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose h2 {
+  font-size: calc(1.25 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose h3 {
-  font-size: 1.0625rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose h3 {
+  font-size: calc(1.0625 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose p {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose p {
   margin: 0.75em 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose ul,
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose ol {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose ul,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose ol {
   margin: 0.75em 0;
-  padding-left: 1.5rem;
+  padding-left: calc(1.5 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose ul {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose ul {
   list-style: disc;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose ol {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose ol {
   list-style: decimal;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose li {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose li {
   margin: 0.25em 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose a {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose a {
   color: var(--interactive-text);
   text-decoration: underline;
   text-underline-offset: 3px;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose a:hover {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose a:hover {
   color: var(--interactive-text-hover);
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose strong {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose strong {
   font-weight: 600;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose code {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose code {
   font-family: var(--font-mono);
   font-size: 0.85em;
   background: var(--muted);
-  padding: 0.125rem 0.375rem;
-  border-radius: 0.25rem;
+  padding: calc(0.125 * var(--sz-community-rem, 1rem)) calc(0.375 * var(--sz-community-rem, 1rem));
+  border-radius: calc(0.25 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose pre {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose pre {
   background: var(--muted);
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  padding: 1rem;
+  border-radius: calc(0.75 * var(--sz-community-rem, 1rem));
+  padding: calc(1 * var(--sz-community-rem, 1rem));
   overflow-x: auto;
   margin: 1em 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose pre code {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose pre code {
   background: transparent;
   padding: 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose blockquote {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose blockquote {
   border-left: 3px solid color-mix(in oklab, var(--primary) 50%, transparent);
-  padding-left: 1rem;
+  padding-left: calc(1 * var(--sz-community-rem, 1rem));
   margin: 1em 0;
   color: var(--muted-foreground);
 }
 /* Imagens em markdown (enunciado/opção de quiz, rich_text) — responsivas e arredondadas */
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose img {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose img {
   max-width: 100%;
   height: auto;
-  border-radius: 0.75rem;
+  border-radius: calc(0.75 * var(--sz-community-rem, 1rem));
   margin: 0.75em 0;
 }
 /* O espaçamento entre blocos vem do gap do container — sem margens vazando nas bordas */
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose > :first-child {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose > :first-child {
   margin-top: 0;
 }
-:where(body:not(:has(.sz-lesson-ui))) .lesson-prose > :last-child {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .lesson-prose > :last-child {
   margin-bottom: 0;
 }
 
 /* Depois das regras do `.lesson-prose`: o `> ul` da lista da faixa tem especificidade maior que
    `.lesson-prose ul`, e o biome cobra a ordem crescente (full review de 30/09, M4). */
 /* "O que falta para seguir" (30/09/2026): a faixa sóbria acima dos botões do rodapé. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status {
-  margin-bottom: 0.5rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 0.75rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status {
+  margin-bottom: calc(0.5 * var(--sz-community-rem, 1rem));
+  padding: calc(0.25 * var(--sz-community-rem, 1rem)) calc(0.75 * var(--sz-community-rem, 1rem));
+  border-radius: calc(0.75 * var(--sz-community-rem, 1rem));
   background: var(--muted);
   color: var(--muted-foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status[data-state="pronto"] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status[data-state="pronto"] {
   color: var(--success-foreground);
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status-item {
-  min-height: 2.25rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status-item {
+  min-height: calc(2.25 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status-icone {
-  width: 1.5rem;
-  height: 1.5rem;
-  border-radius: 0.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status-icone {
+  width: calc(1.5 * var(--sz-community-rem, 1rem));
+  height: calc(1.5 * var(--sz-community-rem, 1rem));
+  border-radius: calc(0.5 * var(--sz-community-rem, 1rem));
   background: var(--card);
   color: currentColor;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status-lista > summary {
-  min-height: 2.75rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status-lista > summary {
+  min-height: calc(2.75 * var(--sz-community-rem, 1rem));
   list-style: none;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status-lista > summary::-webkit-details-marker {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status-lista > summary::-webkit-details-marker {
   display: none;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status-mais {
-  padding: 0.125rem 0.5rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status-mais {
+  padding: calc(0.125 * var(--sz-community-rem, 1rem)) calc(0.5 * var(--sz-community-rem, 1rem));
   border-radius: 9999px;
   border: 1px solid var(--border);
-  font-size: 0.75rem;
+  font-size: calc(0.75 * var(--sz-community-rem, 1rem));
   font-weight: 600;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-status-lista > ul {
-  padding-bottom: 0.25rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-status-lista > ul {
+  padding-bottom: calc(0.25 * var(--sz-community-rem, 1rem));
 }
 
 /* Modal — backdrop + entrada */
@@ -983,10 +1009,10 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
     transform: scale(1) translateY(0);
   }
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-overlay {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-overlay {
   animation: sz-fade-in 0.15s ease;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-modal {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-modal {
   animation: sz-zoom-in 0.15s ease;
 }
 
@@ -1009,33 +1035,34 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
    ⚠️ `color-mix` em `oklab`, nunca em `oklch`: no espaço cilíndrico um cinza vira ROSA.
    ============================================================================ */
 
-:root:where(:not(:has(.sz-lesson-ui))) {
+:root:where(:not(:has(.sz-lesson-ui))),
+:where(.sz-community-chrome) {
   --rolagem: color-mix(in oklab, var(--foreground) 60%, transparent);
   --rolagem-hover: color-mix(in oklab, var(--foreground) 78%, transparent);
 }
 
-*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *)::-webkit-scrollbar {
+*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *)::-webkit-scrollbar {
   width: 14px;
   height: 14px;
 }
-*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *)::-webkit-scrollbar-track,
-*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *)::-webkit-scrollbar-corner {
+*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *)::-webkit-scrollbar-track,
+*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *)::-webkit-scrollbar-corner {
   background: transparent;
 }
-*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *)::-webkit-scrollbar-thumb {
+*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *)::-webkit-scrollbar-thumb {
   border-radius: 9999px;
   background-color: var(--rolagem);
   /* A borda transparente afina o traço sem estreitar a ÁREA de arrasto. */
   border: 4px solid transparent;
   background-clip: padding-box;
 }
-*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *)::-webkit-scrollbar-thumb:hover {
+*:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *)::-webkit-scrollbar-thumb:hover {
   background-color: var(--rolagem-hover);
 }
 
 /* Firefox: as propriedades padrão, e SÓ onde o bloco de cima não existe. */
 @supports not selector(::-webkit-scrollbar) {
-  *:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *) {
+  *:where(html:not(:has(.sz-lesson-ui)), html:not(:has(.sz-lesson-ui)) *, .sz-community-chrome, .sz-community-chrome *) {
     scrollbar-width: thin;
     scrollbar-color: var(--rolagem) transparent;
   }
@@ -1043,30 +1070,31 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
 
 /* A variante discreta some em repouso e aparece ao passar o ponteiro — mesma paleta, só mais
    quieta. Fica para as áreas densas que já a pediam. */
-:where(body:not(:has(.sz-lesson-ui))) .scrollbar-subtle::-webkit-scrollbar-thumb {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .scrollbar-subtle::-webkit-scrollbar-thumb {
   background-color: transparent;
 }
-:where(body:not(:has(.sz-lesson-ui))) .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .scrollbar-subtle:hover::-webkit-scrollbar-thumb {
   background-color: var(--rolagem);
 }
 @supports not selector(::-webkit-scrollbar) {
-  :where(body:not(:has(.sz-lesson-ui))) .scrollbar-subtle {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .scrollbar-subtle {
     scrollbar-color: transparent transparent;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .scrollbar-subtle:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .scrollbar-subtle:hover {
     scrollbar-color: var(--rolagem) transparent;
   }
 }
 
 /* Toast — contraste garantido nos dois temas */
-:where(body:not(:has(.sz-lesson-ui))) [data-sonner-toast] {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) [data-sonner-toast] {
   background: var(--popover) !important;
   color: var(--popover-foreground) !important;
   border: 1px solid var(--border) !important;
 }
 
 /* Shared public game console, using the adult palette. */
-:root:where(:not(:has(.sz-lesson-ui))) {
+:root:where(:not(:has(.sz-lesson-ui))),
+:where(.sz-community-chrome) {
   --snes-body: color-mix(in oklab, var(--primary) 14%, var(--card));
   --snes-body-deep: color-mix(in oklab, var(--primary) 30%, var(--card));
   --snes-body-edge: color-mix(in oklab, var(--primary) 55%, var(--card));
@@ -1091,17 +1119,17 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
    Em `@layer components` para o `className` de quem usa poder ajustar (a armadilha do kids).
    ============================================================================ */
 @layer components {
-  :where(body:not(:has(.sz-lesson-ui))) .sz-page {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-page {
     width: 100%;
-    max-width: 66rem;
+    max-width: calc(66 * var(--sz-community-rem, 1rem));
     margin-inline: auto;
-    padding-inline: 1.6rem;
+    padding-inline: calc(1.6 * var(--sz-community-rem, 1rem));
   }
   /* O PALCO: a faixa escura do topo de cada página e os blocos escuros que comemoram (`sz-palco`).
      Ele não pinta peça por peça: redefine os tokens semânticos para o subárvore inteiro, e todo
      cartão, chip, link, campo e texto apagado dentro dele vira a versão escura sozinho. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-band,
-:where(body:not(:has(.sz-lesson-ui))) .sz-palco {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-band,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-palco {
     --background: var(--noite);
     --foreground: var(--texto-claro);
     --card: var(--carta);
@@ -1136,105 +1164,105 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
        continuam passando por cima do conteúdo de baixo. */
     background-color: var(--palco);
     background-image: radial-gradient(rgb(242 244 250 / 0.09) 1px, transparent 1px);
-    background-size: 1.1rem 1.1rem;
+    background-size: calc(1.1 * var(--sz-community-rem, 1rem)) calc(1.1 * var(--sz-community-rem, 1rem));
     color: var(--foreground);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-kicker {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-kicker {
     font-family: var(--font-pixel);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--sz-community-rem, 1rem));
     letter-spacing: 0.06em;
     line-height: 1.25;
     text-transform: uppercase;
     color: var(--acao-texto);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-kicker {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-kicker {
     color: var(--sz-community-action-light);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-h1,
-:where(body:not(:has(.sz-lesson-ui))) .sz-h1-sm,
-:where(body:not(:has(.sz-lesson-ui))) .sz-h2,
-:where(body:not(:has(.sz-lesson-ui))) .sz-h3,
-:where(body:not(:has(.sz-lesson-ui))) .sz-h4 {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h1,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h1-sm,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h2,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h3,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h4 {
     margin: 0;
     font-family: var(--font-display);
     color: var(--foreground);
   }
   /* Escala de títulos (25/10/2026): 2,8, 2,2, 1,8, 1,3 e 1,1rem (50, 40, 32, 23 e 20 px na base de
      18 px). */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-h1 {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h1 {
     font-weight: 800;
-    font-size: 2.8rem;
+    font-size: calc(2.8 * var(--sz-community-rem, 1rem));
     line-height: 1.05;
     letter-spacing: -0.02em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-h1-sm {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h1-sm {
     font-weight: 800;
-    font-size: 2.2rem;
+    font-size: calc(2.2 * var(--sz-community-rem, 1rem));
     line-height: 1.1;
     letter-spacing: -0.02em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-h2 {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h2 {
     font-weight: 800;
-    font-size: 1.8rem;
+    font-size: calc(1.8 * var(--sz-community-rem, 1rem));
     line-height: 1.12;
     letter-spacing: -0.015em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-h3 {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h3 {
     font-weight: 700;
-    font-size: 1.3rem;
+    font-size: calc(1.3 * var(--sz-community-rem, 1rem));
     line-height: 1.2;
     letter-spacing: -0.01em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-h4 {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h4 {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: calc(1.1 * var(--sz-community-rem, 1rem));
     line-height: 1.25;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-lead {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-lead {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: calc(1.1 * var(--sz-community-rem, 1rem));
     line-height: 1.55;
     color: var(--muted-foreground);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-lead {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-lead {
     color: var(--texto-claro-2);
   }
   /* A FOLHA da bancada: o cartão branco com o degrau embaixo, o mesmo gesto do botão. No palco ele
      vira a carta escura, sem degrau (o token do degrau some lá dentro). */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-card {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-card {
     border: 1px solid var(--border);
-    border-radius: 1.2rem;
+    border-radius: calc(1.2 * var(--sz-community-rem, 1rem));
     background: var(--card);
     color: var(--card-foreground);
     box-shadow: 0 4px 0 var(--degrau-claro);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-card-sm {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-card-sm {
     border: 1px solid var(--border);
-    border-radius: 1rem;
+    border-radius: calc(1 * var(--sz-community-rem, 1rem));
     background: var(--card);
     color: var(--card-foreground);
     box-shadow: 0 3px 0 var(--degrau-claro);
   }
   /* Os cartões da sala ao vivo e da aula são do Kids: sem o degrau do Estúdio à noite. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-card-sm {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-card-sm {
     box-shadow: none;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-soft {
-    border-radius: 0.8rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-soft {
+    border-radius: calc(0.8 * var(--sz-community-rem, 1rem));
     background: var(--background);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn,
-:where(body:not(:has(.sz-lesson-ui))) .sz-btn-outline,
-:where(body:not(:has(.sz-lesson-ui))) .sz-btn-quiet,
-:where(body:not(:has(.sz-lesson-ui))) .sz-btn-white {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-outline,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-quiet,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-white {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
-    min-height: 2.8rem;
-    padding: 0 1.3rem;
+    gap: calc(0.5 * var(--sz-community-rem, 1rem));
+    min-height: calc(2.8 * var(--sz-community-rem, 1rem));
+    padding: 0 calc(1.3 * var(--sz-community-rem, 1rem));
     border: 0;
-    border-radius: 0.7rem;
+    border-radius: calc(0.7 * var(--sz-community-rem, 1rem));
     font: inherit;
     font-weight: 700;
     line-height: 1.2;
@@ -1250,190 +1278,190 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
   }
   /* O botão principal: o amarelo com o degrau de 4 px (o gesto do Kids, em tom adulto). Um por
      tela, para a ação nunca precisar ser procurada. Ao apertar, ele desce o degrau. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn {
     background-color: var(--cta);
     color: var(--cta-tinta);
     box-shadow: 0 4px 0 var(--cta-degrau);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn:hover {
     background-color: var(--dourado);
     color: var(--cta-tinta);
   }
   /* O secundário: na bancada, branco com contorno e degrau; no palco, só o contorno claro. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-outline {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-outline {
     background-color: var(--card);
     color: var(--foreground);
     box-shadow:
       inset 0 0 0 2px var(--foreground),
       0 4px 0 var(--degrau-claro);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-outline:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-outline:hover {
     background-color: var(--muted);
     color: var(--foreground);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-btn-outline {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-btn-outline {
     background-color: transparent;
     box-shadow: inset 0 0 0 2px var(--texto-claro-2);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-btn-outline:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-btn-outline:hover {
     background-color: var(--carta-2);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-quiet {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-quiet {
     background-color: var(--muted);
     color: var(--foreground);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-quiet:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-quiet:hover {
     background-color: color-mix(in oklab, var(--foreground) 9%, var(--muted));
     color: var(--foreground);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-white {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-white {
     background-color: var(--texto-claro);
     color: var(--noite);
     box-shadow: 0 4px 0 var(--legenda-clara);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-white:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-white:hover {
     background-color: white;
     color: var(--noite);
   }
   @media (prefers-reduced-motion: no-preference) {
-    :where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn, .sz-btn-outline, .sz-btn-white):active:not(:disabled, [aria-disabled="true"]) {
+    :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn, .sz-btn-outline, .sz-btn-white):active:not(:disabled, [aria-disabled="true"]) {
       transform: translateY(3px);
       box-shadow: 0 1px 0 var(--cta-degrau);
     }
-    :where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn-outline, .sz-btn-white):active:not(:disabled, [aria-disabled="true"]) {
+    :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn-outline, .sz-btn-white):active:not(:disabled, [aria-disabled="true"]) {
       box-shadow: inset 0 0 0 2px var(--sz-community-line);
     }
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-btn-sm {
-    min-height: 2.5rem;
-    padding: 0 0.9rem;
-    font-size: 0.9rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-btn-sm {
+    min-height: calc(2.5 * var(--sz-community-rem, 1rem));
+    padding: 0 calc(0.9 * var(--sz-community-rem, 1rem));
+    font-size: calc(0.9 * var(--sz-community-rem, 1rem));
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white):disabled,
-:where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white)[aria-disabled="true"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white):disabled,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white)[aria-disabled="true"] {
     opacity: 0.5;
     cursor: not-allowed;
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white, .sz-iconbtn) svg {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white, .sz-iconbtn) svg {
     flex: none;
     width: 1.1em;
     height: 1.1em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-iconbtn {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-iconbtn {
     display: inline-flex;
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 2.6rem;
-    height: 2.6rem;
+    width: calc(2.6 * var(--sz-community-rem, 1rem));
+    height: calc(2.6 * var(--sz-community-rem, 1rem));
     border: 2px solid var(--border);
-    border-radius: 0.6rem;
+    border-radius: calc(0.6 * var(--sz-community-rem, 1rem));
     background: var(--card);
     color: var(--foreground);
     cursor: pointer;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-iconbtn:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-iconbtn:hover {
     background: var(--muted);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-link {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-link {
     font-weight: 700;
     color: var(--link);
     text-decoration: underline;
     text-underline-offset: 0.2em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-link:hover {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-link:hover {
     color: var(--link-hover);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    min-height: 1.7rem;
-    padding: 0 0.6rem;
+    gap: calc(0.3 * var(--sz-community-rem, 1rem));
+    min-height: calc(1.7 * var(--sz-community-rem, 1rem));
+    padding: 0 calc(0.6 * var(--sz-community-rem, 1rem));
     border-radius: 9999px;
     background: var(--muted);
     color: var(--muted-foreground);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--sz-community-rem, 1rem));
     font-weight: 700;
     line-height: 1.2;
     white-space: nowrap;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip svg {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip svg {
     flex: none;
     width: 1em;
     height: 1em;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip-ok {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip-ok {
     background: var(--sucesso-tint);
     color: var(--pen-ok-texto);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip-acao {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip-acao {
     background: var(--acao-tint);
     color: var(--acao-texto);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip-aviso {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip-aviso {
     background: var(--aviso-tint);
     color: var(--aviso-texto);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip-novo {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip-novo {
     background: var(--cta);
     color: var(--cta-tinta);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-chip-escuro {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-chip-escuro {
     background: var(--topo);
     color: var(--texto-claro);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-chip-escuro {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-chip-escuro {
     background: var(--carta-2);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-num {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-num {
     display: inline-flex;
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 2.2rem;
-    height: 2.2rem;
-    border-radius: 0.6rem;
+    width: calc(2.2 * var(--sz-community-rem, 1rem));
+    height: calc(2.2 * var(--sz-community-rem, 1rem));
+    border-radius: calc(0.6 * var(--sz-community-rem, 1rem));
     background: var(--muted);
     color: var(--foreground);
     font-family: var(--font-pixel);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--sz-community-rem, 1rem));
   }
   /* O "você está aqui" é o amarelo da ação, o mesmo do botão que leva até lá. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-num-acao {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-num-acao {
     background: var(--cta);
     color: var(--cta-tinta);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-num-ok {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-num-ok {
     background: var(--pen-sucesso);
     color: white;
   }
   /* ⚠️ Sem `.sz-bar` aqui: o Estúdio tem uma `.sz-bar` própria (a barra de ferramentas) no mesmo
      pipeline de CSS. A barra de progresso da pele é o `Meter` de `profile/meter.tsx`. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-tile {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-tile {
     display: inline-flex;
     flex: none;
     align-items: center;
     justify-content: center;
-    width: 3.6rem;
-    height: 3.6rem;
-    border-radius: 0.9rem;
+    width: calc(3.6 * var(--sz-community-rem, 1rem));
+    height: calc(3.6 * var(--sz-community-rem, 1rem));
+    border-radius: calc(0.9 * var(--sz-community-rem, 1rem));
     background: var(--acao-tint);
     color: var(--acao-texto);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-label {
-    font-size: 0.9rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-label {
+    font-size: calc(0.9 * var(--sz-community-rem, 1rem));
     font-weight: 700;
   }
   /* A barra em blocos, como a barra de vida de um jogo: o trilho de `ProgressBar` e `Meter` é
      recortado em dez gomos por máscara (o valor continua contínuo para o leitor de tela). Na
      bancada o preenchimento é o acento da pessoa; no palco, a menta. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-hud {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-hud {
     --hud-gomos: 10;
     position: relative;
-    height: 0.75rem;
+    height: calc(0.75 * var(--sz-community-rem, 1rem));
     overflow: hidden;
-    border-radius: 0.2rem;
+    border-radius: calc(0.2 * var(--sz-community-rem, 1rem));
     background: color-mix(in oklab, var(--foreground) 12%, var(--card));
     -webkit-mask-image: repeating-linear-gradient(
       90deg,
@@ -1446,56 +1474,56 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
       transparent calc(100% / var(--hud-gomos) - 4px) calc(100% / var(--hud-gomos))
     );
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-hud > span {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-hud > span {
     display: block;
     height: 100%;
     background: var(--primary);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-hud[data-feito="true"] > span {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-hud[data-feito="true"] > span {
     background: var(--pen-sucesso);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-hud {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-hud {
     background: rgb(242 244 250 / 0.16);
   }
-  :where(body:not(:has(.sz-lesson-ui))) :is(.sz-band, .sz-palco) .sz-hud > span {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-band, .sz-palco) .sz-hud > span {
     background: var(--menta);
   }
   /* A MIRA: os cantos amarelos em volta da capa em destaque, como a mira de um jogo. Por dentro
      da moldura (a capa corta o que passa da borda). */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-mira::before,
-:where(body:not(:has(.sz-lesson-ui))) .sz-mira::after {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-mira::before,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-mira::after {
     content: "";
     position: absolute;
     z-index: 1;
-    width: 1.3rem;
-    height: 1.3rem;
+    width: calc(1.3 * var(--sz-community-rem, 1rem));
+    height: calc(1.3 * var(--sz-community-rem, 1rem));
     border: 3px solid var(--cta);
     pointer-events: none;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-mira::before {
-    top: 0.6rem;
-    left: 0.6rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-mira::before {
+    top: calc(0.6 * var(--sz-community-rem, 1rem));
+    left: calc(0.6 * var(--sz-community-rem, 1rem));
     border-right: 0;
     border-bottom: 0;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-mira::after {
-    right: 0.6rem;
-    bottom: 0.6rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-mira::after {
+    right: calc(0.6 * var(--sz-community-rem, 1rem));
+    bottom: calc(0.6 * var(--sz-community-rem, 1rem));
     border-top: 0;
     border-left: 0;
   }
   /* O certificado validado (`/validar`): o cartão da noite com a moldura dourada, uma borda e um
      filete por dentro, como um diploma. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-certificado {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-certificado {
     border: 2px solid var(--dourado);
     box-shadow:
-      inset 0 0 0 0.4rem var(--palco),
-      inset 0 0 0 0.5rem color-mix(in oklab, var(--dourado) 35%, transparent);
+      inset 0 0 0 calc(0.4 * var(--sz-community-rem, 1rem)) var(--palco),
+      inset 0 0 0 calc(0.5 * var(--sz-community-rem, 1rem)) color-mix(in oklab, var(--dourado) 35%, transparent);
   }
 
   /* A cor da etapa (`components/community/journey/stage.tsx`): o anel em volta da foto, o ponto, o
      chip e a fita. `--etapa-cor` chega pelo `style` de cada peça. */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-anel {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-anel {
     --anel-espessura: 3px;
     --anel-folga: 2px;
     display: inline-flex;
@@ -1505,19 +1533,19 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
     padding: var(--anel-folga);
     background: var(--card);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-anel[data-tamanho="p"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-anel[data-tamanho="p"] {
     --anel-espessura: 2px;
     --anel-folga: 1.5px;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-anel[data-tamanho="g"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-anel[data-tamanho="g"] {
     --anel-espessura: 6px;
     --anel-folga: 3px;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-anel[data-fundo="escuro"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-anel[data-fundo="escuro"] {
     background: var(--topo);
     box-shadow: 0 0 0 2px rgb(255 255 255 / 0.9);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-ponto {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-ponto {
     display: inline-block;
     flex: none;
     width: 0.75em;
@@ -1526,12 +1554,12 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
     background: var(--etapa-cor);
     box-shadow: 0 0 0 2px var(--card);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-chip {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    min-height: 2.2rem;
-    padding: 0.2rem 0.85rem 0.2rem 0.6rem;
+    gap: calc(0.5 * var(--sz-community-rem, 1rem));
+    min-height: calc(2.2 * var(--sz-community-rem, 1rem));
+    padding: calc(0.2 * var(--sz-community-rem, 1rem)) calc(0.85 * var(--sz-community-rem, 1rem)) calc(0.2 * var(--sz-community-rem, 1rem)) calc(0.6 * var(--sz-community-rem, 1rem));
     border: 1px solid var(--border);
     border-radius: 9999px;
     background: var(--card);
@@ -1539,42 +1567,42 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
     font-weight: 700;
     line-height: 1.25;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-chip[data-fundo="escuro"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-chip[data-fundo="escuro"] {
     border-color: transparent;
     background: var(--topo-borda);
     color: #fff;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-chip[data-fundo="escuro"] .sz-etapa-ponto {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-chip[data-fundo="escuro"] .sz-etapa-ponto {
     box-shadow: 0 0 0 2px #fff;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-linha {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-linha {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: calc(0.45 * var(--sz-community-rem, 1rem));
     color: var(--muted-foreground);
-    font-size: 0.85rem;
+    font-size: calc(0.85 * var(--sz-community-rem, 1rem));
     line-height: 1.35;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-fita {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-fita {
     display: grid;
-    gap: 0.3rem;
+    gap: calc(0.3 * var(--sz-community-rem, 1rem));
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-fita > span {
-    height: 0.7rem;
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-fita > span {
+    height: calc(0.7 * var(--sz-community-rem, 1rem));
     border-radius: 9999px;
     background: var(--muted);
   }
   /* No marinho, a etapa que ainda vem é um contorno vazio: a diferença para a concluída fica na
      FORMA, não só na cor (o anil e o rosa ficavam a 1,1:1 de um cinza translúcido). */
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-fita[data-fundo="escuro"] > span {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-fita[data-fundo="escuro"] > span {
     background: transparent;
     box-shadow: inset 0 0 0 1.5px rgb(255 255 255 / 0.45);
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-fita > span[data-estado="feita"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-fita > span[data-estado="feita"] {
     background: var(--etapa-cor);
     box-shadow: none;
   }
-  :where(body:not(:has(.sz-lesson-ui))) .sz-etapa-fita > span[data-estado="atual"] {
+  :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-etapa-fita > span[data-estado="atual"] {
     background: linear-gradient(
       90deg,
       var(--etapa-cor) var(--etapa-parte),
@@ -1588,11 +1616,11 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
 
 /* Foco sempre visível e largo nas peças da pele adulta, na cor de ação (3:1 sobre o claro). Sobre
    o escuro (a barra do topo, as faixas `--topo`) a cor de ação clara é a que aparece. */
-:where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white, .sz-iconbtn, .sz-link):focus-visible {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn, .sz-btn-outline, .sz-btn-quiet, .sz-btn-white, .sz-iconbtn, .sz-link):focus-visible {
   outline: 3px solid var(--ring);
   outline-offset: 2px;
 }
-:where(body:not(:has(.sz-lesson-ui))) :is(.sz-btn-white, .bg-\(--topo\) :is(.sz-btn, .sz-link)):focus-visible {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :is(.sz-btn-white, .bg-\(--topo\) :is(.sz-btn, .sz-link)):focus-visible {
   outline-color: var(--sz-community-action-light);
 }
 
@@ -1603,37 +1631,37 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
    `:where()`, sem peso: a regra do rodapé da aula (56 px), logo abaixo, precisa vencer esta.
    ⚠️ O tamanho de ícone se reconhece pelo TOKEN (`size-8`), nunca por `[class*="size-"]`: toda
    classe do `Button` traz `[&_svg:not([class*='size-'])]:size-4`. */
-:where(body:not(:has(.sz-lesson-ui))) :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
   [data-slot="button"] {
-  min-height: 2.5rem;
-  border-radius: 0.6rem;
+  min-height: calc(2.5 * var(--sz-community-rem, 1rem));
+  border-radius: calc(0.6 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
   [data-slot="button"]:is(
     [class~="size-6"],
     [class~="size-7"],
     [class~="size-8"],
     [class~="size-9"]
   ) {
-  min-width: 2.5rem;
+  min-width: calc(2.5 * var(--sz-community-rem, 1rem));
 }
 /* O `size="sm"` do `Button` usa `text-[0.8rem]` (14 px aqui): a menor letra da pele é 15 px. */
-:where(body:not(:has(.sz-lesson-ui))) :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) :where(:root:not(:has(.sz-app[data-embedded="true"], [data-sz-public-player])))
   [data-slot="button"][class~="text-[0.8rem]"] {
-  font-size: 0.85rem;
+  font-size: calc(0.85 * var(--sz-community-rem, 1rem));
 }
 
 /* O vídeo flutuante da aula calcula a geometria em px (`FLOAT_BAR_HEIGHT` 44 e `FLOAT_FRAME` 6, no
    member-shell). Com a raiz a 18 px o `h-11` e o `px-1.5` dele cresceriam e o vídeo encostaria na
    borda da janela: a barra e a moldura ficam nas medidas da conta. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-float {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-float {
   padding: 0 6px 6px;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-float-bar,
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-video-float-move {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-float-bar,
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-video-float-move {
   height: 44px;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto :is(.sz-lesson-video-float-minimize, .sz-lesson-video-float-size) {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto :is(.sz-lesson-video-float-minimize, .sz-lesson-video-float-size) {
   width: 44px;
   height: 44px;
 }
@@ -1641,33 +1669,33 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
 /* A pele da AULA (direção de arte de 18/10/2026). O player é o do Kids e o layout não muda: os
    botões do rodapé viram retângulos de 56 px sem relevo, e os chips das atividades ganham fundo
    (o de criar no verde de "cumprido", os demais na cor de ação), com o ícone que já trazem. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav [data-slot="button"] {
-  min-height: 2.8rem;
-  padding-inline: 1.1rem;
-  font-size: 1rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav [data-slot="button"] {
+  min-height: calc(2.8 * var(--sz-community-rem, 1rem));
+  padding-inline: calc(1.1 * var(--sz-community-rem, 1rem));
+  font-size: calc(1 * var(--sz-community-rem, 1rem));
   font-weight: 700;
 }
 /* Com os botões de 56 px, "Preciso de ajuda" e "Concluir aula" não cabem lado a lado num celular:
    o grupo da direita do rodapé (o último filho da `sz-lesson-nav-inner`) quebra a linha. */
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav-inner > div:last-child {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav-inner > div:last-child {
   flex-wrap: wrap;
   justify-content: flex-end;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-nav [data-slot="button"] svg {
-  width: 1.1rem;
-  height: 1.1rem;
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-nav [data-slot="button"] svg {
+  width: calc(1.1 * var(--sz-community-rem, 1rem));
+  height: calc(1.1 * var(--sz-community-rem, 1rem));
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto .sz-lesson-chip {
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto .sz-lesson-chip {
   align-self: flex-start;
   border-radius: 9999px;
-  padding: 0.2rem 0.7rem;
+  padding: calc(0.2 * var(--sz-community-rem, 1rem)) calc(0.7 * var(--sz-community-rem, 1rem));
   background: var(--primary);
   color: var(--primary-foreground);
-  font-size: 0.85rem;
+  font-size: calc(0.85 * var(--sz-community-rem, 1rem));
   font-weight: 700;
   letter-spacing: 0.04em;
 }
-:where(body:not(:has(.sz-lesson-ui))) .sz-aula-adulto
+:where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-aula-adulto
   .sz-lesson-chip:is(
     [data-chip="experimentation"],
     [data-chip="html"],
@@ -1681,17 +1709,17 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
    no celular. */
 @layer components {
   @media (max-width: 767px) {
-    :where(body:not(:has(.sz-lesson-ui))) .sz-page {
-      padding-inline: 0.8rem;
+    :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-page {
+      padding-inline: calc(0.8 * var(--sz-community-rem, 1rem));
     }
-    :where(body:not(:has(.sz-lesson-ui))) .sz-h1 {
-      font-size: 2rem;
+    :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h1 {
+      font-size: calc(2 * var(--sz-community-rem, 1rem));
     }
-    :where(body:not(:has(.sz-lesson-ui))) .sz-h1-sm {
-      font-size: 1.7rem;
+    :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h1-sm {
+      font-size: calc(1.7 * var(--sz-community-rem, 1rem));
     }
-    :where(body:not(:has(.sz-lesson-ui))) .sz-h2 {
-      font-size: 1.45rem;
+    :where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-h2 {
+      font-size: calc(1.45 * var(--sz-community-rem, 1rem));
     }
   }
 }
@@ -3904,8 +3932,9 @@ html:where(:not(:has(.sz-lesson-ui))):has([data-sz-public-player]) {
       left 0.3s ease-in-out,
       right 0.3s ease-in-out;
   }
-  :where(body:has(.sz-lesson-ui)) .kids-shell-row:has(aside.kids-menu:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
-    left: var(--kids-menu-width);
+  :where(body:has(.sz-lesson-ui)) .kids-shell-row:has(:is(aside.kids-menu, aside.sz-community-menu):not([aria-hidden="true"]))
+    .sz-lesson-nav-immersive {
+    left: var(--sz-community-sidebar-width, var(--kids-menu-width));
   }
 }
 

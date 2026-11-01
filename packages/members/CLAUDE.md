@@ -1,5 +1,42 @@
 # CLAUDE.md — @sistemazero/members
 
+## Publicação de cursos pelo Admin (01/11/2026)
+
+`application/course-publication` reúne o serviço, o worker e o processador da promoção.
+`copy-adult` copia dentro do ambiente; `promote-kids` parte de staging e tem um único trabalho
+persistido em produção. Não executar shell na requisição nem copiar bancos de alunos.
+O operador `scripts/publish-course.ts` reutiliza o serviço canônico, com entrada JSON limitada.
+
+Prévia e aprovação usam versão e hashes de origem/destino. Recursos ficam em tarefas duráveis;
+publicação de grade, fontes do tutor e conclusão do trabalho são atômicas. Lease de 90 segundos,
+renovação a cada 20, prazo de duas horas e adiamento de recurso por 30 segundos. Cancelamento,
+perda de posse e edição concorrente impedem a publicação. Migrations 0145 a 0148.
+
+As portas privadas de mídia vivem no Admin; Members continua sem domínio público. Promoção e
+leitura da origem atravessam relays de Admin com destino fixo, tokens distintos e limites de
+corpo. A origem só sai para um trabalho aprovado e atual. Nunca expor capturas, transcrições,
+credenciais ou respostas do professor no DTO do navegador. Configuração parcial deve falhar.
+Os testes de banco recusam destinos fora dos bancos locais nomeados explicitamente.
+Guia operacional e variáveis: `docs/operations/publicar-cursos.md`.
+
+## Sincronizar curso Kids para adulto (01/11/2026)
+
+Operador em `scripts/release/sync-course-audiences.ts`; a entrada Railway em
+`packages/members/scripts/course-audience-sync/run.ts` só carrega conexão e política. A regra pura
+fica em `src/domain/course-publication/course-sync.ts`, sem Drizzle, e o executor transacional em
+`src/infrastructure/persistence/drizzle/course-sync.ts`, com parser e política injetados. A cópia
+de extratos fica em `course-knowledge-sync.ts`. CLI e serviço reutilizam essas regras, sem shell
+na aplicação nem uma segunda cópia do publicador. Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
+Cria o adulto ausente ou atualiza o existente e publica pela autoria canônica numa transação,
+preservando identidade e dados dos alunos. A grade ativa é substituída: módulos e aulas excedentes
+são arquivados (`archivedAt`, migration 0145), com os blocos das aulas, nunca apagados por cascata.
+Leituras e contagens da grade excluem esses registros; o histórico e as conclusões ficam guardados.
+Um retorno da aula recupera seu ID pelo mapa ou slug. Reordenar usa posições abaixo também do
+histórico (`curriculumParkingPositions`). A cópia exige extratos atuais do Zappy e confere os
+trechos reais, além dos cabeçalhos; `verify` não escreve. Preparação de mídia no Admin do mesmo ambiente, backup e plano com hashes,
+recusa de edição concorrente, remapeamento persistido em `metadata.contentMirror`. Não transformar
+essa operação explícita em sincronização automática ou chamar o composition root completo.
+
 ## Referência neutra de animação dos módulos, 31/10/2026
 
 O módulo usa `animation: ModuleAnimation | null`, validado no contrato do core. POST/PATCH

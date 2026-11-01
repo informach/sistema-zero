@@ -278,6 +278,7 @@ async function prepareSchema(conn: DbConnection): Promise<void> {
       id uuid primary key, course_id uuid not null, title text not null, sort_order integer not null default 0,
       created_at timestamptz not null default now(), updated_at timestamptz not null default now())`,
     `alter table members.modules
+      add column if not exists archived_at timestamptz,
       add column if not exists course_id uuid,
       add column if not exists title text not null default 'Módulo',
       add column if not exists sort_order integer not null default 0,
@@ -288,6 +289,7 @@ async function prepareSchema(conn: DbConnection): Promise<void> {
       title text not null, sort_order integer not null default 0, is_published boolean not null default true,
       created_at timestamptz not null default now(), updated_at timestamptz not null default now())`,
     `alter table members.lessons
+      add column if not exists archived_at timestamptz,
       add column if not exists module_id uuid,
       add column if not exists course_id uuid,
       add column if not exists slug text,

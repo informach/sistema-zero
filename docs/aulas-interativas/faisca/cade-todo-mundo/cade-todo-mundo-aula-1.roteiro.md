@@ -6,7 +6,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-a1-abertura`
 
-**Na tela:** mostrar o jogo pronto nesta parte, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No "tem mais uma coisa", falar olhando para a câmera, com entusiasmo e naturalidade, sem mostrar nada da personalização. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** Do "Oi" até o "funciona", a tela fica parada, e a edição troca esse trecho por outro fundo [na edição: outro fundo na abertura]. No "Neste jardim", ampliar o jogo pronto e mostrar o jardim com os três personagens escondidos [ampliar jogo]. No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem estava atrás dele. No "repare no número Achados", apontar o número Achados, que mudou para 1 [apontar jogo 75 26]. No "Agora é a sua vez", apontar o jardim [apontar jogo]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -38,7 +38,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-caderno`
 
-**Na tela:** mostrar a capa e a página de orientação do Passo a passo do projeto, o caderno real. No "Olha aqui", apontar o material. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
+**Na tela:** A parte começa no livro 3D do Passo a passo do projeto. No "Olha, aqui está o Passo a passo do projeto", apontar o livro [apontar livro]. No "Aqui você encontra os passos", colocar o livro em tela cheia [livro tela cheia] e passar as páginas devagar enquanto a fala segue [livro próxima] [livro próxima]. No "Então, se você esquecer algum passo", passar mais uma página [livro próxima]. No "Se quiser, você pode ler aqui mesmo", sair da tela cheia [livro sair da tela cheia] e mostrar o livro no tamanho da aula [apontar livro]. No "clicar em Baixar", clicar no botão **Baixar** [baixar]. No "Agora clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -56,7 +56,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-toque`
 
-**Na tela:** explicar ação e reação com a animação já produzida da pena fazendo cócegas e o Zappy rindo, com a legenda “ação: cócega · reação: risada”. Em seguida, mostrar um toque e a ideia de ligação com uma reação no jardim, sem percorrer a interface da experiência nem revelar os testes com outro esconderijo. A atividade real começa sem progresso. O Zappy da página orienta cada etapa conforme o estado; não sobrepor sua voz à professora.
+**Na tela:** Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e a edição troca esse trecho pela explicação de ação e reação, com as cócegas e a risada [na edição: ação e reação, com as cócegas e a risada]. No "Agora é a sua vez de investigar", ampliar a experiência [ampliar experiência]. No "Compare o que acontece", mostrar onde a reação liga e desliga [apontar "Ligar a reação ao toque"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -79,7 +79,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-programar`
 
-**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e, no "Tá vendo?", mostrar que nada acontece. Depois da lembrança da experiência, apresentar os comandos como blocos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e, no "Olha aqui: nessa área", enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a categoria na paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "toque num esconderijo", tocar num esconderijo na Pré-visualização [tocar prévia arbusto]. No "Tá vendo?", mostrar que nada acontece [apontar prévia arbusto]. Do "Lembra da experiência" até o "esconderijos do seu jogo", a tela fica parada, e a edição troca esse trecho pela experiência da parte anterior, com o arbusto ficando invisível depois de ligar a reação [na edição: a experiência da parte anterior, com o arbusto ficando invisível]. No "que aqui aparecem como blocos", mostrar os blocos na área de código [apontar bloco "Ao iniciar"]. No "Olha aqui: neste menu", apontar a paleta de comandos [apontar paleta], abrir uma categoria para mostrar os blocos [categoria Jogo 2D] e recolher de novo [categoria Jogo 2D]. No "encontre a área Quando acontecer", arrastar um espaço vazio entre os blocos até a área aparecer [arrastar até "Quando acontecer"]. No "Olha aqui: nessa área", mostrar o bloco Quando clicar ou tocar num sprite do grupo esconderijos [apontar bloco "Quando clicar ou tocar"]. No "A reação vai ficar dentro desse bloco", mostrar o espaço vazio ao lado de **fazer** [apontar encaixe em "Quando clicar ou tocar"]. No "Agora sim, abra Jogo 2D", abrir Jogo 2D, depois Sprites e depois Aparência [categoria Jogo 2D > Sprites > Aparência]. No "Arraste esse bloco", levar o bloco Deixar o sprite jogador com 50% de visibilidade até o espaço ao lado de **fazer** [encaixar "Deixar o sprite" em "Quando clicar ou tocar"]. No "Repare que o bloco chega com o nome jogador", mostrar o bloco encaixado [apontar bloco "Deixar o sprite"]. No "clique em jogador", trocar jogador por escolhido [trocar "jogador" por "escolhido" em "Deixar o sprite"]. No "Clique no 50", trocar 50 por 0 [trocar "50" por "0" em "Deixar o sprite"]. No "Agora vamos testar no seu jogo", tocar num esconderijo na Pré-visualização [tocar prévia arbusto]. No "Achados continua em zero", apontar o número Achados [apontar prévia 75 26]. No "toque em outro esconderijo", tocar em outro [tocar prévia pedras]. No "volte aos blocos e confira", mostrar o bloco montado [apontar bloco "Quando clicar ou tocar"]. No "Clique em Verificar projeto", clicar em **Verificar projeto** e esperar a resposta [verificar projeto]. No "clique em Enviar meu projeto", enviar e confirmar em **Enviar** [enviar projeto]. No "Quando o envio terminar", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].
 
 **Fala para ElevenLabs:**
 

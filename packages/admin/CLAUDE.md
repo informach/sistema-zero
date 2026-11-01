@@ -1,5 +1,32 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Publicar cursos entre públicos e ambientes (01/11/2026)
+
+A listagem Kids oferece copiar para adulto; staging também oferece promover para produção.
+`course-publication-dialog.tsx` mostra prévia, andamento e comandos por versão. O BFF permite
+somente operações explícitas e deriva a identidade da sessão. Nenhuma chave chega ao navegador.
+
+`server/course-publication-media.ts` compartilha voz, vídeo e extração do tutor com a autoria.
+`course-transfer.ts` copia R2 público e privado com condição de versão, preserva os cabeçalhos,
+confere ediSVG e remapeia referências explícitas. Vimeo usa cópia nativa com reserva anterior
+ao POST e fases imutáveis no R2 privado; uma resposta incerta exige reconciliação, nunca outra
+cópia cega. Pasta, domínios, privacidade, conteúdo e transcrições são reconferidos.
+
+Rotas `api/internal/course-publication` autenticam token próprio antes de ler o corpo. O relay
+entre ambientes aceita somente caminhos/métodos previstos, sem redirecionamentos ou autoridade
+enviada pelo cliente. A exclusão do proxy Next é exata e não dispensa a autenticação da rota.
+Não usar busca textual Vimeo para localizar o marcador: a consulta paginada compara o nome
+exato. O Vimeo normaliza o alias `www`; a comparação da whitelist usa a mesma normalização.
+Runbook: `docs/operations/publicar-cursos.md`. Provas locais não equivalem a deploy.
+
+## Voz na cópia de curso entre públicos (01/11/2026)
+
+`src/lib/voz-zappy-aula.ts` é a extração pura compartilhada pelo botão de voz e pelo operador
+`scripts/course-audience-media.ts`. Preservar a projeção pública das experiências e os roteiros
+efetivos de diálogos e quiz. O operador só roda no Admin do ambiente solicitado e reutiliza
+`gerarVozes` e `getVideo`; não duplicar síntese, cache ou configuração de credenciais.
+Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
+
 ## Requisitos dos desafios do jogo (C01e, 30/10/2026)
 
 A orientação de `GameAdmin` distingue as regras comparadas entre inicial/gabarito dos

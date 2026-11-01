@@ -77,8 +77,17 @@ describe('o menu da esquerda recolhe, como no Kids', () => {
       'openOffset={menuWidth}',
     )
     expect(source('src/components/community/community-frame.tsx')).toContain(
-      "const menuWidth = lesson ? 'var(--kids-menu-width, 16.75rem)' : COMMUNITY_SIDEBAR_WIDTH",
+      'const menuWidth = communitySidebarWidth(lesson)',
     )
+    // A mesma medida veste a coluna e a alça, inclusive sob o tema da aula.
+    for (const [path, width] of [
+      ['/quarto', '14.4rem'],
+      ['/cursos/curso/aulas/aula', 'calc(14.4 * 1.125rem)'],
+    ] as const) {
+      const html = render(path)
+      expect(html).toContain(`--sz-community-sidebar-width:${width}`)
+      expect(sidebarTag(html)).toContain(`--sz-menu-width:${width}`)
+    }
     // ⚠️ Sem `overflow-hidden` na coluna: o menu do perfil abre mais largo que ela.
     expect(nav).not.toMatch(/<aside[\s\S]{0,400}overflow-hidden/)
   })

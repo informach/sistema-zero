@@ -6,7 +6,7 @@ Data: 21/10/2026. Contrato aplicado às 37 aulas da [unificação](../plans/2026
 
 | Arquivo | Para quem | Conteúdo |
 | --- | --- | --- |
-| `{base}.roteiro.md` | Produção e edição | Falas com tags, poucas notas de tela e tabela das substituições kids |
+| `{base}.roteiro.md` | Produção, gravação e edição | Falas com tags, o **Na tela** de cada parte (o que aparece e os gestos da gravação, presos a frases da fala) e tabela das substituições kids |
 | `{base}.elevenlabs.txt` | Geração da professora | TODA a fala principal, na ordem, somente texto falado, tags e pausas |
 | `{base}.debinha.elevenlabs.txt` | Geração da Debinha | Somente as frases dela, na ordem da tabela, com tags e separações |
 | `{base}.dede.elevenlabs.txt` | Geração do Dedé | Somente as frases dele, quando existirem |
@@ -82,7 +82,7 @@ Exemplo de formato usado na produção das aulas:
 
 **Clipe:** `video-a1-montagem`
 
-**Na tela:** mostrar o teste. Depois, conferir os três itens nos blocos.
+**Na tela:** No "Talvez você esteja pensando", tocar no jogo da pré-visualização [tocar prévia arbusto]. No "volte aos blocos", mostrar o bloco montado [apontar bloco "Quando clicar ou tocar"].
 
 **Fala para ElevenLabs:**
 
@@ -105,6 +105,35 @@ Exemplo de formato usado na produção das aulas:
 ````
 
 A chave de clipe no exemplo é ilustrativa. Na aula real, usar a chave já existente no manifesto, sem renomeá-la para caber no exemplo. O exportador lê apenas o bloco sob Fala para ElevenLabs para produzir o arquivo principal; o áudio do personagem é outra origem explicitamente identificada.
+
+## A fala e o Na tela
+
+A fala é escrita primeiro e manda. O **Na tela** de cada parte é escrito depois, a partir dela, e
+diz o que aparece e os gestos do robô de gravação do EdiAula, cada frase presa a um trecho da fala
+entre aspas: `No "Olha aqui", tocar num esconderijo [achar arbusto].` As regras completas, com
+todas as tags, estão na seção 9 de [ESPEC-ROTEIRO.md](ESPEC-ROTEIRO.md).
+
+- **Dois tipos de colchete, dois lugares.** Na fala, colchetes são só tags de voz
+  (`[curious]`, `[short pause]`). No **Na tela**, colchetes são só gestos (`[ampliar jogo]`,
+  `[próxima parte]`). Um gesto nunca entra na fala e uma tag de voz nunca entra no **Na tela**.
+- **A tela acompanha a fala.** Quando a fala diz "olha aqui", "repare", "clique", "abra",
+  "arraste" ou "toque", alguma coisa precisa aparecer naquele momento. A ação pedida para a
+  criança (**Próxima parte**, **Verificar projeto**, **Enviar meu projeto**, **Concluir aula**)
+  vai numa frase própria, no momento em que ela deve fazer: "Quando terminar, clique em Próxima
+  parte." É nessa frase que o robô volta o bloco ao tamanho da aula e clica.
+- **Tempo para a mão.** Cada gesto leva cerca de 2 segundos. Numa sequência de passos no
+  Estúdio, cada passo precisa de uma frase com tempo para o gesto; a direção
+  `[confident, clear, unhurried voice]` e um `[short pause]` depois de um passo ajudam. Não
+  acelerar a fala para caber nem esticar com frases vazias.
+- **Mudou a fala, confira o Na tela.** Toda mudança na fala, mesmo de uma palavra, pode tirar o
+  trecho que o **Na tela** cita. Refaça as citações e rode `validar-roteiros.py`, que recusa uma
+  citação que não está na fala da parte. Uma descrição de tela que a fala nova não sustenta sai.
+- **A voz gerada marca o tempo.** O EdiAula transcreve a voz do ElevenLabs e põe cada gesto no
+  segundo em que a professora diz a frase citada. Depois de gerar ou trocar a voz, gerar de novo
+  o plano no EdiAula. As tags de voz e a pontuação não atrapalham as citações.
+- **Trocas kids.** O plano usa a voz da professora, que tem a fala inteira; o **Na tela** pode
+  citar uma frase que será trocada pelo Dedé ou pela Debinha. Não pôr a troca no meio de um gesto
+  que precisa ser mostrado sem corte.
 
 ## Contrato das substituições
 
@@ -134,13 +163,14 @@ interface IntervencaoKids {
 
 ## Conferência de cada entrega
 
-1. O arquivo principal contém todas as falas gravadas e nenhuma nota de produção.
+1. O arquivo principal contém todas as falas gravadas e nenhuma nota de produção, nenhum **Na tela** e nenhum gesto entre colchetes.
 2. Os arquivos dos personagens correspondem à tabela, na mesma ordem, sem nomes ou IDs falados.
 3. Retirar tags e normalizar aspas/espaços conserva as palavras, números, comandos e ordem da fala aprovada. Pronúncias especiais são registradas e aprovadas separadamente.
 4. As tags ficam fora de textos de página, legendas e transcrições públicas.
 5. Cada passagem entre partes gravadas tem a marca de pausa longa, sem criar áudio para uma seção sem vídeo.
 6. A versão principal soa contínua sem personagens; a edição kids preserva explicação, condição e resultado.
 7. Escutar as duas montagens, conferir a pronúncia dos blocos e os intervalos de corte. Texto validado não equivale a áudio aprovado.
+8. Cada citação do **Na tela** está na fala atual da mesma parte (`validar-roteiros.py`), e a fala tem tempo para os gestos que o **Na tela** pede.
 
 Para produção real, registrar voz escolhida, modelo exato disponível, configurações, revisão do roteiro e nomes dos arquivos gerados. Não inventar um identificador de API para v4, nem gerar ou cobrar áudios durante o planejamento.
 

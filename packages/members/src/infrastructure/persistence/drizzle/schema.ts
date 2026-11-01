@@ -1,6 +1,11 @@
 import type { StudioAiFundingSource } from '@sistemazero/core/ai-credits'
 import type { CourseModality } from '@sistemazero/core/course/modality'
 import type { ModuleAnimation } from '@sistemazero/core/course/module-animation'
+import type {
+  CoursePublicationOperation,
+  CoursePublicationPreview,
+  CoursePublicationStatus,
+} from '@sistemazero/core/course/publication'
 import type { HelpTutorialDocument } from '@sistemazero/core/help'
 import type {
   AdultCreatorCapability,
@@ -64,6 +69,10 @@ import type { AvatarConfig } from '../../../domain/avatar/avatar-config'
 import type { CourseAudience } from '../../../domain/course/course'
 import type { LessonBlockContent } from '../../../domain/course/lesson-block'
 import type { QuizAnswers } from '../../../domain/course/quiz'
+import type {
+  PublicationTaskSeed,
+  StoredPublicationSnapshot,
+} from '../../../domain/course-publication/jobs'
 import type { EntitlementSnapshot } from '../../../domain/entitlement/entitlement-snapshot'
 import type { LiveRecordingSegmentTime } from '../../../domain/live/recording-chapters'
 import type {
@@ -255,6 +264,90 @@ export const courses = members.table(
   ],
 )
 
+/** Private release payloads. Only the explicit sanitized view is returned to Admin. */
+export const coursePublicationJobs = members.table(
+  'course_publication_jobs',
+  {
+    id: uuid('id').primaryKey(),
+    requestKey: uuid('request_key').notNull(),
+    actorId: uuid('actor_id').notNull(),
+    operation: text('operation').$type<CoursePublicationOperation>().notNull(),
+    status: text('status').$type<CoursePublicationStatus>().notNull().default('preview'),
+    version: integer('version').notNull().default(0),
+    snapshot: jsonb('snapshot').$type<StoredPublicationSnapshot>().notNull(),
+    snapshotHash: varchar('snapshot_hash', { length: 64 }).notNull(),
+    sourceHash: varchar('source_hash', { length: 64 }),
+    planHash: varchar('plan_hash', { length: 64 }).notNull(),
+    preview: jsonb('preview').$type<CoursePublicationPreview>().notNull(),
+    leaseToken: uuid('lease_token'),
+    leaseUntil: timestamp('lease_until', { withTimezone: true }),
+    availableAt: timestamp('available_at', { withTimezone: true }).notNull().defaultNow(),
+    deadlineAt: timestamp('deadline_at', { withTimezone: true }),
+    error: text('error'),
+    result: jsonb('result').$type<Record<string, unknown>>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('course_publication_request_uq').on(table.actorId, table.requestKey),
+    index('course_publication_queue_idx').on(
+      table.status,
+      table.availableAt,
+      table.leaseUntil,
+      table.createdAt,
+    ),
+    check(
+      'course_publication_promotion_source',
+      sql`${table.operation} <> 'promote-kids' or ${table.sourceHash} is not null`,
+    ),
+    check('course_publication_operation', sql`${table.operation} in ('copy-adult','promote-kids')`),
+    check(
+      'course_publication_status',
+      sql`${table.status} in ('preview','queued','preparing','publishing','completed','failed','cancelled')`,
+    ),
+    check(
+      'course_publication_lease',
+      sql`(${table.leaseToken} is null) = (${table.leaseUntil} is null)`,
+    ),
+    check(
+      'course_publication_payload_bound',
+      sql`octet_length(${table.snapshot}::text) <= 64000000 and ${table.version} >= 0`,
+    ),
+  ],
+)
+export const coursePublicationTasks = members.table(
+  'course_publication_tasks',
+  {
+    id: uuid('id').primaryKey(),
+    jobId: uuid('job_id')
+      .notNull()
+      .references(() => coursePublicationJobs.id, { onDelete: 'cascade' }),
+    taskKey: varchar('task_key', { length: 128 }).notNull(),
+    kind: text('kind').$type<PublicationTaskSeed['kind']>().notNull(),
+    input: jsonb('input').$type<Record<string, unknown>>().notNull(),
+    status: text('status').$type<'pending' | 'completed' | 'failed'>().notNull().default('pending'),
+    result: jsonb('result').$type<Record<string, unknown>>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('course_publication_task_uq').on(table.jobId, table.taskKey),
+    index('course_publication_task_queue_idx').on(table.jobId, table.status, table.createdAt),
+    check(
+      'course_publication_task_kind',
+      sql`${table.kind} in ('media-plan','voice','video','knowledge','r2-copy','vimeo-copy')`,
+    ),
+    check(
+      'course_publication_task_status',
+      sql`${table.status} in ('pending','completed','failed')`,
+    ),
+    check(
+      'course_publication_task_payload_bound',
+      sql`octet_length(${table.input}::text) <= 2000000 and (${table.result} is null or octet_length(${table.result}::text) <= 2000000)`,
+    ),
+  ],
+)
+
 export const modules = members.table(
   'modules',
   {
@@ -266,6 +359,8 @@ export const modules = members.table(
     summary: text('summary'),
     animation: jsonb('animation').$type<ModuleAnimation>(),
     sortOrder: integer('sort_order').notNull().default(0),
+    /** Retired curriculum remains available to historical records, outside the active outline. */
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -290,6 +385,7 @@ export const lessons = members.table(
     // Default true = backfill das aulas já em produção (continuam visíveis).
     // A API admin sempre manda o valor explícito (aula NOVA nasce rascunho).
     isPublished: boolean('is_published').notNull().default(true),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -3136,6 +3232,8 @@ export const schema = {
   lessonDraftOperations,
   activeLessonBlocks,
   courses,
+  coursePublicationJobs,
+  coursePublicationTasks,
   modules,
   lessons,
   lessonBlocks,

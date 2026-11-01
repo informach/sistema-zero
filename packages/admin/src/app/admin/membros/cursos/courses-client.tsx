@@ -41,6 +41,7 @@ import { ReadOnlyNotice } from '@/components/admin/read-only-notice'
 import { StatusBadge, statusLabel } from '@/components/admin/status-badge'
 import { TableSkeletonRows } from '@/components/admin/table-skeleton'
 import { useConfirm } from '@/components/admin/use-confirm'
+import { MoreMenu } from '@/components/professor/more-menu'
 import { type ApiError, apiGet, apiSend } from '@/lib/api'
 import { isLiveCourse } from '@/lib/course-modality'
 import { formatDate } from '@/lib/format'
@@ -63,10 +64,17 @@ import {
   type Paginated,
 } from '@/lib/types'
 import { CourseFormDialog, type CoursePrefill, slotsForTier } from './course-form-dialog'
+import { CoursePublicationDialog } from './course-publication-dialog'
 
 const LIMIT = 20
 
-export function CoursesClient({ currentRole }: { currentRole: string }) {
+export function CoursesClient({
+  currentRole,
+  showCoursePromotion = false,
+}: {
+  currentRole: string
+  showCoursePromotion?: boolean
+}) {
   const canWrite = currentRole === 'superadmin' || currentRole === 'admin'
   // Seletor global: a listagem mostra só os cursos da plataforma ativa.
   const platform = usePlatform()
@@ -91,6 +99,10 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CourseView | null>(null)
   const [cloning, setCloning] = useState<CourseView | null>(null)
+  const [publishing, setPublishing] = useState<CourseView | null>(null)
+  const [publicationOperation, setPublicationOperation] = useState<'copy-adult' | 'promote-kids'>(
+    'copy-adult',
+  )
   const [prefill, setPrefill] = useState<CoursePrefill | undefined>(undefined)
   const { confirm, confirmDialog } = useConfirm()
   const loadAuthority = useRef(createForegroundPriority()).current
@@ -105,6 +117,7 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
     setOpen(false)
     setEditing(null)
     setCloning(null)
+    setPublishing(null)
     setPrefill(undefined)
   }, [platform])
 
@@ -446,34 +459,72 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
                       <Link
                         href={`/admin/membros/cursos/${c.id}`}
                         className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+                        aria-label={`Abrir ${c.title}`}
+                        title="Abrir curso"
                       >
-                        <SquarePen className="size-4" /> Abrir
+                        <SquarePen className="size-4" aria-hidden />
                       </Link>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => openEdit(c)}
                         disabled={!canWrite}
+                        aria-label={`Editar dados de ${c.title}`}
+                        title="Editar dados"
                       >
-                        <Pencil className="size-4" /> Editar dados
+                        <Pencil className="size-4" aria-hidden />
                       </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setCloning(c)}
-                        disabled={!canWrite}
-                      >
-                        <Copy className="size-4" /> Copiar para a{' '}
-                        {COMMUNITY_NAMES[c.audience === 'kids' ? 'adult' : 'kids']}
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => void remove(c)}
-                        disabled={!canWrite}
-                      >
-                        Excluir
-                      </Button>
+                      <MoreMenu
+                        label="Mais ações"
+                        items={[
+                          ...(c.audience === 'kids' && !isLiveCourse(c)
+                            ? [
+                                {
+                                  label: 'Publicar e atualizar no adulto',
+                                  icon: <Copy className="size-4" aria-hidden />,
+                                  onSelect: () => {
+                                    setPublicationOperation('copy-adult')
+                                    setPublishing(c)
+                                  },
+                                  disabled: !canWrite || c.status !== 'published',
+                                  disabledReason:
+                                    c.status !== 'published'
+                                      ? 'Publique o curso Kids antes de copiar o conteúdo'
+                                      : undefined,
+                                },
+                              ]
+                            : [
+                                {
+                                  label: `Criar cópia na ${COMMUNITY_NAMES[c.audience === 'kids' ? 'adult' : 'kids']}`,
+                                  icon: <Copy className="size-4" aria-hidden />,
+                                  onSelect: () => setCloning(c),
+                                  disabled: !canWrite,
+                                },
+                              ]),
+                          ...(showCoursePromotion && c.audience === 'kids' && !isLiveCourse(c)
+                            ? [
+                                {
+                                  label: 'Promover para produção',
+                                  icon: <Copy className="size-4" aria-hidden />,
+                                  onSelect: () => {
+                                    setPublicationOperation('promote-kids')
+                                    setPublishing(c)
+                                  },
+                                  disabled: !canWrite || c.status !== 'published',
+                                  disabledReason:
+                                    c.status !== 'published'
+                                      ? 'Publique o curso Kids antes de promover o conteúdo'
+                                      : undefined,
+                                },
+                              ]
+                            : []),
+                          {
+                            label: 'Excluir curso',
+                            onSelect: () => void remove(c),
+                            disabled: !canWrite,
+                          },
+                        ]}
+                      />
                     </div>
                   </TableCell>
                 </TableRow>
@@ -508,6 +559,14 @@ export function CoursesClient({ currentRole }: { currentRole: string }) {
         onCloned={async () => {
           if (!mutationScope.isCurrent(renderScope)) return
           await Promise.all([load(), loadJourney()])
+        }}
+      />
+      <CoursePublicationDialog
+        course={publishing}
+        operation={publicationOperation}
+        onClose={() => setPublishing(null)}
+        onPublished={() => {
+          if (mutationScope.isCurrent(renderScope)) void Promise.all([load(), loadJourney()])
         }}
       />
     </div>

@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, count, desc, eq, inArray, isNull, sql } from 'drizzle-orm'
 import { artSlotFillers } from '../../../domain/course/art-slot-course'
 import type {
   Course,
@@ -154,7 +154,11 @@ export class DrizzleCourseRepository implements CourseRepository {
   }
 
   async findLesson(lessonId: string): Promise<Lesson | null> {
-    const [row] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
+    const [row] = await this.db
+      .select()
+      .from(lessons)
+      .where(and(eq(lessons.id, lessonId), isNull(lessons.archivedAt)))
+      .limit(1)
     return row ? toLesson(row) : null
   }
 
@@ -244,13 +248,17 @@ export class DrizzleCourseRepository implements CourseRepository {
     opts?: { publishedOnly?: boolean },
   ): Promise<ModuleWithLessons[]> {
     const lessonWhere = opts?.publishedOnly
-      ? and(eq(lessons.courseId, courseId), eq(lessons.isPublished, true))
-      : eq(lessons.courseId, courseId)
+      ? and(
+          eq(lessons.courseId, courseId),
+          isNull(lessons.archivedAt),
+          eq(lessons.isPublished, true),
+        )
+      : and(eq(lessons.courseId, courseId), isNull(lessons.archivedAt))
     const [mods, less] = await Promise.all([
       this.db
         .select()
         .from(modules)
-        .where(eq(modules.courseId, courseId))
+        .where(and(eq(modules.courseId, courseId), isNull(modules.archivedAt)))
         .orderBy(asc(modules.sortOrder)),
       this.db.select().from(lessons).where(lessonWhere).orderBy(asc(lessons.sortOrder)),
     ])
@@ -269,13 +277,17 @@ export class DrizzleCourseRepository implements CourseRepository {
   ): Promise<Map<string, ModuleWithLessons[]>> {
     if (courseIds.length === 0) return new Map()
     const lessonWhere = opts?.publishedOnly
-      ? and(inArray(lessons.courseId, courseIds), eq(lessons.isPublished, true))
-      : inArray(lessons.courseId, courseIds)
+      ? and(
+          inArray(lessons.courseId, courseIds),
+          isNull(lessons.archivedAt),
+          eq(lessons.isPublished, true),
+        )
+      : and(inArray(lessons.courseId, courseIds), isNull(lessons.archivedAt))
     const [mods, less] = await Promise.all([
       this.db
         .select()
         .from(modules)
-        .where(inArray(modules.courseId, courseIds))
+        .where(and(inArray(modules.courseId, courseIds), isNull(modules.archivedAt)))
         .orderBy(asc(modules.sortOrder)),
       this.db.select().from(lessons).where(lessonWhere).orderBy(asc(lessons.sortOrder)),
     ])
@@ -299,7 +311,11 @@ export class DrizzleCourseRepository implements CourseRepository {
     lessonId: string,
     opts?: { includeAttachments?: boolean; includePrivateStudioAuthoring?: boolean },
   ): Promise<LessonWithContent | null> {
-    const [lesson] = await this.db.select().from(lessons).where(eq(lessons.id, lessonId)).limit(1)
+    const [lesson] = await this.db
+      .select()
+      .from(lessons)
+      .where(and(eq(lessons.id, lessonId), isNull(lessons.archivedAt)))
+      .limit(1)
     if (!lesson) return null
     const wantAttachments = opts?.includeAttachments !== false
     const [blocks, attachments] = await Promise.all([
@@ -338,7 +354,7 @@ export class DrizzleCourseRepository implements CourseRepository {
     const [row] = await this.db
       .select({ c: count() })
       .from(lessons)
-      .where(eq(lessons.courseId, courseId))
+      .where(and(eq(lessons.courseId, courseId), isNull(lessons.archivedAt)))
     return row?.c ?? 0
   }
 
@@ -346,7 +362,13 @@ export class DrizzleCourseRepository implements CourseRepository {
     const [row] = await this.db
       .select({ c: count() })
       .from(lessons)
-      .where(and(eq(lessons.courseId, courseId), eq(lessons.isPublished, true)))
+      .where(
+        and(
+          eq(lessons.courseId, courseId),
+          isNull(lessons.archivedAt),
+          eq(lessons.isPublished, true),
+        ),
+      )
     return row?.c ?? 0
   }
 
@@ -354,7 +376,13 @@ export class DrizzleCourseRepository implements CourseRepository {
     const rows = await this.db
       .select({ id: lessons.id })
       .from(lessons)
-      .where(and(eq(lessons.moduleId, moduleId), eq(lessons.isPublished, true)))
+      .where(
+        and(
+          eq(lessons.moduleId, moduleId),
+          isNull(lessons.archivedAt),
+          eq(lessons.isPublished, true),
+        ),
+      )
     return rows.map((r) => r.id)
   }
 
@@ -370,7 +398,7 @@ export class DrizzleCourseRepository implements CourseRepository {
       .select({ modSort: modules.sortOrder, lessonSort: lessons.sortOrder })
       .from(lessons)
       .innerJoin(modules, eq(lessons.moduleId, modules.id))
-      .where(eq(lessons.id, lessonId))
+      .where(and(eq(lessons.id, lessonId), isNull(lessons.archivedAt)))
       .limit(1)
     if (!cur) return null
 
@@ -427,7 +455,7 @@ export class DrizzleCourseRepository implements CourseRepository {
     const rows = await this.db
       .select({ courseId: lessons.courseId, c: count() })
       .from(lessons)
-      .where(inArray(lessons.courseId, courseIds))
+      .where(and(inArray(lessons.courseId, courseIds), isNull(lessons.archivedAt)))
       .groupBy(lessons.courseId)
     return new Map(rows.map((r) => [r.courseId, r.c]))
   }
@@ -437,7 +465,13 @@ export class DrizzleCourseRepository implements CourseRepository {
     const rows = await this.db
       .select({ courseId: lessons.courseId, c: count() })
       .from(lessons)
-      .where(and(inArray(lessons.courseId, courseIds), eq(lessons.isPublished, true)))
+      .where(
+        and(
+          inArray(lessons.courseId, courseIds),
+          isNull(lessons.archivedAt),
+          eq(lessons.isPublished, true),
+        ),
+      )
       .groupBy(lessons.courseId)
     return new Map(rows.map((r) => [r.courseId, r.c]))
   }

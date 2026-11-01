@@ -860,6 +860,7 @@ jobs:
             [admin]=e00eca0b-5323-4424-9b58-fdb073cfce82
             [community]=9df1b493-4cea-4b36-bec8-7299f054c17d
             [community-kids]=fc8a1b29-ac14-4dc9-a7b3-03d497b8bf4f
+            [palco-gravacao]=a9c67d3c-9880-4707-bb16-22a5e7a52c30
             [hub]=00b27b18-0587-460b-ba90-b6b24c423e45
             [fiscal]=2ea11afd-bdfd-4736-b400-c3db13fd8a0e
             [marketing]=7b8a87e6-a92f-4a5c-adc1-c4d2fe23b737
@@ -881,6 +882,8 @@ jobs:
             }
             add helpdesk
           }
+          # O palco de gravação só existe no staging e entra no mapa quando o serviço existe.
+          add_palco() { [ -z "${SVC_ID[palco-gravacao]:-}" ] || add palco-gravacao; }
           add_helpdesk_app() {
             [ -n "${SVC_ID[helpdesk-app]:-}" ] || {
               echo "::error::Configure RAILWAY_HELPDESK_APP_SERVICE_ID antes de deployar packages/helpdesk-app"; exit 1;
@@ -914,14 +917,14 @@ jobs:
                 case "$f" in
                   bun.lock|package.json|.dockerignore) add_all ;;
                   .railway/*) add_all ;;
-                  scripts/release/*) add members; add hub; add admin; add community; add community-kids ;;
+                  scripts/release/*) add members; add hub; add admin; add community; add community-kids; add_palco ;;
                   # core é lib COMPARTILHADA: além dos serviços, os 3 apps Next o EMPACOTAM
                   # (admin/community via member-shell+studio; kids direto) — sem eles aqui, o
                   # front servia um core VELHO até alguém deployar na mão.
-                  packages/core/*) for s in api-gateway arquipelago-api auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids marketing-app; do add "$s"; done; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
+                  packages/core/*) for s in api-gateway arquipelago-api auth catalog payments members messaging funnel fiscal hub marketing referrals admin community community-kids marketing-app; do add "$s"; done; add_palco; [ -n "${SVC_ID[helpdesk]:-}" ] && add helpdesk; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   # O player e as artes ediSVG são empacotados pelos três aplicativos.
-                  packages/edisvg/*) add admin; add community; add community-kids ;;
-                  packages/ui/*) add admin; add community; add community-kids; add funnel; add marketing-app; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
+                  packages/edisvg/*) add admin; add community; add community-kids; add_palco ;;
+                  packages/ui/*) add admin; add community; add community-kids; add_palco; add funnel; add marketing-app; [ -n "${SVC_ID[helpdesk-app]:-}" ] && add helpdesk-app ;;
                   packages/api-gateway/*) add api-gateway ;;
                   packages/auth/*) add auth ;;
                   packages/catalog/*) add catalog ;;
@@ -934,15 +937,17 @@ jobs:
                   packages/funnel/*) add funnel ;;
                   packages/admin/*) add admin ;;
                   packages/community/*) add community ;;
-                  packages/member-shell/*) add community; add community-kids; add admin ;; # BFF dos 2 apps de aluno + o admin (studio-embed/entregas dependem dele)
+                  packages/member-shell/*) add community; add community-kids; add_palco; add admin ;; # BFF dos 2 apps de aluno + o admin (studio-embed/entregas dependem dele)
                   # Avatar 3D e quarto 3D compartilhados pela plataforma e pelo Arquipélago Vagalume.
-                  packages/avatar-quarto/*) add community; add community-kids; add admin; add arquipelago-api ;;
+                  packages/avatar-quarto/*) add community; add community-kids; add_palco; add admin; add arquipelago-api ;;
                   # Contrato da porta do jogo: a página que hospeda o Arquipélago nas duas comunidades.
-                  packages/arquipelago-contracts/*) add community; add community-kids; add arquipelago-api ;;
+                  packages/arquipelago-contracts/*) add community; add community-kids; add_palco; add arquipelago-api ;;
                   packages/arquipelago/*|packages/arquipelago-api/*) add arquipelago-api ;;
                   # O adulto empacota as mesmas poses do Zappy usadas pelo Kids nas aulas.
-                  packages/community-kids/public/zappy/*.webp) add community; add community-kids ;;
-                  packages/community-kids/*) add community-kids ;;
+                  packages/community-kids/public/zappy/*.webp) add community; add community-kids; add_palco ;;
+                  packages/community-kids/*) add community-kids; add_palco ;;
+                  # Palco de gravação (só no staging): monta as aulas com o código do Kids.
+                  packages/palco-gravacao/*) add_palco ;;
                   packages/hub/*) add hub ;; # backend da comunidade (Clube/Mural) — serviço próprio
                   packages/fiscal/*) add fiscal ;;
                   packages/marketing/*) add marketing ;; # ferramenta de marketing (API)
@@ -951,19 +956,19 @@ jobs:
                   packages/helpdesk/*) add_helpdesk ;;
                   packages/helpdesk-app/*) add_helpdesk_app ;;
                   # Contrato PURO compartilhado: backend + console + member-shell (BFF dos 2 apps de aluno e o admin).
-                  packages/helpdesk-contracts/*) add_helpdesk; add_helpdesk_app; add community; add community-kids; add admin ;;
+                  packages/helpdesk-contracts/*) add_helpdesk; add_helpdesk_app; add community; add community-kids; add_palco; add admin ;;
                   # lib embarcada: 2 apps de aluno (editor/player) + admin (studio-embed de autoria/entregas,
                   # transpilePackages). E o Members: ele confere as atividades das aulas no servidor com o
                   # catálogo de blocos e o avaliador do Estúdio (`@sistemazero/studio/server-project-checks`);
                   # sem ele aqui, um bloco novo era aceito na autoria (admin) e recusado na correção.
-                  packages/studio/*) add community; add community-kids; add admin; add members ;;
-                  packages/pensa/*) add community-kids; add community ;; # planejamento compartilhado pelos dois públicos
+                  packages/studio/*) add community; add community-kids; add_palco; add admin; add members ;;
+                  packages/pensa/*) add community-kids; add_palco; add community ;; # planejamento compartilhado pelos dois públicos
                   # Bloco de aula do Pinta: o renderizador de blocos é COMPARTILHADO (o adulto
                   # compila o pacote mesmo sem usar o bloco) e o admin embute o editor na autoria
                   # e no viewer da entrega; o Members valida o mesmo wire no servidor — todos
                   # precisam acompanhar o pacote para não servir contratos de versões diferentes.
-                  packages/pinta/*) add community-kids; add community; add admin; add members ;;
-                  packages/molda/*) add community-kids; add community ;; # oficina 3D compartilhada pelos dois públicos
+                  packages/pinta/*) add community-kids; add_palco; add community; add admin; add members ;;
+                  packages/molda/*) add community-kids; add_palco; add community ;; # oficina 3D compartilhada pelos dois públicos
                 esac
               done <<< "$CHANGED"
             fi

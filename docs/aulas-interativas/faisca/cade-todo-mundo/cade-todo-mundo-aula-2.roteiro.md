@@ -6,7 +6,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-a2-retomada`
 
-**Na tela:** mostrar a reação pronta da Aula 1. No "Olha aqui", tocar em um esconderijo: o personagem aparece, e **Achados** continua em zero. Deixar o placar visível para a pergunta do Dedé. Esta parte tem apenas vídeo; não mandar a criança procurar um Estúdio aqui.
+**Na tela:** Do "Olha aqui o jardim" até o "ficou no zero", a tela fica parada, e a edição troca esse trecho pelo jardim do jeito que ficou na Aula 1: um toque num esconderijo, ele fica invisível, o personagem aparece e o número Achados fica no zero [na edição: o jardim da Aula 1, com um toque e Achados em zero]. No "Clique em Próxima parte para começar", clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -34,7 +34,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a2-variavel`
 
-**Na tela:** reaproveitar a animação do placar de futebol recebendo um gol. Mostrar a relação entre o valor guardado em `achados` e o placar que lê esse valor; uma mudança simples pode ilustrar a soma. Os testes com jardim vazio, repetição e nova busca ficam para a exploração guiada da pessoa. A cena abre em zero e sem progresso.
+**Na tela:** Do "Para contar os personagens" até o "já estava guardado", a tela fica parada, e a edição troca esse trecho pela explicação da variável, com o placar de futebol [na edição: a variável achados e o placar de futebol]. No "Agora você vai acompanhar uma busca", ampliar a experiência [ampliar experiência]. No "observar quando esse número muda", tocar num esconderijo [tocar "Tocar no arbusto"] e mostrar o valor de Achados [apontar "Valor atual de achados"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -57,7 +57,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a2-contagem`
 
-**Na tela:** mostrar o projeto da criança no Estúdio incorporado. Se não houver projeto salvo, usar a retomada prevista no manifesto. Começar com três esconderijos fechados e **Achados: 0**. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo e, no "Tá vendo?", mostrar que o personagem aparece, mas Achados continua em zero. Depois trazer à vista a área Quando acontecer, arrastando um espaço vazio entre os blocos se for preciso. Apontar a área primeiro e o bloco Quando clicar ou tocar dentro dela em seguida, acompanhando cada frase. Deixar à vista a regra de visibilidade que já está dentro desse bloco antes de abrir a paleta. O bloco Somar nasce com 1 e contador.
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "toque num esconderijo", tocar num esconderijo na Pré-visualização [tocar prévia 137 209]. No "Tá vendo?", mostrar que o personagem aparece, mas Achados continua em zero [apontar prévia 75 26]. Do "Lembra da experiência" até o "contar do mesmo jeito", a tela fica parada, e a edição troca esse trecho pela experiência da parte anterior, com cada personagem somando um em Achados [na edição: a experiência da parte anterior, com Achados somando um]. No "procure a área Quando acontecer", arrastar um espaço vazio entre os blocos até a área aparecer [arrastar até "Quando acontecer"]. No "encontre o bloco Quando clicar ou tocar", mostrar o bloco [apontar bloco "Quando clicar ou tocar"]. No "Repare que dentro dele", mostrar o bloco Deixar o sprite escolhido com 0% de visibilidade [apontar bloco "Deixar o sprite"]. No "Ele vai entrar logo abaixo", mostrar o lugar logo abaixo dele [apontar abaixo de "Deixar o sprite"]. No "Agora abra Programação", abrir Programação e depois Variáveis [categoria Programação > Variáveis]. No "Arraste e solte", levar o bloco Somar 1 em variável contador para logo abaixo de Deixar o sprite escolhido [encaixar "Somar 1" abaixo de "Deixar o sprite"]. No "clique em contador", trocar contador por achados [trocar "contador" por "achados" em "Somar 1"]. No "Toque num esconderijo", tocar num esconderijo [tocar prévia 137 209]. No "Olha só: o personagem aparece", apontar o número Achados, que vira 1 [apontar prévia 75 26]. No "Toque em outro", tocar no segundo esconderijo [tocar prévia 310 209]. No "Quando você tocar no último", tocar no terceiro [tocar prévia 483 209]. No "E quem faz essa mensagem aparecer", apontar a mensagem Você achou todo mundo! [apontar prévia 310 64]. No "Agora toque de novo no mesmo lugar", tocar de novo no primeiro esconderijo [tocar prévia 137 209]. No "o número continua em 3", apontar o número Achados [apontar prévia 75 26]. No "volte aos blocos e confira", mostrar os dois blocos dentro de Quando clicar ou tocar [apontar bloco "Quando clicar ou tocar"]. No "Clique em Verificar projeto", clicar em **Verificar projeto** e esperar a resposta [verificar projeto]. No "Quando aparecer Objetivo cumprido", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -110,7 +110,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a2-personalizar`
 
-**Na tela:** começar pela revelação: no "A surpresa chegou", abrir o Passo a passo do projeto na página **A surpresa do final** e, no "Olha quem mais pode brincar de se esconder", mostrar a galeria inteira, com os sete bichos e os seis esconderijos, por alguns segundos. Manter essa página aberta durante a entrada do Dedé.
+**Na tela:** Do "Chegou a surpresa" até o "fica no seu jogo", a tela fica parada, e a edição troca esse trecho pelo Passo a passo do projeto aberto nos bichos e nos esconderijos, com o nome de cada um [na edição: o Passo a passo do projeto nos bichos e esconderijos]. No "Vamos começar pelos bichos", expandir o Estúdio [expandir estúdio]. No "Encontre a área Ao iniciar", arrastar um espaço vazio até a área aparecer [arrastar até "Ao iniciar"]. No "Repare nos blocos Criar sprite", mostrar os blocos Criar sprite [apontar bloco "Criar sprite"]. No "Clique nesse nome", trocar o coelho pelo gato [trocar "coelho" por "gato"]. No "Com os esconderijos é do mesmo jeito", trocar o arbusto pelo toco [trocar "arbusto" por "toco"]. No "Olha só: o esconderijo novo", apontar o esconderijo novo na Pré-visualização [apontar prévia 137 209]. No "Encontre a área Enquanto estiver rodando", arrastar um espaço vazio até a área aparecer [arrastar até "Enquanto estiver rodando"]. No "Clique nessa frase", trocar a mensagem por uma frase curta [trocar "Você achou todo mundo!" por "Achei todo mundo!"]. No "dê uma olhada no jardim", mostrar o jardim na Pré-visualização [apontar prévia]. No "encontre todo mundo de novo", tocar nos três esconderijos [tocar prévia 137 209] [tocar prévia 310 209] [tocar prévia 483 209]. No "no fim vem a mensagem", apontar a mensagem [apontar prévia 310 64]. No "clique em Enviar meu projeto", enviar e confirmar em **Enviar** [enviar projeto]. No "Quando aparecer Projeto enviado", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
@@ -144,7 +144,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a2-fecho`
 
-**Na tela:** manter o mesmo Estúdio da prática, com o projeto já enviado ao professor. Apontar e abrir **Compartilhar**, no alto do Estúdio; na aula, o botão costuma aparecer só como ícone (uma setinha para cima saindo de uma bandeja), e a janela se chama **Compartilhar no Mural dos Criadores**. Mostrar o **Resumo do projeto** já preenchido, sem editar. Na aula, a janela não mostra o campo Título: o título vem do curso. Clicar em **Gerar capa**, esperar a imagem e conferir o resultado. Não demonstrar upload nem outra capa.
+**Na tela:** A parte começa com o Estúdio expandido [expandir estúdio]. No "clique em Compartilhar", clicar em **Compartilhar**, no alto do Estúdio [compartilhar]. No "Repare que o resumo do projeto", mostrar o **Resumo do projeto** já preenchido [apontar "Resumo do projeto"]. No "clique em Gerar capa", clicar em **Gerar capa** e esperar a imagem [clicar "Gerar capa"]. No "clique em Publicar", clicar em **Publicar** [clicar "Publicar"]. No "Clique em Copiar link de jogar", clicar em **Copiar link de jogar** [clicar "Copiar link de jogar"]. No "clique em Fechar", clicar em **Fechar** [clicar "Fechar"], voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].
 
 **Fala para ElevenLabs:**
 

@@ -3,9 +3,12 @@ import {
   type AccountDeletionFence,
   assertAccountMutationAllowed,
   PayloadTooLargeError,
+  RequestBodyTooLargeError,
+  readTextBodyWithLimit,
 } from '@sistemazero/core/http'
 import { SECTION_PYTHON_PROJECT_TEST_BODY_BYTES } from '@sistemazero/core/learning'
 import type { Logger } from '@sistemazero/core/logging'
+import { safeEqual } from '@sistemazero/core/security'
 import { Elysia } from 'elysia'
 import type { LiveMaterialsService } from '../../application/live/live-materials.service'
 import type { LivePublicationService } from '../../application/live/live-publication.service'
@@ -28,6 +31,14 @@ import { adultProfileRoutes } from './routes/adult-profile.routes'
 import { arquipelagoCoinsRoutes } from './routes/arquipelago-coins.routes'
 import { arquipelagoInternalRoutes } from './routes/arquipelago-internal.routes'
 import { type ContentRoutesDeps, contentRoutes } from './routes/content.routes'
+import {
+  coursePromotionPeerRoutes,
+  coursePromotionSourceRoutes,
+} from './routes/course-promotion-peer.routes'
+import {
+  type CoursePublicationRoutesDependencies,
+  coursePublicationRoutes,
+} from './routes/course-publication.routes'
 import { creationCleanupRoutes } from './routes/creation-cleanup.routes'
 import { type CreationsRoutesDeps, creationsRoutes } from './routes/creations.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
@@ -85,6 +96,9 @@ export interface HttpDeps {
   webhooks: WebhooksRoutesDeps
   admin: AdminRoutesDeps
   content: ContentRoutesDeps
+  coursePublication?: CoursePublicationRoutesDependencies
+  coursePromotion?: Parameters<typeof coursePromotionPeerRoutes>[0]
+  coursePromotionSource?: Parameters<typeof coursePromotionSourceRoutes>[0]
   internal: InternalRoutesDeps
   /** "Como fazer": a biblioteca de ajuda do Kids (leitura da criança + autoria do admin). */
   help: HelpRoutesDeps
@@ -119,6 +133,7 @@ const ARQUIPELAGO_OBJECTIVES_BODY_BYTES = 4 * 1024 * 1024
 // (o gateway já capa em 512 KB na borda — este é o backstop interno, mesmo
 // racional do MAX_STUDIO_BODY_BYTES).
 function bodyLimitForPath(pathname: string, env: Env): number {
+  if (pathname === '/members/internal/course-promotions/preview') return 64_000_000
   if (pathname === '/members/admin/python-project-checks/test')
     return SECTION_PYTHON_PROJECT_TEST_BODY_BYTES
   if (pathname === '/members/internal/studio-ai/builder') return 3_004_096
@@ -161,6 +176,7 @@ export function createServer(deps: HttpDeps) {
   // O teto do Bun.serve é o MAIOR dos limites — o per-rota (mais estrito) é
   // aplicado no `onParse`; senão o Bun cortaria a entrega do Estúdio antes dela.
   const serveCeiling = Math.max(
+    deps.coursePromotion ? 64_000_000 : 0,
     SECTION_PYTHON_PROJECT_TEST_BODY_BYTES,
     ARQUIPELAGO_OBJECTIVES_BODY_BYTES,
     deps.env.MAX_REQUEST_BODY_BYTES,
@@ -170,6 +186,23 @@ export function createServer(deps: HttpDeps) {
   const app = new Elysia({
     serve: { maxRequestBodySize: serveCeiling },
   })
+    .onRequest(({ request, set }) => {
+      const pathname = new URL(request.url).pathname
+      const peer = pathname.startsWith('/members/internal/course-promotions/')
+      const source = pathname.startsWith('/members/internal/course-promotion-sources/')
+      if (!peer && !source) return
+      const token = peer ? deps.coursePromotion?.token : deps.coursePromotionSource?.token
+      if (
+        !token ||
+        !safeEqual(
+          request.headers.get(peer ? 'x-course-promotion-token' : 'x-course-source-token') ?? '',
+          token,
+        )
+      ) {
+        set.status = 401
+        return { error: { code: 'UNAUTHORIZED', message: 'Publicação não autorizada' } }
+      }
+    })
     .onParse({ as: 'global' }, async ({ request, contentType }) => {
       const maxBytes = bodyLimitForPath(new URL(request.url).pathname, deps.env)
       const declared = Number(request.headers.get('content-length') ?? '0')
@@ -178,8 +211,11 @@ export function createServer(deps: HttpDeps) {
         return undefined
       }
       if (contentType?.includes('application/json')) {
-        const text = await request.text()
-        if (Buffer.byteLength(text, 'utf8') > maxBytes) {
+        let text: string
+        try {
+          text = await readTextBodyWithLimit(request, maxBytes, request.signal)
+        } catch (error) {
+          if (!(error instanceof RequestBodyTooLargeError)) throw error
           markOversizeBody(request)
           return {}
         }
@@ -225,6 +261,10 @@ export function createServer(deps: HttpDeps) {
     )
   }
 
+  // S2S routers own their versioned wire contracts. Register them independently instead of
+  // building an unused, monolithic Eden type containing every teaching capture and public route.
+  if (deps.coursePromotion) app.use(coursePromotionPeerRoutes(deps.coursePromotion))
+  if (deps.coursePromotionSource) app.use(coursePromotionSourceRoutes(deps.coursePromotionSource))
   return app
     .use(healthRoutes(deps.readiness))
     .use(membersRoutes(deps.members))
@@ -279,6 +319,7 @@ export function createServer(deps: HttpDeps) {
     .use(webhooksRoutes(deps.webhooks))
     .use(adminRoutes(deps.admin))
     .use(contentRoutes(deps.content))
+    .use(deps.coursePublication ? coursePublicationRoutes(deps.coursePublication) : new Elysia())
     .use(internalRoutes(deps.internal))
     .use(deps.arquipelagoCoins ? arquipelagoCoinsRoutes(deps.arquipelagoCoins) : new Elysia())
     .use(

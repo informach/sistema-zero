@@ -11,6 +11,26 @@ const env = loadEnv({})
 const service = { name: 'p', upstreamGroups: { default: [{ url: 'http://p' }] } }
 
 describe('loadGatewayConfig', () => {
+  test('publicação de cursos separa leitura staff de aprovação admin e não aceita HMAC de aluno', () => {
+    const registry = new RouteRegistry(
+      realConfig.routes.map((route) => routeConfigSchema.parse(route)),
+    )
+    expect(
+      registry.resolve('GET', '/members/admin/course-publications/capabilities', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-course-publications-read',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin', 'staff'], statuses: ['active'] },
+    })
+    expect(
+      registry.resolve('POST', '/members/admin/course-publications/preview', 'v1')?.route,
+    ).toMatchObject({
+      id: 'members-admin-course-publications-write',
+      auth: { strategies: ['jwt'] },
+      authorize: { roles: ['superadmin', 'admin'], statuses: ['active'] },
+      audit: {},
+    })
+  })
   test('política de regularização tem leitura staff e escrita admin, limitada e auditada', () => {
     const registry = new RouteRegistry(
       realConfig.routes.map((route) => routeConfigSchema.parse(route)),

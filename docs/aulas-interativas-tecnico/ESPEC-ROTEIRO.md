@@ -130,7 +130,7 @@ Mural!**, comemorar, copiar com **Copiar link de jogar**, usar **Fechar** e só 
 
 ## 7. Formato para gravação
 
-Cada `{slug}.roteiro.md` é o roteiro de produção. Os cabeçalhos `## Parte N. Título` acompanham as partes do manifesto. Cada vídeo tem **Clipe:** com a chave literal, **Na tela:** com uma nota curta, e **Fala para ElevenLabs:** com um bloco de texto cercado por três crases. Esse bloco contém apenas a fala integral da professora, com tags de áudio e pausas.
+Cada `{slug}.roteiro.md` é o roteiro de produção. Os cabeçalhos `## Parte N. Título` acompanham as partes do manifesto. Cada vídeo tem **Clipe:** com a chave literal, **Na tela:** com o que aparece e os gestos da gravação, escritos a partir da fala (seção 9), e **Fala para ElevenLabs:** com um bloco de texto cercado por três crases. Esse bloco contém apenas a fala integral da professora, com tags de áudio e pausas.
 
 Após o bloco, quando houver substituição kids, a tabela registra ID, personagem, ocorrência, âncora anterior, frase exata substituída, âncora posterior e tags. Notas e recados da página ficam fora do bloco de fala. Uma parte sem vídeo não ganha locução.
 
@@ -175,7 +175,7 @@ correto. A liberdade de cor e detalhes continua livre.
 - A explicação da palavra nova cabe na tarefa atual?
 - A experiência permite observar, sem esconder ações obrigatórias?
 - A fala corresponde ao projeto, aos controles e aos critérios de conclusão reais?
-- As notas de tela e narrações estão pareadas e a leitura soa natural?
+- As notas de tela e narrações estão pareadas e a leitura soa natural? Cada frase do Na tela cita a fala atual da parte e tem os gestos que ela pede (seção 9)?
 - O master funciona sozinho? A substituição kids conserva a frase exata e a continuidade, sem voz dupla? Zappy está separado como fala da página?
 - Quando um bloco chega com um nome de outro jogo, a fala diz a palavra da tela e onde clicar?
 - O estado da conta de gravação (sem progresso nas experiências, sem envio na fase, aba aberta depois do deploy) bate com o que a criança vai ver?
@@ -192,3 +192,273 @@ confere se a fala funciona.
 Na experiência, registrar o que observar e comparar, mantendo a ordem de exploração livre. Não narrar uma lista de cliques que a pessoa apenas reproduz. Zappy pode sugerir uma comparação conforme o que falta observar, enquanto os demais controles continuam disponíveis. A montagem do Estúdio preserva todos os passos operacionais.
 
 Conferir, frase por frase, a diferença entre adicionar/retirar um comando, pressionar/soltar uma tecla e avançar/executar o teste. O texto precisa corresponder ao efeito real do controle. Registrar separadamente as regras atuais e o resultado anterior. Os reinícios de tentativa conservam as descobertas; o reinício da experiência limpa o percurso. Atualizar o caderno e os derivados junto com o roteiro e os manifestos.
+
+## 9. O Na tela e a gravação automática (01/11/2026)
+
+O **Na tela** de cada parte é lido por duas pessoas: quem grava à mão e o robô de gravação do
+EdiAula. Para quem grava, é a descrição do que aparece. Para o robô, são os gestos entre
+colchetes, cada um preso a uma frase da fala. O padrão de referência é o Cadê Todo Mundo
+(`docs/aulas-interativas/faisca/cade-todo-mundo/`, Aula 1, Aula 2 e certificado).
+
+### 9.1 A fala manda
+
+A fala da professora é a fonte. O **Na tela** é escrito depois dela, frase por frase, e diz só o
+que a fala pede para ver. Quando a fala muda, o **Na tela** é refeito a partir da fala nova:
+descrição antiga que a fala não sustenta sai. Nunca mudar a fala para caber um gesto.
+
+Toda frase da fala que diz "olha aqui", "repare", "clique", "abra", "arraste" ou "toque" tem um
+gesto no **Na tela**. Toda ação que a fala pede para a criança fazer (Próxima parte, Verificar
+projeto, Enviar, Concluir aula) é feita na tela no mesmo momento.
+
+### 9.2 Como o robô usa o Na tela
+
+1. A voz gerada no ElevenLabs entra no EdiAula, que a transcreve sozinho.
+2. Em **Gerar plano do roteiro**, o EdiAula procura na voz cada frase citada no **Na tela** e
+   coloca os colchetes daquela frase no segundo em que a professora a diz.
+3. Em **Verificar plano**, com o palco de gravação aberto, ele confere cada gesto na página sem
+   gravar.
+4. Na gravação, o robô move o mouse como uma criança, faz os gestos nos tempos da voz e acelera
+   as esperas do servidor (time-lapse). Os trechos `[na edição: ...]` viram lembretes na linha do
+   tempo.
+
+O tempo vem sempre da voz gravada. Se a voz for gerada de novo, gerar o plano de novo. As trocas
+kids não mudam o plano: ele usa a voz da professora, que tem a fala inteira.
+
+A gravação acontece no palco de gravação do staging (`packages/palco-gravacao`), que mostra a
+aula como a criança vê e não salva nada (progresso, envio, Mural).
+
+### 9.3 A frase do Na tela
+
+Cada frase do **Na tela** começa com a citação da fala que ela espera:
+
+```
+No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem estava atrás dele.
+```
+
+- **A citação** é um trecho da fala **desta mesma parte**, entre aspas, no começo da frase do
+  **Na tela** (`No "..."` ou, para um trecho de edição, `Do "..." até o "..."`). Só a primeira
+  citação fora dos colchetes vale como âncora; uma citação no meio da frase não marca tempo.
+- O trecho pode ignorar maiúsculas, acentos, pontuação e as tags de voz, mas as palavras têm de
+  ser as da fala, inteiras e na mesma ordem. Duas a seis palavras bastam. Prefira um trecho que
+  apareça uma vez só na parte; se ele se repete, a ordem das citações no **Na tela** desfaz a
+  dúvida.
+- **Cada frase do Na tela termina com ponto** e a seguinte começa com maiúscula: é assim que o
+  EdiAula separa as frases. Um ponto no meio da frase seguido de maiúscula (uma abreviação)
+  também corta a frase; evite.
+- **Os colchetes** são os gestos, na ordem em que acontecem. O texto fora deles continua sendo a
+  orientação de quem grava à mão.
+- **Aspas dentro de colchetes** nomeiam um botão, um bloco ou um campo, nunca uma frase a
+  esperar: `[apontar "Ligar a reação ao toque"]`.
+- **Frase sem citação** (uma observação, um cuidado) se junta à frase anterior e seus colchetes
+  vêm depois dos dela. No começo do **Na tela**, antes de qualquer citação, ela vale do começo da
+  fala da parte: é o lugar do `[expandir estúdio]` de uma parte que já começa no Estúdio.
+
+### 9.4 O tempo dos gestos
+
+- O primeiro colchete acontece no segundo em que a voz diz o começo da frase citada.
+- Cada gesto de mão (apontar, clicar, tocar, arrastar) leva cerca de 2 segundos: o mouse viaja,
+  para em cima do alvo e age. O segundo colchete da mesma frase vem 2 segundos depois do primeiro,
+  e assim por diante.
+- Os gestos de uma frase têm de caber antes da próxima frase citada. Conte 2 segundos por gesto e
+  pouco mais de duas palavras por segundo de fala. O que não couber acontece em seguida, na
+  ordem do roteiro, e entra acelerado na edição.
+- Para agir **depois** de uma palavra, cite o começo da frase seguinte. O ampliar que vem depois
+  de "vamos ver como ele funciona" vai no `No "Neste jardim"`.
+- Uma espera do servidor (o **Verificar projeto**, a capa do **Gerar capa**) entra acelerada
+  sob a fala, sem esticar o vídeo.
+- Gestos depois do fim da voz não são feitos. A última frase da parte precisa ser citada antes de
+  a voz terminar, com a ação de saída nela.
+
+### 9.5 As tags
+
+Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fica em
+`packages/palco-gravacao/src/lib/verbos.ts`; um verbo novo entra lá e aqui.
+
+**Aula e blocos**
+
+| Tag | O que faz | Quando usar |
+| --- | --- | --- |
+| `[próxima parte]` | clica em **Próxima parte** | na frase que pede Próxima parte, depois de voltar o bloco ao tamanho da aula |
+| `[concluir aula]` | clica em **Concluir aula** | na frase que pede Concluir aula, na última parte |
+| `[ampliar jogo]` | amplia o jogo pronto | antes de mostrar o jogo pronto |
+| `[ampliar experiência]` | amplia a experiência | antes de mostrar a experiência |
+| `[voltar à aula]` | volta o jogo ou a experiência ao tamanho da aula | antes de Próxima parte ou Concluir aula |
+| `[expandir estúdio]` | coloca o Estúdio em tela cheia | no começo de uma parte de montagem |
+| `[reduzir estúdio]` | volta o Estúdio ao tamanho da aula | antes de Próxima parte ou Concluir aula |
+
+**Jogo pronto**
+
+| Tag | O que faz |
+| --- | --- |
+| `[achar arbusto]` | toca num alvo do jogo pronto, pelo nome ou pelo id do alvo no manifesto |
+| `[apontar jogo]`, `[apontar jogo 75 26]` | aponta o meio do jogo ou um ponto, em pixels do palco do jogo (o placar, uma mensagem) |
+| `[jogar de novo]` | recomeça o jogo pronto |
+
+**Material da aula (Passo a passo do projeto)**
+
+| Tag | O que faz |
+| --- | --- |
+| `[apontar livro]` | aponta o livro 3D |
+| `[livro tela cheia]`, `[livro sair da tela cheia]` | coloca o livro em tela cheia e tira |
+| `[livro próxima]`, `[livro anterior]` | vira uma página |
+| `[apontar baixar]` | aponta o botão **Baixar**, sem clicar |
+| `[baixar]` | clica em **Baixar** (no palco o arquivo não é salvo) |
+
+**Experiência**
+
+| Tag | O que faz |
+| --- | --- |
+| `[tocar "Tocar no arbusto"]` | toca num controle da experiência pelo nome dele |
+| `[apontar zappy]` | aponta o Zappy, ao lado da fala dele |
+| `[apontar "Valor atual de achados"]` | aponta qualquer coisa da página pelo nome (verbo do EdiAula, abaixo) |
+
+**Estúdio**
+
+| Tag | O que faz |
+| --- | --- |
+| `[apontar paleta]` | aponta a paleta de comandos |
+| `[categoria Jogo 2D > Sprites > Aparência]` | abre as categorias da paleta, uma depois da outra |
+| `[categoria Jogo 2D]` com a categoria aberta | recolhe a categoria (clicar de novo numa subcategoria aberta também a recolhe) |
+| `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área aparecer |
+| `[apontar bloco "Quando clicar ou tocar"]` | aponta um bloco da área de trabalho pelo texto dele |
+| `[apontar encaixe em "Quando clicar ou tocar"]` | aponta o espaço ao lado de **fazer** do bloco |
+| `[apontar abaixo de "Deixar o sprite"]` | aponta o lugar logo abaixo de um bloco, onde o próximo vai entrar |
+| `[encaixar "Deixar o sprite" em "Quando clicar ou tocar"]` | leva um bloco da paleta para o espaço ao lado de **fazer**, o único lugar onde ele encaixa |
+| `[encaixar "Somar 1" abaixo de "Deixar o sprite"]` | leva um bloco da paleta para logo abaixo de um bloco da área de trabalho |
+| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um |
+| `[tocar prévia arbusto]`, `[tocar prévia 137 209]` | toca no jogo da pré-visualização, por um alvo do jogo pronto ou por um ponto em pixels do jogo |
+| `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização |
+| `[verificar projeto]` | clica em **Verificar projeto** e espera a resposta, acelerada |
+| `[enviar projeto]` | clica em **Enviar meu projeto** (ou **Enviar de novo**) e confirma em **Enviar**; no palco nada é enviado |
+| `[compartilhar]` | abre o **Compartilhar** do Estúdio; no palco nada vai para o Mural |
+
+**Verbos do EdiAula, para qualquer página.** Servem para um botão ou campo que não tem tag
+própria; o nome é o que a pessoa lê na tela ou o nome acessível do botão:
+
+| Tag | O que faz |
+| --- | --- |
+| `[clicar "Gerar capa"]` | clica no botão ou link com esse nome |
+| `[apontar "Resumo do projeto"]` | aponta, sem clicar |
+| `[passar o mouse "Texto"]` | para o mouse em cima, para mostrar uma dica |
+| `[clique duplo "Texto"]`, `[clique direito "Texto"]` | os outros cliques |
+| `[digitar "Achei!" em "Recado"]` | escreve num campo |
+| `[tecla Escape]`, `[tecla Ctrl+Z]` | aperta uma tecla ou atalho |
+| `[esperar "Objetivo cumprido"]`, `[esperar "Carregando" sumir]` | espera um texto aparecer ou sumir |
+| `[rolar até "Texto"]`, `[rolar para baixo]` | rola a **página** (não a área de blocos do Estúdio) |
+| `[arrastar "A" para "B"]` | arrasta numa página comum (no Estúdio, usar `encaixar`) |
+
+**Trecho da edição**
+
+| Tag | O que faz |
+| --- | --- |
+| `[na edição: o que entra]` | o robô fica parado e o EdiAula deixa um lembrete com esse texto na linha do tempo, para a edição trocar aquele pedaço da tela |
+
+### 9.6 Ampliar e voltar
+
+Toda demonstração num bloco interativo acontece com o bloco ampliado, e ele volta ao tamanho da
+aula só antes de **Próxima parte** ou **Concluir aula**:
+
+| Bloco | Ampliar | Voltar |
+| --- | --- | --- |
+| Jogo pronto | `[ampliar jogo]` | `[voltar à aula]` |
+| Experiência | `[ampliar experiência]` | `[voltar à aula]` |
+| Estúdio | `[expandir estúdio]` | `[reduzir estúdio]` |
+
+- O **Verificar projeto**, o envio e o **Compartilhar** aparecem dentro do Estúdio expandido: não
+  reduzir antes deles.
+- O livro do material não tem ampliar: ele usa `[livro tela cheia]` e sai com
+  `[livro sair da tela cheia]` antes de apontar o **Baixar**.
+- A frase que pede a saída leva os dois gestos juntos:
+  `No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].`
+- A parte seguinte já começa na tela certa: não repetir `[próxima parte]` no começo dela. A
+  exceção é a parte que vem depois de uma parte sem vídeo (um quiz): ela começa com
+  `[próxima parte]`, numa frase sem citação.
+
+### 9.7 Tela que entra na edição
+
+Quando um trecho vai mostrar outra coisa (outro fundo, uma animação, um vídeo do jogo sendo
+jogado, uma imagem do material), o **Na tela** diz de onde até onde e o que entra:
+
+```
+Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e a edição troca esse trecho pela explicação de ação e reação, com as cócegas e a risada [na edição: ação e reação, com as cócegas e a risada].
+```
+
+- A âncora é a primeira citação (`Do "..."`); a segunda (`até o "..."`) diz a quem edita onde o
+  trecho termina.
+- O texto do colchete é o que aparece no lembrete: curto e concreto.
+- Nesse trecho não vão outros gestos. O próximo gesto vem na frase seguinte, que cita a fala onde
+  a tela real volta.
+
+### 9.8 Receitas
+
+**Abertura com jogo pronto**
+
+```
+Do "Oi" até o "funciona", a tela fica parada, e a edição troca esse trecho por outro fundo [na edição: outro fundo na abertura]. No "Neste jardim", ampliar o jogo pronto [ampliar jogo]. No "Olha aqui", tocar num esconderijo [achar arbusto]. No "repare no número Achados", apontar o número [apontar jogo 75 26]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
+```
+
+**Material da aula**
+
+```
+No "Aqui você encontra os passos", colocar o livro em tela cheia [livro tela cheia] e passar as páginas [livro próxima] [livro próxima]. No "Se quiser, você pode ler aqui mesmo", sair da tela cheia [livro sair da tela cheia] e mostrar o livro [apontar livro]. No "clicar em Baixar", clicar em **Baixar** [baixar]. No "Agora clique em Próxima parte", clicar em **Próxima parte** [próxima parte].
+```
+
+**Experiência**
+
+```
+No "Agora é a sua vez de investigar", ampliar a experiência [ampliar experiência]. No "Compare o que acontece", mostrar onde a reação liga e desliga [apontar "Ligar a reação ao toque"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
+```
+
+Na experiência, mostrar onde estão os controles e o Zappy, sem fazer a investigação no lugar da
+criança.
+
+**Montagem no Estúdio**
+
+```
+A parte começa com o Estúdio expandido [expandir estúdio]. No "encontre a área Quando acontecer", arrastar até a área aparecer [arrastar até "Quando acontecer"]. No "Agora sim, abra Jogo 2D", abrir as categorias [categoria Jogo 2D > Sprites > Aparência]. No "Arraste esse bloco", levar o bloco até o espaço ao lado de **fazer** [encaixar "Deixar o sprite" em "Quando clicar ou tocar"]. No "clique em jogador", trocar o campo [trocar "jogador" por "escolhido" em "Deixar o sprite"]. No "Agora vamos testar", tocar na pré-visualização [tocar prévia arbusto]. No "Clique em Verificar projeto", [verificar projeto]. No "clique em Enviar meu projeto", enviar e confirmar [enviar projeto]. No "Quando o envio terminar", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].
+```
+
+- Abrir a categoria antes do `encaixar`: o bloco sai da paleta aberta.
+- Para mostrar a paleta sem pegar bloco, abrir e recolher a mesma categoria:
+  `[categoria Jogo 2D]` e de novo `[categoria Jogo 2D]`.
+- Um bloco de evento recebe a reação só no espaço ao lado de **fazer** (`encaixar ... em`); um
+  bloco seguinte entra logo abaixo de outro (`encaixar ... abaixo de`).
+- Numa aula sem jogo pronto, os toques na pré-visualização vão por ponto
+  (`[tocar prévia 137 209]`), em pixels do jogo.
+
+**Compartilhar no Mural**
+
+```
+No "clique em Compartilhar", abrir o Compartilhar [compartilhar]. No "o resumo do projeto já vem preenchido", mostrar o resumo [apontar "Resumo do projeto"]. No "clique em Gerar capa", [clicar "Gerar capa"]. No "clique em Publicar", [clicar "Publicar"]. No "Clique em Copiar link de jogar", [clicar "Copiar link de jogar"]. No "clique em Fechar", [clicar "Fechar"], voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].
+```
+
+**Certificado**
+
+```
+No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado** [clicar "Baixar meu certificado"]. No "Quando o certificado baixar", clicar em **Concluir aula** [concluir aula].
+```
+
+### 9.9 Erros comuns
+
+- Citar uma frase que não está na fala da parte (de uma versão antiga, de outra parte ou de uma
+  fala do Zappy): a frase não marca tempo e os gestos dela vão parar na frase anterior.
+- Pôr a citação no meio da frase do **Na tela** (`mostrar, no "Olha aqui", ...`).
+- Reduzir o Estúdio antes do **Verificar projeto** ou do envio.
+- Esquecer o `[voltar à aula]` ou o `[reduzir estúdio]` antes de **Próxima parte**.
+- Usar `[rolar até]` ou `[arrastar "A" para "B"]` dentro do Estúdio: lá valem `[arrastar até]`
+  e `[encaixar]`.
+- Apontar o **Baixar** quando a fala pede o clique: `[baixar]` clica, `[apontar baixar]` só
+  aponta.
+- Juntar gestos demais numa frase curta. Se não cabem, escolha os que a fala nomeia.
+- Inventar uma tag. Verbo que o palco não conhece aparece como erro no **Verificar plano**.
+
+### 9.10 Conferência
+
+- `python -X utf8 docs/aulas-interativas-tecnico/validar-roteiros.py` confere a fala e também
+  as citações do **Na tela**: cada `No "..."`, `Do "..."` e `até o "..."` precisa estar na fala
+  da mesma parte.
+- No EdiAula, **Gerar plano do roteiro** informa quantos gestos ficaram de fora porque a voz não
+  diz a frase deles, e **Verificar plano** confere cada gesto no palco. Os dois precisam terminar
+  sem nada de fora antes de gravar.
+- Lida em voz alta junto com a fala, cada frase do **Na tela** precisa cair no momento em que a
+  professora fala daquilo.

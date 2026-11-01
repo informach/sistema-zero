@@ -89,6 +89,12 @@
   --text-xs--line-height: 1.45;
 }
 
+/* A aula compartilha a raiz de 16px do Kids; a navegação conserva o ritmo adulto de 18px.
+   O gerador leva esta regra só para a ilha de tema, sem alterar o conteúdo da aula. */
+:root:has(.sz-lesson-ui) {
+  --sz-community-rem: 1.125rem;
+}
+
 /* ============================================================
    SISTEMA ZERO — TEMA PADRÃO
    A paleta do Pen (`esboço plataforma.pen`, 11/09/2026) com o verde de destaque do adulto.
@@ -97,6 +103,7 @@
    ============================================================ */
 :root {
   color-scheme: light;
+  --sz-community-rem: 1rem;
 
   --pen-chao: var(--sz-community-ground);
   --pen-chao-alt: var(--sz-community-ground-alt);
@@ -685,6 +692,8 @@ main:has(.sz-aula-adulto) {
     --text-xs--line-height: 1.45;
   }
   body {
+    font-size: var(--sz-community-rem, 1rem);
+    --spacing: calc(0.25 * var(--sz-community-rem, 1rem));
     --font-sans:
       var(--font-atkinson), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
       Roboto, "Helvetica Neue", Arial, sans-serif;

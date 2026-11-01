@@ -123,20 +123,25 @@ export async function extractPdfText(bytes: Uint8Array): Promise<string> {
   }
 }
 
+/** Shared extraction for publication workers. It does not depend on a browser session. */
+export async function extractZappySourceContent(
+  extraction: PendingExtraction['extraction'],
+): Promise<string> {
+  if (extraction.kind === 'stable-vtt') {
+    return downloadVtt(extraction.location)
+  } else if (extraction.kind === 'vimeo') {
+    const transcript = await syncVimeoTranscript(extraction.videoId)
+    if (!transcript) throw new Error('Vimeo ainda não disponibilizou transcrição')
+    return transcript.content
+  } else if (extraction.kind === 'private-pdf') {
+    return extractPdfText(await r2ReadPrivateObject(extraction.location))
+  } else {
+    throw new Error(extraction.error)
+  }
+}
 async function syncPending(input: PendingExtraction): Promise<void> {
   try {
-    let content: string
-    if (input.extraction.kind === 'stable-vtt') {
-      content = await downloadVtt(input.extraction.location)
-    } else if (input.extraction.kind === 'vimeo') {
-      const transcript = await syncVimeoTranscript(input.extraction.videoId)
-      if (!transcript) throw new Error('Vimeo ainda não disponibilizou transcrição')
-      content = transcript.content
-    } else if (input.extraction.kind === 'private-pdf') {
-      content = await extractPdfText(await r2ReadPrivateObject(input.extraction.location))
-    } else {
-      throw new Error(input.extraction.error)
-    }
+    const content = await extractZappySourceContent(input.extraction)
     await postSource({
       lessonId: input.lessonId,
       sourceType: input.sourceType,

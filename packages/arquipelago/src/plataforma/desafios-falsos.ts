@@ -64,7 +64,7 @@ function desafio(
 
 export function criarDesafiosFalsos(
   posicao: number,
-  o: { dia?: DiaDoPlayground; agora?: () => Date; quadrosFeitos?: boolean } = {},
+  o: { dia?: DiaDoPlayground; agora?: () => Date; quadrosFeitos?: boolean | 'todos' } = {},
 ) {
   const dia = o.dia ?? 'pronto'
   // Com `quadrosFeitos`, as seis posições do Bosque têm conquistas confirmadas para prints.
@@ -152,6 +152,22 @@ export function criarDesafiosFalsos(
         ),
       )
     }
+  }
+  // `todos` (prints do manual do jogo): os seis quadros de todas as ilhas feitos, todas coloridas.
+  if (o.quadrosFeitos === 'todos') {
+    const ilhas: IlhaId[] = ['sua-ilha', 'vila-doce', 'recife', 'pico', 'vale-dos-dinos', 'nuvens']
+    ilhas.forEach((ilha, i) => {
+      for (let quadro = 1; quadro <= QUADROS_POR_ILHA; quadro++) {
+        if (lista.some((d) => d.ilha === ilha && d.quadro === quadro)) continue
+        const id = `00000000-0000-4000-8000-00000000${(0xd0 + i * 8 + quadro).toString(16).padStart(4, '0')}`
+        lista.push(desafio(id, quadro, `Quadro ${quadro}`, 'concluido', ilha))
+      }
+    })
+    for (const d of lista)
+      if (d.tipo === 'quadro-das-cores' && d.ilha !== 'farol') {
+        d.situacao = 'concluido'
+        d.recompensaVista = true
+      }
   }
   if (dia !== 'nenhum')
     lista.push({

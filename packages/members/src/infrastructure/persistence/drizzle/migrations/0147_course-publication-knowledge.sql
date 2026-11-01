@@ -1,0 +1,2 @@
+ALTER TABLE "members"."course_publication_tasks" DROP CONSTRAINT "course_publication_task_kind";--> statement-breakpoint
+ALTER TABLE "members"."course_publication_tasks" ADD CONSTRAINT "course_publication_task_kind" CHECK ("members"."course_publication_tasks"."kind" in ('media-plan','voice','video','knowledge','r2-copy','vimeo-copy'));

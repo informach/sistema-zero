@@ -132,17 +132,10 @@ describe.skipIf(!url)(
       // A fixture ainda está no schema 0077; o modelo Drizzle atual inclui colunas posteriores.
       await sql`insert into members.modules (id,course_id,title,sort_order,created_at,updated_at)
         values (${moduleId},${courseId},'Unidade',0,${now.toISOString()},${now.toISOString()})`
-      await db.insert(lessons).values({
-        id: lessonId,
-        moduleId,
-        courseId,
-        slug: 'aula-qa',
-        title: 'Aula existente',
-        sortOrder: 0,
-        isPublished: true,
-        createdAt: now,
-        updatedAt: now,
-      })
+      // Como os módulos, a aula histórica ainda não possui archived_at (0145).
+      // A fixture usa apenas as colunas que existiam, antes do migrador de produção.
+      await sql`insert into members.lessons (id,module_id,course_id,slug,title,sort_order,is_published,created_at,updated_at)
+        values (${lessonId},${moduleId},${courseId},'aula-qa','Aula existente',0,true,${now.toISOString()},${now.toISOString()})`
       await sql`insert into members.lessons (id,module_id,course_id,slug,title,sort_order,is_published,created_at,updated_at)
         values (${legacyEbookLessonId},${moduleId},${courseId},'livro-antigo','Livro antigo',1,true,${now.toISOString()},${now.toISOString()})`
       await sql`insert into members.lesson_attachments (id,lesson_id,label,url,file_type,size_bytes,sort_order)
@@ -201,33 +194,19 @@ describe.skipIf(!url)(
       ]
       for (const block of legacyBlocks)
         await sql`insert into members.lesson_blocks (id,lesson_id,kind,sort_order,content) values (${block.id},${block.lessonId},${block.kind},${block.sortOrder},${JSON.stringify(block.content)}::jsonb)`
-      await db.insert(quizAttempts).values({
-        id: attemptId,
-        userId: owner.userId,
-        lessonId,
-        blockId: quizId,
-        courseId,
-        score: 100,
-        passed: true,
-        answers: { q: ['a'] },
-        createdAt: now,
-      })
+      // Toda a carga histórica usa o contrato SQL antigo, nunca o modelo ORM atual.
+      await sql`insert into members.quiz_attempts (id,user_id,lesson_id,block_id,course_id,score,passed,answers,created_at)
+        values (${attemptId},${owner.userId},${lessonId},${quizId},${courseId},100,true,
+                ${JSON.stringify({ q: ['a'] })}::jsonb,${now.toISOString()})`
       // SQL cru pelo mesmo motivo dos cursos: o modelo atual lista colunas posteriores à 0077
       // (`content_fingerprint`, 0101) e o insert do Drizzle as nomeia mesmo com `default`.
       await sql`insert into members.studio_submissions (id,user_id,account_id,block_id,lesson_id,course_id,project,submitted_at)
         values (${randomUUID()},${owner.userId},${owner.accountId},${studioId},${lessonId},${courseId},
                 ${JSON.stringify(project)}::jsonb,${now.toISOString()})`
-      await db
-        .insert(lessonCompletions)
-        .values({ id: randomUUID(), userId: owner.userId, courseId, lessonId, completedAt: now })
-      await db.insert(lessonProgress).values({
-        id: randomUUID(),
-        userId: owner.userId,
-        courseId,
-        lessonId,
-        positionSeconds: 87,
-        updatedAt: now,
-      })
+      await sql`insert into members.lesson_completions (id,user_id,course_id,lesson_id,completed_at)
+        values (${randomUUID()},${owner.userId},${courseId},${lessonId},${now.toISOString()})`
+      await sql`insert into members.lesson_progress (id,user_id,course_id,lesson_id,position_seconds,updated_at)
+        values (${randomUUID()},${owner.userId},${courseId},${lessonId},87,${now.toISOString()})`
       await sql`insert into members.practice_sessions (id,user_id,account_id,course_id,course_slug,lesson_id,block_id,title,quiz,created_at) values (${randomUUID()},${owner.userId},${owner.accountId},${courseId},'learning-qa',${lessonId},${quizId},'Legacy practice','{}',${now.toISOString()})`
       await sql`create schema if not exists drizzle`
       await sql`create table drizzle.members_migrations (id serial primary key, hash text not null, created_at bigint)`
@@ -665,6 +644,13 @@ describe.skipIf(!url)(
       const { db, sql } = get()
       const [table] = await sql`select to_regclass('members.practice_sessions') as practice`
       expect(table?.practice).toBeNull()
+      // O arquivamento acrescentado em 0145 não pode ocultar a grade já existente.
+      expect(
+        (await db.select().from(modules).where(eq(modules.id, moduleId)))[0]?.archivedAt,
+      ).toBeNull()
+      expect(
+        (await db.select().from(lessons).where(eq(lessons.id, lessonId)))[0]?.archivedAt,
+      ).toBeNull()
       const [structure] = await db
         .select()
         .from(lessonStructures)

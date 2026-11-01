@@ -19,10 +19,13 @@ describe('rodapé da aula entre os menus abertos', () => {
     expect(sidebar).toContain('w-(--kids-menu-width)')
     expect(fallback).toContain('w-(--kids-menu-width)')
     expect(css).toContain('--kids-menu-width: 16.75rem')
-    expect(css).toContain(
-      '.kids-shell-row:has(aside.kids-menu:not([aria-hidden="true"])) .sz-lesson-nav-immersive',
-    )
-    expect(css).toContain('left: var(--kids-menu-width)')
+    // O tema compartilhado reconhece os dois menus e conserva a medida Kids como reserva.
+    const rule =
+      '.kids-shell-row:has(:is(aside.kids-menu, aside.sz-community-menu):not([aria-hidden="true"])) .sz-lesson-nav-immersive { left: var(--sz-community-sidebar-width, var(--kids-menu-width)); }'
+    for (const stylesheet of [css, source('../community/src/app/globals.generated.css')]) {
+      // Evita despejar o CSS inteiro nos logs quando a regra não corresponde.
+      expect(stylesheet.replace(/\s+/g, ' ').includes(rule)).toBe(true)
+    }
   })
 
   test('a lista Kids ocupa a borda direita e acompanha o rodapé sem cobrir a aula', () => {

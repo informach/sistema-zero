@@ -58,6 +58,7 @@ COPY packages/members/scripts/bootstrap-kids-journey.ts \
      packages/members/scripts/rebase-lesson-draft-revisions.ts \
      packages/members/scripts/reorganize-desafio-primeiro-jogo.ts \
      packages/members/scripts/migrate-studio-project-examples.ts ./packages/members/scripts/
+COPY packages/members/scripts/publish-course.ts ./packages/members/scripts/
 COPY packages/members/scripts/lib ./packages/members/scripts/lib
 COPY scripts/release/start.mjs scripts/release/kids-journey-bootstrap.mjs \
      scripts/release/kids-journey-targets.mjs ./scripts/release/

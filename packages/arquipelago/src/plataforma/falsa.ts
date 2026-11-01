@@ -89,7 +89,7 @@ export interface OpcoesDaPlataformaFalsa {
   /** O desafio do dia: `pronto` (padrão), `feito` ("Amanhã tem outro") ou `nenhum`. */
   dia?: DiaDoPlayground
   /** Os quadros do Bosque todos feitos (`?quadros=feitos`). */
-  quadrosFeitos?: boolean
+  quadrosFeitos?: boolean | 'todos'
   /**
    * O Pinta e o Molda no molde de um objeto: `pronto` (padrão, a ferramenta de mentira guarda na
    * hora) ou `sem-acesso` (a página responde que a ferramenta não está liberada).

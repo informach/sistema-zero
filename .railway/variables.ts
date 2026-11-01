@@ -331,6 +331,11 @@ const common: Record<string, string[]> = {
     'R2_SECRET_ACCESS_KEY',
   ],
   members: [
+    'COURSE_PUBLICATION_ENVIRONMENT',
+    'COURSE_PUBLICATION_ADMIN_URL',
+    'COURSE_PUBLICATION_MEDIA_TOKEN',
+    'COURSE_PUBLICATION_PEER_TOKEN',
+    'COURSE_PUBLICATION_SOURCE_TOKEN',
     'ARQUIPELAGO_COINS_TOKEN',
     'ARQUIPELAGO_MEMBERS_TOKEN',
     'STUDIO_AI_VAULT_KEYS',
@@ -390,6 +395,9 @@ const common: Record<string, string[]> = {
     'PORT',
   ],
   admin: [
+    'COURSE_PUBLICATION_ENVIRONMENT',
+    'COURSE_PUBLICATION_MEDIA_TOKEN',
+    'COURSE_PUBLICATION_MEMBERS_URL',
     'STUDIO_PYTHON_FRAME_ORIGINS',
     'STUDIO_PYTHON_LANGUAGE_URL',
     'STUDIO_PYTHON_LANGUAGE_TOKEN',
@@ -457,6 +465,21 @@ const common: Record<string, string[]> = {
     'VOICE_INPUT_ENABLED',
     'ZAPPY_ENABLED',
   ],
+  // Palco de gravação (01/11/2026), só no staging: a conta da equipe pelo gateway e o PDF do
+  // livro pelo bucket privado. Os valores são os mesmos do community-kids do staging.
+  'palco-gravacao': [
+    'GATEWAY_URL',
+    'JWT_AUDIENCE',
+    'JWT_ISSUER',
+    'JWT_JWKS_URL',
+    'MEMBER_SHELL_HMAC_SECRET',
+    'NODE_ENV',
+    'PORT',
+    'R2_ACCESS_KEY_ID',
+    'R2_ACCOUNT_ID',
+    'R2_PRIVATE_BUCKET',
+    'R2_SECRET_ACCESS_KEY',
+  ],
 }
 
 const extra: Record<string, Record<string, string[]>> = {
@@ -477,10 +500,11 @@ const extra: Record<string, Record<string, string[]>> = {
     'evolution-api': [],
     community: [],
     funnel: [],
-    members: [],
+    members: ['COURSE_PUBLICATION_PRODUCTION_ADMIN_URL'],
     'helpdesk-app': [],
-    admin: [],
+    admin: ['COURSE_PUBLICATION_SOURCE_TOKEN'],
     'community-kids': [],
+    'palco-gravacao': [],
   },
   production: {
     'arquipelago-api': [],
@@ -500,13 +524,24 @@ const extra: Record<string, Record<string, string[]>> = {
     community: ['RELEASE_MAINTENANCE_MODE', 'SENTRY_DSN'],
     funnel: ['CATALOG_OFFER_SLUG', 'SENTRY_DSN'],
     members: [
+      'COURSE_PUBLICATION_STAGING_ADMIN_URL',
       'FUNNEL_INTERNAL_TOKEN',
       'RELEASE_MAINTENANCE_MODE',
       'RELEASE_SCHEMA_STAGE',
       'SENTRY_DSN',
     ],
     'helpdesk-app': [],
-    admin: ['R2_UGC_BUCKET', 'RELEASE_MAINTENANCE_MODE', 'SENTRY_DSN'],
+    admin: [
+      'R2_UGC_BUCKET',
+      'RELEASE_MAINTENANCE_MODE',
+      'SENTRY_DSN',
+      'COURSE_PUBLICATION_PEER_TOKEN',
+      'COURSE_PROMOTION_SOURCE_PUBLIC_URL',
+      'COURSE_PROMOTION_SOURCE_BUCKET',
+      'COURSE_PROMOTION_SOURCE_PRIVATE_BUCKET',
+      'COURSE_PROMOTION_SOURCE_FUNNEL_URL',
+      'COURSE_PROMOTION_TARGET_FUNNEL_URL',
+    ],
     'community-kids': [
       'KIDS_REFORM_NOTICE_ENABLED',
       'OPENROUTER_MODEL',

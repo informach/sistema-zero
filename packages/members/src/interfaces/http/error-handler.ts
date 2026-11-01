@@ -23,6 +23,9 @@ export type { ErrorEnvelope }
 
 /** Mapeia o `code` de domínio para o status HTTP apropriado. */
 const DOMAIN_STATUS: Record<string, number> = {
+  COURSE_PUBLICATION_CONFLICT: 409,
+  COURSE_PUBLICATION_PEER_UNAVAILABLE: 424,
+  COURSE_PUBLICATION_LEASE_LOST: 409,
   KIDS_JOURNEY_CONFLICT: 409,
   KIDS_JOURNEY_PREPARATION_MISSING: 404,
   KIDS_JOURNEY_CATALOG_BUSY: 409,

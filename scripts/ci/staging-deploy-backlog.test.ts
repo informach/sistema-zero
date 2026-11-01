@@ -145,10 +145,11 @@ test('resolved successful baseline retains the failed-push backlog in the actual
     expect(select(failedPush)).toEqual(['admin'])
     expect(result.before).toBe(baseline)
     expect(select(result.before)).toEqual(Object.keys(configured).sort())
-    expect(select(result.before)).toHaveLength(19)
-    expect(select(failedPush, 'workflow_dispatch', 'all')).toHaveLength(19)
+    expect(select(result.before)).toHaveLength(20)
+    expect(select(result.before)).toContain('palco-gravacao')
+    expect(select(failedPush, 'workflow_dispatch', 'all')).toHaveLength(20)
     expect(select(failedPush, 'workflow_dispatch', 'hub,funnel')).toEqual(['funnel', 'hub'])
-    expect(select(baseline, 'workflow_dispatch', 'auto')).toHaveLength(19)
+    expect(select(baseline, 'workflow_dispatch', 'auto')).toHaveLength(20)
   } finally {
     rmSync(directory, { recursive: true, force: true })
   }

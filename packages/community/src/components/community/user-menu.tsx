@@ -103,7 +103,7 @@ export function UserMenu({
 
   const close = () => setOpen(false)
   const item =
-    'flex min-h-[3rem] w-full items-center gap-3.5 px-5 text-left text-foreground no-underline transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none'
+    'flex min-h-[calc(3*var(--sz-community-rem,1rem))] w-full items-center gap-3.5 px-5 text-left text-foreground no-underline transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none'
 
   return (
     <div
@@ -125,16 +125,21 @@ export function UserMenu({
           aria-expanded={open}
           aria-controls={panelId}
           className={cn(
-            'flex w-full min-w-0 items-center gap-3 rounded-[1rem] bg-(--carta) p-3 text-left transition-colors hover:bg-(--carta-2)',
+            'flex w-full min-w-0 items-center gap-3 rounded-[calc(1*var(--sz-community-rem,1rem))] bg-(--carta) p-3 text-left transition-colors hover:bg-(--carta-2)',
             open && 'shadow-[inset_0_0_0_2px_var(--cta)]',
           )}
         >
           <StageRing badge={stage} dark>
-            <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
+            <PersonAvatar
+              user={user}
+              className="size-[calc(2.4*var(--sz-community-rem,1rem))] text-[calc(0.85*var(--sz-community-rem,1rem))]"
+            />
           </StageRing>
           <span className="flex min-w-0 flex-1 flex-col">
-            <strong className="truncate text-(--texto-claro) text-[0.9rem]">{name}</strong>
-            <span className="truncate text-(--legenda-clara) text-[0.85rem]">
+            <strong className="truncate text-(--texto-claro) text-[calc(0.9*var(--sz-community-rem,1rem))]">
+              {name}
+            </strong>
+            <span className="truncate text-(--legenda-clara) text-[calc(0.85*var(--sz-community-rem,1rem))]">
               {stage ? `${stageTinyLabel(stage)} · ${stageName(stage)}` : 'Meu perfil'}
             </span>
           </span>
@@ -164,7 +169,10 @@ export function UserMenu({
           )}
         >
           <StageRing badge={stage} dark>
-            <PersonAvatar user={user} className="size-[2.4rem] text-[0.85rem]" />
+            <PersonAvatar
+              user={user}
+              className="size-[calc(2.4*var(--sz-community-rem,1rem))] text-[calc(0.85*var(--sz-community-rem,1rem))]"
+            />
           </StageRing>
         </button>
       )}
@@ -172,21 +180,28 @@ export function UserMenu({
         <div
           id={panelId}
           className={cn(
-            'absolute z-50 w-[min(20rem,calc(100vw-1.6rem))] overflow-hidden rounded-[1rem] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]',
+            'absolute z-50 w-[min(calc(20*var(--sz-community-rem,1rem)),calc(100vw_-_1.6*var(--sz-community-rem,1rem)))] overflow-hidden rounded-[calc(1*var(--sz-community-rem,1rem))] border border-border bg-popover text-popover-foreground shadow-[0_18px_40px_rgba(15,26,51,0.18)]',
             // Janela baixa (notebook com zoom, celular deitado): o painel cabe na tela e rola por
             // dentro, em vez de sair pelo alto (cartão do menu lateral) ou por trás das abas.
             variant === 'card'
-              ? 'bottom-full left-0 mb-2 max-h-[calc(100dvh-8rem)] overflow-y-auto'
-              : 'right-0 mt-2 max-h-[calc(100dvh-8.5rem)] overflow-y-auto',
+              ? 'bottom-full left-0 mb-2 max-h-[calc(100dvh_-_8*var(--sz-community-rem,1rem))] overflow-y-auto'
+              : 'right-0 mt-2 max-h-[calc(100dvh_-_8.5*var(--sz-community-rem,1rem))] overflow-y-auto',
           )}
         >
           <div className="flex items-center gap-3.5 border-border border-b px-5 py-4">
             <StageRing badge={stage}>
-              <PersonAvatar user={user} className="size-[3.2rem] text-[1rem]" />
+              <PersonAvatar
+                user={user}
+                className="size-[calc(3.2*var(--sz-community-rem,1rem))] text-[calc(1*var(--sz-community-rem,1rem))]"
+              />
             </StageRing>
             <div className="flex min-w-0 flex-col">
-              <p className="truncate font-bold text-[1.05rem]">{name}</p>
-              <p className="truncate text-[0.85rem] text-muted-foreground">{user.email}</p>
+              <p className="truncate font-bold text-[calc(1.05*var(--sz-community-rem,1rem))]">
+                {name}
+              </p>
+              <p className="truncate text-[calc(0.85*var(--sz-community-rem,1rem))] text-muted-foreground">
+                {user.email}
+              </p>
               {stage ? <StageLine badge={stage} className="mt-0.5" /> : null}
             </div>
           </div>
@@ -194,13 +209,13 @@ export function UserMenu({
             href="/progresso"
             prefetch={false}
             onClick={close}
-            className={cn(item, 'min-h-[3.2rem] bg-background')}
+            className={cn(item, 'min-h-[calc(3.2*var(--sz-community-rem,1rem))] bg-background')}
           >
             <Trophy className="size-5 text-primary" aria-hidden />
             <span className="flex min-w-0 flex-1 flex-col">
               <strong>Seu progresso</strong>
               {progress ? (
-                <span className="text-[0.85rem] text-muted-foreground">
+                <span className="text-[calc(0.85*var(--sz-community-rem,1rem))] text-muted-foreground">
                   {progress.xp} XP · sequência de {progress.streak.current}{' '}
                   {progress.streak.current === 1 ? 'dia' : 'dias'}
                 </span>
@@ -220,7 +235,7 @@ export function UserMenu({
             <Palette className="size-5" aria-hidden />
             <span className="flex flex-col">
               <strong>Meu perfil</strong>
-              <span className="text-[0.85rem] text-muted-foreground">
+              <span className="text-[calc(0.85*var(--sz-community-rem,1rem))] text-muted-foreground">
                 Dados, avatar, senha e cor da plataforma
               </span>
             </span>

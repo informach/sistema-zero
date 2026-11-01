@@ -1,0 +1,30 @@
+{
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "packages/palco-gravacao/Dockerfile",
+    "watchPatterns": [
+      "/packages/palco-gravacao/**",
+      "/packages/community-kids/**",
+      "/packages/core/**",
+      "/packages/edisvg/**",
+      "/packages/member-shell/**",
+      "/packages/avatar-quarto/**",
+      "/packages/arquipelago-contracts/**",
+      "/packages/helpdesk-contracts/**",
+      "/packages/molda/**",
+      "/packages/pensa/**",
+      "/packages/pinta/**",
+      "/packages/studio/**",
+      "/packages/ui/**",
+      "/bun.lock",
+      "/package.json",
+      "/.dockerignore",
+      "/scripts/release/**",
+      "/.railway/**"
+    ]
+  },
+  "deploy": {
+    "healthcheckPath": "/api/healthz",
+    "restartPolicyMaxRetries": 3
+  }
+}

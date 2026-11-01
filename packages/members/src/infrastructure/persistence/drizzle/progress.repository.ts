@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { and, count, desc, eq, inArray, max } from 'drizzle-orm'
+import { and, count, desc, eq, inArray, isNull, max } from 'drizzle-orm'
 import type {
   ProgressRepository,
   RecentLessonActivity,
@@ -28,7 +28,14 @@ export class DrizzleProgressRepository implements ProgressRepository {
     const [row] = await this.db
       .select({ c: count() })
       .from(lessonCompletions)
-      .where(and(eq(lessonCompletions.userId, userId), eq(lessonCompletions.courseId, courseId)))
+      .innerJoin(lessons, eq(lessons.id, lessonCompletions.lessonId))
+      .where(
+        and(
+          eq(lessonCompletions.userId, userId),
+          eq(lessonCompletions.courseId, courseId),
+          isNull(lessons.archivedAt),
+        ),
+      )
     return row?.c ?? 0
   }
 
@@ -40,8 +47,13 @@ export class DrizzleProgressRepository implements ProgressRepository {
     const rows = await this.db
       .select({ courseId: lessonCompletions.courseId, c: count() })
       .from(lessonCompletions)
+      .innerJoin(lessons, eq(lessons.id, lessonCompletions.lessonId))
       .where(
-        and(eq(lessonCompletions.userId, userId), inArray(lessonCompletions.courseId, courseIds)),
+        and(
+          eq(lessonCompletions.userId, userId),
+          inArray(lessonCompletions.courseId, courseIds),
+          isNull(lessons.archivedAt),
+        ),
       )
       .groupBy(lessonCompletions.courseId)
     return new Map(rows.map((r) => [r.courseId, r.c]))
@@ -59,10 +71,12 @@ export class DrizzleProgressRepository implements ProgressRepository {
         c: count(),
       })
       .from(lessonCompletions)
+      .innerJoin(lessons, eq(lessons.id, lessonCompletions.lessonId))
       .where(
         and(
           inArray(lessonCompletions.userId, userIds),
           inArray(lessonCompletions.courseId, courseIds),
+          isNull(lessons.archivedAt),
         ),
       )
       .groupBy(lessonCompletions.userId, lessonCompletions.courseId)

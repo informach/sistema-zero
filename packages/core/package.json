@@ -28,6 +28,8 @@
     "./time": "./src/time/index.ts",
     "./billing": "./src/billing/index.ts",
     "./zappy": "./src/zappy/index.ts",
+    "./course/publication-media": "./src/course/publication-media.ts",
+    "./course/publication": "./src/course/publication.ts",
     "./learning": "./src/learning/index.ts",
     "./learning/scene": "./src/learning/scene/index.ts",
     "./palette": "./src/palette/index.ts",
