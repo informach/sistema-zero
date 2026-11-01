@@ -229,12 +229,12 @@ Verbos do palco (`packages/palco-gravacao/src/lib/verbos.ts`):
 | `apontar baixar`, `baixar` | o Baixar do material |
 | `tocar "<nome>"` | um controle da experiência pelo nome |
 | `categoria A > B > C` | abre as categorias da paleta do Estúdio |
-| `arrastar "<bloco>" para "<bloco>"` | da paleta para baixo de um bloco da área de trabalho |
+| `encaixar "<bloco>" abaixo de "<bloco>"` | da paleta para logo abaixo de um bloco da área de trabalho |
 | `verificar projeto` | clica e espera a resposta do servidor, acelerada sob a fala |
 | `enviar projeto` | clica em Enviar meu projeto (ou Enviar de novo) e confirma: no palco nada é enviado |
 | `apontar livro`, `apontar paleta`, `apontar bloco "<texto>"` | aponta o livro 3D, a paleta de comandos ou um bloco da área de trabalho |
 | `tocar prévia <alvo>`, `tocar prévia x y`, `apontar prévia x y` | o jogo na pré-visualização do Estúdio, por um alvo do jogo pronto da aula ou por um ponto em pixels do jogo |
-| `rolar até "<bloco>"` | arrasta um espaço vazio da área de trabalho até o bloco aparecer |
+| `arrastar até "<bloco>"` | arrasta um espaço vazio da área de trabalho até o bloco aparecer (o `rolar até` do EdiAula rola a página, não a área) |
 | `encaixar "<bloco>" em "<bloco>"` | leva um bloco da paleta para o espaço ao lado de **fazer** de outro (`no "<rótulo>"` para outro espaço) |
 | `trocar "<de>" por "<para>"` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto (`em "<bloco>"` para dizer qual) |
 | `compartilhar` | abre o Compartilhar do Estúdio; Gerar capa, Publicar, Copiar link de jogar e Fechar vão com `clicar "<nome>"`. No palco nada vai para o Mural |

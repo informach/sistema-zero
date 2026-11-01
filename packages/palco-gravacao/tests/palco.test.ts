@@ -17,6 +17,8 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
     para: { seletor: '[data-palco-alvo="a3"]', u: 0.4, v: 0.2 },
   }),
   temBotao: () => false,
+  bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
+  abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
   ...patch,
 })
 
@@ -76,7 +78,7 @@ describe('verbos do palco', () => {
       { fazer: 'clicar', alvo: { bloco: { texto: 'Jogo 2D', area: 'toolbox' } } },
       { fazer: 'clicar', alvo: { bloco: { texto: 'Sprites', area: 'toolbox' } } },
     ])
-    expect(agir('arrastar "mover" para "quando começar"', jogos)).toEqual([
+    expect(agir('encaixar "mover" abaixo de "quando começar"', jogos)).toEqual([
       {
         fazer: 'arrastar',
         alvo: { bloco: { texto: 'mover', area: 'flyout' } },
@@ -109,11 +111,11 @@ describe('verbos do palco', () => {
   })
 
   test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', () => {
-    expect(agir('rolar até "Quando acontecer"', jogos, pagina())[0]).toMatchObject({
+    expect(agir('arrastar até "Quando acontecer"', jogos, pagina())[0]).toMatchObject({
       fazer: 'arrastar',
     })
     expect(
-      agir('rolar até "Quando acontecer"', jogos, pagina({ rolagem: () => 'visivel' })),
+      agir('arrastar até "Quando acontecer"', jogos, pagina({ rolagem: () => 'visivel' })),
     ).toEqual([
       { fazer: 'apontar', alvo: { bloco: { texto: 'Quando acontecer', area: 'workspace' } } },
     ])
@@ -121,11 +123,22 @@ describe('verbos do palco', () => {
       [
         {
           fazer: 'arrastar',
-          alvo: { bloco: { texto: 'Deixar o sprite', area: 'flyout' } },
+          alvo: { seletor: '[data-palco-alvo="paleta:Deixar o sprite"]', u: 0.1, v: 0.5 },
           para: { seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 },
         },
       ],
     )
+    expect(() =>
+      agir('encaixar "Voar" em "Quando clicar ou tocar"', jogos, pagina({ bloco: () => null })),
+    ).toThrow(/Abra a categoria/)
+    expect(agir('encaixar "Somar 1" abaixo de "Deixar o sprite"', jogos, pagina())).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="paleta:Somar 1"]', u: 0.1, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 },
+      },
+    ])
+    expect(agir('apontar zappy', jogos, pagina())[0]).toMatchObject({ fazer: 'apontar' })
     expect(agir('trocar "jogador" por "escolhido"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
