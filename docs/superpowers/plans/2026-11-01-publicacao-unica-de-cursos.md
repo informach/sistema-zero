@@ -65,3 +65,16 @@ ou nos modelos. O Admin também passou no typecheck frio com heap de 4 GB, o lim
 
 A dona preferiu fazer login no palco depois. A conferência autenticada de gravação continua
 pendente e não bloqueia a preparação dos deploys restantes.
+
+### Correção da última tentativa do CI
+
+As execuções `41337559977` e `41337564771` falharam no teste da largura do menu adulto.
+O teste ainda exigia a expressão anterior, embora menu e alça já compartilhem
+`communitySidebarWidth`. A conferência agora também compara a medida renderizada da coluna
+e da moldura nas rotas comum e de aula. Os 118 testes da comunidade passaram.
+
+A revisão do último lote do palco encontrou uma continuação inválida ao editar campos de
+blocos sem rótulo fixo. A edição agora termina sem agendar esse alvo inexistente. O negativo
+foi reproduzido e os 22 testes do palco passaram após a correção. O build de produção passou.
+Os ajustes posteriores de margem do cursor alteram apenas posições de desenho e entram na
+nova tentativa integrada do CI. Nenhuma dessas evidências equivale à gravação autenticada.
