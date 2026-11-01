@@ -14,13 +14,31 @@ import {
 } from '../../../packages/core/src/learning/section-progression'
 import { evaluateStudioProjectStructure } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
 import { criarManifestoDaLinguagem, type LinguagemDoFarol } from './gerar-manifesto-linguagens'
-import { codigoDoFarolPython } from './linguagens'
+import { codigoDoFarolPython, objetivosDoFarolPro, objetivosDoFarolPython } from './linguagens'
 
 const LINGUAGEM: Record<LinguagemDoFarol, ReturnType<typeof linguagemDoProjeto>> = {
   python: 'python',
   ponte: 'texto',
   pro: 'pro',
 }
+
+test('o Farol não recompensa a integridade do cenário que já vem pronto', () => {
+  for (const criar of [objetivosDoFarolPython, objetivosDoFarolPro])
+    for (const publico of ['kids', 'adulto'] as const) {
+      const objetivos = criar(publico)
+      expect(objetivos.map((o) => o.id)).not.toContain('joga')
+      const reinicio = objetivos.find((o) => o.id === 'recomeca')!
+      expect(reinicio.rule.type).toBe('behavior')
+      if (reinicio.rule.type !== 'behavior') throw Error('Reinício precisa rodar o jogo')
+      const entradas = reinicio.rule.steps.flatMap((s) => (s.action === 'press' ? [s.key] : []))
+      expect(entradas).toContain('ArrowRight')
+      expect(entradas).toContain('ArrowLeft')
+      expect(entradas).toContain('Space')
+      expect(entradas.at(-1)).toBe('r')
+      expect(reinicio.rule.steps.some((s) => s.action === 'click')).toBe(true)
+      expect(reinicio.rule.expect.target.kind).not.toBe('console')
+    }
+})
 
 for (const linguagem of ['python', 'ponte', 'pro'] as const)
   test(`Farol em ${linguagem}: o arquivo corresponde à fonte e cumpre as réguas (A29)`, async () => {

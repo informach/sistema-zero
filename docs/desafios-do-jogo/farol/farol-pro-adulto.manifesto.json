@@ -179,9 +179,9 @@
             "programmingLanguage": "javascript"
           },
           {
-            "id": "joga",
-            "label": "O jogo roda sem erro com setas, espaço e clique.",
-            "hint": "Teste cada entrada; o console mostra o erro e a linha.",
+            "id": "recomeca",
+            "label": "R devolve o guia à posição inicial.",
+            "hint": "Reinicie a partida em R, inclusive o guia.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -212,28 +212,6 @@
                 {
                   "action": "wait",
                   "ms": 1200
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "console"
-                },
-                "compare": "notContains",
-                "value": "Error"
-              }
-            },
-            "programmingLanguage": "javascript"
-          },
-          {
-            "id": "recomeca",
-            "label": "R devolve o guia à posição inicial.",
-            "hint": "Reinicie a partida em R, inclusive o guia.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "wait",
-                  "ms": 300
                 },
                 {
                   "action": "press",
