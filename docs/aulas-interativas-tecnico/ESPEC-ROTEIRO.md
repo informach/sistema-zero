@@ -227,6 +227,12 @@ kids não mudam o plano: ele usa a voz da professora, que tem a fala inteira.
 A gravação acontece no palco de gravação do staging (`packages/palco-gravacao`), que mostra a
 aula como a criança vê e não salva nada (progresso, envio, Mural).
 
+Cada parte é gravada à parte, e no palco cada uma começa do zero: o Estúdio abre com o projeto
+inicial, sem o que foi feito nas partes anteriores. Quando a parte depende de algo feito antes,
+o **Na tela** avisa no começo. A parte que vem depois do envio do projeto (a do Compartilhar,
+que só libera depois dele) começa com "A parte começa com o projeto já enviado na Parte N", e o
+endereço dela no palco leva `&enviado=1`.
+
 ### 9.3 A frase do Na tela
 
 Cada frase do **Na tela** começa com a citação da fala que ela espera:
