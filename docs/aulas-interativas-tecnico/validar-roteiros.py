@@ -2,6 +2,7 @@
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent / 'aulas-interativas'
@@ -9,6 +10,33 @@ LEGADO = re.compile(r'Concluir fase|Próxima (?:fase|seção|etapa)|Mapa da Aven
 CLIP = re.compile(r'^\*\*Clipe:\*\* `([^`]+)`\s*$', re.M)
 FALA = re.compile(r'\*\*Fala para ElevenLabs:\*\*\s*\n```text\r?\n([\s\S]*?)\r?\n```')
 TAGS = set(json.loads((Path(__file__).resolve().parent / 'qa/direcoes-voz.json').read_text(encoding='utf-8')))
+NA_TELA = re.compile(r'^\*\*Na tela:\*\*\s*(.+)$', re.M)
+# Como o EdiAula separa as frases do Na tela e acha a fala que cada uma espera (ESPEC-ROTEIRO, seção 9).
+FRASE = re.compile(r'(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÀÇ"“*])')
+CITACAO = re.compile(r'^(No|Do)\s+["“]([^"”]+)["”]')
+ATE = re.compile(r'\baté o\s+["“]([^"”]+)["”]')
+COLCHETE = re.compile(r'\[[^\]\n]*\]')
+
+
+def dobrar(texto):
+    sem_acento = ''.join(c for c in unicodedata.normalize('NFD', texto) if not unicodedata.combining(c))
+    palavras = re.sub(r'[\W_]+', ' ', sem_acento.lower()).split()
+    return ' ' + ' '.join(palavras) + ' '
+
+
+def citacoes_fora_da_fala(na_tela, fala):
+    """As citações do Na tela que a fala da parte não diz: o robô não acharia o tempo delas."""
+    dita = dobrar(COLCHETE.sub(' ', fala))
+    faltam = []
+    for frase in FRASE.split(na_tela.strip()):
+        m = CITACAO.match(COLCHETE.sub(' ', frase).strip())
+        if not m:
+            continue
+        citadas = [m.group(2)]
+        if m.group(1) == 'Do':
+            citadas += ATE.findall(COLCHETE.sub(' ', frase))
+        faltam += [c for c in citadas if dobrar(c).strip() and dobrar(c) not in dita]
+    return faltam
 
 
 def extrair_falas(body):
@@ -53,6 +81,11 @@ def audit(path):
         for paragraph in re.split(r'\n\s*\n', texto):
             if paragraph.strip() and not paragraph.lstrip().startswith('['):
                 errors.append(f'{script_path.name}: segmento sem direção vocal')
+        for na_tela in NA_TELA.findall(body):
+            if na_tela.count('[') != na_tela.count(']'):
+                errors.append(f'{script_path.name}/{marker.group(1)}: colchetes incompletos no Na tela')
+            for citada in citacoes_fora_da_fala(na_tela, texto):
+                errors.append(f'{script_path.name}/{marker.group(1)}: o Na tela cita "{citada}", que não está na fala da parte')
         falas.append(texto)
     full = '\n\n[long pause]\n\n'.join(falas) + '\n'
     txt = path.with_name(path.name.replace('.manifesto.json', '.elevenlabs.txt'))

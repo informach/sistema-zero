@@ -12,7 +12,7 @@ Os slugs, IDs e contratos de publicação não mudaram com a organização.
 - [A Ilha do Farol](modulos-a-ilha-do-farol.md): curso 3D do Faísca, três aulas sem certificado, comandos e contrato de troca das artes do Molda.
 - [Conceito, investigação e construção](DESCOBERTA-GUIADA.md): vídeo conceitual, Zappy por etapa, previsão e objetivos observáveis.
 - [Diretrizes pedagógicas](DIRETRIZES-PEDAGOGICAS.md): clareza, instrução completa e linguagem comum.
-- [Voz ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md), [formato do roteiro](ESPEC-ROTEIRO.md) e [Dedé/Debinha](AVATARES-NOS-VIDEOS.md).
+- [Voz ElevenLabs v4](DIRETRIZES-VOZ-ELEVENLABS.md), [formato do roteiro](ESPEC-ROTEIRO.md) e [Dedé/Debinha](AVATARES-NOS-VIDEOS.md). O **Na tela** e todas as tags da gravação automática pelo EdiAula estão na seção 9 do formato do roteiro; o padrão de referência é o Cadê Todo Mundo.
 - [Briefing](BRIEFING.md), [manifesto](ESPEC-MANIFESTO.md), [plataforma](REFERENCIA-PLATAFORMA.md) e [blocos](REFERENCIA-BLOCOS-JOGO-2D.json).
 - `qa/`: fontes editoriais, geradores, exportadores e testes.
 - `recursos/`: fontes e geradores do Passo a passo do projeto.

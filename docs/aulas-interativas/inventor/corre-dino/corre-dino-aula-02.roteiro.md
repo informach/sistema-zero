@@ -68,7 +68,7 @@
 
 **Clipe:** `video-limpeza`
 
-**Na tela:** Mostrar o projeto no estado de entrada. No “Repare” da abertura, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. No “olhe a sombra do Dino”, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
