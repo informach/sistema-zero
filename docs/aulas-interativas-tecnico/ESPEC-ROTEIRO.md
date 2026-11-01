@@ -255,15 +255,18 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
 
 ### 9.4 O tempo dos gestos
 
-- O primeiro colchete acontece no segundo em que a voz diz o começo da frase citada.
+- A mão chega ao alvo quando a voz começa a frase citada, e o primeiro colchete acontece quando
+  a voz termina de dizê-la. O tamanho da citação decide o momento: em
+  `No "Agora clique em Próxima parte"`, o clique vem depois de "parte"; em `No "Agora"`, logo
+  depois de "Agora". Cite até a palavra depois da qual a ação deve aparecer.
 - Cada gesto de mão (apontar, clicar, tocar, arrastar) leva cerca de 2 segundos: o mouse viaja,
   para em cima do alvo e age. O segundo colchete da mesma frase vem 2 segundos depois do primeiro,
   e assim por diante.
 - Os gestos de uma frase têm de caber antes da próxima frase citada. Conte 2 segundos por gesto e
   pouco mais de duas palavras por segundo de fala. O que não couber acontece em seguida, na
   ordem do roteiro, e entra acelerado na edição.
-- Para agir **depois** de uma palavra, cite o começo da frase seguinte. O ampliar que vem depois
-  de "vamos ver como ele funciona" vai no `No "Neste jardim"`.
+- Para agir depois de uma frase inteira, cite a frase inteira, ou o começo da frase seguinte. O
+  ampliar que vem depois de "vamos ver como ele funciona" vai no `No "Neste jardim"`.
 - Uma espera do servidor (o **Verificar projeto**, a capa do **Gerar capa**) entra acelerada
   sob a fala, sem esticar o vídeo.
 - Gestos depois do fim da voz não são feitos. A última frase da parte precisa ser citada antes de

@@ -11,6 +11,7 @@ const EPOCH = '.github/staging-deploy-epoch-v1.json'
 // Criado após a fotografia histórica; o primeiro deploy é provado em etapa própria da onda.
 const postBootstrapServices = Object.freeze({
   'arquipelago-api': 'ee19a264-7708-471a-adf9-c9db1cfdb9a2',
+  'palco-gravacao': 'a9c67d3c-9880-4707-bb16-22a5e7a52c30',
 })
 // An exhausted bound is a refusal, never permission to truncate the baseline history.
 const MAX_PAGES = 20

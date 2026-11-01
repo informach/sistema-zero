@@ -25,8 +25,13 @@ test('resolved successful baseline retains the failed-push backlog in the actual
     LIVE_RECORDER_SERVICE_ID: uuid(3),
   }
   const configured = configuredServiceIds(workflow, optionalIds)
+  // Os nomes vêm da fotografia histórica. IDs, execuções e recibos abaixo continuam sintéticos.
+  const coverage = JSON.parse(
+    readFileSync('.github/staging-deploy-bootstrap-v1.json', 'utf8'),
+  ).coverage
+  const historicalNames = new Set([...coverage.ciServices, ...coverage.extraServices])
   const historical = Object.fromEntries(
-    Object.entries(configured).filter(([name]) => name !== 'arquipelago-api'),
+    Object.entries(configured).filter(([name]) => historicalNames.has(name)),
   )
   const childEnv = {
     PATH: process.env.PATH ?? process.env.Path,
