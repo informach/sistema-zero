@@ -41,8 +41,8 @@
               "name": "chao-bosque",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:dd04fc28f36a34920e1f9227ac2b0bf00c752cf0af6189778488a555ee3e83e1",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImRkMDRmYzI4ZjM2YTM0OTIwZTFmOTIyN2FjMmIwYmYwMGM3NTJjZjBhZjYxODk3Nzg0ODhhNTU1ZWUzZTgzZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:0d5027e5f37a3b69bdb9781a4981e08a413a808314fc64db32d8d9bfba3be73f",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjBkNTAyN2U1ZjM3YTNiNjliZGI5NzgxYTQ5ODFlMDhhNDEzYTgwODMxNGZjNjRkYjMyZDhkOWJmYmEzYmU3M2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-bosque.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-bosque",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:dd04fc28f36a34920e1f9227ac2b0bf00c752cf0af6189778488a555ee3e83e1",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImRkMDRmYzI4ZjM2YTM0OTIwZTFmOTIyN2FjMmIwYmYwMGM3NTJjZjBhZjYxODk3Nzg0ODhhNTU1ZWUzZTgzZTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:0d5027e5f37a3b69bdb9781a4981e08a413a808314fc64db32d8d9bfba3be73f",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjBkNTAyN2U1ZjM3YTNiNjliZGI5NzgxYTQ5ODFlMDhhNDEzYTgwODMxNGZjNjRkYjMyZDhkOWJmYmEzYmU3M2YifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-bosque.glb"
             },
             {

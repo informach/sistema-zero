@@ -1,6 +1,6 @@
 {
   "chao-sua-ilha": {
-    "sha": "c47430029006463dacd4067ee4f6db5906a6733614e1027a11c6c776761ca202",
+    "sha": "60e46e3f118c5be95343173f229f84f46b90c5e7ea79bd37d4565a3ecd0f8175",
     "clips": []
   },
   "nico": {
@@ -12,7 +12,7 @@
     "clips": []
   },
   "chao-bosque": {
-    "sha": "dd04fc28f36a34920e1f9227ac2b0bf00c752cf0af6189778488a555ee3e83e1",
+    "sha": "0d5027e5f37a3b69bdb9781a4981e08a413a808314fc64db32d8d9bfba3be73f",
     "clips": []
   },
   "capi": {
@@ -24,7 +24,7 @@
     "clips": ["andar", "correr", "feliz", "parado", "sentar", "truque"]
   },
   "chao-vila-doce": {
-    "sha": "c39437ce46cfc792dd6b9f855dcce03bb98bd3c7fc5150e24567fa45d359fa23",
+    "sha": "4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022",
     "clips": []
   },
   "bento": {
@@ -36,7 +36,7 @@
     "clips": []
   },
   "chao-recife": {
-    "sha": "bde46f3201e8731466295f26cd2d022bf3a04b1d3b90682b8512c6d72e5525d4",
+    "sha": "5e60c96b2e0a5e74b89e7696a13ce9bede46910c28af99f6e82ddf2081b5e404",
     "clips": []
   },
   "mare": {
@@ -48,7 +48,7 @@
     "clips": []
   },
   "chao-pico": {
-    "sha": "c6849d19e280bb306ef82b2a9c73382a4fbd93042d5f50d39aa801d3b54f30aa",
+    "sha": "bd01e0eb0b48d08a58d66fab598ff5b5f2824977b4de473d5468ee9bb95f7473",
     "clips": []
   },
   "floco": {
@@ -60,7 +60,7 @@
     "clips": []
   },
   "chao-vale-dos-dinos": {
-    "sha": "9f5606fb490c74835ce0f3f8c9c962367fa70570eb56b565e3618385a991e1ad",
+    "sha": "bb9b410c0358f307fee9c132aa5ea3b7748be8e2e99c7e1a5aead9f6f100b6b1",
     "clips": []
   },
   "jade": {
@@ -72,7 +72,7 @@
     "clips": []
   },
   "chao-nuvens": {
-    "sha": "020050943f037f61630cc8620e1e958afcbfd261410043a09802b00b506633da",
+    "sha": "6324182a406da1d2152d230f57e07071f1f5a542b3f57ca0dbf78eb2cf3dccc9",
     "clips": []
   },
   "irie": {

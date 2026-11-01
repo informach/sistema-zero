@@ -40,7 +40,7 @@ O extra é a tecla R recomeçar.
 |---|---|
 | Personagem | aventureiro da Ilha do Farol |
 | Morador e item | modelos do jogo (`packages/arquipelago/src/assets/`) |
-| Chão | um disco na cor da ilha, feito no Blender (`arte/chaos.py`) |
+| Chão | um disco na cor da ilha com borda de terra, feito no Blender (`arte/chaos.py`); cores conferidas com a luz do Estúdio (`docs/qa/2026-11-01-chaos-3d/`) |
 
 Todos vão para a biblioteca de modelos dos cursos (`publicar-modelos.ts`, que grava
 `modelos.json`), e o projeto leva só a referência. Embutidos, os modelos passavam do teto do

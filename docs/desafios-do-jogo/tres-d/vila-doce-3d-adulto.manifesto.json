@@ -41,8 +41,8 @@
               "name": "chao-vila-doce",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:c39437ce46cfc792dd6b9f855dcce03bb98bd3c7fc5150e24567fa45d359fa23",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImMzOTQzN2NlNDZjZmM3OTJkZDZiOWY4NTVkY2NlMDNiYjk4YmQzYzdmYzUxNTBlMjQ1NjdmYTQ1ZDM1OWZhMjMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjRlMTk0MmQ4YzQ3OGIzY2E2MDM1YjIyYmJhNjhmMzA0ZGIxNTlmZjJlOThlNzAyNTg2ZjI2YTJlMDhjNDEwMjIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-vila-doce.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-vila-doce",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:c39437ce46cfc792dd6b9f855dcce03bb98bd3c7fc5150e24567fa45d359fa23",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImMzOTQzN2NlNDZjZmM3OTJkZDZiOWY4NTVkY2NlMDNiYjk4YmQzYzdmYzUxNTBlMjQ1NjdmYTQ1ZDM1OWZhMjMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjRlMTk0MmQ4YzQ3OGIzY2E2MDM1YjIyYmJhNjhmMzA0ZGIxNTlmZjJlOThlNzAyNTg2ZjI2YTJlMDhjNDEwMjIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-vila-doce.glb"
             },
             {

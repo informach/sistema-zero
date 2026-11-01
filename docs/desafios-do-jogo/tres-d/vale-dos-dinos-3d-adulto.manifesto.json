@@ -41,8 +41,8 @@
               "name": "chao-vale-dos-dinos",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:9f5606fb490c74835ce0f3f8c9c962367fa70570eb56b565e3618385a991e1ad",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjlmNTYwNmZiNDkwYzc0ODM1Y2UwZjNmOGM5Yzk2MjM2N2ZhNzA1NzBlYjU2YjU2NWUzNjE4Mzg1YTk5MWUxYWQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:bb9b410c0358f307fee9c132aa5ea3b7748be8e2e99c7e1a5aead9f6f100b6b1",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJiOWI0MTBjMDM1OGYzMDdmZWU5YzEzMmFhNWVhM2I3NzQ4YmU4ZTJlOTljN2UxYTVhZWFkOWY2ZjEwMGI2YjEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-vale-dos-dinos.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-vale-dos-dinos",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:9f5606fb490c74835ce0f3f8c9c962367fa70570eb56b565e3618385a991e1ad",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjlmNTYwNmZiNDkwYzc0ODM1Y2UwZjNmOGM5Yzk2MjM2N2ZhNzA1NzBlYjU2YjU2NWUzNjE4Mzg1YTk5MWUxYWQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:bb9b410c0358f307fee9c132aa5ea3b7748be8e2e99c7e1a5aead9f6f100b6b1",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJiOWI0MTBjMDM1OGYzMDdmZWU5YzEzMmFhNWVhM2I3NzQ4YmU4ZTJlOTljN2UxYTVhZWFkOWY2ZjEwMGI2YjEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-vale-dos-dinos.glb"
             },
             {

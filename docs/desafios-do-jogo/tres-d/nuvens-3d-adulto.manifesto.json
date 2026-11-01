@@ -41,8 +41,8 @@
               "name": "chao-nuvens",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:020050943f037f61630cc8620e1e958afcbfd261410043a09802b00b506633da",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjAyMDA1MDk0M2YwMzdmNjE2MzBjYzg2MjBlMWU5NThhZmNiZmQyNjE0MTAwNDNhMDk4MDJiMDBiNTA2NjMzZGEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:6324182a406da1d2152d230f57e07071f1f5a542b3f57ca0dbf78eb2cf3dccc9",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjYzMjQxODJhNDA2ZGExZDIxNTJkMjMwZjU3ZTA3MDcxZjFmNWE1NDJiM2Y1N2NhMGRiZjc4ZWIyY2YzZGNjYzkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-nuvens.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-nuvens",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:020050943f037f61630cc8620e1e958afcbfd261410043a09802b00b506633da",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjAyMDA1MDk0M2YwMzdmNjE2MzBjYzg2MjBlMWU5NThhZmNiZmQyNjE0MTAwNDNhMDk4MDJiMDBiNTA2NjMzZGEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:6324182a406da1d2152d230f57e07071f1f5a542b3f57ca0dbf78eb2cf3dccc9",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjYzMjQxODJhNDA2ZGExZDIxNTJkMjMwZjU3ZTA3MDcxZjFmNWE1NDJiM2Y1N2NhMGRiZjc4ZWIyY2YzZGNjYzkifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-nuvens.glb"
             },
             {
