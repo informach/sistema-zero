@@ -154,6 +154,28 @@
       "pelo"
     ]
   },
+  "ovelhinha": {
+    "grupo": "vila",
+    "triangulos": 3902,
+    "kb": 152.9,
+    "clipes": ["andar", "correr", "feliz", "parado"],
+    "materiais": [
+      "boca",
+      "bochecha",
+      "brilho",
+      "casco",
+      "fita",
+      "la",
+      "laClara",
+      "laLilas",
+      "nariz",
+      "olho",
+      "orelha",
+      "pata",
+      "rosto",
+      "sino"
+    ]
+  },
   "passaro-das-nuvens": {
     "grupo": "nuvens",
     "triangulos": 2198,

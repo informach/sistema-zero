@@ -61,10 +61,10 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
   corrida: {
     titulo: 'A corrida do entregador',
     enunciado:
-      'O Bento precisa de um jogo para a barraca da feira. Os clientes estão com pressa: ele quer que cada pedra nova venha um pouco mais rápida que a anterior e que, quando o entregador bater, a tela do fim mostre quantos metros ele correu.',
+      'O Bento precisa de um jogo para a barraca da feira: o entregador corre pelos telhados da Vila, pulando as chaminés. Os clientes estão com pressa: ele quer que cada chaminé nova venha um pouco mais rápida que a anterior e que, quando o entregador encostar numa chaminé, a tela do fim mostre quantos metros ele correu.',
     dicas: [
-      'A velocidade das pedras é um número negativo: quanto menor, mais rápido. Pare de acelerar em -9, para a corrida continuar possível.',
-      'A mudança acontece no mesmo relógio que cria cada pedra.',
+      'A velocidade das chaminés é um número negativo: quanto menor, mais rápido. Pare de acelerar em -9, para a corrida continuar possível.',
+      'A mudança acontece no mesmo relógio que cria cada chaminé.',
       'Na tela do fim, desenhe o placar com a variável metros.',
     ],
   },

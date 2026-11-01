@@ -32,9 +32,11 @@ GRUPOS = {
     'nuvens': {'teto': 2500, 'bichos': {'passaro-das-nuvens': ['voar', 'pousado']}},
     'bosque': {'teto': 2500, 'bichos': {b: ['voar', 'pousado'] for b in ('bem-te-vi', 'borboleta')}},
     'montaria': {'teto': 6500, 'bichos': {'dino-montaria': ['parado', 'andar', 'correr', 'pular']}, 'soquete': 'sela'},
+    # A ovelhinha de algodão-doce da Vila (a luneta, 01/11/2026): a lã em tufos gasta mais.
+    'vila': {'teto': 4000, 'bichos': {'ovelhinha': ['parado', 'andar', 'correr', 'feliz']}},
 }
 ARQUIVO = {'adotar': 'adotar.py', 'recife': 'recife.py', 'pico': 'pico.py', 'vale': 'vale.py', 'nuvens': 'nuvens.py',
-           'bosque': 'bosque.py', 'montaria': 'montaria.py'}
+           'bosque': 'bosque.py', 'montaria': 'montaria.py', 'vila': 'vila.py'}
 
 
 def ler_glb(caminho):

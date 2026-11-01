@@ -42,6 +42,7 @@ Prévia (Cycles na CPU, lê o próprio GLB; as opções estão no topo do arquiv
 | `passaro-das-nuvens` | nuvens | `voar`, `pousado` | azul-céu, peito de nuvem, penacho enrolado |
 | `bem-te-vi` | bosque | `voar`, `pousado` | barriga amarela e faixa branca na cabeça |
 | `borboleta` | bosque | `voar`, `pousado` | azul-morfo; pousa com as asas fechadas e abre devagar; o avesso das asas é azul-claro com pintas de olho (é o que aparece pousada) |
+| `ovelhinha` | vila | `parado`, `andar`, `correr`, `feliz` | ovelhinha de algodão-doce: lã em tufos rosa, lilás e rosa-claro, rosto creme, orelhas caídas, patas de cacau, coleira de menta com sininho; corre pela Vila na luneta do píer (01/11/2026) |
 | `dino-montaria` | montaria | `parado`, `andar`, `correr`, `pular` | parassaurolofo de sela e manta; vazio `sela` |
 
 O filhote dos bichos de adotar é o mesmo desenho com a cabeça maior, as pernas mais curtas e os olhos
@@ -58,7 +59,7 @@ maiores, e sai menor pela escala do `Bicho` (cerca de 0,7 do adulto).
 - **Cores chapadas** por material com nome (`pelo`, `claro`, `penas`, `pele`, `casco`, `couro`…).
 - **Escala:** a do avatar (~2,2 de altura). Frente para +Z no three.js e os pés em y = 0 (os peixes
   e a tartaruguinha têm a origem no meio do corpo). Altura aproximada: cachorro 0,71, gato 0,59,
-  coelho 0,68, porquinho 0,26, pinguim 0,51, rex 0,63, dino de montaria 2,4 (sela a 1,51).
+  coelho 0,68, porquinho 0,26, ovelhinha 0,5, pinguim 0,51, rex 0,63, dino de montaria 2,4 (sela a 1,51).
 
 ## Esqueletos
 
@@ -91,7 +92,7 @@ cada quadro). Ele acompanha o corpo em todos os clipes, inclusive o `pular`.
 
 - `lib_bichos.py`: os ajudantes (partiu de `arte/personagens/lib_personagens.py`), com os
   esqueletos, os clipes de quatro patas, ave e peixe, o passarinho e a escala do filhote.
-- `adotar.py`, `recife.py`, `pico.py`, `vale.py`, `nuvens.py`, `bosque.py`, `montaria.py`: um por grupo.
+- `adotar.py`, `recife.py`, `pico.py`, `vale.py`, `nuvens.py`, `bosque.py`, `montaria.py`, `vila.py`: um por grupo.
 - `build_all.py`: gera e confere (clipes, olhos, tamanho, teto de triângulos, `sela`).
 - `render.py`: a prévia (cópia do dos moradores).
 - `relatorio.json`: triângulos, tamanho, clipes e materiais de cada bicho.

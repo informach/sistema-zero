@@ -91,7 +91,12 @@ try {
         await tocar('Space')
         await esperar('entregador.y', 'menor', 140)
         await page.screenshot({ path: join(out, `${variacao}-pulo-${tela}.png`) })
-        // Sem pular de novo, uma pedra alcança o entregador e a corrida acaba.
+        // Na corrida pelos telhados, a primeira chaminé chegando (lacunas, 01/11/2026).
+        if (variacao === 'corrida') {
+          await esperar('chamine1.x', 'menor', 300)
+          await page.screenshot({ path: join(out, `${variacao}-chamine-${tela}.png`) })
+        }
+        // Sem pular de novo, uma pedra (ou chaminé) alcança o entregador e a corrida acaba.
         let antes = await ler('metros')
         for (let i = 0; i < 30; i++) {
           await page.waitForTimeout(1200)

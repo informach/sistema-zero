@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Material, Object3D } from 'three'
 import { useEstado, useJogo } from '../estado/contexto'
 import { esmaecer, ilhaPreferida, versoesPerto } from '../sistemas/ilhas-completas'
+import { iluminarArte, prepararLuzesNoturnas } from './arte-animada'
 import { buscarIlha, soltarIlha } from './carregar-ilha'
 import { tirarNosDeColisao } from './colisores-da-ilha'
 import { aplicarOpacidade, type Troca } from './ilha-completa'
@@ -35,15 +36,19 @@ export function temVersaoMedia(id: IlhaId): boolean {
 export interface Media {
   modelo: Object3D
   materiais: Material[]
+  luzesNoturnas: ReturnType<typeof prepararLuzesNoturnas>
 }
 
-/** Prepara a cena da média: girada como a ilha, sem nós de colisão e com a tinta da ilha. */
+/**
+ * Prepara a cena da média: girada como a ilha, sem nós de colisão, com a tinta da ilha e as luzes que
+ * só acendem à noite (como na completa).
+ */
 export function prepararMedia(cena: Object3D, ilha: Ilha): Media {
   cena.rotation.y = giroDaIlha(ilha)
   tirarNosDeColisao(cena)
   const materiais = materiaisDe(cena)
   pintarMateriais(materiais, pinturaDaIlha(ilha))
-  return { modelo: cena, materiais }
+  return { modelo: cena, materiais, luzesNoturnas: prepararLuzesNoturnas(materiais) }
 }
 
 export function useIlhaMedia(
@@ -129,8 +134,10 @@ export function useIlhaMedia(
 
 /** A média na cena: aparece com `troca.media` e some quando a completa entra (`troca.opacidade`). */
 export function IlhaMedia({ media, troca }: { media: Media; troca: Troca }) {
+  const { ambiente } = useJogo()
   const aplicada = useRef(-1)
   useFrame(() => {
+    iluminarArte(media.luzesNoturnas, ambiente.noite)
     const opacidade = (troca.media ?? 0) * (1 - troca.opacidade)
     if (opacidade === aplicada.current) return
     aplicada.current = opacidade

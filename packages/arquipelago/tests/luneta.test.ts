@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { ILHAS, ilhaAberta } from '@sistemazero/arquipelago-contracts'
 import { Box3, Vector3 } from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
@@ -9,12 +10,16 @@ import { PIER } from '../src/mundo/medidas'
 import {
   ACENO_DA_LUNETA,
   artigoDaIlha,
+  BICHO_DA_LUNETA,
+  bichoDaLuneta,
   deveAcenar,
   falaDaLuneta,
   ilhaDaLuneta,
   moradorDaLuneta,
   passoDaPrevia,
   recadoDaPlaca,
+  SEGREDO_DA_LUNETA,
+  segredoDaLuneta,
 } from '../src/sistemas/luneta'
 import { criarPesos, passoDosPesos, perfilDaVez } from '../src/sistemas/perfis-de-camera'
 
@@ -90,14 +95,20 @@ describe('luneta', () => {
     expect(vistaDaLuneta(ilhaDaLuneta(8), 1).alvo).toEqual({ x: -12, y: 5, z: -13 })
   })
   test('a prévia tem movimento lento e vira imagem estável com menos movimento', () => {
-    const p = { x: 0, brilho: 0 }
+    const p = { x: 0, brilho: 0, rumo: 0 }
     passoDaPrevia(0, false, p)
     const antes = { ...p }
+    // Indo para +x, virado para +x; na volta, para -x; na ponta, de frente para a luneta.
+    expect(p.rumo).toBeCloseTo(Math.PI / 2)
     passoDaPrevia(1.5, false, p)
     expect(p.x).not.toBe(antes.x)
     expect(p.brilho).toBeGreaterThanOrEqual(0.65)
+    expect(p.rumo).toBeCloseTo(0)
+    passoDaPrevia(3, false, p)
+    expect(p.rumo).toBeCloseTo(-Math.PI / 2)
     passoDaPrevia(0, true, p)
     const parado = { ...p }
+    expect(parado.rumo).toBe(0)
     passoDaPrevia(1000, true, p)
     expect(p).toEqual(parado)
   })
@@ -138,6 +149,45 @@ describe('o morador acenando pela luneta (§6.28, A18)', () => {
     expect(deveAcenar(ACENO_DA_LUNETA.aCada, 0, 2, false)).toBe(true)
     expect(deveAcenar(ACENO_DA_LUNETA.aCada, 0, 9, false)).toBe(false)
     expect(deveAcenar(100, 0, 2, true)).toBe(false)
+  })
+})
+
+/** Os nomes dos clipes de um GLB (lidos do JSON do arquivo, sem montar a cena). */
+function clipesDoGlb(caminho: string): string[] {
+  const buf = readFileSync(caminho)
+  const json = JSON.parse(buf.subarray(20, 20 + buf.readUInt32LE(12)).toString('utf8')) as {
+    animations?: { name?: string }[]
+  }
+  return (json.animations ?? []).map((a) => a.name ?? '')
+}
+
+const ASSETS = join(import.meta.dir, '..', 'src', 'assets')
+
+describe('o bicho correndo e o segredo brilhando pela luneta (lacunas, 01/11/2026)', () => {
+  const doAnel = ILHAS.filter((i) => i.angulo !== null)
+
+  test('cada ilha do anel tem um bicho dela e o Lumi de luz da família; o Farol, nenhum', () => {
+    for (const ilha of doAnel) {
+      expect(bichoDaLuneta(ilha)).not.toBeNull()
+      expect(segredoDaLuneta(ilha)).not.toBeNull()
+    }
+    expect(bichoDaLuneta({ id: 'farol' })).toBeNull()
+    expect(segredoDaLuneta({ id: 'farol' })).toBeNull()
+    // A Vila ganhou o bicho dela: a ovelhinha de algodão-doce.
+    expect(bichoDaLuneta({ id: 'vila-doce' })?.bicho).toBe('ovelhinha')
+  })
+
+  test('os arquivos dos bichos têm os clipes de correr e de ficar parado que a luneta toca', () => {
+    for (const { bicho, correr, parado } of Object.values(BICHO_DA_LUNETA)) {
+      const clipes = clipesDoGlb(join(ASSETS, 'bichos', `${bicho}.glb`))
+      expect(clipes).toContain(correr)
+      expect(clipes).toContain(parado)
+    }
+  })
+
+  test('os Lumis de luz têm o clipe parado (a coroa gira)', () => {
+    for (const segredo of Object.values(SEGREDO_DA_LUNETA))
+      expect(clipesDoGlb(join(ASSETS, 'lumis', `${segredo}.glb`))).toContain('parado')
   })
 })
 

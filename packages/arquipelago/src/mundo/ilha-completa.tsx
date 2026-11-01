@@ -282,6 +282,14 @@ export function useIlhaCompleta(
     if (troca.colisoresNaCena && troca.opacidade >= 0.99) movimento.caisProntos.add(ilha.id)
     else movimento.caisProntos.delete(ilha.id)
     const distancia = Math.hypot(rastro.x - centro.x, rastro.z - centro.z)
+    const naPonte = naPonteDa(ilha, rastro.x, rastro.z)
+    const temMedia = ARQUIVOS_DAS_ILHAS_MEDIAS[ilha.id] !== undefined
+    const versoes = versoesPerto({
+      temMedia,
+      nivel: nivelDeDetalhe(distancia, naPonte),
+      distancia,
+      distanciaDaCompleta: DISTANCIA_DA_COMPLETA,
+    })
     const perto =
       !!info &&
       aberta &&
@@ -292,14 +300,11 @@ export function useIlhaCompleta(
           ? (movimento.mergulhos.find((v) => v.ativo)?.id ?? null)
           : null,
       ) === ilha.id &&
-      (ilha.id === 'recife'
+      // O Recife baixa de longe para quem nada em volta (o mergulho); na ponte, com a versão média,
+      // segue as três versões como as outras.
+      (ilha.id === 'recife' && !(naPonte && temMedia)
         ? distancia < MERGULHO.carregar
-        : versoesPerto({
-            temMedia: ARQUIVOS_DAS_ILHAS_MEDIAS[ilha.id] !== undefined,
-            nivel: nivelDeDetalhe(distancia, naPonteDa(ilha, rastro.x, rastro.z)),
-            distancia,
-            distanciaDaCompleta: DISTANCIA_DA_COMPLETA,
-          }).completa)
+        : versoes.completa)
     if (!perto) v.falhou = false
     troca.opacidade = esmaecer(troca.opacidade, opacidadeAlvo(v.estado), dt, DURACAO_DA_TROCA)
     const proximo = proximoEstadoDaIlha(v.estado, {

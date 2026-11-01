@@ -597,7 +597,7 @@
       "col-mesa": 1,
       "col-terreno": 1
     },
-    "kb": 679.2,
+    "kb": 906.0,
     "nos": {
       "agua": 94,
       "alga-1": 240,
@@ -614,10 +614,10 @@
       "construcoes": 5841,
       "corais": 3680,
       "enfeites": 2214,
-      "marco-pinaculos": 2976,
+      "marco-pinaculos": 11557,
       "terreno": 902
     },
-    "triangulos": 20460
+    "triangulos": 29041
   },
   "recife-labirinto": {
     "ancoras": {
@@ -891,7 +891,7 @@
       "col-telhado-padaria": 2,
       "col-terreno": 1
     },
-    "kb": 1253.3,
+    "kb": 1296.0,
     "nos": {
       "atalhos": 2528,
       "barraca-do-jogo": 1504,
@@ -899,7 +899,7 @@
       "enfeites": 4166,
       "feira": 7630,
       "fonte": 1996,
-      "marco-torre-de-doces": 176,
+      "marco-torre-de-doces": 2092,
       "porto": 1698,
       "tela": 2,
       "telhados": 6200,
@@ -928,12 +928,12 @@
         "canto_mais_longe_com": 23.96,
         "canto_mais_longe_sem": 21.53,
         "com_o_porto": {
-          "max": [13.82, 12.15, 15.01],
+          "max": [13.82, 15.5, 15.01],
           "min": [-18.67, -2.5, -13.79]
         },
         "raio_do_porto_no_chao": 18.7,
         "sem_o_porto": {
-          "max": [13.82, 12.15, 15.01],
+          "max": [13.82, 15.5, 15.01],
           "min": [-15.44, -1.0, -13.79]
         }
       },
@@ -956,12 +956,12 @@
       },
       "tipo": "deque de praia"
     },
-    "triangulos": 33514
+    "triangulos": 35430
   },
   "vila-doce-props": {
     "ancoras": {},
     "clipes": "",
-    "kb": 271.6,
+    "kb": 272.0,
     "nos": {
       "barraca": 1912,
       "bengala": 212,

@@ -21,14 +21,16 @@ import { arquivoDaIlha, carregarGlb } from './ajuda-colisores'
  * triângulos, com cor por vértice, e tem a mesma altura e a mesma largura da completa no mesmo
  * referencial (o jogo põe as duas no mesmo grupo e gira as duas com `giroDaIlha`): a troca na ponte
  * não muda o tamanho. Medido como o teste dos marcos: o desenho (as malhas que não são `col-*` nem
- * `escalada-*`), somando os 7 m das Nuvens (`ALTURA_DAS_NUVENS`).
+ * `escalada-*`), somando os 7 m das Nuvens (`ALTURA_DAS_NUVENS`). Desde 01/11/2026 (lacunas, L11) a
+ * altura sobe na ordem dos postos, sem empate: Bosque 14,4, Vila 15,5, Recife 16,8, Pico 18,2, Vale
+ * 19,8 e Nuvens 24 (a Vila e o Recife ficavam abaixo do Bosque).
  */
 const ILHAS: Record<string, { arquivo: string; alvo: number; soma: number }> = {
   bosque: { arquivo: 'bosque.glb', alvo: 14, soma: 0 },
-  'vila-doce': { arquivo: 'vila-doce.glb', alvo: 12, soma: 0 },
-  recife: { arquivo: 'recife.glb', alvo: 9, soma: 0 },
+  'vila-doce': { arquivo: 'vila-doce.glb', alvo: 15.5, soma: 0 },
+  recife: { arquivo: 'recife.glb', alvo: 16.8, soma: 0 },
   pico: { arquivo: 'pico.glb', alvo: 18, soma: 0 },
-  'vale-dos-dinos': { arquivo: 'vale-dos-dinos.glb', alvo: 20, soma: 0 },
+  'vale-dos-dinos': { arquivo: 'vale-dos-dinos.glb', alvo: 19.8, soma: 0 },
   nuvens: { arquivo: 'nuvens.glb', alvo: 24, soma: ALTURA_DAS_NUVENS },
 }
 
@@ -93,6 +95,24 @@ beforeAll(async () => {
     completas.set(id, raiz)
   }
 }, 30_000)
+
+/** Quanto, no mínimo, cada ilha passa da do posto de antes (nas duas versões). */
+const DEGRAU_MINIMO = 1
+
+test('a altura sobe com o posto, nas duas versões (a ordem de ILHAS é a dos postos)', () => {
+  for (const versao of ['completa', 'silhueta'] as const) {
+    const topos = Object.entries(ILHAS).map(
+      ([id, ilha]) =>
+        caixaDe(
+          versao === 'completa'
+            ? (completas.get(id) as Object3D)
+            : (silhuetas.getObjectByName(id) as Object3D),
+        ).max.y + ilha.soma,
+    )
+    for (let i = 1; i < topos.length; i++)
+      expect((topos[i] as number) - (topos[i - 1] as number)).toBeGreaterThanOrEqual(DEGRAU_MINIMO)
+  }
+})
 
 test('o arquivo das silhuetas tem só os seis nós das ilhas, cada um com o id dela', () => {
   const raizes = (json.scenes[0]?.nodes ?? []).map((i) => json.nodes[i]?.name)

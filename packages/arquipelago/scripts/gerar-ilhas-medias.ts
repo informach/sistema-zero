@@ -21,9 +21,10 @@ export function codigoDasIlhasMedias(ilhas: readonly string[]): string {
   const linhas = [
     '// Gerado por scripts/gerar-ilhas-medias.ts. Não edite.',
     "import type { IlhaId } from '@sistemazero/arquipelago-contracts'",
-    ...ilhas.map(
-      (ilha) => `import ${nomeDaImportacao(ilha)} from '../assets/ilhas/${ilha}-media.glb'`,
-    ),
+    // As importações na ordem do caminho, como o Biome deixa; o objeto, na ordem das ilhas.
+    ...[...ilhas]
+      .sort()
+      .map((ilha) => `import ${nomeDaImportacao(ilha)} from '../assets/ilhas/${ilha}-media.glb'`),
     '',
     '/** O endereço da versão média de cada ilha que tem a arte dela. */',
     // O formato que o Biome já aceita: objeto vazio numa linha e aspas só onde precisa.
