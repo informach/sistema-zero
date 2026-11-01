@@ -192,3 +192,46 @@ confere se a fala funciona.
 Na experiência, registrar o que observar e comparar, mantendo a ordem de exploração livre. Não narrar uma lista de cliques que a pessoa apenas reproduz. Zappy pode sugerir uma comparação conforme o que falta observar, enquanto os demais controles continuam disponíveis. A montagem do Estúdio preserva todos os passos operacionais.
 
 Conferir, frase por frase, a diferença entre adicionar/retirar um comando, pressionar/soltar uma tecla e avançar/executar o teste. O texto precisa corresponder ao efeito real do controle. Registrar separadamente as regras atuais e o resultado anterior. Os reinícios de tentativa conservam as descobertas; o reinício da experiência limpa o percurso. Atualizar o caderno e os derivados junto com o roteiro e os manifestos.
+
+## 9. Ações da gravação automática (01/11/2026)
+
+O **Na tela** pode dizer, entre colchetes, o que o robô de gravação do EdiAula faz, junto da
+frase citada que ele espera:
+
+```
+No "Olha aqui", tocar em UM esconderijo [achar arbusto] e deixar ver o personagem aparecer.
+```
+
+- Cada colchete é um gesto, no segundo em que a voz diz a frase citada antes dele. Um segundo
+  colchete da mesma frase vem depois do tempo que a mão leva. Um colchete numa frase sem citação
+  vale do começo da fala seguinte (o `[próxima parte]` no começo de cada parte).
+- Aspas dentro do colchete nomeiam um botão, nunca uma frase a esperar.
+- O texto do **Na tela** continua sendo a orientação de quem grava à mão: os colchetes só
+  acrescentam o gesto. O `validar-roteiros.py` confere só a fala e aceita os colchetes.
+- A gravação acontece no palco de gravação do staging (`packages/palco-gravacao`), que mostra a
+  aula como a criança vê e não salva nada.
+
+Verbos do EdiAula, para qualquer página: `clicar "Texto"`, `apontar "Texto"`,
+`passar o mouse "Texto"`, `rolar até "Texto"`, `esperar "Texto"`, `digitar "texto" em "Campo"`,
+`tecla Ctrl+Z` e `arrastar "A" para "B"`.
+
+Verbos do palco (`packages/palco-gravacao/src/lib/verbos.ts`):
+
+| Verbo | O que faz |
+| --- | --- |
+| `próxima parte`, `concluir aula` | os botões da aula |
+| `ampliar jogo`, `ampliar experiência`, `voltar à aula` | a ampliação do bloco da parte |
+| `expandir estúdio`, `reduzir estúdio` | o Estúdio em tela cheia e de volta |
+| `achar <alvo>` | toca no alvo do jogo pronto, pelo id ou pelo nome (`achar arbusto`) |
+| `apontar jogo [x y]` | aponta um ponto do jogo pronto, em pixels do palco do jogo (sem números: o meio) |
+| `jogar de novo` | recomeça o jogo pronto |
+| `livro próxima`, `livro anterior`, `livro tela cheia`, `livro sair da tela cheia` | o livro 3D |
+| `apontar baixar`, `baixar` | o Baixar do material |
+| `tocar "<nome>"` | um controle da experiência pelo nome |
+| `categoria A > B > C` | abre as categorias da paleta do Estúdio |
+| `arrastar "<bloco>" para "<bloco>"` | da paleta para baixo de um bloco da área de trabalho |
+| `verificar projeto` | clica e espera a resposta do servidor, acelerada sob a fala |
+| `enviar projeto` | clica em Enviar meu projeto: no palco nada é enviado |
+
+Ainda não há verbo para trocar um campo ou um número de um bloco, nem para encaixar dentro de um
+bloco (o espaço ao lado de **fazer**): esses gestos continuam sendo marcados à mão no EdiAula.

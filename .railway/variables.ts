@@ -457,6 +457,21 @@ const common: Record<string, string[]> = {
     'VOICE_INPUT_ENABLED',
     'ZAPPY_ENABLED',
   ],
+  // Palco de gravação (01/11/2026), só no staging: a conta da equipe pelo gateway e o PDF do
+  // livro pelo bucket privado. Os valores são os mesmos do community-kids do staging.
+  'palco-gravacao': [
+    'GATEWAY_URL',
+    'JWT_AUDIENCE',
+    'JWT_ISSUER',
+    'JWT_JWKS_URL',
+    'MEMBER_SHELL_HMAC_SECRET',
+    'NODE_ENV',
+    'PORT',
+    'R2_ACCESS_KEY_ID',
+    'R2_ACCOUNT_ID',
+    'R2_PRIVATE_BUCKET',
+    'R2_SECRET_ACCESS_KEY',
+  ],
 }
 
 const extra: Record<string, Record<string, string[]>> = {
@@ -481,6 +496,7 @@ const extra: Record<string, Record<string, string[]>> = {
     'helpdesk-app': [],
     admin: [],
     'community-kids': [],
+    'palco-gravacao': [],
   },
   production: {
     'arquipelago-api': [],
