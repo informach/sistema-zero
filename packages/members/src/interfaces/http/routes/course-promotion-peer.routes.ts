@@ -10,6 +10,8 @@ import { readPublicationSource } from '../../../domain/course-publication/jobs'
 import { parsePublicationSource } from '../course-publication-source.dtos'
 
 const Id = z.strictObject({ id: z.uuid() })
+const PEER_PREFIX = '/members/internal/course-promotions'
+const SOURCE_PREFIX = '/members/internal/course-promotion-sources'
 const prepare = z.strictObject({
   version: z.literal(1),
   // Validate the deep teaching capture once at this HTTP boundary, without asking Elysia
@@ -32,8 +34,11 @@ export function coursePromotionPeerRoutes(deps: {
   enabled: boolean
 }) {
   if (deps.token.length < 32) throw new Error('Token de publicação entre ambientes inválido')
-  return new Elysia({ prefix: '/members/internal/course-promotions' })
+  return new Elysia({ prefix: PEER_PREFIX })
     .onRequest(({ request, set }) => {
+      // onRequest precedes routing and can be inherited by the parent app. Keep this
+      // capability inside its boundary, including when both routers are installed.
+      if (!new URL(request.url).pathname.startsWith(`${PEER_PREFIX}/`)) return
       set.headers['cache-control'] = 'private, no-store'
       if (!safeEqual(request.headers.get('x-course-promotion-token') ?? '', deps.token)) {
         set.status = 401
@@ -123,8 +128,9 @@ export function coursePromotionSourceRoutes(deps: {
   token: string
 }) {
   if (deps.token.length < 32) throw new Error('Token de leitura da origem inválido')
-  return new Elysia({ prefix: '/members/internal/course-promotion-sources' })
+  return new Elysia({ prefix: SOURCE_PREFIX })
     .onRequest(({ request, set }) => {
+      if (!new URL(request.url).pathname.startsWith(`${SOURCE_PREFIX}/`)) return
       set.headers['cache-control'] = 'private, no-store'
       if (!safeEqual(request.headers.get('x-course-source-token') ?? '', deps.token)) {
         set.status = 401

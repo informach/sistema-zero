@@ -7,6 +7,41 @@ assert.equal(process.cwd(), '/app')
 assert.equal(process.getuid(), 1000)
 assert.equal(Bun.version, '1.4.4')
 assert.equal(process.env.NODE_ENV, 'production')
+// Capability flags are optional at boot. Exercise their enabled composition in the
+// actual Bun image too, without starting workers, migrations or a database client.
+const { Elysia } = await import(Bun.resolveSync('elysia', '/app/packages/members'))
+const { coursePromotionPeerRoutes, coursePromotionSourceRoutes } = await import(
+  '/app/packages/members/src/interfaces/http/routes/course-promotion-peer.routes.ts'
+)
+const { healthRoutes } = await import(
+  '/app/packages/members/src/interfaces/http/routes/health.routes.ts'
+)
+const capabilityApp = new Elysia()
+  .use(
+    coursePromotionPeerRoutes({
+      service: {},
+      token: 'peer-capability-'.repeat(4),
+      enabled: true,
+    }),
+  )
+  .use(
+    coursePromotionSourceRoutes({
+      service: {},
+      token: 'source-capability-'.repeat(4),
+    }),
+  )
+  .use(healthRoutes(async () => ({ ready: true, checks: { db: 'ok' } })))
+  .compile()
+for (const path of ['/health', '/readyz']) {
+  const response = await capabilityApp.handle(new Request(`http://localhost${path}`))
+  assert.equal(response.status, 200, `Publication capability captured ${path}`)
+  await response.arrayBuffer()
+}
+const privateCapability = await capabilityApp.handle(
+  new Request('http://localhost/members/internal/course-promotions/capabilities'),
+)
+assert.equal(privateCapability.status, 401)
+await privateCapability.arrayBuffer()
 const workspaces = ['arquipelago-contracts', 'core', 'members', 'pinta', 'studio', 'ui']
 assert.deepEqual(readdirSync('/app/packages').sort(), workspaces)
 for (const path of [

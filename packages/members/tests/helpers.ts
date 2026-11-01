@@ -176,6 +176,8 @@ export function buildApp(
     aiLimits?: { daily: number; monthly: number }
     /** Probe do /readyz (default: pronto). */
     readiness?: () => Promise<{ ready: boolean; checks: Record<string, string> }>
+    coursePromotion?: Parameters<typeof createServer>[0]['coursePromotion']
+    coursePromotionSource?: Parameters<typeof createServer>[0]['coursePromotionSource']
     zappy?: ZappyHistoryService
     /** Contas já cercadas por exclusão (simula a barreira durável do Postgres). */
     deletedAccountIds?: string[]
@@ -522,6 +524,8 @@ export function buildApp(
       isFenced: async (accountId: string) => opts.deletedAccountIds?.includes(accountId) ?? false,
     },
     readiness: opts.readiness ?? (async () => ({ ready: true, checks: { db: 'ok' } })),
+    coursePromotion: opts.coursePromotion,
+    coursePromotionSource: opts.coursePromotionSource,
     members: {
       adultJourney,
       listMyCourses: new ListMyCoursesService(
