@@ -293,7 +293,8 @@ test('diagnostic codes never trust arbitrary error messages or code fields', () 
 
 test('actual checked-in workflow service map is accepted without provider access', () => {
   const ids = configuredServiceIds(readFileSync('.github/workflows/ci.yml', 'utf8'))
-  expect(Object.keys(ids)).toHaveLength(16)
+  expect(Object.keys(ids)).toHaveLength(17)
+  expect(ids['palco-gravacao']).toBe('a9c67d3c-9880-4707-bb16-22a5e7a52c30')
   expect(ids['arquipelago-api']).toBe('ee19a264-7708-471a-adf9-c9db1cfdb9a2')
   expect(ids.members).toBe('aa282801-ffba-477c-af6d-394b2f4f9af9')
 })
