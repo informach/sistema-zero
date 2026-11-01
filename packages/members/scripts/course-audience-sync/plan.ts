@@ -15,9 +15,12 @@ export interface LessonSnapshot {
   publishedRevision: string
 }
 export interface CourseSnapshot {
+  missing?: true
   course: CourseRow
   modules: ModuleRow[]
   lessons: LessonSnapshot[]
+  archivedModules?: ModuleRow[]
+  archivedLessons?: LessonRow[]
 }
 export interface Snapshot {
   environment: Environment
@@ -49,6 +52,32 @@ export const sourceHash = (snapshot: Snapshot) =>
 const newId = (target: string, kind: string, source: string) => {
   const h = hash(['course-audience-sync-v1', target, kind, source])
   return `${h.slice(0, 8)}-${h.slice(8, 12)}-5${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`
+}
+
+/** A deterministic empty destination makes preparation read-only, even before it exists. */
+export function missingAdultTarget(
+  source: CourseRow,
+  slug: string,
+  environment: Environment,
+): CourseSnapshot {
+  return {
+    missing: true,
+    course: {
+      ...source,
+      id: newId(source.id, 'adult-course', `${environment}:${slug}`),
+      slug,
+      audience: 'adult',
+      status: 'draft',
+      version: 0,
+      careerSlot: null,
+      journeyRole: 'reward',
+      metadata: null,
+      createdAt: new Date(0),
+      updatedAt: new Date(0),
+    },
+    modules: [],
+    lessons: [],
+  }
 }
 const withoutPlans = (document: LessonDraftDocument) => ({ ...document, plannedVideos: [] })
 
@@ -150,17 +179,29 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     id: identify(
       maps.modules,
       module.id,
-      target.modules.find((m) => m.sortOrder === module.sortOrder)?.id,
+      [...target.modules, ...(target.archivedModules ?? [])].find(
+        (m) => m.id === maps.modules[module.id],
+      )?.id ?? target.modules.find((m) => m.sortOrder === module.sortOrder)?.id,
       targetId,
       'module',
     ),
     courseId: targetId,
+    archivedAt: null,
   }))
   const lessonPlans = source.lessons.map((lesson) => {
     const existing =
       target.lessons.find((l) => l.row.id === maps.lessons[lesson.row.id]) ??
       target.lessons.find((l) => l.row.slug === lesson.row.slug)
-    const id = identify(maps.lessons, lesson.row.id, existing?.row.id, targetId, 'lesson')
+    const retired =
+      target.archivedLessons?.find((l) => l.id === maps.lessons[lesson.row.id]) ??
+      target.archivedLessons?.find((l) => l.slug === lesson.row.slug)
+    const id = identify(
+      maps.lessons,
+      lesson.row.id,
+      existing?.row.id ?? retired?.id,
+      targetId,
+      'lesson',
+    )
     // Student content always comes from the published version, even for volatile editor data.
     const document = structuredClone(lesson.published)
     document.plannedVideos = structuredClone(lesson.draft?.document.plannedVideos ?? [])
@@ -235,6 +276,7 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
       moduleId: ref(maps.modules, lesson.row.moduleId),
       courseId: targetId,
       isPublished: true,
+      archivedAt: null,
     }
     const changed =
       !existing?.row.isPublished ||
@@ -244,14 +286,18 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
       !same(withoutPlans(document), withoutPlans(existing.published))
     return { row, document, changed }
   })
-  for (const [kind, desired, existing] of [
-    ['módulo', modulePlans, target.modules],
-    ['aula', lessonPlans.map((l) => l.row), target.lessons.map((l) => l.row)],
+  for (const [kind, desired] of [
+    ['módulo', modulePlans],
+    ['aula', lessonPlans.map((l) => l.row)],
   ] as const) {
-    if (existing.some((row) => !desired.some((d) => d.id === row.id)))
-      throw new Error(`O adulto tem ${kind} excedente. A sincronização não remove dados de alunos`)
     if (new Set(desired.map((row) => row.id)).size !== desired.length)
       throw new Error(`Mapeamento ambíguo de ${kind}`)
+  }
+  const retirements = {
+    modules: target.modules.filter((m) => !modulePlans.some((d) => d.id === m.id)).map((m) => m.id),
+    lessons: target.lessons
+      .filter((l) => !lessonPlans.some((d) => d.row.id === l.row.id))
+      .map((l) => l.row.id),
   }
   const metadata = structuredClone(source.course.metadata ?? {})
   delete metadata.contentMirror
@@ -284,6 +330,8 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     rest
   const moduleComparable = ({ createdAt: _c, updatedAt: _u, ...rest }: ModuleRow) => rest
   const changed =
+    retirements.modules.length > 0 ||
+    retirements.lessons.length > 0 ||
     !same(courseComparable(course), courseComparable(target.course)) ||
     modulePlans.some(
       (m) =>
@@ -300,6 +348,7 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     course,
     modules: modulePlans,
     lessons: lessonPlans,
+    retirements,
     mediaHash: media ? hash(media) : null,
     changed,
   }

@@ -214,7 +214,7 @@ async function main() {
     membersCode,
     {
       ...saved.request,
-      mode: mode === 'apply' ? 'apply' : 'plan',
+      mode: mode === 'apply' ? 'apply' : 'verify',
       expectedPlanHash: saved.prepared.plan.planHash,
     },
     join(directory, mode === 'apply' ? 'apply.log' : `verify-${Date.now()}.log`),

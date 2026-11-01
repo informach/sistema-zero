@@ -1016,6 +1016,13 @@
       "when": 1793490314724,
       "tag": "0144_retire_module_rive",
       "breakpoints": true
+    },
+    {
+      "idx": 145,
+      "version": "7",
+      "when": 1793535367270,
+      "tag": "0145_archive-course-curriculum",
+      "breakpoints": true
     }
   ]
 }

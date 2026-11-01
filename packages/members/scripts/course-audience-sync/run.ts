@@ -1,21 +1,25 @@
 import { randomUUID } from 'node:crypto'
-import { asc, eq, inArray, sql } from 'drizzle-orm'
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm'
+import { curriculumParkingPositions } from '../../src/domain/course/curriculum-order'
 import { loadStudioAuthoringPolicy } from '../../src/infrastructure/config/studio-authoring-policy'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { createDbConnection, type Database } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
 import {
   courses,
+  lessonBlocks,
   lessonDrafts,
   lessons,
   modules,
 } from '../../src/infrastructure/persistence/drizzle/schema'
+import { preserveStudioChainsForLessons } from '../../src/infrastructure/persistence/drizzle/studio-chain.repository'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
 import { syncCourseKnowledge } from './knowledge'
 import {
   type Environment,
   hash,
   type MediaProof,
+  missingAdultTarget,
   planCourseSync,
   type Snapshot,
   same,
@@ -27,7 +31,7 @@ export interface SyncRequest {
   environment: Environment
   sourceSlug: string
   targetSlug: string
-  mode: 'plan' | 'apply'
+  mode: 'plan' | 'apply' | 'verify'
   expectedPlanHash?: string
   media?: MediaProof
 }
@@ -42,7 +46,8 @@ export async function readSyncSnapshot(
     .from(courses)
     .where(inArray(courses.slug, [request.sourceSlug, request.targetSlug]))
     .orderBy(asc(courses.id))
-  if (rows.length !== 2) throw new Error('Informe dois cursos existentes e distintos')
+  if (!rows.length || request.sourceSlug === request.targetSlug)
+    throw new Error('Informe uma origem existente e slugs distintos')
   const drafts = new DrizzleLessonDraftRepository(tx, parsePublishedLessonBlock)
   const trees: Snapshot['source'][] = []
   for (const course of rows) {
@@ -58,6 +63,7 @@ export async function readSyncSnapshot(
       .orderBy(asc(lessons.moduleId), asc(lessons.sortOrder))
     const snapshots = []
     for (const row of lessonRows) {
+      if (row.archivedAt) continue
       const published = await drafts.readPublished(row.id)
       const [draft] = await tx.select().from(lessonDrafts).where(eq(lessonDrafts.lessonId, row.id))
       snapshots.push({
@@ -67,11 +73,19 @@ export async function readSyncSnapshot(
         draft: draft ? { revision: draft.revision, document: draft.document } : null,
       })
     }
-    trees.push({ course, modules: moduleRows, lessons: snapshots })
+    trees.push({
+      course,
+      modules: moduleRows.filter((m) => !m.archivedAt),
+      lessons: snapshots,
+      archivedModules: moduleRows.filter((m) => m.archivedAt),
+      archivedLessons: lessonRows.filter((l) => l.archivedAt),
+    })
   }
   const source = trees.find((t) => t.course.slug === request.sourceSlug)
-  const target = trees.find((t) => t.course.slug === request.targetSlug)
-  if (!source || !target) throw new Error('Cursos não encontrados')
+  if (!source) throw new Error('Curso Kids não encontrado')
+  const target =
+    trees.find((t) => t.course.slug === request.targetSlug) ??
+    missingAdultTarget(source.course, request.targetSlug, request.environment)
   return { environment: request.environment, source, target }
 }
 
@@ -80,11 +94,11 @@ export async function executeCourseSync(
   request: SyncRequest,
   policy?: Awaited<ReturnType<typeof loadStudioAuthoringPolicy>>,
 ) {
-  if (request.mode !== 'plan' && request.mode !== 'apply') throw new Error('Modo inválido')
+  if (!['plan', 'apply', 'verify'].includes(request.mode)) throw new Error('Modo inválido')
   return db.transaction(async (tx) => {
     await tx.execute(sql`set local statement_timeout = '60s'`)
     await tx.execute(sql`set local lock_timeout = '10s'`)
-    if (request.mode === 'plan')
+    if (request.mode !== 'apply')
       await tx.execute(sql`set transaction isolation level repeatable read, read only`)
     else {
       // Same ordering as canonical authoring: courses, then lessons. Concurrent edits block.
@@ -109,6 +123,12 @@ export async function executeCourseSync(
     const snapshot = await readSyncSnapshot(tx, request)
     const plan = planCourseSync(snapshot, request.media)
     if (request.mode === 'plan') return { snapshot, plan }
+    if (request.mode === 'verify') {
+      const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source, true)
+      if (plan.changed || !knowledge.unchanged)
+        throw new Error('O conteúdo ou o material do Zappy ainda difere da origem')
+      return { snapshot, plan, knowledge }
+    }
     if (!request.media || request.expectedPlanHash !== plan.planHash)
       throw new Error('O plano mudou ou a mídia não foi conferida. Gere outro plano')
     const checked = Date.parse(request.media.checkedAt)
@@ -118,28 +138,70 @@ export async function executeCourseSync(
       Date.now() - checked > 30 * 60_000
     )
       throw new Error('A conferência de mídia precisa ter menos de 30 minutos')
-    if (!plan.changed)
+    if (!plan.changed) {
+      const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source)
       return {
-        applied: false,
+        applied: !knowledge.unchanged,
+        contentChanged: false,
+        knowledge,
         verified: true,
         planHash: plan.planHash,
         sourceHash: plan.sourceHash,
       }
+    }
     const author = request.actorId
     const drafts = new DrizzleLessonDraftRepository(tx, parsePublishedLessonBlock, policy)
     const content = new DrizzleContentAdminRepository(tx, policy)
     const now = new Date()
-    // Temporary positions prevent unique conflicts when existing rows are reordered.
-    if (snapshot.target.modules.length)
+    if (snapshot.target.missing) {
+      await tx.insert(courses).values({
+        ...plan.course,
+        status: 'draft',
+        createdAt: now,
+        updatedAt: now,
+      })
+    }
+    // Park active rows below every historical position. Archived identities stay unique;
+    // repeated replacements never collide with an older archived curriculum.
+    const park = async (
+      table: typeof modules | typeof lessons,
+      active: { id: string; sortOrder: number }[],
+      archived: { sortOrder: number }[],
+    ) => {
+      const positions = curriculumParkingPositions([
+        ...active.map((r) => ({ ...r, archivedAt: null })),
+        ...archived.map((r, i) => ({ ...r, id: `archived:${i}`, archivedAt: now })),
+      ])
+      for (const row of positions)
+        await tx.update(table).set({ sortOrder: row.sortOrder }).where(eq(table.id, row.id))
+    }
+    await park(modules, snapshot.target.modules, snapshot.target.archivedModules ?? [])
+    await park(
+      lessons,
+      snapshot.target.lessons.map((l) => l.row),
+      snapshot.target.archivedLessons ?? [],
+    )
+    if (plan.retirements.lessons.length) {
+      await preserveStudioChainsForLessons(tx, plan.course.id, plan.retirements.lessons)
       await tx
-        .update(modules)
-        .set({ sortOrder: sql`${modules.sortOrder} - 2000000` })
-        .where(eq(modules.courseId, plan.course.id))
-    if (snapshot.target.lessons.length)
+        .update(lessonBlocks)
+        .set({ archivedAt: now })
+        .where(
+          and(
+            inArray(lessonBlocks.lessonId, plan.retirements.lessons),
+            isNull(lessonBlocks.archivedAt),
+          ),
+        )
       await tx
         .update(lessons)
-        .set({ sortOrder: sql`${lessons.sortOrder} - 2000000` })
-        .where(eq(lessons.courseId, plan.course.id))
+        .set({ archivedAt: now, isPublished: false, updatedAt: now })
+        .where(inArray(lessons.id, plan.retirements.lessons))
+    }
+    if (plan.retirements.modules.length)
+      await tx
+        .update(modules)
+        .set({ archivedAt: now, updatedAt: now })
+        .where(inArray(modules.id, plan.retirements.modules))
     for (const module of plan.modules) {
       const { createdAt: _c, updatedAt: _u, ...fields } = module
       const [savedModule] = await tx
@@ -153,6 +215,7 @@ export async function executeCourseSync(
             summary: module.summary,
             animation: module.animation,
             sortOrder: module.sortOrder,
+            archivedAt: null,
             updatedAt: now,
           },
         })
@@ -161,7 +224,9 @@ export async function executeCourseSync(
         throw new Error('O módulo pertence a outro curso')
     }
     for (const lesson of plan.lessons) {
-      const exists = snapshot.target.lessons.some((l) => l.row.id === lesson.row.id)
+      const exists =
+        snapshot.target.lessons.some((l) => l.row.id === lesson.row.id) ||
+        snapshot.target.archivedLessons?.some((l) => l.id === lesson.row.id)
       if (!exists) {
         const { createdAt: _c, updatedAt: _u, ...fields } = lesson.row
         await tx
@@ -170,7 +235,12 @@ export async function executeCourseSync(
       } else {
         await tx
           .update(lessons)
-          .set({ moduleId: lesson.row.moduleId, sortOrder: lesson.row.sortOrder, updatedAt: now })
+          .set({
+            moduleId: lesson.row.moduleId,
+            sortOrder: lesson.row.sortOrder,
+            archivedAt: null,
+            updatedAt: now,
+          })
           .where(eq(lessons.id, lesson.row.id))
       }
       if (!lesson.changed) continue
@@ -199,7 +269,7 @@ export async function executeCourseSync(
     }
     if (!(await content.updateCourse({ ...plan.course, updatedAt: now })))
       throw new Error('O curso adulto mudou durante a sincronização')
-    const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source.course.id)
+    const knowledge = await syncCourseKnowledge(tx, plan, snapshot.source)
     const after = await readSyncSnapshot(tx, request)
     if (!same(snapshot.source, after.source)) throw new Error('A origem Kids foi alterada')
     const verify = planCourseSync(after, request.media)

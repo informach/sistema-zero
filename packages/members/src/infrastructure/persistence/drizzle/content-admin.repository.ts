@@ -29,6 +29,7 @@ import {
   CreatorSeedMetadataSchema,
   creatorSeedRequiredLessonIds,
 } from '../../../domain/course/creator-seed-metadata'
+import { curriculumParkingPositions } from '../../../domain/course/curriculum-order'
 import {
   type LessonBlockContent,
   type LessonBlockKind,
@@ -477,8 +478,14 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         throw error
       }
 
-      const srcModules = await tx.select().from(modules).where(eq(modules.courseId, src.id))
-      const srcLessons = await tx.select().from(lessons).where(eq(lessons.courseId, src.id))
+      const srcModules = await tx
+        .select()
+        .from(modules)
+        .where(and(eq(modules.courseId, src.id), isNull(modules.archivedAt)))
+      const srcLessons = await tx
+        .select()
+        .from(lessons)
+        .where(and(eq(lessons.courseId, src.id), isNull(lessons.archivedAt)))
       const lessonIds = srcLessons.map((l) => l.id)
       for (const lessonId of [...lessonIds].sort()) await lockLessonStructure(tx, lessonId)
       const srcBlocks =
@@ -803,7 +810,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   // ── Módulos ─────────────────────────────────────────────────────────────
   async findModuleById(id: string): Promise<Module | null> {
-    const [row] = await this.db.select().from(modules).where(eq(modules.id, id)).limit(1)
+    const [row] = await this.db
+      .select()
+      .from(modules)
+      .where(and(eq(modules.id, id), isNull(modules.archivedAt)))
+      .limit(1)
     return row ? toModule(row) : null
   }
 
@@ -820,7 +831,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
           title: fields.title,
           summary: fields.summary,
           animation: fields.animation ?? null,
-          sortOrder: sql`coalesce((select max(${modules.sortOrder}) + 1 from ${modules} where ${modules.courseId} = ${courseId}), 0)`,
+          sortOrder: sql`coalesce((select max(${modules.sortOrder}) + 1 from ${modules} where ${modules.courseId} = ${courseId} and ${modules.archivedAt} is null), 0)`,
           createdAt: now,
           updatedAt: now,
         })
@@ -839,7 +850,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
         animation: fields.animation,
         updatedAt: new Date(),
       })
-      .where(eq(modules.id, id))
+      .where(and(eq(modules.id, id), isNull(modules.archivedAt)))
       .returning()
     return row ? toModule(row) : null
   }
@@ -872,7 +883,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const rows = await this.db
       .select({ id: modules.id })
       .from(modules)
-      .where(eq(modules.courseId, courseId))
+      .where(and(eq(modules.courseId, courseId), isNull(modules.archivedAt)))
       .orderBy(asc(modules.sortOrder))
     return rows.map((r) => r.id)
   }
@@ -884,12 +895,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
       // linha colidiria com o irmão ainda não movido (ex.: [a:0,b:1]→[b,a] tentaria
       // b:0 com `a` ainda em 0 → 23505 → 500). Fase 1: desloca TODAS as linhas (o
       // serviço garante orderedIds = conjunto completo via assertSameSet) p/ um
-      // intervalo negativo disjunto num único statement (shift uniforme = sem
-      // colisão); fase 2: atribui a ordem final (nada mais ocupa 0..n-1).
-      await tx
-        .update(modules)
-        .set({ sortOrder: sql`${modules.sortOrder} - ${REORDER_PARK_OFFSET}` })
-        .where(eq(modules.courseId, courseId))
+      // intervalo negativo abaixo também das grades arquivadas; fase 2 atribui a
+      // ordem final. Linhas históricas não são movidas nem reativadas.
+      const rows = await tx.select().from(modules).where(eq(modules.courseId, courseId))
+      for (const row of curriculumParkingPositions(rows))
+        await tx.update(modules).set({ sortOrder: row.sortOrder }).where(eq(modules.id, row.id))
       const now = new Date()
       for (let i = 0; i < orderedIds.length; i++) {
         await tx
@@ -902,7 +912,11 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
 
   // ── Aulas ───────────────────────────────────────────────────────────────
   async findLessonById(id: string): Promise<Lesson | null> {
-    const [row] = await this.db.select().from(lessons).where(eq(lessons.id, id)).limit(1)
+    const [row] = await this.db
+      .select()
+      .from(lessons)
+      .where(and(eq(lessons.id, id), isNull(lessons.archivedAt)))
+      .limit(1)
     return row ? toLesson(row) : null
   }
 
@@ -919,7 +933,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
             courseId,
             slug: fields.slug,
             title: fields.title,
-            sortOrder: sql`coalesce((select max(${lessons.sortOrder}) + 1 from ${lessons} where ${lessons.moduleId} = ${moduleId}), 0)`,
+            sortOrder: sql`coalesce((select max(${lessons.sortOrder}) + 1 from ${lessons} where ${lessons.moduleId} = ${moduleId} and ${lessons.archivedAt} is null), 0)`,
             estimatedMinutes: fields.estimatedMinutes,
             isPublished: fields.isPublished,
             createdAt: now,
@@ -1001,7 +1015,7 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     const rows = await this.db
       .select({ id: lessons.id })
       .from(lessons)
-      .where(eq(lessons.moduleId, moduleId))
+      .where(and(eq(lessons.moduleId, moduleId), isNull(lessons.archivedAt)))
       .orderBy(asc(lessons.sortOrder))
     return rows.map((r) => r.id)
   }
@@ -1010,10 +1024,9 @@ export class DrizzleContentAdminRepository implements ContentAdminRepository {
     await this.db.transaction(async (tx) => {
       // Fase 1 estaciona em faixa negativa, fase 2 atribui a ordem final — sem
       // colidir com o índice único (module_id, sort_order). Ver reorderModules.
-      await tx
-        .update(lessons)
-        .set({ sortOrder: sql`${lessons.sortOrder} - ${REORDER_PARK_OFFSET}` })
-        .where(eq(lessons.moduleId, moduleId))
+      const rows = await tx.select().from(lessons).where(eq(lessons.moduleId, moduleId))
+      for (const row of curriculumParkingPositions(rows))
+        await tx.update(lessons).set({ sortOrder: row.sortOrder }).where(eq(lessons.id, row.id))
       const now = new Date()
       for (let i = 0; i < orderedIds.length; i++) {
         await tx

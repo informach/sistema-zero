@@ -134,7 +134,7 @@ async function lockDraft(tx: Transaction, lessonId: string) {
   const [lesson] = await tx
     .select({ courseId: lessons.courseId })
     .from(lessons)
-    .where(eq(lessons.id, lessonId))
+    .where(and(eq(lessons.id, lessonId), isNull(lessons.archivedAt)))
   if (!lesson) throw new LessonNotFoundError()
   const [course] = await tx
     .select({ id: courses.id, slug: courses.slug })

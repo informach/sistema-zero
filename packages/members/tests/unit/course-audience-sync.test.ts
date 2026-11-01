@@ -5,6 +5,7 @@ import {
   adultSalesUrl,
   hash,
   type MediaProof,
+  missingAdultTarget,
   planCourseSync,
   type Snapshot,
   sourceHash,
@@ -62,6 +63,7 @@ export function fixture(): Snapshot {
         summary: 'Observe',
         animation: null,
         sortOrder: 0,
+        archivedAt: null,
         createdAt: now,
         updatedAt: now,
       },
@@ -77,6 +79,7 @@ export function fixture(): Snapshot {
           estimatedMinutes: 15,
           sortOrder: 0,
           isPublished: true,
+          archivedAt: null,
           createdAt: now,
           updatedAt: now,
         },
@@ -131,6 +134,17 @@ export function proof(snapshot: Snapshot): MediaProof {
 }
 
 describe('sincronizar curso publicado entre públicos', () => {
+  test('planeja o curso ausente sem criar identidade nova a cada tentativa', () => {
+    const snapshot = fixture()
+    snapshot.target = missingAdultTarget(snapshot.source.course, 'busca-adulto', 'local')
+    const first = planCourseSync(snapshot)
+    const second = planCourseSync(structuredClone(snapshot))
+    expect(first.planHash).toBe(second.planHash)
+    expect(first.course.id).not.toBe(snapshot.source.course.id)
+    expect(first.course.status).toBe('published')
+    expect(first.lessons).toHaveLength(1)
+    expect(snapshot.target.modules).toHaveLength(0)
+  })
   test('preserva identidade adulta e origem, copia conteúdo e publica', () => {
     const snapshot = fixture(),
       before = hash(snapshot),
@@ -206,13 +220,15 @@ describe('sincronizar curso publicado entre públicos', () => {
     snapshot.source.course.description = 'Mudou'
     expect(() => planCourseSync(snapshot, media)).toThrow('origem')
   })
-  test('recusa apagar aula adulta excedente', () => {
+  test('planeja retirar a aula excedente sem apagar o histórico', () => {
     const snapshot = fixture()
     snapshot.target.lessons.push({
       ...snapshot.target.lessons[0]!,
       row: { ...snapshot.target.lessons[0]!.row, id: randomUUID(), slug: 'extra' },
     })
-    expect(() => planCourseSync(snapshot)).toThrow('excedente')
+    const plan = planCourseSync(snapshot)
+    expect(plan.retirements.lessons).toEqual([snapshot.target.lessons[1]!.row.id])
+    expect(plan.lessons).toHaveLength(1)
   })
   test('remapeia anexos, critérios, workspace e planos de vídeo', () => {
     const snapshot = fixture(),

@@ -2,8 +2,9 @@
  * Progresso por aluno: conclusão de aulas (fato leve) + agregações derivadas.
  *
  * Duas famílias de contagem:
- * - `countCompleted*` (cruas) — TODAS as conclusões registradas, inclusive de
- *   aulas hoje despublicadas/movidas. Visão ADMIN (numerador real vs total real).
+ * - `countCompleted*` — conclusões da grade ATIVA, inclusive de aulas hoje
+ *   despublicadas/movidas. Visão ADMIN (par de `countLessons*`). Aulas retiradas
+ *   por substituição da grade ficam no histórico, fora desse numerador.
  * - `countCompletedPublished*` — só conclusões de aulas AINDA publicadas. Visão
  *   do ALUNO: o denominador dela é `countPublishedLessons*`; sem o filtro, o
  *   numerador inflava (curso "100%" sem o aluno ter feito as aulas visíveis).
@@ -23,9 +24,9 @@ export interface ProgressRepository {
    * devolve `true` quando a conclusão é NOVA (re-complete → `false`).
    */
   markComplete(userId: string, lessonId: string, courseId: string, now: Date): Promise<boolean>
-  /** Quantas aulas do curso o aluno concluiu (cru — visão admin). */
+  /** Quantas aulas da grade ativa o aluno concluiu (visão admin). */
   countCompleted(userId: string, courseId: string): Promise<number>
-  /** Concluídas por curso, em lote (cru — visão admin). courseId → concluídas. */
+  /** Concluídas da grade ativa por curso, em lote (visão admin). */
   countCompletedByCourseIds(userId: string, courseIds: string[]): Promise<Map<string, number>>
   /** Concluídas por aprendiz e curso em uma única consulta (ficha admin da família). */
   countCompletedByUsersAndCourseIds(

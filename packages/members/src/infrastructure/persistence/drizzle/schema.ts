@@ -266,6 +266,8 @@ export const modules = members.table(
     summary: text('summary'),
     animation: jsonb('animation').$type<ModuleAnimation>(),
     sortOrder: integer('sort_order').notNull().default(0),
+    /** Retired curriculum remains available to historical records, outside the active outline. */
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },
@@ -290,6 +292,7 @@ export const lessons = members.table(
     // Default true = backfill das aulas já em produção (continuam visíveis).
     // A API admin sempre manda o valor explícito (aula NOVA nasce rascunho).
     isPublished: boolean('is_published').notNull().default(true),
+    archivedAt: timestamp('archived_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
   },

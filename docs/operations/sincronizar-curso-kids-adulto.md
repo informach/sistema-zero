@@ -1,12 +1,14 @@
 # Copiar um curso pronto do Kids para o adulto
 
-O comando atualiza um curso adulto **existente**, a pedido da equipe. Não mantém sincronização automática. A origem precisa estar publicada e com todas as aulas publicadas. O curso e as aulas do adulto ficam publicados ao final da transação.
+O comando cria o curso adulto ausente ou atualiza o existente, a pedido da equipe. Não mantém sincronização automática. A origem precisa estar publicada e com todas as aulas ativas publicadas. O curso e as aulas do adulto ficam publicados ao final da transação.
 
 ## Conteúdo e identidade
 
 São copiados título, subtítulo, descrição, capa, módulos, resumo e animação do módulo, aulas, blocos, partes, objetivos privados, exemplos, materiais, PDFs, configurações de progressão, vídeos e lista de blocos concedidos. As instruções dos vídeos planejados também permanecem disponíveis na autoria.
 
-O adulto mantém seu ID, slug e audiência. Aulas são reconhecidas pelo mapa de proveniência ou, na primeira operação, pelo slug. IDs existentes são preservados. Na primeira cópia, módulos, blocos, partes e anexos correspondentes são reconhecidos pela posição; depois, `metadata.contentMirror` conserva o mapa mesmo se a ordem mudar. A operação recusa módulos ou aulas adultas excedentes em vez de removê-los e apagar progresso por cascata.
+O adulto mantém seu ID, slug e audiência. Aulas são reconhecidas pelo mapa de proveniência ou, na primeira operação, pelo slug. IDs existentes são preservados. Na primeira cópia, módulos, blocos, partes e anexos correspondentes são reconhecidos pela posição; depois, `metadata.contentMirror` conserva o mapa mesmo se a ordem mudar.
+
+A grade de origem substitui integralmente a grade ativa adulta. Módulos e aulas excedentes são arquivados, os blocos dessas aulas também, e as aulas deixam de ser publicadas. Saem da navegação, da autoria normal e dos números da grade atual, mas seus registros de progresso, conclusões e entregas permanecem. Se uma aula voltar, o mapa ou o mesmo slug recupera sua identidade. Aulas novas ficam pendentes para quem ainda não as fez. O percentual pode mudar para refletir a nova grade; o histórico não é zerado. O plano explicita as retiradas em `retirements`.
 
 Os dados de alunos não são copiados, removidos nem reatribuídos. O publicador canônico continua responsável pelas revisões de conteúdo e pela invalidação de tentativas de quiz quando a pergunta muda. A posição exclusiva do Kids não é transferida para a jornada adulta. Metadados antigos de um modelo vazio, como a lista antiga de aulas planejadas, são substituídos pelos da origem. As referências dessa lista são remapeadas quando ela existe na origem.
 
@@ -18,13 +20,13 @@ Os arquivos continuam compartilhados por referência, incluindo PDFs privados no
 
 Antes de escrever no Members, o operador consulta o Vimeo com as credenciais do Admin do ambiente e exige `available` em todos os vídeos. As falas vêm da mesma função `falasDaAula` usada pelo botão de voz do Admin, incluindo diálogos, experiências e quiz. `gerarVozes` reaproveita os MP3s existentes no cache oficial do R2 e só sintetiza os que faltam. O operador também confere a entrega HTTP dos áudios. Falha ou falta de voz impede a aplicação, sem substituir o áudio por uma promessa de geração posterior.
 
-Extratos didáticos válidos e atuais do tutor são reaproveitados por meio do repositório canônico de conhecimento, com referências e revisões adultas. Não se copiam conversas de alunos. Fontes antigas ou em erro são contabilizadas como indisponíveis no recibo, sem inventar transcrições.
+Extratos didáticos válidos e atuais do tutor são reaproveitados por meio do repositório canônico de conhecimento, com referências e revisões adultas. Não se copiam conversas de alunos. Transcrição ou PDF marcado para o tutor sem fonte pronta e atual impede a publicação e reverte a operação inteira. O índice antigo do destino é substituído na mesma transação. Um índice perdido pode ser reparado sem republicar o curso; `verify` é somente leitura e também confere o conhecimento, não apenas os arquivos.
 
 O programa é sempre copiado da versão publicada. Um rascunho diferente bloqueia a operação, exceto pela data interna `initialProject.updatedAt` do Estúdio, que pode mudar ao abrir o editor. Essa exceção não alcança código, arquivos, exemplos, blocos ou falas. A data copiada continua sendo a publicada.
 
 ## Execução
 
-Requisitos: Bun, Railway CLI autenticada com SSH e acesso aos serviços `members` e `admin` do projeto. No Windows, o operador usa a instalação npm da CLI sob `%APPDATA%`. As credenciais do banco, Vimeo, ElevenLabs e R2 permanecem nos processos remotos dos serviços. Não editar `.env` nem copiar tokens para argumentos.
+Requisitos: Bun, Railway CLI autenticada com SSH e acesso aos serviços `members` e `admin` do projeto. A migration Members `0145_archive-course-curriculum.sql` e os repositórios com arquivamento precisam estar implantados antes de executar esta versão do operador contra um ambiente remoto. A alteração só acrescenta duas colunas nullable e não arquiva dados por conta própria. No Windows, o operador usa a instalação npm da CLI sob `%APPDATA%`. As credenciais do banco, Vimeo, ElevenLabs e R2 permanecem nos processos remotos dos serviços. Não editar `.env` nem copiar tokens para argumentos.
 
 Execute na raiz do repositório. Informe o UUID da conta administrativa responsável pela operação e um diretório novo sob `.cache/course-audience-sync/`.
 
@@ -41,7 +43,7 @@ bun scripts/release/sync-course-audiences.ts verify staging cade-todo-mundo cade
 
 Depois, repita **prepare, apply e verify** com `production`, outro diretório e o UUID administrativo de produção. Para outro curso, troque os dois slugs. Não é necessário implantar um endpoint novo para executar o operador: ele transporta o código operacional por SSH e carrega os publicadores e a política do Estúdio diretamente dos arquivos implantados no Members. O gerador de áudio é empacotado a partir do código oficial do Admin.
 
-O backup deve corresponder ao inventário do plano. Mudança na árvore, no código operacional ou no plano recusa a aplicação. O conferimento de mídia vale por 30 minutos. As travas dos cursos e das aulas, a comparação do plano e a publicação das aulas acontecem na mesma transação. Um erro desfaz a cópia inteira. Uma nova preparação de conteúdo já equivalente retorna `changed: false`; a aplicação correspondente não escreve nada. Não reutilizar diretórios de evidência para novas tentativas.
+O backup deve corresponder ao inventário do plano. Mudança na árvore, no código operacional ou no plano recusa a aplicação. O conferimento de mídia vale por 30 minutos. As travas dos cursos e das aulas, a comparação do plano e a publicação das aulas acontecem na mesma transação. Um erro desfaz a cópia inteira. Uma nova preparação de conteúdo já equivalente retorna `changed: false`; a aplicação correspondente não republica as aulas, mas pode reparar um índice do Zappy perdido. Se o índice também estiver equivalente, não escreve nada. Não reutilizar diretórios de evidência para novas tentativas.
 
 ## Verificação local
 

@@ -4,8 +4,13 @@
 
 Operador em `scripts/release/sync-course-audiences.ts`, planejador e executor em
 `packages/members/scripts/course-audience-sync/`. Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
-Atualiza o adulto existente e publica pela autoria canônica numa transação, preservando identidade
-e dados dos alunos. Preparação de mídia no Admin do mesmo ambiente, backup e plano com hashes,
+Cria o adulto ausente ou atualiza o existente e publica pela autoria canônica numa transação,
+preservando identidade e dados dos alunos. A grade ativa é substituída: módulos e aulas excedentes
+são arquivados (`archivedAt`, migration 0145), com os blocos das aulas, nunca apagados por cascata.
+Leituras e contagens da grade excluem esses registros; o histórico e as conclusões ficam guardados.
+Um retorno da aula recupera seu ID pelo mapa ou slug. Reordenar usa posições abaixo também do
+histórico (`curriculumParkingPositions`). A cópia exige extratos atuais do Zappy e confere os
+trechos reais, além dos cabeçalhos; `verify` não escreve. Preparação de mídia no Admin do mesmo ambiente, backup e plano com hashes,
 recusa de edição concorrente, remapeamento persistido em `metadata.contentMirror`. Não transformar
 essa operação explícita em sincronização automática ou chamar o composition root completo.
 
