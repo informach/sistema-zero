@@ -19,8 +19,8 @@ A implantação deve incluir os commits concluídos de staging local e o palco d
 | Interface | Ações separadas de copiar ao adulto e promover Kids para produção, prévia, acompanhamento, cancelamento e retomada. Cinco fluxos de navegador aprovados em 1366×1000 e 390×844. |
 | Operação | Operador `members/scripts/publish-course.ts` chama o mesmo serviço e worker. Runbook em `docs/operations/publicar-cursos.md`. |
 | Configuração Railway | Portas de publicação configuradas no Members e Admin dos dois ambientes, sem reiniciar. Schemas locais validados com as variáveis reais do Railway e leitura sem `.env` local. |
-| Palco | Criado em staging, ID `a9c67d3c-9880-4707-bb16-22a5e7a52c30`. Variáveis por referência ao Kids, configuração e ID do CI registrados. 21 testes atuais e build de produção dos últimos ajustes aprovados. Endereço `palco-gravacao-staging.up.railway.app` provisionado. Ainda falta publicar e conferir a sessão real. |
-| Entrega final | Revisão e verificações finais, commit/push, migrações e deploys ainda pendentes neste checkpoint. Não tratar configuração como implantação. |
+| Palco | Criado em staging, ID `a9c67d3c-9880-4707-bb16-22a5e7a52c30`. Variáveis por referência ao Kids, configuração e ID do CI registrados. 21 testes atuais e build de produção dos últimos ajustes aprovados. Endereço `palco-gravacao-staging.up.railway.app` provisionado. Primeira imagem `af9e8cc64` publicada e saudável. Atualização dos pontos do Estúdio está no lote seguinte. Conferência com login adiada pela dona. |
+| Entrega final | Código enviado em `af9e8cc64` e correção do mapa de serviços em `d8afe56a7`. CI final, migrations e deploys gerais ainda em andamento. Não confundir o primeiro deploy do palco com a implantação do lote inteiro. |
 
 ## Arquitetura implementada
 
@@ -43,5 +43,25 @@ A grade substitui somente a árvore ativa. A retirada de aulas arquiva registros
 - A fixture de navegador usa provedores determinísticos. Não equivale a uma publicação integral de curso com provedores pagos reais.
 - Suítes amplas: Members 2.217 aprovados, 563 ignorados de outros ambientes; Admin 981 aprovados, zero falhas na execução final r4. Cópia real Vimeo, reutilização e limpeza confirmadas.
 - Build de produção do Admin e tipos do Members aprovados. Lint global aprovado. O teste de autorização que excedeu cinco segundos sob concorrência passou isolado e na repetição ampla final sem build concorrente.
-- Integrar e implantar a versão exata nos dois ambientes, com migrations 0145 a 0148 e configuração já preparada.
+- Concluir o CI e implantar a versão exata nos dois ambientes, com migrations 0145 a 0148 e configuração já preparada.
 - Conferir o palco publicado, a autenticação da equipe e a ponte `window.__gravacao` com o EdiAula. Python continua fora do suporte do palco atual; isso não altera o Estúdio real.
+
+## Fechamento das configurações do palco
+
+Em 01/11, a primeira imagem do palco passou no healthcheck do Railway. Autodeploy nativo foi
+explicitamente desligado e o plano IaC de staging ficou vazio. O CI continua sendo o dono das
+próximas ondas. O domínio foi incluído no CORS público dos dois buckets, com prova pelo CDN e
+remoção dos objetos temporários. O Admin de staging passou a listar os domínios dos apps de
+staging para os próximos uploads Vimeo; 245 vídeos existentes da pasta Testes receberam somente
+o domínio adicional do palco, com os domínios anteriores reconferidos. Nenhum vídeo da pasta de
+produção foi alterado para essa validação.
+
+Duas expectativas de contagem dos serviços no CI foram corrigidas após adicionar o palco:
+362 testes dos scripts de release/CI passaram. O job do Arquipélago encontrou um `as never`
+num gerador dos pontos do manual; a construção explícita de `Vector3` preserva o cálculo.
+Typecheck, gerador com os seis GLBs e build passaram; 2.097 testes do jogo passaram, com um
+caso de Postgres ignorado por falta da configuração local específica. Não há mudança no motor
+ou nos modelos. O Admin também passou no typecheck frio com heap de 4 GB, o limite do Docker.
+
+A dona preferiu fazer login no palco depois. A conferência autenticada de gravação continua
+pendente e não bloqueia a preparação dos deploys restantes.

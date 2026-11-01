@@ -72,6 +72,19 @@ já existem; criar um é recusado e trava o deploy de todos. Então, antes do me
 4. o id do serviço entra no `SVC_ID` de `ci.yml`, e o plano volta a não ter mudanças;
 5. só então o merge.
 
+## Acesso às mídias
+
+O domínio do palco também precisa de leitura CORS nos buckets públicos: ele está na lista
+canônica `packages/admin/scripts/student-app-origins.ts`. O comando `r2-cors-public.ts`
+mescla a regra gerenciada, conserva regras externas e prova o CDN com um objeto temporário.
+O livro continua pela rota privada da própria origem; nenhuma escrita de aluno é liberada.
+
+No Admin de staging, `VIMEO_WHITELIST_DOMAINS` inclui os apps de staging e
+`palco-gravacao-staging.up.railway.app`. Vídeos já existentes na pasta Testes precisam receber
+esse domínio adicional, preservando os que já tinham. Alterar só a variável vale para os próximos
+uploads, sem atualizar retroativamente os vídeos. Não modificar vídeos da pasta de produção
+para validar o palco.
+
 ## Limites conhecidos
 
 - Os vídeos da aula (Vimeo, YouTube) não são controlados pelo robô.

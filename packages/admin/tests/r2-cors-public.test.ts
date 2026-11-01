@@ -15,6 +15,9 @@ import {
 describe('CORS do bucket R2 público', () => {
   it('inclui na regra a mesma origem usada pela prova do staging', () => {
     expect(PUBLIC_READ_RULE.AllowedOrigins).toContain(KIDS_STAGING_ORIGIN)
+    expect(PUBLIC_READ_RULE.AllowedOrigins).toContain(
+      'https://palco-gravacao-staging.up.railway.app',
+    )
   })
 
   it('mantém um objeto-prova público estável para o gate sem credenciais', () => {
