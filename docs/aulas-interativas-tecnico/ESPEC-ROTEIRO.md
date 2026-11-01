@@ -231,7 +231,29 @@ Verbos do palco (`packages/palco-gravacao/src/lib/verbos.ts`):
 | `categoria A > B > C` | abre as categorias da paleta do Estúdio |
 | `arrastar "<bloco>" para "<bloco>"` | da paleta para baixo de um bloco da área de trabalho |
 | `verificar projeto` | clica e espera a resposta do servidor, acelerada sob a fala |
-| `enviar projeto` | clica em Enviar meu projeto: no palco nada é enviado |
+| `enviar projeto` | clica em Enviar meu projeto (ou Enviar de novo) e confirma: no palco nada é enviado |
+| `apontar livro`, `apontar paleta`, `apontar bloco "<texto>"` | aponta o livro 3D, a paleta de comandos ou um bloco da área de trabalho |
+| `tocar prévia <alvo>`, `tocar prévia x y`, `apontar prévia x y` | o jogo na pré-visualização do Estúdio, por um alvo do jogo pronto da aula ou por um ponto em pixels do jogo |
+| `rolar até "<bloco>"` | arrasta um espaço vazio da área de trabalho até o bloco aparecer |
+| `encaixar "<bloco>" em "<bloco>"` | leva um bloco da paleta para o espaço ao lado de **fazer** de outro (`no "<rótulo>"` para outro espaço) |
+| `trocar "<de>" por "<para>"` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto (`em "<bloco>"` para dizer qual) |
+| `compartilhar` | abre o Compartilhar do Estúdio; Gerar capa, Publicar, Copiar link de jogar e Fechar vão com `clicar "<nome>"`. No palco nada vai para o Mural |
 
-Ainda não há verbo para trocar um campo ou um número de um bloco, nem para encaixar dentro de um
-bloco (o espaço ao lado de **fazer**): esses gestos continuam sendo marcados à mão no EdiAula.
+**Ampliar e voltar.** Toda demonstração num bloco interativo acontece com o bloco ampliado, e
+ele volta ao tamanho da aula antes de **Próxima parte** ou **Concluir aula**. Os botões têm o nome
+do bloco:
+
+| Bloco | Ampliar | Voltar |
+| --- | --- | --- |
+| Jogo pronto | `[ampliar jogo]` | `[voltar à aula]` |
+| Experiência | `[ampliar experiência]` | `[voltar à aula]` |
+| Estúdio | `[expandir estúdio]` | `[reduzir estúdio]` |
+
+A conferência do projeto (**Verificar projeto**) e o envio aparecem dentro do Estúdio expandido:
+não é preciso reduzir antes deles, só antes de **Próxima parte** ou **Concluir aula**. O livro do
+caderno não tem ampliar; a tela cheia dele não entra na gravação.
+
+**Tela que entra na edição.** Quando um trecho vai mostrar outra coisa (um vídeo do jogo sendo
+jogado, uma imagem), o **Na tela** diz `[na edição: <o que entra>]` junto da frase: o robô fica
+parado naquele momento e o EdiAula deixa um lembrete na linha do tempo, com o texto, para trocar
+aquele pedaço na edição.

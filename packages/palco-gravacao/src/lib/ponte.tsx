@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import type { LessonDetailView } from '@/lib/types'
+import { paginaDe } from './pagina'
 import { agir, type JogoDaAula, ocupado, VERBOS } from './verbos'
 
 /** Os jogos prontos da aula, com o palco e os alvos de cada um (para `achar`). */
@@ -28,7 +29,7 @@ export function PonteDeGravacao({ lesson }: { lesson: Pick<LessonDetailView, 'bl
     const ponte = {
       versao: 1,
       verbos: () => VERBOS,
-      agir: (acao: string) => agir(acao, jogos),
+      agir: (acao: string) => agir(acao, jogos, paginaDe(document)),
       ocupado: () => ocupado(document),
     }
     Object.assign(window, { __gravacao: ponte })
