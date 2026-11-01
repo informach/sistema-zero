@@ -45,9 +45,11 @@ estão em `src/lib/verbos.ts` e na seção 9 de `docs/aulas-interativas-tecnico/
 `ocupado()` responde enquanto o Estúdio ou o livro carregam, o jogo pronto prepara ou o projeto
 está sendo conferido.
 
-- **A mão nunca fica parada em cima de um bloco:** parada em cima, o Blockly mostra a dica do bloco
+- **A mão procura descansar fora dos blocos:** parada em cima, o Blockly mostra a dica do bloco
   por cima da aula. Apontar um bloco, o encaixe ou o lugar abaixo dele deixa a mão no fundo da
   área, ao lado (`perto`, com o apontar `exato`), e encaixar e trocar terminam afastando a mão.
+  Sem fundo livre ou sem rótulo fixo para reencontrar um campo, o gesto termina sem afastamento,
+  preservando a edição e a sequência da gravação.
 - **Decidir depois do clique:** os seletores do Estúdio (sprite, nome, som) herdam do campo de
   texto do Blockly e abrem uma lista. O `trocar` clica e pede `continuar` com `escolher "<valor>"`,
   que escolhe na lista aberta ou digita na caixa. A prévia que ainda monta depois de expandir é

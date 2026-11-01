@@ -486,16 +486,18 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const campo = precisaDaPagina(pagina).campo(trocar[1], trocar[3])
     if (!campo) throw new Error(`Não achei o campo "${trocar[1]}" num bloco da área de trabalho.`)
     // Depois de trocar, a mão sai de cima do bloco (parada em cima, aparece a dica dele).
-    const depois = afastar(campo.bloco)
+    // Blocos de valor podem ter só o campo editável, sem nome fixo para reencontrar depois.
+    // Nesse caso a edição termina sem agendar um gesto que não tem alvo.
+    const depois = campo.bloco ? [afastar(campo.bloco)] : []
     if (campo.tipo === 'menu')
-      return [{ fazer: 'clicar', alvo: campo.alvo }, naLista(trocar[2]), depois]
+      return [{ fazer: 'clicar', alvo: campo.alvo }, naLista(trocar[2]), ...depois]
     if (campo.tipo === 'numero')
-      return [{ fazer: 'clicar', alvo: campo.alvo }, ...naCaixa(trocar[2]), depois]
+      return [{ fazer: 'clicar', alvo: campo.alvo }, ...naCaixa(trocar[2]), ...depois]
     // Um texto ou um seletor do Estúdio: o que abrir com o clique diz como escolher.
     return [
       { fazer: 'clicar', alvo: campo.alvo },
       { fazer: 'continuar', acao: `escolher "${trocar[2]}"` },
-      depois,
+      ...depois,
     ]
   }
 

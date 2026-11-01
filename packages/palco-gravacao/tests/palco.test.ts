@@ -207,6 +207,18 @@ describe('verbos do palco', () => {
     )
   })
 
+  test('trocar um campo sem rótulo fixo não produz uma continuação inválida', () => {
+    for (const tipo of ['numero', 'menu', 'outro'] as const) {
+      const atual = pagina({
+        campo: () => ({ alvo: { seletor: '[data-palco-alvo="sem-rotulo"]' }, tipo, bloco: '' }),
+      })
+      const passos = agir('trocar "50" por "0"', jogos, atual)
+      for (const passo of passos)
+        if (passo.fazer === 'continuar') expect(() => agir(passo.acao, jogos, atual)).not.toThrow()
+      expect(passos).not.toContainEqual({ fazer: 'continuar', acao: 'afastar de ""' })
+    }
+  })
+
   test('enviar projeto confirma o envio, e reenviar confirma o reenvio', () => {
     expect(agir('enviar projeto', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'Enviar meu projeto' } },
