@@ -229,6 +229,7 @@ Verbos do palco (`packages/palco-gravacao/src/lib/verbos.ts`):
 | `apontar baixar`, `baixar` | o Baixar do material |
 | `tocar "<nome>"` | um controle da experiência pelo nome |
 | `categoria A > B > C` | abre as categorias da paleta do Estúdio; clicar de novo numa categoria ou subcategoria aberta a recolhe (`[categoria Jogo 2D]` de novo) |
+| `apontar abaixo de "<bloco>"` | aponta o lugar logo abaixo de um bloco, onde o próximo vai entrar |
 | `encaixar "<bloco>" abaixo de "<bloco>"` | da paleta para logo abaixo de um bloco da área de trabalho |
 | `verificar projeto` | clica e espera a resposta do servidor, acelerada sob a fala |
 | `enviar projeto` | clica em Enviar meu projeto (ou Enviar de novo) e confirma: no palco nada é enviado |
@@ -252,6 +253,21 @@ do bloco:
 A conferência do projeto (**Verificar projeto**) e o envio aparecem dentro do Estúdio expandido:
 não é preciso reduzir antes deles, só antes de **Próxima parte** ou **Concluir aula**. O livro do
 caderno não tem ampliar; a tela cheia dele não entra na gravação.
+
+**Como escrever o Na tela** (o padrão do Cadê Todo Mundo, de 01/11/2026):
+
+- Uma frase citada por frase do Na tela, no começo dela: `No "frase da fala", ... [gesto].` Uma
+  citação no meio da frase não vira âncora.
+- A citação é um trecho exato da fala daquela parte, de preferência único. Se a mesma frase
+  aparece duas vezes, a ordem das citações no Na tela desfaz a dúvida.
+- Cada gesto da mão leva uns 2 segundos. Os gestos de uma frase têm de caber antes da próxima
+  frase citada; o que passar acontece em seguida, na ordem do roteiro, e entra acelerado.
+- Para ancorar logo depois de uma palavra, cite o começo da frase seguinte (o ampliar depois do
+  "funciona" vai no "Neste jardim").
+- A parte termina com o bloco reduzido e o clique em **Próxima parte** junto da frase que pede
+  isso; a parte seguinte já começa na tela certa, sem `[próxima parte]` no começo.
+- Numa aula sem jogo pronto, os toques no jogo da pré-visualização vão por ponto, em pixels do
+  jogo (`[tocar prévia 137 209]`).
 
 **Tela que entra na edição.** Quando um trecho vai mostrar outra coisa (um vídeo do jogo sendo
 jogado, uma imagem), o **Na tela** diz `[na edição: <o que entra>]` junto da frase: o robô fica
