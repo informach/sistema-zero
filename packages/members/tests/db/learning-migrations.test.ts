@@ -132,17 +132,10 @@ describe.skipIf(!url)(
       // A fixture ainda está no schema 0077; o modelo Drizzle atual inclui colunas posteriores.
       await sql`insert into members.modules (id,course_id,title,sort_order,created_at,updated_at)
         values (${moduleId},${courseId},'Unidade',0,${now.toISOString()},${now.toISOString()})`
-      await db.insert(lessons).values({
-        id: lessonId,
-        moduleId,
-        courseId,
-        slug: 'aula-qa',
-        title: 'Aula existente',
-        sortOrder: 0,
-        isPublished: true,
-        createdAt: now,
-        updatedAt: now,
-      })
+      // Como os módulos, a aula histórica ainda não possui archived_at (0145).
+      // A fixture usa apenas as colunas que existiam, antes do migrador de produção.
+      await sql`insert into members.lessons (id,module_id,course_id,slug,title,sort_order,is_published,created_at,updated_at)
+        values (${lessonId},${moduleId},${courseId},'aula-qa','Aula existente',0,true,${now.toISOString()},${now.toISOString()})`
       await sql`insert into members.lessons (id,module_id,course_id,slug,title,sort_order,is_published,created_at,updated_at)
         values (${legacyEbookLessonId},${moduleId},${courseId},'livro-antigo','Livro antigo',1,true,${now.toISOString()},${now.toISOString()})`
       await sql`insert into members.lesson_attachments (id,lesson_id,label,url,file_type,size_bytes,sort_order)
@@ -665,6 +658,13 @@ describe.skipIf(!url)(
       const { db, sql } = get()
       const [table] = await sql`select to_regclass('members.practice_sessions') as practice`
       expect(table?.practice).toBeNull()
+      // O arquivamento acrescentado em 0145 não pode ocultar a grade já existente.
+      expect(
+        (await db.select().from(modules).where(eq(modules.id, moduleId)))[0]?.archivedAt,
+      ).toBeNull()
+      expect(
+        (await db.select().from(lessons).where(eq(lessons.id, lessonId)))[0]?.archivedAt,
+      ).toBeNull()
       const [structure] = await db
         .select()
         .from(lessonStructures)
