@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { gravarManifesto } from '../gravar-manifesto'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivosDoValeTexto } from './texto-objetivos'
@@ -39,43 +40,45 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 
 export function criarManifestoTexto(publico: PublicoDoDesafio = 'kids') {
   const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
-  return comPedidosDosMoradores(
-    ManifestoDeDesafiosSchema.parse({
-      formato: 'arquipelago-desafios',
-      versao: 1,
-      escopo: 'ilha',
-      desafios: [
-        {
-          slug: `vale-guardiao-dos-ninhos-texto${publico === 'adulto' ? '-adulto' : ''}`,
-          publico,
-          ilha: 'vale-dos-dinos',
-          // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
-          // curso-base do posto concluído (A3). A43 (decisão da dona, 31/10/2026): publica como
-          // está; a Ponte deriva blocos que terão fonte com os cursos do Arquiteto, que chegam
-          // antes do lançamento, e a barreira C01a confere na importação.
-          tipo: 'quadro-das-cores',
-          quadro: 6,
-          ordem: 60,
-          publicar: true,
-          conteudo: {
-            versao: 1,
-            ...textos[publico],
-            projetoInicial: montarProjetoTexto('inicial'),
-            gabarito: montarProjetoTexto('gabarito'),
-            objetivos: objetivosDoValeTexto(publico),
-            desafioExtra: {
-              titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
-              texto:
-                publico === 'kids'
-                  ? 'Faça a tecla R recomeçar a partida: sem ondas, sem nuvens e com as contagens zeradas.'
-                  : 'Faça a tecla R reiniciar a partida: onda, inimigos, protegidos e vidas voltam ao início.',
+  return comApresentacao(
+    comPedidosDosMoradores(
+      ManifestoDeDesafiosSchema.parse({
+        formato: 'arquipelago-desafios',
+        versao: 1,
+        escopo: 'ilha',
+        desafios: [
+          {
+            slug: `vale-guardiao-dos-ninhos-texto${publico === 'adulto' ? '-adulto' : ''}`,
+            publico,
+            ilha: 'vale-dos-dinos',
+            // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+            // curso-base do posto concluído (A3). A43 (decisão da dona, 31/10/2026): publica como
+            // está; a Ponte deriva blocos que terão fonte com os cursos do Arquiteto, que chegam
+            // antes do lançamento, e a barreira C01a confere na importação.
+            tipo: 'quadro-das-cores',
+            quadro: 6,
+            ordem: 60,
+            publicar: true,
+            conteudo: {
+              versao: 1,
+              ...textos[publico],
+              projetoInicial: montarProjetoTexto('inicial'),
+              gabarito: montarProjetoTexto('gabarito'),
+              objetivos: objetivosDoValeTexto(publico),
+              desafioExtra: {
+                titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
+                texto:
+                  publico === 'kids'
+                    ? 'Faça a tecla R recomeçar a partida: sem ondas, sem nuvens e com as contagens zeradas.'
+                    : 'Faça a tecla R reiniciar a partida: onda, inimigos, protegidos e vidas voltam ao início.',
+              },
+              recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
+              blocosManuais: { acrescentar: [], retirar: [] },
             },
-            recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
-            blocosManuais: { acrescentar: [], retirar: [] },
           },
-        },
-      ],
-    }),
+        ],
+      }),
+    ),
   )
 }
 

@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { gravarManifesto } from '../gravar-manifesto'
 import {
   montarProjetoPonteDoFarol,
@@ -126,42 +127,44 @@ export function criarManifestoDaLinguagem(
             montarProjetoPonteDoFarol(true),
             objetivosDoFarolPonte(),
           ]
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      {
-        slug: `farol-${MEU_JOGO.slug}-${linguagem}${publico === 'adulto' ? '-adulto' : ''}`,
-        publico,
-        ilha: 'farol',
-        tipo: 'quadro-das-cores',
-        quadro: QUADRO[linguagem],
-        ordem: QUADRO[linguagem] * 10,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          titulo: t.titulo,
-          enunciado: t.enunciado,
-          dicas: t.dicas,
-          projetoInicial,
-          gabarito,
-          objetivos,
-          desafioExtra: { titulo: 'Versão 2', texto: t.extra },
-          // Lenda (lacunas, 01/11/2026): o extra é a versão 2, e o aprovado vai à revisão humana.
-          recompensa: {
-            cor: false,
-            atracao: 'meu-jogo-do-arquipelago',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-            extraNaVersao2: true,
-            revisaoHumana: true,
+  return comApresentacao(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        {
+          slug: `farol-${MEU_JOGO.slug}-${linguagem}${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'farol',
+          tipo: 'quadro-das-cores',
+          quadro: QUADRO[linguagem],
+          ordem: QUADRO[linguagem] * 10,
+          publicar: true,
+          conteudo: {
+            versao: 1,
+            titulo: t.titulo,
+            enunciado: t.enunciado,
+            dicas: t.dicas,
+            projetoInicial,
+            gabarito,
+            objetivos,
+            desafioExtra: { titulo: 'Versão 2', texto: t.extra },
+            // Lenda (lacunas, 01/11/2026): o extra é a versão 2, e o aprovado vai à revisão humana.
+            recompensa: {
+              cor: false,
+              atracao: 'meu-jogo-do-arquipelago',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+              extraNaVersao2: true,
+              revisaoHumana: true,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          blocosManuais: { acrescentar: [], retirar: [] },
         },
-      },
-    ],
-  })
+      ],
+    }),
+  )
 }
 
 if (import.meta.main)

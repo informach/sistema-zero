@@ -1,6 +1,7 @@
 import type { JSX } from 'react'
 import { type ReactNode, useEffect, useId, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import { useStudioPortalContainer } from '../studio/portal-container'
 import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
@@ -23,6 +24,7 @@ export function Modal({
 }: ModalProps): JSX.Element | null {
   const titleId = useId()
   const dialogRef = useRef<HTMLDialogElement | null>(null)
+  const portalContainer = useStudioPortalContainer()
 
   useEffect(() => {
     if (!open) return
@@ -93,6 +95,6 @@ export function Modal({
         </div>
       </dialog>
     </StudioThemeScope>,
-    document.body,
+    portalContainer ?? document.body,
   )
 }

@@ -1,6 +1,7 @@
 import type { JSX, KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { useStudioPortalContainer } from '../studio/portal-container'
 import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
@@ -75,6 +76,7 @@ export function Menu({
 }: MenuProps): JSX.Element {
   const baseId = useId()
   const [open, setOpen] = useState(false)
+  const portalContainer = useStudioPortalContainer()
   const [pos, setPos] = useState<PanelPos | null>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([])
@@ -276,7 +278,7 @@ export function Menu({
               ))}
             </div>
           </StudioThemeScope>,
-          document.body,
+          portalContainer ?? document.body,
         )}
     </div>
   )

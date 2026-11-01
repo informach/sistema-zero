@@ -40,7 +40,20 @@ export const LIMITES_DO_DESAFIO = {
   blocosManuais: 200,
   /** O projeto (inicial ou gabarito) inteiro, serializado. Igual ao teto do bloco Estúdio. */
   projetoCaracteres: 1_500_000,
+  /** A linha "o que se faz" do cartão do Quadro (01/11/2026): curta, cabe numa linha. */
+  resumo: 60,
+  /**
+   * A imagem "Como fica" (o jogo resolvido pelo gabarito), em data URL. A lista do Quadro leva
+   * a de cada quadro da ilha, então o teto é de miniatura (uns 240 por 150 em WebP).
+   */
+  imagemCaracteres: 40_000,
 } as const
+
+/** A imagem "Como fica": PNG, JPEG ou WebP embutido, dentro do teto. */
+export const ImagemDoDesafioSchema = z
+  .string()
+  .max(LIMITES_DO_DESAFIO.imagemCaracteres)
+  .regex(/^data:image\/(png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/)
 
 /** Moedas padrão de um desafio novo (o Admin pode mudar dentro dos tetos). */
 export const MOEDAS_PADRAO = { principal: 20, extra: 10 } as const
@@ -173,6 +186,13 @@ export const ConteudoDoDesafioV1Schema = z.strictObject({
   gabarito: ProjetoSchema,
   objetivos: z.array(ObjetivoDoDesafioSchema).min(1).max(LIMITES_DO_DESAFIO.objetivos),
   desafioExtra: z.strictObject({ titulo: Texto(80), texto: Texto(500) }).optional(),
+  /**
+   * A linha "o que se faz" do cartão do Quadro (01/11/2026). Sem ela, o jogo mostra a primeira
+   * frase do enunciado (`resumoDoDesafio`). Opcional: o conteúdo guardado antes continua V1.
+   */
+  resumo: Texto(LIMITES_DO_DESAFIO.resumo).optional(),
+  /** "Como fica": o print do jogo resolvido pelo gabarito, tirado uma vez por desafio. */
+  imagem: ImagemDoDesafioSchema.optional(),
   recompensa: RecompensaDoDesafioSchema,
   /** A equipe ajusta os blocos que o gabarito pede: acrescenta e retira. */
   blocosManuais: z.strictObject({
@@ -181,6 +201,17 @@ export const ConteudoDoDesafioV1Schema = z.strictObject({
   }),
 })
 export type ConteudoDoDesafio = z.infer<typeof ConteudoDoDesafioV1Schema>
+
+/**
+ * A linha "o que se faz" de um desafio: o `resumo` escrito pela equipe ou, sem ele, a primeira
+ * frase do enunciado (até o primeiro ponto final seguido de espaço).
+ */
+export function resumoDoDesafio(conteudo: Pick<ConteudoDoDesafio, 'resumo' | 'enunciado'>): string {
+  if (conteudo.resumo) return conteudo.resumo
+  const texto = conteudo.enunciado.trim()
+  const fim = texto.search(/[.!?](\s|$)/)
+  return fim === -1 ? texto : texto.slice(0, fim + 1)
+}
 
 /** Lê um conteúdo guardado (hoje só existe a V1). Formato novo = V2 com migração da V1. */
 export function migrarConteudoDoDesafio(guardado: unknown): ConteudoDoDesafio | null {
@@ -565,6 +596,13 @@ export const DesafioNaListaSchema = z.strictObject({
   revisaoHumana: RevisaoHumanaSchema.nullable().optional(),
   /** O desafio extra já foi feito (A25: o prêmio-objeto vale). Opcional para o serviço anterior. */
   extraFeito: z.boolean().optional(),
+  /**
+   * O que se faz, em uma linha (01/11/2026): o `resumo` do conteúdo ou a primeira frase do
+   * enunciado. Opcional para o serviço anterior.
+   */
+  resumo: z.string().optional(),
+  /** A miniatura "Como fica", só nos quadros do Quadro das Cores de ilha aberta. Opcional. */
+  imagem: ImagemDoDesafioSchema.optional(),
 })
 export type DesafioNaLista = z.infer<typeof DesafioNaListaSchema>
 
@@ -606,6 +644,8 @@ export const DesafioAbertoSchema = z.strictObject({
   enunciado: z.string(),
   dicas: z.array(z.string()),
   desafioExtra: z.strictObject({ titulo: z.string(), texto: z.string() }).nullable(),
+  /** "Como fica" na coluna da Missão (01/11/2026). Opcional para o serviço anterior. */
+  imagem: ImagemDoDesafioSchema.optional(),
   objetivos: z.array(VistaDoObjetivoSchema),
   projetoInicial: z.unknown(),
   ultimosResultados: z.array(z.strictObject({ id: z.string(), passou: z.boolean() })),

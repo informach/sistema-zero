@@ -66,6 +66,11 @@ export const DICAS: Readonly<Record<IdDaDica, Dica>> = {
   'quadro-painel': {
     nome: 'O desafio de hoje',
     falas: () => [
+      // Retorno de quem testou (01/11/2026): primeiro o quadrinho que explica o Quadro.
+      {
+        texto: 'O quadrinho Como funciona mostra o que cada desafio pinta na ilha.',
+        anel: 'quadro-como',
+      },
       { texto: 'Todo dia tem um desafio de hoje, aqui em cima.', anel: 'desafio-de-hoje' },
     ],
     sobrePainel: true,

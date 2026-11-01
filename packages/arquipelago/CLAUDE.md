@@ -7,6 +7,18 @@ por semana. Seções datadas preservam o histórico
 (as menções a V12, V18 e V20 nelas dizem quando um campo entrou, não a versão atual);
 consultar o contrato e o teste de documento cheio antes de acrescentar campos.
 
+## Quadro das Cores explicado e botão direito no jogo (01/11/2026)
+
+Retorno de quem testou a sua ilha (proposta no Canvas "Desafios mais claros"):
+- **Quadro das Cores** (`interface/quadro-das-cores.tsx`): quadrinho `ComoFunciona` (cavalete
+  com as seis manchas, pintadas as da ilha), aberto até o primeiro desafio feito em qualquer ilha
+  e depois recolhido num `<details>`; fora no Farol. Cada cartão mostra a miniatura
+  (`d.imagem`) e a linha "o que se faz" (`d.resumo`), os dois opcionais da lista. A dica
+  `quadro-painel` ganhou a fala que aponta o quadrinho (anel `quadro-como`).
+- **Botão direito**: a câmera gira com qualquer botão e soltar o direito abria o menu do
+  navegador. `personagem/camera.tsx` cancela o `contextmenu` no canvas em todo modo (andar,
+  luneta, Farol). As falas dizem "Arraste a tela com o mouse, com qualquer botão".
+
 ## As lacunas do levantamento de 31/10 (L1 a L12, 01/11/2026)
 
 Plano e registro com commits e provas: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`;

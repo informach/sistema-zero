@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { gravarManifesto } from '../gravar-manifesto'
 import { objetivosDoPicoPython } from './python-objetivos'
 import { montarProjetoPython } from './python-projetos'
@@ -39,47 +40,49 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 
 export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
   const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      {
-        slug: `pico-fase-de-plataforma-python${publico === 'adulto' ? '-adulto' : ''}`,
-        publico,
-        ilha: 'pico',
-        // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
-        // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
-        tipo: 'quadro-das-cores',
-        quadro: 6,
-        ordem: 60,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[publico],
-          projetoInicial: montarProjetoPython('inicial'),
-          gabarito: montarProjetoPython('gabarito'),
-          objetivos: objetivosDoPicoPython(publico),
-          desafioExtra: {
-            titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
-            texto:
-              publico === 'kids'
-                ? 'Complete melhor(tempos): ela devolve o menor tempo da lista, para o fim do jogo mostrar o trecho mais rápido.'
-                : 'Implemente melhor(tempos), que retorna o menor valor da lista de tempos dos trechos.',
+  return comApresentacao(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        {
+          slug: `pico-fase-de-plataforma-python${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'pico',
+          // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+          // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
+          tipo: 'quadro-das-cores',
+          quadro: 6,
+          ordem: 60,
+          publicar: true,
+          conteudo: {
+            versao: 1,
+            ...textos[publico],
+            projetoInicial: montarProjetoPython('inicial'),
+            gabarito: montarProjetoPython('gabarito'),
+            objetivos: objetivosDoPicoPython(publico),
+            desafioExtra: {
+              titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
+              texto:
+                publico === 'kids'
+                  ? 'Complete melhor(tempos): ela devolve o menor tempo da lista, para o fim do jogo mostrar o trecho mais rápido.'
+                  : 'Implemente melhor(tempos), que retorna o menor valor da lista de tempos dos trechos.',
+            },
+            // O minijogo vira atração (lacunas, 01/11/2026): o player roda o Python no ambiente do
+            // desafio.
+            recompensa: {
+              cor: true,
+              atracao: 'subida-do-floco',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          // O minijogo vira atração (lacunas, 01/11/2026): o player roda o Python no ambiente do
-          // desafio.
-          recompensa: {
-            cor: true,
-            atracao: 'subida-do-floco',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-          },
-          blocosManuais: { acrescentar: [], retirar: [] },
         },
-      },
-    ],
-  })
+      ],
+    }),
+  )
 }
 
 if (import.meta.main)

@@ -19,6 +19,7 @@ import {
   postoDoCursoBase,
   QUADROS_POR_ILHA,
   type ResultadoDaVerificacao,
+  resumoDoDesafio,
   type VerificarDesafio,
 } from '@sistemazero/arquipelago-contracts'
 import type { Logger } from '@sistemazero/core/logging'
@@ -148,6 +149,14 @@ export class ServicoDosDesafios {
             recompensa: conteudo.recompensa,
             recompensaVista: feito?.recompensaVistaEm != null,
             extraFeito: feito?.extraConcluidoEm != null,
+            // O cartão do Quadro (01/11/2026): o que se faz e a miniatura, só nos quadros de ilha
+            // aberta (a lista inteira levaria a de todas as ilhas a cada leitura).
+            resumo: resumoDoDesafio(conteudo),
+            ...(d.metadados.tipo === 'quadro-das-cores' &&
+            situacao !== 'ilha-fechada' &&
+            conteudo.imagem
+              ? { imagem: conteudo.imagem }
+              : {}),
             ...(conteudo.recompensa.revisaoHumana && revisoes
               ? { revisaoHumana: revisoes.get(d.id) ?? null }
               : {}),
@@ -247,6 +256,7 @@ export class ServicoDosDesafios {
       enunciado: conteudo.enunciado,
       dicas: conteudo.dicas,
       desafioExtra: conteudo.desafioExtra ?? null,
+      ...(conteudo.imagem ? { imagem: conteudo.imagem } : {}),
       objetivos: desafio.publicacao.vista,
       projetoInicial: conteudo.projetoInicial,
       // Resultados de outra revisão não valem: os objetivos podem ter mudado.

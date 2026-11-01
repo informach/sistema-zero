@@ -6,6 +6,7 @@ import {
   ResultadoDaVerificacaoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { isStudioProArtifact } from '@sistemazero/core/studio'
+import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
 import {
   createLocalPersistenceAdapter,
   type EditableStudioProject,
@@ -13,6 +14,7 @@ import {
   type StudioHandle,
   StudioLesson,
   type StudioPersistenceAdapter,
+  StudioPortalContainerProvider,
   type StudioProRuntimeAdapter,
 } from '@sistemazero/studio'
 import { prepareProjectForHost } from '@sistemazero/studio/project-validation'
@@ -21,11 +23,34 @@ import { useBodyScrollLock } from '@sistemazero/ui/scroll-lock'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { apiSend } from '../lib/api'
 import { challengeDraftScope } from '../lib/arquipelago-challenge'
+import { cn } from '../lib/cn'
 import { createProToolchainPreparer } from '../lib/pro-toolchain'
 import { sessionFetch } from '../lib/session-fetch'
 import { useArquipelagoChallengeRuntime } from './studio/use-arquipelago-challenge-runtime'
 
 type Prepared = { project: EditableStudioProject; adapter: StudioPersistenceAdapter }
+
+/** A coluna da Missão recolhida no computador (preferência deste navegador). */
+const CHAVE_MISSAO_RECOLHIDA = 'sz:arquipelago:missao-recolhida'
+/** O balão de primeira vez já foi visto neste navegador. */
+const CHAVE_BALAO_VISTO = 'sz:arquipelago:missao-balao-visto'
+
+function lerMarca(chave: string): boolean {
+  try {
+    return window.localStorage.getItem(chave) === '1'
+  } catch {
+    return false
+  }
+}
+
+function gravarMarca(chave: string, valor: boolean): void {
+  try {
+    if (valor) window.localStorage.setItem(chave, '1')
+    else window.localStorage.removeItem(chave)
+  } catch {
+    // Sem armazenamento (janela privada): a escolha vale só até fechar.
+  }
+}
 
 /** Estúdio de tarefa, sem produto livre e sem gabarito no navegador. */
 export function ArquipelagoChallengeDialog({
@@ -61,12 +86,21 @@ export function ArquipelagoChallengeDialog({
   const unsubscribe = useRef<(() => void) | undefined>(undefined)
   const dialog = useRef<HTMLDialogElement | null>(null)
   const releaseOpening = useRef<(() => void) | undefined>(undefined)
+  // O diálogo vira o contêiner dos menus do Studio depois do `showModal()` (fora dele, inertes).
+  const [portalContainer, setPortalContainer] = useState<HTMLDialogElement | null>(null)
+  const [missaoRecolhida, setMissaoRecolhida] = useState(() => lerMarca(CHAVE_MISSAO_RECOLHIDA))
+  // No celular a Missão é a primeira aba; o Estúdio fica montado embaixo dela.
+  const [aba, setAba] = useState<'missao' | 'estudio'>('missao')
+  const [balao, setBalao] = useState(() => !lerMarca(CHAVE_BALAO_VISTO))
 
   useEffect(() => {
     mounted.current = true
     let active = true
     const element = dialog.current
     element?.showModal()
+    // Os menus do Studio e os campos, as listas e o botão direito do Blockly abrem fora do
+    // Estúdio: com o diálogo como contêiner dos portais, eles abrem dentro dele.
+    setPortalContainer(element)
     const scope = challengeDraftScope(audience, desafio.jogadorId, desafio.id, desafio.revisao)
     const adapter = createLocalPersistenceAdapter({ namespace: scope.namespace })
     const release = adapter.beginOpening?.(scope.projectId)
@@ -208,6 +242,14 @@ export function ArquipelagoChallengeDialog({
 
   const required = desafio.objetivos.filter((o) => !o.optional)
   const passed = required.filter((o) => results.some((r) => r.id === o.id && r.passou)).length
+  const recolher = (valor: boolean) => {
+    setMissaoRecolhida(valor)
+    gravarMarca(CHAVE_MISSAO_RECOLHIDA, valor)
+  }
+  const fecharBalao = () => {
+    setBalao(false)
+    gravarMarca(CHAVE_BALAO_VISTO, true)
+  }
   return (
     <dialog
       ref={dialog}
@@ -225,111 +267,237 @@ export function ArquipelagoChallengeDialog({
         <h1 className="min-w-0 flex-1 font-semibold">{desafio.titulo}</h1>
         <span className="text-sm text-muted-foreground">Rascunho guardado neste navegador</span>
       </header>
-      <details className="max-h-[30vh] overflow-y-auto border-b border-border p-3">
-        <summary className="cursor-pointer font-medium">O desafio e as dicas</summary>
-        <p className="mt-2 whitespace-pre-wrap">{desafio.enunciado}</p>
-        {hints.slice(0, openHints).map((d) => (
-          <p key={d.id} className="mt-2 text-sm">
-            {d.text}
-          </p>
-        ))}
-        {openHints < hints.length ? (
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => setOpenHints((n) => Math.min(n + 1, hints.length))}
+      <div role="group" aria-label="Mostrar" className="flex border-b border-border lg:hidden">
+        {(
+          [
+            ['missao', 'Missão'],
+            ['estudio', 'Estúdio'],
+          ] as const
+        ).map(([id, rotulo]) => (
+          <button
+            key={id}
+            type="button"
+            aria-pressed={aba === id}
+            aria-controls={id === 'missao' ? 'arq-missao' : 'arq-estudio'}
+            className={cn(
+              'min-h-11 flex-1 border-b-2 px-3 text-sm font-semibold',
+              aba === id
+                ? 'border-primary text-foreground'
+                : 'border-transparent text-muted-foreground',
+            )}
+            onClick={() => setAba(id)}
           >
-            {openHints === 0 ? 'Ver uma dica' : 'Ver outra dica'}
-          </Button>
-        ) : null}
-        {desafio.desafioExtra && (
-          <p className="mt-2 text-sm">
-            <strong>{desafio.desafioExtra.titulo}: </strong>
-            {desafio.desafioExtra.texto}
-          </p>
-        )}
-      </details>
+            {rotulo}
+          </button>
+        ))}
+      </div>
       {error && (
         <p role="alert" className="p-3 text-sm text-destructive">
           {error}
         </p>
       )}
-      <div className="min-h-0 flex-1">
-        {prepared && pythonWaiting ? (
-          <div role="status" className="flex flex-col items-start gap-3 p-6">
-            <span>{runtime.error ?? 'Preparando o ambiente Python…'}</span>
-            {runtime.error && (
-              <Button variant="outline" onClick={runtime.retry}>
-                Tentar de novo
-              </Button>
-            )}
+      <div className="relative flex min-h-0 flex-1">
+        <aside
+          id="arq-missao"
+          aria-labelledby="arq-missao-titulo"
+          className={cn(
+            'absolute inset-0 z-10 flex-col gap-4 overflow-y-auto bg-card p-4 lg:static lg:z-auto lg:w-72 lg:shrink-0 lg:border-r lg:border-border 2xl:w-80',
+            aba === 'missao' ? 'flex' : 'hidden',
+            missaoRecolhida ? 'lg:hidden' : 'lg:flex',
+          )}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h2 id="arq-missao-titulo" className="text-lg font-bold">
+              Missão
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              className="hidden lg:inline-flex"
+              aria-expanded={true}
+              aria-controls="arq-missao"
+              onClick={() => recolher(true)}
+            >
+              Recolher
+            </Button>
           </div>
-        ) : prepared ? (
-          <StudioLesson
-            ref={handle}
-            initialProject={prepared.project}
-            persistence={prepared.adapter}
-            initialMode={isPro ? 'code' : prepared.project.mode === 'bridge' ? 'bridge' : 'blocks'}
-            allowedModes={isPro ? ['code'] : ['blocks', 'bridge']}
-            level="avancado-3d"
-            // A régua de blocos do jogo é a paleta do JavaScript; Python e Pro abrem pela ilha.
-            grantedBlockIds={
-              isPython || isPro ? undefined : (desafio.blocosPermitidos ?? undefined)
-            }
-            pythonLevel={isPython ? 3 : undefined}
-            features={{ extensions: false, professional: isPro }}
-            proRuntime={proRuntime}
-            runtimeEnvironment={runtime.environment}
-            onReady={() => {
-              releaseOpening.current?.()
-              releaseOpening.current = undefined
-              setReady(true)
-              unsubscribe.current?.()
-              unsubscribe.current = handle.current?.onProjectChange?.(() => {
-                editing.current++
-                setStale(true)
-              })
-            }}
-            onError={(e) => {
-              releaseOpening.current?.()
-              setError(e.message)
-            }}
-            style={{ height: '100%' }}
-          />
-        ) : (
-          <p role="status" className="p-6">
-            {error ? 'Não foi possível abrir o Estúdio.' : 'Abrindo o Estúdio…'}
-          </p>
+          {balao && (
+            <div
+              role="note"
+              className="flex items-start gap-3 rounded-xl border border-primary/40 bg-primary/10 p-3 text-sm"
+            >
+              {audience === 'kids' && (
+                <img
+                  src={BUILTIN_ART.happy.poster.url}
+                  alt=""
+                  width={48}
+                  height={48}
+                  className="size-12 shrink-0"
+                />
+              )}
+              <div className="flex flex-col gap-2">
+                <p>Aqui está o pedido. Monte o projeto e clique em Verificar projeto.</p>
+                <Button variant="outline" size="sm" className="self-start" onClick={fecharBalao}>
+                  Entendi
+                </Button>
+              </div>
+            </div>
+          )}
+          <section aria-labelledby="arq-pedido" className="flex flex-col gap-1">
+            <h3 id="arq-pedido" className="text-sm font-semibold text-muted-foreground">
+              O pedido
+            </h3>
+            <p className="whitespace-pre-wrap">{desafio.enunciado}</p>
+          </section>
+          {desafio.imagem && (
+            <figure className="flex flex-col gap-1">
+              <figcaption className="text-sm font-semibold text-muted-foreground">
+                Como fica
+              </figcaption>
+              <img
+                src={desafio.imagem}
+                alt="O jogo pronto, do jeito que o pedido descreve."
+                className="w-full rounded-lg border border-border"
+              />
+            </figure>
+          )}
+          <section aria-labelledby="arq-objetivos" className="flex flex-col gap-2">
+            <h3 id="arq-objetivos" className="text-sm font-semibold text-muted-foreground">
+              Objetivos · {passed}/{required.length}
+            </h3>
+            <ul className="flex flex-col gap-2">
+              {desafio.objetivos.map((o) => {
+                const resultado = results.find((r) => r.id === o.id)
+                return (
+                  <li
+                    key={o.id}
+                    className="flex gap-2 text-sm"
+                    data-feito={resultado?.passou ? '' : undefined}
+                  >
+                    <span
+                      aria-hidden="true"
+                      className={resultado?.passou ? 'text-green-600' : 'text-muted-foreground'}
+                    >
+                      {resultado?.passou ? '✓' : '○'}
+                    </span>
+                    <span>
+                      <span className="sr-only">{resultado?.passou ? 'Feito: ' : 'Falta: '}</span>
+                      {o.label}
+                      {o.optional ? ' (extra)' : ''}
+                      {/* A dica do objetivo só depois de verificar e faltar, como nas aulas. */}
+                      {o.hint && resultado && !resultado.passou && (
+                        <span className="mt-1 block text-muted-foreground">{o.hint}</span>
+                      )}
+                    </span>
+                  </li>
+                )
+              })}
+            </ul>
+          </section>
+          {desafio.desafioExtra && (
+            <p className="text-sm">
+              <strong>{desafio.desafioExtra.titulo}: </strong>
+              {desafio.desafioExtra.texto}
+            </p>
+          )}
+          {hints.length > 0 && (
+            <section aria-label="Dicas" className="flex flex-col gap-2">
+              {hints.slice(0, openHints).map((d) => (
+                <p key={d.id} className="text-sm">
+                  {d.text}
+                </p>
+              ))}
+              {openHints < hints.length ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="self-start"
+                  onClick={() => setOpenHints((n) => Math.min(n + 1, hints.length))}
+                >
+                  {openHints === 0 ? 'Ver uma dica' : 'Ver outra dica'}
+                </Button>
+              ) : null}
+            </section>
+          )}
+        </aside>
+        {missaoRecolhida && (
+          <button
+            type="button"
+            aria-expanded={false}
+            aria-controls="arq-missao"
+            className="hidden w-11 shrink-0 items-start justify-center border-r border-border bg-card pt-4 text-sm font-semibold lg:flex"
+            onClick={() => recolher(false)}
+          >
+            <span className="[writing-mode:vertical-rl]">Mostrar a missão</span>
+          </button>
         )}
+        <div id="arq-estudio" className="min-h-0 min-w-0 flex-1">
+          <StudioPortalContainerProvider value={portalContainer}>
+            {prepared && pythonWaiting ? (
+              <div role="status" className="flex flex-col items-start gap-3 p-6">
+                <span>{runtime.error ?? 'Preparando o ambiente Python…'}</span>
+                {runtime.error && (
+                  <Button variant="outline" onClick={runtime.retry}>
+                    Tentar de novo
+                  </Button>
+                )}
+              </div>
+            ) : prepared ? (
+              <StudioLesson
+                ref={handle}
+                initialProject={prepared.project}
+                persistence={prepared.adapter}
+                initialMode={
+                  isPro ? 'code' : prepared.project.mode === 'bridge' ? 'bridge' : 'blocks'
+                }
+                allowedModes={isPro ? ['code'] : ['blocks', 'bridge']}
+                level="avancado-3d"
+                // A régua de blocos do jogo é a paleta do JavaScript; Python e Pro abrem pela ilha.
+                grantedBlockIds={
+                  isPython || isPro ? undefined : (desafio.blocosPermitidos ?? undefined)
+                }
+                pythonLevel={isPython ? 3 : undefined}
+                features={{ extensions: false, professional: isPro }}
+                proRuntime={proRuntime}
+                runtimeEnvironment={runtime.environment}
+                onReady={() => {
+                  releaseOpening.current?.()
+                  releaseOpening.current = undefined
+                  setReady(true)
+                  unsubscribe.current?.()
+                  unsubscribe.current = handle.current?.onProjectChange?.(() => {
+                    editing.current++
+                    setStale(true)
+                  })
+                }}
+                onError={(e) => {
+                  releaseOpening.current?.()
+                  setError(e.message)
+                }}
+                style={{ height: '100%' }}
+              />
+            ) : (
+              <p role="status" className="p-6">
+                {error ? 'Não foi possível abrir o Estúdio.' : 'Abrindo o Estúdio…'}
+              </p>
+            )}
+          </StudioPortalContainerProvider>
+        </div>
       </div>
-      <footer className="max-h-[30vh] overflow-y-auto border-t border-border bg-card p-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-3">
+        <div className="flex min-w-0 flex-col">
           <span className="font-medium">
             Objetivos do projeto · {passed}/{required.length}
           </span>
-          <Button disabled={busy || !ready || pythonWaiting} onClick={() => void verify()}>
-            {busy ? 'Aguarde…' : 'Verificar projeto'}
-          </Button>
+          {stale && (
+            <span role="status" className="text-sm text-muted-foreground">
+              O projeto mudou. Verifique novamente para conferir esta versão.
+            </span>
+          )}
         </div>
-        {stale && (
-          <p role="status" className="mt-1 text-sm text-muted-foreground">
-            O projeto mudou. Verifique novamente para conferir esta versão.
-          </p>
-        )}
-        <details className="mt-2">
-          <summary className="cursor-pointer text-sm">Ver objetivos</summary>
-          <ul className="mt-2 space-y-2">
-            {desafio.objetivos.map((o) => (
-              <li key={o.id} className="text-sm">
-                {results.find((r) => r.id === o.id)?.passou ? '✓ ' : '○ '}
-                {o.label}
-                {o.optional ? ' (extra)' : ''}
-                {o.hint && <p className="text-muted-foreground">{o.hint}</p>}
-              </li>
-            ))}
-          </ul>
-        </details>
+        <Button disabled={busy || !ready || pythonWaiting} onClick={() => void verify()}>
+          {busy ? 'Aguarde…' : 'Verificar projeto'}
+        </Button>
       </footer>
     </dialog>
   )
