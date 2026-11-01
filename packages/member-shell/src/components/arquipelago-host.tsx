@@ -30,6 +30,7 @@ import { lerAparenciaDaConta, listarCriacoesQueCabem } from '../lib/arquipelago-
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
 import { localizarEntrada, origemDoCliente } from '../lib/arquipelago-cliente'
 import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
+import { enderecoDoPro } from '../lib/arquipelago-pro-mensagem'
 import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-rotina'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
 import { sessionFetch } from '../lib/session-fetch'
@@ -39,6 +40,7 @@ import {
   PELE_KIDS_DA_PORTA,
   type PeleDaPorta,
 } from './arquipelago-porta'
+import { ArquipelagoProFrame } from './arquipelago-pro-frame'
 
 const RotinaDialog = lazy(() =>
   import('./arquipelago-rotina-dialog').then((m) => ({ default: m.ArquipelagoRotinaDialog })),
@@ -53,6 +55,11 @@ const QuartoDialog = lazy(() =>
 const CreationDialog = lazy(() =>
   import('./arquipelago-creation-dialog').then((m) => ({ default: m.ArquipelagoCreationDialog })),
 )
+/** O desafio em modo Código (Pro): o projeto inicial é um projeto Pro (com a árvore de arquivos). */
+function desafioPro(desafio: DesafioAberto): boolean {
+  const p = desafio.projetoInicial as { kind?: unknown } | null
+  return p !== null && typeof p === 'object' && p.kind === 'pro'
+}
 const ChallengeDialog = lazy(() =>
   import('./arquipelago-challenge-dialog').then((m) => ({ default: m.ArquipelagoChallengeDialog })),
 )
@@ -375,6 +382,21 @@ export function ArquipelagoHost(props: {
   const [quartoAberto, setQuartoAberto] = useState(false)
   const fimRotina = useRef<((resultado: ResultadoDaFerramentaRotina | null) => void) | null>(null)
   const pendente = useRef<((resultado: ResultadoDeFerramenta) => void) | null>(null)
+  /** Fecha o desafio (no diálogo ou no quadro do Pro) e responde ao jogo. */
+  const terminarDesafio = (desafio: DesafioAberto, completed: boolean) => {
+    setChallenge(null)
+    const resolve = pendente.current
+    pendente.current = null
+    const draft = challengeDraftScope(
+      publico === 'kids' ? 'kids' : 'adult',
+      id,
+      desafio.id,
+      desafio.revisao,
+    )
+    resolve?.(
+      completed ? { situacao: 'pronto', criacaoId: draft.projectId } : { situacao: 'cancelado' },
+    )
+  }
   const abrindo = useRef(false)
   const { publico, voltarPara } = props
   const { id, primeiroNome } = props.perfil
@@ -697,28 +719,28 @@ export function ArquipelagoHost(props: {
             resolve?.({ situacao: 'cancelado' })
           }}
         >
-          <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
-            <ChallengeDialog
-              desafio={challenge}
-              audience={publico === 'kids' ? 'kids' : 'adult'}
-              onFinish={(completed) => {
-                setChallenge(null)
-                const resolve = pendente.current
-                pendente.current = null
-                const draft = challengeDraftScope(
-                  publico === 'kids' ? 'kids' : 'adult',
-                  id,
-                  challenge.id,
-                  challenge.revisao,
-                )
-                resolve?.(
-                  completed
-                    ? { situacao: 'pronto', criacaoId: draft.projectId }
-                    : { situacao: 'cancelado' },
-                )
-              }}
-            />
-          </Suspense>
+          {desafioPro(challenge) ? (
+            // O desafio Pro abre na rota isolada, num quadro (lacunas, 01/11/2026): a página do
+            // jogo fica sem `unsafe-eval`. O quadro avisa quando termina.
+            <div className="fixed inset-0 z-50 bg-background">
+              <ArquipelagoProFrame
+                src={enderecoDoPro({ desafioId: challenge.id, revisao: challenge.revisao })}
+                titulo={challenge.titulo}
+                onMensagem={(m) => {
+                  if (m.evento === 'desafio' && m.desafioId === challenge.id)
+                    terminarDesafio(challenge, m.concluido)
+                }}
+              />
+            </div>
+          ) : (
+            <Suspense fallback={<Aviso ferramenta="estudio" falhou={false} />}>
+              <ChallengeDialog
+                desafio={challenge}
+                audience={publico === 'kids' ? 'kids' : 'adult'}
+                onFinish={(completed) => terminarDesafio(challenge, completed)}
+              />
+            </Suspense>
+          )}
         </ToolLoadBoundary>
       ) : null}
       {moldeRotina ? (

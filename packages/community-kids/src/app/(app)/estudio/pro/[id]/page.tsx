@@ -34,7 +34,7 @@ export default async function EstudioProPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams?: Promise<{ missao?: string | string[] }>
+  searchParams?: Promise<{ missao?: string | string[]; embed?: string | string[] }>
 }) {
   const { id } = await params
   const query = await searchParams
@@ -81,6 +81,8 @@ export default async function EstudioProPage({
       viewerId={session?.id ?? null}
       projectId={id}
       taskId={taskId}
+      // Num quadro por cima do jogo (lacunas, 01/11/2026): ao sair, avisa o jogo.
+      incorporadoNoArquipelago={query?.embed === 'arquipelago'}
       pintaOwned={res.body?.access?.pinta === true}
       moldaOwned={res.body?.access?.molda === true}
       // A mesma view canônica já lida para Pro fornece a capacidade de IA,

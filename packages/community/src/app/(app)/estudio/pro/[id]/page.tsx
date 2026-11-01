@@ -10,7 +10,7 @@ export default async function AdultProPage({
   searchParams,
 }: {
   params: Promise<{ id: string }>
-  searchParams: Promise<{ missao?: string }>
+  searchParams: Promise<{ missao?: string; embed?: string }>
 }) {
   const [{ id }, query, state] = await Promise.all([params, searchParams, getCreativeToolsState()])
   if (!/^[A-Za-z0-9_-]{1,64}$/.test(id)) redirect('/estudio')
@@ -32,6 +32,8 @@ export default async function AdultProPage({
       viewerId={state.session.id}
       projectId={id}
       taskId={query.missao && /^[0-9a-f-]{36}$/i.test(query.missao) ? query.missao : null}
+      // Num quadro por cima do jogo (lacunas, 01/11/2026): ao sair, avisa o jogo.
+      incorporadoNoArquipelago={query.embed === 'arquipelago'}
       pintaOwned={state.access.pinta === true && state.journey.capabilities.includes('pinta')}
       moldaOwned={state.access.molda === true && state.journey.capabilities.includes('molda')}
     />

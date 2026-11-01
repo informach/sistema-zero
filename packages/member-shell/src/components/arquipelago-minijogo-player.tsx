@@ -23,8 +23,12 @@ export function ArquipelagoMinijogoPlayer({
 }: {
   url: string
   onClose: () => void
-  userId: string
-  audience: 'kids' | 'adult'
+  /**
+   * Quem joga, para pedir o ambiente do desafio (o minijogo em Python). A área dos pais mostra o
+   * minijogo da criança sem isso: lá não há sessão da criança, e o Python não ganha ambiente.
+   */
+  userId?: string
+  audience?: 'kids' | 'adult'
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [dados, setDados] = useState<{
@@ -66,7 +70,7 @@ export function ArquipelagoMinijogoPlayer({
   const desafioId = dados?.desafioId
   const revisao = dados?.revisao
   const ambientePython = useMemo(() => {
-    if (!desafioId || !revisao) return undefined
+    if (!desafioId || !revisao || !userId || !audience) return undefined
     return (project: PythonProjectDocument, signal: AbortSignal) =>
       import('@sistemazero/studio/challenge-runtime').then(
         ({ createArquipelagoChallengeRuntimeEnvironment }) =>
