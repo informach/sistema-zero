@@ -6,7 +6,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-a1-abertura`
 
-**Na tela:** mostrar o jogo pronto nesta parte, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo e deixar ver o personagem aparecer. No "repare", apontar o número Achados, que virou 1. Não tocar nos outros esconderijos. No "tem mais uma coisa", falar olhando para a câmera, com entusiasmo e naturalidade, sem mostrar nada da personalização. No fim, apontar para a área jogável ao passar a vez e para **Próxima parte**. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** mostrar o jogo pronto nesta parte, com os três personagens escondidos. No "Olha aqui", tocar em UM esconderijo [achar arbusto] e deixar ver o personagem aparecer. No "repare", apontar o número Achados [apontar jogo 75 26], que virou 1. Não tocar nos outros esconderijos. No "tem mais uma coisa", falar olhando para a câmera, com entusiasmo e naturalidade, sem mostrar nada da personalização. No "Agora é a sua vez", apontar para a área jogável [apontar jogo] e para **Próxima parte** [apontar "Próxima parte"]. O mesmo convite deve funcionar com o jogo ao lado ou abaixo do vídeo.
 
 **Fala para ElevenLabs:**
 
@@ -38,7 +38,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-caderno`
 
-**Na tela:** mostrar a capa e a página de orientação do Passo a passo do projeto, o caderno real. No "Olha aqui", apontar o material. Ao falar em baixar, apontar o botão **Baixar**, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
+**Na tela:** [próxima parte] mostrar a capa e a página de orientação do Passo a passo do projeto, o caderno real. No "Olha aqui", apontar o material. No "clicar em Baixar", apontar o botão **Baixar** [apontar baixar], ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão, a divisória nem os controles do leitor. O PDF precisa estar anexado antes da gravação.
 
 **Fala para ElevenLabs:**
 
@@ -56,7 +56,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-toque`
 
-**Na tela:** explicar ação e reação com a animação já produzida da pena fazendo cócegas e o Zappy rindo, com a legenda “ação: cócega · reação: risada”. Em seguida, mostrar um toque e a ideia de ligação com uma reação no jardim, sem percorrer a interface da experiência nem revelar os testes com outro esconderijo. A atividade real começa sem progresso. O Zappy da página orienta cada etapa conforme o estado; não sobrepor sua voz à professora.
+**Na tela:** [próxima parte] explicar ação e reação com a animação já produzida da pena fazendo cócegas e o Zappy rindo, com a legenda “ação: cócega · reação: risada”. Em seguida, mostrar um toque e a ideia de ligação com uma reação no jardim, sem percorrer a interface da experiência nem revelar os testes com outro esconderijo. A atividade real começa sem progresso. O Zappy da página orienta cada etapa conforme o estado; não sobrepor sua voz à professora.
 
 **Fala para ElevenLabs:**
 
@@ -79,7 +79,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-programar`
 
-**Na tela:** abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e, no "Tá vendo?", mostrar que nada acontece. Depois da lembrança da experiência, apresentar os comandos como blocos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e, no "Olha aqui: nessa área", enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a categoria na paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho.
+**Na tela:** [próxima parte] abrir o Estúdio incorporado com o projeto inicial. Começar pela retomada, antes de qualquer bloco: tocar num esconderijo na Pré-visualização e, no "Tá vendo?", mostrar que nada acontece. Depois da lembrança da experiência, apresentar os comandos como blocos; no "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco ainda. Depois trazer à vista a área **Quando acontecer**, arrastando um espaço vazio entre os blocos se ela começar fora da tela, e, no "Olha aqui: nessa área", enquadrar o evento do grupo **esconderijos**, ainda vazio. Deixar à vista o espaço ao lado de **fazer** antes de abrir a categoria na paleta. Mostrar cada gesto no ritmo da fala, com pausa suficiente para acompanhar. Não demonstrar abas, divisória, expansão ou olhinho. No "Agora sim, abra Jogo 2D", [categoria Jogo 2D > Sprites > Aparência]. No "Clique em Verificar projeto", [verificar projeto]. No "clique em Enviar meu projeto", [enviar projeto]. No "clique em Concluir aula", [concluir aula].
 
 **Fala para ElevenLabs:**
 

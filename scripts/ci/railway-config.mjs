@@ -25,6 +25,7 @@ const applicationNames = new Set([
   'members',
   'live-recorder',
   'messaging',
+  'palco-gravacao',
   'payments',
   'referrals',
 ])
