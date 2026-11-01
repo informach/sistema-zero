@@ -74,7 +74,10 @@ describe('o menu da esquerda recolhe, como no Kids', () => {
     const nav = source('src/components/community/community-nav.tsx')
     expect(nav).toContain("COMMUNITY_SIDEBAR_WIDTH = '14.4rem'")
     expect(source('src/components/community/community-frame.tsx')).toContain(
-      'openOffset={COMMUNITY_SIDEBAR_WIDTH}',
+      'openOffset={menuWidth}',
+    )
+    expect(source('src/components/community/community-frame.tsx')).toContain(
+      "const menuWidth = lesson ? 'var(--kids-menu-width, 16.75rem)' : COMMUNITY_SIDEBAR_WIDTH",
     )
     // ⚠️ Sem `overflow-hidden` na coluna: o menu do perfil abre mais largo que ela.
     expect(nav).not.toMatch(/<aside[\s\S]{0,400}overflow-hidden/)

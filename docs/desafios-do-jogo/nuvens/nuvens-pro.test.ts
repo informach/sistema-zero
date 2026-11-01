@@ -44,9 +44,20 @@ test('C02 Nuvens em Pro: JSON corresponde à fonte e cumpre as réguas comuns', 
 
 test('o modelo fica separado da apresentação, e a apresentação é igual no inicial e no gabarito', () => {
   expect(MAIN_DAS_NUVENS).toContain("from './regras'")
-  for (const nome of ['podeConstruir', 'construir', 'colher', 'salvar', 'carregar', 'remover'])
+  // Lacunas (01/11/2026): o que a missão pede (ocupação, saldo, guardar) vem pronto; a pessoa
+  // completa vizinhas, colher com bônus, expandir e, no extra, plantasPorTipo.
+  const pronto = ['podeConstruir', 'construir', 'salvar', 'carregar']
+  const completa = ['vizinhas', 'colher', 'expandir', 'plantasPorTipo']
+  for (const nome of [...pronto, ...completa])
     for (const versao of ['inicial', 'gabarito'] as const)
       expect(regrasDasNuvens(versao)).toContain(`export function ${nome}(`)
+  const funcao = (codigo: string, nome: string) => {
+    const inicio = codigo.indexOf(`export function ${nome}(`)
+    return codigo.slice(inicio, codigo.indexOf('\n}\n', inicio))
+  }
+  for (const nome of pronto)
+    expect(funcao(regrasDasNuvens('inicial'), nome)).toBe(funcao(regrasDasNuvens('gabarito'), nome))
+  expect(regrasDasNuvens('inicial')).not.toContain('export function remover(')
   // As regras não tocam a tela nem o armazenamento: o main.ts é quem usa localStorage.
   expect(regrasDasNuvens('gabarito')).not.toMatch(/document|localStorage|window/)
   for (const erro of Object.keys(ERROS_DAS_NUVENS_PRO) as ErroDasNuvensPro[])

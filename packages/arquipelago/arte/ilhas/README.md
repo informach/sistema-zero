@@ -33,6 +33,25 @@ ALVO=0,2,0 DIR=0.75,0.85,1 DIST=46 AGUA=1 \
 Antes de exportar, cada script também confere que nada na altura do corpo ocupa o corredor da
 chegada (`conferir_corredor`).
 
+## Versões médias (as ilhas em três versões, 01/11/2026)
+
+`medias.py` faz a versão média de cada ilha do anel a partir da completa (`<ilha>.glb` →
+`<ilha>-media.glb`): sem `col-*`, `escalada-*`, âncoras e clipes; sem as peças soltas menores que
+0,32 m (que da ponte não se veem); as malhas de 1.000 triângulos ou mais simplificadas por colapso
+(42%), menos o chão e a água; tudo num nó só, `ilha-media`, com os materiais da completa. O jogo
+baixa a média ao pisar na ponte e a completa no fim dela (`src/mundo/ilha-media.tsx`); o build liga
+a média de toda ilha que tem o arquivo (`scripts/gerar-ilhas-medias.ts`).
+
+```sh
+C:/Users/tocha/blender-venv/Scripts/python.exe -B arte/ilhas/medias.py [ilha …]
+```
+
+Rode de novo depois de regerar uma completa (a média sai dela). Teto: 16 mil triângulos e 640 KB
+por ilha; `medias.json` guarda os números. `tests/ilhas-medias.test.ts` confere o nó único, o teto,
+a altura e a largura iguais às da completa, os materiais e que nenhum par novo de faces coplanares
+apareceu. Não separe as malhas por material antes do colapso: cada faixa de cor simplifica sozinha e
+abre frestas entre elas (o vulcão alto do Vale rachou assim).
+
 ## Referencial e troca com a versão leve
 
 - **Referencial:** cada ilha fica no centro dela, com y = 0 no mar e o tampo plano em y = 1.
@@ -59,8 +78,8 @@ chegada (`conferir_corredor`).
 | Arquivo | Nós (malhas) | Âncoras (nós vazios) | Clipes | Triângulos | Tamanho |
 |---|---|---|---|---|---|
 | `bosque.glb` | `terreno`, `agua`, `construcoes`, `vegetacao`, `cipo-1`…`cipo-3`, `copa-1`…`copa-13`, `tronco-1`…`tronco-5`, `telhado-casa-na-arvore`, `porto` (o deque do barco) e 295 `col-*` mais o `col-terreno` | comuns + `escada`, `casa-na-arvore`, `cabana`, `cercado`, `lago`, `escorregador-fim`, `copas-1`…`copas-4`, `esconderijo-1`…`esconderijo-4`, `barco` e `cais` (o porto do barco), `escada-2-base`/`-topo`/`-saida` e `segredo-patins` (a pista suspensa do segredo dos patins, 31/10/2026) | não tem | 34.300 | 1.269 KB |
-| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites`, `porto` (o deque do barco), `barraca-do-jogo` (a barraca do minijogo, atrás das barracas 5 e 6) com a `tela`, `atalhos` (a prancha e a escada de caixotes dos telhados), `marco-torre-de-doces` (topo a 12,15 m, 31/10/2026) e 100 `col-*` mais o `col-terreno` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6`, `barco` e `cais` (o porto do barco), `jogar` (na frente da tela) | não tem | 33.514 | 1.253 KB |
-| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10`, `marco-pinaculos` (os pináculos de coral no mar, topo a 9,1 m, 31/10/2026) e 73 `col-*` mais o `col-terreno` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho`, `coral-muda-1`…`coral-muda-4` | `balancar` (2 s, as algas) | 20.460 | 679 KB |
+| `vila-doce.glb` | `terreno`, `fonte`, `construcoes`, `telhados`, `feira`, `enfeites`, `porto` (o deque do barco), `barraca-do-jogo` (a barraca do minijogo, atrás das barracas 5 e 6) com a `tela`, `atalhos` (a prancha e a escada de caixotes dos telhados), `marco-torre-de-doces` (o espeto de doces em cima da casquinha, topo a 15,5 m, 01/11/2026) e 100 `col-*` mais o `col-terreno` | comuns + `fonte`, `padaria`, `sorveteria`, `telhados-inicio`, `telhados-1`…`telhados-3`, `telhados-fim`, `barraca-1`…`barraca-6`, `barco` e `cais` (o porto do barco), `jogar` (na frente da tela) | não tem | 35.430 | 1.296 KB |
+| `recife.glb` | `terreno`, `agua`, `construcoes`, `corais`, `enfeites`, `caverna`, `alga-1`…`alga-10`, `marco-pinaculos` (três pináculos de rocha de recife no mar, cobertos de coral, o mais alto a 16,8 m, 01/11/2026) e 73 `col-*` mais o `col-terreno` | comuns + `casa-mare`, `mapa`, `lagoa`, `cais`, `barco`, `caverna-entrada`, `caverna`, `caverna-tesouro`, `mergulho`, `coral-muda-1`…`coral-muda-4` | `balancar` (2 s, as algas) | 29.041 | 906 KB |
 | `bosque-props.glb` | `arvore-grande-a`/`-b`/`-c`, `arvore-media`, `moita`, `tora`, `toco`, `cogumelo` | | não tem | 3.958 | 84 KB |
 | `vila-doce-props.glb` | `casinha-a`/`-b`/`-c`, `barraca`, `pirulito`, `jujuba`, `bengala`, `lampiao` | | não tem | 7.966 | 272 KB |
 | `recife-props.glb` | `coral-galho`, `coral-cerebro`, `coral-leque`, `coral-tubo`, os quatro `coral-<tipo>-desbotado`, `mapa-aberto`, `mapa-rolo`, `alga` | | `balancar` (a alga) | 2.488 | 81 KB |

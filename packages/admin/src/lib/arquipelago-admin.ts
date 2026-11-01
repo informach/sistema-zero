@@ -3,10 +3,12 @@ import {
   AplicarManifestoSchema,
   ConferirManifestoSchema,
   CriarDesafioSchema,
+  ESTADOS_DA_REVISAO_HUMANA,
   FiltroDaMedicaoSchema,
   GravarDesafioSchema,
   ILHA_IDS,
   PUBLICOS_DO_DESAFIO,
+  ResponderRevisaoSchema,
   SITUACOES_DO_CADASTRO,
   TIPOS_DE_DESAFIO,
 } from '@sistemazero/arquipelago-contracts'
@@ -64,6 +66,20 @@ export function gameAdminRequest(
         path: `/arquipelago/admin/desafios/${z.uuid().parse(id)}/manifesto`,
         body: undefined,
       }
+    // A fila da revisão humana da Lenda (lacunas, 01/11/2026) e um item dela.
+    if (resource === 'revisoes' && path.length === 1)
+      return {
+        path: '/arquipelago/admin/revisoes',
+        query: z
+          .strictObject({ estado: z.enum(ESTADOS_DA_REVISAO_HUMANA).optional() })
+          .parse(Object.fromEntries(search)),
+        body: undefined,
+      }
+    if (resource === 'revisoes' && path.length === 3 && !search.size)
+      return {
+        path: `/arquipelago/admin/revisoes/${z.uuid().parse(id)}/${z.uuid().parse(action)}`,
+        body: undefined,
+      }
     if (resource === 'manifestos' && id === 'exportar' && path.length === 2)
       return {
         path: '/arquipelago/admin/manifestos/exportar',
@@ -83,6 +99,11 @@ export function gameAdminRequest(
         body: AplicarManifestoSchema.parse(body),
       }
   }
+  if (method === 'POST' && resource === 'revisoes' && path.length === 3 && !search.size)
+    return {
+      path: `/arquipelago/admin/revisoes/${z.uuid().parse(id)}/${z.uuid().parse(action)}`,
+      body: ResponderRevisaoSchema.parse(body),
+    }
   if (search.size || resource !== 'desafios') throw new Error('Rota inválida.')
   if (method === 'POST' && path.length === 1)
     return { path: '/arquipelago/admin/desafios', body: CriarDesafioSchema.parse(body) }

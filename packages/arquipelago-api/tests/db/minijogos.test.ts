@@ -71,6 +71,7 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
   })
   beforeEach(async () => {
     await conexao.sql`truncate arquipelago.minijogos, arquipelago.perfis_da_conta`
+    await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
     c = structuredClone(conteudo)
     passar = true
     relogio = agora
@@ -126,6 +127,7 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
   test('a lista diz a ilha publicada do desafio (B10); sem o desafio no banco, fica sem ilha', async () => {
     await servico.verificar(jogador, desafioId, { revisao: 1, projeto: {} })
     expect((await repo.listar(perfil))[0]?.ilha).toBeUndefined()
+    expect((await repo.abrir(perfil, desafioId))?.revisao).toBeUndefined()
     await conexao.sql`
       insert into arquipelago.desafios
         (id, slug, publico, ilha, tipo, quadro, ordem, situacao, revisao, revisao_publicada,
@@ -134,6 +136,18 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
         2, 1, ${JSON.stringify({ ilha: 'vila-doce' })}::jsonb, ${JSON.stringify(c)}::jsonb, now(), now(), ${perfil})`
     // A ilha publicada vale sobre a do rascunho.
     expect((await repo.listar(perfil))[0]?.ilha).toBe('vila-doce')
+    // JavaScript mantém a resposta sem revisão, inclusive durante a troca dos apps.
+    const javascript = await repo.abrir(perfil, desafioId)
+    expect(javascript).not.toHaveProperty('revisao')
+    const python = { programmingLanguage: 'python', files: { 'main.py': 'print(1)' } }
+    await repo.guardar({ jogador, desafioId, titulo: c.titulo, projeto: python, agora })
+    // Python e Pro precisam da revisão publicada para pedir o ambiente ou compilar a atração.
+    expect((await repo.abrir(perfil, desafioId))?.revisao).toBe(1)
+    expect((await repo.abrir(perfil, desafioId))?.projeto).toEqual(python)
+    const pro = { kind: 'pro', programmingLanguage: 'javascript', tree: { version: 1, nodes: [] } }
+    await repo.guardar({ jogador, desafioId, titulo: c.titulo, projeto: pro, agora })
+    expect((await repo.abrir(perfil, desafioId))?.revisao).toBe(1)
+    expect((await repo.abrir(perfil, desafioId))?.projeto).toEqual(pro)
     await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
   })
   test('reprovado, sem atração e suporte não guardam cópia', async () => {

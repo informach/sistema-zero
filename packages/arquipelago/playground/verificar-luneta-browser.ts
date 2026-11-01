@@ -49,6 +49,8 @@ try {
   for (const caso of [
     { posto: 1, reduzido: false, largura: 1280, altura: 800 },
     { posto: 2, reduzido: true, largura: 390, altura: 844 },
+    // O bicho correndo e o Lumi de luz de cada ilha do anel (lacunas, 01/11/2026).
+    ...[2, 3, 4, 5, 6].map((posto) => ({ posto, reduzido: false, largura: 1280, altura: 800 })),
     { posto: 8, reduzido: false, largura: 1280, altura: 800 },
   ]) {
     const contexto = await browser.newContext({
@@ -90,8 +92,23 @@ try {
     await pagina.waitForFunction(
       () => ((globalThis as Janela).__arquipelagoDesenho?.posicao.z ?? 0) > 34.1,
     )
+    // Com o barco no píer (a partir do Recife), o "Embarcar" fica mais perto até ela chegar à
+    // luneta: segue andando até a luneta ser o interativo mais perto.
+    await pagina.waitForFunction(
+      () =>
+        [...document.querySelectorAll('.arq-acao')].some((e) =>
+          e.textContent?.includes('Olhar pela luneta'),
+        ) || ((globalThis as Janela).__arquipelagoDesenho?.posicao.z ?? 0) > 36.5,
+    )
     await pagina.keyboard.up('w')
-    await pagina.locator('.arq-acao').filter({ hasText: 'Olhar pela luneta' }).waitFor()
+    await pagina
+      .locator('.arq-acao')
+      .filter({ hasText: 'Olhar pela luneta' })
+      .waitFor()
+      .catch(async (e) => {
+        await pagina.screenshot({ path: path.join(prints, `falha-posto-${caso.posto}.png`) })
+        throw e
+      })
     await pagina.waitForTimeout(400)
     const antes = await pagina.evaluate(() => (globalThis as Janela).__arquipelagoDesenho)
     assert(antes)
@@ -119,7 +136,9 @@ try {
         (url) => !/\/(bosque|vila-doce|recife|pico|vale-dos-dinos|nuvens)-[^/]*\.glb$/.test(url),
       ),
     )
-    await pagina.screenshot({ path: path.join(prints, `luneta-posto-${caso.posto}.png`) })
+    await pagina.screenshot({
+      path: path.join(prints, `luneta-posto-${caso.posto}${caso.reduzido ? '-parado' : ''}.png`),
+    })
     // Tira o foco de Voltar: espaço num botão deve ativá-lo, não testar o pulo.
     await visor.click({ position: { x: 180, y: 200 } })
     await pagina.keyboard.press('w')

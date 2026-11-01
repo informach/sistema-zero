@@ -19,6 +19,7 @@ import {
 } from '@sistemazero/member-shell/components/live/use-live-lesson'
 import type { LiveLessonSlotProps } from '@sistemazero/member-shell/lib/live/lesson-slot'
 import { useLessonRefresh } from '@sistemazero/member-shell/lib/use-lesson-refresh'
+import videoGateVoice from '@sistemazero/member-shell/lib/zappy-video-gate-voice.json'
 import { Spinner } from '@sistemazero/ui/spinner'
 import { CheckCircle2 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
@@ -30,7 +31,6 @@ import { apiSend } from '@/lib/api'
 import { conclusaoRecusada } from '@/lib/lesson-copy'
 import { lessonDraftCloudFor } from '@/lib/lesson-draft-cloud'
 import type { LessonCompleteResult, LessonDetailView } from '@/lib/types'
-import videoGateVoice from '@/lib/zappy-video-gate-voice.json'
 
 interface Viewer {
   viewerId: string | null

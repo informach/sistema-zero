@@ -4,9 +4,12 @@ import {
   ManifestoDoClienteSchema,
   VERSAO_CONTRATO_PLATAFORMA,
 } from '@sistemazero/arquipelago-contracts'
+import { gerarIlhasMedias } from './gerar-ilhas-medias'
 import { conferirPortosDaArte } from './gerar-portos'
 
 await conferirPortosDaArte()
+// As versões médias das ilhas que já têm a arte (lacunas, 01/11/2026).
+await gerarIlhasMedias()
 
 /**
  * Compila o jogo para publicação: arquivos com hash em `dist/cliente/` e um `manifesto.json`

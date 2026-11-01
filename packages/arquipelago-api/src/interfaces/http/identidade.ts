@@ -82,5 +82,9 @@ export function lerEquipe(h: Cabecalhos): Equipe {
   if (h['x-auth-account-id'] !== undefined || h['x-auth-kids-context'] !== undefined) {
     throw new ForbiddenError('Use a conta da equipe, sem perfil')
   }
-  return { id, podeEscrever: PAPEIS_QUE_ESCREVEM_DESAFIOS.has(papel) && !somenteLeitura }
+  return {
+    id,
+    podeEscrever: PAPEIS_QUE_ESCREVEM_DESAFIOS.has(papel) && !somenteLeitura,
+    podeRevisar: !somenteLeitura,
+  }
 }

@@ -1,0 +1,139 @@
+{
+  "cases": [
+    {
+      "audience": "kids",
+      "width": 1440,
+      "frames": 6,
+      "cacheEnabled": true,
+      "metrics": {
+        "bodyFont": "Arial, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+        "fontSize": "16px",
+        "cardRadius": "0px",
+        "chipFontSize": "12px",
+        "chipLineHeight": "16px",
+        "chipHeight": 28,
+        "bodyBackground": "rgb(233, 238, 246)",
+        "footer": {
+          "x": 0,
+          "width": 1440
+        },
+        "overflow": false
+      },
+      "passed": true
+    },
+    {
+      "audience": "adult",
+      "width": 1440,
+      "frames": 6,
+      "cacheEnabled": true,
+      "metrics": {
+        "bodyFont": "Arial, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+        "fontSize": "16px",
+        "cardRadius": "0px",
+        "chipFontSize": "12px",
+        "chipLineHeight": "16px",
+        "chipHeight": 28,
+        "bodyBackground": "rgb(233, 238, 246)",
+        "footer": {
+          "x": 0,
+          "width": 1440
+        },
+        "overflow": false
+      },
+      "passed": true
+    },
+    {
+      "audience": "kids",
+      "width": 768,
+      "frames": 6,
+      "cacheEnabled": true,
+      "metrics": {
+        "bodyFont": "Arial, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+        "fontSize": "16px",
+        "cardRadius": "0px",
+        "chipFontSize": "12px",
+        "chipLineHeight": "16px",
+        "chipHeight": 28,
+        "bodyBackground": "rgb(233, 238, 246)",
+        "footer": {
+          "x": 0,
+          "width": 768
+        },
+        "overflow": false
+      },
+      "passed": true
+    },
+    {
+      "audience": "adult",
+      "width": 768,
+      "frames": 6,
+      "cacheEnabled": true,
+      "metrics": {
+        "bodyFont": "Arial, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+        "fontSize": "16px",
+        "cardRadius": "0px",
+        "chipFontSize": "12px",
+        "chipLineHeight": "16px",
+        "chipHeight": 28,
+        "bodyBackground": "rgb(233, 238, 246)",
+        "footer": {
+          "x": 0,
+          "width": 768
+        },
+        "overflow": false
+      },
+      "passed": true
+    },
+    {
+      "audience": "kids",
+      "width": 390,
+      "frames": 6,
+      "cacheEnabled": true,
+      "metrics": {
+        "bodyFont": "Arial, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+        "fontSize": "16px",
+        "cardRadius": "0px",
+        "chipFontSize": "12px",
+        "chipLineHeight": "16px",
+        "chipHeight": 28,
+        "bodyBackground": "rgb(233, 238, 246)",
+        "footer": {
+          "x": 0,
+          "width": 390
+        },
+        "overflow": false
+      },
+      "passed": true
+    },
+    {
+      "audience": "adult",
+      "width": 390,
+      "frames": 6,
+      "cacheEnabled": true,
+      "metrics": {
+        "bodyFont": "Arial, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, sans-serif",
+        "fontSize": "16px",
+        "cardRadius": "0px",
+        "chipFontSize": "12px",
+        "chipLineHeight": "16px",
+        "chipHeight": 28,
+        "bodyBackground": "rgb(233, 238, 246)",
+        "footer": {
+          "x": 0,
+          "width": 390
+        },
+        "overflow": false
+      },
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "rawReceiptSha256": "621095fe8abc678375b99f24d5f3d403e108a8e1b6f3552e0533b4a23b4cbf0c",
+  "requests": {
+    "total": 2178,
+    "rive": 0,
+    "ediSVG": 12,
+    "localOnly": true
+  },
+  "run": "lesson-parity-browser-r5"
+}

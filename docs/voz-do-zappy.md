@@ -72,7 +72,7 @@ interrompe o outro. Trocar de parte ou liberar a atividade também encerra a ori
 
 Essa frase pertence à interface, e sua gravação acompanha o app em
 `community-kids/public/zappy/assista-ao-video-v1.mp3`; não depende de republicar cada aula.
-O texto, a voz, o modelo e o formato usados estão em `src/lib/zappy-video-gate-voice.json`
+O texto, a voz, o modelo e o formato usados estão em `packages/member-shell/src/lib/zappy-video-gate-voice.json`
 do Kids. Ao mudar a frase ou a voz, gere outro MP3 e use um nome novo, pois os arquivos em
 `/zappy/` têm cache prolongado. As falas autoradas das aulas continuam pelo Admin.
 

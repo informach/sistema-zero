@@ -62,6 +62,9 @@ export function MinijogosDaCrianca({
         <Suspense fallback={<p role="status">Abrindo minijogo.</p>}>
           <Player
             key={jogo}
+            userId={perfilId}
+            audience="kids"
+            environmentUrl={`${rota}?id=${encodeURIComponent(jogo)}`}
             url={`${rota}?id=${encodeURIComponent(jogo)}`}
             onClose={() => setJogo(null)}
           />

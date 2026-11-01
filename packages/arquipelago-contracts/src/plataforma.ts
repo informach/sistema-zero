@@ -29,6 +29,17 @@ export function versaoCompativel(versao: unknown): boolean {
   return typeof versao === 'number' && VERSOES_COMPATIVEIS_DA_PLATAFORMA.includes(versao)
 }
 
+/**
+ * A negociação (A35, lacunas de 01/11/2026): o lado novo entrega ao antigo a porta da versão
+ * antiga. Com as duas versões aceitas por este lado, vale a menor delas: um host v2 monta a
+ * `Plataforma` v1 para um jogo v1, e um jogo v2 lê a v1 de um host v1. `null` quando a versão
+ * do outro lado não é aceita (ele está duas versões atrás, ou na frente).
+ */
+export function negociarVersao(outroLado: unknown): number | null {
+  if (!versaoCompativel(outroLado)) return null
+  return Math.min(VERSAO_CONTRATO_PLATAFORMA, outroLado as number)
+}
+
 export type PublicoJogo = 'kids' | 'adulto'
 
 export interface PerfilDoJogo {
@@ -148,7 +159,8 @@ export const CriacaoQueCabeSchema = z.strictObject({
 export type CriacaoQueCabe = z.infer<typeof CriacaoQueCabeSchema>
 
 export interface Plataforma {
-  versaoContrato: typeof VERSAO_CONTRATO_PLATAFORMA
+  /** A versão negociada (`negociarVersao`): a atual ou a anterior, a menor dos dois lados. */
+  versaoContrato: number
   publico: PublicoJogo
   perfil: PerfilDoJogo
   lerJornada(): Promise<JornadaDoJogo>
@@ -218,3 +230,30 @@ export const ManifestoDoClienteSchema = z.strictObject({
   geradoEm: z.iso.datetime({ offset: true }),
 })
 export type ManifestoDoCliente = z.infer<typeof ManifestoDoClienteSchema>
+
+/**
+ * A publicação separada do jogo (lacunas, 01/11/2026, desfaz a A11): cada versão compilada vai
+ * para o CDN em `arquipelago/versoes/<versao>/`, imutável, e os canais (`arquipelago/canais/
+ * estavel.json` e `teste.json`) apontam para uma delas. Voltar uma versão é trocar o ponteiro. O
+ * host escolhe o canal pelo ambiente; sem CDN configurado, segue lendo o manifesto do serviço.
+ */
+export const CANAIS_DO_CLIENTE = ['estavel', 'teste'] as const
+export type CanalDoCliente = (typeof CANAIS_DO_CLIENTE)[number]
+export const VERSAO_DO_CLIENTE = /^[A-Za-z0-9._-]{1,80}$/
+/** A pasta de uma versão no CDN (sem barra no começo, com barra no fim). */
+export const pastaDaVersao = (versao: string) => `arquipelago/versoes/${versao}/`
+export const arquivoDoCanal = (canal: CanalDoCliente) => `arquipelago/canais/${canal}.json`
+/** O marcador que a publicação grava por último: a versão só pode ser promovida com ele. */
+export const MARCADOR_DA_VERSAO = 'completa.json'
+
+export const PonteiroDoCanalSchema = z.strictObject({
+  formato: z.literal(2),
+  canal: z.enum(CANAIS_DO_CLIENTE),
+  versao: z.string().regex(VERSAO_DO_CLIENTE),
+  entrada: ManifestoDoClienteSchema.shape.entrada,
+  versaoContrato: z.number().int().min(1),
+  /** Quando a versão foi compilada e quando o canal passou a apontar para ela. */
+  geradoEm: z.iso.datetime({ offset: true }),
+  promovidoEm: z.iso.datetime({ offset: true }),
+})
+export type PonteiroDoCanal = z.infer<typeof PonteiroDoCanalSchema>

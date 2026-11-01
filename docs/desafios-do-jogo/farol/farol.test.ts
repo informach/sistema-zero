@@ -17,8 +17,15 @@ if (!desafio) throw new Error('sem desafio')
 const GABARITO = desafio.conteudo.gabarito
 const checks = desafio.conteudo.objetivos as SectionJavaScriptProjectCheck[]
 const raiz = new URL('../../aulas-interativas/', import.meta.url)
-const blocosDoFaisca = new Set(
-  ['faisca/desafio-primeiro-jogo', 'faisca/o-jardim-secreto'].flatMap((curso) => {
+/** Os blocos dos três postos de blocos (Lenda, lacunas de 01/11/2026): Faísca, Construtor e Inventor. */
+const blocosDosTresPostos = new Set(
+  [
+    'faisca/desafio-primeiro-jogo',
+    'faisca/o-jardim-secreto',
+    'construtor/nave-contra-asteroides',
+    'construtor/o-jogo-do-meu-jeito',
+    'inventor/corre-dino',
+  ].flatMap((curso) => {
     const dados = JSON.parse(readFileSync(new URL(`${curso}/blocos.json`, raiz), 'utf8'))
     return dados.blocks ?? dados['2d']
   }),
@@ -43,12 +50,16 @@ test('os arquivos importáveis correspondem à fonte, um quadro do Farol que nã
   expect(desafio.ilha).toBe('farol')
   expect(desafio.quadro).toBe(1)
   expect(desafio.conteudo.recompensa.cor).toBe(false)
+  // Lenda: o extra é a versão 2, conferida pelo serviço; o aprovado vai à revisão humana.
+  expect(desafio.conteudo.recompensa.extraNaVersao2).toBe(true)
+  expect(desafio.conteudo.recompensa.revisaoHumana).toBe(true)
+  expect(checks.some((c) => c.optional)).toBe(false)
   for (const p of [desafio.conteudo.projetoInicial, desafio.conteudo.gabarito]) {
     const project = p as { ir: unknown; blocksState: unknown }
     expect(SZIRV2Schema.safeParse(project.ir).success).toBe(true)
-    expect([...new Set(tipos(project.blocksState))].filter((t) => !blocosDoFaisca.has(t))).toEqual(
-      [],
-    )
+    expect(
+      [...new Set(tipos(project.blocksState))].filter((t) => !blocosDosTresPostos.has(t)),
+    ).toEqual([])
   }
   expect(isSectionCompletion({ version: 1, blockIds: [], projectChecks: checks })).toBe(true)
 })
@@ -97,6 +108,11 @@ const se = (cond: unknown, corpo: unknown[]) => ({
   else: [],
 })
 const falso = { type: 'bool', value: false }
+/** Os encontros do guia com o grupo de pedras, que ficam dentro do "a cada quadro". */
+const encontrosDoGrupo = (ir: { behavior: { loops: any[] } }) =>
+  ir.behavior.loops.flatMap((l: any) =>
+    (l.body ?? []).filter((s: any) => s.type === 'g2d:onSpriteGroupOverlap'),
+  )
 const passa = (projeto: Project) =>
   Object.fromEntries(
     checks
@@ -106,14 +122,15 @@ const passa = (projeto: Project) =>
 
 test('a reprodução da revisão: tudo dentro de "Se falso" não cumpre nada além de andar', () => {
   const projeto = variante((ir) => {
-    for (const evento of ir.behavior.events) evento.body = [se(falso, evento.body)]
+    for (const evento of [...ir.behavior.events, ...encontrosDoGrupo(ir)])
+      evento.body = [se(falso, evento.body)]
   })
   expect(passa(projeto)).toEqual({
     encontro: false,
     lembra: false,
     decide: false,
     recomeca: false,
-    some: false,
+    combina: false,
   })
 })
 
@@ -121,14 +138,15 @@ test('N3: tudo dentro de "Se podeAgir", com podeAgir sempre falso, também não 
   const pode = { type: 'var', name: 'podeAgir' }
   const projeto = variante((ir) => {
     ir.behavior.start.unshift({ type: 'var', name: 'podeAgir', value: falso })
-    for (const evento of ir.behavior.events) evento.body = [se(pode, evento.body)]
+    for (const evento of [...ir.behavior.events, ...encontrosDoGrupo(ir)])
+      evento.body = [se(pode, evento.body)]
   })
   expect(passa(projeto)).toEqual({
     encontro: false,
     lembra: false,
     decide: false,
     recomeca: false,
-    some: false,
+    combina: false,
   })
 })
 
@@ -136,7 +154,8 @@ test('N3: a única atribuição de podeAgir está em código morto, e continua s
   const pode = { type: 'var', name: 'podeAgir' }
   const projeto = variante((ir) => {
     ir.behavior.start.unshift({ type: 'var', name: 'podeAgir', value: falso })
-    for (const evento of ir.behavior.events) evento.body = [se(pode, evento.body)]
+    for (const evento of [...ir.behavior.events, ...encontrosDoGrupo(ir)])
+      evento.body = [se(pode, evento.body)]
     ir.behavior.events.push({
       type: 'g2d:onKey',
       key: 'p',
@@ -150,8 +169,8 @@ test('N3: a única atribuição de podeAgir está em código morto, e continua s
 
 test('encontro sem efeito: o corpo vazio ou morto não conta', () => {
   const projeto = variante((ir) => {
-    for (const evento of ir.behavior.events)
-      if (evento.type === 'g2d:onOverlap')
+    for (const evento of [...ir.behavior.events, ...encontrosDoGrupo(ir)])
+      if (evento.type === 'g2d:onOverlap' || evento.type === 'g2d:onSpriteGroupOverlap')
         evento.body = [
           se(
             { type: 'logical', op: '&&', left: { type: 'var', name: 'temEstrela' }, right: falso },
@@ -164,6 +183,8 @@ test('encontro sem efeito: o corpo vazio ou morto não conta', () => {
   expect(r.lembra).toBe(false)
   expect(r.decide).toBe(false)
   expect(r.recomeca).toBe(true)
+  // Sem a decisão do Faísca, a combinação dos três postos também cai.
+  expect(r.combina).toBe(false)
 })
 
 test('condição que nunca produz a consequência não é decisão', () => {
@@ -219,4 +240,23 @@ test('textos sem travessão e sem exclamação', () => {
     ...checks.map((c) => c.label),
   ]
   for (const t of textos) expect(t).not.toMatch(/[—–!]/)
+})
+
+test('a combinação pede os três postos: sem o relógio do grupo ou sem o pulo, não combina', () => {
+  const semRelogio = variante((ir) => {
+    ir.behavior.loops = ir.behavior.loops.filter((l: any) => l.type !== 'g2d:everySeconds')
+  })
+  expect(passa(semRelogio).combina).toBe(false)
+  const semPulo = variante((ir) => {
+    ir.behavior.loops[0].body = ir.behavior.loops[0].body.filter(
+      (s: any) => s.type !== 'g2d:controlDino',
+    )
+  })
+  expect(passa(semPulo).combina).toBe(false)
+  const pedrasMortas = variante((ir) => {
+    const relogio = ir.behavior.loops.find((l: any) => l.type === 'g2d:everySeconds')
+    relogio.body = [se(falso, relogio.body)]
+  })
+  expect(passa(pedrasMortas).combina).toBe(false)
+  expect(passa(GABARITO as Project).combina).toBe(true)
 })

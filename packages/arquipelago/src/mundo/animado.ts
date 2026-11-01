@@ -18,6 +18,8 @@ export function useCopiaAnimada(
   pausado = false,
   manual = false,
   brilhoNoturno = 1,
+  /** As luzes acesas também de dia (o segredo que brilha na luneta). */
+  sempreAceso = false,
 ): {
   cena: Object3D
   /** Atualização manual antes do passageiro, para âncoras móveis no mesmo quadro. */
@@ -33,13 +35,13 @@ export function useCopiaAnimada(
   const copia = useMemo(() => {
     const c = copiarArteAnimada(gltf.scene)
     // Já nasce com o brilho da hora: sem isso, o primeiro quadro mostrava a luz do GLB de dia.
-    iluminarArte(c.luzes, ambiente.noite, brilhoNoturno)
+    iluminarArte(c.luzes, ambiente.noite || sempreAceso, brilhoNoturno)
     return c
-  }, [gltf.scene, ambiente, brilhoNoturno])
+  }, [gltf.scene, ambiente, brilhoNoturno, sempreAceso])
   const { cena } = copia
   const olhos = useMemo(() => malhasDosOlhos(cena), [cena])
   useEffect(() => () => copia.soltar(), [copia])
-  useFrame(() => iluminarArte(copia.luzes, ambiente.noite, brilhoNoturno))
+  useFrame(() => iluminarArte(copia.luzes, ambiente.noite || sempreAceso, brilhoNoturno))
   const { actions, mixer } = useAnimations(gltf.animations, raiz)
   useEffect(() => {
     for (const acao of Object.values(actions)) if (acao) configurarAcao(acao, umaVez)

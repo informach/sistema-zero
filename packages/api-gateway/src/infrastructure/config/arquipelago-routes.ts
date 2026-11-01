@@ -76,6 +76,14 @@ export function arquipelagoGateway(opts: {
         rateLimit: { max: 60, windowMs: 60_000, by: 'principal' as const },
       })),
       {
+        ...jogador,
+        id: 'arquipelago-minijogo-familia-ambiente',
+        pathPattern: '/arquipelago/familia/minijogos/:perfil/:id/ambiente',
+        methods: ['POST'],
+        maxBodyBytes: 2 * 1024 * 1024,
+        rateLimit: { max: 12, windowMs: 60000, by: 'principal' },
+      },
+      {
         ...leituraDaEquipe,
         id: 'arquipelago-equipe-medicao',
         methods: ['GET'],

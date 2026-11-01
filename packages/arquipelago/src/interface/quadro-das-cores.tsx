@@ -93,6 +93,7 @@ function CartaoDoQuadro({
         ) : null}
         {q.estado === 'trancado' && d ? <Falta d={d} /> : null}
         {q.estado === 'disponivel' || q.estado === 'feito' ? <Premio d={d} /> : null}
+        {d?.revisaoHumana ? <RevisaoDaEquipe r={d.revisaoHumana} /> : null}
       </div>
       {q.estado === 'disponivel' || q.estado === 'feito' ? (
         <button
@@ -101,10 +102,35 @@ function CartaoDoQuadro({
           disabled={ocupado}
           onClick={() => aoJogar(q)}
         >
-          {q.estado === 'feito' ? 'Fazer de novo' : 'Fazer o desafio'}
+          {q.estado !== 'feito'
+            ? 'Fazer o desafio'
+            : d?.recompensa.extraNaVersao2 && !d.extraFeito
+              ? 'Fazer a versão 2'
+              : 'Fazer de novo'}
         </button>
       ) : null}
     </li>
+  )
+}
+
+/**
+ * A revisão humana do jogo autoral (lacunas, 01/11/2026): depois do envio aprovado, a equipe joga
+ * e manda um retorno. O acesso ao jogo e às criações continua enquanto isso.
+ */
+function RevisaoDaEquipe({ r }: { r: NonNullable<DesafioNaLista['revisaoHumana']> }) {
+  if (r.estado === 'aguardando')
+    return (
+      <span className="arq-quadro-estado">
+        A equipe vai jogar o seu jogo e mandar um retorno.
+        {r.retorno ? ` O último retorno foi: ${r.retorno}` : ''}
+      </span>
+    )
+  return (
+    <span className="arq-quadro-estado">
+      {r.estado === 'conferido'
+        ? `A equipe jogou o seu jogo. ${r.retorno ?? ''}`
+        : `A equipe jogou o seu jogo e sugeriu uma melhora. ${r.retorno ?? ''} Mude o jogo e envie de novo.`}
+    </span>
   )
 }
 

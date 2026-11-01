@@ -3005,11 +3005,11 @@
       "objetivosObrigatorios": [
         {
           "id": "acelera",
-          "descricao": "Cada pedra nova deixa a próxima um pouco mais rápida."
+          "descricao": "Cada chaminé nova deixa a próxima um pouco mais rápida."
         },
         {
-          "id": "com-limite",
-          "descricao": "A velocidade só aumenta enquanto não passa do limite, entre -14 e -7."
+          "id": "pontos-no-fim",
+          "descricao": "Encostar numa chaminé encerra a corrida e a tela do fim mostra os metros."
         },
         {
           "id": "um-acelerador",
@@ -3026,10 +3026,8 @@
         "sz_g2d_clear",
         "sz_g2d_control_dino",
         "sz_g2d_create_dino",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
-        "sz_g2d_draw_group",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_every_seconds",
@@ -3037,9 +3035,7 @@
         "sz_g2d_on_any_input",
         "sz_g2d_on_jump",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_play_fx",
-        "sz_g2d_prune_offscreen",
         "sz_g2d_random_between",
         "sz_g2d_restart",
         "sz_g2d_scene_is",
@@ -3050,11 +3046,10 @@
         "sz_g2d_setup_stage",
         "sz_g2d_shake",
         "sz_g2d_show_screen",
-        "sz_g2d_spawn_obstacle",
         "sz_g2d_sprite_x",
         "sz_g2d_update_each_frame",
-        "sz_g2d_update_group",
         "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_create",
         "sz_js_var_increment",
         "sz_val_compare",
@@ -3597,11 +3592,11 @@
       "objetivosObrigatorios": [
         {
           "id": "acelera",
-          "descricao": "Cada pedra nova deixa a próxima um pouco mais rápida."
+          "descricao": "Cada chaminé nova deixa a próxima um pouco mais rápida."
         },
         {
-          "id": "com-limite",
-          "descricao": "A velocidade só aumenta enquanto não passa do limite, entre -14 e -7."
+          "id": "pontos-no-fim",
+          "descricao": "Encostar numa chaminé encerra a corrida e a tela do fim mostra os metros."
         },
         {
           "id": "um-acelerador",
@@ -3618,10 +3613,8 @@
         "sz_g2d_clear",
         "sz_g2d_control_dino",
         "sz_g2d_create_dino",
-        "sz_g2d_create_group",
         "sz_g2d_create_image_sprite",
         "sz_g2d_draw_backdrop",
-        "sz_g2d_draw_group",
         "sz_g2d_draw_score",
         "sz_g2d_draw_sprite",
         "sz_g2d_every_seconds",
@@ -3629,9 +3622,7 @@
         "sz_g2d_on_any_input",
         "sz_g2d_on_jump",
         "sz_g2d_on_overlap",
-        "sz_g2d_on_sprite_group_overlap",
         "sz_g2d_play_fx",
-        "sz_g2d_prune_offscreen",
         "sz_g2d_random_between",
         "sz_g2d_restart",
         "sz_g2d_scene_is",
@@ -3642,11 +3633,10 @@
         "sz_g2d_setup_stage",
         "sz_g2d_shake",
         "sz_g2d_show_screen",
-        "sz_g2d_spawn_obstacle",
         "sz_g2d_sprite_x",
         "sz_g2d_update_each_frame",
-        "sz_g2d_update_group",
         "sz_js_if_else",
+        "sz_js_var_assign",
         "sz_js_var_create",
         "sz_js_var_increment",
         "sz_val_compare",
@@ -7731,6 +7721,10 @@
         {
           "id": "recomeca",
           "descricao": "Uma tecla recomeça o jogo."
+        },
+        {
+          "id": "combina",
+          "descricao": "O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor."
         }
       ],
       "tiposJaPresentes": [
@@ -7748,12 +7742,23 @@
       ],
       "tiposAcrescentados": [
         "sz_frame_events",
+        "sz_g2d_apply_gravity",
+        "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
+        "sz_g2d_control_dino",
+        "sz_g2d_create_dino",
+        "sz_g2d_create_group",
         "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_every_seconds",
+        "sz_g2d_explode",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_random_between",
         "sz_g2d_restart",
-        "sz_g2d_top_down",
+        "sz_g2d_spawn_obstacle",
+        "sz_g2d_update_group",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
@@ -7794,6 +7799,10 @@
         {
           "id": "recomeca",
           "descricao": "Uma tecla recomeça o jogo."
+        },
+        {
+          "id": "combina",
+          "descricao": "O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor."
         }
       ],
       "tiposJaPresentes": [
@@ -7811,12 +7820,23 @@
       ],
       "tiposAcrescentados": [
         "sz_frame_events",
+        "sz_g2d_apply_gravity",
+        "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
+        "sz_g2d_control_dino",
+        "sz_g2d_create_dino",
+        "sz_g2d_create_group",
         "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_every_seconds",
+        "sz_g2d_explode",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_random_between",
         "sz_g2d_restart",
-        "sz_g2d_top_down",
+        "sz_g2d_spawn_obstacle",
+        "sz_g2d_update_group",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",

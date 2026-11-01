@@ -1,4 +1,9 @@
-import { ILHAS, type Ilha, type PostoDaJornada } from '@sistemazero/arquipelago-contracts'
+import {
+  ILHAS,
+  type Ilha,
+  type LumiDeLuz,
+  type PostoDaJornada,
+} from '@sistemazero/arquipelago-contracts'
 
 export const PAINEL_DA_LUNETA = 'luneta'
 /** Só apresentação. Ordem e regras de abertura continuam no contrato das ilhas. */
@@ -40,15 +45,77 @@ export function recadoDaPlaca(ilha: Ilha): string {
 
 export const SINAIS_DA_LUNETA = { periodo: 6, percurso: 2.6, brilhoMinimo: 0.65 } as const
 
-/** A prévia mexe devagar; com menos movimento, o vulto e o brilho ficam estáveis. */
+/**
+ * A prévia mexe devagar: o bicho vai e volta (`x`) virado para onde corre (`rumo`, em radianos: 0 é
+ * de frente para a luneta, π/2 correndo para +x) e o segredo pulsa (`brilho`). Nas pontas do
+ * caminho ele vira de frente um instante, como quem dá a volta. Com menos movimento, tudo fica
+ * parado e o bicho olha para a luneta.
+ */
 export function passoDaPrevia(
   tempo: number,
   menosMovimento: boolean,
-  saida: { x: number; brilho: number },
+  saida: { x: number; brilho: number; rumo: number },
 ): void {
   const fase = menosMovimento ? 0 : (tempo * Math.PI * 2) / SINAIS_DA_LUNETA.periodo
   saida.x = Math.sin(fase) * SINAIS_DA_LUNETA.percurso
   saida.brilho = SINAIS_DA_LUNETA.brilhoMinimo + (Math.cos(fase) + 1) * 0.175
+  saida.rumo = menosMovimento ? 0 : (Math.PI / 2) * Math.max(-1, Math.min(1, Math.cos(fase) * 4))
+}
+
+/**
+ * O bicho que corre pela ilha vista (um dos que moram nela; na Vila, a ovelhinha de algodão-doce feita
+ * para a luneta), o clipe de correr e o de ficar parado (com menos movimento), a escala para ler de
+ * longe e quanto ele voa acima do chão. A tartaruguinha tem a origem no meio do corpo.
+ */
+export const BICHO_DA_LUNETA = {
+  bosque: { bicho: 'coelho', correr: 'correr', parado: 'parado', escala: 1.6, altura: 0 },
+  'vila-doce': { bicho: 'ovelhinha', correr: 'correr', parado: 'parado', escala: 2.1, altura: 0 },
+  recife: { bicho: 'tartaruguinha', correr: 'nadar', parado: 'parado', escala: 2.2, altura: 0.2 },
+  pico: { bicho: 'pinguim', correr: 'deslizar', parado: 'parado', escala: 1.9, altura: 0 },
+  'vale-dos-dinos': {
+    bicho: 'triceratops-filhote',
+    correr: 'andar',
+    parado: 'parado',
+    escala: 1.6,
+    altura: 0,
+  },
+  nuvens: {
+    bicho: 'passaro-das-nuvens',
+    correr: 'voar',
+    parado: 'pousado',
+    escala: 2.4,
+    altura: 1.4,
+  },
+} as const
+
+export type BichoDaLuneta = (typeof BICHO_DA_LUNETA)[keyof typeof BICHO_DA_LUNETA]['bicho']
+
+/** O bicho da ilha vista, ou nenhum (o Farol). */
+export function bichoDaLuneta(
+  ilha: Pick<Ilha, 'id'>,
+): (typeof BICHO_DA_LUNETA)[keyof typeof BICHO_DA_LUNETA] | null {
+  return ilha.id in BICHO_DA_LUNETA
+    ? BICHO_DA_LUNETA[ilha.id as keyof typeof BICHO_DA_LUNETA]
+    : null
+}
+
+/**
+ * O segredo que brilha na ilha vista: o Lumi de luz da família dela (B12), o que só sai do baú do
+ * segredo. O do Pico fica na gruta da sua ilha, mas a família é a do Pico.
+ */
+export const SEGREDO_DA_LUNETA = {
+  bosque: 'ipe-de-luz',
+  'vila-doce': 'brigadeiro-de-luz',
+  recife: 'perola-de-luz',
+  pico: 'cristal-de-luz',
+  'vale-dos-dinos': 'brotinho-de-luz',
+  nuvens: 'pluma-de-luz',
+} as const satisfies Record<string, LumiDeLuz>
+
+export function segredoDaLuneta(ilha: Pick<Ilha, 'id'>): LumiDeLuz | null {
+  return ilha.id in SEGREDO_DA_LUNETA
+    ? SEGREDO_DA_LUNETA[ilha.id as keyof typeof SEGREDO_DA_LUNETA]
+    : null
 }
 
 /** Quem acena pela luneta em cada ilha do anel (o morador da ilha, §6.28 A18). */

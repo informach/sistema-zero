@@ -11,7 +11,7 @@ import {
 } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { serializeError } from '@sistemazero/core/logging'
-import { Elysia } from 'elysia'
+import { type AnyElysia, Elysia } from 'elysia'
 import {
   AcessoBloqueadoError,
   AparenciaNaoCompradaError,
@@ -26,6 +26,7 @@ import {
   ManifestoDesatualizadoError,
   ManifestoExcedeLimiteError,
   PlataformaIndisponivelError,
+  RevisaoMudouError,
   SaldoInsuficienteError,
   SalvamentoGrandeDemaisError,
   SalvamentoIlegivelError,
@@ -48,6 +49,7 @@ import {
   type ServicoDasProfissoes,
   TurnoNaoEncontradoError,
 } from '../../application/servico-das-profissoes'
+import type { ServicoDasRevisoesHumanas } from '../../application/servico-das-revisoes-humanas'
 import type { ServicoDasRoupas } from '../../application/servico-das-roupas'
 import type { ServicoDasVendas } from '../../application/servico-das-vendas'
 import type { ServicoDasVisitas } from '../../application/servico-das-visitas'
@@ -93,6 +95,7 @@ import { rotasDaGaleria } from './rotas-da-galeria'
 import { rotasDaMedicao } from './rotas-da-medicao'
 import { rotasDaObraEstendida } from './rotas-da-obra-estendida'
 import { rotasDasProfissoes } from './rotas-das-profissoes'
+import { rotasDasRevisoesHumanas } from './rotas-das-revisoes-humanas'
 import { rotasDasRoupas } from './rotas-das-roupas'
 import { rotasDasVendas } from './rotas-das-vendas'
 import { rotasDasVisitas } from './rotas-das-visitas'
@@ -121,6 +124,8 @@ export interface DependenciasHttp {
   insumos?: ServicoDosInsumos
   profissoes?: ServicoDasProfissoes
   minijogos?: ServicoDosMinijogos
+  /** A revisão humana da Lenda (lacunas, 01/11/2026). */
+  revisoes?: ServicoDasRevisoesHumanas
   medicao?: ServicoDaMedicao
   logger: Logger
   servico: ServicoDoJogo
@@ -165,7 +170,12 @@ function tetoDoCaminho(caminho: string, tetoDoJogo: number): number {
  * Borda HTTP do serviço do jogo. Tudo em `/arquipelago/*` chega pelo gateway (JWT lá; aqui a
  * prova de origem é o `x-internal-token`). Falha aqui só afeta a página do jogo.
  */
-export function createServer(deps: DependenciasHttp) {
+/**
+ * O servidor do jogo. O tipo de volta é o `AnyElysia`: com um `.use` por área, o tipo inteiro das
+ * rotas passou do teto de complexidade do tsc nos testes que o guardam, e ninguém usa as rotas
+ * pelo tipo (os testes chamam `handle`).
+ */
+export function createServer(deps: DependenciasHttp): AnyElysia {
   const tetoDoJogo = deps.maxRequestBodyBytes ?? 96 * 1024
   const tetoDoServidor = Math.max(tetoDoJogo, CORPO_DA_EQUIPE, CORPO_DA_CONFERENCIA)
   return new Elysia({ serve: { maxRequestBodySize: tetoDoServidor } })
@@ -368,6 +378,10 @@ export function createServer(deps: DependenciasHttp) {
         set.status = 403
         return envelope('SEM_PERMISSAO', error.message)
       }
+      if (error instanceof RevisaoMudouError) {
+        set.status = 409
+        return envelope('REVISAO_MUDOU', error.message)
+      }
       if (error instanceof SomenteLeituraError) {
         set.status = 403
         return envelope('SOMENTE_LEITURA', error.message)
@@ -486,6 +500,11 @@ export function createServer(deps: DependenciasHttp) {
     .use(
       deps.minijogos
         ? rotasDosMinijogos({ minijogos: deps.minijogos, tokenInterno: deps.tokenInterno })
+        : new Elysia(),
+    )
+    .use(
+      deps.revisoes
+        ? rotasDasRevisoesHumanas({ revisoes: deps.revisoes, tokenInterno: deps.tokenInterno })
         : new Elysia(),
     )
     .get('/healthz', () => ({ status: 'ok' }))

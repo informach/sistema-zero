@@ -241,3 +241,12 @@ perfil do community e pelo pré-checkout do funil; convenção: o auth guarda S�
 `bun run typecheck` · `bun test tests` (o contrato do `tool-chrome.css` + `phone`) · `bun run check`
 / `check:fix` (Biome; overrides a11y p/ `packages/ui` no biome.json da raiz). Não há build — os
 apps transpilam o source.
+
+## Tema canônico de aula, 31/10/2026
+
+`src/styles/creator-theme.css` é a mesma apresentação das aulas Kids e adultas. O Kids importa
+a fonte diretamente. `scripts/lesson-theme.mjs` compõe os seletores do app adulto e da aula
+com gates CSS `:where` mutuamente exclusivos, preservando especificidade, camadas, animações
+e movimento reduzido. A saída gerada é conferida antes de dev/build. Não editar a saída nem
+criar overrides adultos para partes da aula. `read-stylesheet.mjs` expande imports locais para
+os testes de contrato, sem substituir a compilação Tailwind e a conferência no navegador.

@@ -1,4 +1,4 @@
-import { diaDeSaoPaulo } from '@sistemazero/arquipelago-contracts'
+import { diaDeSaoPaulo, type PublicoJogo } from '@sistemazero/arquipelago-contracts'
 import { and, eq, sql } from 'drizzle-orm'
 import { CompraPendenteError } from '../../../domain/insumos.port'
 import {
@@ -14,6 +14,7 @@ import { EventoTempoConflitanteError } from '../../../domain/tempo-erros'
 import type { Database } from './db'
 import {
   comprasDeInsumos,
+  diasDeJogo,
   eventosTempo,
   limitesDaFamilia,
   mudancasDeAparencia,
@@ -173,6 +174,18 @@ export class DrizzleRepositorioDoJogo implements RepositorioDoJogo {
         .returning({ segundos: tempoDiario.segundos })
       return linha?.segundos ?? 0
     })
+  }
+
+  async marcarDiaDeJogo(jogadorId: string, publico: PublicoJogo, dia: string, agora: Date) {
+    await this.db
+      .insert(diasDeJogo)
+      .values({ jogadorId, dia, publico, primeiroEm: agora, ultimoEm: agora })
+      .onConflictDoUpdate({
+        target: [diasDeJogo.jogadorId, diasDeJogo.dia],
+        set: {
+          ultimoEm: sql`greatest(${diasDeJogo.ultimoEm}, ${agora.toISOString()}::timestamptz)`,
+        },
+      })
   }
 
   async lerTempo(jogadorId: string, dia: string): Promise<number> {

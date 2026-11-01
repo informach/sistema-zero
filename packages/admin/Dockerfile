@@ -15,6 +15,7 @@ ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=4096
 # Origens públicas usadas na CSP que o Next grava no routes-manifest durante o build.
 # Railway só encaminha essas variáveis ao Docker quando o estágio declara ARG.
+ARG RAILWAY_GIT_COMMIT_SHA
 ARG STUDIO_PYTHON_FRAME_ORIGINS
 ARG STUDIO_PRO_RUNTIME_URL
 # Build PACKAGE-LOCAL com runtime Node (gotcha do monorepo: `--filter` da raiz

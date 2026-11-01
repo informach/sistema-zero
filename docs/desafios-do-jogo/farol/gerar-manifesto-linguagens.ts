@@ -32,64 +32,72 @@ const textos: Record<
   python: {
     kids: {
       titulo: 'Meu jogo do Arquipélago em Python',
-      enunciado: `${PEDIDO_DA_IRIS} Neste, em Python com Pygame Zero, o guia está à esquerda e uma estrela está no caminho dele. Invente a aventura: o guia já anda com as setas; passar pela estrela soma um ponto uma vez só, porque o jogo lembra que ela foi pega, e a tecla R recomeça do zero. O resto é escolha sua.`,
+      enunciado: `${PEDIDO_DA_IRIS} Neste, em Python com Pygame Zero, o jogo começa só com a janela e o guia andando. Primeiro preencha a ficha no começo do código: o objetivo do jogo e as três coisas que ele vai ter. Depois faça o jogo da sua ideia, combinando o que você aprendeu. A tecla R leva o guia de volta ao começo. Quando o jogo passar, a equipe vai jogar e mandar um retorno.`,
       dicas: [
-        'O update já faz o guia andar. Confira ali se ele encostou na estrela.',
-        'Uma variável verdadeira ou falsa pode lembrar se a estrela já foi pega.',
-        'Em on_key_down, confira key == keys.R e volte tudo ao começo.',
+        'Comece pela ficha. Três coisas pequenas que cabem no jogo valem mais que dez grandes.',
+        'Lembre dos jogos dos postos: um sorteio, um relógio, uma lista de coisas, uma fase.',
+        'Jogue um pouco a cada mudança. Se aparecer um erro, ele mostra a linha.',
+        'Em on_key_down, confira key == keys.R e volte o guia e o resto da partida ao começo.',
       ],
-      extra: 'Faça a estrela sair da tela quando for pega.',
+      extra:
+        'Versão 2: depois de aprovado, peça para outra pessoa jogar, mude o jogo pelo que o teste mostrou e envie de novo.',
     },
     adulto: {
       titulo: 'Projeto autoral em Python',
       enunciado:
-        'Projeto livre em Python com Pygame Zero. A cena traz guia, estrela e pontos. Critérios: a colisão com a estrela pontua uma única vez (mantenha uma flag); R reinicia a partida, inclusive o guia e a flag. O movimento já vem pronto. O restante do jogo é seu.',
+        'Projeto livre em Python com Pygame Zero. A cena traz só a janela e o guia andando. Preencha a ficha (objetivo e três funcionalidades) e implemente o jogo combinando mecânicas já estudadas. Critérios automáticos: ficha preenchida, jogo sem erro com setas, espaço e clique, e R devolvendo o guia ao início. Aprovado, o projeto passa por uma revisão humana com retorno.',
       dicas: [
-        'keyboard.right indica a seta pressionada no quadro.',
-        'Rect.colliderect detecta a colisão.',
+        'Mantenha o escopo pequeno: três funcionalidades que cabem no tempo.',
+        'clock.schedule_interval, random e listas cobrem relógio, sorteio e ondas.',
         'on_key_down recebe key; compare com keys.R.',
       ],
-      extra: 'Ao coletar, mova a estrela para fora da tela.',
+      extra:
+        'Versão 2: após a aprovação, faça um teste com outra pessoa, ajuste o jogo pelo que o teste mostrou e envie de novo.',
     },
   },
   ponte: {
     kids: {
       titulo: 'Meu jogo do Arquipélago na Ponte',
-      enunciado: `${PEDIDO_DA_IRIS} Neste, você escreve em JavaScript na Ponte, e os blocos acompanham. O guia está no palco, com desenhos para usar: estrela, farol, concha e Lumi. Os critérios estão na lista: o guia anda, algo acontece num encontro, o jogo lembra o que aconteceu, uma decisão usa essa lembrança e uma tecla recomeça.`,
+      enunciado: `${PEDIDO_DA_IRIS} Neste, você escreve em JavaScript na Ponte, e os blocos acompanham. O guia está no palco, com desenhos para usar: estrela, farol, concha e Lumi. Antes de montar, escolha o objetivo do jogo e três coisas que ele vai ter. Combine os três postos de blocos: um encontro que o jogo lembra e usa numa decisão, coisas que um relógio cria num grupo e gravidade com pulo. Os critérios estão na lista.`,
       dicas: [...MEU_JOGO.dicas],
       extra: MEU_JOGO.extra,
     },
     adulto: {
       titulo: 'Projeto autoral em JavaScript',
       enunciado:
-        'Projeto livre em JavaScript na Ponte, com o Jogo 2D. O guia e os desenhos estão prontos. Critérios: movimento, um encontro com efeito, um estado guardado no encontro, uma decisão que usa esse estado e uma tecla de reinício. Só conta o código que pode rodar.',
+        'Projeto livre em JavaScript na Ponte, com o Jogo 2D. O guia e os desenhos estão prontos. Critérios: movimento, um encontro com efeito, um estado guardado no encontro, uma decisão que usa esse estado, uma tecla de reinício e a combinação das mecânicas dos três postos de blocos. Só conta o código que pode rodar. Aprovado, o projeto passa por uma revisão humana com retorno.',
       dicas: [
         'Os eventos de contato recebem os dois sprites; guarde o estado numa variável.',
+        'Combine os três postos de blocos: decisão com estado, grupo criado por relógio e gravidade com pulo.',
         'A conferência ignora ramos que nunca rodam, como um if (false).',
       ],
-      extra: 'Remova um sprite da tela quando ele for coletado.',
+      extra:
+        'Versão 2: após a aprovação, faça um teste com outra pessoa, ajuste o jogo pelo que o teste mostrou e envie de novo.',
     },
   },
   pro: {
     kids: {
       titulo: 'Meu jogo do Arquipélago no Pro',
-      enunciado: `${PEDIDO_DA_IRIS} Neste, no Pro, o jogo é um projeto de verdade, em arquivos. O src/main.ts já desenha a tela e guarda o jogo: o guia, a estrela e os pontos. Escreva as regras em passo e em tecla: o guia já anda com as setas; passar pela estrela soma um ponto uma vez só e a tecla R recomeça do zero.`,
+      enunciado: `${PEDIDO_DA_IRIS} Neste, no Pro, o jogo é um projeto de verdade, em arquivos. O src/main.ts começa só com a janela e o guia andando. Primeiro preencha a ficha: o objetivo do jogo e as três coisas que ele vai ter. Depois faça o jogo da sua ideia em passo, tecla, clique e desenhar. A tecla R leva o guia de volta ao começo. Quando o jogo passar, a equipe vai jogar e mandar um retorno.`,
       dicas: [
-        'passo roda a cada quadro e já faz o guia andar; confira ali o encontro com a estrela.',
-        'Uma variável fora das funções pode lembrar se a estrela já foi pega.',
-        'tecla recebe o nome em minúsculas: confira se é r.',
+        'Comece pela ficha. Três coisas pequenas que cabem no jogo valem mais que dez grandes.',
+        'Guarde no jogo tudo o que ele precisa lembrar: pontos, listas, a fase.',
+        'Jogue um pouco a cada mudança. Se aparecer um erro, o console mostra a linha.',
+        'tecla recebe o nome em minúsculas: confira se é r e volte a partida ao começo.',
       ],
-      extra: 'Faça a estrela sair da tela quando for pega.',
+      extra:
+        'Versão 2: depois de aprovado, peça para outra pessoa jogar, mude o jogo pelo que o teste mostrou e envie de novo.',
     },
     adulto: {
       titulo: 'Projeto autoral no Pro',
       enunciado:
-        'Projeto livre em TypeScript com Vite. src/main.ts exporta o estado jogo (guia, estrela, pontos) e chama passo(teclas) a cada quadro e tecla(nome) a cada tecla. Critérios: pontuação única na colisão com a estrela e reinício completo com R. O movimento já vem pronto.',
+        'Projeto livre em TypeScript com Vite. src/main.ts exporta a ficha e o estado jogo e chama passo(teclas), tecla(nome), clique(x, y) e desenhar(ctx). Preencha a ficha (objetivo e três funcionalidades) e implemente o jogo combinando mecânicas já estudadas. Critérios automáticos: ficha preenchida, jogo sem erro com setas, espaço e clique, e R devolvendo o guia ao início. Aprovado, o projeto passa por uma revisão humana com retorno.',
       dicas: [
-        'Mantenha o estado em jogo para os critérios lerem.',
-        'Use uma flag de coleta fora das funções.',
+        'Mantenha o escopo pequeno: três funcionalidades que cabem no tempo.',
+        'Deixe o estado em jogo e a ficha exportados: os critérios leem os dois.',
       ],
-      extra: 'Ao coletar, mova a estrela para fora da tela.',
+      extra:
+        'Versão 2: após a aprovação, faça um teste com outra pessoa, ajuste o jogo pelo que o teste mostrou e envie de novo.',
     },
   },
 }
@@ -139,12 +147,15 @@ export function criarManifestoDaLinguagem(
           projetoInicial,
           gabarito,
           objetivos,
-          desafioExtra: { titulo: 'Mais um desafio', texto: t.extra },
+          desafioExtra: { titulo: 'Versão 2', texto: t.extra },
+          // Lenda (lacunas, 01/11/2026): o extra é a versão 2, e o aprovado vai à revisão humana.
           recompensa: {
             cor: false,
             atracao: 'meu-jogo-do-arquipelago',
             moedas: moedas.principal,
             moedasExtra: moedas.extra,
+            extraNaVersao2: true,
+            revisaoHumana: true,
           },
           blocosManuais: { acrescentar: [], retirar: [] },
         },

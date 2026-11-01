@@ -14,10 +14,10 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Projeto autoral no Pro",
-        "enunciado": "Projeto livre em TypeScript com Vite. src/main.ts exporta o estado jogo (guia, estrela, pontos) e chama passo(teclas) a cada quadro e tecla(nome) a cada tecla. Critérios: pontuação única na colisão com a estrela e reinício completo com R. O movimento já vem pronto.",
+        "enunciado": "Projeto livre em TypeScript com Vite. src/main.ts exporta a ficha e o estado jogo e chama passo(teclas), tecla(nome), clique(x, y) e desenhar(ctx). Preencha a ficha (objetivo e três funcionalidades) e implemente o jogo combinando mecânicas já estudadas. Critérios automáticos: ficha preenchida, jogo sem erro com setas, espaço e clique, e R devolvendo o guia ao início. Aprovado, o projeto passa por uma revisão humana com retorno.",
         "dicas": [
-          "Mantenha o estado em jogo para os critérios lerem.",
-          "Use uma flag de coleta fora das funções."
+          "Mantenha o escopo pequeno: três funcionalidades que cabem no tempo.",
+          "Deixe o estado em jogo e a ficha exportados: os critérios leem os dois."
         ],
         "projetoInicial": {
           "id": "farol-meu-jogo-pro",
@@ -43,14 +43,14 @@
             },
             "index.html": {
               "kind": "file",
-              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jogo\" width=\"640\" height=\"480\"></canvas>\n    <p id=\"placar\"></p>\n    <p>Setas andam. R recomeça.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jogo\" width=\"640\" height=\"480\"></canvas>\n    <p>Setas andam. R recomeça.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
             },
             "src": {
               "kind": "dir"
             },
             "src/main.ts": {
               "kind": "file",
-              "content": "import './style.css'\n\nconst LADO = 40\n\n/** O estado do jogo: o guia, a estrela e os pontos. */\nexport const jogo = {\n  guia: { x: 60, y: 220 },\n  estrela: { x: 420, y: 220 },\n  pontos: 0,\n}\n\nfunction passo(teclas: Set<string>) {\n  if (teclas.has('ArrowRight')) jogo.guia.x += 4\n  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4\n  // As regras do seu jogo: encontrar, lembrar e decidir.\n}\n\nfunction tecla(nome: string) {\n  // O que cada tecla faz, além de andar.\n}\n\nconst tela = document.getElementById('jogo') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst placar = document.getElementById('placar') as HTMLElement\nconst teclas = new Set<string>()\ndocument.addEventListener('keydown', (evento) => {\n  teclas.add(evento.key)\n  tecla(evento.key.toLowerCase())\n})\ndocument.addEventListener('keyup', (evento) => teclas.delete(evento.key))\n\nfunction desenhar() {\n  ctx.fillStyle = '#1a2854'\n  ctx.fillRect(0, 0, tela.width, tela.height)\n  ctx.fillStyle = '#ffdc5a'\n  ctx.beginPath()\n  ctx.arc(jogo.estrela.x + LADO / 2, jogo.estrela.y + LADO / 2, 18, 0, Math.PI * 2)\n  ctx.fill()\n  ctx.fillStyle = '#78dcc8'\n  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)\n  placar.textContent = 'Pontos: ' + jogo.pontos\n}\n\nfunction quadro() {\n  passo(teclas)\n  desenhar()\n  requestAnimationFrame(quadro)\n}\nrequestAnimationFrame(quadro)\n"
+              "content": "import './style.css'\n\nconst LADO = 40\nconst LARGURA = 640\nconst ALTURA = 480\n\n/** A ficha do seu jogo: o objetivo e as três coisas que ele vai ter. */\nexport const ficha = {\n  objetivo: '',\n  funcionalidade1: '',\n  funcionalidade2: '',\n  funcionalidade3: '',\n}\n\n/** O estado do jogo. Acrescente aqui o que o seu jogo precisa lembrar. */\nexport const jogo = {\n  guia: { x: 60, y: 400 },\n}\n\nfunction passo(teclas: Set<string>) {\n  if (teclas.has('ArrowRight')) jogo.guia.x += 4\n  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4\n}\n\nfunction tecla(nome: string) {\n  // O que cada tecla faz, além de andar.\n}\n\nfunction clique(x: number, y: number) {\n  // O que um clique faz.\n}\n\nfunction desenhar(ctx: CanvasRenderingContext2D) {\n  ctx.fillStyle = '#1a2854'\n  ctx.fillRect(0, 0, LARGURA, ALTURA)\n  ctx.fillStyle = '#78dcc8'\n  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)\n}\n\nconst tela = document.getElementById('jogo') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst teclas = new Set<string>()\ndocument.addEventListener('keydown', (evento) => {\n  teclas.add(evento.key)\n  tecla(evento.key.toLowerCase())\n})\ndocument.addEventListener('keyup', (evento) => teclas.delete(evento.key))\ntela.addEventListener('click', (evento) => {\n  const caixa = tela.getBoundingClientRect()\n  clique(evento.clientX - caixa.left, evento.clientY - caixa.top)\n})\n\nfunction quadro() {\n  passo(teclas)\n  desenhar(ctx)\n  requestAnimationFrame(quadro)\n}\nrequestAnimationFrame(quadro)\n"
             },
             "src/style.css": {
               "kind": "file",
@@ -95,14 +95,14 @@
             },
             "index.html": {
               "kind": "file",
-              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jogo\" width=\"640\" height=\"480\"></canvas>\n    <p id=\"placar\"></p>\n    <p>Setas andam. R recomeça.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
+              "content": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"/src/style.css\" />\n  </head>\n  <body>\n    <canvas id=\"jogo\" width=\"640\" height=\"480\"></canvas>\n    <p>Setas andam. R recomeça.</p>\n    <script type=\"module\" src=\"/src/main.ts\"></script>\n  </body>\n</html>\n"
             },
             "src": {
               "kind": "dir"
             },
             "src/main.ts": {
               "kind": "file",
-              "content": "import './style.css'\n\nconst LADO = 40\n\n/** O estado do jogo: o guia, a estrela e os pontos. */\nexport const jogo = {\n  guia: { x: 60, y: 220 },\n  estrela: { x: 420, y: 220 },\n  pontos: 0,\n}\n\nlet pegou = false\n\nfunction passo(teclas: Set<string>) {\n  if (teclas.has('ArrowRight')) jogo.guia.x += 4\n  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4\n  const encostou =\n    Math.abs(jogo.guia.x - jogo.estrela.x) < LADO && Math.abs(jogo.guia.y - jogo.estrela.y) < LADO\n  if (encostou && !pegou) {\n    pegou = true\n    jogo.pontos += 1\n    jogo.estrela.x = 700\n  }\n}\n\nfunction tecla(nome: string) {\n  if (nome === 'r') {\n    jogo.pontos = 0\n    pegou = false\n    jogo.guia.x = 60\n    jogo.estrela.x = 420\n  }\n}\n\nconst tela = document.getElementById('jogo') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst placar = document.getElementById('placar') as HTMLElement\nconst teclas = new Set<string>()\ndocument.addEventListener('keydown', (evento) => {\n  teclas.add(evento.key)\n  tecla(evento.key.toLowerCase())\n})\ndocument.addEventListener('keyup', (evento) => teclas.delete(evento.key))\n\nfunction desenhar() {\n  ctx.fillStyle = '#1a2854'\n  ctx.fillRect(0, 0, tela.width, tela.height)\n  ctx.fillStyle = '#ffdc5a'\n  ctx.beginPath()\n  ctx.arc(jogo.estrela.x + LADO / 2, jogo.estrela.y + LADO / 2, 18, 0, Math.PI * 2)\n  ctx.fill()\n  ctx.fillStyle = '#78dcc8'\n  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)\n  placar.textContent = 'Pontos: ' + jogo.pontos\n}\n\nfunction quadro() {\n  passo(teclas)\n  desenhar()\n  requestAnimationFrame(quadro)\n}\nrequestAnimationFrame(quadro)\n"
+              "content": "import './style.css'\n\nconst LADO = 40\nconst LARGURA = 640\nconst ALTURA = 480\n\n/** A ficha do seu jogo: o objetivo e as três coisas que ele vai ter. */\nexport const ficha = {\n  objetivo: 'Pegar as estrelas que caem antes de o tempo acabar.',\n  funcionalidade1: 'As estrelas caem em lugares sorteados.',\n  funcionalidade2: 'Cada estrela pega vale um ponto.',\n  funcionalidade3: 'A partida acaba em 30 segundos, e o R recomeça.',\n}\n\n/** O estado do jogo: o guia, as estrelas que caem, os pontos e o tempo. */\nexport const jogo = {\n  guia: { x: 60, y: 400 },\n  estrelas: [] as { x: number; y: number }[],\n  pontos: 0,\n  tempo: 30,\n  jogando: true,\n}\n\nsetInterval(() => {\n  if (!jogo.jogando) return\n  jogo.estrelas.push({ x: 20 + Math.floor(Math.random() * 580), y: 0 })\n  jogo.tempo -= 1\n  if (jogo.tempo <= 0) jogo.jogando = false\n}, 1000)\n\nfunction passo(teclas: Set<string>) {\n  if (!jogo.jogando) return\n  if (teclas.has('ArrowRight')) jogo.guia.x += 4\n  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4\n  for (const estrela of [...jogo.estrelas]) {\n    estrela.y += 3\n    const pegou =\n      Math.abs(jogo.guia.x - estrela.x) < LADO && Math.abs(jogo.guia.y - estrela.y) < LADO\n    if (pegou || estrela.y > ALTURA) {\n      jogo.estrelas.splice(jogo.estrelas.indexOf(estrela), 1)\n      if (pegou) jogo.pontos += 1\n    }\n  }\n}\n\nfunction tecla(nome: string) {\n  if (nome === 'r') {\n    jogo.guia.x = 60\n    jogo.estrelas.length = 0\n    jogo.pontos = 0\n    jogo.tempo = 30\n    jogo.jogando = true\n  }\n}\n\nfunction clique(x: number, y: number) {\n  // Clicar numa estrela a puxa para o chão, onde o guia pode pegar.\n  for (const estrela of jogo.estrelas)\n    if (Math.abs(x - estrela.x) < 24 && Math.abs(y - estrela.y) < 24) estrela.y = jogo.guia.y\n}\n\nfunction desenhar(ctx: CanvasRenderingContext2D) {\n  ctx.fillStyle = '#1a2854'\n  ctx.fillRect(0, 0, LARGURA, ALTURA)\n  ctx.fillStyle = '#ffdc5a'\n  for (const estrela of jogo.estrelas) {\n    ctx.beginPath()\n    ctx.arc(estrela.x + 12, estrela.y + 12, 12, 0, Math.PI * 2)\n    ctx.fill()\n  }\n  ctx.fillStyle = '#78dcc8'\n  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)\n  ctx.fillStyle = '#f2f4ff'\n  ctx.font = '24px system-ui'\n  ctx.fillText('Pontos: ' + jogo.pontos + '   Tempo: ' + jogo.tempo, 16, 32)\n  if (!jogo.jogando) ctx.fillText('Fim. R recomeça.', 240, 240)\n}\n\nconst tela = document.getElementById('jogo') as HTMLCanvasElement\nconst ctx = tela.getContext('2d') as CanvasRenderingContext2D\nconst teclas = new Set<string>()\ndocument.addEventListener('keydown', (evento) => {\n  teclas.add(evento.key)\n  tecla(evento.key.toLowerCase())\n})\ndocument.addEventListener('keyup', (evento) => teclas.delete(evento.key))\ntela.addEventListener('click', (evento) => {\n  const caixa = tela.getBoundingClientRect()\n  clique(evento.clientX - caixa.left, evento.clientY - caixa.top)\n})\n\nfunction quadro() {\n  passo(teclas)\n  desenhar(ctx)\n  requestAnimationFrame(quadro)\n}\nrequestAnimationFrame(quadro)\n"
             },
             "src/style.css": {
               "kind": "file",
@@ -125,20 +125,15 @@
         },
         "objetivos": [
           {
-            "id": "encontro",
-            "label": "A colisão com a estrela soma um ponto uma única vez.",
-            "hint": "Mantenha uma flag de coleta e teste-a antes de pontuar.",
+            "id": "objetivo",
+            "label": "A ficha declara o objetivo do jogo.",
+            "hint": "Preencha o objetivo na ficha.",
             "rule": {
               "type": "behavior",
               "steps": [
                 {
                   "action": "wait",
                   "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
                 },
                 {
                   "action": "wait",
@@ -149,18 +144,44 @@
                 "target": {
                   "kind": "moduleValue",
                   "module": "src/main.ts",
-                  "path": "jogo.pontos"
+                  "path": "ficha.objetivo"
                 },
-                "compare": "equals",
-                "value": 1
+                "compare": "truthy"
               }
             },
             "programmingLanguage": "javascript"
           },
           {
-            "id": "recomeca",
-            "label": "R devolve o guia à posição inicial.",
-            "hint": "Restaure guia.x em R.",
+            "id": "funcionalidades",
+            "label": "A ficha declara três funcionalidades.",
+            "hint": "Preencha as três funcionalidades planejadas.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "moduleValue",
+                  "module": "src/main.ts",
+                  "path": "ficha.funcionalidade3"
+                },
+                "compare": "truthy"
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "joga",
+            "label": "O jogo roda sem erro com setas, espaço e clique.",
+            "hint": "Teste cada entrada; o console mostra o erro e a linha.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -171,7 +192,53 @@
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 2500
+                  "holdMs": 800
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowLeft",
+                  "holdMs": 400
+                },
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 120
+                },
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 240
+                },
+                {
+                  "action": "wait",
+                  "ms": 1200
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "console"
+                },
+                "compare": "notContains",
+                "value": "Error"
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "recomeca",
+            "label": "R devolve o guia à posição inicial.",
+            "hint": "Reinicie a partida em R, inclusive o guia.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 1500
                 },
                 {
                   "action": "press",
@@ -194,98 +261,19 @@
               }
             },
             "programmingLanguage": "javascript"
-          },
-          {
-            "id": "outra-partida",
-            "label": "Após R, a estrela pode ser coletada de novo, com a pontuação recomeçando em zero.",
-            "hint": "Reinicie pontos, a flag de coleta e a posição da estrela.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "moduleValue",
-                  "module": "src/main.ts",
-                  "path": "jogo.pontos"
-                },
-                "compare": "equals",
-                "value": 1
-              }
-            },
-            "programmingLanguage": "javascript"
-          },
-          {
-            "id": "some",
-            "label": "Extra: a estrela sai da área visível quando é coletada.",
-            "hint": "Mova a estrela para fora da tela (x 700).",
-            "optional": true,
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "moduleValue",
-                  "module": "src/main.ts",
-                  "path": "jogo.estrela.x"
-                },
-                "compare": "atLeast",
-                "value": 640
-              }
-            },
-            "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
-          "titulo": "Mais um desafio",
-          "texto": "Ao coletar, mova a estrela para fora da tela."
+          "titulo": "Versão 2",
+          "texto": "Versão 2: após a aprovação, faça um teste com outra pessoa, ajuste o jogo pelo que o teste mostrou e envie de novo."
         },
         "recompensa": {
           "cor": false,
           "atracao": "meu-jogo-do-arquipelago",
           "moedas": 20,
-          "moedasExtra": 10
+          "moedasExtra": 10,
+          "extraNaVersao2": true,
+          "revisaoHumana": true
         },
         "blocosManuais": {
           "acrescentar": [],

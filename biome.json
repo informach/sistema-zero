@@ -19,6 +19,7 @@
       "!packages/edisvg/vendor",
       "!packages/edisvg/assets",
       "!packages/edisvg/src/builtins.generated.ts",
+      "!packages/community/src/app/globals.generated.css",
       "!art/edisvg",
       "!**/.astro",
       "!**/.next",
@@ -149,7 +150,7 @@
       }
     },
     {
-      "includes": ["packages/admin/**/*.tsx"],
+      "includes": ["packages/admin/**/*.tsx", "packages/arquipelago-admin/**/*.tsx"],
       "linter": {
         "rules": {
           "a11y": {

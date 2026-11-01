@@ -129,3 +129,18 @@ test('same slug in another audience or live modality cannot be silently reused',
     buildCreatorJourneySeed(spec, [{ ...course, modality: 'recorded', audience: 'adult' }]),
   ).toThrow('outro público ou modalidade')
 })
+
+test('Ponte e Pro pela Jornada: Ponte após o curso-base do Explorador, Pro no Gênio (lacunas)', () => {
+  for (const audience of ['kids', 'adult'] as const) {
+    const stages = empty.curricula[audience].stages
+    const quem = (capability: string) =>
+      stages.flatMap((stage) =>
+        stage.grants
+          .filter((grant) => (grant.capabilities as readonly string[]).includes(capability))
+          .map((grant) => ({ level: stage.level, after: grant.after })),
+      )
+    expect(quem('pensa')).toEqual([{ level: 'coder', after: 'pair' }])
+    expect(quem('bridge')).toEqual([{ level: 'explorer', after: 'base2d' }])
+    expect(quem('pro')).toEqual([{ level: 'champion', after: 'base2d' }])
+  }
+})

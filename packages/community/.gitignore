@@ -22,3 +22,7 @@ next-env.d.ts
 # misc
 .DS_Store
 *.pem
+
+/public/sounds/celebracao.mp3
+
+/public/zappy/coin.webp

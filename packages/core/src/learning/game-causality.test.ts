@@ -404,3 +404,117 @@ describe('gameCausality', () => {
     })
   })
 })
+
+describe('combinação de três postos (lacunas, 01/11/2026)', () => {
+  const grupo = { type: 'g2d:createGroup', varName: 'pedras' }
+  const relogio = (body: unknown[]) => ({
+    type: 'g2d:everySeconds',
+    seconds: num(2),
+    body,
+  })
+  const criar = {
+    type: 'g2d:spawnObstacle',
+    groupVar: 'pedras',
+    ctxVar: 'ctx',
+    shape: 'pedra',
+    x: num(700),
+    size: num(30),
+    vx: num(-4),
+  }
+  const bater = (body: unknown[]) => ({
+    type: 'g2d:onSpriteGroupOverlap',
+    spriteVar: 'heroi',
+    groupVar: 'pedras',
+    itemName: 'pedra',
+    body,
+  })
+  const gravidade = { type: 'g2d:applyGravity', spriteVar: 'heroi' }
+  const dino = { type: 'g2d:controlDino', spriteVar: 'heroi', ctxVar: 'ctx', jump: num(12) }
+  const fim = { type: 'g2d:setScene', name: 'fim' }
+  const combinado = (extra: { start?: unknown[]; events?: unknown[]; loops?: unknown[] } = {}) =>
+    projeto(
+      [
+        encontro('chave', [assign('pegou', bool(true))]),
+        encontro('porta', [se(v('pegou'), [desenhar])]),
+        bater([fim]),
+        ...(extra.events ?? []),
+      ],
+      [{ type: 'var', name: 'pegou', value: bool(false) }, grupo, ...(extra.start ?? [])],
+      [
+        { type: 'g2d:updateEachFrame', body: [relogio([criar]), gravidade, dino] },
+        ...(extra.loops ?? []),
+      ],
+    )
+
+  test('decisão do Faísca, grupo com relógio do Construtor e pulo do Inventor: combina', () => {
+    expect(confere('combination', combinado())).toBe(true)
+  })
+
+  test('dois postos não bastam', () => {
+    const semPulo = combinado()
+    const loop = semPulo.ir.behavior.loops[0] as { body: unknown[] }
+    loop.body = [relogio([criar])]
+    expect(confere('combination', semPulo)).toBe(false)
+    const semRelogio = combinado()
+    ;(semRelogio.ir.behavior.loops[0] as { body: unknown[] }).body = [criar, gravidade, dino]
+    expect(confere('combination', semRelogio)).toBe(false)
+  })
+
+  test('mecânica em código que não roda não conta', () => {
+    const morto = combinado()
+    ;(morto.ir.behavior.loops[0] as { body: unknown[] }).body = [
+      relogio([criar]),
+      gravidade,
+      se(bool(false), [dino]),
+    ]
+    expect(confere('combination', morto)).toBe(false)
+    const relogioMorto = combinado()
+    ;(relogioMorto.ir.behavior.loops[0] as { body: unknown[] }).body = [
+      relogio([se(bool(false), [criar])]),
+      gravidade,
+      dino,
+    ]
+    expect(confere('combination', relogioMorto)).toBe(false)
+  })
+
+  test('o encontro com o grupo precisa fazer alguma coisa, e o grupo precisa existir', () => {
+    const vazio = combinado()
+    ;(vazio.ir.behavior.events as { type: string; body: unknown[] }[]).find(
+      (e) => e.type === 'g2d:onSpriteGroupOverlap',
+    )!.body = []
+    expect(confere('combination', vazio)).toBe(false)
+    const semGrupo = combinado()
+    semGrupo.ir.behavior.start = semGrupo.ir.behavior.start.filter((s) => s !== grupo)
+    expect(confere('combination', semGrupo)).toBe(false)
+  })
+
+  test('gravidade sozinha ou pulo sozinho não são o Inventor; gravidade e pulo no chão, sim', () => {
+    const soPulo = combinado()
+    ;(soPulo.ir.behavior.loops[0] as { body: unknown[] }).body = [relogio([criar]), dino]
+    expect(confere('combination', soPulo)).toBe(false)
+    const soValor = combinado()
+    ;(soValor.ir.behavior.loops[0] as { body: unknown[] }).body = [
+      relogio([criar]),
+      { type: 'g2d:setGravity', value: num(0.8) },
+      dino,
+    ]
+    expect(confere('combination', soValor)).toBe(false)
+    const noChao = { type: 'g2d:jumpOnGround', spriteVar: 'heroi', ctxVar: 'ctx', jump: num(10) }
+    const so = combinado()
+    ;(so.ir.behavior.loops[0] as { body: unknown[] }).body = [relogio([criar]), gravidade]
+    expect(confere('combination', so)).toBe(false)
+    const ambos = combinado()
+    ;(ambos.ir.behavior.loops[0] as { body: unknown[] }).body = [
+      relogio([criar]),
+      gravidade,
+      noChao,
+    ]
+    expect(confere('combination', ambos)).toBe(true)
+  })
+
+  test('é um passo válido da regra', () => {
+    expect(
+      isGameCausalityRule({ type: 'gameCausality', actor: 'heroi', step: 'combination' }),
+    ).toBe(true)
+  })
+})

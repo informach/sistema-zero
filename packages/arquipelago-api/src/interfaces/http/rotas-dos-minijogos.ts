@@ -1,3 +1,4 @@
+import { PedirAmbienteDoDesafioSchema } from '@sistemazero/arquipelago-contracts'
 import { IdentityUuidSchema } from '@sistemazero/core/identity'
 import { Elysia } from 'elysia'
 import type { ServicoDosMinijogos } from '../../application/servico-dos-minijogos'
@@ -24,4 +25,14 @@ export function rotasDosMinijogos(deps: { minijogos: ServicoDosMinijogos; tokenI
     .get('/familia/minijogos/:perfil/:id', ({ headers, params }) =>
       s.abrirDaFamilia(lerResponsavel(headers), id(params.perfil), id(params.id)),
     )
+    .post('/familia/minijogos/:perfil/:id/ambiente', ({ headers, params, body }) => {
+      const pedido = PedirAmbienteDoDesafioSchema.safeParse(body)
+      if (!pedido.success) throw new CorpoInvalidoError()
+      return s.ambienteDaFamilia(
+        lerResponsavel(headers),
+        id(params.perfil),
+        id(params.id),
+        pedido.data,
+      )
+    })
 }

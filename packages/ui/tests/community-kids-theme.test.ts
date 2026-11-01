@@ -10,7 +10,13 @@ const canonical = await Bun.file(
 ).text()
 const aliases = await Bun.file(join(ROOT, 'packages/ui/src/styles/theme-kids.css')).text()
 const funnel = await Bun.file(join(ROOT, 'packages/funnel/src/styles/global.css')).text()
-const platform = await Bun.file(join(ROOT, 'packages/community-kids/src/app/globals.css')).text()
+const platformEntry = await Bun.file(
+  join(ROOT, 'packages/community-kids/src/app/globals.css'),
+).text()
+// O consumidor inclui a entrada e o tema que ela importa. Não inclui as paletas geradas:
+// a guarda de cores abaixo procura cópias no consumidor, não na própria fonte da paleta.
+const creatorTheme = await Bun.file(join(ROOT, 'packages/ui/src/styles/creator-theme.css')).text()
+const platform = `${platformEntry}\n${creatorTheme}`
 const adulto = await Bun.file(join(ROOT, 'packages/community/src/app/globals.css')).text()
 
 const withoutComments = (css: string) => css.replace(/\/\*[\s\S]*?\*\//g, '')
@@ -37,7 +43,8 @@ describe('identidade compartilhada da Comunidade Kids', () => {
   })
 
   it('faz plataforma, adulto e funil consumirem o mesmo contrato', () => {
-    expect(platform).toContain('@import "@sistemazero/ui/theme-kids.css"')
+    expect(platformEntry).toContain('@import "@sistemazero/ui/theme-kids.css"')
+    expect(platformEntry).toContain('@import "@sistemazero/ui/styles/creator-theme.css"')
     expect(platform).toContain('--pen-chao: var(--sz-community-ground)')
     expect(platform).toContain('--pen-acao: var(--sz-community-action)')
     expect(funnel).toContain('@import "@sistemazero/ui/theme-kids.css"')
@@ -45,7 +52,7 @@ describe('identidade compartilhada da Comunidade Kids', () => {
     expect(funnel).toContain('--color-lime: var(--sz-community-action)')
     // A comunidade ADULTA era o buraco: ela mantinha uma cópia inteira da paleta em literais,
     // e a guarda antiga não a varria. Desde 17/09/2026 ela bebe da mesma fonte.
-    expect(adulto).toContain('@import "@sistemazero/ui/community-kids-theme.css"')
+    expect(adulto).toContain('@import "@sistemazero/ui/theme-kids.css"')
     expect(adulto).toContain('--pen-chao: var(--sz-community-ground)')
     expect(adulto).toContain('--pen-acao: var(--sz-community-action)')
     expect(adulto).not.toContain('data-tema')

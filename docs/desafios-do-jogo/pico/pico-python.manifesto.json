@@ -235,6 +235,7 @@
         },
         "recompensa": {
           "cor": true,
+          "atracao": "subida-do-floco",
           "moedas": 20,
           "moedasExtra": 10
         },

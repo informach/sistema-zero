@@ -14,10 +14,12 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Meu jogo do Arquipélago",
-        "enunciado": "Agora o jogo é seu. O guia está no palco e há desenhos para usar: estrela, farol, concha e Lumi. Invente uma pequena aventura com a sua ideia. Os critérios estão na lista de objetivos: o guia anda, algo acontece num encontro, o jogo lembra o que aconteceu, uma decisão usa essa lembrança e uma tecla recomeça. O resto é escolha sua.",
+        "enunciado": "Agora o jogo é seu. O guia está no palco e há desenhos para usar: estrela, farol, concha e Lumi. Antes de montar, escolha o objetivo do jogo e três coisas que ele vai ter. Combine o que você aprendeu nos três postos de blocos: um encontro que o jogo lembra e usa numa decisão, coisas que um relógio cria num grupo e que o guia encontra, e gravidade com pulo. Os critérios estão na lista de objetivos. O resto é escolha sua.",
         "dicas": [
           "Comece pelo guia andando. Depois escolha um encontro e o que o jogo vai lembrar dele.",
-          "Se travar, lembre do Pega-conchas: pegar, lembrar e decidir no balde."
+          "O relógio do Construtor cria coisas num grupo; o encontro com o grupo precisa fazer alguma coisa.",
+          "Do Inventor vêm a gravidade e o pulo. Os dois juntos fazem o guia cair e pular.",
+          "Se travar, lembre do Pega-conchas, da Nave e do Corre Dino: um jogo de cada posto."
         ],
         "projetoInicial": {
           "formatVersion": 2,
@@ -324,7 +326,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>Meu jogo do Arquipélago</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#e9e4ff\");\n  SZGame2D.enableClassicControls(\"always\");\n  const guia = SZGame2D.createSprite({ x: 48, y: 240, w: 48, h: 48, image: \"guia\" });\n  let temEstrela = false;\n  let aceso = false;\n  const estrela = SZGame2D.createSprite({ x: 260, y: 240, w: 48, h: 48, image: \"estrela\" });\n  const farol = SZGame2D.createSprite({ x: 520, y: 240, w: 48, h: 48, image: \"farol\" });\n  // Quando acontecer\n  SZGame2D.onOverlap(() => guia, () => estrela, () => {\n    temEstrela = true;\n    SZGame2D.destroySprite(estrela);\n  }, \"farol-meu-jogo_events_0\");\n  SZGame2D.onOverlap(() => guia, () => farol, () => {\n    if (temEstrela) {\n      aceso = true;\n    }\n  }, \"farol-meu-jogo_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"farol-meu-jogo_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.topDown(guia, 4);\n    SZGame2D.clampToScreen(guia, ctx);\n    SZGame2D.clear();\n    SZGame2D.drawLabel(ctx, \"Meu jogo do Arquipélago\", 20, 35, \"#2c2a4a\", 18, \"left\");\n    SZGame2D.drawSprite(ctx, estrela);\n    SZGame2D.drawSprite(ctx, farol);\n    if (aceso) {\n      SZGame2D.drawLabel(ctx, \"O farol acendeu.\", 20, 70, \"#2c2a4a\", 18, \"left\");\n    }\n    SZGame2D.drawSprite(ctx, guia);\n  }, \"farol-meu-jogo_loops_0\");\n}, \"__sz-project\");\n"
+            "script.js": "SZGame2D.onStart(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame2D.restart());\n  // Ao iniciar\n  SZGame2D.setupStage(640, 480, \"#e9e4ff\");\n  SZGame2D.enableClassicControls(\"always\");\n  const guia = SZGame2D.createDino({ x: 48, y: 300, size: 56, color: \"#f2b84b\" });\n  let temEstrela = false;\n  let aceso = false;\n  const estrela = SZGame2D.createSprite({ x: 260, y: 352, w: 48, h: 48, image: \"estrela\" });\n  const farol = SZGame2D.createSprite({ x: 560, y: 352, w: 48, h: 48, image: \"farol\" });\n  const pedras = SZGame2D.createGroup();\n  // Quando acontecer\n  SZGame2D.onOverlap(() => guia, () => estrela, () => {\n    temEstrela = true;\n    SZGame2D.destroySprite(estrela);\n  }, \"farol-meu-jogo_events_0\");\n  SZGame2D.onOverlap(() => guia, () => farol, () => {\n    if (temEstrela) {\n      aceso = true;\n    }\n  }, \"farol-meu-jogo_events_1\");\n  SZGame2D.onKey(\"Enter\", () => {\n    SZGame2D.restart();\n  }, \"farol-meu-jogo_events_2\");\n  // Enquanto estiver rodando\n  // O jogo roda 60 passos por segundo: cada volta desenha um \"quadro\" do filme.\n  SZGame2D.gameLoop(function update() {\n    SZGame2D.arrowsX(guia, 5);\n    SZGame2D.applyGravity(guia);\n    SZGame2D.controlDino(guia, ctx, 14);\n    SZGame2D.clampToScreen(guia, ctx);\n    SZGame2D.updateGroup(pedras);\n    SZGame2D.overlapSpriteGroup(() => guia, pedras, (pedra) => {\n      SZGame2D.explodeSprite(pedra, \"#9a8f86\");\n    });\n    SZGame2D.clear();\n    SZGame2D.drawLabel(ctx, \"Meu jogo do Arquipélago\", 20, 35, \"#2c2a4a\", 18, \"left\");\n    SZGame2D.drawGroup(ctx, pedras);\n    SZGame2D.drawSprite(ctx, estrela);\n    SZGame2D.drawSprite(ctx, farol);\n    if (aceso) {\n      SZGame2D.drawLabel(ctx, \"O farol acendeu.\", 20, 70, \"#2c2a4a\", 18, \"left\");\n    }\n    SZGame2D.drawSprite(ctx, guia);\n  }, \"farol-meu-jogo_loops_0\");\n  SZGame2D.gameLoop(function __szPeriodicLoop() {\n    if (SZGame2D.everySeconds(\"cada\", 2.5)) {\n      SZGame2D.spawnObstacle(pedras, ctx, { type: \"rock\", x: SZGame2D.randomBetween(660, 760), size: 28, vx: -3 });\n    }\n  });\n}, \"__sz-project\");\n"
           },
           "extraFiles": [],
           "assets": [
@@ -383,13 +385,24 @@
                   "__id": "farol-meu-jogo_start_1"
                 },
                 {
-                  "type": "g2d:createImageSprite",
+                  "type": "g2d:createDino",
                   "varName": "guia",
-                  "image": "guia",
-                  "x": 48,
-                  "y": 240,
-                  "w": 48,
-                  "h": 48,
+                  "x": {
+                    "type": "num",
+                    "value": 48,
+                    "__id": "farol-meu-jogo_start_2_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 300,
+                    "__id": "farol-meu-jogo_start_2_y"
+                  },
+                  "size": {
+                    "type": "num",
+                    "value": 56,
+                    "__id": "farol-meu-jogo_start_2_size"
+                  },
+                  "color": "#f2b84b",
                   "__id": "farol-meu-jogo_start_2"
                 },
                 {
@@ -417,7 +430,7 @@
                   "varName": "estrela",
                   "image": "estrela",
                   "x": 260,
-                  "y": 240,
+                  "y": 352,
                   "w": 48,
                   "h": 48,
                   "__id": "farol-meu-jogo_start_5"
@@ -426,11 +439,16 @@
                   "type": "g2d:createImageSprite",
                   "varName": "farol",
                   "image": "farol",
-                  "x": 520,
-                  "y": 240,
+                  "x": 560,
+                  "y": 352,
                   "w": 48,
                   "h": 48,
                   "__id": "farol-meu-jogo_start_6"
+                },
+                {
+                  "type": "g2d:createGroup",
+                  "varName": "pedras",
+                  "__id": "farol-meu-jogo_start_7"
                 }
               ],
               "events": [
@@ -504,20 +522,60 @@
                   "type": "g2d:updateEachFrame",
                   "body": [
                     {
-                      "type": "g2d:topDown",
+                      "type": "g2d:arrowsX",
                       "spriteVar": "guia",
-                      "speed": 4,
+                      "speed": {
+                        "type": "num",
+                        "value": 5,
+                        "__id": "farol-meu-jogo_loops_0_body_0_speed"
+                      },
                       "__id": "farol-meu-jogo_loops_0_body_0"
+                    },
+                    {
+                      "type": "g2d:applyGravity",
+                      "spriteVar": "guia",
+                      "__id": "farol-meu-jogo_loops_0_body_1"
+                    },
+                    {
+                      "type": "g2d:controlDino",
+                      "spriteVar": "guia",
+                      "ctxVar": "ctx",
+                      "jump": {
+                        "type": "num",
+                        "value": 14,
+                        "__id": "farol-meu-jogo_loops_0_body_2_jump"
+                      },
+                      "__id": "farol-meu-jogo_loops_0_body_2"
                     },
                     {
                       "type": "g2d:clampToScreen",
                       "spriteVar": "guia",
                       "ctxVar": "ctx",
-                      "__id": "farol-meu-jogo_loops_0_body_1"
+                      "__id": "farol-meu-jogo_loops_0_body_3"
+                    },
+                    {
+                      "type": "g2d:updateGroup",
+                      "groupVar": "pedras",
+                      "__id": "farol-meu-jogo_loops_0_body_4"
+                    },
+                    {
+                      "type": "g2d:onSpriteGroupOverlap",
+                      "spriteVar": "guia",
+                      "groupVar": "pedras",
+                      "itemName": "pedra",
+                      "body": [
+                        {
+                          "type": "g2d:explode",
+                          "spriteVar": "pedra",
+                          "color": "#9a8f86",
+                          "__id": "farol-meu-jogo_loops_0_body_5_body_0"
+                        }
+                      ],
+                      "__id": "farol-meu-jogo_loops_0_body_5"
                     },
                     {
                       "type": "g2d:clear",
-                      "__id": "farol-meu-jogo_loops_0_body_2"
+                      "__id": "farol-meu-jogo_loops_0_body_6"
                     },
                     {
                       "type": "g2d:drawLabel",
@@ -528,26 +586,32 @@
                       "size": 18,
                       "color": "#2c2a4a",
                       "align": "left",
-                      "__id": "farol-meu-jogo_loops_0_body_3"
+                      "__id": "farol-meu-jogo_loops_0_body_7"
+                    },
+                    {
+                      "type": "g2d:drawGroup",
+                      "groupVar": "pedras",
+                      "ctxVar": "ctx",
+                      "__id": "farol-meu-jogo_loops_0_body_8"
                     },
                     {
                       "type": "g2d:drawSprite",
                       "ctxVar": "ctx",
                       "spriteVar": "estrela",
-                      "__id": "farol-meu-jogo_loops_0_body_4"
+                      "__id": "farol-meu-jogo_loops_0_body_9"
                     },
                     {
                       "type": "g2d:drawSprite",
                       "ctxVar": "ctx",
                       "spriteVar": "farol",
-                      "__id": "farol-meu-jogo_loops_0_body_5"
+                      "__id": "farol-meu-jogo_loops_0_body_10"
                     },
                     {
                       "type": "if",
                       "cond": {
                         "type": "var",
                         "name": "aceso",
-                        "__id": "farol-meu-jogo_loops_0_body_6_cond"
+                        "__id": "farol-meu-jogo_loops_0_body_11_cond"
                       },
                       "then": [
                         {
@@ -559,20 +623,62 @@
                           "size": 18,
                           "color": "#2c2a4a",
                           "align": "left",
-                          "__id": "farol-meu-jogo_loops_0_body_6_then_0"
+                          "__id": "farol-meu-jogo_loops_0_body_11_then_0"
                         }
                       ],
                       "else": [],
-                      "__id": "farol-meu-jogo_loops_0_body_6"
+                      "__id": "farol-meu-jogo_loops_0_body_11"
                     },
                     {
                       "type": "g2d:drawSprite",
                       "ctxVar": "ctx",
                       "spriteVar": "guia",
-                      "__id": "farol-meu-jogo_loops_0_body_7"
+                      "__id": "farol-meu-jogo_loops_0_body_12"
                     }
                   ],
                   "__id": "farol-meu-jogo_loops_0"
+                },
+                {
+                  "type": "g2d:everySeconds",
+                  "seconds": {
+                    "type": "num",
+                    "value": 2.5,
+                    "__id": "farol-meu-jogo_loops_1_seconds"
+                  },
+                  "body": [
+                    {
+                      "type": "g2d:spawnObstacle",
+                      "groupVar": "pedras",
+                      "ctxVar": "ctx",
+                      "shape": "rock",
+                      "x": {
+                        "type": "g2d:randomBetween",
+                        "min": {
+                          "type": "num",
+                          "value": 660,
+                          "__id": "farol-meu-jogo_loops_1_body_0_x_min"
+                        },
+                        "max": {
+                          "type": "num",
+                          "value": 760,
+                          "__id": "farol-meu-jogo_loops_1_body_0_x_max"
+                        },
+                        "__id": "farol-meu-jogo_loops_1_body_0_x"
+                      },
+                      "size": {
+                        "type": "num",
+                        "value": 28,
+                        "__id": "farol-meu-jogo_loops_1_body_0_size"
+                      },
+                      "vx": {
+                        "type": "num",
+                        "value": -3,
+                        "__id": "farol-meu-jogo_loops_1_body_0_vx"
+                      },
+                      "__id": "farol-meu-jogo_loops_1_body_0"
+                    }
+                  ],
+                  "__id": "farol-meu-jogo_loops_1"
                 }
               ]
             },
@@ -623,11 +729,11 @@
                             },
                             "next": {
                               "block": {
-                                "type": "sz_g2d_create_image_sprite",
+                                "type": "sz_g2d_create_dino",
                                 "id": "farol-meu-jogo_start_2",
                                 "fields": {
                                   "NAME": "guia",
-                                  "IMAGE": "guia"
+                                  "COLOR": "#f2b84b"
                                 },
                                 "inputs": {
                                   "X": {
@@ -635,31 +741,26 @@
                                       "type": "sz_val_number",
                                       "fields": {
                                         "NUM": 48
-                                      }
+                                      },
+                                      "id": "farol-meu-jogo_start_2_x"
                                     }
                                   },
                                   "Y": {
                                     "shadow": {
                                       "type": "sz_val_number",
                                       "fields": {
-                                        "NUM": 240
-                                      }
+                                        "NUM": 300
+                                      },
+                                      "id": "farol-meu-jogo_start_2_y"
                                     }
                                   },
-                                  "W": {
+                                  "SIZE": {
                                     "shadow": {
                                       "type": "sz_val_number",
                                       "fields": {
-                                        "NUM": 48
-                                      }
-                                    }
-                                  },
-                                  "H": {
-                                    "shadow": {
-                                      "type": "sz_val_number",
-                                      "fields": {
-                                        "NUM": 48
-                                      }
+                                        "NUM": 56
+                                      },
+                                      "id": "farol-meu-jogo_start_2_size"
                                     }
                                   }
                                 },
@@ -720,7 +821,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_number",
                                                   "fields": {
-                                                    "NUM": 240
+                                                    "NUM": 352
                                                   }
                                                 }
                                               },
@@ -754,7 +855,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 520
+                                                        "NUM": 560
                                                       }
                                                     }
                                                   },
@@ -762,7 +863,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 240
+                                                        "NUM": 352
                                                       }
                                                     }
                                                   },
@@ -780,6 +881,15 @@
                                                       "fields": {
                                                         "NUM": 48
                                                       }
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g2d_create_group",
+                                                    "id": "farol-meu-jogo_start_7",
+                                                    "fields": {
+                                                      "NAME": "pedras"
                                                     }
                                                   }
                                                 }
@@ -928,7 +1038,7 @@
                         "inputs": {
                           "BODY": {
                             "block": {
-                              "type": "sz_g2d_top_down",
+                              "type": "sz_g2d_arrows_x",
                               "id": "farol-meu-jogo_loops_0_body_0",
                               "fields": {
                                 "SPRITE": "guia"
@@ -938,146 +1048,217 @@
                                   "shadow": {
                                     "type": "sz_val_number",
                                     "fields": {
-                                      "NUM": 4
-                                    }
+                                      "NUM": 5
+                                    },
+                                    "id": "farol-meu-jogo_loops_0_body_0_speed"
                                   }
                                 }
                               },
                               "next": {
                                 "block": {
-                                  "type": "sz_g2d_clamp_to_screen",
+                                  "type": "sz_g2d_apply_gravity",
                                   "id": "farol-meu-jogo_loops_0_body_1",
                                   "fields": {
                                     "SPRITE": "guia"
                                   },
                                   "next": {
                                     "block": {
-                                      "type": "sz_g2d_clear",
+                                      "type": "sz_g2d_control_dino",
                                       "id": "farol-meu-jogo_loops_0_body_2",
+                                      "fields": {
+                                        "SPRITE": "guia"
+                                      },
+                                      "inputs": {
+                                        "JUMP": {
+                                          "shadow": {
+                                            "type": "sz_val_number",
+                                            "fields": {
+                                              "NUM": 14
+                                            },
+                                            "id": "farol-meu-jogo_loops_0_body_2_jump"
+                                          }
+                                        }
+                                      },
                                       "next": {
                                         "block": {
-                                          "type": "sz_g2d_draw_label",
+                                          "type": "sz_g2d_clamp_to_screen",
                                           "id": "farol-meu-jogo_loops_0_body_3",
                                           "fields": {
-                                            "COLOR": "#2c2a4a",
-                                            "ALIGN": "left"
-                                          },
-                                          "inputs": {
-                                            "TEXT": {
-                                              "shadow": {
-                                                "type": "sz_val_text",
-                                                "fields": {
-                                                  "TEXT": "Meu jogo do Arquipélago"
-                                                }
-                                              }
-                                            },
-                                            "X": {
-                                              "shadow": {
-                                                "type": "sz_val_number",
-                                                "fields": {
-                                                  "NUM": 20
-                                                }
-                                              }
-                                            },
-                                            "Y": {
-                                              "shadow": {
-                                                "type": "sz_val_number",
-                                                "fields": {
-                                                  "NUM": 35
-                                                }
-                                              }
-                                            },
-                                            "SIZE": {
-                                              "shadow": {
-                                                "type": "sz_val_number",
-                                                "fields": {
-                                                  "NUM": 18
-                                                }
-                                              }
-                                            }
+                                            "SPRITE": "guia"
                                           },
                                           "next": {
                                             "block": {
-                                              "type": "sz_g2d_draw_sprite",
+                                              "type": "sz_g2d_update_group",
                                               "id": "farol-meu-jogo_loops_0_body_4",
                                               "fields": {
-                                                "SPRITE": "estrela"
+                                                "GROUP": "pedras"
                                               },
                                               "next": {
                                                 "block": {
-                                                  "type": "sz_g2d_draw_sprite",
+                                                  "type": "sz_g2d_on_sprite_group_overlap",
                                                   "id": "farol-meu-jogo_loops_0_body_5",
                                                   "fields": {
-                                                    "SPRITE": "farol"
+                                                    "SPRITE": "guia",
+                                                    "GROUP": "pedras",
+                                                    "ANAME": "pedra"
+                                                  },
+                                                  "inputs": {
+                                                    "BODY": {
+                                                      "block": {
+                                                        "type": "sz_g2d_explode",
+                                                        "id": "farol-meu-jogo_loops_0_body_5_body_0",
+                                                        "fields": {
+                                                          "SPRITE": "pedra",
+                                                          "COLOR": "#9a8f86"
+                                                        }
+                                                      }
+                                                    }
                                                   },
                                                   "next": {
                                                     "block": {
-                                                      "type": "sz_js_if_else",
+                                                      "type": "sz_g2d_clear",
                                                       "id": "farol-meu-jogo_loops_0_body_6",
-                                                      "inputs": {
-                                                        "THEN": {
-                                                          "block": {
-                                                            "type": "sz_g2d_draw_label",
-                                                            "id": "farol-meu-jogo_loops_0_body_6_then_0",
-                                                            "fields": {
-                                                              "COLOR": "#2c2a4a",
-                                                              "ALIGN": "left"
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_g2d_draw_label",
+                                                          "id": "farol-meu-jogo_loops_0_body_7",
+                                                          "fields": {
+                                                            "COLOR": "#2c2a4a",
+                                                            "ALIGN": "left"
+                                                          },
+                                                          "inputs": {
+                                                            "TEXT": {
+                                                              "shadow": {
+                                                                "type": "sz_val_text",
+                                                                "fields": {
+                                                                  "TEXT": "Meu jogo do Arquipélago"
+                                                                }
+                                                              }
                                                             },
-                                                            "inputs": {
-                                                              "TEXT": {
-                                                                "shadow": {
-                                                                  "type": "sz_val_text",
-                                                                  "fields": {
-                                                                    "TEXT": "O farol acendeu."
-                                                                  }
+                                                            "X": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 20
                                                                 }
-                                                              },
-                                                              "X": {
-                                                                "shadow": {
-                                                                  "type": "sz_val_number",
-                                                                  "fields": {
-                                                                    "NUM": 20
-                                                                  }
+                                                              }
+                                                            },
+                                                            "Y": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 35
                                                                 }
-                                                              },
-                                                              "Y": {
-                                                                "shadow": {
-                                                                  "type": "sz_val_number",
-                                                                  "fields": {
-                                                                    "NUM": 70
-                                                                  }
+                                                              }
+                                                            },
+                                                            "SIZE": {
+                                                              "shadow": {
+                                                                "type": "sz_val_number",
+                                                                "fields": {
+                                                                  "NUM": 18
                                                                 }
+                                                              }
+                                                            }
+                                                          },
+                                                          "next": {
+                                                            "block": {
+                                                              "type": "sz_g2d_draw_group",
+                                                              "id": "farol-meu-jogo_loops_0_body_8",
+                                                              "fields": {
+                                                                "GROUP": "pedras"
                                                               },
-                                                              "SIZE": {
-                                                                "shadow": {
-                                                                  "type": "sz_val_number",
+                                                              "next": {
+                                                                "block": {
+                                                                  "type": "sz_g2d_draw_sprite",
+                                                                  "id": "farol-meu-jogo_loops_0_body_9",
                                                                   "fields": {
-                                                                    "NUM": 18
+                                                                    "SPRITE": "estrela"
+                                                                  },
+                                                                  "next": {
+                                                                    "block": {
+                                                                      "type": "sz_g2d_draw_sprite",
+                                                                      "id": "farol-meu-jogo_loops_0_body_10",
+                                                                      "fields": {
+                                                                        "SPRITE": "farol"
+                                                                      },
+                                                                      "next": {
+                                                                        "block": {
+                                                                          "type": "sz_js_if_else",
+                                                                          "id": "farol-meu-jogo_loops_0_body_11",
+                                                                          "inputs": {
+                                                                            "THEN": {
+                                                                              "block": {
+                                                                                "type": "sz_g2d_draw_label",
+                                                                                "id": "farol-meu-jogo_loops_0_body_11_then_0",
+                                                                                "fields": {
+                                                                                  "COLOR": "#2c2a4a",
+                                                                                  "ALIGN": "left"
+                                                                                },
+                                                                                "inputs": {
+                                                                                  "TEXT": {
+                                                                                    "shadow": {
+                                                                                      "type": "sz_val_text",
+                                                                                      "fields": {
+                                                                                        "TEXT": "O farol acendeu."
+                                                                                      }
+                                                                                    }
+                                                                                  },
+                                                                                  "X": {
+                                                                                    "shadow": {
+                                                                                      "type": "sz_val_number",
+                                                                                      "fields": {
+                                                                                        "NUM": 20
+                                                                                      }
+                                                                                    }
+                                                                                  },
+                                                                                  "Y": {
+                                                                                    "shadow": {
+                                                                                      "type": "sz_val_number",
+                                                                                      "fields": {
+                                                                                        "NUM": 70
+                                                                                      }
+                                                                                    }
+                                                                                  },
+                                                                                  "SIZE": {
+                                                                                    "shadow": {
+                                                                                      "type": "sz_val_number",
+                                                                                      "fields": {
+                                                                                        "NUM": 18
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                            "COND": {
+                                                                              "block": {
+                                                                                "type": "sz_val_variable",
+                                                                                "fields": {
+                                                                                  "NAME": "aceso"
+                                                                                },
+                                                                                "id": "farol-meu-jogo_loops_0_body_11_cond"
+                                                                              }
+                                                                            }
+                                                                          },
+                                                                          "extraState": {
+                                                                            "hasElse": true
+                                                                          },
+                                                                          "next": {
+                                                                            "block": {
+                                                                              "type": "sz_g2d_draw_sprite",
+                                                                              "id": "farol-meu-jogo_loops_0_body_12",
+                                                                              "fields": {
+                                                                                "SPRITE": "guia"
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
                                                                   }
                                                                 }
                                                               }
                                                             }
-                                                          }
-                                                        },
-                                                        "COND": {
-                                                          "block": {
-                                                            "type": "sz_val_variable",
-                                                            "fields": {
-                                                              "NAME": "aceso"
-                                                            },
-                                                            "id": "farol-meu-jogo_loops_0_body_6_cond"
-                                                          }
-                                                        }
-                                                      },
-                                                      "extraState": {
-                                                        "hasElse": true
-                                                      },
-                                                      "next": {
-                                                        "block": {
-                                                          "type": "sz_g2d_draw_sprite",
-                                                          "id": "farol-meu-jogo_loops_0_body_7",
-                                                          "fields": {
-                                                            "SPRITE": "guia"
                                                           }
                                                         }
                                                       }
@@ -1091,6 +1272,79 @@
                                       }
                                     }
                                   }
+                                }
+                              }
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g2d_every_seconds",
+                            "id": "farol-meu-jogo_loops_1",
+                            "inputs": {
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_g2d_spawn_obstacle",
+                                  "id": "farol-meu-jogo_loops_1_body_0",
+                                  "fields": {
+                                    "GROUP": "pedras",
+                                    "SHAPE": "rock"
+                                  },
+                                  "inputs": {
+                                    "X": {
+                                      "block": {
+                                        "type": "sz_g2d_random_between",
+                                        "id": "farol-meu-jogo_loops_1_body_0_x",
+                                        "inputs": {
+                                          "MIN": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 660
+                                              },
+                                              "id": "farol-meu-jogo_loops_1_body_0_x_min"
+                                            }
+                                          },
+                                          "MAX": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 760
+                                              },
+                                              "id": "farol-meu-jogo_loops_1_body_0_x_max"
+                                            }
+                                          }
+                                        }
+                                      }
+                                    },
+                                    "VX": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": -3
+                                        },
+                                        "id": "farol-meu-jogo_loops_1_body_0_vx"
+                                      }
+                                    },
+                                    "SIZE": {
+                                      "shadow": {
+                                        "type": "sz_val_number",
+                                        "fields": {
+                                          "NUM": 28
+                                        },
+                                        "id": "farol-meu-jogo_loops_1_body_0_size"
+                                      }
+                                    }
+                                  }
+                                }
+                              },
+                              "SECS": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 2.5
+                                  },
+                                  "id": "farol-meu-jogo_loops_1_seconds"
                                 }
                               }
                             }
@@ -1179,26 +1433,27 @@
             "programmingLanguage": "javascript"
           },
           {
-            "id": "some",
-            "label": "Extra: algo sai da tela quando é pego no encontro.",
-            "optional": true,
+            "id": "combina",
+            "label": "O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor.",
             "rule": {
               "type": "gameCausality",
               "actor": "guia",
-              "step": "removal"
+              "step": "combination"
             },
             "programmingLanguage": "javascript"
           }
         ],
         "desafioExtra": {
-          "titulo": "Mais um desafio",
-          "texto": "Faça alguma coisa sair da tela quando for pega no encontro."
+          "titulo": "Versão 2",
+          "texto": "Versão 2: depois de aprovado, peça para outra pessoa jogar, mude o jogo pelo que o teste mostrou e envie de novo."
         },
         "recompensa": {
           "cor": false,
           "atracao": "meu-jogo-do-arquipelago",
           "moedas": 20,
-          "moedasExtra": 10
+          "moedasExtra": 10,
+          "extraNaVersao2": true,
+          "revisaoHumana": true
         },
         "blocosManuais": {
           "acrescentar": [],

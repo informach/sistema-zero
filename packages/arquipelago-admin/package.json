@@ -1,0 +1,31 @@
+{
+  "name": "@sistemazero/arquipelago-admin",
+  "version": "0.1.0",
+  "description": "A seção Jogo do Admin (desafios, manifestos, cobertura e medição do Arquipélago), montada numa página do Admin. Não importa o jogo nem o Admin.",
+  "type": "module",
+  "private": true,
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "bun test",
+    "check": "biome check .",
+    "check:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@sistemazero/arquipelago-contracts": "workspace:*",
+    "@sistemazero/core": "workspace:*",
+    "@sistemazero/studio": "workspace:*",
+    "@sistemazero/ui": "workspace:*",
+    "zod": "4.3.6"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "@types/react": "^19",
+    "typescript": "^5.7.0"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  }
+}

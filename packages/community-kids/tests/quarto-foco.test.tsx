@@ -2,6 +2,7 @@ import { afterAll, afterEach, describe, expect, it, mock } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { cleanup, render, screen } from '@testing-library/react'
+import { readStylesheet } from '../../ui/scripts/read-stylesheet.mjs'
 
 /**
  * O Quarto e o configurador de avatar entraram no modo foco em 19/09/2026: o menu da esquerda
@@ -13,7 +14,9 @@ import { cleanup, render, screen } from '@testing-library/react'
  * `focus-mode.test.tsx`, para nenhum outro arquivo perder export.
  */
 const source = (relativePath: string) =>
-  readFileSync(resolve(import.meta.dir, '..', relativePath), 'utf8')
+  relativePath.endsWith('.css')
+    ? readStylesheet(resolve(import.meta.dir, '..', relativePath))
+    : readFileSync(resolve(import.meta.dir, '..', relativePath), 'utf8')
 
 const nav = await import('next/navigation')
 let pathname = '/quarto'

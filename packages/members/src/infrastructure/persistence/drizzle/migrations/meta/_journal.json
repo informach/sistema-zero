@@ -1009,6 +1009,13 @@
       "when": 1793476555798,
       "tag": "0143_module_animation",
       "breakpoints": true
+    },
+    {
+      "idx": 144,
+      "version": "7",
+      "when": 1793490314724,
+      "tag": "0144_retire_module_rive",
+      "breakpoints": true
     }
   ]
 }

@@ -177,9 +177,15 @@ async function rodar(
 // A29: o projeto autoral do Farol no Pro roda junto com o Jardim das Nuvens.
 const pacotes = [
   { ilha: 'nuvens', arquivo: 'nuvens/nuvens-pro', erros: CENARIOS_DAS_NUVENS },
-  { ilha: 'farol', arquivo: 'farol/farol-pro', erros: CENARIOS_DO_FAROL_PRO },
+  {
+    ilha: 'farol',
+    arquivo: 'farol/farol-pro',
+    erros: CENARIOS_DO_FAROL_PRO,
+    // Cenário aberto (Lenda): o inicial não quebra ao ser jogado; falha na ficha e no R.
+    inicialFalha: ['objetivo', 'funcionalidades', 'recomeca'],
+  },
 ].filter((p) => !soIlha || p.ilha === soIlha)
-for (const { arquivo, erros } of pacotes)
+for (const { arquivo, erros, ...resto } of pacotes)
   for (const publico of ['', '-adulto']) {
     const manifesto = ManifestoDeDesafiosSchema.parse(
       JSON.parse(
@@ -196,7 +202,12 @@ for (const { arquivo, erros } of pacotes)
       }))
       const cenarios = [
         { nome: 'gabarito', projeto: d.conteudo.gabarito as Project, passa: true },
-        { nome: 'inicial', projeto: d.conteudo.projetoInicial as Project, passa: false },
+        {
+          nome: 'inicial',
+          projeto: d.conteudo.projetoInicial as Project,
+          passa: false,
+          ...('inicialFalha' in resto ? { ids: resto.inicialFalha } : {}),
+        },
         ...(publico ? [] : erros()),
       ] as { nome: string; projeto: Project; ids?: readonly string[]; passa: boolean }[]
       for (const cenario of cenarios) {

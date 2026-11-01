@@ -27,6 +27,11 @@ export interface Equipe {
   id: string
   /** Administração (superadmin/admin) fora de sessão de suporte; o resto da equipe só lê. */
   podeEscrever: boolean
+  /**
+   * Responde à revisão humana da Lenda (lacunas, 01/11/2026): toda a equipe, fora de sessão de
+   * suporte. É trabalho de professor, não de quem cuida do cadastro dos desafios.
+   */
+  podeRevisar: boolean
 }
 
 export const PAPEIS_DA_EQUIPE = new Set(['superadmin', 'admin', 'staff'])

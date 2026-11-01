@@ -46,7 +46,7 @@ for (const linguagem of ['python', 'ponte', 'pro'] as const)
       for (const p of [d.conteudo.projetoInicial, d.conteudo.gabarito])
         expect(linguagemDoProjeto(p)).toBe(LINGUAGEM[linguagem])
       expect(postoDoCursoBase(LINGUAGEM[linguagem], 'farol')).toBe(
-        { python: 'explorer', ponte: 'architect', pro: 'champion' }[linguagem],
+        ({ python: 'explorer', ponte: 'architect', pro: 'champion' } as const)[linguagem],
       )
       const textos = [
         d.conteudo.titulo,
@@ -62,7 +62,11 @@ for (const linguagem of ['python', 'ponte', 'pro'] as const)
       const checks = d.conteudo.objetivos as unknown as SectionProjectCheck[]
       expect(isSectionCompletion({ version: 1, blockIds: [], projectChecks: checks })).toBe(true)
       expect(checks.some((c) => !c.optional)).toBe(true)
-      expect(checks.some((c) => c.optional)).toBe(true)
+      // Lenda (lacunas, 01/11/2026): o extra é a versão 2, conferida pelo serviço, sem objetivo
+      // opcional; o aprovado vai à revisão humana.
+      expect(checks.some((c) => c.optional)).toBe(false)
+      expect(d.conteudo.recompensa.extraNaVersao2).toBe(true)
+      expect(d.conteudo.recompensa.revisaoHumana).toBe(true)
       const espera = checks.reduce(
         (s, c) =>
           s +
@@ -76,20 +80,25 @@ for (const linguagem of ['python', 'ponte', 'pro'] as const)
       if (linguagem === 'ponte')
         for (const c of checks) {
           if (isSectionExecutionRule(c.rule as { type: string })) continue
-          expect(evaluateStudioProjectStructure(c.rule, d.conteudo.gabarito), c.id).toBe(true)
-          expect(evaluateStudioProjectStructure(c.rule, d.conteudo.projetoInicial), c.id).toBe(
-            false,
-          )
+          // A Ponte é JavaScript: as regras de estrutura são as do Estúdio clássico.
+          const regra = c.rule as Parameters<typeof evaluateStudioProjectStructure>[0]
+          expect(evaluateStudioProjectStructure(regra, d.conteudo.gabarito), c.id).toBe(true)
+          expect(evaluateStudioProjectStructure(regra, d.conteudo.projetoInicial), c.id).toBe(false)
         }
     }
   })
 
-test('o Python do Farol traz a cena pronta e deixa as regras para a pessoa', () => {
+test('o Python do Farol começa aberto: a janela, o guia andando e a ficha vazia', () => {
   const inicial = codigoDoFarolPython('inicial')
-  expect(inicial).toContain('guia = Rect((60, 220), (40, 40))')
-  expect(inicial).toContain('estrela = Rect((420, 220), (40, 40))')
-  // O guia já anda; o encontro e o R são da pessoa.
+  expect(inicial).toContain('guia = Rect((60, 400), (40, 40))')
+  // Nada de cenário pronto: sem estrela, sem pontos.
+  expect(inicial).not.toContain('estrela')
+  expect(inicial).not.toContain('pontos')
+  expect(inicial).toContain('OBJETIVO = ""')
+  expect(inicial).toContain('FUNCIONALIDADE_3 = ""')
   expect(inicial).toContain('guia.x = guia.x + 4')
   expect(inicial).toContain('def on_key_down(key):\n    pass')
-  expect(codigoDoFarolPython('gabarito')).toContain('if key == keys.R:')
+  const gabarito = codigoDoFarolPython('gabarito')
+  expect(gabarito).toContain('if key == keys.R:')
+  expect(gabarito).not.toContain('OBJETIVO = ""')
 })

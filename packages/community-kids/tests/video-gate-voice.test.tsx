@@ -5,8 +5,8 @@ import {
   requestLessonMediaFocus,
 } from '@sistemazero/member-shell/lib/lesson-media-focus'
 import { KIDS_VIDEO_GATE_COPY } from '@sistemazero/member-shell/lib/video-gate-copy'
+import voice from '@sistemazero/member-shell/lib/zappy-video-gate-voice.json'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
-import voice from '../src/lib/zappy-video-gate-voice.json'
 
 const originalAudio = globalThis.Audio
 const audios: TestAudio[] = []

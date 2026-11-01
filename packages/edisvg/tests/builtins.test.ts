@@ -17,6 +17,11 @@ test('built-in expressions and both chest poses have immutable verified artwork 
     const poster = await readFile(resolve(folder, posterFile))
     assert.equal(createHash('sha256').update(content).digest('hex'), art.sha256)
     assert.equal(createHash('sha256').update(poster).digest('hex'), art.poster.sha256)
+    assert.ok(file.includes(`.${art.sha256.slice(0, 12)}.`), 'A nova arte deve receber outra URL')
+    assert.ok(
+      posterFile.includes(`.${art.poster.sha256.slice(0, 12)}.`),
+      'A reserva também precisa mudar de URL',
+    )
     assert.equal(manifest.files[file].bytes, content.byteLength)
     assert.equal(manifest.files[posterFile].bytes, poster.byteLength)
     assert.equal(poster.toString('ascii', 0, 4), 'RIFF')

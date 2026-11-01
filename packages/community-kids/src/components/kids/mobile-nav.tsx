@@ -2,6 +2,7 @@
 
 import type { CreativeToolId } from '@sistemazero/core/journey'
 import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
+import { LessonMobileTopbar } from '@sistemazero/member-shell/components/lesson-ui/mobile-topbar'
 import { useModalA11y } from '@sistemazero/ui/use-modal-a11y'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -40,19 +41,18 @@ export function MobileTopbar({
   avatarPhotoUrl?: string | null
 }) {
   return (
-    <header className="kids-menu sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-(--menu-2) border-b bg-(--menu) px-3 text-(--menu-texto) md:hidden">
-      {/* `shrink-0`: sem ele o bloco da direita espremia o logo e o selo "kids" escapava
-          por baixo dos números (medido a 375px: logo em 104px para um conteúdo de 150). */}
-      <Link href="/" aria-label="Início" className="flex shrink-0 items-center" prefetch={false}>
-        <KidsLogo fundo="escuro" />
-      </Link>
-      <div className="flex min-w-0 items-center gap-2">
-        {gamification ? <StreakWidget gamification={gamification} compact /> : null}
-        <HelpShortcut variant="icon" />
-        <RecadosBell />
-        <UserMenu user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
-      </div>
-    </header>
+    <LessonMobileTopbar
+      brand={
+        <Link href="/" aria-label="Início" className="flex shrink-0 items-center" prefetch={false}>
+          <KidsLogo fundo="escuro" />
+        </Link>
+      }
+    >
+      {gamification ? <StreakWidget gamification={gamification} compact /> : null}
+      <HelpShortcut variant="icon" />
+      <RecadosBell />
+      <UserMenu user={user} gamification={gamification} avatarPhotoUrl={avatarPhotoUrl} />
+    </LessonMobileTopbar>
   )
 }
 

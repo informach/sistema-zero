@@ -98,16 +98,19 @@ const proCsp = buildCsp({ pro: true })
 // Arquipélago Vagalume (A27, revisão de 31/10/2026): a página do jogo tem a SUA regra, montada
 // pelo que roda nela, e não a cópia da rota Pro.
 // - `'wasm-unsafe-eval'`: a física (Rapier) e o Molda são WebAssembly.
-// - `'unsafe-eval'`, `blob:` e os quadros do WebContainer: o Estúdio completo abre por cima do
-//   jogo e, para quem já tem o modo Código, abre o projeto Pro com o terminal, que exige essas
-//   três coisas (`packages/studio/docs/embedding.md`). Tirar quebra o Pro dentro do jogo.
+// - Sem `'unsafe-eval'` nem os quadros do WebContainer (lacunas, 01/11/2026): o modo Código
+//   (o projeto Pro e o desafio Pro) abre a rota isolada `/estudio/pro/...` num quadro da mesma
+//   origem (`frame-src 'self'`), e é ela que roda o terminal.
 // - Sem os vídeos das aulas (YouTube e Vimeo): a página do jogo não tem aula, e a COEP
 //   `credentialless` daqui já os impediria de carregar.
 // O executor do Python e o do Pro publicado entram pelos mesmos `withStudio*Csp` do resto.
-const arquipelagoCsp = proCsp.replace(
+const arquipelagoCsp = strictCsp.replace(
   ' https://www.youtube-nocookie.com https://player.vimeo.com',
   '',
 )
+// O Pro num quadro por cima do jogo (lacunas, 01/11/2026): a rota isolada só aceita ser embutida
+// pela própria origem, e só com `?embed=arquipelago`. Sem o parâmetro, segue `frame-ancestors 'none'`.
+const proEmbutidoCsp = proCsp.replace("frame-ancestors 'none'", "frame-ancestors 'self'")
 
 // Headers de segurança comuns a TODAS as rotas — SEM a CSP (aplicada por-rota em
 // `headers()`: estrita em tudo, relaxada só em `/estudio/pro`). COOP fica aqui (vale
@@ -139,6 +142,8 @@ const securityHeaders = [
 ]
 
 const nextConfig: NextConfig = {
+  // The same release identity in HTML, RSC and static assets prevents mixed versions.
+  deploymentId: process.env.RAILWAY_GIT_COMMIT_SHA || undefined,
   reactStrictMode: true,
   // Deploy em container (Railway): `.next/standalone` com server.js mínimo.
   output: 'standalone',
@@ -246,6 +251,16 @@ const nextConfig: NextConfig = {
           // (Um `Clear-Site-Data: "cache"` TEMPORÁRIO viveu aqui em 13/07/2026
           // para curar navegadores com o bootstrap de worker do Turbopack
           // cacheado sem COEP — ver o comentário da regra de /_next/static.)
+        ],
+      },
+      // O mesmo Pro aberto pelo jogo num quadro (`?embed=arquipelago`, lacunas de 01/11/2026): a
+      // regra que vem depois vence, então só aqui o quadro da própria origem é aceito.
+      {
+        source: '/estudio/pro/:path*',
+        has: [{ type: 'query', key: 'embed', value: 'arquipelago' }],
+        headers: [
+          { key: 'Content-Security-Policy', value: proEmbutidoCsp },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
         ],
       },
       // Workers do Monaco DENTRO da rota PRO: uma página com COEP só cria um

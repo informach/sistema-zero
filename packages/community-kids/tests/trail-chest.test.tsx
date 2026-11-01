@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import type { ModuleChestView } from '@sistemazero/member-shell/lib/types'
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { readStylesheet } from '../../ui/scripts/read-stylesheet.mjs'
 
 /**
  * O baú da trilha, agora CLICÁVEL.
@@ -71,7 +72,7 @@ function movimentoReduzido(ligado: boolean) {
 
 describe('baú da trilha', () => {
   test('fechado, liberado e aberto compartilham uma base 3D visível', () => {
-    const css = readFileSync(new URL('../src/app/globals.css', import.meta.url), 'utf8')
+    const css = readStylesheet(new URL('../src/app/globals.css', import.meta.url))
     const rule = (selector: string) =>
       css.match(new RegExp(`${selector}\\s*\\{([^}]*)\\}`, 's'))?.[1] ?? ''
     const base = rule('\\.kids-node--chest')

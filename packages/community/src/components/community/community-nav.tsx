@@ -1,13 +1,25 @@
 'use client'
 
 import { ArquipelagoNavLink } from '@sistemazero/member-shell/components/arquipelago-nav-link'
+import { LessonMobileTopbar } from '@sistemazero/member-shell/components/lesson-ui/mobile-topbar'
+import { StreakWidget } from '@sistemazero/member-shell/components/lesson-ui/streak-widget'
 import { BrandLogo } from '@sistemazero/ui/brand-logo'
-import { Ellipsis, Mail, Palette, PersonStanding, Receipt, Sofa, Trophy } from 'lucide-react'
+import {
+  CircleHelp,
+  Ellipsis,
+  Mail,
+  Palette,
+  PersonStanding,
+  Receipt,
+  Sofa,
+  Trophy,
+} from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { type CSSProperties, useEffect, useId, useRef, useState } from 'react'
 import { cn } from '@/lib/cn'
 import type { SessionUserWithAvatar } from '@/lib/types'
+import { useAdultGamification } from './gamification-provider'
 import { isNavItemActive, NAV_ITEMS, type NavItem, visibleCommunityNav } from './nav'
 import { UserMenu } from './user-menu'
 
@@ -49,11 +61,13 @@ export function CommunitySidebar({
   user,
   unread,
   collapsed = false,
+  lesson = false,
   arquipelagoLiberado = false,
 }: {
   user: SessionUserWithAvatar
   unread: number
   collapsed?: boolean
+  lesson?: boolean
   arquipelagoLiberado?: boolean
 }) {
   const pathname = usePathname() ?? ''
@@ -65,10 +79,15 @@ export function CommunitySidebar({
       inert={collapsed}
       aria-hidden={collapsed || undefined}
       className={cn(
-        'sticky top-0 z-30 hidden h-dvh shrink-0 transition-[width] duration-300 ease-in-out motion-reduce:transition-none lg:block',
+        'sticky top-0 z-30 hidden h-dvh shrink-0 transition-[width] duration-300 ease-in-out motion-reduce:transition-none',
+        lesson ? 'kids-menu md:block' : 'lg:block',
         collapsed ? 'w-0' : 'w-(--sz-menu-width)',
       )}
-      style={{ '--sz-menu-width': COMMUNITY_SIDEBAR_WIDTH } as CSSProperties}
+      style={
+        {
+          '--sz-menu-width': lesson ? 'var(--kids-menu-width, 16.75rem)' : COMMUNITY_SIDEBAR_WIDTH,
+        } as CSSProperties
+      }
     >
       <div
         className={cn(
@@ -148,13 +167,61 @@ export function CommunityTopBar({
   user,
   unread,
   compact = false,
+  lesson = false,
 }: {
   user: SessionUserWithAvatar
   unread: number
   compact?: boolean
+  lesson?: boolean
 }) {
   const pathname = usePathname() ?? ''
   const recadosActive = pathname === '/recados' || pathname.startsWith('/recados/')
+  const gamification = useAdultGamification()
+  if (lesson)
+    return (
+      <LessonMobileTopbar
+        brand={
+          <Link
+            href="/"
+            prefetch={false}
+            aria-label="Início"
+            className="flex shrink-0 items-center"
+          >
+            <BrandLogo
+              fundo="escuro"
+              label="Comunidade Sistema Zero"
+              className="block h-auto w-[150px]"
+            />
+          </Link>
+        }
+      >
+        {gamification?.progress ? (
+          <StreakWidget gamification={gamification.progress} compact />
+        ) : null}
+        <Link
+          href="/ajuda"
+          prefetch={false}
+          aria-label="Como fazer"
+          className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-(--menu-vidro) text-(--menu-texto) transition-colors hover:bg-white/12 hover:text-white"
+        >
+          <CircleHelp className="size-4" aria-hidden />
+        </Link>
+        <Link
+          href="/recados"
+          prefetch={false}
+          aria-label={unreadLabel(unread)}
+          className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-(--menu-vidro) text-(--menu-texto) transition-colors hover:bg-white/12 hover:text-white"
+        >
+          <Mail className="size-5" aria-hidden />
+          {unread > 0 ? (
+            <span className="absolute top-0 right-0 rounded-full bg-primary px-1 text-primary-foreground text-xs">
+              {unread > 9 ? '9+' : unread}
+            </span>
+          ) : null}
+        </Link>
+        <UserMenu user={user} />
+      </LessonMobileTopbar>
+    )
   return (
     <header
       className={cn(
@@ -235,10 +302,12 @@ function inMore(pathname: string, links: readonly NavItem[]) {
  * botão com `aria-expanded`, Esc fecha e devolve o foco, clicar fora fecha.
  */
 export function CommunityTabs({
+  lesson = false,
   unread,
   arquipelagoLiberado = false,
 }: {
   unread: number
+  lesson?: boolean
   arquipelagoLiberado?: boolean
 }) {
   const pathname = usePathname() ?? ''
@@ -246,11 +315,30 @@ export function CommunityTabs({
   const panelId = useId()
   const ref = useRef<HTMLDivElement>(null)
   const trigger = useRef<HTMLButtonElement>(null)
+  const navigation = useRef<HTMLElement>(null)
   const tabs = TAB_HREFS.map((href) => NAV_ITEMS.find((item) => item.href === href)).filter(
     (item): item is NavItem => Boolean(item),
   )
   const moreLinks = visibleCommunityNav(MORE_LINKS, arquipelagoLiberado)
   const moreActive = inMore(pathname, moreLinks)
+
+  useEffect(() => {
+    const node = navigation.current
+    const frame = node?.closest<HTMLElement>('.sz-app')
+    if (!node || !frame) return
+    const update = () =>
+      frame.style.setProperty(
+        '--sz-lesson-tabs-height',
+        `${Math.ceil(node.getBoundingClientRect().height)}px`,
+      )
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      frame.style.removeProperty('--sz-lesson-tabs-height')
+    }
+  }, [])
 
   // Trocar de página fecha o painel.
   // biome-ignore lint/correctness/useExhaustiveDependencies: o efeito reage SÓ à troca de rota.
@@ -278,7 +366,9 @@ export function CommunityTabs({
 
   const tabClass = (active: boolean) =>
     cn(
-      'flex min-h-[3.2rem] min-w-0 flex-col items-center justify-center gap-0.5 pt-1.5 pb-2 font-bold text-[0.85rem] leading-tight no-underline',
+      lesson
+        ? 'flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5 font-bold text-[0.68rem] tracking-tight transition-colors'
+        : 'flex min-h-[var(--sz-community-tab-min-height,3.2rem)] min-w-0 flex-col items-center justify-center gap-0.5 pt-1.5 pb-2 font-bold text-[0.85rem] leading-tight no-underline',
       active ? 'text-(--cta)' : 'text-(--legenda-clara) hover:text-(--texto-claro)',
     )
 
@@ -287,7 +377,10 @@ export function CommunityTabs({
   return (
     <div
       ref={ref}
-      className="sz-palco fixed inset-x-0 bottom-0 z-40 flex flex-col-reverse bg-(--topo) bg-none lg:hidden"
+      className={cn(
+        'sz-palco fixed inset-x-0 bottom-0 z-40 flex flex-col-reverse bg-(--topo) bg-none',
+        lesson ? 'md:hidden' : 'lg:hidden',
+      )}
       // Como no menu do perfil: só fecha quando o foco VAI para fora (Tab); o clique fora já fecha
       // pelo `mousedown`.
       onBlur={(event) => {
@@ -296,6 +389,7 @@ export function CommunityTabs({
       }}
     >
       <nav
+        ref={navigation}
         aria-label="Principal"
         className="grid grid-cols-[1fr_1fr_1fr_1.85fr_1fr] border-(--linha-escura) border-t pb-[env(safe-area-inset-bottom)]"
       >

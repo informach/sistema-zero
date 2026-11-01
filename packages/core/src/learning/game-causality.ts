@@ -25,14 +25,29 @@
  * - `constantsOf` só tira a variável da conta pelos campos que escrevem nela (nomes de variável),
  *   não por um texto que repete o nome;
  * - `x = x` não é efeito.
+ *
+ * Combinação (lacunas, 01/11/2026): o projeto autoral da Lenda combina mecânicas de três postos,
+ * as do repertório de blocos, cada uma em código que roda:
+ * - Faísca: o encontro do personagem guarda uma lembrança que muda uma decisão (`decision`);
+ * - Construtor: um relógio (`a cada N quadros` ou `a cada N segundos`) cria desenhos num grupo, e
+ *   um encontro com esse grupo faz alguma coisa;
+ * - Inventor: aplicar a gravidade e pular (o controle do Dino, pular só no chão ou o evento do
+ *   pulo); o bloco da plataforma traz os dois. Só mudar o valor da gravidade não a aplica.
  */
-export type GameCausalityStep = 'encounter' | 'memory' | 'decision' | 'restart' | 'removal'
+export type GameCausalityStep =
+  | 'encounter'
+  | 'memory'
+  | 'decision'
+  | 'restart'
+  | 'removal'
+  | 'combination'
 export const GAME_CAUSALITY_STEPS: readonly GameCausalityStep[] = [
   'encounter',
   'memory',
   'decision',
   'restart',
   'removal',
+  'combination',
 ]
 export interface GameCausalityRule {
   type: 'gameCausality'
@@ -514,6 +529,102 @@ function decides(b: Behavior, actor: string, env: Env): boolean {
   return found
 }
 
+/** Construtor: um relógio que cria num grupo, e um encontro com esse grupo que faz alguma coisa. */
+function groupsByClock(b: Behavior, env: Env): boolean {
+  const { groups } = existing(b, env)
+  const timed = new Set<string>()
+  const areas = [b.molds, b.start, b.events, b.loops]
+  for (const area of areas)
+    walkLive(
+      area,
+      (s) => {
+        if (s.type !== 'g2d:everyFrames' && s.type !== 'g2d:everySeconds') return
+        walkLive(
+          s.body,
+          (inner) => {
+            const type = String(inner.type)
+            if (
+              type.startsWith('g2d:spawn') &&
+              typeof inner.groupVar === 'string' &&
+              groups.has(inner.groupVar)
+            )
+              timed.add(inner.groupVar)
+          },
+          env,
+        )
+      },
+      env,
+    )
+  if (!timed.size) return false
+  let meets = false
+  for (const area of areas)
+    walkLive(
+      area,
+      (s) => {
+        const group =
+          (s.type === 'g2d:onSpriteGroupOverlap' || s.type === 'g2d:onTouchGroup') &&
+          typeof s.groupVar === 'string' &&
+          timed.has(s.groupVar)
+            ? s.groupVar
+            : s.type === 'g2d:onGroupOverlap' &&
+                ((typeof s.aGroup === 'string' && timed.has(s.aGroup)) ||
+                  (typeof s.bGroup === 'string' && timed.has(s.bGroup)))
+              ? 'grupo'
+              : null
+        if (group && hasEffect(s.body, env)) meets = true
+      },
+      env,
+    )
+  return meets
+}
+
+/** Inventor: gravidade e pulo em código que roda. */
+function gravityAndJump(b: Behavior, env: Env): boolean {
+  let gravity = false
+  let jump = false
+  for (const area of [b.molds, b.start, b.events, b.loops])
+    walkLive(
+      area,
+      (s) => {
+        switch (s.type) {
+          case 'g2d:platformer':
+            gravity = jump = true
+            break
+          case 'g2d:applyGravity':
+          case 'g2d:applyGravityToGroup':
+            gravity = true
+            break
+          case 'g2d:controlDino':
+          case 'g2d:jumpOnGround':
+            jump = true
+            break
+          case 'g2d:onJump':
+            if (hasEffect(s.body, env)) jump = true
+            break
+        }
+      },
+      env,
+    )
+  return gravity && jump
+}
+
+/** Quantos postos o jogo combina: Faísca, Construtor e Inventor (o repertório de blocos). */
+export function combinedPostos(
+  project: unknown,
+  actor: string,
+): ('faisca' | 'construtor' | 'inventor')[] {
+  const b = behaviorOf(project)
+  if (!b) return []
+  const env = constantsOf(b)
+  return [
+    ...(decides(b, actor, env) ? (['faisca'] as const) : []),
+    ...(groupsByClock(b, env) ? (['construtor'] as const) : []),
+    ...(gravityAndJump(b, env) ? (['inventor'] as const) : []),
+  ]
+}
+/** A combinação pede as mecânicas dos três postos de blocos. */
+export const COMBINATION_MINIMUM = 3
+
 export function evaluatesGameCausality(rule: GameCausalityRule, project: unknown): boolean {
   const b = behaviorOf(project)
   if (!b) return false
@@ -525,6 +636,8 @@ export function evaluatesGameCausality(rule: GameCausalityRule, project: unknown
       return memories(b, rule.actor, env).size > 0
     case 'decision':
       return decides(b, rule.actor, env)
+    case 'combination':
+      return combinedPostos(project, rule.actor).length >= COMBINATION_MINIMUM
     case 'removal':
       return encounters(b, rule.actor, env).some((body) => {
         let removes = false

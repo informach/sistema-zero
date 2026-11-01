@@ -1,5 +1,47 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## As lacunas do levantamento de 31/10 (01/11/2026)
+
+Registro completo: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`. No serviço:
+
+- **Salvamento V23 e teto de 80 KB (L1):** o corpo da chamada vai até 96 KB no gateway, no BFF e
+  aqui.
+- **Revisão humana da Lenda (L7l):** tabela `revisoes_humanas` (migration 0025), porta e
+  repositório `repositorio-revisoes-humanas.ts`, `ServicoDasRevisoesHumanas`, rotas em
+  `/arquipelago/admin` (`rotas-das-revisoes-humanas.ts`, fila "Projetos da Lenda" na Sala do
+  Professor; `Equipe.podeRevisar`, 409 `RevisaoMudouError`). O `verificar` lê o minijogo antigo antes
+  de gravar e só põe na fila na primeira aprovação ou quando o jogo mudou (`eVersao2`); a lista dos
+  desafios leva `revisaoHumana`. A 0025 também conserta a trava `fantasmas_percurso_check` dos
+  percursos do L3 (trenó, montaria e regata, que tinham entrado sem migration); um teste confere a
+  foto do banco contra os `PERCURSOS`.
+- **Dias de jogo do adulto (L8):** tabela `dias_de_jogo` (migration 0026), marcada ao abrir e ao
+  gravar o jogo adulto; dá D1, D7 e a volta ao curso em 24 h do adulto na medição. Satisfação dos
+  pais e permanência saem como "sem fonte".
+- **`createServer(): AnyElysia`:** a anotação evita o estouro de complexidade de tipo do tsc.
+- **Publicação do jogo (L9):** o jogo vai para o CDN (`packages/arquipelago/scripts/publicar.ts`); a
+  rota do cliente (`rotas-do-cliente.ts`) e o build no Dockerfile ficam como alternativa até a troca
+  (operação em `docs/plans/2026-11-01-arquipelago-publicacao-separada.md`).
+- Testes de banco: Postgres descartável (`arquipelago_test_*`); sem as variáveis, eles pulam em
+  silêncio.
+
+## Revisão publicada dos minijogos, 01/11/2026
+
+A abertura inclui `revisao` para projetos Python e para `kind: pro`: o primeiro pede o
+ambiente e o segundo compila pelo endpoint do desafio. JavaScript clássico mantém a resposta
+sem revisão. A origem é a publicação atual do catálogo, como o ambiente dos desafios já exige,
+não uma revisão histórica deduzida da primeira conclusão. Sem publicação não há revisão para
+autorizar. A conferência em `tests/db/minijogos.test.ts` usa apenas Postgres local descartável.
+Sem alteração de esquema ou migração.
+
+## Ambiente Python do minijogo familiar, 31/10/2026
+
+`POST /familia/minijogos/:perfil/:id/ambiente` exige a identidade do responsável pelo gateway,
+vínculo com o perfil, cópia aprovada Python e a mesma revisão do pedido. Reutiliza o
+autorizador de desafios com a identidade da criança e `somenteLeitura`. Não grava projeto,
+progresso nem recompensa. Público e publicação continuam conferidos pelo serviço de desafios.
+Implantar API e gateway antes do Kids que pede este ambiente. Testes causais em
+`tests/unit/minijogos-familia-ambiente.test.ts`, sem banco ou credenciais reais.
+
 ## Obra estendida (E04 e B14, 31/10/2026)
 
 O iglu do Pico, o andar de cima da casa e o terreno moldado não cabem no salvamento: moram num

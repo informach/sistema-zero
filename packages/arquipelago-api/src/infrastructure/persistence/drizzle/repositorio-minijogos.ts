@@ -67,20 +67,29 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
     }))
   }
   async abrir(jogadorId: string, desafioId: string) {
-    const [v] = await this.db
-      .select()
+    const [linha] = await this.db
+      .select({ minijogo: minijogos, revisao: desafios.revisaoPublicada })
       .from(minijogos)
+      .leftJoin(desafios, eq(desafios.id, minijogos.desafioId))
       .where(and(eq(minijogos.jogadorId, jogadorId), eq(minijogos.desafioId, desafioId)))
-    return v
-      ? MinijogoAbertoSchema.parse({
-          desafioId: v.desafioId,
-          titulo: v.titulo,
-          projeto: JSON.parse(v.projeto),
-          aprovadoEm: v.aprovadoEm.toISOString(),
-          atualizadoEm: v.atualizadoEm.toISOString(),
-          capa: capaQueCabe(v.capa),
-        })
-      : null
+    if (!linha) return null
+    const v = linha.minijogo
+    const projeto: unknown = JSON.parse(v.projeto)
+    const precisaDoAmbiente =
+      projeto !== null &&
+      typeof projeto === 'object' &&
+      (('programmingLanguage' in projeto && projeto.programmingLanguage === 'python') ||
+        ('kind' in projeto && projeto.kind === 'pro'))
+    return MinijogoAbertoSchema.parse({
+      desafioId: v.desafioId,
+      titulo: v.titulo,
+      projeto,
+      aprovadoEm: v.aprovadoEm.toISOString(),
+      atualizadoEm: v.atualizadoEm.toISOString(),
+      capa: capaQueCabe(v.capa),
+      // Python pede o ambiente e Pro compila pela publicação do desafio, com a mesma revisão.
+      ...(precisaDoAmbiente && linha.revisao ? { revisao: linha.revisao } : {}),
+    })
   }
   async pertenceAConta(jogadorId: string, contaId: string) {
     return (

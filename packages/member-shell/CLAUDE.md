@@ -1,5 +1,24 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Minijogo Python na área dos pais, 31/10/2026
+
+A prévia usa POST no mesmo BFF familiar da leitura, com o id do desafio na query. A grade
+atual do Auth confirma o perfil; a API reconfirma o vínculo e a revisão da cópia aprovada.
+A autorização do ambiente recebe o perfil da criança, público Kids e somente leitura.
+O player recebe `environmentUrl` só neste contexto. A sessão do responsável nunca usa a
+rota de ambiente da criança nem ganha acesso a verificação, edição ou terminal.
+
+## Apresentação de aula compartilhada, 31/10/2026
+
+`components/lesson-ui` é a fonte de apresentação das aulas Kids e adultas. Os hosts fornecem
+apenas seus dados e permissões. O compartilhamento não altera a identidade das chamadas nem
+libera compartilhamento de Estúdio nas oficinas. O diálogo usa o estado de voz real do player,
+e a imagem estática e a animada vêm da mesma exportação ediSVG. O tema de aula é canônico no
+UI; o host adulto o seleciona somente quando `.sz-lesson-ui` está montado. Os recursos de
+celebração moram em `assets/lesson`, copiados por `scripts/sync-lesson-assets.mjs` nos builds.
+A avaliação Kids recebe só os dados do perfil; o host adulto passa nome da própria conta e
+idade nula. O progresso prioriza o resultado do servidor e usa a posição apenas sem esse dado.
+
 ## Reservas de arte compartilhadas, 31/10/2026
 
 As poses do Pensa e da porta do Arquipélago vêm de `@sistemazero/edisvg/builtins`.

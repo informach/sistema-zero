@@ -17,7 +17,7 @@ conteúdo para o adulto. Os dois são gerados por `bun gerar-manifesto.ts` a par
 | Começar e recomeçar | Quadro das Cores | 3 | Uma tecla começa na abertura e recomeça no fim | aulas 7 a 9 |
 | A batida | Quadro das Cores | 4 | A batida leva ao fim, com a área justa (50% a 95%) | aulas 9 e 10 |
 | Cada pedra num lugar | Quadro das Cores | 5 | Lugar e tamanho sorteados, com limites | aula 12 |
-| A corrida do entregador | Quadro das Cores | 6 | Cada pedra mais rápida, até um limite | aula 13 |
+| A corrida do entregador | Quadro das Cores | 6 | Cada pedra mais rápida e o fim mostra os metros (a ficha da proposta; o teto, que é da missão, não é critério) | aula 13 |
 | Pedras maiores | Desafio do dia | Nenhum | Um pulo mais forte, de 12 a 16 | aula 3 |
 | Pombos na praça | Desafio do dia | Nenhum | O obstáculo sorteado, com pombos que pedem abaixar | aula 5 |
 | Quem não vê a tela | Desafio do dia | Nenhum | A descrição do palco com o objetivo e os três controles | aula 13 |
@@ -28,8 +28,19 @@ extra dele dá a receita de brigadeiro (A25). Cada desafio tem um extra opcional
 efeitos da batida ou os metros na tela de fim. O extra do quadro 6 segue a proposta ("★ Desafio
 extra: um bolo dourado que vale o dobro", lacunas de 01/11/2026): um bolo dourado passa pela rua
 (pronto no cenário) e a criança completa o encontro do entregador com ele, que soma 2 metros de
-uma vez (o dobro de um segundo de corrida) e leva o bolo de volta ao começo. Os telhados e as
-chaminés da ficha são arte 2D, pedida no lote de arte.
+uma vez (o dobro de um segundo de corrida) e leva o bolo de volta ao começo.
+
+**A corrida pelos telhados (lacunas, L11d, 01/11/2026).** O quadro 6 segue o exemplo da ficha: o
+entregador corre pelos telhados da Vila, pulando chaminés ("encostar numa chaminé encerra a corrida
+e mostra os pontos"). A arte é nova e em imagens, que dá para trocar no Pinta: `telhados` (o céu, a
+torre de doces da sorveteria, as casas com as chaminés soltando fumaça e a fileira de telhas doces,
+com o beiral de glacê em y 227, onde o kit põe o chão), `chamine` (tijolo de morango com a borda de
+glacê, 30 × 40) e o `bolo` dourado (dois andares, glacê, cereja e um halo). As chaminés são duas
+imagens que se revezam (o bloco de imagem do Faísca): no relógio da corrida, a da vez entra pela
+direita com a velocidade de agora (o mesmo jeito do bolo, só com velocidade e borda), no mesmo
+relógio em que a criança deixa a próxima mais rápida; encostar numa delas, durante a corrida, leva
+ao fim. O bloco de pôr imagem num grupo foi descartado: ele só aparece em cursos extras e de poder,
+fora da trilha (C01b). Os quadros 1 a 5 e os desafios do dia continuam na rua, com as pedras do kit.
 
 Todos pedem publicação (`publicar: true`, §6.28 item 1): todo bloco tem fonte nos cursos até o
 Inventor e resolve no nível `iniciante-2d` (por isso a corrida não usa o bloco de conta nem o de
@@ -50,7 +61,8 @@ juntar textos). A barreira C01a continua no serviço, na importação.
   ali.
 - `conferir-corrida-browser.ts` (com `SZ_CHECK_CHROMIUM`): a corrida no computador e no celular
   emulado, com teclado e toque reais, e os prints em
-  `docs/qa/2026-10-31-revisao-dos-lotes/vila-corrida/`.
+  `docs/qa/2026-10-31-revisao-dos-lotes/vila-corrida/` (os da corrida pelos telhados, com a chaminé
+  chegando, em `docs/qa/2026-11-01-vila-telhados/`).
 
 Os quadros de antes (o forno, a caixa de pães, o suco, o doce que esfria, as bandejas e a corrida
 em quatro direções) saíram nesta revisão; o histórico deles está em

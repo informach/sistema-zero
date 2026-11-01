@@ -212,7 +212,7 @@ const PEDIDOS_DOS_MINIJOGOS: Record<string, { pedido: string; soKids?: true }> =
   },
   'nuvens-jardim-em-grade-pro': {
     pedido:
-      'A Iriê quer planejar o jardim do céu numa grade, plantar onde cabe e houver moedas, colher a produção e guardar o jardim para continuar depois.',
+      'A Iriê reparou que as plantas juntas crescem mais felizes no céu. Ela quer que cada planta com vizinha renda uma moeda a mais na colheita, e que o jardim possa crescer uma coluna de cada vez, quando houver moedas.',
     soKids: true,
   },
   // Sua ilha: o Nico.

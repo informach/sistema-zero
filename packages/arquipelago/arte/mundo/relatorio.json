@@ -347,16 +347,16 @@
     "triangulos": 3010
   },
   "ilhas-do-anel": {
-    "kb": 549.2,
+    "kb": 552.5,
     "nos": {
-      "bosque": 2927,
-      "nuvens": 2998,
-      "pico": 2866,
-      "recife": 2874,
-      "vale-dos-dinos": 2884,
-      "vila-doce": 2885
+      "bosque": 2935,
+      "nuvens": 3000,
+      "pico": 2867,
+      "recife": 2890,
+      "vale-dos-dinos": 2883,
+      "vila-doce": 2886
     },
-    "triangulos": 17434
+    "triangulos": 17461
   },
   "pier": {
     "ancoras": {

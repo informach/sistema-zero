@@ -59,9 +59,11 @@ BARRACA_DO_JOGO = dict(x=3.5, z=-9.75, olha=(0.5, -9.75), jogar=1.65)
 PRANCHA = dict(de=(-5.5, 5.4), ate=(-8.0, -0.4), largura=0.7, espessura=0.08, sobre=0.25)
 ESCADA_DE_CAIXOTES = dict(casinha=1, degraus=6, espelho=0.4, piso=0.45, largura=0.8, folga=0.05, antes=0.7)
 # O marco da Vila (31/10/2026, as ilhas mais altas nos postos mais altos): a torre de doces da sorveteria
-# (a casquinha gigante) ganha a bengala de açúcar e a estrela no alto, até 12 m acima do mar. Fica em cima
-# da casquinha (o colisor dela já para em 10 m, onde ninguém chega); só desenho.
-MARCO_DA_VILA = dict(topo=12.15)
+# (a casquinha gigante) ganha um espeto de doces, uma bengala de açúcar com a rosquinha, os macarons e o
+# bombom, e a estrela no alto. Fica em cima da casquinha (o colisor dela já para em 10 m, onde ninguém
+# chega); só desenho. Desde 01/11/2026 (lacunas, L11) vai a 15,5 m: a Vila (posto 3) passa do Bosque
+# (posto 2, as árvores a 14,4 m) e fica abaixo do Recife (posto 4).
+MARCO_DA_VILA = dict(topo=15.5, haste=0.14, estrela=0.62)
 
 
 # ------------------------------------------------------------------ casinhas (montadas na origem)
@@ -633,17 +635,50 @@ def escada_de_caixotes(col):
 
 
 def marco_da_vila():
-    """A bengala de açúcar e a estrela que acende, em cima da cereja da casquinha gigante (no referencial
-    da sorveteria, montada na origem; a casquinha fica em (0,2; 0,75) do terraço)."""
-    base = (0.2, 0.75, TOPO + ALTURA_SORVETERIA + 4.72)
+    """O espeto de doces em cima da cereja da casquinha gigante (no referencial da sorveteria, montada na
+    origem; a casquinha fica em (0,2; 0,75) do terraço): a bengala de açúcar com a listra em espiral, a
+    rosquinha com cobertura e granulado, dois macarons, o bombom com fio de baunilha e a estrela que
+    acende (duas pontas cruzadas, para ler de qualquer lado)."""
+    bx, by = 0.2, 0.75
+    z0 = TOPO + ALTURA_SORVETERIA + 4.72
     topo = MARCO_DA_VILA['topo']
-    h = topo - 0.32 - base[2]
-    # O miolo branco inteiro e as listras vermelhas por fora (um pouco mais grossas: sem faces no mesmo plano).
-    p = [cyl(0.08, h, (base[0], base[1], base[2] + h / 2), 'doceBranco', verts=8)]
-    n = 4
-    for k in range(n):
-        p.append(cyl(0.088, h / (2 * n), (base[0], base[1], base[2] + h * (k + 0.5) / n), 'morango', verts=8))
-    p.append(prism(star_pts(0.3, 0.13), 0.08, (base[0], base[1], topo - 0.3), 'lampiao'))
+    re = MARCO_DA_VILA['estrela']
+    zc = topo - re
+    rh = MARCO_DA_VILA['haste']
+    h = zc - z0
+    p = [cyl(rh, h, (bx, by, z0 + h / 2), 'doceBranco', verts=10)]
+    # A listra vermelha em espiral, um pouco por fora da haste (não encosta no mesmo plano).
+    pts, n, voltas = [], 36, 6
+    for k in range(n + 1):
+        u = k / n
+        a = 2 * math.pi * voltas * u
+        pts.append((bx + math.cos(a) * rh * 0.92, by + math.sin(a) * rh * 0.92, z0 + 0.05 + (h - 0.1) * u))
+    p.append(tube(pts, [0.055] * len(pts), 'morango', seg=6))
+    # A rosquinha: a massa, a cobertura rosa por cima e o granulado.
+    zr = z0 + 0.95
+    p.append(torus(0.48, 0.2, (bx, by, zr), 'pao', seg=16, rseg=6))
+    p.append(torus(0.48, 0.17, (bx, by, zr + 0.09), 'toldoRosa', seg=16, rseg=6))
+    rnd = random.Random(31)
+    for k in range(12):
+        a = 2 * math.pi * k / 12 + rnd.uniform(-0.12, 0.12)
+        rr = 0.48 + rnd.uniform(-0.11, 0.11)
+        cor = ('confeito', 'toldoAzul', 'toldoAmarelo', 'menta')[k % 4]
+        p.append(cyl(0.028, 0.11, (bx + math.cos(a) * rr, by + math.sin(a) * rr, zr + 0.25), cor, verts=4,
+                     rot=(R(90), 0, a + rnd.uniform(-0.6, 0.6))))
+    # Dois macarons: as duas cascas achatadas e o recheio de creme.
+    for k, (cor, zm) in enumerate((('toldoLilas', z0 + 1.95), ('menta', z0 + 2.55))):
+        for dz in (-0.125, 0.125):
+            p.append(uvball(0.41, (bx, by, zm + dz), cor, seg=14, ring=6, scale=(1, 1, 0.42)))
+        p.append(cyl(0.37, 0.09, (bx, by, zm), 'baunilha', verts=16))
+    # O bombom com o fio de baunilha.
+    zb = z0 + 3.4
+    p.append(uvball(0.37, (bx, by, zb), 'chocolate', seg=12, ring=7))
+    p.append(torus(0.3, 0.037, (bx, by, zb + 0.17), 'baunilha', seg=16, rseg=4))
+    p.append(uvball(0.085, (bx, by, zb + 0.36), 'morango', seg=8, ring=5))
+    # A estrela do alto: duas pontas cruzadas em pé, que acendem à noite.
+    for giro in (0, 90):
+        p.append(prism(star_pts(re, re * 0.45), 0.12, (bx, by, zc), 'lampiao', rot=(0, 0, R(giro))))
+    print(f'MARCO da Vila: espeto de {z0:.2f} a {topo:.2f} (estrela em {zc:.2f})')
     return p
 
 

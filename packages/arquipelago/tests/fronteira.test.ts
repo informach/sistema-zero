@@ -119,6 +119,22 @@ describe('fronteira do jogo', () => {
     expect(fora).toEqual([])
   })
 
+  test('o Admin do jogo não importa o jogo, o serviço nem o Admin (lacunas, 01/11/2026)', () => {
+    const PROIBIDOS = [
+      '@sistemazero/arquipelago',
+      '@sistemazero/arquipelago-api',
+      '@sistemazero/admin',
+      'next',
+    ]
+    const fora: string[] = []
+    // `@/` é o atalho do Admin: o pacote recebe as peças dele por `PecasDoAdmin`.
+    for (const f of arquivos(join(PACOTES, 'arquipelago-admin', 'src')))
+      for (const alvo of importsDe(readFileSync(f, 'utf8')))
+        if (alvo.startsWith('@/') || (externo(alvo) && casa(alvo, PROIBIDOS)))
+          fora.push(`${relative(PACOTES, f)} → ${alvo}`)
+    expect(fora).toEqual([])
+  })
+
   test('nenhum pacote da plataforma importa o jogo ou o serviço do jogo', () => {
     const jogo = new Set(['arquipelago', 'arquipelago-api'])
     const proibido = /^@sistemazero\/arquipelago(-api)?(\/|$)/

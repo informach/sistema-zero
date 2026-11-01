@@ -33,3 +33,27 @@ describe('journal de migrations', () => {
     )
   })
 })
+
+/**
+ * GUARDA das lacunas (01/11/2026): os três percursos do L3 entraram no contrato sem migration, e a
+ * trava `fantasmas_percurso_check` do banco recusaria o fantasma deles. A foto da última migration
+ * precisa ter todos os percursos do contrato.
+ */
+describe('a trava dos percursos acompanha o contrato', () => {
+  it('a última foto do banco aceita todos os PERCURSOS', async () => {
+    const { PERCURSOS } = await import('@sistemazero/arquipelago-contracts')
+    const ultima = (journal.entries as Array<{ idx: number }>).at(-1)?.idx ?? 0
+    const foto = (await Bun.file(
+      new URL(
+        `../../src/infrastructure/persistence/drizzle/migrations/meta/${String(ultima).padStart(4, '0')}_snapshot.json`,
+        import.meta.url,
+      ),
+    ).json()) as {
+      tables: Record<string, { checkConstraints: Record<string, { value: string }> }>
+    }
+    const trava =
+      foto.tables['arquipelago.fantasmas']?.checkConstraints.fantasmas_percurso_check?.value ?? ''
+    expect(trava).not.toBe('')
+    for (const percurso of PERCURSOS) expect(trava, percurso).toContain(`'${percurso}'`)
+  })
+})

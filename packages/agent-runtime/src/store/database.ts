@@ -29,35 +29,37 @@ export class Journal {
   private artifacts: ArtifactJournal
   constructor(file: string) {
     this.db = new Database(file, { strict: true })
-    this.artifacts = new ArtifactJournal(this.db)
-    this.db.run(
-      'PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON; PRAGMA busy_timeout=3000',
-    )
-    const version =
-      this.db.query<{ user_version: number }, []>('PRAGMA user_version').get()?.user_version ?? 0
-    if (version > 5) {
+    try {
+      // Install the existing bounded lock wait before WAL can acquire a database lock.
+      this.db.run('PRAGMA busy_timeout=3000')
+      this.artifacts = new ArtifactJournal(this.db)
+      this.db.run('PRAGMA journal_mode=WAL; PRAGMA synchronous=FULL; PRAGMA foreign_keys=ON')
+      const version =
+        this.db.query<{ user_version: number }, []>('PRAGMA user_version').get()?.user_version ?? 0
+      if (version > 5) throw new Error('Database is newer than this application')
+      if (version > 0 && version < 5)
+        this.db.query('VACUUM INTO ?').run(`${file}.v${version}.${Date.now()}.backup`)
+      this.db.transaction(() => {
+        this.db.run(`CREATE TABLE IF NOT EXISTS documents(namespace TEXT NOT NULL,id TEXT NOT NULL,value TEXT NOT NULL,PRIMARY KEY(namespace,id));
+          CREATE TABLE IF NOT EXISTS events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE NOT NULL,run_id TEXT NOT NULL,type TEXT NOT NULL,payload TEXT NOT NULL,occurred_at TEXT NOT NULL);
+          CREATE INDEX IF NOT EXISTS events_run_sequence ON events(run_id,sequence);
+          CREATE TABLE IF NOT EXISTS requests(id TEXT PRIMARY KEY,digest TEXT NOT NULL,run_id TEXT NOT NULL);
+          CREATE VIRTUAL TABLE IF NOT EXISTS memory_search USING fts5(id UNINDEXED,body);
+          CREATE INDEX IF NOT EXISTS effects_uncertain ON documents(json_extract(value,'$.state'),coalesce(json_extract(value,'$.operationDigest'),json_extract(value,'$.digest'))) WHERE namespace='effects';
+          CREATE INDEX IF NOT EXISTS run_root ON documents(json_extract(value,'$.rootId')) WHERE namespace='runs';
+          CREATE INDEX IF NOT EXISTS effect_run_state ON documents(json_extract(value,'$.runId'),json_extract(value,'$.state')) WHERE namespace='effects';
+          CREATE INDEX IF NOT EXISTS run_session ON documents(json_extract(value,'$.sessionId')) WHERE namespace='runs';
+          CREATE INDEX IF NOT EXISTS session_workspace ON documents(json_extract(value,'$.workspace')) WHERE namespace='sessions';
+          CREATE INDEX IF NOT EXISTS question_run ON documents(json_extract(value,'$.runId')) WHERE namespace='questions';
+          CREATE INDEX IF NOT EXISTS document_namespace ON documents(namespace);
+          CREATE INDEX IF NOT EXISTS budget_root ON documents(coalesce(json_extract(value,'$.rootId'),json_extract(value,'$.runId'))) WHERE namespace='budgets';
+          PRAGMA user_version=5;`)
+        this.artifacts.initialize()
+      })()
+    } catch (error) {
       this.db.close()
-      throw new Error('Database is newer than this application')
+      throw error
     }
-    if (version > 0 && version < 5)
-      this.db.query('VACUUM INTO ?').run(`${file}.v${version}.${Date.now()}.backup`)
-    this.db.transaction(() => {
-      this.db.run(`CREATE TABLE IF NOT EXISTS documents(namespace TEXT NOT NULL,id TEXT NOT NULL,value TEXT NOT NULL,PRIMARY KEY(namespace,id));
-        CREATE TABLE IF NOT EXISTS events(sequence INTEGER PRIMARY KEY AUTOINCREMENT,id TEXT UNIQUE NOT NULL,run_id TEXT NOT NULL,type TEXT NOT NULL,payload TEXT NOT NULL,occurred_at TEXT NOT NULL);
-        CREATE INDEX IF NOT EXISTS events_run_sequence ON events(run_id,sequence);
-        CREATE TABLE IF NOT EXISTS requests(id TEXT PRIMARY KEY,digest TEXT NOT NULL,run_id TEXT NOT NULL);
-        CREATE VIRTUAL TABLE IF NOT EXISTS memory_search USING fts5(id UNINDEXED,body);
-        CREATE INDEX IF NOT EXISTS effects_uncertain ON documents(json_extract(value,'$.state'),coalesce(json_extract(value,'$.operationDigest'),json_extract(value,'$.digest'))) WHERE namespace='effects';
-        CREATE INDEX IF NOT EXISTS run_root ON documents(json_extract(value,'$.rootId')) WHERE namespace='runs';
-        CREATE INDEX IF NOT EXISTS effect_run_state ON documents(json_extract(value,'$.runId'),json_extract(value,'$.state')) WHERE namespace='effects';
-        CREATE INDEX IF NOT EXISTS run_session ON documents(json_extract(value,'$.sessionId')) WHERE namespace='runs';
-        CREATE INDEX IF NOT EXISTS session_workspace ON documents(json_extract(value,'$.workspace')) WHERE namespace='sessions';
-        CREATE INDEX IF NOT EXISTS question_run ON documents(json_extract(value,'$.runId')) WHERE namespace='questions';
-        CREATE INDEX IF NOT EXISTS document_namespace ON documents(namespace);
-        CREATE INDEX IF NOT EXISTS budget_root ON documents(coalesce(json_extract(value,'$.rootId'),json_extract(value,'$.runId'))) WHERE namespace='budgets';
-        PRAGMA user_version=5;`)
-      this.artifacts.initialize()
-    })()
   }
   get(namespace: string, id: string): unknown {
     const row = this.db

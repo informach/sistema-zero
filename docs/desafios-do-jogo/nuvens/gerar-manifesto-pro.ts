@@ -15,23 +15,23 @@ import { montarProjetoPro } from './pro-projetos'
  */
 const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dicas: string[] }> = {
   kids: {
-    titulo: 'Jardim das Nuvens: grade, custo e guardar',
+    titulo: 'Jardim das Nuvens: plantas juntas e jardim maior',
     enunciado:
-      'Nas Nuvens, o jardim é uma grade de células. Este desafio é em JavaScript no Pro, com arquivos separados. O src/main.ts desenha a tela e trata cliques e teclas; ele já está pronto. As regras do jardim moram em src/regras.ts, e é lá que você trabalha. podeConstruir diz se dá para plantar numa célula: ela precisa estar dentro da grade, vazia e com moedas suficientes. construir planta e desconta o custo, ou devolve o mesmo jardim quando não pode. colher soma às moedas a produção de cada planta. salvar transforma o jardim em texto e carregar reconstrói o jardim a partir desse texto, com a grade e as moedas. Tirar uma planta e devolver metade do custo fica para o extra.',
+      'Nas Nuvens, o jardim é uma grade de células. Este desafio é em JavaScript no Pro, com arquivos separados. O src/main.ts desenha a tela e trata cliques e teclas; ele já está pronto. As regras do jardim moram em src/regras.ts: plantar, custo, ocupação e guardar já estão prontos, e você completa as regras do jardim do céu. vizinhas diz quantas plantas há nas quatro células em volta de uma célula, só dentro da grade. colher soma às moedas a produção de cada planta, e a planta que tem vizinha rende 1 a mais. expandir aumenta o jardim em uma coluna vazia por 4 moedas; sem moedas, devolve o mesmo jardim. Contar as plantas por tipo fica para o extra.',
     dicas: [
-      'Leia CUSTO e PRODUCAO no começo do src/regras.ts: flor custa 3 e produz 1; árvore custa 5 e produz 2.',
-      'Não mude o jardim recebido. Faça uma cópia da grade com map e devolva um objeto novo.',
-      'JSON.stringify transforma um objeto em texto e JSON.parse faz o caminho de volta.',
+      'Leia PRODUCAO e CUSTO_DA_COLUNA no começo do src/regras.ts.',
+      'Em vizinhas, confira se a célula do lado está dentro da grade antes de olhar para ela.',
+      'Não mude o jardim recebido. Faça uma grade nova com map e devolva um objeto novo.',
     ],
   },
   adulto: {
-    titulo: 'Jardim em grade: modelo, custo e persistência',
+    titulo: 'Jardim em grade: vizinhança, produção e expansão',
     enunciado:
-      'Projeto JavaScript Pro (Vite e TypeScript) com modelo e apresentação separados. src/main.ts (pronto) desenha a grade e liga cliques e teclas ao modelo. Implemente o modelo em src/regras.ts, sem efeitos colaterais: podeConstruir valida limites, ocupação e saldo; construir aplica a regra e desconta o custo, retornando um novo estado (ou o mesmo, quando a ação é inválida); colher soma a produção de todas as plantas; salvar e carregar serializam e reconstroem o estado completo (grade e saldo). O main.ts usa salvar e carregar com localStorage nas teclas S e R. Como extra, remover libera a célula e devolve metade do custo.',
+      'Projeto JavaScript Pro (Vite e TypeScript) com modelo e apresentação separados. src/main.ts (pronto) desenha a grade e liga cliques e teclas ao modelo; podeConstruir, construir, salvar e carregar já estão prontos em src/regras.ts. Implemente, sem efeitos colaterais: vizinhas(jardim, linha, coluna), que conta plantas nas quatro vizinhas ortogonais dentro dos limites; colher, que soma PRODUCAO por planta mais 1 para cada planta com vizinha; expandir, que acrescenta uma coluna vazia por CUSTO_DA_COLUNA só com saldo, retornando um novo estado. A tecla E usa expandir. Como extra, plantasPorTipo retorna a contagem por tipo.',
     dicas: [
-      'CUSTO e PRODUCAO são tabelas por tipo de planta.',
-      'Imutabilidade: copie a grade antes de alterar uma célula.',
-      'Inclua no texto salvo tudo o que é necessário para reconstruir o estado.',
+      'Valide os limites antes de indexar a grade.',
+      'Reaproveite vizinhas dentro de colher.',
+      'Imutabilidade: estenda uma cópia de cada fileira.',
     ],
   },
 }
@@ -64,10 +64,17 @@ export function criarManifestoPro(publico: PublicoDoDesafio = 'kids') {
               titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
               texto:
                 publico === 'kids'
-                  ? 'Complete remover: tire a planta da célula e devolva metade do custo dela, arredondado para baixo. Shift e clique usa essa regra na tela.'
-                  : 'Implemente remover: libera a célula e devolve Math.floor(CUSTO / 2); célula vazia não muda. Shift e clique usa a regra.',
+                  ? 'Complete plantasPorTipo: conte quantas flores e quantas árvores o jardim tem.'
+                  : 'Implemente plantasPorTipo: retorna { flor, arvore } com a contagem de cada tipo.',
             },
-            recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
+            // O jogo aprovado vai para o fliperama (lacunas, 01/11/2026): o minijogo compila pela
+            // rota Pro do próprio desafio e toca o artefato, sem o WebContainer na página do jogo.
+            recompensa: {
+              cor: true,
+              atracao: 'jardim-das-nuvens',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
             blocosManuais: { acrescentar: [], retirar: [] },
           },
         },

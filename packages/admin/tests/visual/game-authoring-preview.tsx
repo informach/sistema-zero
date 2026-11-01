@@ -1,5 +1,5 @@
 import { createRoot } from 'react-dom/client'
-import { GameAdmin } from '../../src/app/admin/jogo/game-admin'
+import { JogoClient } from '../../src/app/admin/jogo/jogo-client'
 import { PlatformProvider } from '../../src/components/admin/platform-provider'
 import { setPlatform } from '../../src/components/admin/platform-store'
 
@@ -16,7 +16,7 @@ createRoot(root).render(
           Adultos
         </button>
       </nav>
-      <GameAdmin canWrite />
+      <JogoClient canWrite />
     </div>
   </PlatformProvider>,
 )

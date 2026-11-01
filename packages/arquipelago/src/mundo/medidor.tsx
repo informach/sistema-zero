@@ -106,7 +106,10 @@ export interface MedidaDoDesenho {
   texturas: number
   programas: number
   quadrosPorSegundo: number
+  /** Ilhas completas na memória ou a caminho (a versão média conta à parte). */
   ilhasCompletas: number
+  /** Versões médias na memória ou a caminho (as ilhas em três versões). */
+  ilhasMedias: number
   posicao: { x: number; y: number; z: number }
   /** Para onde a câmera olha (o mesmo `giro` do rastro). */
   giro: number
@@ -470,7 +473,8 @@ export function Medidor() {
       texturas: gl.info.memory.textures,
       programas: gl.info.programs?.length ?? 0,
       quadrosPorSegundo: Math.round(c.quadros / c.tempo),
-      ilhasCompletas: ilhasNaMemoria(),
+      ilhasCompletas: ilhasNaMemoria('completa'),
+      ilhasMedias: ilhasNaMemoria('media'),
       posicao: { x: rastro.x, y: rastro.y, z: rastro.z },
       giro: rastro.giro,
       camera: { x: camera.position.x, y: camera.position.y, z: camera.position.z },

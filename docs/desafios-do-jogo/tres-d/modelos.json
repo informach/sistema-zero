@@ -1,0 +1,86 @@
+{
+  "chao-sua-ilha": {
+    "sha": "60e46e3f118c5be95343173f229f84f46b90c5e7ea79bd37d4565a3ecd0f8175",
+    "clips": []
+  },
+  "nico": {
+    "sha": "a7abe1ff6d1b9a2a2c0f17c3a1d18ae7afcb92c0d5e8e8f25fd126f00a034ba3",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "concha-vieira": {
+    "sha": "3075b03110db60485bcaf2fb8c509bc636a06b31874b9c80e4bc9cd3bf8b0cf8",
+    "clips": []
+  },
+  "chao-bosque": {
+    "sha": "0d5027e5f37a3b69bdb9781a4981e08a413a808314fc64db32d8d9bfba3be73f",
+    "clips": []
+  },
+  "capi": {
+    "sha": "b600862ab9a0bee24aaec6cc10c0917f6eec63db400ecc226b289a86ad348112",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "coelho-filhote": {
+    "sha": "a411540b9f38bd6a659ee425d1c79fcee8e578e977575d8342374a9dc33bae6f",
+    "clips": ["andar", "correr", "feliz", "parado", "sentar", "truque"]
+  },
+  "chao-vila-doce": {
+    "sha": "4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022",
+    "clips": []
+  },
+  "bento": {
+    "sha": "ecff8f7cee580caa17e8075826c91e7d47155b29cbe6bdb7798d1af4af29f75b",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "bolo-de-fuba": {
+    "sha": "8f368b212c38424d142a340078e252879a594a80319a42c1423f02e883f00093",
+    "clips": []
+  },
+  "chao-recife": {
+    "sha": "5e60c96b2e0a5e74b89e7696a13ce9bede46910c28af99f6e82ddf2081b5e404",
+    "clips": []
+  },
+  "mare": {
+    "sha": "55f6077b90524602de013c823e20e12d76f02210be8dbd6a49608b63bf4e12f0",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "estrela-do-mar": {
+    "sha": "b68befbf82d67a6be42c5d970e164093447f4310a09ba12dd11d614aec8d7827",
+    "clips": []
+  },
+  "chao-pico": {
+    "sha": "bd01e0eb0b48d08a58d66fab598ff5b5f2824977b4de473d5468ee9bb95f7473",
+    "clips": []
+  },
+  "floco": {
+    "sha": "36f5d23499800d1baf57d3820f069cdac4f08346e0a7e3d56bb1b21d1fad008c",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "cristal-verde": {
+    "sha": "afae1718423f88549c070e4051f4b4bd8d1e524df80fe9847841807bf5156279",
+    "clips": []
+  },
+  "chao-vale-dos-dinos": {
+    "sha": "bb9b410c0358f307fee9c132aa5ea3b7748be8e2e99c7e1a5aead9f6f100b6b1",
+    "clips": []
+  },
+  "jade": {
+    "sha": "ee5c95203cfc99f2a9eae16cec49bba991455f340aa2c13c9fa637cb55151530",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "ovo": {
+    "sha": "719168486d735f334b911c4f3c2291dc29d2f5d43f82d1737de20d5ee48961d1",
+    "clips": []
+  },
+  "chao-nuvens": {
+    "sha": "6324182a406da1d2152d230f57e07071f1f5a542b3f57ca0dbf78eb2cf3dccc9",
+    "clips": []
+  },
+  "irie": {
+    "sha": "491036916ee0913af487230a060da5e8f6973624884800dc715802e88a107b3f",
+    "clips": ["acenar", "andar", "falar", "feliz", "parado"]
+  },
+  "semente-flor-de-nuvem": {
+    "sha": "2e1bbecbdc653acfa56a8f2125882e49a222d3dbed994afef882f970cffb27d2",
+    "clips": []
+  }
+}

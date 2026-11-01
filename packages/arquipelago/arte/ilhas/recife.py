@@ -34,9 +34,13 @@ CAVERNA = (-17.6, -2.0)   # centro do salão (fora do contorno da ilha, encostad
 FUNDO_CAVERNA = -1.3
 # Os marcos do Recife (31/10/2026, as ilhas mais altas nos postos mais altos): três pináculos de coral no
 # mar do noroeste, além do barranco (17 m do meio) e longe do cais, do barco, da caverna, da chegada e do
-# labirinto, o mais alto até 9 m acima do mar. Cada um tem o colisor do tronco (`col-cil-pinaculo-N`, do
-# fundo até o alto: quem nada não atravessa e ninguém pisa lá em cima).
-PINACULOS = [(-12.6, 11.6, 8.7, 1.25), (-9.6, 13.9, 7.4, 1.0), (-15.1, 8.4, 6.2, 0.9)]
+# labirinto. Cada um tem o colisor do tronco (`col-cil-pinaculo-N`, do fundo até perto do alto: quem nada
+# não atravessa e ninguém pisa lá em cima). Desde 01/11/2026 (lacunas, L11) o mais alto vai a 16,8 m
+# acima do mar: o Recife (posto 4) passa da Vila (posto 3, 15,5 m) e fica abaixo do Pico (posto 5). A
+# forma também mudou: rocha de recife irregular, com faixas de coral, galhos, leques e uma coroa de coral.
+# (x, z, alto, raio da base); `alto` é o topo da coroa.
+PINACULOS = [(-12.6, 11.6, 16.8, 1.3), (-9.6, 13.9, 12.2, 1.0), (-15.1, 8.4, 9.4, 0.9)]
+CORES_DO_PINACULO = ('coral', 'coralLaranja', 'coralLilas', 'coralAmarelo', 'coralRosa')
 FUNDO_DO_MAR = -3.5
 ALGAS = [(-2.6, -1.6, TOPO), (1.4, 1.0, TOPO), (-1.8, 1.8, TOPO), (2.0, -2.4, TOPO), (-3.6, 0.6, TOPO),
          (0.6, -3.4, TOPO), (-18.4, -1.0, FUNDO_CAVERNA), (-17.0, -3.4, FUNDO_CAVERNA),
@@ -621,33 +625,126 @@ def clipe_algas(juntos):
 
 
 # ------------------------------------------------------------------ montagem
+def tronco_do_pinaculo(bx, by, alto, r, rnd, nome):
+    """O tronco de um pináculo: anéis irregulares do fundo do mar até `alto`, afinando, com um leve
+    balanço, em camadas de rocha de recife (a escura molhada até a linha d'água). Devolve a malha e o
+    desvio do balanço no alto (x, y do Blender)."""
+    n, aneis = 11, 16
+    z0 = FUNDO_DO_MAR
+    verts, faces = [], []
+    fase = rnd.uniform(0, 2 * math.pi)
+    ox = oy = 0.0
+    for k in range(aneis + 1):
+        t = k / aneis
+        z = z0 + (alto - z0) * t
+        rr = raio_do_pinaculo(r, t) * rnd.uniform(0.93, 1.07)
+        ox = 0.14 * r * math.sin(fase + 2.6 * t) * t
+        oy = 0.14 * r * math.cos(fase + 2.1 * t) * t
+        for i in range(n):
+            a = 2 * math.pi * i / n + k * 0.31
+            j = rnd.uniform(0.9, 1.1) if 0 < k < aneis else 1.0
+            verts.append((bx + ox + math.cos(a) * rr * j, by + oy + math.sin(a) * rr * j, z))
+    for k in range(aneis):
+        for i in range(n):
+            a0, a1 = k * n + i, k * n + (i + 1) % n
+            b0, b1 = (k + 1) * n + i, (k + 1) * n + (i + 1) % n
+            faces += [(a0, a1, b1), (a0, b1, b0)]
+    topo = len(verts)
+    verts.append((bx + ox, by + oy, alto + 0.12))
+    for i in range(n):
+        faces.append((aneis * n + i, aneis * n + (i + 1) % n, topo))
+    o = malha(nome, verts, faces, 'rochaRecife', cima=False)
+    bm = bmesh.new()
+    bm.from_mesh(o.data)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(o.data)
+    bm.free()
+    # As camadas: uma faixa escura a cada três, com a borda ondulada.
+    def regra(c, nn):
+        if c.z < 0.3:
+            return 'rochaRecifeEscura'
+        onda = 0.2 * math.sin(math.atan2(c.y - by, c.x - bx) * 2 + c.z * 0.9)
+        return 'rochaRecifeEscura' if int((c.z + onda) / 1.3) % 3 == 2 else None
+    pintar_por(o, regra)
+    lib_q.flat(o)
+    return o, ox, oy
+
+
+def raio_do_pinaculo(r, t):
+    return r * (1 - 0.7 * t ** 1.25)
+
+
 def pinaculos(col):
-    """Os pináculos de coral: um tronco de pedra de coral afinando para cima, com anéis de coral de
-    cores diferentes, bolotas e galhinhos, do fundo do mar até `alto` (x, z do jogo)."""
+    """Os pináculos de coral: o tronco de rocha de recife afinando para cima (`tronco_do_pinaculo`),
+    coberto de coral incrustado (almofadas achatadas encostadas na rocha, algumas com o anel do coral
+    cérebro), galhos saindo entre elas, um leque virado para o mar e, no alto, a coroa de galhos de coral
+    com as pontas redondas. Tudo acima de onde se alcança nadando. `alto` é o topo da coroa."""
     p = []
-    cores = ('coral', 'coralLaranja', 'coralLilas', 'coralAmarelo')
+    cores = CORES_DO_PINACULO
     for i, (x, z, alto, r) in enumerate(PINACULOS):
         bx, by = x, -z
         rnd = random.Random(70 + i)
-        h = alto - FUNDO_DO_MAR
-        n = 5
+        coroa = 1.1 + 0.3 * r
+        alto_do_tronco = alto - coroa
+        tronco, ox, oy = tronco_do_pinaculo(bx, by, alto_do_tronco, r, rnd, f'pinaculo-{i + 1}')
+        p.append(tronco)
+        h = alto_do_tronco - FUNDO_DO_MAR
+
+        def no_tronco(zz):
+            t = (zz - FUNDO_DO_MAR) / h
+            return raio_do_pinaculo(r, t), ox * t, oy * t
+        # Para o lado do mar aberto (de costas para o meio da ilha).
+        fora = math.atan2(by, bx)
+        # O coral incrustado: almofadas achatadas meio enterradas na rocha, em espiral pelo tronco, cada
+        # uma de uma cor; a cada três, o anel do coral cérebro; a cada quatro, um galho no lugar.
+        z_de, z_ate = TOPO + 3.0, alto_do_tronco - 0.3
+        n = int((z_ate - z_de) * 2.6)
         for k in range(n):
-            z0 = FUNDO_DO_MAR + h * k / n
-            z1 = FUNDO_DO_MAR + h * (k + 1) / n
-            r0 = r * (1 - 0.75 * k / n)
-            r1 = r * (1 - 0.75 * (k + 1) / n)
-            ox, oy = rnd.uniform(-0.08, 0.08), rnd.uniform(-0.08, 0.08)
-            # Cada pedaço girado 20° do de baixo: no trecho em que se encaixam, as faces não ficam no mesmo plano.
-            p.append(cyl(r0, z1 - z0 + 0.04, (bx + ox, by + oy, (z0 + z1) / 2), 'rochaRecife' if k < 2 else cores[(i + k) % 4],
-                         verts=9, r2=r1, rot=(0, 0, R(20 * k))))
-            if k >= 1:
-                for j in range(3):
-                    a = rnd.uniform(0, 2 * math.pi)
-                    rr = (r0 + r1) / 2
-                    p.append(uvball(rr * 0.42, (bx + math.cos(a) * rr * 0.92, by + math.sin(a) * rr * 0.92,
-                                                z0 + rnd.uniform(0.2, 0.8) * (z1 - z0)), cores[(i + j + k) % 4], seg=8, ring=5))
-        p.append(uvball(r * 0.32, (bx, by, alto - 0.12), cores[(i + 2) % 4], seg=8, ring=5, scale=(1, 1, 1.3)))
+            zz = z_de + (z_ate - z_de) * (k + rnd.uniform(0.1, 0.9)) / n
+            rr, dx, dy = no_tronco(zz)
+            a = fora + k * 2.4 + rnd.uniform(-0.5, 0.5)
+            cor = cores[(i + k * 2) % len(cores)]
+            if k % 4 == 3:
+                gx, gy = bx + dx + math.cos(a) * rr * 0.8, by + dy + math.sin(a) * rr * 0.8
+                p += coral_galho(gx, -gy, cor, s=0.38 + 0.25 * rr, seed=90 + i * 31 + k, y=zz - 0.12)
+                continue
+            ra = (0.2 + 0.32 * rr) * rnd.uniform(0.75, 1.3)
+            px, py = bx + dx + math.cos(a) * (rr + ra * 0.15), by + dy + math.sin(a) * (rr + ra * 0.15)
+            p.append(uvball(ra, (px, py, zz), cor, seg=9, ring=6, scale=(1, 1, 0.62)))
+            if k % 3 == 1:
+                p.append(torus(ra * 0.55, 0.028, (px, py, zz + ra * 0.5), cores[(i + k + 3) % len(cores)],
+                               seg=10, rseg=3))
+            # Um ou dois menores encostados (o coral cresce em grupo).
+            for j in range(1 + k % 2):
+                aj = a + (0.55 + 0.25 * j) * (1 if j == 0 else -1)
+                zj = zz + rnd.uniform(-0.35, 0.25)
+                rj, dxj, dyj = no_tronco(zj)
+                rb = ra * rnd.uniform(0.45, 0.65)
+                p.append(uvball(rb, (bx + dxj + math.cos(aj) * (rj + rb * 0.1), by + dyj + math.sin(aj) * (rj + rb * 0.1), zj),
+                                cores[(i + k * 2 + 2 + j) % len(cores)], seg=7, ring=5, scale=(1, 1, 0.65)))
+        # Um leque virado para o mar, a meia altura.
+        zl = TOPO + 3.4 + (alto_do_tronco - TOPO - 3.4) * 0.42
+        rr, dx, dy = no_tronco(zl)
+        lx, ly = bx + dx + math.cos(fora) * rr * 0.75, by + dy + math.sin(fora) * rr * 0.75
+        p += coral_leque(lx, -ly, cores[(i + 2) % len(cores)], s=0.5 + 0.3 * r, rot=fora + math.pi / 2, y=zl)
+        # A coroa: galhos de coral abrindo para cima, com o miolo redondo.
+        tx, ty = bx + ox, by + oy
+        rt = raio_do_pinaculo(r, 1.0)
+        p.append(uvball(rt * 1.15, (tx, ty, alto_do_tronco + 0.05), cores[(i + 1) % len(cores)], seg=10, ring=6,
+                        scale=(1, 1, 0.8)))
+        for k in range(5):
+            a = 2 * math.pi * k / 5 + rnd.uniform(-0.3, 0.3)
+            d = 0.35 + 0.3 * r
+            ponta_z = alto - 0.12 - 0.3 * coroa * (k % 2)
+            ponta = (tx + math.cos(a) * d, ty + math.sin(a) * d, ponta_z)
+            meio = (tx + math.cos(a) * d * 0.35, ty + math.sin(a) * d * 0.35, alto_do_tronco + coroa * 0.45)
+            cor = cores[(i + k) % len(cores)]
+            p.append(tube([(tx, ty, alto_do_tronco - 0.1), meio, ponta], [0.13 + 0.05 * r, 0.11 + 0.03 * r, 0.08],
+                          cor, seg=6, cap=False))
+            p.append(uvball(0.12, ponta, cor, seg=6, ring=4))
         col.append(col_cilindro('pinaculo', r * 0.85, h - 0.6, (bx, by, FUNDO_DO_MAR + (h - 0.6) / 2)))
+    topo = max((o.matrix_world @ Vector(c)).z for o in p for c in o.bound_box)
+    print(f'MARCO do Recife: o pináculo mais alto chega a {topo:.2f}')
     return p
 
 

@@ -1,0 +1,2395 @@
+{
+  "formato": "arquipelago-desafios",
+  "versao": 1,
+  "escopo": "ilha",
+  "desafios": [
+    {
+      "slug": "vila-doce-3d-o-bolo-do-bento-adulto",
+      "publico": "adulto",
+      "ilha": "vila-doce",
+      "tipo": "desafio-do-dia",
+      "quadro": null,
+      "ordem": 75,
+      "publicar": true,
+      "conteudo": {
+        "versao": 1,
+        "titulo": "O bolo do Bento",
+        "enunciado": "Um bolo saiu da fornada e rolou pela praça. Ache o bolo e leve de volta ao Bento. O cenário e os modelos estão prontos. Programe os encontros: ao encostar no item, esconda o item e atribua verdadeiro a temItem; ao encostar no Bento, entregue só com o item (entregue verdadeiro) e, sem ele, registre o pedido (pediu verdadeiro).",
+        "dicas": [
+          "Os dois eventos de encontro existem e estão vazios.",
+          "temItem começa falsa e continua verdadeira depois que o item some.",
+          "No encontro com o morador, uma decisão lê temItem e escolhe entre entregar e pedir.",
+          "Uma decisão externa com a negação de entregue impede a segunda entrega."
+        ],
+        "projetoInicial": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "tres-d-o-bolo-do-bento",
+          "name": "O bolo do Bento",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O bolo do Bento</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#f7e7d4\");\n  SZGame3D.frameScene(cena, 18, 5, 10);\n  const chao = SZGame3D.createModelFile(cena, \"chao-vila-doce\", 19);\n  SZGame3D.setPosition(chao, 0, -0.48, 0);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -4, 0.8, 0);\n  const item = SZGame3D.createModelFile(cena, \"bolo-de-fuba\", 0.9);\n  SZGame3D.setPosition(item, -1.5, 0.3, -1.5);\n  const morador = SZGame3D.createModelFile(cena, \"bento\", 1.8);\n  SZGame3D.setPosition(morador, 3, 0.8, 0.5);\n  SZGame3D.walkArea(personagem, -8, 8, -4.5, 4.5);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let temItem = false;\n  let entregue = false;\n  let pediu = false;\n  let aviso = \"Ache o bolo e leve até o Bento.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n\n  });\n  SZGame3D.onTouch(personagem, item, () => {\n\n  });\n  SZGame3D.onTouch(personagem, morador, () => {\n\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "tres-d-chao-vila-doce",
+              "name": "chao-vila-doce",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjRlMTk0MmQ4YzQ3OGIzY2E2MDM1YjIyYmJhNjhmMzA0ZGIxNTlmZjJlOThlNzAyNTg2ZjI2YTJlMDhjNDEwMjIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "originalFileName": "chao-vila-doce.glb"
+            },
+            {
+              "id": "ilha-modelo-aventureiro",
+              "name": "aventureiro",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51",
+              "originalFileName": "aventureiro.glb",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAA4AQAAJAEAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjNlZGQxYWJkYWViNjdiMTUzYWRmYjFjNjI1MjY3ZTg4N2QzOTBlNTI3NGFkOTNkNzI1YWJjNTNjZjBmNzFhNTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiYW5kYW5kbyIsImNoYW5uZWxzIjpbXSwic2FtcGxlcnMiOltdfSx7Im5hbWUiOiJwYXJhZG8iLCJjaGFubmVscyI6W10sInNhbXBsZXJzIjpbXX1dfSAg"
+            },
+            {
+              "id": "tres-d-bento",
+              "name": "bento",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:ecff8f7cee580caa17e8075826c91e7d47155b29cbe6bdb7798d1af4af29f75b",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAC8AQAAqAEAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVjZmY4ZjdjZWU1ODBjYWExN2U4MDc1ODI2YzkxZTdkNDcxNTViMjljYmU2YmRiNzc5OGQxYWY0YWYyOWY3NWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiYWNlbmFyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6ImFuZGFyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6ImZhbGFyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6ImZlbGl6IiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6InBhcmFkbyIsImNoYW5uZWxzIjpbXSwic2FtcGxlcnMiOltdfV19",
+              "originalFileName": "bento.glb"
+            },
+            {
+              "id": "tres-d-bolo-de-fuba",
+              "name": "bolo-de-fuba",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:8f368b212c38424d142a340078e252879a594a80319a42c1423f02e883f00093",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjhmMzY4YjIxMmMzODQyNGQxNDJhMzQwMDc4ZTI1Mjg3OWE1OTRhODAzMTlhNDJjMTQyM2YwMmU4ODNmMDAwOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "originalFileName": "bolo-de-fuba.glb"
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g3d:createFullscreenScene",
+                  "varName": "cena",
+                  "bg": "#f7e7d4",
+                  "__id": "tres_d_vila_doce_start_0"
+                },
+                {
+                  "type": "g3d:frameScene",
+                  "worldVar": "cena",
+                  "width": {
+                    "type": "num",
+                    "value": 18,
+                    "__id": "tres_d_vila_doce_start_1_width"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 5,
+                    "__id": "tres_d_vila_doce_start_1_height"
+                  },
+                  "depth": {
+                    "type": "num",
+                    "value": 10,
+                    "__id": "tres_d_vila_doce_start_1_depth"
+                  },
+                  "__id": "tres_d_vila_doce_start_1"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "chao",
+                  "worldVar": "cena",
+                  "asset": "chao-vila-doce",
+                  "size": {
+                    "type": "num",
+                    "value": 19,
+                    "__id": "tres_d_vila_doce_start_2_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_2"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "chao",
+                  "x": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "tres_d_vila_doce_start_3_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": -0.48,
+                    "__id": "tres_d_vila_doce_start_3_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "tres_d_vila_doce_start_3_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_3"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "personagem",
+                  "worldVar": "cena",
+                  "asset": "aventureiro",
+                  "size": {
+                    "type": "num",
+                    "value": 1.66,
+                    "__id": "tres_d_vila_doce_start_4_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_4"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "personagem",
+                  "x": {
+                    "type": "num",
+                    "value": -4,
+                    "__id": "tres_d_vila_doce_start_5_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 0.8,
+                    "__id": "tres_d_vila_doce_start_5_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "tres_d_vila_doce_start_5_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_5"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "item",
+                  "worldVar": "cena",
+                  "asset": "bolo-de-fuba",
+                  "size": {
+                    "type": "num",
+                    "value": 0.9,
+                    "__id": "tres_d_vila_doce_start_6_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_6"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "item",
+                  "x": {
+                    "type": "num",
+                    "value": -1.5,
+                    "__id": "tres_d_vila_doce_start_7_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 0.3,
+                    "__id": "tres_d_vila_doce_start_7_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": -1.5,
+                    "__id": "tres_d_vila_doce_start_7_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_7"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "morador",
+                  "worldVar": "cena",
+                  "asset": "bento",
+                  "size": {
+                    "type": "num",
+                    "value": 1.8,
+                    "__id": "tres_d_vila_doce_start_8_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_8"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "morador",
+                  "x": {
+                    "type": "num",
+                    "value": 3,
+                    "__id": "tres_d_vila_doce_start_9_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 0.8,
+                    "__id": "tres_d_vila_doce_start_9_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": 0.5,
+                    "__id": "tres_d_vila_doce_start_9_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_9"
+                },
+                {
+                  "type": "g3d:walkArea",
+                  "objVar": "personagem",
+                  "minX": {
+                    "type": "num",
+                    "value": -8,
+                    "__id": "tres_d_vila_doce_start_10_minX"
+                  },
+                  "maxX": {
+                    "type": "num",
+                    "value": 8,
+                    "__id": "tres_d_vila_doce_start_10_maxX"
+                  },
+                  "minZ": {
+                    "type": "num",
+                    "value": -4.5,
+                    "__id": "tres_d_vila_doce_start_10_minZ"
+                  },
+                  "maxZ": {
+                    "type": "num",
+                    "value": 4.5,
+                    "__id": "tres_d_vila_doce_start_10_maxZ"
+                  },
+                  "__id": "tres_d_vila_doce_start_10"
+                },
+                {
+                  "type": "g3d:walkAnimations",
+                  "objVar": "personagem",
+                  "idle": "parado",
+                  "walking": "andando",
+                  "__id": "tres_d_vila_doce_start_11"
+                },
+                {
+                  "type": "var",
+                  "name": "temItem",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "tres_d_vila_doce_start_12_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_12"
+                },
+                {
+                  "type": "var",
+                  "name": "entregue",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "tres_d_vila_doce_start_13_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_13"
+                },
+                {
+                  "type": "var",
+                  "name": "pediu",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "tres_d_vila_doce_start_14_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_14"
+                },
+                {
+                  "type": "var",
+                  "name": "aviso",
+                  "value": {
+                    "type": "str",
+                    "value": "Ache o bolo e leve até o Bento.",
+                    "__id": "tres_d_vila_doce_start_15_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_15"
+                },
+                {
+                  "type": "g3d:cornerText",
+                  "corner": "bottom-center",
+                  "text": {
+                    "type": "str",
+                    "value": "Setas ou WASD: andar. R: recomeçar.",
+                    "__id": "tres_d_vila_doce_start_16_text"
+                  },
+                  "__id": "tres_d_vila_doce_start_16"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g3d:onGame",
+                  "event": "tecla",
+                  "key": "KeyR",
+                  "body": [],
+                  "__id": "tres_d_vila_doce_events_0"
+                },
+                {
+                  "type": "g3d:onTouch",
+                  "objVar": "personagem",
+                  "otherVar": "item",
+                  "body": [],
+                  "__id": "tres_d_vila_doce_events_1"
+                },
+                {
+                  "type": "g3d:onTouch",
+                  "objVar": "personagem",
+                  "otherVar": "morador",
+                  "body": [],
+                  "__id": "tres_d_vila_doce_events_2"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g3d:animate",
+                  "worldVar": "cena",
+                  "body": [
+                    {
+                      "type": "g3d:topDown",
+                      "objVar": "personagem",
+                      "speed": {
+                        "type": "num",
+                        "value": 4,
+                        "__id": "tres_d_vila_doce_loops_0_body_0_speed"
+                      },
+                      "__id": "tres_d_vila_doce_loops_0_body_0"
+                    },
+                    {
+                      "type": "g3d:cornerText",
+                      "corner": "top-center",
+                      "text": {
+                        "type": "var",
+                        "name": "aviso",
+                        "__id": "tres_d_vila_doce_loops_0_body_1_text"
+                      },
+                      "__id": "tres_d_vila_doce_loops_0_body_1"
+                    }
+                  ],
+                  "__id": "tres_d_vila_doce_loops_0"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-3d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g3d_create_fullscreen_scene",
+                        "id": "tres_d_vila_doce_start_0",
+                        "fields": {
+                          "NAME": "cena",
+                          "BG": "#f7e7d4"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g3d_frame_scene",
+                            "id": "tres_d_vila_doce_start_1",
+                            "fields": {
+                              "WORLD": "cena"
+                            },
+                            "inputs": {
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 18
+                                  },
+                                  "id": "tres_d_vila_doce_start_1_width"
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 5
+                                  },
+                                  "id": "tres_d_vila_doce_start_1_height"
+                                }
+                              },
+                              "D": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 10
+                                  },
+                                  "id": "tres_d_vila_doce_start_1_depth"
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g3d_create_model_file",
+                                "id": "tres_d_vila_doce_start_2",
+                                "fields": {
+                                  "NAME": "chao",
+                                  "MODEL": "chao-vila-doce",
+                                  "WORLD": "cena"
+                                },
+                                "inputs": {
+                                  "SIZE": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 19
+                                      },
+                                      "id": "tres_d_vila_doce_start_2_size"
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g3d_set_position",
+                                    "id": "tres_d_vila_doce_start_3",
+                                    "fields": {
+                                      "OBJ": "chao"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 0
+                                          },
+                                          "id": "tres_d_vila_doce_start_3_x"
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": -0.48
+                                          },
+                                          "id": "tres_d_vila_doce_start_3_y"
+                                        }
+                                      },
+                                      "Z": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 0
+                                          },
+                                          "id": "tres_d_vila_doce_start_3_z"
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g3d_create_model_file",
+                                        "id": "tres_d_vila_doce_start_4",
+                                        "fields": {
+                                          "NAME": "personagem",
+                                          "MODEL": "aventureiro",
+                                          "WORLD": "cena"
+                                        },
+                                        "inputs": {
+                                          "SIZE": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 1.66
+                                              },
+                                              "id": "tres_d_vila_doce_start_4_size"
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_g3d_set_position",
+                                            "id": "tres_d_vila_doce_start_5",
+                                            "fields": {
+                                              "OBJ": "personagem"
+                                            },
+                                            "inputs": {
+                                              "X": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": -4
+                                                  },
+                                                  "id": "tres_d_vila_doce_start_5_x"
+                                                }
+                                              },
+                                              "Y": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 0.8
+                                                  },
+                                                  "id": "tres_d_vila_doce_start_5_y"
+                                                }
+                                              },
+                                              "Z": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 0
+                                                  },
+                                                  "id": "tres_d_vila_doce_start_5_z"
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_g3d_create_model_file",
+                                                "id": "tres_d_vila_doce_start_6",
+                                                "fields": {
+                                                  "NAME": "item",
+                                                  "MODEL": "bolo-de-fuba",
+                                                  "WORLD": "cena"
+                                                },
+                                                "inputs": {
+                                                  "SIZE": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 0.9
+                                                      },
+                                                      "id": "tres_d_vila_doce_start_6_size"
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g3d_set_position",
+                                                    "id": "tres_d_vila_doce_start_7",
+                                                    "fields": {
+                                                      "OBJ": "item"
+                                                    },
+                                                    "inputs": {
+                                                      "X": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": -1.5
+                                                          },
+                                                          "id": "tres_d_vila_doce_start_7_x"
+                                                        }
+                                                      },
+                                                      "Y": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 0.3
+                                                          },
+                                                          "id": "tres_d_vila_doce_start_7_y"
+                                                        }
+                                                      },
+                                                      "Z": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": -1.5
+                                                          },
+                                                          "id": "tres_d_vila_doce_start_7_z"
+                                                        }
+                                                      }
+                                                    },
+                                                    "next": {
+                                                      "block": {
+                                                        "type": "sz_g3d_create_model_file",
+                                                        "id": "tres_d_vila_doce_start_8",
+                                                        "fields": {
+                                                          "NAME": "morador",
+                                                          "MODEL": "bento",
+                                                          "WORLD": "cena"
+                                                        },
+                                                        "inputs": {
+                                                          "SIZE": {
+                                                            "shadow": {
+                                                              "type": "sz_val_number",
+                                                              "fields": {
+                                                                "NUM": 1.8
+                                                              },
+                                                              "id": "tres_d_vila_doce_start_8_size"
+                                                            }
+                                                          }
+                                                        },
+                                                        "next": {
+                                                          "block": {
+                                                            "type": "sz_g3d_set_position",
+                                                            "id": "tres_d_vila_doce_start_9",
+                                                            "fields": {
+                                                              "OBJ": "morador"
+                                                            },
+                                                            "inputs": {
+                                                              "X": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 3
+                                                                  },
+                                                                  "id": "tres_d_vila_doce_start_9_x"
+                                                                }
+                                                              },
+                                                              "Y": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 0.8
+                                                                  },
+                                                                  "id": "tres_d_vila_doce_start_9_y"
+                                                                }
+                                                              },
+                                                              "Z": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 0.5
+                                                                  },
+                                                                  "id": "tres_d_vila_doce_start_9_z"
+                                                                }
+                                                              }
+                                                            },
+                                                            "next": {
+                                                              "block": {
+                                                                "type": "sz_g3d_walk_area",
+                                                                "id": "tres_d_vila_doce_start_10",
+                                                                "fields": {
+                                                                  "OBJ": "personagem"
+                                                                },
+                                                                "inputs": {
+                                                                  "MINX": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": -8
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_minX"
+                                                                    }
+                                                                  },
+                                                                  "MAXX": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 8
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_maxX"
+                                                                    }
+                                                                  },
+                                                                  "MINZ": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": -4.5
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_minZ"
+                                                                    }
+                                                                  },
+                                                                  "MAXZ": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 4.5
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_maxZ"
+                                                                    }
+                                                                  }
+                                                                },
+                                                                "next": {
+                                                                  "block": {
+                                                                    "type": "sz_g3d_walk_animations",
+                                                                    "id": "tres_d_vila_doce_start_11",
+                                                                    "fields": {
+                                                                      "OBJ": "personagem",
+                                                                      "IDLE": "parado",
+                                                                      "WALK": "andando"
+                                                                    },
+                                                                    "next": {
+                                                                      "block": {
+                                                                        "type": "sz_js_var_create",
+                                                                        "id": "tres_d_vila_doce_start_12",
+                                                                        "fields": {
+                                                                          "NAME": "temItem"
+                                                                        },
+                                                                        "inputs": {
+                                                                          "VALUE": {
+                                                                            "block": {
+                                                                              "type": "sz_val_bool",
+                                                                              "fields": {
+                                                                                "VALUE": "false"
+                                                                              },
+                                                                              "id": "tres_d_vila_doce_start_12_value"
+                                                                            }
+                                                                          }
+                                                                        },
+                                                                        "next": {
+                                                                          "block": {
+                                                                            "type": "sz_js_var_create",
+                                                                            "id": "tres_d_vila_doce_start_13",
+                                                                            "fields": {
+                                                                              "NAME": "entregue"
+                                                                            },
+                                                                            "inputs": {
+                                                                              "VALUE": {
+                                                                                "block": {
+                                                                                  "type": "sz_val_bool",
+                                                                                  "fields": {
+                                                                                    "VALUE": "false"
+                                                                                  },
+                                                                                  "id": "tres_d_vila_doce_start_13_value"
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                            "next": {
+                                                                              "block": {
+                                                                                "type": "sz_js_var_create",
+                                                                                "id": "tres_d_vila_doce_start_14",
+                                                                                "fields": {
+                                                                                  "NAME": "pediu"
+                                                                                },
+                                                                                "inputs": {
+                                                                                  "VALUE": {
+                                                                                    "block": {
+                                                                                      "type": "sz_val_bool",
+                                                                                      "fields": {
+                                                                                        "VALUE": "false"
+                                                                                      },
+                                                                                      "id": "tres_d_vila_doce_start_14_value"
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "next": {
+                                                                                  "block": {
+                                                                                    "type": "sz_js_var_create",
+                                                                                    "id": "tres_d_vila_doce_start_15",
+                                                                                    "fields": {
+                                                                                      "NAME": "aviso"
+                                                                                    },
+                                                                                    "inputs": {
+                                                                                      "VALUE": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_text",
+                                                                                          "fields": {
+                                                                                            "TEXT": "Ache o bolo e leve até o Bento."
+                                                                                          },
+                                                                                          "id": "tres_d_vila_doce_start_15_value"
+                                                                                        }
+                                                                                      }
+                                                                                    },
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g3d_hud_text",
+                                                                                        "id": "tres_d_vila_doce_start_16",
+                                                                                        "fields": {
+                                                                                          "CORNER": "bottom-center"
+                                                                                        },
+                                                                                        "inputs": {
+                                                                                          "TEXT": {
+                                                                                            "shadow": {
+                                                                                              "type": "sz_val_text",
+                                                                                              "fields": {
+                                                                                                "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                              },
+                                                                                              "id": "tres_d_vila_doce_start_16_text"
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g3d_on_key",
+                        "id": "tres_d_vila_doce_events_0",
+                        "fields": {
+                          "KEY": "KeyR"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g3d_on_touch",
+                            "id": "tres_d_vila_doce_events_1",
+                            "fields": {
+                              "OBJ": "personagem",
+                              "OTHER": "item"
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g3d_on_touch",
+                                "id": "tres_d_vila_doce_events_2",
+                                "fields": {
+                                  "OBJ": "personagem",
+                                  "OTHER": "morador"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g3d_animate",
+                        "id": "tres_d_vila_doce_loops_0",
+                        "fields": {
+                          "WORLD": "cena"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g3d_top_down",
+                              "id": "tres_d_vila_doce_loops_0_body_0",
+                              "fields": {
+                                "OBJ": "personagem"
+                              },
+                              "inputs": {
+                                "SPEED": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 4
+                                    },
+                                    "id": "tres_d_vila_doce_loops_0_body_0_speed"
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g3d_hud_text",
+                                  "id": "tres_d_vila_doce_loops_0_body_1",
+                                  "fields": {
+                                    "CORNER": "top-center"
+                                  },
+                                  "inputs": {
+                                    "TEXT": {
+                                      "block": {
+                                        "type": "sz_val_variable",
+                                        "fields": {
+                                          "NAME": "aviso"
+                                        },
+                                        "id": "tres_d_vila_doce_loops_0_body_1_text"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-3d",
+              "version": "0.32.0",
+              "installedAt": 0
+            }
+          ],
+          "programmingLanguage": "javascript"
+        },
+        "gabarito": {
+          "formatVersion": 2,
+          "projectTools": [],
+          "id": "tres-d-o-bolo-do-bento",
+          "name": "O bolo do Bento",
+          "createdAt": 0,
+          "updatedAt": 0,
+          "mode": "blocks",
+          "files": {
+            "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O bolo do Bento</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
+            "style.css": "",
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#f7e7d4\");\n  SZGame3D.frameScene(cena, 18, 5, 10);\n  const chao = SZGame3D.createModelFile(cena, \"chao-vila-doce\", 19);\n  SZGame3D.setPosition(chao, 0, -0.48, 0);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -4, 0.8, 0);\n  const item = SZGame3D.createModelFile(cena, \"bolo-de-fuba\", 0.9);\n  SZGame3D.setPosition(item, -1.5, 0.3, -1.5);\n  const morador = SZGame3D.createModelFile(cena, \"bento\", 1.8);\n  SZGame3D.setPosition(morador, 3, 0.8, 0.5);\n  SZGame3D.walkArea(personagem, -8, 8, -4.5, 4.5);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let temItem = false;\n  let entregue = false;\n  let pediu = false;\n  let aviso = \"Ache o bolo e leve até o Bento.\";\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, item, () => {\n    SZGame3D.setVisible(item, \"hide\");\n    temItem = true;\n    aviso = \"Você pegou o bolo. Agora leve até o Bento.\";\n  });\n  SZGame3D.onTouch(personagem, morador, () => {\n    if (!entregue) {\n      if (temItem) {\n        entregue = true;\n        SZGame3D.playAnimation(morador, \"feliz\", \"uma-vez\");\n        aviso = \"O Bento ficou feliz com o bolo.\";\n      } else {\n        pediu = true;\n        aviso = \"O Bento pede o bolo. Ele está na praça.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n  });\n});\n"
+          },
+          "extraFiles": [],
+          "assets": [
+            {
+              "id": "tres-d-chao-vila-doce",
+              "name": "chao-vila-doce",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:4e1942d8c478b3ca6035b22bba68f304db159ff2e98e702586f26a2e08c41022",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjRlMTk0MmQ4YzQ3OGIzY2E2MDM1YjIyYmJhNjhmMzA0ZGIxNTlmZjJlOThlNzAyNTg2ZjI2YTJlMDhjNDEwMjIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "originalFileName": "chao-vila-doce.glb"
+            },
+            {
+              "id": "ilha-modelo-aventureiro",
+              "name": "aventureiro",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:3edd1abdaeb67b153adfb1c625267e887d390e5274ad93d725abc53cf0f71a51",
+              "originalFileName": "aventureiro.glb",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAA4AQAAJAEAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjNlZGQxYWJkYWViNjdiMTUzYWRmYjFjNjI1MjY3ZTg4N2QzOTBlNTI3NGFkOTNkNzI1YWJjNTNjZjBmNzFhNTEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiYW5kYW5kbyIsImNoYW5uZWxzIjpbXSwic2FtcGxlcnMiOltdfSx7Im5hbWUiOiJwYXJhZG8iLCJjaGFubmVscyI6W10sInNhbXBsZXJzIjpbXX1dfSAg"
+            },
+            {
+              "id": "tres-d-bento",
+              "name": "bento",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:ecff8f7cee580caa17e8075826c91e7d47155b29cbe6bdb7798d1af4af29f75b",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAAC8AQAAqAEAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImVjZmY4ZjdjZWU1ODBjYWExN2U4MDc1ODI2YzkxZTdkNDcxNTViMjljYmU2YmRiNzc5OGQxYWY0YWYyOWY3NWIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dLCJhbmltYXRpb25zIjpbeyJuYW1lIjoiYWNlbmFyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6ImFuZGFyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6ImZhbGFyIiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6ImZlbGl6IiwiY2hhbm5lbHMiOltdLCJzYW1wbGVycyI6W119LHsibmFtZSI6InBhcmFkbyIsImNoYW5uZWxzIjpbXSwic2FtcGxlcnMiOltdfV19",
+              "originalFileName": "bento.glb"
+            },
+            {
+              "id": "tres-d-bolo-de-fuba",
+              "name": "bolo-de-fuba",
+              "kind": "model3d",
+              "source": "library",
+              "libId": "modelo-curso:8f368b212c38424d142a340078e252879a594a80319a42c1423f02e883f00093",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjhmMzY4YjIxMmMzODQyNGQxNDJhMzQwMDc4ZTI1Mjg3OWE1OTRhODAzMTlhNDJjMTQyM2YwMmU4ODNmMDAwOTMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "originalFileName": "bolo-de-fuba.glb"
+            }
+          ],
+          "ir": {
+            "version": 2,
+            "html": [],
+            "css": [],
+            "behavior": {
+              "start": [
+                {
+                  "type": "g3d:createFullscreenScene",
+                  "varName": "cena",
+                  "bg": "#f7e7d4",
+                  "__id": "tres_d_vila_doce_start_0"
+                },
+                {
+                  "type": "g3d:frameScene",
+                  "worldVar": "cena",
+                  "width": {
+                    "type": "num",
+                    "value": 18,
+                    "__id": "tres_d_vila_doce_start_1_width"
+                  },
+                  "height": {
+                    "type": "num",
+                    "value": 5,
+                    "__id": "tres_d_vila_doce_start_1_height"
+                  },
+                  "depth": {
+                    "type": "num",
+                    "value": 10,
+                    "__id": "tres_d_vila_doce_start_1_depth"
+                  },
+                  "__id": "tres_d_vila_doce_start_1"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "chao",
+                  "worldVar": "cena",
+                  "asset": "chao-vila-doce",
+                  "size": {
+                    "type": "num",
+                    "value": 19,
+                    "__id": "tres_d_vila_doce_start_2_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_2"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "chao",
+                  "x": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "tres_d_vila_doce_start_3_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": -0.48,
+                    "__id": "tres_d_vila_doce_start_3_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "tres_d_vila_doce_start_3_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_3"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "personagem",
+                  "worldVar": "cena",
+                  "asset": "aventureiro",
+                  "size": {
+                    "type": "num",
+                    "value": 1.66,
+                    "__id": "tres_d_vila_doce_start_4_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_4"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "personagem",
+                  "x": {
+                    "type": "num",
+                    "value": -4,
+                    "__id": "tres_d_vila_doce_start_5_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 0.8,
+                    "__id": "tres_d_vila_doce_start_5_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": 0,
+                    "__id": "tres_d_vila_doce_start_5_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_5"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "item",
+                  "worldVar": "cena",
+                  "asset": "bolo-de-fuba",
+                  "size": {
+                    "type": "num",
+                    "value": 0.9,
+                    "__id": "tres_d_vila_doce_start_6_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_6"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "item",
+                  "x": {
+                    "type": "num",
+                    "value": -1.5,
+                    "__id": "tres_d_vila_doce_start_7_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 0.3,
+                    "__id": "tres_d_vila_doce_start_7_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": -1.5,
+                    "__id": "tres_d_vila_doce_start_7_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_7"
+                },
+                {
+                  "type": "g3d:createModelFile",
+                  "varName": "morador",
+                  "worldVar": "cena",
+                  "asset": "bento",
+                  "size": {
+                    "type": "num",
+                    "value": 1.8,
+                    "__id": "tres_d_vila_doce_start_8_size"
+                  },
+                  "__id": "tres_d_vila_doce_start_8"
+                },
+                {
+                  "type": "g3d:setPosition",
+                  "objVar": "morador",
+                  "x": {
+                    "type": "num",
+                    "value": 3,
+                    "__id": "tres_d_vila_doce_start_9_x"
+                  },
+                  "y": {
+                    "type": "num",
+                    "value": 0.8,
+                    "__id": "tres_d_vila_doce_start_9_y"
+                  },
+                  "z": {
+                    "type": "num",
+                    "value": 0.5,
+                    "__id": "tres_d_vila_doce_start_9_z"
+                  },
+                  "__id": "tres_d_vila_doce_start_9"
+                },
+                {
+                  "type": "g3d:walkArea",
+                  "objVar": "personagem",
+                  "minX": {
+                    "type": "num",
+                    "value": -8,
+                    "__id": "tres_d_vila_doce_start_10_minX"
+                  },
+                  "maxX": {
+                    "type": "num",
+                    "value": 8,
+                    "__id": "tres_d_vila_doce_start_10_maxX"
+                  },
+                  "minZ": {
+                    "type": "num",
+                    "value": -4.5,
+                    "__id": "tres_d_vila_doce_start_10_minZ"
+                  },
+                  "maxZ": {
+                    "type": "num",
+                    "value": 4.5,
+                    "__id": "tres_d_vila_doce_start_10_maxZ"
+                  },
+                  "__id": "tres_d_vila_doce_start_10"
+                },
+                {
+                  "type": "g3d:walkAnimations",
+                  "objVar": "personagem",
+                  "idle": "parado",
+                  "walking": "andando",
+                  "__id": "tres_d_vila_doce_start_11"
+                },
+                {
+                  "type": "var",
+                  "name": "temItem",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "tres_d_vila_doce_start_12_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_12"
+                },
+                {
+                  "type": "var",
+                  "name": "entregue",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "tres_d_vila_doce_start_13_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_13"
+                },
+                {
+                  "type": "var",
+                  "name": "pediu",
+                  "value": {
+                    "type": "bool",
+                    "value": false,
+                    "__id": "tres_d_vila_doce_start_14_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_14"
+                },
+                {
+                  "type": "var",
+                  "name": "aviso",
+                  "value": {
+                    "type": "str",
+                    "value": "Ache o bolo e leve até o Bento.",
+                    "__id": "tres_d_vila_doce_start_15_value"
+                  },
+                  "__id": "tres_d_vila_doce_start_15"
+                },
+                {
+                  "type": "g3d:cornerText",
+                  "corner": "bottom-center",
+                  "text": {
+                    "type": "str",
+                    "value": "Setas ou WASD: andar. R: recomeçar.",
+                    "__id": "tres_d_vila_doce_start_16_text"
+                  },
+                  "__id": "tres_d_vila_doce_start_16"
+                }
+              ],
+              "events": [
+                {
+                  "type": "g3d:onGame",
+                  "event": "tecla",
+                  "key": "KeyR",
+                  "body": [
+                    {
+                      "type": "g3d:restart",
+                      "__id": "tres_d_vila_doce_events_0_body_0"
+                    }
+                  ],
+                  "__id": "tres_d_vila_doce_events_0"
+                },
+                {
+                  "type": "g3d:onTouch",
+                  "objVar": "personagem",
+                  "otherVar": "item",
+                  "body": [
+                    {
+                      "type": "g3d:setVisible",
+                      "objVar": "item",
+                      "mode": "hide",
+                      "__id": "tres_d_vila_doce_events_1_body_0"
+                    },
+                    {
+                      "type": "assign",
+                      "name": "temItem",
+                      "value": {
+                        "type": "bool",
+                        "value": true,
+                        "__id": "tres_d_vila_doce_events_1_body_1_value"
+                      },
+                      "__id": "tres_d_vila_doce_events_1_body_1"
+                    },
+                    {
+                      "type": "assign",
+                      "name": "aviso",
+                      "value": {
+                        "type": "str",
+                        "value": "Você pegou o bolo. Agora leve até o Bento.",
+                        "__id": "tres_d_vila_doce_events_1_body_2_value"
+                      },
+                      "__id": "tres_d_vila_doce_events_1_body_2"
+                    }
+                  ],
+                  "__id": "tres_d_vila_doce_events_1"
+                },
+                {
+                  "type": "g3d:onTouch",
+                  "objVar": "personagem",
+                  "otherVar": "morador",
+                  "body": [
+                    {
+                      "type": "if",
+                      "cond": {
+                        "type": "logicalNot",
+                        "value": {
+                          "type": "var",
+                          "name": "entregue",
+                          "__id": "tres_d_vila_doce_events_2_body_0_cond_value"
+                        },
+                        "__id": "tres_d_vila_doce_events_2_body_0_cond"
+                      },
+                      "then": [
+                        {
+                          "type": "if",
+                          "cond": {
+                            "type": "var",
+                            "name": "temItem",
+                            "__id": "tres_d_vila_doce_events_2_body_0_then_0_cond"
+                          },
+                          "then": [
+                            {
+                              "type": "assign",
+                              "name": "entregue",
+                              "value": {
+                                "type": "bool",
+                                "value": true,
+                                "__id": "tres_d_vila_doce_events_2_body_0_then_0_then_0_value"
+                              },
+                              "__id": "tres_d_vila_doce_events_2_body_0_then_0_then_0"
+                            },
+                            {
+                              "type": "g3d:modelAnimation",
+                              "op": "tocar",
+                              "objVar": "morador",
+                              "clip": "feliz",
+                              "mode": "uma-vez",
+                              "__id": "tres_d_vila_doce_events_2_body_0_then_0_then_1"
+                            },
+                            {
+                              "type": "assign",
+                              "name": "aviso",
+                              "value": {
+                                "type": "str",
+                                "value": "O Bento ficou feliz com o bolo.",
+                                "__id": "tres_d_vila_doce_events_2_body_0_then_0_then_2_value"
+                              },
+                              "__id": "tres_d_vila_doce_events_2_body_0_then_0_then_2"
+                            }
+                          ],
+                          "else": [
+                            {
+                              "type": "assign",
+                              "name": "pediu",
+                              "value": {
+                                "type": "bool",
+                                "value": true,
+                                "__id": "tres_d_vila_doce_events_2_body_0_then_0_else_0_value"
+                              },
+                              "__id": "tres_d_vila_doce_events_2_body_0_then_0_else_0"
+                            },
+                            {
+                              "type": "assign",
+                              "name": "aviso",
+                              "value": {
+                                "type": "str",
+                                "value": "O Bento pede o bolo. Ele está na praça.",
+                                "__id": "tres_d_vila_doce_events_2_body_0_then_0_else_1_value"
+                              },
+                              "__id": "tres_d_vila_doce_events_2_body_0_then_0_else_1"
+                            }
+                          ],
+                          "__id": "tres_d_vila_doce_events_2_body_0_then_0"
+                        }
+                      ],
+                      "else": [],
+                      "__id": "tres_d_vila_doce_events_2_body_0"
+                    }
+                  ],
+                  "__id": "tres_d_vila_doce_events_2"
+                }
+              ],
+              "loops": [
+                {
+                  "type": "g3d:animate",
+                  "worldVar": "cena",
+                  "body": [
+                    {
+                      "type": "g3d:topDown",
+                      "objVar": "personagem",
+                      "speed": {
+                        "type": "num",
+                        "value": 4,
+                        "__id": "tres_d_vila_doce_loops_0_body_0_speed"
+                      },
+                      "__id": "tres_d_vila_doce_loops_0_body_0"
+                    },
+                    {
+                      "type": "g3d:cornerText",
+                      "corner": "top-center",
+                      "text": {
+                        "type": "var",
+                        "name": "aviso",
+                        "__id": "tres_d_vila_doce_loops_0_body_1_text"
+                      },
+                      "__id": "tres_d_vila_doce_loops_0_body_1"
+                    }
+                  ],
+                  "__id": "tres_d_vila_doce_loops_0"
+                }
+              ]
+            },
+            "extensions": [
+              {
+                "extensionId": "game-3d"
+              }
+            ]
+          },
+          "blocksState": {
+            "blocks": {
+              "languageVersion": 0,
+              "blocks": [
+                {
+                  "type": "sz_frame_start",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g3d_create_fullscreen_scene",
+                        "id": "tres_d_vila_doce_start_0",
+                        "fields": {
+                          "NAME": "cena",
+                          "BG": "#f7e7d4"
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g3d_frame_scene",
+                            "id": "tres_d_vila_doce_start_1",
+                            "fields": {
+                              "WORLD": "cena"
+                            },
+                            "inputs": {
+                              "W": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 18
+                                  },
+                                  "id": "tres_d_vila_doce_start_1_width"
+                                }
+                              },
+                              "H": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 5
+                                  },
+                                  "id": "tres_d_vila_doce_start_1_height"
+                                }
+                              },
+                              "D": {
+                                "shadow": {
+                                  "type": "sz_val_number",
+                                  "fields": {
+                                    "NUM": 10
+                                  },
+                                  "id": "tres_d_vila_doce_start_1_depth"
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g3d_create_model_file",
+                                "id": "tres_d_vila_doce_start_2",
+                                "fields": {
+                                  "NAME": "chao",
+                                  "MODEL": "chao-vila-doce",
+                                  "WORLD": "cena"
+                                },
+                                "inputs": {
+                                  "SIZE": {
+                                    "shadow": {
+                                      "type": "sz_val_number",
+                                      "fields": {
+                                        "NUM": 19
+                                      },
+                                      "id": "tres_d_vila_doce_start_2_size"
+                                    }
+                                  }
+                                },
+                                "next": {
+                                  "block": {
+                                    "type": "sz_g3d_set_position",
+                                    "id": "tres_d_vila_doce_start_3",
+                                    "fields": {
+                                      "OBJ": "chao"
+                                    },
+                                    "inputs": {
+                                      "X": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 0
+                                          },
+                                          "id": "tres_d_vila_doce_start_3_x"
+                                        }
+                                      },
+                                      "Y": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": -0.48
+                                          },
+                                          "id": "tres_d_vila_doce_start_3_y"
+                                        }
+                                      },
+                                      "Z": {
+                                        "shadow": {
+                                          "type": "sz_val_number",
+                                          "fields": {
+                                            "NUM": 0
+                                          },
+                                          "id": "tres_d_vila_doce_start_3_z"
+                                        }
+                                      }
+                                    },
+                                    "next": {
+                                      "block": {
+                                        "type": "sz_g3d_create_model_file",
+                                        "id": "tres_d_vila_doce_start_4",
+                                        "fields": {
+                                          "NAME": "personagem",
+                                          "MODEL": "aventureiro",
+                                          "WORLD": "cena"
+                                        },
+                                        "inputs": {
+                                          "SIZE": {
+                                            "shadow": {
+                                              "type": "sz_val_number",
+                                              "fields": {
+                                                "NUM": 1.66
+                                              },
+                                              "id": "tres_d_vila_doce_start_4_size"
+                                            }
+                                          }
+                                        },
+                                        "next": {
+                                          "block": {
+                                            "type": "sz_g3d_set_position",
+                                            "id": "tres_d_vila_doce_start_5",
+                                            "fields": {
+                                              "OBJ": "personagem"
+                                            },
+                                            "inputs": {
+                                              "X": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": -4
+                                                  },
+                                                  "id": "tres_d_vila_doce_start_5_x"
+                                                }
+                                              },
+                                              "Y": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 0.8
+                                                  },
+                                                  "id": "tres_d_vila_doce_start_5_y"
+                                                }
+                                              },
+                                              "Z": {
+                                                "shadow": {
+                                                  "type": "sz_val_number",
+                                                  "fields": {
+                                                    "NUM": 0
+                                                  },
+                                                  "id": "tres_d_vila_doce_start_5_z"
+                                                }
+                                              }
+                                            },
+                                            "next": {
+                                              "block": {
+                                                "type": "sz_g3d_create_model_file",
+                                                "id": "tres_d_vila_doce_start_6",
+                                                "fields": {
+                                                  "NAME": "item",
+                                                  "MODEL": "bolo-de-fuba",
+                                                  "WORLD": "cena"
+                                                },
+                                                "inputs": {
+                                                  "SIZE": {
+                                                    "shadow": {
+                                                      "type": "sz_val_number",
+                                                      "fields": {
+                                                        "NUM": 0.9
+                                                      },
+                                                      "id": "tres_d_vila_doce_start_6_size"
+                                                    }
+                                                  }
+                                                },
+                                                "next": {
+                                                  "block": {
+                                                    "type": "sz_g3d_set_position",
+                                                    "id": "tres_d_vila_doce_start_7",
+                                                    "fields": {
+                                                      "OBJ": "item"
+                                                    },
+                                                    "inputs": {
+                                                      "X": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": -1.5
+                                                          },
+                                                          "id": "tres_d_vila_doce_start_7_x"
+                                                        }
+                                                      },
+                                                      "Y": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": 0.3
+                                                          },
+                                                          "id": "tres_d_vila_doce_start_7_y"
+                                                        }
+                                                      },
+                                                      "Z": {
+                                                        "shadow": {
+                                                          "type": "sz_val_number",
+                                                          "fields": {
+                                                            "NUM": -1.5
+                                                          },
+                                                          "id": "tres_d_vila_doce_start_7_z"
+                                                        }
+                                                      }
+                                                    },
+                                                    "next": {
+                                                      "block": {
+                                                        "type": "sz_g3d_create_model_file",
+                                                        "id": "tres_d_vila_doce_start_8",
+                                                        "fields": {
+                                                          "NAME": "morador",
+                                                          "MODEL": "bento",
+                                                          "WORLD": "cena"
+                                                        },
+                                                        "inputs": {
+                                                          "SIZE": {
+                                                            "shadow": {
+                                                              "type": "sz_val_number",
+                                                              "fields": {
+                                                                "NUM": 1.8
+                                                              },
+                                                              "id": "tres_d_vila_doce_start_8_size"
+                                                            }
+                                                          }
+                                                        },
+                                                        "next": {
+                                                          "block": {
+                                                            "type": "sz_g3d_set_position",
+                                                            "id": "tres_d_vila_doce_start_9",
+                                                            "fields": {
+                                                              "OBJ": "morador"
+                                                            },
+                                                            "inputs": {
+                                                              "X": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 3
+                                                                  },
+                                                                  "id": "tres_d_vila_doce_start_9_x"
+                                                                }
+                                                              },
+                                                              "Y": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 0.8
+                                                                  },
+                                                                  "id": "tres_d_vila_doce_start_9_y"
+                                                                }
+                                                              },
+                                                              "Z": {
+                                                                "shadow": {
+                                                                  "type": "sz_val_number",
+                                                                  "fields": {
+                                                                    "NUM": 0.5
+                                                                  },
+                                                                  "id": "tres_d_vila_doce_start_9_z"
+                                                                }
+                                                              }
+                                                            },
+                                                            "next": {
+                                                              "block": {
+                                                                "type": "sz_g3d_walk_area",
+                                                                "id": "tres_d_vila_doce_start_10",
+                                                                "fields": {
+                                                                  "OBJ": "personagem"
+                                                                },
+                                                                "inputs": {
+                                                                  "MINX": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": -8
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_minX"
+                                                                    }
+                                                                  },
+                                                                  "MAXX": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 8
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_maxX"
+                                                                    }
+                                                                  },
+                                                                  "MINZ": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": -4.5
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_minZ"
+                                                                    }
+                                                                  },
+                                                                  "MAXZ": {
+                                                                    "shadow": {
+                                                                      "type": "sz_val_number",
+                                                                      "fields": {
+                                                                        "NUM": 4.5
+                                                                      },
+                                                                      "id": "tres_d_vila_doce_start_10_maxZ"
+                                                                    }
+                                                                  }
+                                                                },
+                                                                "next": {
+                                                                  "block": {
+                                                                    "type": "sz_g3d_walk_animations",
+                                                                    "id": "tres_d_vila_doce_start_11",
+                                                                    "fields": {
+                                                                      "OBJ": "personagem",
+                                                                      "IDLE": "parado",
+                                                                      "WALK": "andando"
+                                                                    },
+                                                                    "next": {
+                                                                      "block": {
+                                                                        "type": "sz_js_var_create",
+                                                                        "id": "tres_d_vila_doce_start_12",
+                                                                        "fields": {
+                                                                          "NAME": "temItem"
+                                                                        },
+                                                                        "inputs": {
+                                                                          "VALUE": {
+                                                                            "block": {
+                                                                              "type": "sz_val_bool",
+                                                                              "fields": {
+                                                                                "VALUE": "false"
+                                                                              },
+                                                                              "id": "tres_d_vila_doce_start_12_value"
+                                                                            }
+                                                                          }
+                                                                        },
+                                                                        "next": {
+                                                                          "block": {
+                                                                            "type": "sz_js_var_create",
+                                                                            "id": "tres_d_vila_doce_start_13",
+                                                                            "fields": {
+                                                                              "NAME": "entregue"
+                                                                            },
+                                                                            "inputs": {
+                                                                              "VALUE": {
+                                                                                "block": {
+                                                                                  "type": "sz_val_bool",
+                                                                                  "fields": {
+                                                                                    "VALUE": "false"
+                                                                                  },
+                                                                                  "id": "tres_d_vila_doce_start_13_value"
+                                                                                }
+                                                                              }
+                                                                            },
+                                                                            "next": {
+                                                                              "block": {
+                                                                                "type": "sz_js_var_create",
+                                                                                "id": "tres_d_vila_doce_start_14",
+                                                                                "fields": {
+                                                                                  "NAME": "pediu"
+                                                                                },
+                                                                                "inputs": {
+                                                                                  "VALUE": {
+                                                                                    "block": {
+                                                                                      "type": "sz_val_bool",
+                                                                                      "fields": {
+                                                                                        "VALUE": "false"
+                                                                                      },
+                                                                                      "id": "tres_d_vila_doce_start_14_value"
+                                                                                    }
+                                                                                  }
+                                                                                },
+                                                                                "next": {
+                                                                                  "block": {
+                                                                                    "type": "sz_js_var_create",
+                                                                                    "id": "tres_d_vila_doce_start_15",
+                                                                                    "fields": {
+                                                                                      "NAME": "aviso"
+                                                                                    },
+                                                                                    "inputs": {
+                                                                                      "VALUE": {
+                                                                                        "block": {
+                                                                                          "type": "sz_val_text",
+                                                                                          "fields": {
+                                                                                            "TEXT": "Ache o bolo e leve até o Bento."
+                                                                                          },
+                                                                                          "id": "tres_d_vila_doce_start_15_value"
+                                                                                        }
+                                                                                      }
+                                                                                    },
+                                                                                    "next": {
+                                                                                      "block": {
+                                                                                        "type": "sz_g3d_hud_text",
+                                                                                        "id": "tres_d_vila_doce_start_16",
+                                                                                        "fields": {
+                                                                                          "CORNER": "bottom-center"
+                                                                                        },
+                                                                                        "inputs": {
+                                                                                          "TEXT": {
+                                                                                            "shadow": {
+                                                                                              "type": "sz_val_text",
+                                                                                              "fields": {
+                                                                                                "TEXT": "Setas ou WASD: andar. R: recomeçar."
+                                                                                              },
+                                                                                              "id": "tres_d_vila_doce_start_16_text"
+                                                                                            }
+                                                                                          }
+                                                                                        }
+                                                                                      }
+                                                                                    }
+                                                                                  }
+                                                                                }
+                                                                              }
+                                                                            }
+                                                                          }
+                                                                        }
+                                                                      }
+                                                                    }
+                                                                  }
+                                                                }
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 32,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_events",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g3d_on_key",
+                        "id": "tres_d_vila_doce_events_0",
+                        "fields": {
+                          "KEY": "KeyR"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g3d_restart",
+                              "id": "tres_d_vila_doce_events_0_body_0"
+                            }
+                          }
+                        },
+                        "next": {
+                          "block": {
+                            "type": "sz_g3d_on_touch",
+                            "id": "tres_d_vila_doce_events_1",
+                            "fields": {
+                              "OBJ": "personagem",
+                              "OTHER": "item"
+                            },
+                            "inputs": {
+                              "BODY": {
+                                "block": {
+                                  "type": "sz_g3d_set_visible",
+                                  "id": "tres_d_vila_doce_events_1_body_0",
+                                  "fields": {
+                                    "OBJ": "item",
+                                    "MODE": "hide"
+                                  },
+                                  "next": {
+                                    "block": {
+                                      "type": "sz_js_var_assign",
+                                      "id": "tres_d_vila_doce_events_1_body_1",
+                                      "fields": {
+                                        "NAME": "temItem"
+                                      },
+                                      "inputs": {
+                                        "VALUE": {
+                                          "block": {
+                                            "type": "sz_val_bool",
+                                            "fields": {
+                                              "VALUE": "true"
+                                            },
+                                            "id": "tres_d_vila_doce_events_1_body_1_value"
+                                          }
+                                        }
+                                      },
+                                      "next": {
+                                        "block": {
+                                          "type": "sz_js_var_assign",
+                                          "id": "tres_d_vila_doce_events_1_body_2",
+                                          "fields": {
+                                            "NAME": "aviso"
+                                          },
+                                          "inputs": {
+                                            "VALUE": {
+                                              "block": {
+                                                "type": "sz_val_text",
+                                                "fields": {
+                                                  "TEXT": "Você pegou o bolo. Agora leve até o Bento."
+                                                },
+                                                "id": "tres_d_vila_doce_events_1_body_2_value"
+                                              }
+                                            }
+                                          }
+                                        }
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            },
+                            "next": {
+                              "block": {
+                                "type": "sz_g3d_on_touch",
+                                "id": "tres_d_vila_doce_events_2",
+                                "fields": {
+                                  "OBJ": "personagem",
+                                  "OTHER": "morador"
+                                },
+                                "inputs": {
+                                  "BODY": {
+                                    "block": {
+                                      "type": "sz_js_if_else",
+                                      "id": "tres_d_vila_doce_events_2_body_0",
+                                      "inputs": {
+                                        "THEN": {
+                                          "block": {
+                                            "type": "sz_js_if_else",
+                                            "id": "tres_d_vila_doce_events_2_body_0_then_0",
+                                            "inputs": {
+                                              "THEN": {
+                                                "block": {
+                                                  "type": "sz_js_var_assign",
+                                                  "id": "tres_d_vila_doce_events_2_body_0_then_0_then_0",
+                                                  "fields": {
+                                                    "NAME": "entregue"
+                                                  },
+                                                  "inputs": {
+                                                    "VALUE": {
+                                                      "block": {
+                                                        "type": "sz_val_bool",
+                                                        "fields": {
+                                                          "VALUE": "true"
+                                                        },
+                                                        "id": "tres_d_vila_doce_events_2_body_0_then_0_then_0_value"
+                                                      }
+                                                    }
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_g3d_play_animation",
+                                                      "id": "tres_d_vila_doce_events_2_body_0_then_0_then_1",
+                                                      "fields": {
+                                                        "OBJ": "morador",
+                                                        "CLIP": "feliz",
+                                                        "MODE": "uma-vez"
+                                                      },
+                                                      "next": {
+                                                        "block": {
+                                                          "type": "sz_js_var_assign",
+                                                          "id": "tres_d_vila_doce_events_2_body_0_then_0_then_2",
+                                                          "fields": {
+                                                            "NAME": "aviso"
+                                                          },
+                                                          "inputs": {
+                                                            "VALUE": {
+                                                              "block": {
+                                                                "type": "sz_val_text",
+                                                                "fields": {
+                                                                  "TEXT": "O Bento ficou feliz com o bolo."
+                                                                },
+                                                                "id": "tres_d_vila_doce_events_2_body_0_then_0_then_2_value"
+                                                              }
+                                                            }
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "ELSE": {
+                                                "block": {
+                                                  "type": "sz_js_var_assign",
+                                                  "id": "tres_d_vila_doce_events_2_body_0_then_0_else_0",
+                                                  "fields": {
+                                                    "NAME": "pediu"
+                                                  },
+                                                  "inputs": {
+                                                    "VALUE": {
+                                                      "block": {
+                                                        "type": "sz_val_bool",
+                                                        "fields": {
+                                                          "VALUE": "true"
+                                                        },
+                                                        "id": "tres_d_vila_doce_events_2_body_0_then_0_else_0_value"
+                                                      }
+                                                    }
+                                                  },
+                                                  "next": {
+                                                    "block": {
+                                                      "type": "sz_js_var_assign",
+                                                      "id": "tres_d_vila_doce_events_2_body_0_then_0_else_1",
+                                                      "fields": {
+                                                        "NAME": "aviso"
+                                                      },
+                                                      "inputs": {
+                                                        "VALUE": {
+                                                          "block": {
+                                                            "type": "sz_val_text",
+                                                            "fields": {
+                                                              "TEXT": "O Bento pede o bolo. Ele está na praça."
+                                                            },
+                                                            "id": "tres_d_vila_doce_events_2_body_0_then_0_else_1_value"
+                                                          }
+                                                        }
+                                                      }
+                                                    }
+                                                  }
+                                                }
+                                              },
+                                              "COND": {
+                                                "block": {
+                                                  "type": "sz_val_variable",
+                                                  "fields": {
+                                                    "NAME": "temItem"
+                                                  },
+                                                  "id": "tres_d_vila_doce_events_2_body_0_then_0_cond"
+                                                }
+                                              }
+                                            },
+                                            "extraState": {
+                                              "hasElse": true
+                                            }
+                                          }
+                                        },
+                                        "COND": {
+                                          "block": {
+                                            "type": "sz_val_not",
+                                            "inputs": {
+                                              "VALUE": {
+                                                "block": {
+                                                  "type": "sz_val_variable",
+                                                  "fields": {
+                                                    "NAME": "entregue"
+                                                  },
+                                                  "id": "tres_d_vila_doce_events_2_body_0_cond_value"
+                                                }
+                                              }
+                                            },
+                                            "id": "tres_d_vila_doce_events_2_body_0_cond"
+                                          }
+                                        }
+                                      },
+                                      "extraState": {
+                                        "hasElse": true
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 452,
+                  "y": 392
+                },
+                {
+                  "type": "sz_frame_loops",
+                  "inputs": {
+                    "CHILDREN": {
+                      "block": {
+                        "type": "sz_g3d_animate",
+                        "id": "tres_d_vila_doce_loops_0",
+                        "fields": {
+                          "WORLD": "cena"
+                        },
+                        "inputs": {
+                          "BODY": {
+                            "block": {
+                              "type": "sz_g3d_top_down",
+                              "id": "tres_d_vila_doce_loops_0_body_0",
+                              "fields": {
+                                "OBJ": "personagem"
+                              },
+                              "inputs": {
+                                "SPEED": {
+                                  "shadow": {
+                                    "type": "sz_val_number",
+                                    "fields": {
+                                      "NUM": 4
+                                    },
+                                    "id": "tres_d_vila_doce_loops_0_body_0_speed"
+                                  }
+                                }
+                              },
+                              "next": {
+                                "block": {
+                                  "type": "sz_g3d_hud_text",
+                                  "id": "tres_d_vila_doce_loops_0_body_1",
+                                  "fields": {
+                                    "CORNER": "top-center"
+                                  },
+                                  "inputs": {
+                                    "TEXT": {
+                                      "block": {
+                                        "type": "sz_val_variable",
+                                        "fields": {
+                                          "NAME": "aviso"
+                                        },
+                                        "id": "tres_d_vila_doce_loops_0_body_1_text"
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "x": 872,
+                  "y": 392
+                }
+              ]
+            }
+          },
+          "installedExtensions": [
+            {
+              "id": "game-3d",
+              "version": "0.32.0",
+              "installedAt": 0
+            }
+          ],
+          "programmingLanguage": "javascript"
+        },
+        "objetivos": [
+          {
+            "id": "pegar",
+            "label": "Encostar no item guarda que o personagem está com ele.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "item",
+                  "walkable": [
+                    {
+                      "minX": -8,
+                      "maxX": 8,
+                      "minZ": -4.5,
+                      "maxZ": 4.5
+                    }
+                  ],
+                  "timeoutMs": 7000
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "temItem"
+                },
+                "compare": "equals",
+                "value": true
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 1,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temItem"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "entregar",
+            "label": "Com o item, encostar no Bento entrega.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "item",
+                  "walkable": [
+                    {
+                      "minX": -8,
+                      "maxX": 8,
+                      "minZ": -4.5,
+                      "maxZ": 4.5
+                    }
+                  ],
+                  "timeoutMs": 7000
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "morador",
+                  "walkable": [
+                    {
+                      "minX": -8,
+                      "maxX": 8,
+                      "minZ": -4.5,
+                      "maxZ": 4.5
+                    }
+                  ],
+                  "timeoutMs": 7500
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "entregue"
+                },
+                "compare": "equals",
+                "value": true
+              }
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "sem-item",
+            "label": "Sem o item, o Bento pede e nada é entregue.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "morador",
+                  "walkable": [
+                    {
+                      "minX": -8,
+                      "maxX": 8,
+                      "minZ": -4.5,
+                      "maxZ": 4.5
+                    }
+                  ],
+                  "timeoutMs": 7500,
+                  "avoidPaths": ["item"]
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "pediu"
+                },
+                "compare": "equals",
+                "value": true
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "entregue"
+                    },
+                    "compare": "equals",
+                    "value": false
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          },
+          {
+            "id": "recomecar",
+            "label": "Extra: a tecla R recomeça a aventura.",
+            "optional": true,
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                },
+                {
+                  "action": "approachObject3d",
+                  "actorPath": "personagem",
+                  "targetPath": "item",
+                  "walkable": [
+                    {
+                      "minX": -8,
+                      "maxX": 8,
+                      "minZ": -4.5,
+                      "maxZ": 4.5
+                    }
+                  ],
+                  "timeoutMs": 7000
+                },
+                {
+                  "action": "press",
+                  "key": "r",
+                  "holdMs": 80
+                },
+                {
+                  "action": "wait",
+                  "ms": 600
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "temItem"
+                },
+                "compare": "equals",
+                "value": false
+              },
+              "checkpoints": [
+                {
+                  "afterStep": 2,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "temItem"
+                    },
+                    "compare": "equals",
+                    "value": true
+                  }
+                }
+              ]
+            },
+            "programmingLanguage": "javascript"
+          }
+        ],
+        "desafioExtra": {
+          "titulo": "Extra",
+          "texto": "A tecla R recomeça a aventura."
+        },
+        "recompensa": {
+          "cor": false,
+          "moedas": 10,
+          "moedasExtra": 5
+        },
+        "blocosManuais": {
+          "acrescentar": [],
+          "retirar": []
+        }
+      }
+    }
+  ]
+}

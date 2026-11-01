@@ -1,0 +1,1 @@
+ALTER TABLE "members"."modules" DROP COLUMN "rive_url";

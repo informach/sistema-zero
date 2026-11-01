@@ -12,16 +12,8 @@ import type { StudioTier } from '@sistemazero/member-shell/lib/studio-tier'
 import { useIsDesktop } from '@sistemazero/member-shell/lib/use-is-desktop'
 import { RefreshCw } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import {
-  lazy,
-  Suspense,
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { enderecoDoPro } from '../../lib/arquipelago-pro-mensagem'
 import { concluirStudio } from '../../lib/arquipelago-studio'
 import type { CreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
@@ -45,8 +37,8 @@ import { resumeExistingCreation } from '../../lib/resume-creation'
 import { createStudioCloudSync } from '../../lib/studio-cloud'
 import { createStudioCloudTransport } from '../../lib/studio-cloud-transport'
 import { authorizeJavaScriptCreation } from '../../lib/studio-javascript-creation'
+import { ArquipelagoProFrame } from '../arquipelago-pro-frame'
 import { EMBEDDED_STUDIO_FRAME, EmbeddedAppLoadingBody } from './embedded-app-loading'
-import { openCreationInMolda, openDrawingInPinta } from './open-creation-tab'
 import { PensaMissionBlocked } from './pensa-mission-blocked'
 import { StudioFullEditor } from './studio-full-editor'
 import { HostChromeAnnouncer, useHostChrome } from './use-host-chrome'
@@ -65,9 +57,6 @@ import { useKidsStudioTutor } from './use-studio-tutor'
 // isso carregamos o módulo inteiro DENTRO de um effect (igual ao public-player) e o
 // server renderiza só o placeholder. `mod` guarda os exports carregados.
 type StudioModule = typeof import('@sistemazero/studio')
-const EmbeddedStudioProEditor = lazy(() =>
-  import('../studio/studio-pro-editor').then((module) => ({ default: module.StudioProEditor })),
-)
 type View =
   | { name: 'list' }
   | { name: 'editor' | 'pro'; projectId: string }
@@ -230,12 +219,6 @@ export function StudioFullClient({
     },
     [cloudSync, viewerId, localNamespace],
   )
-  const embeddedProId = view.name === 'pro' ? view.projectId : null
-  const prepareEmbeddedPro = useCallback(async () => {
-    if (!embeddedProId || !cloudSync) throw new Error('O Estúdio ainda não está pronto')
-    await cloudSync.pullMissing()
-    await preparePensaOpen(embeddedProId)
-  }, [cloudSync, embeddedProId, preparePensaOpen])
   const precisaPrepararAbertura = useCallback(
     (projectId: string): boolean => {
       if (!viewerId) return false
@@ -856,27 +839,16 @@ export function StudioFullClient({
               </button>
             </div>
           ) : view.name === 'pro' ? (
-            <Suspense fallback={<EmbeddedAppLoadingBody label="Carregando o Estúdio Pro…" />}>
-              <EmbeddedStudioProEditor
-                key={JSON.stringify([viewerId, view.projectId, 'embedded-pro'])}
-                audience={audience}
-                freeRuntime
-                viewerId={viewerId}
-                storageNamespace={localNamespace}
-                projectId={view.projectId}
-                theme={studioTheme}
-                onExit={exitEditor}
-                tutor={tutor}
-                share={share}
-                prepareProject={prepareEmbeddedPro}
-                pintaLibrary={pintaLibrary}
-                moldaLibrary={moldaLibrary}
-                teamLibrary={teamLibrary}
-                onEditDrawing={pintaLibrary ? openDrawingInPinta : undefined}
-                onEditCreation={moldaLibrary ? openCreationInMolda : undefined}
-                onCompletionControlChange={registerCompletionControl}
-              />
-            </Suspense>
+            // O modo Código por cima do jogo abre a rota isolada num quadro (lacunas, 01/11/2026):
+            // a página do jogo fica sem `unsafe-eval`; o quadro reconcilia a nuvem e, ao sair,
+            // sobe o projeto e avisa aqui.
+            <ArquipelagoProFrame
+              src={enderecoDoPro({ projetoId: view.projectId })}
+              titulo="Estúdio Pro"
+              onMensagem={(m) => {
+                if (m.evento === 'saiu') exitEditor()
+              }}
+            />
           ) : (
             <StudioFullEditor
               key={JSON.stringify([viewerId, view.projectId])}
