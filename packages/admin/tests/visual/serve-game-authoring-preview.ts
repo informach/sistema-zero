@@ -1,13 +1,13 @@
 /** Local visual/interaction harness. In-memory HTTP fixtures; never connects to real accounts. */
 import { createRequire } from 'node:module'
 import { basename, resolve, sep } from 'node:path'
+import { challengePayload, newChallenge } from '@sistemazero/arquipelago-admin'
 import {
   CriarDesafioSchema,
   type DesafioDaEquipe,
   GravarDesafioSchema,
 } from '@sistemazero/arquipelago-contracts'
 import tailwind from '@tailwindcss/postcss'
-import { challengePayload, newChallenge } from '../../src/lib/game-challenge-authoring'
 
 const app = resolve(import.meta.dir, '../..')
 const postcss = createRequire(Bun.resolveSync('@tailwindcss/postcss', app))('postcss')

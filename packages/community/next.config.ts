@@ -73,13 +73,13 @@ const proCsp = csp
   )
 
 // Arquipélago Vagalume (A27, revisão de 31/10/2026): a regra própria da página do jogo, como no
-// Kids. O Estúdio completo abre por cima do jogo e pode abrir o projeto Pro com o terminal
-// (`'unsafe-eval'`, `blob:` e os quadros do WebContainer); os vídeos das aulas ficam de fora,
-// porque a página não tem aula e a COEP `credentialless` já os impediria.
-const arquipelagoCsp = proCsp.replace(
-  ' https://www.youtube-nocookie.com https://player.vimeo.com',
-  '',
-)
+// Kids. Sem `'unsafe-eval'` nem os quadros do WebContainer (lacunas, 01/11/2026): o modo Código
+// abre a rota isolada `/estudio/pro/...` num quadro da mesma origem (`frame-src 'self'`). Os
+// vídeos das aulas ficam de fora: a página não tem aula e a COEP `credentialless` os impediria.
+const arquipelagoCsp = csp.replace(' https://www.youtube-nocookie.com https://player.vimeo.com', '')
+// O Pro num quadro por cima do jogo: a rota isolada só aceita ser embutida pela própria origem, e
+// só com `?embed=arquipelago`. Sem o parâmetro, segue `frame-ancestors 'none'`.
+const proEmbutidoCsp = proCsp.replace("frame-ancestors 'none'", "frame-ancestors 'self'")
 
 const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
@@ -157,6 +157,16 @@ const nextConfig: NextConfig = {
             value: proCsp,
           },
           { key: 'Cross-Origin-Embedder-Policy', value: 'credentialless' },
+        ],
+      },
+      // O mesmo Pro aberto pelo jogo num quadro (`?embed=arquipelago`, lacunas de 01/11/2026): a
+      // regra que vem depois vence, então só aqui o quadro da própria origem é aceito.
+      {
+        source: '/estudio/pro/:path*',
+        has: [{ type: 'query', key: 'embed', value: 'arquipelago' }],
+        headers: [
+          { key: 'Content-Security-Policy', value: proEmbutidoCsp },
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
         ],
       },
       {

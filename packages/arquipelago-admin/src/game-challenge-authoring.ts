@@ -7,13 +7,8 @@ import {
   type PublicoDoDesafio,
   type TipoDeDesafio,
 } from '@sistemazero/arquipelago-contracts'
-import {
-  isSectionCompletion,
-  type SectionObjectiveRule,
-  type SectionProjectCheck,
-} from '@sistemazero/core/learning'
+import { isSectionCompletion, type SectionProjectCheck } from '@sistemazero/core/learning'
 import { createBlankProjectSnapshot } from '@sistemazero/studio/blank-project'
-import { newExecutionRule } from './execution-rule'
 
 /** Objetivos JavaScript ou, desde C02 (30/10/2026), Python com o perfil do projeto inicial. */
 export type ChallengeDraft = Omit<CriarDesafio, 'conteudo'> & {
@@ -116,23 +111,5 @@ export function challengePayload(draft: ChallengeDraft): CriarDesafio {
         retirar: draft.conteudo.blocosManuais.retirar.map((v) => v.trim()).filter(Boolean),
       },
     },
-  }
-}
-export function challengeRule(type: string): SectionObjectiveRule {
-  switch (type) {
-    case 'behavior':
-    case 'functionReturns':
-    case 'script':
-      return newExecutionRule(type, false, false)
-    case 'usesLoop':
-      return { type }
-    case 'gameCausality':
-      return { type, actor: 'guia', step: 'encounter' }
-    case 'declaresVariable':
-    case 'definesFunction':
-    case 'callsFunction':
-      return { type, name: '' }
-    default:
-      return { type: 'usesBlock', blockType: '' }
   }
 }

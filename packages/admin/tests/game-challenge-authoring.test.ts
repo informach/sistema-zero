@@ -1,6 +1,4 @@
 import { expect, test } from 'bun:test'
-import { CriarDesafioSchema } from '@sistemazero/arquipelago-contracts'
-import { gameAdminRequest } from '../src/lib/arquipelago-admin'
 import {
   challengeDraft,
   challengePayload,
@@ -8,7 +6,9 @@ import {
   challengeProjectLanguage,
   challengeType,
   newChallenge,
-} from '../src/lib/game-challenge-authoring'
+} from '@sistemazero/arquipelago-admin'
+import { CriarDesafioSchema } from '@sistemazero/arquipelago-contracts'
+import { gameAdminRequest } from '../src/lib/arquipelago-admin'
 
 const id = 'db9ca185-3ce4-4eba-a07d-8cdba7a145fd'
 function valid() {

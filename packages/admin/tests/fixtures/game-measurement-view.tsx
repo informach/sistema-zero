@@ -1,6 +1,6 @@
+import { GameMeasurement } from '@sistemazero/arquipelago-admin'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
-import { GameMeasurement } from '../../src/app/admin/jogo/game-measurement'
 
 /** Monta o componente real da aba, sem login ou dados de ambientes remotos. */
 function LocalMeasurement() {

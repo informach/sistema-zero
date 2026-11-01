@@ -18,7 +18,7 @@ test('BFF permite só leitura agregada com período e público explícitos', () 
 })
 
 test('a medição lida pelo Admin aceita fonte nova e campo novo; o número continua estrito', async () => {
-  const { textoDaFonteQueFalta } = await import('../src/app/admin/jogo/game-measurement')
+  const { textoDaFonteQueFalta } = await import('@sistemazero/arquipelago-admin')
   const { FONTES_QUE_FALTAM, RelatorioDaMedicaoLidoSchema } = await import(
     '@sistemazero/arquipelago-contracts'
   )

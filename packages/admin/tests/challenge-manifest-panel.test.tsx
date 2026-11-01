@@ -6,7 +6,7 @@ if (typeof document === 'undefined') GlobalRegistrator.register()
 
 const { act } = await import('react')
 const { createRoot } = await import('react-dom/client')
-const { ChallengeManifestPanel } = await import('../src/app/admin/jogo/challenge-manifest-panel')
+const { ChallengeManifestPanel } = await import('@sistemazero/arquipelago-admin')
 
 const projeto = { files: { 'index.html': '', 'style.css': '', 'script.js': '' } }
 const item = (slug: string, quadro: number) => ({

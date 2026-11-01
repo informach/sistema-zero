@@ -7,6 +7,7 @@ import type { AiCreditsView } from '@sistemazero/core/ai-credits'
 import { StudioProEditor } from '@sistemazero/member-shell/components/studio/studio-pro-editor'
 import { useRouter } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
+import { avisarOJogo } from '../../lib/arquipelago-pro-mensagem'
 import type { CreationsCloud } from '../../lib/creations-cloud'
 import { createStoredSyncedMarks } from '../../lib/creations-sync'
 import { creatorStorageNamespace } from '../../lib/creator-storage-namespace'
@@ -72,6 +73,7 @@ function StudioProClientSession({
   aiCredits = null,
   narrationEnabled = false,
   voiceInputEnabled = false,
+  incorporadoNoArquipelago = false,
 }: {
   viewerId: string | null
   audience?: 'adult' | 'kids'
@@ -85,6 +87,11 @@ function StudioProClientSession({
   aiCredits?: AiCreditsView | null
   narrationEnabled?: boolean
   voiceInputEnabled?: boolean
+  /**
+   * Aberto num quadro por cima do jogo (`?embed=arquipelago`, lacunas de 01/11/2026): ao sair, o
+   * projeto sobe e a rota avisa o jogo, em vez de navegar.
+   */
+  incorporadoNoArquipelago?: boolean
 }) {
   // ⚠️ O tema escuro não existe nesta plataforma desde 11/09/2026: este valor era uma
   // CONSTANTE calculada por um hook. Trocar por literal é apagar código morto, não mudar
@@ -120,13 +127,17 @@ function StudioProClientSession({
   // `pagehide` da fila também cobre, e o `/estudio` reconcilia e sobe o que ficou.
   const onExit = useCallback(() => {
     const leave = () =>
-      window.location.assign(
-        boundHandoff ? `/pensa?plano=${encodeURIComponent(boundHandoff.project.id)}` : '/estudio',
-      )
+      incorporadoNoArquipelago && avisarOJogo({ tipo: 'arquipelago-pro', evento: 'saiu' })
+        ? undefined
+        : window.location.assign(
+            boundHandoff
+              ? `/pensa?plano=${encodeURIComponent(boundHandoff.project.id)}`
+              : '/estudio',
+          )
     if (!cloud) return leave()
     if (cloud.getState().status === 'offline') return leave()
     void cloud.flush({ timeoutMs: EXIT_FLUSH_TIMEOUT_MS }).finally(leave)
-  }, [cloud, boundHandoff])
+  }, [cloud, boundHandoff, incorporadoNoArquipelago])
   const navigateTask = useCallback(
     (path: string) => {
       if (path.startsWith('/estudio/pro/') && path.split('?')[0] === window.location.pathname)
