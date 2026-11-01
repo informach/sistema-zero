@@ -127,9 +127,9 @@ describe('fronteira do jogo', () => {
       'next',
     ]
     const fora: string[] = []
+    // `@/` é o atalho do Admin: o pacote recebe as peças dele por `PecasDoAdmin`.
     for (const f of arquivos(join(PACOTES, 'arquipelago-admin', 'src')))
       for (const alvo of importsDe(readFileSync(f, 'utf8')))
-        // `@/` é o atalho do Admin: o pacote recebe as peças dele por `PecasDoAdmin`.
         if (alvo.startsWith('@/') || (externo(alvo) && casa(alvo, PROIBIDOS)))
           fora.push(`${relative(PACOTES, f)} → ${alvo}`)
     expect(fora).toEqual([])

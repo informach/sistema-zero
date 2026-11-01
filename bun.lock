@@ -156,6 +156,7 @@
         "fake-indexeddb": "6.2.5",
         "playwright-core": "1.60.0",
         "typescript": "^5.7.0",
+        "wrangler": "4.120.1",
       },
     },
     "packages/arquipelago-admin": {
