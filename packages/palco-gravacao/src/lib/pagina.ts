@@ -13,7 +13,10 @@ export interface PaginaDoPalco {
    * Blockly, um número, ou outro campo (texto ou um seletor do Estúdio, que só se sabe depois
    * de clicar).
    */
-  campo(texto: string, bloco?: string): { alvo: Alvo; tipo: 'menu' | 'numero' | 'outro' } | null
+  campo(
+    texto: string,
+    bloco?: string,
+  ): { alvo: Alvo; tipo: 'menu' | 'numero' | 'outro'; bloco: string } | null
   /** O que o campo clicado abriu: a lista de um menu ou seletor, ou a caixa de digitar. */
   aberto(): 'lista' | 'caixa' | null
   /** O espaço ao lado do rótulo de um bloco (o "fazer" de um Quando clicar ou tocar). */
@@ -30,6 +33,11 @@ export interface PaginaDoPalco {
   bloco(texto: string, area: 'paleta' | 'area'): Alvo | null
   /** O ponto logo abaixo de um bloco da área de trabalho, onde outro bloco encaixa embaixo dele. */
   abaixo(bloco: string): Alvo | null
+  /**
+   * Um ponto do fundo da área de código ao lado de um bloco, sem bloco nenhum embaixo: a mão
+   * parada em cima de um bloco faz o Blockly mostrar a dica dele.
+   */
+  perto(bloco: string): Alvo | null
 }
 
 let marks = 0
@@ -127,6 +135,13 @@ function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'
 const textosDe = (block: Element): Element[] =>
   [...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block)
 
+/** O primeiro rótulo fixo do bloco, o mais acima e à esquerda (um número de sombra vem antes no DOM). */
+const rotuloDe = (block: Element): Element | undefined =>
+  textosDe(block)
+    .filter((t) => !t.closest('.blocklyEditableField'))
+    .map((t) => ({ t, r: t.getBoundingClientRect() }))
+    .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)[0]?.t
+
 /** Um ponto de um elemento como alvo do robô (u, v de 0 a 1 da caixa dele). */
 function pontoEm(el: Element, x: number, y: number): Alvo {
   const r = el.getBoundingClientRect()
@@ -163,8 +178,11 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       if (!found) return null
       const field = found.closest('.blocklyEditableField') ?? found
       const r = field.getBoundingClientRect()
+      const dono = donoDe(field)
       return {
         alvo: pontoEm(field, r.left + r.width / 2, r.top + r.height / 2),
+        // O começo do texto do bloco do campo: é por ele que a mão se afasta depois.
+        bloco: (dono && rotuloDe(dono)?.textContent?.trim()) || (bloco ?? ''),
         // Os seletores do Estúdio (sprite, nome, som) herdam do campo de texto do Blockly e
         // abrem uma lista: pela classe, só se distinguem depois de clicar ("outro").
         tipo:
@@ -251,11 +269,7 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       // Na área, apontado no texto dele: o meio da caixa de um bloco com outros dentro cai fora
       // da barra dele, no fundo da área. O texto é o alvo, e o robô do EdiAula deixa a mão logo
       // abaixo dele, sem cobrir o que está escrito.
-      // O primeiro rótulo fixo, o mais acima e à esquerda (um número de sombra vem antes no DOM).
-      const rotulo = textosDe(block)
-        .filter((t) => !t.closest('.blocklyEditableField'))
-        .map((t) => ({ t, r: t.getBoundingClientRect() }))
-        .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)[0]?.t
+      const rotulo = rotuloDe(block)
       if (!rotulo) return pontoEm(block, r.left + 12, r.top + Math.min(r.height / 2, 18))
       const t = rotulo.getBoundingClientRect()
       return pontoEm(rotulo, t.left + t.width / 2, t.top + t.height / 2)
@@ -271,6 +285,40 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       )
       const r = (path ?? block).getBoundingClientRect()
       return pontoEm(area, r.left + 12, r.bottom + 10)
+    },
+
+    perto(texto) {
+      const area = areaDeTrabalho(doc)
+      const block = blocosCom(doc, texto)[0]
+      if (!area || !block) return null
+      const view = areaVisivel(doc, area)
+      // A primeira linha do bloco: os textos e campos dele na altura do primeiro rótulo.
+      const pecas = textosDe(block).map((t) =>
+        (t.closest('.blocklyEditableField') ?? t).getBoundingClientRect(),
+      )
+      const topo = pecas.sort((a, b) => a.top - b.top)[0]
+      if (!topo) return null
+      const linha = pecas.filter(
+        (r) => Math.abs(r.top + r.height / 2 - (topo.top + topo.height / 2)) < topo.height,
+      )
+      const direita = Math.max(...linha.map((r) => r.right))
+      const meio = topo.top + topo.height / 2
+      const b = block.getBoundingClientRect()
+      const fundo = (x: number, y: number) =>
+        x > view.left + 4 &&
+        x < view.right - 4 &&
+        y > view.top + 4 &&
+        y < view.bottom - 4 &&
+        doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+      for (const [x, y] of [
+        [direita + 28, meio],
+        [direita + 56, meio],
+        [b.left - 24, meio],
+        [b.left + 24, b.top - 16],
+        [direita + 28, meio + topo.height],
+      ] as const)
+        if (fundo(x, y)) return pontoEm(area, x, y)
+      return null
     },
 
     temBotao(nome) {
