@@ -310,12 +310,14 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         y > view.top + 4 &&
         y < view.bottom - 4 &&
         doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+      // A seta cresce na edição (o EdiAula aumenta o cursor) para baixo e para a direita da
+      // ponta: à direita ela se afasta do bloco; à esquerda e acima, a folga cobre o corpo dela.
       for (const [x, y] of [
-        [direita + 28, meio],
-        [direita + 56, meio],
-        [b.left - 24, meio],
-        [b.left + 24, b.top - 16],
-        [direita + 28, meio + topo.height],
+        [direita + 44, meio],
+        [direita + 80, meio],
+        [b.left - 72, meio],
+        [b.left - 40, b.top - 64],
+        [direita + 44, meio + topo.height + 12],
       ] as const)
         if (fundo(x, y)) return pontoEm(area, x, y)
       return null
