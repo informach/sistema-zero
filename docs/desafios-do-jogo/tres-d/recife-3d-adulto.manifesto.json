@@ -41,8 +41,8 @@
               "name": "chao-recife",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:bde46f3201e8731466295f26cd2d022bf3a04b1d3b90682b8512c6d72e5525d4",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJkZTQ2ZjMyMDFlODczMTQ2NjI5NWYyNmNkMmQwMjJiZjNhMDRiMWQzYjkwNjgyYjg1MTJjNmQ3MmU1NTI1ZDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:5e60c96b2e0a5e74b89e7696a13ce9bede46910c28af99f6e82ddf2081b5e404",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVlNjBjOTZiMmUwYTVlNzRiODllNzY5NmExM2NlOWJlZGU0NjkxMGMyOGFmOTlmNmU4MmRkZjIwODFiNWU0MDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-recife.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-recife",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:bde46f3201e8731466295f26cd2d022bf3a04b1d3b90682b8512c6d72e5525d4",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJkZTQ2ZjMyMDFlODczMTQ2NjI5NWYyNmNkMmQwMjJiZjNhMDRiMWQzYjkwNjgyYjg1MTJjNmQ3MmU1NTI1ZDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:5e60c96b2e0a5e74b89e7696a13ce9bede46910c28af99f6e82ddf2081b5e404",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjVlNjBjOTZiMmUwYTVlNzRiODllNzY5NmExM2NlOWJlZGU0NjkxMGMyOGFmOTlmNmU4MmRkZjIwODFiNWU0MDQifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-recife.glb"
             },
             {

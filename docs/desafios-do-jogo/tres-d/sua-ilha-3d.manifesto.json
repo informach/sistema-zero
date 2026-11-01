@@ -41,8 +41,8 @@
               "name": "chao-sua-ilha",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:c47430029006463dacd4067ee4f6db5906a6733614e1027a11c6c776761ca202",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0NzQzMDAyOTAwNjQ2M2RhY2Q0MDY3ZWU0ZjZkYjU5MDZhNjczMzYxNGUxMDI3YTExYzZjNzc2NzYxY2EyMDIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:60e46e3f118c5be95343173f229f84f46b90c5e7ea79bd37d4565a3ecd0f8175",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjYwZTQ2ZTNmMTE4YzViZTk1MzQzMTczZjIyOWY4NGY0NmI5MGM1ZTdlYTc5YmQzN2Q0NTY1YTNlY2QwZjgxNzUifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-sua-ilha.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-sua-ilha",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:c47430029006463dacd4067ee4f6db5906a6733614e1027a11c6c776761ca202",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM0NzQzMDAyOTAwNjQ2M2RhY2Q0MDY3ZWU0ZjZkYjU5MDZhNjczMzYxNGUxMDI3YTExYzZjNzc2NzYxY2EyMDIifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:60e46e3f118c5be95343173f229f84f46b90c5e7ea79bd37d4565a3ecd0f8175",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6IjYwZTQ2ZTNmMTE4YzViZTk1MzQzMTczZjIyOWY4NGY0NmI5MGM1ZTdlYTc5YmQzN2Q0NTY1YTNlY2QwZjgxNzUifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-sua-ilha.glb"
             },
             {

@@ -41,8 +41,8 @@
               "name": "chao-pico",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:c6849d19e280bb306ef82b2a9c73382a4fbd93042d5f50d39aa801d3b54f30aa",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM2ODQ5ZDE5ZTI4MGJiMzA2ZWY4MmIyYTljNzMzODJhNGZiZDkzMDQyZDVmNTBkMzlhYTgwMWQzYjU0ZjMwYWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:bd01e0eb0b48d08a58d66fab598ff5b5f2824977b4de473d5468ee9bb95f7473",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJkMDFlMGViMGI0OGQwOGE1OGQ2NmZhYjU5OGZmNWI1ZjI4MjQ5NzdiNGRlNDczZDU0NjhlZTliYjk1Zjc0NzMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-pico.glb"
             },
             {
@@ -958,8 +958,8 @@
               "name": "chao-pico",
               "kind": "model3d",
               "source": "library",
-              "libId": "modelo-curso:c6849d19e280bb306ef82b2a9c73382a4fbd93042d5f50d39aa801d3b54f30aa",
-              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImM2ODQ5ZDE5ZTI4MGJiMzA2ZWY4MmIyYTljNzMzODJhNGZiZDkzMDQyZDVmNTBkMzlhYTgwMWQzYjU0ZjMwYWEifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
+              "libId": "modelo-curso:bd01e0eb0b48d08a58d66fab598ff5b5f2824977b4de473d5468ee9bb95f7473",
+              "dataUrl": "data:model/gltf-binary;base64,Z2xURgIAAADMAAAAuAAAAEpTT057ImFzc2V0Ijp7InZlcnNpb24iOiIyLjAiLCJnZW5lcmF0b3IiOiJTaXN0ZW1hIFplcm8iLCJleHRyYXMiOnsic3pNb2RlbG9DdXJzbyI6ImJkMDFlMGViMGI0OGQwOGE1OGQ2NmZhYjU5OGZmNWI1ZjI4MjQ5NzdiNGRlNDczZDU0NjhlZTliYjk1Zjc0NzMifX0sInNjZW5lIjowLCJzY2VuZXMiOlt7Im5vZGVzIjpbXX1dfSAg",
               "originalFileName": "chao-pico.glb"
             },
             {
