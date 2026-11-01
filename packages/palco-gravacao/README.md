@@ -8,10 +8,13 @@ no staging, só para a equipe. Nada do que acontece aqui é salvo.
 - **Entrada:** e-mail e senha de uma conta da equipe (superadmin, admin ou staff, ativa), pelo
   auth do ambiente. Impersonação e sessão de perfil do Kids não entram (`src/lib/staff.ts`). O
   `src/proxy.ts` pede a sessão em toda página e rota e renova o token vencido.
-- **A aula:** cole o endereço de uma aula do Kids (`…/cursos/<curso>/aulas/<aula>`) no início, ou
-  abra `/aulas/<curso>/<aula>`. A aula é lida pelo gateway com o token da equipe, que vê tudo
-  aberto, sem trava e sem progresso. Cada abertura é uma tomada nova (`?tomada=`): o Estúdio e as
-  atividades começam do zero.
+- **A aula:** no início, escolha o curso (o catálogo do Kids, `/members/catalog?audience=kids`)
+  e depois a aula daquele curso. Também dá para colar o endereço de uma aula do Kids
+  (`…/cursos/<curso>/aulas/<aula>`), abrir a lista de aulas de um curso em `/aulas/<curso>` ou
+  abrir `/aulas/<curso>/<aula>` direto. A aula é lida pelo gateway com o token da equipe, que vê
+  tudo aberto, sem trava e sem progresso. Cada abertura é uma tomada nova (`?tomada=`): o Estúdio
+  e as atividades começam do zero. A página é a do Kids: o mesmo `<main>` com a pele `kids-aula`,
+  a largura toda e a barra de cima em 860 px, com o botão de voltar para a lista de aulas.
 - **Mesmos componentes do Kids:** o alias `@/` aponta para `packages/community-kids/src`, então o
   player, os blocos, o Estúdio, o livro 3D, as cenas, o CSS e as fontes são os do Kids, sem cópia.
   O palco não muda nenhum outro pacote.

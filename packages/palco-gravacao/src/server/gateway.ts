@@ -65,9 +65,11 @@ type RefreshResult = AuthTokens | 'invalid' | 'unavailable'
  * usado como roubo e derruba a sessão inteira, então pedidos que chegam juntos com o token
  * vencido (a navegação e a posição do vídeo, no meio de uma tomada) esperam a mesma renovação.
  */
-const refreshes: Map<string, { at: number; result: Promise<RefreshResult> }> = ((
-  globalThis as { __palcoRefreshes?: Map<string, { at: number; result: Promise<RefreshResult> }> }
-).__palcoRefreshes ??= new Map())
+const shared = globalThis as {
+  __palcoRefreshes?: Map<string, { at: number; result: Promise<RefreshResult> }>
+}
+shared.__palcoRefreshes ??= new Map()
+const refreshes = shared.__palcoRefreshes
 const REFRESH_REUSE_MS = 30_000
 
 /** Renova a sessão. `unavailable`: o auth não respondeu (a sessão continua). */
@@ -109,6 +111,7 @@ export async function logout(refreshToken: string): Promise<void> {
 const enc = encodeURIComponent
 
 export const paths = {
+  catalog: '/members/catalog?audience=kids',
   course: (slug: string) => `/members/courses/${enc(slug)}`,
   lesson: (slug: string, lessonId: string) =>
     `/members/courses/${enc(slug)}/lessons/${enc(lessonId)}`,
