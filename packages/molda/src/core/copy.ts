@@ -131,8 +131,12 @@ export const COPY = {
       autoRigged: 'O Molda colocou os ossos sozinho. Ficou torto? Ajuste os ossos.',
       adjust: 'Ajustar os ossos',
       autoFailed: 'Não deu para achar o corpo sozinho. Marque os pontos no palco: é rapidinho.',
-      autoFailedBasic:
-        'Não deu para achar o corpo sozinho. Deixe o personagem em pé, de frente, com os braços abertos ou afastados do corpo, e tente de novo.',
+      unrig: 'Tirar os ossos',
+      unrigHint:
+        'Os ossos e os movimentos deste personagem saem; as peças ficam. Depois, é só clicar num movimento para o Molda colocar de novo.',
+      unrigged:
+        'Ossos tirados. Clique num movimento para o Molda colocar de novo. Dá para desfazer.',
+      unrigChoose: 'Escolha uma peça do personagem que vai perder os ossos.',
       simple: 'Movimentos de uma peça (pular, balançar, girar)',
       applied: (name: string) => `${name} está no personagem, com as poses na linha do tempo.`,
       speed: 'Velocidade',

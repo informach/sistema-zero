@@ -355,6 +355,24 @@ export function removeCharacterBones(source: MoldaSceneDocument, ids: readonly s
   return removeOldBones(source, target.meshIds)
 }
 
+/** As peças que um esqueleto de personagem move (as que têm vínculo com algum osso dele). */
+export function characterRigPieces(source: MoldaSceneDocument, rig: CharacterRig) {
+  const joints = new Set(rig.joints.values())
+  return (source.skins ?? [])
+    .filter((skin) => skin.joints.some((joint) => joints.has(joint.nodeId)))
+    .map((skin) => skin.nodeId)
+}
+
+/**
+ * Tira um esqueleto de personagem inteiro, seja qual for a escolha do momento (em Animar, ela
+ * costuma ser um osso): o vínculo das peças, os ossos e os movimentos que só mexiam neles.
+ */
+export function removeCharacterRig(source: MoldaSceneDocument, rig: CharacterRig) {
+  const pieces = characterRigPieces(source, rig)
+  requireScene(pieces.length > 0, 'skins', 'Este personagem não tem ossos para remover.')
+  return removeOldBones(source, pieces)
+}
+
 /**
  * Tira os ossos antigos das peças do personagem: o vínculo de cada peça, os ossos que ninguém
  * mais usa (nunca uma peça nem o que está pendurado nela) e os movimentos que ficaram vazios.

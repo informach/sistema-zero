@@ -9,9 +9,8 @@ import {
   type CharacterMotionCategory,
   type CharacterMotionControl,
 } from '../../../scene/characterMotions'
-import { useMoldaToolAccess } from '../../toolAccess'
 import { Button } from '../../ui/Button'
-import { Check, PersonStanding, Sparkles, Star, X } from '../../ui/icons'
+import { Check, PersonStanding, Sparkles, Star, Trash2, X } from '../../ui/icons'
 import { SceneCharacterRigSteps } from './SceneCharacterRigSection'
 import { sceneAnimationFormNumber } from './sceneAnimationForm'
 import { SCENE_APPEARANCE_FIELD as field } from './sceneAppearanceForm'
@@ -40,7 +39,6 @@ export function SceneAnimationPresets({
   const copy = COPY.scene
   const motions = copy.characterMotions
   const library = useCharacterMotionLibrary()
-  const canMark = useMoldaToolAccess().can('model.skin')
   const motion = useCharacterMotion(workshop, library.motions)
   const character = motion.rigged
   // Cada personagem tem no máximo um de cada: o guardado é o clipe com o nome que mexe os ossos dele.
@@ -70,19 +68,15 @@ export function SceneAnimationPresets({
       workshop.requestTransition(() => {
         const points = motion.guess()
         // Peças que já têm ossos perdem os ossos e os movimentos deles: primeiro mostra e avisa.
-        if (points && motion.replaced() > 0 && canMark) {
+        if (points && motion.replaced() > 0) {
           setManual(false)
           characterRig.start(workshop.selected, true, choice, points)
           return
         }
         // Primeira vez, como no Mixamo: os ossos entram sozinhos junto do movimento.
         if (points && motion.rigAndChoose(choice, points)) return
-        // Silhueta que não parece um corpo: marcar os 5 pontos ali mesmo no palco. Marcar à mão é
-        // de Ossos e pesos (profissional); sem ele, o painel explica como deixar o personagem.
-        if (!canMark) {
-          setMessage(motions.autoFailedBasic)
-          return
-        }
+        // Silhueta que não parece um corpo: marcar os 5 pontos ali mesmo no palco, em qualquer
+        // nível (os ossos sozinhos também valem em qualquer nível).
         setManual(true)
         characterRig.start(workshop.selected, true, choice)
       })
@@ -168,45 +162,56 @@ export function SceneAnimationPresets({
     >
       <fieldset className="space-y-2 rounded-xl border border-mld-border bg-mld-bg p-2">
         <legend className="px-1 text-sm font-bold">{motions.title}</legend>
-        {MOTION_CATEGORIES.map((category) => (
-          <fieldset key={category}>
-            <legend className="mb-1 text-xs font-bold text-mld-muted">
-              {motions.categories[category]}
-            </legend>
+        {/* O que está no personagem vem primeiro: a lista de movimentos é longa e a área tem
+            rolagem (às vezes só uns 370px), então ossos e controles embaixo dela ficavam fora da
+            vista. Os ossos, por serem o que corrige a deformação, ficam no topo de tudo. */}
+        {character && !characterRig.draft && (
+          // Os ossos que o Molda pôs (ou os de antes) dão para corrigir ou tirar, em qualquer nível.
+          <div className="space-y-1 rounded-lg border border-mld-border p-2">
+            {motion.auto && <p className="text-xs text-mld-muted">{motions.autoRigged}</p>}
             <div className="grid grid-cols-2 gap-1">
-              {CHARACTER_MOTIONS.filter(
-                (kind) => CHARACTER_MOTION_INFO[kind].category === category,
-              ).map((kind) => choiceButton({ kind }))}
+              <Button
+                size="compact"
+                className="w-full px-2 text-xs"
+                onClick={() =>
+                  workshop.requestTransition(() => {
+                    // Os ossos em repouso, com os pontos achados já marcados: é só corrigir. Vale o
+                    // personagem inteiro, não a escolha (em Animar ela costuma ser um osso). A
+                    // linha do tempo só sai do movimento se a marcação abrir.
+                    setManual(false)
+                    setMessage(null)
+                    const pieces = motion.pieces()
+                    if (
+                      characterRig.start(
+                        pieces,
+                        true,
+                        motion.current ?? null,
+                        motion.guess(pieces) ?? [],
+                      )
+                    )
+                      workshop.animation.setClip(null, null)
+                  })
+                }
+              >
+                <PersonStanding aria-hidden="true" className="size-4" />
+                {motions.adjust}
+              </Button>
+              <Button
+                size="compact"
+                className="w-full px-2 text-xs"
+                onClick={() =>
+                  workshop.requestTransition(() => {
+                    setMessage(motion.unrig() ? motions.unrigged : motions.unrigChoose)
+                  })
+                }
+              >
+                <Trash2 aria-hidden="true" className="size-4" />
+                {motions.unrig}
+              </Button>
             </div>
-          </fieldset>
-        ))}
-        {library.motions.length > 0 && (
-          <fieldset>
-            <legend className="mb-1 text-xs font-bold text-mld-muted">
-              {motions.categories.meus}
-            </legend>
-            <ul className="space-y-1">
-              {library.motions.map((entry) => (
-                <li key={entry.id} className="flex gap-1">
-                  <div className="grid min-w-0 flex-1">
-                    {choiceButton({ kind: 'custom', id: entry.id, data: entry.data })}
-                  </div>
-                  <Button
-                    size="compact"
-                    className="px-2"
-                    aria-label={motions.mineRemove(entry.data.name)}
-                    onClick={() => library.remove(entry.id)}
-                  >
-                    <X aria-hidden="true" className="size-4" />
-                  </Button>
-                </li>
-              ))}
-            </ul>
-          </fieldset>
+            <p className="text-xs text-mld-muted">{motions.unrigHint}</p>
+          </div>
         )}
-        <span id={savedHint} hidden>
-          {motions.saved}
-        </span>
         {characterRig.draft ? (
           <section
             className="space-y-2 rounded-lg border border-mld-accent p-2"
@@ -278,44 +283,9 @@ export function SceneAnimationPresets({
               </label>
             )}
             <p className="text-xs text-mld-muted">{motions.tuneHint}</p>
-            {motion.auto && <p className="text-xs text-mld-muted">{motions.autoRigged}</p>}
-            {canMark && (
-              <Button
-                size="compact"
-                className="w-full"
-                onClick={() =>
-                  workshop.requestTransition(() => {
-                    // Os ossos em repouso, com os pontos achados já marcados: é só corrigir. A
-                    // linha do tempo só sai do movimento se a marcação abrir.
-                    setManual(false)
-                    if (
-                      characterRig.start(
-                        workshop.selected,
-                        true,
-                        motion.current!,
-                        motion.guess() ?? [],
-                      )
-                    )
-                      workshop.animation.setClip(null, null)
-                  })
-                }
-              >
-                <PersonStanding aria-hidden="true" className="size-4" />
-                {motions.adjust}
-              </Button>
-            )}
           </div>
         ) : (
           <p className="text-xs text-mld-muted">{character ? motions.hint : motions.missing}</p>
-        )}
-        {character && motion.savable && motion.current?.kind !== 'custom' && (
-          <div className="space-y-1 rounded-lg border border-mld-border p-2">
-            <p className="text-xs text-mld-muted">{motions.saveMineHint}</p>
-            <Button size="compact" className="w-full" onClick={saveMine}>
-              <Star aria-hidden="true" className="size-4" />
-              {motions.saveMine}
-            </Button>
-          </div>
         )}
         {(message || library.error) && (
           <p role="status" className="text-xs">
@@ -326,6 +296,54 @@ export function SceneAnimationPresets({
           <p role="alert" className="text-xs text-mld-danger">
             {characterRig.error}
           </p>
+        )}
+        {MOTION_CATEGORIES.map((category) => (
+          <fieldset key={category}>
+            <legend className="mb-1 text-xs font-bold text-mld-muted">
+              {motions.categories[category]}
+            </legend>
+            <div className="grid grid-cols-2 gap-1">
+              {CHARACTER_MOTIONS.filter(
+                (kind) => CHARACTER_MOTION_INFO[kind].category === category,
+              ).map((kind) => choiceButton({ kind }))}
+            </div>
+          </fieldset>
+        ))}
+        {library.motions.length > 0 && (
+          <fieldset>
+            <legend className="mb-1 text-xs font-bold text-mld-muted">
+              {motions.categories.meus}
+            </legend>
+            <ul className="space-y-1">
+              {library.motions.map((entry) => (
+                <li key={entry.id} className="flex gap-1">
+                  <div className="grid min-w-0 flex-1">
+                    {choiceButton({ kind: 'custom', id: entry.id, data: entry.data })}
+                  </div>
+                  <Button
+                    size="compact"
+                    className="px-2"
+                    aria-label={motions.mineRemove(entry.data.name)}
+                    onClick={() => library.remove(entry.id)}
+                  >
+                    <X aria-hidden="true" className="size-4" />
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          </fieldset>
+        )}
+        <span id={savedHint} hidden>
+          {motions.saved}
+        </span>
+        {character && motion.savable && motion.current?.kind !== 'custom' && (
+          <div className="space-y-1 rounded-lg border border-mld-border p-2">
+            <p className="text-xs text-mld-muted">{motions.saveMineHint}</p>
+            <Button size="compact" className="w-full" onClick={saveMine}>
+              <Star aria-hidden="true" className="size-4" />
+              {motions.saveMine}
+            </Button>
+          </div>
         )}
       </fieldset>
       <button

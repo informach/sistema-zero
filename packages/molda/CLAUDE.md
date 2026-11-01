@@ -95,8 +95,15 @@ mistura o joelho até o meio da coxa). Profundidade de cada junta = meio do corp
     renomeia as folhas e os nós `[base n]` / `[pose]` dos ossos de personagem para
     `mixamorig:Hips` etc., e o segundo personagem usa `mixamorig2:`. Os espelhos ficam fora. A
     opção só aparece com `files.interop` e um esqueleto de personagem.
-  - **Nível básico:** sem `model.skin`, a marcação à mão não existe. Se o automático falhar, o
-    painel explica como deixar o personagem (`autoFailedBasic`), e "Ajustar os ossos" some.
+  - **Qualquer nível (01/11):** os ossos sozinhos valem em todo nível, então corrigir e tirar
+    também. Em Animar, a marcação dos 5 pontos (automático que falhou ou "Ajustar os ossos") não
+    depende de `model.skin`: `useCharacterRigBuilder` liga em `mode === 'animation'` sempre; em
+    Modelar → Ossos e pesos continua profissional. Com esqueleto, a galeria tem um bloco fixo com
+    "Ajustar os ossos" e "Tirar os ossos". Os dois valem o PERSONAGEM, não a escolha (em Animar ela
+    costuma ser um osso, e `characterRigTarget` de um osso não acha peça):
+    `characterRigPieces` (peças com vínculo a um osso dele) alimenta a marcação e `guess(ids)`;
+    `removeCharacterRig` (`useCharacterMotion.unrig`) tira ossos, vínculos e movimentos num passo
+    de desfazer e larga a linha do tempo antes. As peças ficam com os cortes das juntas.
 - **Movimentos** (`scene/characterMotions.ts`): Parado 3 s, Andando 1 s, Correndo 0,7 s, Pulando
   1,2 s, no lugar e em loop, Força 0,5–1,5. Poses em eixos canônicos (X esquerda, Y cima, Z
   frente) presas ao osso de cima; trilha local = R⁻¹·g·R com o giro de repouso R de cada junta.

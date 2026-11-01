@@ -628,8 +628,9 @@ export function useSceneWorkshop(editor: EditorStore<MoldaSceneDocument>) {
   const characterRig = useCharacterRigBuilder(
     editor,
     run,
-    // Montar o esqueleto vale em Ossos e pesos e também direto em Animar, pelos movimentos.
-    rigAllowed && (mode === 'animation' || (mode === 'model' && area === 'skin')),
+    // Montar o esqueleto vale em Ossos e pesos (profissional) e, em qualquer nível, direto em
+    // Animar, pelos movimentos: os ossos que o Molda põe sozinho precisam poder ser corrigidos.
+    mode === 'animation' || (rigAllowed && mode === 'model' && area === 'skin'),
   )
   const solidCut = useSceneSolidCut(editor, (next) => !!run(() => next))
   const knife = useSceneKnife(editor, (next) => !!run(() => next))

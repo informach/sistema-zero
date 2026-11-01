@@ -6,6 +6,7 @@ import { resolvePaletteColors } from '../../../core/sanitize'
 import { SCENE_FIRST_STEPS_COPY as firstSteps } from '../../../core/sceneFirstStepsCopy'
 import { SCENE_PAINT_COPY } from '../../../core/scenePaintCopy'
 import { structuredBytes } from '../../../core/structuredBytes'
+import { type MoldaToolAccess, moldaToolFamilyIds } from '../../../core/toolFamilies'
 import {
   captureSceneAnimationPoseSet,
   pasteSceneAnimationPoseSet,
@@ -66,6 +67,7 @@ import type {
   SceneViewportFactory,
   SceneViewportPort,
 } from '../../../viewport/sceneViewportTypes'
+import { MoldaToolAccessProvider } from '../../toolAccess'
 import { SceneWorkshop } from './SceneWorkshop'
 
 function openMoreComponentTools() {
@@ -121,6 +123,8 @@ function setup(
   asset = migrateLegacyModel(makeModel()).document,
   persistedEditor?: SceneEditorStore,
   options: {
+    /** Nível de jornada: sem ele, tudo liberado. */
+    access?: MoldaToolAccess
     renderThumb?: () => string | null
     resyncToStudio?: (asset: {
       id: string
@@ -220,12 +224,14 @@ function setup(
   }
   const view = render(
     <StrictMode>
-      <SceneWorkshop
-        editor={editor}
-        storage={persistedEditor?.storage}
-        viewportFactory={factory}
-        {...(options.resyncToStudio ? { resyncToStudio: options.resyncToStudio as never } : {})}
-      />
+      <MoldaToolAccessProvider access={options.access}>
+        <SceneWorkshop
+          editor={editor}
+          storage={persistedEditor?.storage}
+          viewportFactory={factory}
+          {...(options.resyncToStudio ? { resyncToStudio: options.resyncToStudio as never } : {})}
+        />
+      </MoldaToolAccessProvider>
     </StrictMode>,
   )
   function openInspector() {
@@ -1546,6 +1552,79 @@ describe('scene workshop integration', () => {
       expect(
         within(details()).getByRole('button', { name: 'Andando' }).getAttribute('aria-pressed'),
       ).toBe('true')
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('sem Ossos e pesos, os ossos que o Molda pôs dão para ajustar e tirar em Animar', async () => {
+    const { document: source } = makeCharacterFixture()
+    const { editor, view, ports, openInspector } = setup(source, undefined, {
+      access: { allow: moldaToolFamilyIds(['basic', 'intermediate']) },
+    })
+    const copy = COPY.scene
+    const motions = copy.characterMotions
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      await screen.findByRole('region', { name: copy.animationPresetTitle })
+      const details = () => within(screen.getByRole('region', { name: copy.animationPresetTitle }))
+      fireEvent.click(details().getByRole('button', { name: 'Andando' }))
+      const rig = findCharacterRigs(editor.getState().asset)[0]!
+      // O texto manda ajustar: o botão tem de existir em qualquer nível.
+      expect(details().getByText(motions.autoRigged)).toBeDefined()
+      // Em Animar a escolha costuma ser um osso: ajustar vale o personagem inteiro mesmo assim.
+      act(() => ports.at(-1)!.callbacks.select(rig.joints.get('forearmL')!, false))
+      fireEvent.click(details().getByRole('button', { name: motions.adjust }))
+      const area = within(await details().findByRole('region', { name: copy.characterRig.title }))
+      expect(area.getByRole('status').textContent).toBe(copy.characterRig.preview)
+      expect(area.getByText(copy.characterRig.thenMotion('Andando'))).toBeDefined()
+      fireEvent.click(area.getByRole('button', { name: copy.characterRig.cancel }))
+      // Tirar os ossos: o esqueleto e os movimentos dele saem, as peças ficam, um desfazer volta.
+      const withRig = editor.getState().asset
+      act(() => ports.at(-1)!.callbacks.select(rig.joints.get('shinR')!, false))
+      fireEvent.click(details().getByRole('button', { name: motions.unrig }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(0)
+      expect(editor.getState().asset.skins ?? []).toEqual([])
+      expect(editor.getState().asset.animations ?? []).toEqual([])
+      expect(details().getByText(motions.unrigged)).toBeDefined()
+      expect(details().getByText(motions.missing)).toBeDefined()
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.undo }))
+      expect(editor.getState().asset.nodes).toEqual(withRig.nodes)
+      expect(editor.getState().asset.skins).toEqual(withRig.skins)
+      expect(editor.getState().asset.animations).toEqual(withRig.animations)
+      // Com tudo tirado, um clique põe os ossos de novo.
+      fireEvent.click(screen.getByRole('button', { name: COPY.editor.redo }))
+      fireEvent.click(details().getByRole('button', { name: 'Correndo' }))
+      expect(findCharacterRigs(editor.getState().asset)).toHaveLength(1)
+      expect(editor.getState().asset.animations?.map((clip) => clip.name)).toEqual(['Correndo'])
+    } finally {
+      view.unmount()
+      editor.getState().dispose()
+    }
+  })
+
+  test('sem Ossos e pesos, um corpo que a silhueta não reconhece também pede os 5 pontos', async () => {
+    const source = addScenePrimitive(
+      createSceneProject({ kind: 'empty', name: 'Cubo' }),
+      'box',
+      'cubo',
+    )
+    const { editor, view, ports, openInspector } = setup(source, undefined, {
+      access: { allow: moldaToolFamilyIds(['basic']) },
+    })
+    const copy = COPY.scene
+    try {
+      await waitFor(() => expect(ports.length).toBeGreaterThan(0))
+      openInspector()
+      fireEvent.click(screen.getByRole('button', { name: copy.animationMode }))
+      const details = within(await screen.findByRole('region', { name: copy.animationPresetTitle }))
+      fireEvent.click(details.getByRole('button', { name: 'Andando' }))
+      const area = within(await details.findByRole('region', { name: copy.characterRig.title }))
+      expect(area.getByText(copy.characterMotions.autoFailed)).toBeDefined()
+      expect(area.getByRole('status').textContent).toBe(copy.characterRig.marks.chin)
     } finally {
       view.unmount()
       editor.getState().dispose()

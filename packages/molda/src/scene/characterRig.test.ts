@@ -21,6 +21,7 @@ import {
   findCharacterRigs,
   layoutCharacterSkeleton,
   removeCharacterBones,
+  removeCharacterRig,
 } from './characterRig'
 import { addScenePrimitive, renameSceneNode } from './commands'
 import { indexSceneDocument } from './documentIndex'
@@ -549,4 +550,23 @@ test('remover ossos tira o esqueleto, os vínculos e os movimentos, mas deixa as
     source.nodes.map((node) => node.name).sort(),
   )
   expect(() => removeCharacterBones(clean, [group])).toThrow(SceneValidationError)
+})
+
+test('tirar o esqueleto pelo personagem não depende da escolha (em Animar, um osso)', () => {
+  const { document: built, source } = rigged()
+  const walking = createCharacterMotion(
+    built,
+    [],
+    { kind: 'walk', name: 'Andando', duration: 1, amount: 1 },
+    nextId,
+  )
+  const rig = findCharacterRigs(walking)[0]!
+  const clean = removeCharacterRig(walking, rig)
+  expect(findCharacterRigs(clean)).toHaveLength(0)
+  expect(clean.skins).toEqual([])
+  expect(clean.animations).toEqual([])
+  expect(clean.nodes.map((node) => node.name).sort()).toEqual(
+    source.nodes.map((node) => node.name).sort(),
+  )
+  expect(() => removeCharacterRig(clean, rig)).toThrow(SceneValidationError)
 })

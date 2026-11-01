@@ -16,9 +16,11 @@ import {
 } from '../../../scene/characterMotions'
 import {
   buildCharacterRig,
+  characterRigPieces,
   characterRigTarget,
   findCharacterRigs,
   layoutCharacterSkeleton,
+  removeCharacterRig,
 } from '../../../scene/characterRig'
 import type { MoldaSceneDocument } from '../../../scene/document'
 import { keepSceneThumb, sameSceneContent } from '../../../scene/documentContent'
@@ -263,15 +265,47 @@ export function useCharacterMotion(
       }
     },
     /** Os pontos que a silhueta acha (nulo quando não parece um corpo). */
-    guess(): Vec3[] | null {
+    guess(ids: readonly string[] = live.current.selected): Vec3[] | null {
       const now = live.current
       try {
-        const points = guessCharacterMarks(now.document, now.selected)
-        layoutCharacterSkeleton(now.document, now.selected, points, true)
+        const points = guessCharacterMarks(now.document, ids)
+        layoutCharacterSkeleton(now.document, ids, points, true)
         return points
       } catch {
         return null
       }
+    },
+    /**
+     * As peças do personagem que tem ossos (as que eles movem), para ajustar sem depender da
+     * escolha: em Animar ela costuma ser um osso. Sem esqueleto, vale a escolha.
+     */
+    pieces(): readonly string[] {
+      const now = live.current
+      try {
+        const pieces = characterRigPieces(now.document, characterRigFor(now.document, now.selected))
+        return pieces.length ? pieces : now.selected
+      } catch {
+        return now.selected
+      }
+    },
+    /**
+     * Tira o esqueleto do personagem e os movimentos dele num passo de desfazer, para colocar de
+     * novo. As peças continuam no lugar. Falso quando não deu.
+     */
+    unrig() {
+      const now = live.current
+      let rig: ReturnType<typeof characterRigFor>
+      try {
+        rig = characterRigFor(now.document, now.selected)
+      } catch {
+        return false
+      }
+      // A linha do tempo larga o movimento antes: ele vai sair junto com os ossos.
+      animation.setClip(null, null)
+      const next = now.run((source) => keepSceneThumb(removeCharacterRig(source, rig), source))
+      if (!next) return false
+      setAuto(false)
+      return true
     },
     /** Peças da escolha que já têm ossos (montar troca esses ossos e leva os movimentos deles). */
     replaced() {
