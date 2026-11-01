@@ -59,10 +59,12 @@ const visivel = (el: Element): boolean => {
 const texto = (el: Element): string => (el.textContent ?? '').replace(/\s+/g, ' ').trim()
 
 // A barra de um rótulo é dita "ou": o bloco "Quando clicar/tocar" é "Quando clicar ou tocar" na fala.
+// O emoji da categoria não é dito: "🏷️ Variáveis" é "Variáveis".
 const fold = (s: string): string =>
   s
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
+    .replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, '')
     .toLowerCase()
     .replace(/\s*\/\s*/g, ' ou ')
     .replace(/\s+/g, ' ')

@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
 import type { PaginaDoPalco } from '../src/lib/pagina'
@@ -307,6 +308,24 @@ describe('rotas da aula no palco', () => {
         ],
       },
     })
+  })
+
+  test('enviado=1 abre o Estúdio com o projeto já enviado, e só ele muda', () => {
+    const now = new Date('2026-11-01T12:00:00Z')
+    const lesson = {
+      id: 'a',
+      blocks: [
+        { id: 'e', kind: 'studio', sortOrder: 1, content: {} },
+        { id: 'v', kind: 'video', sortOrder: 2, content: {} },
+      ],
+    } as unknown as Parameters<typeof enviada>[0]
+    const aula = enviada(lesson, now)
+    expect(aula.blocks[0]?.studioState).toEqual({
+      submitted: true,
+      submittedAt: '2026-11-01T12:00:00.000Z',
+    })
+    expect(aula.blocks[1]).toBe(lesson.blocks[1])
+    expect(lesson.blocks[0]?.studioState).toBeUndefined()
   })
 
   test('cada tomada começa do projeto inicial: nada enviado nem trazido', () => {

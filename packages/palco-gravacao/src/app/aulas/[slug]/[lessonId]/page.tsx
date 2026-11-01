@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { notFound, redirect } from 'next/navigation'
 import type { CourseDetailView, LessonDetailView } from '@/lib/types'
+import { enviada } from '~/lib/aula-enviada'
 import { recordingPart } from '~/lib/recording-part'
 import { staffAccess } from '~/server/access'
 import { gatewayFetch, paths, readJson } from '~/server/gateway'
@@ -14,16 +15,19 @@ export const dynamic = 'force-dynamic'
  * progresso (é assim que o members serve a equipe). Cada abertura é uma tomada nova
  * (`?tomada=`): o Estúdio e as atividades começam do zero, e atualizar a página dentro da
  * mesma tomada não apaga o que já foi feito. `?parte=N` abre a aula direto na parte N (cada
- * parte da aula é gravada num plano próprio do EdiAula).
+ * parte da aula é gravada num plano próprio do EdiAula). `&enviado=1` abre o Estúdio com o
+ * projeto já enviado, como fica para quem enviou numa parte anterior (o Compartilhar da última
+ * parte só libera depois do envio).
  */
 export default async function AulaPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string; lessonId: string }>
-  searchParams: Promise<{ tomada?: string; parte?: string }>
+  searchParams: Promise<{ tomada?: string; parte?: string; enviado?: string }>
 }) {
-  const [{ slug, lessonId }, { tomada, parte }] = await Promise.all([params, searchParams])
+  const [{ slug, lessonId }, { tomada, parte, enviado }] = await Promise.all([params, searchParams])
+  const sent = enviado === '1' ? '&enviado=1' : ''
   const here = `/aulas/${encodeURIComponent(slug)}/${encodeURIComponent(lessonId)}`
   let numero: number | null
   try {
@@ -33,11 +37,11 @@ export default async function AulaPage({
     throw error
   }
   if (!tomada || !/^[a-f0-9-]{36}$/.test(tomada))
-    redirect(`${here}?tomada=${randomUUID()}${numero ? `&parte=${numero}` : ''}`)
+    redirect(`${here}?tomada=${randomUUID()}${numero ? `&parte=${numero}` : ''}${sent}`)
   const access = await staffAccess()
   if (!access)
     redirect(
-      `/entrar?volta=${encodeURIComponent(`${here}?tomada=${tomada}${numero ? `&parte=${numero}` : ''}`)}`,
+      `/entrar?volta=${encodeURIComponent(`${here}?tomada=${tomada}${numero ? `&parte=${numero}` : ''}${sent}`)}`,
     )
   const [courseRes, lessonRes] = await Promise.all([
     gatewayFetch(paths.course(slug), { access: access.token }),
@@ -51,7 +55,8 @@ export default async function AulaPage({
   // A parte pedida vira o `#section=` que o player do Kids já entende, na mesma tomada.
   const secao = numero ? lesson.sections?.[numero - 1] : undefined
   if (numero && !secao) notFound()
-  if (secao) redirect(`${here}?tomada=${tomada}#section=${encodeURIComponent(secao.id)}`)
+  if (secao) redirect(`${here}?tomada=${tomada}${sent}#section=${encodeURIComponent(secao.id)}`)
   rememberLesson(lesson)
-  return <PalcoAula course={course} lesson={lesson} viewerId={`palco-${tomada}`} />
+  const aula = sent ? enviada(lesson, new Date()) : lesson
+  return <PalcoAula course={course} lesson={aula} viewerId={`palco-${tomada}`} />
 }
