@@ -10,7 +10,8 @@ import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   previa: () => ({ width: 800, height: 600 }),
-  campo: () => ({ alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 }, menu: true }),
+  campo: () => ({ alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 }, tipo: 'menu' }),
+  aberto: () => 'lista',
   encaixe: () => ({ seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 }),
   rolagem: () => ({
     de: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
@@ -146,10 +147,25 @@ describe('verbos do palco', () => {
     const numero = agir(
       'trocar "50" por "0"',
       jogos,
-      pagina({ campo: () => ({ alvo: { seletor: '[data-palco-alvo="a4"]' }, menu: false }) }),
+      pagina({ campo: () => ({ alvo: { seletor: '[data-palco-alvo="a4"]' }, tipo: 'numero' }) }),
     )
     expect(numero.map((p) => p.fazer)).toEqual(['clicar', 'digitar', 'tecla'])
     expect(numero[1]).toMatchObject({ texto: '0', substituir: true })
+    // Um seletor do Estúdio herda do campo de texto: o robô clica e a página decide no que abriu.
+    const outro = pagina({
+      campo: () => ({ alvo: { seletor: '[data-palco-alvo="a6"]' }, tipo: 'outro' }),
+    })
+    expect(agir('trocar "jogador" por "escolhido"', jogos, outro)).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a6"]' } },
+      { fazer: 'continuar', acao: 'escolher "escolhido"' },
+    ])
+    expect(agir('escolher "escolhido"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+    ])
+    expect(
+      agir('escolher "Achei!"', jogos, pagina({ aberto: () => 'caixa' })).map((p) => p.fazer),
+    ).toEqual(['digitar', 'tecla'])
+    expect(() => agir('escolher "x"', jogos, pagina({ aberto: () => null }))).toThrow(/não abriu/)
     expect(() => agir('trocar "x" por "y"', jogos, pagina({ campo: () => null }))).toThrow(
       /Não achei o campo/,
     )
