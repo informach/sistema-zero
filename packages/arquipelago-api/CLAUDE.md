@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Revisão publicada dos minijogos, 01/11/2026
+
+A abertura inclui `revisao` para projetos Python e para `kind: pro`: o primeiro pede o
+ambiente e o segundo compila pelo endpoint do desafio. JavaScript clássico mantém a resposta
+sem revisão. A origem é a publicação atual do catálogo, como o ambiente dos desafios já exige,
+não uma revisão histórica deduzida da primeira conclusão. Sem publicação não há revisão para
+autorizar. A conferência em `tests/db/minijogos.test.ts` usa apenas Postgres local descartável.
+Sem alteração de esquema ou migração.
+
 ## Ambiente Python do minijogo familiar, 31/10/2026
 
 `POST /familia/minijogos/:perfil/:id/ambiente` exige a identidade do responsável pelo gateway,

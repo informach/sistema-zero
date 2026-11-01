@@ -141,9 +141,13 @@ describe.skipIf(!url)('minijogos no serviço e Postgres local descartável', () 
     expect(javascript).not.toHaveProperty('revisao')
     const python = { programmingLanguage: 'python', files: { 'main.py': 'print(1)' } }
     await repo.guardar({ jogador, desafioId, titulo: c.titulo, projeto: python, agora })
-    // Só Python precisa da revisão para pedir o ambiente de execução do desafio.
+    // Python e Pro precisam da revisão publicada para pedir o ambiente ou compilar a atração.
     expect((await repo.abrir(perfil, desafioId))?.revisao).toBe(1)
     expect((await repo.abrir(perfil, desafioId))?.projeto).toEqual(python)
+    const pro = { kind: 'pro', programmingLanguage: 'javascript', tree: { version: 1, nodes: [] } }
+    await repo.guardar({ jogador, desafioId, titulo: c.titulo, projeto: pro, agora })
+    expect((await repo.abrir(perfil, desafioId))?.revisao).toBe(1)
+    expect((await repo.abrir(perfil, desafioId))?.projeto).toEqual(pro)
     await conexao.sql`delete from arquipelago.desafios where id = ${desafioId}`
   })
   test('reprovado, sem atração e suporte não guardam cópia', async () => {
