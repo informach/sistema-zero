@@ -1047,15 +1047,22 @@ Arquivos: `sistemas/ilhas-completas.ts`, `mundo/ilha-completa.tsx` e `mundo/medi
   Recife, Pico, Vale dos Dinos e Ilha das Nuvens, todas vivas (`ILHAS_VIVAS`). Na Vila Doce o
   percurso dos telhados se pisa (caixotes a 1 m, casinhas a 2,0, 2,8 e 3,6 m, terraço da
   sorveteria a 4,4 m).
-- **Decisão (N15, registrada em 30/10/2026):** a proposta fala em três versões (silhueta, média e
-  completa); o jogo usa duas, a leve (que já é a silhueta cinza no anel) e a completa, com a
-  busca começando na faixa da ponte. Ajuste técnico para caber no orçamento de memória (uma
-  ilha completa por vez), sem mudar o que a criança vê de longe.
+- **Três versões (lacunas, 01/11/2026, pela proposta; desfaz a N15 de 30/10, que usava duas):** a
+  silhueta (a leve, a ilha cinza no anel, que sempre colide), a média e a completa. A média
+  (`<ilha>-media.glb`, `arte/ilhas/medias.py`) sai da completa: sem colisão, sem âncoras e sem o
+  miúdo, de 8 a 16 mil triângulos. Ela baixa quando a pessoa pisa na ponte (ou fica a menos de 43
+  do centro) e toma o lugar da silhueta esmaecendo, sem colidir (`mundo/ilha-media.tsx`); a
+  completa só baixa no fim da ponte, a menos de 37 do centro (`DISTANCIA_DA_COMPLETA`), e troca a
+  30, como antes. Memória: uma média e uma completa ao mesmo tempo (`buscarIlha` com a versão);
+  outra da mesma versão solta a anterior. O Recife, na ponte, segue as três versões; nadando em
+  volta, a completa continua baixando a 55 m para o mergulho. O código fica atrás do arquivo: sem
+  o `-media.glb` de uma ilha, ela volta a ter duas versões (`scripts/gerar-ilhas-medias.ts`).
 - **O ciclo** (`proximoEstadoDaIlha`): `longe` → `carregando` → `pronta` → `ativa` →
   `descarregando` → `longe`.
-- **Quando busca:** a ilha precisa estar aberta. A busca começa quando a pessoa entra na faixa da
-  ponte (`BUSCA_NA_PONTE`: meia largura 3, começa 4 antes da ponte, vai até 2 depois) ou fica a
-  menos de 43 do centro da ilha (`nivelDeDetalhe`: raio da ilha + 30).
+- **Quando busca:** a ilha precisa estar aberta. A média começa a baixar quando a pessoa entra na
+  faixa da ponte (`BUSCA_NA_PONTE`: meia largura 3, começa 4 antes da ponte, vai até 2 depois) ou
+  fica a menos de 43 do centro da ilha (`nivelDeDetalhe`: raio da ilha + 30); a completa, a menos de
+  37 (`versoesPerto`). Ilha sem a média busca a completa já na faixa da ponte, como antes.
 - **Quando troca:** a completa toma o lugar da leve a menos de 30 do centro da ilha, no meio da
   ponte (`DISTANCIA_DA_TROCA = RAIO_DA_ILHA_DO_ANEL + 17`). A troca esmaece em 0,8 segundo
   (`DURACAO_DA_TROCA`).
@@ -2541,7 +2548,8 @@ reduzido; provado por mutação).
 Escolhas aprovadas no plano do levantamento integrado (`docs/arquipelago-levantamento-2026-10-30.md`),
 anotadas para não serem refeitas por engano:
 
-- **Duas versões de ilha (N15):** leve e completa, em vez de silhueta, média e completa (§6.9).
+- **Duas versões de ilha (N15; desfeita em 01/11/2026, pela proposta):** agora são as três da
+  proposta, silhueta, média e completa (§6.9).
 - **A Íris só pelas páginas (desfeita em 01/11/2026, pela proposta):** a cena `iris` da abertura
   "O Cinza" não mostra mais a Íris: a imagem é o Farol de pé ao lado da casa, com a ilha colorida
   (`playground/capturar-abertura.ts`, `src/assets/abertura/iris.webp`). A placa da ponte quebrada
@@ -2557,7 +2565,9 @@ anotadas para não serem refeitas por engano:
   (`POSICAO_DO_MOLDA`). A Jornada põe a primeira peça como extra do Construtor; o extra continua
   valendo na plataforma, e o jogo não abre antes.
 - **A chave de cada cômodo (N11), os segredos (N12), a companhia (S01), o iglu (adiado) e o
-  quintal grande:** mínimos coerentes descritos nas seções §6.16.2a a §6.16.2c, §6.24 e §6.26.
+  quintal grande:** mínimos coerentes descritos nas seções §6.16.2a a §6.16.2c, §6.24 e §6.26. A
+  chave de cada cômodo foi refeita nas lacunas de 01/11/2026, pela proposta: cada chave achada
+  deixa a casa fechar mais um cômodo (§6.16.2a).
 
 ### 6.28 Decisões da revisão da proposta v3 (30/10/2026)
 
@@ -2622,9 +2632,15 @@ faz o que as seções acima descrevem.
 
 **Regras e técnica (registrado)**
 
-11. **Admin e publicação (A11):** o Admin do jogo fica em `packages/admin` e o jogo é publicado
-    dentro da imagem do `arquipelago-api`; voltar uma versão é reimplantar o serviço. Diferença
-    técnica da proposta, aceita.
+11. **Admin e publicação (A11; desfeita nas lacunas de 01/11/2026, pela proposta):** o Admin do jogo
+    é um pacote próprio, `packages/arquipelago-admin`, montado em `/admin/jogo` com as peças do Admin
+    (o pacote não importa o jogo, o serviço, o Admin nem o Next). O jogo compilado é publicado à
+    parte, no CDN: versões imutáveis em `arquipelago/versoes/<v>/` e os canais `estavel` e `teste`
+    como ponteiros (`scripts/publicar.ts`); voltar uma versão é promover a anterior. A rota do
+    cliente no `arquipelago-api` fica como alternativa durante a troca; a operação (balde, CORS,
+    variáveis, tirar o build do Dockerfile) está em
+    `docs/plans/2026-11-01-arquipelago-publicacao-separada.md`. A página do jogo não usa mais
+    `unsafe-eval`: o Estúdio Pro abre num quadro isolado da mesma origem.
 12. **Teto semanal (A32):** uma regra só para tudo o que passa do teto: espera a semana seguinte e
     nunca se perde (os pedidos deixam de perder o excedente). Feito (lote 7): pedidos e vendas
     guardam a semana do teto e o serviço credita de novo, com a mesma chave, quando o jogo abre numa
@@ -2634,10 +2650,15 @@ faz o que as seções acima descrevem.
 
 **Arte**
 
-13. **Ilhas de posto alto (B2):** mais altas pelo posto, nas duas versões, por marcos que não se
+13. **Ilhas de posto alto (B2):** mais altas pelo posto, nas versões da ilha, por marcos que não se
     pisam (torre de doces, coral, ponta de gelo, vulcão, torres de nuvem); a largura e tudo o que se
     pisa não mudam, e a silhueta copia a ilha completa. Revisto em 30/10/2026 depois de medir: só na
-    silhueta, a ilha encolheria na troca da ponte. Alvos no documento de pedidos de arte.
+    silhueta, a ilha encolheria na troca da ponte. Revisto nas lacunas de 01/11/2026: com os alvos
+    de 30/10 a Vila e o Recife ficavam abaixo do Bosque, então a torre de doces virou um espeto de
+    doces e os pináculos do Recife, rocha coberta de coral. A altura sobe sem empate: Bosque 14,4,
+    Vila 15,5, Recife 16,8, Pico 18,2, Vale 19,8 e Nuvens 24 m (`tests/silhuetas-das-ilhas.test.ts`
+    confere a subida, com degrau de pelo menos 1 m, nas duas versões medidas; a média tem a mesma
+    altura da completa).
 14. **Lumis raros (B12):** revisto em 31/10/2026: com arte, os Lumis de luz, uma terceira versão de
     cada família (a forma da rara, coroa de luz e brilho), que só se acha nos baús dos segredos.
     Nunca sorteados em troca de moeda. Pedido no documento de pedidos de arte.
@@ -2667,8 +2688,13 @@ Plano e registro dos lotes: `docs/superpowers/plans/2026-10-31-arquipelago-v3-li
   revisão publicada, o player pede o ambiente a `POST /desafios/:id/ambiente` (o serviço confere que
   a pessoa concluiu o desafio) e o Members confere o projeto contra o inicial, só com execução
   (`pythonRuntimeEnvironment` no player do Estúdio, `arquipelago-minijogo-player.tsx`). O quadro 6
-  no Pro (Nuvens) ainda não vira atração: o player do Pro só toca uma revisão publicada (build no
-  host isolado), que chega com a publicação do lote L9.
+  no Pro (Nuvens, `jardim-das-nuvens`) virou atração no L9: o player compila pela rota Pro do
+  desafio e toca o artefato isolado.
+- **A corrida da Vila pelos telhados (lacunas, L11d, 01/11/2026):** o quadro 6 da Vila segue o
+  exemplo da ficha, telhados, chaminés e o bolo dourado que vale o dobro. A arte é em imagens (dá
+  para trocar no Pinta) e as chaminés são duas imagens do Faísca que se revezam no relógio da
+  corrida, o mesmo em que a criança deixa a próxima mais rápida; encostar numa delas, durante a
+  corrida, leva ao fim. Os quadros 1 a 5 continuam na rua, com as pedras do Corre, Dino!.
 - **Café, banca de feira e festa no Construir (B7 e B9):** a aba "Café e feira" abre com a Vila
   Doce; a aba "Festa" só aparece durante uma festa, com as peças dela. Fora da festa, a decoração
   posta continua guardada, sem aparecer nem colidir, e volta na festa seguinte. O que acende
@@ -3751,18 +3777,25 @@ Decisões: `docs/plans/2026-10-28-arquipelago-praia-nico-e-lumis.md`.
 - O tubo gira para o alvo em dois eixos, descontando os 18 graus da inclinação de origem
   do modelo. Nenhum GLB foi regenerado. A luneta só monta o interativo e o colisor quando
   seu modelo carrega; falha de arquivo fica contida na reserva desse componente.
-- A observação usa a ilha leve já existente. Na ilha vista há um vulto de bicho e um brilho
-  dourado, feitos com quatro malhas simples, sem corpos físicos. O ciclo dura 6 s, o vulto
-  percorre até 2,6 m para cada lado e a escala do brilho varia de 0,65 a 1. Esses sinais só
-  existem enquanto a luneta está aberta. O rastro da criança fica no píer, portanto a vista
-  não pede a ilha completa ao carregador.
-- Com `prefers-reduced-motion` ou Menos movimento do jogo, não há zoom animado, deslocamento
-  do vulto nem pulsação do brilho. A mudança de vista continua disponível.
+- A observação usa a ilha leve já existente. Na ilha vista, como a proposta pede ("morador
+  acenando, bicho correndo, segredo brilhando"; lacunas, 01/11/2026), o morador acena, um bicho
+  da ilha corre na frente dele e o segredo brilha, sem corpos físicos. O bicho (`BICHO_DA_LUNETA`):
+  o coelho no Bosque, a ovelhinha de algodão-doce na Vila (arte de 01/11), a tartaruguinha no
+  Recife, o pinguim deslizando no Pico, o triceratops filhote no Vale e o pássaro voando nas Nuvens;
+  ele vira para onde corre e, nas pontas, de frente para a luneta. O segredo (`SEGREDO_DA_LUNETA`)
+  é o Lumi de luz da família da ilha, aceso também de dia, com um halo que pulsa. O ciclo dura 6 s,
+  o bicho percorre até 2,6 m para cada lado e a escala do halo varia de 0,65 a 1. Esses sinais só
+  existem enquanto a luneta está aberta. O rastro da criança fica no píer, portanto a vista não
+  pede a ilha completa nem a média ao carregador.
+- Com `prefers-reduced-motion` ou Menos movimento do jogo, não há zoom animado, o bicho fica parado
+  olhando para a luneta (no clipe de parado; o pássaro pousado) e o halo não pulsa. A mudança de
+  vista continua disponível.
 - Cada ponte fechada recebe a placa existente `placa-quadro.glb`, no fim das tábuas visíveis,
   0,5 m antes da borda e 0,6 m para o lado. Ela fica voltada para quem vem da praia.
   O texto ocupa a face `texto` do modelo, sem sobrepor outra face. A caixa simples da placa
   mede 0,96 × 1 × 0,18 m e só segura o corpo. O recado também pode ser lido com E / Usar
-  a até 2,3 m: "Tem mais para descobrir. A ponte abre em [nome do posto]. Íris."
+  a até 2,3 m: "Tem mais para descobrir. A ponte abre em [nome do posto]." (sem a assinatura da
+  Íris desde 01/11/2026: ela só aparece pelas páginas até o final).
   Ao abrir a ponte, a placa sai com seu interativo, material e textura próprios.
 
 Arquivos: `sistemas/luneta.ts`, `mundo/luneta-medidas.ts`, `mundo/luneta.tsx`,

@@ -237,7 +237,7 @@ test('jogo fechado para a família: nem a semana nem as permissões são pedidas
 
 test('a frase de como as permissões começam segue o padrão do contrato (A34)', () => {
   expect(comoComecam()).toBe(
-    'Visitas de irmãos começa ligada; visitas de outras crianças e fotos no Clube começam desligadas.',
+    'Visitas de irmãos começam ligadas; visitas de outras crianças e fotos no Clube começam desligadas.',
   )
   expect(comoComecam()).not.toContain('Tudo começa desligado')
   expect(
