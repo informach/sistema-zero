@@ -1,3 +1,4 @@
+import { isSameOriginRequest, requiresOriginCheck } from '@sistemazero/member-shell/lib/csrf'
 import { type NextRequest, NextResponse } from 'next/server'
 import { setSessionCookies } from './server/cookies'
 import { refresh } from './server/gateway'
@@ -12,6 +13,19 @@ const PUBLIC = ['/entrar', '/api/entrar', '/api/healthz']
 
 export async function proxy(req: NextRequest): Promise<NextResponse> {
   const { pathname, search } = req.nextUrl
+  // Guard even the public login: cross-site forms must never replace the staff session.
+  if (
+    requiresOriginCheck(req.method) &&
+    !isSameOriginRequest({
+      secFetchSite: req.headers.get('sec-fetch-site'),
+      origin: req.headers.get('origin'),
+      host: req.headers.get('x-forwarded-host') ?? req.headers.get('host'),
+    })
+  )
+    return NextResponse.json(
+      { error: { code: 'FORBIDDEN', message: 'Abra o palco para continuar.' } },
+      { status: 403 },
+    )
   if (PUBLIC.includes(pathname)) return NextResponse.next()
   const verdict = await verifyAccess(req.cookies.get(ACCESS_COOKIE)?.value)
   if (verdict.ok) return NextResponse.next()

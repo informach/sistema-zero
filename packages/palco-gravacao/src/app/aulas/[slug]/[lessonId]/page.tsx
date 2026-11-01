@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { notFound, redirect } from 'next/navigation'
 import type { CourseDetailView, LessonDetailView } from '@/lib/types'
+import { recordingPart } from '~/lib/recording-part'
 import { staffAccess } from '~/server/access'
 import { gatewayFetch, paths, readJson } from '~/server/gateway'
 import { rememberLesson } from '~/server/lessons'
@@ -24,11 +25,20 @@ export default async function AulaPage({
 }) {
   const [{ slug, lessonId }, { tomada, parte }] = await Promise.all([params, searchParams])
   const here = `/aulas/${encodeURIComponent(slug)}/${encodeURIComponent(lessonId)}`
-  const numero = parte && /^\d{1,2}$/.test(parte) ? Number(parte) : null
+  let numero: number | null
+  try {
+    numero = recordingPart(parte)
+  } catch (error) {
+    if (error instanceof RangeError) notFound()
+    throw error
+  }
   if (!tomada || !/^[a-f0-9-]{36}$/.test(tomada))
     redirect(`${here}?tomada=${randomUUID()}${numero ? `&parte=${numero}` : ''}`)
   const access = await staffAccess()
-  if (!access) redirect(`/entrar?volta=${encodeURIComponent(here)}`)
+  if (!access)
+    redirect(
+      `/entrar?volta=${encodeURIComponent(`${here}?tomada=${tomada}${numero ? `&parte=${numero}` : ''}`)}`,
+    )
   const [courseRes, lessonRes] = await Promise.all([
     gatewayFetch(paths.course(slug), { access: access.token }),
     gatewayFetch(paths.lesson(slug, lessonId), { access: access.token }),
@@ -40,6 +50,7 @@ export default async function AulaPage({
     throw new Error(`Não consegui ler a aula (${courseRes.status}, ${lessonRes.status}).`)
   // A parte pedida vira o `#section=` que o player do Kids já entende, na mesma tomada.
   const secao = numero ? lesson.sections?.[numero - 1] : undefined
+  if (numero && !secao) notFound()
   if (secao) redirect(`${here}?tomada=${tomada}#section=${encodeURIComponent(secao.id)}`)
   rememberLesson(lesson)
   return <PalcoAula course={course} lesson={lesson} viewerId={`palco-${tomada}`} />
