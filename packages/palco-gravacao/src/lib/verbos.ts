@@ -118,6 +118,11 @@ export const VERBOS: Verbo[] = [
     descricao: 'Aponta o espaço ao lado de "fazer" de um bloco.',
   },
   {
+    verbo: 'apontar abaixo de',
+    exemplo: 'apontar abaixo de "Deixar o sprite"',
+    descricao: 'Aponta o lugar logo abaixo de um bloco, onde o próximo bloco vai entrar.',
+  },
+  {
     verbo: 'apontar zappy',
     exemplo: 'apontar zappy',
     descricao: 'Aponta o Zappy ao lado da fala dele na experiência.',
@@ -393,6 +398,12 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const rotulo = apontarEncaixe[2] ?? 'fazer'
     const alvo = precisaDaPagina(pagina).encaixe(apontarEncaixe[1], rotulo)
     if (!alvo) throw new Error(`Não achei o espaço de "${rotulo}" no bloco "${apontarEncaixe[1]}".`)
+    return [{ fazer: 'apontar', alvo }]
+  }
+  const apontarAbaixo = /^apontar abaixo de ["“]([^"”]+)["”]$/i.exec(texto)
+  if (apontarAbaixo?.[1]) {
+    const alvo = precisaDaPagina(pagina).abaixo(apontarAbaixo[1])
+    if (!alvo) throw new Error(`Não achei o bloco "${apontarAbaixo[1]}" na área de trabalho.`)
     return [{ fazer: 'apontar', alvo }]
   }
   if (f === 'apontar zappy')

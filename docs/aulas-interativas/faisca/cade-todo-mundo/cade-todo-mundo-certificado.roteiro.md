@@ -10,7 +10,7 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-certificado`
 
-**Na tela:** no "Olha só", mostrar o resultado do jogo, com os três personagens encontrados. Manter esse resultado durante a comemoração, antes da entrada da Debinha.
+**Na tela:** a parte começa saindo das perguntas da Parte 1 [próxima parte]. No "Olha só", a tela fica parada, e a edição troca esse trecho pelo jogo pronto sendo jogado, com os três personagens encontrados, mantido durante a comemoração, antes da entrada da Debinha [na edição: o jogo pronto sendo jogado, com os três personagens encontrados]. No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado** [clicar "Baixar meu certificado"]. No "Quando o certificado baixar", clicar em **Concluir aula** [concluir aula].
 
 **Fala para ElevenLabs:**
 
