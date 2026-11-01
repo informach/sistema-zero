@@ -3,10 +3,13 @@ import { randomUUID } from 'node:crypto'
 import { defaultLessonSection, type LessonDraftDocument } from '@sistemazero/core/learning'
 import { eq } from 'drizzle-orm'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
-import { hash, type MediaProof, sourceHash } from '../../scripts/course-audience-sync/plan'
-import { executeCourseSync, type SyncRequest } from '../../scripts/course-audience-sync/run'
+import { hash, type MediaProof, sourceHash } from '../../src/domain/course-publication/course-sync'
 import { DrizzleContentAdminRepository } from '../../src/infrastructure/persistence/drizzle/content-admin.repository'
 import { DrizzleCourseRepository } from '../../src/infrastructure/persistence/drizzle/course.repository'
+import {
+  executeCourseSync as executeWithDependencies,
+  type SyncRequest,
+} from '../../src/infrastructure/persistence/drizzle/course-sync'
 import { createDbConnection } from '../../src/infrastructure/persistence/drizzle/db'
 import { DrizzleLessonDraftRepository } from '../../src/infrastructure/persistence/drizzle/lesson-draft.repository'
 import { DrizzleProgressRepository } from '../../src/infrastructure/persistence/drizzle/progress.repository'
@@ -22,6 +25,11 @@ import {
 } from '../../src/infrastructure/persistence/drizzle/schema'
 import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
 import { parsePublishedLessonBlock } from '../../src/interfaces/http/lesson-draft.dtos'
+
+const executeCourseSync = (
+  db: Parameters<typeof executeWithDependencies>[0],
+  request: SyncRequest,
+) => executeWithDependencies(db, request, { parseBlock: parsePublishedLessonBlock })
 
 const url = process.env.COURSE_SYNC_TEST_DATABASE_URL
 if (

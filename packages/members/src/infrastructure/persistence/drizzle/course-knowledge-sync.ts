@@ -1,12 +1,13 @@
 import { asc, eq } from 'drizzle-orm'
-import type { ZappyKnowledgeSourceType } from '../../src/domain/ports/zappy-knowledge-repository.port'
-import type { Database } from '../../src/infrastructure/persistence/drizzle/db'
 import {
-  zappyKnowledgeChunks,
-  zappyKnowledgeSources,
-} from '../../src/infrastructure/persistence/drizzle/schema'
-import { DrizzleZappyKnowledgeRepository } from '../../src/infrastructure/persistence/drizzle/zappy-knowledge.repository'
-import { type CourseSnapshot, type CourseSyncPlan, same } from './plan'
+  type CourseSnapshot,
+  type CourseSyncPlan,
+  same,
+} from '../../../domain/course-publication/course-sync'
+import type { ZappyKnowledgeSourceType } from '../../../domain/ports/zappy-knowledge-repository.port'
+import type { Database } from './db'
+import { zappyKnowledgeChunks, zappyKnowledgeSources } from './schema'
+import { DrizzleZappyKnowledgeRepository } from './zappy-knowledge.repository'
 
 type Transaction = Parameters<Parameters<Database['transaction']>[0]>[0]
 

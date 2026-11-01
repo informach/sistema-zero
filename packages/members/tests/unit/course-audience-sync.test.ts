@@ -9,7 +9,7 @@ import {
   planCourseSync,
   type Snapshot,
   sourceHash,
-} from '../../scripts/course-audience-sync/plan'
+} from '../../src/domain/course-publication/course-sync'
 
 export function fixture(): Snapshot {
   const now = new Date('2026-11-01T10:00:00Z')
@@ -134,6 +134,38 @@ export function proof(snapshot: Snapshot): MediaProof {
 }
 
 describe('sincronizar curso publicado entre públicos', () => {
+  test('publica seguindo módulo e aula, mesmo quando o inventário chega em outra ordem', () => {
+    const snapshot = fixture()
+    const module = {
+      ...snapshot.source.modules[0]!,
+      id: randomUUID(),
+      sortOrder: 1,
+      title: 'Depois',
+    }
+    snapshot.source.modules.push(module)
+    const lesson = structuredClone(snapshot.source.lessons[0]!)
+    lesson.row = {
+      ...lesson.row,
+      id: randomUUID(),
+      moduleId: module.id,
+      slug: 'aula-depois',
+      title: 'Depois',
+    }
+    const block = randomUUID()
+    lesson.published = {
+      ...lesson.published,
+      slug: 'aula-depois',
+      title: 'Depois',
+      blocks: [{ id: block, content: { kind: 'dialogue', text: 'Depois.' } }],
+      sections: [defaultLessonSection(randomUUID(), 'Depois', [block])],
+    }
+    lesson.draft = null
+    snapshot.source.lessons.unshift(lesson)
+    const plan = planCourseSync(snapshot)
+    expect(plan.lessons.map((l) => l.row.slug)).toEqual(['aula-1', 'aula-depois'])
+    lesson.row.moduleId = randomUUID()
+    expect(() => planCourseSync(snapshot)).toThrow('módulo da origem')
+  })
   test('planeja o curso ausente sem criar identidade nova a cada tentativa', () => {
     const snapshot = fixture()
     snapshot.target = missingAdultTarget(snapshot.source.course, 'busca-adulto', 'local')

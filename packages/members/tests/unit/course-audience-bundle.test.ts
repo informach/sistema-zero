@@ -14,6 +14,10 @@ test('o operador mantém publicação e política nos módulos implantados', asy
   )
   expect(code).not.toContain('from "drizzle-orm"')
   expect(code).not.toContain('function loadStudioAuthoringPolicy')
+  expect(code).toContain('async function executeCourseSync')
+  expect(code).not.toContain(
+    'from "/app/packages/members/src/infrastructure/persistence/drizzle/course-sync.ts"',
+  )
 }, 30_000)
 
 test('um recibo existente recusa a execução antes de abrir o Railway', async () => {

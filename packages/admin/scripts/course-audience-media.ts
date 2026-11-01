@@ -1,6 +1,6 @@
 import { inventoryCourseMedia } from '@sistemazero/core/course/publication-media'
 import { chaveDeVoz } from '@sistemazero/core/learning/scene'
-import { type Snapshot, sourceHash } from '../../members/scripts/course-audience-sync/plan'
+import { type Snapshot, sourceHash } from '../../members/src/domain/course-publication/course-sync'
 import { getEnv } from '../src/lib/env'
 import { falasDaAula } from '../src/lib/voz-zappy-aula'
 import { MAX_TEXTOS_POR_PEDIDO } from '../src/lib/voz-zappy-limites'

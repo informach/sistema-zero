@@ -2,8 +2,12 @@
 
 ## Sincronizar curso Kids para adulto (01/11/2026)
 
-Operador em `scripts/release/sync-course-audiences.ts`, planejador e executor em
-`packages/members/scripts/course-audience-sync/`. Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
+Operador em `scripts/release/sync-course-audiences.ts`; a entrada Railway em
+`packages/members/scripts/course-audience-sync/run.ts` só carrega conexão e política. A regra pura
+fica em `src/domain/course-publication/course-sync.ts`, sem Drizzle, e o executor transacional em
+`src/infrastructure/persistence/drizzle/course-sync.ts`, com parser e política injetados. A cópia
+de extratos fica em `course-knowledge-sync.ts`. CLI e serviço reutilizam essas regras, sem shell
+na aplicação nem uma segunda cópia do publicador. Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
 Cria o adulto ausente ou atualiza o existente e publica pela autoria canônica numa transação,
 preservando identidade e dados dos alunos. A grade ativa é substituída: módulos e aulas excedentes
 são arquivados (`archivedAt`, migration 0145), com os blocos das aulas, nunca apagados por cascata.

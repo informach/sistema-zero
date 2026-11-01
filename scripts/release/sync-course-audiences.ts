@@ -1,9 +1,12 @@
 import { spawn } from 'node:child_process'
 import { createHash } from 'node:crypto'
 import { mkdir, open, readFile, writeFile } from 'node:fs/promises'
-import { join, resolve } from 'node:path'
-import type { MediaProof, Snapshot } from '../../packages/members/scripts/course-audience-sync/plan'
-import type { SyncRequest } from '../../packages/members/scripts/course-audience-sync/run'
+import { dirname, join, relative, resolve } from 'node:path'
+import type {
+  MediaProof,
+  Snapshot,
+} from '../../packages/members/src/domain/course-publication/course-sync'
+import type { SyncRequest } from '../../packages/members/src/infrastructure/persistence/drizzle/course-sync'
 
 const project = '415d5a1c-5f75-432c-8445-b395d0977ce3'
 const environmentIds = {
@@ -30,14 +33,27 @@ export async function bundle(service: 'members' | 'admin') {
         setup(build) {
           // Keep canonical publication and policy loading at their deployed file URLs.
           build.onLoad(
-            { filter: /course-audience-sync[\\/](run|knowledge)\.ts$/ },
+            {
+              filter:
+                /course-audience-sync[\\/]run\.ts$|persistence[\\/]drizzle[\\/](course-sync|course-knowledge-sync)\.ts$/,
+            },
             async (args) => {
               if (service !== 'members') return undefined
               const contents = (await Bun.file(args.path).text())
-                .replace(
-                  /from '(\.\.\/)+src\/([^']+)'/g,
-                  (_match, _prefix, path) => `from '/app/packages/members/src/${path}.ts'`,
-                )
+                .replace(/from '(\.[^']+)'/g, (match, path) => {
+                  const local = resolve(dirname(args.path), path)
+                  const owned = relative(join(root, 'packages/members/src'), local).replaceAll(
+                    '\\',
+                    '/',
+                  )
+                  if (
+                    owned.startsWith('../') ||
+                    owned.startsWith('domain/') ||
+                    /(?:^|\/)course-(?:knowledge-)?sync$/.test(owned)
+                  )
+                    return match
+                  return `from '/app/packages/members/src/${owned.replace(/\.ts$/, '')}.ts'`
+                })
                 .replace(
                   "from 'drizzle-orm'",
                   "from '/app/packages/members/node_modules/drizzle-orm/index.js'",

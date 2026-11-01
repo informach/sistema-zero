@@ -1,13 +1,17 @@
 import { createHash } from 'node:crypto'
 import { type LessonDraftDocument, remapStudioExampleContent } from '@sistemazero/core/learning'
-import { remapBlockAttachmentIds } from '../../src/domain/course/lesson-block'
-import { stableJson } from '../../src/domain/shared/stable-json'
-import type { courses, lessons, modules } from '../../src/infrastructure/persistence/drizzle/schema'
+import type { Course, Lesson, Module } from '../course/course'
+import { remapBlockAttachmentIds } from '../course/lesson-block'
+import { stableJson } from '../shared/stable-json'
 
 export type Environment = 'staging' | 'production' | 'local'
-export type CourseRow = typeof courses.$inferSelect
-export type ModuleRow = typeof modules.$inferSelect
-export type LessonRow = typeof lessons.$inferSelect
+export type CourseRow = Course
+export type ModuleRow = Required<Module> & {
+  archivedAt: Date | null
+  createdAt: Date
+  updatedAt: Date
+}
+export type LessonRow = Lesson & { archivedAt: Date | null; createdAt: Date; updatedAt: Date }
 export interface LessonSnapshot {
   row: LessonRow
   published: LessonDraftDocument
@@ -174,21 +178,32 @@ export function planCourseSync(snapshot: Snapshot, media?: MediaProof) {
     throw new Error('A mídia pertence a outra origem ou ambiente')
   const maps = identities(snapshot)
   const targetId = target.course.id
-  const modulePlans = source.modules.map((module) => ({
-    ...module,
-    id: identify(
-      maps.modules,
-      module.id,
-      [...target.modules, ...(target.archivedModules ?? [])].find(
-        (m) => m.id === maps.modules[module.id],
-      )?.id ?? target.modules.find((m) => m.sortOrder === module.sortOrder)?.id,
-      targetId,
-      'module',
-    ),
-    courseId: targetId,
-    archivedAt: null,
-  }))
-  const lessonPlans = source.lessons.map((lesson) => {
+  const modulePositions = new Map(source.modules.map((module) => [module.id, module.sortOrder]))
+  for (const lesson of source.lessons)
+    if (!modulePositions.has(lesson.row.moduleId))
+      throw new Error(`A aula não pertence a um módulo da origem: ${lesson.row.slug}`)
+  const modulePlans = [...source.modules]
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((module) => ({
+      ...module,
+      id: identify(
+        maps.modules,
+        module.id,
+        [...target.modules, ...(target.archivedModules ?? [])].find(
+          (m) => m.id === maps.modules[module.id],
+        )?.id ?? target.modules.find((m) => m.sortOrder === module.sortOrder)?.id,
+        targetId,
+        'module',
+      ),
+      courseId: targetId,
+      archivedAt: null,
+    }))
+  const orderedLessons = [...source.lessons].sort(
+    (a, b) =>
+      modulePositions.get(a.row.moduleId)! - modulePositions.get(b.row.moduleId)! ||
+      a.row.sortOrder - b.row.sortOrder,
+  )
+  const lessonPlans = orderedLessons.map((lesson) => {
     const existing =
       target.lessons.find((l) => l.row.id === maps.lessons[lesson.row.id]) ??
       target.lessons.find((l) => l.row.slug === lesson.row.slug)

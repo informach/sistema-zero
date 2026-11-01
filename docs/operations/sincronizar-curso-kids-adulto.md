@@ -26,6 +26,8 @@ O programa é sempre copiado da versão publicada. Um rascunho diferente bloquei
 
 ## Execução
 
+A regra pura fica em `members/src/domain/course-publication/course-sync.ts`, o executor transacional em `members/src/infrastructure/persistence/drizzle/course-sync.ts` e a adaptação Railway em `members/scripts/course-audience-sync/run.ts`. O executor recebe o parser canônico e a política da composição. O comando empacota a mesma regra local, mantendo os publicadores e a política nos módulos implantados. A aplicação não deve executar o comando ou abrir um shell para publicar.
+
 Requisitos: Bun, Railway CLI autenticada com SSH e acesso aos serviços `members` e `admin` do projeto. A migration Members `0145_archive-course-curriculum.sql` e os repositórios com arquivamento precisam estar implantados antes de executar esta versão do operador contra um ambiente remoto. A alteração só acrescenta duas colunas nullable e não arquiva dados por conta própria. No Windows, o operador usa a instalação npm da CLI sob `%APPDATA%`. As credenciais do banco, Vimeo, ElevenLabs e R2 permanecem nos processos remotos dos serviços. Não editar `.env` nem copiar tokens para argumentos.
 
 Execute na raiz do repositório. Informe o UUID da conta administrativa responsável pela operação e um diretório novo sob `.cache/course-audience-sync/`.
