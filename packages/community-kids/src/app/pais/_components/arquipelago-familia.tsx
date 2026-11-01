@@ -190,13 +190,11 @@ export function comoComecam(padrao: Readonly<PermissoesDaFamilia> = PERMISSOES_P
     itens.length > 1 ? `${itens.slice(0, -1).join(', ')} e ${itens.at(-1)}` : (itens[0] ?? '')
   const ligadas = nomes(true)
   const desligadas = nomes(false)
+  // Os nomes das permissões são todos no plural ("Visitas de irmãos", "Fotos no Clube"): o verbo
+  // concorda com eles mesmo quando a lista tem um só (antes saía "Visitas de irmãos começa ligada").
   const partes = [
-    ligadas.length
-      ? `${lista(ligadas)} ${ligadas.length > 1 ? 'começam ligadas' : 'começa ligada'}`
-      : '',
-    desligadas.length
-      ? `${lista(desligadas)} ${desligadas.length > 1 ? 'começam desligadas' : 'começa desligada'}`
-      : '',
+    ligadas.length ? `${lista(ligadas)} começam ligadas` : '',
+    desligadas.length ? `${lista(desligadas)} começam desligadas` : '',
   ].filter(Boolean)
   const frase = partes.join('; ')
   return `${frase.charAt(0).toUpperCase()}${frase.slice(1)}.`

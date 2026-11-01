@@ -1,10 +1,47 @@
 # CLAUDE.md — @sistemazero/arquipelago
 
 Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-estado-atual.md):
-código, conteúdo, prova local e implantação separados. Salvamento atual V22, teto de
-65.536 bytes UTF-8, moedas do jogo até 100 por semana. Seções datadas preservam o histórico
+código, conteúdo, prova local e implantação separados. Salvamento atual V23, teto de
+81.920 bytes UTF-8 (80 KB, escolha da dona nas lacunas de 01/11/2026), moedas do jogo até 100
+por semana. Seções datadas preservam o histórico
 (as menções a V12, V18 e V20 nelas dizem quando um campo entrou, não a versão atual);
 consultar o contrato e o teste de documento cheio antes de acrescentar campos.
+
+## As lacunas do levantamento de 31/10 (L1 a L12, 01/11/2026)
+
+Plano e registro com commits e provas: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`;
+a situação de cada item do levantamento está na seção 0 de
+`docs/arquipelago-levantamento-proposta-v3-2026-10-31.md`. Regra da dona: a proposta vence a decisão
+registrada, e os desafios seguem o conteúdo da Jornada (só blocos que a trilha ensina). O que mais
+importa para quem mexe aqui:
+
+- **Salvamento V23 (L1):** níveis do bicho inteiros, `bichos.outros` (até dois, L4), espaço para os
+  percursos novos; teto de 80 KB. Campo novo ainda precisa caber no pior caso
+  (`cenario-salvamento-cheio.ts` dos contratos).
+- **As ilhas em três versões (L10 e L11b):** silhueta, média e completa. `buscarIlha(url, ler,
+  versao)` tem teto por versão (uma média e uma completa). A média (`mundo/ilha-media.tsx`) baixa
+  na ponte e não colide; a completa baixa no fim da ponte (`DISTANCIA_DA_COMPLETA`, `versoesPerto`).
+  O código fica atrás do arquivo: o build lista `src/assets/ilhas/<ilha>-media.glb` em
+  `mundo/ilhas-medias.gerado.ts` (`scripts/gerar-ilhas-medias.ts`). Regerou uma completa? Rode
+  `arte/ilhas/medias.py` (e `arte/mundo/ilhas_anel.py` para a silhueta). O medidor conta
+  `ilhasCompletas` e `ilhasMedias` à parte. Navegador: `playground/verificar-ilhas-medias-browser.ts`.
+- **A altura pelo posto (L11a):** Bosque 14,4, Vila 15,5, Recife 16,8, Pico 18,2, Vale 19,8 e
+  Nuvens 24 m; `tests/silhuetas-das-ilhas.test.ts` confere a subida (degrau de 1 m ou mais).
+- **A luneta (L11c):** `BICHO_DA_LUNETA` e `SEGREDO_DA_LUNETA` (`sistemas/luneta.ts`): um bicho de
+  cada ilha correndo e o Lumi de luz da família (`useCopiaAnimada(..., sempreAceso)`). A ovelhinha
+  da Vila é de `arte/bichos/vila.py`.
+- **Mundo (L2 a L5):** a subida do Farol pede o planador (`exige` na `ConfigDoPercurso`); Lumis da
+  praia só presos; mapa no tamanho de cada ilha; cochilo onde está; borrões que desbotam em volta
+  (`mundo/cinza-dos-borroes.ts`); chocolate quente aquece no Pico; trenó, montaria e volta das
+  boias são minijogos (`corrida-de-portoes.ts`, `regata-das-boias`); até três bichos adotados; a
+  chave abre o cômodo; objetos com função no andar de cima.
+- **Desafios (L6 e L7):** dicas na ordem da Jornada; a sua ilha pinta por quadro e tem desafio do
+  dia; pedido de morador em cada ilha; quadros 1 a 5 no gênero do posto; quadro 6 sem copiar a
+  missão e como atração (Python e Pro); um desafio 3D por posto (`docs/desafios-do-jogo/tres-d/`);
+  a Lenda com cenário aberto, critério de combinação e revisão humana; cartões dos Lumis por posto.
+- **Plataforma e arquitetura (L8 e L9):** `negociarVersao` no contrato; o jogo publicado no CDN
+  (`scripts/publicar.ts`), o Admin em `packages/arquipelago-admin`, o Estúdio Pro num quadro
+  isolado (a página do jogo sem `unsafe-eval`).
 
 ## Revisão dos lotes de 31/10/2026: obra estendida, V22 e o que mudou
 
