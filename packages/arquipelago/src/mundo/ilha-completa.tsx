@@ -30,6 +30,7 @@ import {
   opacidadeAlvo,
   PRIORIDADE_DA_CARGA_DA_ILHA,
   proximoEstadoDaIlha,
+  versoesPerto,
 } from '../sistemas/ilhas-completas'
 import { MERGULHO } from '../sistemas/mergulho'
 import { iluminarArte, prepararLuzesNoturnas } from './arte-animada'
@@ -52,7 +53,9 @@ import {
   usarSuave,
 } from './copas'
 import { gruposDoColisor } from './grupos'
+import { ARQUIVOS_DAS_ILHAS_MEDIAS } from './ilhas-medias.gerado'
 import {
+  DISTANCIA_DA_COMPLETA,
   DISTANCIA_DA_TROCA,
   DURACAO_DA_TROCA,
   DURACAO_DO_ESMAECER_DA_COPA,
@@ -235,6 +238,8 @@ async function aquecer(
 export interface Troca {
   /** 0 = só a leve; 1 = só a completa. */
   opacidade: number
+  /** Quanto a versão média já tomou o lugar da leve (0 a 1; sem média, fica em 0). */
+  media?: number
   /** Os colisores da completa já estão no mundo da física. */
   colisoresNaCena?: boolean
   /** O desenho da versão leve (para compilar o pontilhado dela junto). */
@@ -289,7 +294,12 @@ export function useIlhaCompleta(
       ) === ilha.id &&
       (ilha.id === 'recife'
         ? distancia < MERGULHO.carregar
-        : nivelDeDetalhe(distancia, naPonteDa(ilha, rastro.x, rastro.z)) !== 'silhueta')
+        : versoesPerto({
+            temMedia: ARQUIVOS_DAS_ILHAS_MEDIAS[ilha.id] !== undefined,
+            nivel: nivelDeDetalhe(distancia, naPonteDa(ilha, rastro.x, rastro.z)),
+            distancia,
+            distanciaDaCompleta: DISTANCIA_DA_COMPLETA,
+          }).completa)
     if (!perto) v.falhou = false
     troca.opacidade = esmaecer(troca.opacidade, opacidadeAlvo(v.estado), dt, DURACAO_DA_TROCA)
     const proximo = proximoEstadoDaIlha(v.estado, {

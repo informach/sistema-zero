@@ -98,3 +98,28 @@ export function ilhaPreferida(
   }
   return escolhida
 }
+
+/**
+ * Onde cada versão entra (lacunas, 01/11/2026, as ilhas em três versões). Sem a versão média
+ * (`temMedia` falso, o jogo de hoje), a completa baixa já na ponte (`perto` = o nível médio da
+ * distância) e nada muda. Com ela, a média baixa na ponte e toma o lugar da leve, e a completa só
+ * baixa no fim da ponte (`DISTANCIA_DA_COMPLETA`), pouco antes de entrar na ilha (`naTroca`).
+ */
+export interface VersoesPerto {
+  /** A versão média deve estar na memória e na cena. */
+  media: boolean
+  /** A completa deve estar na memória (o `perto` do ciclo dela). */
+  completa: boolean
+}
+export function versoesPerto(e: {
+  temMedia: boolean
+  /** O nível de detalhe pela distância (`nivelDeDetalhe`). */
+  nivel: 'silhueta' | 'media' | 'completa'
+  distancia: number
+  /** Onde a completa começa a baixar quando há a média (o fim da ponte). */
+  distanciaDaCompleta: number
+}): VersoesPerto {
+  const naPonte = e.nivel !== 'silhueta'
+  if (!e.temMedia) return { media: false, completa: naPonte }
+  return { media: naPonte, completa: naPonte && e.distancia < e.distanciaDaCompleta }
+}
