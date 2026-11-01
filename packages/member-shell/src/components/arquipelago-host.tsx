@@ -4,7 +4,6 @@ import {
   type ClubeDoJogo,
   type DesafioAberto,
   EnvioAoClubeSchema,
-  ManifestoDoClienteSchema,
   type ModuloDoArquipelago,
   type MoldeDaRotina,
   MoldeDeDesafioSchema,
@@ -23,13 +22,13 @@ import {
   type ResultadoDeFerramenta,
   SituacaoDoClubeSchema,
   VERSAO_CONTRATO_PLATAFORMA,
-  versaoCompativel,
 } from '@sistemazero/arquipelago-contracts'
 import { type AdultJourneyView, adultJourneyPosition } from '@sistemazero/core/journey'
 import type { MoldaToolAccess } from '@sistemazero/molda/tools'
 import { Component, lazy, type ReactNode, Suspense, useEffect, useRef, useState } from 'react'
 import { lerAparenciaDaConta, listarCriacoesQueCabem } from '../lib/arquipelago-aparencia'
 import { challengeDraftScope, challengeForViewer } from '../lib/arquipelago-challenge'
+import { localizarEntrada, origemDoCliente } from '../lib/arquipelago-cliente'
 import { lerPedidoDeObjeto, type PedidoDeObjeto } from '../lib/arquipelago-objeto'
 import { abrirRotinaNaPlataforma, cartasDaRotina } from '../lib/arquipelago-rotina'
 import type { ArquipelagoStudioConfig } from '../lib/arquipelago-studio'
@@ -498,16 +497,12 @@ export function ArquipelagoHost(props: {
       }
     }
     void (async () => {
-      const resposta = await fetch(`${BASE}/cliente/manifesto.json`, { cache: 'no-store' })
-      const manifesto = resposta.ok
-        ? ManifestoDoClienteSchema.safeParse(await resposta.json().catch(() => null))
-        : null
-      // A atual e a anterior valem (A35): o jogo e a plataforma sobem em dias diferentes.
-      if (!manifesto?.success || !versaoCompativel(manifesto.data.versaoContrato)) {
+      // O canal no CDN (publicação separada) ou o manifesto do serviço (lacunas, 01/11/2026).
+      const url = await localizarEntrada(origemDoCliente(), BASE)
+      if (!url) {
         if (vivo) setEstado('indisponivel')
         return
       }
-      const url = `${BASE}/cliente/${manifesto.data.entrada}`
       const modulo = (await import(
         /* webpackIgnore: true */ /* turbopackIgnore: true */ url
       )) as ModuloDoArquipelago
