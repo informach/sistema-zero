@@ -6,8 +6,13 @@ import type { LessonDetailView } from '@/lib/types'
  * As aulas abertas no palco, lembradas pelo id: as rotas da aula recebem só o id da aula, e o
  * contexto do Estúdio precisa do bloco dela. O serviço tem uma réplica só (como os apps do
  * Kids), então a memória do processo basta; uma aula esquecida pede para reabrir a página.
+ * Fica no `globalThis`: no build de produção a página e as rotas da aula são pacotes separados,
+ * cada um com a sua cópia deste módulo, e um `Map` do módulo não seria visto pela rota do
+ * Estúdio.
  */
-const opened = new Map<string, LessonDetailView>()
+const shared = globalThis as { __palcoAulas?: Map<string, LessonDetailView> }
+shared.__palcoAulas ??= new Map()
+const opened = shared.__palcoAulas
 const LIMIT = 50
 
 export function rememberLesson(lesson: LessonDetailView): void {

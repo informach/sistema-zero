@@ -44,11 +44,32 @@ const visivel = (el: Element): boolean => {
 
 const texto = (el: Element): string => (el.textContent ?? '').replace(/\s+/g, ' ').trim()
 
+// A barra de um rótulo é dita "ou": o bloco "Quando clicar/tocar" é "Quando clicar ou tocar" na fala.
 const fold = (s: string): string =>
-  s.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/\s+/g, ' ').trim()
+  s
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '')
+    .toLowerCase()
+    .replace(/\s*\/\s*/g, ' ou ')
+    .replace(/\s+/g, ' ')
+    .trim()
 
 /** A área de trabalho principal do Estúdio (a paleta é outro SVG). */
 const areaDeTrabalho = (doc: Document): SVGSVGElement | null => doc.querySelector('svg.blocklySvg')
+
+/**
+ * A parte da área de trabalho que aparece: o SVG passa por baixo da caixa de categorias (e da
+ * paleta aberta), à esquerda, então o que fica à vista começa à direita delas.
+ */
+function areaVisivel(doc: Document, area: Element): DOMRect {
+  const view = area.getBoundingClientRect()
+  let left = view.left
+  for (const lado of doc.querySelectorAll('.blocklyToolbox, svg.blocklyFlyout')) {
+    const r = lado.getBoundingClientRect()
+    if (r.width > 0 && r.height > 0 && r.left <= view.left + 8) left = Math.max(left, r.right)
+  }
+  return new DOMRect(left, view.top, view.right - left, view.height)
+}
 
 /** O texto que é do próprio bloco, sem o dos blocos encaixados nele. */
 const textoProprio = (block: Element): string =>
@@ -140,7 +161,7 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const area = areaDeTrabalho(doc)
       const block = blocosCom(doc, bloco)[0]
       if (!area || !block) return null
-      const view = area.getBoundingClientRect()
+      const view = areaVisivel(doc, area)
       const b = block.getBoundingClientRect()
       const inside =
         b.top >= view.top && b.bottom <= view.bottom && b.left >= view.left && b.right <= view.right
@@ -148,17 +169,20 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       // Um ponto do fundo, sem bloco em cima, de onde arrastar.
       const fundo = (x: number, y: number) =>
         doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+      // Leva o bloco para perto do topo, à esquerda do meio, até onde o arrasto alcança.
+      const dx = view.left + view.width * 0.35 - (b.left + Math.min(b.width, view.width) / 2)
+      const dy = view.top + view.height * 0.3 - b.top
+      // Começa do lado de onde o bloco vem: o arrasto inteiro cabe na área à vista.
+      const xs = dx < 0 ? [0.9, 0.75, 0.5, 0.25, 0.1] : [0.1, 0.25, 0.5, 0.75, 0.9]
+      const ys = dy < 0 ? [0.85, 0.7, 0.5, 0.3, 0.15] : [0.15, 0.3, 0.5, 0.7, 0.85]
       let start: { x: number; y: number } | null = null
-      for (const fy of [0.5, 0.3, 0.7, 0.15, 0.85])
-        for (const fx of [0.5, 0.75, 0.25, 0.9, 0.1]) {
+      for (const fy of ys)
+        for (const fx of xs) {
           const x = view.left + view.width * fx
           const y = view.top + view.height * fy
           if (!start && fundo(x, y)) start = { x, y }
         }
       if (!start) return null
-      // Leva o bloco para perto do topo, à esquerda do meio, até onde o arrasto alcança.
-      const dx = view.left + view.width * 0.35 - (b.left + Math.min(b.width, view.width) / 2)
-      const dy = view.top + view.height * 0.3 - b.top
       const end = {
         x: Math.min(view.right - 4, Math.max(view.left + 4, start.x + dx)),
         y: Math.min(view.bottom - 4, Math.max(view.top + 4, start.y + dy)),
@@ -170,10 +194,19 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const block = blocosCom(doc, texto, onde)[0]
       if (!block) return null
       const r = block.getBoundingClientRect()
-      // Da paleta, o bloco é pego pela borda esquerda, como uma pessoa pega; na área, apontado no meio.
-      return onde === 'paleta'
-        ? pontoEm(block, r.left + Math.min(12, r.width / 4), r.top + Math.min(r.height / 2, 18))
-        : pontoEm(block, r.left + r.width / 2, r.top + Math.min(r.height / 2, 18))
+      // Da paleta, o bloco é pego pela borda esquerda, como uma pessoa pega.
+      if (onde === 'paleta')
+        return pontoEm(
+          block,
+          r.left + Math.min(12, r.width / 4),
+          r.top + Math.min(r.height / 2, 18),
+        )
+      // Na área, apontado no texto dele: o meio da caixa de um bloco com outros dentro cai fora
+      // da barra dele, no fundo da área.
+      const rotulo = textosDe(block)[0]
+      if (!rotulo) return pontoEm(block, r.left + 12, r.top + Math.min(r.height / 2, 18))
+      const t = rotulo.getBoundingClientRect()
+      return pontoEm(block, t.left + t.width / 2, t.top + t.height / 2)
     },
 
     abaixo(texto) {
