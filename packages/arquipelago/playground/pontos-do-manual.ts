@@ -1,6 +1,6 @@
 import { writeFileSync } from 'node:fs'
 import { ilha as ilhaDe } from '@sistemazero/arquipelago-contracts'
-import type { Object3D } from 'three'
+import { type Object3D, Vector3 } from 'three'
 import { paraOMundo } from '../src/mundo/bosque'
 import { ALTURA_DAS_NUVENS, centroNoAnel, giroDaIlha } from '../src/mundo/medidas'
 import { arquivoDaIlha, carregarGlb } from '../tests/ajuda-colisores'
@@ -18,7 +18,7 @@ for (const id of ILHAS) {
   raiz.traverse((o) => {
     if (o.type !== 'Object3D' || !o.name || o.name.startsWith('col-')) return
     const p = { x: 0, y: 0, z: 0 }
-    const w = o.getWorldPosition(new (o.position.constructor as never)())
+    const w = o.getWorldPosition(new Vector3())
     paraOMundo({ x: w.x, y: w.y, z: w.z }, { x: centro.x, y: soma, z: centro.z }, giro, p)
     ancoras[o.name] = [+p.x.toFixed(2), +p.y.toFixed(2), +p.z.toFixed(2)]
   })
