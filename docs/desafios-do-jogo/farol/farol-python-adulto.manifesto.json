@@ -14,10 +14,10 @@
       "conteudo": {
         "versao": 1,
         "titulo": "Projeto autoral em Python",
-        "enunciado": "Projeto livre em Python com Pygame Zero. A cena traz guia, estrela e pontos. Critérios: a colisão com a estrela pontua uma única vez (mantenha uma flag); R reinicia a partida, inclusive o guia e a flag. O movimento já vem pronto. O restante do jogo é seu.",
+        "enunciado": "Projeto livre em Python com Pygame Zero. A cena traz só a janela e o guia andando. Preencha a ficha (objetivo e três funcionalidades) e implemente o jogo combinando mecânicas já estudadas. Critérios automáticos: ficha preenchida, jogo sem erro com setas, espaço e clique, e R devolvendo o guia ao início. Aprovado, o projeto passa por uma revisão humana com retorno.",
         "dicas": [
-          "keyboard.right indica a seta pressionada no quadro.",
-          "Rect.colliderect detecta a colisão.",
+          "Mantenha o escopo pequeno: três funcionalidades que cabem no tempo.",
+          "clock.schedule_interval, random e listas cobrem relógio, sorteio e ondas.",
           "on_key_down recebe key; compare com keys.R."
         ],
         "projetoInicial": {
@@ -57,7 +57,7 @@
           "ir": null,
           "blocksState": null,
           "files": {
-            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Meu jogo do Arquipélago\"\n\nguia = Rect((60, 220), (40, 40))\nestrela = Rect((420, 220), (40, 40))\npontos = 0\n\n\ndef update():\n    if keyboard.right:\n        guia.x = guia.x + 4\n    if keyboard.left:\n        guia.x = guia.x - 4\n\n\ndef on_key_down(key):\n    pass\n\n\ndef draw():\n    screen.fill((26, 40, 84))\n    screen.draw.filled_circle(estrela.center, 18, (255, 220, 90))\n    screen.draw.filled_rect(guia, (120, 220, 200))\n    screen.draw.text(\"Pontos: \" + str(pontos), (16, 12), fontsize=32)\n",
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Meu jogo do Arquipélago\"\n\n# A ficha do seu jogo: o objetivo e as três coisas que ele vai ter.\nOBJETIVO = \"\"\nFUNCIONALIDADE_1 = \"\"\nFUNCIONALIDADE_2 = \"\"\nFUNCIONALIDADE_3 = \"\"\n\nguia = Rect((60, 400), (40, 40))\n\n\ndef update():\n    if keyboard.right:\n        guia.x = guia.x + 4\n    if keyboard.left:\n        guia.x = guia.x - 4\n\n\ndef on_key_down(key):\n    pass\n\n\ndef draw():\n    screen.fill((26, 40, 84))\n    screen.draw.filled_rect(guia, (120, 220, 200))\n",
             "requirements.txt": ""
           }
         },
@@ -98,23 +98,18 @@
           "ir": null,
           "blocksState": null,
           "files": {
-            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Meu jogo do Arquipélago\"\n\nguia = Rect((60, 220), (40, 40))\nestrela = Rect((420, 220), (40, 40))\npontos = 0\n\n\npegou = False\n\n\ndef update():\n    global pontos, pegou\n    if keyboard.right:\n        guia.x = guia.x + 4\n    if keyboard.left:\n        guia.x = guia.x - 4\n    if guia.colliderect(estrela) and not pegou:\n        pegou = True\n        pontos = pontos + 1\n        estrela.x = 700\n\n\ndef on_key_down(key):\n    global pontos, pegou\n    if key == keys.R:\n        pontos = 0\n        pegou = False\n        guia.x = 60\n        estrela.x = 420\n\n\ndef draw():\n    screen.fill((26, 40, 84))\n    screen.draw.filled_circle(estrela.center, 18, (255, 220, 90))\n    screen.draw.filled_rect(guia, (120, 220, 200))\n    screen.draw.text(\"Pontos: \" + str(pontos), (16, 12), fontsize=32)\n",
+            "main.py": "WIDTH = 640\nHEIGHT = 480\nTITLE = \"Meu jogo do Arquipélago\"\n\n# A ficha do seu jogo: o objetivo e as três coisas que ele vai ter.\nOBJETIVO = \"Pegar as estrelas que caem antes de o tempo acabar.\"\nFUNCIONALIDADE_1 = \"As estrelas caem em lugares sorteados.\"\nFUNCIONALIDADE_2 = \"Cada estrela pega vale um ponto.\"\nFUNCIONALIDADE_3 = \"A partida acaba em 30 segundos, e o R recomeça.\"\n\nimport random\n\nguia = Rect((60, 400), (40, 40))\nestrelas = []\npontos = 0\ntempo = 30\njogando = True\n\n\ndef nova_estrela():\n    if jogando:\n        estrelas.append(Rect((random.randint(20, 600), 0), (24, 24)))\n\n\ndef contar():\n    global tempo, jogando\n    if jogando:\n        tempo = tempo - 1\n        if tempo <= 0:\n            jogando = False\n\n\nclock.schedule_interval(nova_estrela, 1.0)\nclock.schedule_interval(contar, 1.0)\n\n\ndef update():\n    global pontos\n    if not jogando:\n        return\n    if keyboard.right:\n        guia.x = guia.x + 4\n    if keyboard.left:\n        guia.x = guia.x - 4\n    for estrela in estrelas[:]:\n        estrela.y = estrela.y + 3\n        if guia.colliderect(estrela):\n            estrelas.remove(estrela)\n            pontos = pontos + 1\n        elif estrela.y > HEIGHT:\n            estrelas.remove(estrela)\n\n\ndef on_key_down(key):\n    global pontos, tempo, jogando\n    if key == keys.R:\n        guia.x = 60\n        estrelas.clear()\n        pontos = 0\n        tempo = 30\n        jogando = True\n\n\ndef draw():\n    screen.fill((26, 40, 84))\n    for estrela in estrelas:\n        screen.draw.filled_circle(estrela.center, 12, (255, 220, 90))\n    screen.draw.filled_rect(guia, (120, 220, 200))\n    screen.draw.text(\"Pontos: \" + str(pontos) + \"   Tempo: \" + str(tempo), (16, 12), fontsize=32)\n    if not jogando:\n        screen.draw.text(\"Fim. R recomeça.\", center=(320, 240), fontsize=48)\n",
             "requirements.txt": ""
           }
         },
         "objetivos": [
           {
-            "id": "encontro",
-            "label": "A colisão com a estrela soma um ponto uma única vez.",
-            "hint": "Mantenha uma flag de coleta e teste-a antes de pontuar.",
+            "id": "objetivo",
+            "label": "A ficha declara o objetivo do jogo.",
+            "hint": "Preencha o objetivo na ficha.",
             "rule": {
               "type": "behavior",
               "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
                 {
                   "action": "wait",
                   "ms": 300
@@ -123,10 +118,75 @@
               "expect": {
                 "target": {
                   "kind": "value",
-                  "path": "pontos"
+                  "path": "OBJETIVO"
                 },
-                "compare": "equals",
-                "value": 1
+                "compare": "truthy"
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "funcionalidades",
+            "label": "A ficha declara três funcionalidades.",
+            "hint": "Preencha as três funcionalidades planejadas.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "wait",
+                  "ms": 300
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "value",
+                  "path": "FUNCIONALIDADE_3"
+                },
+                "compare": "truthy"
+              }
+            },
+            "programmingLanguage": "python",
+            "profileId": "python-browser"
+          },
+          {
+            "id": "joga",
+            "label": "O jogo roda sem erro com setas, espaço e clique.",
+            "hint": "Teste cada entrada; o console mostra o erro e a linha.",
+            "rule": {
+              "type": "behavior",
+              "steps": [
+                {
+                  "action": "press",
+                  "key": "ArrowRight",
+                  "holdMs": 800
+                },
+                {
+                  "action": "press",
+                  "key": "ArrowLeft",
+                  "holdMs": 400
+                },
+                {
+                  "action": "press",
+                  "key": "Space",
+                  "holdMs": 120
+                },
+                {
+                  "action": "click",
+                  "x": 320,
+                  "y": 240
+                },
+                {
+                  "action": "wait",
+                  "ms": 1200
+                }
+              ],
+              "expect": {
+                "target": {
+                  "kind": "console"
+                },
+                "compare": "notContains",
+                "value": "Error"
               }
             },
             "programmingLanguage": "python",
@@ -135,14 +195,14 @@
           {
             "id": "recomeca",
             "label": "R devolve o guia à posição inicial.",
-            "hint": "Restaure guia.x em R.",
+            "hint": "Reinicie a partida em R, inclusive o guia.",
             "rule": {
               "type": "behavior",
               "steps": [
                 {
                   "action": "press",
                   "key": "ArrowRight",
-                  "holdMs": 2500
+                  "holdMs": 1500
                 },
                 {
                   "action": "press",
@@ -165,90 +225,19 @@
             },
             "programmingLanguage": "python",
             "profileId": "python-browser"
-          },
-          {
-            "id": "outra-partida",
-            "label": "Após R, a estrela pode ser coletada de novo, com a pontuação recomeçando em zero.",
-            "hint": "Reinicie pontos, a flag de coleta e a posição da estrela.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
-                {
-                  "action": "press",
-                  "key": "r",
-                  "holdMs": 80
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                },
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "pontos"
-                },
-                "compare": "equals",
-                "value": 1
-              }
-            },
-            "programmingLanguage": "python",
-            "profileId": "python-browser"
-          },
-          {
-            "id": "some",
-            "label": "Extra: a estrela sai da área visível quando é coletada.",
-            "hint": "Mova a estrela para fora da tela (x 700).",
-            "optional": true,
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "press",
-                  "key": "ArrowRight",
-                  "holdMs": 2500
-                },
-                {
-                  "action": "wait",
-                  "ms": 300
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "value",
-                  "path": "estrela.x"
-                },
-                "compare": "atLeast",
-                "value": 640
-              }
-            },
-            "programmingLanguage": "python",
-            "profileId": "python-browser"
           }
         ],
         "desafioExtra": {
-          "titulo": "Mais um desafio",
-          "texto": "Ao coletar, mova a estrela para fora da tela."
+          "titulo": "Versão 2",
+          "texto": "Versão 2: após a aprovação, faça um teste com outra pessoa, ajuste o jogo pelo que o teste mostrou e envie de novo."
         },
         "recompensa": {
           "cor": false,
           "atracao": "meu-jogo-do-arquipelago",
           "moedas": 20,
-          "moedasExtra": 10
+          "moedasExtra": 10,
+          "extraNaVersao2": true,
+          "revisaoHumana": true
         },
         "blocosManuais": {
           "acrescentar": [],

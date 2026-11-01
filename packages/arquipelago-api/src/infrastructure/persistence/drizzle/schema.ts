@@ -63,6 +63,39 @@ export const minijogos = arquipelagoSchema.table(
   ],
 )
 
+/**
+ * A fila da revisão humana do projeto autoral da Lenda (lacunas, 01/11/2026): uma linha por
+ * jogador e desafio. Cada envio aprovado volta a `aguardando` e soma 1 em `envio` (a trava da
+ * resposta); a equipe responde com `conferido` ou `nova-tentativa` e um retorno.
+ */
+export const revisoesHumanas = arquipelagoSchema.table(
+  'revisoes_humanas',
+  {
+    jogadorId: uuid().notNull(),
+    desafioId: uuid()
+      .notNull()
+      .references(() => desafios.id, { onDelete: 'cascade' }),
+    publico: varchar({ length: 8 }).notNull(),
+    titulo: varchar({ length: 200 }).notNull(),
+    estado: varchar({ length: 16 }).notNull(),
+    envio: integer().notNull().default(1),
+    enviadoEm: timestamp({ withTimezone: true }).notNull(),
+    retorno: text(),
+    revisadoPor: uuid(),
+    revisadoEm: timestamp({ withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.desafioId] }),
+    index('revisoes_humanas_fila').on(t.estado, t.enviadoEm),
+    check('revisoes_humanas_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+    check(
+      'revisoes_humanas_estado_check',
+      sql`${t.estado} in ('aguardando', 'conferido', 'nova-tentativa')`,
+    ),
+    check('revisoes_humanas_retorno_check', sql`length(${t.retorno}) <= 1000`),
+  ],
+)
+
 /** Um salvamento por jogador (perfil no Kids, conta no adulto). `revisao` é a trava. */
 export const salvamentos = arquipelagoSchema.table(
   'salvamentos',

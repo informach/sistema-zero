@@ -71,6 +71,6 @@ O apoio preparado de lista não comprova construir uma lista ou um laço. As ati
 | nuvens | Jardim que floresce: rega forte | retomada-em-blocos | Espaço guarda cinco de água de uma vez. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce: sol forte | retomada-em-blocos | Com o sol forte, de seis para cima, a flor cresce vinte por segundo; com menos, dez. | Nenhum neste recorte | pedida |
 | nuvens | Jardim que floresce: chuva | retomada-em-blocos | A cada segundo chove um de água, e a flor cresce sem regar enquanto há sol. | Nenhum neste recorte | pedida |
-| farol | Meu jogo do Arquipélago | projeto-autoral | A seta para a direita leva o guia pelo palco.; Algo acontece quando o guia encontra outro desenho.; No encontro, o jogo guarda uma informação.; Um Se usa essa informação para decidir o que acontece.; Uma tecla recomeça o jogo. | Nenhum neste recorte | pedida |
+| farol | Meu jogo do Arquipélago | projeto-autoral | A seta para a direita leva o guia pelo palco.; Algo acontece quando o guia encontra outro desenho.; No encontro, o jogo guarda uma informação.; Um Se usa essa informação para decidir o que acontece.; Uma tecla recomeça o jogo.; O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor. | Nenhum neste recorte | pedida |
 
 Detalhes de cada público e fonte por bloco: [repertorio-local.json](repertorio-local.json). Nenhuma fonte local comprova que o curso esteja publicado ou concluído. Lacunas não são preenchidas por blocos manuais.

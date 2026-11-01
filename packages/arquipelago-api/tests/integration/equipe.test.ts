@@ -631,7 +631,7 @@ describe('conflitos do cadastro', () => {
         () => crypto.randomUUID(),
       )
     const s = outro()
-    const admin = { id: ADMIN, podeEscrever: true }
+    const admin = { id: ADMIN, podeEscrever: true, podeRevisar: true }
     await s.criar(admin, pedido())
     await expect(s.criar(admin, pedido({ quadro: 2 }))).rejects.toMatchObject({
       motivo: 'slug-em-uso',

@@ -5,6 +5,7 @@ import {
   criarSalvamentoInicial,
   type Fantasma,
   LeituraDoFantasmaSchema,
+  PERCURSOS,
   PERMISSOES_PADRAO,
   type PublicoJogo,
 } from '@sistemazero/arquipelago-contracts'
@@ -120,6 +121,12 @@ function headers(p: { id: string; contaId: string; publico: PublicoJogo }) {
 }
 
 describe.skipIf(!url)('fantasmas no Postgres e HTTP reais', () => {
+  test('o banco migrado aceita o fantasma de todos os percursos do contrato (lacunas, L3)', async () => {
+    const [trava] = await db.sql<{ def: string }[]>`
+      select pg_get_constraintdef(oid) as def from pg_constraint
+      where conname = 'fantasmas_percurso_check'`
+    for (const percurso of PERCURSOS) expect(trava?.def, percurso).toContain(`'${percurso}'`)
+  })
   test('revisão, recorde e público são conferidos; repetição não duplica linha nem modifica o save', async () => {
     const p = await perfil()
     const pedido = { versao: 1 as const, revisaoBase: 1, fantasma: artefato() }

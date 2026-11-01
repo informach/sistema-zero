@@ -7731,6 +7731,10 @@
         {
           "id": "recomeca",
           "descricao": "Uma tecla recomeça o jogo."
+        },
+        {
+          "id": "combina",
+          "descricao": "O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor."
         }
       ],
       "tiposJaPresentes": [
@@ -7748,12 +7752,23 @@
       ],
       "tiposAcrescentados": [
         "sz_frame_events",
+        "sz_g2d_apply_gravity",
+        "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
+        "sz_g2d_control_dino",
+        "sz_g2d_create_dino",
+        "sz_g2d_create_group",
         "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_every_seconds",
+        "sz_g2d_explode",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_random_between",
         "sz_g2d_restart",
-        "sz_g2d_top_down",
+        "sz_g2d_spawn_obstacle",
+        "sz_g2d_update_group",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
@@ -7794,6 +7809,10 @@
         {
           "id": "recomeca",
           "descricao": "Uma tecla recomeça o jogo."
+        },
+        {
+          "id": "combina",
+          "descricao": "O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor."
         }
       ],
       "tiposJaPresentes": [
@@ -7811,12 +7830,23 @@
       ],
       "tiposAcrescentados": [
         "sz_frame_events",
+        "sz_g2d_apply_gravity",
+        "sz_g2d_arrows_x",
         "sz_g2d_clamp_to_screen",
+        "sz_g2d_control_dino",
+        "sz_g2d_create_dino",
+        "sz_g2d_create_group",
         "sz_g2d_destroy_sprite",
+        "sz_g2d_draw_group",
+        "sz_g2d_every_seconds",
+        "sz_g2d_explode",
         "sz_g2d_on_key",
         "sz_g2d_on_overlap",
+        "sz_g2d_on_sprite_group_overlap",
+        "sz_g2d_random_between",
         "sz_g2d_restart",
-        "sz_g2d_top_down",
+        "sz_g2d_spawn_obstacle",
+        "sz_g2d_update_group",
         "sz_js_if_else",
         "sz_js_var_assign",
         "sz_js_var_create",
