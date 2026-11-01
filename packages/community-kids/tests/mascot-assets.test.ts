@@ -5,8 +5,17 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { basename, resolve } from 'node:path'
 import { BUILTIN_ART } from '@sistemazero/edisvg/builtins'
+import { createElement } from 'react'
+import { renderToStaticMarkup } from 'react-dom/server'
 import { DIALOGUE_POSES } from '../../admin/src/lib/types'
-import { type MascotExpression, ZAPPY_SRC } from '../src/components/kids/mascot'
+import { KidsMascot, type MascotExpression, ZAPPY_SRC } from '../src/components/kids/mascot'
+
+test('a decorative loading pose renders without preloading a discarded fallback', () => {
+  const html = renderToStaticMarkup(createElement(KidsMascot, { expression: 'thinking' }))
+  expect(html).toContain('<img')
+  expect(html).toContain(ZAPPY_SRC.thinking)
+  expect(html).not.toContain('rel="preload"')
+})
 
 test('every selectable expression points to its matching export-derived static pose', async () => {
   for (const pose of Object.keys(ZAPPY_SRC) as MascotExpression[]) {

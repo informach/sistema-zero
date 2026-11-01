@@ -36,6 +36,7 @@ export function KidsMascot({
       height={48}
       aria-hidden="true"
       draggable={false}
+      fetchPriority="low"
       className={cn('size-12 shrink-0 select-none object-contain', className)}
     />
   )
