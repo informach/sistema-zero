@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { ILHA_IDS, ilha, type PostoDaJornada } from './ilhas'
 import { ProblemaDoMapaSchema } from './membros'
 import { RECEITAS } from './receitas-moradores'
+import { RevisaoHumanaSchema } from './revisao-humana'
 
 /**
  * Os desafios do jogo (decisão de 27/10/2026, plano em `docs/plans/2026-10-27-arquipelago-desafios.md`):
@@ -153,6 +154,13 @@ export const RecompensaDoDesafioSchema = z.strictObject({
     .string()
     .refine((id) => RECEITAS.some((r) => r.id === id), 'Receita desconhecida')
     .optional(),
+  /**
+   * O extra é a versão 2 (Lenda, lacunas de 01/11/2026): vale num envio depois da aprovação, com
+   * o jogo mudado em relação ao aprovado guardado. Pede `atracao`, que guarda o aprovado.
+   */
+  extraNaVersao2: z.literal(true).optional(),
+  /** Aprovado, o projeto entra na fila de revisão humana da Sala do Professor (Lenda). */
+  revisaoHumana: z.literal(true).optional(),
 })
 export type RecompensaDoDesafio = z.infer<typeof RecompensaDoDesafioSchema>
 
@@ -550,6 +558,11 @@ export const DesafioNaListaSchema = z.strictObject({
     .optional(),
   recompensa: RecompensaDoDesafioSchema,
   recompensaVista: z.boolean(),
+  /**
+   * A revisão humana do projeto autoral da Lenda (lacunas, 01/11/2026): o estado e o retorno da
+   * equipe. Só nos desafios com `recompensa.revisaoHumana`; `null` antes do primeiro envio aprovado.
+   */
+  revisaoHumana: RevisaoHumanaSchema.nullable().optional(),
   /** O desafio extra já foi feito (A25: o prêmio-objeto vale). Opcional para o serviço anterior. */
   extraFeito: z.boolean().optional(),
 })

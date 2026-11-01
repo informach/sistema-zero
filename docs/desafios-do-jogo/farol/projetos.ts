@@ -20,8 +20,16 @@ import type { JSExpr, JSStatement, SZIRV2 } from '../../../packages/studio/src/i
  * decisão que usa essa informação e um recomeço, todos em código que pode rodar) e um de
  * execução (o guia anda): nenhum pede um nome de variável, uma imagem ou uma regra pronta. O
  * gabarito é só um exemplo de como cumprir.
+ *
+ * À altura do posto Lenda (lacunas, 01/11/2026): a Jornada pede um projeto que combine mecânicas
+ * já aprendidas. O critério `combina` confere, em código que roda, as mecânicas dos três postos de
+ * blocos: a decisão com lembrança do Faísca, o grupo criado por relógio com encontro do
+ * Construtor e a gravidade com pulo do Inventor. O extra virou a versão 2: depois de aprovado,
+ * testar com outra pessoa, mudar o jogo e enviar de novo (o serviço do jogo confere a mudança).
+ * Feito, o projeto vai para a revisão humana na Sala do Professor.
  */
 const bool = (value: boolean): JSExpr => ({ type: 'bool', value })
+const num = (value: number): JSExpr => ({ type: 'num', value })
 const v = (name: string): JSExpr => ({ type: 'var', name })
 const iff = (cond: JSExpr, then: JSStatement[]): JSStatement => ({
   type: 'if',
@@ -90,12 +98,15 @@ export const MEU_JOGO = {
   slug: 'meu-jogo-do-arquipelago',
   titulo: 'Meu jogo do Arquipélago',
   texto:
-    'Agora o jogo é seu. O guia está no palco e há desenhos para usar: estrela, farol, concha e Lumi. Invente uma pequena aventura com a sua ideia. Os critérios estão na lista de objetivos: o guia anda, algo acontece num encontro, o jogo lembra o que aconteceu, uma decisão usa essa lembrança e uma tecla recomeça. O resto é escolha sua.',
+    'Agora o jogo é seu. O guia está no palco e há desenhos para usar: estrela, farol, concha e Lumi. Antes de montar, escolha o objetivo do jogo e três coisas que ele vai ter. Combine o que você aprendeu nos três postos de blocos: um encontro que o jogo lembra e usa numa decisão, coisas que um relógio cria num grupo e que o guia encontra, e gravidade com pulo. Os critérios estão na lista de objetivos. O resto é escolha sua.',
   dicas: [
     'Comece pelo guia andando. Depois escolha um encontro e o que o jogo vai lembrar dele.',
-    'Se travar, lembre do Pega-conchas: pegar, lembrar e decidir no balde.',
+    'O relógio do Construtor cria coisas num grupo; o encontro com o grupo precisa fazer alguma coisa.',
+    'Do Inventor vêm a gravidade e o pulo. Os dois juntos fazem o guia cair e pular.',
+    'Se travar, lembre do Pega-conchas, da Nave e do Corre Dino: um jogo de cada posto.',
   ],
-  extra: 'Faça alguma coisa sair da tela quando for pega no encontro.',
+  extra:
+    'Versão 2: depois de aprovado, peça para outra pessoa jogar, mude o jogo pelo que o teste mostrou e envie de novo.',
 } as const
 
 export function projetoDoMeuJogo(pronto: boolean): Project {
@@ -107,18 +118,56 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
   const events: JSStatement[] = []
   const movement: JSStatement[] = []
   const drawing: JSStatement[] = [label(MEU_JOGO.titulo, 20, 35)]
+  const timers: JSStatement[] = []
   if (pronto) {
-    // Um exemplo de cumprir os critérios: levar a estrela até o farol para acender.
+    // Um exemplo de cumprir os critérios: levar a estrela até o farol para acender, pulando as
+    // pedras que o relógio solta. O guia corre e pula como o Dino (Inventor); as pedras são um
+    // grupo criado por relógio (Construtor); a estrela é lembrada e decide o farol (Faísca).
+    start.splice(2, 1, {
+      type: 'g2d:createDino',
+      varName: 'guia',
+      x: num(48),
+      y: num(300),
+      size: num(56),
+      color: '#f2b84b',
+    })
     start.push(
       { type: 'var', name: 'temEstrela', value: bool(false) },
       { type: 'var', name: 'aceso', value: bool(false) },
-      image('estrela', 'estrela', 260, 240),
-      image('farol', 'farol', 520, 240),
+      image('estrela', 'estrela', 260, 352),
+      image('farol', 'farol', 560, 352),
+      { type: 'g2d:createGroup', varName: 'pedras' },
     )
     movement.push(
-      { type: 'g2d:topDown', spriteVar: 'guia', speed: 4 },
+      { type: 'g2d:arrowsX', spriteVar: 'guia', speed: num(5) },
+      { type: 'g2d:applyGravity', spriteVar: 'guia' },
+      { type: 'g2d:controlDino', spriteVar: 'guia', ctxVar: 'ctx', jump: num(14) },
       { type: 'g2d:clampToScreen', spriteVar: 'guia', ctxVar: 'ctx' },
+      { type: 'g2d:updateGroup', groupVar: 'pedras' },
+      {
+        type: 'g2d:onSpriteGroupOverlap',
+        spriteVar: 'guia',
+        groupVar: 'pedras',
+        itemName: 'pedra',
+        body: [{ type: 'g2d:explode', spriteVar: 'pedra', color: '#9a8f86' }],
+      },
     )
+    // O relógio é uma raiz da área dos laços, ao lado do "a cada quadro".
+    timers.push({
+      type: 'g2d:everySeconds',
+      seconds: num(2.5),
+      body: [
+        {
+          type: 'g2d:spawnObstacle',
+          groupVar: 'pedras',
+          ctxVar: 'ctx',
+          shape: 'rock',
+          x: { type: 'g2d:randomBetween', min: num(660), max: num(760) },
+          size: num(28),
+          vx: num(-3),
+        },
+      ],
+    })
     events.push(
       {
         type: 'g2d:onOverlap',
@@ -135,6 +184,7 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
       { type: 'g2d:onKey', key: 'Enter', body: [{ type: 'g2d:restart' }] },
     )
     drawing.push(
+      { type: 'g2d:drawGroup', groupVar: 'pedras', ctxVar: 'ctx' },
       draw('estrela'),
       draw('farol'),
       iff(v('aceso'), [label('O farol acendeu.', 20, 70)]),
@@ -151,6 +201,7 @@ export function projetoDoMeuJogo(pronto: boolean): Project {
       events,
       loops: [
         { type: 'g2d:updateEachFrame', body: [...movement, { type: 'g2d:clear' }, ...drawing] },
+        ...timers,
       ],
     },
   }
@@ -204,6 +255,10 @@ export function objetivosDoMeuJogo(): SectionJavaScriptProjectCheck[] {
     causal('lembra', 'No encontro, o jogo guarda uma informação.', 'memory'),
     causal('decide', 'Um Se usa essa informação para decidir o que acontece.', 'decision'),
     causal('recomeca', 'Uma tecla recomeça o jogo.', 'restart'),
-    causal('some', 'Extra: algo sai da tela quando é pego no encontro.', 'removal', true),
+    causal(
+      'combina',
+      'O jogo combina os três postos de blocos: a decisão do Faísca, o grupo com relógio do Construtor e a gravidade com pulo do Inventor.',
+      'combination',
+    ),
   ]
 }

@@ -176,6 +176,13 @@
       "when": 1793464031411,
       "tag": "0024_cartao_dos_pais_por_criacao",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1793490641623,
+      "tag": "0025_revisao_humana",
+      "breakpoints": true
     }
   ]
 }

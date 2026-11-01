@@ -141,3 +141,10 @@ export class DesafioBloqueadoError extends Error {
     super('Este desafio ainda não está liberado')
   }
 }
+
+/** A revisão humana recebeu um envio novo depois de aberta: abrir de novo antes de responder. */
+export class RevisaoMudouError extends Error {
+  constructor() {
+    super('A pessoa enviou uma versão nova. Abra de novo antes de responder.')
+  }
+}

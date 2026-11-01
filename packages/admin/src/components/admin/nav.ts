@@ -4,6 +4,7 @@ import {
   CalendarDays,
   Contact,
   CreditCard,
+  Crown,
   Gamepad2,
   Gift,
   Headset,
@@ -85,6 +86,8 @@ export const NAV_GROUPS: NavGroup[] = [
         badgeKey: 'entregas',
       },
       { label: 'Maestrias', href: '/admin/professor/maestrias', icon: Award },
+      // A revisão humana do jogo autoral do Farol (lacunas, 01/11/2026).
+      { label: 'Projetos da Lenda', href: '/admin/professor/lenda', icon: Crown },
       {
         label: 'Recados',
         href: '/admin/professor/recados',

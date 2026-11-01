@@ -139,7 +139,13 @@ const ilhas = [
   { ilha: 'recife', arquivo: 'recife/recife-python', erros: CENARIOS_DO_RECIFE },
   { ilha: 'pico', arquivo: 'pico/pico-python', erros: CENARIOS_DO_PICO },
   // A29: o projeto autoral do Farol em Python.
-  { ilha: 'farol', arquivo: 'farol/farol-python', erros: CENARIOS_DO_FAROL_PYTHON },
+  {
+    ilha: 'farol',
+    arquivo: 'farol/farol-python',
+    erros: CENARIOS_DO_FAROL_PYTHON,
+    // Cenário aberto (Lenda): o inicial não quebra ao ser jogado; falha na ficha e no R.
+    inicialFalha: ['objetivo', 'funcionalidades', 'recomeca'],
+  },
 ].filter(({ ilha }) => !argumento('ilha') || ilha === argumento('ilha'))
 const evidencia = path.join(cache, 'desafios-python', crypto.randomUUID())
 await mkdir(evidencia, { recursive: true })
@@ -243,7 +249,7 @@ async function rodar(slug: string, cenario: Cenario, objetivos: PythonProjectExe
   }
 }
 
-for (const { arquivo, erros } of ilhas)
+for (const { arquivo, erros, ...resto } of ilhas)
   for (const publico of ['', '-adulto']) {
     const manifesto = ManifestoDeDesafiosSchema.parse(
       JSON.parse(
@@ -265,7 +271,12 @@ for (const { arquivo, erros } of ilhas)
       // Os dois públicos guardam os mesmos projetos; os erros rodam uma vez, no Kids.
       const cenarios: Cenario[] = [
         { nome: 'gabarito', projeto: d.conteudo.gabarito, passa: true },
-        { nome: 'inicial', projeto: d.conteudo.projetoInicial, passa: false },
+        {
+          nome: 'inicial',
+          projeto: d.conteudo.projetoInicial,
+          passa: false,
+          ...('inicialFalha' in resto ? { ids: resto.inicialFalha } : {}),
+        },
         ...(publico ? [] : erros()),
       ]
       for (const cenario of cenarios) {

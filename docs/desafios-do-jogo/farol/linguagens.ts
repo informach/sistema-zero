@@ -14,124 +14,156 @@ import { objetivosDoMeuJogo, projetoDoMeuJogo } from './projetos'
  * (`postoDoCursoBase` do contrato): o jogo mostra os quatro, e a pessoa escolhe entre os que já
  * abriram. Nenhum pinta (o Farol não tem cor) e todos vão para o fliperama.
  *
- * Nas linguagens de texto, a cena vem pronta (o guia à esquerda, andando com as setas, e a estrela
- * no caminho dele, à direita) e o jogo é da pessoa: encontrar, lembrar, decidir e recomeçar. Os
- * critérios rodam o jogo de verdade, olhando os mesmos três nomes que a cena já traz (`guia`,
- * `estrela` e `pontos`): passar pela estrela soma um ponto uma vez só, R leva o guia de volta ao
- * começo e, depois do R, a estrela pode ser pega de novo, com os pontos começando do zero. O andar
- * vem pronto porque é ele que separa "recomeçou" de "nunca saiu do lugar".
+ * Cenário aberto (Lenda, lacunas de 01/11/2026): nas linguagens de texto o jogo começa só com a
+ * janela, o guia andando e a ficha. A Jornada pede "definir objetivo e três funcionalidades" e "uma
+ * revisão humana por projeto final": a ficha guarda o objetivo e as três coisas que o jogo terá,
+ * e quem julga o jogo inventado é a equipe, na Sala do Professor. Os critérios automáticos ficam no
+ * que vale para qualquer ideia: a ficha preenchida, o jogo que aguenta ser jogado (setas, espaço e
+ * clique sem erro) e o R que leva o guia de volta ao começo. O gabarito é um exemplo (uma chuva de
+ * estrelas com lista, sorteio, relógio e fim de partida), não o jogo esperado.
  */
 export const FAROL_TEXTO = {
-  guia: { x: 60, y: 220 },
-  estrela: { x: 420, y: 220 },
+  guia: { x: 60, y: 400 },
   lado: 40,
-  passo: 4,
   largura: 640,
   altura: 480,
 } as const
 
 // ── Python (quadro 2) ───────────────────────────────────────────────────────────────────────
 
-const PYTHON = {
-  inicial: `def update():
-    if keyboard.right:
-        guia.x = guia.x + 4
-    if keyboard.left:
-        guia.x = guia.x - 4
+const FICHA_PYTHON_VAZIA = `# A ficha do seu jogo: o objetivo e as três coisas que ele vai ter.
+OBJETIVO = ""
+FUNCIONALIDADE_1 = ""
+FUNCIONALIDADE_2 = ""
+FUNCIONALIDADE_3 = ""`
+const FICHA_PYTHON = `# A ficha do seu jogo: o objetivo e as três coisas que ele vai ter.
+OBJETIVO = "Pegar as estrelas que caem antes de o tempo acabar."
+FUNCIONALIDADE_1 = "As estrelas caem em lugares sorteados."
+FUNCIONALIDADE_2 = "Cada estrela pega vale um ponto."
+FUNCIONALIDADE_3 = "A partida acaba em 30 segundos, e o R recomeça."`
 
-
-def on_key_down(key):
-    pass`,
-  gabarito: `pegou = False
+const PYTHON_INICIAL = `guia = Rect((${FAROL_TEXTO.guia.x}, ${FAROL_TEXTO.guia.y}), (${FAROL_TEXTO.lado}, ${FAROL_TEXTO.lado}))
 
 
 def update():
-    global pontos, pegou
     if keyboard.right:
         guia.x = guia.x + 4
     if keyboard.left:
         guia.x = guia.x - 4
-    if guia.colliderect(estrela) and not pegou:
-        pegou = True
-        pontos = pontos + 1
-        estrela.x = 700
 
 
 def on_key_down(key):
-    global pontos, pegou
+    pass
+
+
+def draw():
+    screen.fill((26, 40, 84))
+    screen.draw.filled_rect(guia, (120, 220, 200))`
+
+const PYTHON_GABARITO = `import random
+
+guia = Rect((${FAROL_TEXTO.guia.x}, ${FAROL_TEXTO.guia.y}), (${FAROL_TEXTO.lado}, ${FAROL_TEXTO.lado}))
+estrelas = []
+pontos = 0
+tempo = 30
+jogando = True
+
+
+def nova_estrela():
+    if jogando:
+        estrelas.append(Rect((random.randint(20, 600), 0), (24, 24)))
+
+
+def contar():
+    global tempo, jogando
+    if jogando:
+        tempo = tempo - 1
+        if tempo <= 0:
+            jogando = False
+
+
+clock.schedule_interval(nova_estrela, 1.0)
+clock.schedule_interval(contar, 1.0)
+
+
+def update():
+    global pontos
+    if not jogando:
+        return
+    if keyboard.right:
+        guia.x = guia.x + 4
+    if keyboard.left:
+        guia.x = guia.x - 4
+    for estrela in estrelas[:]:
+        estrela.y = estrela.y + 3
+        if guia.colliderect(estrela):
+            estrelas.remove(estrela)
+            pontos = pontos + 1
+        elif estrela.y > HEIGHT:
+            estrelas.remove(estrela)
+
+
+def on_key_down(key):
+    global pontos, tempo, jogando
     if key == keys.R:
+        guia.x = ${FAROL_TEXTO.guia.x}
+        estrelas.clear()
         pontos = 0
-        pegou = False
-        guia.x = 60
-        estrela.x = 420`,
-} as const
+        tempo = 30
+        jogando = True
+
+
+def draw():
+    screen.fill((26, 40, 84))
+    for estrela in estrelas:
+        screen.draw.filled_circle(estrela.center, 12, (255, 220, 90))
+    screen.draw.filled_rect(guia, (120, 220, 200))
+    screen.draw.text("Pontos: " + str(pontos) + "   Tempo: " + str(tempo), (16, 12), fontsize=32)
+    if not jogando:
+        screen.draw.text("Fim. R recomeça.", center=(320, 240), fontsize=48)`
 
 /** Programas errados que o executor precisa recusar, cada um no lugar do gabarito. */
 export const ERROS_DO_FAROL_PYTHON = {
-  'conta-sem-lembrar': {
-    quebra: ['encontro'],
-    codigo: `def update():
-    global pontos
-    if keyboard.right:
-        guia.x = guia.x + 4
-    if keyboard.left:
+  'ficha-vazia': { quebra: ['objetivo', 'funcionalidades'], ficha: false, codigo: PYTHON_GABARITO },
+  'quebra-no-espaco': {
+    quebra: ['joga'],
+    ficha: true,
+    codigo: PYTHON_GABARITO.replace(
+      `    if keyboard.left:
         guia.x = guia.x - 4
-    if guia.colliderect(estrela):
-        pontos = pontos + 1
-
-
-def on_key_down(key):
-    global pontos
-    if key == keys.R:
-        pontos = 0
-        guia.x = 60`,
+    for estrela`,
+      `    if keyboard.left:
+        guia.x = guia.x - 4
+    if keyboard.space:
+        pular()
+    for estrela`,
+    ),
   },
   'sem-recomecar': {
     quebra: ['recomeca'],
-    codigo: PYTHON.gabarito.replace(
-      `    if key == keys.R:
-        pontos = 0
-        pegou = False
-        guia.x = 60
-        estrela.x = 420`,
-      `    pass`,
-    ),
-  },
-  'recomeca-sem-esquecer': {
-    quebra: ['outra-partida'],
-    codigo: PYTHON.gabarito.replace(
-      `        pontos = 0
-        pegou = False
-        guia.x = 60`,
-      `        pontos = 0
-        guia.x = 60`,
-    ),
+    ficha: true,
+    codigo: PYTHON_GABARITO.replace('    if key == keys.R:', '    if key == keys.Q:'),
   },
 } as const
 export type VersaoDoFarolPython = 'inicial' | 'gabarito' | keyof typeof ERROS_DO_FAROL_PYTHON
 
 export function codigoDoFarolPython(versao: VersaoDoFarolPython): string {
-  const regras =
-    versao === 'inicial' || versao === 'gabarito'
-      ? PYTHON[versao]
-      : ERROS_DO_FAROL_PYTHON[versao].codigo
+  const [ficha, regras] =
+    versao === 'inicial'
+      ? [FICHA_PYTHON_VAZIA, PYTHON_INICIAL]
+      : versao === 'gabarito'
+        ? [FICHA_PYTHON, PYTHON_GABARITO]
+        : [
+            ERROS_DO_FAROL_PYTHON[versao].ficha ? FICHA_PYTHON : FICHA_PYTHON_VAZIA,
+            ERROS_DO_FAROL_PYTHON[versao].codigo,
+          ]
   return `WIDTH = ${FAROL_TEXTO.largura}
 HEIGHT = ${FAROL_TEXTO.altura}
 TITLE = "Meu jogo do Arquipélago"
 
-guia = Rect((${FAROL_TEXTO.guia.x}, ${FAROL_TEXTO.guia.y}), (${FAROL_TEXTO.lado}, ${FAROL_TEXTO.lado}))
-estrela = Rect((${FAROL_TEXTO.estrela.x}, ${FAROL_TEXTO.estrela.y}), (${FAROL_TEXTO.lado}, ${FAROL_TEXTO.lado}))
-pontos = 0
-
+${ficha}
 
 ${regras}
-
-
-def draw():
-    screen.fill((26, 40, 84))
-    screen.draw.filled_circle(estrela.center, 18, (255, 220, 90))
-    screen.draw.filled_rect(guia, (120, 220, 200))
-    screen.draw.text("Pontos: " + str(pontos), (16, 12), fontsize=32)
 `
 }
 
@@ -149,7 +181,7 @@ export function CENARIOS_DO_FAROL_PYTHON() {
     (erro) => ({
       nome: erro,
       projeto: montarProjetoPythonDoFarol(erro),
-      ids: ERROS_DO_FAROL_PYTHON[erro].quebra,
+      ids: [...ERROS_DO_FAROL_PYTHON[erro].quebra],
       passa: false,
     }),
   )
@@ -158,120 +190,168 @@ export function CENARIOS_DO_FAROL_PYTHON() {
 // ── Pro (quadro 4) ──────────────────────────────────────────────────────────────────────────
 
 const MODELO_PRO = 'vanilla-vite' as const
-const PRO = {
-  inicial: `function passo(teclas: Set<string>) {
-  if (teclas.has('ArrowRight')) jogo.guia.x += 4
-  if (teclas.has('ArrowLeft')) jogo.guia.x -= 4
-  // As regras do seu jogo: encontrar, lembrar e decidir.
-}
+const FICHA_PRO_VAZIA = `/** A ficha do seu jogo: o objetivo e as três coisas que ele vai ter. */
+export const ficha = {
+  objetivo: '',
+  funcionalidade1: '',
+  funcionalidade2: '',
+  funcionalidade3: '',
+}`
+const FICHA_PRO = `/** A ficha do seu jogo: o objetivo e as três coisas que ele vai ter. */
+export const ficha = {
+  objetivo: 'Pegar as estrelas que caem antes de o tempo acabar.',
+  funcionalidade1: 'As estrelas caem em lugares sorteados.',
+  funcionalidade2: 'Cada estrela pega vale um ponto.',
+  funcionalidade3: 'A partida acaba em 30 segundos, e o R recomeça.',
+}`
 
-function tecla(nome: string) {
-  // O que cada tecla faz, além de andar.
-}`,
-  gabarito: `let pegou = false
+const PRO_INICIAL = `/** O estado do jogo. Acrescente aqui o que o seu jogo precisa lembrar. */
+export const jogo = {
+  guia: { x: ${FAROL_TEXTO.guia.x}, y: ${FAROL_TEXTO.guia.y} },
+}
 
 function passo(teclas: Set<string>) {
   if (teclas.has('ArrowRight')) jogo.guia.x += 4
   if (teclas.has('ArrowLeft')) jogo.guia.x -= 4
-  const encostou =
-    Math.abs(jogo.guia.x - jogo.estrela.x) < LADO && Math.abs(jogo.guia.y - jogo.estrela.y) < LADO
-  if (encostou && !pegou) {
-    pegou = true
-    jogo.pontos += 1
-    jogo.estrela.x = 700
-  }
 }
 
 function tecla(nome: string) {
-  if (nome === 'r') {
-    jogo.pontos = 0
-    pegou = false
-    jogo.guia.x = ${FAROL_TEXTO.guia.x}
-    jogo.estrela.x = ${FAROL_TEXTO.estrela.x}
-  }
-}`,
-} as const
+  // O que cada tecla faz, além de andar.
+}
 
-export const ERROS_DO_FAROL_PRO = {
-  'conta-sem-lembrar': {
-    quebra: ['encontro'],
-    codigo: `function passo(teclas: Set<string>) {
+function clique(x: number, y: number) {
+  // O que um clique faz.
+}
+
+function desenhar(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = '#1a2854'
+  ctx.fillRect(0, 0, LARGURA, ALTURA)
+  ctx.fillStyle = '#78dcc8'
+  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)
+}`
+
+const PRO_GABARITO = `/** O estado do jogo: o guia, as estrelas que caem, os pontos e o tempo. */
+export const jogo = {
+  guia: { x: ${FAROL_TEXTO.guia.x}, y: ${FAROL_TEXTO.guia.y} },
+  estrelas: [] as { x: number; y: number }[],
+  pontos: 0,
+  tempo: 30,
+  jogando: true,
+}
+
+setInterval(() => {
+  if (!jogo.jogando) return
+  jogo.estrelas.push({ x: 20 + Math.floor(Math.random() * 580), y: 0 })
+  jogo.tempo -= 1
+  if (jogo.tempo <= 0) jogo.jogando = false
+}, 1000)
+
+function passo(teclas: Set<string>) {
+  if (!jogo.jogando) return
   if (teclas.has('ArrowRight')) jogo.guia.x += 4
   if (teclas.has('ArrowLeft')) jogo.guia.x -= 4
-  const encostou =
-    Math.abs(jogo.guia.x - jogo.estrela.x) < LADO && Math.abs(jogo.guia.y - jogo.estrela.y) < LADO
-  if (encostou) jogo.pontos += 1
+  for (const estrela of [...jogo.estrelas]) {
+    estrela.y += 3
+    const pegou =
+      Math.abs(jogo.guia.x - estrela.x) < LADO && Math.abs(jogo.guia.y - estrela.y) < LADO
+    if (pegou || estrela.y > ALTURA) {
+      jogo.estrelas.splice(jogo.estrelas.indexOf(estrela), 1)
+      if (pegou) jogo.pontos += 1
+    }
+  }
 }
 
 function tecla(nome: string) {
   if (nome === 'r') {
-    jogo.pontos = 0
     jogo.guia.x = ${FAROL_TEXTO.guia.x}
+    jogo.estrelas.length = 0
+    jogo.pontos = 0
+    jogo.tempo = 30
+    jogo.jogando = true
   }
-}`,
-  },
-  'sem-recomecar': {
-    quebra: ['recomeca'],
-    codigo: PRO.gabarito.replace(
+}
+
+function clique(x: number, y: number) {
+  // Clicar numa estrela a puxa para o chão, onde o guia pode pegar.
+  for (const estrela of jogo.estrelas)
+    if (Math.abs(x - estrela.x) < 24 && Math.abs(y - estrela.y) < 24) estrela.y = jogo.guia.y
+}
+
+function desenhar(ctx: CanvasRenderingContext2D) {
+  ctx.fillStyle = '#1a2854'
+  ctx.fillRect(0, 0, LARGURA, ALTURA)
+  ctx.fillStyle = '#ffdc5a'
+  for (const estrela of jogo.estrelas) {
+    ctx.beginPath()
+    ctx.arc(estrela.x + 12, estrela.y + 12, 12, 0, Math.PI * 2)
+    ctx.fill()
+  }
+  ctx.fillStyle = '#78dcc8'
+  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)
+  ctx.fillStyle = '#f2f4ff'
+  ctx.font = '24px system-ui'
+  ctx.fillText('Pontos: ' + jogo.pontos + '   Tempo: ' + jogo.tempo, 16, 32)
+  if (!jogo.jogando) ctx.fillText('Fim. R recomeça.', 240, 240)
+}`
+
+export const ERROS_DO_FAROL_PRO = {
+  'ficha-vazia': { quebra: ['objetivo', 'funcionalidades'], ficha: false, codigo: PRO_GABARITO },
+  'quebra-no-espaco': {
+    quebra: ['joga'],
+    ficha: true,
+    codigo: PRO_GABARITO.replace(
       `function tecla(nome: string) {
   if (nome === 'r') {`,
       `function tecla(nome: string) {
-  if (nome === 'nunca') {`,
+  if (nome === ' ') (jogo as unknown as { pulo: () => void }).pulo()
+  if (nome === 'r') {`,
     ),
   },
-  'recomeca-sem-esquecer': {
-    quebra: ['outra-partida'],
-    codigo: PRO.gabarito.replace(
-      `    jogo.pontos = 0
-    pegou = false`,
-      `    jogo.pontos = 0`,
-    ),
+  'sem-recomecar': {
+    quebra: ['recomeca'],
+    ficha: true,
+    codigo: PRO_GABARITO.replace(`  if (nome === 'r') {`, `  if (nome === 'nunca') {`),
   },
 } as const
 export type VersaoDoFarolPro = 'inicial' | 'gabarito' | keyof typeof ERROS_DO_FAROL_PRO
 
-/** `src/main.ts`: a cena, o laço e o desenho prontos; as regras são da pessoa. */
+/** `src/main.ts`: a janela, o laço, as teclas e o clique prontos; o jogo é da pessoa. */
 function mainDoFarol(versao: VersaoDoFarolPro): string {
-  const regras =
-    versao === 'inicial' || versao === 'gabarito' ? PRO[versao] : ERROS_DO_FAROL_PRO[versao].codigo
+  const [ficha, regras] =
+    versao === 'inicial'
+      ? [FICHA_PRO_VAZIA, PRO_INICIAL]
+      : versao === 'gabarito'
+        ? [FICHA_PRO, PRO_GABARITO]
+        : [
+            ERROS_DO_FAROL_PRO[versao].ficha ? FICHA_PRO : FICHA_PRO_VAZIA,
+            ERROS_DO_FAROL_PRO[versao].codigo,
+          ]
   return `import './style.css'
 
 const LADO = ${FAROL_TEXTO.lado}
+const LARGURA = ${FAROL_TEXTO.largura}
+const ALTURA = ${FAROL_TEXTO.altura}
 
-/** O estado do jogo: o guia, a estrela e os pontos. */
-export const jogo = {
-  guia: { x: ${FAROL_TEXTO.guia.x}, y: ${FAROL_TEXTO.guia.y} },
-  estrela: { x: ${FAROL_TEXTO.estrela.x}, y: ${FAROL_TEXTO.estrela.y} },
-  pontos: 0,
-}
+${ficha}
 
 ${regras}
 
 const tela = document.getElementById('jogo') as HTMLCanvasElement
 const ctx = tela.getContext('2d') as CanvasRenderingContext2D
-const placar = document.getElementById('placar') as HTMLElement
 const teclas = new Set<string>()
 document.addEventListener('keydown', (evento) => {
   teclas.add(evento.key)
   tecla(evento.key.toLowerCase())
 })
 document.addEventListener('keyup', (evento) => teclas.delete(evento.key))
-
-function desenhar() {
-  ctx.fillStyle = '#1a2854'
-  ctx.fillRect(0, 0, tela.width, tela.height)
-  ctx.fillStyle = '#ffdc5a'
-  ctx.beginPath()
-  ctx.arc(jogo.estrela.x + LADO / 2, jogo.estrela.y + LADO / 2, 18, 0, Math.PI * 2)
-  ctx.fill()
-  ctx.fillStyle = '#78dcc8'
-  ctx.fillRect(jogo.guia.x, jogo.guia.y, LADO, LADO)
-  placar.textContent = 'Pontos: ' + jogo.pontos
-}
+tela.addEventListener('click', (evento) => {
+  const caixa = tela.getBoundingClientRect()
+  clique(evento.clientX - caixa.left, evento.clientY - caixa.top)
+})
 
 function quadro() {
   passo(teclas)
-  desenhar()
+  desenhar(ctx)
   requestAnimationFrame(quadro)
 }
 requestAnimationFrame(quadro)
@@ -287,7 +367,6 @@ const INDEX_PRO = `<!doctype html>
   </head>
   <body>
     <canvas id="jogo" width="${FAROL_TEXTO.largura}" height="${FAROL_TEXTO.altura}"></canvas>
-    <p id="placar"></p>
     <p>Setas andam. R recomeça.</p>
     <script type="module" src="/src/main.ts"></script>
   </body>
@@ -321,7 +400,7 @@ export function CENARIOS_DO_FAROL_PRO() {
   return (Object.keys(ERROS_DO_FAROL_PRO) as (keyof typeof ERROS_DO_FAROL_PRO)[]).map((erro) => ({
     nome: erro,
     projeto: montarProjetoProDoFarol(erro),
-    ids: ERROS_DO_FAROL_PRO[erro].quebra,
+    ids: [...ERROS_DO_FAROL_PRO[erro].quebra],
     passa: false,
   }))
 }
@@ -337,107 +416,104 @@ export function montarProjetoPonteDoFarol(pronto: boolean): Project {
 
 const ROTULOS: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
   kids: {
-    encontro: [
-      'Passar pela estrela soma um ponto, uma vez só.',
-      'Guarde que a estrela já foi pega e use essa lembrança para não contar de novo.',
+    objetivo: [
+      'A ficha diz o objetivo do jogo.',
+      'Escreva o objetivo entre as aspas: o que quem joga tenta fazer.',
+    ],
+    funcionalidades: [
+      'A ficha diz as três coisas que o jogo vai ter.',
+      'Escolha três coisas que cabem no jogo, uma em cada linha da ficha.',
+    ],
+    joga: [
+      'O jogo aguenta ser jogado: setas, espaço e clique não quebram nada.',
+      'Jogue um pouco com cada tecla e com o mouse. Se aparecer um erro, ele mostra a linha.',
     ],
     recomeca: [
       'A tecla R leva o guia de volta ao começo.',
-      'Em R, volte a posição do guia para onde ele começou.',
-    ],
-    'outra-partida': [
-      'Depois do R, a estrela pode ser pega de novo, com os pontos começando do zero.',
-      'Volte também o que a partida mudou: os pontos, a lembrança da estrela e o lugar dela.',
-    ],
-    some: [
-      'Extra: a estrela sai da tela quando é pega.',
-      'Leve a estrela para fora da tela, por exemplo para x 700.',
+      'Em R, volte o guia para onde ele começou e o resto da partida também.',
     ],
   },
   adulto: {
-    encontro: [
-      'A colisão com a estrela soma um ponto uma única vez.',
-      'Mantenha uma flag de coleta e teste-a antes de pontuar.',
+    objetivo: ['A ficha declara o objetivo do jogo.', 'Preencha o objetivo na ficha.'],
+    funcionalidades: [
+      'A ficha declara três funcionalidades.',
+      'Preencha as três funcionalidades planejadas.',
     ],
-    recomeca: ['R devolve o guia à posição inicial.', 'Restaure guia.x em R.'],
-    'outra-partida': [
-      'Após R, a estrela pode ser coletada de novo, com a pontuação recomeçando em zero.',
-      'Reinicie pontos, a flag de coleta e a posição da estrela.',
+    joga: [
+      'O jogo roda sem erro com setas, espaço e clique.',
+      'Teste cada entrada; o console mostra o erro e a linha.',
     ],
-    some: [
-      'Extra: a estrela sai da área visível quando é coletada.',
-      'Mova a estrela para fora da tela (x 700).',
-    ],
+    recomeca: ['R devolve o guia à posição inicial.', 'Reinicie a partida em R, inclusive o guia.'],
   },
 }
 const direita = (ms: number) => ({ action: 'press' as const, key: 'ArrowRight', holdMs: ms })
 const r = { action: 'press' as const, key: 'r', holdMs: 80 }
 const esperar = { action: 'wait' as const, ms: 300 }
 const passos = {
-  encontro: [direita(2500), esperar],
-  recomeca: [direita(2500), r, esperar],
-  'outra-partida': [direita(2500), r, esperar, direita(2500), esperar],
-  some: [direita(2500), esperar],
+  objetivo: [esperar],
+  funcionalidades: [esperar],
+  joga: [
+    direita(800),
+    { action: 'press' as const, key: 'ArrowLeft', holdMs: 400 },
+    { action: 'press' as const, key: 'Space', holdMs: 120 },
+    { action: 'click' as const, x: 320, y: 240 },
+    { action: 'wait' as const, ms: 1200 },
+  ],
+  recomeca: [direita(1500), r, esperar],
 }
+type Alvo =
+  | { kind: 'value'; path: string }
+  | { kind: 'moduleValue'; module: string; path: string }
+  | { kind: 'console' }
+const expectativa = (
+  target: Alvo,
+  compare: 'lessThan' | 'truthy' | 'notContains',
+  value?: number | string,
+) => ({ target, compare, ...(value === undefined ? {} : { value }) })
 
 export function objetivosDoFarolPython(publico: PublicoDoDesafio): SectionPythonProjectCheck[] {
   const objetivo = (
     id: keyof typeof passos,
-    path: string,
-    compare: 'lessThan' | 'equals' | 'atLeast',
-    value: number,
-    optional = false,
+    expect: ReturnType<typeof expectativa>,
   ): SectionPythonProjectCheck => {
     const [label, hint] = ROTULOS[publico][id]!
     return {
       id,
       label,
       hint,
-      ...(optional ? { optional: true as const } : {}),
       programmingLanguage: 'python',
       profileId: AMBIENTE_PYTHON_C02.profileId,
-      rule: {
-        type: 'behavior',
-        steps: passos[id],
-        expect: { target: { kind: 'value', path }, compare, value },
-      },
-    }
+      rule: { type: 'behavior', steps: passos[id], expect },
+    } as SectionPythonProjectCheck
   }
   return [
-    objetivo('encontro', 'pontos', 'equals', 1),
-    objetivo('recomeca', 'guia.x', 'lessThan', 100),
-    objetivo('outra-partida', 'pontos', 'equals', 1),
-    objetivo('some', 'estrela.x', 'atLeast', FAROL_TEXTO.largura, true),
+    objetivo('objetivo', expectativa({ kind: 'value', path: 'OBJETIVO' }, 'truthy')),
+    objetivo('funcionalidades', expectativa({ kind: 'value', path: 'FUNCIONALIDADE_3' }, 'truthy')),
+    objetivo('joga', expectativa({ kind: 'console' }, 'notContains', 'Error')),
+    objetivo('recomeca', expectativa({ kind: 'value', path: 'guia.x' }, 'lessThan', 100)),
   ]
 }
 
 export function objetivosDoFarolPro(publico: PublicoDoDesafio): SectionJavaScriptProjectCheck[] {
+  const modulo = (path: string): Alvo => ({ kind: 'moduleValue', module: 'src/main.ts', path })
   const objetivo = (
     id: keyof typeof passos,
-    path: string,
-    compare: 'lessThan' | 'equals' | 'atLeast',
-    value: number,
-    optional = false,
+    expect: ReturnType<typeof expectativa>,
   ): SectionJavaScriptProjectCheck => {
     const [label, hint] = ROTULOS[publico][id]!
     return {
       id,
       label,
       hint,
-      ...(optional ? { optional: true as const } : {}),
       programmingLanguage: 'javascript',
-      rule: {
-        type: 'behavior',
-        steps: [{ action: 'wait', ms: 300 }, ...passos[id]],
-        expect: { target: { kind: 'moduleValue', module: 'src/main.ts', path }, compare, value },
-      },
-    }
+      rule: { type: 'behavior', steps: [{ action: 'wait', ms: 300 }, ...passos[id]], expect },
+    } as SectionJavaScriptProjectCheck
   }
   return [
-    objetivo('encontro', 'jogo.pontos', 'equals', 1),
-    objetivo('recomeca', 'jogo.guia.x', 'lessThan', 100),
-    objetivo('outra-partida', 'jogo.pontos', 'equals', 1),
-    objetivo('some', 'jogo.estrela.x', 'atLeast', FAROL_TEXTO.largura, true),
+    objetivo('objetivo', expectativa(modulo('ficha.objetivo'), 'truthy')),
+    objetivo('funcionalidades', expectativa(modulo('ficha.funcionalidade3'), 'truthy')),
+    objetivo('joga', expectativa({ kind: 'console' }, 'notContains', 'Error')),
+    objetivo('recomeca', expectativa(modulo('jogo.guia.x'), 'lessThan', 100)),
   ]
 }
 
