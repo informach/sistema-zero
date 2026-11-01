@@ -23,6 +23,7 @@ import {
 } from '@sistemazero/member-shell/components/lesson-sections'
 import { CheckCircle2 } from 'lucide-react'
 import { useCallback, useMemo, useRef, useState } from 'react'
+import { KidsBackButton } from '@/components/kids/back-button'
 import { FocusModeProvider } from '@/components/kids/focus-mode'
 import { KidsLessonBlocks } from '@/components/kids/kids-lesson-blocks'
 import { KidsLessonCopy } from '@/components/kids/kids-lesson-copy'
@@ -55,7 +56,13 @@ export function PalcoAula({
     <FocusModeProvider viewerId={viewerId}>
       <LessonCompletionRefreshProvider>
         <KidsLessonCopy>
-          <main id="main-content" className="mx-auto w-full max-w-[1280px] px-4 py-6 md:px-8">
+          {/* O mesmo `<main>` da aula no Kids (`community-kids/.../main-container.tsx`): a pele
+              `kids-aula` e a largura toda, sem limite. */}
+          <main
+            id="main-content"
+            tabIndex={-1}
+            className="kids-aula w-full flex-1 px-4 pt-6 pb-40 md:px-8 md:pt-8 md:pb-32"
+          >
             <Aula course={course} lesson={lesson} viewerId={viewerId} />
           </main>
         </KidsLessonCopy>
@@ -224,6 +231,11 @@ function Aula({
         <PonteDeGravacao lesson={lesson} />
         <div className="flex min-w-0 flex-1 flex-col gap-6">
           <div className="mx-auto flex w-full max-w-[860px] items-center gap-3 md:gap-4">
+            {/* Como no Kids; aqui volta à lista das aulas do curso no palco. */}
+            <KidsBackButton
+              href={`/aulas/${encodeURIComponent(course.slug)}`}
+              label={`Voltar às aulas do curso ${course.title}`}
+            />
             <KidsLessonProgress
               progress={lesson.sectionProgress}
               posicao={secao ?? posicaoInicial}
