@@ -255,7 +255,7 @@ const principais: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
   corrida: [
     behavior(
       'acelera',
-      'Cada pedra nova deixa a próxima um pouco mais rápida.',
+      'Cada chaminé nova deixa a próxima um pouco mais rápida.',
       [largada, wait(2600)],
       val('velocidade', 'atMost', PISTA.velocidade - 1),
     ),
@@ -263,7 +263,7 @@ const principais: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     // velocidade continua no projeto, pronto, mas não é critério: ele é da missão do posto.
     {
       id: 'pontos-no-fim',
-      label: 'Encostar numa pedra encerra a corrida e a tela do fim mostra os metros.',
+      label: 'Encostar numa chaminé encerra a corrida e a tela do fim mostra os metros.',
       programmingLanguage: 'javascript',
       rule: EXTRAS.telaComMetros.rule,
     },
