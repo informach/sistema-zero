@@ -33,6 +33,8 @@ export type Passo =
   | { fazer: 'rolar'; dy: number }
   | { fazer: 'digitar'; alvo: Alvo; texto: string; substituir?: boolean }
   | { fazer: 'tecla'; tecla: string }
+  /** O robô pergunta `acao` de novo depois dos gestos anteriores (a página decide no que abriu). */
+  | { fazer: 'continuar'; acao: string }
 
 export interface Verbo {
   verbo: string
@@ -164,7 +166,13 @@ export const VERBOS: Verbo[] = [
     verbo: 'trocar',
     exemplo: 'trocar "jogador" por "escolhido"',
     descricao:
-      'Troca um campo de bloco: escolhe no menu, ou reescreve um número ou texto (em "<bloco>" para dizer qual).',
+      'Troca um campo de bloco: escolhe no menu ou no seletor que ele abre, ou reescreve um número ou texto (em "<bloco>" para dizer qual).',
+  },
+  {
+    verbo: 'escolher',
+    exemplo: 'escolher "escolhido"',
+    descricao:
+      'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho).',
   },
   {
     verbo: 'compartilhar',
@@ -189,6 +197,18 @@ const unquote = (s: string): string =>
     .trim()
 
 const botao = (nome: string): Alvo => ({ texto: nome })
+
+/** Escolhe `valor` na lista que um campo abriu (um menu do Blockly ou um seletor do Estúdio). */
+const naLista = (valor: string): Passo => ({
+  fazer: 'clicar',
+  alvo: { texto: valor, dentro: '.blocklyDropDownDiv' },
+})
+
+/** Reescreve o campo na caixa de digitar que ele abriu, e confirma. */
+const naCaixa = (valor: string): Passo[] => [
+  { fazer: 'digitar', alvo: { seletor: 'input.blocklyHtmlInput' }, texto: valor, substituir: true },
+  { fazer: 'tecla', tecla: 'Enter' },
+]
 
 /** O alvo de um jogo pronto pelo id ("arbusto") ou pelo nome ("no arbusto", "arbusto"). */
 function acharAlvo(jogos: readonly JogoDaAula[], nome: string) {
@@ -441,21 +461,22 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (trocar?.[1] && trocar[2] !== undefined) {
     const campo = precisaDaPagina(pagina).campo(trocar[1], trocar[3])
     if (!campo) throw new Error(`Não achei o campo "${trocar[1]}" num bloco da área de trabalho.`)
-    if (campo.menu)
-      return [
-        { fazer: 'clicar', alvo: campo.alvo },
-        { fazer: 'clicar', alvo: { texto: trocar[2], dentro: '.blocklyDropDownDiv' } },
-      ]
+    if (campo.tipo === 'menu') return [{ fazer: 'clicar', alvo: campo.alvo }, naLista(trocar[2])]
+    if (campo.tipo === 'numero')
+      return [{ fazer: 'clicar', alvo: campo.alvo }, ...naCaixa(trocar[2])]
+    // Um texto ou um seletor do Estúdio: o que abrir com o clique diz como escolher.
     return [
       { fazer: 'clicar', alvo: campo.alvo },
-      {
-        fazer: 'digitar',
-        alvo: { seletor: 'input.blocklyHtmlInput' },
-        texto: trocar[2],
-        substituir: true,
-      },
-      { fazer: 'tecla', tecla: 'Enter' },
+      { fazer: 'continuar', acao: `escolher "${trocar[2]}"` },
     ]
+  }
+
+  const escolher = /^escolher ["“]([^"”]*)["”]$/i.exec(texto)
+  if (escolher?.[1] !== undefined) {
+    const aberto = precisaDaPagina(pagina).aberto()
+    if (aberto === 'lista') return [naLista(escolher[1])]
+    if (aberto === 'caixa') return naCaixa(escolher[1])
+    throw new Error('O campo clicado não abriu uma lista nem uma caixa de texto.')
   }
 
   throw new Error(`Não conheço "${texto}". Veja os verbos do palco no README do pacote.`)

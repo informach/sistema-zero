@@ -8,8 +8,14 @@ import type { Alvo } from './verbos'
 export interface PaginaDoPalco {
   /** O tamanho da pré-visualização do jogo no Estúdio, ou nulo quando ela não está na tela. */
   previa(): { width: number; height: number } | null
-  /** Um campo de bloco pelo texto (dentro do bloco que tem `bloco`, quando dado). */
-  campo(texto: string, bloco?: string): { alvo: Alvo; menu: boolean } | null
+  /**
+   * Um campo de bloco pelo texto (dentro do bloco que tem `bloco`, quando dado): um menu do
+   * Blockly, um número, ou outro campo (texto ou um seletor do Estúdio, que só se sabe depois
+   * de clicar).
+   */
+  campo(texto: string, bloco?: string): { alvo: Alvo; tipo: 'menu' | 'numero' | 'outro' } | null
+  /** O que o campo clicado abriu: a lista de um menu ou seletor, ou a caixa de digitar. */
+  aberto(): 'lista' | 'caixa' | null
   /** O espaço ao lado do rótulo de um bloco (o "fazer" de um Quando clicar ou tocar). */
   encaixe(bloco: string, rotulo: string): Alvo | null
   /** Um arrasto do fundo da área de trabalho que traz o bloco à vista (nulo se já está). */
@@ -64,18 +70,41 @@ const areaDeTrabalho = (doc: Document): SVGSVGElement | null => doc.querySelecto
 function areaVisivel(doc: Document, area: Element): DOMRect {
   const view = area.getBoundingClientRect()
   let left = view.left
-  for (const lado of doc.querySelectorAll('.blocklyToolbox, svg.blocklyFlyout')) {
-    const r = lado.getBoundingClientRect()
-    if (r.width > 0 && r.height > 0 && r.left <= view.left + 8) left = Math.max(left, r.right)
+  // A caixa encostada na borda e, encostada nela, a paleta aberta.
+  const lados = [toolbox(doc), paleta(doc)]
+  for (const lado of lados) {
+    const r = lado?.getBoundingClientRect()
+    if (r && r.width > 0 && r.height > 0 && r.left <= left + 8) left = Math.max(left, r.right)
   }
   return new DOMRect(left, view.top, view.right - left, view.height)
+}
+
+const toolbox = (doc: Document): Element | null => doc.querySelector('.blocklyToolbox')
+
+/**
+ * A paleta aberta: o Estúdio tem mais de um `svg.blocklyFlyout` (o da lixeira fica escondido,
+ * com tamanho zero), e o primeiro da página não é o da caixa de categorias.
+ */
+const paleta = (doc: Document): Element | null =>
+  [...doc.querySelectorAll('svg.blocklyFlyout')].find(visivel) ?? null
+
+/**
+ * O bloco de que um texto ou campo é: o primeiro que não é sombra. O número de um bloco ("50" em
+ * "Deixar o sprite jogador com 50% de visibilidade", o "1" de "Somar 1") fica num bloco-sombra
+ * encaixado nele, que é dele.
+ */
+function donoDe(el: Element): Element | null {
+  let dono = el.closest('.blocklyDraggable')
+  while (dono?.classList.contains('blocklyShadow'))
+    dono = dono.parentElement?.closest('.blocklyDraggable') ?? null
+  return dono
 }
 
 /** O texto que é do próprio bloco, sem o dos blocos encaixados nele. */
 const textoProprio = (block: Element): string =>
   fold(
     [...block.querySelectorAll('text.blocklyText')]
-      .filter((t) => t.closest('.blocklyDraggable') === block)
+      .filter((t) => donoDe(t) === block)
       .map(texto)
       .join(' ')
       .replace(/▾/g, ''),
@@ -86,7 +115,7 @@ const textoProprio = (block: Element): string =>
  * quando nenhum começa).
  */
 function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'): Element[] {
-  const raiz = onde === 'area' ? areaDeTrabalho(doc) : doc.querySelector('svg.blocklyFlyout')
+  const raiz = onde === 'area' ? areaDeTrabalho(doc) : paleta(doc)
   if (!raiz) return []
   const wanted = fold(alvo)
   const blocos = [...raiz.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(visivel)
@@ -96,9 +125,7 @@ function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'
 
 /** Os textos que são do próprio bloco, não dos blocos encaixados nele. */
 const textosDe = (block: Element): Element[] =>
-  [...block.querySelectorAll('text.blocklyText')].filter(
-    (t) => t.closest('.blocklyDraggable') === block,
-  )
+  [...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block)
 
 /** Um ponto de um elemento como alvo do robô (u, v de 0 a 1 da caixa dele). */
 function pontoEm(el: Element, x: number, y: number): Alvo {
@@ -130,7 +157,7 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         (t) =>
           visivel(t) &&
           fold(texto(t).replace(/▾/g, '')) === wanted &&
-          (!blocos || blocos.some((b) => t.closest('.blocklyDraggable') === b)),
+          (!blocos || blocos.some((b) => donoDe(t) === b)),
       )
       const found = candidatos[0]
       if (!found) return null
@@ -138,8 +165,24 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const r = field.getBoundingClientRect()
       return {
         alvo: pontoEm(field, r.left + r.width / 2, r.top + r.height / 2),
-        menu: field.classList.contains('blocklyDropdownField'),
+        // Os seletores do Estúdio (sprite, nome, som) herdam do campo de texto do Blockly e
+        // abrem uma lista: pela classe, só se distinguem depois de clicar ("outro").
+        tipo:
+          field.classList.contains('blocklyDropdownField') ||
+          field.classList.contains('blocklyVariableField')
+            ? 'menu'
+            : field.classList.contains('blocklyNumberField')
+              ? 'numero'
+              : 'outro',
       }
+    },
+
+    aberto() {
+      const lista = doc.querySelector('.blocklyDropDownDiv')
+      // Fechada, a lista do Blockly fica com `display: none`, sem tamanho.
+      if (lista && visivel(lista)) return 'lista'
+      const caixa = doc.querySelector('input.blocklyHtmlInput')
+      return caixa && visivel(caixa) ? 'caixa' : null
     },
 
     encaixe(bloco, rotulo) {
@@ -169,8 +212,10 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       // Um ponto do fundo, sem bloco em cima, de onde arrastar.
       const fundo = (x: number, y: number) =>
         doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
-      // Leva o bloco para perto do topo, à esquerda do meio, até onde o arrasto alcança.
-      const dx = view.left + view.width * 0.35 - (b.left + Math.min(b.width, view.width) / 2)
+      // Leva o bloco para perto do topo, à direita de onde a paleta abre por cima da área (é
+      // nele que o próximo bloco vai encaixar), até onde o arrasto alcança.
+      const dx =
+        view.left + Math.max(0, Math.min(view.width * 0.45, view.width - b.width - 16)) - b.left
       const dy = view.top + view.height * 0.3 - b.top
       // Começa do lado de onde o bloco vem: o arrasto inteiro cabe na área à vista.
       const xs = dx < 0 ? [0.9, 0.75, 0.5, 0.25, 0.1] : [0.1, 0.25, 0.5, 0.75, 0.9]
@@ -203,7 +248,11 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         )
       // Na área, apontado no texto dele: o meio da caixa de um bloco com outros dentro cai fora
       // da barra dele, no fundo da área.
-      const rotulo = textosDe(block)[0]
+      // O primeiro rótulo fixo, o mais acima e à esquerda (um número de sombra vem antes no DOM).
+      const rotulo = textosDe(block)
+        .filter((t) => !t.closest('.blocklyEditableField'))
+        .map((t) => ({ t, r: t.getBoundingClientRect() }))
+        .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)[0]?.t
       if (!rotulo) return pontoEm(block, r.left + 12, r.top + Math.min(r.height / 2, 18))
       const t = rotulo.getBoundingClientRect()
       return pontoEm(block, t.left + t.width / 2, t.top + t.height / 2)
