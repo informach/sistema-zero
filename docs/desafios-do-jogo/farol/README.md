@@ -85,3 +85,10 @@ bun packages/studio-runtime/tests/desafios-pro-smoke.ts --ilha=farol
 ```
 
 Importar o `farol.manifesto.json` (quadro 1) e depois os três das linguagens.
+
+## Conferência antes da publicação (01/11/2026)
+
+No Python e no Pro, setas, espaço e clique são exercitados dentro do objetivo de recomeçar.
+Rodar sem erro é uma condição de segurança da execução, não uma conquista separada: a janela
+inicial já roda sem erro. A posição depois do R precisa mostrar o reinício que a pessoa
+implementou. O inicial continua válido e jogável, sem defeito artificial para reprovar.

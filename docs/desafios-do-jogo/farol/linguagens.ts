@@ -19,8 +19,8 @@ import { objetivosDoMeuJogo, projetoDoMeuJogo } from './projetos'
  * revisão humana por projeto final": a ficha guarda o objetivo e as três coisas que o jogo terá,
  * e quem julga o jogo inventado é a equipe, na Sala do Professor. Os critérios automáticos ficam no
  * que vale para qualquer ideia: a ficha preenchida, o jogo que aguenta ser jogado (setas, espaço e
- * clique sem erro) e o R que leva o guia de volta ao começo. O gabarito é um exemplo (uma chuva de
- * estrelas com lista, sorteio, relógio e fim de partida), não o jogo esperado.
+ * clique sem erro) e o R que leva o guia de volta ao começo depois dessas entradas. O gabarito é
+ * um exemplo (uma chuva de estrelas com lista, sorteio, relógio e fim de partida), não o jogo esperado.
  */
 export const FAROL_TEXTO = {
   guia: { x: 60, y: 400 },
@@ -126,7 +126,7 @@ def draw():
 export const ERROS_DO_FAROL_PYTHON = {
   'ficha-vazia': { quebra: ['objetivo', 'funcionalidades'], ficha: false, codigo: PYTHON_GABARITO },
   'quebra-no-espaco': {
-    quebra: ['joga'],
+    quebra: ['recomeca'],
     ficha: true,
     codigo: PYTHON_GABARITO.replace(
       `    if keyboard.left:
@@ -297,7 +297,7 @@ function desenhar(ctx: CanvasRenderingContext2D) {
 export const ERROS_DO_FAROL_PRO = {
   'ficha-vazia': { quebra: ['objetivo', 'funcionalidades'], ficha: false, codigo: PRO_GABARITO },
   'quebra-no-espaco': {
-    quebra: ['joga'],
+    quebra: ['recomeca'],
     ficha: true,
     codigo: PRO_GABARITO.replace(
       `function tecla(nome: string) {
@@ -424,10 +424,6 @@ const ROTULOS: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
       'A ficha diz as três coisas que o jogo vai ter.',
       'Escolha três coisas que cabem no jogo, uma em cada linha da ficha.',
     ],
-    joga: [
-      'O jogo aguenta ser jogado: setas, espaço e clique não quebram nada.',
-      'Jogue um pouco com cada tecla e com o mouse. Se aparecer um erro, ele mostra a linha.',
-    ],
     recomeca: [
       'A tecla R leva o guia de volta ao começo.',
       'Em R, volte o guia para onde ele começou e o resto da partida também.',
@@ -439,10 +435,6 @@ const ROTULOS: Record<PublicoDoDesafio, Record<string, [string, string]>> = {
       'A ficha declara três funcionalidades.',
       'Preencha as três funcionalidades planejadas.',
     ],
-    joga: [
-      'O jogo roda sem erro com setas, espaço e clique.',
-      'Teste cada entrada; o console mostra o erro e a linha.',
-    ],
     recomeca: ['R devolve o guia à posição inicial.', 'Reinicie a partida em R, inclusive o guia.'],
   },
 }
@@ -452,24 +444,23 @@ const esperar = { action: 'wait' as const, ms: 300 }
 const passos = {
   objetivo: [esperar],
   funcionalidades: [esperar],
-  joga: [
+  recomeca: [
     direita(800),
     { action: 'press' as const, key: 'ArrowLeft', holdMs: 400 },
     { action: 'press' as const, key: 'Space', holdMs: 120 },
     { action: 'click' as const, x: 320, y: 240 },
     { action: 'wait' as const, ms: 1200 },
+    direita(1500),
+    r,
+    esperar,
   ],
-  recomeca: [direita(1500), r, esperar],
 }
-type Alvo =
-  | { kind: 'value'; path: string }
-  | { kind: 'moduleValue'; module: string; path: string }
-  | { kind: 'console' }
-const expectativa = (
-  target: Alvo,
-  compare: 'lessThan' | 'truthy' | 'notContains',
-  value?: number | string,
-) => ({ target, compare, ...(value === undefined ? {} : { value }) })
+type Alvo = { kind: 'value'; path: string } | { kind: 'moduleValue'; module: string; path: string }
+const expectativa = (target: Alvo, compare: 'lessThan' | 'truthy', value?: number | string) => ({
+  target,
+  compare,
+  ...(value === undefined ? {} : { value }),
+})
 
 export function objetivosDoFarolPython(publico: PublicoDoDesafio): SectionPythonProjectCheck[] {
   const objetivo = (
@@ -483,13 +474,16 @@ export function objetivosDoFarolPython(publico: PublicoDoDesafio): SectionPython
       hint,
       programmingLanguage: 'python',
       profileId: AMBIENTE_PYTHON_C02.profileId,
-      rule: { type: 'behavior', steps: passos[id], expect },
+      rule: {
+        type: 'behavior',
+        steps: passos[id],
+        expect,
+      },
     } as SectionPythonProjectCheck
   }
   return [
     objetivo('objetivo', expectativa({ kind: 'value', path: 'OBJETIVO' }, 'truthy')),
     objetivo('funcionalidades', expectativa({ kind: 'value', path: 'FUNCIONALIDADE_3' }, 'truthy')),
-    objetivo('joga', expectativa({ kind: 'console' }, 'notContains', 'Error')),
     objetivo('recomeca', expectativa({ kind: 'value', path: 'guia.x' }, 'lessThan', 100)),
   ]
 }
@@ -506,13 +500,16 @@ export function objetivosDoFarolPro(publico: PublicoDoDesafio): SectionJavaScrip
       label,
       hint,
       programmingLanguage: 'javascript',
-      rule: { type: 'behavior', steps: [{ action: 'wait', ms: 300 }, ...passos[id]], expect },
+      rule: {
+        type: 'behavior',
+        steps: [{ action: 'wait', ms: 300 }, ...passos[id]],
+        expect,
+      },
     } as SectionJavaScriptProjectCheck
   }
   return [
     objetivo('objetivo', expectativa(modulo('ficha.objetivo'), 'truthy')),
     objetivo('funcionalidades', expectativa(modulo('ficha.funcionalidade3'), 'truthy')),
-    objetivo('joga', expectativa({ kind: 'console' }, 'notContains', 'Error')),
     objetivo('recomeca', expectativa(modulo('jogo.guia.x'), 'lessThan', 100)),
   ]
 }

@@ -181,9 +181,9 @@
             "programmingLanguage": "javascript"
           },
           {
-            "id": "joga",
-            "label": "O jogo aguenta ser jogado: setas, espaço e clique não quebram nada.",
-            "hint": "Jogue um pouco com cada tecla e com o mouse. Se aparecer um erro, ele mostra a linha.",
+            "id": "recomeca",
+            "label": "A tecla R leva o guia de volta ao começo.",
+            "hint": "Em R, volte o guia para onde ele começou e o resto da partida também.",
             "rule": {
               "type": "behavior",
               "steps": [
@@ -214,28 +214,6 @@
                 {
                   "action": "wait",
                   "ms": 1200
-                }
-              ],
-              "expect": {
-                "target": {
-                  "kind": "console"
-                },
-                "compare": "notContains",
-                "value": "Error"
-              }
-            },
-            "programmingLanguage": "javascript"
-          },
-          {
-            "id": "recomeca",
-            "label": "A tecla R leva o guia de volta ao começo.",
-            "hint": "Em R, volte o guia para onde ele começou e o resto da partida também.",
-            "rule": {
-              "type": "behavior",
-              "steps": [
-                {
-                  "action": "wait",
-                  "ms": 300
                 },
                 {
                   "action": "press",
