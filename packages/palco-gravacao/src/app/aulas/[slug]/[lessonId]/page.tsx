@@ -12,18 +12,21 @@ export const dynamic = 'force-dynamic'
  * A aula publicada no ambiente, lida pela conta da equipe: tudo aberto, sem trava e sem
  * progresso (é assim que o members serve a equipe). Cada abertura é uma tomada nova
  * (`?tomada=`): o Estúdio e as atividades começam do zero, e atualizar a página dentro da
- * mesma tomada não apaga o que já foi feito.
+ * mesma tomada não apaga o que já foi feito. `?parte=N` abre a aula direto na parte N (cada
+ * parte da aula é gravada num plano próprio do EdiAula).
  */
 export default async function AulaPage({
   params,
   searchParams,
 }: {
   params: Promise<{ slug: string; lessonId: string }>
-  searchParams: Promise<{ tomada?: string }>
+  searchParams: Promise<{ tomada?: string; parte?: string }>
 }) {
-  const [{ slug, lessonId }, { tomada }] = await Promise.all([params, searchParams])
+  const [{ slug, lessonId }, { tomada, parte }] = await Promise.all([params, searchParams])
   const here = `/aulas/${encodeURIComponent(slug)}/${encodeURIComponent(lessonId)}`
-  if (!tomada || !/^[a-f0-9-]{36}$/.test(tomada)) redirect(`${here}?tomada=${randomUUID()}`)
+  const numero = parte && /^\d{1,2}$/.test(parte) ? Number(parte) : null
+  if (!tomada || !/^[a-f0-9-]{36}$/.test(tomada))
+    redirect(`${here}?tomada=${randomUUID()}${numero ? `&parte=${numero}` : ''}`)
   const access = await staffAccess()
   if (!access) redirect(`/entrar?volta=${encodeURIComponent(here)}`)
   const [courseRes, lessonRes] = await Promise.all([
@@ -35,6 +38,9 @@ export default async function AulaPage({
   const lesson = lessonRes.ok ? await readJson<LessonDetailView>(lessonRes) : null
   if (!course || !lesson)
     throw new Error(`Não consegui ler a aula (${courseRes.status}, ${lessonRes.status}).`)
+  // A parte pedida vira o `#section=` que o player do Kids já entende, na mesma tomada.
+  const secao = numero ? lesson.sections?.[numero - 1] : undefined
+  if (secao) redirect(`${here}?tomada=${tomada}#section=${encodeURIComponent(secao.id)}`)
   rememberLesson(lesson)
   return <PalcoAula course={course} lesson={lesson} viewerId={`palco-${tomada}`} />
 }
