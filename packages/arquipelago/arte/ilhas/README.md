@@ -33,6 +33,25 @@ ALVO=0,2,0 DIR=0.75,0.85,1 DIST=46 AGUA=1 \
 Antes de exportar, cada script também confere que nada na altura do corpo ocupa o corredor da
 chegada (`conferir_corredor`).
 
+## Versões médias (as ilhas em três versões, 01/11/2026)
+
+`medias.py` faz a versão média de cada ilha do anel a partir da completa (`<ilha>.glb` →
+`<ilha>-media.glb`): sem `col-*`, `escalada-*`, âncoras e clipes; sem as peças soltas menores que
+0,32 m (que da ponte não se veem); as malhas de 1.000 triângulos ou mais simplificadas por colapso
+(42%), menos o chão e a água; tudo num nó só, `ilha-media`, com os materiais da completa. O jogo
+baixa a média ao pisar na ponte e a completa no fim dela (`src/mundo/ilha-media.tsx`); o build liga
+a média de toda ilha que tem o arquivo (`scripts/gerar-ilhas-medias.ts`).
+
+```sh
+C:/Users/tocha/blender-venv/Scripts/python.exe -B arte/ilhas/medias.py [ilha …]
+```
+
+Rode de novo depois de regerar uma completa (a média sai dela). Teto: 16 mil triângulos e 640 KB
+por ilha; `medias.json` guarda os números. `tests/ilhas-medias.test.ts` confere o nó único, o teto,
+a altura e a largura iguais às da completa, os materiais e que nenhum par novo de faces coplanares
+apareceu. Não separe as malhas por material antes do colapso: cada faixa de cor simplifica sozinha e
+abre frestas entre elas (o vulcão alto do Vale rachou assim).
+
 ## Referencial e troca com a versão leve
 
 - **Referencial:** cada ilha fica no centro dela, com y = 0 no mar e o tampo plano em y = 1.

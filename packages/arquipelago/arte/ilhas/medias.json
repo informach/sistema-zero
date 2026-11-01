@@ -1,0 +1,32 @@
+{
+  "bosque": {
+    "kb": 488.9,
+    "triangulos": 15667,
+    "triangulos_da_completa": 34300
+  },
+  "nuvens": {
+    "kb": 399.8,
+    "triangulos": 13922,
+    "triangulos_da_completa": 34348
+  },
+  "pico": {
+    "kb": 544.5,
+    "triangulos": 12559,
+    "triangulos_da_completa": 33440
+  },
+  "recife": {
+    "kb": 446.6,
+    "triangulos": 12805,
+    "triangulos_da_completa": 29041
+  },
+  "vale-dos-dinos": {
+    "kb": 296.9,
+    "triangulos": 8012,
+    "triangulos_da_completa": 25498
+  },
+  "vila-doce": {
+    "kb": 519.4,
+    "triangulos": 12331,
+    "triangulos_da_completa": 35430
+  }
+}
