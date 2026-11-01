@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Voz na cópia de curso entre públicos (01/11/2026)
+
+`src/lib/voz-zappy-aula.ts` é a extração pura compartilhada pelo botão de voz e pelo operador
+`scripts/course-audience-media.ts`. Preservar a projeção pública das experiências e os roteiros
+efetivos de diálogos e quiz. O operador só roda no Admin do ambiente solicitado e reutiliza
+`gerarVozes` e `getVideo`; não duplicar síntese, cache ou configuração de credenciais.
+Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
+
 ## Requisitos dos desafios do jogo (C01e, 30/10/2026)
 
 A orientação de `GameAdmin` distingue as regras comparadas entre inicial/gabarito dos

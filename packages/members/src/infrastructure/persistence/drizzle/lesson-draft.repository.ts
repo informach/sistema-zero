@@ -213,7 +213,7 @@ function isVimeoVideo(src: string, id: string) {
 
 export class DrizzleLessonDraftRepository implements LessonDraftRepository {
   constructor(
-    private readonly db: Database,
+    private readonly db: Database | Transaction,
     private readonly parseBlock: ParsePublishedBlock,
     private readonly studioPolicy?: StudioAuthoringPolicy,
   ) {}

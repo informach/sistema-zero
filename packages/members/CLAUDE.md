@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/members
 
+## Sincronizar curso Kids para adulto (01/11/2026)
+
+Operador em `scripts/release/sync-course-audiences.ts`, planejador e executor em
+`packages/members/scripts/course-audience-sync/`. Guia: `docs/operations/sincronizar-curso-kids-adulto.md`.
+Atualiza o adulto existente e publica pela autoria canônica numa transação, preservando identidade
+e dados dos alunos. Preparação de mídia no Admin do mesmo ambiente, backup e plano com hashes,
+recusa de edição concorrente, remapeamento persistido em `metadata.contentMirror`. Não transformar
+essa operação explícita em sincronização automática ou chamar o composition root completo.
+
 ## Referência neutra de animação dos módulos, 31/10/2026
 
 O módulo usa `animation: ModuleAnimation | null`, validado no contrato do core. POST/PATCH
