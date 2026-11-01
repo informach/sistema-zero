@@ -1,5 +1,6 @@
 import 'server-only'
 import {
+  CopyObjectCommand,
   DeleteObjectCommand,
   DeleteObjectsCommand,
   GetObjectCommand,
@@ -12,6 +13,7 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { deleteObjectPrefixes } from '@sistemazero/core/creations'
 import { getEnv } from '@/lib/env'
+import { createCourseObjectCopier } from './course-object-copy'
 
 const DEFAULT_CACHE_CONTROL = 'public, max-age=31536000, immutable'
 
@@ -102,6 +104,48 @@ function requirePrivateR2Config(): R2PrivateConfig {
 }
 
 let cachedClient: S3Client | null = null
+
+/** Internal publication adapter. The worker, never a browser payload, resolves these buckets. */
+export const r2CopyCourseObject = createCourseObjectCopier({
+  async head(bucket, key) {
+    try {
+      const object = await getClient(requireAccountConfig()).send(
+        new HeadObjectCommand({ Bucket: bucket, Key: key }),
+      )
+      if (!object.ETag || object.ContentLength === undefined)
+        throw new Error('Arquivo sem versão no armazenamento')
+      return {
+        etag: object.ETag,
+        bytes: object.ContentLength,
+        metadata: object.Metadata ?? {},
+        contentType: object.ContentType,
+        cacheControl: object.CacheControl,
+        contentDisposition: object.ContentDisposition,
+      }
+    } catch (error) {
+      if ((error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 404)
+        return null
+      throw error
+    }
+  },
+  async copy({ source, destination, fingerprint, headers }) {
+    const result = await getClient(requireAccountConfig()).send(
+      new CopyObjectCommand({
+        Bucket: destination.bucket,
+        Key: destination.key,
+        CopySource: `${source.bucket}/${source.key.split('/').map(encodeURIComponent).join('/')}`,
+        CopySourceIfMatch: source.etag,
+        MetadataDirective: 'REPLACE',
+        Metadata: { ...headers.metadata, 'course-source': fingerprint },
+        ContentType: headers.contentType,
+        CacheControl: headers.cacheControl,
+        ContentDisposition: headers.contentDisposition,
+      }),
+    )
+    if (!result.CopyObjectResult?.ETag) throw new Error('Cópia sem confirmação de versão')
+    return { etag: result.CopyObjectResult.ETag }
+  },
+})
 
 // O client S3 é por CONTA (endpoint+credenciais) — o bucket é parâmetro do comando,
 // então público e privado compartilham a mesma instância cacheada.

@@ -1,5 +1,7 @@
+import { inventoryCourseMedia } from '@sistemazero/core/course/publication-media'
 import { chaveDeVoz } from '@sistemazero/core/learning/scene'
 import { type Snapshot, sourceHash } from '../../members/scripts/course-audience-sync/plan'
+import { getEnv } from '../src/lib/env'
 import { falasDaAula } from '../src/lib/voz-zappy-aula'
 import { MAX_TEXTOS_POR_PEDIDO } from '../src/lib/voz-zappy-limites'
 import { getVideo } from '../src/server/vimeo'
@@ -13,6 +15,22 @@ export async function run(snapshot: Snapshot) {
     process.env.RAILWAY_SERVICE_NAME !== 'admin'
   )
     throw new Error('Ambiente ou serviço de mídia incorreto')
+  const env = getEnv()
+  const inventory = inventoryCourseMedia(
+    {
+      course: snapshot.source.course,
+      modules: snapshot.source.modules,
+      lessons: snapshot.source.lessons.map((lesson) => ({
+        published: lesson.published,
+        plannedVideos: lesson.draft?.document.plannedVideos ?? [],
+      })),
+    },
+    {
+      publicBaseUrl: env.R2_PUBLIC_URL ?? '',
+      publicBucket: env.R2_BUCKET ?? '',
+      privateBucket: env.R2_PRIVATE_BUCKET ?? '',
+    },
+  )
   const blocks = snapshot.source.lessons.flatMap((l) => l.published.blocks)
   const videoIds = [
     ...new Set(
@@ -72,5 +90,6 @@ export async function run(snapshot: Snapshot) {
     voices,
     generated,
     reused,
+    inventory,
   }
 }
