@@ -39,7 +39,7 @@ function marcacao(content: InteractiveBlock) {
 describe('o selo de tipo do bloco interativo', () => {
   test.each([
     [{ type: 'experimentation', scene: 'impulse' } as const, 'experimentation', 'Experimente'],
-    [{ type: 'html', html: '<p>oi</p>' } as const, 'html', 'Brinque'],
+    [{ type: 'html', html: '<p>oi</p>' } as const, 'html', 'Jogue'],
   ])('%o vira o chip %s', (activity, chip, rotulo) => {
     const html = marcacao(bloco(activity))
     expect(html).toContain('sz-lesson-chip')

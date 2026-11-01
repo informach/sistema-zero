@@ -20,7 +20,7 @@ for (const activity of [
   {
     path: '/project-play',
     expand: 'Ampliar jogo',
-    badge: 'Brinque',
+    badge: 'Jogue',
     body: 'iframe[aria-busy="false"]',
   },
   { path: '/', expand: 'Ampliar experiência', badge: 'Experimente', body: '.sz-scene-console' },
