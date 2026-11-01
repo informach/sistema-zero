@@ -1,4 +1,5 @@
 'use client'
+import { challengeProjectLanguage } from '@sistemazero/arquipelago-admin'
 import {
   isExecutionRule,
   type SectionJavaScriptProjectCheck,
@@ -10,7 +11,7 @@ import { StudioProjectDocumentSchema } from '@sistemazero/core/studio/project-do
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
-import { challengeProjectLanguage, challengeRule } from '@/lib/game-challenge-authoring'
+import { challengeRule } from '@/lib/game-challenge-rule'
 import { ExecutionRuleEditor } from './execution-rule-editor'
 import { GameCausalityRuleEditor } from './game-causality-rule-editor'
 import { ProjectRuleEditor } from './project-rule-editor'

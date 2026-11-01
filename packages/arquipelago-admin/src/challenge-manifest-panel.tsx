@@ -18,6 +18,7 @@ import {
 import { Button } from '@sistemazero/ui/button'
 import { Textarea } from '@sistemazero/ui/textarea'
 import { useEffect, useRef, useState } from 'react'
+import { baixarJson } from './baixar-json'
 import {
   manifestCoverage,
   manifestFileName,
@@ -26,8 +27,7 @@ import {
   missingFromManifest,
   parseChallengeManifest,
   splitManifest,
-} from '@/lib/challenge-manifest'
-import { downloadJson } from '@/lib/download-json'
+} from './challenge-manifest'
 import { GameRequestError, gameRequest } from './game-request'
 
 const card = 'space-y-4 rounded-xl border border-border bg-card p-5'
@@ -273,7 +273,7 @@ export function ChallengeManifestPanel({
       })
       const raw = await gameRequest(`manifestos/exportar?${query}`, 'GET', undefined, signal, opts)
       const manifest = ManifestoDeDesafiosSchema.parse(raw)
-      downloadJson(manifestFileName(manifest), manifest)
+      baixarJson(manifestFileName(manifest), manifest)
     })
   }
 

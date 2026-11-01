@@ -120,6 +120,7 @@ const nextConfig: NextConfig = {
   // é feito com o @napi-rs/canvas — ver `extractPdfText` em server/zappy-knowledge.ts.
   // Pacotes workspace com TS cru (componentes compartilhados + editor embarcável) — transpilar junto.
   transpilePackages: [
+    '@sistemazero/arquipelago-admin',
     '@sistemazero/ui',
     '@sistemazero/studio',
     '@sistemazero/pinta',

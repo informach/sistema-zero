@@ -18,19 +18,17 @@ import {
   type ResumoDoDesafio,
   TIPOS_DE_DESAFIO,
 } from '@sistemazero/arquipelago-contracts'
+import type { SectionProjectCheck } from '@sistemazero/core/learning'
 import type { EditableStudioProject, StudioHandle } from '@sistemazero/studio'
 import { prepareProjectForHost } from '@sistemazero/studio/project-validation'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
 import { Select } from '@sistemazero/ui/select'
 import { Textarea } from '@sistemazero/ui/textarea'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { usePlatform } from '@/components/admin/platform-provider'
-import { setPlatform } from '@/components/admin/platform-store'
-import { GameObjectivesEditor } from '@/components/editor/game-objectives-editor'
-import { StudioEmbed } from '@/components/studio/studio-embed'
-import { manifestFileName } from '@/lib/challenge-manifest'
-import { downloadJson } from '@/lib/download-json'
+import { type ComponentType, type RefObject, useCallback, useEffect, useRef, useState } from 'react'
+import { baixarJson } from './baixar-json'
+import { manifestFileName } from './challenge-manifest'
+import { ChallengeManifestPanel } from './challenge-manifest-panel'
 import {
   CHALLENGE_PROJECT_NOT_EDITABLE,
   type ChallengeDraft,
@@ -39,8 +37,7 @@ import {
   challengeProjectEditable,
   challengeType,
   newChallenge,
-} from '@/lib/game-challenge-authoring'
-import { ChallengeManifestPanel } from './challenge-manifest-panel'
+} from './game-challenge-authoring'
 import { GameMeasurement } from './game-measurement'
 import { gameRequest as request } from './game-request'
 
@@ -56,9 +53,30 @@ const coverageSchema = CoberturaDosCartoesSchema
 type Coverage = CoberturaDosCartoes
 const card = 'space-y-4 rounded-xl border border-border bg-card p-5'
 
-export function GameAdmin({ canWrite }: { canWrite: boolean }) {
-  const platform = usePlatform()
-  const publico = platform === 'kids' ? 'kids' : 'adulto'
+/**
+ * O que o Admin entrega ao painel do jogo (lacunas, 01/11/2026): a comunidade escolhida no Admin,
+ * o editor de objetivos (que também serve às aulas) e o Estúdio embutido. O pacote não importa o
+ * Admin nem o jogo.
+ */
+export interface PecasDoAdmin {
+  publico: 'kids' | 'adulto'
+  trocarPublico(publico: 'kids' | 'adulto'): void
+  EditorDeObjetivos: ComponentType<{
+    value: SectionProjectCheck[]
+    gabarito: unknown
+    onChange(objetivos: SectionProjectCheck[]): void
+  }>
+  Estudio: ComponentType<{
+    initialProject: EditableStudioProject
+    handleRef: RefObject<StudioHandle | null>
+    hideKindChooser?: boolean
+    lessonConfig?: { level: 'avancado-3d'; allowedModes: ('blocks' | 'bridge')[] }
+    className?: string
+  }>
+}
+
+export function GameAdmin({ canWrite, pecas }: { canWrite: boolean; pecas: PecasDoAdmin }) {
+  const { publico, EditorDeObjetivos, Estudio } = pecas
   const [island, setIsland] = useState('')
   const [tab, setTab] = useState<'desafios' | 'ilhas' | 'cartoes' | 'medicao'>('desafios')
   const [coverageLoading, setCoverageLoading] = useState(false)
@@ -239,7 +257,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
       const manifest = ManifestoDeDesafiosSchema.parse(
         await request(`desafios/${id}/manifesto`, 'GET', undefined, signal),
       )
-      downloadJson(manifestFileName(manifest), manifest)
+      baixarJson(manifestFileName(manifest), manifest)
     })
   }
   function manifestApplied(slugs: string[]) {
@@ -326,7 +344,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
       {tab === 'medicao' && (
         <GameMeasurement
           publico={publico}
-          onPublicoChange={(p) => setPlatform(p === 'kids' ? 'kids' : 'adult')}
+          onPublicoChange={(p) => pecas.trocarPublico(p === 'kids' ? 'kids' : 'adulto')}
         />
       )}
       {error && (
@@ -630,7 +648,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
               </Button>
             </div>
             <h3 className="font-semibold">Objetivos do projeto</h3>
-            <GameObjectivesEditor
+            <EditorDeObjetivos
               value={draft.conteudo.objetivos}
               gabarito={draft.conteudo.gabarito}
               onChange={(objetivos) => patch({ objetivos })}
@@ -911,7 +929,7 @@ export function GameAdmin({ canWrite }: { canWrite: boolean }) {
             </Button>
           </header>
           <div className="min-h-0 flex-1">
-            <StudioEmbed
+            <Estudio
               initialProject={editor.project}
               handleRef={handle}
               hideKindChooser

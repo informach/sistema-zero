@@ -12,7 +12,7 @@ import {
   missingFromManifest,
   parseChallengeManifest,
   splitManifest,
-} from '../src/lib/challenge-manifest'
+} from '../src/challenge-manifest'
 
 const projeto = { files: { 'index.html': '', 'style.css': '', 'script.js': '' } }
 const item = (slug: string, over: Partial<DesafioDoManifesto> = {}): DesafioDoManifesto => ({

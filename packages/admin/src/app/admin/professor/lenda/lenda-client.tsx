@@ -1,5 +1,6 @@
 'use client'
 
+import { GameRequestError, gameRequest } from '@sistemazero/arquipelago-admin'
 import {
   type EstadoDaRevisaoHumana,
   FilaDeRevisaoSchema,
@@ -17,7 +18,6 @@ import { Textarea } from '@sistemazero/ui/textarea'
 import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
-import { GameRequestError, gameRequest } from '@/app/admin/jogo/game-request'
 import { AdminHeader } from '@/components/admin/admin-header'
 import { EmptyState, LoadError } from '@/components/admin/empty-state'
 import { formatDate } from '@/lib/format'

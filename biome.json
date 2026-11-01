@@ -149,7 +149,7 @@
       }
     },
     {
-      "includes": ["packages/admin/**/*.tsx"],
+      "includes": ["packages/admin/**/*.tsx", "packages/arquipelago-admin/**/*.tsx"],
       "linter": {
         "rules": {
           "a11y": {
