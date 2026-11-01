@@ -946,22 +946,26 @@ export function lessonDraftCases(getDb: () => Database) {
       ).rejects.toThrow()
       expect((await f.reader.findLessonWithContent(second.id))?.blocks).toHaveLength(0)
     })
-    test('every current manifest imports into drafts; retry and reimport retain linked videos and required work', async () => {
-      // A importação exercita todos os manifestos atuais, copiados do fluxo criativo.
-      const paths = listarArquivosAulas().filter((path) => path.endsWith('.manifesto.json'))
-      // Piso anti-vácuo: um glob que deixasse de achar as aulas reprovaria.
+    const paths = listarArquivosAulas().filter((path) => path.endsWith('.manifesto.json'))
+    test('o corpus de importação inclui as aulas e seus vídeos planejados', async () => {
       expect(paths.length).toBeGreaterThanOrEqual(28)
-      let plannedCount = 0
-      // ⚠️ O esperado sai dos PRÓPRIOS manifestos, não de um número cravado. O 144 de
-      // antes quebrava o CI toda vez que a autora acrescentava um vídeo a uma aula — e
-      // foi o que aconteceu (virou 145). Derivar não enfraquece o teste: o que ele
-      // guarda é que TODO vídeo planejado atravessa a importação e chega ao rascunho, e
-      // isso continua sendo uma comparação entre dois lados independentes.
-      let plannedEsperado = 0
+      let videos = 0
       for (const path of paths) {
         const manifest: unknown = await Bun.file(caminhoAula(path)).json()
         if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
-        plannedEsperado += manifest.blocks.filter(
+        videos += manifest.blocks.filter(
+          (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',
+        ).length
+      }
+      expect(videos).toBeGreaterThan(100)
+    })
+    // Cada manifesto tem a mesma prova completa e o mesmo limite anterior de 30 s.
+    // O crescimento do catálogo não deve consumir um único prazo para todas as aulas.
+    for (const path of paths)
+      test(`manifesto ${path}: importação, repetição e reimportação preservam vídeos e trabalho`, async () => {
+        const manifest: unknown = await Bun.file(caminhoAula(path)).json()
+        if (!isLearningManifest(manifest)) throw new Error(`Invalid ${path}`)
+        const plannedEsperado = manifest.blocks.filter(
           (block) => typeof (block as { plannedVideo?: unknown }).plannedVideo === 'string',
         ).length
         expect(manifest.version).toBe(5)
@@ -1000,7 +1004,7 @@ export function lessonDraftCases(getDb: () => Database) {
         )
         expect(retry.revision).toBe(result.revision)
         let draft = await f.repo.read(f.lessonId)
-        plannedCount += draft.document.plannedVideos.length
+        expect(draft.document.plannedVideos).toHaveLength(plannedEsperado)
         for (const entry of manifest.blocks)
           if (
             'content' in entry &&
@@ -1062,11 +1066,6 @@ export function lessonDraftCases(getDb: () => Database) {
           ).toBe('123456789')
         }
         expect(await f.reader.findLessonWithContent(f.lessonId)).toEqual(before)
-      }
-      expect(plannedCount).toBe(plannedEsperado)
-      // Anti-vácuo: a régua acima compararia 0 com 0 se a leitura dos manifestos
-      // parasse de enxergar os vídeos planejados.
-      expect(plannedEsperado).toBeGreaterThan(100)
-    }, 30000)
+      }, 30000)
   })
 }

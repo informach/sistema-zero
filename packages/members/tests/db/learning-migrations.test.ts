@@ -194,33 +194,19 @@ describe.skipIf(!url)(
       ]
       for (const block of legacyBlocks)
         await sql`insert into members.lesson_blocks (id,lesson_id,kind,sort_order,content) values (${block.id},${block.lessonId},${block.kind},${block.sortOrder},${JSON.stringify(block.content)}::jsonb)`
-      await db.insert(quizAttempts).values({
-        id: attemptId,
-        userId: owner.userId,
-        lessonId,
-        blockId: quizId,
-        courseId,
-        score: 100,
-        passed: true,
-        answers: { q: ['a'] },
-        createdAt: now,
-      })
+      // Toda a carga histórica usa o contrato SQL antigo, nunca o modelo ORM atual.
+      await sql`insert into members.quiz_attempts (id,user_id,lesson_id,block_id,course_id,score,passed,answers,created_at)
+        values (${attemptId},${owner.userId},${lessonId},${quizId},${courseId},100,true,
+                ${JSON.stringify({ q: ['a'] })}::jsonb,${now.toISOString()})`
       // SQL cru pelo mesmo motivo dos cursos: o modelo atual lista colunas posteriores à 0077
       // (`content_fingerprint`, 0101) e o insert do Drizzle as nomeia mesmo com `default`.
       await sql`insert into members.studio_submissions (id,user_id,account_id,block_id,lesson_id,course_id,project,submitted_at)
         values (${randomUUID()},${owner.userId},${owner.accountId},${studioId},${lessonId},${courseId},
                 ${JSON.stringify(project)}::jsonb,${now.toISOString()})`
-      await db
-        .insert(lessonCompletions)
-        .values({ id: randomUUID(), userId: owner.userId, courseId, lessonId, completedAt: now })
-      await db.insert(lessonProgress).values({
-        id: randomUUID(),
-        userId: owner.userId,
-        courseId,
-        lessonId,
-        positionSeconds: 87,
-        updatedAt: now,
-      })
+      await sql`insert into members.lesson_completions (id,user_id,course_id,lesson_id,completed_at)
+        values (${randomUUID()},${owner.userId},${courseId},${lessonId},${now.toISOString()})`
+      await sql`insert into members.lesson_progress (id,user_id,course_id,lesson_id,position_seconds,updated_at)
+        values (${randomUUID()},${owner.userId},${courseId},${lessonId},87,${now.toISOString()})`
       await sql`insert into members.practice_sessions (id,user_id,account_id,course_id,course_slug,lesson_id,block_id,title,quiz,created_at) values (${randomUUID()},${owner.userId},${owner.accountId},${courseId},'learning-qa',${lessonId},${quizId},'Legacy practice','{}',${now.toISOString()})`
       await sql`create schema if not exists drizzle`
       await sql`create table drizzle.members_migrations (id serial primary key, hash text not null, created_at bigint)`
