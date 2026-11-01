@@ -1,0 +1,14 @@
+/* O visual é o do Kids, inteiro: tokens, componentes do member-shell, Estúdio e cenas. */
+@import "../../../community-kids/src/app/globals.css";
+/* O scanner do Tailwind vê as classes do Kids, que aqui é código de outro pacote. */
+@source "../../../community-kids/src";
+@source "./";
+
+/*
+ * Ajustes de palco: só o que muda a tomada, nunca a aula.
+ * Os controles do livro que só aparecem ao passar o mouse ficam à vista, para o robô
+ * apontar para eles como a professora apontaria.
+ */
+.palco [class*="group-hover/ebook:opacity-100"] {
+  opacity: 1;
+}

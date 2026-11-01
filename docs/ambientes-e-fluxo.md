@@ -229,6 +229,17 @@ Consulte [as instruções de infraestrutura](../.railway/README.md) e o
 [plano da migração](superpowers/plans/2026-09-27-railway-iac.md) para manutenção,
 validação e recuperação. Promover staging para main continua sendo o fluxo normal.
 
+### Palco de gravação (só no staging)
+
+`palco-gravacao` (01/11/2026) mostra as aulas do Kids como a criança vê, para o robô de gravação
+do EdiAula gravar, e não salva nada: progresso, rascunho, envio e conclusão ficam só na tela.
+Entra com a conta da equipe. Só a conferência do projeto vai ao members, como equipe, e o members
+não guarda progresso nem prêmio da equipe. A definição fica em `.railway/staging-services/`, que
+o `railway.ts` lê apenas no staging, então a produção não ganha o serviço. As variáveis têm os
+mesmos valores do `community-kids` do staging (ver `.railway/variables.ts`). O CI só faz o deploy
+dele depois que o id do serviço entra no mapa `SVC_ID` de `ci.yml`. Detalhes em
+`packages/palco-gravacao/README.md`.
+
 ## Custo do staging
 
 O staging roda 24/7 (≈ dobra o uso do Railway). O recurso nativo de economia

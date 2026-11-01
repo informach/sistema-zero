@@ -32,6 +32,7 @@ const rootServices = new Set([
   'admin',
   'community-kids',
   'live-recorder',
+  'palco-gravacao',
 ])
 
 const productionDomains: Record<string, Array<{ domain: string; port?: number }>> = {
@@ -55,11 +56,20 @@ export default defineRailway((ctx) => {
     allowOnlineResize: true,
     alerts: { usage: { '80': {}, '95': {}, '100': {} } },
   })
-  const directory = new URL('./services/', import.meta.url)
-  const apps = readdirSync(directory)
-    .filter((file) => file.endsWith('.json'))
-    .sort()
-    .map((file) => {
+  // Serviços só do staging (o palco de gravação) ficam numa pasta própria: a lista de produção
+  // continua sendo exatamente `services/`, com as origens qualificadas dela.
+  const directories = [
+    new URL('./services/', import.meta.url),
+    ...(production ? [] : [new URL('./staging-services/', import.meta.url)]),
+  ]
+  const apps = directories
+    .flatMap((directory) =>
+      readdirSync(directory)
+        .filter((file) => file.endsWith('.json'))
+        .sort()
+        .map((file) => ({ file, directory })),
+    )
+    .map(({ file, directory }) => {
       const name = file.slice(0, -5)
       const config = JSON.parse(readFileSync(new URL(file, directory), 'utf8')) as {
         build: BuildConfig
