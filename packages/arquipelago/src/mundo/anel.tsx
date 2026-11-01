@@ -40,6 +40,7 @@ import {
   type Troca,
   useIlhaCompleta,
 } from './ilha-completa'
+import { IlhaMedia, type Media, useIlhaMedia } from './ilha-media'
 import {
   ALTURA_DA_TERRA,
   ALTURA_DAS_NUVENS,
@@ -245,6 +246,7 @@ function IlhaDoAnel({
   cor,
   estado,
   preparada,
+  media,
   troca,
 }: {
   ilha: Ilha
@@ -252,6 +254,7 @@ function IlhaDoAnel({
   cor: number
   estado: EstadoDaIlha
   preparada: IlhaPreparada | null
+  media: Media | null
   troca: Troca
 }) {
   const flutua = ilha.id === 'nuvens'
@@ -278,6 +281,7 @@ function IlhaDoAnel({
         <ComReserva reserva={<IlhaDeAntes ilha={ilha} cor={cor} />}>
           <IlhaDoModelo ilha={ilha} troca={troca} />
         </ComReserva>
+        {media && <IlhaMedia media={media} troca={troca} />}
         {!completaColide(estado) && (
           <RigidBody type="fixed" colliders={false}>
             {apoios.map((a) => (
@@ -327,10 +331,11 @@ function IlhaDoModelo({ ilha, troca }: { ilha: Ilha; troca: Troca }) {
       if (troca.leve === modelo) troca.leve = undefined
     }
   }, [troca, modelo])
-  // Sai esmaecendo quando a completa entra (e volta quando ela sai); parada, não mexe em nada.
+  // Sai esmaecendo quando a média ou a completa entra (e volta quando saem); parada, não mexe em nada.
   const aplicada = useRef(1)
   useFrame(() => {
-    const opacidade = 1 - troca.opacidade
+    // A média (quando a ilha tem) também toma o lugar da leve; a leve segue colidindo.
+    const opacidade = 1 - Math.max(troca.opacidade, troca.media ?? 0)
     if (opacidade === aplicada.current) return
     aplicada.current = opacidade
     aplicarOpacidade(materiais, opacidade)
@@ -628,6 +633,7 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
   const cor = usePinturaDaIlha(ilha, aberta ? chegada : 0)
   const troca = useRef<Troca>({ opacidade: 0 }).current
   const { estado, preparada } = useIlhaCompleta(ilha, centro, aberta, troca)
+  const media = useIlhaMedia(ilha, centro, aberta, troca)
   // A ilha aberta ganha as rodas de boias dela: dá para nadar em volta (a das Nuvens fica no céu).
   // No Bosque o meio da roda vai para o lado da ponta de campo; o Recife tem também as do navio e
   // do labirinto (`rodasDaIlhaNoModelo`).
@@ -658,6 +664,7 @@ function IlhaComPonte({ ilha, centro }: { ilha: Ilha; centro: { x: number; z: nu
         cor={cor}
         estado={estado}
         preparada={preparada}
+        media={media}
         troca={troca}
       />
       <Ponte ilha={ilha} inteira={aberta} tabuasVisiveis={chegada} />

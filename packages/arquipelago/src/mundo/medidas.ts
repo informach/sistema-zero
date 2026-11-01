@@ -397,6 +397,11 @@ export const BUSCA_NA_PONTE = {
  * esmaecida mal se nota e o arquivo teve a primeira metade da ponte para ser lido.
  */
 export const DISTANCIA_DA_TROCA = RAIO_DA_ILHA_DO_ANEL + 17
+/**
+ * Com a versão média (as ilhas em três versões), a completa só começa a baixar aqui, no fim da
+ * ponte: 7 m antes da troca, para o arquivo chegar enquanto a média ocupa o lugar da leve.
+ */
+export const DISTANCIA_DA_COMPLETA = RAIO_DA_ILHA_DO_ANEL + 24
 /** Segundos do esmaecer entre a leve e a completa (curto, mas sem estalo). */
 export const DURACAO_DA_TROCA = 0.8
 /** Até onde, além da borda da ilha, o personagem espera no ar o chão da completa chegar. */

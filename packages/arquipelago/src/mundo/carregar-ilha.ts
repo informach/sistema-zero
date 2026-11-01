@@ -5,8 +5,18 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
  * Baixa e lê as ilhas completas fora do React (sem o cache do `useGLTF`, que não solta a memória
  * sozinho e suspenderia a cena). Regra de memória: a ilha central fica sempre, e no máximo UMA
  * ilha completa por vez; pedir outra solta a anterior.
+ *
+ * As três versões (lacunas, 01/11/2026): além da completa, uma versão média por ilha (vista da
+ * ponte, sem os colisores de detalhe). Cada versão tem o seu teto: uma média e uma completa ao
+ * mesmo tempo; pedir outra da mesma versão solta a anterior dela.
  */
 export const MAXIMO_DE_ILHAS_COMPLETAS = 1
+export const MAXIMO_DE_ILHAS_MEDIAS = 1
+export type VersaoDaIlha = 'media' | 'completa'
+const TETO: Record<VersaoDaIlha, number> = {
+  media: MAXIMO_DE_ILHAS_MEDIAS,
+  completa: MAXIMO_DE_ILHAS_COMPLETAS,
+}
 
 interface Pedido {
   promessa: Promise<Object3D>
@@ -15,6 +25,7 @@ interface Pedido {
   solto: boolean
   usos: number
   limparExtras?: () => void
+  versao: VersaoDaIlha
 }
 
 const pedidos = new Map<string, Pedido>()
@@ -24,12 +35,13 @@ let carregador: GLTFLoader | undefined
 export function buscarIlha(
   url: string,
   ler?: (url: string) => Promise<Object3D>,
+  versao: VersaoDaIlha = 'completa',
 ): Promise<Object3D> {
   const existente = pedidos.get(url)
   if (existente) return existente.promessa
-  for (const outra of [...pedidos.keys()]) {
-    if (pedidos.size < MAXIMO_DE_ILHAS_COMPLETAS) break
-    soltarIlha(outra)
+  for (const [outra, pedido] of [...pedidos]) {
+    if (ilhasNaMemoria(versao) < TETO[versao]) break
+    if (pedido.versao === versao) soltarIlha(outra)
   }
   const leitura =
     ler ??
@@ -37,7 +49,7 @@ export function buscarIlha(
       carregador ??= new GLTFLoader()
       return carregador.loadAsync(u).then((g) => g.scene)
     })
-  const pedido = { solto: false, usos: 0 } as Pedido
+  const pedido = { solto: false, usos: 0, versao } as Pedido
   pedido.promessa = leitura(url).then(
     (cena) => {
       if (pedido.solto) {
@@ -56,9 +68,12 @@ export function buscarIlha(
   return pedido.promessa
 }
 
-/** Quantas ilhas completas estão na memória ou a caminho. */
-export function ilhasNaMemoria(): number {
-  return pedidos.size
+/** Quantas ilhas (de uma versão, ou de todas) estão na memória ou a caminho. */
+export function ilhasNaMemoria(versao?: VersaoDaIlha): number {
+  if (!versao) return pedidos.size
+  let n = 0
+  for (const p of pedidos.values()) if (p.versao === versao) n++
+  return n
 }
 
 /** Solta geometrias, materiais e texturas da ilha (ou marca para soltar quando chegar). */
