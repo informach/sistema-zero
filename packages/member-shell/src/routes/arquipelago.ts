@@ -234,6 +234,24 @@ export function createArquipelagoRoutes(deps: {
         if (id !== null && !UUID.test(id)) return invalido()
         return chamar(`/familia/minijogos/${perfil}${id ? `/${id}` : ''}`, 'GET')
       },
+      POST: async (req: Request, ctx: { params: Promise<{ perfil: string }> }) => {
+        const { perfil } = await ctx.params
+        const lista = await perfisProntos()
+        if (!lista.ok) return lista.resposta
+        const id = new URL(req.url).searchParams.get('id')
+        if (
+          !UUID.test(perfil) ||
+          !lista.perfis.some((p) => p.id === perfil) ||
+          !id ||
+          !UUID.test(id)
+        )
+          return privado(invalido())
+        const lido = await corpoJson(req, CORPO_DO_AMBIENTE)
+        if (!lido.ok) return privado(invalido())
+        return privado(
+          await chamar(`/familia/minijogos/${perfil}/${id}/ambiente`, 'POST', lido.corpo),
+        )
+      },
     },
     /**
      * Recordes da família e visitas (fase3-12, 29/10/2026): os irmãos que o serviço do jogo acha

@@ -64,6 +64,7 @@ export function MinijogosDaCrianca({
             key={jogo}
             userId={perfilId}
             audience="kids"
+            environmentUrl={`${rota}?id=${encodeURIComponent(jogo)}`}
             url={`${rota}?id=${encodeURIComponent(jogo)}`}
             onClose={() => setJogo(null)}
           />

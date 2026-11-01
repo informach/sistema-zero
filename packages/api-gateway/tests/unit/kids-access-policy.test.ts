@@ -184,3 +184,19 @@ describe('Arquipélago Vagalume', () => {
     expect(kidsMayAccess(parent, '/arquipelago/familia/outra', 'GET', 'responsavel')).toBe(false)
   })
 })
+
+test('responsável só pode pedir a execução Python de um minijogo pelo caminho familiar exato', () => {
+  const path =
+    '/arquipelago/familia/minijogos/11111111-1111-4111-8111-111111111111/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/ambiente'
+  expect(kidsMayAccess(parent, path, 'POST', 'conta')).toBe(true)
+  expect(kidsMayAccess(student, path, 'POST', 'perfil')).toBe(false)
+  for (const method of ['GET', 'PUT', 'DELETE'])
+    expect(kidsMayAccess(parent, path, method, 'conta')).toBe(false)
+  for (const altered of [
+    path + '/extra',
+    path.replace('/ambiente', '/verificar'),
+    path.replace('/familia', ''),
+    path.replace('/ambiente', '/../ambiente'),
+  ])
+    expect(kidsMayAccess(parent, altered, 'POST', 'conta')).toBe(false)
+})

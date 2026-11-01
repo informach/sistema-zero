@@ -13,7 +13,7 @@ test('web hosts stamp one release into assets and navigation without affecting a
       windowsHide: true,
       encoding: 'utf8',
     }),
-  ) as { id: string; headers: { source: string; headers: { key: string; value: string }[] } }[]
+  ) as { id: string; headers: { source: string; headers: { key: string; value: string }[] }[] }[]
   expect(results).toHaveLength(3)
   for (const result of results) {
     expect(result.id).toBe(version)

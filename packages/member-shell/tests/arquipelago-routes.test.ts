@@ -975,3 +975,35 @@ describe('Python e Pro no Estúdio de desafio (C02b, 30/10/2026)', () => {
     expect(enviados[0]?.corpo.executionId).toMatch(/^arquipelago-[a-f0-9]{48}$/)
   })
 })
+
+test('ambiente Python da família confere a grade, limita o corpo e mantém o escopo do perfil', async () => {
+  const { routes, chamadas } = montar({ status: 200, body: { ambiente: 'teste' } })
+  const ctx = (perfil: string) => ({ params: Promise.resolve({ perfil }) })
+  const request = (id: string, body: string) =>
+    new Request(`http://local?id=${id}`, { method: 'POST', body })
+  const body = { revisao: 7, pedido: { ambiente: 'teste' } }
+  const response = await routes.arquipelagoMinijogosDaFamilia.POST(
+    request(IRMAO, JSON.stringify(body)),
+    ctx(PERFIL),
+  )
+  expect(response.status).toBe(200)
+  expect(response.headers.get('cache-control')).toBe('private, no-store')
+  expect(chamadas).toEqual([
+    {
+      caminho: `/arquipelago/familia/minijogos/${PERFIL}/${IRMAO}/ambiente`,
+      metodo: 'POST',
+      corpo: body,
+    },
+  ])
+  for (const [profile, id, content] of [
+    ['ffffffff-ffff-4fff-8fff-ffffffffffff', IRMAO, JSON.stringify(body)],
+    [PERFIL, '../outro', JSON.stringify(body)],
+    [PERFIL, IRMAO, '{invalido'],
+    [PERFIL, IRMAO, JSON.stringify('x'.repeat(2 * 1024 * 1024))],
+  ]) {
+    const r = await routes.arquipelagoMinijogosDaFamilia.POST(request(id!, content!), ctx(profile!))
+    expect(r.status).toBe(400)
+    expect(r.headers.get('cache-control')).toBe('private, no-store')
+  }
+  expect(chamadas).toHaveLength(1)
+})

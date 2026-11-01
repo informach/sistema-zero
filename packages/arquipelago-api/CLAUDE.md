@@ -1,5 +1,14 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Ambiente Python do minijogo familiar, 31/10/2026
+
+`POST /familia/minijogos/:perfil/:id/ambiente` exige a identidade do responsável pelo gateway,
+vínculo com o perfil, cópia aprovada Python e a mesma revisão do pedido. Reutiliza o
+autorizador de desafios com a identidade da criança e `somenteLeitura`. Não grava projeto,
+progresso nem recompensa. Público e publicação continuam conferidos pelo serviço de desafios.
+Implantar API e gateway antes do Kids que pede este ambiente. Testes causais em
+`tests/unit/minijogos-familia-ambiente.test.ts`, sem banco ou credenciais reais.
+
 ## Obra estendida (E04 e B14, 31/10/2026)
 
 O iglu do Pico, o andar de cima da casa e o terreno moldado não cabem no salvamento: moram num

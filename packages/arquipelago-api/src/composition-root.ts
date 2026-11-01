@@ -183,7 +183,11 @@ export function createApplication(env: Env): Application {
       politica,
       logger,
     }),
-    minijogos: new ServicoDosMinijogos(new DrizzleRepositorioDosMinijogos(connection.db), politica),
+    minijogos: new ServicoDosMinijogos(
+      new DrizzleRepositorioDosMinijogos(connection.db),
+      politica,
+      (jogador, id, pedido) => desafios.ambiente(jogador, id, pedido),
+    ),
     revisoes: new ServicoDasRevisoesHumanas({
       repo: repositorioDasRevisoes,
       minijogos: new DrizzleRepositorioDosMinijogos(connection.db),

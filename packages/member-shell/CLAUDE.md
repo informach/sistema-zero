@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Minijogo Python na área dos pais, 31/10/2026
+
+A prévia usa POST no mesmo BFF familiar da leitura, com o id do desafio na query. A grade
+atual do Auth confirma o perfil; a API reconfirma o vínculo e a revisão da cópia aprovada.
+A autorização do ambiente recebe o perfil da criança, público Kids e somente leitura.
+O player recebe `environmentUrl` só neste contexto. A sessão do responsável nunca usa a
+rota de ambiente da criança nem ganha acesso a verificação, edição ou terminal.
+
 ## Apresentação de aula compartilhada, 31/10/2026
 
 `components/lesson-ui` é a fonte de apresentação das aulas Kids e adultas. Os hosts fornecem

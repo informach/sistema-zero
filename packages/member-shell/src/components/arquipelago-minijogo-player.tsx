@@ -20,11 +20,14 @@ export function ArquipelagoMinijogoPlayer({
   onClose,
   userId,
   audience,
+  environmentUrl,
 }: {
   url: string
   onClose: () => void
   userId: string
   audience: 'kids' | 'adult'
+  /** The family preview uses its own authenticated, profile-scoped authorization route. */
+  environmentUrl?: string
 }) {
   const dialog = useRef<HTMLDialogElement>(null)
   const [dados, setDados] = useState<{
@@ -77,7 +80,8 @@ export function ArquipelagoMinijogoPlayer({
             signal,
             request: (pedido, sinal) =>
               apiSend(
-                `/api/arquipelago/desafios/${encodeURIComponent(desafioId)}/ambiente`,
+                environmentUrl ??
+                  `/api/arquipelago/desafios/${encodeURIComponent(desafioId)}/ambiente`,
                 'POST',
                 { revisao, pedido },
                 undefined,
@@ -85,7 +89,7 @@ export function ArquipelagoMinijogoPlayer({
               ),
           }),
       )
-  }, [desafioId, revisao, userId, audience])
+  }, [desafioId, revisao, userId, audience, environmentUrl])
   return (
     <dialog
       ref={dialog}

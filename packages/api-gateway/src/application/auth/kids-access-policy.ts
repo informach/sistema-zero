@@ -57,6 +57,10 @@ export function kidsMayAccess(
       /^\/arquipelago\/familia\/amigos\/(convite|aceitar|convite\/[0-9a-f-]+|[0-9a-f-]+)$/i.test(
         pathname,
       ) ||
+      (method === 'POST' &&
+        /^\/arquipelago\/familia\/minijogos\/[0-9a-f-]{36}\/[0-9a-f-]{36}\/ambiente$/i.test(
+          pathname,
+        )) ||
       (method === 'GET' &&
         /^\/arquipelago\/familia\/minijogos\/[0-9a-f-]+(?:\/[0-9a-f-]+)?$/i.test(pathname)) ||
       (method === 'GET' &&
