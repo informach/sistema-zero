@@ -2216,8 +2216,9 @@ input[type="password"]::-webkit-strong-password-auto-fill-button {
       left 0.3s ease-in-out,
       right 0.3s ease-in-out;
   }
-  .kids-shell-row:has(aside.kids-menu:not([aria-hidden="true"])) .sz-lesson-nav-immersive {
-    left: var(--kids-menu-width);
+  .kids-shell-row:has(:is(aside.kids-menu, aside.sz-community-menu):not([aria-hidden="true"]))
+    .sz-lesson-nav-immersive {
+    left: var(--sz-community-sidebar-width, var(--kids-menu-width));
   }
 }
 

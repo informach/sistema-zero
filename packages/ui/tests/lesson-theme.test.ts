@@ -4,6 +4,29 @@ import { resolve } from 'node:path'
 import postcss from 'postcss'
 import { createLessonStyles, gateStylesheet } from '../scripts/lesson-theme.mjs'
 
+test('a navegação adulta mantém sua própria paleta e componentes numa página de aula', () => {
+  const output = createLessonStyles(
+    ':root { --logo-zero-escuro-de: orange; --topo: navy } body { font-family: sans-serif } .sz-palco { color: white }',
+    ':root { --topo: pink } .kids-aula { color: black }',
+  )
+  expect(output).toContain(':where(.sz-community-chrome)')
+  expect(output).toContain(':where(body:not(:has(.sz-lesson-ui)), .sz-community-chrome) .sz-palco')
+  expect(output).toContain('--logo-zero-escuro-de: orange')
+  expect(output).toContain(':root:where(:has(.sz-lesson-ui)) { --topo: pink }')
+})
+
+test('a unidade adulta não altera literais, URLs ou animações globais', () => {
+  const source =
+    ':root { --sz-community-rem: 1.125rem; --radius: 1rem } .card { padding: 2rem; content: "1rem"; background: url("1rem.png") } @keyframes float { to { transform: translateY(1rem) } }'
+  const css = gateStylesheet(source, false, true)
+  expect(css).toContain('--sz-community-rem: 1.125rem')
+  expect(css).toContain('--radius: calc(1 * var(--sz-community-rem, 1rem))')
+  expect(css).toContain('padding: calc(2 * var(--sz-community-rem, 1rem))')
+  expect(css).toContain('content: "1rem"')
+  expect(css).toContain('url("1rem.png")')
+  expect(css).toContain('translateY(1rem)')
+})
+
 test('skins are mutually exclusive and their gate adds no selector specificity', () => {
   const input =
     ':root[data-sz-palette="pink"] { --ink: red } body { color: black } .card:is(.a,.b), button { padding: 1rem }'

@@ -8,8 +8,22 @@ const marker = '.sz-lesson-ui'
 const normalize = (value) => value.replaceAll('\r\n', '\n')
 
 /** Zero-specificity gates preserve the original cascade in each mutually exclusive skin. */
-export function gateStylesheet(source, creator = false) {
+export function gateStylesheet(source, creator = false, communityChrome = false) {
   const root = postcss.parse(normalize(source))
+  if (communityChrome && !creator) {
+    // Adult chrome keeps its 18px rhythm inside a lesson whose root uses 16px.
+    // Outside an island the fallback is exactly the original rem. Do not rewrite
+    // strings, URLs, the basis itself or global keyframes.
+    root.walkDecls((declaration) => {
+      if (declaration.prop === '--sz-community-rem' || /["']|url\(/i.test(declaration.value)) return
+      for (let parent = declaration.parent; parent; parent = parent.parent)
+        if (parent.type === 'atrule' && /keyframes$/i.test(parent.name)) return
+      declaration.value = declaration.value.replace(
+        /(?<![\w-])(-?\d*\.?\d+)rem\b/g,
+        (_match, amount) => `calc(${amount} * var(--sz-community-rem, 1rem))`,
+      )
+    })
+  }
   if (creator) {
     root.walkAtRules((rule) => {
       if (['source', 'custom-variant'].includes(rule.name)) rule.remove()
@@ -31,13 +45,23 @@ export function gateStylesheet(source, creator = false) {
       .comma(rule.selector)
       .map((selector) => {
         const documentRoot = selector.match(/^(:root|html|body)(?=$|[^a-zA-Z0-9_-])/)
-        if (documentRoot)
-          return selector.replace(documentRoot[0], `${documentRoot[0]}:where(${condition})`)
+        if (documentRoot) {
+          const gated = selector.replace(documentRoot[0], `${documentRoot[0]}:where(${condition})`)
+          if (!communityChrome || creator) return gated
+          // A navigation island keeps the canonical adult tokens even while the viewport
+          // uses the lesson skin. Root qualifiers still refer to the actual document root.
+          const qualifier = selector.slice(documentRoot[0].length)
+          if (qualifier.includes('::')) return gated
+          const island = qualifier
+            ? `${selector} :where(.sz-community-chrome)`
+            : ':where(.sz-community-chrome)'
+          return `${gated},\n${island}`
+        }
         // Universal rules also own the viewport (html) scrollbar, not just body descendants.
         // Keep the gate inside :where so the original selector specificity is unchanged.
         if (/^\*(?=$|[\s.#:[>+~])/.test(selector))
-          return `*:where(html${condition}, html${condition} *)${selector.slice(1)}`
-        return `:where(body${condition}) ${selector}`
+          return `*:where(html${condition}, html${condition} *${communityChrome && !creator ? ', .sz-community-chrome, .sz-community-chrome *' : ''})${selector.slice(1)}`
+        return `:where(body${condition}${communityChrome && !creator ? ', .sz-community-chrome' : ''}) ${selector}`
       })
       .join(',\n')
   })
@@ -63,7 +87,7 @@ export function createLessonStyles(community, creator) {
       throw Error(`Animações de aula divergentes: ${name}`)
   }
   const digest = createHash('sha256').update(inputs.join('\0')).digest('hex')
-  return `/* Gerado por packages/ui/scripts/lesson-theme.mjs. Não editar.\n * Fontes SHA-256: ${digest}\n */\n${gateStylesheet(inputs[0]).trimEnd()}\n${gateStylesheet(inputs[1], true).trimEnd()}\n`
+  return `/* Gerado por packages/ui/scripts/lesson-theme.mjs. Não editar.\n * Fontes SHA-256: ${digest}\n */\n${gateStylesheet(inputs[0], false, true).trimEnd()}\n${gateStylesheet(inputs[1], true).trimEnd()}\n`
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {

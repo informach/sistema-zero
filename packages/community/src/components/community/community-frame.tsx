@@ -9,10 +9,10 @@ import { type CSSProperties, type ReactNode, useState } from 'react'
 import type { SessionUserWithAvatar } from '@/lib/types'
 import {
   COMMUNITY_SIDEBAR_ID,
-  COMMUNITY_SIDEBAR_WIDTH,
   CommunitySidebar,
   CommunityTabs,
   CommunityTopBar,
+  communitySidebarWidth,
 } from './community-nav'
 
 /** A sala da oficina ao vivo mantém a barra compacta também no computador. */
@@ -53,7 +53,7 @@ export function CommunityFrame({
   // O menu da esquerda com a alça de esconder e mostrar (27/10/2026, como o Kids): nas telas de
   // foco (o Meu espaço 3D) ele nasce recolhido a cada entrada e a alça presa à borda o devolve.
   // A escolha vale só para a rota em que foi feita; nas outras páginas o menu fica aberto.
-  const menuWidth = lesson ? 'var(--kids-menu-width, 16.75rem)' : COMMUNITY_SIDEBAR_WIDTH
+  const menuWidth = communitySidebarWidth(lesson)
   const focus = app && (lesson || isFocusOnlyPath(pathname))
   const [menuOpenOn, setMenuOpenOn] = useState<string | null>(null)
   const menuCollapsed = focus && menuOpenOn !== pathname
@@ -117,11 +117,7 @@ export function CommunityFrame({
           label={menuCollapsed ? 'Mostrar menu' : 'Esconder menu'}
           controlsId={COMMUNITY_SIDEBAR_ID}
           onToggle={() => setMenuOpenOn(menuCollapsed ? pathname : null)}
-          className={
-            lesson
-              ? 'hidden border-border bg-card text-foreground md:flex'
-              : 'hidden border-(--linha-escura) bg-(--topo) text-(--texto-claro) lg:flex'
-          }
+          className={`sz-community-chrome hidden border-(--linha-escura) bg-(--topo) text-(--texto-claro) ${lesson ? 'md:flex' : 'lg:flex'}`}
         />
       ) : null}
     </div>

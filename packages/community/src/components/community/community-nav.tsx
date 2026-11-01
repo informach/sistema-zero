@@ -30,6 +30,8 @@ import { UserMenu } from './user-menu'
 /** O id do menu lateral (a alça aponta para ele) e a largura dele, que a alça acompanha. */
 export const COMMUNITY_SIDEBAR_ID = 'community-sidebar'
 export const COMMUNITY_SIDEBAR_WIDTH = '14.4rem'
+export const communitySidebarWidth = (lesson: boolean) =>
+  lesson ? 'calc(14.4 * 1.125rem)' : COMMUNITY_SIDEBAR_WIDTH
 
 function unreadLabel(count: number) {
   return count > 0 ? `Recados, ${count} ${count === 1 ? 'novo' : 'novos'}` : 'Recados'
@@ -40,7 +42,7 @@ function UnreadBadge({ count }: { count: number }) {
   return (
     <span
       aria-hidden
-      className="ml-auto inline-grid h-[1.4rem] min-w-[1.4rem] place-items-center rounded-full bg-(--cta) px-1.5 font-bold text-(--cta-tinta) text-[0.85rem]"
+      className="ml-auto inline-grid h-[calc(1.4*var(--sz-community-rem,1rem))] min-w-[calc(1.4*var(--sz-community-rem,1rem))] place-items-center rounded-full bg-(--cta) px-1.5 font-bold text-(--cta-tinta) text-[calc(0.85*var(--sz-community-rem,1rem))]"
     >
       {count > 9 ? '9+' : count}
     </span>
@@ -80,12 +82,13 @@ export function CommunitySidebar({
       aria-hidden={collapsed || undefined}
       className={cn(
         'sticky top-0 z-30 hidden h-dvh shrink-0 transition-[width] duration-300 ease-in-out motion-reduce:transition-none',
-        lesson ? 'kids-menu md:block' : 'lg:block',
+        'sz-community-chrome sz-community-menu',
+        lesson ? 'md:block' : 'lg:block',
         collapsed ? 'w-0' : 'w-(--sz-menu-width)',
       )}
       style={
         {
-          '--sz-menu-width': lesson ? 'var(--kids-menu-width, 16.75rem)' : COMMUNITY_SIDEBAR_WIDTH,
+          '--sz-menu-width': communitySidebarWidth(lesson),
         } as CSSProperties
       }
     >
@@ -99,13 +102,13 @@ export function CommunitySidebar({
           href="/"
           prefetch={false}
           aria-label="Início"
-          className="mb-4 flex items-center rounded-[0.6rem] px-3 py-1"
+          className="mb-4 flex items-center rounded-[calc(0.6*var(--sz-community-rem,1rem))] px-3 py-1"
         >
           <BrandLogo
             fundo="escuro"
             instancia="menu"
             label="Comunidade Sistema Zero"
-            className="block h-auto w-[8rem]"
+            className="block h-auto w-[calc(8*var(--sz-community-rem,1rem))]"
           />
         </Link>
         {/* Só a lista rola numa janela baixa: o cartão da pessoa fica sempre à vista no pé. */}
@@ -136,7 +139,7 @@ export function CommunitySidebar({
 
 function sidebarItemClass(active: boolean) {
   return cn(
-    'flex min-h-[2.8rem] items-center gap-3.5 rounded-[0.7rem] px-3.5 font-bold text-[0.95rem] no-underline transition-colors',
+    'flex min-h-[calc(2.8*var(--sz-community-rem,1rem))] items-center gap-3.5 rounded-[calc(0.7*var(--sz-community-rem,1rem))] px-3.5 font-bold text-[calc(0.95*var(--sz-community-rem,1rem))] no-underline transition-colors',
     active
       ? 'bg-(--carta) text-(--texto-claro) shadow-[inset_4px_0_0_var(--cta)]'
       : 'text-(--texto-claro-2) hover:bg-(--carta) hover:text-(--texto-claro)',
@@ -229,12 +232,12 @@ export function CommunityTopBar({
         !compact && 'lg:hidden',
       )}
     >
-      <div className="flex min-h-[3.4rem] items-center justify-between gap-3 px-4">
+      <div className="flex min-h-[calc(3.4*var(--sz-community-rem,1rem))] items-center justify-between gap-3 px-4">
         <Link href="/" prefetch={false} aria-label="Início" className="flex shrink-0 items-center">
           <BrandLogo
             fundo="escuro"
             label="Comunidade Sistema Zero"
-            className="block h-auto w-[6.4rem]"
+            className="block h-auto w-[calc(6.4*var(--sz-community-rem,1rem))]"
           />
         </Link>
         <div className="flex shrink-0 items-center gap-2.5">
@@ -244,7 +247,7 @@ export function CommunityTopBar({
             aria-current={recadosActive ? 'page' : undefined}
             aria-label={unreadLabel(unread)}
             className={cn(
-              'relative inline-flex h-[2.4rem] items-center gap-2 rounded-[0.6rem] bg-(--carta) px-3 font-bold text-(--texto-claro) text-[0.9rem]',
+              'relative inline-flex h-[calc(2.4*var(--sz-community-rem,1rem))] items-center gap-2 rounded-[calc(0.6*var(--sz-community-rem,1rem))] bg-(--carta) px-3 font-bold text-(--texto-claro) text-[calc(0.9*var(--sz-community-rem,1rem))]',
               recadosActive && 'shadow-[inset_0_0_0_2px_var(--cta)]',
             )}
           >
@@ -253,7 +256,7 @@ export function CommunityTopBar({
             {unread > 0 ? (
               <span
                 aria-hidden
-                className="inline-grid h-[1.3rem] min-w-[1.3rem] place-items-center rounded-full bg-(--cta) px-1 font-bold text-(--cta-tinta) text-[0.85rem]"
+                className="inline-grid h-[calc(1.3*var(--sz-community-rem,1rem))] min-w-[calc(1.3*var(--sz-community-rem,1rem))] place-items-center rounded-full bg-(--cta) px-1 font-bold text-(--cta-tinta) text-[calc(0.85*var(--sz-community-rem,1rem))]"
               >
                 {unread > 9 ? '9+' : unread}
               </span>
@@ -367,8 +370,8 @@ export function CommunityTabs({
   const tabClass = (active: boolean) =>
     cn(
       lesson
-        ? 'flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5 font-bold text-[0.68rem] tracking-tight transition-colors'
-        : 'flex min-h-[var(--sz-community-tab-min-height,3.2rem)] min-w-0 flex-col items-center justify-center gap-0.5 pt-1.5 pb-2 font-bold text-[0.85rem] leading-tight no-underline',
+        ? 'flex min-h-14 min-w-0 flex-1 flex-col items-center justify-center gap-1 py-1.5 font-bold text-[calc(0.68*var(--sz-community-rem,1rem))] tracking-tight transition-colors'
+        : 'flex min-h-[var(--sz-community-tab-min-height,calc(3.2*var(--sz-community-rem,1rem)))] min-w-0 flex-col items-center justify-center gap-0.5 pt-1.5 pb-2 font-bold text-[calc(0.85*var(--sz-community-rem,1rem))] leading-tight no-underline',
       active ? 'text-(--cta)' : 'text-(--legenda-clara) hover:text-(--texto-claro)',
     )
 
