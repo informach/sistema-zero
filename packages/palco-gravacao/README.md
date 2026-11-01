@@ -12,7 +12,8 @@ no staging, só para a equipe. Nada do que acontece aqui é salvo.
 - **A aula:** no início, escolha o curso (o catálogo do Kids, `/members/catalog?audience=kids`)
   e depois a aula daquele curso. Também dá para colar o endereço de uma aula do Kids
   (`…/cursos/<curso>/aulas/<aula>`), abrir a lista de aulas de um curso em `/aulas/<curso>` ou
-  abrir `/aulas/<curso>/<aula>` direto. A aula é lida pelo gateway com o token da equipe, que vê
+  abrir `/aulas/<curso>/<aula>` direto (`?parte=N` abre direto na parte N, que é como cada plano
+  do EdiAula começa a sua). A aula é lida pelo gateway com o token da equipe, que vê
   tudo aberto, sem trava e sem progresso. Cada abertura é uma tomada nova (`?tomada=`): o Estúdio
   e as atividades começam do zero. A página é a do Kids: o mesmo `<main>` com a pele `kids-aula`,
   a largura toda e a barra de cima em 860 px, com o botão de voltar para a lista de aulas.
@@ -44,6 +45,16 @@ estão em `src/lib/verbos.ts` e na seção 9 de `docs/aulas-interativas-tecnico/
 `ocupado()` responde enquanto o Estúdio ou o livro carregam, o jogo pronto prepara ou o projeto
 está sendo conferido.
 
+- **A mão nunca fica parada em cima de um bloco:** parada em cima, o Blockly mostra a dica do bloco
+  por cima da aula. Apontar um bloco, o encaixe ou o lugar abaixo dele deixa a mão no fundo da
+  área, ao lado (`perto`, com o apontar `exato`), e encaixar e trocar terminam afastando a mão.
+- **Decidir depois do clique:** os seletores do Estúdio (sprite, nome, som) herdam do campo de
+  texto do Blockly e abrem uma lista. O `trocar` clica e pede `continuar` com `escolher "<valor>"`,
+  que escolhe na lista aberta ou digita na caixa. A prévia que ainda monta depois de expandir é
+  esperada do mesmo jeito.
+- **Blocos-sombra:** o número de um bloco ("50", o "1" de "Somar 1") fica num bloco-sombra
+  encaixado nele, que conta como parte dele.
+
 ## Rodar
 
 ```sh
@@ -56,6 +67,17 @@ Variáveis: `GATEWAY_URL`, `JWT_JWKS_URL` (ou `JWT_HS256_SECRET` em desenvolvime
 `JWT_ISSUER`, `JWT_AUDIENCE`, `MEMBER_SHELL_HMAC_SECRET` e, para o livro, `R2_ACCOUNT_ID`,
 `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` e `R2_PRIVATE_BUCKET`. No staging, os valores são os
 do `community-kids`.
+
+**No computador, com o staging:** depois do `build`, suba com as variáveis do serviço do staging,
+trocando só os dois endereços internos pelo gateway público (a rede interna do Railway não chega
+ao computador):
+
+```sh
+railway run --service palco-gravacao --environment staging -- env   GATEWAY_URL=https://<gateway do staging>   JWT_JWKS_URL=https://<gateway do staging>/auth/.well-known/jwks.json   NODE_ENV=production npx next start -p 3010
+```
+
+O passo a passo de uma gravação está no README do EdiAula ("Gravar uma aula do Sistema Zero,
+passo a passo").
 
 ## Deploy
 
@@ -91,8 +113,7 @@ para validar o palco.
 - O jogo pronto usa `Math.random` como no Kids: o que é sorteado pode mudar de uma tomada para
   outra.
 - Os gestos do Estúdio acham blocos e campos pelo texto que aparece neles, e o jogo da
-  pré-visualização pelo ponto do jogo (o jogo cabe inteiro, centrado). Uma lista de menu longa,
-  que precisa rolar para mostrar a opção, ainda não é rolada pelo robô.
+  pré-visualização pelo ponto do jogo (o jogo cabe inteiro, centrado).
 - Estúdio em Python não funciona no palco: a conferência e o ambiente do Python pedem o vínculo
   do projeto na conta, que o palco não cria. As aulas com blocos e JavaScript funcionam.
 - Quiz respondido no palco passa sempre: as respostas certas só o members conhece, e conferir
