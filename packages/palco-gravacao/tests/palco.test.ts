@@ -108,7 +108,10 @@ describe('verbos do palco', () => {
       },
     })
     expect(agir('apontar prévia 75 26', jogos, pagina())[0]).toMatchObject({ fazer: 'apontar' })
-    expect(() => agir('tocar prévia', jogos, pagina({ previa: () => null }))).toThrow(/Expanda/)
+    // Sem a prévia ainda (o Estúdio acabou de expandir): espera ela aparecer e pergunta de novo.
+    expect(agir('tocar prévia', jogos, pagina({ previa: () => null })).map((p) => p.fazer)).toEqual(
+      ['esperar', 'continuar'],
+    )
   })
 
   test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', () => {

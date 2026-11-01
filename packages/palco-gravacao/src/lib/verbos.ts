@@ -430,6 +430,18 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'apontar', alvo: { seletor: '.sz-scene-console-fala > div > :first-child' } }]
   const previa = /^(tocar|apontar) pr[eé]via ?(.*)$/i.exec(texto)
   if (previa?.[1]) {
+    // Logo depois de expandir, o Estúdio ainda monta a pré-visualização: o robô espera ela
+    // aparecer e pergunta de novo.
+    if (pagina && !pagina.previa())
+      return [
+        {
+          fazer: 'esperar',
+          alvo: { seletor: 'iframe[title="Pré-visualização"]' },
+          estado: 'aparecer',
+          maximo: 30,
+        },
+        { fazer: 'continuar', acao: texto },
+      ]
     const alvo = naPrevia(pagina, jogos, (previa[2] ?? '').trim())
     return [{ fazer: fold(previa[1]) === 'tocar' ? 'clicar' : 'apontar', alvo }]
   }
