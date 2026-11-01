@@ -212,11 +212,13 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       // Um ponto do fundo, sem bloco em cima, de onde arrastar.
       const fundo = (x: number, y: number) =>
         doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
-      // Leva o bloco para perto do topo, à direita de onde a paleta abre por cima da área (é
-      // nele que o próximo bloco vai encaixar), até onde o arrasto alcança.
-      const dx =
-        view.left + Math.max(0, Math.min(view.width * 0.45, view.width - b.width - 16)) - b.left
-      const dy = view.top + view.height * 0.3 - b.top
+      // Leva o bloco para o centro da área de código, onde a criança o vê melhor, até onde o
+      // arrasto alcança (um bloco maior que a área fica com o topo perto do alto). A paleta que
+      // abrir por cima dele fecha quando o próximo bloco sai dela.
+      const centro = (inicio: number, tamanho: number, area: number) =>
+        tamanho >= area * 0.8 ? area * 0.1 - inicio : area / 2 - (inicio + tamanho / 2)
+      const dx = centro(b.left - view.left, b.width, view.width)
+      const dy = centro(b.top - view.top, b.height, view.height)
       // Começa do lado de onde o bloco vem: o arrasto inteiro cabe na área à vista.
       const xs = dx < 0 ? [0.9, 0.75, 0.5, 0.25, 0.1] : [0.1, 0.25, 0.5, 0.75, 0.9]
       const ys = dy < 0 ? [0.85, 0.7, 0.5, 0.3, 0.15] : [0.15, 0.3, 0.5, 0.7, 0.85]
@@ -247,7 +249,8 @@ export function paginaDe(doc: Document): PaginaDoPalco {
           r.top + Math.min(r.height / 2, 18),
         )
       // Na área, apontado no texto dele: o meio da caixa de um bloco com outros dentro cai fora
-      // da barra dele, no fundo da área.
+      // da barra dele, no fundo da área. O texto é o alvo, e o robô do EdiAula deixa a mão logo
+      // abaixo dele, sem cobrir o que está escrito.
       // O primeiro rótulo fixo, o mais acima e à esquerda (um número de sombra vem antes no DOM).
       const rotulo = textosDe(block)
         .filter((t) => !t.closest('.blocklyEditableField'))
@@ -255,7 +258,7 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         .sort((a, b) => a.r.top - b.r.top || a.r.left - b.r.left)[0]?.t
       if (!rotulo) return pontoEm(block, r.left + 12, r.top + Math.min(r.height / 2, 18))
       const t = rotulo.getBoundingClientRect()
-      return pontoEm(block, t.left + t.width / 2, t.top + t.height / 2)
+      return pontoEm(rotulo, t.left + t.width / 2, t.top + t.height / 2)
     },
 
     abaixo(texto) {
