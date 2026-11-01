@@ -29,6 +29,17 @@ export function versaoCompativel(versao: unknown): boolean {
   return typeof versao === 'number' && VERSOES_COMPATIVEIS_DA_PLATAFORMA.includes(versao)
 }
 
+/**
+ * A negociação (A35, lacunas de 01/11/2026): o lado novo entrega ao antigo a porta da versão
+ * antiga. Com as duas versões aceitas por este lado, vale a menor delas: um host v2 monta a
+ * `Plataforma` v1 para um jogo v1, e um jogo v2 lê a v1 de um host v1. `null` quando a versão
+ * do outro lado não é aceita (ele está duas versões atrás, ou na frente).
+ */
+export function negociarVersao(outroLado: unknown): number | null {
+  if (!versaoCompativel(outroLado)) return null
+  return Math.min(VERSAO_CONTRATO_PLATAFORMA, outroLado as number)
+}
+
 export type PublicoJogo = 'kids' | 'adulto'
 
 export interface PerfilDoJogo {
@@ -148,7 +159,8 @@ export const CriacaoQueCabeSchema = z.strictObject({
 export type CriacaoQueCabe = z.infer<typeof CriacaoQueCabeSchema>
 
 export interface Plataforma {
-  versaoContrato: typeof VERSAO_CONTRATO_PLATAFORMA
+  /** A versão negociada (`negociarVersao`): a atual ou a anterior, a menor dos dois lados. */
+  versaoContrato: number
   publico: PublicoJogo
   perfil: PerfilDoJogo
   lerJornada(): Promise<JornadaDoJogo>

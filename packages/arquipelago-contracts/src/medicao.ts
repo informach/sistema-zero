@@ -28,6 +28,22 @@ export const NumeroDaMedicaoSchema = z.discriminatedUnion('situacao', [
 ])
 export type NumeroDaMedicao = z.infer<typeof NumeroDaMedicaoSchema>
 
+/**
+ * O que pode faltar na medição. `volta-adulto` fica para o serviço anterior: desde as lacunas
+ * (01/11/2026) os dias de jogo do adulto são guardados. A satisfação dos pais (Kids) e a
+ * permanência na assinatura não têm fonte no jogo e aparecem sempre como "sem fonte".
+ */
+export const FONTES_QUE_FALTAM = [
+  'volta-adulto',
+  'compras',
+  'minijogos',
+  'curso-24h',
+  'conclusoes-curso',
+  'satisfacao-dos-pais',
+  'permanencia',
+] as const
+export type FonteQueFalta = (typeof FONTES_QUE_FALTAM)[number]
+
 export const RelatorioDaMedicaoSchema = z.strictObject({
   periodo: FiltroDaMedicaoSchema,
   calculadoEm: z.iso.datetime(),
@@ -95,8 +111,38 @@ export const RelatorioDaMedicaoSchema = z.strictObject({
       moedasNasCompras: NumeroDaMedicaoSchema.optional(),
     })
     .optional(),
-  semFonte: z.array(
-    z.enum(['volta-adulto', 'compras', 'minijogos', 'curso-24h', 'conclusoes-curso']),
-  ),
+  semFonte: z.array(z.enum(FONTES_QUE_FALTAM)),
 })
 export type RelatorioDaMedicao = z.infer<typeof RelatorioDaMedicaoSchema>
+
+/** Os objetos do relatório aceitam campo a mais; o resto da régua continua a mesma. */
+function tolerante(schema: z.ZodType): z.ZodType {
+  if (schema instanceof z.ZodObject)
+    return z.looseObject(
+      Object.fromEntries(
+        Object.entries(schema.shape as Record<string, z.ZodType>).map(([k, v]) => [
+          k,
+          tolerante(v),
+        ]),
+      ),
+    )
+  if (schema instanceof z.ZodOptional) return tolerante(schema.unwrap() as z.ZodType).optional()
+  if (schema instanceof z.ZodArray) {
+    const array = schema as z.ZodArray<z.ZodType>
+    const max = array._zod.bag.maximum
+    const lista = z.array(tolerante(array.element))
+    return typeof max === 'number' ? lista.max(max) : lista
+  }
+  return schema
+}
+export type RelatorioDaMedicaoLido = Omit<RelatorioDaMedicao, 'semFonte'> & { semFonte: string[] }
+/**
+ * O que o Admin lê (lacunas, 01/11/2026): tolerante a campo novo e a uma fonte que falta ainda
+ * desconhecida, para o serviço poder subir antes do Admin (o painel mostra um texto padrão). Os
+ * números continuam na régua estrita: um formato de número novo é mudança de contrato.
+ */
+export const RelatorioDaMedicaoLidoSchema = (
+  tolerante(RelatorioDaMedicaoSchema) as z.ZodObject
+).extend({
+  semFonte: z.array(z.string().min(1).max(80)).max(40),
+}) as unknown as z.ZodType<RelatorioDaMedicaoLido>

@@ -86,15 +86,27 @@ test('minijogos deixam de ser sem fonte e grupos pequenos continuam protegidos',
   expect(r.semFonte).not.toContain('minijogos')
   expect(JSON.stringify(r)).not.toContain('jogadorId')
 })
-test('adulto não herda o histórico de tempo do Kids', () => {
-  const r = montarMedicao(
+test('o adulto mede a volta pelos próprios dias de jogo; permanência e satisfação ficam sem fonte', () => {
+  // As coortes do adulto vêm de `dias_de_jogo` (o repositório não lê o tempo do Kids para ele).
+  const adulto = montarMedicao(
     { de: '2026-10-01', ate: '2026-10-28', publico: 'adulto' },
     dados,
     '2026-10-28',
     new Date('2026-10-28T12:00:00Z'),
   )
-  expect(r.volta).toEqual({ situacao: 'sem-fonte', coortes: [] })
-  expect(r.semFonte).toContain('volta-adulto')
+  expect(adulto.volta.situacao).toBe('disponivel')
+  expect(adulto.volta.coortes).toHaveLength(dados.coortes.length)
+  expect(adulto.semFonte).not.toContain('volta-adulto')
+  expect(adulto.semFonte).toContain('permanencia')
+  expect(adulto.semFonte).not.toContain('satisfacao-dos-pais')
+  const kids = montarMedicao(
+    { de: '2026-10-01', ate: '2026-10-28', publico: 'kids' },
+    dados,
+    '2026-10-28',
+    new Date('2026-10-28T12:00:00Z'),
+  )
+  expect(kids.semFonte).toContain('satisfacao-dos-pais')
+  expect(kids.semFonte).toContain('permanencia')
 })
 test('data futura é recusada antes do banco, pelo dia de São Paulo', async () => {
   let chamadas = 0

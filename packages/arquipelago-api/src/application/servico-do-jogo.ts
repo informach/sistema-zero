@@ -61,6 +61,7 @@ export class ServicoDoJogo {
 
   async lerSalvamento(jogador: Jogador): Promise<SalvamentoGuardado> {
     this.exigirLiberado(jogador)
+    await this.marcarDia(jogador)
     const linha = await this.repo.lerSalvamento(jogador.id)
     return linha ? paraGuardado(linha) : NADA_GUARDADO
   }
@@ -80,8 +81,21 @@ export class ServicoDoJogo {
       agora: this.agora(),
       contaId: jogador.publico === 'kids' ? jogador.contaId : null,
     })
-    if (r.ok) return { ok: true, guardado: paraGuardado(r.guardado) }
+    if (r.ok) {
+      await this.marcarDia(jogador)
+      return { ok: true, guardado: paraGuardado(r.guardado) }
+    }
     return { ok: false, atual: r.atual ? paraGuardado(r.atual) : NADA_GUARDADO }
+  }
+
+  /**
+   * O dia de jogo do adulto (lacunas, 01/11/2026): abrir ou gravar o jogo marca o dia. O Kids já
+   * tem o tempo do dia; o suporte só olha.
+   */
+  private async marcarDia(jogador: Jogador) {
+    if (jogador.publico !== 'adulto' || jogador.somenteLeitura) return
+    const agora = this.agora()
+    await this.repo.marcarDiaDeJogo?.(jogador.id, jogador.publico, diaDeSaoPaulo(agora), agora)
   }
 
   async registrarTempo(

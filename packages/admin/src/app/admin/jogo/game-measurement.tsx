@@ -3,9 +3,10 @@
 import {
   diaDeSaoPaulo,
   FiltroDaMedicaoSchema,
+  type FonteQueFalta,
   type NumeroDaMedicao,
-  type RelatorioDaMedicao,
-  RelatorioDaMedicaoSchema,
+  type RelatorioDaMedicaoLido,
+  RelatorioDaMedicaoLidoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { Button } from '@sistemazero/ui/button'
 import { Input } from '@sistemazero/ui/input'
@@ -13,9 +14,13 @@ import { Select } from '@sistemazero/ui/select'
 import { useEffect, useState } from 'react'
 import { gameRequest } from './game-request'
 
-const semFonte: Record<RelatorioDaMedicao['semFonte'][number], string> = {
+const semFonte: Record<FonteQueFalta, string> = {
   'volta-adulto':
     'Volta dos adultos: o histórico de dias de jogo ainda não é registrado para esta comunidade.',
+  'satisfacao-dos-pais':
+    'Satisfação dos pais: o jogo não pergunta aos pais; falta uma fonte (pesquisa ou avaliação na área dos pais).',
+  permanencia:
+    'Permanência na assinatura: a renovação fica nos pagamentos, que o serviço do jogo não lê.',
   compras:
     'Compras na galeria: a leitura das compras no Members não respondeu agora (ou o serviço ainda não mede como se aprende).',
   minijogos:
@@ -24,6 +29,16 @@ const semFonte: Record<RelatorioDaMedicao['semFonte'][number], string> = {
     'Volta ao curso em 24 horas: a leitura das aulas concluídas no Members não respondeu agora, ou o período pediria leituras demais.',
   'conclusoes-curso':
     'Conclusões antes e depois de jogar: falta uma fonte integrada com as datas de conclusão e de entrada no jogo.',
+}
+/**
+ * O texto de uma fonte que falta. Uma fonte nova, que este Admin ainda não conhece (o serviço subiu
+ * antes), aparece com o nome dela e um texto padrão em vez de quebrar o painel (lacunas, 01/11/2026).
+ */
+export function textoDaFonteQueFalta(codigo: string): string {
+  return (
+    semFonte[codigo as FonteQueFalta] ??
+    `${codigo}: o serviço avisa que esta medida ainda não tem fonte. Atualize o Admin para ver a explicação.`
+  )
 }
 export function measurementNumber(n: NumeroDaMedicao): string {
   return n.situacao === 'disponivel'
@@ -45,7 +60,7 @@ function media(total: NumeroDaMedicao, vezes: NumeroDaMedicao): string | null {
  * Como se aprende no jogo (§6.28, A26): tentativas e dicas até concluir, acerto na primeira,
  * rotinas dos Lumis que funcionam, reenvios de minijogo e compras na galeria.
  */
-function Aprendizagem({ a }: { a: NonNullable<RelatorioDaMedicao['aprendizagem']> }) {
+function Aprendizagem({ a }: { a: NonNullable<RelatorioDaMedicaoLido['aprendizagem']> }) {
   const tentativas = media(a.tentativas, a.conclusoesMedidas)
   const dicas = media(a.dicas, a.conclusoesMedidas)
   const linhas: [string, NumeroDaMedicao, string | null][] = [
@@ -99,7 +114,7 @@ export function GameMeasurement({
   )
   const [ate, setAte] = useState(hoje)
   const [aplicado, setAplicado] = useState({ de, ate })
-  const [resultado, setResultado] = useState<RelatorioDaMedicao | null>(null)
+  const [resultado, setResultado] = useState<RelatorioDaMedicaoLido | null>(null)
   const [erro, setErro] = useState('')
   const [carregando, setCarregando] = useState(true)
   useEffect(() => {
@@ -111,7 +126,7 @@ export function GameMeasurement({
     void gameRequest(`medicao?${query}`, 'GET', undefined, controller.signal)
       .then((raw) => {
         if (controller.signal.aborted) return
-        const report = RelatorioDaMedicaoSchema.parse(raw)
+        const report = RelatorioDaMedicaoLidoSchema.parse(raw)
         if (
           report.periodo.publico !== publico ||
           report.periodo.de !== aplicado.de ||
@@ -396,7 +411,7 @@ export function GameMeasurement({
             <h3 className="text-sm font-semibold">O que estes dados ainda não mostram</h3>
             <ul className="list-disc space-y-2 pl-5 text-sm text-muted-foreground">
               {report.semFonte.map((codigo) => (
-                <li key={codigo}>{semFonte[codigo]}</li>
+                <li key={codigo}>{textoDaFonteQueFalta(codigo)}</li>
               ))}
             </ul>
           </aside>

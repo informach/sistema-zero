@@ -38,6 +38,11 @@ export interface RepositorioDoJogo {
     eventoId?: string,
   ): Promise<number>
   lerTempo(jogadorId: string, dia: string): Promise<number>
+  /**
+   * O dia de jogo do adulto (lacunas, 01/11/2026): guarda o dia (São Paulo) com a primeira e a
+   * última hora em que a pessoa abriu ou gravou o jogo. Opcional para os repositórios de teste.
+   */
+  marcarDiaDeJogo?(jogadorId: string, publico: PublicoJogo, dia: string, agora: Date): Promise<void>
   lerLimite(contaId: string): Promise<number | null>
   gravarLimite(contaId: string, minutos: number, agora: Date): Promise<number>
 }

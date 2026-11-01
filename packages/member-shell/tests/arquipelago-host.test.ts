@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import {
+  VERSAO_CONTRATO_PLATAFORMA,
+  VERSOES_COMPATIVEIS_DA_PLATAFORMA,
+} from '@sistemazero/arquipelago-contracts'
+import {
   caminhoDoJogo,
   criarPlataformaDoArquipelago,
   lerFerramentasMolda,
@@ -383,4 +387,17 @@ test('fotos no Clube: só o Kids monta; resposta fora do contrato vira fora-do-a
   })
   expect(await clube.situacao()).toBe('fora-do-ar')
   expect(await clube.mandarFoto(new Blob([]))).toBe('falhou')
+})
+
+test('A35: a porta sai na versão negociada com o jogo; sem versão, a atual', () => {
+  expect(plataforma().versaoContrato).toBe(VERSAO_CONTRATO_PLATAFORMA)
+  for (const versao of VERSOES_COMPATIVEIS_DA_PLATAFORMA)
+    expect(
+      criarPlataformaDoArquipelago({
+        versao,
+        publico: 'kids',
+        perfil: { id: 'p1', primeiroNome: 'Lia' },
+        voltarPara: '/',
+      }).versaoContrato,
+    ).toBe(versao)
 })

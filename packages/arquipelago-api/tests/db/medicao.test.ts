@@ -4,6 +4,7 @@ import {
   createDbConnection,
   type DbConnection,
 } from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleRepositorioDoJogo } from '../../src/infrastructure/persistence/drizzle/repositorio'
 import { DrizzleRepositorioDaMedicao } from '../../src/infrastructure/persistence/drizzle/repositorio-medicao'
 import { migrarBancoDeTeste } from '../fakes/banco-migrado'
 import {
@@ -106,6 +107,49 @@ describe.skipIf(!url)('medição no Postgres local e na rota real', () => {
     expect(text).not.toContain('12345678-')
     expect(text).not.toContain('jogador')
     expect(text).not.toContain('ficticio')
+  })
+  test('adulto: os dias de jogo dão D1, D7 e os fins de dia; o tempo do Kids não entra (lacunas)', async () => {
+    const jogo = new DrizzleRepositorioDoJogo(db.db)
+    const em = (dia: string, hora: string) => new Date(`${dia}T${hora}:00Z`)
+    for (let i = 1; i <= 10; i++) {
+      const id = idMedicao(200 + i)
+      const dias = ['2026-10-01', ...(i <= 5 ? ['2026-10-02', '2026-10-07'] : [])]
+      for (const dia of dias) {
+        await jogo.marcarDiaDeJogo(id, 'adulto', dia, em(dia, '13:00'))
+        // Gravar de novo no mesmo dia só empurra a última hora; uma hora velha não volta.
+        await jogo.marcarDiaDeJogo(id, 'adulto', dia, em(dia, '18:00'))
+        await jogo.marcarDiaDeJogo(id, 'adulto', dia, em(dia, '14:00'))
+      }
+    }
+    try {
+      const repo = new DrizzleRepositorioDaMedicao(db.db)
+      const adulto = await repo.agregar(
+        { de: '2026-10-01', ate: '2026-10-28', publico: 'adulto' },
+        '2026-10-28',
+      )
+      expect(adulto.coortes).toEqual([{ dia: '2026-10-01', pessoas: 10, seguinte: 5, dia7: 5 }])
+      const fins = await repo.finsDosDiasDeJogo(
+        new Date('2026-10-01T00:00:00Z'),
+        new Date('2026-10-02T00:00:00Z'),
+      )
+      expect(fins.size).toBe(10)
+      expect(fins.get(idMedicao(201))).toEqual([em('2026-10-01', '18:00')])
+      // O Kids continua no tempo do dia, sem os dias de jogo do adulto.
+      const kids = await repo.agregar(
+        { de: '2026-10-01', ate: '2026-10-28', publico: 'kids' },
+        '2026-10-28',
+      )
+      expect(kids.coortes[0]).toEqual({ dia: '2026-10-01', pessoas: 10, seguinte: 5, dia7: 5 })
+      const response = await chamar('de=2026-10-01&ate=2026-10-28&publico=adulto')
+      expect(response.status).toBe(200)
+      const report = RelatorioDaMedicaoSchema.parse(await response.json())
+      expect(report.volta.situacao).toBe('disponivel')
+      expect(report.volta.coortes[0]?.dia1).toEqual({ situacao: 'disponivel', valor: 10 })
+      expect(report.semFonte).not.toContain('volta-adulto')
+      expect(report.semFonte).toContain('permanencia')
+    } finally {
+      await db.sql`TRUNCATE arquipelago.dias_de_jogo`
+    }
   })
   test('gateway, equipe, perfil, estado ativo e parâmetros são conferidos', async () => {
     expect((await chamar(undefined, { ...headers, 'x-internal-token': 'errado' })).status).toBe(401)
