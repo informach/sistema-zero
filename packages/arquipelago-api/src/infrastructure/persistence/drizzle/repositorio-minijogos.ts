@@ -75,11 +75,11 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
     if (!linha) return null
     const v = linha.minijogo
     const projeto: unknown = JSON.parse(v.projeto)
-    const python =
+    const precisaDoAmbiente =
       projeto !== null &&
       typeof projeto === 'object' &&
-      'programmingLanguage' in projeto &&
-      projeto.programmingLanguage === 'python'
+      (('programmingLanguage' in projeto && projeto.programmingLanguage === 'python') ||
+        ('kind' in projeto && projeto.kind === 'pro'))
     return MinijogoAbertoSchema.parse({
       desafioId: v.desafioId,
       titulo: v.titulo,
@@ -87,8 +87,8 @@ export class DrizzleRepositorioDosMinijogos implements RepositorioDosMinijogos {
       aprovadoEm: v.aprovadoEm.toISOString(),
       atualizadoEm: v.atualizadoEm.toISOString(),
       capa: capaQueCabe(v.capa),
-      // O minijogo em Python pede o ambiente do desafio com a revisão publicada (lacunas).
-      ...(python && linha.revisao ? { revisao: linha.revisao } : {}),
+      // Python pede o ambiente e Pro compila pela publicação do desafio, com a mesma revisão.
+      ...(precisaDoAmbiente && linha.revisao ? { revisao: linha.revisao } : {}),
     })
   }
   async pertenceAConta(jogadorId: string, contaId: string) {

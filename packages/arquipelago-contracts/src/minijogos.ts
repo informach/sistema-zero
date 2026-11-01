@@ -31,8 +31,8 @@ export const MinijogosSchema = z.strictObject({ minijogos: z.array(MinijogoSchem
 export const MinijogoAbertoSchema = MinijogoSchema.extend({
   projeto: ProjetoDoMinijogoSchema,
   /**
-   * A revisão publicada do desafio (lacunas, 01/11/2026): o minijogo em Python roda no ambiente
-   * do próprio desafio, pedido ao serviço do jogo com ela. Sem ela, só blocos.
+   * A revisão publicada do desafio: Python pede o ambiente e Pro compila pela publicação
+   * do próprio desafio. JavaScript clássico não precisa deste campo.
    */
   revisao: z.number().int().min(1).optional(),
 })
