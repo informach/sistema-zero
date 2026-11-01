@@ -38,7 +38,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-a1-caderno`
 
-**Na tela:** a parte já começa no livro 3D do Passo a passo do projeto, o caderno real, aberto na capa. No "Aqui você encontra os passos", colocar o livro em tela cheia [livro tela cheia] e passar as páginas devagar enquanto a fala segue [livro próxima] [livro próxima]. No "Então, se você esquecer algum passo", passar mais uma página [livro próxima]. No "Se quiser, você pode ler aqui mesmo", sair da tela cheia [livro sair da tela cheia] e mostrar o livro no tamanho da aula [apontar livro]. No "clicar em Baixar", levar o mouse até o botão **Baixar**, ao lado do nome do arquivo [apontar baixar]. No "Agora clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. O PDF precisa estar anexado antes da gravação.
+**Na tela:** a parte já começa no livro 3D do Passo a passo do projeto, o caderno real, aberto na capa. No "Aqui você encontra os passos", colocar o livro em tela cheia [livro tela cheia] e passar as páginas devagar enquanto a fala segue [livro próxima] [livro próxima]. No "Então, se você esquecer algum passo", passar mais uma página [livro próxima]. No "Se quiser, você pode ler aqui mesmo", sair da tela cheia [livro sair da tela cheia] e mostrar o livro no tamanho da aula [apontar livro]. No "clicar em Baixar", levar o mouse até o botão **Baixar**, ao lado do nome do arquivo, e clicar [baixar]. No "Agora clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. O PDF precisa estar anexado antes da gravação.
 
 **Fala para ElevenLabs:**
 

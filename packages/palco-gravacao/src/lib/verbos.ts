@@ -92,7 +92,8 @@ export const VERBOS: Verbo[] = [
   {
     verbo: 'categoria',
     exemplo: 'categoria Jogo 2D > Sprites',
-    descricao: 'Abre as categorias da paleta do Estúdio, uma depois da outra.',
+    descricao:
+      'Abre as categorias da paleta do Estúdio, uma depois da outra; clicar de novo numa aberta a recolhe.',
   },
   {
     verbo: 'encaixar abaixo',
@@ -114,7 +115,7 @@ export const VERBOS: Verbo[] = [
   {
     verbo: 'apontar encaixe',
     exemplo: 'apontar encaixe em "Quando clicar ou tocar"',
-    descricao: 'Aponta o espaço ao lado de "fazer" de um bloco (outro rótulo: no "senão").',
+    descricao: 'Aponta o espaço ao lado de "fazer" de um bloco.',
   },
   {
     verbo: 'apontar zappy',
@@ -152,7 +153,7 @@ export const VERBOS: Verbo[] = [
     verbo: 'encaixar',
     exemplo: 'encaixar "Deixar o sprite" em "Quando clicar ou tocar"',
     descricao:
-      'Leva um bloco da paleta para o espaço ao lado de "fazer" de outro bloco (outro rótulo: no "senão").',
+      'Leva um bloco da paleta para o espaço ao lado de "fazer" de outro bloco, o único lugar onde ele encaixa.',
   },
   {
     verbo: 'trocar',
