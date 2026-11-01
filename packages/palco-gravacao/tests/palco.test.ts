@@ -11,6 +11,7 @@ import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   previa: () => ({ width: 800, height: 600 }),
+  areaPronta: () => true,
   campo: () => ({
     alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 },
     tipo: 'menu',
@@ -115,6 +116,16 @@ describe('verbos do palco', () => {
     })
     expect(agir('apontar prévia 75 26', jogos, pagina())[0]).toMatchObject({ fazer: 'apontar' })
     // Sem a prévia ainda (o Estúdio acabou de expandir): espera ela aparecer e pergunta de novo.
+    // Logo depois de expandir: os gestos de bloco esperam a área de trabalho.
+    expect(agir('arrastar até "Ao iniciar"', jogos, pagina({ areaPronta: () => false }))).toEqual([
+      {
+        fazer: 'esperar',
+        alvo: { seletor: 'svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable' },
+        estado: 'aparecer',
+        maximo: 30,
+      },
+      { fazer: 'continuar', acao: 'arrastar até "Ao iniciar"' },
+    ])
     expect(agir('tocar prévia', jogos, pagina({ previa: () => null })).map((p) => p.fazer)).toEqual(
       ['esperar', 'continuar'],
     )

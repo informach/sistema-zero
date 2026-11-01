@@ -8,6 +8,8 @@ import type { Alvo } from './verbos'
 export interface PaginaDoPalco {
   /** O tamanho da pré-visualização do jogo no Estúdio, ou nulo quando ela não está na tela. */
   previa(): { width: number; height: number } | null
+  /** A área de trabalho do Estúdio já mostra os blocos (logo depois de expandir, ainda não). */
+  areaPronta(): boolean
   /**
    * Um campo de bloco pelo texto (dentro do bloco que tem `bloco`, quando dado): um menu do
    * Blockly, um número, ou outro campo (texto ou um seletor do Estúdio, que só se sabe depois
@@ -161,6 +163,13 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       if (!frame || !visivel(frame)) return null
       const r = frame.getBoundingClientRect()
       return { width: r.width, height: r.height }
+    },
+
+    areaPronta() {
+      const area = areaDeTrabalho(doc)
+      return (
+        !!area && [...area.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].some(visivel)
+      )
     },
 
     campo(valor, bloco) {

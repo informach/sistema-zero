@@ -308,6 +308,25 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   const ampliar = /^ampliar (.+)$/i.exec(texto)
   if (ampliar?.[1]) return [{ fazer: 'clicar', alvo: botao(`Ampliar ${ampliar[1]}`) }]
 
+  // Logo depois de expandir, o Estúdio ainda monta a área de trabalho: o gesto de bloco espera os
+  // blocos aparecerem e pergunta de novo.
+  if (
+    pagina &&
+    /^(arrastar at[eé]|apontar (bloco|encaixe|abaixo de)|encaixar|abrir campo|trocar) /i.test(
+      texto,
+    ) &&
+    !pagina.areaPronta()
+  )
+    return [
+      {
+        fazer: 'esperar',
+        alvo: { seletor: 'svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable' },
+        estado: 'aparecer',
+        maximo: 30,
+      },
+      { fazer: 'continuar', acao: texto },
+    ]
+
   const achar = /^achar (.+)$/i.exec(texto)
   if (achar?.[1]) {
     const found = acharAlvo(jogos, unquote(achar[1]))
