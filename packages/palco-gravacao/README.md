@@ -22,6 +22,10 @@ no staging, só para a equipe. Nada do que acontece aqui é salvo.
 - **Verificar projeto** vai ao members de verdade, como equipe: o members não guarda progresso
   nem prêmio da equipe, e o tempo da conferência é parte da aula gravada (o EdiAula acelera a
   espera sob a fala).
+- **Certificado:** aparece pronto para baixar e entrega um PDF que diz ser um exemplo; nenhum
+  certificado é emitido.
+- **Compartilhar no Mural:** a janela mostra o sucesso, com links para uma página do palco que
+  diz que nada foi publicado.
 - **Livro e anexos:** o PDF vem do bucket privado do ambiente pela própria origem, sem marca
   d'água e sem registrar download.
 - **Ajustes de palco** (`src/app/globals.css`): os controles do livro que só aparecem ao passar o
@@ -67,8 +71,9 @@ já existem; criar um é recusado e trava o deploy de todos. Então, antes do me
 - Os vídeos da aula (Vimeo, YouTube) não são controlados pelo robô.
 - O jogo pronto usa `Math.random` como no Kids: o que é sorteado pode mudar de uma tomada para
   outra.
-- Ainda não há verbos para trocar um campo ou um número de um bloco nem para encaixar dentro de
-  um bloco; esses gestos são marcados à mão no EdiAula.
+- Os gestos do Estúdio acham blocos e campos pelo texto que aparece neles, e o jogo da
+  pré-visualização pelo ponto do jogo (o jogo cabe inteiro, centrado). Uma lista de menu longa,
+  que precisa rolar para mostrar a opção, ainda não é rolada pelo robô.
 - Estúdio em Python não funciona no palco: a conferência e o ambiente do Python pedem o vínculo
   do projeto na conta, que o palco não cria. As aulas com blocos e JavaScript funcionam.
 - Quiz respondido no palco passa sempre: as respostas certas só o members conhece, e conferir

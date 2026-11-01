@@ -2,9 +2,23 @@ import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
+import type { PaginaDoPalco } from '../src/lib/pagina'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
 import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
+
+/** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
+const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
+  previa: () => ({ width: 800, height: 600 }),
+  campo: () => ({ alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 }, menu: true }),
+  encaixe: () => ({ seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 }),
+  rolagem: () => ({
+    de: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
+    para: { seletor: '[data-palco-alvo="a3"]', u: 0.4, v: 0.2 },
+  }),
+  temBotao: () => false,
+  ...patch,
+})
 
 /** O jogo pronto da Aula 1 do Cadê Todo Mundo, como o manifesto publica. */
 const manifesto = JSON.parse(
@@ -76,7 +90,68 @@ describe('verbos do palco', () => {
 
   test('um verbo desconhecido diz o que fazer; todo verbo listado tem exemplo que funciona', () => {
     expect(() => agir('voar', jogos)).toThrow(/Não conheço "voar"/)
-    for (const v of VERBOS) expect(() => agir(v.exemplo, jogos)).not.toThrow()
+    for (const v of VERBOS) expect(() => agir(v.exemplo, jogos, pagina())).not.toThrow()
+  })
+
+  test('pré-visualização: o jogo cabe inteiro, centrado, e o alvo vira o ponto certo', () => {
+    // 640 × 360 numa prévia de 800 × 600: escala 1,25, 75 px de faixa em cima e embaixo.
+    const [toque] = agir('tocar prévia arbusto', jogos, pagina())
+    expect(toque).toEqual({
+      fazer: 'clicar',
+      alvo: {
+        seletor: 'iframe[title="Pré-visualização"]',
+        u: ((56.5 + 161 / 2) * 1.25) / 800,
+        v: (75 + (137 + 144 / 2) * 1.25) / 600,
+      },
+    })
+    expect(agir('apontar prévia 75 26', jogos, pagina())[0]).toMatchObject({ fazer: 'apontar' })
+    expect(() => agir('tocar prévia', jogos, pagina({ previa: () => null }))).toThrow(/Expanda/)
+  })
+
+  test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', () => {
+    expect(agir('rolar até "Quando acontecer"', jogos, pagina())[0]).toMatchObject({
+      fazer: 'arrastar',
+    })
+    expect(
+      agir('rolar até "Quando acontecer"', jogos, pagina({ rolagem: () => 'visivel' })),
+    ).toEqual([
+      { fazer: 'apontar', alvo: { bloco: { texto: 'Quando acontecer', area: 'workspace' } } },
+    ])
+    expect(agir('encaixar "Deixar o sprite" em "Quando clicar ou tocar"', jogos, pagina())).toEqual(
+      [
+        {
+          fazer: 'arrastar',
+          alvo: { bloco: { texto: 'Deixar o sprite', area: 'flyout' } },
+          para: { seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 },
+        },
+      ],
+    )
+    expect(agir('trocar "jogador" por "escolhido"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
+      { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+    ])
+    const numero = agir(
+      'trocar "50" por "0"',
+      jogos,
+      pagina({ campo: () => ({ alvo: { seletor: '[data-palco-alvo="a4"]' }, menu: false }) }),
+    )
+    expect(numero.map((p) => p.fazer)).toEqual(['clicar', 'digitar', 'tecla'])
+    expect(numero[1]).toMatchObject({ texto: '0', substituir: true })
+    expect(() => agir('trocar "x" por "y"', jogos, pagina({ campo: () => null }))).toThrow(
+      /Não achei o campo/,
+    )
+  })
+
+  test('enviar projeto confirma o envio, e reenviar confirma o reenvio', () => {
+    expect(agir('enviar projeto', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { texto: 'Enviar meu projeto' } },
+      { fazer: 'clicar', alvo: { papel: 'button', nome: 'Enviar', dentro: '[role="dialog"]' } },
+    ])
+    const denovo = agir('enviar projeto', jogos, pagina({ temBotao: () => true }))
+    expect(denovo.map((p) => ('alvo' in p ? p.alvo : null))).toEqual([
+      { texto: 'Enviar de novo' },
+      { papel: 'button', nome: 'Reenviar', dentro: '[role="dialog"]' },
+    ])
   })
 
   test('ocupado: Estúdio carregando, conferência em curso, livro preparando', () => {
@@ -151,6 +226,11 @@ describe('rotas da aula no palco', () => {
       body: { project: null },
     })
     expect(bffAnswer('GET', ['blocks', 'b1', 'art-slots'])).toMatchObject({ body: { slots: [] } })
+    // O certificado aparece pronto para baixar, e baixar entrega o PDF de exemplo.
+    expect(bffAnswer('GET', ['blocks', 'c1', 'certificate'])).toMatchObject({
+      body: { eligible: true, issued: false },
+    })
+    expect(bffAnswer('POST', ['blocks', 'c1', 'certificate'])).toEqual({ kind: 'certificate' })
     expect(bffAnswer('GET', ['blocks', 'b1', 'outra'])).toMatchObject({ status: 404 })
     expect(bffAnswer('DELETE', ['navigation'])).toMatchObject({ status: 404 })
   })

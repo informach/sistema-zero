@@ -8,6 +8,7 @@
 
 export type BffAnswer =
   | { kind: 'json'; status: number; body: unknown }
+  | { kind: 'certificate' }
   | { kind: 'project-check'; sectionId: string }
   | { kind: 'studio-context'; blockId: string }
 
@@ -78,6 +79,16 @@ export function bffAnswer(
     )
       return ok({ project: null })
     if (action === 'art-slots') return ok({ slots: [] })
+    // O certificado aparece pronto para baixar, como para quem terminou o curso.
+    if (action === 'certificate')
+      return ok({
+        eligible: true,
+        issued: false,
+        revoked: false,
+        serial: null,
+        issuedAt: null,
+        revokedAt: null,
+      })
     return missing
   }
   if (method !== 'POST') return missing
@@ -90,6 +101,7 @@ export function bffAnswer(
   if (first === 'blocks' && id && action === 'learning-progress')
     return ok(progressOf(id, body, now))
   if (first === 'blocks' && id && action === 'quiz-attempts') return ok(quizOf(body))
+  if (first === 'blocks' && id && action === 'certificate') return { kind: 'certificate' }
   // Navegação, posição do vídeo, acesso ao material, pedido de ajuda: aceitos e esquecidos.
   return ok()
 }

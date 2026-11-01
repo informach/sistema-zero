@@ -1,3 +1,5 @@
+import type { PaginaDoPalco } from './pagina'
+
 /**
  * Os verbos da gravação das aulas do Sistema Zero: o texto entre colchetes do "Na tela" do
  * roteiro (`[ampliar jogo]`, `[achar arbusto]`) vira gestos simples que o robô do EdiAula faz
@@ -7,6 +9,8 @@
 
 export interface Alvo {
   seletor?: string
+  /** Só dentro do elemento que este seletor nomeia (um menu aberto, uma janela). */
+  dentro?: string
   papel?: string
   nome?: string
   rotulo?: string
@@ -27,6 +31,8 @@ export type Passo =
       maximo?: number
     }
   | { fazer: 'rolar'; dy: number }
+  | { fazer: 'digitar'; alvo: Alvo; texto: string; substituir?: boolean }
+  | { fazer: 'tecla'; tecla: string }
 
 export interface Verbo {
   verbo: string
@@ -101,7 +107,53 @@ export const VERBOS: Verbo[] = [
   {
     verbo: 'enviar projeto',
     exemplo: 'enviar projeto',
-    descricao: 'Clica em Enviar: no palco só a tela responde, nada é enviado.',
+    descricao:
+      'Clica em Enviar meu projeto (ou Enviar de novo) e confirma: no palco nada é enviado.',
+  },
+  { verbo: 'apontar livro', exemplo: 'apontar livro', descricao: 'Aponta o livro 3D do caderno.' },
+  {
+    verbo: 'apontar paleta',
+    exemplo: 'apontar paleta',
+    descricao: 'Aponta a paleta de comandos do Estúdio.',
+  },
+  {
+    verbo: 'apontar bloco',
+    exemplo: 'apontar bloco "Quando clicar ou tocar"',
+    descricao: 'Aponta um bloco da área de trabalho pelo texto dele.',
+  },
+  {
+    verbo: 'tocar prévia',
+    exemplo: 'tocar prévia arbusto',
+    descricao:
+      'Toca no jogo da pré-visualização do Estúdio: num alvo do jogo pronto da aula ou num ponto (tocar prévia 137 209), em pixels do jogo.',
+  },
+  {
+    verbo: 'apontar prévia',
+    exemplo: 'apontar prévia 75 26',
+    descricao: 'Aponta um ponto do jogo na pré-visualização, como o placar.',
+  },
+  {
+    verbo: 'rolar até',
+    exemplo: 'rolar até "Quando acontecer"',
+    descricao:
+      'Arrasta um espaço vazio da área de trabalho até o bloco aparecer (nada, se ele já está à vista).',
+  },
+  {
+    verbo: 'encaixar',
+    exemplo: 'encaixar "Deixar o sprite" em "Quando clicar ou tocar"',
+    descricao:
+      'Leva um bloco da paleta para o espaço ao lado de "fazer" de outro bloco (outro rótulo: no "senão").',
+  },
+  {
+    verbo: 'trocar',
+    exemplo: 'trocar "jogador" por "escolhido"',
+    descricao:
+      'Troca um campo de bloco: escolhe no menu, ou reescreve um número ou texto (em "<bloco>" para dizer qual).',
+  },
+  {
+    verbo: 'compartilhar',
+    exemplo: 'compartilhar',
+    descricao: 'Abre o Compartilhar do Estúdio: no palco nada vai para o Mural.',
   },
 ]
 
@@ -149,7 +201,51 @@ const noJogo = (jogo: JogoDaAula, x: number, y: number): Alvo => ({
  * Os gestos de uma ação. Lança o que a pessoa precisa saber quando o verbo não existe ou não
  * se aplica a esta aula (a mensagem aparece na etapa do Verificar plano do EdiAula).
  */
-export function agir(acao: string, jogos: readonly JogoDaAula[]): Passo[] {
+/** Um ponto do jogo (em pixels do palco dele) na pré-visualização do Estúdio. */
+function naPrevia(
+  pagina: PaginaDoPalco | undefined,
+  jogos: readonly JogoDaAula[],
+  resto: string,
+): Alvo {
+  const previa = pagina?.previa()
+  if (!previa)
+    throw new Error('A pré-visualização do Estúdio não está na tela. Expanda o Estúdio antes.')
+  const stage = jogos[0]?.stage ?? { width: 640, height: 360 }
+  const numeros = /^(-?\d+(?:[.,]\d+)?) (-?\d+(?:[.,]\d+)?)$/.exec(resto)
+  let x: number
+  let y: number
+  if (numeros?.[1] && numeros[2]) {
+    x = Number(numeros[1].replace(',', '.'))
+    y = Number(numeros[2].replace(',', '.'))
+  } else if (!resto) {
+    x = stage.width / 2
+    y = stage.height / 2
+  } else {
+    const found = acharAlvo(jogos, unquote(resto))
+    if (!found)
+      throw new Error(
+        `Não achei "${unquote(resto)}" nos jogos desta aula. Use o ponto do jogo: tocar prévia 137 209.`,
+      )
+    x = found.target.x + found.target.width / 2
+    y = found.target.y + found.target.height / 2
+  }
+  // O jogo cabe inteiro na pré-visualização, centrado, sem esticar.
+  const scale = Math.min(previa.width / stage.width, previa.height / stage.height)
+  const left = (previa.width - stage.width * scale) / 2
+  const top = (previa.height - stage.height * scale) / 2
+  return {
+    seletor: 'iframe[title="Pré-visualização"]',
+    u: Math.min(1, Math.max(0, (left + x * scale) / previa.width)),
+    v: Math.min(1, Math.max(0, (top + y * scale) / previa.height)),
+  }
+}
+
+const precisaDaPagina = (pagina: PaginaDoPalco | undefined): PaginaDoPalco => {
+  if (!pagina) throw new Error('Este gesto precisa da página do palco aberta.')
+  return pagina
+}
+
+export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: PaginaDoPalco): Passo[] {
   const texto = acao.replace(/\s+/g, ' ').trim()
   const f = fold(texto)
   if (f === 'proxima parte') return [{ fazer: 'clicar', alvo: botao('Próxima parte') }]
@@ -211,7 +307,8 @@ export function agir(acao: string, jogos: readonly JogoDaAula[]): Passo[] {
     return [{ fazer: 'apontar', alvo: { seletor: '[aria-label^="Baixar"]' } }]
   if (f === 'baixar') return [{ fazer: 'clicar', alvo: { seletor: '[aria-label^="Baixar"]' } }]
 
-  const tocar = /^tocar (.+)$/i.exec(texto)
+  // "tocar prévia …" é o jogo do Estúdio, mais abaixo.
+  const tocar = /^tocar (?!pr[eé]via\b)(.+)$/i.exec(texto)
   if (tocar?.[1]) return [{ fazer: 'clicar', alvo: { rotulo: unquote(tocar[1]) } }]
 
   const categoria = /^categoria (.+)$/i.exec(texto)
@@ -246,7 +343,71 @@ export function agir(acao: string, jogos: readonly JogoDaAula[]): Passo[] {
         maximo: 180,
       },
     ]
-  if (f === 'enviar projeto') return [{ fazer: 'clicar', alvo: botao('Enviar meu projeto') }]
+  if (f === 'enviar projeto') {
+    // Depois do primeiro envio o botão vira "Enviar de novo", e a confirmação, "Reenviar".
+    const denovo = pagina?.temBotao('Enviar de novo') === true
+    return [
+      { fazer: 'clicar', alvo: botao(denovo ? 'Enviar de novo' : 'Enviar meu projeto') },
+      {
+        fazer: 'clicar',
+        alvo: { papel: 'button', nome: denovo ? 'Reenviar' : 'Enviar', dentro: '[role="dialog"]' },
+      },
+    ]
+  }
+  if (f === 'apontar livro')
+    return [{ fazer: 'apontar', alvo: { seletor: '[class*="group/ebook"]' } }]
+  if (f === 'apontar paleta') return [{ fazer: 'apontar', alvo: { seletor: '.blocklyToolbox' } }]
+  if (f === 'compartilhar') return [{ fazer: 'clicar', alvo: { rotulo: 'Compartilhar' } }]
+  const apontarBloco = /^apontar bloco ["“]([^"”]+)["”]$/i.exec(texto)
+  if (apontarBloco?.[1])
+    return [{ fazer: 'apontar', alvo: { bloco: { texto: apontarBloco[1], area: 'workspace' } } }]
+  const previa = /^(tocar|apontar) pr[eé]via ?(.*)$/i.exec(texto)
+  if (previa?.[1]) {
+    const alvo = naPrevia(pagina, jogos, (previa[2] ?? '').trim())
+    return [{ fazer: fold(previa[1]) === 'tocar' ? 'clicar' : 'apontar', alvo }]
+  }
+  const rolar = /^rolar at[eé] ["“]([^"”]+)["”]$/i.exec(texto)
+  if (rolar?.[1]) {
+    const rolagem = precisaDaPagina(pagina).rolagem(rolar[1])
+    if (!rolagem) throw new Error(`Não achei o bloco "${rolar[1]}" na área de trabalho.`)
+    // Já à vista: a mão só aponta para ele.
+    if (rolagem === 'visivel')
+      return [{ fazer: 'apontar', alvo: { bloco: { texto: rolar[1], area: 'workspace' } } }]
+    return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
+  }
+  const encaixar = /^encaixar ["“]([^"”]+)["”] em ["“]([^"”]+)["”](?: no ["“]([^"”]+)["”])?$/i.exec(
+    texto,
+  )
+  if (encaixar?.[1] && encaixar[2]) {
+    const rotulo = encaixar[3] ?? 'fazer'
+    const destino = precisaDaPagina(pagina).encaixe(encaixar[2], rotulo)
+    if (!destino) throw new Error(`Não achei o espaço de "${rotulo}" no bloco "${encaixar[2]}".`)
+    return [
+      { fazer: 'arrastar', alvo: { bloco: { texto: encaixar[1], area: 'flyout' } }, para: destino },
+    ]
+  }
+  const trocar = /^trocar ["“]([^"”]+)["”] por ["“]([^"”]*)["”](?: em ["“]([^"”]+)["”])?$/i.exec(
+    texto,
+  )
+  if (trocar?.[1] && trocar[2] !== undefined) {
+    const campo = precisaDaPagina(pagina).campo(trocar[1], trocar[3])
+    if (!campo) throw new Error(`Não achei o campo "${trocar[1]}" num bloco da área de trabalho.`)
+    if (campo.menu)
+      return [
+        { fazer: 'clicar', alvo: campo.alvo },
+        { fazer: 'clicar', alvo: { texto: trocar[2], dentro: '.blocklyDropDownDiv' } },
+      ]
+    return [
+      { fazer: 'clicar', alvo: campo.alvo },
+      {
+        fazer: 'digitar',
+        alvo: { seletor: 'input.blocklyHtmlInput' },
+        texto: trocar[2],
+        substituir: true,
+      },
+      { fazer: 'tecla', tecla: 'Enter' },
+    ]
+  }
 
   throw new Error(`Não conheço "${texto}". Veja os verbos do palco no README do pacote.`)
 }

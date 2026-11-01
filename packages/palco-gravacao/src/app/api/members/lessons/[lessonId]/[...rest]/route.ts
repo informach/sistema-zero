@@ -1,4 +1,5 @@
 import { bffAnswer } from '~/lib/bff'
+import { certificadoDeExemplo } from '~/lib/certificado-de-exemplo'
 import { staffAccess } from '~/server/access'
 import { gatewayFetch, paths } from '~/server/gateway'
 import { studioContextOf } from '~/server/lessons'
@@ -21,6 +22,14 @@ async function answer(req: Request, ctx: Ctx): Promise<Response> {
     body && typeof body === 'object' ? (body as Record<string, unknown>) : undefined,
   )
   if (result.kind === 'json') return Response.json(result.body, { status: result.status })
+  if (result.kind === 'certificate')
+    return new Response(new Blob([certificadoDeExemplo()]), {
+      headers: {
+        'content-type': 'application/pdf',
+        'content-disposition': 'attachment; filename="certificado-de-exemplo.pdf"',
+        'cache-control': 'no-store',
+      },
+    })
   if (result.kind === 'studio-context') {
     const context = studioContextOf(lessonId, result.blockId)
     return context
