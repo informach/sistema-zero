@@ -2169,7 +2169,7 @@ dialog.visor button { position: absolute; top: 8px; right: 8px; }
 <dialog class="visor" id="visor" aria-label="Tela ampliada">
   <img id="visor-img" alt="">
   <p id="visor-legenda"></p>
-  <button class="fechar" id="visor-fechar">Fechar</button>
+  <button type="button" class="fechar" id="visor-fechar">Fechar</button>
 </dialog>
 
 <script>
@@ -2196,8 +2196,8 @@ dialog.visor button { position: absolute; top: 8px; right: 8px; }
     celular.appendChild(li2);
   });
   if ('IntersectionObserver' in window) {
-    var links = lista.querySelectorAll('a');
-    var obs = new IntersectionObserver(function (es) {
+    const links = lista.querySelectorAll('a');
+    const obs = new IntersectionObserver(function (es) {
       es.forEach(function (e) {
         if (!e.isIntersecting) return;
         links.forEach(function (l) { l.classList.toggle('atual', l.getAttribute('href') === '#' + e.target.id); });
