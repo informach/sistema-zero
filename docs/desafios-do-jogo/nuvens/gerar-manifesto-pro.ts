@@ -67,7 +67,14 @@ export function criarManifestoPro(publico: PublicoDoDesafio = 'kids') {
                   ? 'Complete plantasPorTipo: conte quantas flores e quantas árvores o jardim tem.'
                   : 'Implemente plantasPorTipo: retorna { flor, arvore } com a contagem de cada tipo.',
             },
-            recompensa: { cor: true, moedas: moedas.principal, moedasExtra: moedas.extra },
+            // O jogo aprovado vai para o fliperama (lacunas, 01/11/2026): o minijogo compila pela
+            // rota Pro do próprio desafio e toca o artefato, sem o WebContainer na página do jogo.
+            recompensa: {
+              cor: true,
+              atracao: 'jardim-das-nuvens',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
             blocosManuais: { acrescentar: [], retirar: [] },
           },
         },

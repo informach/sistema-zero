@@ -1,3 +1,4 @@
+import type { StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
 import { forwardRef, lazy, Suspense } from 'react'
 import type { EditableStudioProject, PythonProjectDocument } from '../../core/editableProject'
 import type { StudioRuntimeEnvironment } from '../../runtime/environment'
@@ -12,6 +13,9 @@ const JavaScriptPlayer = lazy(() =>
 )
 const PythonPlayer = lazy(() =>
   import('./PythonProjectPlayer').then((module) => ({ default: module.PythonProjectPlayer })),
+)
+const BuiltProPlayer = lazy(() =>
+  import('./BuiltProPlayer').then((module) => ({ default: module.BuiltProPlayer })),
 )
 
 export interface StudioProjectPlayerProps
@@ -33,6 +37,12 @@ export interface StudioProjectPlayerProps
     project: PythonProjectDocument,
     signal: AbortSignal,
   ): Promise<StudioRuntimeEnvironment>
+  /**
+   * A host build for a Pro project that is not a community publication (the Arquipélago minigame
+   * builds the approved challenge solution through the challenge's Pro route). The player shows the
+   * returned artifact; without it, a Pro project needs `published`.
+   */
+  proBuild?(project: EditableStudioProject, signal: AbortSignal): Promise<StudioProArtifact>
   /** Same-origin host callback; no subject/source/capabilities are sent by the player. */
   pythonRuntimeRequest?(
     input: { playId: string; publicationRevision: string },
@@ -51,6 +61,17 @@ export const StudioProjectPlayer = forwardRef<HTMLIFrameElement, StudioProjectPl
         </Suspense>
       )
     }
+    if (props.project.kind === 'pro' && props.proBuild)
+      return (
+        <Suspense fallback={fallback}>
+          <BuiltProPlayer
+            project={props.project}
+            title={props.title}
+            build={props.proBuild}
+            onError={props.onError}
+          />
+        </Suspense>
+      )
     const published = props.published && 'url' in props.published ? props.published : undefined
     return (
       <Suspense fallback={fallback}>

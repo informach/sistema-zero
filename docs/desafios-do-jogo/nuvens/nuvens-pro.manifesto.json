@@ -354,6 +354,7 @@
         },
         "recompensa": {
           "cor": true,
+          "atracao": "jardim-das-nuvens",
           "moedas": 20,
           "moedasExtra": 10
         },

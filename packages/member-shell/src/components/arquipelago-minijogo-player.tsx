@@ -1,6 +1,7 @@
 'use client'
 import '@sistemazero/studio/styles.css'
 import { MinijogoAbertoSchema } from '@sistemazero/arquipelago-contracts'
+import type { StudioProArtifact } from '@sistemazero/core/studio/pro-artifact'
 import type { PythonProjectDocument } from '@sistemazero/studio'
 import { StudioProjectPlayer } from '@sistemazero/studio/player'
 import { prepareProjectForHost } from '@sistemazero/studio/project-validation'
@@ -90,6 +91,40 @@ export function ArquipelagoMinijogoPlayer({
           }),
       )
   }, [desafioId, revisao, userId, audience])
+  // O minijogo Pro (o quadro 6 das Nuvens e o Farol no Pro, lacunas de 01/11/2026): compila pela
+  // rota Pro do desafio, com a sessão de quem joga, e toca o artefato isolado.
+  const proBuild = useMemo(() => {
+    if (!desafioId || !revisao) return undefined
+    return async (
+      project: { kind?: unknown; tree?: unknown; assets?: unknown; proMeta?: unknown },
+      signal: AbortSignal,
+    ) => {
+      const r = await sessionFetch(
+        `/api/arquipelago/desafios/${encodeURIComponent(desafioId)}/pro`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            revisao,
+            project: {
+              kind: 'pro',
+              tree: project.tree,
+              assets: project.assets,
+              proMeta: project.proMeta,
+            },
+          }),
+          signal,
+        },
+      )
+      const corpo = (await r.json().catch(() => null)) as {
+        artifact?: unknown
+        error?: { message?: string }
+      } | null
+      if (!r.ok || !corpo?.artifact)
+        throw new Error(corpo?.error?.message ?? 'Não foi possível abrir o jogo agora.')
+      return corpo.artifact as StudioProArtifact
+    }
+  }, [desafioId, revisao])
   return (
     <dialog
       ref={dialog}
@@ -127,6 +162,7 @@ export function ArquipelagoMinijogoPlayer({
             project={dados.projeto}
             title={dados.titulo}
             pythonRuntimeEnvironment={ambientePython}
+            proBuild={proBuild}
             onError={() => setErro(true)}
           />
         </div>
