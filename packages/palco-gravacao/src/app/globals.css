@@ -12,3 +12,13 @@
 .palco [class*="group-hover/ebook:opacity-100"] {
   opacity: 1;
 }
+
+/*
+ * As dicas dos blocos (Blockly) não aparecem no palco: a mão do robô passa por cima de blocos a
+ * caminho de outro lugar, e a dica ficava parada por cima da aula (até sobre a prévia do jogo,
+ * que não avisa o Blockly que o mouse saiu do bloco).
+ */
+.palco .blocklyTooltipDiv {
+  /* biome-ignore lint/complexity/noImportantStyles: o Blockly mostra a dica com style.display no próprio elemento */
+  display: none !important;
+}
