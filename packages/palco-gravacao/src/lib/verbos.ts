@@ -22,7 +22,13 @@ export interface Alvo {
 }
 
 export type Passo =
-  | { fazer: 'apontar' | 'clicar' | 'clique duplo'; alvo: Alvo; espera?: 'acelerar' | 'cortar' }
+  | {
+      fazer: 'apontar' | 'clicar' | 'clique duplo'
+      alvo: Alvo
+      espera?: 'acelerar' | 'cortar'
+      /** apontar: o ponto é onde a mão descansa (ao lado do bloco, não em cima). */
+      exato?: boolean
+    }
   | { fazer: 'arrastar'; alvo: Alvo; para: Alvo }
   | {
       fazer: 'esperar'
@@ -198,6 +204,9 @@ const unquote = (s: string): string =>
 
 const botao = (nome: string): Alvo => ({ texto: nome })
 
+/** Depois de agir num bloco, a mão vai para o fundo da área ao lado dele (o ponto é visto na hora). */
+const afastar = (bloco: string): Passo => ({ fazer: 'continuar', acao: `afastar de "${bloco}"` })
+
 /** Escolhe `valor` na lista que um campo abriu (um menu do Blockly ou um seletor do Estúdio). */
 const naLista = (valor: string): Passo => ({
   fazer: 'clicar',
@@ -368,7 +377,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       if (!origem)
         throw new Error(`Não achei o bloco "${arrastar[1]}" na paleta. Abra a categoria antes.`)
       if (!destino) throw new Error(`Não achei o bloco "${arrastar[2]}" na área de trabalho.`)
-      return [{ fazer: 'arrastar', alvo: origem, para: destino }]
+      return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(arrastar[1])]
     }
     return [
       {
@@ -407,6 +416,9 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (f === 'compartilhar') return [{ fazer: 'clicar', alvo: { rotulo: 'Compartilhar' } }]
   const apontarBloco = /^apontar bloco ["“]([^"”]+)["”]$/i.exec(texto)
   if (apontarBloco?.[1]) {
+    // Ao lado do bloco, no fundo da área: em cima dele, a mão parada faz aparecer a dica.
+    const perto = precisaDaPagina(pagina).perto(apontarBloco[1])
+    if (perto) return [{ fazer: 'apontar', alvo: perto, exato: true }]
     const alvo = precisaDaPagina(pagina).bloco(apontarBloco[1], 'area')
     if (!alvo) throw new Error(`Não achei o bloco "${apontarBloco[1]}" na área de trabalho.`)
     return [{ fazer: 'apontar', alvo }]
@@ -418,13 +430,14 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const rotulo = apontarEncaixe[2] ?? 'fazer'
     const alvo = precisaDaPagina(pagina).encaixe(apontarEncaixe[1], rotulo)
     if (!alvo) throw new Error(`Não achei o espaço de "${rotulo}" no bloco "${apontarEncaixe[1]}".`)
-    return [{ fazer: 'apontar', alvo }]
+    // O espaço vazio é fundo da área: a mão fica nele, sem descer para o bloco.
+    return [{ fazer: 'apontar', alvo, exato: true }]
   }
   const apontarAbaixo = /^apontar abaixo de ["“]([^"”]+)["”]$/i.exec(texto)
   if (apontarAbaixo?.[1]) {
     const alvo = precisaDaPagina(pagina).abaixo(apontarAbaixo[1])
     if (!alvo) throw new Error(`Não achei o bloco "${apontarAbaixo[1]}" na área de trabalho.`)
-    return [{ fazer: 'apontar', alvo }]
+    return [{ fazer: 'apontar', alvo, exato: true }]
   }
   if (f === 'apontar zappy')
     return [{ fazer: 'apontar', alvo: { seletor: '.sz-scene-console-fala > div > :first-child' } }]
@@ -451,8 +464,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const rolagem = precisaDaPagina(pagina).rolagem(rolar[1])
     if (!rolagem) throw new Error(`Não achei o bloco "${rolar[1]}" na área de trabalho.`)
     // Já à vista: a mão só aponta para ele.
-    if (rolagem === 'visivel')
-      return [{ fazer: 'apontar', alvo: { bloco: { texto: rolar[1], area: 'workspace' } } }]
+    if (rolagem === 'visivel') return agir(`apontar bloco "${rolar[1]}"`, jogos, pagina)
     return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
   }
   const encaixar = /^encaixar ["“]([^"”]+)["”] em ["“]([^"”]+)["”](?: no ["“]([^"”]+)["”])?$/i.exec(
@@ -465,7 +477,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const origem = precisaDaPagina(pagina).bloco(encaixar[1], 'paleta')
     if (!origem)
       throw new Error(`Não achei o bloco "${encaixar[1]}" na paleta. Abra a categoria antes.`)
-    return [{ fazer: 'arrastar', alvo: origem, para: destino }]
+    return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(encaixar[1])]
   }
   const trocar = /^trocar ["“]([^"”]+)["”] por ["“]([^"”]*)["”](?: em ["“]([^"”]+)["”])?$/i.exec(
     texto,
@@ -473,14 +485,26 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (trocar?.[1] && trocar[2] !== undefined) {
     const campo = precisaDaPagina(pagina).campo(trocar[1], trocar[3])
     if (!campo) throw new Error(`Não achei o campo "${trocar[1]}" num bloco da área de trabalho.`)
-    if (campo.tipo === 'menu') return [{ fazer: 'clicar', alvo: campo.alvo }, naLista(trocar[2])]
+    // Depois de trocar, a mão sai de cima do bloco (parada em cima, aparece a dica dele).
+    const depois = afastar(campo.bloco)
+    if (campo.tipo === 'menu')
+      return [{ fazer: 'clicar', alvo: campo.alvo }, naLista(trocar[2]), depois]
     if (campo.tipo === 'numero')
-      return [{ fazer: 'clicar', alvo: campo.alvo }, ...naCaixa(trocar[2])]
+      return [{ fazer: 'clicar', alvo: campo.alvo }, ...naCaixa(trocar[2]), depois]
     // Um texto ou um seletor do Estúdio: o que abrir com o clique diz como escolher.
     return [
       { fazer: 'clicar', alvo: campo.alvo },
       { fazer: 'continuar', acao: `escolher "${trocar[2]}"` },
+      depois,
     ]
+  }
+
+  const afastarDe = /^afastar de ["“]([^"”]+)["”]$/i.exec(texto)
+  if (afastarDe?.[1]) {
+    const perto = precisaDaPagina(pagina).perto(afastarDe[1])
+    // Sem fundo livre ao lado, a mão fica onde está.
+    if (!perto) return [{ fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' } }]
+    return [{ fazer: 'apontar', alvo: perto, exato: true }]
   }
 
   const escolher = /^escolher ["“]([^"”]*)["”]$/i.exec(texto)

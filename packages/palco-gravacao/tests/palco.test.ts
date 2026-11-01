@@ -10,7 +10,12 @@ import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   previa: () => ({ width: 800, height: 600 }),
-  campo: () => ({ alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 }, tipo: 'menu' }),
+  campo: () => ({
+    alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 },
+    tipo: 'menu',
+    bloco: 'Deixar o sprite',
+  }),
+  perto: () => ({ seletor: '[data-palco-alvo="a7"]', u: 0.9, v: 0.1 }),
   aberto: () => 'lista',
   encaixe: () => ({ seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 }),
   rolagem: () => ({
@@ -121,7 +126,12 @@ describe('verbos do palco', () => {
     expect(
       agir('arrastar até "Quando acontecer"', jogos, pagina({ rolagem: () => 'visivel' })),
     ).toEqual([
-      { fazer: 'apontar', alvo: { bloco: { texto: 'Quando acontecer', area: 'workspace' } } },
+      // Já à vista: a mão só aponta, ao lado dele, no fundo da área (não em cima do bloco).
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '[data-palco-alvo="a7"]', u: 0.9, v: 0.1 },
+        exato: true,
+      },
     ])
     expect(agir('encaixar "Deixar o sprite" em "Quando clicar ou tocar"', jogos, pagina())).toEqual(
       [
@@ -130,8 +140,17 @@ describe('verbos do palco', () => {
           alvo: { seletor: '[data-palco-alvo="paleta:Deixar o sprite"]', u: 0.1, v: 0.5 },
           para: { seletor: '[data-palco-alvo="a2"]', u: 0.6, v: 0.2 },
         },
+        // Encaixado, a mão sai de cima do bloco (parada em cima, aparece a dica dele).
+        { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
       ],
     )
+    expect(agir('afastar de "Deixar o sprite"', jogos, pagina())).toEqual([
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '[data-palco-alvo="a7"]', u: 0.9, v: 0.1 },
+        exato: true,
+      },
+    ])
     expect(() =>
       agir('encaixar "Voar" em "Quando clicar ou tocar"', jogos, pagina({ bloco: () => null })),
     ).toThrow(/Abra a categoria/)
@@ -141,26 +160,40 @@ describe('verbos do palco', () => {
         alvo: { seletor: '[data-palco-alvo="paleta:Somar 1"]', u: 0.1, v: 0.5 },
         para: { seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 },
       },
+      { fazer: 'continuar', acao: 'afastar de "Somar 1"' },
     ])
     expect(agir('apontar zappy', jogos, pagina())[0]).toMatchObject({ fazer: 'apontar' })
     expect(agir('trocar "jogador" por "escolhido"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+      // Trocado, a mão sai de cima do bloco do campo.
+      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
     ])
     const numero = agir(
       'trocar "50" por "0"',
       jogos,
-      pagina({ campo: () => ({ alvo: { seletor: '[data-palco-alvo="a4"]' }, tipo: 'numero' }) }),
+      pagina({
+        campo: () => ({
+          alvo: { seletor: '[data-palco-alvo="a4"]' },
+          tipo: 'numero',
+          bloco: 'Deixar o sprite',
+        }),
+      }),
     )
-    expect(numero.map((p) => p.fazer)).toEqual(['clicar', 'digitar', 'tecla'])
+    expect(numero.map((p) => p.fazer)).toEqual(['clicar', 'digitar', 'tecla', 'continuar'])
     expect(numero[1]).toMatchObject({ texto: '0', substituir: true })
     // Um seletor do Estúdio herda do campo de texto: o robô clica e a página decide no que abriu.
     const outro = pagina({
-      campo: () => ({ alvo: { seletor: '[data-palco-alvo="a6"]' }, tipo: 'outro' }),
+      campo: () => ({
+        alvo: { seletor: '[data-palco-alvo="a6"]' },
+        tipo: 'outro',
+        bloco: 'Deixar o sprite',
+      }),
     })
     expect(agir('trocar "jogador" por "escolhido"', jogos, outro)).toEqual([
       { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a6"]' } },
       { fazer: 'continuar', acao: 'escolher "escolhido"' },
+      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
     ])
     expect(agir('escolher "escolhido"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
