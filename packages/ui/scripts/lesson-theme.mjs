@@ -33,6 +33,10 @@ export function gateStylesheet(source, creator = false) {
         const documentRoot = selector.match(/^(:root|html|body)(?=$|[^a-zA-Z0-9_-])/)
         if (documentRoot)
           return selector.replace(documentRoot[0], `${documentRoot[0]}:where(${condition})`)
+        // Universal rules also own the viewport (html) scrollbar, not just body descendants.
+        // Keep the gate inside :where so the original selector specificity is unchanged.
+        if (/^\*(?=$|[\s.#:[>+~])/.test(selector))
+          return `*:where(html${condition}, html${condition} *)${selector.slice(1)}`
         return `:where(body${condition}) ${selector}`
       })
       .join(',\n')

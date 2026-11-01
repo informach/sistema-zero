@@ -127,6 +127,9 @@ async function metrics(page: Page) {
     const rect = footer.getBoundingClientRect()
     return {
       bodyFont: getComputedStyle(document.body).fontFamily,
+      rootScrollbarWidth: getComputedStyle(document.documentElement, '::-webkit-scrollbar').width,
+      rootScrollbarThumb: getComputedStyle(document.documentElement, '::-webkit-scrollbar-thumb')
+        .backgroundColor,
       fontSize: getComputedStyle(document.documentElement).fontSize,
       cardRadius: style.borderRadius,
       chipFontSize: chipStyle.fontSize,
@@ -214,6 +217,8 @@ try {
       adult = snapshots.get('adult')!
     for (const key of [
       'bodyFont',
+      'rootScrollbarWidth',
+      'rootScrollbarThumb',
       'fontSize',
       'bodyBackground',
       'cardRadius',
