@@ -8,6 +8,7 @@ import type {
 import type { Database } from './db'
 import {
   desafiosConcluidos,
+  diasDeJogo,
   minijogos,
   mudancasDeAparencia,
   salvamentos,
@@ -22,9 +23,31 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
   async agregar(f: FiltroDaMedicao, hoje: string): Promise<AgregadosDaMedicao> {
     return this.db.transaction(
       async (tx) => {
+        // O Kids conta pelo tempo do dia; o adulto, pelos dias de jogo (lacunas, 01/11/2026).
         const coortes =
-          f.publico === 'kids'
+          f.publico === 'adulto'
             ? await tx.execute<{
+                dia: string
+                pessoas: number
+                seguinte: number
+                dia7: number
+              }>(sql`
+        WITH entradas AS (
+          SELECT ${diasDeJogo.jogadorId} AS jogador, min(${diasDeJogo.dia}) AS primeiro
+          FROM ${diasDeJogo} WHERE ${diasDeJogo.publico} = 'adulto' AND ${diasDeJogo.dia} < ${hoje}::date
+          GROUP BY ${diasDeJogo.jogadorId}
+        ), coorte AS (
+          SELECT * FROM entradas WHERE primeiro BETWEEN ${f.de}::date AND ${f.ate}::date
+        )
+        SELECT c.primeiro::text AS dia, count(*)::int AS pessoas,
+          count(seguinte.dia)::int AS seguinte,
+          count(sete.dia)::int AS dia7
+        FROM coorte c
+        LEFT JOIN ${diasDeJogo} seguinte ON seguinte.jogador_id = c.jogador AND seguinte.dia = c.primeiro + 1
+        LEFT JOIN ${diasDeJogo} sete ON sete.jogador_id = c.jogador AND sete.dia = c.primeiro + 6
+        GROUP BY c.primeiro ORDER BY c.primeiro
+      `)
+            : await tx.execute<{
                 dia: string
                 pessoas: number
                 seguinte: number
@@ -45,7 +68,6 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
         LEFT JOIN ${tempoDiario} sete ON sete.jogador_id = c.jogador AND sete.dia = c.primeiro + 6
         GROUP BY c.primeiro ORDER BY c.primeiro
       `)
-            : []
         const origens = await tx.execute<{
           origem: string
           quantidade: number
@@ -178,6 +200,20 @@ export class DrizzleRepositorioDaMedicao implements RepositorioDaMedicao {
   }
 
   /** O mesmo recorte do cartão dos pais: sessão que só abriu e não contou tempo não é jogar. */
+  /**
+   * O adulto não tem sessões: o fim de cada dia de jogo (a última vez que abriu ou gravou o jogo)
+   * faz o papel do fim da sessão na volta ao curso em 24 horas (lacunas, 01/11/2026).
+   */
+  async finsDosDiasDeJogo(de: Date, ate: Date): Promise<Map<string, Date[]>> {
+    const linhas = await this.db
+      .select({ jogadorId: diasDeJogo.jogadorId, fim: diasDeJogo.ultimoEm })
+      .from(diasDeJogo)
+      .where(and(sql`${diasDeJogo.publico} = 'adulto'`, between(diasDeJogo.ultimoEm, de, ate)))
+    const fins = new Map<string, Date[]>()
+    for (const l of linhas) fins.set(l.jogadorId, [...(fins.get(l.jogadorId) ?? []), l.fim])
+    return fins
+  }
+
   async finsDeSessao(de: Date, ate: Date): Promise<Map<string, Date[]>> {
     const linhas = await this.db
       .select({ jogadorId: sessoesDeTempo.jogadorId, fim: sessoesDeTempo.cursor })

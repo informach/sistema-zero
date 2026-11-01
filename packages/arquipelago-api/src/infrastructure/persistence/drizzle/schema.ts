@@ -270,6 +270,28 @@ export const tempoDiario = arquipelagoSchema.table(
   ],
 )
 
+/**
+ * Os dias de jogo do adulto (lacunas, 01/11/2026): o adulto não tem limite de tempo nem sessões
+ * (o Kids mede pelo `tempo_diario` e pelas `sessoes_de_tempo`), então cada dia em que ele abre ou
+ * grava o jogo fica aqui, com a primeira e a última hora. A medição tira D1, D7 e a volta ao curso
+ * em 24 horas do adulto destes dias, pela mesma regra do Kids.
+ */
+export const diasDeJogo = arquipelagoSchema.table(
+  'dias_de_jogo',
+  {
+    jogadorId: uuid().notNull(),
+    dia: date({ mode: 'string' }).notNull(),
+    publico: varchar({ length: 8 }).notNull(),
+    primeiroEm: timestamp({ withTimezone: true }).notNull(),
+    ultimoEm: timestamp({ withTimezone: true }).notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.jogadorId, t.dia] }),
+    index('dias_de_jogo_dia').on(t.publico, t.dia),
+    check('dias_de_jogo_publico_check', sql`${t.publico} in ('kids', 'adulto')`),
+  ],
+)
+
 /** Eventos aceitos, para que uma resposta perdida possa ser reenviada sem somar duas vezes. */
 export const eventosTempo = arquipelagoSchema.table(
   'eventos_tempo',
