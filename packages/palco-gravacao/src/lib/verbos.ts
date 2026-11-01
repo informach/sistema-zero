@@ -175,10 +175,16 @@ export const VERBOS: Verbo[] = [
       'Troca um campo de bloco: escolhe no menu ou no seletor que ele abre, ou reescreve um número ou texto (em "<bloco>" para dizer qual).',
   },
   {
-    verbo: 'escolher',
-    exemplo: 'escolher "escolhido"',
+    verbo: 'abrir campo',
+    exemplo: 'abrir campo "jogador" em "Deixar o sprite"',
     descricao:
-      'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho).',
+      'Só clica num campo de bloco, para a lista ou a caixa abrir na fala do clique; o escolher vem na fala seguinte.',
+  },
+  {
+    verbo: 'escolher',
+    exemplo: 'escolher "escolhido" em "Deixar o sprite"',
+    descricao:
+      'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho); com "em", a mão sai de cima do bloco depois.',
   },
   {
     verbo: 'compartilhar',
@@ -501,6 +507,15 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     ]
   }
 
+  const abrirCampo = /^abrir campo ["“]([^"”]+)["”](?: em ["“]([^"”]+)["”])?$/i.exec(texto)
+  if (abrirCampo?.[1]) {
+    const campo = precisaDaPagina(pagina).campo(abrirCampo[1], abrirCampo[2])
+    if (!campo)
+      throw new Error(`Não achei o campo "${abrirCampo[1]}" num bloco da área de trabalho.`)
+    // A lista (ou a caixa) que abre cobre o bloco: a mão fica no campo até o escolher.
+    return [{ fazer: 'clicar', alvo: campo.alvo }]
+  }
+
   const afastarDe = /^afastar de ["“]([^"”]+)["”]$/i.exec(texto)
   if (afastarDe?.[1]) {
     const perto = precisaDaPagina(pagina).perto(afastarDe[1])
@@ -509,11 +524,13 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'apontar', alvo: perto, exato: true }]
   }
 
-  const escolher = /^escolher ["“]([^"”]*)["”]$/i.exec(texto)
+  const escolher = /^escolher ["“]([^"”]*)["”](?: em ["“]([^"”]+)["”])?$/i.exec(texto)
   if (escolher?.[1] !== undefined) {
     const aberto = precisaDaPagina(pagina).aberto()
-    if (aberto === 'lista') return [naLista(escolher[1])]
-    if (aberto === 'caixa') return naCaixa(escolher[1])
+    // Escolhido, a mão sai de cima do bloco do campo, quando o roteiro diz qual é.
+    const depois = escolher[2] ? [afastar(escolher[2])] : []
+    if (aberto === 'lista') return [naLista(escolher[1]), ...depois]
+    if (aberto === 'caixa') return [...naCaixa(escolher[1]), ...depois]
     throw new Error('O campo clicado não abriu uma lista nem uma caixa de texto.')
   }
 

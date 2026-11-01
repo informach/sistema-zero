@@ -202,6 +202,17 @@ describe('verbos do palco', () => {
       agir('escolher "Achei!"', jogos, pagina({ aberto: () => 'caixa' })).map((p) => p.fazer),
     ).toEqual(['digitar', 'tecla'])
     expect(() => agir('escolher "x"', jogos, pagina({ aberto: () => null }))).toThrow(/não abriu/)
+    // Em duas falas: o clique no campo numa, a escolha na outra, e a mão sai do bloco no fim.
+    expect(agir('abrir campo "jogador" em "Deixar o sprite"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
+    ])
+    expect(agir('escolher "escolhido" em "Deixar o sprite"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+    ])
+    expect(() => agir('abrir campo "x"', jogos, pagina({ campo: () => null }))).toThrow(
+      /Não achei o campo/,
+    )
     expect(() => agir('trocar "x" por "y"', jogos, pagina({ campo: () => null }))).toThrow(
       /Não achei o campo/,
     )

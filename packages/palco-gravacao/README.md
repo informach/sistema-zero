@@ -52,7 +52,9 @@ está sendo conferido.
   preservando a edição e a sequência da gravação.
 - **Decidir depois do clique:** os seletores do Estúdio (sprite, nome, som) herdam do campo de
   texto do Blockly e abrem uma lista. O `trocar` clica e pede `continuar` com `escolher "<valor>"`,
-  que escolhe na lista aberta ou digita na caixa. A prévia que ainda monta depois de expandir é
+  que escolhe na lista aberta ou digita na caixa. Quando a fala separa os dois cliques ("clique em
+  jogador, desça até o fim da lista e clique em escolhido"), o roteiro usa `abrir campo` numa fala e
+  `escolher "<valor>" em "<bloco>"` na outra, e cada clique cai na sua palavra. A prévia que ainda monta depois de expandir é
   esperada do mesmo jeito.
 - **Blocos-sombra:** o número de um bloco ("50", o "1" de "Somar 1") fica num bloco-sombra
   encaixado nele, que conta como parte dele.
