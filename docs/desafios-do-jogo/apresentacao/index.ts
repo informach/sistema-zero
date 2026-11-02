@@ -25,7 +25,7 @@ export function comApresentacao<M extends ManifestoDeDesafios>(manifesto: M): M 
       const resumo = RESUMOS_DOS_QUADROS[slugBase(d.slug)]
       const arquivo = arquivoDaImagem(d.slug)
       const imagem = existsSync(arquivo)
-        ? `data:image/webp;base64,${readFileSync(arquivo).toString('base64')}`
+        ? `data:image/webp;base64,${readFileSync(arquivo, 'base64')}`
         : undefined
       if (imagem && imagem.length > LIMITES_DO_DESAFIO.imagemCaracteres)
         throw new Error(
