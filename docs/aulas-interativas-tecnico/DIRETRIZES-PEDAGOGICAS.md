@@ -297,6 +297,15 @@ Consulta histórica opcional; não é preciso reconstruir as regras a partir des
 
 ## Exploração livre e linguagem sem ambiguidade
 
+**A experiência trabalha a ideia; a montagem traz os blocos (01/11/2026).** Decisão da responsável depois de ler a parte "Como o personagem anda" do Farol, em que o vídeo misturava quadro, comando, regra, tecla e bloco e a experiência era um Estúdio em miniatura: "o objetivo da experiência é concretizar uma ideia, trazer para o concreto para a criança, mas sem falar de programação, sem falar de blocos, de código. Depois, na próxima parte, em que a gente vai para o Estúdio, aí sim a gente vê quais blocos a gente usa para implementar essa ideia." Vale para todo curso:
+
+- O vídeo da experiência e a experiência não nomeiam blocos, áreas do Estúdio, comandos, regra de programação nem código. Usam a comparação do dia a dia e o que acontece no próprio jogo (o desenho animado, o passinho, a seta; a cócega e a risada, o toque e o esconderijo).
+- A montagem que vem depois liga cada bloco à ideia, com o nome que aparece na tela: "É este bloco que dá o passinho"; "Lembra que o jogo olha a seta em todo quadro? Por isso, o passinho vai dentro do bloco A cada quadro do jogo".
+- Uma ideia por fala: não juntar na mesma explicação o que é quadro, o que a tecla faz e onde o bloco fica.
+- Quando a Debinha ou o Dedé perguntam o que acontece ("E se eu soltar a seta?"), a resposta começa pelo que a criança vê ("Aí ele para!") e depois dá o porquê.
+
+Primeira aplicação: a câmera lenta do Farol, Dia 1 (registro em `modulos-desafio-primeiro-jogo.md`). O que vem abaixo, de 26/10/2026, continua valendo onde não contradiz esta regra.
+
 Aplicar a direção de 26/10/2026 em [Conceito, investigação e construção](DESCOBERTA-GUIADA.md#explorar-para-compreender-direção-de-26102026). Distinguir editar uma regra, dar uma entrada e executar o teste. As palavras do controle precisam dizer qual dessas operações acontece. Não apresentar uma tecla como se fosse um bloco nem apagar uma coleta ao editar a regra depois do encontro.
 
 Simplicidade não significa limitar a experiência a um ou dois cliques. Oferecer repetição suficiente para perceber a relação: muitos quadros para movimento; ida e volta nos eixos; reação ligada/desligada em objetos diferentes; novo achado, vazio e repetição para contagem. Os objetivos são observações que podem ser feitas em qualquer ordem. Manter referências visuais permanentes quando elas tornam a comparação possível.

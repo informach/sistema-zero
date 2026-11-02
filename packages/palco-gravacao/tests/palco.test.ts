@@ -1,8 +1,11 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
 import type { PaginaDoPalco } from '../src/lib/pagina'
+import { projetoDaParte } from '../src/lib/projeto-da-parte'
+import { projetoAntes } from '../src/lib/projeto-gravado'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
 import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
@@ -10,6 +13,7 @@ import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   previa: () => ({ width: 800, height: 600 }),
+  areaPronta: () => true,
   campo: () => ({
     alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 },
     tipo: 'menu',
@@ -22,6 +26,8 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
     de: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
     para: { seletor: '[data-palco-alvo="a3"]', u: 0.4, v: 0.2 },
   }),
+  rolagemDoCampo: () => 'visivel',
+  fundoLivre: () => ({ seletor: '[data-palco-alvo="a8"]', u: 0.85, v: 0.85 }),
   temBotao: () => false,
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
@@ -114,6 +120,16 @@ describe('verbos do palco', () => {
     })
     expect(agir('apontar prévia 75 26', jogos, pagina())[0]).toMatchObject({ fazer: 'apontar' })
     // Sem a prévia ainda (o Estúdio acabou de expandir): espera ela aparecer e pergunta de novo.
+    // Logo depois de expandir: os gestos de bloco esperam a área de trabalho.
+    expect(agir('arrastar até "Ao iniciar"', jogos, pagina({ areaPronta: () => false }))).toEqual([
+      {
+        fazer: 'esperar',
+        alvo: { seletor: 'svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable' },
+        estado: 'aparecer',
+        maximo: 30,
+      },
+      { fazer: 'continuar', acao: 'arrastar até "Ao iniciar"' },
+    ])
     expect(agir('tocar prévia', jogos, pagina({ previa: () => null })).map((p) => p.fazer)).toEqual(
       ['esperar', 'continuar'],
     )
@@ -202,6 +218,40 @@ describe('verbos do palco', () => {
       agir('escolher "Achei!"', jogos, pagina({ aberto: () => 'caixa' })).map((p) => p.fazer),
     ).toEqual(['digitar', 'tecla'])
     expect(() => agir('escolher "x"', jogos, pagina({ aberto: () => null }))).toThrow(/não abriu/)
+    // Em duas falas: o clique no campo numa, a escolha na outra, e a mão sai do bloco no fim.
+    expect(agir('abrir campo "jogador" em "Deixar o sprite"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
+    ])
+    expect(agir('escolher "escolhido" em "Deixar o sprite"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+    ])
+    expect(agir('organizar blocos', jogos, pagina())).toEqual([
+      { fazer: 'clique direito', alvo: { seletor: '[data-palco-alvo="a8"]', u: 0.85, v: 0.85 } },
+      { fazer: 'clicar', alvo: { texto: 'Organizar blocos', dentro: '.blocklyWidgetDiv' } },
+    ])
+    // Fora da vista ou coberto, o campo vem para o centro antes do clique.
+    const longe = pagina({
+      rolagemDoCampo: () => ({
+        de: { seletor: '[data-palco-alvo="a3"]', u: 0.2, v: 0.8 },
+        para: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
+      }),
+    })
+    expect(agir('abrir campo "coelho" em "Criar sprite"', jogos, longe)).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="a3"]', u: 0.2, v: 0.8 },
+        para: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
+      },
+      { fazer: 'continuar', acao: 'abrir campo "coelho" em "Criar sprite"' },
+    ])
+    expect(agir('trocar "50" por "0"', jogos, longe).map((p) => p.fazer)).toEqual([
+      'arrastar',
+      'continuar',
+    ])
+    expect(() => agir('abrir campo "x"', jogos, pagina({ campo: () => null }))).toThrow(
+      /Não achei o campo/,
+    )
     expect(() => agir('trocar "x" por "y"', jogos, pagina({ campo: () => null }))).toThrow(
       /Não achei o campo/,
     )
@@ -296,6 +346,71 @@ describe('rotas da aula no palco', () => {
         ],
       },
     })
+  })
+
+  test('enviado=1 abre o Estúdio com o projeto já enviado, e só ele muda', () => {
+    const now = new Date('2026-11-01T12:00:00Z')
+    const lesson = {
+      id: 'a',
+      blocks: [
+        { id: 'e', kind: 'studio', sortOrder: 1, content: {} },
+        { id: 'v', kind: 'video', sortOrder: 2, content: {} },
+      ],
+    } as unknown as Parameters<typeof enviada>[0]
+    const aula = enviada(lesson, now)
+    expect(aula.blocks[0]?.studioState).toEqual({
+      submitted: true,
+      submittedAt: '2026-11-01T12:00:00.000Z',
+    })
+    expect(aula.blocks[1]).toBe(lesson.blocks[1])
+    expect(lesson.blocks[0]?.studioState).toBeUndefined()
+  })
+
+  test('a parte continua do projeto da tomada mais recente da parte de antes mais perto', () => {
+    const g = (parte: number, at: number) => ({ parte, at, project: { de: `${parte}@${at}` } })
+    const gravados = [g(3, 1), g(4, 2), g(4, 5), g(5, 9)]
+    expect(projetoAntes(gravados, 5)).toEqual({ de: '4@5' })
+    expect(projetoAntes(gravados, 4)).toEqual({ de: '3@1' })
+    // Gravar a parte 5 depois não muda o que a 5 recebe; nada antes da 3, nada a continuar.
+    expect(projetoAntes(gravados, 3)).toBeNull()
+  })
+
+  test('sem tomada de antes, a parte abre no projeto de entrada dela ou na solução de antes', () => {
+    const aula2 = JSON.parse(
+      readFileSync(
+        new URL(
+          '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    )
+    const studio = aula2.blocks.find((b: { content?: { projectExamples?: unknown } }) =>
+      Boolean(b.content?.projectExamples),
+    ).content.projectExamples
+    // Na aula publicada, as partes têm ids; o manifesto as chama pela chave.
+    const chaves = ['retomada', 'variavel-achados', 'contar-achados', 'personalizar', 'conclusao']
+    const id = (i: number) => `00000000-0000-4000-8000-00000000000${i + 1}`
+    const publicada = {
+      ...studio,
+      sections: Object.fromEntries(
+        Object.entries(studio.sections).map(([k, v]) => [id(chaves.indexOf(k)), v]),
+      ),
+    }
+    const ids = chaves.map((_, i) => id(i))
+    const [entrada, solucao] = [
+      studio.sections['contar-achados'].entryExampleId,
+      studio.sections['contar-achados'].solutionExampleId,
+    ]
+    expect(projetoDaParte(publicada, ids, 3)).toEqual(studio.examples[entrada])
+    expect(projetoDaParte(publicada, ids, 4)).toEqual(studio.examples[solucao])
+    expect(projetoDaParte(publicada, ids, 5)).toEqual(studio.examples[solucao])
+    expect(projetoDaParte(publicada, ids, 2)).toBeNull()
+    expect(projetoDaParte(publicada, ids, ids.length + 1)).toBeNull()
+    expect(projetoDaParte(publicada, ids, Number.MAX_SAFE_INTEGER)).toBeNull()
+    expect(projetoDaParte(publicada, ids, Number.POSITIVE_INFINITY)).toBeNull()
+    expect(projetoDaParte(publicada, ids, Number.NaN)).toBeNull()
+    expect(projetoDaParte(undefined, ids, 4)).toBeNull()
   })
 
   test('cada tomada começa do projeto inicial: nada enviado nem trazido', () => {

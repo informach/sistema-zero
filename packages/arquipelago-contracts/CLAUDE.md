@@ -5,6 +5,20 @@ Estado canônico em [docs/arquipelago-estado-atual.md](../../docs/arquipelago-es
 Schemas históricos continuam imutáveis. Menções a V11, V18 e outras versões nas seções datadas
 explicam sua introdução, não a versão atual da resposta.
 
+## Apresentação do desafio: `resumo` e `imagem` (01/11/2026)
+
+`ConteudoDoDesafioV1Schema` aceita `resumo` (até `LIMITES_DO_DESAFIO.resumo`, 60) e `imagem`
+(`ImagemDoDesafioSchema`: data URL PNG, JPEG ou WebP até `imagemCaracteres`, 40 mil), os dois
+opcionais: o conteúdo guardado antes continua V1. A lista leva `resumo` (o escrito ou a primeira
+frase do enunciado, `resumoDoDesafio`) e `imagem` só nos quadros de ilha aberta; a abertura leva `imagem`. Todos
+opcionais nas vistas estritas. Implantar a API antes de importar manifestos com os campos (uma API
+antiga recusaria o conteúdo). Teste: `tests/desafios-resumo.test.ts`.
+
+A vista HTTP ampliada é pedida com `apresentacao=1`; a padrão não acrescenta esses campos a
+uma tela antiga. O jogo pede `apresentacaoDosDesafios: true` em `servico.buscar`: um host novo
+traduz a opção, e um anterior a ignora e entrega a vista compacta. Isso permite trocar host,
+jogo e API em ordens diferentes sem perder a leitura estrita nem mudar o salvamento.
+
 ## Revisão dos lotes de 31/10/2026
 
 - **V22** (lista B): percursos em tupla (`ResultadoCompacto`), `vale.fosseis` (B4), `ceu` e

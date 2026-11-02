@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
 import { montarProjeto, TITULO_DAS_VARIACOES, VARIACOES, type Variacao } from './projetos'
@@ -45,48 +46,50 @@ const textos: Record<Variacao, { enunciado: string; dicas: string[] }> = {
 }
 
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return comPedidosDosMoradores(
-    ManifestoDeDesafiosSchema.parse({
-      formato: 'arquipelago-desafios',
-      versao: 1,
-      escopo: 'ilha',
-      desafios: [
-        ...desafiosIniciaisDoVale(publico),
-        ...VARIACOES.map((variacao, i) => {
-          const tipo = 'desafio-do-dia' as const
-          const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-          return {
-            slug: `vale-guardiao-${variacao}${publico === 'adulto' ? '-adulto' : ''}`,
-            publico,
-            ilha: 'vale-dos-dinos',
-            tipo,
-            quadro: null,
-            ordem: 60 + i,
-            // Só blocos da trilha (lacunas, 01/11/2026): pede publicação como os outros.
-            publicar: true,
-            conteudo: {
-              versao: 1,
-              titulo: TITULO_DAS_VARIACOES[variacao],
-              ...textos[variacao],
-              projetoInicial: montarProjeto(variacao, false),
-              gabarito: montarProjeto(variacao, true),
-              objetivos: objetivos[variacao],
-              desafioExtra: {
-                titulo: 'Mais um desafio',
-                texto: 'Complete Enter para recomeçar a defesa.',
+  return comApresentacao(
+    comPedidosDosMoradores(
+      ManifestoDeDesafiosSchema.parse({
+        formato: 'arquipelago-desafios',
+        versao: 1,
+        escopo: 'ilha',
+        desafios: [
+          ...desafiosIniciaisDoVale(publico),
+          ...VARIACOES.map((variacao, i) => {
+            const tipo = 'desafio-do-dia' as const
+            const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+            return {
+              slug: `vale-guardiao-${variacao}${publico === 'adulto' ? '-adulto' : ''}`,
+              publico,
+              ilha: 'vale-dos-dinos',
+              tipo,
+              quadro: null,
+              ordem: 60 + i,
+              // Só blocos da trilha (lacunas, 01/11/2026): pede publicação como os outros.
+              publicar: true,
+              conteudo: {
+                versao: 1,
+                titulo: TITULO_DAS_VARIACOES[variacao],
+                ...textos[variacao],
+                projetoInicial: montarProjeto(variacao, false),
+                gabarito: montarProjeto(variacao, true),
+                objetivos: objetivos[variacao],
+                desafioExtra: {
+                  titulo: 'Mais um desafio',
+                  texto: 'Complete Enter para recomeçar a defesa.',
+                },
+                recompensa: {
+                  cor: false,
+                  atracao: 'guardiao-dos-ninhos',
+                  moedas: moedas.principal,
+                  moedasExtra: moedas.extra,
+                },
+                blocosManuais: { acrescentar: [], retirar: [] },
               },
-              recompensa: {
-                cor: false,
-                atracao: 'guardiao-dos-ninhos',
-                moedas: moedas.principal,
-                moedasExtra: moedas.extra,
-              },
-              blocosManuais: { acrescentar: [], retirar: [] },
-            },
-          }
-        }),
-      ],
-    }),
+            }
+          }),
+        ],
+      }),
+    ),
   )
 }
 if (import.meta.main) {

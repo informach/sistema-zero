@@ -651,6 +651,39 @@ describe('repasse do Arquipélago', () => {
     })
   })
 
+  test('a vista com apresentação é explícita e só repassa os filtros permitidos', async () => {
+    const chamadas: { caminho: string; opts: Record<string, unknown> }[] = []
+    const routes = createArquipelagoRoutes({
+      gateway: {
+        gatewayFetch: async (caminho: string, opts: Record<string, unknown>) => {
+          chamadas.push({ caminho, opts })
+          return { status: 200, body: { ok: true } }
+        },
+      } as never,
+      profiles: { list: async () => ({ status: 200, body: { profiles: [] } }) } as never,
+    })
+    const id = '22222222-2222-4222-8222-222222222222'
+    const ctx = { params: Promise.resolve({ id }) }
+    await routes.arquipelagoDesafios.GET(
+      new Request('http://local/api/arquipelago/desafios?ilha=bosque&apresentacao=1&perfil=outro'),
+    )
+    await routes.arquipelagoDesafio.GET(
+      new Request(`http://local/api/arquipelago/desafios/${id}?apresentacao=1`),
+      ctx,
+    )
+    expect(chamadas.map((c) => c.opts.query)).toEqual([
+      { ilha: 'bosque', apresentacao: '1' },
+      { apresentacao: '1' },
+    ])
+    expect(
+      (await routes.arquipelagoDesafios.GET(new Request('http://local?apresentacao=2'))).status,
+    ).toBe(400)
+    expect(
+      (await routes.arquipelagoDesafio.GET(new Request('http://local?apresentacao=2'), ctx)).status,
+    ).toBe(400)
+    expect(chamadas).toHaveLength(2)
+  })
+
   test('conferir: corpo acima de 4 MB não sai do BFF', async () => {
     const { routes, chamadas } = montar({ status: 200, body: {} })
     const grande = JSON.stringify({ revisao: 1, projeto: { x: 'a'.repeat(4 * 1024 * 1024) } })

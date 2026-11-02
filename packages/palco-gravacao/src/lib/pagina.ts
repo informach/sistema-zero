@@ -8,6 +8,8 @@ import type { Alvo } from './verbos'
 export interface PaginaDoPalco {
   /** O tamanho da pré-visualização do jogo no Estúdio, ou nulo quando ela não está na tela. */
   previa(): { width: number; height: number } | null
+  /** A área de trabalho do Estúdio já mostra os blocos (logo depois de expandir, ainda não). */
+  areaPronta(): boolean
   /**
    * Um campo de bloco pelo texto (dentro do bloco que tem `bloco`, quando dado): um menu do
    * Blockly, um número, ou outro campo (texto ou um seletor do Estúdio, que só se sabe depois
@@ -23,6 +25,10 @@ export interface PaginaDoPalco {
   encaixe(bloco: string, rotulo: string): Alvo | null
   /** Um arrasto do fundo da área de trabalho que traz o bloco à vista (nulo se já está). */
   rolagem(bloco: string): { de: Alvo; para: Alvo } | 'visivel' | null
+  /** Um ponto do fundo da área de trabalho à vista, sem bloco em cima (para o menu dela). */
+  fundoLivre(): Alvo | null
+  /** O mesmo para um campo de bloco, que também precisa estar descoberto para o clique. */
+  rolagemDoCampo(valor: string, bloco?: string): { de: Alvo; para: Alvo } | 'visivel' | null
   /** Algum botão visível com este texto. */
   temBotao(texto: string): boolean
   /**
@@ -59,10 +65,12 @@ const visivel = (el: Element): boolean => {
 const texto = (el: Element): string => (el.textContent ?? '').replace(/\s+/g, ' ').trim()
 
 // A barra de um rótulo é dita "ou": o bloco "Quando clicar/tocar" é "Quando clicar ou tocar" na fala.
+// O emoji da categoria não é dito: "🏷️ Variáveis" é "Variáveis".
 const fold = (s: string): string =>
   s
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
+    .replace(/\p{Extended_Pictographic}|\u200d|\ufe0f/gu, '')
     .toLowerCase()
     .replace(/\s*\/\s*/g, ' ou ')
     .replace(/\s+/g, ' ')
@@ -152,6 +160,69 @@ function pontoEm(el: Element, x: number, y: number): Alvo {
   }
 }
 
+/** O campo de bloco com este valor (dentro do bloco que tem `bloco`, quando dado). */
+function campoDe(doc: Document, valor: string, bloco?: string): Element | null {
+  const wanted = fold(valor)
+  const blocos = bloco ? blocosCom(doc, bloco) : null
+  const area = areaDeTrabalho(doc)
+  if (!area) return null
+  const found = [...area.querySelectorAll('.blocklyEditableField text.blocklyText')].find(
+    (t) =>
+      visivel(t) &&
+      fold(texto(t).replace(/▾/g, '')) === wanted &&
+      (!blocos || blocos.some((b) => donoDe(t) === b)),
+  )
+  return found ? (found.closest('.blocklyEditableField') ?? found) : null
+}
+
+/**
+ * Um arrasto do fundo da área de trabalho que leva `el` (um bloco, um campo) para o centro da
+ * área à vista; `'visivel'` se ele já está inteiro à vista e sem nada por cima.
+ */
+function rolagemDe(
+  doc: Document,
+  el: Element,
+  descoberto = false,
+): { de: Alvo; para: Alvo } | 'visivel' | null {
+  const area = areaDeTrabalho(doc)
+  if (!area) return null
+  const view = areaVisivel(doc, area)
+  const b = el.getBoundingClientRect()
+  const inside =
+    b.top >= view.top && b.bottom <= view.bottom && b.left >= view.left && b.right <= view.right
+  // Um campo também precisa estar descoberto: com outra coisa por cima (a paleta aberta, um
+  // painel), vai para o centro. Um bloco tem os de dentro por cima, e isso não conta.
+  const topo = descoberto ? doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null
+  const livre = !topo || el.contains(topo) || topo.contains(el)
+  if (inside && livre) return 'visivel'
+  // Um ponto do fundo, sem bloco em cima, de onde arrastar.
+  const fundo = (x: number, y: number) =>
+    doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+  // Leva o bloco para o centro da área de código, onde a criança o vê melhor, até onde o
+  // arrasto alcança (um bloco maior que a área fica com o topo perto do alto). A paleta que
+  // abrir por cima dele fecha quando o próximo bloco sai dela.
+  const centro = (inicio: number, tamanho: number, area: number) =>
+    tamanho >= area * 0.8 ? area * 0.1 - inicio : area / 2 - (inicio + tamanho / 2)
+  const dx = centro(b.left - view.left, b.width, view.width)
+  const dy = centro(b.top - view.top, b.height, view.height)
+  // Começa do lado de onde o bloco vem: o arrasto inteiro cabe na área à vista.
+  const xs = dx < 0 ? [0.9, 0.75, 0.5, 0.25, 0.1] : [0.1, 0.25, 0.5, 0.75, 0.9]
+  const ys = dy < 0 ? [0.85, 0.7, 0.5, 0.3, 0.15] : [0.15, 0.3, 0.5, 0.7, 0.85]
+  let start: { x: number; y: number } | null = null
+  for (const fy of ys)
+    for (const fx of xs) {
+      const x = view.left + view.width * fx
+      const y = view.top + view.height * fy
+      if (!start && fundo(x, y)) start = { x, y }
+    }
+  if (!start) return null
+  const end = {
+    x: Math.min(view.right - 4, Math.max(view.left + 4, start.x + dx)),
+    y: Math.min(view.bottom - 4, Math.max(view.top + 4, start.y + dy)),
+  }
+  return { de: pontoEm(area, start.x, start.y), para: pontoEm(area, end.x, end.y) }
+}
+
 export function paginaDe(doc: Document): PaginaDoPalco {
   return {
     previa() {
@@ -161,22 +232,16 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return { width: r.width, height: r.height }
     },
 
-    campo(valor, bloco) {
-      const wanted = fold(valor)
-      const blocos = bloco ? blocosCom(doc, bloco) : null
+    areaPronta() {
       const area = areaDeTrabalho(doc)
-      if (!area) return null
-      const candidatos = [
-        ...area.querySelectorAll('.blocklyEditableField text.blocklyText'),
-      ].filter(
-        (t) =>
-          visivel(t) &&
-          fold(texto(t).replace(/▾/g, '')) === wanted &&
-          (!blocos || blocos.some((b) => donoDe(t) === b)),
+      return (
+        !!area && [...area.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].some(visivel)
       )
-      const found = candidatos[0]
-      if (!found) return null
-      const field = found.closest('.blocklyEditableField') ?? found
+    },
+
+    campo(valor, bloco) {
+      const field = campoDe(doc, valor, bloco)
+      if (!field) return null
       const r = field.getBoundingClientRect()
       const dono = donoDe(field)
       return {
@@ -219,40 +284,13 @@ export function paginaDe(doc: Document): PaginaDoPalco {
     },
 
     rolagem(bloco) {
-      const area = areaDeTrabalho(doc)
       const block = blocosCom(doc, bloco)[0]
-      if (!area || !block) return null
-      const view = areaVisivel(doc, area)
-      const b = block.getBoundingClientRect()
-      const inside =
-        b.top >= view.top && b.bottom <= view.bottom && b.left >= view.left && b.right <= view.right
-      if (inside) return 'visivel'
-      // Um ponto do fundo, sem bloco em cima, de onde arrastar.
-      const fundo = (x: number, y: number) =>
-        doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
-      // Leva o bloco para o centro da área de código, onde a criança o vê melhor, até onde o
-      // arrasto alcança (um bloco maior que a área fica com o topo perto do alto). A paleta que
-      // abrir por cima dele fecha quando o próximo bloco sai dela.
-      const centro = (inicio: number, tamanho: number, area: number) =>
-        tamanho >= area * 0.8 ? area * 0.1 - inicio : area / 2 - (inicio + tamanho / 2)
-      const dx = centro(b.left - view.left, b.width, view.width)
-      const dy = centro(b.top - view.top, b.height, view.height)
-      // Começa do lado de onde o bloco vem: o arrasto inteiro cabe na área à vista.
-      const xs = dx < 0 ? [0.9, 0.75, 0.5, 0.25, 0.1] : [0.1, 0.25, 0.5, 0.75, 0.9]
-      const ys = dy < 0 ? [0.85, 0.7, 0.5, 0.3, 0.15] : [0.15, 0.3, 0.5, 0.7, 0.85]
-      let start: { x: number; y: number } | null = null
-      for (const fy of ys)
-        for (const fx of xs) {
-          const x = view.left + view.width * fx
-          const y = view.top + view.height * fy
-          if (!start && fundo(x, y)) start = { x, y }
-        }
-      if (!start) return null
-      const end = {
-        x: Math.min(view.right - 4, Math.max(view.left + 4, start.x + dx)),
-        y: Math.min(view.bottom - 4, Math.max(view.top + 4, start.y + dy)),
-      }
-      return { de: pontoEm(area, start.x, start.y), para: pontoEm(area, end.x, end.y) }
+      return block ? rolagemDe(doc, block) : null
+    },
+
+    rolagemDoCampo(valor, bloco) {
+      const field = campoDe(doc, valor, bloco)
+      return field ? rolagemDe(doc, field, true) : null
     },
 
     bloco(texto, onde) {
@@ -285,6 +323,20 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       )
       const r = (path ?? block).getBoundingClientRect()
       return pontoEm(area, r.left + 12, r.bottom + 10)
+    },
+
+    fundoLivre() {
+      const area = areaDeTrabalho(doc)
+      if (!area) return null
+      const view = areaVisivel(doc, area)
+      for (const fy of [0.85, 0.15, 0.5, 0.7, 0.3])
+        for (const fx of [0.85, 0.5, 0.15, 0.7, 0.3]) {
+          const x = view.left + view.width * fx
+          const y = view.top + view.height * fy
+          if (doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
+            return pontoEm(area, x, y)
+        }
+      return null
     },
 
     perto(texto) {

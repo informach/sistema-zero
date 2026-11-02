@@ -152,7 +152,7 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
   // sai do começo.
   if (
     scene === 'lighthouse-walk' &&
-    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order'].includes(acao.type)
+    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order', 'walk-pace'].includes(acao.type)
   )
     return false
   return true

@@ -21,6 +21,7 @@ let sends: unknown[] = []
 let paths: string[] = []
 let environmentRequests: unknown[] = []
 const environment = { signal: new AbortController().signal, marca: 'ambiente-do-desafio' }
+let portalContainer: unknown = 'nenhum'
 let respond = async () => ({
   passou: true,
   resultados: [{ id: 'o1', passou: true }],
@@ -29,6 +30,10 @@ let respond = async () => ({
 })
 mock.module('@sistemazero/studio', () => ({
   STUDIO_PRO_BUILD_LIMITS: { maxBffRequestBytes: 1 },
+  StudioPortalContainerProvider: ({ value, children }: { value: unknown; children: unknown }) => {
+    portalContainer = value
+    return children
+  },
   createLocalPersistenceAdapter: () => ({
     load: async () => stored,
     save: async (project: EditableStudioProject) => {
@@ -130,6 +135,8 @@ afterEach(async () => {
   paths = []
   environmentRequests = []
   props = {}
+  portalContainer = 'nenhum'
+  localStorage.clear()
   stored = null
   respond = async () => ({
     passou: true,
@@ -277,4 +284,44 @@ test('C02b: o Pro abre no código com o compilador do desafio e sem a paleta do 
   expect(props.features).toEqual({ extensions: false, professional: true })
   expect(typeof (props.proRuntime as { build?: unknown })?.build).toBe('function')
   expect(environmentRequests).toEqual([])
+})
+
+test('o diálogo modal é o contêiner dos menus do Studio e dos campos do Blockly', async () => {
+  const ui = await render()
+  expect(portalContainer).toBe(ui.container.querySelector('dialog'))
+})
+test('a Missão mostra o pedido, a imagem e a dica do objetivo só depois de faltar', async () => {
+  respond = async () => ({
+    passou: false,
+    resultados: [{ id: 'o1', passou: false }],
+    concluidoAgora: false,
+    extraAgora: false,
+  })
+  const ui = await render({
+    ...data,
+    enunciado: 'O Nico quer que o guia ande pela areia.',
+    imagem: 'data:image/webp;base64,AAAA',
+    objetivos: [{ id: 'o1', label: 'Ande para a direita', kind: 'game', hint: 'Use a seta.' }],
+  })
+  const missao = ui.container.querySelector('#arq-missao')
+  expect(missao?.textContent).toContain('O Nico quer que o guia ande pela areia.')
+  expect(missao?.querySelector('img[src^="data:image/webp"]')).not.toBeNull()
+  expect(missao?.textContent).not.toContain('Use a seta.')
+  await ui.click('Verificar projeto')
+  expect(missao?.textContent).toContain('Use a seta.')
+  expect(missao?.textContent).toContain('Falta: ')
+})
+test('a Missão recolhe no computador e o balão de primeira vez some de vez', async () => {
+  const ui = await render()
+  expect(ui.container.textContent).toContain('Aqui está o pedido.')
+  await ui.click('Entendi')
+  expect(ui.container.textContent).not.toContain('Aqui está o pedido.')
+  await ui.click('Recolher')
+  expect(ui.container.querySelector('#arq-missao')?.className).toContain('lg:hidden')
+  await cleanup?.()
+  const outra = await render()
+  expect(outra.container.textContent).not.toContain('Aqui está o pedido.')
+  expect(outra.container.querySelector('#arq-missao')?.className).toContain('lg:hidden')
+  await outra.click('Mostrar a missão')
+  expect(outra.container.querySelector('#arq-missao')?.className).toContain('lg:flex')
 })

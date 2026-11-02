@@ -111,6 +111,7 @@ import {
   ScenePrediction,
 } from './scene-prediction'
 import { ScenePredictionPreview } from './scene-prediction-preview'
+import { WalkEmCameraLenta } from './scene-walk-camera-lenta'
 import { SceneWorkspace } from './scene-workspace'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
 
@@ -1342,6 +1343,7 @@ export function SceneActivityView({
                       dispatch,
                       running,
                       setRunning,
+                      tick: (seconds) => action.current({ type: 'advance', seconds }),
                       instruction,
                       dialogue: (text) =>
                         renderDialogue(text, {
@@ -1363,7 +1365,13 @@ export function SceneActivityView({
                     ) : m === 'touch-response' || m === 'found-counter' ? (
                       <ProposedGarden part={m === 'touch-response' ? 'touch' : 'count'} />
                     ) : m === 'lighthouse-walk' ? (
-                      <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
+                      // ⭐ A câmera lenta (01/11/2026) é escolhida pela meta dela: um bloco ainda com o
+                      // caso antigo (antes de reimportar o manifesto) segue com a bancada antiga.
+                      activity.setup?.goals?.includes('walked-real-speed') ? (
+                        <WalkEmCameraLenta />
+                      ) : (
+                        <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
+                      )
                     ) : m === 'collect-and-remember' ? (
                       <Memory />
                     ) : m === 'lighthouse-key' ? (

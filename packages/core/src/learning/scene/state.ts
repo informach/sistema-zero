@@ -10,7 +10,9 @@ import {
   COIN_COUNTER,
   isRecord,
   LIGHTHOUSE_POSITION,
+  LIGHTHOUSE_WALK_PACES,
   LIGHTHOUSE_WALK_SPEEDS,
+  type LighthouseWalkPace,
   type LighthouseWalkSpeed,
   MESH_LEVELS,
   type MeshLevel,
@@ -213,6 +215,11 @@ export interface SceneLighthouseWalk {
   order?: 'correct' | 'reverse'
   testedOrders?: ('correct' | 'reverse')[]
   orderResult?: boolean
+  /**
+   * O ritmo escolhido na experiência em câmera lenta (Farol, 01/11/2026): `lenta` ou `real`. Ausente nos
+   * outros casos (Nave, limite) e nos retratos anteriores. `walked-real-speed` só cai com `real`.
+   */
+  pace?: LighthouseWalkPace
   /** Quantos quadros passaram desde o começo (ou desde o Recomeçar). */
   frame: number
   /** O x do canto esquerdo do personagem, na tela de 480 do Farol. */
@@ -262,6 +269,11 @@ export const LIGHTHOUSE_WALK = {
    * passo e lia "anda a cada quadro".
    */
   runSeen: 2,
+  /**
+   * Quadros SEGUIDOS andando na velocidade de verdade para `walked-real-speed`: um segundo de
+   * caminhada, o bastante para os passinhos virarem movimento aos olhos.
+   */
+  realWalk: 30,
   /** O teto do x e do quadro no retrato (o Rodar para muito antes). */
   max: 1_000_000,
 } as const
@@ -2426,6 +2438,7 @@ function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
     (value.movement === undefined || typeof value.movement === 'boolean') &&
     (value.order === undefined || value.order === 'correct' || value.order === 'reverse') &&
     (value.orderResult === undefined || typeof value.orderResult === 'boolean') &&
+    (value.pace === undefined || LIGHTHOUSE_WALK_PACES.some((v) => v === value.pace)) &&
     (value.testedOrders === undefined ||
       (Array.isArray(value.testedOrders) &&
         value.testedOrders.length <= 2 &&

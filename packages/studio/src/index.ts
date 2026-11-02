@@ -152,6 +152,7 @@ export type {
   StudioPintaImportResult,
   StudioPintaLibraryAdapter,
 } from './studio/pinta-library'
+export { StudioPortalContainerProvider } from './studio/portal-container'
 export { prefetchStudioModes } from './studio/prefetch'
 export type {
   PrepareProDependencies,

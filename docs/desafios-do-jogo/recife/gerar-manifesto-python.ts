@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { gravarManifesto } from '../gravar-manifesto'
 import { objetivosDoRecifePython } from './python-objetivos'
 import { montarProjetoPython } from './python-projetos'
@@ -39,47 +40,49 @@ const textos: Record<PublicoDoDesafio, { titulo: string; enunciado: string; dica
 
 export function criarManifestoPython(publico: PublicoDoDesafio = 'kids') {
   const moedas = MOEDAS_PADRAO_POR_TIPO['quadro-das-cores']
-  return ManifestoDeDesafiosSchema.parse({
-    formato: 'arquipelago-desafios',
-    versao: 1,
-    escopo: 'ilha',
-    desafios: [
-      {
-        slug: `recife-mira-de-bolhas-python${publico === 'adulto' ? '-adulto' : ''}`,
-        publico,
-        ilha: 'recife',
-        // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
-        // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
-        tipo: 'quadro-das-cores',
-        quadro: 6,
-        ordem: 60,
-        publicar: true,
-        conteudo: {
-          versao: 1,
-          ...textos[publico],
-          projetoInicial: montarProjetoPython('inicial'),
-          gabarito: montarProjetoPython('gabarito'),
-          objetivos: objetivosDoRecifePython(publico),
-          desafioExtra: {
-            titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
-            texto:
-              publico === 'kids'
-                ? 'Faça a tecla R recomeçar a rodada: as mudas e as perdidas voltam a zero, coral volta a 0 e a bolha volta para a areia.'
-                : 'R reinicia a rodada: contadores e perdidas zerados, coral 0, jogando ativo e a bolha em (280, 360).',
+  return comApresentacao(
+    ManifestoDeDesafiosSchema.parse({
+      formato: 'arquipelago-desafios',
+      versao: 1,
+      escopo: 'ilha',
+      desafios: [
+        {
+          slug: `recife-mira-de-bolhas-python${publico === 'adulto' ? '-adulto' : ''}`,
+          publico,
+          ilha: 'recife',
+          // §6.28 A2: o sexto quadro, na linguagem do posto, devolve a cor; abre só com o
+          // curso-base do posto concluído (A3). Publica (A1): não pede bloco nenhum.
+          tipo: 'quadro-das-cores',
+          quadro: 6,
+          ordem: 60,
+          publicar: true,
+          conteudo: {
+            versao: 1,
+            ...textos[publico],
+            projetoInicial: montarProjetoPython('inicial'),
+            gabarito: montarProjetoPython('gabarito'),
+            objetivos: objetivosDoRecifePython(publico),
+            desafioExtra: {
+              titulo: publico === 'kids' ? 'Mais um desafio' : 'Extra',
+              texto:
+                publico === 'kids'
+                  ? 'Faça a tecla R recomeçar a rodada: as mudas e as perdidas voltam a zero, coral volta a 0 e a bolha volta para a areia.'
+                  : 'R reinicia a rodada: contadores e perdidas zerados, coral 0, jogando ativo e a bolha em (280, 360).',
+            },
+            // O minijogo vira atração (lacunas, 01/11/2026): o player roda o Python no ambiente do
+            // desafio.
+            recompensa: {
+              cor: true,
+              atracao: 'bolhas-da-lagoa',
+              moedas: moedas.principal,
+              moedasExtra: moedas.extra,
+            },
+            blocosManuais: { acrescentar: [], retirar: [] },
           },
-          // O minijogo vira atração (lacunas, 01/11/2026): o player roda o Python no ambiente do
-          // desafio.
-          recompensa: {
-            cor: true,
-            atracao: 'bolhas-da-lagoa',
-            moedas: moedas.principal,
-            moedasExtra: moedas.extra,
-          },
-          blocosManuais: { acrescentar: [], retirar: [] },
         },
-      },
-    ],
-  })
+      ],
+    }),
+  )
 }
 
 if (import.meta.main)

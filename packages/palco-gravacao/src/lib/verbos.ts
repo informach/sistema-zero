@@ -23,7 +23,7 @@ export interface Alvo {
 
 export type Passo =
   | {
-      fazer: 'apontar' | 'clicar' | 'clique duplo'
+      fazer: 'apontar' | 'clicar' | 'clique duplo' | 'clique direito'
       alvo: Alvo
       espera?: 'acelerar' | 'cortar'
       /** apontar: o ponto é onde a mão descansa (ao lado do bloco, não em cima). */
@@ -175,10 +175,22 @@ export const VERBOS: Verbo[] = [
       'Troca um campo de bloco: escolhe no menu ou no seletor que ele abre, ou reescreve um número ou texto (em "<bloco>" para dizer qual).',
   },
   {
-    verbo: 'escolher',
-    exemplo: 'escolher "escolhido"',
+    verbo: 'organizar blocos',
+    exemplo: 'organizar blocos',
     descricao:
-      'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho).',
+      'Botão direito no fundo da área de trabalho e Organizar blocos: arruma blocos um por cima do outro.',
+  },
+  {
+    verbo: 'abrir campo',
+    exemplo: 'abrir campo "jogador" em "Deixar o sprite"',
+    descricao:
+      'Só clica num campo de bloco, para a lista ou a caixa abrir na fala do clique; o escolher vem na fala seguinte.',
+  },
+  {
+    verbo: 'escolher',
+    exemplo: 'escolher "escolhido" em "Deixar o sprite"',
+    descricao:
+      'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho); com "em", a mão sai de cima do bloco depois.',
   },
   {
     verbo: 'compartilhar',
@@ -301,6 +313,36 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (f === 'reduzir estudio') return [{ fazer: 'clicar', alvo: botao('Reduzir') }]
   const ampliar = /^ampliar (.+)$/i.exec(texto)
   if (ampliar?.[1]) return [{ fazer: 'clicar', alvo: botao(`Ampliar ${ampliar[1]}`) }]
+
+  // Logo depois de expandir, o Estúdio ainda monta a área de trabalho: o gesto de bloco espera os
+  // blocos aparecerem e pergunta de novo.
+  if (
+    pagina &&
+    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |encaixar |abrir campo |trocar |organizar blocos$)/i.test(
+      texto,
+    ) &&
+    !pagina.areaPronta()
+  )
+    return [
+      {
+        fazer: 'esperar',
+        alvo: { seletor: 'svg.blocklySvg .blocklyBlockCanvas .blocklyDraggable' },
+        estado: 'aparecer',
+        maximo: 30,
+      },
+      { fazer: 'continuar', acao: texto },
+    ]
+
+  // Blocos um por cima do outro (um projeto que veio de outra parte): o menu da área de trabalho
+  // arruma, como a professora faz com o botão direito.
+  if (f === 'organizar blocos') {
+    const fundo = precisaDaPagina(pagina).fundoLivre()
+    if (!fundo) throw new Error('Não achei um espaço vazio na área de trabalho para o menu.')
+    return [
+      { fazer: 'clique direito', alvo: fundo },
+      { fazer: 'clicar', alvo: { texto: 'Organizar blocos', dentro: '.blocklyWidgetDiv' } },
+    ]
+  }
 
   const achar = /^achar (.+)$/i.exec(texto)
   if (achar?.[1]) {
@@ -483,6 +525,8 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     texto,
   )
   if (trocar?.[1] && trocar[2] !== undefined) {
+    const antes = trazerCampo(texto, trocar[1], trocar[3], pagina)
+    if (antes) return antes
     const campo = precisaDaPagina(pagina).campo(trocar[1], trocar[3])
     if (!campo) throw new Error(`Não achei o campo "${trocar[1]}" num bloco da área de trabalho.`)
     // Depois de trocar, a mão sai de cima do bloco (parada em cima, aparece a dica dele).
@@ -501,6 +545,17 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     ]
   }
 
+  const abrirCampo = /^abrir campo ["“]([^"”]+)["”](?: em ["“]([^"”]+)["”])?$/i.exec(texto)
+  if (abrirCampo?.[1]) {
+    const antes = trazerCampo(texto, abrirCampo[1], abrirCampo[2], pagina)
+    if (antes) return antes
+    const campo = precisaDaPagina(pagina).campo(abrirCampo[1], abrirCampo[2])
+    if (!campo)
+      throw new Error(`Não achei o campo "${abrirCampo[1]}" num bloco da área de trabalho.`)
+    // A lista (ou a caixa) que abre cobre o bloco: a mão fica no campo até o escolher.
+    return [{ fazer: 'clicar', alvo: campo.alvo }]
+  }
+
   const afastarDe = /^afastar de ["“]([^"”]+)["”]$/i.exec(texto)
   if (afastarDe?.[1]) {
     const perto = precisaDaPagina(pagina).perto(afastarDe[1])
@@ -509,15 +564,35 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'apontar', alvo: perto, exato: true }]
   }
 
-  const escolher = /^escolher ["“]([^"”]*)["”]$/i.exec(texto)
+  const escolher = /^escolher ["“]([^"”]*)["”](?: em ["“]([^"”]+)["”])?$/i.exec(texto)
   if (escolher?.[1] !== undefined) {
     const aberto = precisaDaPagina(pagina).aberto()
-    if (aberto === 'lista') return [naLista(escolher[1])]
-    if (aberto === 'caixa') return naCaixa(escolher[1])
+    // Escolhido, a mão sai de cima do bloco do campo, quando o roteiro diz qual é.
+    const depois = escolher[2] ? [afastar(escolher[2])] : []
+    if (aberto === 'lista') return [naLista(escolher[1]), ...depois]
+    if (aberto === 'caixa') return [...naCaixa(escolher[1]), ...depois]
     throw new Error('O campo clicado não abriu uma lista nem uma caixa de texto.')
   }
 
   throw new Error(`Não conheço "${texto}". Veja os verbos do palco no README do pacote.`)
+}
+
+/**
+ * Um campo fora da vista ou coberto (pela paleta aberta, por um painel) vem para o centro da área
+ * de trabalho, num arrasto do fundo, antes do clique; depois a página é perguntada de novo.
+ */
+function trazerCampo(
+  texto: string,
+  valor: string,
+  bloco: string | undefined,
+  pagina: PaginaDoPalco | undefined,
+): Passo[] | null {
+  const rolagem = precisaDaPagina(pagina).rolagemDoCampo(valor, bloco)
+  if (!rolagem || rolagem === 'visivel') return null
+  return [
+    { fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para },
+    { fazer: 'continuar', acao: texto },
+  ]
 }
 
 /**

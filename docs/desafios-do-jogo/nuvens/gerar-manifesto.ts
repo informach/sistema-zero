@@ -3,6 +3,7 @@ import {
   MOEDAS_PADRAO_POR_TIPO,
   type PublicoDoDesafio,
 } from '../../../packages/arquipelago-contracts/src/desafios'
+import { comApresentacao } from '../apresentacao'
 import { comPedidosDosMoradores } from '../pedidos-dos-moradores'
 import { objetivos } from './objetivos'
 import { montarProjeto, VARIACOES, type Variacao } from './projetos'
@@ -52,49 +53,51 @@ const textos: Record<Variacao, { titulo: string; enunciado: string; dicas: strin
 }
 
 export function criarManifesto(publico: PublicoDoDesafio = 'kids') {
-  return comPedidosDosMoradores(
-    ManifestoDeDesafiosSchema.parse({
-      formato: 'arquipelago-desafios',
-      versao: 1,
-      escopo: 'ilha',
-      desafios: [
-        ...desafiosIniciaisDasNuvens(publico),
-        ...VARIACOES.map((variacao, index) => {
-          const tipo = 'desafio-do-dia' as const
-          const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
-          return {
-            slug: `nuvens-jardim-que-floresce${variacao === 'jardim' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
-            publico,
-            ilha: 'nuvens',
-            tipo,
-            quadro: null,
-            ordem: 60 + index,
-            // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
-            // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
-            publicar: true,
-            conteudo: {
-              versao: 1,
-              ...textos[variacao],
-              projetoInicial: montarProjeto(variacao, false),
-              gabarito: montarProjeto(variacao, true),
-              objetivos: objetivos[variacao],
-              desafioExtra: {
-                titulo: 'Mais um desafio',
-                texto:
-                  'Faça a tecla Enter recomeçar o jardim: água, tempo e crescimento voltam a zero, o sol volta a três e o jardim deixa de estar florido.',
+  return comApresentacao(
+    comPedidosDosMoradores(
+      ManifestoDeDesafiosSchema.parse({
+        formato: 'arquipelago-desafios',
+        versao: 1,
+        escopo: 'ilha',
+        desafios: [
+          ...desafiosIniciaisDasNuvens(publico),
+          ...VARIACOES.map((variacao, index) => {
+            const tipo = 'desafio-do-dia' as const
+            const moedas = MOEDAS_PADRAO_POR_TIPO[tipo]
+            return {
+              slug: `nuvens-jardim-que-floresce${variacao === 'jardim' ? '' : `-${variacao}`}${publico === 'adulto' ? '-adulto' : ''}`,
+              publico,
+              ilha: 'nuvens',
+              tipo,
+              quadro: null,
+              ordem: 60 + index,
+              // §6.28 A2: o sexto quadro é o desafio na linguagem do posto; o minijogo em blocos
+              // continua como desafio do dia (nunca pinta). A1: publica, todas as fontes na trilha.
+              publicar: true,
+              conteudo: {
+                versao: 1,
+                ...textos[variacao],
+                projetoInicial: montarProjeto(variacao, false),
+                gabarito: montarProjeto(variacao, true),
+                objetivos: objetivos[variacao],
+                desafioExtra: {
+                  titulo: 'Mais um desafio',
+                  texto:
+                    'Faça a tecla Enter recomeçar o jardim: água, tempo e crescimento voltam a zero, o sol volta a três e o jardim deixa de estar florido.',
+                },
+                recompensa: {
+                  cor: false,
+                  atracao: 'jardim-que-floresce',
+                  moedas: moedas.principal,
+                  moedasExtra: moedas.extra,
+                },
+                blocosManuais: { acrescentar: [], retirar: [] },
               },
-              recompensa: {
-                cor: false,
-                atracao: 'jardim-que-floresce',
-                moedas: moedas.principal,
-                moedasExtra: moedas.extra,
-              },
-              blocosManuais: { acrescentar: [], retirar: [] },
-            },
-          }
-        }),
-      ],
-    }),
+            }
+          }),
+        ],
+      }),
+    ),
   )
 }
 if (import.meta.main) {

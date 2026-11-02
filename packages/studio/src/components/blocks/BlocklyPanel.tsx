@@ -30,6 +30,7 @@ import { deepEqualIR } from '#ir'
 import { findExtension } from '#official-extensions'
 import { SERVER_BLOCK_CATALOG } from '../../blockly/blockCatalog'
 import { isProgramStructureChange, isPureWorkspaceLayoutMove } from '../../blockly/changeSemantics'
+import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import {
   attachAnimationNameWatcher,
   refreshAnimationNames,
@@ -51,6 +52,7 @@ import { useSettingsStore } from '../../state/settingsStore'
 import { useSourcemapStore } from '../../state/sourcemapStore'
 import { useEditorHistory, usePendingEditorEdits } from '../../state/studioStores'
 import { useStudioConfig } from '../../studio/config'
+import { useStudioPortalContainer } from '../../studio/portal-container'
 import { useStudioTheme } from '../../studio/theme'
 import { Spinner } from '../layout/LoadingViews'
 import { STUDIO_COMPACT_MAX_PX } from '../layout/layoutBreakpoints'
@@ -378,6 +380,13 @@ export function BlocklyPanel({ className, onWorkspaceReady }: BlocklyPanelProps)
       if (pasteNoticeTimerRef.current) clearTimeout(pasteNoticeTimerRef.current)
     }
   }, [])
+  // Dentro de um diálogo modal do host, os campos, as listas e o botão direito do Blockly abrem
+  // dentro dele (fora, o `showModal()` os deixaria inertes).
+  const portalContainer = useStudioPortalContainer()
+  useEffect(
+    () => (portalContainer ? blocklyPortalsInside(portalContainer) : undefined),
+    [portalContainer],
+  )
   const initialToolboxRef = useRef<ReturnType<typeof buildCoreToolbox> | null>(null)
   // Posições das pilhas a restaurar após um recarregamento programático, para
   // preservar onde o aluno deixou os blocos quando a Ponte reconstrói o estado.

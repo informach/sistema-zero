@@ -224,7 +224,8 @@
         "blocosManuais": {
           "acrescentar": [],
           "retirar": []
-        }
+        },
+        "resumo": "Invente o seu jogo em Python."
       }
     }
   ]

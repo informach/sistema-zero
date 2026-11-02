@@ -230,7 +230,7 @@ describe('as dicas de primeira vez', () => {
 
   test('as quatro da proposta (Quadro, barco, Lumis, primeira noite), com as falas certas', () => {
     expect(DICAS.quadro.falas(contexto())).toHaveLength(3)
-    expect(DICAS['quadro-painel'].falas(contexto())).toHaveLength(1)
+    expect(DICAS['quadro-painel'].falas(contexto())).toHaveLength(2)
     expect(DICAS.barco.falas(contexto())).toHaveLength(2)
     expect(DICAS['barco-chegada'].falas(contexto())).toHaveLength(1)
     expect(DICAS.lanterna.falas(contexto())).toHaveLength(1)

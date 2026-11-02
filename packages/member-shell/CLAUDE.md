@@ -1,5 +1,23 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## Estúdio de desafio: portais no diálogo e coluna Missão (01/11/2026)
+
+Retorno de quem testou a sua ilha: no desafio, os campos dos blocos não aceitavam digitação, a
+lista não abria e o botão direito não fazia nada. Causa: o `<dialog>` aberto com `showModal()`
+deixa inerte tudo o que fica fora dele, e os portais do Blockly e os menus do Studio moravam no
+`document.body`. `arquipelago-challenge-dialog.tsx` passa o próprio diálogo ao
+`StudioPortalContainerProvider` do Studio (ver o CLAUDE.md de lá); o Studio põe ali os portais do
+Blockly e os menus. ⚠️ Outro diálogo modal com Studio dentro precisa do mesmo provider. A rotina
+dos Lumis (Blockly cru, sem Studio) segue com `arquipelago-rotina/blockly-dialog.ts`.
+
+A coluna **Missão** (à esquerda no computador, `lg:w-72`; primeira de duas abas no celular,
+Missão e Estúdio, por cima do Estúdio montado para ele não remontar) mostra o pedido, o print
+"Como fica" (`desafio.imagem`, opcional), os objetivos com marca de feito (a dica do objetivo só
+depois de verificar e faltar), o extra e as dicas. Recolher fica no `localStorage`
+(`sz:arquipelago:missao-recolhida`); o balão de primeira vez (Zappy só no Kids) em
+`sz:arquipelago:missao-balao-visto`. O rodapé mantém o progresso e "Verificar projeto". Testes:
+`tests/fixtures/arquipelago-challenge-dialog.fixture.tsx`.
+
 ## Minijogo Python na área dos pais, 31/10/2026
 
 A prévia usa POST no mesmo BFF familiar da leitura, com o id do desafio na query. A grade
@@ -853,6 +871,10 @@ contexto: a comunidade adulta não liga nada disso.
   `flushAll` e o coordenador `registerEditor`/`withSavedDrafts`/`isSaving`/`subscribeSaving`. O kids implementa; o
   player recebe por `LessonPlayerContextValue.lessonDrafts?`. Desligado por `LESSON_DRAFTS_ENABLED`
   (padrão ligado, `lib/env.ts`) e em sessão de suporte somente leitura.
+- **`LessonPlayerContextValue.onStudioProjectChange?(blockId, project)`** (01/11/2026): o bloco
+  Estúdio chama a cada mudança do projeto (o mesmo `onChange` do salvamento automático). Só o
+  palco de gravação passa, para a parte gravada seguinte abrir com o que esta montou; sem ele,
+  nada muda.
 - **Qual versão abre** é `lib/lesson-draft-seed.ts` (`decideLessonDraftSeed`, pura, testada em
   `tests/lesson-draft-seed.test.ts`): local, conta, envio ou a ordem de sempre (`fallback`), com a
   "outra" guardada quando os dois lados mudaram com conteúdos diferentes. ⚠️ O relógio que compara
@@ -3842,3 +3864,9 @@ A escala da caixa agora vem do contrato. Testes: `tests/arquipelago-aparencia.te
 pedido. V2 mostra o clima e o humor congelados na abertura e executa o intérprete compartilhado;
 não altera a ilha nem presume que o contexto continuará igual depois de fechar. V1 conserva a
 prévia sem bônus. Nunca duplicar regras de colheita no componente.
+## Apresentação dos desafios durante a implantação, 01/11/2026
+
+O host só acrescenta `apresentacao=1` à lista quando o jogo pede
+`apresentacaoDosDesafios: true`. A abertura feita pelo host novo também pede essa vista.
+O BFF valida e repassa somente `ilha` e `apresentacao`; chamadas antigas continuam sem a opção.
+Assim a API não manda campos novos para um jogo ou uma página antiga com schema estrito.

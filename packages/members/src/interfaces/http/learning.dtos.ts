@@ -21,6 +21,7 @@ import {
   CABIN_RULES,
   CHEST_RULES,
   LIGHTHOUSE_POSITION,
+  LIGHTHOUSE_WALK_PACES,
   LIGHTHOUSE_WALK_SPEEDS,
   MAP_TILES,
   MESH_LEVELS,
@@ -154,6 +155,11 @@ const SceneActionSchema = t.Union([
   }),
   t.Object({ type: t.Literal('keep-on-screen'), enabled: t.Boolean() }),
   t.Object({ type: t.Literal('restart-walk') }),
+  // A câmera lenta do Farol (01/11/2026): o ritmo dos quadros.
+  t.Object({
+    type: t.Literal('walk-pace'),
+    pace: t.Union(LIGHTHOUSE_WALK_PACES.map((v) => t.Literal(v))),
+  }),
   // O lugar da chave do Farol (06/10/2026): um eixo por gesto, cada um com o limite da tela.
   ...(['x', 'y'] as const).map((axis) =>
     t.Object({

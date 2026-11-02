@@ -106,7 +106,10 @@ export function criarLojaDosDesafios(loja: LojaDoJogo, plataforma: Plataforma): 
           return false
         })
       try {
-        const r = await plataforma.servico.buscar('/desafios', { sinal: controller.signal })
+        const r = await plataforma.servico.buscar('/desafios', {
+          sinal: controller.signal,
+          apresentacaoDosDesafios: true,
+        })
         if (meu !== pedido) return
         const dados = r.status === 200 ? lerDesafios(r.corpo) : null
         if (!dados) {

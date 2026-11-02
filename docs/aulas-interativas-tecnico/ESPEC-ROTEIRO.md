@@ -227,6 +227,16 @@ kids não mudam o plano: ele usa a voz da professora, que tem a fala inteira.
 A gravação acontece no palco de gravação do staging (`packages/palco-gravacao`), que mostra a
 aula como a criança vê e não salva nada (progresso, envio, Mural).
 
+Cada parte é gravada à parte. O palco leva o projeto do Estúdio de uma parte para a seguinte: a
+parte abre com o que a parte de antes montou na gravação mais recente dela, ou, sem ela, com o
+projeto de entrada da parte nos exemplos da aula. Por isso, grave as partes em ordem: a última
+parte (a do Compartilhar) mostra o jogo com tudo o que foi montado. Se o projeto que veio da parte
+de antes tiver blocos um por cima do outro, `[organizar blocos]` arruma pelo botão direito; ponha
+num trecho que a edição troca por outra imagem. O envio não passa de uma
+parte para a outra: a parte que vem depois do envio do projeto (a do Compartilhar, que só libera
+depois dele) começa com "A parte começa com o projeto já enviado na Parte N", e o endereço dela
+no palco leva `&enviado=1`.
+
 ### 9.3 A frase do Na tela
 
 Cada frase do **Na tela** começa com a citação da fala que ela espera:
@@ -259,6 +269,27 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
   a voz termina de dizê-la. O tamanho da citação decide o momento: em
   `No "Agora clique em Próxima parte"`, o clique vem depois de "parte"; em `No "Agora"`, logo
   depois de "Agora". Cite até a palavra depois da qual a ação deve aparecer.
+- **O clique só depois da palavra do clique.** A mão pode ir até o alvo antes, mas clicar, tocar
+  ou arrastar só acontece depois que a voz diz a palavra da ação. Comece a citação onde a mão deve
+  sair e termine nela: `No "Agora vamos testar no seu jogo, toque num esconderijo"` leva a mão no
+  "Agora" e toca depois de "esconderijo". Citar só `No "Agora vamos testar no seu jogo"` toca antes
+  do "toque".
+- **Cada gesto na sua palavra.** Quando a fala nomeia dois cliques ("clique em jogador, desça até
+  o fim da lista e clique em escolhido"), são duas citações: `No "Então clique em jogador"`
+  [abrir campo "jogador" em "Deixar o sprite"] e `No "desça até o fim da lista que abre e clique em
+  escolhido"` [escolher "escolhido" em "Deixar o sprite"]. O mesmo para o número: `No "Clique no
+  50"` [abrir campo "50" em …] e `No "e troque por 0"` [escolher "0" em …]. Dois colchetes numa
+  só citação ficam 2 segundos um depois do outro, depois do fim dela.
+- **A saída da parte em duas citações.** Voltar ao tamanho da aula e clicar em **Próxima parte**
+  numa só citação deixa o clique 2 segundos depois da fala. O voltar vai numa frase anterior
+  (`No "Agora é a sua vez"`, `No "Quando terminar"`) e o clique na sua:
+  `No "Quando terminar, clique em Próxima"`.
+- **A citação é procurada no que a voz disse.** A transcrição às vezes ouve diferente: um nome
+  ("Zappy" vira "Zap"), "num" vira "no", "zero" vira "0". Números escritos de um jeito ou de outro
+  valem igual, e numa citação de quatro palavras ou mais uma em cada quatro pode ter sido ouvida
+  diferente, menos a última. Evite citar só um nome próprio; cite as palavras comuns em volta
+  (`No "ajuda a observar"`). A citação que a voz não tem é avisada no **Gerar plano do roteiro**, e
+  o gesto dela vem logo depois do anterior.
 - Cada gesto de mão (apontar, clicar, tocar, arrastar) leva cerca de 2 segundos: o mouse viaja,
   para em cima do alvo e age. O segundo colchete da mesma frase vem 2 segundos depois do primeiro,
   e assim por diante.
@@ -269,8 +300,8 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
   ampliar que vem depois de "vamos ver como ele funciona" vai no `No "Neste jardim"`.
 - Uma espera do servidor (o **Verificar projeto**, a capa do **Gerar capa**) entra acelerada
   sob a fala, sem esticar o vídeo.
-- Gestos depois do fim da voz não são feitos. A última frase da parte precisa ser citada antes de
-  a voz terminar, com a ação de saída nela.
+- Todos os gestos aparecem. O que cairia depois do fim da voz vai logo depois dela, acelerado se
+  não couber. Mesmo assim, cite a ação de saída na última frase, para o clique cair na fala.
 
 ### 9.5 As tags
 

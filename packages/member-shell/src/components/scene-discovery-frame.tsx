@@ -21,6 +21,11 @@ export const DiscoveryContext = createContext<{
   instruction: string
   running: boolean
   setRunning: (v: boolean) => void
+  /**
+   * Passa tempo na cena SEM contar como gesto (a câmera lenta do Farol tem o relógio dela). Pelo
+   * `dispatch`, cada tique apagaria o aviso da descoberta que acabou de cair.
+   */
+  tick?: (seconds: number) => void
   dialogue: (text: string) => ReactNode
   tools: ReactNode
 } | null>(null)

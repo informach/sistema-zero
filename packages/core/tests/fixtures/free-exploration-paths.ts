@@ -29,5 +29,11 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
     { type: 'test-walk-order' },
     { type: 'walk-order', order: 'reverse' },
     { type: 'test-walk-order' },
+    // A câmera lenta (01/11/2026): um segundo de caminhada na velocidade de verdade.
+    { type: 'restart-walk' },
+    { type: 'walk-pace', pace: 'real' },
+    { type: 'hold-arrow', held: true },
+    { type: 'advance', seconds: 0.5 },
+    { type: 'advance', seconds: 0.6 },
   ],
 }

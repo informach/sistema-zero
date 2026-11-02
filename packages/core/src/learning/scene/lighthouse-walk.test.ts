@@ -363,6 +363,7 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
       ...CASOS.andar,
       ...CASOS.velocidade,
       ...CASOS.limite,
+      'walked-real-speed',
     ])
     const rotulos = Object.fromEntries(m.goals.map((g) => [g.id, g.label]))
     expect(rotulos).toEqual({
@@ -375,6 +376,7 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
       'step-speed-1': 'Com velocidade 1, ele andou 1 a cada quadro',
       'left-the-screen': 'Sem o limite, o sprite saiu da tela',
       'stayed-inside': 'Com o limite, o sprite ficou inteiro na tela',
+      'walked-real-speed': 'Na velocidade de verdade, os passinhos viraram uma caminhada',
     })
   })
 
@@ -391,6 +393,7 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
       'Velocidade 3',
       'Manter dentro da tela',
       'Recomeçar',
+      'Velocidade de verdade',
     ]
     for (const g of sceneModel('lighthouse-walk').goals) {
       expect(g.pedido, g.id).not.toMatch(RESULTADO)
@@ -479,5 +482,84 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
     expect(sceneSituation('lighthouse-walk', play([SETA, ...quadros(100)]))).toContain(
       'passou inteiro da borda da tela',
     )
+  })
+})
+
+/**
+ * "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): só a IDEIA, sem bloco. O caso cobra os
+ * passinhos a cada quadro, a parada com a seta solta e a caminhada na velocidade de verdade.
+ */
+describe('lighthouse-walk: a câmera lenta', () => {
+  const CAMERA_LENTA = ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'] as const
+  const caso: SceneStart = { scene: 'lighthouse-walk', setup: { goals: [...CAMERA_LENTA] } }
+  const LENTA: SceneAction = { type: 'walk-pace', pace: 'lenta' }
+  const REAL: SceneAction = { type: 'walk-pace', pace: 'real' }
+  const tocar = (actions: SceneAction[], from?: SceneState) => play(actions, from, caso)
+
+  test('o ritmo é uma ação desta cena, fora do caso, e o retrato sem ritmo continua válido', () => {
+    expect(isSceneAction(LENTA, 'lighthouse-walk')).toBe(true)
+    expect(isSceneAction(REAL, 'lighthouse-walk')).toBe(true)
+    expect(isSceneAction({ type: 'walk-pace', pace: 'rapida' }, 'lighthouse-walk')).toBe(false)
+    expect(isSceneAction(REAL, 'lighthouse-position')).toBe(false)
+    expect(isSceneSetup({ actions: [REAL] }, 'lighthouse-walk')).toBe(false)
+    const s = tocar([REAL])
+    expect(s.walk.pace).toBe('real')
+    expect(isSceneState(s)).toBe(true)
+    expect(isSceneState({ ...s, walk: { ...s.walk, pace: 'rapida' } })).toBe(false)
+    expect(openScene(caso).walk.pace).toBeUndefined()
+  })
+
+  test('na câmera lenta, um segundo de passinhos NÃO é a caminhada de verdade', () => {
+    const s = tocar([LENTA, SETA, ...quadros(LIGHTHOUSE_WALK.realWalk + 5)])
+    expect(viu(s, 'moves-each-frame')).toBe(true)
+    expect(viu(s, 'walked-real-speed')).toBe(false)
+  })
+
+  test('na velocidade de verdade, a caminhada cai com um segundo de passinhos seguidos', () => {
+    const devagar = tocar([LENTA, SETA, QUADRO, QUADRO, SOLTA])
+    const quase = tocar([REAL, SETA, ...quadros(LIGHTHOUSE_WALK.realWalk - 1)], devagar)
+    expect(viu(quase, 'walked-real-speed')).toBe(false)
+    expect(viu(tocar([QUADRO], quase), 'walked-real-speed')).toBe(true)
+  })
+
+  test('⚠️ só na velocidade de verdade não conclui: os passinhos e a parada pedem a câmera lenta', () => {
+    const s = tocar([REAL, SETA, ...quadros(LIGHTHOUSE_WALK.realWalk + 10), SOLTA, QUADRO, QUADRO])
+    expect(viu(s, 'moves-each-frame')).toBe(false)
+    expect(viu(s, 'stopped-after-release')).toBe(false)
+    expect(viu(s, 'walked-real-speed')).toBe(false)
+  })
+
+  test('trocar para a velocidade de verdade no meio da caminhada recomeça a conta', () => {
+    const lenta = tocar([LENTA, SETA, ...quadros(LIGHTHOUSE_WALK.realWalk - 2)])
+    const trocou = tocar([REAL, QUADRO, QUADRO], lenta)
+    expect(trocou.walk.run).toBe(2)
+    expect(viu(trocou, 'walked-real-speed')).toBe(false)
+  })
+
+  test('soltar a seta depois de andar fecha a parada; a seta solta desde o começo, não', () => {
+    expect(viu(tocar([LENTA, ...quadros(5)]), 'stopped-after-release')).toBe(false)
+    expect(viu(tocar([LENTA, SETA, QUADRO, QUADRO, SOLTA, QUADRO]), 'stopped-after-release')).toBe(
+      true,
+    )
+  })
+
+  test('o caminho inteiro conclui, com a frase da ideia', () => {
+    const s = tocar([
+      LENTA,
+      SETA,
+      QUADRO,
+      QUADRO,
+      SOLTA,
+      QUADRO,
+      REAL,
+      SETA,
+      ...quadros(LIGHTHOUSE_WALK.realWalk),
+    ])
+    expect(
+      evaluateExperimentation('lighthouse-walk', s, true, undefined, [...CAMERA_LENTA]).passed,
+    ).toBe(true)
+    const frase = sceneSuccess('lighthouse-walk', undefined, [...CAMERA_LENTA])
+    expect(frase).toContain('passinho')
+    expect(frase).not.toMatch(/bloco|regra|comando|\bx\b|sprite/i)
   })
 })

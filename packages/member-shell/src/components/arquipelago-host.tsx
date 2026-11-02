@@ -333,7 +333,12 @@ export function criarPlataformaDoArquipelago(opcoes: {
           (opcoes.publico !== 'adulto' && caminho.startsWith('/visitas-adultas/'))
         )
           return { status: 404, corpo: { code: 'NOT_FOUND' } }
-        return json(`${BASE}${caminho}`, {
+        const apresentacao =
+          pedido?.apresentacaoDosDesafios === true &&
+          (pedido.metodo ?? 'GET') === 'GET' &&
+          (caminho === '/desafios' || caminho.startsWith('/desafios?ilha='))
+        const complemento = apresentacao ? `${caminho.includes('?') ? '&' : '?'}apresentacao=1` : ''
+        return json(`${BASE}${caminho}${complemento}`, {
           ...corpoJson(pedido?.metodo ?? 'GET', pedido?.corpo),
           signal: pedido?.sinal,
         })
@@ -468,7 +473,7 @@ export function ArquipelagoHost(props: {
           const molde = MoldeDeDesafioSchema.safeParse(pedido.molde)
           if (!molde.success || pedido.ferramenta !== 'estudio' || pedido.proposito !== 'desafio')
             return { situacao: 'indisponivel', motivo: 'em-breve' }
-          const resposta = await json(`${BASE}/desafios/${molde.data.desafioId}`)
+          const resposta = await json(`${BASE}/desafios/${molde.data.desafioId}?apresentacao=1`)
           if (!vivo) return { situacao: 'cancelado' }
           if (resposta.status !== 200)
             return { situacao: 'indisponivel', motivo: 'acesso-necessario' }

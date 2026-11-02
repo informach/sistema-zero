@@ -13,9 +13,15 @@ no staging, só para a equipe. Nada do que acontece aqui é salvo.
   e depois a aula daquele curso. Também dá para colar o endereço de uma aula do Kids
   (`…/cursos/<curso>/aulas/<aula>`), abrir a lista de aulas de um curso em `/aulas/<curso>` ou
   abrir `/aulas/<curso>/<aula>` direto (`?parte=N` abre direto na parte N, que é como cada plano
-  do EdiAula começa a sua). A aula é lida pelo gateway com o token da equipe, que vê
-  tudo aberto, sem trava e sem progresso. Cada abertura é uma tomada nova (`?tomada=`): o Estúdio
-  e as atividades começam do zero. A página é a do Kids: o mesmo `<main>` com a pele `kids-aula`,
+  do EdiAula começa a sua; `&enviado=1` abre o Estúdio com o projeto já enviado, para a parte
+  que vem depois do envio, como a do Compartilhar, que só libera depois dele). A aula é lida pelo
+  gateway com o token da equipe, que vê tudo aberto, sem trava e sem progresso. Cada abertura é
+  uma tomada nova (`?tomada=`): as atividades começam do zero, e o Estúdio abre com o que a criança
+  já teria montado nas partes de antes: o projeto como ficou na tomada mais recente da parte de
+  antes mais perto (o palco guarda, na memória, o que cada parte gravada montou) ou, sem ela, o
+  projeto de entrada da parte nos exemplos da aula (`/members/admin/lessons/:id/draft/published`),
+  ou a solução da parte de antes mais perto que tenha uma. Gravar as partes em ordem leva o
+  projeto inteiro até o fim; o palco reiniciado cai nos exemplos. A página é a do Kids: o mesmo `<main>` com a pele `kids-aula`,
   a largura toda e a barra de cima em 860 px, com o botão de voltar para a lista de aulas.
   `?parte=N` abre a parte numerada a partir de um, mantendo a tomada. Número inválido ou parte
   inexistente retorna 404, sem cair silenciosamente na primeira parte.
@@ -52,7 +58,9 @@ está sendo conferido.
   preservando a edição e a sequência da gravação.
 - **Decidir depois do clique:** os seletores do Estúdio (sprite, nome, som) herdam do campo de
   texto do Blockly e abrem uma lista. O `trocar` clica e pede `continuar` com `escolher "<valor>"`,
-  que escolhe na lista aberta ou digita na caixa. A prévia que ainda monta depois de expandir é
+  que escolhe na lista aberta ou digita na caixa. Quando a fala separa os dois cliques ("clique em
+  jogador, desça até o fim da lista e clique em escolhido"), o roteiro usa `abrir campo` numa fala e
+  `escolher "<valor>" em "<bloco>"` na outra, e cada clique cai na sua palavra. A prévia que ainda monta depois de expandir é
   esperada do mesmo jeito.
 - **Blocos-sombra:** o número de um bloco ("50", o "1" de "Somar 1") fica num bloco-sombra
   encaixado nele, que conta como parte dele.

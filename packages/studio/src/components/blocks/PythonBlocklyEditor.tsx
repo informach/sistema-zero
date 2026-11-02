@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import * as PtBr from 'blockly/msg/pt-br'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { blocklyPortalsInside } from '../../blockly/dialogPortals'
 import { szGridColourFor, szThemeFor } from '../../blockly/theme'
 import { isPythonProject } from '../../core/editableProject'
 import {
@@ -53,6 +54,7 @@ import {
   useStudioPersistence,
 } from '../../state/studioStores'
 import { useStudioExecution } from '../../studio/observation'
+import { useStudioPortalContainer } from '../../studio/portal-container'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 import { useStudioTheme } from '../../studio/theme'
 import {
@@ -194,6 +196,13 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   const focusedTutorNonce = useRef<number | null>(null)
   const container = useRef<HTMLElement>(null)
   const callbacks = useRef(props)
+  // Dentro de um diálogo modal do host, os portais do Blockly abrem dentro dele (ver
+  // `blocklyPortalsInside`).
+  const portalContainer = useStudioPortalContainer()
+  useEffect(
+    () => (portalContainer ? blocklyPortalsInside(portalContainer) : undefined),
+    [portalContainer],
+  )
   callbacks.current = props
   const initialTheme = useRef(theme)
   initialTheme.current = theme
