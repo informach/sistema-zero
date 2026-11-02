@@ -508,6 +508,8 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     texto,
   )
   if (trocar?.[1] && trocar[2] !== undefined) {
+    const antes = trazerCampo(texto, trocar[1], trocar[3], pagina)
+    if (antes) return antes
     const campo = precisaDaPagina(pagina).campo(trocar[1], trocar[3])
     if (!campo) throw new Error(`Não achei o campo "${trocar[1]}" num bloco da área de trabalho.`)
     // Depois de trocar, a mão sai de cima do bloco (parada em cima, aparece a dica dele).
@@ -528,6 +530,8 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
 
   const abrirCampo = /^abrir campo ["“]([^"”]+)["”](?: em ["“]([^"”]+)["”])?$/i.exec(texto)
   if (abrirCampo?.[1]) {
+    const antes = trazerCampo(texto, abrirCampo[1], abrirCampo[2], pagina)
+    if (antes) return antes
     const campo = precisaDaPagina(pagina).campo(abrirCampo[1], abrirCampo[2])
     if (!campo)
       throw new Error(`Não achei o campo "${abrirCampo[1]}" num bloco da área de trabalho.`)
@@ -554,6 +558,24 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   }
 
   throw new Error(`Não conheço "${texto}". Veja os verbos do palco no README do pacote.`)
+}
+
+/**
+ * Um campo fora da vista ou coberto (pela paleta aberta, por um painel) vem para o centro da área
+ * de trabalho, num arrasto do fundo, antes do clique; depois a página é perguntada de novo.
+ */
+function trazerCampo(
+  texto: string,
+  valor: string,
+  bloco: string | undefined,
+  pagina: PaginaDoPalco | undefined,
+): Passo[] | null {
+  const rolagem = precisaDaPagina(pagina).rolagemDoCampo(valor, bloco)
+  if (!rolagem || rolagem === 'visivel') return null
+  return [
+    { fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para },
+    { fazer: 'continuar', acao: texto },
+  ]
 }
 
 /**
