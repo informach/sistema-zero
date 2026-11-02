@@ -203,9 +203,9 @@ export function WalkEmCameraLenta() {
     seen.has('walked-real-speed'),
   ]
   const goals = [
-    'Segure a seta e veja um passinho em cada quadro.',
-    'Solte a seta e veja os quadros passarem sem ele sair do lugar.',
-    'Veja os passinhos na velocidade de verdade.',
+    'Compare os quadros com a seta apertada.',
+    'Compare os quadros com a seta solta.',
+    'Compare a câmera lenta com a velocidade de verdade.',
   ]
   const saiu = lighthouseWalkGone(w)
   // Saiu inteiro da tela, ou ficou parado muito tempo depois de já ter visto a parada: pausa.
@@ -225,7 +225,11 @@ export function WalkEmCameraLenta() {
     else if (chegou) setChegada((antes) => antes ?? w.frame)
   }, [chegou, w.frame])
 
-  const pedeCameraLenta = !seen.has('moves-each-frame') && !(rodando && ritmo === 'lenta')
+  // A parada só se vê em câmera lenta: quem foi para a velocidade de verdade antes dela volta a ver
+  // Câmera lenta em destaque.
+  const pedeCameraLenta =
+    (!seen.has('moves-each-frame') || !seen.has('stopped-after-release')) &&
+    !(rodando && ritmo === 'lenta')
   const pedeVelocidade =
     seen.has('stopped-after-release') &&
     !seen.has('walked-real-speed') &&

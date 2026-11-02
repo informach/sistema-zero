@@ -56,10 +56,18 @@ describe('a beirada da tela do Farol', () => {
   test('abre com o limite desligado, a velocidade de verdade em destaque e a faixa fora da tela', () => {
     const html = tela(openScene(start))
     expect(texto(html)).toContain('Ligar o limite da tela')
-    expect(texto(html)).toContain('O limite está desligado: ninguém confere a beirada.')
+    expect(texto(html)).toContain('O limite está desligado.')
     expect(html).toMatch(/data-tom="gesto"[^>]*>.*Velocidade de verdade/)
     expect(html).toContain('data-fora-da-tela')
     expect(texto(html)).toContain('0 de 3 descobertas')
+  })
+
+  test('as três descobertas dizem o que comparar, sem contar o resultado', () => {
+    const lido = texto(tela(openScene(start)))
+    expect(lido).toContain('Leve o personagem até a beirada com o limite desligado.')
+    expect(lido).toContain('Ligue o limite com o personagem fora da tela.')
+    expect(lido).toContain('Segure a seta na beirada com o limite ligado.')
+    expect(lido).not.toMatch(/sair da tela|voltou|volta para dentro|segurou|fica dentro/i)
   })
 
   test('⚠️⚠️ só a ideia: nenhum bloco, regra, comando, ordem dos blocos nem x', () => {

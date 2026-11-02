@@ -40,9 +40,9 @@ export function WalkNaBeirada() {
     seen.has('stayed-inside'),
   ]
   const goals = [
-    'Sem o limite, leve o personagem até a beirada e veja ele sair da tela.',
-    'Com ele fora, ligue o limite da tela e veja o que acontece.',
-    'Com o limite ligado, segure a seta na beirada e olhe cada quadro.',
+    'Leve o personagem até a beirada com o limite desligado.',
+    'Ligue o limite com o personagem fora da tela.',
+    'Segure a seta na beirada com o limite ligado.',
   ]
   const saiu = lighthouseWalkGone(w)
   // "Fora" é a régua do `left-the-screen` (metade da caixa além da borda), a mesma do motor e do Zappy.
@@ -70,8 +70,18 @@ export function WalkNaBeirada() {
     !todas &&
     (fora || (seen.has('left-the-screen') && seen.has('came-back-inside')))
   const pedeDesligar = w.keepInside && !todas && seen.has('stayed-inside')
-  const pedeReal = !w.keepInside && !fora && !todas && !pedeLigar && !(rodando && ritmo === 'real')
-  const pedeLenta = w.keepInside && !seen.has('stayed-inside') && !(rodando && ritmo === 'lenta')
+  // Do meio da tela até a beirada, a velocidade de verdade (em câmera lenta seriam uns 40 s); perto
+  // da beirada (uns 10 passinhos), a câmera lenta, para ver cada quadro.
+  const perto = w.x >= lighthouseWalkMaxX() - 10 * w.speed
+  const pedeReal =
+    !todas &&
+    !fora &&
+    !pedeLigar &&
+    !pedeDesligar &&
+    !(rodando && ritmo === 'real') &&
+    (!w.keepInside || !perto)
+  const pedeLenta =
+    w.keepInside && !seen.has('stayed-inside') && perto && !(rodando && ritmo === 'lenta')
   return (
     <Frame
       title="A beirada da tela"
@@ -108,7 +118,7 @@ export function WalkNaBeirada() {
             ? 'Neste quadro: ele estava fora; o jogo conferiu a beirada e puxou de volta para dentro.'
             : w.keepInside
               ? 'O limite está ligado: depois de cada passinho, o jogo confere a beirada.'
-              : 'O limite está desligado: ninguém confere a beirada.'}
+              : 'O limite está desligado.'}
       </p>
       <div className="sz-discovery-controls free-controls" role="group" aria-label="Limite da tela">
         <SceneButton

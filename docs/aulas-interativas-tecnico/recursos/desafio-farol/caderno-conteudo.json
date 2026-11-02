@@ -36,22 +36,22 @@
     "items": [
       {
         "kind": "text",
-        "text": "O jogo é como um desenho animado: ele desenha um <b>quadro</b> atrás do outro, bem rápido. Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho; se está solta, ele fica onde está."
+        "text": "O jogo é como um desenho animado: ele desenha um <b>quadro</b> atrás do outro, bem rápido. Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho. E quando ela está solta? Descubra na experiência."
       },
       {
         "kind": "step",
-        "title": "Veja os passinhos",
-        "text": "Clique em <b>Câmera lenta</b> e segure a seta. A cada quadro, aparece uma pegada nova e um quadro novo na tira."
+        "title": "Compare com a seta apertada",
+        "text": "Clique em <b>Câmera lenta</b> e segure a seta. Repare no personagem, nas pegadas e na tira de quadros."
       },
       {
         "kind": "step",
-        "title": "Solte a seta",
-        "text": "Deixe passar alguns quadros com a seta solta e repare no personagem e nas pegadas."
+        "title": "Compare com a seta solta",
+        "text": "Solte a seta e deixe os quadros passarem. O que muda na tira?"
       },
       {
         "kind": "step",
-        "title": "Agora na velocidade de verdade",
-        "text": "Clique em <b>Velocidade de verdade</b> e segure a seta por alguns segundos. É assim que vai ser no seu jogo."
+        "title": "Compare com a velocidade de verdade",
+        "text": "Clique em <b>Velocidade de verdade</b> e segure a seta. Compare com o que você viu em câmera lenta."
       },
       {
         "kind": "box",
@@ -127,17 +127,17 @@
       {
         "kind": "step",
         "title": "Sem o limite",
-        "text": "Com o limite desligado, clique em <b>Velocidade de verdade</b> e segure a seta até a beirada. Continue segurando e veja ele sair da tela."
+        "text": "Com o limite desligado, clique em <b>Velocidade de verdade</b> e segure a seta até a beirada. Continue segurando e repare na faixa fora da tela."
       },
       {
         "kind": "step",
-        "title": "Ligue o limite",
-        "text": "Com ele fora da tela, clique em <b>Ligar o limite da tela</b> e veja o próximo quadro."
+        "title": "Ligue o limite com ele fora",
+        "text": "E se você ligar o limite com ele já fora da tela? Clique em <b>Ligar o limite da tela</b> e observe o próximo quadro."
       },
       {
         "kind": "step",
-        "title": "Olhe cada quadro",
-        "text": "Com o limite ligado, clique em <b>Câmera lenta</b> e segure a seta na beirada. Em cada quadro, o passinho ia levar ele para fora, e o jogo confere a beirada e segura ele dentro."
+        "title": "Na beirada com o limite",
+        "text": "Com o limite ligado, leve o personagem até a beirada. Lá, clique em <b>Câmera lenta</b>, segure a seta e observe a tira e a frase de cada quadro."
       },
       {
         "kind": "box",
