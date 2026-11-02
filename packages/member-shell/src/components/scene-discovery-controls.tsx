@@ -351,7 +351,10 @@ export function Memory() {
         remember={c.remember}
         collected={!c.keyPresent}
         saved={c.hasKey}
-        revealed={{ any: completed[0] || completed[1], on: completed[1] }}
+        revealed={{
+          any: completed[0] === true || completed[1] === true,
+          on: completed[1] === true,
+        }}
       />
       <div className="sz-discovery-controls free-controls">
         <SceneButton
@@ -413,7 +416,10 @@ export function Door() {
       done={completed.filter(Boolean).length}
       reset={m.reset}
     >
-      <DoorRule checked={l.checkedKey ?? null} revealed={{ yes: completed[1], no: completed[0] }} />
+      <DoorRule
+        checked={l.checkedKey ?? null}
+        revealed={{ yes: completed[1] === true, no: completed[0] === true }}
+      />
       <div className="sz-discovery-controls free-controls">
         <SceneButton
           tom={casoTestado && !completed.every(Boolean) ? 'gesto' : 'ferramenta'}

@@ -21,7 +21,7 @@ const params = new URLSearchParams(location.search)
 // "primeira-nave"; a de camadas continua no Dia 1.
 // Os quatro Poderes da Faísca (02/11/2026): a experiência de cada um é o bloco `experiencia` da
 // aula 1, escolhido por `?course=<poder>`.
-const PODERES: Record<string, { blocks: { key: string; content: unknown }[] }> = {
+const PODERES: Record<string, { blocks: { key: string; content?: unknown }[] }> = {
   ponte,
   moedas,
   simbolos,

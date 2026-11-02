@@ -105,7 +105,7 @@ function Bifurcacao({
   rotulo: string
   revelado: boolean
   escolhido: boolean | null
-  arte: string
+  arte: Parameters<typeof farolSvgUrl>[0]
   texto: string
   espera: string
 }) {
