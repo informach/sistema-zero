@@ -16,7 +16,7 @@ Jogue na ilha.
 
 
 
-**Zappy na página (não gravar):** Clique no jogo e use as setas do teclado ou WASD. Aperte R para recomeçar. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
+**Zappy na página (não gravar):** Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
 
 ### Parte 2. Seu passo a passo do projeto
 
@@ -32,7 +32,7 @@ Seu passo a passo do projeto.
 
 ### Parte 3. O que aparece quando você muda de lugar?
 
-O que aparece quando você muda de lugar?.
+O que aparece quando você muda de lugar?
 
 - Intenção: exploration.
 - Blocos: video-ponto-de-vista, ponte-ponto-de-vista, experiencia-ponto-de-vista.
@@ -40,7 +40,7 @@ O que aparece quando você muda de lugar?.
 
 
 
-**Zappy na página (não gravar):** Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Procure a chave olhando a ilha de lugares diferentes. Compare o que muda na imagem e o que continua onde estava. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ### Parte 4. Faça o personagem andar
 
@@ -56,7 +56,7 @@ Faça o personagem andar.
 - Faça o personagem andar para o fundo com a seta correspondente.
 - Faça o personagem andar para a frente com a seta correspondente.
 
-**Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ### Parte 5. Confira seu primeiro percurso
 

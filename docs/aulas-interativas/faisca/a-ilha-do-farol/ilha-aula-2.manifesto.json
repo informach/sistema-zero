@@ -6,30 +6,38 @@
   "blocks": [
     {
       "key": "video-posicao-3d",
-      "plannedVideo": "Título: Duas direções no chão e uma na altura\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-posicao-3d. Gravação pendente."
+      "plannedVideo": "Título: Para onde vai a chave?\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-posicao-3d. Gravação pendente."
     },
     {
       "key": "ponte-posicao-3d",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte."
+        "text": "Sua vez! Mude um número da chave de cada vez, para mais e para menos, e observe para onde ela vai. Você escolhe por onde começar, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-posicao-3d",
       "content": {
         "kind": "interactive",
-        "title": "Duas direções no chão e uma na altura",
+        "title": "Para onde vai a chave?",
         "required": true,
-        "instructions": "Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.",
-        "hints": [],
+        "instructions": "A chave tem três números: x, y e z. Mude um de cada vez, para mais e para menos, e observe para onde ela vai. Compare com a marca dourada do lugar inicial e troque a vista quando quiser.",
+        "hints": [
+          "Escolha um dos três números da chave e observe para onde ela vai.",
+          "Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.",
+          "Na linha do X, clique no + e depois no −, observando a chave. Faça o mesmo nas linhas do Z e do Y. Para ver melhor, clique em Ver de lado ou em Ver de cima."
+        ],
         "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": ["axis-x", "axis-y", "axis-z"],
+            "goals": [
+              "axis-x",
+              "axis-y",
+              "axis-z"
+            ],
             "freeExploration": true
           }
         }
@@ -44,7 +52,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -56,7 +64,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte."
+        "text": "Sua vez! Teste se a chave e o personagem estão encostando e compare com o que a imagem mostra. Procure um caso em que eles encostam e outro em que ficam separados. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -65,14 +73,21 @@
         "kind": "interactive",
         "title": "Parece junto, mas está encostando?",
         "required": true,
-        "instructions": "Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.",
-        "hints": [],
+        "instructions": "Teste se a chave e o personagem estão encostando. Compare o resultado com o que a imagem mostra de cima e de lado. Mude um dos dois de lugar e teste de novo, na ordem que quiser.",
+        "hints": [
+          "Antes de testar, pense: a chave e o personagem estão encostando?",
+          "Teste o encontro e compare a vista de cima com a vista de lado.",
+          "Clique em Testar o encontro e depois em Ver de lado. Na linha do Y, clique no − até a chave chegar perto do personagem e clique em Testar o encontro de novo. Se quiser, clique em Mostrar onde encosta."
+        ],
         "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
           "scene": "island-3d",
           "setup": {
-            "goals": ["contact-apart", "contact-touch"],
+            "goals": [
+              "contact-apart",
+              "contact-touch"
+            ],
             "freeExploration": true
           }
         }
@@ -87,7 +102,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -99,7 +114,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -133,7 +148,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -8544,16 +8561,23 @@
   "sections": [
     {
       "key": "posicao-3d",
-      "title": "Duas direções no chão e uma na altura",
+      "title": "Para onde vai a chave?",
       "intent": "exploration",
-      "objective": "Duas direções no chão e uma na altura.",
-      "blockKeys": ["video-posicao-3d", "ponte-posicao-3d", "experiencia-posicao-3d"],
+      "objective": "Para onde vai a chave?",
+      "blockKeys": [
+        "video-posicao-3d",
+        "ponte-posicao-3d",
+        "experiencia-posicao-3d"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao-3d", "experiencia-posicao-3d"]
+        "blockIds": [
+          "video-posicao-3d",
+          "experiencia-posicao-3d"
+        ]
       }
     },
     {
@@ -8561,13 +8585,18 @@
       "title": "Coloque a chave na ilha",
       "intent": "application",
       "objective": "Coloque a chave na ilha.",
-      "blockKeys": ["video-posicao", "ponte-posicao"],
+      "blockKeys": [
+        "video-posicao",
+        "ponte-posicao"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-posicao"],
+        "blockIds": [
+          "video-posicao"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -8789,14 +8818,21 @@
       "key": "contato-3d",
       "title": "Parece junto, mas está encostando?",
       "intent": "exploration",
-      "objective": "Parece junto, mas está encostando?.",
-      "blockKeys": ["video-contato-3d", "ponte-contato-3d", "experiencia-contato-3d"],
+      "objective": "Parece junto, mas está encostando?",
+      "blockKeys": [
+        "video-contato-3d",
+        "ponte-contato-3d",
+        "experiencia-contato-3d"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-contato-3d", "experiencia-contato-3d"]
+        "blockIds": [
+          "video-contato-3d",
+          "experiencia-contato-3d"
+        ]
       }
     },
     {
@@ -8804,13 +8840,18 @@
       "title": "Recolha a chave",
       "intent": "application",
       "objective": "Recolha a chave.",
-      "blockKeys": ["video-recolher", "ponte-recolher"],
+      "blockKeys": [
+        "video-recolher",
+        "ponte-recolher"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-recolher"],
+        "blockIds": [
+          "video-recolher"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9187,13 +9228,18 @@
       "title": "Guarde que você pegou a chave",
       "intent": "application",
       "objective": "Guarde que você pegou a chave.",
-      "blockKeys": ["video-memoria", "ponte-memoria"],
+      "blockKeys": [
+        "video-memoria",
+        "ponte-memoria"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-memoria"],
+        "blockIds": [
+          "video-memoria"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -9785,13 +9831,20 @@
       "title": "Conte que a chave foi recolhida",
       "intent": "delivery",
       "objective": "Conte que a chave foi recolhida.",
-      "blockKeys": ["video-aviso", "ponte-aviso", "projeto"],
+      "blockKeys": [
+        "video-aviso",
+        "ponte-aviso",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-aviso", "projeto"],
+        "blockIds": [
+          "video-aviso",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -10422,15 +10475,22 @@
       "title": "A chave já pode ser encontrada",
       "intent": "closing",
       "objective": "A chave já pode ser encontrada.",
-      "blockKeys": ["video-fecho", "ponte-fecho"],
+      "blockKeys": [
+        "video-fecho",
+        "ponte-fecho"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-fecho"]
+        "blockIds": [
+          "video-fecho"
+        ]
       }
     }
   ],
-  "retireBlockKeys": ["materiais"]
+  "retireBlockKeys": [
+    "materiais"
+  ]
 }

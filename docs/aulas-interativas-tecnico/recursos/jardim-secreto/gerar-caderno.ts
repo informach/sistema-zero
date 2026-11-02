@@ -214,7 +214,7 @@ pages.push({
   body:
     box(
       'Antes de enviar',
-      'Teste as quatro direções, a parada, o limite da tela no 2D, a coleta no lugar escolhido e a flor com e sem o regador. Depois de um sucesso, pressione R: o regador volta e a flor começa fechada. Seus blocos e sua posição continuam iguais.',
+      'Teste as quatro direções, a parada, o limite da tela no 2D, a coleta no lugar escolhido e a flor com e sem o regador. Depois de um sucesso, clique no jogo e toque na tecla R: o regador volta e a flor começa fechada. Seus blocos e sua posição continuam iguais.',
       'test',
     ) +
     box(

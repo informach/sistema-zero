@@ -2632,7 +2632,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora a alavanca da ilha: crie ponteAberta começando em falso e, no encontro, toque puxar e baixar, guarde verdadeiro, mude o aviso e coloque o depois de 4 segundos que desfaz tudo. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora a alavanca da ilha: a mesma ideia do 2D, com animações no lugar das imagens. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
       }
     },
     {
@@ -2644,7 +2644,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de atravessar na ilha! Se ponteAberta, o personagem vai até a pedra e o sino toca; senão, o aviso diz que a ponte está levantada. Teste a tempo, atrasado e sem puxar, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora de atravessar na ilha! A ponte faz a mesma pergunta do 2D: ponteAberta. Teste sem puxar, a tempo e atrasado, clique em Verificar projeto e depois em Próxima parte."
       }
     },
     {

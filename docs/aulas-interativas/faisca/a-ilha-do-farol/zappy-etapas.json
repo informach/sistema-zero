@@ -4,63 +4,79 @@
     "experiencia-ponto-de-vista": [
       {
         "id": "island-view-start",
-        "text": "A pedra esconde a chave deste lado. Experimente olhar de outro lugar. O que muda?"
+        "text": "A pedra esconde a chave deste lado. Olhe a ilha de outro lugar e procure a chave. O que você vê agora?"
       },
       {
         "id": "island-view-compare",
-        "text": "Você já mudou o ponto de vista. Compare as vistas e responda: o que mudou quando a chave apareceu?"
+        "text": "Você olhou de outro lugar. Compare as vistas e responda: o que mudou quando a chave apareceu?"
       },
       {
-        "id": "island-complete",
-        "text": "Você fez as comparações. Continue explorando: pode mudar os valores, trocar a vista e repetir os testes."
+        "id": "island-view-complete",
+        "text": "Isso mesmo! A chave continuou atrás da mesma pedra. O que mudou foi o lugar de onde você olha: a câmera. Você pode continuar comparando as vistas."
       }
     ],
     "experiencia-posicao-3d": [
       {
         "id": "island-position-start",
-        "text": "Experimente os três valores. O x e o z mudam o lugar no chão. O y muda a altura. Você escolhe por qual começar."
+        "text": "A chave tem três números: x, y e z. Mude um de cada vez, para mais e para menos, e observe para onde a chave vai. Você escolhe por qual começar."
       },
       {
         "id": "island-position-x-plus",
-        "text": "Aumente x e observe para onde a chave vai no chão. Você também pode testar os outros valores."
+        "text": "Aumente o x e observe a chave. Para onde ela foi?"
       },
       {
         "id": "island-position-x-minus",
-        "text": "Agora diminua x e compare com o movimento anterior. A marca dourada continua no lugar inicial."
+        "text": "Agora diminua o x e compare com o que aconteceu antes. A marca dourada guarda o lugar do começo."
       },
       {
         "id": "island-position-z-plus",
-        "text": "Experimente aumentar z. Observe a outra direção do chão; a altura continua igual."
+        "text": "Aumente o z e observe a chave. Para onde ela foi?"
       },
       {
         "id": "island-position-z-minus",
-        "text": "Diminua z e compare os dois sentidos dessa direção do chão. Você pode repetir quando quiser."
+        "text": "Agora diminua o z e compare os dois sentidos. Você pode repetir quando quiser."
       },
       {
         "id": "island-position-y-plus",
-        "text": "Aumente y e observe a altura da chave. Olhar de lado ajuda a enxergar essa mudança."
+        "text": "Aumente o y e observe a chave. Se ficar difícil de ver, troque a vista."
       },
       {
         "id": "island-position-y-minus",
-        "text": "Diminua y e compare a altura. O pontilhado liga a chave ao chão."
+        "text": "Agora diminua o y e compare com o que aconteceu antes. Repare no pontilhado embaixo da chave."
       },
       {
-        "id": "island-complete",
-        "text": "Você fez as comparações. Continue explorando: pode mudar os valores, trocar a vista e repetir os testes."
+        "id": "island-position-x-found",
+        "text": "Viu? O x leva a chave pelo chão, para um lado e para o outro, e a altura não muda. Agora investigue outro número."
+      },
+      {
+        "id": "island-position-z-found",
+        "text": "Viu? O z também leva a chave pelo chão, mas na outra direção: para a frente e para trás. A altura não muda. Agora investigue outro número."
+      },
+      {
+        "id": "island-position-y-found",
+        "text": "Viu? O y muda a altura: a chave sobe e desce, e o lugar no chão continua o mesmo. No jogo 2D, o y tinha outro papel. Agora investigue outro número."
+      },
+      {
+        "id": "island-position-complete",
+        "text": "Você investigou os três números: o x e o z levam a chave pelo chão, e o y muda a altura. Continue explorando quando quiser."
       }
     ],
     "experiencia-contato-3d": [
       {
         "id": "island-contact-start",
-        "text": "De cima, a chave parece estar sobre o personagem. Teste o encontro e compare com a vista de lado. Todos os controles estão livres."
+        "text": "De cima, a chave parece estar em cima do personagem. Será que eles estão encostando? Teste o encontro e compare com o que você vê de lado."
       },
       {
         "id": "island-contact-other",
-        "text": "Você testou um caso. Mude a altura ou o lugar no chão e teste novamente para comparar contato e separação."
+        "text": "Eles não encostaram, mesmo parecendo juntos de cima. Olhando de lado, dá para ver o espaço entre a chave e o personagem. Mude um dos dois de lugar e teste de novo: dá para fazer os dois se encontrarem?"
       },
       {
-        "id": "island-complete",
-        "text": "Você fez as comparações. Continue explorando: pode mudar os valores, trocar a vista e repetir os testes."
+        "id": "island-contact-touch-first",
+        "text": "Desta vez eles encostaram. Agora mude a altura da chave ou o lugar no chão e teste de novo: quando eles ficam separados?"
+      },
+      {
+        "id": "island-contact-complete",
+        "text": "Você comparou os dois casos. A imagem pode enganar: para encostar, os dois precisam se encontrar no chão e também na altura. Continue testando quando quiser."
       }
     ]
   }

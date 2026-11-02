@@ -48,3 +48,29 @@ Os Poderes que partem da Ilha (Moedas, Cabana, Ponte e Baú) herdam a regra com 
 Junto, o motor do Jogo 3D deixou de medir o cubo de reserva dos modelos (do tamanho do lado
 maior) na área de toque, no sólido e no clique: com ele, a área de toque do farol cobria o cais,
 e o cubo do cenário envolvia o personagem, que nunca era barrado pela pedra.
+
+## Só a ideia e convite à investigação (02/11/2026)
+
+Decisões da responsável, com a régua do Farol (Dias 1 a 3) e do Cadê. As três experiências
+(ponto de vista, posição e contato) trabalham só a ideia, sem blocos, áreas ou código. Os vídeos
+explicam com a comparação (a pessoa que tapa a vista, a estante, a lâmpada) e perguntam ("O que
+você acha? Isso você vai testar na experiência"), sem contar o resultado nem pedir uma sequência
+de cliques. Na experiência, o Zappy pergunta e diz o que observar antes do teste e explica depois
+(`island-position-<eixo>-found`, `island-<modo>-complete`); a legenda da troca de vista pede para
+comparar; o papel de cada número ("Uma direção do chão", "Altura") só aparece depois de a criança
+ir para mais e para menos naquele número, como o "?" da porta do Farol. Instrução, recado e pistas
+de cada experiência moram na fonte editorial (pistas do aberto ao direto, com os botões reais,
+como **Mostrar onde encosta**). O Passo a passo traz objetivos de investigação nas experiências.
+
+Montagens: uma ideia por fala, o porquê antes do como, **Atualizar** no lugar de "execute o jogo",
+**toque na tecla R** no lugar de "pressione R", rótulos reais (**Mostrar o objeto**, **verdadeiro**,
+**Alterar variável para**, o segundo sinal de mais para o **senão**), "É este bloco que…" na posição
+e no encontro, `ganhou` explicada antes de ser escolhida e a conferência no formato das Diretrizes.
+A revisão da aula 3 passou a ficar, no roteiro, antes da aparência, como no manifesto.
+
+O **não** (parte **O farol acende uma vez só**) ficou sem experiência: nenhuma cena existente mostra
+uma pergunta e a sua inversão (a porta do Farol, `lighthouse-key`, só responde a `temChave`). A
+parte ganhou a retomada com a porta que só abre quando **não** está trancada e a leitura de
+`não ganhou` antes e depois da vitória. Proposta para decidir: uma variante da porta do Farol em
+que a pergunta pode ser invertida ("a porta está trancada?" e "a porta não está trancada?"), com a
+criança comparando a resposta nos dois casos.

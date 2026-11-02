@@ -7,7 +7,7 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { simbolosAjuda, simbolosAulas } from '../../qa/simbolos-conteudo'
+import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from '../../qa/simbolos-conteudo'
 import { SIMBOLOS_ASSETS_2D } from '../../qa/simbolos-projeto'
 
 // O mesmo template do Cadê Todo Mundo, com as fontes e as cores reais dos blocos do Estúdio,
@@ -141,7 +141,15 @@ const pages: { title: string; kicker: string; subtitle: string; body: string; le
     kicker: 'Poder do Faísca',
     subtitle: 'Um baú que só abre com o sol, a lua e a estrela tocados na ordem certa.',
     lesson: 1,
-    body: `${box('O seu jogo', 'No Farol aparecem três pedras com símbolos, uma placa com a ordem e um baú. O jogo guarda em passo até onde a sequência chegou: 0 antes do sol, 1 depois do sol, 2 depois da lua. Cada símbolo pergunta se é a vez dele; fora da vez, a tentativa recomeça. O farol continua pedindo a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+    body: `${box('O seu jogo', 'No Farol aparecem três pedras com símbolos, uma placa com a ordem e um baú. O jogo guarda em passo até onde a sequência chegou, e cada símbolo pergunta se é a vez dele. O que acontece com passo na ordem certa e fora da vez você descobre na experiência. O farol continua pedindo a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'A experiência tem o que investigar. Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+  },
+  // A experiência só com a ideia (02/11/2026), no formato da Ponte: o que investigar, sem o resultado.
+  {
+    title: simbolosExperiencia.title.replace('A experiência: ', ''),
+    kicker: 'Aula 1 · Experiência',
+    subtitle: 'Investigue antes de montar.',
+    lesson: 1,
+    body: `${box('A ideia', simbolosExperiencia.idea)}<div class="steps">${simbolosExperiencia.goals.map((g, n) => `<div class="step"><span class="number">${n + 1}</span><p>${esc(g)}</p></div>`).join('')}</div>${box('Como investigar', simbolosExperiencia.observe, 'test')}`,
   },
 ]
 for (const [i, aula] of simbolosAulas.entries())
@@ -169,7 +177,7 @@ pages.push({
   body:
     box(
       'Antes de enviar',
-      'Jogue uma partida inteira: abra o baú com o sol, a lua e a estrela, na ordem. Pressione R, toque o sol e a estrela, pulando a lua: tudo apaga. Recomece pelo sol: o baú abre. Pressione R: o baú volta fechado.',
+      'Jogue uma partida inteira: abra o baú com o sol, a lua e a estrela, na ordem. Toque na tecla R, toque o sol e a estrela, pulando a lua: tudo apaga. Recomece pelo sol: o baú abre. Toque na tecla R de novo: o baú volta fechado.',
       'test',
     ) +
     box(
@@ -189,7 +197,7 @@ pages[0]!.body = pages[0]!.body.replace(
   '<div class="index"></div>',
   box(
     'Encontre a sua aula',
-    `Jogo 2D: página 3. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
+    `Experiência: página 3. Jogo 2D: página 4. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
   ),
 )
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${image}" alt="Praia do Farol"><img class="cabin" src="${chest}" alt="O baú aberto"><img class="piece p1" src="${sun}" alt=""><img class="piece p2" src="${moon}" alt=""><img class="piece p3" src="${star}" alt=""><img class="piece p4" src="${sign}" alt=""></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>O baú dos<br><em>símbolos</em></h1><p>Ajuda para construir o Poder em 2D e em 3D.</p><div class="cover-bottom">O sol, a lua e a estrela.<br>Só na ordem certa o baú abre.</div></div></section>`

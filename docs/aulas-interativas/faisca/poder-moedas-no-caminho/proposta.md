@@ -134,6 +134,23 @@ Mais curta, como a aula 3D da missão: o conceito já foi visto.
 
 ## 7. Experiência "O contador de moedas"
 
+> **Revisão de 02/11/2026 (decisões da responsável, régua do Farol e do Cadê).** A experiência e o
+> vídeo conceitual trabalham **só a ideia**: o número `moedas` como um cofrinho, o **sumiço da
+> moeda** (*Ligar/Desligar o sumiço da moeda*) e a pergunta do baú, **Pelo menos 5** ou **Exatamente
+> 5**. Saíram da tela a regra montada como blocos, o grupo, o "Somar 1 em variável", o Se, o então e o
+> senão; eles aparecem só na montagem, que liga cada bloco à ideia ("É este bloco que faz a moeda
+> sumir, e por isso ela não conta de novo"). A descoberta "sem sumir, a mesma moeda contou de novo"
+> entrou na lista (seis descobertas), porque é a comparação que explica o Tirar do grupo. O que o
+> encontro, o sumiço e cada resposta do baú fazem só aparece depois do teste daquele caso. O Zappy
+> pergunta e diz o que observar antes do teste, e explica depois; o botão em destaque é o gesto que
+> ele pede. Pistas do aberto ao direto com os botões reais. O vídeo conceitual mantém o cofrinho e
+> convida a investigar ("O que você acha? Isso você vai testar na experiência"), sem sequência de
+> cliques nem resultado. As montagens começam pelo "Tá vendo?" no jogo, retomam a experiência,
+> explicam "grupo" e "condição", e a montagem do baú retoma "pelo menos × exatamente" para explicar
+> o ≥. A aula 2 ficou com o resumo mais leve. O Passo a passo ganhou a página da experiência com os
+> objetivos de investigação. Falas: `packages/core/src/learning/scene/guidance-moedas.ts`; tela:
+> `packages/member-shell/src/components/scene-poder-moedas.tsx`. O texto abaixo é o registro de 29/10.
+
 Cena com o personagem real do Farol, cinco ou seis moedas e o baú. Mostra o valor guardado como
 na diretriz: **antes → somar 1 → agora**, um único valor atual, e a meta ao lado do baú.
 

@@ -125,6 +125,42 @@ Transferência, como as aulas 3D dos outros Poderes.
 
 ## 7. Experiência "A ordem dos símbolos"
 
+> ⚠️ **Revisão de 02/11/2026 (decisão da responsável): a experiência trabalha só a IDEIA**, na régua
+> do Desafio do Primeiro Jogo (A Chave do Farol, Dias 1 a 3) e do Cadê Todo Mundo
+> ([descoberta guiada](../../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md)). O que muda em
+> relação ao texto abaixo:
+>
+> - **Sem blocos na tela.** A regra montada saiu da experiência: no lugar, a figura "A pergunta de
+>   cada símbolo" (é a minha vez?), com passo à vista e as duas respostas, sim e não. O que cada
+>   resposta faz ("o símbolo acende, e passo anda"; "passo volta a 0, e tudo apaga") fica com "?"
+>   até a criança testar aquele caso, como a pergunta da porta do Farol. Nada de Se, então, senão,
+>   evento ou "regra" na tela, nas falas do Zappy, na lista e nas pistas. Os blocos aparecem só na
+>   montagem, que liga cada bloco à ideia ("É este bloco que faz a pergunta da lua").
+> - **Os dois baús, ditos pela ideia:** "O baú confere a vez" e "O baú só conta" (antes, "Na ordem"
+>   e "Só contando"). Trocar de baú começa uma partida nova.
+> - **Exploração livre com o Zappy acompanhando** (`setup.freeExploration`, falas
+>   `symbols-*` em `packages/core/src/learning/scene/guidance-simbolos.ts`, exportadas em
+>   `zappy-etapas.json`). Antes do teste, o Zappy pergunta e diz o que observar; depois, explica. O
+>   botão em destaque é o gesto que a fala pede. No modo livre, "só contando, a ordem errada também
+>   abriu" vale depois de a criança ter visto o baú que confere a vez responder (ordem certa, fora
+>   da vez ou começando pelo meio): é uma comparação e pede o primeiro termo antes. Os avisos do
+>   palco acompanham o baú ("O baú abriu!" no baú que só conta) e a figura da ideia mora embaixo do
+>   palco.
+> - **A lista diz o que comparar**, sem o resultado (por exemplo, "Com o sol aceso, pule um símbolo
+>   e observe passo."). As três pistas vão do aberto ao direto, com os botões reais.
+> - **Vídeo conceitual:** mantém o cadeado de senha, explica variável e a pergunta "é a minha vez?"
+>   e convida a investigar, sem os valores de passo ("zero antes de começar, um depois do sol…") nem
+>   o que acontece fora da vez, que são a descoberta. A pergunta "o que acontece com passo fora da
+>   vez?" vira "O que você acha? Isso você vai testar na experiência."
+> - **Didática dos vídeos das duas aulas:** uma ideia por fala, um encaixe por fala, "É este
+>   bloco que…" nos blocos que correspondem à ideia, a retomada da experiência depois do "Tá vendo?"
+>   em todas as montagens, "comparação" explicada, tecla R dita como "comece uma partida nova com a
+>   tecla R", e testar, verificar e enviar em falas separadas. A aula 2 ficou com o resumo mais leve
+>   (o que é igual ao 2D, o que muda no 3D e o Passo a passo).
+> - O Passo a passo do projeto e o caderno ganharam a parte da experiência, com os objetivos de
+>   investigação. O PDF precisa ser renderizado e conferido de novo.
+
+
 Cena com o personagem do Farol, as três pedras, a placa e o baú, e o número do **passo** à vista
 (como a diretriz pede: a informação guardada aparece). A regra montada aparece como os blocos do
 Estúdio: os três encontros, com os dois Se.

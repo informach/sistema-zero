@@ -403,6 +403,8 @@ quando um ritmo mudar):
 | `enemy-type`, `aim`, `stage-size` | o deslizante no batente reenvia o MESMO valor | o valor mudar de verdade |
 | todas as de tempo | um quadro por chamada: o mesmo gesto dava números diferentes no ▶, no passo e no roteiro | o relógio de quadro fixo |
 | `score` (`score-start`/`score-end`) | a sobra de ANTES do gesto atravessava: "o placar ficou parado" caía 0,05 s depois de bater | nas cenas de `sceneLongFrame` o gesto recomeça o quadro |
+| `symbol-sequence` (`count-vs-order`, exploração livre) | "só contando" com a ordem errada caía no primeiro gesto, sem a criança ter visto o baú que confere a vez | no modo livre, só depois de ter visto o baú que confere a vez responder (`right-order`, `out-of-turn` ou `middle-start`) |
+| `timed-bridge` (`in-time`, exploração livre) | ir à ponte no segundo 0 contava "a tempo" também com o relógio da partida, onde não há contagem que comece na puxada | a exceção do segundo 0 vale só com o relógio da alavanca (`place === 'lever'`) |
 
 Regras que saem da tabela:
 - Meta de COMPARAÇÃO pede o primeiro termo visto antes: `stopped` depois de `moves`, `landed` depois de

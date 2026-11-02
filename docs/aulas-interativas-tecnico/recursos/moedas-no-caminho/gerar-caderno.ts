@@ -7,7 +7,7 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { moedasAjuda, moedasAulas } from '../../qa/moedas-conteudo'
+import { moedasAjuda, moedasAulas, moedasExperiencia } from '../../qa/moedas-conteudo'
 import { MOEDAS_ASSETS_2D } from '../../qa/moedas-projeto'
 
 // O mesmo template do Cadê Todo Mundo, com as fontes e as cores reais dos blocos do Estúdio,
@@ -138,7 +138,16 @@ const pages: { title: string; kicker: string; subtitle: string; body: string; le
     kicker: 'Poder do Faísca',
     subtitle: 'Um número que guarda as moedas e um baú que decide pela quantidade.',
     lesson: 1,
-    body: `${box('O seu jogo', 'No caminho do Farol aparecem seis moedas e um baú. Cada moeda que o personagem pega soma um no número das moedas e conta uma vez só. O número aparece na tela, e o baú só abre com pelo menos cinco moedas.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+    body: `${box('O seu jogo', 'No caminho do Farol aparecem seis moedas e um baú. O jogo guarda no número moedas quantas o personagem já pegou, e o número aparece na tela. Quando cada moeda conta, e o que o baú responde, você descobre na experiência.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'A experiência tem o que investigar. Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+  },
+  // Revisão de 02/11/2026: a experiência ganha uma página com a ideia e os objetivos de
+  // investigação (os mesmos da lista da tela), sem a sequência de cliques e sem as respostas.
+  {
+    title: moedasAulas[0]!.trechos.find((t) => t.kind === 'experience')!.title,
+    kicker: 'Aula 1 · Experiência',
+    subtitle: 'Investigue a ideia antes de montar.',
+    lesson: 1,
+    body: `${box('A ideia', moedasExperiencia.idea)}<div class="steps">${moedasExperiencia.goals.map((g, n) => `<div class="step"><span class="number">${n + 1}</span><p>${esc(g)}</p></div>`).join('')}</div>${box('Como investigar', moedasExperiencia.observe, 'test')}`,
   },
 ]
 for (const [i, aula] of moedasAulas.entries())
@@ -166,7 +175,7 @@ pages.push({
   body:
     box(
       'Antes de enviar',
-      'Jogue uma partida inteira: pegue as moedas, tente o baú com poucas e com cinco ou mais. Volte ao lugar de uma moeda pega e confira que o número não muda. Pressione R: o número volta para 0, as moedas voltam e o baú volta fechado.',
+      'Jogue uma partida inteira: pegue as moedas, tente o baú com poucas e com cinco ou mais. Volte ao lugar de uma moeda pega e confira que o número não muda. Toque na tecla R: o número volta para 0, as moedas voltam e o baú volta fechado.',
       'test',
     ) +
     box(
@@ -186,7 +195,7 @@ pages[0]!.body = pages[0]!.body.replace(
   '<div class="index"></div>',
   box(
     'Encontre a sua aula',
-    `Jogo 2D: página 3. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
+    `Experiência: página 3. Jogo 2D: página 4. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
   ),
 )
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${image}" alt="Praia do Farol"><img class="chest" src="${chest}" alt="Baú aberto"><img class="coin c1" src="${coin}" alt=""><img class="coin c2" src="${coin}" alt=""><img class="coin c3" src="${coin}" alt=""></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>Moedas<br><em>no caminho</em></h1><p>Ajuda para construir o Poder em 2D e em 3D.</p><div class="cover-bottom">Cada moeda conta.<br>O baú decide.</div></div></section>`

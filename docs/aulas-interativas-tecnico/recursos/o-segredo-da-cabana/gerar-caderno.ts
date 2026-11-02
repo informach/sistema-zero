@@ -7,7 +7,7 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { cabanaAjuda, cabanaAulas } from '../../qa/cabana-conteudo'
+import { cabanaAjuda, cabanaAulas, cabanaExperiencia } from '../../qa/cabana-conteudo'
 import { CABANA_ASSETS_2D } from '../../qa/cabana-projeto'
 
 // O mesmo template do Cadê Todo Mundo, com as fontes e as cores reais dos blocos do Estúdio,
@@ -133,7 +133,15 @@ const pages: { title: string; kicker: string; subtitle: string; body: string; le
     kicker: 'Poder do Faísca',
     subtitle: 'Duas informações guardadas e uma porta que pergunta as duas ao mesmo tempo.',
     lesson: 1,
-    body: `${box('O seu jogo', 'No Farol aparece a cabana do faroleiro, com a porta trancada, e um emblema novo no gramado de baixo. O jogo guarda se o personagem já pegou a chave e se já pegou o emblema, e a cabana só abre com as duas peças, em qualquer ordem. O farol continua pedindo só a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma pergunta para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+    body: `${box('O seu jogo', 'No Farol aparece a cabana do faroleiro, com a porta trancada, e um emblema novo no gramado de baixo. O jogo guarda se o personagem já pegou a chave e se já pegou o emblema, e a cabana pede as duas peças. Quando ela abre, e se a ordem das peças importa, você descobre na experiência. O farol continua pedindo só a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma pergunta para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'A experiência tem o que investigar. Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+  },
+  // A experiência só com a ideia (02/11/2026), no formato da Ponte: o que investigar, sem o resultado.
+  {
+    title: cabanaExperiencia.title.replace('A experiência: ', ''),
+    kicker: 'Aula 1 · Experiência',
+    subtitle: 'Investigue antes de montar.',
+    lesson: 1,
+    body: `${box('A ideia', cabanaExperiencia.idea)}<div class="steps">${cabanaExperiencia.goals.map((g, n) => `<div class="step"><span class="number">${n + 1}</span><p>${esc(g)}</p></div>`).join('')}</div>${box('Como investigar', cabanaExperiencia.observe, 'test')}`,
   },
 ]
 for (const [i, aula] of cabanaAulas.entries())
@@ -161,7 +169,7 @@ pages.push({
   body:
     box(
       'Antes de enviar',
-      'Jogue uma partida inteira: tente a cabana sem peças, só com a chave e só com o emblema, e depois com as duas. Pegue as peças nas duas ordens. Pressione R: as peças voltam ao chão e a cabana volta fechada.',
+      'Jogue uma partida inteira: tente a cabana sem peças, só com a chave e só com o emblema, e depois com as duas. Pegue as peças nas duas ordens. Toque na tecla R: as peças voltam ao chão e a cabana volta fechada.',
       'test',
     ) +
     box(
@@ -181,7 +189,7 @@ pages[0]!.body = pages[0]!.body.replace(
   '<div class="index"></div>',
   box(
     'Encontre a sua aula',
-    `Jogo 2D: página 3. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
+    `Experiência: página 3. Jogo 2D: página 4. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
   ),
 )
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${image}" alt="Praia do Farol"><img class="cabin" src="${cabin}" alt="Cabana do faroleiro aberta"><img class="piece p1" src="${key}" alt=""><img class="piece p2" src="${emblem}" alt=""></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>O segredo<br><em>da cabana</em></h1><p>Ajuda para construir o Poder em 2D e em 3D.</p><div class="cover-bottom">A chave e o emblema.<br>As duas peças abrem.</div></div></section>`

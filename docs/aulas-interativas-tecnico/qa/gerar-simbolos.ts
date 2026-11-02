@@ -6,13 +6,14 @@ import {
   LEARNING_IMPORT_BODY_MAX_BYTES,
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
 import { extrairPartesElevenLabs, sincronizarRecadosNaPagina } from './roteiro-elevenlabs'
-import { simbolosAjuda, simbolosAulas } from './simbolos-conteudo'
+import { simbolosAjuda, simbolosAulas, simbolosExperiencia } from './simbolos-conteudo'
 import { simbolosChecks } from './simbolos-criterios'
 import {
   montarProjetoSimbolos,
@@ -27,7 +28,7 @@ mkdirSync(dir, { recursive: true })
 const write = (name: string, v: unknown) =>
   gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
 
-const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n${simbolosAulas
+const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${simbolosExperiencia.title}\n\n**A ideia:** ${simbolosExperiencia.idea}\n\n**O que investigar:**\n\n${simbolosExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${simbolosExperiencia.observe}\n\n${simbolosAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${simbolosAjuda(
@@ -41,7 +42,7 @@ const help = `# Passo a passo do projeto — O baú dos símbolos\n\nPoder do Fa
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Pressione R e confira que o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: abra o baú na ordem certa, erre a ordem e recomece pelo sol. Toque na tecla R e confira que o baú volta fechado.\n\nDepois clique em Verificar projeto e corrija o que faltar.\n\nPor fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 write('passo-a-passo.md', help)
 
 const inventory: Record<string, string[]> = {}
@@ -121,10 +122,51 @@ for (const [index, aula] of simbolosAulas.entries()) {
           required: true,
           title: 'A ordem dos símbolos',
           semPerguntaFinal: true,
+          // Só a ideia e o convite à investigação (02/11/2026): a pergunta "é a minha vez?" e passo,
+          // sem blocos. As pistas e o "Ainda falta" citam os botões desta tela (o catálogo cita
+          // "Na ordem" e "Só contando", da bancada antiga).
           instructions:
-            'Toque os símbolos e acompanhe o passo: na ordem da placa, fora da vez e começando pelo meio. Depois compare com o baú que só conta. Você pode repetir quantas vezes quiser.',
-          hints: [],
-          activity: { type: 'experimentation', scene: 'symbol-sequence', cenario: 'farol' },
+            'Toque os símbolos e observe passo a cada toque: na ordem da placa, fora da vez e começando pelo meio. Depois compare com o baú que só conta. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+          hints: [
+            'Olhe o número passo depois de cada toque: ele muda? Para quanto?',
+            'Compare a ordem da placa com um símbolo fora da vez: o que acontece com passo e com os símbolos acesos?',
+            'Clique em Tocar o sol, Tocar a lua e Tocar a estrela. Clique em Recomeçar a partida, Tocar o sol, Tocar a estrela e Tocar a lua. Clique de novo em Tocar o sol, Tocar a lua e Tocar a estrela. Por último, clique em O baú só conta e em Tocar a estrela, Tocar a lua e Tocar o sol.',
+          ],
+          activity: {
+            type: 'experimentation',
+            scene: 'symbol-sequence',
+            cenario: 'farol',
+            setup: {
+              freeExploration: true,
+              goalCopy: {
+                'step-moves': {
+                  pedido:
+                    'Com O baú confere a vez escolhido, clique em Tocar o sol e depois em Tocar a lua, observando passo.',
+                },
+                'right-order': {
+                  pedido:
+                    'Com O baú confere a vez escolhido, clique em Tocar o sol, Tocar a lua e Tocar a estrela, nessa ordem.',
+                },
+                'out-of-turn': {
+                  pedido:
+                    'Com o sol aceso, clique em Tocar a estrela, pulando a lua, e observe passo.',
+                },
+                'middle-start': {
+                  pedido:
+                    'Numa partida sem nada aceso, clique em Tocar a lua antes do sol e observe passo.',
+                },
+                'restart-works': {
+                  pedido:
+                    'Erre a ordem e, sem clicar em Recomeçar a partida, clique em Tocar o sol, Tocar a lua e Tocar a estrela.',
+                },
+                'count-vs-order': {
+                  label: 'No baú que só conta, a ordem errada também abriu',
+                  pedido:
+                    'Depois de ver o baú que confere a vez responder, clique em O baú só conta e em Tocar a estrela, Tocar a lua e Tocar o sol.',
+                },
+              },
+            },
+          },
         },
       })
     }
@@ -234,7 +276,7 @@ for (const [index, aula] of simbolosAulas.entries()) {
     script +=
       t.kind === 'quiz'
         ? `## Parte ${i + 1}. ${t.title}\n\nSem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.\n\n`
-        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n${t.kind === 'experience' ? '**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-simbolos.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.\n\n' : ''}`
   script = sincronizarRecadosNaPagina(script, manifest)
   write(`simbolos-${aula.slug}.roteiro.md`, script)
   for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
@@ -253,6 +295,11 @@ for (const [index, aula] of simbolosAulas.entries()) {
   })
 }
 write('blocos.json', inventory)
+// As falas do Zappy dentro da experiência (02/11/2026), para gravar e auditar com o resto da aula.
+write('zappy-etapas.json', {
+  version: 1,
+  experiences: { experiencia: discoverySpeechSteps('symbol-sequence') },
+})
 write(
   'modulos.md',
   '# O baú dos símbolos — organização do curso\n\nPoder 4 do posto Faísca (`jornada-faisca-poder-4`). Módulo: **O baú dos símbolos**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +

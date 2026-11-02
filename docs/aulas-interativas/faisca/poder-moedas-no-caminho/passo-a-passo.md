@@ -1,12 +1,27 @@
 # Passo a passo do projeto — Moedas no caminho
 
-Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
+Poder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
+
+## A experiência: o contador de moedas
+
+**A ideia:** O número moedas funciona como um cofrinho: o jogo guarda quantas moedas o personagem já pegou. O baú faz uma pergunta sobre esse número. Na experiência, você descobre quando o número muda, quando continua igual e o que o baú responde.
+
+**O que investigar:**
+
+- Encoste em duas moedas diferentes e observe moedas.
+- Com o sumiço ligado, volte a uma moeda que já pegou e observe moedas.
+- Com o sumiço desligado, volte a uma moeda que já pegou e observe moedas.
+- Afaste o personagem das moedas e observe moedas.
+- Tente o baú com menos de 5 moedas.
+- Com mais de 5 moedas, compare as perguntas Pelo menos 5 e Exatamente 5.
+
+Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o número moedas, as moedas do caminho e o baú. O Zappy sugere o que observar.
 
 ## Aula 1 · Jogo 2D: Cada moeda conta
 
 ### Crie o contador
 
-**Relembre:** A variável moedas guarda quantas moedas o personagem já pegou. Toda partida começa com zero.
+**Relembre:** A variável moedas é o cofrinho do jogo: guarda quantas moedas o personagem já pegou. Toda partida começa com zero.
 
 1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.
 2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar.
@@ -18,7 +33,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 ### Cada moeda soma um
 
-**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
+**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 2D → Colisões → Encostar e bloquear. Pegue Quando o sprite começar a encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em jogador e escolha personagem. Clique em moedas e escolha moedasDoCaminho. O último nome já vem moeda; deixe assim.
@@ -39,13 +54,13 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 4. O valor chega com 0. Abra Programação → Valores, pegue valor da variável e solte em cima do 0. Clique no x e escolha moedas.
 5. No x do placar, troque 12 por 38. No y, troque 30 por 60. A cor já vem branca; deixe assim. No tamanho, troque 24 por 20.
 
-**Teste:** O número começa em 0 e sobe de um em um a cada moeda. Volte ao lugar de uma moeda pega: o número continua igual. Pressione R: o número volta para 0 e as moedas voltam.
+**Teste:** O número começa em 0 e sobe de um em um a cada moeda. Volte ao lugar de uma moeda pega: o número continua igual. Toque na tecla R: o número volta para 0 e as moedas voltam.
 
 **Se não funcionar:** Se aparecer sempre 0, o valor ficou com o número 0 em vez de valor da variável moedas. Se o número não aparecer, confira se o bloco está dentro do A cada quadro.
 
 ### O baú pede pelo menos 5
 
-**Relembre:** O encontro com o baú pergunta se moedas é maior ou igual a 5. Sim escolhe o então, que abre o baú. Não escolhe o senão, que avisa o que falta.
+**Relembre:** O encontro com o baú faz uma condição, uma pergunta de sim ou não: moedas é maior ou igual a 5, ou seja, pelo menos 5? Sim escolhe o então, que abre o baú. Não escolhe o senão, que avisa o que falta. Com o sinal de igual, o baú só abriria com exatamente 5.
 
 1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com as moedas, fora do fazer dele. Abra Jogo 2D → Colisões → Encostar e bloquear, pegue Quando o sprite começar a encostar no sprite e encaixe nesse espaço. Clique em jogador e escolha personagem. Clique em inimigo e escolha bau.
 2. Dentro do fazer desse encontro, encaixe Se, de Programação → Lógica e Se. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.
@@ -54,7 +69,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 5. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva O baú abriu! Você juntou moedas suficientes.
 6. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva O baú pede pelo menos 5 moedas.
 
-**Teste:** Pressione R e vá direto ao baú, sem moedas: ele fica fechado e o aviso pede pelo menos 5. Pegue as cinco moedas do caminho e volte: ele abre. Pressione R: o baú volta fechado e o número volta para 0.
+**Teste:** Toque na tecla R e vá direto ao baú, sem moedas: ele fica fechado e o aviso pede pelo menos 5. Pegue as cinco moedas do caminho e volte: ele abre. Toque na tecla R: o baú volta fechado e o número volta para 0.
 
 **Se não funcionar:** Se o baú abrir sem moedas, confira se a abertura está dentro do então e se a pergunta é moedas ≥ 5. Se com cinco ele não abrir, confira o sinal: com > (só maior) ele pediria seis; com = ele não abriria com seis.
 
@@ -62,7 +77,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 ### Crie o contador
 
-**Relembre:** A variável moedas guarda quantas moedas o personagem já pegou. Toda partida começa com zero.
+**Relembre:** A variável moedas é o cofrinho do jogo: guarda quantas moedas o personagem já pegou. Toda partida começa com zero.
 
 1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.
 2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar.
@@ -74,7 +89,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 ### Cada moeda soma um
 
-**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
+**Relembre:** O encontro com alguma moeda do grupo é o evento. A reação tira essa moeda do jogo, como o sumiço ligado da experiência, e soma 1 em moedas. Como a moeda sai, ela não conta de novo.
 
 1. Encontre a área Quando acontecer. Deixe à vista um espaço vazio depois do último evento dela, fora do fazer dos outros eventos.
 2. Abra Jogo 3D → Encostar. Pegue Quando encostar em algum do grupo, chamando de, e encaixe nesse espaço. Clique em heroi e escolha personagem. No grupo, clique em estrelas e escolha moedasDoCaminho. No último nome, clique em item e escreva moeda.
@@ -93,13 +108,13 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 2. Abra Jogo 3D → Placar, vida e telas → Na tela. Pegue Escrever na tela e encaixe ali. O canto já vem em cima, à esquerda; deixe assim.
 3. O texto chega com Pegue as estrelas!. Abra Programação → Valores, pegue valor da variável e solte em cima desse texto. Clique no x e escolha moedas.
 
-**Teste:** O número começa em 0 e sobe de um em um a cada moeda. Volte ao lugar de uma moeda pega: o número continua igual. Pressione R: o número volta para 0 e as moedas voltam.
+**Teste:** O número começa em 0 e sobe de um em um a cada moeda. Volte ao lugar de uma moeda pega: o número continua igual. Toque na tecla R: o número volta para 0 e as moedas voltam.
 
 **Se não funcionar:** Se aparecer sempre 0, o valor ficou com o número 0 em vez de valor da variável moedas. Se o número não aparecer, confira se o bloco está dentro do A cada quadro.
 
 ### O baú pede pelo menos 5
 
-**Relembre:** O encontro com o baú pergunta se moedas é maior ou igual a 5. Sim escolhe o então, que abre o baú. Não escolhe o senão, que avisa o que falta.
+**Relembre:** O encontro com o baú faz uma condição, uma pergunta de sim ou não: moedas é maior ou igual a 5, ou seja, pelo menos 5? Sim escolhe o então, que abre o baú. Não escolhe o senão, que avisa o que falta. Com o sinal de igual, o baú só abriria com exatamente 5.
 
 1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com as moedas, fora do fazer dele. Abra Jogo 3D → Encostar, pegue Quando encostar em e encaixe nesse espaço. O primeiro nome já vem personagem; deixe assim. Clique em chave e escolha bau.
 2. Dentro do fazer desse encontro, encaixe Se, de Programação → Lógica e Se. Na linha de baixo do Se, clique no segundo sinal de mais, antes da palavra senão, para abrir o senão.
@@ -108,10 +123,10 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 5. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva O baú abriu! Você juntou moedas suficientes.
 6. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva O baú pede pelo menos 5 moedas.
 
-**Teste:** Pressione R e vá direto ao baú, sem moedas: ele fica fechado e o aviso pede pelo menos 5. Pegue as cinco moedas do caminho e volte: ele abre. Pressione R: o baú volta fechado e o número volta para 0.
+**Teste:** Toque na tecla R e vá direto ao baú, sem moedas: ele fica fechado e o aviso pede pelo menos 5. Pegue as cinco moedas do caminho e volte: ele abre. Toque na tecla R: o baú volta fechado e o número volta para 0.
 
 **Se não funcionar:** Se o baú abrir sem moedas, confira se a abertura está dentro do então e se a pergunta é moedas ≥ 5. Se com cinco ele não abrir, confira o sinal: com > (só maior) ele pediria seis; com = ele não abriria com seis.
 
 ## Entrega
 
-Em cada aula, jogue uma partida inteira, pressione R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.
+Em cada aula, jogue uma partida inteira, toque na tecla R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

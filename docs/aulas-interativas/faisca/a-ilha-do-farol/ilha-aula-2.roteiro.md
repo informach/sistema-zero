@@ -4,23 +4,29 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Antes de gravar:** abra a aula numa aba nova após o deploy. Use uma sessão sem progresso na experiência e sem envio anterior nesta aula. Não preencha Recado (opcional) na tomada do envio. Mostre Salvo somente quando o estado aparecer de verdade. Para repetir um primeiro envio, use outro perfil de ensaio. Nas partes sem Estúdio, use a cena da própria parte; não simule botões ou estados na edição.
 
-## Parte 1. Duas direções no chão e uma na altura
+## Parte 1. Para onde vai a chave?
 
 **Clipe:** `video-posicao-3d`
 
-**Na tela:** Comparar planta do chão e vista lateral. X e Z no chão, Y vertical. Atividade position com marca inicial, anterior e projeção.
+**Na tela:** Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois mostrar a experiência parada, com os três números da chave e a marca dourada, sem mudar nenhum valor: o que cada número muda é a descoberta da criança. Não falar de blocos nem de código.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No jogo 2D, você usou x e y para escolher um lugar na tela. Aqui a posição tem três valores, e o y tem outro papel: ele indica a altura.
+[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela.
 
-[interested, animated voice] Imagine procurar um livro numa estante. Você pode mudar de lugar para os lados, chegar mais perto ou mais longe e também procurar numa prateleira mais alta. No seu jogo, x e z indicam as duas direções do chão; y indica a altura.
+[interested, animated voice] Aqui a ilha tem profundidade, e o lugar de cada objeto tem três números: x, y e z.
 
-[upbeat, encouraging voice] Experimente aumentar e diminuir cada valor da chave. Observe a marca do lugar inicial e compare com o lugar atual. Mude também a vista para enxergar melhor cada diferença. Você escolhe por onde começar. Quando fizer as comparações, clique em Próxima parte.
+[curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar.
+
+[curious] Será que cada número da chave muda um desses jeitos? E o y, será que continua fazendo o que fazia no jogo 2D?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Sua vez de investigar: mude um número de cada vez, para mais e para menos, e observe para onde a chave vai. Compare com a marca dourada do lugar inicial e, se ficar difícil de ver, troque a vista. Você escolhe por onde começar. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Mude um número da chave de cada vez, para mais e para menos, e observe para onde ela vai. Você escolhe por onde começar, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Coloque a chave na ilha
 
@@ -31,62 +37,96 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora que você comparou as três direções, vamos mudar o lugar da chave no seu jogo.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O x e o z levaram a chave pelo chão, e o y mudou a altura. No jogo 2D era diferente: lá, o y mudava o lugar na tela.
 
-[confident, clear, unhurried voice] Nos blocos, abra Ao iniciar e encontre Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se precisar, arraste um espaço vazio entre os blocos até deixar essa linha à vista. Primeiro mude só x: coloque menos 3. Execute o jogo e observe para onde a chave foi.
+[engaging, energetic, conversational voice] Agora você vai escolher um lugar novo para a chave no seu jogo!
 
-[confident, clear, unhurried voice] Volte à mesma linha e coloque menos 2 em z. Deixe y em 1. Execute outra vez e leve o personagem até perto da chave.
+[confident, clear, unhurried voice] Nos blocos, abra a área Ao iniciar e encontre o bloco Colocar o objeto chave em x menos 2, y 1 e z menos 3. Se ele não estiver aparecendo, arraste um espaço vazio entre os blocos até ele aparecer.
 
-[interested, animated voice] Ela mudou de lugar no chão, mas continuou na mesma altura. Por enquanto, encostar não a retira: vamos montar essa reação depois de investigar o contato em 3D.
+[engaging, energetic, conversational voice] É este bloco que coloca a chave na ilha. Os três números dele são o x, o y e o z que você mudou na experiência.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+[confident, clear, unhurried voice] Primeiro mude só o x. Clique no menos 2 que fica depois de x e troque por menos 3.
 
-[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[upbeat, encouraging voice] Clique em Atualizar, logo acima do jogo, e observe para onde a chave foi.
+
+[confident, clear, unhurried voice] Agora mude o z. Clique no menos 3 que fica depois de z e troque por menos 2. Deixe o y em 1.
+
+[upbeat, encouraging voice] Clique em Atualizar de novo. Depois clique dentro do jogo e leve o personagem até perto da chave.
+
+[interested, animated voice] Olha só: a chave mudou de lugar no chão e continuou na mesma altura, porque você não mexeu no y.
+
+[engaging, energetic, conversational voice] Por enquanto, encostar na chave não faz nada. Essa reação vem daqui a pouco, depois da experiência do contato.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Ao iniciar, o bloco Colocar o objeto chave está com x menos 3, y 1 e z menos 2. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ## Parte 3. Parece junto, mas está encostando?
 
 **Clipe:** `video-contato-3d`
 
-**Na tela:** Atividade contact, inicialmente vista de cima e chave alta. Todos os controles livres. Áreas desenhadas correspondem à conta de contato.
+**Na tela:** Ilustrar a lâmpada bem acima da cabeça de alguém. Depois mostrar a experiência na vista de cima, com a chave alta parecendo estar sobre o personagem, e apontar Testar o encontro e Mostrar onde encosta sem testar: o resultado é a descoberta da criança. Não falar de blocos nem de código.
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Se a chave aparece sobre o personagem na imagem, será que os dois estão encostando? Uma lâmpada pode ficar bem acima da sua cabeça sem encostar em você. Ainda existe um espaço entre vocês.
+[curious] Sabe quando uma lâmpada fica bem em cima da sua cabeça? Olhando de baixo, parece que ela está grudada em você. Mas ela pode estar lá no teto.
 
-[engaging, energetic, conversational voice] Em 3D, o encontro depende do lugar no chão e da altura. A imagem sozinha pode enganar.
+[engaging, energetic, conversational voice] No seu jogo, o personagem vai pegar a chave quando encostar nela. Só que a imagem da tela também pode enganar.
 
-[upbeat, encouraging voice] Na experiência, teste um encontro e observe o resultado. Troque a vista, mude o lugar da chave ou do personagem e compare casos em que eles encostam com casos em que ficam separados. Se quiser, mostre as áreas de contato. Repita os testes na ordem que preferir. Quando fizer as descobertas, clique em Próxima parte.
+[curious] Na experiência, olhando de cima, a chave parece estar em cima do personagem. Será que eles estão encostando?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Sua vez de investigar: teste o encontro e compare com o que a imagem mostra de cima e de lado. Depois mude a chave ou o personagem de lugar e procure um caso em que eles encostam e outro em que ficam separados. Se quiser, clique em Mostrar onde encosta. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Teste se a chave e o personagem estão encostando e compare com o que a imagem mostra. Procure um caso em que eles encostam e outro em que ficam separados. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Recolha a chave
 
 **Clipe:** `video-recolher`
 
-**Na tela:** Mostrar Quando acontecer existente com reinício por R. Novo encontro fica fora do evento R. O evento escolhe diretamente personagem e chave, sem grupo nem nome de item.
+**Na tela:** Começar pela retomada: clicar em Atualizar e levar o personagem até a chave, que continua ali no Tá vendo?. Mostrar Quando acontecer com o evento da tecla R. Novo encontro fica fora do evento R. O evento escolhe diretamente personagem e chave, sem grupo nem nome de item. O bloco de visibilidade chega como Mostrar o objeto: trocar para Esconder e escolher chave.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Você viu que o contato precisa acontecer também na altura. No seu jogo, leve o personagem até a chave. Ela ainda fica ali porque falta a reação do encontro.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e leve o personagem até a chave. Tá vendo? A chave continua ali, porque o jogo ainda não tem nenhuma reação para esse encontro.
 
-[confident, clear, unhurried voice] Volte aos blocos e encontre Quando acontecer. Já existe ali o evento da tecla R, que recomeça a partida. Deixe à vista um espaço depois desse evento, fora do fazer dele. Abra Jogo 3D, Encostar, Encostar. Pegue o bloco Quando personagem encostar em chave. Encaixe no espaço que deixamos à vista. No primeiro nome, escolha personagem; no segundo, chave.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Só valia encostar quando o personagem e a chave se encontravam no chão e também na altura. Agora a gente vai fazer o seu jogo perceber esse encontro!
 
-[confident, clear, unhurried voice] Agora deixe à vista o fazer do novo encontro. Abra Jogo 3D, Objetos, Aparência e pegue o bloco de mostrar ou esconder o objeto. Encaixe dentro desse fazer. Escolha Esconder e, no objeto, chave.
+[confident, clear, unhurried voice] Os encontros ficam na área Quando acontecer. Encontre essa área nos blocos. Repare: ali já tem o evento da tecla R, que recomeça a partida.
 
-[upbeat, encouraging voice] Execute o jogo e caminhe até a chave. Ela deve sumir quando o personagem encostar. Pressione R e repita por outro caminho.
+[confident, clear, unhurried voice] Deixe à vista o espaço logo abaixo desse evento, fora do fazer dele.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+[confident, clear, unhurried voice] Agora abra Jogo 3D, depois Encostar e depois Encostar de novo. Pegue o bloco Quando personagem encostar em chave e solte nesse espaço.
 
-[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o Testar o encontro da experiência, ele confere o lugar no chão e a altura.
+
+[confident, clear, unhurried voice] Repare que ele já chega com personagem no primeiro nome e chave no segundo. Se aparecer outro nome, clique nele e escolha o certo.
+
+[engaging, energetic, conversational voice] Agora falta a reação: a chave sumir. Deixe à vista o espaço ao lado da palavra fazer, dentro do novo encontro.
+
+[confident, clear, unhurried voice] Abra Jogo 3D, depois Objetos e depois Aparência. Pegue o bloco Mostrar o objeto e solte dentro desse fazer.
+
+[confident, clear, unhurried voice] Repare que ele chega com Mostrar. Clique em Mostrar e escolha Esconder. Depois clique no nome do objeto e escolha chave.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar e caminhe até a chave.
+
+[interested, animated voice] Olha só: ela some quando o personagem encosta.
+
+[upbeat, encouraging voice] Toque na tecla R e repita por outro caminho.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Quando acontecer, fora do evento da tecla R, está o encontro Quando personagem encostar em chave, e dentro do fazer dele está Esconder o objeto chave. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ## Parte 5. Guarde que você pegou a chave
 
@@ -97,37 +137,65 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] A chave sumiu. Lembra do jogo 2D? Sumir e guardar que pegamos a chave são ações diferentes. Vamos usar de novo temChave, a variável que responde se o personagem tem a chave.
+[engaging, energetic, conversational voice] A chave já some. Mas lembra do jogo 2D? Sumir não é a mesma coisa que guardar que o personagem pegou a chave.
 
-[confident, clear, unhurried voice] Deixe à vista o fim da área Ao iniciar. Em Programação, Variáveis, pegue Criar variável e encaixe depois da linha que cria aviso. Escreva temChave no nome. Em Programação, Lógica e Se, pegue verdadeiro ou falso e coloque no valor dessa variável. Escolha falso, porque a partida começa sem a chave.
+[engaging, energetic, conversational voice] Para guardar, a gente usa de novo temChave, a variável que responde se o personagem tem a chave.
 
-[confident, clear, unhurried voice] Agora deixe à vista o encontro do personagem com chave. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois de Esconder o objeto chave. Escolha temChave. Em Programação, Lógica e Se, pegue verdadeiro ou falso e encaixe no valor. Aqui escolha verdadeiro.
+[confident, clear, unhurried voice] Nos blocos, deixe à vista o fim da área Ao iniciar, logo depois da linha que cria aviso.
 
-[interested, animated voice] Confira os dois lugares: ao começar, falso; ao recolher, verdadeiro. O valor não aparece como um objeto na ilha. Na próxima aula, o farol vai consultar essa informação.
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, pegue o bloco Criar variável e solte ali. Repare que ele chega com o nome contador. Clique em contador e escreva temChave.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+[confident, clear, unhurried voice] Agora abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 0, no valor dessa variável. Clique em verdadeiro e escolha falso, porque a partida começa sem a chave.
 
-[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Agora deixe à vista o encontro do personagem com a chave, logo depois de Esconder o objeto chave.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, pegue o bloco Alterar variável para e solte ali. Repare que ele chega com o nome contador. Clique em contador e escolha temChave.
+
+[confident, clear, unhurried voice] Abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1, no valor. Aqui ele fica verdadeiro, porque o personagem acabou de pegar a chave.
+
+[interested, animated voice] Olha os dois lugares: ao começar, falso; ao recolher, verdadeiro.
+
+[engaging, energetic, conversational voice] Esse valor não aparece na ilha. Na próxima aula, o farol vai consultar essa informação.
+
+[reassuring, encouraging voice] Confira se ficou assim: em Ao iniciar está Criar variável temChave com valor falso, e no encontro com a chave, depois de Esconder o objeto chave, está Alterar variável temChave para verdadeiro.
+
+[engaging, energetic, conversational voice] Agora clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ## Parte 6. Conte que a chave foi recolhida
 
 **Clipe:** `video-aviso`
 
-**Na tela:** Atribuição aviso dentro da coleta. HUD existente lê aviso a cada quadro. Envio desta aula.
+**Na tela:** Começar pela retomada: clicar em Atualizar e recolher a chave, com o aviso de sempre no Tá vendo?. Atribuição aviso dentro da coleta; os blocos chegam com contador e 1. HUD existente lê aviso a cada quadro. Envio desta aula.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Vamos mostrar na tela quando a coleta acontece. O jogo já exibe o texto guardado em aviso. Só precisamos mudar esse texto no encontro.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar e recolha a chave. Tá vendo? A chave some, mas o aviso continua o mesmo, porque nada muda o aviso no encontro.
 
-[confident, clear, unhurried voice] Deixe à vista o encontro com chave e a linha temChave verdadeiro. Em Programação, Variáveis, pegue Alterar variável variável para e encaixe depois dessa linha. Escolha aviso. Em Programação, Valores, pegue Texto, encaixe no valor e escreva: Você pegou a chave! Agora vá ao farol.
+[engaging, energetic, conversational voice] Agora a gente vai mostrar na tela quando a coleta acontece! Repare no aviso no alto do jogo: ele mostra o texto guardado na variável aviso.
 
-[upbeat, encouraging voice] Execute o jogo, recolha a chave e se afaste. A chave deve sumir e o novo aviso deve continuar na tela. Pressione R: a chave e o aviso inicial devem voltar. Se algo não funcionou, confira se esconder a chave, guardar verdadeiro e mudar aviso estão juntos no fazer do encontro. Corrija e teste novamente.
+[engaging, energetic, conversational voice] Por isso, para mudar o aviso, basta mudar esse texto no encontro com a chave.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e teste novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+[confident, clear, unhurried voice] Nos blocos, deixe à vista o encontro com a chave, logo depois da linha temChave verdadeiro.
+
+[confident, clear, unhurried voice] Abra Programação e depois Variáveis, pegue o bloco Alterar variável para e solte ali. Repare que ele chega com o nome contador. Clique em contador e escolha aviso.
+
+[confident, clear, unhurried voice] Agora abra Programação e depois Valores, pegue o bloco texto e solte em cima do 1, no valor. Ele chega com Olá: apague Olá e escreva: Você pegou a chave! Agora vá ao farol.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar, recolha a chave e se afaste.
+
+[interested, animated voice] Olha só: a chave some, e o novo aviso continua na tela.
+
+[upbeat, encouraging voice] Toque na tecla R. A chave e o aviso do começo voltam.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do encontro com a chave estão Esconder o objeto chave, temChave verdadeiro e o aviso com o texto novo. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 ```
 
 **Recado na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.

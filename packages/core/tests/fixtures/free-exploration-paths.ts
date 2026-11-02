@@ -9,6 +9,17 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
     { type: 'touch-hiding-place', id: 0 },
     { type: 'touch-hiding-place', id: 1 },
   ],
+  // As Moedas em exploração livre (02/11/2026) cobram também "sem sumir, a mesma moeda contou de
+  // novo": a comparação que justifica tirar a moeda do grupo.
+  'coin-counter': [
+    { type: 'coin-disappears', enabled: false },
+    { type: 'touch-coin', coin: 0 },
+    { type: 'touch-coin', coin: 1 },
+    { type: 'touch-coin', coin: 0 },
+    { type: 'restart-coins' },
+    { type: 'coin-disappears', enabled: true },
+    ...scenePaths['coin-counter'],
+  ],
   'lighthouse-position': [
     ...scenePaths['lighthouse-position'],
     { type: 'key-position', axis: 'x', value: 300 },

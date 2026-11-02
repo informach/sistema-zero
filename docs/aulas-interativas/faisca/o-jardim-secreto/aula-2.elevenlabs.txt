@@ -1,57 +1,91 @@
 [upbeat, welcoming voice] Seu jardim agora tem profundidade! A missão continua: recolher o regador, guardar essa informação e fazer a flor responder.
 
-[engaging, energetic, conversational voice] Na Ilha do Farol, você descobriu que x e z indicam o lugar no chão, e y indica a altura. Também viu que dois desenhos parecerem juntos não garante o encontro em 3D. Vamos usar essas descobertas.
+[engaging, energetic, conversational voice] Na Ilha do Farol, você descobriu que x e z indicam o lugar no chão, e y indica a altura.
 
-[upbeat, encouraging voice] Conheça o jardim pronto com as setas ou W, A, S e D. R recomeça a partida. Depois clique em Próxima parte. A ajuda completa das duas versões continua na primeira aula, na parte Ajuda quando você precisar.
+[engaging, energetic, conversational voice] Também viu que, no 3D, dois objetos podem parecer juntos na tela e estar separados, um mais alto que o outro. Por isso, o encontro só acontece quando eles se tocam de verdade.
+
+[reassuring, encouraging voice] Se precisar, a ajuda completa das duas versões continua na primeira aula, na parte Ajuda quando você precisar.
+
+[upbeat, encouraging voice] Conheça o jardim pronto: clique nele e use as setas ou as teclas W, A, S e D. A tecla R começa outra partida. Depois clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] A câmera, a área de caminhada e as animações já estão preparadas. Falta você colocar o comando que faz o personagem andar. Use o movimento com o teclado que montou na Ilha do Farol.
+[engaging, energetic, conversational voice] A câmera, a área de caminhada e as animações já estão preparadas. Falta só o que faz o personagem andar.
 
-[upbeat, encouraging voice] Teste cada direção e solte a tecla para conferir a parada. Explore o caminho até o regador e até a flor.
+[engaging, energetic, conversational voice] É a mesma ideia da Ilha do Farol: em cada quadro, o jogo olha as setas e, se você está segurando uma delas, o personagem anda um pouquinho para aquele lado. Use o movimento com o teclado que você montou lá.
+
+[upbeat, encouraging voice] Teste cada direção e solte a tecla para conferir a parada. Depois explore o caminho até o regador e até a flor.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] No 3D, o encontro considera também a altura. O regador já está numa altura alcançável. Monte a coleta: no encontro, esconda o regador, guarde que ele foi pego e mude o aviso.
+[engaging, energetic, conversational voice] No 3D, o encontro considera também a altura. Por isso, o regador já veio numa altura que o personagem alcança.
 
-[interested, animated voice] A ideia da memória continua a mesma: a partida começa sem a coleta e passa a lembrar dela no encontro. O regador não precisa aparecer na mão do personagem.
+[interested, animated voice] A ideia da memória continua a mesma do jardim 2D: a partida começa sem a coleta, e o jogo passa a lembrar dela no encontro.
 
-[upbeat, encouraging voice] Jogue, recolha e se afaste. Confira se o aviso continua.
+[confident, clear, unhurried voice] Agora monte a coleta. No encontro com o regador, esconda o regador, guarde que ele foi pego e mude o aviso. O regador não precisa aparecer na mão do personagem.
+
+[upbeat, encouraging voice] Depois jogue, recolha o regador e se afaste. Confira se o aviso continua.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sua flor também tem duas respostas. Sem o regador, ela fica fechada e o aviso pede a coleta. Com ele, a animação florescer abre as pétalas e o aviso conta que deu certo. A animação veio pronta; você escolhe quando ela toca.
+[engaging, energetic, conversational voice] Sua flor também tem duas respostas. Sem o regador, ela fica fechada, e o aviso pede a coleta. Com ele, ela abre as pétalas, e o aviso conta que deu certo.
 
-[curious] Lembra do farol da Ilha, que acendia tudo de novo quando o personagem voltava? A flor é o fim deste jogo, então ela também abre uma vez só. Crie a variável ganhou começando em falso, guarde verdadeiro quando a flor abrir e coloque a pergunta do regador dentro de Se não ganhou, como você fez no farol.
+[engaging, energetic, conversational voice] Para abrir as pétalas, a flor já tem uma animação pronta, chamada florescer. Você escolhe quando ela toca.
+
+[curious] Lembra do farol da Ilha? Cada vez que o personagem voltava, ele acendia tudo de novo.
+
+[engaging, energetic, conversational voice] A flor é o fim deste jogo, como o farol era o fim daquele. Por isso, ela também deve abrir uma vez só: depois do apito final, a partida já foi ganha.
+
+[confident, clear, unhurried voice] Para o jogo lembrar disso, crie a variável ganhou, começando em falso. Quando a flor abrir, guarde verdadeiro nela.
+
+[confident, clear, unhurried voice] Depois coloque a pergunta do regador dentro de Se não ganhou, como você fez no farol. Assim, a flor só responde enquanto a partida ainda não foi ganha.
 
 [upbeat, encouraging voice] Monte a decisão no encontro com a flor. Teste uma partida sem a coleta e outra com a coleta. Depois que ela abrir, saia de perto e volte: a flor deve continuar aberta, sem florescer de novo.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Escolha um novo lugar para o regador no jardim 3D. Mude x, z ou os dois; mantenha a altura y que já veio preparada. Lembra? No chão do 3D usamos x e z.
+[engaging, energetic, conversational voice] Lembra? No 3D, x e z indicam o lugar no chão, e y indica a altura.
 
-[upbeat, encouraging voice] Experimente mais de um lugar. Deixe o regador visível e alcançável, separado do personagem no começo, e preserve um caminho direto à flor sem passar por ele. Depois da mudança, comece a testar desde o início da partida. Confira a coleta no lugar novo e as duas respostas da flor.
+[upbeat, encouraging voice] Agora escolha um novo lugar para o regador no jardim 3D. Mude x, z ou os dois, e mantenha a altura y que já veio preparada. Experimente mais de um lugar.
+
+[engaging, energetic, conversational voice] Deixe o regador visível e alcançável, longe do personagem no começo, e preserve um caminho direto até a flor sem passar por ele.
+
+[confident, clear, unhurried voice] Depois da mudança, teste uma partida desde o começo. Confira a coleta no lugar novo e as duas respostas da flor.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
 [pleased, lively voice] Você usou a memória e a decisão em dois jardins e conferiu o que muda no espaço em três dimensões.
 
-[confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor. Confira também que, depois de aberta, ela não floresce de novo quando você volta. Pressione R no jogo depois de um sucesso: o regador deve voltar e a flor deve começar fechada. Seus blocos continuam iguais. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[engaging, energetic, conversational voice] Quando você enviar este jardim, a sua missão fica registrada na jornada. Lá você confere o que falta para avançar de posto.
 
-[upbeat, encouraging voice] Sua missão fica registrada na jornada. Confira lá o que falta para avançar de posto.
+[confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor. Confira também que, depois de aberta, ela não floresce de novo quando você volta.
+
+[confident, clear, unhurried voice] Depois de um sucesso, clique no jogo e toque na tecla R. O regador deve voltar e a flor deve começar fechada, e os seus blocos continuam iguais.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

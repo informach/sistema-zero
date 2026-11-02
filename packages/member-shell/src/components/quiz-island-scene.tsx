@@ -36,7 +36,7 @@ export function IslandQuizScene({
     }
   } else if (scene === 'island-height') {
     before = 'De cima, as imagens parecem juntas. Vamos olhar de lado.'
-    after = 'A chave está acima do personagem. As áreas de contato estão separadas.'
+    after = 'A chave está acima do personagem: não estão encostando, há um espaço entre eles.'
     if (result) {
       state.view = 'side'
       state.bounds = true
@@ -45,7 +45,7 @@ export function IslandQuizScene({
     state.key = { x: 2, y: 1, z: 1 }
     state.view = 'front'
     before = 'A chave mudou de lugar. Vamos levar o personagem até ela e testar o encontro.'
-    after = 'O personagem chegou ao novo lugar. As áreas se encontram: a chave pode ser recolhida.'
+    after = 'O personagem chegou ao novo lugar. Estão encostando: a chave pode ser recolhida.'
     if (result) {
       state.hero.x = 2
       state.bounds = true

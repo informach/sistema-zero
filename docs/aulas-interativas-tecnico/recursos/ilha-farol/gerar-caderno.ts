@@ -177,7 +177,7 @@ const box = (title: string, s: string, tone = 'note') =>
 const steps = (ss: string[]) =>
   `<div class="steps">${ss.map((s, i) => `<div class="step"><span class="number">${i + 1}</span><p>${esc(s)}</p></div>`).join('')}</div>`
 const exit = (delivery: boolean) =>
-  `<div class="check"><span class="pill pill--test">${delivery ? 'Verificar e enviar' : 'Confira no seu jogo'}</span><p>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente, até aparecer <b>Objetivo cumprido!</b> Espere <b>Salvo</b>. ${delivery ? 'Clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, ' : ''}Clique em <b>Próxima parte</b>.</p></div>`
+  `<div class="check"><span class="pill pill--test">${delivery ? 'Verificar e enviar' : 'Confira no seu jogo'}</span><p>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente, até aparecer <b>Objetivo cumprido!</b> Espere <b>Salvo</b>. ${delivery ? 'Clique em <b>Enviar meu projeto</b> e confirme em <b>Enviar</b>. Quando aparecer <b>Projeto enviado!</b>, clique' : 'Clique'} em <b>Próxima parte</b>.</p></div>`
 pages.push({
   id: 'inicio',
   lesson: 1,
@@ -186,7 +186,7 @@ pages.push({
   subtitle: 'Encontre a chave e acenda o farol para o barco chegar.',
   body:
     text(
-      'Você já construiu A Chave do Farol. Agora vai programar essa aventura em três dimensões. O chão tem duas direções e a altura tem outra. Uma mudança de câmera pode revelar o que estava escondido.',
+      'Você já construiu A Chave do Farol. Agora vai programar essa aventura em três dimensões e investigar o que muda quando o mundo ganha profundidade.',
     ) +
     box(
       'Use quando precisar',
@@ -195,50 +195,54 @@ pages.push({
     '<div class="index"></div>' +
     box(
       'Comece pela partida pronta',
-      'Clique no jogo e use as setas do teclado ou W, A, S e D. Pressione R para recomeçar. Você pode continuar a aula mesmo sem terminar essa partida.',
+      'Clique dentro do jogo e segure as setas do teclado ou as letras W, A, S e D. Para recomeçar, toque na tecla R. Você pode continuar a aula mesmo sem terminar essa partida.',
       'experience',
     ),
 })
+// Objetivos de investigação (02/11/2026): o que comparar e observar, sem o resultado e sem uma
+// sequência de cliques. A montagem continua com os passos completos.
 const experiences: Record<string, { intro: string; steps: string[]; image: string }> = {
   'ponto-de-vista': {
     intro:
-      'A câmera é o lugar de onde olhamos. Compare as vistas para procurar a chave, sem mudar os objetos.',
+      'A câmera é o lugar de onde você olha a ilha. Investigue: quando a chave aparece atrás da pedra, o que mudou?',
     steps: [
-      'Use Ver de frente, Ver de lado e Ver de cima. Volte a uma vista para comparar.',
-      'Responda o que mudou quando a chave apareceu. Se precisar, olhe novamente antes de tentar outra resposta.',
-      'Continue explorando mesmo depois das descobertas. Desfazer volta uma ação; Recomeçar experiência limpa esse percurso.',
+      'Olhe a ilha de frente, de lado e de cima, na ordem que quiser. Em cada vista, procure a chave e repare na pedra.',
+      'Compare as vistas: o que muda na imagem e o que continua onde estava?',
+      'Responda à pergunta da experiência. Se precisar, olhe de novo antes de tentar outra resposta. Você pode continuar explorando depois das descobertas.',
     ],
-    image: 'vista-lado',
+    image: 'vista-frente',
   },
   'posicao-3d': {
     intro:
-      'Neste jogo, x e z são as duas direções do chão. Y indica a altura. No jogo 2D, y tinha outro papel: a posição na tela.',
+      'Na ilha, o lugar da chave tem três números: x, y e z. No jogo 2D, você usava só x e y. Investigue o que cada número muda aqui.',
     steps: [
-      'Escolha um valor da chave: use os botões, a barra ou o campo numérico. Aumente e diminua cada um, na ordem que quiser.',
-      'Compare o lugar inicial dourado, o anterior e o atual. O pontilhado liga a chave ao chão. Troque a vista para observar a altura.',
-      'Voltar à posição inicial prepara outra tentativa e conserva as descobertas. Experimente os extremos e repita os testes.',
+      'Escolha um dos números e mude para mais e para menos. Observe para onde a chave vai.',
+      'Compare com a marca dourada do lugar inicial. Quando ficar difícil de ver, troque a vista.',
+      'Faça o mesmo com os outros números, na ordem que quiser. Você pode voltar à posição inicial e repetir.',
     ],
     image: 'posicao',
   },
   'contato-3d': {
     intro:
-      'Parecer junto na imagem não garante contato no espaço. É preciso comparar o lugar no chão e a altura.',
+      'De cima, a chave parece estar em cima do personagem. Investigue: eles estão mesmo encostando?',
     steps: [
-      'Clique em Testar o encontro. Leia o resultado e compare a vista de cima com a vista de lado.',
-      'Mude a posição da chave ou use os botões do personagem. Eles preparam o teste; não acrescentam blocos ao programa.',
-      'Se quiser, clique em Mostrar onde encosta. Teste objetos separados e encostando. Repita em outra ordem e observe o que muda.',
+      'Teste o encontro e compare o resultado com o que a imagem mostra de cima e de lado.',
+      'Mude a chave ou o personagem de lugar e teste de novo. Procure um caso em que eles encostam e outro em que ficam separados.',
+      'Se quiser, mostre onde cada um encosta. Repita os testes na ordem que preferir.',
     ],
     image: 'contato',
   },
 }
 for (const [li, a] of ilhaAulas.entries()) {
   for (const [ti, t] of a.trechos.entries()) {
-    const part = ti + 1 + (li === 2 && ti >= 2 ? 1 : 0)
+    // Na aula 3, a revisão é a parte logo antes da aparência.
+    const quizAt = a.trechos.findIndex((x) => x.key === 'aparencia')
+    const part = ti + 1 + (li === 2 && ti >= quizAt ? 1 : 0)
     if (li === 2 && t.key === 'aparencia')
       pages.push({
         id: 'quiz',
         lesson: 3,
-        kicker: 'Aula 3 · Parte 3 · Revisão',
+        kicker: `Aula 3 · Parte ${part - 1} · Revisão`,
         title: 'O que você descobriu no 3D',
         subtitle: 'Responda na própria aula e observe a demonstração.',
         body:
@@ -302,7 +306,10 @@ for (const [li, a] of ilhaAulas.entries()) {
         subtitle: t.title,
         body:
           `<div class="blocks"><h3>Esquema dos encaixes</h3>${drawings[t.key]}<p class="diagram-note">As cores são as mesmas dos blocos no Estúdio. Os espaços cinza representam a preparação que já vem no projeto.</p></div>` +
-          box('Teste antes de seguir', t.steps?.at(-1) ?? 'Execute o jogo e confira o resultado.'),
+          box(
+            'Teste antes de seguir',
+            t.steps?.at(-1) ?? 'Clique em Atualizar e confira o resultado no jogo.',
+          ),
       })
   }
 }
@@ -317,7 +324,7 @@ const galeria: Page[] = [
   {
     id: '3-galeria-1',
     lesson: 3,
-    kicker: 'Aula 3 · Parte 4 · Escolhas',
+    kicker: `Aula 3 · Parte ${ilhaAulas[2].trechos.findIndex((t) => t.key === 'aparencia') + 2} · Escolhas`,
     title: 'Todas as opções do seu jogo',
     subtitle: 'O nome embaixo de cada uma é o mesmo da lista do bloco.',
     body:
@@ -335,7 +342,7 @@ const galeria: Page[] = [
   {
     id: '3-galeria-2',
     lesson: 3,
-    kicker: 'Aula 3 · Parte 4 · Escolhas',
+    kicker: `Aula 3 · Parte ${ilhaAulas[2].trechos.findIndex((t) => t.key === 'aparencia') + 2} · Escolhas`,
     title: 'Barcos, faróis e cenários',
     subtitle: 'Todo farol sabe acender: troque o modelo num lugar só.',
     body:
