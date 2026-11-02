@@ -12,6 +12,7 @@ import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import {
   Door,
+  type GestoDaMemoria,
   Memory,
   Position,
   proximoGestoDaMemoria,
@@ -90,7 +91,7 @@ describe('Dia 2: a memória da chave', () => {
     const desligar: SceneAction = { type: 'remember-collection', enabled: false }
     const encostar: SceneAction = { type: 'collect-key' }
     const recomecar: SceneAction = { type: 'restart-collection' }
-    const casos: [SceneAction[], string][] = [
+    const casos: [SceneAction[], Exclude<GestoDaMemoria, null>][] = [
       [[], 'encostar'],
       [[encostar], 'memoria'],
       [[encostar, ligar], 'recomecar'],

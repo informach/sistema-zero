@@ -11,8 +11,16 @@ import {
 import type { ReactElement } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { DiscoveryContext } from '../src/components/scene-discovery-frame'
-import { CabanaLivre, proximoGestoDaCabana } from '../src/components/scene-poder-cabana'
-import { proximoGestoDosSimbolos, SimbolosLivre } from '../src/components/scene-poder-simbolos'
+import {
+  CabanaLivre,
+  type GestoDaCabana,
+  proximoGestoDaCabana,
+} from '../src/components/scene-poder-cabana'
+import {
+  type GestoDosSimbolos,
+  proximoGestoDosSimbolos,
+  SimbolosLivre,
+} from '../src/components/scene-poder-simbolos'
 
 /**
  * Os Poderes "O baú dos símbolos" e "O segredo da cabana" (Faísca, 02/11/2026): só a IDEIA na
@@ -98,7 +106,7 @@ describe('O baú dos símbolos: a tela', () => {
   })
 
   test('o botão em destaque é o gesto que o Zappy pede', () => {
-    const rotulo: Record<string, string> = {
+    const rotulo: Record<Exclude<GestoDosSimbolos, null>, string> = {
       sol: 'Tocar o sol',
       lua: 'Tocar a lua',
       estrela: 'Tocar a estrela',
@@ -106,7 +114,7 @@ describe('O baú dos símbolos: a tela', () => {
       ordem: 'O baú confere a vez',
       contar: 'O baú só conta',
     }
-    const casos: [SceneAction[], string][] = [
+    const casos: [SceneAction[], Exclude<GestoDosSimbolos, null>][] = [
       [[], 'sol'],
       [[tocar('sol')], 'lua'],
       [[tocar('sol'), tocar('lua')], 'estrela'],
@@ -205,7 +213,7 @@ describe('O segredo da cabana: a tela', () => {
   })
 
   test('o botão em destaque é o gesto que o Zappy pede', () => {
-    const rotulo: Record<string, string> = {
+    const rotulo: Record<Exclude<GestoDaCabana, null>, string> = {
       chave: 'Pegar a chave',
       emblema: 'Pegar o emblema',
       encostar: 'Encostar na cabana',
@@ -214,7 +222,7 @@ describe('O segredo da cabana: a tela', () => {
       uma: 'A cabana pede uma das peças',
     }
     const abriu = [encostar, pegar('key'), encostar, pegar('emblem'), encostar]
-    const casos: [SceneAction[], string][] = [
+    const casos: [SceneAction[], Exclude<GestoDaCabana, null>][] = [
       [[], 'encostar'],
       [[encostar], 'chave'],
       [[encostar, pegar('key')], 'encostar'],
