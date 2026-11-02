@@ -100,13 +100,14 @@ for (const [i, aula] of ilhaAulas.entries()) {
       t.kind === 'closing'
         ? 'Você concluiu os testes desta aula. Clique em Concluir aula.'
         : t.kind === 'experience'
-          ? 'Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.'
+          ? (t.ponte ??
+            'Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.')
           : t.kind === 'delivery'
             ? 'Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.'
             : t.kind === 'build'
-              ? 'Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.'
+              ? 'Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.'
               : t.kind === 'intro'
-                ? 'Clique no jogo e use as setas do teclado ou WASD. Aperte R para recomeçar. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.'
+                ? 'Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.'
                 : 'Consulte seu Passo a passo do projeto quando quiser. Para seguir, clique em Próxima parte.'
     blocks.push(fala(pk, bridge))
     if (t.kind === 'intro') {
@@ -119,7 +120,7 @@ for (const [i, aula] of ilhaAulas.entries()) {
           title: 'Jogue A Ilha do Farol',
           required: true,
           instructions:
-            'Clique no jogo e use setas ou WASD no teclado. Encontre a chave e vá ao farol. R recomeça. Você pode seguir sem terminar a partida.',
+            'Clique dentro do jogo e segure as setas ou as letras WASD. Encontre a chave e vá ao farol. A tecla R recomeça. Você pode seguir sem terminar a partida.',
           hints: [],
           activity: {
             type: 'project-play',
@@ -143,8 +144,9 @@ for (const [i, aula] of ilhaAulas.entries()) {
           title: t.title,
           required: true,
           instructions:
+            t.instrucao ??
             'Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.',
-          hints: [],
+          hints: t.pistas ?? [],
           semPerguntaFinal: true,
           activity: {
             type: 'experimentation',
@@ -173,7 +175,8 @@ for (const [i, aula] of ilhaAulas.entries()) {
               : t.kind === 'closing'
                 ? 'closing'
                 : 'explanation',
-      objective: t.title + '.',
+      // O título pode ser pergunta: só ganha ponto quando não termina em pontuação.
+      objective: /[.?!]$/.test(t.title) ? t.title : `${t.title}.`,
       blockKeys: keys,
       workspaceKey: studio || (i === 2 && t.kind === 'closing') ? 'projeto' : null,
       externalTool: null,
@@ -282,13 +285,14 @@ for (const [i, aula] of ilhaAulas.entries()) {
     throw new Error(`O manifesto ${aula.slug} excede o limite real de importação.`)
   write(`${aula.slug}.manifesto.json`, manifest)
   let script = `# Roteiro de produção · ${aula.title}\n\nMaster integral da professora. Sem intervenções de personagens nesta versão. Gerar áudio, escutar, gravar e publicar são etapas pendentes. Teclado necessário no jogo.\n\n**Antes de gravar:** abra a aula numa aba nova após o deploy. Use uma sessão sem progresso na experiência e sem envio anterior nesta aula. Não preencha Recado (opcional) na tomada do envio. Mostre Salvo somente quando o estado aparecer de verdade. Para repetir um primeiro envio, use outro perfil de ensaio. Nas partes sem Estúdio, use a cena da própria parte; não simule botões ou estados na edição.\n\n`
-  for (const [j, t] of aula.trechos.entries())
-    script += `## Parte ${j + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
-  if (i === 2)
-    script = script.replace(
-      '## Parte 3.',
-      '## Revisão. O que você descobriu no 3D\n\nQuiz sem vídeo: escolha, demonstração, explicação e nova tentativa.\n\n## Parte 3.',
-    )
+  // A numeração segue as partes da aula, com a revisão onde o manifesto a põe (antes da aparência).
+  // Antes, o roteiro a punha antes do uma-vez e trocava os recados dessas duas partes.
+  const parte = (key: string) => sections.findIndex((s) => s.key === key) + 1
+  for (const t of aula.trechos) {
+    if (i === 2 && t.key === 'aparencia')
+      script += `## Parte ${parte('revisao')}. O que você descobriu no 3D\n\nQuiz sem vídeo: escolha, demonstração, explicação e nova tentativa.\n\n`
+    script += `## Parte ${parte(t.key)}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+  }
   script = sincronizarRecadosNaPagina(script, manifest)
   write(`${aula.slug}.roteiro.md`, script)
   write(
@@ -309,7 +313,7 @@ write('zappy-etapas.json', {
     ].map(([key, mode]) => [
       key,
       Object.entries(ISLAND_SPEECH)
-        .filter(([id]) => id.startsWith(`island-${mode}-`) || id === 'island-complete')
+        .filter(([id]) => id.startsWith(`island-${mode}-`))
         .map(([id, text]) => ({ id, text })),
     ]),
   ),

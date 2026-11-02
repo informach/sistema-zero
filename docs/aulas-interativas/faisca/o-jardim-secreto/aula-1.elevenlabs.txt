@@ -1,12 +1,14 @@
 [upbeat, welcoming voice] Sua missão do Faísca é criar O Jardim Secreto! A flor está fechada. Seu personagem precisa pegar o regador e chegar até ela para fazê-la abrir. Se chegar antes de pegar o regador, o jogo deve avisar o que falta.
 
-[interested, animated voice] Você já investigou essas ideias nos Faróis. Agora vai escolher e montar as regras de outro jogo, primeiro em duas dimensões e depois em três.
+[interested, animated voice] Você já investigou essas ideias na Chave do Farol e na Ilha do Farol. Agora vai escolher e montar as regras de outro jogo, primeiro numa tela plana, em duas dimensões, e depois com profundidade, em três.
 
 [upbeat, encouraging voice] Conheça o jogo pronto aqui na página. Clique nele e use as setas do teclado. A tecla R começa uma nova partida. Você pode seguir sem terminar: clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Você pode começar pela regra que preferir. As próximas partes ajudam a conferir os resultados aos poucos. O cenário, os desenhos e o reinício já estão preparados; as regras da missão são suas.
+[engaging, energetic, conversational voice] O cenário, os desenhos e o reinício da partida já vêm preparados. As regras da missão são suas, e você pode começar pela que preferir.
+
+[engaging, energetic, conversational voice] As próximas partes ajudam a conferir os resultados aos poucos, uma regra de cada vez.
 
 [reassuring, encouraging voice] Esqueceu um encaixe? O Passo a passo do projeto tem lembretes, montagem completa e testes para os dois jardins. Consultar essa ajuda faz parte de aprender. Ela fica aqui na aula e você pode voltar quando precisar. Depois clique em Próxima parte.
 
@@ -14,62 +16,94 @@
 
 [curious] O jardim aparece, mas o personagem ainda não responde às setas. O que falta para ele andar?
 
-[engaging, energetic, conversational voice] No Farol, os controles recebiam a direção e o comando de movimento era executado a cada quadro. Use essa ideia no jardim. Colocar o comando nos blocos muda a regra; pressionar uma seta no teclado testa essa regra.
+[engaging, energetic, conversational voice] Lembra da Chave do Farol? Em cada quadro, o jogo olha a seta. Se você está segurando a seta, o personagem dá um passinho para o lado dela.
 
-[upbeat, encouraging voice] Faça o personagem andar nas quatro direções e parar quando você soltar a tecla.
+[engaging, energetic, conversational voice] No seu jardim, ainda faltam as setas e esse passinho. E, como o jogo olha a seta em todo quadro, o passinho precisa acontecer de novo em todo quadro.
+
+[upbeat, encouraging voice] Agora faça o personagem andar nas quatro direções. Para testar, clique no jogo e segure uma seta do teclado: ele deve andar para aquele lado e parar quando você soltar.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Agora confira as bordas da tela. Seu personagem deve chegar até elas, continuar visível e conseguir voltar. Lembra da ordem dos comandos no Farol? O limite precisa conferir a posição depois do movimento.
+[engaging, energetic, conversational voice] Agora leve o personagem até a beirada da tela e continue segurando a seta. Se ele passar da beirada e for sumindo, falta o limite da tela no seu jardim.
 
-[upbeat, encouraging voice] Monte essa regra e experimente os quatro lados. Não basta chegar à borda: tente voltar também.
+[engaging, energetic, conversational voice] Lembra como o limite funcionava na Chave do Farol? Em cada quadro, primeiro o personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro.
+
+[upbeat, encouraging voice] Monte o limite e teste os quatro lados. O personagem deve chegar à beirada, continuar visível e conseguir voltar.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Quando o personagem encontrar o regador, o regador deve sair do chão e um aviso deve contar que ele foi pego. Mas sumir e lembrar são coisas diferentes.
+[engaging, energetic, conversational voice] Agora o regador. Quando o personagem encontrar o regador, o regador deve sair do chão, e um aviso deve contar que ele foi pego.
 
-[interested, animated voice] No Farol, uma variável guardava a coleta da chave. Aqui, o jogo precisa guardar a coleta do regador. No começo, ele ainda não foi pego. Depois do encontro, foi. Essa informação continua valendo quando o personagem se afasta.
+[engaging, energetic, conversational voice] Mas sumir e lembrar são coisas diferentes. O regador some da tela, e o jogo ainda precisa guardar que ele foi pego.
 
-[upbeat, encouraging voice] Monte a coleta e essa memória. Nesta parte, confira o regador sumindo e o aviso. Na próxima, a flor vai mostrar se o jogo está usando a informação.
+[interested, animated voice] Na Chave do Farol, uma variável guardava se a chave já tinha sido pega. Lembra? A variável é como um recado que o jogo anota para não esquecer.
+
+[engaging, energetic, conversational voice] Aqui, ela guarda o regador. No começo da partida, ele ainda não foi pego. Depois do encontro, foi, e o jogo continua lembrando disso quando o personagem se afasta.
+
+[upbeat, encouraging voice] Monte a coleta e essa memória. Nesta parte, confira o regador sumindo e o aviso. Na próxima, a flor vai mostrar se o jogo está usando o que guardou.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
 [curious] O que a flor deve fazer quando o personagem chega sem o regador? E quando ele já pegou?
 
-[engaging, energetic, conversational voice] A flor precisa consultar a informação da coleta. Sem o regador, continua fechada e o aviso pede o que falta. Com o regador, ela abre e o aviso conta que deu certo. Use a decisão que você já montou no Farol.
+[engaging, energetic, conversational voice] Para responder, a flor olha o que o jogo guardou sobre o regador. Sem o regador, ela continua fechada, e o aviso pede o que falta. Com o regador, ela abre, e o aviso conta que deu certo.
 
-[upbeat, encouraging voice] Teste os dois casos. Para testar sem o regador depois de já ter pegado, clique no jogo e pressione R. Isso começa outra partida e conserva seus blocos.
+[interested, animated voice] É a mesma decisão da Chave do Farol: lá, com a chave, o farol acendia; sem a chave, um aviso pedia a chave.
+
+[upbeat, encouraging voice] Monte a decisão e teste os dois casos: primeiro sem o regador, depois com ele.
+
+[reassuring, encouraging voice] Já pegou o regador e quer testar sem ele? Clique no jogo e toque na tecla R. Isso começa outra partida, e os seus blocos continuam iguais.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
-[upbeat, encouraging voice] Agora escolha outro lugar para o regador. No 2D, você pode mudar x, y ou os dois. Mude um valor, observe e experimente de novo.
+[engaging, energetic, conversational voice] Lembra? Na tela do 2D, o x leva um objeto de um lado para o outro, e o y, para cima e para baixo.
 
-[engaging, energetic, conversational voice] Deixe o regador visível, separado do personagem no começo e num lugar que dê para alcançar. Também precisa existir um caminho até a flor sem pegar o regador. Depois da mudança, teste uma partida desde o começo. Se a prévia já recomeçou sozinha, pode usar essa nova partida.
+[upbeat, encouraging voice] Agora escolha outro lugar para o regador. Mude um valor, observe onde o regador apareceu e experimente de novo. Você pode mudar o x, o y ou os dois.
 
-[confident, clear, unhurried voice] Confira a coleta no novo lugar e as duas respostas da flor. Reiniciar a partida mantém a posição que você escolheu.
+[engaging, energetic, conversational voice] Escolha um lugar em que o regador fique visível, longe do personagem no começo e fácil de alcançar. Também precisa existir um caminho até a flor sem pegar o regador, para você testar a flor sem ele.
+
+[confident, clear, unhurried voice] Depois da mudança, teste uma partida desde o começo. Se a prévia já recomeçou sozinha, pode usar essa nova partida. Confira a coleta no novo lugar e as duas respostas da flor.
+
+[reassuring, encouraging voice] Começar outra partida com a tecla R mantém o lugar que você escolheu.
 
 [reassuring, encouraging voice] Experimente quantas vezes quiser. Se precisar, abra o Passo a passo do projeto: a ajuda está disponível desde o começo.
 
-[confident, clear, unhurried voice] Clique em Verificar projeto, leia o que falta e ajuste. Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos desta parte estiverem cumpridos e aparecer Salvo, clique em Próxima parte.
 
 [long pause]
 
 [pleased, lively voice] Seu primeiro jardim já pode florescer! Na próxima aula, você vai construir a versão em três dimensões.
 
-[confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor. Pressione R no jogo depois de um sucesso: o regador deve voltar e a flor deve começar fechada. Seus blocos continuam iguais. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[confident, clear, unhurried voice] Antes de enviar, confira o movimento, a coleta no lugar escolhido e as duas respostas da flor.
+
+[confident, clear, unhurried voice] Depois de um sucesso, clique no jogo e toque na tecla R. O regador deve voltar e a flor deve começar fechada, e os seus blocos continuam iguais.
+
+[confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando os objetivos estiverem cumpridos e aparecer Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

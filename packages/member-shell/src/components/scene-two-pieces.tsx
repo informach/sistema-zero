@@ -20,6 +20,9 @@ export const AVISOS_DA_CABANA = {
   emblema: 'Você pegou o emblema!',
   abriu: 'A cabana abriu! Você tinha as duas peças.',
   falta: 'A cabana pede a chave e o emblema.',
+  /** Pedindo uma das peças (full review de 02/11/2026): o aviso não fala das duas. */
+  abriuComUma: 'A cabana abriu!',
+  faltaUma: 'A cabana pede a chave ou o emblema.',
 } as const
 
 type Pecas = SceneState['pieces']
@@ -35,7 +38,11 @@ function lugarDoPersonagem(at: Pecas['at']) {
 }
 
 export function avisoDaCabana(p: Pecas) {
-  if (p.at === 'door') return p.door === 'open' ? AVISOS_DA_CABANA.abriu : AVISOS_DA_CABANA.falta
+  if (p.at === 'door') {
+    if (p.rule === 'or')
+      return p.door === 'open' ? AVISOS_DA_CABANA.abriuComUma : AVISOS_DA_CABANA.faltaUma
+    return p.door === 'open' ? AVISOS_DA_CABANA.abriu : AVISOS_DA_CABANA.falta
+  }
   if (p.at === 'key') return AVISOS_DA_CABANA.chave
   if (p.at === 'emblem') return AVISOS_DA_CABANA.emblema
   return AVISOS_DA_CABANA.inicio

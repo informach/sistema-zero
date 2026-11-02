@@ -114,6 +114,38 @@ Transferência, como a aula 3D das Moedas: o conceito já foi visto.
 
 ## 7. Experiência "A porta com duas peças"
 
+> ⚠️ **Revisão de 02/11/2026 (decisão da responsável): a experiência trabalha só a IDEIA**, na régua
+> do Desafio do Primeiro Jogo (A Chave do Farol, Dias 1 a 3) e do Cadê Todo Mundo
+> ([descoberta guiada](../../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md)). O que muda em
+> relação ao texto abaixo:
+>
+> - **Sem blocos na tela.** A pergunta montada como blocos (`temChave` **e** `temEmblema`, então,
+>   senão) saiu: no lugar, a figura "A pergunta da cabana", com temChave e temEmblema à vista e as
+>   duas respostas, sim e não. O que cada resposta faz ("Abrir a cabana"; "Avisar o que a cabana
+>   pede") fica com "?" até a criança testar aquele caso, como a pergunta da porta do Farol.
+> - **O "e" e o "ou" como ideia:** os botões viraram "A cabana pede as duas peças" e "A cabana pede
+>   uma das peças". Mudar o pedido vale para o próximo encontro com a cabana. Com a cabana aberta,
+>   "Encostar na cabana" fica indisponível até uma partida nova. Trocar o pedido com o personagem na
+>   porta tira o personagem dali (a resposta antiga não vale para a pergunta nova), e os avisos do
+>   palco acompanham o pedido ("A cabana pede a chave ou o emblema."). A figura da ideia mora
+>   embaixo do palco.
+> - **Exploração livre com o Zappy acompanhando** (`setup.freeExploration`, falas `cabin-*` em
+>   `packages/core/src/learning/scene/guidance-cabana.ts`, exportadas em `zappy-etapas.json`). A
+>   fala propõe testar o caso que a criança preparou (sem peça, com uma, com as duas) e, depois,
+>   explica e propõe o próximo; o botão em destaque é o gesto que a fala pede.
+> - **A lista diz o que comparar**, sem o resultado (por exemplo, "Encoste na cabana com uma peça
+>   só e observe."). As três pistas vão do aberto ao direto, com os botões reais.
+> - **Vídeo conceitual:** mantém a bicicleta e o capacete (sem concluir que uma só não vale),
+>   explica as duas variáveis e a condição, aponta os controles no "Olha aqui" e convida a investigar, sem dizer o que a cabana faz em cada caso ("Com e, a resposta só é sim
+>   quando as duas são verdadeiras" saiu: é a descoberta; volta na montagem, com o bloco "e").
+> - **Didática dos vídeos das duas aulas:** uma ideia por fala, um encaixe por fala, "É este
+>   bloco que…" nos blocos que correspondem à ideia, a retomada da experiência depois do "Tá vendo?",
+>   "condição" explicada, tecla R dita como "toque na tecla R", e testar,
+>   verificar e enviar em falas separadas. A aula 2 ficou com o resumo mais leve.
+> - O Passo a passo do projeto e o caderno ganharam a parte da experiência, com os objetivos de
+>   investigação. O PDF precisa ser renderizado e conferido de novo.
+
+
 Cena com o personagem real do Farol, a chave, o emblema e a cabana. Mostra as duas informações
 como na diretriz (os dois valores guardados, cada um verdadeiro ou falso) e a pergunta da porta
 montada como os blocos do Estúdio: `temChave` **e** `temEmblema`, com a resposta (verdadeiro ou

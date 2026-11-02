@@ -35,16 +35,14 @@ try {
     await style.evaluate((el) => el.remove())
   }
   await shot('ilha')
-  await page.getByRole('button', { name: 'Ver de lado', exact: true }).click()
-  await shot('vista-lado')
+  // ⚠️ As ilustrações das experiências mostram o ESTADO INICIAL de cada uma (02/11/2026): outra
+  // vista, outro número ou as áreas de contato à mostra entregariam a descoberta no caderno.
+  await shot('vista-frente')
   await page.getByRole('button', { name: 'experiencia-posicao-3d', exact: true }).click()
   await page.locator('[data-ready="true"]').waitFor()
-  await page.getByRole('spinbutton', { name: 'Valor y', exact: true }).fill('3')
   await shot('posicao')
   await page.getByRole('button', { name: 'experiencia-contato-3d', exact: true }).click()
   await page.locator('[data-ready="true"]').waitFor()
-  await page.getByRole('button', { name: 'Ver de lado', exact: true }).click()
-  await page.getByRole('button', { name: 'Mostrar onde encosta', exact: true }).click()
   await shot('contato')
   if (errors.length) throw Error(errors.join('\n'))
   const html = readFileSync(resolve(out, 'caderno.template.html'), 'utf8').replace(

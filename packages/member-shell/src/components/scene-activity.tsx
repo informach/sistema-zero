@@ -99,6 +99,10 @@ import { LearningRecap } from './scene-garden-learning'
 import { IslandDiscovery } from './scene-island-discovery'
 import { LessonSceneControls } from './scene-lesson-controls'
 import { LugarReservado } from './scene-lugar-reservado'
+import { CabanaLivre } from './scene-poder-cabana'
+import { MoedasLivre } from './scene-poder-moedas'
+import { PonteLivre } from './scene-poder-ponte'
+import { SimbolosLivre } from './scene-poder-simbolos'
 import {
   anuncioDaEscolha,
   apagarPalpite,
@@ -1379,6 +1383,14 @@ export function SceneActivityView({
                       <Memory />
                     ) : m === 'lighthouse-key' ? (
                       <Door />
+                    ) : m === 'timed-bridge' ? (
+                      <PonteLivre />
+                    ) : m === 'coin-counter' ? (
+                      <MoedasLivre />
+                    ) : m === 'symbol-sequence' ? (
+                      <SimbolosLivre />
+                    ) : m === 'two-pieces' ? (
+                      <CabanaLivre />
                     ) : (
                       <Position />
                     )}

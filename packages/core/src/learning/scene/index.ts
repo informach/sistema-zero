@@ -179,6 +179,11 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
         'lighthouse-position',
         'collect-and-remember',
         'lighthouse-key',
+        // Os quatro Poderes da Faísca (02/11/2026): só a ideia, com o Zappy acompanhando.
+        'timed-bridge',
+        'coin-counter',
+        'symbol-sequence',
+        'two-pieces',
       ].includes(scene))
   )
     return false

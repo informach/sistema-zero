@@ -6,13 +6,13 @@ Extra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pin
 
 **Relembre:** O quadro do Pinta é quadrado, como a chave do jogo. O que você desenha nele vira a imagem minha-chave, que vai para o jogo quando você envia o desenho.
 
-1. Se aparecer o quadro Dicas rápidas, clique em Entendi!. Depois clique em Expandir, em cima do Pinta, para ele ocupar a tela toda.
+1. Se aparecer a janela Dicas rápidas, clique em Entendi!. Depois clique em Expandir, em cima do Pinta, para ele ocupar a tela toda.
 2. Embaixo da caixa de ferramentas, clique no quadradinho cheio, o Preenchimento. No painel Cores, à direita, escolha a cor da chave. O Contorno, o quadradinho vazado, já vem preto.
-3. Pegue a ferramenta Círculo. No lado esquerdo do quadro, aperte o botão do mouse e arraste na diagonal até a argola ficar grande e redonda. Solte.
-4. Pegue a ferramenta Retângulo. Começando no meio da argola, arraste para a direita até perto da borda do quadro, num retângulo baixinho: é a haste.
+3. Clique na ferramenta Círculo. No lado esquerdo do quadro, clique e segure o botão do mouse. Sem soltar, arraste na diagonal até a argola ficar grande e redonda. Depois solte.
+4. Clique na ferramenta Retângulo. Clique e segure no meio da argola e, sem soltar, arraste para a direita até perto da borda do quadro, num retângulo baixinho: é a haste.
 5. Ainda com o Retângulo, desenhe um retângulo pequeno embaixo da ponta da haste, saindo para baixo. Do lado dele, desenhe outro: são os dentes.
-6. Para arrumar, pegue a ferramenta Selecionar, clique numa forma e arraste. Para mudar o tamanho, puxe um dos quadradinhos da borda da seleção.
-7. Se quiser, pegue o Pincel e faça um brilho na argola. Use o quadro inteiro: no jogo a chave fica pequena.
+6. Para arrumar, clique na ferramenta Selecionar, depois clique numa forma e arraste. Para mudar o tamanho, puxe um dos quadradinhos da borda da seleção.
+7. Se quiser, clique no Pincel e faça um brilho na argola. Use o quadro inteiro: no jogo a chave fica pequena.
 8. Clique em Reduzir, para voltar à aula. Depois clique em Enviar meu desenho, em cima do Pinta, e confirme em Enviar.
 
 **Teste:** A sua chave ocupa quase todo o quadro, e aparece a mensagem Desenho enviado!
@@ -21,7 +21,7 @@ Extra do Faísca. Aqui estão as duas montagens da aula: desenhar a chave no Pin
 
 ## 2. A sua chave no jogo
 
-**Relembre:** O desenho chega aos materiais do jogo com o nome minha-chave. Trocar a imagem do sprite chave muda só a aparência: o nome do sprite continua chave, e as regras do jogo continuam valendo.
+**Relembre:** O desenho chega aos materiais do jogo com o nome minha-chave. Trocar a imagem do sprite chave é como vestir uma fantasia: o nome do sprite continua chave, só a aparência muda, e por isso as regras do jogo continuam valendo.
 
 1. Se quiser ver o desenho, abra o menu de três pontinhos e depois Imagens, e role a lista até o fim: a minha-chave tem o selo Seu desenho da aula. Clique em Fechar.
 2. Clique em Expandir, em cima do Estúdio. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.

@@ -33,6 +33,8 @@ export const AVISOS_DOS_SIMBOLOS = {
   sol: 'O sol acendeu! Agora a lua.',
   lua: 'A lua acendeu! Agora a estrela.',
   abriu: 'Na ordem certa! O baú abriu.',
+  /** O baú que só conta abre em qualquer ordem: o aviso não diz "na ordem certa". */
+  abriuContando: 'O baú abriu!',
   errou: 'Fora da ordem. Comece de novo pelo sol.',
 } as const
 
@@ -47,7 +49,8 @@ function lugarDoPersonagem(at: Sequencia['at']) {
 
 /** O aviso que o jogo mostraria (só contando, o jogo não erra: o aviso é o do começo). */
 export function avisoDosSimbolos(q: Sequencia) {
-  if (q.chest === 'open') return AVISOS_DOS_SIMBOLOS.abriu
+  if (q.chest === 'open')
+    return q.mode === 'order' ? AVISOS_DOS_SIMBOLOS.abriu : AVISOS_DOS_SIMBOLOS.abriuContando
   if (q.mode === 'count' || q.at === null) return AVISOS_DOS_SIMBOLOS.inicio
   if (q.lit.length === 0) return AVISOS_DOS_SIMBOLOS.errou
   if (q.at === 'lua' && q.passo === 2) return AVISOS_DOS_SIMBOLOS.lua

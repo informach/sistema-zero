@@ -81,4 +81,23 @@ ideia que o vídeo explica é que **trocar a imagem muda só a aparência**: o n
 Desenhar o farol (duas imagens, apagado e aceso), desenho em 3D, molde por baixo do desenho e levar
 o desenho para o Estúdio Completo ou para "Meus desenhos" (é do Pinta Completo).
 
+## 8. Revisão de didática das falas (02/11/2026)
+
+Revisão das falas com a régua das diretrizes (uma ideia por fala; "clique em", "toque" e "segure"; o
+porquê antes do como; analogia curta). A aula continua sem experiência e sem quiz.
+
+- Desenhe a sua chave: a fala que juntava Pinta, quadro, Dicas rápidas, Expandir e caixa de
+  ferramentas foi dividida, uma por fala. A janela Dicas rápidas deixa de ser chamada de "quadro",
+  para não confundir com o quadro de desenhar. O motivo de desenhar grande (no jogo a chave fica
+  pequena) vem antes do desenho, não no fim. "Aperte o botão do mouse" vira "clique e segure",
+  "pegue a ferramenta" vira "clique na ferramenta", e mover e mudar o tamanho ficam em falas
+  separadas.
+- A sua chave no jogo: a ideia "o nome continua, a aparência muda" ganha a analogia da fantasia
+  (você continua sendo você, só a roupa muda) e vem antes da troca, sem o "então" como ligação. O
+  teste, a verificação e o envio ficam em falas próprias; o convite para trocar o desenho depois
+  vem antes da saída, e a fala termina em Concluir aula.
+- Abertura: "a chave foi desenhada no Pinta" e "o resto do jogo é igual" ficam em falas separadas.
+- Passo a passo: as mesmas trocas de verbo e a analogia da fantasia na ideia da troca. O PDF do
+  Passo a passo do projeto foi regenerado em 02/11/2026.
+
 [Posto Faísca](../README.md) · [Regras da jornada](../../../jornada-do-criador.md)

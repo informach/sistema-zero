@@ -13,7 +13,7 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, welcoming voice] A ponte apressada chegou à Ilha do Farol, em três dimensões! A regra é a mesma do seu jogo 2D: a alavanca baixa a ponte, e 4 segundos depois ela sobe sozinha.
+[upbeat, welcoming voice] A ponte apressada chegou à Ilha do Farol, em três dimensões! A ideia é a mesma do seu jogo 2D: a alavanca baixa a ponte, e 4 segundos depois ela sobe sozinha.
 
 [engaging, energetic, conversational voice] Olha aqui: a alavanca, a ponte e o sino têm animações que já vêm prontas. A alavanca puxa e solta, a ponte baixa e sobe, e o sino balança. Você vai escolher quando cada uma toca.
 
@@ -31,16 +31,20 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Na ilha, a regra é a mesma do seu jogo 2D. Crie a variável ponteAberta começando em falso, no fim de Ao iniciar. Depois, no encontro do personagem com a alavanca, a alavanca toca a animação puxar, a ponte toca a animação baixar, ponteAberta vira verdadeiro e o aviso muda.
+[engaging, energetic, conversational voice] Na ilha, a ideia é a mesma do seu jogo 2D. A alavanca baixa a ponte e ponteAberta vira verdadeiro. Quatro segundos depois da puxada, tudo volta ao que era.
 
-[interested, animated voice] E, dentro desse mesmo encontro, vem o depois de 4 segundos. Dentro dele, a alavanca toca soltar, a ponte toca subir, ponteAberta volta a falso e o aviso pede para puxar de novo. No 3D, o encontro fica em Jogo 3D, na gaveta Encostar, e as animações ficam em Objetos, na Animação do modelo. O depois de 4 segundos é o mesmo bloco de Programação, em Repetições.
+[interested, animated voice] A diferença está no jeito de mostrar. No 3D, a alavanca e a ponte não trocam de imagem: elas tocam animações que já vêm prontas. A alavanca tem puxar e soltar, e a ponte tem baixar e subir.
 
-[upbeat, encouraging voice] Agora teste. Puxe a alavanca e conte até 4: a ponte baixa e depois sobe sozinha. Puxe de novo: ela baixa outra vez. Se precisar, o Passo a passo do projeto, que está na primeira aula, tem a montagem completa da ilha.
+[engaging, energetic, conversational voice] Os blocos você já conhece: ponteAberta nasce falso em Ao iniciar, o encontro com a alavanca fica em Quando acontecer, e o depois de 4 segundos vai dentro desse encontro.
+
+[engaging, energetic, conversational voice] No 3D, o encontro fica em Jogo 3D, na gaveta Encostar, e as animações ficam em Jogo 3D, Objetos, na Animação do modelo. O depois de 4 segundos é o mesmo bloco de Programação, em Repetições. A montagem completa da ilha está no Passo a passo do projeto, que fica na primeira aula.
+
+[upbeat, encouraging voice] Agora teste. Puxe a alavanca e conte até 4: a ponte baixa e depois sobe sozinha. Puxe de novo: ela baixa outra vez.
 
 [confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Agora a alavanca da ilha: crie ponteAberta começando em falso e, no encontro, toque puxar e baixar, guarde verdadeiro, mude o aviso e coloque o depois de 4 segundos que desfaz tudo. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte.
+**Recado na página (não gravar):** Agora a alavanca da ilha: a mesma ideia do 2D, com animações no lugar das imagens. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte.
 
 ## Parte 3. Atravesse até o sino
 
@@ -51,16 +55,16 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora a travessia da ilha. Monte o encontro do personagem com a ponte e, dentro dele, um Se com senão. A pergunta é a mesma do 2D: ponteAberta. No então, o personagem vai até a pedra, com o bloco Colocar o objeto, o sino toca a animação tocar uma vez, e o aviso conta que você atravessou. No senão, o aviso diz que a ponte está levantada.
+[engaging, energetic, conversational voice] Agora a travessia da ilha. A pergunta é a mesma do 2D: ponteAberta é verdadeiro? Com o sim, o personagem vai até a pedra e o sino toca. Com o não, o aviso diz que a ponte está levantada.
 
-[interested, animated voice] Na ilha, a água não deixa o personagem andar até a pedra: o único caminho é a regra da ponte. Os números do lugar em cima da pedra estão no Passo a passo do projeto.
+[interested, animated voice] Na ilha, a água não deixa o personagem andar até a pedra. Quem leva ele até lá é a resposta do sim, com o bloco Colocar o objeto, de Jogo 3D, em Objetos. O sino toca com a animação tocar, na Animação do modelo. Os números do lugar em cima da pedra estão no Passo a passo do projeto.
 
-[upbeat, encouraging voice] Teste todos os casos. Pressione R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Depois puxe, espere a ponte subir e encoste nela: ele fica na margem.
+[upbeat, encouraging voice] Teste os três casos. Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Depois puxe, espere a ponte subir e encoste nela: ele fica na margem.
 
 [confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Hora de atravessar na ilha! Se ponteAberta, o personagem vai até a pedra e o sino toca; senão, o aviso diz que a ponte está levantada. Teste a tempo, atrasado e sem puxar, clique em Verificar projeto e depois em Próxima parte.
+**Recado na página (não gravar):** Hora de atravessar na ilha! A ponte faz a mesma pergunta do 2D: ponteAberta. Teste sem puxar, a tempo e atrasado, clique em Verificar projeto e depois em Próxima parte.
 
 ## Parte 4. Pense na ponte da ilha
 
@@ -79,7 +83,9 @@ Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha
 ```text
 [pleased, lively voice] Pronto, você levou o relógio para outro mundo: na ilha, a ponte também baixa, espera 4 segundos e sobe sozinha.
 
-[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Depois pressione R e confira que a ponte volta levantada. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Depois toque na tecla R e confira que a ponte volta levantada.
+
+[confident, clear, unhurried voice] Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
 **Recado na página (não gravar):** Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

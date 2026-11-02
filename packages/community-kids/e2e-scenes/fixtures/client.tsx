@@ -11,15 +11,33 @@ import navePrimeira from '../../../../docs/aulas-interativas/construtor/nave-con
 import farolDia1 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
 import farolDia2 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
 import farolDia3 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
+import ponte from '../../../../docs/aulas-interativas/faisca/poder-a-ponte-apressada/ponte-aula-1.manifesto.json'
+import moedas from '../../../../docs/aulas-interativas/faisca/poder-moedas-no-caminho/moedas-aula-1.manifesto.json'
+import simbolos from '../../../../docs/aulas-interativas/faisca/poder-o-bau-dos-simbolos/simbolos-aula-1.manifesto.json'
+import cabana from '../../../../docs/aulas-interativas/faisca/poder-o-segredo-da-cabana/cabana-aula-1.manifesto.json'
 
 const params = new URLSearchParams(location.search)
 // Desde a reestruturação da Nave (05/10/2026), as experiências do antigo Dia 1 ficaram em
 // "primeira-nave"; a de camadas continua no Dia 1.
+// Os quatro Poderes da Faísca (02/11/2026): a experiência de cada um é o bloco `experiencia` da
+// aula 1, escolhido por `?course=<poder>`.
+const PODERES: Record<string, { blocks: { key: string; content: unknown }[] }> = {
+  ponte,
+  moedas,
+  simbolos,
+  cabana,
+}
+const curso = params.get('course') ?? ''
 const blocks =
-  params.get('course') === 'farol'
+  curso === 'farol'
     ? [...farolDia1.blocks, ...farolDia2.blocks, ...farolDia3.blocks]
-    : [...navePrimeira.blocks, ...naveDia1.blocks]
-const source = blocks.find((block) => block.key === (params.get('block') ?? 'experiencia-areas'))
+    : PODERES[curso]
+      ? PODERES[curso].blocks
+      : [...navePrimeira.blocks, ...naveDia1.blocks]
+const source = blocks.find(
+  (block) =>
+    block.key === (params.get('block') ?? (PODERES[curso] ? 'experiencia' : 'experiencia-areas')),
+)
 if (!source || !isInteractiveBlock(source.content)) throw new Error('Experiência não encontrada')
 /**
  * Os testes de layout do palpite precisam de uma cena com palpite. Os cursos deixaram de usá-lo

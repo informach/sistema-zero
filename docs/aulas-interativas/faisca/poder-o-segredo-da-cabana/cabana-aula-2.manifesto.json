@@ -2114,7 +2114,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. A montagem completa está no Passo a passo do projeto. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte."
       }
     },
     {
@@ -2126,7 +2126,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto e em Próxima parte."
       }
     },
     {
@@ -2161,7 +2161,9 @@
                 "label": "Abre e fecha de novo."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "A pergunta olha o que está guardado agora, não a ordem em que as peças foram pegas. Com temChave e temEmblema verdadeiros, a cabana abre. É a mesma regra do jogo 2D, em outro mundo."
           },
           {
@@ -2181,7 +2183,9 @@
                 "label": "Dentro do \"então\" do Se temChave e temEmblema."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "O \"então\" só roda quando a pergunta é verdadeira, ou seja, com as duas peças. No senão ou antes do Se, a cabana abriria sem elas."
           }
         ]
@@ -2206,7 +2210,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-2-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -9901,13 +9907,20 @@
       "title": "A cabana chegou à ilha",
       "intent": "explanation",
       "objective": "A cabana chegou à ilha.",
-      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
+      "blockKeys": [
+        "video-abertura",
+        "ponte-abertura",
+        "jogo-pronto"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura", "jogo-pronto"]
+        "blockIds": [
+          "video-abertura",
+          "jogo-pronto"
+        ]
       }
     },
     {
@@ -9915,13 +9928,18 @@
       "title": "Guarde o emblema da ilha",
       "intent": "application",
       "objective": "Guarde o emblema da ilha.",
-      "blockKeys": ["video-emblema", "ponte-emblema"],
+      "blockKeys": [
+        "video-emblema",
+        "ponte-emblema"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-emblema"],
+        "blockIds": [
+          "video-emblema"
+        ],
         "projectChecks": [
           {
             "id": "guardar",
@@ -10056,7 +10074,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "chave"]
+                  "avoidPaths": [
+                    "cabana",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -10115,13 +10136,18 @@
       "title": "A cabana da ilha abre",
       "intent": "application",
       "objective": "A cabana da ilha abre.",
-      "blockKeys": ["video-porta", "ponte-porta"],
+      "blockKeys": [
+        "video-porta",
+        "ponte-porta"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-porta"],
+        "blockIds": [
+          "video-porta"
+        ],
         "projectChecks": [
           {
             "id": "recolher",
@@ -10278,7 +10304,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["chave", "emblema"]
+                  "avoidPaths": [
+                    "chave",
+                    "emblema"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -10440,7 +10469,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "emblema"]
+                  "avoidPaths": [
+                    "cabana",
+                    "emblema"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -10569,7 +10601,9 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["emblema"]
+                  "avoidPaths": [
+                    "emblema"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -10732,7 +10766,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "chave"]
+                  "avoidPaths": [
+                    "cabana",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -10861,7 +10898,9 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -11024,7 +11063,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "chave"]
+                  "avoidPaths": [
+                    "cabana",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -11153,7 +11195,9 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana"]
+                  "avoidPaths": [
+                    "cabana"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -11339,13 +11383,18 @@
       "title": "Pense na cabana da ilha",
       "intent": "explanation",
       "objective": "Pense na cabana da ilha.",
-      "blockKeys": ["ponte-revisao", "quiz"],
+      "blockKeys": [
+        "ponte-revisao",
+        "quiz"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz"]
+        "blockIds": [
+          "quiz"
+        ]
       }
     },
     {
@@ -11353,13 +11402,20 @@
       "title": "Envie a sua ilha com a cabana",
       "intent": "delivery",
       "objective": "Envie a sua ilha com a cabana.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "blockKeys": [
+        "video-entrega",
+        "ponte-entrega",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": [
+          "video-entrega",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "recolher",
@@ -11516,7 +11572,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["chave", "emblema"]
+                  "avoidPaths": [
+                    "chave",
+                    "emblema"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -11678,7 +11737,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "emblema"]
+                  "avoidPaths": [
+                    "cabana",
+                    "emblema"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -11807,7 +11869,9 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["emblema"]
+                  "avoidPaths": [
+                    "emblema"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -11970,7 +12034,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "chave"]
+                  "avoidPaths": [
+                    "cabana",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -12099,7 +12166,9 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["chave"]
+                  "avoidPaths": [
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -12262,7 +12331,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana", "chave"]
+                  "avoidPaths": [
+                    "cabana",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -12391,7 +12463,9 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["cabana"]
+                  "avoidPaths": [
+                    "cabana"
+                  ]
                 },
                 {
                   "action": "approachObject3d",

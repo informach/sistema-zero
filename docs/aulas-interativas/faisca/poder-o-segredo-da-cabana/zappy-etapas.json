@@ -1,0 +1,67 @@
+{
+  "version": 1,
+  "experiences": {
+    "experiencia": [
+      {
+        "id": "cabin-start",
+        "text": "A cabana pede as duas peças: a chave e o emblema. O que você acha que ela faz quando o personagem chega sem nenhuma? Encoste na cabana sem pegar nada e observe a porta e o aviso."
+      },
+      {
+        "id": "cabin-none",
+        "text": "O personagem está sem nenhuma peça, e a cabana pede as duas. O que você acha que ela faz? Encoste na cabana e observe a porta e o aviso."
+      },
+      {
+        "id": "cabin-one",
+        "text": "O personagem está com uma peça só, e a cabana pede as duas. Será que uma basta? Encoste na cabana e observe a porta e o aviso."
+      },
+      {
+        "id": "cabin-two",
+        "text": "Agora o personagem está com as duas peças. O que você acha que a cabana vai fazer? Encoste nela e observe a porta e o aviso."
+      },
+      {
+        "id": "cabin-after-none",
+        "text": "Sem nenhuma peça, a cabana ficou fechada e avisou o que pede. E com uma peça só, será que basta? Pegue a chave ou o emblema e encoste na cabana."
+      },
+      {
+        "id": "cabin-after-one",
+        "text": "Com uma peça só, a cabana ficou fechada e avisou o que pede. E sem nenhuma peça, o que ela faz? Recomece a partida e encoste na cabana sem pegar nada."
+      },
+      {
+        "id": "cabin-after-closed",
+        "text": "Sem as duas peças, a cabana continuou fechada e avisou o que pede. E se o personagem tiver as duas? Pegue a peça que falta e encoste na cabana."
+      },
+      {
+        "id": "cabin-restart",
+        "text": "A cabana ficou aberta do teste anterior. Para ver o que ela faz quando pede as duas peças, recomece a partida: a cabana fecha e as peças voltam ao chão."
+      },
+      {
+        "id": "cabin-opened-closed",
+        "text": "Com as duas peças, a cabana abriu. E sem as duas, o que ela faz? Recomece a partida e encoste na cabana sem nenhuma peça ou com uma só."
+      },
+      {
+        "id": "cabin-opened",
+        "text": "Com as duas peças, a cabana abriu. Será que a ordem das peças importa? Recomece a partida, pegue as peças na outra ordem e observe a cabana."
+      },
+      {
+        "id": "cabin-order-try",
+        "text": "Desta vez as peças vieram na outra ordem. O que você acha que a cabana vai fazer? Encoste nela e observe."
+      },
+      {
+        "id": "cabin-or",
+        "text": "Começando pela chave ou pelo emblema, a cabana abriu do mesmo jeito: a ordem das peças não importa. E se a cabana pedir só uma das peças? Clique em A cabana pede uma das peças, pegue uma peça só e encoste na cabana. O que você acha que acontece?"
+      },
+      {
+        "id": "cabin-or-try",
+        "text": "Agora a cabana pede uma das peças. O que você acha que ela faz com uma peça só? Numa partida com a cabana fechada, pegue uma peça só, encoste na cabana e observe."
+      },
+      {
+        "id": "cabin-back-and",
+        "text": "Pedindo uma das peças, uma peça só já abriu a cabana. E quando ela pede as duas? Clique em A cabana pede as duas peças e continue comparando."
+      },
+      {
+        "id": "cabin-complete",
+        "text": "Você comparou os casos. Quando a cabana pede as duas peças, ela só abre com a chave e o emblema, em qualquer ordem; sem uma delas, fica fechada e avisa. Quando pede uma das peças, uma só já basta. Pode continuar testando."
+      }
+    ]
+  }
+}

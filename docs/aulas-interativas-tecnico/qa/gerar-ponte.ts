@@ -6,12 +6,13 @@ import {
   LEARNING_IMPORT_BODY_MAX_BYTES,
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
-import { ponteAjuda, ponteAulas } from './ponte-conteudo'
+import { ponteAjuda, ponteAulas, ponteExperiencia } from './ponte-conteudo'
 import { ponteChecks } from './ponte-criterios'
 import { montarProjetoPonte, PONTE_CURSO, PONTE_ETAPAS, type PonteEtapa } from './ponte-projeto'
 import { ponteQuiz2d, ponteQuiz3d } from './ponte-quiz'
@@ -22,7 +23,7 @@ mkdirSync(dir, { recursive: true })
 const write = (name: string, v: unknown) =>
   gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
 
-const help = `# Passo a passo do projeto — A ponte apressada\n\nPoder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n${ponteAulas
+const help = `# Passo a passo do projeto — A ponte apressada\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${ponteExperiencia.title}\n\n**A ideia:** ${ponteExperiencia.idea}\n\n**O que investigar:**\n\n${ponteExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${ponteExperiencia.observe}\n\n${ponteAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${ponteAjuda(
@@ -36,7 +37,7 @@ const help = `# Passo a passo do projeto — A ponte apressada\n\nPoder do Faís
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Pressione R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 write('passo-a-passo.md', help)
 
 const inventory: Record<string, string[]> = {}
@@ -116,10 +117,47 @@ for (const [index, aula] of ponteAulas.entries()) {
           required: true,
           title: 'A ponte apressada',
           semPerguntaFinal: true,
+          // Faísca, 02/11/2026: só a ideia (a alavanca, a ponte, ponteAberta e o relógio) e o convite
+          // à investigação. As pistas e os pedidos do modelo citam "Dentro da alavanca" e "No começo
+          // do jogo", da bancada antiga: aqui vão do aberto ao direto com os botões desta tela.
           instructions:
-            'Puxe a alavanca, deixe o tempo passar um segundo por vez e tente a ponte a tempo e atrasado. Depois mude o lugar do "depois de". Você pode repetir quantas vezes quiser.',
-          hints: [],
-          activity: { type: 'experimentation', scene: 'timed-bridge', cenario: 'farol' },
+            'Investigue a ponte antes de puxar a alavanca, assim que puxar e quando o relógio chega a 4, observando a ponte, ponteAberta e o relógio. Compare também o relógio começando na alavanca e junto com a partida. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+          hints: [
+            'Olhe a ponte, ponteAberta e o relógio antes e após cada teste.',
+            'Compare ir até a ponte antes de puxar a alavanca, assim que puxar e quando o relógio já chegou a 4. Depois compare o relógio começando na alavanca e junto com a partida.',
+            'Clique em Encostar na ponte. Clique em Puxar a alavanca e em Encostar na ponte. Clique em Recomeçar a partida, em Puxar a alavanca e em Esperar 1 segundo quatro vezes; depois clique em Puxar a alavanca de novo. Por último, escolha Quando a partida começa, clique em Esperar 1 segundo quatro vezes, em Puxar a alavanca e em Esperar 1 segundo mais quatro vezes.',
+          ],
+          activity: {
+            type: 'experimentation',
+            scene: 'timed-bridge',
+            cenario: 'farol',
+            setup: {
+              freeExploration: true,
+              // O "Ainda falta" e o relatório da equipe com os botões desta tela.
+              goalCopy: {
+                'closed-start': {
+                  pedido: 'Antes de puxar a alavanca, clique em Encostar na ponte.',
+                },
+                'lever-opens': { pedido: 'Clique em Puxar a alavanca e observe ponteAberta.' },
+                'in-time': {
+                  pedido:
+                    'Clique em Puxar a alavanca e em Encostar na ponte antes de o relógio chegar a 4.',
+                },
+                'rises-alone': {
+                  pedido:
+                    'Clique em Puxar a alavanca e em Esperar 1 segundo até o relógio chegar a 4.',
+                },
+                'pull-again': {
+                  pedido: 'Deixe a ponte subir sozinha e clique em Puxar a alavanca de novo.',
+                },
+                'timer-place': {
+                  label: 'Com o relógio começando junto com a partida, a ponte não subiu mais',
+                  pedido:
+                    'Escolha Quando a partida começa, clique em Esperar 1 segundo quatro vezes, puxe a alavanca e espere mais quatro segundos.',
+                },
+              },
+            },
+          },
         },
       })
     }
@@ -226,7 +264,7 @@ for (const [index, aula] of ponteAulas.entries()) {
     script +=
       t.kind === 'quiz'
         ? `## Parte ${i + 1}. ${t.title}\n\nSem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.\n\n`
-        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n${t.kind === 'experience' ? '**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-ponte.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.\n\n' : ''}`
   script = sincronizarRecadosNaPagina(script, manifest)
   write(`ponte-${aula.slug}.roteiro.md`, script)
   for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
@@ -245,6 +283,11 @@ for (const [index, aula] of ponteAulas.entries()) {
   })
 }
 write('blocos.json', inventory)
+// As falas do Zappy dentro da experiência, para a gravação e a auditoria (como no Farol).
+write('zappy-etapas.json', {
+  version: 1,
+  experiences: { experiencia: discoverySpeechSteps('timed-bridge') },
+})
 write(
   'modulos.md',
   '# A ponte apressada — organização do curso\n\nPoder 3 do posto Faísca (`jornada-faisca-poder-3`). Módulo: **A ponte apressada**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +

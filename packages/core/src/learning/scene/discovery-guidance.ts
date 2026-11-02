@@ -1,4 +1,8 @@
 import type { SceneId } from './actions'
+import { CABANA_SPEECH, cabanaGuidance } from './guidance-cabana'
+import { MOEDAS_SPEECH, moedasGuidance } from './guidance-moedas'
+import { PONTE_SPEECH, ponteGuidance } from './guidance-ponte'
+import { SIMBOLOS_SPEECH, simbolosGuidance } from './guidance-simbolos'
 import type { SceneActivity } from './index'
 import { ISLAND_SPEECH, islandGuidance } from './island-3d'
 import { lighthouseWalkMaxX, lighthouseWalkOutSeenX, type SceneState } from './state'
@@ -6,6 +10,10 @@ import { lighthouseWalkMaxX, lighthouseWalkOutSeenX, type SceneState } from './s
 /** Shared authored speech: player and recording inventory always use the same text. */
 const speech = {
   ...ISLAND_SPEECH,
+  ...PONTE_SPEECH,
+  ...MOEDAS_SPEECH,
+  ...SIMBOLOS_SPEECH,
+  ...CABANA_SPEECH,
   // ⭐ "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): só a IDEIA (quadro, passinho, seta). Os
   // blocos aparecem só na montagem do Estúdio; aqui não se fala de bloco, regra nem comando.
   // ⭐ Convite à investigação, como no Cadê (02/11/2026): antes do teste, a fala pergunta e diz o
@@ -136,9 +144,17 @@ export function discoverySpeechSteps(scene?: SceneId) {
               ? ['memory']
               : scene === 'lighthouse-key'
                 ? ['door']
-                : scene === 'lighthouse-position'
-                  ? ['position']
-                  : []
+                : scene === 'timed-bridge'
+                  ? ['bridge']
+                  : scene === 'coin-counter'
+                    ? ['coin']
+                    : scene === 'symbol-sequence'
+                      ? ['symbols']
+                      : scene === 'two-pieces'
+                        ? ['cabin']
+                        : scene === 'lighthouse-position'
+                          ? ['position']
+                          : []
   return Object.entries(speech)
     .filter(([id]) => !scene || prefixes.some((prefix) => id.startsWith(`${prefix}-`)))
     .map(([id, text]) => ({ id, text }))
@@ -263,6 +279,18 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
             : !has('no-response')
               ? 'touch-with-first'
               : 'touch-with'
+      break
+    case 'timed-bridge':
+      id = ponteGuidance(state, has)
+      break
+    case 'coin-counter':
+      id = moedasGuidance(state, has)
+      break
+    case 'symbol-sequence':
+      id = simbolosGuidance(state, has)
+      break
+    case 'two-pieces':
+      id = cabanaGuidance(state, has)
       break
     case 'found-counter':
       id = ['first-find', 'second-find', 'no-find', 'repeat', 'back-to-zero'].every(has)

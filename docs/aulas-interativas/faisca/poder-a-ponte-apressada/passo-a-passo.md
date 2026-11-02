@@ -1,12 +1,27 @@
 # Passo a passo do projeto — A ponte apressada
 
-Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
+Poder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
+
+## A experiência: a ponte apressada
+
+**A ideia:** A alavanca baixa a ponte, e o jogo lembra disso em ponteAberta, como quem anota num papelzinho. Um relógio conta 4 segundos. Na experiência, você descobre o que acontece com a ponte em cada momento.
+
+**O que investigar:**
+
+- Vá até a ponte antes de puxar a alavanca e observe ponteAberta.
+- Puxe a alavanca e observe a ponte e ponteAberta.
+- Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.
+- Puxe a alavanca, deixe o relógio chegar a 4 e observe a ponte.
+- Quando a ponte subir sozinha, puxe a alavanca de novo.
+- Compare o relógio começando na alavanca e junto com a partida.
+
+Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e após cada teste, observe a ponte, ponteAberta e o relógio. O Zappy sugere o que observar.
 
 ## Aula 1 · Jogo 2D: Aberta por um tempo
 
 ### A alavanca baixa a ponte
 
-**Relembre:** A variável ponteAberta guarda se a ponte está baixada. Toda partida começa com falso; o encontro com a alavanca baixa a ponte e muda para verdadeiro.
+**Relembre:** A variável ponteAberta é o papelzinho em que o jogo anota se a ponte está baixada. Toda partida começa com falso; o encontro com a alavanca baixa a ponte e muda para verdadeiro.
 
 1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.
 2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar. Clique em contador, apague e escreva ponteAberta.
@@ -17,13 +32,13 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 7. Embaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha ponteAberta e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.
 8. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva A ponte baixou! Atravesse antes que ela suba.
 
-**Teste:** Leve o personagem até a alavanca. A alavanca desce, a ponte baixa e o aviso muda. Pressione R: a ponte volta levantada.
+**Teste:** Leve o personagem até a alavanca. A alavanca desce, a ponte baixa e o aviso muda. Toque na tecla R: a ponte volta levantada.
 
 **Se não funcionar:** Se nada acontecer, confira se o encontro usa personagem e alavanca. Não crie ponteAberta dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.
 
 ### A ponte sobe sozinha
 
-**Relembre:** O bloco depois de 4 segundos espera e só então roda o que está dentro dele. Dentro do encontro com a alavanca, o relógio começa a cada puxada, e o que vai dentro dele desfaz o que a alavanca fez.
+**Relembre:** O bloco depois de 4 segundos é o relógio da experiência: espera e só então roda o que está dentro dele. Dentro do encontro com a alavanca, o relógio começa a cada puxada, e o que vai dentro dele desfaz o que a alavanca fez.
 
 1. No encontro com a alavanca, deixe à vista o espaço embaixo do último bloco do fazer, o Alterar aviso.
 2. Abra Programação → Repetições. Pegue depois de 1 segundos, fazer e encaixe embaixo do Alterar aviso, ainda dentro do encontro. Clique no 1, apague e escreva 4.
@@ -38,7 +53,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 ### Atravesse a ponte
 
-**Relembre:** O encontro com a ponte pergunta ponteAberta. Verdadeiro escolhe o então, que leva o personagem à pedra e toca o sino; falso escolhe o senão, que avisa.
+**Relembre:** A ponte faz uma condição, uma pergunta de sim ou não: ponteAberta é verdadeiro? O sim escolhe o então, que leva o personagem à pedra e toca o sino; o não escolhe o senão, que avisa.
 
 1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com a alavanca, fora do fazer dos outros. Abra Jogo 2D → Colisões → Encostar e bloquear e pegue Quando o sprite começar a encostar no sprite. Clique em jogador e escolha personagem; clique em inimigo e escolha ponte.
 2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.
@@ -49,7 +64,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 7. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Você atravessou e tocou o sino!
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte está levantada. Puxe a alavanca primeiro.
 
-**Teste:** Pressione R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Pressione R, puxe e espere a ponte subir antes de encostar: ele não atravessa.
+**Teste:** Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Toque na tecla R, puxe e espere a ponte subir antes de encostar: ele não atravessa.
 
 **Se não funcionar:** Se o personagem atravessar sem puxar, confira se a pergunta do Se é ponteAberta e se ponteAberta começa falso. Se ele nunca atravessar, confira se a mudança de lugar está dentro do então e não no senão.
 
@@ -57,7 +72,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 ### A alavanca baixa a ponte
 
-**Relembre:** A variável ponteAberta guarda se a ponte está baixada. Toda partida começa com falso; o encontro com a alavanca baixa a ponte e muda para verdadeiro.
+**Relembre:** A variável ponteAberta é o papelzinho em que o jogo anota se a ponte está baixada. Toda partida começa com falso; o encontro com a alavanca baixa a ponte e muda para verdadeiro.
 
 1. Encontre a área Ao iniciar. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o fim dela, depois do último bloco.
 2. Abra Programação → Variáveis. Pegue Criar variável e encaixe no fim de Ao iniciar. Clique em contador, apague e escreva ponteAberta.
@@ -68,13 +83,13 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 7. Embaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha ponteAberta e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.
 8. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva A ponte baixou! Atravesse antes que ela suba.
 
-**Teste:** Leve o personagem até a alavanca. A alavanca desce, a ponte baixa e o aviso muda. Pressione R: a ponte volta levantada.
+**Teste:** Leve o personagem até a alavanca. A alavanca desce, a ponte baixa e o aviso muda. Toque na tecla R: a ponte volta levantada.
 
 **Se não funcionar:** Se nada acontecer, confira se o encontro usa personagem e alavanca. Não crie ponteAberta dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.
 
 ### A ponte sobe sozinha
 
-**Relembre:** O bloco depois de 4 segundos espera e só então roda o que está dentro dele. Dentro do encontro com a alavanca, o relógio começa a cada puxada, e o que vai dentro dele desfaz o que a alavanca fez.
+**Relembre:** O bloco depois de 4 segundos é o relógio da experiência: espera e só então roda o que está dentro dele. Dentro do encontro com a alavanca, o relógio começa a cada puxada, e o que vai dentro dele desfaz o que a alavanca fez.
 
 1. No encontro com a alavanca, deixe à vista o espaço embaixo do último bloco do fazer, o Alterar aviso.
 2. Abra Programação → Repetições. Pegue depois de 1 segundos, fazer e encaixe embaixo do Alterar aviso, ainda dentro do encontro. Clique no 1, apague e escreva 4.
@@ -89,7 +104,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 
 ### Atravesse a ponte
 
-**Relembre:** O encontro com a ponte pergunta ponteAberta. Verdadeiro escolhe o então, que leva o personagem à pedra e toca o sino; falso escolhe o senão, que avisa.
+**Relembre:** A ponte faz uma condição, uma pergunta de sim ou não: ponteAberta é verdadeiro? O sim escolhe o então, que leva o personagem à pedra e toca o sino; o não escolhe o senão, que avisa.
 
 1. Em Quando acontecer, deixe à vista um espaço vazio depois do encontro com a alavanca, fora do fazer dos outros. Abra Jogo 3D → Encostar → Encostar e pegue Quando personagem encostar em. O primeiro nome já vem personagem; deixe assim. No segundo, escolha ponte.
 2. Dentro do fazer, encaixe Se, de Programação → Lógica e Se. Segure a pergunta x > 0 pelo sinal de maior e arraste até a lixeira.
@@ -100,10 +115,10 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 7. Embaixo, ainda no então, encaixe Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva Você atravessou e tocou o sino!
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A ponte está levantada. Puxe a alavanca primeiro.
 
-**Teste:** Pressione R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Pressione R, puxe e espere a ponte subir antes de encostar: ele não atravessa.
+**Teste:** Toque na tecla R e vá direto à ponte: o aviso pede para puxar a alavanca. Puxe e vá logo: o personagem atravessa e o sino toca. Toque na tecla R, puxe e espere a ponte subir antes de encostar: ele não atravessa.
 
 **Se não funcionar:** Se o personagem atravessar sem puxar, confira se a pergunta do Se é ponteAberta e se ponteAberta começa falso. Se ele nunca atravessar, confira se a mudança de lugar está dentro do então e não no senão.
 
 ## Entrega
 
-Em cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Pressione R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.
+Em cada aula, jogue uma partida inteira: atravesse a tempo, chegue atrasado e puxe a alavanca de novo. Toque na tecla R e confira que a ponte volta levantada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

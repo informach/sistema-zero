@@ -1,5 +1,9 @@
 'use client'
-import { ISLAND_ORIGIN } from '@sistemazero/core/learning/scene'
+import {
+  ISLAND_CONTACT_TEXT,
+  ISLAND_ORIGIN,
+  islandNextAxis,
+} from '@sistemazero/core/learning/scene'
 import { useState } from 'react'
 import { Frame, Note, SceneButton, useDiscovery } from './scene-discovery-frame'
 import { IslandWorld } from './scene-island-world'
@@ -13,7 +17,7 @@ export function IslandDiscovery() {
     p.mode === 'view'
       ? ['other-view', 'same-place']
       : p.mode === 'position'
-        ? ['axis-x', 'axis-y', 'axis-z']
+        ? ['axis-x', 'axis-z', 'axis-y']
         : ['contact-apart', 'contact-touch']
   const allGoals =
     p.mode === 'view'
@@ -22,7 +26,11 @@ export function IslandDiscovery() {
           'Responda o que mudou quando a chave apareceu.',
         ]
       : p.mode === 'position'
-        ? ['Aumente e diminua x.', 'Aumente e diminua y.', 'Aumente e diminua z.']
+        ? [
+            'Aumente e diminua o x e observe a chave.',
+            'Aumente e diminua o z e observe a chave.',
+            'Aumente e diminua o y e observe a chave.',
+          ]
         : [
             'Teste uma situação com os objetos separados.',
             'Teste uma situação com os objetos encostando.',
@@ -31,9 +39,13 @@ export function IslandDiscovery() {
   const goals = ids.map((id) => allGoals[allIds.indexOf(id)]!)
   const completed = ids.map(seen),
     done = completed.filter(Boolean).length
-  const nextAxis = (['x', 'z', 'y'] as const).find(
-    (a) => ids.includes(`axis-${a}`) && !seen(`axis-${a}`),
-  )
+  const nextAxis = islandNextAxis(m.state, m.activity.setup?.goals)
+  // ⚠️ O papel de cada número (chão ou altura) é a descoberta da experiência de posição: o rótulo só
+  // aparece depois de a criança ir para mais e para menos naquele número, como o "?" da porta do
+  // Farol (02/11/2026). No contato, que vem depois, os rótulos já ficam à vista.
+  const roleShown = (a: 'x' | 'y' | 'z') =>
+    p.mode !== 'position' || seen(`axis-${a}`) || !ids.includes(`axis-${a}`)
+  const allAxesShown = (['x', 'y', 'z'] as const).every(roleShown)
   const axis = (a: 'x' | 'y' | 'z', value: number) =>
     m.dispatch({
       type: 'island-axis',
@@ -56,7 +68,9 @@ export function IslandDiscovery() {
           {p.mode === 'view'
             ? 'A mesma ilha, três pontos de vista'
             : p.mode === 'position'
-              ? 'x e z no chão · y na altura'
+              ? allAxesShown
+                ? 'x e z no chão · y na altura'
+                : 'Três números para o lugar da chave'
               : 'A imagem e o contato'}
         </strong>
       }
@@ -65,14 +79,14 @@ export function IslandDiscovery() {
         <Note label={p.mode === 'contact' && p.tested !== null ? 'Último teste' : 'Observe'}>
           {p.tested !== null
             ? p.tested
-              ? 'As áreas se encontram: há contato.'
-              : 'As áreas estão separadas: não há contato.'
+              ? ISLAND_CONTACT_TEXT.touch
+              : ISLAND_CONTACT_TEXT.apart
             : m.state.caption ||
               (p.mode === 'view'
                 ? 'Procure a chave em outra vista.'
                 : p.mode === 'position'
-                  ? 'A marca dourada guarda o lugar inicial. O pontilhado mostra a altura.'
-                  : 'Mude a vista para conferir a altura. Depois teste o encontro.')}
+                  ? 'A marca dourada guarda o lugar inicial. O pontilhado liga a chave ao chão.'
+                  : 'Teste o encontro e compare com o que a imagem mostra.')}
         </Note>
       }
     >
@@ -109,7 +123,7 @@ export function IslandDiscovery() {
               aria-pressed={p.answer === 'camera'}
               onClick={() => m.dispatch({ type: 'island-answer', answer: 'camera' })}
             >
-              O lugar de onde olhamos
+              O lugar de onde a gente olha
             </SceneButton>
             <SceneButton
               tom="ferramenta"
@@ -125,12 +139,10 @@ export function IslandDiscovery() {
             {(['x', 'z', 'y'] as const).map((a) => (
               <fieldset key={a} className="sz-island-axis">
                 <legend>
-                  {a.toUpperCase()} ·{' '}
-                  {a === 'y'
-                    ? 'Altura'
-                    : a === 'x'
-                      ? 'Uma direção do chão'
-                      : 'Outra direção do chão'}
+                  {a.toUpperCase()}
+                  {roleShown(a)
+                    ? ` · ${a === 'y' ? 'Altura' : a === 'x' ? 'Uma direção do chão' : 'Outra direção do chão'}`
+                    : ''}
                 </legend>
                 <SceneButton
                   tom={

@@ -29,7 +29,7 @@ O farol precisa conferir a chave.
 - No encontro com farol, consulte temChave e mude aviso no senão.
 - Em uma partida nova, o farol continua apagado e pede a chave.
 
-**Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ### Parte 2. Acenda o farol com a chave
 
@@ -55,7 +55,7 @@ Acenda o farol com a chave.
 - No então do encontro com farol, toque a animação acender no farol uma vez, guarde ganhou e mude aviso.
 - Recolha a chave, acenda o farol e recomece uma partida.
 
-**Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ### Parte 3. O farol acende uma vez só
 
@@ -82,7 +82,7 @@ O farol acende uma vez só.
 - Com a chave, acenda o farol, saia dele pelo cais e volte: a luz continua acesa.
 - No encontro com farol, coloque o Se temChave dentro de Se não ganhou.
 
-**Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ### Parte 4. O que você descobriu no 3D
 
@@ -121,7 +121,7 @@ Deixe o jogo com a sua cara.
 - Recolha a chave, acenda o farol e recomece uma partida.
 - No encontro com farol, coloque o Se temChave dentro de Se não ganhou.
 
-**Zappy na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ### Parte 6. Escolha seu esconderijo e teste de verdade
 

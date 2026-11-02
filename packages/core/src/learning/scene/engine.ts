@@ -598,6 +598,12 @@ export function stepScene(
       break
     case 'chest-rule':
       s.coins.rule = action.rule
+      // ⚠️ Na exploração livre (Faísca, 02/11/2026), trocar a pergunta tira o personagem do baú e o
+      // fecha: a resposta da pergunta nova só aparece no próximo teste, nunca herdada do anterior.
+      if (start.setup?.freeExploration && s.coins.at === 'chest') {
+        s.coins.at = null
+        s.coins.chest = 'closed'
+      }
       s.caption =
         action.rule === 'at-least'
           ? 'O baú abre com pelo menos 5 moedas.'
@@ -656,6 +662,9 @@ export function stepScene(
     }
     case 'cabin-rule':
       s.pieces.rule = action.rule
+      // A resposta da porta era da pergunta antiga: trocar o pedido tira o personagem da porta, e
+      // a próxima resposta só aparece no próximo encontro (full review de 02/11/2026).
+      if (s.pieces.at === 'door') s.pieces.at = null
       s.caption =
         action.rule === 'and'
           ? 'A cabana pergunta: temChave e temEmblema.'
@@ -731,7 +740,14 @@ export function stepScene(
       if (b.ponteAberta) {
         b.at = 'stone'
         s.caption = 'O personagem atravessou a ponte e o sino tocou!'
-        if (b.sincePull !== null && b.sincePull >= 1 && b.sincePull < TIMED_BRIDGE.seconds)
+        // ⚠️ Na exploração livre (Faísca, 02/11/2026), ir assim que puxa também é chegar a tempo:
+        // a criança que atravessa sem esperar viu o caso, e o Zappy não pode pedir de novo. Só com o
+        // relógio na alavanca: com o relógio da partida, a ponte não sobe por causa da puxada.
+        if (
+          b.sincePull !== null &&
+          (b.sincePull >= 1 || (start.setup?.freeExploration && b.place === 'lever')) &&
+          b.sincePull < TIMED_BRIDGE.seconds
+        )
           observe(s, 'in-time', 'Indo antes dos 4 segundos, o personagem atravessou')
       } else {
         b.at = 'bridge'
@@ -777,7 +793,16 @@ export function stepScene(
         s.caption = naOrdem
           ? 'Os três símbolos foram tocados: o baú abriu!'
           : 'Os três símbolos foram tocados, fora da ordem da placa, e o baú abriu mesmo assim!'
-        if (!naOrdem && s.evidence.discoveries.includes('right-order'))
+        // Meta de COMPARAÇÃO pede o primeiro termo visto antes. Na exploração livre (Faísca,
+        // 02/11/2026) a criança escolhe a ordem dos testes: basta ter visto o baú que confere a vez
+        // responder (na vez certa, fora da vez ou começando pelo meio), não só a ordem certa.
+        const viuAVez = (id: string) => s.evidence.discoveries.includes(id)
+        if (
+          !naOrdem &&
+          (viuAVez('right-order') ||
+            (start.setup?.freeExploration === true &&
+              ['out-of-turn', 'middle-start'].some(viuAVez)))
+        )
           observe(s, 'count-vs-order', 'Só contando, a ordem errada também abriu o baú')
         break
       }
