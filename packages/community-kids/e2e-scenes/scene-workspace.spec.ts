@@ -248,6 +248,32 @@ test('fontes maiores não cortam os controles no modo ampliado', async ({ page }
   await expect(expand(page)).toBeFocused()
 })
 
+test('HUD cabe em 320px com fonte de sistema larga, sem cortar números ou descobertas', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 568 })
+  await page.goto('/?width=620')
+  await page.addStyleTag({
+    content:
+      '.sz-discovery-simple-hud { font-family: monospace; letter-spacing: .12em; word-spacing: .16em; }',
+  })
+  await expect(jeito(page, SEMPRE)).toBeVisible()
+  const geometry = await page.evaluate(() => ({
+    page: document.documentElement.scrollWidth,
+    viewport: innerWidth,
+    hud: [...document.querySelectorAll('.position-hud, .sz-discovery-simple-hud-top')].map(
+      (el) => ({
+        width: el.clientWidth,
+        content: el.scrollWidth,
+      }),
+    ),
+  }))
+  expect(geometry.page, JSON.stringify(geometry)).toBeLessThanOrEqual(geometry.viewport)
+  for (const box of geometry.hud)
+    expect(box.content, JSON.stringify(geometry)).toBeLessThanOrEqual(box.width)
+  await fits(page)
+})
+
 for (const size of [
   { width: 1366, panel: 860, height: 768, sideBySide: true },
   { width: 1366, panel: 900, height: 768, sideBySide: true },

@@ -272,11 +272,13 @@
 }
 .sz-discovery-simple-hud {
   display: grid;
+  min-width: 0;
   gap: 12px;
   margin-bottom: 10px;
 }
 .sz-discovery-simple-hud-top {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
@@ -679,14 +681,18 @@
 }
 .position-hud {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 10px;
 }
 .position-hud > span {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 18px;
-  flex: 1;
+  gap: 4px 18px;
+  flex: 1 1 150px;
+  min-width: 0;
   padding: 12px;
   border-radius: 12px;
   background: var(--color-secondary);

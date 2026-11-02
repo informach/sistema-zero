@@ -49,3 +49,28 @@ ou progresso de aluno foi gravado por essas verificações.
 
 As evidências da publicação dos desafios e dos deploys pertencem à operação posterior
 ao CI. Esta nota não afirma que a versão já tenha sido implantada.
+
+## Correção do painel em 320 px
+
+O CI da composição `3954bf8ce` encontrou rolagem horizontal em 320 × 568. O HUD
+impunha a largura mínima dos filhos flexíveis, que dependia da fonte. A regressão local
+com fonte monoespaçada, espaçamento de letras de 0,12 em e de palavras de 0,16 em
+reproduziu 330 px de conteúdo numa janela de 320 px. O painel agora permite quebrar
+linhas e reduzir a largura mínima. Não corta conteúdo, reduz fonte ou esconde a rolagem.
+
+Após a correção, a suíte completa `e2e-scenes` passou: **86 testes, zero falhas e nenhuma
+repetição, em 3,9 minutos**, com um worker e o navegador padrão do Playwright 1.60.0
+(Chromium headless shell 1223). A porta local 5398 foi liberada ao terminar. O novo teste
+de espaçamento e o caso exato reprovado no CI passaram. Biome e o typecheck focado do
+arquivo de testes também passaram. Os typechecks completos de Kids e Members da base
+`3954bf8ce` terminaram com código zero.
+
+A primeira tentativa local, com o executável completo do Chrome indicado explicitamente,
+parou no arrasto do vídeo: depois de capturar o ponteiro, não recebeu os movimentos nem
+a soltura. A investigação preservou o negativo; usando o navegador padrão da configuração,
+o teste original e a suíte inteira passaram. Nenhuma alteração no player, espera arbitrária
+ou omissão de teste foi necessária. Isso não afirma que todo navegador físico foi validado.
+
+Recibos locais preservados em `.cache/course-audience-sync/`: `hud-wide-font-red-r2.log`,
+`hud-wide-font-green-r1.log`, `video-drag-pointer-r1.log`,
+`video-drag-default-browser-r1.log` e `hud-default-all-scenes-r1.log`.
