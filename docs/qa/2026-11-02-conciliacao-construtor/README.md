@@ -109,3 +109,34 @@ Recibos locais: `inventor0d-core-review-r1.log`, `inventor0d-core-types-r1.log` 
 `inventor0d-border-green-r1.log` e `inventor0d-final-browser-r1.log`.
 Os 12 checks anteriores aprovados pertencem a `6b423961c`. A composição nova exige CI
 próprio; a onda anterior foi cancelada antes de acessar provedores ou disparar deployments.
+
+## Correções encontradas no CI da composição `1f19d71b5`
+
+A regra geral de texto encontrou o marcador de ausência `—` no impulso. O HUD passa a
+mostrar `nenhuma` para a marca anterior ausente. A varredura passou nos três testes.
+Os 1.838 testes do Kids passaram localmente, com 11.043 asserções, em 198 segundos.
+
+No Linux, a tabela da pergunta com o não ocupou 343 px numa janela de 320 px. A
+regressão local com fonte monoespaçada e espaçamento de texto reproduziu 366 px. A
+tabela agora usa largura fixa das colunas e quebra de palavras quando necessário,
+preservando cabeçalhos e respostas. A regressão passou, sem ocultar conteúdo.
+
+O teste da beirada ainda tinha um segundo problema: escolher câmera lenta com o
+personagem inteiramente fora e o limite desligado reinicia a caminhada, conforme a
+regra do player. Agora ele pausa, liga o limite e só então roda em câmera lenta.
+Assim observa a volta real antes de continuar andando. As verificações de posição,
+três descobertas e permanência na beirada foram mantidas. O motor não foi alterado.
+
+Após os ajustes, a suíte completa passou novamente: **140 testes, zero falhas,
+nenhuma repetição, em 4,9 minutos**. Os 48 testes das duas interfaces afetadas
+passaram, com 132 asserções; o typecheck dos testes de navegador, Biome e diffcheck
+passaram. Os negativos do CI e o RED de largura foram preservados nos recibos locais
+`ci1f1-main-failed-job-r1.log`, `ci1f1-kids-failed-job-r1.log`,
+`door-mobile-red-r1.log` e `ci1f1-full-regressions-green-r1.log`.
+
+Houve também uma falha isolada no desktop Windows do PR, na sondagem de versão do
+Node, embora o runner tenha configurado Node 24.22.2 e o job Windows do push tenha
+passado no mesmo SHA. O negativo `ci1f1-desktop-job-log-r1.txt` fica separado dos
+achados confirmados de interface. A sonda local foi recusada pela política de
+execução do helper nativo; isso não prova o motivo da falha do runner. Não foram
+alterados os limites ou a contenção. A liberação exige CI próprio da versão corrigida.

@@ -44,6 +44,12 @@ for (const largura of [1366, 320]) {
       page.on('pageerror', (erro) => erros.push(erro.message))
       await page.setViewportSize({ width: largura, height: 844 })
       await page.goto(`/?course=${curso}&block=${bloco}&width=900`)
+      if (largura === 320 && bloco === 'experiencia-pergunta-com-nao') {
+        await page.addStyleTag({
+          content:
+            '[data-tabela-do-nao] { font-family: monospace; letter-spacing: .12em; word-spacing: .16em; }',
+        })
+      }
       await expect(page.locator('.sz-scene-prancha')).toBeVisible()
       await expect(page.getByRole('button', { name: 'Recomeçar experiência' })).toBeVisible()
       const medida = await page.evaluate(() => ({

@@ -94,7 +94,7 @@ export function LivreImpulse() {
           itens={[
             ['Impulso', f.force],
             ['Marca deste salto', Math.round(f.peak)],
-            ['Marca de antes', f.before > 0 ? Math.round(f.before) : '—'],
+            ['Marca de antes', f.before > 0 ? Math.round(f.before) : 'nenhuma'],
           ]}
         />
       }

@@ -81,7 +81,10 @@ export function PortaDoNao() {
         <p className="sz-discovery-small">
           A resposta sim abre a porta. A resposta não deixa a porta fechada.
         </p>
-        <table className="w-full text-sm" data-tabela-do-nao="">
+        <table
+          className="w-full table-fixed text-sm [overflow-wrap:anywhere]"
+          data-tabela-do-nao=""
+        >
           <thead>
             <tr>
               <th scope="col">
