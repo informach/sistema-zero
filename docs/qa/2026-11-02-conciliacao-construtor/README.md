@@ -164,3 +164,23 @@ A validação da composição nova deve rodar em um PR separado enquanto o deplo
 de staging de `e47aab75f` termina. Esse PR não inicia outro deploy de staging.
 O envio posterior de staging preserva os merges e só ocorre após reconciliar
 o deploy anterior, para não cancelar o processo que já alterou os serviços.
+
+## Teste antigo de texto encontrado pelo CI do lote de convites
+
+O CI `41509339151` aprovou os outros 11 jobs, mas encontrou uma expectativa
+literal antiga em `core/tests/learning.test.ts`: a instrução das coordenadas
+devia conter `x sem mudar y`. O novo convite aprovado apresenta as mesmas três
+comparações sem ditar a sequência dos testes. A reprodução local preservou o
+negativo: 72 testes passaram e um falhou no arquivo.
+
+A expectativa foi atualizada para conferir mudança em x, mudança em y, os dois
+números em zero e a escolha da ordem. As verificações de ausência de palpite e
+checkpoint e de não concluir sem participação foram mantidas. Nenhum critério,
+cena, projeto ou instrução de aula foi alterado para satisfazer o teste antigo.
+
+Após a correção, o pacote Core inteiro passou em **3.032 testes e 97.049
+asserções**, com 178 arquivos, e no typecheck completo. Biome e diffcheck
+passaram. Recibos locais: `core-invitation-red-r1.log`,
+`core-invitation-full-green-r1.log` e `core-invitation-types-r1.log` no worktree
+de release. A promoção e o envio pendente foram interrompidos antes de gravar;
+o deploy anterior de staging continuou. A composição corrigida exige CI próprio.

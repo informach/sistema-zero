@@ -446,14 +446,15 @@ describe('progressão inicial de Nave Contra Asteroides', () => {
     expect(order.indexOf('setas')).toBeLessThan(order.indexOf('borda'))
     expect(order.indexOf('borda')).toBeLessThan(order.indexOf('fundo-estrelado'))
   })
-  test('coordenadas está na primeira aula e orienta os três testes sem palpite ou pergunta final', () => {
+  test('coordenadas está na primeira aula e convida às três comparações sem ditar a ordem', () => {
     const m = read('primeira-nave')
     const entry = m.blocks.find((b) => b.key === 'experiencia-coordenadas')
     const bloco = entry && 'content' in entry ? entry.content : undefined
     if (!isInteractiveBlock(bloco)) throw new Error('Coordenadas ausentes')
-    expect(bloco.instructions).toMatch(/x sem mudar y/)
-    expect(bloco.instructions).toMatch(/y sem mudar x/)
-    expect(bloco.instructions).toMatch(/x e y em zero/)
+    expect(bloco.instructions).toMatch(/quando o x muda/)
+    expect(bloco.instructions).toMatch(/quando o y muda/)
+    expect(bloco.instructions).toMatch(/dois números em zero/)
+    expect(bloco.instructions).toMatch(/Você escolhe a ordem/)
     expect(publicInteractiveBlock(bloco).prediction).toBeUndefined()
     expect(publicInteractiveBlock(bloco).checkpoint).toBeUndefined()
     expect(evaluateLearning(bloco, {}).passed).toBe(false)
