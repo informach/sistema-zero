@@ -14,7 +14,6 @@ import {
   linguagemDoProjeto,
   migrarConteudoDoDesafio,
   type PedirAmbienteDoDesafio,
-  POSICOES_DA_JORNADA,
   ProjetoDoMinijogoSchema,
   postoDoCursoBase,
   QUADROS_POR_ILHA,
@@ -434,9 +433,13 @@ export class ServicoDosDesafios {
   }
 
   /** Posição na jornada, blocos e cursos-base conquistados; a equipe tem tudo aberto. */
+  /**
+   * A régua de quem joga: o posto real na Jornada, os blocos e os cursos-base concluídos. Vale
+   * também para a equipe (02/11/2026): antes ela tinha tudo aberto aqui enquanto o mundo seguia o
+   * posto real, e o desafio de hoje caía numa ilha sem ponte. Para conferir desafios de outras
+   * ilhas, a equipe usa o Admin (seção Jogo) ou um perfil mais adiantado.
+   */
   private async regua(jogador: Jogador): Promise<Regua> {
-    if (jogador.equipe)
-      return { posicao: POSICOES_DA_JORNADA, blocos: 'todos', cursosBase: 'todos' }
     const dados = await this.deps.leituras.jogador(jogador)
     return {
       posicao: dados.posicao,

@@ -459,10 +459,14 @@ describe('lista da ilha', () => {
     expect(com.desafios.find((d) => d.id === PYTHON)?.situacao).toBe('disponivel')
   })
 
-  test('equipe vê todas as ilhas abertas e todos os blocos', async () => {
-    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', daEquipe)).corpo)
-    expect(r.desafios.every((d) => d.situacao === 'disponivel')).toBe(true)
-    expect(r.ilhas.every((i) => i.aberta)).toBe(true)
+  test('a equipe segue o posto real, como o mundo do jogo (02/11/2026): sem passe livre aqui', async () => {
+    const equipe = DesafiosDoJogadorSchema.parse((await chamar('GET', '', daEquipe)).corpo)
+    const doPerfil = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    // A mesma régua do Members dá a mesma situação e as mesmas ilhas abertas.
+    expect(equipe.ilhas.map((i) => i.aberta)).toEqual(doPerfil.ilhas.map((i) => i.aberta))
+    expect(equipe.ilhas.find((i) => i.id === 'farol')?.aberta).toBe(false)
+    expect(equipe.desafios.find((d) => d.id === FAROL)?.situacao).toBe('ilha-fechada')
+    expect(equipe.desafios.find((d) => d.id === PONTE)?.situacao).toBe('faltam-blocos')
   })
 
   test('nada da regra nem do gabarito vai na lista', async () => {
