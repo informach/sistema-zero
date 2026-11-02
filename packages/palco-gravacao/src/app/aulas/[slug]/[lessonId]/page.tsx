@@ -6,6 +6,7 @@ import { recordingPart } from '~/lib/recording-part'
 import { staffAccess } from '~/server/access'
 import { gatewayFetch, paths, readJson } from '~/server/gateway'
 import { rememberLesson } from '~/server/lessons'
+import { abrirNaParte } from '~/server/projeto-da-parte'
 import { PalcoAula } from './palco-aula'
 
 export const dynamic = 'force-dynamic'
@@ -24,14 +25,20 @@ export default async function AulaPage({
   searchParams,
 }: {
   params: Promise<{ slug: string; lessonId: string }>
-  searchParams: Promise<{ tomada?: string; parte?: string; enviado?: string }>
+  searchParams: Promise<{ tomada?: string; parte?: string; desde?: string; enviado?: string }>
 }) {
-  const [{ slug, lessonId }, { tomada, parte, enviado }] = await Promise.all([params, searchParams])
+  const [{ slug, lessonId }, { tomada, parte, desde, enviado }] = await Promise.all([
+    params,
+    searchParams,
+  ])
   const sent = enviado === '1' ? '&enviado=1' : ''
   const here = `/aulas/${encodeURIComponent(slug)}/${encodeURIComponent(lessonId)}`
   let numero: number | null
+  // A parte da tomada, que a ida para o `#section=` guarda em `desde`.
+  let inicio: number | null
   try {
     numero = recordingPart(parte)
+    inicio = numero ?? recordingPart(desde)
   } catch (error) {
     if (error instanceof RangeError) notFound()
     throw error
@@ -55,8 +62,15 @@ export default async function AulaPage({
   // A parte pedida vira o `#section=` que o player do Kids já entende, na mesma tomada.
   const secao = numero ? lesson.sections?.[numero - 1] : undefined
   if (numero && !secao) notFound()
-  if (secao) redirect(`${here}?tomada=${tomada}${sent}#section=${encodeURIComponent(secao.id)}`)
-  rememberLesson(lesson)
-  const aula = sent ? enviada(lesson, new Date()) : lesson
-  return <PalcoAula course={course} lesson={aula} viewerId={`palco-${tomada}`} />
+  if (secao)
+    redirect(
+      `${here}?tomada=${tomada}&desde=${numero}${sent}#section=${encodeURIComponent(secao.id)}`,
+    )
+  // O Estúdio abre com o que a criança já teria montado nas partes de antes.
+  const naParte = inicio ? await abrirNaParte(lesson, inicio, access.token) : lesson
+  const aula = sent ? enviada(naParte, new Date()) : naParte
+  rememberLesson(aula)
+  return (
+    <PalcoAula course={course} lesson={aula} viewerId={`palco-${tomada}`} parte={inicio ?? 1} />
+  )
 }

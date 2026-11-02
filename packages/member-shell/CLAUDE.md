@@ -871,6 +871,10 @@ contexto: a comunidade adulta não liga nada disso.
   `flushAll` e o coordenador `registerEditor`/`withSavedDrafts`/`isSaving`/`subscribeSaving`. O kids implementa; o
   player recebe por `LessonPlayerContextValue.lessonDrafts?`. Desligado por `LESSON_DRAFTS_ENABLED`
   (padrão ligado, `lib/env.ts`) e em sessão de suporte somente leitura.
+- **`LessonPlayerContextValue.onStudioProjectChange?(blockId, project)`** (01/11/2026): o bloco
+  Estúdio chama a cada mudança do projeto (o mesmo `onChange` do salvamento automático). Só o
+  palco de gravação passa, para a parte gravada seguinte abrir com o que esta montou; sem ele,
+  nada muda.
 - **Qual versão abre** é `lib/lesson-draft-seed.ts` (`decideLessonDraftSeed`, pura, testada em
   `tests/lesson-draft-seed.test.ts`): local, conta, envio ou a ordem de sempre (`fallback`), com a
   "outra" guardada quando os dois lados mudaram com conteúdos diferentes. ⚠️ O relógio que compara
