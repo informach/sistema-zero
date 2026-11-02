@@ -74,3 +74,38 @@ ou omissão de teste foi necessária. Isso não afirma que todo navegador físic
 Recibos locais preservados em `.cache/course-audience-sync/`: `hud-wide-font-red-r2.log`,
 `hud-wide-font-green-r1.log`, `video-drag-pointer-r1.log`,
 `video-drag-default-browser-r1.log` e `hud-default-all-scenes-r1.log`.
+
+## Conciliação posterior do Inventor
+
+O merge `0d860b6ba`, com o lote `c03cb8df0`, entrou em staging local durante a
+qualificação anterior. Inclui as experiências livres do Corre Dino e três experiências
+de aula. A revisão conferiu os contratos de ação, inicialização e hidratação do estado,
+as variantes por cenário, os guias, a seleção de vozes, as telas e o DTO do Members.
+Não altera a API, os contratos, as migrações nem os manifestos de desafios do jogo.
+
+Foi corrigido um TS2353 no teste do passinho: `cenario` pertence à atividade, não a
+`SceneStart`. O teste agora usa a fábrica `sceneStart`, sem cast ou mudança do contrato.
+O Core passou no typecheck e em 2.359 testes, com 90.964 asserções. A seleção posterior
+do teste corrigido e do DTO passou em 103 testes e 1.685 asserções, que se sobrepõem à
+contagem anterior. O MemberShell passou no typecheck completo e em 665 testes de cenas,
+com 5.749 asserções.
+
+Uma execução do navegador expôs a corrida do teste antigo da beirada: ele ligava o
+limite a 30 fps e procurava a volta depois de outros gestos, quando o quadro já podia
+ter saído da tira de seis quadros. O teste agora escolhe câmera lenta antes de ligar
+o limite e observa a volta imediatamente. Mantém as provas da posição 416, das três
+descobertas e do limite segurando o personagem, sem aumentar prazos ou mudar o motor.
+
+Os 27 cenários novos passaram também em 320 px, sem erro de página ou rolagem lateral.
+A suíte completa ampliada passou: **140 testes, zero falhas, nenhuma repetição, em
+4,6 minutos**, com um worker e Chromium headless shell 1223. O typecheck focado dos
+dois arquivos de navegador passou. Os 51 manifestos, 292 clipes e derivados ElevenLabs
+foram conferidos, sem geração de vozes. Biome dos 143 arquivos do lote: zero erros;
+dois avisos de `any` e três informações de estilo de geradores já existentes.
+
+Recibos locais: `inventor0d-core-review-r1.log`, `inventor0d-core-types-r1.log` (negativo),
+`inventor0d-core-types-green-r1.log`, `inventor0d-ui-review-r2.log`,
+`inventor0d-member-shell-types-r1.log`, `inventor0d-all-scenes-browser-r1.log` (negativo),
+`inventor0d-border-green-r1.log` e `inventor0d-final-browser-r1.log`.
+Os 12 checks anteriores aprovados pertencem a `6b423961c`. A composição nova exige CI
+próprio; a onda anterior foi cancelada antes de acessar provedores ou disparar deployments.

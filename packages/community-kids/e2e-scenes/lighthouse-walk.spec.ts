@@ -69,15 +69,16 @@ test('a beirada: sem o limite ele sai, com o limite ligado ele volta e fica, sem
   await page.mouse.down()
   await expect(page.locator('[data-personagem="fora"]')).toBeVisible({ timeout: 10000 })
   await page.mouse.up()
-  // Ligar o limite com ele fora: no quadro seguinte ele volta para dentro.
-  await page.getByRole('button', { name: 'Ligar o limite da tela', exact: true }).click()
+  // Observe a volta na câmera lenta: a tira guarda só seis quadros. Ligando o limite
+  // ainda a 30 fps e depois mudando o ritmo, a volta já podia ter saído da tira.
   await page.getByRole('button', { name: 'Câmera lenta', exact: true }).click()
-  await page.getByRole('button', { name: SETA_DO_QUADRO, exact: true }).hover()
-  await page.mouse.down()
+  await page.getByRole('button', { name: 'Ligar o limite da tela', exact: true }).click()
+  await expect(page.getByText('↩ voltou').first()).toBeVisible({ timeout: 5000 })
   await expect(page.locator('[data-personagem="dentro"]')).toHaveAttribute('data-x', '416', {
     timeout: 10000,
   })
-  await expect(page.getByText('↩ voltou').first()).toBeVisible({ timeout: 5000 })
+  await page.getByRole('button', { name: SETA_DO_QUADRO, exact: true }).hover()
+  await page.mouse.down()
   // Segurando na beirada em câmera lenta: cada quadro passa e volta.
   await expect(page.locator('.sz-discovery-discoveries li[data-done="true"]')).toHaveCount(3, {
     timeout: 5000,

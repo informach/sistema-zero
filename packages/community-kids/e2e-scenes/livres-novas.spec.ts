@@ -37,14 +37,21 @@ const CASOS: [curso: string, bloco: string][] = [
   ['ilha', 'experiencia-pergunta-com-nao'],
 ]
 
-for (const [curso, bloco] of CASOS) {
-  test(`tela livre: ${curso} · ${bloco}`, async ({ page }) => {
-    const erros: string[] = []
-    page.on('pageerror', (erro) => erros.push(erro.message))
-    await page.setViewportSize({ width: 1366, height: 768 })
-    await page.goto(`/?course=${curso}&block=${bloco}&width=900`)
-    await expect(page.locator('.sz-scene-prancha')).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Recomeçar experiência' })).toBeVisible()
-    expect(erros).toEqual([])
-  })
+for (const largura of [1366, 320]) {
+  for (const [curso, bloco] of CASOS) {
+    test(`tela livre em ${largura}px: ${curso} · ${bloco}`, async ({ page }) => {
+      const erros: string[] = []
+      page.on('pageerror', (erro) => erros.push(erro.message))
+      await page.setViewportSize({ width: largura, height: 844 })
+      await page.goto(`/?course=${curso}&block=${bloco}&width=900`)
+      await expect(page.locator('.sz-scene-prancha')).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Recomeçar experiência' })).toBeVisible()
+      const medida = await page.evaluate(() => ({
+        conteudo: document.documentElement.scrollWidth,
+        janela: innerWidth,
+      }))
+      expect(medida.conteudo, JSON.stringify(medida)).toBeLessThanOrEqual(medida.janela)
+      expect(erros).toEqual([])
+    })
+  }
 }

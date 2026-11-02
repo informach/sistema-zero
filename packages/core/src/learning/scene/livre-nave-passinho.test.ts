@@ -118,7 +118,11 @@ describe('o tamanho do passinho: a meta só cai quando a criança VIU', () => {
   })
 
   test('sem a exploração livre, o motor segue como era (um quadro, sem recomeçar)', () => {
-    const antigo: SceneStart = { scene: 'lighthouse-walk', cenario: 'nave' }
+    const antigo = sceneStart({
+      type: 'experimentation',
+      scene: 'lighthouse-walk',
+      cenario: 'nave',
+    })
     const s = jogar([SETA, QUADRO, passinho(1)], antigo)
     expect(s.evidence.discoveries).toContain('step-speed-3')
     expect(s.walk.x).toBe(LIGHTHOUSE_WALK.start + 3)
