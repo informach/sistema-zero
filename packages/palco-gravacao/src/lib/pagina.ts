@@ -226,6 +226,19 @@ function rolagemDe(
   return { de: pontoEm(area, start.x, start.y), para: pontoEm(area, end.x, end.y) }
 }
 
+/**
+ * A área de trabalho do Estúdio na tela e a caixa de cada pilha de blocos nela (nada quando o
+ * Estúdio não está aberto).
+ */
+export function pilhasDaArea(doc: Document): { area: Element | null; caixas: DOMRect[] } {
+  const area = areaDeTrabalho(doc)
+  if (!area || !visivel(area)) return { area: null, caixas: [] }
+  const caixas = [...area.querySelectorAll('.blocklyBlockCanvas > .blocklyDraggable')]
+    .filter(visivel)
+    .map((b) => b.getBoundingClientRect())
+  return { area, caixas }
+}
+
 export function paginaDe(doc: Document): PaginaDoPalco {
   return {
     previa() {

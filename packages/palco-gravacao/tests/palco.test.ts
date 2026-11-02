@@ -1,5 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { readFileSync } from 'node:fs'
+import { arrumacao, sobrepostas } from '../src/lib/arrumacao'
 import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
@@ -461,5 +462,74 @@ describe('entrada e endereço', () => {
     ).toBe('/aulas/cade-todo-mundo/abc-123')
     expect(lessonPathOf('/cursos/c%C3%A1/aulas/a1')).toBe('/aulas/c%C3%A1/a1')
     expect(lessonPathOf('https://kids/cursos/x')).toBeNull()
+  })
+})
+
+describe('arrumação de quando o Estúdio abre', () => {
+  const caixa = (left: number, top: number, w = 100, h = 40) => ({
+    left,
+    top,
+    right: left + w,
+    bottom: top + h,
+  })
+  const juntas = [caixa(0, 0), caixa(50, 20), caixa(300, 0)]
+  const separadas = [caixa(0, 0), caixa(0, 60), caixa(300, 0)]
+
+  test('acha pilhas uma por cima da outra, e encostadas não contam', () => {
+    expect(sobrepostas(juntas)).toBe(true)
+    expect(sobrepostas(separadas)).toBe(false)
+    expect(sobrepostas([caixa(0, 0), caixa(100, 0)])).toBe(false)
+  })
+
+  test('organiza uma vez quando os blocos pararam de chegar, e a página fica ocupada até lá', async () => {
+    const arrumar = arrumacao<object>()
+    const area = {}
+    let vezes = 0
+    const organizar = async () => {
+      vezes++
+      return true
+    }
+    expect(arrumar.pendente(area, juntas)).toBe(true)
+    await arrumar.passo(area, juntas.slice(0, 2), organizar)
+    await arrumar.passo(area, juntas, organizar)
+    expect(vezes).toBe(0)
+    await arrumar.passo(area, juntas, organizar)
+    expect(vezes).toBe(1)
+    expect(arrumar.pendente(area, juntas)).toBe(false)
+    // Depois disso o que o robô faz na área fica como ele fez.
+    await arrumar.passo(area, juntas, organizar)
+    await arrumar.passo(area, juntas, organizar)
+    expect(vezes).toBe(1)
+    // Uma área nova (o Estúdio expandido) passa de novo.
+    expect(arrumar.pendente({}, separadas)).toBe(true)
+  })
+
+  test('sem blocos sobrepostos não mexe, e sem blocos não segura a página', async () => {
+    const arrumar = arrumacao<object>()
+    const area = {}
+    let vezes = 0
+    const organizar = async () => {
+      vezes++
+      return true
+    }
+    expect(arrumar.pendente(area, [])).toBe(false)
+    await arrumar.passo(area, separadas, organizar)
+    await arrumar.passo(area, separadas, organizar)
+    expect(vezes).toBe(0)
+    expect(arrumar.pendente(area, separadas)).toBe(false)
+  })
+
+  test('um menu que não abre é tentado de novo e depois deixado, sem prender a gravação', async () => {
+    const arrumar = arrumacao<object>()
+    const area = {}
+    let vezes = 0
+    const organizar = async () => {
+      vezes++
+      if (vezes === 2) throw new Error('sem menu')
+      return false
+    }
+    for (let i = 0; i < 8; i++) await arrumar.passo(area, juntas, organizar)
+    expect(vezes).toBe(3)
+    expect(arrumar.pendente(area, juntas)).toBe(false)
   })
 })
