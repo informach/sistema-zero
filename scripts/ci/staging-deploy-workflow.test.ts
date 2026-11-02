@@ -92,7 +92,7 @@ test('CI and deployment budgets preserve individual proofs and other job deadlin
         .map(([name, job]) => [name, job['timeout-minutes']]),
     ),
   ).toEqual({
-    ci: 60,
+    ci: 90,
     arquipelago: 20,
     'studio-python-extensions': 15,
     'studio-storage-macos': 15,

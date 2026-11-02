@@ -140,3 +140,27 @@ passado no mesmo SHA. O negativo `ci1f1-desktop-job-log-r1.txt` fica separado do
 achados confirmados de interface. A sonda local foi recusada pela política de
 execução do helper nativo; isso não prova o motivo da falha do runner. Não foram
 alterados os limites ou a contenção. A liberação exige CI próprio da versão corrigida.
+
+## Orçamento global do CI e lote posterior dos convites
+
+O push `e47aab75f` passou nos 12 jobs obrigatórios. O PR da mesma versão passou
+nos outros 11 jobs, mas o job `ci` atingiu o teto de 60 minutos durante o
+typecheck global. No log do PR, Community, Kids e Admin já haviam terminado
+com código zero antes do cancelamento. Isso não qualifica os pacotes restantes.
+
+O orçamento do job principal passa de 60 para 90 minutos. Os prazos de cada
+prova, dos demais jobs, do produto e da implantação ficam iguais. A regressão
+do workflow falhou com o orçamento anterior e passou após a mudança: 11 testes,
+86 asserções, incluindo o contrato do deploy de produção. O negativo fica em
+`.cache/ci-budget-90-red-r1.log`; o positivo, em `ci-budget-90-green-r1.log`.
+
+O merge `7a9014945` acrescentou o lote `334e08c34`, com convites à investigação
+nos vídeos de experiência e seus materiais derivados. Todos os 232 caminhos
+ficam em `docs/`. A revisão dos geradores e das instruções foi acompanhada pela
+suíte de QA pedagógica: 592 testes passaram, com 110.624 asserções. Não houve
+geração de vozes pela API nem importação de cursos nesta conferência.
+
+A validação da composição nova deve rodar em um PR separado enquanto o deploy
+de staging de `e47aab75f` termina. Esse PR não inicia outro deploy de staging.
+O envio posterior de staging preserva os merges e só ocorre após reconciliar
+o deploy anterior, para não cancelar o processo que já alterou os serviços.
