@@ -8,7 +8,8 @@ import { EXTRA, PISTA, type Variacao } from './projetos'
 
 /** Qualquer tecla começa a corrida (o evento é "qualquer tecla ou toque"). */
 export const largada: ExecutionStep = { action: 'press', key: 'Enter', holdMs: 30 }
-const pulo: ExecutionStep = { action: 'press', key: 'Space', holdMs: 30 }
+// O controle lê a tecla a cada quadro: 80 ms atravessa também um quadro lento de 50 ms.
+const pulo: ExecutionStep = { action: 'press', key: 'Space', holdMs: 80 }
 const wait = (ms: number): ExecutionStep => ({ action: 'wait', ms })
 const val = (
   path: string,
@@ -277,9 +278,13 @@ const principais: Record<Variacao, SectionJavaScriptProjectCheck[]> = {
     behavior(
       'pulo-alto',
       'Com o pulo novo, o entregador sobe mais alto que as pedras grandes.',
-      [largada, wait(500), pulo, wait(200)],
-      val('entregador.y', 'lessThan', PISTA.chao - 81),
-      [point(2, 'entregador.y', 'atLeast', PISTA.chao - 3)],
+      [largada, wait(500), pulo, wait(200), wait(700)],
+      val('entregador.y', 'atLeast', PISTA.chao - 3),
+      [
+        point(2, 'entregador.y', 'atLeast', PISTA.chao - 3),
+        // A altura é observada durante o salto, antes da acomodação final do executor.
+        point(4, 'entregador.y', 'lessThan', PISTA.chao - 81),
+      ],
     ),
     estrutura('forca', 'A força do pulo fica entre 12 e 16.', {
       blockType: 'sz_g2d_control_dino',

@@ -35,8 +35,9 @@ de um curso opcional. O erro é reproduzido pela rota canônica de publicação.
 Consultas SQL somente em transação read only. Publicar apenas pela API do Admin, com
 backup, manifesto conferido, revisão atual e recibos duráveis. Nenhum teste escreve em
 banco remoto. Não editar .env, workflows, salvamento ou cursos. Os 70 desafios antigos
-arquivados em cada ambiente ficam como histórico. A variação noturna do Bosque não pede
-publicação no manifesto e requer uma decisão editorial separada.
+arquivados em cada ambiente ficam como histórico. A dona autorizou em 02/11/2026 as duas variações noturnas do Bosque como desafios
+do dia opcionais, sem cor nem quadro obrigatório. A opacidade continua dependendo do bloco
+conquistado em Cadê Todo Mundo; a exceção editorial fica explícita no teste de repertório.
 
 ## Limites
 
@@ -54,3 +55,23 @@ Suíte do serviço: 319 passaram, 146 de Postgres local pulados, zero falhas, 13
 Typecheck do pacote e Biome dos arquivos tocados passaram. Inventário: 5 fontes, 92 blocos.
 Revisão: fontes somente na composição de autoria, nenhum uso em régua do jogador, nenhum
 novo contrato/migração, nenhum curso inventado ou alteração no currículo remoto.
+
+
+## Entrada e momento da observação na Vila Doce
+
+A publicação em produção recusou o objetivo pulo-alto do adulto. O executor local original
+passou em cadência normal. Uma regressão com Chromium real a 20 fps e aperto logo depois do
+quadro reproduziu a perda do toque de 30 ms: y ficou em 171, no chão. Com 80 ms, a força
+válida 12 ainda foi recusada na observação final, y=103,8: os 250 ms de acomodação do
+executor já a encontravam na descida. Os dois negativos foram preservados no recibo local.
+
+O toque de pulo passa a 80 ms, já usado na conferência manual da Vila. No pulo alto, o
+checkpoint do passo 4 observa y<90 durante o salto, o passo 2 continua exigindo chão antes
+de pular, e a observação final exige voltar ao chão após mais 700 ms. A física, a faixa
+permitida de força 12 a 16 e a altura mínima permanecem iguais. Assim, uma posição alta
+constante não substitui um salto. Os projetos e seus blocos não foram alterados.
+
+A suíte do executor cobre gabarito, inicial com força 9, forças válidas 12 e 16, em cadência
+normal e com quadros de 50 ms. O controle de cadência só entra na cópia temporária do executor
+usada pelo teste; não integra o runtime distribuído. Importar os quatro conteúdos alterados
+da Vila pela rota de manifesto, sem sobrescrever publicações históricas ou progresso.
