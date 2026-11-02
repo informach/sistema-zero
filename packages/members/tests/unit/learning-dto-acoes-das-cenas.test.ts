@@ -78,6 +78,9 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     { type: 'touch-hiding-place', id: 0 },
     { type: 'touch-hiding-place', id: 1 },
     { type: 'other-hiding-place' },
+    // A câmera lenta do Farol (01/11/2026).
+    { type: 'walk-pace', pace: 'lenta' },
+    { type: 'walk-pace', pace: 'real' },
   ]
   for (const scene of SCENE_IDS) {
     for (const acao of acoesDosControles) somar(scene, acao)

@@ -6,6 +6,19 @@ import type { SceneState } from './state'
 /** Shared authored speech: player and recording inventory always use the same text. */
 const speech = {
   ...ISLAND_SPEECH,
+  // ⭐ "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): só a IDEIA (quadro, passinho, seta). Os
+  // blocos aparecem só na montagem do Estúdio; aqui não se fala de bloco, regra nem comando.
+  'slow-start':
+    'Clique em Câmera lenta para os quadros passarem devagar. Depois segure a seta e veja o personagem dar um passinho a cada quadro.',
+  'slow-walking':
+    'Um quadro novo, um passinho, uma pegada. Agora solte a seta e deixe passar uns quadros.',
+  'slow-released':
+    'Os quadros continuam passando, mas sem a seta ele fica no lugar. Agora clique em Velocidade de verdade e segure a seta.',
+  'slow-real':
+    'Continue segurando: com os quadros passando bem rápido, os passinhos viram uma caminhada.',
+  'slow-complete':
+    'Você viu os passinhos, a parada e a caminhada. Se quiser, tente chegar à chave em câmera lenta e conte os quadros.',
+  // ⚠️ As falas da bancada antiga do quadro: valem só para o bloco que ainda não foi reimportado.
   'walk-empty':
     'A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco.',
   'walk-no-command':
@@ -89,7 +102,7 @@ export function discoverySpeechSteps(scene?: SceneId) {
         : scene === 'found-counter'
           ? ['count']
           : scene === 'lighthouse-walk'
-            ? ['walk', 'edge']
+            ? ['slow', 'walk', 'edge']
             : scene === 'collect-and-remember'
               ? ['memory']
               : scene === 'lighthouse-key'
@@ -120,6 +133,16 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
             : !has('compared-command-order')
               ? 'edge-order'
               : 'edge-complete'
+      else if (activity.setup?.goals?.includes('walked-real-speed'))
+        id = !has('moves-each-frame')
+          ? 'slow-start'
+          : !has('stopped-after-release')
+            ? 'slow-walking'
+            : !has('walked-real-speed')
+              ? state.walk.pace === 'real' && state.walk.arrow
+                ? 'slow-real'
+                : 'slow-released'
+              : 'slow-complete'
       else
         id = [
           'no-movement-command',

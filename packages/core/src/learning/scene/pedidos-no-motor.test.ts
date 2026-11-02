@@ -1562,6 +1562,20 @@ const CENAS: Record<SceneId, Cena> = {
           m.tempo(3)
         },
       },
+      // A câmera lenta (01/11/2026): "Velocidade de verdade" é o relógio no tempo real.
+      'walked-real-speed': {
+        texto:
+          'Clique em Câmera lenta e segure a seta por alguns quadros. Depois clique em Velocidade de verdade e segure a seta por alguns segundos.',
+        faz: (m) => {
+          m.faz({ type: 'walk-pace', pace: 'lenta' })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+          m.faz({ type: 'walk-pace', pace: 'real' })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.tempo(1.1)
+        },
+      },
     },
     mostra: (s) => {
       const [antes, agora] = s.walk.trail.slice(-2)

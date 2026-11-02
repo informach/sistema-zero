@@ -860,6 +860,11 @@ export function stepScene(
       s.walk.speed = action.speed
       s.walk.idle = 0
       break
+    case 'walk-pace':
+      // A caminhada de verdade (`walked-real-speed`) conta só os passinhos dados DEPOIS da troca.
+      s.walk.pace = action.pace
+      s.walk.run = 0
+      break
     case 'keep-on-screen':
       s.walk.keepInside = action.enabled
       s.walk.idle = 0
@@ -2464,6 +2469,8 @@ export function stepScene(
  *   derrubaria a meta sem a criança ver o personagem sair.
  * - `stayed-inside`: com o limite, a seta segurada e o personagem JÁ na borda, mais um quadro e ele
  *   continuou inteiro na tela: é o limite segurando, e não ele chegando.
+ * - `walked-real-speed`: no ritmo `real`, um segundo de passinhos SEGUIDOS (`LIGHTHOUSE_WALK.realWalk`),
+ *   depois de `moves-each-frame`. No ritmo `real`, `moves-each-frame` e `stopped-after-release` não caem.
  */
 function quadroDoAndar(s: SceneState): void {
   const walk = s.walk
@@ -2478,12 +2485,28 @@ function quadroDoAndar(s: SceneState): void {
   walk.run = walk.arrow && walk.x > antes ? Math.min(walk.run + 1, walk.frame) : 0
   if (walk.arrow && walk.movement === false)
     observe(s, 'no-movement-command', 'A tecla não moveu sem o comando')
-  if (!walk.arrow && walk.movement !== false && antes > LIGHTHOUSE_WALK.start && walk.x === antes)
+  // ⚠️ Na velocidade de verdade (a câmera lenta, 01/11/2026) um quadro dura 33 ms: o passinho e a
+  // parada são metas de quem os VIU devagar. Sem ritmo (Nave, limite) segue igual.
+  const devagar = walk.pace !== 'real'
+  if (
+    devagar &&
+    !walk.arrow &&
+    walk.movement !== false &&
+    antes > LIGHTHOUSE_WALK.start &&
+    walk.x === antes
+  )
     observe(s, 'stopped-after-release', 'Soltar a tecla interrompeu os passos')
   if (!walk.arrow && walk.movement !== false && walk.x === antes)
     observe(s, 'still-without-arrow', 'Sem a seta, o sprite ficou parado')
-  if (walk.run >= LIGHTHOUSE_WALK.runSeen)
+  if (devagar && walk.run >= LIGHTHOUSE_WALK.runSeen)
     observe(s, 'moves-each-frame', 'Com a seta, o sprite andou a cada quadro')
+  // A caminhada é a COMPARAÇÃO com os passinhos: pede os passinhos vistos antes.
+  if (
+    walk.pace === 'real' &&
+    walk.run >= LIGHTHOUSE_WALK.realWalk &&
+    s.evidence.discoveries.includes('moves-each-frame')
+  )
+    observe(s, 'walked-real-speed', 'Na velocidade de verdade, os passinhos viraram uma caminhada')
   if (walk.arrow && walk.x - antes === walk.speed)
     observe(
       s,

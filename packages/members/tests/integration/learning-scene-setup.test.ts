@@ -190,13 +190,19 @@ test.each([
 ] as const)('Farol free exploration: the server replays %s with the same evidence as the player', async (ending) => {
   const content = blocoDoManifesto('desafio-dia-1.manifesto.json', 'experiencia-quadro')
   const { gravar, tentar } = preparar(content)
+  // A câmera lenta (01/11/2026): passinhos devagar, a seta solta e a caminhada de verdade.
+  const quadro = { type: 'advance', seconds: 1 / 30 }
   const commands: unknown[] = [
+    { type: 'walk-pace', pace: 'lenta' },
     { type: 'hold-arrow', held: true },
-    { type: 'walk-frames', count: 10 },
-    { type: 'movement-command', enabled: true },
-    { type: 'walk-frames', count: 10 },
+    quadro,
+    quadro,
     { type: 'hold-arrow', held: false },
-    { type: 'walk-frames', count: 1 },
+    quadro,
+    { type: 'walk-pace', pace: 'real' },
+    { type: 'hold-arrow', held: true },
+    { type: 'advance', seconds: 0.5 },
+    { type: 'advance', seconds: 0.6 },
   ]
   if (ending !== 'complete') commands.push({ type: ending })
   const answers = await gravar(commands)
@@ -205,5 +211,5 @@ test.each([
   expect((await tentar(answers)).passed).toBe(ending === 'complete')
   if (ending === 'reset') expect(session?.state.evidence.discoveries).toEqual([])
   if (ending === 'undo')
-    expect(session?.state.evidence.discoveries).not.toContain('stopped-after-release')
+    expect(session?.state.evidence.discoveries).not.toContain('walked-real-speed')
 })

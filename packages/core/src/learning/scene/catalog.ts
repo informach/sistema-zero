@@ -1455,6 +1455,9 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       // blocos do Estúdio ("Mover o sprite…", "Manter o sprite… dentro da tela"), que vale nos dois jogos.
       'left-the-screen+stayed-inside':
         'Sem o limite, o sprite passou da borda. Com Manter dentro da tela, o sprite parou inteiro na tela.',
+      // A câmera lenta do Farol fala só da IDEIA: nada de bloco, regra ou x (decisão de 01/11/2026).
+      'moves-each-frame+stopped-after-release+walked-real-speed':
+        'Em cada quadro o jogo olha a seta. Apertada, o personagem dá um passinho; solta, ele fica parado. Bem rápido, os passinhos viram uma caminhada.',
       'moves-each-frame+step-speed-1+step-speed-3+still-without-arrow':
         'A cada quadro o jogo confere a seta. Solta, o sprite fica parado. Segurada, o sprite anda o tanto da velocidade: 3 com Velocidade 3, 1 com Velocidade 1.',
     },
@@ -1516,6 +1519,15 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         label: 'Com o limite, o sprite ficou inteiro na tela',
         pedido:
           'Ligue Manter dentro da tela e Segurar a seta para a direita, clique em Recomeçar e depois em Rodar. Olhe a borda da tela.',
+        soNoCaso: true,
+      },
+      // ⭐ A experiência "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): os passinhos de cada
+      // quadro, vistos devagar, viram caminhada na velocidade de verdade.
+      {
+        id: 'walked-real-speed',
+        label: 'Na velocidade de verdade, os passinhos viraram uma caminhada',
+        pedido:
+          'Clique em Câmera lenta e segure a seta por alguns quadros. Depois clique em Velocidade de verdade e segure a seta por alguns segundos.',
         soNoCaso: true,
       },
     ],

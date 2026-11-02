@@ -32,26 +32,31 @@
     "id": "andar-experiencia",
     "kicker": "Dia 1 · Parte 3 · Experiência antes da montagem",
     "title": "Como o personagem anda",
-    "subtitle": "Compare a regra, a tecla e a passagem dos quadros.",
+    "subtitle": "O jogo em câmera lenta: um passinho em cada quadro.",
     "items": [
       {
         "kind": "text",
-        "text": "Cada repetição do jogo é um <b>quadro</b>. O movimento é uma pequena mudança que pode se repetir."
+        "text": "O jogo é como um desenho animado: ele desenha um <b>quadro</b> atrás do outro, bem rápido. Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho; se está solta, ele fica onde está."
       },
       {
         "kind": "step",
-        "title": "Compare a regra e a tecla",
-        "text": "Use <b>Adicionar bloco de mover</b> ou <b>Retirar bloco de mover</b> para editar a regra. O <b>Teclado de teste</b> faz outra coisa: simula uma tecla apertada ou solta."
+        "title": "Veja os passinhos",
+        "text": "Clique em <b>Câmera lenta</b> e segure a seta. A cada quadro, aparece uma pegada nova e um quadro novo na tira."
       },
       {
         "kind": "step",
-        "title": "Observe vários quadros",
-        "text": "Avance <b>1</b> ou <b>10 quadros</b>, ou deixe os quadros passarem automaticamente. Compare início, lugar anterior, atual e próximo passo."
+        "title": "Solte a seta",
+        "text": "Deixe passar alguns quadros com a seta solta e repare no personagem e nas pegadas."
+      },
+      {
+        "kind": "step",
+        "title": "Agora na velocidade de verdade",
+        "text": "Clique em <b>Velocidade de verdade</b> e segure a seta por alguns segundos. É assim que vai ser no seu jogo."
       },
       {
         "kind": "box",
         "title": "Você escolhe a ordem",
-        "text": "Teste com e sem o bloco; com a tecla apertada e solta. Repita quando quiser. Ao terminar, clique em <b>Próxima parte</b>.",
+        "text": "Experimente do jeito que quiser e repita quando quiser. Ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "experience"
       }
     ]
@@ -75,7 +80,7 @@
       {
         "kind": "box",
         "title": "Uma palavra que aparece aqui",
-        "text": "<b>Sprite:</b> um objeto do jogo que você pode programar, como o personagem. O movimento fica dentro de A cada quadro do jogo, que repete seus blocos sem parar.",
+        "text": "<b>Sprite:</b> um objeto do jogo que você pode programar, como o personagem. Lembra que o jogo olha a seta em todo quadro? Por isso, o bloco que dá o passinho fica dentro de <b>A cada quadro do jogo</b>: tudo o que está dentro dele acontece de novo, em todo quadro.",
         "tone": "experience"
       },
       {
