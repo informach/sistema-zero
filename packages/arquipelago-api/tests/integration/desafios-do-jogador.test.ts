@@ -415,6 +415,13 @@ describe('lista da ilha', () => {
       (await chamar('GET', `/${BORBOLETA}?apresentacao=1`, crianca())).corpo,
     )
     expect(aberto.imagem).toBe(imagem)
+    expect(aberto.moedasExtra).toBe(10)
+    // Sem `apresentacao=1` (cliente anterior, esquema estrito): nem imagem nem moedas do extra.
+    const antigo = (await chamar('GET', `/${BORBOLETA}`, crianca())).corpo as Record<
+      string,
+      unknown
+    >
+    expect('imagem' in antigo || 'moedasExtra' in antigo).toBe(false)
   })
 
   test('A24: o "Aprenda isso em" vem também no desafio disponível', async () => {

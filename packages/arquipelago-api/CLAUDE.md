@@ -38,7 +38,7 @@ Registro completo: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`. N
 ## Linha e print do desafio (01/11/2026)
 
 `ServicoDosDesafios.listar` põe `resumo` (`resumoDoDesafio` do contrato) em todo desafio e
-`imagem` só nos do Quadro das Cores de ilha aberta (a lista inteira levaria uns 180 KB de prints a cada leitura); `abrir` leva `imagem`.
+`imagem` só nos do Quadro das Cores de ilha aberta (a lista inteira levaria uns 180 KB de prints a cada leitura); `abrir` leva `imagem` e `moedasExtra` (02/11/2026, o prêmio do extra na caixa da Missão). Os dois só com `?apresentacao=1`: sem ele, `semImagem` tira ambos para o cliente de esquema estrito.
 Na porta HTTP, `GET /desafios` e `GET /desafios/:id` só incluem a apresentação com
 `?apresentacao=1`. Sem a opção, a vista continua compacta e legível pelos clientes estritos já
 abertos. A regra do domínio e o conteúdo publicado são únicos. Não afrouxar os schemas.

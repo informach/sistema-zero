@@ -257,6 +257,9 @@ export class ServicoDosDesafios {
       dicas: conteudo.dicas,
       desafioExtra: conteudo.desafioExtra ?? null,
       ...(conteudo.imagem ? { imagem: conteudo.imagem } : {}),
+      ...(conteudo.recompensa.moedasExtra > 0
+        ? { moedasExtra: conteudo.recompensa.moedasExtra }
+        : {}),
       objetivos: desafio.publicacao.vista,
       projetoInicial: conteudo.projetoInicial,
       // Resultados de outra revisão não valem: os objetivos podem ter mudado.

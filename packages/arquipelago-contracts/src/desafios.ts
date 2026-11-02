@@ -646,6 +646,8 @@ export const DesafioAbertoSchema = z.strictObject({
   desafioExtra: z.strictObject({ titulo: z.string(), texto: z.string() }).nullable(),
   /** "Como fica" na coluna da Missão (01/11/2026). Opcional para o serviço anterior. */
   imagem: ImagemDoDesafioSchema.optional(),
+  /** Quanto o desafio extra vale a mais (02/11/2026), para a caixa do extra na Missão. */
+  moedasExtra: z.number().int().min(0).optional(),
   objetivos: z.array(VistaDoObjetivoSchema),
   projetoInicial: z.unknown(),
   ultimosResultados: z.array(z.strictObject({ id: z.string(), passou: z.boolean() })),
