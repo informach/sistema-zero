@@ -1965,3 +1965,8 @@ concede o projeto apenas se ele ainda não existe. O mundo chama essa regra pura
 HUD e Diário só explicam. Visita, suporte e pausa continuam guardados na loja.
 Não há alteração do save V18, migração, saldo ou régua de cursos. A prova de navegador
 usa gestos reais e adianta somente o relógio do navegador depois de regar.
+## Lista dos desafios e troca de versão, 01/11/2026
+
+O Quadro pede `apresentacaoDosDesafios: true` na porta do serviço para receber resumo e print.
+Um host anterior ignora a opção e devolve a vista compacta, que continua aceita pelo jogo.
+Não colocar parâmetros livres na URL da porta nem afrouxar a conferência do contrato.

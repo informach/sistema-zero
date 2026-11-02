@@ -9,6 +9,7 @@ import {
   ResultadoDaVerificacaoSchema,
 } from '@sistemazero/arquipelago-contracts'
 import { createLogger } from '@sistemazero/core/logging'
+import { z } from 'zod'
 import { LeiturasDosMembros } from '../../src/application/leituras-dos-membros'
 import { ConferenciaDoMapa } from '../../src/application/mapa-das-ilhas'
 import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
@@ -365,6 +366,35 @@ describe('lista da ilha', () => {
     ])
   })
 
+  test('a lista continua legível por um jogo já aberto antes da apresentação nova', async () => {
+    const anterior = DesafiosDoJogadorSchema.extend({
+      desafios: z.array(
+        DesafiosDoJogadorSchema.shape.desafios.element.omit({ resumo: true, imagem: true }),
+      ),
+    })
+    const resposta = await chamar('GET', '', crianca())
+    expect(resposta.status).toBe(200)
+    expect(anterior.safeParse(resposta.corpo).success).toBe(true)
+  })
+
+  test('a abertura continua legível pela página anterior mesmo depois de importar a imagem', async () => {
+    publicar(
+      BORBOLETA,
+      metadados({}),
+      conteudo('A borboleta que voa', { imagem: 'data:image/webp;base64,AAAA' }),
+      ['sz_js_repeat'],
+    )
+    const resposta = await chamar('GET', `/${BORBOLETA}`, crianca())
+    expect(resposta.status).toBe(200)
+    expect(DesafioAbertoSchema.omit({ imagem: true }).safeParse(resposta.corpo).success).toBe(true)
+  })
+
+  test('a vista nova não afrouxa identidade nem aceita uma apresentação desconhecida', async () => {
+    expect((await chamar('GET', '?apresentacao=1', {})).status).toBe(401)
+    expect((await chamar('GET', '?apresentacao=2', crianca())).status).toBe(400)
+    expect((await chamar('GET', `/${BORBOLETA}?apresentacao=2`, crianca())).status).toBe(400)
+  })
+
   test('o cartão do Quadro: a linha "o que se faz" e a miniatura chegam à lista e à abertura', async () => {
     const imagem = 'data:image/webp;base64,AAAA'
     publicar(
@@ -373,14 +403,16 @@ describe('lista da ilha', () => {
       conteudo('A borboleta que voa', { resumo: 'Leve a borboleta até a flor.', imagem }),
       ['sz_js_repeat'],
     )
-    const r = DesafiosDoJogadorSchema.parse((await chamar('GET', '', crianca())).corpo)
+    const r = DesafiosDoJogadorSchema.parse(
+      (await chamar('GET', '?apresentacao=1', crianca())).corpo,
+    )
     const borboleta = r.desafios.find((d) => d.id === BORBOLETA)
     expect(borboleta?.resumo).toBe('Leve a borboleta até a flor.')
     expect(borboleta?.imagem).toBe(imagem)
     // Sem a linha escrita, a primeira frase do enunciado.
     expect(r.desafios.find((d) => d.id === PONTE)?.resumo).toBe('Faça a borboleta voar até a flor.')
     const aberto = DesafioAbertoSchema.parse(
-      (await chamar('GET', `/${BORBOLETA}`, crianca())).corpo,
+      (await chamar('GET', `/${BORBOLETA}?apresentacao=1`, crianca())).corpo,
     )
     expect(aberto.imagem).toBe(imagem)
   })

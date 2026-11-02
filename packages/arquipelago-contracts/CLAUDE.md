@@ -14,6 +14,11 @@ frase do enunciado, `resumoDoDesafio`) e `imagem` só nos quadros de ilha aberta
 opcionais nas vistas estritas. Implantar a API antes de importar manifestos com os campos (uma API
 antiga recusaria o conteúdo). Teste: `tests/desafios-resumo.test.ts`.
 
+A vista HTTP ampliada é pedida com `apresentacao=1`; a padrão não acrescenta esses campos a
+uma tela antiga. O jogo pede `apresentacaoDosDesafios: true` em `servico.buscar`: um host novo
+traduz a opção, e um anterior a ignora e entrega a vista compacta. Isso permite trocar host,
+jogo e API em ordens diferentes sem perder a leitura estrita nem mudar o salvamento.
+
 ## Revisão dos lotes de 31/10/2026
 
 - **V22** (lista B): percursos em tupla (`ResultadoCompacto`), `vale.fosseis` (B4), `ceu` e

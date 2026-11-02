@@ -66,7 +66,7 @@ const fold = (s: string): string =>
   s
     .normalize('NFD')
     .replace(/\p{M}/gu, '')
-    .replace(/[\p{Extended_Pictographic}\u200d\ufe0f]/gu, '')
+    .replace(/\p{Extended_Pictographic}|\u200d|\ufe0f/gu, '')
     .toLowerCase()
     .replace(/\s*\/\s*/g, ' ou ')
     .replace(/\s+/g, ' ')
