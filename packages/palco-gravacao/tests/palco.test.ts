@@ -4,6 +4,8 @@ import { enviada } from '../src/lib/aula-enviada'
 import { bffAnswer } from '../src/lib/bff'
 import { lessonPathOf } from '../src/lib/lesson-address'
 import type { PaginaDoPalco } from '../src/lib/pagina'
+import { projetoDaParte } from '../src/lib/projeto-da-parte'
+import { projetoAntes } from '../src/lib/projeto-gravado'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
 import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
@@ -337,6 +339,49 @@ describe('rotas da aula no palco', () => {
     })
     expect(aula.blocks[1]).toBe(lesson.blocks[1])
     expect(lesson.blocks[0]?.studioState).toBeUndefined()
+  })
+
+  test('a parte continua do projeto da tomada mais recente da parte de antes mais perto', () => {
+    const g = (parte: number, at: number) => ({ parte, at, project: { de: `${parte}@${at}` } })
+    const gravados = [g(3, 1), g(4, 2), g(4, 5), g(5, 9)]
+    expect(projetoAntes(gravados, 5)).toEqual({ de: '4@5' })
+    expect(projetoAntes(gravados, 4)).toEqual({ de: '3@1' })
+    // Gravar a parte 5 depois não muda o que a 5 recebe; nada antes da 3, nada a continuar.
+    expect(projetoAntes(gravados, 3)).toBeNull()
+  })
+
+  test('sem tomada de antes, a parte abre no projeto de entrada dela ou na solução de antes', () => {
+    const aula2 = JSON.parse(
+      readFileSync(
+        new URL(
+          '../../../docs/aulas-interativas/faisca/cade-todo-mundo/cade-todo-mundo-aula-2.manifesto.json',
+          import.meta.url,
+        ),
+        'utf8',
+      ),
+    )
+    const studio = aula2.blocks.find((b: { content?: { projectExamples?: unknown } }) =>
+      Boolean(b.content?.projectExamples),
+    ).content.projectExamples
+    // Na aula publicada, as partes têm ids; o manifesto as chama pela chave.
+    const chaves = ['retomada', 'variavel-achados', 'contar-achados', 'personalizar', 'conclusao']
+    const id = (i: number) => `00000000-0000-4000-8000-00000000000${i + 1}`
+    const publicada = {
+      ...studio,
+      sections: Object.fromEntries(
+        Object.entries(studio.sections).map(([k, v]) => [id(chaves.indexOf(k)), v]),
+      ),
+    }
+    const ids = chaves.map((_, i) => id(i))
+    const [entrada, solucao] = [
+      studio.sections['contar-achados'].entryExampleId,
+      studio.sections['contar-achados'].solutionExampleId,
+    ]
+    expect(projetoDaParte(publicada, ids, 3)).toEqual(studio.examples[entrada])
+    expect(projetoDaParte(publicada, ids, 4)).toEqual(studio.examples[solucao])
+    expect(projetoDaParte(publicada, ids, 5)).toEqual(studio.examples[solucao])
+    expect(projetoDaParte(publicada, ids, 2)).toBeNull()
+    expect(projetoDaParte(undefined, ids, 4)).toBeNull()
   })
 
   test('cada tomada começa do projeto inicial: nada enviado nem trazido', () => {

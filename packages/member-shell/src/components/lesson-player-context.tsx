@@ -116,6 +116,11 @@ export interface LessonPlayerContextValue {
    * sala passa; as aulas gravadas nunca.
    */
   liveWorkspace?: LiveLessonWorkspace | null
+  /**
+   * O projeto de um bloco Estúdio a cada mudança (01/11/2026). Só o palco de gravação passa: ele
+   * guarda o que a parte gravada montou para abrir a parte seguinte com isso. Sem ele, nada muda.
+   */
+  onStudioProjectChange?: (blockId: string, project: unknown) => void
 }
 
 const LessonPlayerContext = createContext<LessonPlayerContextValue | null>(null)

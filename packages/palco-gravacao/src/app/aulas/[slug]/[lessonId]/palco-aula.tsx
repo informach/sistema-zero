@@ -47,10 +47,13 @@ export function PalcoAula({
   course,
   lesson,
   viewerId,
+  parte,
 }: {
   course: CourseDetailView
   lesson: LessonDetailView
   viewerId: string
+  /** A parte desta tomada: o que o Estúdio montar fica para a parte seguinte abrir com isso. */
+  parte: number | null
 }) {
   return (
     <FocusModeProvider viewerId={viewerId}>
@@ -63,12 +66,39 @@ export function PalcoAula({
             tabIndex={-1}
             className="kids-aula w-full flex-1 px-4 pt-6 pb-40 md:px-8 md:pt-8 md:pb-32"
           >
-            <Aula course={course} lesson={lesson} viewerId={viewerId} />
+            <Aula course={course} lesson={lesson} viewerId={viewerId} parte={parte} />
           </main>
         </KidsLessonCopy>
       </LessonCompletionRefreshProvider>
     </FocusModeProvider>
   )
+}
+
+/**
+ * Manda ao palco o projeto do Estúdio desta parte, um segundo depois da última mudança (o
+ * Estúdio avisa a cada salvamento automático), para a parte seguinte abrir com ele.
+ */
+function useGuardarProjeto(
+  lessonId: string,
+  parte: number | null,
+): ((blockId: string, project: unknown) => void) | undefined {
+  const timers = useRef(new Map<string, ReturnType<typeof setTimeout>>())
+  return useMemo(() => {
+    if (!parte) return undefined
+    return (blockId: string, project: unknown) => {
+      clearTimeout(timers.current.get(blockId))
+      timers.current.set(
+        blockId,
+        setTimeout(() => {
+          void fetch('/api/palco/projeto', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ lessonId, blockId, parte, project }),
+          }).catch(() => undefined)
+        }, 1000),
+      )
+    }
+  }, [lessonId, parte])
 }
 
 /** Uma atividade conferida no navegador: o resultado de sempre, sem tentativa guardada. */
@@ -90,12 +120,15 @@ function Aula({
   course,
   lesson,
   viewerId,
+  parte,
 }: {
   course: CourseDetailView
   lesson: LessonDetailView
   viewerId: string
+  parte: number | null
 }) {
   const learning = useLessonLearning(lesson, viewerId)
+  const guardarProjeto = useGuardarProjeto(lesson.id, parte)
   const [secao, setSecao] = useState<PosicaoNaAula | null>(null)
   const aoTrocarSecao = useCallback((p: PosicaoNaAula) => {
     setSecao((antes) => (antes && antes.index === p.index && antes.total === p.total ? antes : p))
@@ -169,6 +202,7 @@ function Aula({
       learningProgress: learning.progress,
       onLearningProgress: learning.onProgress,
       lessonDrafts: null,
+      onStudioProjectChange: guardarProjeto,
       renderActionEvidence: (result) => <LessonActionEvidence result={result} />,
       videoGateMascot: <KidsMascotAnimated expression="happy" className="size-20 sm:size-24" />,
       renderInstruction: (text, pose = 'speaking', speech) => (
@@ -179,7 +213,7 @@ function Aula({
         />
       ),
     }),
-    [lesson.id, course.slug, viewerId, learning.progress, learning.onProgress],
+    [lesson.id, course.slug, viewerId, learning.progress, learning.onProgress, guardarProjeto],
   )
 
   const requirements = lessonCompletionRequirements({

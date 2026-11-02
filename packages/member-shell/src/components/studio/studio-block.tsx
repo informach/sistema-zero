@@ -503,9 +503,14 @@ function LessonStudioBlockView({
   // mudança"). Um conjunto num ref: o `onChange` do Estúdio chega a cada autosave, e um estado
   // aqui re-renderizaria o editor inteiro a cada segundo de trabalho.
   const projectListeners = useRef(new Set<(project: { updatedAt?: number }) => void>())
-  const notifyProjectChange = useCallback((project: Project) => {
-    for (const listener of projectListeners.current) listener(project)
-  }, [])
+  const onStudioProjectChange = player?.onStudioProjectChange
+  const notifyProjectChange = useCallback(
+    (project: Project) => {
+      for (const listener of projectListeners.current) listener(project)
+      onStudioProjectChange?.(blockId, project)
+    },
+    [onStudioProjectChange, blockId],
+  )
   const subscribeProjectChanges = useCallback(
     (listener: (project: { updatedAt?: number }) => void) => {
       projectListeners.current.add(listener)
