@@ -21,12 +21,34 @@
   ],
   "intervencoes": [
     {
+      "id": "video-uma-vez-e-sempre-K1",
+      "clipe": "video-uma-vez-e-sempre",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "tem coisa que você faz uma vez, antes de sair, como amarrar o tênis, e tem coisa que você faz o caminho inteiro.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o Dino dá um",
+      "falaPrincipal": "E se o Dino der um passinho uma vez só, no começo? Ele continua andando?",
+      "falaPersonagem": "E se o Dino der um passinho uma vez só, no começo? Ele continua andando?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-limite-da-tela-K1",
+      "clipe": "video-limite-da-tela",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "que caber nela. O seu jogo também tem uma folha: a tela. O tamanho dela é feito de dois números, a largura e a altura.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mudam a largura e a",
+      "falaPrincipal": "E se a largura diminuir, a tela fica mais baixa ou mais estreita?",
+      "falaPersonagem": "E se a largura diminuir, a tela fica mais baixa ou mais estreita?",
+      "tags": ["[curious]"]
+    },
+    {
       "id": "video-borda-K1",
       "clipe": "video-borda",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.",
-      "ancoraDepois": "Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a",
+      "ancoraAntes": "Mostrar a borda da tela e solte logo abaixo da preparação. É este bloco que mostra o contorno de onde a tela acaba.",
+      "ancoraDepois": "Uma cor bem diferente do fundo, como branco: com duas cores parecidas, a borda some no azul. Escolha essa cor no bloco.",
       "falaPrincipal": "Qual cor vai aparecer melhor?",
       "falaPersonagem": "Qual cor vai aparecer melhor?",
       "tags": ["[curious]"]
@@ -36,10 +58,10 @@
       "clipe": "video-coordenadas",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Quando eu aumento só o x, para 300, o Dino vai para a direita, e o y continua igual. O x conta de um lado para o outro.",
-      "ancoraDepois": "Quando eu aumento só o y, para 200, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y",
-      "falaPrincipal": "E para fazer ele descer?",
-      "falaPersonagem": "E para fazer ele descer?",
+      "ancoraAntes": "No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você muda o x e o y do Dino, um",
+      "falaPrincipal": "E para que lado cada número leva o Dino?",
+      "falaPersonagem": "E para que lado cada número leva o Dino?",
       "tags": ["[curious]"]
     },
     {
@@ -47,10 +69,10 @@
       "clipe": "video-criar-e-mostrar",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado.",
-      "ancoraDepois": "Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha",
-      "falaPrincipal": "Como eu faço ele aparecer?",
-      "falaPersonagem": "Como eu faço ele aparecer?",
+      "ancoraAntes": "no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado ficam os bastidores, e",
+      "falaPrincipal": "E quando o Dino passa a existir, ele já aparece na tela?",
+      "falaPersonagem": "E quando o Dino passa a existir, ele já aparece na tela?",
       "tags": ["[curious]"]
     },
     {
@@ -58,8 +80,8 @@
       "clipe": "video-criar-dino",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.",
-      "ancoraDepois": "Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. Confira se ficou assim: dentro de Ao iniciar, primeiro",
+      "ancoraAntes": "no 120 do x e troque por 110. O y já vem 150, e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.",
+      "ancoraDepois": "O Dino já existe, nos bastidores, mas ainda não foi desenhado na tela, e é isso mesmo: o desenho vem na próxima aula.",
       "falaPrincipal": "Escolhi a cor, mas cadê o Dino?",
       "falaPersonagem": "Escolhi a cor, mas cadê o Dino?",
       "tags": ["[curious]"]

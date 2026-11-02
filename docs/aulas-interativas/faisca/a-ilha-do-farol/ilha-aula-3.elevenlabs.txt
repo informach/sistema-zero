@@ -84,6 +84,22 @@
 
 [long pause]
 
+[curious] Sabe a plaquinha na porta de uma loja? “Pode entrar” e “Não pode entrar” são quase iguais, mas a palavrinha não troca tudo.
+
+[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter o não. Nesta experiência, a porta do farol faz uma pergunta. A porta pergunta: a porta está trancada? E ela é muito obediente: abre sempre que a resposta é sim.
+
+[engaging, energetic, conversational voice] Sem a chave, a porta está trancada. Com a chave, ela fica destrancada.
+
+[curious] Agora pense: com o não na pergunta, a resposta da porta muda?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, estes botões dão ou tiram a chave, põem ou tiram o não da pergunta e testam a porta. E esta tabela guarda a resposta de cada situação que você testar.
+
+[upbeat, encouraging voice] Sua vez de investigar: teste a porta com a pergunta sem o não e com o não, com a chave e sem a chave, e compare as respostas. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
 [engaging, energetic, conversational voice] Seu farol já acende com a chave. Agora vamos conferir uma coisa no seu jogo. Clique em Atualizar, pegue a chave e acenda o farol. Depois ande um pouco para trás pelo cais e volte até o farol.
 
 [interested, animated voice] Tá vendo? A luz apagou e acendeu tudo de novo. Isso acontece porque, cada vez que o personagem encosta no farol, o encontro acontece de novo e manda acender outra vez.
@@ -94,7 +110,7 @@
 
 [engaging, energetic, conversational voice] Por isso, o encontro vai fazer uma pergunta antes de tudo: a partida ainda não foi ganha? Para fazer essa pergunta, a gente usa a palavra não.
 
-[curious] Pense numa porta que só abre quando não está trancada. Se ela está trancada, a resposta é não, e ela fica fechada. Se ela não está trancada, a resposta é sim, e ela abre.
+[engaging, energetic, conversational voice] Lembra da porta da experiência? Com o não na pergunta, a resposta virava ao contrário, e a porta só abria quando não estava trancada.
 
 [engaging, energetic, conversational voice] No seu jogo é igual. Enquanto ganhou é falso, a partida ainda não foi ganha: a resposta é sim, e o farol responde.
 

@@ -2,52 +2,54 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare o intervalo entre cactos
+## Seção 1. Todo quadro ou de tempos em tempos?
 
-### Clipe `video-espaco-e-tempo` · Compare o intervalo entre cactos
+### Clipe `video-espaco-e-tempo` · Todo quadro ou de tempos em tempos?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-espaco-e-tempo`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Criar cacto em A cada quadro. Clicar em Tempo, deixar passar cerca de um segundo e parar, com a parede de cactos e o número na faixa. Levar a peça para o relógio, escolher 1,4 s, clicar em Tempo e esperar dois nascimentos, com a comparação das duas tentativas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e os cactos numa fila para passar por uma porta, um de cada vez. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe uma torneira pingando", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Em todo quadro"] [apontar "A cada 1,4 segundo"]. No "e este passa um segundo de jogo", apontar o botão, sem clicar [apontar "Passar 1 segundo"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como um relógio abre espaço entre os cactos.
+[engaging, energetic, conversational voice] Sabe uma torneira pingando? Ela pode pingar sem parar ou esperar um pouco entre uma gota e outra.
 
-[interested, animated voice] Olha aqui: com Criar cacto em A cada quadro, eu clico em Tempo e deixo passar um segundo. Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.
+[engaging, energetic, conversational voice] No seu jogo, os cactos vão nascer na direita e vir na direção do Dino. E o jogo pode criar um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.
 
-[curious] Como eu deixo um espaço entre eles?
+[curious] E se nascer um cacto em todo quadro, o Dino consegue pular?
 
-[engaging, energetic, conversational voice] Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e nascem só dois cactos, com espaço entre eles. O relógio cria um cacto a cada 1,4 segundo, e não em todo quadro.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] É como a fila de pessoas passando por uma porta. Se todo mundo passa junto, falta espaço. Se cada um espera a sua vez, sobra espaço entre as pessoas. No seu jogo, você vai preparar um relógio de 1,4 segundo para criar os cactos.
+[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem quando nasce um cacto novo, e este passa um segundo de jogo.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera o relógio para nascer. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-espaco-e-tempo-K1 | Debinha | 1 | Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular. | Como eu deixo um espaço entre eles? | Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e | [curious] |
+| video-espaco-e-tempo-K1 | Debinha | 1 | um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos. | E se nascer um cacto em todo quadro, o Dino consegue pular? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem quando nasce | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-espaco-e-tempo-K1`: entrada — Deixar o tempo parado com a parede de cactos visível. Saída — Mover Criar cacto para o relógio de 1,4 s; deixar os dois nascimentos acontecerem no tempo real.
+- `video-espaco-e-tempo-K1`: entrada — Manter o meme da torneira até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o tempo parado.
 
 
-**Recado na página (não gravar):** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/spawn.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/spawn.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare o grupo e o relógio
 
 ### Clipe `video-grupo-e-relogio` · Prepare o grupo e o relógio
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-grupo-e-relogio`
 
@@ -56,13 +58,29 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o relógio de 1,4 segundo, sobrava espaço entre os cactos. Agora a gente vai preparar o grupo e o relógio dos cactos!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o relógio, sobrava espaço entre os cactos. Agora a gente vai preparar o grupo e o relógio dos cactos!
 
-[engaging, energetic, conversational voice] O grupo é criado uma vez, no começo do jogo. Por isso, deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro. Depois, abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.
+[engaging, energetic, conversational voice] Como vão ser muitos cactos, eles ficam juntos num grupo, que é a lista de cactos que o jogo guarda e move de uma vez. O grupo é criado uma vez, no começo do jogo. Por isso, ele vai no fim de Ao iniciar.
+
+[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Criar dinossauro.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar grupo de sprites e solte no fim de Ao iniciar.
+
+[confident, clear, unhurried voice] Repare: o nome chega como asteroides. Clique em asteroides, troque por cactos e clique fora do campo.
+
+[engaging, energetic, conversational voice] É este bloco que cria a lista dos cactos, ainda vazia.
 
 [curious] E como eu faço aparecer um cacto de cada vez?
 
-[engaging, energetic, conversational voice] Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um cacto em todo quadro. Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo de A cada quadro do jogo e fora dele. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço. Troque o 2 por 1.4, ou seja, um segundo e quase meio.
+[engaging, energetic, conversational voice] Com um relógio, que cria um cacto de tempos em tempos. O relógio fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque ele não pode criar um cacto em todo quadro.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço dentro de Enquanto estiver rodando, abaixo de A cada quadro do jogo e fora dele.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço.
+
+[engaging, energetic, conversational voice] É este bloco, A cada 2 segundos, que faz o papel do relógio.
+
+[confident, clear, unhurried voice] Clique no 2 e troque por 1.4, com ponto: é quase um segundo e meio.
 
 [confident, clear, unhurried voice] Confira se ficou assim: o grupo cactos está no fim de Ao iniciar, e o relógio de 1.4 segundo está em Enquanto estiver rodando, fora de A cada quadro do jogo. O relógio ainda está vazio, e por isso nenhum cacto aparece por enquanto.
 
@@ -73,7 +91,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-grupo-e-relogio-K1 | Debinha | 1 | solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar. | E como eu faço aparecer um cacto de cada vez? | Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um | [curious] |
+| video-grupo-e-relogio-K1 | Debinha | 1 | Clique em asteroides, troque por cactos e clique fora do campo. É este bloco que cria a lista dos cactos, ainda vazia. | E como eu faço aparecer um cacto de cada vez? | Com um relógio, que cria um cacto de tempos em tempos. O relógio fica em Enquanto estiver rodando, mas fora de A cada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -82,48 +100,50 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-grupo-e-relogio-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
 
 
-**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora de A cada quadro do jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 3. Compare a direção da velocidade
+## Seção 3. Para que lado anda o cacto?
 
-### Clipe `video-numero-negativo` · Compare a direção da velocidade
+### Clipe `video-numero-negativo` · Para que lado anda o cacto?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-numero-negativo`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o cacto parado em x 60 e as duas velocidades em 0. Escolher 5 na velocidade para o lado e clicar em Avançar 1 quadro algumas vezes, com o x à vista na faixa. Trocar para -5 e avançar. Deixar as duas em 0 e avançar de novo. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você atravessa a sala", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os números, sem clicar [apontar "Velocidade para o lado"]. No "e este botão passa um quadro", apontar o botão, sem clicar [apontar "Avançar 1 quadro"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a velocidade e como o sinal do número escolhe a direção.
+[engaging, energetic, conversational voice] Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.
 
-[interested, animated voice] Olha aqui: com a velocidade para baixo em 0 e a velocidade para o lado em 5, eu clico em Avançar 1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.
+[engaging, energetic, conversational voice] No seu jogo, a velocidade do cacto é assim: ela diz quanto o cacto anda em cada quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.
 
-[curious] E se eu quiser que o cacto vá para o outro lado?
+[curious] E com um número negativo, o cacto vai para onde?
 
-[engaging, energetic, conversational voice] Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda. O sinal de menos inverte a direção.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Com as duas velocidades em 0, eu avanço de novo, e o cacto fica parado: somar zero não muda nada. Os cactos do seu jogo vão nascer na direita, por isso vão usar velocidade -5 para atravessar a tela.
+[interested, animated voice] Olha aqui: nesta experiência, estes números escolhem a velocidade para o lado do cacto, e este botão passa um quadro. Ao lado, aparece o x do cacto.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o cacto anda e o que acontece com o x com um número positivo, com um número negativo e com zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-numero-negativo-K1 | Debinha | 1 | 1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x. | E se eu quiser que o cacto vá para o outro lado? | Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda. | [curious] |
+| video-numero-negativo-K1 | Debinha | 1 | quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero. | E com um número negativo, o cacto vai para onde? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-numero-negativo-K1`: entrada — Mostrar o cacto avançando para a direita com velocidade 5 e o x na faixa. Saída — Trocar para -5 e avançar os quadros; depois testar as duas velocidades em zero.
+- `video-numero-negativo-K1`: entrada — Manter o meme dos passos até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o cacto parado.
 
 
-**Recado na página (não gravar):** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/velocity.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/velocity.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Crie os cactos no relógio
 
@@ -133,18 +153,28 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-criar-cactos`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o relógio de 1.4 segundo vazio no projeto. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu projeto, olhe o relógio de 1.4 segundo. Tá vendo? Ele está vazio, por isso nenhum cacto nasce.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com um número negativo, o cacto andava para a esquerda. Agora a gente vai criar cactos que entram pela direita!
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com velocidade -5, o cacto andava para a esquerda. Agora a gente vai criar cactos que entram pela direita!
+[engaging, energetic, conversational voice] Cada cacto nasce quando o relógio toca. Por isso, o bloco que cria o cacto vai dentro do relógio, A cada 1.4 segundos.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de A cada 1.4 segundos. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco No grupo criar obstáculo e solte dentro do relógio. Escolha o grupo cactos. A forma já chega como cacto: mantenha.
+[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de A cada 1.4 segundos.
 
-[confident, clear, unhurried voice] Agora troque o x 400 por 560. Em vx, troque -3 por -5: o vx é a velocidade para o lado, a mesma da experiência. O tamanho já chega 44: mantenha. [confident, clear, unhurried voice] Repare no x: a tela do seu jogo tem largura 480, por isso o cacto que nasce em x 560 começa escondido, além da borda direita.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco No grupo criar obstáculo e solte dentro do relógio.
+
+[engaging, energetic, conversational voice] É este bloco que cria um cacto novo no grupo, cada vez que o relógio toca.
+
+[confident, clear, unhurried voice] Repare: o grupo chega como obstaculos. Clique em obstaculos e escolha cactos. A forma já chega como cacto: mantenha.
+
+[engaging, energetic, conversational voice] O cacto tem que nascer escondido, depois da borda direita. A tela tem largura 480. Por isso, clique no 400 do x e troque por 560.
+
+[engaging, energetic, conversational voice] Agora o vx, que é a velocidade para o lado, como na experiência. Clique no -3 e troque por -5.
+
+[engaging, energetic, conversational voice] O tamanho já chega 44: mantenha.
 
 [confident, clear, unhurried voice] Confira se ficou assim: No grupo criar obstáculo está dentro do relógio de 1.4 segundo, com o grupo cactos, x 560, vx -5 e tamanho 44. Olhe a área do jogo: por enquanto, ela continua só com o Dino e a floresta. É que os cactos já nascem, mas o jogo ainda não manda mover nem desenhar esses cactos.
 
@@ -169,17 +199,29 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? Nenhum cacto aparece, porque o jogo ainda não move nem desenha o grupo.
 
-[engaging, energetic, conversational voice] Lembra da experiência do relógio, na primeira parte desta aula? Os cactos nasciam um de cada vez. Agora a gente vai mover e desenhar os seus cactos!
+[engaging, energetic, conversational voice] Lembra da experiência da terceira parte desta aula? Em cada quadro, o cacto andava o número da velocidade. Agora a gente vai fazer os seus cactos andarem e aparecerem!
 
-[engaging, energetic, conversational voice] O movimento e o desenho dos cactos acontecem em todo quadro, depois do Dino. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino. Depois, abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo e solte logo depois do Dino. Escolha cactos. Esse bloco usa a velocidade que cada cacto recebeu ao nascer.
+[engaging, energetic, conversational voice] O movimento e o desenho dos cactos acontecem em todo quadro, depois do Dino. Por isso, eles vão no fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino.
 
-[confident, clear, unhurried voice] Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo. Escolha cactos.
+[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite dino.
 
-[engaging, energetic, conversational voice] Agora espere alguns cactos nascerem. [interested, animated voice] Olha só: eles entram pela direita e passam para a esquerda! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Movimento, pegue o bloco Mover os sprites do grupo e solte logo depois do Dino.
+
+[confident, clear, unhurried voice] Repare: o grupo chega como asteroides. Clique em asteroides e escolha cactos.
+
+[engaging, energetic, conversational voice] É este bloco que move cada cacto do grupo, com a velocidade que ele recebeu ao nascer.
+
+[confident, clear, unhurried voice] Agora deixe à vista o lugar logo abaixo de Mover os sprites do grupo. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte logo abaixo.
+
+[engaging, energetic, conversational voice] Ele também chega com asteroides: clique em asteroides e escolha cactos.
+
+[engaging, energetic, conversational voice] É este bloco que desenha todos os cactos do grupo na tela.
+
+[engaging, energetic, conversational voice] Agora espere alguns cactos nascerem. [interested, animated voice] Olha só: eles entram pela direita e passam para a esquerda! Pule um deles para testar o controle.
 
 [curious] O cacto passou pelo Dino. Por que a partida não terminou?
 
-[engaging, energetic, conversational voice] A batida ainda não foi programada. Agora pule um deles para testar o controle.
+[engaging, energetic, conversational voice] Porque a batida ainda não foi programada. Isso vem daqui a algumas aulas. [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, a ordem é desenhar o Dino, mover os cactos e desenhar os cactos, com o grupo cactos. No grupo criar obstáculo continua no relógio, fora de A cada quadro do jogo, com x 560 e vx -5. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -188,13 +230,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-mover-e-desenhar-K1 | Debinha | 1 | No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo. | O cacto passou pelo Dino. Por que a partida não terminou? | A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto. | [curious] |
+| video-mover-e-desenhar-K1 | Debinha | 1 | cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda! Pule um deles para testar o controle. | O cacto passou pelo Dino. Por que a partida não terminou? | Porque a batida ainda não foi programada. Isso vem daqui a algumas aulas. Se no seu jogo não aconteceu isso, volte aos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-mover-e-desenhar-K1`: entrada — Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar regras. Saída — Retomar o teste de pulo e a explicação de que a batida ainda não foi programada.
+- `video-mover-e-desenhar-K1`: entrada — Concluir a montagem e os testes do movimento dos cactos; deixar um cacto atravessar o Dino sem mudar os blocos. Saída — Retomar com a explicação de que a batida ainda não foi programada e seguir para a conferência.
 
 
 **Recado na página (não gravar):** Agora faça os cactos aparecerem e andarem! Coloque Mover os sprites do grupo e Desenhar o grupo depois do desenho do Dino, a cada quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.

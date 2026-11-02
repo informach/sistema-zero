@@ -205,7 +205,8 @@ test('experiências: ideia, convite e controles reais, sem blocos nem resultado 
         ])
           expect(s.screen, id).toContain(regra)
     }
-  expect(experiencias).toBe(19)
+  // 21 desde 02/11/2026: o tamanho do passinho (Dia 1) e a meta do jogo (Dia 5) viraram experiências.
+  expect(experiencias).toBe(21)
 })
 
 /**
@@ -334,8 +335,9 @@ test('retomadas: primeiro o problema no seu jogo, depois a lembrança e um anún
       expect(i, id).toBe(1)
       expect(fala[0], id).toMatch(/\bseu jogo\b[^?]*\. Tá vendo\? [^.!?]*\bporque\b[^.!?]*\.$/)
     }
-  // 21 desde 02/11/2026: as quatro montagens divididas ganharam retomadas próprias.
-  expect(retomadas).toBe(21)
+  // 21 desde 02/11/2026: as quatro montagens divididas ganharam retomadas próprias; 22 com a dos
+  // finais, que retoma a meta do jogo (Dia 5).
+  expect(retomadas).toBe(22)
 })
 
 test('conferência: uma lista só por montagem e, com teste, depois dele (06/10/2026)', () => {
@@ -454,6 +456,15 @@ const spokenRoutes: Record<string, SceneAction[]> = {
     { type: 'hold-arrow', held: true },
     ...quadros(45),
   ],
+  // O tamanho do passinho (02/11/2026): os dois passinhos, dois quadros seguidos em câmera lenta.
+  'dia-1/experiencia-tamanho-do-passinho': [
+    { type: 'walk-pace', pace: 'lenta' },
+    { type: 'walk-speed', speed: 1 },
+    { type: 'hold-arrow', held: true },
+    ...quadros(2),
+    { type: 'walk-speed', speed: 3 },
+    ...quadros(2),
+  ],
   // A beirada do Farol, com a nave: sai sem o limite, volta com o limite ligado e fica na beirada.
   'dia-1/experiencia-limite-da-tela': [
     { type: 'hold-arrow', held: true },
@@ -546,6 +557,21 @@ const spokenRoutes: Record<string, SceneAction[]> = {
     ...seconds(4),
     { type: 'start', input: 'tap' },
     ...seconds(3),
+  ],
+  // A meta do jogo (Dia 5, 02/11/2026): os dois sinais até a vitória e a placa no meio da partida.
+  'score-goal': [
+    { type: 'goal-op', op: '>=' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-op', op: '>' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-restart' },
+    { type: 'goal-hit' },
+    { type: 'goal-edit' },
   ],
   restart: [
     { type: 'start', input: 'key' },

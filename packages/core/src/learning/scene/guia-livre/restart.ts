@@ -13,7 +13,7 @@ import type { GuiaLivre } from './tipos'
  */
 export const RESTART_SPEECH = {
   'restart-start':
-    'Clique em Apertar Enter para jogar e deixe a partida acabar. No fim, o Enter pode só voltar para a tela de início ou começar tudo de novo: escolha um jeito e, no fim, clique em Apertar Enter até começar outra partida. O que acontece com os asteroides da partida anterior? Observe os asteroides na tela.',
+    'No fim da partida, o Enter pode só voltar para a tela de início ou começar tudo de novo. O que acontece com os asteroides da partida anterior? Escolha um jeito e clique em Apertar Enter para jogar.',
   'restart-screen-only':
     'Só voltando para a tela de início, os asteroides da partida anterior ficaram na tela, e a partida nova acabou na hora. E se o Enter começar tudo de novo? Escolha Começar tudo de novo, jogue até bater e, no fim, clique em Apertar Enter até começar outra partida. Observe os asteroides e a tela.',
   'restart-everything':

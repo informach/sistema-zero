@@ -21,10 +21,10 @@
       "clipe": "video-espaco-e-tempo",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.",
-      "ancoraDepois": "Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e",
-      "falaPrincipal": "Como eu deixo um espaço entre eles?",
-      "falaPersonagem": "Como eu deixo um espaço entre eles?",
+      "ancoraAntes": "um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem quando nasce",
+      "falaPrincipal": "E se nascer um cacto em todo quadro, o Dino consegue pular?",
+      "falaPersonagem": "E se nascer um cacto em todo quadro, o Dino consegue pular?",
       "tags": ["[curious]"]
     },
     {
@@ -32,8 +32,8 @@
       "clipe": "video-grupo-e-relogio",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.",
-      "ancoraDepois": "Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um",
+      "ancoraAntes": "Clique em asteroides, troque por cactos e clique fora do campo. É este bloco que cria a lista dos cactos, ainda vazia.",
+      "ancoraDepois": "Com um relógio, que cria um cacto de tempos em tempos. O relógio fica em Enquanto estiver rodando, mas fora de A cada",
       "falaPrincipal": "E como eu faço aparecer um cacto de cada vez?",
       "falaPersonagem": "E como eu faço aparecer um cacto de cada vez?",
       "tags": ["[curious]"]
@@ -43,10 +43,10 @@
       "clipe": "video-numero-negativo",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.",
-      "ancoraDepois": "Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.",
-      "falaPrincipal": "E se eu quiser que o cacto vá para o outro lado?",
-      "falaPersonagem": "E se eu quiser que o cacto vá para o outro lado?",
+      "ancoraAntes": "quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade",
+      "falaPrincipal": "E com um número negativo, o cacto vai para onde?",
+      "falaPersonagem": "E com um número negativo, o cacto vai para onde?",
       "tags": ["[curious]"]
     },
     {
@@ -54,8 +54,8 @@
       "clipe": "video-mover-e-desenhar",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.",
-      "ancoraDepois": "A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto.",
+      "ancoraAntes": "cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda! Pule um deles para testar o controle.",
+      "ancoraDepois": "Porque a batida ainda não foi programada. Isso vem daqui a algumas aulas. Se no seu jogo não aconteceu isso, volte aos",
       "falaPrincipal": "O cacto passou pelo Dino. Por que a partida não terminou?",
       "falaPersonagem": "O cacto passou pelo Dino. Por que a partida não terminou?",
       "tags": ["[curious]"]

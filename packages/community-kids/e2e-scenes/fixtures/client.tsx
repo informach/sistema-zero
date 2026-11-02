@@ -7,7 +7,9 @@ import { resolveLessonSplit } from '@sistemazero/member-shell/lib/lesson-split'
 import { createRoot } from 'react-dom/client'
 import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import naveDia1 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json'
+import naveDia5 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json'
 import navePrimeira from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
+import ilha3 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json'
 import farolDia1 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
 import farolDia2 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
 import farolDia3 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-3.manifesto.json'
@@ -15,6 +17,19 @@ import ponte from '../../../../docs/aulas-interativas/faisca/poder-a-ponte-apres
 import moedas from '../../../../docs/aulas-interativas/faisca/poder-moedas-no-caminho/moedas-aula-1.manifesto.json'
 import simbolos from '../../../../docs/aulas-interativas/faisca/poder-o-bau-dos-simbolos/simbolos-aula-1.manifesto.json'
 import cabana from '../../../../docs/aulas-interativas/faisca/poder-o-segredo-da-cabana/cabana-aula-1.manifesto.json'
+import dino01 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-01.manifesto.json'
+import dino02 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-02.manifesto.json'
+import dino03 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-03.manifesto.json'
+import dino04 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-04.manifesto.json'
+import dino05 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-05.manifesto.json'
+import dino06 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-06.manifesto.json'
+import dino07 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-07.manifesto.json'
+import dino08 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-08.manifesto.json'
+import dino09 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-09.manifesto.json'
+import dino10 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-10.manifesto.json'
+import dino11 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-11.manifesto.json'
+import dino12 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-12.manifesto.json'
+import dino13 from '../../../../docs/aulas-interativas/inventor/corre-dino/corre-dino-aula-13.manifesto.json'
 
 const params = new URLSearchParams(location.search)
 // Desde a reestruturação da Nave (05/10/2026), as experiências do antigo Dia 1 ficaram em
@@ -29,11 +44,33 @@ const PODERES: Record<string, BlocoDoManifesto[]> = {
   simbolos: simbolos.blocks as BlocoDoManifesto[],
   cabana: cabana.blocks as BlocoDoManifesto[],
 }
+// O Corre Dino inteiro (`?course=dino`) e a aula 3 da Ilha (`?course=ilha`), em exploração livre desde
+// 02/11/2026; o Dia 5 da Nave entra depois dos outros (a meta do jogo), sem tomar chave de ninguém.
+const DINO = [
+  dino01,
+  dino02,
+  dino03,
+  dino04,
+  dino05,
+  dino06,
+  dino07,
+  dino08,
+  dino09,
+  dino10,
+  dino11,
+  dino12,
+  dino13,
+].flatMap((m) => m.blocks as BlocoDoManifesto[])
 const curso = params.get('course') ?? ''
 const blocks: BlocoDoManifesto[] =
   curso === 'farol'
     ? ([...farolDia1.blocks, ...farolDia2.blocks, ...farolDia3.blocks] as BlocoDoManifesto[])
-    : (PODERES[curso] ?? ([...navePrimeira.blocks, ...naveDia1.blocks] as BlocoDoManifesto[]))
+    : curso === 'dino'
+      ? DINO
+      : curso === 'ilha'
+        ? (ilha3.blocks as BlocoDoManifesto[])
+        : (PODERES[curso] ??
+          ([...navePrimeira.blocks, ...naveDia1.blocks, ...naveDia5.blocks] as BlocoDoManifesto[]))
 const source = blocks.find(
   (block) =>
     block.key === (params.get('block') ?? (PODERES[curso] ? 'experiencia' : 'experiencia-areas')),
@@ -81,7 +118,8 @@ const PALPITES_DE_TESTE: Record<string, unknown> = {
     revealOn: 'hidden',
   },
 }
-const palpite = params.get('course') === 'farol' ? undefined : PALPITES_DE_TESTE[source.key]
+// Os palpites de teste são da Nave (o curso padrão): o Dino tem experiências com as mesmas chaves.
+const palpite = curso === '' ? PALPITES_DE_TESTE[source.key] : undefined
 const original = palpite
   ? ({ ...source.content, prediction: palpite } as typeof source.content)
   : source.content

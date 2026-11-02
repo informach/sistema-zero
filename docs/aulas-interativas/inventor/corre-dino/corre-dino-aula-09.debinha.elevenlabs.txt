@@ -1,4 +1,4 @@
-[curious] Ué, a batida aconteceu antes de os desenhos encostarem?
+[curious] E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?
 
 [long pause]
 
@@ -10,7 +10,7 @@
 
 [long pause]
 
-[curious] Mas por que a partida recomeça e já termina?
+[curious] E qual é a diferença entre os dois?
 
 [long pause]
 

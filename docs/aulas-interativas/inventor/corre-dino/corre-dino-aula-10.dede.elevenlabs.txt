@@ -1,4 +1,4 @@
-[curious] Dá para diminuir só essa área?
+[curious] E se a área ficar menor que o desenho, o que acontece com a batida?
 
 [long pause]
 

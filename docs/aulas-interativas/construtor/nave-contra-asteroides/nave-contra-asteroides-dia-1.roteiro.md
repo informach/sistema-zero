@@ -45,7 +45,36 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Sua vez! Descubra o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-## Seção 2. Faça a nave responder às setas
+## Seção 2. O tamanho do passinho
+
+### Clipe `video-tamanho-do-passinho` · O tamanho do passinho
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-tamanho-do-passinho`
+
+**Na tela:** No "Pense em você andando", a tela fica parada, e a edição mostra por 2 a 3 segundos o desenho ilustrado, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: uma fileira de pegadas de formiga ao lado de uma fileira de pegadas de gigante, com o mesmo número de pegadas [na edição: pegadas de formiga e de gigante]. No "Olha aqui: nesta experiência", ampliar a experiência parada [ampliar experiência] e apontar os dois botões, sem clicar [apontar "Passinho pequeno"] [apontar "Passinho grande"]. No "e esta caixa, Os dois passinhos", apontar a caixa ainda sem rastro [apontar "Os dois passinhos"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que muda com o passinho grande nem com o pequeno. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra, código nem do número da velocidade (decisões de 01/11 e 02/11/2026).
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Pense em você andando: dá para dar passinhos de formiga ou passos de gigante. Em cada passo você anda um pouco, e o tamanho de cada passo é você quem escolhe.
+
+[engaging, energetic, conversational voice] No jogo é igual: em cada quadro, a nave dá um passinho, e esse passinho pode ser pequeno ou grande.
+
+[engaging, energetic, conversational voice] E o que muda quando o passinho fica maior? O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem o tamanho do passinho, e esta caixa, Os dois passinhos, guarda o rastro de cada passinho que você já testou.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+```
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, na tela `packages/member-shell/src/components/scene-walk-passinho.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Seção 3. Faça a nave responder às setas
 
 ### Clipe `video-setas-e-rastro` · Faça a nave responder às setas
 
@@ -53,14 +82,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-setas-e-rastro`
 
-**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "clique na área do jogo e segure uma seta", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita do teclado por um instante. No "Tá vendo? A nave fica parada", manter a nave parada à vista. No "Deixe à vista o começo de A cada quadro do jogo", arrastar até o bloco aparecer [arrastar até "A cada quadro do jogo"]. No "Agora abra Jogo 2D, depois Movimento", abrir as categorias [categoria Jogo 2D > Movimento > Movimentos prontos]. No "Arraste e solte no começo de A cada quadro do jogo", encaixar o bloco no começo [encaixar "Mover o sprite com as setas" em "A cada quadro do jogo"]. No "É este bloco que dá o passinho", apontar o bloco [apontar bloco "Mover o sprite com as setas"]. No "clique no 6 da velocidade", trocar o número [trocar "6" por "1" em "Mover o sprite com as setas"]. No "Agora teste: clique na área do jogo", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita por um instante, sem chegar à beirada. No "Agora clique no 1 da velocidade", trocar o número [trocar "1" por "7" em "Mover o sprite com as setas"] e, no "teste de novo", segurar a seta outra vez [tocar prévia 400 240]. No "fica um rastro de naves", apontar o rastro [apontar prévia 400 410]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "clique na área do jogo e segure uma seta", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita do teclado por um instante. No "Tá vendo? A nave fica parada", manter a nave parada à vista. No "Deixe à vista o começo de A cada quadro do jogo", arrastar até o bloco aparecer [arrastar até "A cada quadro do jogo"]. No "Agora abra Jogo 2D, depois Movimento", abrir as categorias [categoria Jogo 2D > Movimento > Movimentos prontos]. No "Arraste e solte no começo de A cada quadro do jogo", encaixar o bloco no começo [encaixar "Mover o sprite com as setas" em "A cada quadro do jogo"]. No "É este bloco que dá o passinho", apontar o bloco [apontar bloco "Mover o sprite com as setas"]. No "é este número que diz", apontar o número da velocidade, sem trocar [apontar bloco "Mover o sprite com as setas"]. No "clique no 6", trocar o número [trocar "6" por "7" em "Mover o sprite com as setas"]. No "Agora teste: clique na área do jogo", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita por um instante, sem chegar à beirada. Não refazer a comparação de duas velocidades: ela é da experiência anterior. No "fica um rastro de naves", apontar o rastro [apontar prévia 400 410]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e segure uma seta. Tá vendo? A nave fica parada, porque o jogo ainda não olha a seta.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da câmera lenta? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!
 
 [engaging, energetic, conversational voice] Como o jogo olha a seta em todo quadro, o passinho vai dentro de A cada quadro do jogo. E ele vem antes do desenho, para o desenho já mostrar a nave no lugar novo.
 
@@ -74,15 +103,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] E qual velocidade eu uso?
 
-[engaging, energetic, conversational voice] Testando duas velocidades, você vai sentir a diferença. A velocidade é o tamanho do passinho que a nave dá em cada quadro. Para comparar, clique no 6 da velocidade, troque por 1 e clique fora do campo.
+[engaging, energetic, conversational voice] Você escolhe! Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama velocidade: é este número que diz quanto a nave anda em cada quadro.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e segure uma seta por um instante. [confident, clear, unhurried voice] Repare: a nave anda bem devagar, porque o passinho é pequeno.
+[engaging, energetic, conversational voice] Escolha a velocidade da sua nave: clique no 6, troque pelo número que você quiser e clique fora do campo. Aqui, eu troco por 7.
 
-[confident, clear, unhurried voice] Agora clique no 1 da velocidade, troque por 7 e teste de novo. [interested, animated voice] Olha só: com um passinho maior, a nave anda mais depressa!
+[upbeat, encouraging voice] Agora teste: clique na área do jogo e segure uma seta por um instante. [interested, animated voice] Olha só: em cada quadro, a nave dá o passinho que você escolheu!
 
 [confident, clear, unhurried voice] Repare: fica um rastro de naves, porque o jogo desenha a nave no lugar novo e ainda não apaga o desenho de antes. Isso fica para a próxima parte.
-
-[engaging, energetic, conversational voice] Agora escolha a velocidade que você achar melhor para a sua nave e teste. Aqui, eu deixo em 7.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com uma velocidade maior que zero, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -93,7 +120,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-setas-e-rastro-K1 | Dedé | 1 | seta você está segurando e leva a nave para aquele lado. Repare: o nome do sprite já vem nave, por isso deixe assim. | E qual velocidade eu uso? | Testando duas velocidades, você vai sentir a diferença. A velocidade é o tamanho do passinho que a nave dá em cada | [curious] |
+| video-setas-e-rastro-K1 | Dedé | 1 | seta você está segurando e leva a nave para aquele lado. Repare: o nome do sprite já vem nave, por isso deixe assim. | E qual velocidade eu uso? | Você escolhe! Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -102,9 +129,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 - `video-setas-e-rastro-K1`: entrada — Manter à vista o bloco de movimento recém-encaixado. Saída — Depois da saída, apontar o número da velocidade antes de trocá-lo.
 
 
-**Recado na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, compare duas velocidades, escolha a sua e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, escolha o tamanho do passinho dela e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 3. Tire o rastro da nave
+## Seção 4. Tire o rastro da nave
 
 ### Clipe `video-limpeza` · Tire o rastro da nave
 
@@ -153,7 +180,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 4. A beirada da tela
+## Seção 5. A beirada da tela
 
 ### Clipe `video-limite-da-tela` · A beirada da tela
 
@@ -196,7 +223,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-## Seção 5. Mantenha a nave na tela
+## Seção 6. Mantenha a nave na tela
 
 ### Clipe `video-limite-da-nave` · Mantenha a nave na tela
 
@@ -249,7 +276,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas beiradas e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 6. Quem fica na frente?
+## Seção 7. Quem fica na frente?
 
 ### Clipe `video-ordem-dos-desenhos` · Quem fica na frente?
 
@@ -292,7 +319,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-## Seção 7. Coloque as estrelas atrás da nave
+## Seção 8. Coloque as estrelas atrás da nave
 
 ### Clipe `video-fundo-estrelado` · Coloque as estrelas atrás da nave
 
@@ -349,13 +376,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 8. Confira o que você construiu
+## Seção 9. Confira o que você construiu
 
 **Recado na página (não gravar):** Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
-## Seção 9. Teste e envie sua nave
+## Seção 10. Teste e envie sua nave
 
 ### Clipe `video-teste-e-envio` · Teste e envie sua nave
 

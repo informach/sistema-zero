@@ -32,6 +32,7 @@ import {
   SCENE_LIMITS,
   SCENE_PILHAS,
   SCENE_PORTS,
+  SCORE_GOAL_OPS,
   SEQUENCE_MODES,
   SEQUENCE_SYMBOLS,
   SETUP_LIMITS,
@@ -90,6 +91,13 @@ const SceneActionSchema = t.Union([
   t.Object({ type: t.Literal('trigger') }),
   t.Object({ type: t.Literal('key-state'), hasKey: t.Boolean() }),
   t.Object({ type: t.Literal('try-lighthouse-door') }),
+  // A pergunta com o não (Ilha do Farol, aula 3, 02/11/2026).
+  t.Object({ type: t.Literal('door-question'), not: t.Boolean() }),
+  // A meta do jogo (Nave, Dia 5, 02/11/2026).
+  t.Object({ type: t.Literal('goal-hit') }),
+  t.Object({ type: t.Literal('goal-op'), op: t.Union(SCORE_GOAL_OPS.map((op) => t.Literal(op))) }),
+  t.Object({ type: t.Literal('goal-restart') }),
+  t.Object({ type: t.Literal('goal-edit') }),
   t.Object({ type: t.Literal('remember-collection'), enabled: t.Boolean() }),
   t.Object({ type: t.Literal('collect-key') }),
   t.Object({ type: t.Literal('leave-key') }),

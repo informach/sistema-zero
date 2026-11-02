@@ -419,6 +419,11 @@ export const SCENE_PREDICTION_CONTEXTS: Record<SceneId, LearningPredictionContex
     explanation:
       'Nesta experiência, vamos observar como luz e sombra mudam a aparência de uma forma.',
   },
+  'score-goal': {
+    label: 'O placar e a placa da meta',
+    explanation:
+      'Nesta experiência, o placar sobe a cada acerto e a placa da meta fica parada. Você troca o sinal da vitória e compara.',
+  },
 }
 
 /**
@@ -2297,6 +2302,33 @@ const SCENE_QUESTION_DEFINITIONS: Record<SceneId, SceneQuestionDefinition> = {
       correctChoiceId: 'contrario',
       explanation:
         'O sol clareia um lado e o outro fica mais escuro. Esses tons da mesma cor fazem o olho ver volume onde só há desenho plano.',
+    },
+  },
+  // A meta do jogo (Nave, Dia 5, 02/11/2026): o erro típico é achar que chegar à meta sempre vale.
+  'score-goal': {
+    prediction: {
+      prompt:
+        'A placa diz 26 e o sinal é maior que (>). Quando o placar chegar a 26, o jogo já dá a vitória?',
+      choices: [
+        { id: 'ainda-nao', label: 'Ainda não: o placar precisa passar de 26' },
+        {
+          id: 'ja',
+          label: 'Já dá, porque chegou à meta',
+          shows: 'O placar chegou a 26 e a partida continuou. A vitória veio no acerto seguinte.',
+        },
+      ],
+      correctChoiceId: 'ainda-nao',
+      revealOn: 'maior-pula',
+    },
+    explain: {
+      prompt: 'Para chegar a 26 já valer a vitória, qual sinal a meta precisa?',
+      choices: [
+        { id: 'maior-igual', label: 'Maior ou igual (≥).' },
+        { id: 'maior', label: 'Maior que (>).' },
+      ],
+      correctChoiceId: 'maior-igual',
+      explanation:
+        'Com maior ou igual, o placar igual à meta já conta. Com maior que, o placar precisa passar da meta. E a placa é uma constante: durante a partida, ela não muda.',
     },
   },
 }

@@ -368,7 +368,7 @@ export function WalkEmCameraLenta() {
 }
 
 /** O personagem, as pegadas, a chave e o farol, numa janela que acompanha quem anda. */
-function PalcoEmCameraLenta() {
+export function PalcoEmCameraLenta() {
   const id = useId()
   const { state } = useDiscovery()
   const quem = useQuemAnda()

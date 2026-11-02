@@ -97,6 +97,8 @@ export const SCENE_IDS = [
   'pick-ray',
   'fill-stroke',
   'shading',
+  // Nave contra Asteroides, Dia 5 (02/11/2026): a placa da meta (uma constante) e o sinal > ou ≥.
+  'score-goal',
 ] as const
 export type SceneId = (typeof SCENE_IDS)[number]
 
@@ -359,12 +361,30 @@ export type SceneAction =
   /** De que lado vem a luz, e se a sombra está pintada. */
   | { type: 'light'; side: 'left' | 'right' }
   | { type: 'shade'; on: boolean }
+  /**
+   * `lighthouse-key`, a pergunta com o "não" (Ilha do Farol, aula 3, 02/11/2026): a porta pergunta
+   * "a porta está trancada?" (`not: false`) ou "a porta não está trancada?" (`not: true`). Só muda
+   * alguma coisa no caso do não (`lighthouseKeyNotCase`); no Farol a porta segue perguntando temChave.
+   */
+  | { type: 'door-question'; not: boolean }
+  /** `score-goal`: um acerto soma 1 ao placar (a partida para quando o jogo dá a vitória). */
+  | { type: 'goal-hit' }
+  /** `score-goal`: o sinal da vitória, `>` (maior que) ou `>=` (maior ou igual); recomeça a partida. */
+  | { type: 'goal-op'; op: ScoreGoalOp }
+  /** `score-goal`: Jogar de novo, com o mesmo sinal (as descobertas ficam). */
+  | { type: 'goal-restart' }
+  /** `score-goal`: tentar mudar a placa da meta. Ela é uma constante: não muda. */
+  | { type: 'goal-edit' }
 
 /**
  * As duas velocidades da `lighthouse-walk`: a do projeto do Desafio (3, a do bloco "Mover sprite
  * personagem em 4 direções com setas, velocidade 3") e a de comparação (1). O DTO do servidor e o
  * editor do admin leem daqui.
  */
+/** Os dois sinais da vitória da `score-goal` (Nave, Dia 5): maior que e maior ou igual. */
+export const SCORE_GOAL_OPS = ['>', '>='] as const
+export type ScoreGoalOp = (typeof SCORE_GOAL_OPS)[number]
+
 export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
 export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
 
@@ -504,6 +524,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'pick-ray': [],
   'fill-stroke': [],
   shading: [],
+  'score-goal': [],
 }
 
 /**
@@ -798,6 +819,10 @@ export const RESTART_CASE_SCENES: readonly SceneId[] = [
   'velocity',
   'collision-pair',
   'invincibility',
+  // Corre Dino (frente C, 02/11/2026): a reta volta ao −5 com o sinal escolhido; a base volta ao −5
+  // com a pergunta como a criança deixou, e a fileira de cactos esvazia.
+  'number-line',
+  'acceleration',
 ]
 
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
@@ -820,6 +845,14 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-key' && typeof value.hasKey === 'boolean'
     case 'try-lighthouse-door':
       return scene === 'lighthouse-key'
+    case 'door-question':
+      return scene === 'lighthouse-key' && typeof value.not === 'boolean'
+    case 'goal-hit':
+    case 'goal-restart':
+    case 'goal-edit':
+      return scene === 'score-goal'
+    case 'goal-op':
+      return scene === 'score-goal' && SCORE_GOAL_OPS.some((op) => op === value.op)
     case 'remember-collection':
       return scene === 'collect-and-remember' && typeof value.enabled === 'boolean'
     case 'collect-key':

@@ -232,8 +232,22 @@ const chapters = aulasDino.map((lesson, i) => {
       )
       continue
     }
-    // Onde o vídeo é demonstração na primeira pessoa, o caderno traz os passos no imperativo.
-    const speech = (section.caderno ?? falasSecao(section)).map((paragraph) => paragraph)
+    // Exploração livre (02/11/2026): a página da experiência é o objetivo de investigação, sem
+    // resultado. Ficam a instrução e o que comparar em cada meta (o `pedido` do `goalCopy`, com os
+    // botões da tela); o que cada teste mostra é descoberta da criança. O jogo pronto traz os passos
+    // no imperativo (`caderno`), e as montagens usam a fala do Passo a passo (`mapa`): sem "Olha
+    // aqui", "Olha só", "Repare" e "Tá vendo?", que apontam para um gesto do vídeo que o PDF não tem.
+    const atividade = section.activity?.activity
+    const speech =
+      atividade?.type === 'experimentation'
+        ? [
+            section.activity!.instructions,
+            `O que investigar: ${(atividade.setup?.goals ?? [])
+              .map((meta) => atividade.setup?.goalCopy?.[meta]?.pedido)
+              .filter(Boolean)
+              .join(' ')}`,
+          ]
+        : (section.caderno ?? falasSecao(section, 'mapa'))
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {

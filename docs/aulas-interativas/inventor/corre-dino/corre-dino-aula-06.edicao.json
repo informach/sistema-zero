@@ -14,10 +14,10 @@
       "clipe": "video-visivel-guardado",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "mas nos bastidores continuam na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.",
-      "ancoraDepois": "Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que",
-      "falaPrincipal": "Sair da tela não tira o cacto do grupo?",
-      "falaPersonagem": "Sair da tela não tira o cacto do grupo?",
+      "ancoraAntes": "que é a lista que o jogo guarda e move em todo quadro. Quando um cacto passa da borda da esquerda, ele some da tela.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, ao lado da tela ficam os",
+      "falaPrincipal": "E quando o cacto some da tela, ele sai do grupo também?",
+      "falaPersonagem": "E quando o cacto some da tela, ele sai do grupo também?",
       "tags": ["[curious]"]
     },
     {
@@ -25,10 +25,10 @@
       "clipe": "video-faxina",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!",
-      "ancoraDepois": "A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de",
-      "falaPrincipal": "Onde essa regra entra?",
-      "falaPersonagem": "Onde essa regra entra?",
+      "ancoraAntes": "parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai tirar esses cactos de lá!",
+      "ancoraDepois": "O jogo confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, o bloco vai no fim de A",
+      "falaPrincipal": "E onde isso entra no jogo?",
+      "falaPersonagem": "E onde isso entra no jogo?",
       "tags": ["[curious]"]
     }
   ]

@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 Gravidade e impulso são observados antes de cada montagem. Não é preciso programar primeiro um pulo sem gravidade para fabricar um defeito. O quiz retoma preparação, desenho, gravidade e impulso depois dos testes.
 
+**Revisão de 02/11/2026.** Gravidade e impulso passaram à exploração livre, com a bola jogada para cima e a cama elástica, a pergunta da Debinha devolvida e os controles apontados uma vez. A montagem do pulo, a mais carregada do curso, virou uma fala por momento (o porquê da ordem, o destino, o bloco, "É este bloco que…", o nome, a força do pulo ligada ao impulso, o teste por tecla e o teste por toque) e começa por Atualizar, como a nota de tela pede. A gravidade diz por que o Dino ainda não se mexe sem contradizer a experiência. A retomada do pulo diz a relação ("com mais impulso, o pulo ia mais alto"), porque a criança pode não ter testado o 14. No quiz, "Criar faz o Dino existir" e "O que está faltando?".
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -23,19 +25,25 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 ## Proposta final
 
-### Seção 1. Compare o salto com e sem gravidade
+### Seção 1. O que traz o Dino de volta?
 
-**Tarefa:** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade.
 
-**Recado na página (não gravar):** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-gravidade-modelo-K1: Debinha substitui “E agora? Como ele volta para o chão?”. Antes: “sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.”. Depois: “Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o”.
+video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta para o chão depois do pulo?”. Antes: “é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o Dino pular, e este”.
 
-**Experiência existente:** `gravity`. Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `gravity` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/gravity.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/gravity.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare um pulo do Dino sem gravidade e com gravidade. Observe o Dino e o número da altura em cada um. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com a gravidade desligada, clique em Pular e observe o número da altura. Depois do pulo sem gravidade, clique em Ligar a gravidade e observe o Dino até o fim.
+
+**Pistas, do aberto ao direto:** 1) Clique em Pular e olhe o número da altura. Ele para de crescer? 2) Com o Dino lá no alto, ligue a gravidade e observe o número. 3) Com a gravidade desligada, clique em Pular; com o Dino no ar, clique em Ligar a gravidade. Sem palpite e sem pergunta final.
 
 ### Seção 2. Deixe a gravidade pronta
 
@@ -50,15 +58,25 @@ video-gravidade-modelo-K1: Debinha substitui “E agora? Como ele volta para o c
 - Deixe a gravidade depois da floresta.
 - Aplique gravidade ao dino dentro do quadro, antes de desenhar.
 
-### Seção 3. Compare duas alturas de pulo
+### Seção 3. Quanto o Dino sobe?
 
-**Tarefa:** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-impulso-modelo → fala-impulso-modelo → experiencia-impulso.
 
-**Recado na página (não gravar):** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-**Experiência existente:** `impulse`. Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-impulso-modelo-K1: Debinha substitui “E com mais impulso, até onde o Dino chega?”. Antes: “também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem o impulso, e”.
+
+**Experiência em exploração livre:** `impulse` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/impulse.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/impulse.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Descubra o que o impulso muda no pulo. Faça saltos com impulsos diferentes e compare as marcas da altura. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Pular e espere o salto terminar. Pule com Impulso 9 e depois com Impulso 14, esperando cada salto terminar.
+
+**Pistas, do aberto ao direto:** 1) A marca azul é o salto de antes; a laranja, o deste. 2) Mude só o impulso. A gravidade fica igual. 3) Clique em Impulso 14 e depois em Pular, e compare as marcas. Sem palpite e sem pergunta final.
 
 ### Seção 4. Dê os controles de pulo ao Dino
 
@@ -70,7 +88,7 @@ video-gravidade-modelo-K1: Debinha substitui “E agora? Como ele volta para o c
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-comando-de-pulo-K1: Debinha substitui “Dá para pular de novo lá no alto?”. Antes: “o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino”.
+video-comando-de-pulo-K1: Debinha substitui “Dá para pular de novo lá no alto?”. Antes: “porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 

@@ -1,9 +1,13 @@
 import type { SceneAction, SceneId } from '../../src/learning/scene'
+import { comOsCaminhosDoDino } from './caminhos-livres/dino-a'
+import { CAMINHOS_LIVRES_DINO_B } from './caminhos-livres/dino-b'
+import { CAMINHOS_LIVRES_DINO_C } from './caminhos-livres/dino-c'
 import { CAMINHOS_LIVRES_MEU_JEITO_D } from './caminhos-livres/meu-jeito-d'
 import { CAMINHOS_LIVRES_MEU_JEITO_E } from './caminhos-livres/meu-jeito-e'
 import { CAMINHOS_LIVRES_NAVE_A } from './caminhos-livres/nave-a'
 import { CAMINHOS_LIVRES_NAVE_B } from './caminhos-livres/nave-b'
 import { CAMINHOS_LIVRES_NAVE_C } from './caminhos-livres/nave-c'
+import { CAMINHO_DO_PASSINHO } from './caminhos-livres/nave-passinho'
 import { scenePaths } from './exploration-paths'
 
 /** Current free-exploration lessons require comparisons beyond the original guided journeys. */
@@ -15,6 +19,17 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
   ...CAMINHOS_LIVRES_NAVE_C,
   ...CAMINHOS_LIVRES_MEU_JEITO_D,
   ...CAMINHOS_LIVRES_MEU_JEITO_E,
+  // O Corre Dino, frente B (02/11/2026): tela, leitor de tela, gravidade, impulso e som do pulo.
+  ...CAMINHOS_LIVRES_DINO_B,
+  // O Corre Dino, frente C (02/11/2026): começar, área de contato, placar, reta e aceleração.
+  ...CAMINHOS_LIVRES_DINO_C,
+  // O Corre Dino, frente A (02/11/2026): as cenas que a Nave já usava. O caminho do Dino vai DEPOIS
+  // do da Nave na mesma cena, e o mesmo caminho serve aos blocos dos dois cursos.
+  ...comOsCaminhosDoDino({
+    ...CAMINHOS_LIVRES_NAVE_A,
+    ...CAMINHOS_LIVRES_NAVE_B,
+    ...CAMINHOS_LIVRES_NAVE_C,
+  }),
   'touch-response': [
     { type: 'touch-hiding-place', id: 0 },
     { type: 'connect', port: 'touch', enabled: true },
@@ -67,5 +82,7 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
     { type: 'hold-arrow', held: true },
     { type: 'advance', seconds: 0.5 },
     { type: 'advance', seconds: 0.6 },
+    // O tamanho do passinho da Nave (02/11/2026): os dois passinhos em câmera lenta.
+    ...CAMINHO_DO_PASSINHO,
   ],
 }

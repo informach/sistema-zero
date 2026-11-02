@@ -201,7 +201,8 @@ pages.push({
 })
 // Objetivos de investigação (02/11/2026): o que comparar e observar, sem o resultado e sem uma
 // sequência de cliques. A montagem continua com os passos completos.
-const experiences: Record<string, { intro: string; steps: string[]; image: string }> = {
+// A pergunta com o não (aula 3, 02/11/2026) é a porta do Farol, em 2D: sem ilustração da ilha 3D.
+const experiences: Record<string, { intro: string; steps: string[]; image?: string }> = {
   'ponto-de-vista': {
     intro:
       'A câmera é o lugar de onde você olha a ilha. Investigue: quando a chave aparece atrás da pedra, o que mudou?',
@@ -231,6 +232,15 @@ const experiences: Record<string, { intro: string; steps: string[]; image: strin
       'Se quiser, mostre onde cada um encosta. Repita os testes na ordem que preferir.',
     ],
     image: 'contato',
+  },
+  'pergunta-com-nao': {
+    intro:
+      'A porta do farol faz uma pergunta e faz o que a resposta mandar: sim abre, não deixa fechada. Sem a chave, a porta está trancada. Investigue: o que a palavra não faz com a resposta?',
+    steps: [
+      'Repare se a porta está trancada e qual pergunta ela está fazendo. Depois clique em Testar a porta.',
+      'Com a mesma chave, teste a pergunta sem o não e com o não. Compare as respostas na tabela.',
+      'Faça o mesmo com a outra chave, na ordem que quiser. Você pode repetir os testes.',
+    ],
   },
 }
 for (const [li, a] of ilhaAulas.entries()) {
@@ -263,7 +273,9 @@ for (const [li, a] of ilhaAulas.entries()) {
     const e = experiences[t.key]
     const body = e
       ? text(e.intro) +
-        `<img class="experiment" data-image="${e.image}" alt="Cena da experiência 3D">` +
+        (e.image
+          ? `<img class="experiment" data-image="${e.image}" alt="Cena da experiência 3D">`
+          : '') +
         steps(e.steps) +
         box(
           'Sua investigação',

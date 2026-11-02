@@ -5,6 +5,7 @@ import {
   LEARNING_IMPORT_BODY_MAX_BYTES,
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import { ISLAND_SPEECH } from '../../../packages/core/src/learning/scene/island-3d'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
@@ -148,11 +149,19 @@ for (const [i, aula] of ilhaAulas.entries()) {
             'Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.',
           hints: t.pistas ?? [],
           semPerguntaFinal: true,
-          activity: {
-            type: 'experimentation',
-            scene: 'island-3d',
-            setup: { goals: goals[t.key], freeExploration: true },
-          },
+          // A pergunta com o não (aula 3, 02/11/2026) usa a porta do Farol; as outras, a ilha 3D.
+          activity: t.cena
+            ? {
+                type: 'experimentation',
+                scene: t.cena.scene,
+                cenario: t.cena.cenario,
+                setup: { goals: t.cena.goals, freeExploration: true },
+              }
+            : {
+                type: 'experimentation',
+                scene: 'island-3d',
+                setup: { goals: goals[t.key], freeExploration: true },
+              },
         },
       })
     }
@@ -305,18 +314,24 @@ for (const [i, aula] of ilhaAulas.entries()) {
 write('blocos.json', { blocks: [...palette].sort() })
 write('zappy-etapas.json', {
   version: 1,
-  experiences: Object.fromEntries(
-    [
-      ['experiencia-ponto-de-vista', 'view'],
-      ['experiencia-posicao-3d', 'position'],
-      ['experiencia-contato-3d', 'contact'],
-    ].map(([key, mode]) => [
-      key,
-      Object.entries(ISLAND_SPEECH)
-        .filter(([id]) => id.startsWith(`island-${mode}-`))
-        .map(([id, text]) => ({ id, text })),
-    ]),
-  ),
+  experiences: {
+    ...Object.fromEntries(
+      [
+        ['experiencia-ponto-de-vista', 'view'],
+        ['experiencia-posicao-3d', 'position'],
+        ['experiencia-contato-3d', 'contact'],
+      ].map(([key, mode]) => [
+        key,
+        Object.entries(ISLAND_SPEECH)
+          .filter(([id]) => id.startsWith(`island-${mode}-`))
+          .map(([id, text]) => ({ id, text })),
+      ]),
+    ),
+    // A porta com o "não" (aula 3, 02/11/2026) usa a porta do Farol, com falas próprias.
+    'experiencia-pergunta-com-nao': discoverySpeechSteps().filter((s) =>
+      s.id.startsWith('door-not-'),
+    ),
+  },
 })
 // Arquivo de importação portátil: leva os modelos reais, sem depender da biblioteca do host.
 write('ilha-do-farol.szproject.json', {

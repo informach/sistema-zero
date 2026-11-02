@@ -17,8 +17,10 @@ import {
   MESH_LEVELS,
   type MeshLevel,
   SCENE_LIMITS,
+  SCORE_GOAL_OPS,
   type SceneId,
   type SceneSetup,
+  type ScoreGoalOp,
   SEQUENCE_MODES,
   SEQUENCE_SYMBOLS,
   type SequenceMode,
@@ -105,6 +107,40 @@ export interface SceneLighthouseKey {
   door: 'closed' | 'open'
   /** Ausente nos retratos antigos; null até uma tentativa na situação atual. */
   checkedKey?: boolean | null
+  /**
+   * A pergunta com o "não" (Ilha do Farol, aula 3, 02/11/2026; só no caso `lighthouseKeyNotCase`):
+   * `true` = "a porta não está trancada?", `false` ou ausente = "a porta está trancada?".
+   */
+  not?: boolean
+  /** A pergunta da última tentativa, no caso do não; null até uma tentativa na situação atual. */
+  checkedNot?: boolean | null
+}
+
+/** As metas do caso do não (`lighthouse-key`): com e sem a chave, as duas perguntas comparadas. */
+export const LIGHTHOUSE_NOT_GOALS = ['not-flips-with-key', 'not-flips-without-key'] as const
+
+/**
+ * O caso do não da porta (Ilha do Farol, aula 3, 02/11/2026): a atividade, em exploração livre, cobra
+ * uma das metas dele. É o que liga o modo no motor, nas falas e na tela; sem ele, a porta do Farol fica
+ * como era. ⚠️ Só com `freeExploration`: a bancada antiga não tem o botão do "não", e com as metas do
+ * caso o motor abriria a porta trancada sem a criança poder testar a outra pergunta.
+ */
+export function lighthouseKeyNotCase(setup?: {
+  goals?: readonly string[]
+  freeExploration?: boolean
+}): boolean {
+  return (
+    setup?.freeExploration === true &&
+    (setup.goals ?? []).some((g) => (LIGHTHOUSE_NOT_GOALS as readonly string[]).includes(g))
+  )
+}
+
+/**
+ * A resposta da porta no caso do não. Sem a chave a porta está trancada; com ela, destrancada. "A porta
+ * está trancada?" diz sim sem a chave; "a porta não está trancada?" diz sim com a chave. Sim abre.
+ */
+export function lighthouseDoorAnswer(hasKey: boolean, not: boolean): boolean {
+  return not ? hasKey : !hasKey
 }
 export interface SceneCollectionMemory {
   remember: boolean
@@ -1263,6 +1299,46 @@ function isSceneMotionAmount(value: unknown): value is SceneMotionAmount {
   )
 }
 
+/**
+ * A meta do jogo (`score-goal`, Nave contra Asteroides, Dia 5, 02/11/2026): o placar que sobe a cada
+ * acerto, a placa da meta (uma CONSTANTE: 26, a mesma do jogo) e o sinal da vitória (`>` ou `>=`).
+ * A partida da experiência começa perto do fim (`SCORE_GOAL.start`) para a vitória caber em poucos
+ * acertos. `won` é sempre o sinal aplicado ao placar: depois da vitória, acertar não soma mais.
+ */
+export interface SceneScoreGoal {
+  points: number
+  op: ScoreGoalOp
+  goal: number
+  /** Acertos desta partida (zera em Jogar de novo e ao trocar o sinal). */
+  hits: number
+  won: boolean
+}
+export const SCORE_GOAL = { goal: 26, start: 23, max: 999 } as const
+const SCORE_GOAL_PADRAO: SceneScoreGoal = {
+  points: SCORE_GOAL.start,
+  op: '>',
+  goal: SCORE_GOAL.goal,
+  hits: 0,
+  won: false,
+}
+/** A vitória da `score-goal`: o placar comparado à placa com o sinal escolhido. */
+export function scoreGoalReached(points: number, op: ScoreGoalOp, goal: number): boolean {
+  return op === '>' ? points > goal : points >= goal
+}
+function isSceneScoreGoal(value: unknown): value is SceneScoreGoal {
+  if (!isRecord(value)) return false
+  const inteiro = (v: unknown, max: number) =>
+    typeof v === 'number' && Number.isInteger(v) && v >= 0 && v <= max
+  return (
+    inteiro(value.points, SCORE_GOAL.max) &&
+    inteiro(value.hits, SCORE_GOAL.max) &&
+    value.goal === SCORE_GOAL.goal &&
+    SCORE_GOAL_OPS.some((op) => op === value.op) &&
+    typeof value.won === 'boolean' &&
+    value.won === scoreGoalReached(value.points as number, value.op as ScoreGoalOp, SCORE_GOAL.goal)
+  )
+}
+
 export interface SceneTwoClockRock {
   id: number
   bornAt: number
@@ -1512,6 +1588,7 @@ export interface SceneState {
   twoClocks: SceneTwoClocks
   copies: SceneCopies
   skinGame: SceneSkinGame
+  scoreGoal: SceneScoreGoal
   world: SceneWorld
   flight: SceneFlight
   sound: SceneSound
@@ -1904,6 +1981,7 @@ function gruposComPadrao() {
     ['twoClocks', TWO_CLOCKS_PADRAO],
     ['copies', COPIES_PADRAO],
     ['skinGame', SKIN_GAME_PADRAO],
+    ['scoreGoal', SCORE_GOAL_PADRAO],
     ['place', PLACE_PADRAO],
     ['description', DESCRIPTION_PADRAO],
     ['stage', STAGE_PADRAO],
@@ -2015,9 +2093,14 @@ export function hydrateSceneState(value: unknown): unknown {
   if (
     isRecord(farol) &&
     typeof farol.checkedKey === 'boolean' &&
-    (farol.checkedKey !== farol.hasKey || (farol.door === 'open') !== farol.checkedKey)
+    (farol.checkedKey !== farol.hasKey ||
+      (farol.door === 'open') !==
+        // No caso do não (Ilha do Farol, 02/11/2026) quem abre é a resposta à pergunta testada.
+        (typeof farol.checkedNot === 'boolean'
+          ? lighthouseDoorAnswer(farol.checkedKey, farol.checkedNot)
+          : farol.checkedKey))
   )
-    saida.lighthouse = { ...farol, checkedKey: null }
+    saida.lighthouse = { ...farol, checkedKey: null, checkedNot: null }
   return saida
 }
 
@@ -2066,6 +2149,7 @@ export function initialScene({ scene, initialImpulse, setup }: SceneStart): Scen
     twoClocks: { ...TWO_CLOCKS_PADRAO, rocks: [] },
     copies: { ...COPIES_PADRAO, posts: [] },
     skinGame: { ...SKIN_GAME_PADRAO, visited: ['space'], shots: [] },
+    scoreGoal: { ...SCORE_GOAL_PADRAO },
     // ⚠️ Duas cenas começam DESMONTADAS de propósito: em `world` a criança cria o Dino, e em
     // `gravity` ela liga a gravidade. Nas outras, isso já vem pronto para não roubar o foco.
     world: { created: scene !== 'world', drawn: scene !== 'world', front: false },
@@ -2267,6 +2351,7 @@ export function cloneScene(state: SceneState): SceneState {
       visited: [...state.skinGame.visited],
       shots: state.skinGame.shots.map((shot) => ({ ...shot })),
     },
+    scoreGoal: { ...state.scoreGoal },
     world: { ...state.world },
     flight: { ...state.flight },
     sound: { ...state.sound, beats: state.sound.beats.map((b) => ({ ...b })) },
@@ -2566,11 +2651,21 @@ export function isSceneState(value: unknown): value is SceneState {
     !isRecord(value.lighthouse) ||
     typeof value.lighthouse.hasKey !== 'boolean' ||
     (value.lighthouse.door !== 'closed' && value.lighthouse.door !== 'open') ||
+    (value.lighthouse.not !== undefined && typeof value.lighthouse.not !== 'boolean') ||
+    (value.lighthouse.checkedNot !== undefined &&
+      value.lighthouse.checkedNot !== null &&
+      (typeof value.lighthouse.checkedNot !== 'boolean' ||
+        typeof value.lighthouse.checkedKey !== 'boolean' ||
+        value.lighthouse.checkedNot !== (value.lighthouse.not === true))) ||
     (value.lighthouse.checkedKey !== undefined &&
       value.lighthouse.checkedKey !== null &&
       (typeof value.lighthouse.checkedKey !== 'boolean' ||
         value.lighthouse.checkedKey !== value.lighthouse.hasKey ||
-        (value.lighthouse.door === 'open') !== value.lighthouse.checkedKey))
+        (value.lighthouse.door === 'open') !==
+          // No caso do não, quem abre é a resposta à pergunta testada; no Farol, a chave.
+          (typeof value.lighthouse.checkedNot === 'boolean'
+            ? lighthouseDoorAnswer(value.lighthouse.checkedKey, value.lighthouse.checkedNot)
+            : value.lighthouse.checkedKey)))
   )
     return false
   if (
@@ -2615,6 +2710,7 @@ export function isSceneState(value: unknown): value is SceneState {
   if (!isSceneTwoClocks(value.twoClocks)) return false
   if (!isSceneCopies(value.copies)) return false
   if (!isSceneSkinGame(value.skinGame)) return false
+  if (!isSceneScoreGoal(value.scoreGoal)) return false
   const { evidence, world, flight, sound, crowd, match, contact, speed, place, description } = value
   const { stage, render, animation, mirror, pixels, sheet, lifeline } = value
   const { drive, input, box, hunt, blueprint, view, hit, weapon, sight, walkPad, grid } = value

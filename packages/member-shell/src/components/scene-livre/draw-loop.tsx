@@ -10,6 +10,7 @@ import {
 import { Eraser, Footprints, Layers, Pause, Pin, Play, StepForward } from 'lucide-react'
 import { ExplorationStage } from '../exploration-stage'
 import { Frame, SceneButton, useDiscovery } from '../scene-discovery-frame'
+import { semDino } from './dino/comum'
 import { DicaLivre, LinhaDaIdeia, Numeros, useMetasLivres } from './nave-a-comum'
 
 /**
@@ -66,7 +67,7 @@ export function LivreDrawLoop() {
   const { activity, state, dispatch, instruction, running, setRunning } = useDiscovery()
   const r = state.render
   const { tem, goals, completed, done } = useMetasLivres(O_QUE_COMPARAR)
-  const gesto = proximoGestoDoDesenho(discoveryGuidance(activity, state)?.id, r)
+  const gesto = proximoGestoDoDesenho(semDino(discoveryGuidance(activity, state)?.id), r)
   const vestir = (texto: string) => castText(texto, activity.cast)
   const quadro = sceneStepSeconds('draw-loop') ?? 0.25
   const escolha = (ativo: boolean, qual: GestoDoDesenho) =>

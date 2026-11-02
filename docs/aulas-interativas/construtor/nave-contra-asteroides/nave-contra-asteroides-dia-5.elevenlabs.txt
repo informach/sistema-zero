@@ -1,10 +1,20 @@
+[engaging, energetic, conversational voice] Sabe aquele brinquedo do parque com uma placa na entrada, com a altura que a criança precisa ter? Cada criança que chega é comparada com o número da placa.
+
+[engaging, energetic, conversational voice] No seu jogo também tem uma placa: a meta de 26 pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.
+
+[curious] Com maior que, chegar a 26 já dá a vitória?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem o sinal da vitória, este faz um acerto, e este tenta mudar a placa no meio da partida.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare em que acerto vem a vitória com maior que e com maior ou igual, e tente mudar a placa no meio de uma partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
 [engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida e faça alguns pontos. Tá vendo? A partida continua sem fim, porque o jogo ainda não sabe quando você ganha.
 
-[engaging, energetic, conversational voice] Sabe aquele brinquedo do parque que tem uma placa na entrada: só entra quem tem 1 metro e 20 ou mais? Quem tem exatamente 1 metro e 20 entra, e quem tem mais também. E a placa não muda: é a mesma o dia inteiro.
-
-[curious] No seu jogo, a meta é como essa placa: 26 pontos, um número que não muda durante a partida. E a pergunta da vitória é: os pontos já chegaram a 26, ou passaram?
-
-[engaging, energetic, conversational voice] Agora a gente vai pôr essa placa e essa pergunta no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da meta? A placa nunca mudou, e com maior ou igual o 26 já valia. Agora a gente vai pôr isso no seu jogo!
 
 [engaging, energetic, conversational voice] Um nome que guarda um valor que não muda se chama constante. A meta vai numa constante, criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar.
 
@@ -16,7 +26,7 @@
 
 [confident, clear, unhurried voice] Agora clique no 0 do valor, troque por 26 e clique fora do campo.
 
-[engaging, energetic, conversational voice] É este bloco que guarda a meta, 26, com o nome alvo, como a placa do parque.
+[engaging, energetic, conversational voice] É este bloco que guarda a meta, 26, com o nome alvo, como a placa da experiência.
 
 [engaging, energetic, conversational voice] Agora a pergunta da vitória. O jogo faz essa pergunta em todo quadro, durante a partida. Por isso, ela vai no fim do então de Se o estado do jogo é jogando, logo depois de Desenhar as vidas do sprite.
 
@@ -26,7 +36,7 @@
 
 [engaging, energetic, conversational voice] No lado esquerdo, clique em x e escolha pontos.
 
-[engaging, energetic, conversational voice] No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque.
+[engaging, energetic, conversational voice] No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.
 
 [curious] E do outro lado vai a meta?
 

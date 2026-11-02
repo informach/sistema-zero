@@ -351,7 +351,7 @@ describe('a experiência: o que a criança vê no motor', () => {
     expect(j.viu('every-jump')).toBe(true)
     j.faz({ type: 'connect', port: 'sound', enabled: false })
     expect(sceneSituation('jump-sound', j.estado)).toContain(
-      'Leve Tocar efeito de volta para Quando o Dino pular, como fica no jogo.',
+      'O som precisa voltar para o pulo do Dino, como fica no jogo.',
     )
   })
 

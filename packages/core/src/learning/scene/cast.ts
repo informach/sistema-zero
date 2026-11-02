@@ -382,6 +382,7 @@ export const SCENE_ROLES: Readonly<Record<SceneId, readonly SceneRole[]>> = {
   'pick-ray': [],
   'fill-stroke': [],
   shading: [],
+  'score-goal': [],
 }
 
 /** Cenas que representam um jogo específico, sem papéis intercambiáveis do elenco. */
@@ -396,6 +397,8 @@ export const SCENE_FIXED_CENARIOS: Readonly<Partial<Record<SceneId, SceneCenario
   'two-pieces': 'farol',
   'timed-bridge': 'farol',
   'symbol-sequence': 'farol',
+  // A meta do jogo (Nave, Dia 5): o placar e a placa do jogo da Nave.
+  'score-goal': 'nave',
 }
 
 /**

@@ -5,6 +5,7 @@ import { ArrowDown, ArrowRight, CornerLeftUp } from 'lucide-react'
 import { ExplorationStage } from '../exploration-stage'
 import { Medida } from '../scene-bench'
 import { Frame, Note, useDiscovery } from '../scene-discovery-frame'
+import { semDino } from './dino/comum'
 import { DicaLivre, LinhaDaIdeia, Numeros, useMetasLivres } from './nave-a-comum'
 
 /**
@@ -44,7 +45,7 @@ export function LivreCoordinates() {
   const { activity, state, dispatch, instruction } = useDiscovery()
   const p = state.place
   const { tem, goals, completed, done } = useMetasLivres(O_QUE_COMPARAR)
-  const gesto = proximoGestoDoEndereco(discoveryGuidance(activity, state)?.id)
+  const gesto = proximoGestoDoEndereco(semDino(discoveryGuidance(activity, state)?.id))
   const vestir = (texto: string) => castText(texto, activity.cast)
   // O passo segue a tela do caso, como na bancada: 40 na tela de 800 × 480, 20 na do Corre Dino.
   const passo = p.width > 480 ? 40 : 20

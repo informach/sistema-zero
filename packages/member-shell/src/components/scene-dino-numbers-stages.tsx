@@ -313,10 +313,16 @@ export function ScoreStage({
   state,
   cast,
   dispatch,
+  semEspera = false,
 }: {
   state: SceneState
   cast?: SceneCast
   dispatch?: (action: SceneAction) => void
+  /**
+   * A exploração livre (Corre Dino, frente C, 02/11/2026): o "esperando" do placar é o RESULTADO do
+   * teste com a pergunta na tela de início, e só aparece depois de a criança tê-lo visto.
+   */
+  semEspera?: boolean
 }) {
   const heroi = actorFigure(cast, 'hero')
   const obstaculo = actorFigure(cast, 'obstacle')
@@ -324,7 +330,7 @@ export function ScoreStage({
   const piso = pisoDoMundo(mundo, CHAO)
   const tela = state.match.screen
   /** O placar parado na tela de início com a peça dentro de Se jogando (consertos da onda A). */
-  const esperando = tela === 'start' && state.match.guarded
+  const esperando = !semEspera && tela === 'start' && state.match.guarded
   // ⚠️ "?" e não a meia-risca (full review de experiência, B3): a casa já usa "?" para número ainda não
   // visto, e a meia-risca lia como sinal de menos. Quem ouve recebe "ainda não visto".
   const visto = (i: number) => {
@@ -757,7 +763,20 @@ function RandomTopStage({ state, cast }: { state: SceneState; cast?: SceneCast }
  * do Estúdio ("−7 > −9? sim → some −1"). O cacto de −10 com a base parada ganha "sorteio −1".
  * ⚠️ Sem Dino (`SCENE_ROLES`).
  */
-export function AccelerationStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function AccelerationStage({
+  state,
+  cast,
+  soAPergunta = false,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  /**
+   * A exploração livre (Corre Dino, frente C, 02/11/2026): a conta mostra só a pergunta e a resposta
+   * ("−7 > −9? sim"), sem o que a resposta FAZ com a base ("→ some −1", "→ fica"), que é o resultado
+   * do próximo "Passar 5 segundos". Sem a pergunta, "pergunta desligada".
+   */
+  soAPergunta?: boolean
+}) {
   const obstaculo = actorFigure(cast, 'obstacle')
   const mundo = useSceneCenario(cast, 'acceleration')
   const { base, limited } = state.speed
@@ -778,11 +797,15 @@ export function AccelerationStage({ state, cast }: { state: SceneState; cast?: S
     return anterior ? anterior.base === -9 : state.evidence.discoveries.includes('variation-limit')
   }
   const ultimoDestaque = [...fileira].reverse().find((c) => destacado(c.id))
-  const conta = limited
-    ? base > -9
-      ? `${numero(base)} > −9? sim → some −1`
-      : `${numero(base)} > −9? não → fica`
-    : 'sem a condição: some −1'
+  const conta = soAPergunta
+    ? limited
+      ? `${numero(base)} > −9? ${base > -9 ? 'sim' : 'não'}`
+      : 'pergunta desligada'
+    : limited
+      ? base > -9
+        ? `${numero(base)} > −9? sim → some −1`
+        : `${numero(base)} > −9? não → fica`
+      : 'sem a condição: some −1'
   return (
     <SceneCanvas
       view={STAGE}

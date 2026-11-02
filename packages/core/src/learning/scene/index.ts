@@ -155,6 +155,8 @@ export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is Scene
     ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order', 'walk-pace'].includes(acao.type)
   )
     return false
+  // A meta do jogo (02/11/2026): o caso escolhe só o sinal. Acertos e tentativas são da criança.
+  if (scene === 'score-goal' && acao.type !== 'goal-op') return false
   return true
 }
 
@@ -213,6 +215,21 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
         'symmetry',
         'two-clocks',
         'unique-names',
+        // O Corre Dino, frente B (02/11/2026): tela, leitor de tela, gravidade, impulso e som do pulo.
+        'stage-size',
+        'screen-reader',
+        'gravity',
+        'impulse',
+        'jump-sound',
+        // O Corre Dino, frente C (02/11/2026): começar a partida, área de contato, placar, a reta
+        // dos números negativos e a base que acelera.
+        'controls',
+        'hitbox',
+        'score',
+        'number-line',
+        'acceleration',
+        // A meta do jogo (Nave, Dia 5, frente D, 02/11/2026).
+        'score-goal',
       ].includes(scene))
   )
     return false
@@ -417,4 +434,8 @@ export function sceneHintsFor(activity: SceneActivity): readonly string[] {
   return sceneModel(activity.scene).hints
 }
 
-export { discoveryGuidance, discoverySpeechSteps } from './discovery-guidance'
+export {
+  discoveryGuidance,
+  discoverySpeechSteps,
+  lighthouseWalkStrideCase,
+} from './discovery-guidance'

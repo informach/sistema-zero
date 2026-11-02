@@ -857,7 +857,14 @@ gravarArquivo(
           'experiencia-posicao': 'position',
         }).map(([key, prefix]) => [
           key,
-          discoverySpeechSteps().filter((s) => s.id.startsWith(`${prefix}-`)),
+          // ⚠️ `door-not-*` é da porta com o "não" da Ilha e `*-nave` é da caminhada da Nave
+          // (02/11/2026): falas da mesma cena, de outros cursos.
+          discoverySpeechSteps().filter(
+            (s) =>
+              s.id.startsWith(`${prefix}-`) &&
+              !s.id.startsWith('door-not-') &&
+              !s.id.endsWith('-nave'),
+          ),
         ]),
       ),
     },

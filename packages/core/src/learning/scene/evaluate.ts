@@ -82,7 +82,7 @@ function pedidoDoArranjo(scene: SceneId, cast?: SceneCast): string {
   // esta frase ("Ainda não. Tente: leve Tocar efeito de volta…"), e antes ele não dizia nada com as metas
   // feitas e a montagem desfeita.
   if (scene === 'jump-sound')
-    return castText('Leve Tocar efeito de volta para Quando o Dino pular, como fica no jogo.', cast)
+    return castText('O som precisa voltar para o pulo do Dino, como fica no jogo.', cast)
   return 'Deixe a montagem com a descoberta que você fez.'
 }
 const cobra = (targets: readonly string[] | undefined, ...goals: string[]) =>

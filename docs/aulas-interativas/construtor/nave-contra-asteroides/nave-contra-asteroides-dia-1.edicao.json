@@ -9,6 +9,7 @@
   },
   "clipes": [
     "video-seta-e-velocidade",
+    "video-tamanho-do-passinho",
     "video-setas-e-rastro",
     "video-limpeza",
     "video-limite-da-tela",
@@ -35,7 +36,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "seta você está segurando e leva a nave para aquele lado. Repare: o nome do sprite já vem nave, por isso deixe assim.",
-      "ancoraDepois": "Testando duas velocidades, você vai sentir a diferença. A velocidade é o tamanho do passinho que a nave dá em cada",
+      "ancoraDepois": "Você escolhe! Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama",
       "falaPrincipal": "E qual velocidade eu uso?",
       "falaPersonagem": "E qual velocidade eu uso?",
       "tags": ["[curious]"]

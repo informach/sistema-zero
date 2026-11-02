@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 A experiência antecede a criação do estado. A montagem separa as regras de cada quadro do relógio de nascimento e testa jogando antes de devolver inicio. Esta aula entrega a espera; a interface de começo é construída na aula seguinte.
 
+**Revisão de 02/11/2026.** D1 (decisão da coordenação, 02/11/2026): saiu a troca temporária do estado para jogando nas partes 3, 4 e 5, o "troque e volte" que a §2 já tinha retirado; a montagem tem um caminho só, e o jogo termina a aula esperando em inicio (a partida começa na Aula 8). A experiência passou à exploração livre com a porta que só abre com a chave, como na Nave. A montagem define estado do jogo, dá o porquê antes do gesto (a limpeza e a floresta também passam na tela de início), explica o Se e o então e liga cada bloco à ideia; o relógio diz por que a pergunta do quadro não vale para ele, sem o duplo sentido de "quadro", e confere sem teste, porque o efeito ainda não aparece no jogo.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -23,19 +25,25 @@ A experiência antecede a criação do estado. A montagem separa as regras de ca
 
 ## Proposta final
 
-### Seção 1. Escolha quando o jogo pode agir
+### Seção 1. A partida já começou?
 
-**Tarefa:** Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-condicao → fala-condicao → experiencia-condicao.
 
-**Recado na página (não gravar):** Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-condicao-K1: Debinha substitui “Mas a partida nem começou. Por que já tem cacto?”. Antes: “deixo o tempo passar na tela de início. Nascem cactos antes de alguém jogar. O relógio cria cactos sem perguntar nada.”. Depois: “Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e”.
+video-condicao-K1: Debinha substitui “E na tela de início, os cactos nascem?”. Antes: “cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a”.
 
-**Experiência existente:** `game-state`. Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto. Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador. Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `game-state` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/game-state.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare o contador de cactos com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador. Clique em Ligar a pergunta e deixe o tempo passar uns 3 segundos na tela de início. Observe o contador. Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador.
+
+**Pistas, do aberto ao direto:** 1) Observe o contador de cactos criados enquanto o tempo passa. 2) Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar? 3) Deixe o tempo passar na tela de início. Depois clique em Ligar a pergunta e deixe o tempo passar uns 3 segundos. Por último, clique em Começar a partida e deixe o tempo passar. Sem palpite e sem pergunta final.
 
 ### Seção 2. Guarde em que momento o jogo está
 
@@ -47,19 +55,19 @@ video-condicao-K1: Debinha substitui “Mas a partida nem começou. Por que já 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começar?”. Antes: “e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.”. Depois: “Ainda falta ligar as ações a esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo”.
+video-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começar?”. Antes: “de Ao iniciar. Ele já chega com inicio: mantenha. É este bloco que diz em que estado o jogo começa: na tela de início.”. Depois: “Ainda não: falta fazer o jogo perguntar por esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No Ao iniciar, coloque Mudar o estado do jogo para inicio.
 
-### Seção 3. Separe as ações da partida
+### Seção 3. Faça a partida esperar
 
-**Tarefa:** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Tarefa:** Agora faça a partida esperar! Coloque as ações da partida num Se o estado do jogo é jogando, logo depois da floresta, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-embrulhar → fala-embrulhar.
 
-**Recado na página (não gravar):** Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora faça a partida esperar! Coloque as ações da partida num Se o estado do jogo é jogando, logo depois da floresta, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
@@ -88,11 +96,11 @@ video-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começa
 
 ### Seção 5. Teste e envie seu jogo
 
-**Tarefa:** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Tarefa:** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando e o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Blocos na página:** video-entrega → fala-entrega → projeto.
 
-**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
+**Recado na página (não gravar):** Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando e o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 

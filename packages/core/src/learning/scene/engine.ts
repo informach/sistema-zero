@@ -85,6 +85,8 @@ import {
   initialScene,
   LIGHTHOUSE_WALK,
   LUGARES_NAO_SORTEADOS,
+  lighthouseDoorAnswer,
+  lighthouseKeyNotCase,
   lighthouseWalkGone,
   lighthouseWalkMaxX,
   lighthouseWalkOutSeenX,
@@ -94,6 +96,7 @@ import {
   PLACAR_NAO_VISTO,
   POOL_CROSSING,
   RANDOM_SPOTS,
+  SCORE_GOAL,
   SCREEN_READER_EMPTY,
   type SceneClock,
   type SceneStart,
@@ -104,6 +107,7 @@ import {
   sceneCactiOnScreen,
   sceneContact,
   sceneDrawingsGap,
+  scoreGoalReached,
   uniqueNamesWarning,
   VELOCITY_TRAIL_MAX,
 } from './state'
@@ -871,7 +875,7 @@ export function stepScene(
       break
     case 'walk-frames':
       s.clock.carry = 0
-      for (let i = 0; i < action.count; i++) quadroDoAndar(s)
+      for (let i = 0; i < action.count; i++) quadroDoAndar(s, start.setup?.freeExploration === true)
       break
     case 'walk-order':
       s.walk.order = action.order
@@ -902,6 +906,17 @@ export function stepScene(
     case 'walk-speed':
       s.walk.speed = action.speed
       s.walk.idle = 0
+      // ⭐ O tamanho do passinho (Nave, Dia 1, 02/11/2026): no modo livre, trocar o passinho é um
+      // teste novo, do começo. As marcas e a tira contam um passinho só, sem misturar os dois.
+      if (start.setup?.freeExploration)
+        s.walk = {
+          ...s.walk,
+          frame: 0,
+          x: LIGHTHOUSE_WALK.start,
+          trail: [LIGHTHOUSE_WALK.start],
+          reach: undefined,
+          run: 0,
+        }
       break
     case 'walk-pace':
       // A caminhada de verdade (`walked-real-speed`) conta só os passinhos dados DEPOIS da troca.
@@ -929,11 +944,71 @@ export function stepScene(
       s.lighthouse.hasKey = action.hasKey
       s.lighthouse.door = 'closed'
       s.lighthouse.checkedKey = null
+      if (lighthouseKeyNotCase(start.setup)) {
+        // O caso do não (Ilha do Farol, 02/11/2026): a chave é o que destranca a porta.
+        s.lighthouse.checkedNot = null
+        s.caption = action.hasKey
+          ? 'A chave está com o personagem: a porta está destrancada. O que ela vai responder?'
+          : 'O personagem está sem a chave: a porta está trancada. O que ela vai responder?'
+        break
+      }
       s.caption = action.hasKey
         ? 'A chave está com o personagem. O que a porta fará?'
         : 'O personagem está sem a chave. O que a porta fará?'
       break
+    case 'door-question':
+      // A pergunta muda e a tentativa recomeça: a resposta de antes era da outra pergunta.
+      s.lighthouse.not = action.not
+      s.lighthouse.door = 'closed'
+      s.lighthouse.checkedKey = null
+      s.lighthouse.checkedNot = null
+      s.caption = action.not
+        ? 'Agora a porta pergunta: a porta não está trancada?'
+        : 'Agora a porta pergunta: a porta está trancada?'
+      break
+    case 'goal-hit': {
+      // ⭐ A meta do jogo (Nave, Dia 5, 02/11/2026). Cada meta só cai com a vitória À VISTA: com ≥, o
+      // acerto que leva o placar a 26 dá a vitória; com >, o 26 passou sem vitória e ela veio no 27.
+      const g = s.scoreGoal
+      if (g.won) {
+        s.caption = 'A partida já acabou com a vitória. Clique em Jogar de novo para outra partida.'
+        break
+      }
+      g.points = Math.min(g.points + 1, SCORE_GOAL.max)
+      g.hits = Math.min(g.hits + 1, SCORE_GOAL.max)
+      g.won = scoreGoalReached(g.points, g.op, g.goal)
+      s.caption = g.won
+        ? `Acerto! O placar foi para ${g.points}, e o jogo deu a vitória.`
+        : `Acerto! O placar foi para ${g.points}. A partida continua.`
+      if (g.won && g.op === '>=' && g.points === g.goal)
+        observe(s, 'igual-conta', 'Com maior ou igual, chegar a 26 já deu a vitória')
+      if (g.won && g.op === '>' && g.points === g.goal + 1)
+        observe(s, 'maior-pula', 'Com maior que, o 26 não deu a vitória; só o 27')
+      break
+    }
+    case 'goal-op':
+      // Trocar o sinal é outra regra de vitória: a partida recomeça, para a comparação ser justa.
+      s.scoreGoal = { ...s.scoreGoal, op: action.op, points: SCORE_GOAL.start, hits: 0, won: false }
+      s.caption =
+        action.op === '>'
+          ? 'Agora a vitória vem quando o placar for maior que a meta. A partida recomeçou.'
+          : 'Agora a vitória vem quando o placar for maior ou igual à meta. A partida recomeçou.'
+      break
+    case 'goal-restart':
+      s.scoreGoal = { ...s.scoreGoal, points: SCORE_GOAL.start, hits: 0, won: false }
+      s.caption = `Partida nova: o placar voltou para ${SCORE_GOAL.start}.`
+      break
+    case 'goal-edit':
+      // A placa é uma CONSTANTE: escolhida antes do jogo, nada a muda durante a partida.
+      s.caption = `A placa da meta é uma constante: ela continua ${s.scoreGoal.goal}.`
+      if (s.scoreGoal.hits > 0 && !s.scoreGoal.won)
+        observe(s, 'placa-fixa', 'No meio da partida, a placa da meta não mudou')
+      break
     case 'try-lighthouse-door':
+      if (lighthouseKeyNotCase(start.setup)) {
+        tentarAPortaDoNao(s)
+        break
+      }
       s.lighthouse.checkedKey = s.lighthouse.hasKey
       if (s.lighthouse.hasKey) {
         s.lighthouse.door = 'open'
@@ -1512,7 +1587,7 @@ export function stepScene(
       // ⚠️ Na `restart` o toque na tela vale em TODA tela (lote 5): no início começa, no fim faz o
       // que a criança escolheu para o toque. É o evento único do Estúdio ("qualquer tecla ou toque").
       if (scene === 'restart') {
-        tocarNaTela(s, action.input)
+        tocarNaTela(s, action.input, start.setup?.freeExploration === true)
         break
       }
       if (s.match.screen !== 'start') break
@@ -2521,6 +2596,10 @@ export function stepScene(
         if (scene === 'invincibility')
           restarted.invincibility.protection = s.invincibility.protection
         if (scene === 'number-line') restarted.numberLine.operator = s.numberLine.operator
+        // ⚠️ Só na exploração livre (frente C do Corre Dino, 02/11/2026): o "Voltar ao começo" guarda a
+        // pergunta como a criança deixou. A bancada antiga segue religando a condição de fábrica.
+        if (scene === 'acceleration' && start.setup?.freeExploration)
+          restarted.speed.limited = s.speed.limited
         if (scene === 'two-clocks') {
           restarted.twoClocks.birthEvery = s.twoClocks.birthEvery
           restarted.twoClocks.animationRate = s.twoClocks.animationRate
@@ -2560,6 +2639,7 @@ export function stepScene(
  * - `moves-each-frame`: `LIGHTHOUSE_WALK.runSeen` quadros SEGUIDOS com a seta segurada e o x
  *   subindo (preso na borda, não andou; um quadro só é um passo, não "a cada quadro").
  * - `step-speed-3` / `step-speed-1`: o x aumentou EXATAMENTE a velocidade (o limite não cortou o passo).
+ *   No modo livre, só em câmera lenta e com `LIGHTHOUSE_WALK.runSeen` passinhos seguidos.
  * - `left-the-screen`: sem o limite, a metade da caixa ATRAVESSOU a borda NESTE quadro
  *   (`LIGHTHOUSE_WALK.outSeen`). ⚠️ A travessia, e não o estado: um retrato que já estivesse fora
  *   derrubaria a meta sem a criança ver o personagem sair.
@@ -2570,7 +2650,7 @@ export function stepScene(
  * - `came-back-inside`: com o limite, o quadro anterior estava FORA da tela (a régua do
  *   `left-the-screen`) e este acabou na borda (o limite foi ligado com o personagem fora).
  */
-function quadroDoAndar(s: SceneState): void {
+function quadroDoAndar(s: SceneState, livre = false): void {
   const walk = s.walk
   const antes = walk.x
   const limite = lighthouseWalkMaxX()
@@ -2607,7 +2687,13 @@ function quadroDoAndar(s: SceneState): void {
     s.evidence.discoveries.includes('moves-each-frame')
   )
     observe(s, 'walked-real-speed', 'Na velocidade de verdade, os passinhos viraram uma caminhada')
-  if (walk.arrow && walk.x - antes === walk.speed)
+  // ⚠️ No modo livre (o tamanho do passinho da Nave, 02/11/2026), o passinho é de quem o VIU: em câmera
+  // lenta e com `LIGHTHOUSE_WALK.runSeen` passinhos seguidos (um só não mostra "a cada quadro").
+  if (
+    walk.arrow &&
+    walk.x - antes === walk.speed &&
+    (!livre || (devagar && walk.run >= LIGHTHOUSE_WALK.runSeen))
+  )
     observe(
       s,
       walk.speed === 3 ? 'step-speed-3' : 'step-speed-1',
@@ -2625,6 +2711,40 @@ function quadroDoAndar(s: SceneState): void {
   // contam: o desenho ainda está inteiro na tela, e a criança não viu nada sair.
   if (walk.keepInside && antes >= saida && walk.x === limite)
     observe(s, 'came-back-inside', 'Com o limite ligado, o sprite voltou para dentro da tela')
+}
+
+/**
+ * A tentativa na porta do caso do não (Ilha do Farol, aula 3, 02/11/2026). A porta faz o que a
+ * resposta mandar: sim abre, não fica fechada. Cada uma das quatro situações (com ou sem a chave, com
+ * ou sem o não) fica guardada como descoberta própria (`asked-*`, a tela só revela o que já foi
+ * testado), e a meta da comparação cai quando as DUAS perguntas foram testadas com a mesma chave.
+ * ⚠️ Não usa `opened-with-key`/`locked-without-key`: aqui a porta pode abrir sem a chave.
+ */
+function tentarAPortaDoNao(s: SceneState): void {
+  const l = s.lighthouse
+  const not = l.not === true
+  const sim = lighthouseDoorAnswer(l.hasKey, not)
+  l.checkedKey = l.hasKey
+  l.checkedNot = not
+  l.door = sim ? 'open' : 'closed'
+  s.caption = sim
+    ? 'A resposta foi sim: a porta abriu.'
+    : 'A resposta foi não: a porta ficou fechada.'
+  const chave = l.hasKey ? 'with-key' : 'without-key'
+  observe(
+    s,
+    `asked-${not ? 'not-locked' : 'locked'}-${chave}`,
+    `${l.hasKey ? 'Com' : 'Sem'} a chave, ${not ? 'com' : 'sem'} o não, a resposta foi ${sim ? 'sim' : 'não'}`,
+  )
+  const viu = s.evidence.discoveries
+  if (viu.includes(`asked-locked-${chave}`) && viu.includes(`asked-not-locked-${chave}`))
+    observe(
+      s,
+      `not-flips-${chave}`,
+      l.hasKey
+        ? 'Com a chave, o não trocou a resposta da porta'
+        : 'Sem a chave, o não trocou a resposta da porta',
+    )
 }
 
 /** Nomes alternativos de metas, aplicados somente quando a aula os escolhe. */
@@ -2700,7 +2820,7 @@ function quadrosDoTempo(relogio: SceneClock, fps: number, segundos: number): num
 function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
   const scene = start.scene
   if (scene === 'lighthouse-walk') {
-    quadroDoAndar(s)
+    quadroDoAndar(s, start.setup?.freeExploration === true)
     return
   }
   if (scene === 'fixed-vs-read') {
@@ -2869,7 +2989,7 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
     return
   }
   // O núcleo do Iniciante 2D: cada uma dessas cenas mostra o que o TEMPO faz com o estado.
-  if (avancarNucleo(s, scene, fps)) return
+  if (avancarNucleo(s, scene, fps, start.setup?.freeExploration === true)) return
   if (scene === 'frames') {
     advanceFrames(s, 1 / fps)
     return
@@ -2982,7 +3102,7 @@ export function maisPerto(distancias: readonly number[]): number {
  * exatamente como estava. Cada uma aqui ensina uma coisa diferente sobre o tempo: a posição que
  * anda sozinha, a tecla que vale enquanto durar, a recarga que espera.
  */
-function avancarNucleo(s: SceneState, scene: SceneId, fps: number): boolean {
+function avancarNucleo(s: SceneState, scene: SceneId, fps: number, livre = false): boolean {
   switch (scene) {
     case 'velocity': {
       s.drive.fromX = s.drive.x
@@ -3015,11 +3135,17 @@ function avancarNucleo(s: SceneState, scene: SceneId, fps: number): boolean {
       const andou = Math.abs(x - anchorX) + Math.abs(y - anchorY)
       // ⚠️ A folga de meio pixel ficou de propósito: um retrato de antes do lote 4 pode ter a
       // posição quebrada, e a meta segue pedindo movimento de verdade desde a âncora.
+      // ⭐ No modo livre (Corre Dino, aula 5, 02/11/2026), as metas do lado são as dos dois SINAIS:
+      // `moves` é o número positivo levando para a DIREITA e `left` o negativo para a esquerda, cada
+      // um com três quadros naquele sentido (a régua de `up`/`down`). Sem isso, quem começava pelo −5
+      // fechava `moves` e `left` no mesmo passo, e o positivo nunca era testado.
+      const tresQuadrosNoLado = s.drive.steps >= 3
       if (andou > 0.5) {
-        observe(s, 'moves', 'A posição mudou sozinha, com o relógio', true)
+        if (!livre || (vx > 0 && x - anchorX > 0.5 && tresQuadrosNoLado))
+          observe(s, 'moves', 'A posição mudou sozinha, com o relógio', true)
         // ⚠️ "Levou para a ESQUERDA" pede ter andado PARA O LADO: com o x travado em 0 um
         // movimento só vertical fechava a meta do sinal.
-        if (vx < 0 && anchorX - x > 0.5)
+        if (vx < 0 && anchorX - x > 0.5 && (!livre || tresQuadrosNoLado))
           observe(s, 'left', 'Velocidade negativa levou para a esquerda', true)
         // ⚠️⚠️ As metas VERTICAIS pedem o personagem ter andado naquele sentido, com a mesma
         // folga de meio pixel: com o y no batente (0 ou 270) o sinal está certo e nada se mexe,
@@ -3933,7 +4059,7 @@ function nascerNaPartida(s: SceneState): void {
  * No início começa a partida. No fim faz o que a criança ESCOLHEU (`match.restartConnected`):
  * "Mudar o estado do jogo para inicio" só troca de tela, "Reiniciar o jogo" limpa a pista.
  */
-function tocarNaTela(s: SceneState, input: 'key' | 'tap'): void {
+function tocarNaTela(s: SceneState, input: 'key' | 'tap', livre = false): void {
   const tela = s.match.screen
   if (tela === 'playing') return
   if (tela === 'end') {
@@ -3968,7 +4094,10 @@ function tocarNaTela(s: SceneState, input: 'key' | 'tap'): void {
       s.caption = `A partida nova começou com ${quantos(herdados, 'cacto', 'cactos')} da partida anterior e acabou na hora, com uma batida.`
     }
   } else {
-    if (s.match.cleared > 0 && s.evidence.discoveries.includes('screen-only')) {
+    // ⭐ No modo livre (Corre Dino, aula 9, 02/11/2026) a criança escolhe a ordem: a comparação mora na
+    // lista de descobertas, e `cleared` (o Reiniciar TIROU cactos que estavam na pista) já prova que a
+    // pista limpa é obra do Reiniciar, e não de uma partida que nunca teve cacto.
+    if (s.match.cleared > 0 && (livre || s.evidence.discoveries.includes('screen-only'))) {
       observe(s, 'clean-track', 'Reiniciar começou com a pista limpa.')
       s.caption = 'A partida começou com a pista limpa.'
     } else s.caption = 'A partida começou.'

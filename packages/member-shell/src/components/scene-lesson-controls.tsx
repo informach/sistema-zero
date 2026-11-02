@@ -31,6 +31,7 @@ import { NucleoSceneControls } from './scene-nucleo-controls'
 import { NumberLineControls } from './scene-number-line'
 import { OnceVsAlwaysControls } from './scene-once-vs-always'
 import { SameRulesControls } from './scene-same-rules'
+import { ScoreGoalControls } from './scene-score-goal'
 import { SymbolSequenceControls } from './scene-symbol-sequence'
 import { TimedBridgeControls } from './scene-timed-bridge'
 import { TwoClocksControls } from './scene-two-clocks'
@@ -140,6 +141,7 @@ export function LessonSceneControls({
       {m === 'two-clocks' && <TwoClocksControls state={state} dispatch={dispatch} />}
       {m === 'copy-vs-original' && <CopyVsOriginalControls state={state} dispatch={dispatch} />}
       {m === 'published-copy' && <PublishedCopyControls state={state} dispatch={dispatch} />}
+      {m === 'score-goal' && <ScoreGoalControls state={state} dispatch={dispatch} />}
       {m === 'same-rules-new-skin' && (
         <SameRulesControls state={state} dispatch={dispatch} onRunning={onRunning} />
       )}

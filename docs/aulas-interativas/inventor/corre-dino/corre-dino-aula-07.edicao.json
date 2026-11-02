@@ -20,10 +20,10 @@
       "clipe": "video-condicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "deixo o tempo passar na tela de início. Nascem cactos antes de alguém jogar. O relógio cria cactos sem perguntar nada.",
-      "ancoraDepois": "Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e",
-      "falaPrincipal": "Mas a partida nem começou. Por que já tem cacto?",
-      "falaPersonagem": "Mas a partida nem começou. Por que já tem cacto?",
+      "ancoraAntes": "cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a",
+      "falaPrincipal": "E na tela de início, os cactos nascem?",
+      "falaPersonagem": "E na tela de início, os cactos nascem?",
       "tags": ["[curious]"]
     },
     {
@@ -31,8 +31,8 @@
       "clipe": "video-estado-inicio",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.",
-      "ancoraDepois": "Ainda falta ligar as ações a esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo",
+      "ancoraAntes": "de Ao iniciar. Ele já chega com inicio: mantenha. É este bloco que diz em que estado o jogo começa: na tela de início.",
+      "ancoraDepois": "Ainda não: falta fazer o jogo perguntar por esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o",
       "falaPrincipal": "O jogo já vai esperar para começar?",
       "falaPersonagem": "O jogo já vai esperar para começar?",
       "tags": ["[curious]"]
