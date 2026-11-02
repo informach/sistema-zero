@@ -4,7 +4,11 @@
 
 [curious] E como eu levo o personagem até a chave?
 
-[interested, animated voice] Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também dá para clicar dentro do jogo e usar as setas do teclado. E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.
+[engaging, energetic, conversational voice] Com as setas! Elas ficam no canto de baixo do jogo. [interested, animated voice] Olha aqui: quando eu seguro a seta da direita, o personagem anda para a direita.
+
+[engaging, energetic, conversational voice] No computador, você também pode clicar dentro do jogo e usar as setas do teclado.
+
+[interested, animated voice] E repare neste aviso aqui em cima: ele diz o que você precisa fazer na partida.
 
 [engaging, energetic, conversational voice] Já o caminho até a chave e depois até o farol, esse eu deixo para você descobrir.
 
@@ -30,29 +34,43 @@
 
 [engaging, energetic, conversational voice] Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela está solta? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta atividade, quando você clica em Câmera lenta, os quadros passam devagar, e cada quadro novo aparece nesta tira, um do lado do outro.
+[interested, animated voice] Olha aqui: nesta experiência, quando você clica em Câmera lenta, os quadros passam devagar, e cada quadro novo aparece nesta tira, um do lado do outro.
 
 [upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Aqui no seu jogo, procure as setas na tela ou, no computador, clique no jogo e use as setas do teclado. Tá vendo? Não tem seta nenhuma, e o personagem não sai do lugar, porque faltam as setas e o movimento.
+[engaging, energetic, conversational voice] Aqui no seu jogo, tente levar o personagem até a chave. No computador, clique dentro do jogo e use as setas do teclado. No celular ou no tablet, procure as setas no canto de baixo do jogo.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Em cada quadro, com a seta apertada, o personagem dava um passinho. Agora a gente vai pôr as setas e esse passinho no seu jogo!
+[interested, animated voice] Tá vendo? O personagem não sai do lugar, e não aparece nenhuma seta no canto de baixo. Faltam duas coisas: as setas na tela e o passinho do personagem.
 
-[engaging, energetic, conversational voice] Para fazer isso, a gente precisa dizer ao jogo o que ele deve fazer. É para isso que servem os comandos, que aqui aparecem como blocos. [interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, você escolhe os blocos que vai encaixar para montar as regras do seu jogo.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Em cada quadro, o jogo olhava a seta e, com ela apertada, o personagem dava um passinho. Agora a gente vai pôr no seu jogo as setas e esse passinho, uma coisa de cada vez!
 
-[engaging, energetic, conversational voice] As setas entram quando o jogo começa, na área Ao iniciar. Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
+[engaging, energetic, conversational voice] Para dizer ao jogo o que ele deve fazer, a gente usa blocos. Cada bloco é uma ordem para o jogo.
+
+[interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, ficam todos os blocos que você pode usar.
+
+[engaging, energetic, conversational voice] Primeiro, as setas. Elas só precisam aparecer uma vez, quando o jogo começa. Por isso, o bloco delas vai na área Ao iniciar.
+
+[confident, clear, unhurried voice] Encontre essa área e deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ela aparecer.
 
 [confident, clear, unhurried voice] Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Ativar controles clássicos.
 
 [confident, clear, unhurried voice] Arraste até o fim de Ao iniciar e solte logo abaixo do último bloco que já está lá.
 
-[confident, clear, unhurried voice] Repare que o bloco chega com automáticos no celular. Clique em automáticos no celular e escolha só as quatro direções, porque o seu personagem só precisa das setas. Depois espere o jogo atualizar. [interested, animated voice] Olha só: as setas de cima, de baixo, da esquerda e da direita aparecem na tela! Segure uma delas.
+[confident, clear, unhurried voice] Repare que o bloco chega com automáticos no celular. Clique em automáticos no celular e escolha só as quatro direções. Assim, as setas aparecem na tela no computador, no celular e no tablet, sem outros botões que o seu jogo não usa.
 
-[engaging, energetic, conversational voice] Mas o personagem continua parado, porque o jogo ainda não sabe que a seta faz ele dar o passinho. No jogo, o personagem é um sprite, que é um objeto do jogo que você pode programar.
+[engaging, energetic, conversational voice] Agora espere o jogo atualizar. [interested, animated voice] Olha só: as setas de cima, de baixo, da esquerda e da direita aparecem na tela! Segure uma delas.
 
-[engaging, energetic, conversational voice] E lembra que o jogo olha a seta em todo quadro? Por isso, o passinho vai dentro do bloco A cada quadro do jogo: tudo que fica dentro dele acontece de novo, em todo quadro. Esse bloco fica na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco A cada quadro do jogo, deixe à vista o Desenhar o cenário praia tropical.
+[engaging, energetic, conversational voice] Tá vendo? O personagem continua parado. As setas já estão no jogo, mas ainda falta o passinho.
+
+[engaging, energetic, conversational voice] Como o jogo olha a seta em todo quadro, o passinho vai dentro do bloco A cada quadro do jogo: tudo o que fica dentro dele acontece de novo, em todo quadro.
+
+[confident, clear, unhurried voice] Esse bloco fica na área Enquanto estiver rodando. Encontre essa área. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
+
+[confident, clear, unhurried voice] Dentro dela, no bloco A cada quadro do jogo, deixe à vista o bloco Desenhar o cenário praia tropical. O passinho vai logo abaixo dele.
+
+[engaging, energetic, conversational voice] No jogo, cada objeto que você pode programar se chama sprite. O seu personagem é um sprite.
 
 [confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover sprite em 4 direções com setas.
 
@@ -62,7 +80,7 @@
 
 [engaging, energetic, conversational voice] É este bloco que dá o passinho: em cada quadro, ele olha qual seta está apertada e leva o personagem para aquele lado.
 
-[upbeat, encouraging voice] Agora vamos testar! Segure uma seta da tela, ou, no computador, clique dentro do jogo e use as setas do teclado. [interested, animated voice] Olha só: o personagem anda na direção da seta!
+[upbeat, encouraging voice] Agora vamos testar! Segure uma seta da tela. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. [interested, animated voice] Olha só: o personagem anda na direção da seta!
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ativar controles clássicos, com só as quatro direções, está no fim de Ao iniciar. E o bloco de movimento, com o sprite personagem, está dentro de A cada quadro do jogo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -80,7 +98,7 @@
 
 [engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta atividade, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
+[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
 
 [upbeat, encouraging voice] Agora é a sua vez de investigar: compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
@@ -92,7 +110,9 @@
 
 [curious] E onde eu coloco esse limite?
 
-[engaging, energetic, conversational voice] O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que, como você viu na experiência, o jogo confere a beirada logo depois do passinho: o bloco de cima dá o passinho, e o de baixo confere a beirada. Deixe esse lugar à vista.
+[engaging, energetic, conversational voice] O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] Deixe esse lugar à vista.
 
 [confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.
 
@@ -100,7 +120,7 @@
 
 [engaging, energetic, conversational voice] É este bloco que confere a beirada: se o personagem passou dela, ele puxa de volta para dentro.
 
-[upbeat, encouraging voice] Agora teste as quatro direções até chegar às beiradas. [interested, animated voice] Olha só: ele para em cada beirada e não sai mais da tela!
+[upbeat, encouraging voice] Agora segure cada seta até o personagem chegar à beirada daquele lado. [interested, animated voice] Olha só: ele para em cada beirada e não sai mais da tela!
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, o bloco que move o personagem vem antes, e logo abaixo dele está Manter o sprite personagem dentro da tela. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 

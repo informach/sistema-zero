@@ -463,10 +463,10 @@ const dia2 = {
         // Dias 2 e 3 (02/11/2026): só a ideia (a memória da chave) e o convite à investigação. As
         // pistas do modelo citam "Guardar a coleta", que esta tela não tem: do aberto ao direto.
         instructions:
-          'Compare uma coleta com a memória da chave ligada e desligada, observando a chave, o aviso e temChave. Teste também afastar o personagem e começar uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+          'Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.',
         hints: [
           'Olhe a chave, o aviso e temChave: são três coisas diferentes.',
-          'Compare temChave depois de uma coleta com a memória desligada e com a memória ligada.',
+          'Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.',
           'Se a chave não estiver no chão, clique em Recomeçar a partida. Com a memória desligada, clique em Encostar na chave. Depois clique em Ligar a memória da chave, em Recomeçar a partida e em Encostar na chave. Por último, clique em Afastar e em Recomeçar a partida, observando temChave.',
         ],
         activity: {
@@ -501,7 +501,7 @@ const dia2 = {
     video('video-d2-recolher', 'Recolha a chave', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-recolher',
-      'Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora faça o seu personagem pegar a chave! Crie a área Quando acontecer, coloque nela o encontro do personagem com a chave e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d2-guardar', 'Guarde que a chave foi encontrada', 'desafio-dia-2.roteiro.md'),
     fala(
@@ -511,7 +511,7 @@ const dia2 = {
     video('video-d2-programar', 'Avise quem está jogando', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-programar',
-      'Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
+      'Agora avise quem está jogando! Faça o aviso mudar quando o personagem pegar a chave. Teste no jogo e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
     ),
     projeto('dia-2'),
   ],
@@ -578,7 +578,7 @@ const dia3 = {
         // A pergunta da porta com "sim" e "não" (então/senão ficam para a montagem). A pista do
         // modelo cita "Levar a chave", que esta tela não tem.
         instructions:
-          'Teste a mesma porta com o personagem sem a chave e com a chave, observando temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+          'Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.',
         hints: [
           'Olhe temChave antes de testar a porta.',
           'Compare a resposta da porta com temChave falso e com temChave verdadeiro.',
@@ -603,12 +603,12 @@ const dia3 = {
     video('video-d3-sem-chave', 'Avise quando faltar a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-sem-chave',
-      'Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o bloco Se e o aviso no espaço do senão. Depois teste: vá até a porta do farol sem pegar a chave. Funcionou? Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-decisao', 'Acenda o farol com a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-decisao',
-      'Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora acenda o farol! Complete o espaço do então, onde vai a resposta do sim. Teste sem a chave, com a chave e numa partida nova. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-personalizar', 'Deixe o jogo com a sua cara', 'desafio-dia-3.roteiro.md'),
     fala(
@@ -635,7 +635,7 @@ const dia3 = {
         // Sem pistas escritas de propósito: a missão restrita pede a meta que falta ("Tente: mude o
         // x para menos…"), sem contar para que lado o número leva a chave.
         instructions:
-          'Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui, no x e no y. Você escolhe a ordem dos testes. Se quiser um desafio, mostre um alvo e leve a chave até ele.',
+          'Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. Você escolhe a ordem dos testes. Se quiser um desafio, clique em Mostrar um alvo e leve a chave até ele.',
         hints: [],
         activity: {
           type: 'experimentation',
@@ -648,12 +648,12 @@ const dia3 = {
     video('video-d3-posicionar-chave', 'Escolha onde fica a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-posicionar-chave',
-      'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste o caminho até a chave e até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
+      'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste: busque a chave no lugar novo e leve até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
     ),
     video('video-d3-fecho', 'Seu jogo está pronto', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-publicar',
-      'Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.',
+      'Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.',
     ),
     projeto('dia-3'),
     ajudaComoFazer('ajuda-publicar', 'Para consultar ao publicar', [
@@ -777,7 +777,7 @@ const certificado = {
     video('video-certificado-farol', 'Comemore sua criação', 'desafio-certificado.roteiro.md'),
     fala(
       'fala-certificado',
-      'Parabéns! Você programou o personagem que anda, a coleta da chave e o farol que confere se você tem a chave. Agora clique em Baixar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir aula.',
+      'Parabéns! Você programou o personagem que anda, a memória da chave e o farol que só acende com a chave. Agora clique em Baixar meu certificado para guardar essa conquista. Quando ele baixar, clique em Concluir aula.',
     ),
     {
       key: 'certificado',

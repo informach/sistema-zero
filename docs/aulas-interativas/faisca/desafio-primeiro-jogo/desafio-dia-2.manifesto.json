@@ -9,7 +9,7 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: O jogo guardou a chave?\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-contexto-K1\",\"clipe\":\"video-d2-contexto\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"o personagem encosta na chave, ela sai do chão e some da tela. Repare em três coisas: a chave, o aviso e temChave.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Olha aqui: nesta atividade, este botão liga e desliga a memória\",\"falaPrincipal\":\"Mas a chave sumiu. Isso já quer dizer que o jogo guardou?\",\"falaPersonagem\":\"Mas a chave sumiu. Isso já quer dizer que o jogo guardou?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: O jogo guardou a chave?\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-contexto-K1\",\"clipe\":\"video-d2-contexto\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"some da tela. Repare em três coisas nesse momento: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a memória\",\"falaPrincipal\":\"Mas, se a chave some, isso já quer dizer que o jogo guardou?\",\"falaPersonagem\":\"Mas, se a chave some, isso já quer dizer que o jogo guardou?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d2-contexto",
@@ -26,10 +26,10 @@
         "required": true,
         "title": "O jogo guardou a chave?",
         "semPerguntaFinal": true,
-        "instructions": "Compare uma coleta com a memória da chave ligada e desligada, observando a chave, o aviso e temChave. Teste também afastar o personagem e começar uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.",
         "hints": [
           "Olhe a chave, o aviso e temChave: são três coisas diferentes.",
-          "Compare temChave depois de uma coleta com a memória desligada e com a memória ligada.",
+          "Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.",
           "Se a chave não estiver no chão, clique em Recomeçar a partida. Com a memória desligada, clique em Encostar na chave. Depois clique em Ligar a memória da chave, em Recomeçar a partida e em Encostar na chave. Por último, clique em Afastar e em Recomeçar a partida, observando temChave."
         ],
         "activity": {
@@ -58,19 +58,19 @@
     },
     {
       "key": "video-d2-recolher",
-      "plannedVideo": "Título: Recolha a chave\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-recolher-K2\",\"clipe\":\"video-d2-recolher\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"com o nome resposta: clique em resposta e escolha chave. É este bloco que tira a chave do chão, como na experiência.\",\"ancoraDepois\":\"Aqui, destruir só tira a chave desta partida. Quando você começa outra, ela volta. E repare que quem sai é a chave, não\",\"falaPrincipal\":\"A chave some para sempre?\",\"falaPersonagem\":\"A chave some para sempre?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Recolha a chave\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-recolher-K2\",\"clipe\":\"video-d2-recolher\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"chão, como na experiência. Agora teste! Segure as setas e leve o personagem até a chave. Olha só: a chave sai do chão!\",\"ancoraDepois\":\"Não, ela só sai desta partida. Para ver, clique em Atualizar, o botão com uma seta redonda, logo acima do jogo. Começa\",\"falaPrincipal\":\"A chave some para sempre?\",\"falaPersonagem\":\"A chave some para sempre?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d2-recolher",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+        "text": "Agora faça o seu personagem pegar a chave! Crie a área Quando acontecer, coloque nela o encontro do personagem com a chave e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-d2-guardar",
-      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-guardar-K2\",\"clipe\":\"video-d2-guardar\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro.\",\"ancoraDepois\":\"No jogo, você ainda não consegue ver temChave, porque quem vai usar essa informação é a porta do farol, no Dia 3. Por\",\"falaPrincipal\":\"Como eu vejo se o jogo guardou a chave?\",\"falaPersonagem\":\"Como eu vejo se o jogo guardou a chave?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Guarde que a chave foi encontrada\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-guardar-K2\",\"clipe\":\"video-d2-guardar\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro.\",\"ancoraDepois\":\"Jogando, você não vê temChave, porque ela não aparece na tela. Quem vai usar essa informação é a porta do farol, na\",\"falaPrincipal\":\"Como eu vejo se o jogo guardou a chave?\",\"falaPersonagem\":\"Como eu vejo se o jogo guardou a chave?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d2-guardar",
@@ -89,7 +89,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
+        "text": "Agora avise quem está jogando! Faça o aviso mudar quando o personagem pegar a chave. Teste no jogo e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula."
       }
     },
     {

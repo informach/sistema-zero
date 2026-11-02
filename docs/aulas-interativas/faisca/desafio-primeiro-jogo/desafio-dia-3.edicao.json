@@ -23,8 +23,8 @@
       "clipe": "video-d3-condicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?",
-      "ancoraDepois": "O que você acha que a porta faz? Isso você vai testar na experiência. Repare só numa coisa: a pergunta é sempre a",
+      "ancoraAntes": "assim, que o jogo faz para decidir o que acontece, tem um nome: condição. E a resposta dela só pode ser sim ou não.",
+      "ancoraDepois": "O que você acha que a porta faz? Isso você vai testar na experiência. Uma dica: a pergunta da porta é sempre a mesma.",
       "falaPrincipal": "E se a resposta for não?",
       "falaPersonagem": "E se a resposta for não?",
       "tags": ["[curious]"]
@@ -34,8 +34,8 @@
       "clipe": "video-d3-sem-chave",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "a pergunta já é essa. Pronto: agora, quando o personagem encostar no farol, o jogo confere se temChave é verdadeiro.",
-      "ancoraDepois": "Lembra da resposta do não, na experiência? Esse aviso vai no espaço do senão. O senão guarda a resposta para quando",
+      "ancoraAntes": "A palavra verdadeiro não aparece no bloco, e nem precisa. Com temChave sozinho ao lado do Se, a pergunta já é essa.",
+      "ancoraDepois": "Num espaço do próprio Se. Lembra das duas respostas da porta, o sim e o não? No bloco Se, cada resposta tem o seu",
       "falaPrincipal": "E onde eu escrevo que falta a chave?",
       "falaPersonagem": "E onde eu escrevo que falta a chave?",
       "tags": ["[curious]"]
@@ -45,8 +45,8 @@
       "clipe": "video-d3-decisao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "heroi e escolha farol. Depois clique no segundo e escolha a imagem farol listrado aceso. Se não achar, role a lista.",
-      "ancoraDepois": "Vai, sim! É para isso que serve o último bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do então.",
+      "ancoraAntes": "trocar de imagem. Depois clique no segundo heroi e escolha a imagem farol listrado aceso. Se não achar, role a lista.",
+      "ancoraDepois": "Vai, sim! É para isso que serve o terceiro bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do",
       "falaPrincipal": "E quem está jogando vai saber que deu certo?",
       "falaPersonagem": "E quem está jogando vai saber que deu certo?",
       "tags": ["[curious]"]
@@ -56,8 +56,8 @@
       "clipe": "video-d3-decisao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco já chegou perto do farol!",
-      "ancoraDepois": "Clique em Atualizar de novo. Repare que a chave volta para o chão, porque começou uma partida nova. Vá direto até a",
+      "ancoraAntes": "até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco vem chegando perto do farol!",
+      "ancoraDepois": "É só clicar em Atualizar de novo. Repare: a chave volta para o chão, porque começou uma partida nova, e o personagem",
       "falaPrincipal": "Acendeu! E se eu quiser jogar de novo?",
       "falaPersonagem": "Acendeu! E se eu quiser jogar de novo?",
       "tags": ["[curious]"]
@@ -67,8 +67,8 @@
       "clipe": "video-d3-posicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "quantos passos andar para os lados e quantos andar para cima ou para baixo. O x cuida da horizontal, para os lados.",
-      "ancoraDepois": "Para isso, a gente muda o y, que cuida da vertical. Mas, quando o y aumenta, a chave sobe ou desce? O que você acha?",
+      "ancoraAntes": "da chave também é dito com dois números: o x e o y. O x cuida dos lados, a direção que também se chama horizontal.",
+      "ancoraDepois": "Para isso existe o y, que cuida de cima e de baixo, a direção vertical. Mas, quando o y aumenta, a chave sobe ou desce?",
       "falaPrincipal": "E para subir ou descer?",
       "falaPersonagem": "E para subir ou descer?",
       "tags": ["[curious]"]
@@ -79,7 +79,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "perto da trilha, com x 211 e y 53; na parte de baixo, com x 160 e y 250; ou perto da ponte, com x 280 e y 160.",
-      "ancoraDepois": "Você pode escolher um deles ou experimentar outro. Eu vou colocar na parte de baixo. No campo x do bloco, troque o",
+      "ancoraDepois": "Você pode escolher um deles ou experimentar outro lugar. Eu vou colocar na parte de baixo. No campo x do bloco, troque",
       "falaPrincipal": "Preciso escolher um desses três lugares?",
       "falaPersonagem": "Preciso escolher um desses três lugares?",
       "tags": ["[curious]"]

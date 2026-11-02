@@ -17,7 +17,7 @@
   "blocks": [
     {
       "key": "video-intro-farol",
-      "plannedVideo": "Título: Seu primeiro jogo: A Chave do Farol\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-intro-farol-K1\",\"clipe\":\"video-intro-farol\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"e sem a luz dele o barco não acha o caminho. Para acender o farol, o personagem precisa pegar a chave e levar até lá.\",\"ancoraDepois\":\"Olha aqui: quando eu seguro a seta da tela para a direita, o personagem anda para a direita. E, no computador, também\",\"falaPrincipal\":\"E como eu levo o personagem até a chave?\",\"falaPersonagem\":\"E como eu levo o personagem até a chave?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Seu primeiro jogo: A Chave do Farol\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-intro-farol-K1\",\"clipe\":\"video-intro-farol\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"e sem a luz dele o barco não acha o caminho. Para acender o farol, o personagem precisa pegar a chave e levar até lá.\",\"ancoraDepois\":\"Com as setas! Elas ficam no canto de baixo do jogo. Olha aqui: quando eu seguro a seta da direita, o personagem anda\",\"falaPrincipal\":\"E como eu levo o personagem até a chave?\",\"falaPersonagem\":\"E como eu levo o personagem até a chave?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-intro-farol",
@@ -1772,7 +1772,7 @@
     },
     {
       "key": "video-d1-limite",
-      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.\",\"ancoraDepois\":\"O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta atividade, este botão liga e\",\"falaPrincipal\":\"E se eu ligar o limite com ele já fora da tela?\",\"falaPersonagem\":\"E se eu ligar o limite com ele já fora da tela?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.\",\"ancoraDepois\":\"O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e\",\"falaPrincipal\":\"E se eu ligar o limite com ele já fora da tela?\",\"falaPersonagem\":\"E se eu ligar o limite com ele já fora da tela?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-limite",
@@ -1822,7 +1822,7 @@
     },
     {
       "key": "video-d1-borda",
-      "plannedVideo": "Título: Mantenha o personagem na tela\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-borda-K1\",\"clipe\":\"video-d1-borda\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!\",\"ancoraDepois\":\"O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que, como você viu na\",\"falaPrincipal\":\"E onde eu coloco esse limite?\",\"falaPersonagem\":\"E onde eu coloco esse limite?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Mantenha o personagem na tela\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-borda-K1\",\"clipe\":\"video-d1-borda\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!\",\"ancoraDepois\":\"O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, ainda\",\"falaPrincipal\":\"E onde eu coloco esse limite?\",\"falaPersonagem\":\"E onde eu coloco esse limite?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-borda",
