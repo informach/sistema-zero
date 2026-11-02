@@ -51,6 +51,11 @@ estão em `src/lib/verbos.ts` e na seção 9 de `docs/aulas-interativas-tecnico/
 `ocupado()` responde enquanto o Estúdio ou o livro carregam, o jogo pronto prepara ou o projeto
 está sendo conferido.
 
+- **Os blocos começam organizados** (`src/lib/arrumacao.ts`): cada área de trabalho nova do
+  Estúdio que abre com pilhas uma por cima da outra recebe Organizar blocos uma vez, assim que os
+  blocos param de chegar. Até lá `ocupado()` responde, e o EdiAula só liga o vídeo da parte depois
+  disso. O que o robô faz na área durante a gravação não é mexido.
+
 - **A mão procura descansar fora dos blocos:** parada em cima, o Blockly mostra a dica do bloco
   por cima da aula. Apontar um bloco, o encaixe ou o lugar abaixo dele deixa a mão no fundo da
   área, ao lado (`perto`, com o apontar `exato`), e encaixar e trocar terminam afastando a mão.

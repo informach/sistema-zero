@@ -2,7 +2,8 @@
 
 import { useEffect } from 'react'
 import type { LessonDetailView } from '@/lib/types'
-import { paginaDe } from './pagina'
+import { arrumacao } from './arrumacao'
+import { paginaDe, pilhasDaArea } from './pagina'
 import { agirNaPagina, type JogoDaAula, ocupado, VERBOS } from './verbos'
 
 /** Os jogos prontos da aula, com o palco e os alvos de cada um (para `achar`). */
@@ -21,19 +22,29 @@ export function jogosDa(lesson: Pick<LessonDetailView, 'blocks'>): JogoDaAula[] 
 
 /**
  * A ponte de gravação na página do palco: `window.__gravacao`, versão 1, o contrato que o modo
- * guiado do EdiAula usa. Existe só aqui, nunca no Kids.
+ * guiado do EdiAula usa. Existe só aqui, nunca no Kids. Junto dela, a arrumação de quando o
+ * Estúdio abre: blocos um por cima do outro são organizados antes de a gravação começar.
  */
 export function PonteDeGravacao({ lesson }: { lesson: Pick<LessonDetailView, 'blocks'> }) {
   useEffect(() => {
     const jogos = jogosDa(lesson)
+    const arrumar = arrumacao<Element>()
+    const vez = setInterval(() => {
+      const { area, caixas } = pilhasDaArea(document)
+      void arrumar.passo(area, caixas, () => paginaDe(document).organizar())
+    }, 250)
     const ponte = {
       versao: 1,
       verbos: () => VERBOS,
       agir: (acao: string) => agirNaPagina(acao, jogos, paginaDe(document)),
-      ocupado: () => ocupado(document),
+      ocupado: () => {
+        const { area, caixas } = pilhasDaArea(document)
+        return ocupado(document) || arrumar.pendente(area, caixas)
+      },
     }
     Object.assign(window, { __gravacao: ponte })
     return () => {
+      clearInterval(vez)
       if ((window as { __gravacao?: unknown }).__gravacao === ponte)
         delete (window as { __gravacao?: unknown }).__gravacao
     }
