@@ -27,11 +27,8 @@ export function analisarRepertorio(
           codigo: 'BLOCO_DESCONHECIDO',
           mensagem: `${nome}: o bloco não existe no catálogo atual do Estúdio. Revise o projeto.`,
         })
-      if (aviso === 'sem-curso')
-        problemas.push({
-          codigo: 'BLOCO_SEM_CURSO',
-          mensagem: `${nome}: nenhum curso publicado desta comunidade concede o bloco. Vincule o ensino antes de publicar o desafio.`,
-        })
+      // Preparar o jogo não depende da publicação dos cursos. A cobertura conserva o
+      // aviso sem-curso; jogar continua exigindo os blocos conquistados no Members.
       if (aviso === 'curso-depois-da-ilha')
         problemas.push({
           codigo: 'CURSO_DEPOIS_DA_ILHA',

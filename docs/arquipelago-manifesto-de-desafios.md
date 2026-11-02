@@ -38,9 +38,11 @@ Admin lista os desafios do cadastro que o arquivo não traz. Se quiser tirá-los
 
 ## Publicar
 
-Desde C01a (30/10/2026), a cobertura é requisito de publicação, não só aviso. Cada bloco exigido
-precisa existir e ter curso publicado naquela comunidade até o posto da ilha. No Quadro das
-Cores, ao menos uma fonte deve ser base 2D, base 3D ou missão. Poder, extra e Maestria podem
+Desde a decisão de 02/11/2026, o desafio pode ser publicado antes da atualização dos cursos.
+A falta de curso publicado aparece como aviso na cobertura, sem conceder blocos nem liberar
+o desafio para quem ainda não os conquistou. Cada bloco exigido precisa existir no catálogo.
+Quando há uma fonte curricular cadastrada, ela precisa caber até o posto da ilha. No Quadro das
+Cores, quando o bloco já tem fontes de ensino, ao menos uma deve ser base 2D, base 3D ou missão. Poder, extra e Maestria podem
 ensinar o mesmo bloco, mas não podem ser a única opção de quem quer completar os quadros.
 Uma atividade que depende de Poder escolhido pode ser desafio opcional, com o curso indicado.
 Não use ajustes manuais de blocos para esconder uma lacuna de ensino.
