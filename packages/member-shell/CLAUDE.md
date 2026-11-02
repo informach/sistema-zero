@@ -12,8 +12,12 @@ dos Lumis (Blockly cru, sem Studio) segue com `arquipelago-rotina/blockly-dialog
 
 A coluna **Missão** (à esquerda no computador, `lg:w-72`; primeira de duas abas no celular,
 Missão e Estúdio, por cima do Estúdio montado para ele não remontar) mostra o pedido, o print
-"Como fica" (`desafio.imagem`, opcional), os objetivos com marca de feito (a dica do objetivo só
-depois de verificar e faltar), o extra e as dicas. Recolher fica no `localStorage`
+"Como fica" (`desafio.imagem`, opcional), os objetivos obrigatórios com marca de feito (a dica do
+objetivo só depois de verificar e faltar; a contagem é só deles) e as dicas. O extra mora numa caixa
+só (02/11/2026, antes ele aparecia na lista e de novo embaixo): o título e o texto do
+`desafioExtra`, o prêmio (`moedasExtra`) e os objetivos opcionais com a marca; "Para depois dos
+objetivos" até os obrigatórios passarem, quando a caixa ganha destaque; feito, "· feito" e o selo
+"Extra feito" no rodapé. Recolher fica no `localStorage`
 (`sz:arquipelago:missao-recolhida`); o balão de primeira vez (Zappy só no Kids) em
 `sz:arquipelago:missao-balao-visto`. O rodapé mantém o progresso e "Verificar projeto". Testes:
 `tests/fixtures/arquipelago-challenge-dialog.fixture.tsx`.

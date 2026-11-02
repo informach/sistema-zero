@@ -184,7 +184,7 @@ test('verification flushes before posting the published revision and returns con
   const ui = await render()
   await ui.click('Verificar projeto')
   expect(sends[0]).toMatchObject({ revisao: 2, projeto: { id: initial?.id } })
-  expect(ui.container.textContent).toContain('1/1')
+  expect(ui.container.textContent).toContain('1 de 1')
   await ui.click('Voltar ao jogo')
   expect(ui.finished).toEqual([true])
 })
@@ -324,4 +324,42 @@ test('a Missão recolhe no computador e o balão de primeira vez some de vez', a
   expect(outra.container.querySelector('#arq-missao')?.className).toContain('lg:hidden')
   await outra.click('Mostrar a missão')
   expect(outra.container.querySelector('#arq-missao')?.className).toContain('lg:flex')
+})
+
+test('o extra mora numa caixa só: fora da lista e da contagem, com o texto, o prêmio e a marca', async () => {
+  respond = async () => ({
+    passou: true,
+    resultados: [
+      { id: 'o1', passou: true },
+      { id: 'o2', passou: true },
+    ],
+    concluidoAgora: true,
+    extraAgora: true,
+  })
+  const ui = await render({
+    ...data,
+    objetivos: [
+      { id: 'o1', label: 'Ande para a direita', kind: 'game' },
+      { id: 'o2', label: 'Enter recomeça a praia', kind: 'game', optional: true },
+    ],
+    desafioExtra: { titulo: 'Mais um desafio', texto: 'Complete o evento Enter.' },
+    moedasExtra: 10,
+  })
+  const lista = ui.container.querySelector('[aria-labelledby="arq-objetivos"]')
+  const extra = ui.container.querySelector('[aria-labelledby="arq-extra"]')
+  expect(lista?.textContent).toContain('Objetivos · 0 de 1')
+  expect(lista?.textContent).not.toContain('Enter recomeça a praia')
+  expect(extra?.textContent).toContain('Mais um desafio')
+  expect(extra?.textContent).toContain('Complete o evento Enter.')
+  expect(extra?.textContent).toContain('Vale mais 10 moedas.')
+  expect(extra?.textContent).toContain('Enter recomeça a praia')
+  expect(extra?.textContent).toContain('Para depois dos objetivos.')
+  // O texto do extra aparece uma vez só na coluna.
+  expect(ui.container.textContent?.split('Complete o evento Enter.').length).toBe(2)
+  await ui.click('Verificar projeto')
+  expect(lista?.textContent).toContain('Objetivos · 1 de 1')
+  expect(extra?.hasAttribute('data-destaque')).toBe(true)
+  expect(extra?.textContent).toContain('Mais um desafio · feito')
+  expect(extra?.textContent).not.toContain('Para depois dos objetivos.')
+  expect(ui.container.querySelector('footer')?.textContent).toContain('Extra feito')
 })

@@ -52,6 +52,33 @@ function gravarMarca(chave: string, valor: boolean): void {
   }
 }
 
+/** Um objetivo com a marca de feito; a dica só depois de verificar e faltar, como nas aulas. */
+function ItemDoObjetivo({
+  objetivo,
+  resultado,
+}: {
+  objetivo: DesafioAberto['objetivos'][number]
+  resultado: { passou: boolean } | undefined
+}) {
+  return (
+    <li className="flex gap-2 text-sm" data-feito={resultado?.passou ? '' : undefined}>
+      <span
+        aria-hidden="true"
+        className={resultado?.passou ? 'text-green-600' : 'text-muted-foreground'}
+      >
+        {resultado?.passou ? '✓' : '○'}
+      </span>
+      <span>
+        <span className="sr-only">{resultado?.passou ? 'Feito: ' : 'Falta: '}</span>
+        {objetivo.label}
+        {objetivo.hint && resultado && !resultado.passou && (
+          <span className="mt-1 block text-muted-foreground">{objetivo.hint}</span>
+        )}
+      </span>
+    </li>
+  )
+}
+
 /** Estúdio de tarefa, sem produto livre e sem gabarito no navegador. */
 export function ArquipelagoChallengeDialog({
   desafio,
@@ -241,7 +268,11 @@ export function ArquipelagoChallengeDialog({
   }
 
   const required = desafio.objetivos.filter((o) => !o.optional)
-  const passed = required.filter((o) => results.some((r) => r.id === o.id && r.passou)).length
+  const extras = desafio.objetivos.filter((o) => o.optional)
+  const resultadoDe = (id: string) => results.find((r) => r.id === id)
+  const passed = required.filter((o) => resultadoDe(o.id)?.passou).length
+  const principaisFeitos = required.length > 0 && passed === required.length
+  const extraFeito = extras.length > 0 && extras.every((o) => resultadoDe(o.id)?.passou)
   const recolher = (valor: boolean) => {
     setMissaoRecolhida(valor)
     gravarMarca(CHAVE_MISSAO_RECOLHIDA, valor)
@@ -363,42 +394,42 @@ export function ArquipelagoChallengeDialog({
           )}
           <section aria-labelledby="arq-objetivos" className="flex flex-col gap-2">
             <h3 id="arq-objetivos" className="text-sm font-semibold text-muted-foreground">
-              Objetivos · {passed}/{required.length}
+              Objetivos · {passed} de {required.length}
             </h3>
             <ul className="flex flex-col gap-2">
-              {desafio.objetivos.map((o) => {
-                const resultado = results.find((r) => r.id === o.id)
-                return (
-                  <li
-                    key={o.id}
-                    className="flex gap-2 text-sm"
-                    data-feito={resultado?.passou ? '' : undefined}
-                  >
-                    <span
-                      aria-hidden="true"
-                      className={resultado?.passou ? 'text-green-600' : 'text-muted-foreground'}
-                    >
-                      {resultado?.passou ? '✓' : '○'}
-                    </span>
-                    <span>
-                      <span className="sr-only">{resultado?.passou ? 'Feito: ' : 'Falta: '}</span>
-                      {o.label}
-                      {o.optional ? ' (extra)' : ''}
-                      {/* A dica do objetivo só depois de verificar e faltar, como nas aulas. */}
-                      {o.hint && resultado && !resultado.passou && (
-                        <span className="mt-1 block text-muted-foreground">{o.hint}</span>
-                      )}
-                    </span>
-                  </li>
-                )
-              })}
+              {required.map((o) => (
+                <ItemDoObjetivo key={o.id} objetivo={o} resultado={resultadoDe(o.id)} />
+              ))}
             </ul>
           </section>
-          {desafio.desafioExtra && (
-            <p className="text-sm">
-              <strong>{desafio.desafioExtra.titulo}: </strong>
-              {desafio.desafioExtra.texto}
-            </p>
+          {/* O extra num lugar só (02/11/2026): o texto do extra, a marca do objetivo extra e o
+              prêmio. Antes o objetivo extra entrava na lista e o texto vinha de novo embaixo. */}
+          {(desafio.desafioExtra || extras.length > 0) && (
+            <section
+              aria-labelledby="arq-extra"
+              data-destaque={principaisFeitos ? '' : undefined}
+              className={cn(
+                'flex flex-col gap-2 rounded-xl border p-3 text-sm',
+                principaisFeitos ? 'border-primary bg-primary/10' : 'border-dashed border-border',
+              )}
+            >
+              <h3 id="arq-extra" className="font-semibold">
+                {desafio.desafioExtra?.titulo ?? 'Desafio extra'}
+                {extraFeito ? ' · feito' : ''}
+              </h3>
+              {!principaisFeitos && (
+                <p className="text-muted-foreground">Para depois dos objetivos.</p>
+              )}
+              {desafio.desafioExtra && <p>{desafio.desafioExtra.texto}</p>}
+              {desafio.moedasExtra ? <p>Vale mais {desafio.moedasExtra} moedas.</p> : null}
+              {extras.length > 0 && (
+                <ul className="flex flex-col gap-2">
+                  {extras.map((o) => (
+                    <ItemDoObjetivo key={o.id} objetivo={o} resultado={resultadoDe(o.id)} />
+                  ))}
+                </ul>
+              )}
+            </section>
           )}
           {hints.length > 0 && (
             <section aria-label="Dicas" className="flex flex-col gap-2">
@@ -487,7 +518,12 @@ export function ArquipelagoChallengeDialog({
       <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-card p-3">
         <div className="flex min-w-0 flex-col">
           <span className="font-medium">
-            Objetivos do projeto · {passed}/{required.length}
+            Objetivos do projeto · {passed} de {required.length}
+            {extraFeito && (
+              <span className="ml-2 rounded-full bg-primary/15 px-2 py-0.5 text-xs font-semibold">
+                Extra feito
+              </span>
+            )}
           </span>
           {stale && (
             <span role="status" className="text-sm text-muted-foreground">

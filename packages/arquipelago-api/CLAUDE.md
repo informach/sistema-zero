@@ -35,10 +35,19 @@ Registro completo: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`. N
 - Testes de banco: Postgres descartável (`arquipelago_test_*`); sem as variáveis, eles pulam em
   silêncio.
 
+## A equipe segue o posto real nos desafios (02/11/2026)
+
+`ServicoDosDesafios.regua` não dá mais passe livre à equipe: posição, blocos e cursos-base vêm do
+Members como para qualquer pessoa. Antes a equipe tinha todas as ilhas e blocos nos desafios
+enquanto o mundo do jogo (pontes, barcos, ilhas) seguia o posto real, e o desafio de hoje caía numa
+ilha sem ponte. Só o jogo mudou: na plataforma (cursos, Estúdio, Admin e a prévia dos desafios no
+Admin) a equipe continua com tudo. `ARQUIPELAGO_DESAFIOS=equipe` segue valendo (decide quem joga,
+não o que abre). Teste em `tests/integration/desafios-do-jogador.test.ts`.
+
 ## Linha e print do desafio (01/11/2026)
 
 `ServicoDosDesafios.listar` põe `resumo` (`resumoDoDesafio` do contrato) em todo desafio e
-`imagem` só nos do Quadro das Cores de ilha aberta (a lista inteira levaria uns 180 KB de prints a cada leitura); `abrir` leva `imagem`.
+`imagem` só nos do Quadro das Cores de ilha aberta (a lista inteira levaria uns 180 KB de prints a cada leitura); `abrir` leva `imagem` e `moedasExtra` (02/11/2026, o prêmio do extra na caixa da Missão). Os dois só com `?apresentacao=1`: sem ele, `semImagem` tira ambos para o cliente de esquema estrito.
 Na porta HTTP, `GET /desafios` e `GET /desafios/:id` só incluem a apresentação com
 `?apresentacao=1`. Sem a opção, a vista continua compacta e legível pelos clientes estritos já
 abertos. A regra do domínio e o conteúdo publicado são únicos. Não afrouxar os schemas.
@@ -100,8 +109,8 @@ chama. Antes disso o jogo recebe 404 na leitura e não constrói nada da obra es
 
 - **A3:** `situacaoDoDesafio` ganhou `falta-curso` (depois da ilha, antes dos blocos): o desafio
   fora dos blocos (Python, Ponte, Pro, por `linguagemDoProjeto` do projeto inicial) pede o
-  curso-base do posto da ilha entre os `cursosBase` que o Members devolve no jogador. A equipe vê
-  tudo. Members anterior (sem o campo) = nenhum curso-base.
+  curso-base do posto da ilha entre os `cursosBase` que o Members devolve no jogador (a equipe
+  também, desde 02/11/2026). Members anterior (sem o campo) = nenhum curso-base.
 - **A24:** a lista traz `aprenda` em todo desafio (`aprendaODesafio`): o curso-base do posto na
   linguagem do posto, ou o curso mais adiantado entre os blocos exigidos.
 - **A26:** `POST .../verificar` aceita `dicas` (opcional, até o teto de dicas). A migração 0022
@@ -455,7 +464,8 @@ Regras do jogo, em linguagem da dona e com onde mudar cada número: `docs/arquip
   blocos > disponível; feito continua feito), `passouNosObrigatorios` (principal = todos os
   obrigatórios, sem obrigatório nunca passa; extra = todos os opcionais), `chaveDasMoedas`
   (UUIDv5 por jogador, desafio e prêmio) e `semanaDeSaoPaulo` (a segunda-feira da semana do teto).
-  A régua (posição e blocos) vem do `GET /jogador` (cache de 30 s); a equipe tem tudo aberto.
+  A régua (posição e blocos) vem do `GET /jogador` (cache de 30 s), também para a equipe desde
+  02/11/2026 (ver "A equipe segue o posto real" no alto).
 - Rotas em `interfaces/http/rotas-dos-desafios.ts`: `GET /arquipelago/desafios[?ilha=]` (as ilhas
   com aberta e a cor, `quadro.feitos` = quadros distintos concluídos na ilha, e os desafios com
   situação, o que falta e "Aprenda isso em"), `GET /desafios/:id` (`DesafioAberto`: só a vista dos
