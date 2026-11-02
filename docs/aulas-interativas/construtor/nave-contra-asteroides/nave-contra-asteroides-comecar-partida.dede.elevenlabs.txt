@@ -1,8 +1,12 @@
-[curious] E como o jogo sabe que deve começar na abertura?
+[curious] E na tela de início, as pedras nascem?
 
 [long pause]
 
-[curious] Qual pergunta vai dentro desse relógio?
+[curious] E como o jogo sabe que deve começar na tela de início?
+
+[long pause]
+
+[curious] Qual pergunta vai aqui?
 
 [long pause]
 

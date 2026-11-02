@@ -112,14 +112,28 @@ function vehicle(
   )
 }
 
+/**
+ * O que o jogo faz, nas palavras da exploração livre (02/11/2026): sem "regra", que é palavra da
+ * programação. A ordem é a da lista de antes; a segunda linha é a do tiro.
+ */
+export const O_QUE_O_JOGO_FAZ = [
+  'as setas movem',
+  'a tecla solta um tiro',
+  'o obstáculo vem',
+  'encostou, perde vida',
+] as const
+
+/** ⚠️ `livre`: o painel diz "O que o jogo faz" em vez de "Regras do jogo". Sem ele, o palco de antes. */
 export function SameRulesStage({
   state,
   cast,
   dispatch,
+  livre = false,
 }: {
   state: SceneState
   cast?: SceneCast
   dispatch?: (action: SceneAction) => void
+  livre?: boolean
 }) {
   const actors = sceneNativeCast('same-rules-new-skin', cast)
   const mundo = useSceneCenario(actors, 'same-rules-new-skin')
@@ -146,7 +160,11 @@ export function SameRulesStage({
         cast={actors}
         mundo={mundo}
         titulo="O mesmo jogo em três histórias"
-        descricao={`Tema ${THEMES.find((theme) => theme.id === game.theme)?.label}. Quatro regras, com a de atirar ${game.shootEnabled ? 'ligada' : 'desligada'}. ${game.lives} vidas e ${game.points} pontos.`}
+        descricao={
+          livre
+            ? `História ${THEMES.find((theme) => theme.id === game.theme)?.label}. O que o jogo faz: quatro coisas, com o tiro ${game.shootEnabled ? 'ligado' : 'desligado'}. ${game.lives} vidas e ${game.points} pontos.`
+            : `Tema ${THEMES.find((theme) => theme.id === game.theme)?.label}. Quatro regras, com a de atirar ${game.shootEnabled ? 'ligada' : 'desligada'}. ${game.lives} vidas e ${game.points} pontos.`
+        }
       >
         {(palco) => (
           <>
@@ -167,32 +185,33 @@ export function SameRulesStage({
               className="fill-scene-ink"
               fontWeight="700"
             >
-              Regras do jogo
+              {livre ? 'O que o jogo faz' : 'Regras do jogo'}
             </Texto>
-            {['as setas movem', 'a tecla atira', 'o obstáculo vem', 'encostou, perde vida'].map(
-              (rule, index) => (
-                <g key={rule}>
-                  <circle
-                    cx={401}
-                    cy={81 + 42 * index}
-                    r={7}
-                    className={
-                      index === 1 && !game.shootEnabled ? 'fill-scene-alert' : 'fill-scene-a'
-                    }
-                  />
-                  <Texto
-                    x={416}
-                    y={86 + 42 * index}
-                    tamanho={palco.estreito ? 15 : 12}
-                    className={
-                      index === 1 && !game.shootEnabled ? 'fill-scene-muted' : 'fill-scene-ink'
-                    }
-                  >
-                    {rule}
-                  </Texto>
-                </g>
-              ),
-            )}
+            {(livre
+              ? O_QUE_O_JOGO_FAZ
+              : ['as setas movem', 'a tecla atira', 'o obstáculo vem', 'encostou, perde vida']
+            ).map((rule, index) => (
+              <g key={rule}>
+                <circle
+                  cx={401}
+                  cy={81 + 42 * index}
+                  r={7}
+                  className={
+                    index === 1 && !game.shootEnabled ? 'fill-scene-alert' : 'fill-scene-a'
+                  }
+                />
+                <Texto
+                  x={416}
+                  y={86 + 42 * index}
+                  tamanho={palco.estreito ? 15 : 12}
+                  className={
+                    index === 1 && !game.shootEnabled ? 'fill-scene-muted' : 'fill-scene-ink'
+                  }
+                >
+                  {rule}
+                </Texto>
+              </g>
+            ))}
             <Texto
               x={391}
               y={262}

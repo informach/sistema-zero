@@ -10,44 +10,42 @@
 
 **Clipe:** `video-preenchimento-contorno`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda "linha: Contorno · dentro: Preenchimento". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Sabe um livro de colorir", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão [apontar "Preenchimento: com cor"]. No "e este outro faz o mesmo com o Contorno", apontar o botão [apontar "Contorno: com cor"]. Não tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender as duas partes de uma forma: o Preenchimento, que fica dentro, e o Contorno, que é a linha da borda.
+[engaging, energetic, conversational voice] A sua pedra vai ser desenhada em vetor, com formas. No vetor, cada forma tem duas partes que recebem cor.
 
-[interested, animated voice] Olha aqui: a pedra começa com Preenchimento azul e Contorno laranja. Quando eu deixo o Contorno em Sem cor, a linha laranja da borda some, e fica só o azul por dentro, porque o Contorno é a linha da borda.
+[engaging, energetic, conversational voice] O Preenchimento é a cor de dentro da forma. O Contorno é a linha da borda. No Pinta, cada uma dessas partes tem a sua cor, e cada uma pode ficar em Sem cor.
 
-[engaging, energetic, conversational voice] Agora eu volto o Contorno com cor e deixo o Preenchimento em Sem cor. [interested, animated voice] Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.
+[engaging, energetic, conversational voice] Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.
 
-[curious] Cadê a cor de dentro?
+[curious] E se uma das partes ficar em Sem cor, o que sobra?
 
-[engaging, energetic, conversational voice] É que Sem cor não é branco: é transparente, por isso dá para ver o fundo.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Quando você pega um desenho para colorir, as linhas já estão lá, e você pinta por dentro delas. No Pinta, a linha é o Contorno, e a pintura de dentro é o Preenchimento. Cada parte tem a sua cor, e cada uma pode ficar em Sem cor.
+[interested, animated voice] Olha aqui: nesta experiência, este botão troca o Preenchimento entre com cor e Sem cor, e este outro faz o mesmo com o Contorno.
 
-[engaging, energetic, conversational voice] Por fim, eu volto o Preenchimento com cor. A pedra fica com as duas partes de novo: azul por dentro e laranja na borda.
-
-[engaging, energetic, conversational voice] Daqui a pouco, a sua pedra vai ter uma cor no Preenchimento e o Contorno em Sem cor.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: deixe uma parte de cada vez em Sem cor e depois as duas com cor. Compare o que sobra da pedra em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-preenchimento-contorno-K1 | Dedé | 1 | cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo. | Cadê a cor de dentro? | É que Sem cor não é branco: é transparente, por isso dá para ver o fundo. Quando você pega um desenho para colorir, as | [curious] |
+| video-preenchimento-contorno-K1 | Dedé | 1 | Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha. | E se uma das partes ficar em Sem cor, o que sobra? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão troca o Preenchimento | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-preenchimento-contorno-K1`: entrada — Tirar a cor do preenchimento e deixar a borda laranja e o xadrez à vista. Saída — Apontar o fundo visível enquanto explica a transparência; retomar o preenchimento no momento previsto.
+- `video-preenchimento-contorno-K1`: entrada — Manter o meme do livro de colorir e a pedra com as duas partes coloridas. Saída — Seguir sem tirar nenhuma cor: a professora só convida a testar e aponta os controles.
 
 
-**Recado na página (não gravar):** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/fill-stroke.ts`, com a tela em `packages/member-shell/src/components/scene-livre/fill-stroke.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare o desenho em vetor
 
@@ -57,16 +55,20 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-novo-asteroide`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. No "Nesta parte, clique em Abrir meu Pinta", clicar no botão e mostrar o Pinta na outra aba. No "clique em Criar novo", abrir a escolha. No "escolha Vetor", escolher Vetor, Personagem e Médio, 64 por 64. No "Escreva asteroide", escrever o nome e começar a desenhar. No "Confira o nome asteroide", apontar o nome e a área quadrada. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A pedra tinha uma cor no Preenchimento, por dentro, e outra no Contorno, na borda. Agora a gente vai preparar o seu asteroide em Vetor, porque é no Vetor que as formas têm essas duas partes.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A pedra tinha uma cor no Preenchimento, por dentro, e outra no Contorno, na borda. Por isso, agora a gente vai criar o seu asteroide em Vetor, que é onde as formas têm essas duas partes.
 
-[confident, clear, unhurried voice] Clique em Abrir meu Pinta nesta parte. Em Meus desenhos, clique em Criar novo. Em Como você quer desenhar?, escolha Vetor. Depois escolha Personagem e Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar. Se você já começou esse desenho neste curso, retome o mesmo cartão.
+[engaging, energetic, conversational voice] Nesta parte, clique em Abrir meu Pinta. Em Meus desenhos, clique em Criar novo.
 
-[confident, clear, unhurried voice] Confira o nome asteroide e a área quadrada. Por último, deixe a parte de cima livre para as chamas que você vai desenhar depois, porque a pedra vai ocupar o centro e a parte de baixo.
+[engaging, energetic, conversational voice] Em Como você quer desenhar?, escolha Vetor. Depois escolha Personagem e Médio, 64 por 64. Escreva asteroide e clique em Começar a desenhar.
+
+[engaging, energetic, conversational voice] Se você já começou esse desenho neste curso, retome o mesmo cartão, em vez de criar outro.
+
+[confident, clear, unhurried voice] Confira o nome asteroide e a área quadrada. A pedra vai ocupar o centro e a parte de baixo, por isso deixe a parte de cima livre para as chamas que você vai desenhar depois.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -82,16 +84,18 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-forma-pedra`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "escolha uma cor em Preenchimento", escolher a cor e deixar o Contorno em Sem cor. No "Pegue a Caneta", marcar seis pontos ao redor da pedra. No "Para fechar, clique no primeiro ponto", fechar a forma. No "Olha só", apontar o interior colorido. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora desenhe a forma da sua pedra. Com nenhuma forma selecionada, escolha uma cor para Preenchimento e, em Contorno, escolha Sem cor, como na experiência do começo desta aula.
+[engaging, energetic, conversational voice] Agora desenhe a forma da sua pedra. Primeiro, escolha uma cor em Preenchimento e deixe o Contorno em Sem cor, como na experiência do começo desta aula.
 
-[engaging, energetic, conversational voice] Depois pegue a Caneta e clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos podem servir de começo, e o formato é seu.
+[engaging, energetic, conversational voice] Pegue a Caneta e clique para marcar pontos ao redor da pedra, deixando espaço livre em cima. Seis pontos são um bom começo, e o formato é seu.
 
-[engaging, energetic, conversational voice] Para fechar, clique no primeiro ponto. [interested, animated voice] Olha só: o interior ganha a cor que você escolheu, porque agora a forma está fechada. Depois confira se toda a pedra está dentro da área do desenho.
+[engaging, energetic, conversational voice] Para fechar, clique no primeiro ponto. [interested, animated voice] Olha só: o interior ganha a cor que você escolheu, porque agora a forma está fechada.
+
+[engaging, energetic, conversational voice] Depois confira se toda a pedra ficou dentro da área do desenho.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -107,14 +111,22 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-curvas`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "Escolha Editar os pontos", escolher a ferramenta e clicar na pedra. No "Repare", apontar os pontos. No "clique em Ponto suave", selecionar um ponto e clicar no botão. No "Olha só", apontar as duas alças. No "Arraste uma alça devagar", arredondar um trecho. No "Depois afaste a imagem", afastar e mostrar a pedra inteira. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora arredonde a sua pedra. Escolha Editar os pontos e clique na pedra. Selecione um ponto do contorno e use Ponto suave. [confident, clear, unhurried voice] Repare: aparecem alças nesse ponto. Arraste essas alças para arredondar o trecho e faça o mesmo nos cantos que você quiser suavizar.
+[engaging, energetic, conversational voice] Agora arredonde a sua pedra. Escolha Editar os pontos e clique na pedra. [confident, clear, unhurried voice] Repare: aparecem os pontos que você marcou com a Caneta.
 
-[engaging, energetic, conversational voice] Depois afaste a imagem e confira o contorno. A pedra pode ser irregular, mas precisa continuar fechada, inteira no quadro e com espaço em cima. Se uma curva criou uma ponta comprida, ajuste as alças ou use Desfazer e tente uma mudança menor, porque alça puxada demais estica a curva para fora.
+[engaging, energetic, conversational voice] Selecione um ponto da borda da pedra e clique em Ponto suave. O Ponto suave transforma esse canto numa curva.
+
+[interested, animated voice] Olha só: aparecem duas bolinhas ligadas ao ponto por linhas. Essas bolinhas se chamam alças, e são elas que entortam a curva.
+
+[confident, clear, unhurried voice] Arraste uma alça devagar para arredondar o trecho. Faça o mesmo nos cantos que você quiser suavizar.
+
+[engaging, energetic, conversational voice] Depois afaste a imagem e confira a borda. A pedra pode ser irregular, mas precisa continuar fechada, inteira na área do desenho e com espaço em cima.
+
+[engaging, energetic, conversational voice] Se uma curva criou uma ponta comprida, é porque a alça foi puxada demais. Ajuste a alça ou clique em Desfazer e tente uma mudança menor.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -130,18 +142,24 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-crateras`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "clique fora da pedra", tirar a seleção. No "Escolha um tom mais escuro e a ferramenta Círculo", escolher a cor e o Círculo. No "Arraste dentro da pedra", desenhar a cratera. No "Olha só", apontar a cratera por cima da pedra. No "use Ctrl+C e Ctrl+V", copiar e colar a cratera. No "arraste um canto da caixa", mudar o tamanho da cópia. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora faça crateras na sua pedra. Antes de escolher uma cor nova, clique fora da pedra para tirar a seleção, porque, com a pedra selecionada, a cor nova pintaria a pedra inteira. Depois escolha um tom mais escuro e a ferramenta Círculo, e arraste dentro da pedra para criar uma cratera. [interested, animated voice] Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.
+[engaging, energetic, conversational voice] Agora faça crateras na sua pedra. Antes de escolher uma cor nova, clique fora da pedra para tirar a seleção, porque, com a pedra selecionada, a cor nova pintaria a pedra inteira.
+
+[engaging, energetic, conversational voice] Escolha um tom mais escuro e a ferramenta Círculo. Arraste dentro da pedra para criar uma cratera.
+
+[interested, animated voice] Olha só: a cratera aparece por cima da pedra, onde você desenhou.
 
 [curious] Posso fazer uma cratera grande e outra pequena?
 
-[engaging, energetic, conversational voice] Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e colar. Mova a cópia para outro lugar dentro da pedra e mude o tamanho dela pelas alças. Se quiser, faça mais uma.
+[engaging, energetic, conversational voice] Pode, sim. Os tamanhos são escolha sua. Para fazer outras, use Selecionar, clique na cratera e use Ctrl+C e Ctrl+V para copiar e colar.
 
-[engaging, energetic, conversational voice] Para conferir, veja se todas as crateras ficaram dentro do corpo e com tamanhos que você consiga distinguir.
+[engaging, energetic, conversational voice] Leve a cópia para outro lugar dentro da pedra. Para mudar o tamanho dela, arraste um canto da caixa que aparece em volta. Se quiser, faça mais uma.
+
+[engaging, energetic, conversational voice] Para conferir, veja se todas as crateras ficaram dentro do corpo, com tamanhos que dê para diferenciar.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -150,13 +168,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-crateras-K1 | Dedé | 1 | criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente. | Posso fazer uma cratera grande e outra pequena? | Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e | [curious] |
+| video-crateras-K1 | Dedé | 1 | Arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, onde você desenhou. | Posso fazer uma cratera grande e outra pequena? | Pode, sim. Os tamanhos são escolha sua. Para fazer outras, use Selecionar, clique na cratera e use Ctrl+C e Ctrl+V para | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-crateras-K1`: entrada — Concluir a primeira cratera e deixar a pedra e o círculo à vista; terminar o arraste antes da entrada. Saída — Copiar a cratera, mover e redimensionar a cópia pelas alças; conferir que todas ficam dentro da pedra.
+- `video-crateras-K1`: entrada — Concluir a primeira cratera e deixar a pedra e o círculo à vista. Saída — Copiar a cratera, mover e mudar o tamanho da cópia pelo canto da caixa.
 
 
 **Recado na página (não gravar):** Agora acrescente crateras à sua pedra! Desenhe pequenas formas dentro dela. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
@@ -169,7 +187,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "confira no seu asteroide", mostrar o asteroide em Vetor com 64 por 64. No "espere aparecer Guardado na sua conta", mostrar o aviso no Pinta. No "clique em Escolher no Pinta", voltar à aba da aula e abrir a galeria. No "selecione o seu asteroide", marcar o asteroide. No "Depois clique em Enviar (1)", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "Por último, clique em Concluir aula", clicar em **Concluir aula**.
 
 **Fala para ElevenLabs:**
 

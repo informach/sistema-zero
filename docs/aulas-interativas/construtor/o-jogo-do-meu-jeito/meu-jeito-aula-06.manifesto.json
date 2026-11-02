@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-nomes",
-      "plannedVideo": "Título: Separe os nomes que os blocos procuram\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, o Zappy de técnico, com apito, chamando \"nave!\", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda \"nave? qual das duas?\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe os nomes que os blocos procuram\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Imagina um time com duas pessoas\", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico chamando um nome [na edição: meme do time]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o bloco de cima e os três blocos que procuram nave. No \"Este botão tira o bloco de cima\", apontar o botão [apontar \"Tirar o bloco de cima\"]. No \"Aqui você escolhe o nome do bloco de baixo\", apontar os nomes [apontar \"Nome no bloco de baixo\"]. No \"E este outro faz a prévia andar\", apontar o botão [apontar \"Ver a prévia andando\"]. Não tirar o bloco nem trocar nomes: os avisos são a descoberta da criança. Nesta parte, o bloco é o próprio conceito e pode ser nomeado. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-nomes-K1: Dedé substitui “E se a nave e a folha tiverem o mesmo nome?”. Antes: “dela. Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o bloco de cima cria a nave, e”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-nomes",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -48,14 +48,33 @@
         "kind": "interactive",
         "required": true,
         "title": "Separe os nomes que os blocos procuram",
-        "instructions": "Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave.",
-        "hints": [],
+        "instructions": "Tire o bloco de cima e dê nomes diferentes ao bloco de baixo. Compare os avisos dos blocos e a prévia em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Depois de cada teste, olhe os avisos dos três blocos e a prévia.",
+          "Compare a prévia sem o bloco de cima, com dois blocos chamados nave e com a folha chamada folha-nave.",
+          "Clique em Tirar o bloco de cima e depois em Pôr o bloco de cima de volta. Escolha nave no bloco de baixo. Depois escolha folha-nave."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "unique-names",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": ["missing", "clash", "own-name"]
+            "goals": ["missing", "clash", "own-name"],
+            "freeExploration": true,
+            "goalCopy": {
+              "missing": {
+                "label": "Tirou o bloco que cria nave",
+                "pedido": "Clique em Tirar o bloco de cima e observe os três blocos e a prévia."
+              },
+              "clash": {
+                "label": "Deu o nome nave aos dois blocos",
+                "pedido": "Com o bloco de cima no lugar, escolha nave no bloco de baixo e leia o aviso."
+              },
+              "own-name": {
+                "label": "Deu à folha um nome só dela",
+                "pedido": "Com o bloco de cima no lugar, escolha folha-nave no bloco de baixo e observe os avisos e a prévia."
+              }
+            }
           }
         },
         "semPerguntaFinal": true
@@ -63,7 +82,7 @@
     },
     {
       "key": "video-trazer-artes",
-      "plannedVideo": "Título: Traga seus desenhos para o projeto\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão aparecer?”. Antes: “e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Depois: “Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Traga seus desenhos para o projeto\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. No \"Nesta parte, clique em Abrir meu Estúdio\", abrir o Estúdio na outra aba e o cartão do jogo. No \"abra Mais opções, Materiais e Imagens\", abrir a janela de materiais. No \"clique em Trazer do Pinta\", mostrar os cartões das artes. No \"clique em Adicionar ao projeto\", adicionar nave e asteroide e mostrar a marca no projeto. No \"Clique na prévia e toque na tecla Enter\", começar uma partida. No \"Tá vendo?\", apontar a nave e as pedras antigas. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão aparecer no jogo?”. Antes: “e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Depois: “Clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos, porque”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-trazer-artes",
@@ -75,14 +94,14 @@
     },
     {
       "key": "video-recorte",
-      "plannedVideo": "Título: Separe o quadro do tamanho no jogo\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda \"um quadro de cada vez\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-recorte-K1: Dedé substitui “Posso deixar a nave maior no jogo sem mudar o recorte?”. Antes: “Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.”. Depois: “Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o quadro do tamanho no jogo\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma cartela de adesivos\", mostrar o meme ilustrado (2 a 3 s) do Zappy destacando um adesivo da nave [na edição: meme da cartela]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os recortes [apontar \"Recorte de 32\"]. No \"aqui você escolhe o Quadro 1 ou o Quadro 2\", apontar os quadros, ainda fechados [apontar \"Quadro do recorte\"]. No \"E aqui fica o tamanho da nave no jogo\", apontar os tamanhos [apontar \"Tamanho da nave no jogo\"]. Não escolher recorte: o que aparece no jogo é a descoberta da criança. Nesta parte, recorte, folha e quadro da folha são o próprio conceito. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-recorte-K1: Dedé substitui “E se o recorte for maior ou menor que um desenho?”. Antes: “pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem a largura do”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-recorte",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -91,14 +110,37 @@
         "kind": "interactive",
         "required": true,
         "title": "Separe o quadro do tamanho no jogo",
-        "instructions": "Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32.",
-        "hints": [],
+        "instructions": "Experimente cada largura de recorte e ache a que mostra uma nave inteira. Depois mude o tamanho da nave no jogo e olhe a folha. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "A cada recorte, compare o que aparece no jogo com o pedaço marcado na folha.",
+          "Procure o recorte do tamanho de um quadro da folha. Depois mude só o tamanho no jogo e olhe a folha.",
+          "Escolha Recorte de 64, depois Recorte de 16 e depois Recorte de 32. Com o Recorte de 32, escolha Bem maior em Tamanho da nave no jogo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "sheet-vs-sprite",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": ["squeezed", "crop-half", "crop-whole", "size-apart"]
+            "goals": ["squeezed", "crop-half", "crop-whole", "size-apart"],
+            "freeExploration": true,
+            "goalCopy": {
+              "squeezed": {
+                "label": "Testou o recorte de 64",
+                "pedido": "Escolha Recorte de 64 e observe o jogo."
+              },
+              "crop-half": {
+                "label": "Testou o recorte de 16",
+                "pedido": "Escolha Recorte de 16 e observe o jogo."
+              },
+              "crop-whole": {
+                "label": "Achou o recorte que mostra uma nave inteira",
+                "pedido": "Escolha Recorte de 32 e observe o jogo."
+              },
+              "size-apart": {
+                "label": "Mudou o tamanho no jogo e olhou a folha",
+                "pedido": "Com o Recorte de 32, escolha Bem maior ou Bem menor em Tamanho da nave no jogo e observe a folha."
+              }
+            }
           }
         },
         "semPerguntaFinal": true
@@ -106,7 +148,7 @@
     },
     {
       "key": "video-trocar-nave",
-      "plannedVideo": "Título: Use sua imagem no criador da nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trocar-nave-K1: Dedé substitui “O bloco novo já está preenchido. E o antigo?”. Antes: “54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Depois: “Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Use sua imagem no criador da nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No \"No seu Estúdio, comece uma partida\", mostrar o Estúdio na outra aba e começar a partida na prévia. No \"Tá vendo?\", apontar a nave antiga. No \"encontre Criar nave\", apontar o bloco e o x e o y dele. No \"Deixe à vista um espaço livre\", mostrar o espaço livre. No \"abra Jogo 2D, Sprites e Criar e trocar aparência\", abrir as categorias e soltar o bloco no espaço livre. No \"No nome, clique em heroi\", apontar o heroi do nome e o da imagem, escrever nave no nome e escolher a imagem nave. No \"Agora os números\", apontar os valores de fábrica e trocar o x, o y, a largura e a altura. No \"Clique com o botão direito só nele\", apagar o Criar nave antigo. No \"Encaixe o novo criador\", encaixar abaixo de Preparar o jogo em tela cheia. No \"Comece uma partida de novo\", começar e apontar a nave espremida e as setas movendo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trocar-nave-K1: Dedé substitui “O bloco novo já está preenchido. E o antigo?”. Antes: “coloque 54. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Depois: “Agora o Criar nave antigo sai. Clique com o botão direito só nele e escolha Apagar este bloco. Se apagar outra peça sem”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-trocar-nave",
@@ -118,7 +160,7 @@
     },
     {
       "key": "video-folha-nave",
-      "plannedVideo": "Título: Prepare o recorte da nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-folha-nave-K1: Dedé substitui “Que nome eu dou para essa folha?”. Antes: “da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”. Depois: “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta aula. Na imagem,”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Prepare o recorte da nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No \"No seu Estúdio, comece uma partida\", mostrar o Estúdio na outra aba e começar a partida na prévia. No \"Tá vendo?\", apontar as duas naves espremidas. No \"deixe primeiro esse lugar à vista\", mostrar o fim de Ao iniciar. No \"abra Jogo 2D, Sprites e Animação\", abrir as categorias e encaixar o bloco no fim de Ao iniciar. No \"Escreva folha-nave no nome da folha\", escrever o nome e escolher a imagem nave. No \"deixe 32 e 32\", apontar os tamanhos. No \"Comece uma partida\", mostrar a nave ainda espremida. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-folha-nave-K1: Dedé substitui “Que nome eu dou para essa folha?”. Antes: “quadros da imagem com quadros de x px. Encaixe esse bloco no fim de Ao iniciar, depois dos blocos que já estavam ali.”. Depois: “Um nome só dela: folha-nave, como na experiência da primeira parte desta aula. Escreva folha-nave no nome da folha. Na”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-folha-nave",
@@ -130,7 +172,7 @@
     },
     {
       "key": "video-animar-nave",
-      "plannedVideo": "Título: Ligue a animação voando\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-animar-nave-K1: Dedé substitui “No Pinta era um e dois. Por que aqui é zero e um?”. Antes: “voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Depois: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1. Agora clique na prévia e”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Ligue a animação voando\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No seu Estúdio, abra o cartão do seu jogo\", mostrar o cartão aberto na outra aba e começar a partida na prévia. No \"Tá vendo?\", apontar a nave espremida. No \"Deixe esse bloco à vista\", mostrar Carregar folha de quadros folha-nave. No \"Abra Jogo 2D, Sprites e Animação\", abrir as categorias e encaixar o bloco logo abaixo. No \"No sprite, escolha nave\", preencher sprite e folha. No \"clique em Escolher\", escolher voando. No \"Repare nos valores\", apontar o 0, o 1 e o 8. No \"Agora comece a partida com Enter\", jogar um pouco e apontar o fogo pulsando. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-animar-nave-K1: Dedé substitui “No Pinta era um e dois. Por que aqui é zero e um?”. Antes: “voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps. Fps quer dizer quadros por segundo.”. Depois: “É que o bloco começa a contar do zero. Por isso, o quadro 0 é o desenho que o Pinta chama de quadro 1, e o quadro 1 é o”.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-animar-nave",
@@ -142,7 +184,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie o jogo com sua nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie o jogo com sua nave\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"confira no seu jogo\", mostrar a nave inteira e animada no jogo. No \"espere aparecer Guardado na sua conta\", mostrar o aviso no Estúdio. No \"clique em Escolher no Estúdio\", voltar à aba da aula e abrir a galeria. No \"selecione o cartão do seu jogo\", marcar o cartão. No \"Depois clique em Enviar (1)\", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"Por último, clique em Concluir aula\", clicar em **Concluir aula**.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-06.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
@@ -208,7 +250,7 @@
     {
       "key": "nomes",
       "title": "Separe os nomes que os blocos procuram",
-      "objective": "Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-nomes", "fala-nomes", "experimento-nomes"],
       "workspaceKey": null,
@@ -236,7 +278,7 @@
     {
       "key": "recorte",
       "title": "Separe o quadro do tamanho no jogo",
-      "objective": "Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-recorte", "fala-recorte", "experimento-recorte"],
       "workspaceKey": null,

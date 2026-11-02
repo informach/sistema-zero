@@ -219,6 +219,8 @@ const SceneActionSchema = t.Union([
     type: t.Literal('birth-every'),
     frames: t.Union([t.Literal(20), t.Literal(40), t.Literal(80)]),
   }),
+  // "Voltar ao começo" no meio dos controles da exploração livre (02/11/2026): guarda as descobertas.
+  t.Object({ type: t.Literal('restart-case') }),
   t.Object({
     type: t.Union([
       t.Literal('export-file'),

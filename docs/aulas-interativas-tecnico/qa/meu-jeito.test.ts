@@ -17,6 +17,7 @@ import { participacoes } from './avatares-video'
 import { conteudoBloco, problemasPedagogicos, temEntregaExterna } from './diretrizes-pedagogicas'
 import {
   aulasMeuJeito,
+  EXPERIENCIAS_DO_BLOCO,
   falasSecao,
   gerarManifestoMeuJeito,
   type SecaoMeuJeito,
@@ -230,8 +231,9 @@ const routes: Record<string, SceneAction[]> = {
     { type: 'layer', front: false },
     { type: 'layer', front: true },
   ],
-  // A Prévia já abre tocando: o texto só pede para olhar (e tocar se ela estiver parada).
+  // Na exploração livre a Prévia abre PARADA (`openScene`): o texto pede Tocar a Prévia.
   'motion-amount': [
+    { type: 'play', on: true },
     { type: 'nudge', piece: 'crater', amount: 0 },
     { type: 'nudge', piece: 'body', amount: 0 },
     ...seconds(1),
@@ -256,14 +258,16 @@ const routes: Record<string, SceneAction[]> = {
     { type: 'cut', cell: 2 },
     { type: 'sprite', size: 80 },
   ],
+  // Na exploração livre, `reset` é o Recomeçar da experiência e apaga as descobertas; o "Voltar
+  // ao começo" da tela é o `restart-case`, que guarda os relógios (02/11/2026).
   'two-clocks': [
     { type: 'rate', perSecond: 8 },
     { type: 'birth-every', frames: 20 },
-    { type: 'reset' },
+    { type: 'restart-case' },
     ...seconds(2),
     { type: 'birth-every', frames: 40 },
     { type: 'rate', perSecond: 16 },
-    { type: 'reset' },
+    { type: 'restart-case' },
     ...seconds(3),
   ],
   'published-copy': [
@@ -281,7 +285,9 @@ for (const m of manifests)
       expect(c.prediction).toBeUndefined()
       expect(c.checkpoint).toBeUndefined()
       expect(c.semPerguntaFinal).toBe(true)
-      expect(c.hints).toEqual([])
+      // Exploração livre com o Zappy (02/11/2026): três pistas, do aberto ao direto.
+      expect(c.activity.setup?.freeExploration).toBe(true)
+      expect(c.hints).toHaveLength(3)
       expect(evaluateLearning(c, {}).passed).toBe(false)
       const start = sceneStart(c.activity)
       let session = initialExperiment(start)
@@ -294,22 +300,28 @@ for (const m of manifests)
       expect(result.passed, JSON.stringify(result)).toBe(true)
     })
   }
-// Decisão do responsável, 06/10/2026: o vídeo da experiência é uma demonstração na primeira pessoa.
-const PASSA_A_VEZ =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
+/** O fim do convite do vídeo da experiência (convite à investigação, 02/11/2026). */
+const CONVITE =
+  'Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.'
+/** A pergunta do avatar que anteciparia uma descoberta vira um teste da experiência. */
+const VAI_TESTAR = 'O que você acha? Isso você vai testar na experiência.'
 /**
- * Começo de frase que dá ordem a quem assiste. Ficam de fora os chamados de atenção que as
- * Diretrizes PEDEM na demonstração ("Olha aqui:", "Olha só:", "Repare:", "Tá vendo?"): eles puxam
- * o olhar para o que o narrador faz, não mandam a criança fazer nada antes da vez dela.
+ * Começo de frase que dá ordem a quem assiste. Ficam de fora os chamados de atenção ("Olha aqui:",
+ * "Olha só:", "Repare:", "Tá vendo?"): no vídeo da experiência, a ordem só vem no convite final.
  */
 const ORDEM =
   /^(Clique|Mude|Observe|Escolha|Ligue|Desligue|Coloque|Deixe|Aumente|Compare|Troque|Faça|Olhe|Use|Toque|Pinte|Volte|Experimente|Confira|Aproxime|Marque|Ajuste|Traga|Tente|Mexa)\b/
-/** A saída da experiência e do jogo pronto, a mesma frase no fim da ponte do Zappy. */
-const SAIDA_DA_PARTE = ' Quando terminar, clique em Próxima parte.'
 const frases = (paragrafos: string[]) => paragrafos.join(' ').split(/(?<=[.!?:])\s+/)
-test('as experiências são demonstrações: conceito, Olha aqui, testes do narrador e a vez no fim', () => {
+/**
+ * A experiência trabalha só a IDEIA (01/11/2026): sem blocos, áreas do Estúdio, regra nem código no
+ * vídeo, na instrução, nas pistas, nos pedidos e na ponte. Exceção da responsável (02/11/2026): nas
+ * Aulas 6 e 7 o conceito é o próprio bloco (`EXPERIENCIAS_DO_BLOCO`).
+ */
+const PROGRAMACAO =
+  /\b(?:blocos?|regras?|código|comandos?|Ao iniciar|Quando acontecer|Enquanto estiver rodando|Exportar)\b/i
+test('as experiências convidam a investigar: ideia, controles, sem resultado antes do teste', () => {
   const experiencias = aulasMeuJeito.flatMap((a) => a.sections.filter((s) => s.activity))
-  // As comparações têm apoio visual; a abertura da fala pode variar naturalmente.
+  // Cada comparação do dia a dia tem o meme ilustrado descrito na nota de tela.
   const comparacoesComIlustracao = new Set([
     'aparencia-e-regras',
     'copias',
@@ -323,33 +335,73 @@ test('as experiências são demonstrações: conceito, Olha aqui, testes do narr
     'mudanca-pequena',
     'nomes',
     'recorte',
+    'dois-relogios',
     'copia-publicada',
   ])
   expect(experiencias).toHaveLength(14)
   for (const s of experiencias) {
     const fala = falasSecao(s)
-    expect(fala[0], s.key).toMatch(
-      /^Esta é (uma experiência|a mesma experiência, agora) para a gente entender /,
-    )
-    expect(fala[1]?.startsWith('Olha aqui: '), s.key).toBe(true)
-    expect(fala.at(-1), s.key).toBe(PASSA_A_VEZ)
+    const atividade = s.activity!
+    // "Olha aqui: nesta experiência…" aponta os controles; o convite final diz o que comparar.
+    expect(
+      fala.some((p) => p.startsWith('Olha aqui: nesta experiência')),
+      s.key,
+    ).toBe(true)
+    expect(fala.at(-1)?.startsWith('Agora é a sua vez de investigar: '), s.key).toBe(true)
+    expect(fala.at(-1)?.endsWith(CONVITE), s.key).toBe(true)
     expect(
       frases(fala.slice(0, -1)).filter((f) => ORDEM.test(f)),
       s.key,
     ).toEqual([])
-    expect(fala.join(' '), s.key).not.toMatch(/Vou te mostrar|mexa e veja|—/i)
-    // Toda comparação do dia a dia tem o meme ilustrado descrito na nota de tela, e só ela.
+    expect(fala.join(' '), s.key).not.toMatch(/Vou te mostrar|mexa e veja|eu clico|eu escolho|—/i)
+    // A pergunta do avatar não é respondida no vídeo: ela vira um teste da experiência.
+    if (participacoes(s).length) expect(fala, s.key).toContain(VAI_TESTAR)
+    const ideia = [
+      ...fala,
+      s.bridge,
+      atividade.instructions,
+      ...atividade.hints,
+      ...Object.values(
+        atividade.activity.type === 'experimentation'
+          ? (atividade.activity.setup?.goalCopy ?? {})
+          : {},
+      ).flatMap((c) => [c.label ?? '', c.pedido ?? '']),
+    ]
+    if (!EXPERIENCIAS_DO_BLOCO.has(s.key))
+      for (const texto of ideia) expect(texto, s.key).not.toMatch(PROGRAMACAO)
     expect(Boolean(s.meme), s.key).toBe(comparacoesComIlustracao.has(s.key))
     const tela = telaSecao(s)
-    expect(tela, s.key).toContain('primeira pessoa')
-    expect(tela, s.key).not.toMatch(/Deixar a execução|sem antecipar|não demonstrar/)
-    if (s.meme) expect(tela, s.key).toContain('Meme na comparação')
-    // A ponte liga o vídeo à experiência sem repetir os passos dela (Diretrizes, seção 1): convida
-    // ("Sua vez!"), pede o teste numa frase curta e termina na saída, que não conta no tamanho.
-    expect(s.bridge, s.key).not.toBe(s.activity!.instructions)
-    expect(s.bridge.startsWith('Sua vez! '), s.key).toBe(true)
-    expect(s.bridge.endsWith(SAIDA_DA_PARTE), s.key).toBe(true)
-    expect(s.bridge.slice(0, -SAIDA_DA_PARTE.length).length, s.key).toBeLessThan(120)
+    expect(tela, s.key).not.toContain('primeira pessoa')
+    for (const gesto of [
+      '[ampliar experiência]',
+      '[apontar zappy]',
+      '[voltar à aula]',
+      '[próxima parte]',
+    ])
+      expect(tela, s.key).toContain(gesto)
+    if (s.meme) expect(tela, s.key).toContain('[na edição: meme')
+    // A instrução e a ponte convidam; as pistas vão do aberto (o que observar) ao direto (a sequência).
+    expect(
+      atividade.instructions.endsWith(
+        'Você escolhe a ordem dos testes e pode repetir quando quiser.',
+      ),
+      s.key,
+    ).toBe(true)
+    expect(atividade.hints, s.key).toHaveLength(3)
+    expect(atividade.hints[2]!.length, s.key).toBeGreaterThan(atividade.hints[0]!.length)
+    if (atividade.activity.type === 'experimentation') {
+      const metas = atividade.activity.setup?.goals ?? []
+      const copia = atividade.activity.setup?.goalCopy ?? {}
+      for (const meta of metas) expect(copia[meta]?.pedido, `${s.key}/${meta}`).toBeTruthy()
+    }
+    expect(s.bridge, s.key).not.toBe(atividade.instructions)
+    expect(s.bridge.startsWith('Sua vez! Investigue '), s.key).toBe(true)
+    expect(
+      s.bridge.endsWith(
+        ' Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      ),
+      s.key,
+    ).toBe(true)
   }
 })
 test('o jogo pronto apresenta o jogo, mostra um exemplo e só passa a vez no fim', () => {
@@ -497,15 +549,25 @@ test('a ponte do Zappy convida e termina na ação real de saída', () => {
  * vez só e no fim, colado ao primeiro passo. Até umas 50 palavras, sem a comparação do vídeo.
  */
 const TETO_DA_RETOMADA = 50
+/**
+ * Aplicações que vêm logo depois de uma experiência mas resolvem a falta com uma experiência MAIS
+ * ATRÁS na aula, que a fala nomeia pela parte (Diretrizes, seção 2). Revisão independente de
+ * 02/11/2026: no criador da nave da Aula 6, a falta é a imagem, e o que a resolve é a experiência
+ * dos nomes (primeira parte), não a do recorte (parte anterior).
+ */
+const RETOMA_PARTE_MAIS_ATRAS = new Set(['aula-06/trocar-nave'])
 test('a retomada é uma ponte curta: problema, lembrança e um anúncio colado ao passo', () => {
   let retomadas = 0
   for (const lesson of aulasMeuJeito)
     lesson.sections.forEach((s, i) => {
       const abertura = falasSecao(s)[0] ?? ''
-      const logoDepois = s.kind === 'application' && Boolean(lesson.sections[i - 1]?.activity)
+      const id = `${lesson.slug}/${s.key}`
+      const logoDepois =
+        s.kind === 'application' &&
+        Boolean(lesson.sections[i - 1]?.activity) &&
+        !RETOMA_PARTE_MAIS_ATRAS.has(id)
       if (!logoDepois && !abertura.includes('Lembra da experiência')) return
       retomadas++
-      const id = `${lesson.slug}/${s.key}`
       // Diz onde a experiência foi feita, sem mandar clicar em Anterior.
       const lembra = abertura.indexOf(
         logoDepois ? 'Lembra da experiência da parte anterior? ' : 'Lembra da experiência da ',
@@ -533,7 +595,8 @@ test('a retomada é uma ponte curta: problema, lembrança e um anúncio colado a
       // Ponte, não segundo vídeo da experiência.
       expect(abertura.split(/\s+/).length, id).toBeLessThanOrEqual(TETO_DA_RETOMADA)
     })
-  expect(retomadas).toBe(14)
+  // A parte Importar da Aula 1 ganhou a retomada da experiência da cópia (02/11/2026).
+  expect(retomadas).toBe(15)
 })
 test('a conferência aparece uma vez, depois do teste, com o gatilho genérico', () => {
   for (const lesson of aulasMeuJeito)

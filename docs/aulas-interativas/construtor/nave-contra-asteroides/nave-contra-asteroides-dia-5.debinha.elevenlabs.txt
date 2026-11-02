@@ -2,10 +2,6 @@
 
 [long pause]
 
-[curious] Chegou na meta, ganhou! E se acabarem as vidas?
-
-[long pause]
-
 [curious] E se as duas coisas acontecerem juntas?
 
 [long pause]
@@ -14,7 +10,7 @@
 
 [long pause]
 
-[curious] Como faz para começar outra partida com tudo no lugar?
+[curious] E qual é a diferença entre os dois?
 
 [long pause]
 

@@ -1,8 +1,20 @@
 import type { SceneAction, SceneId } from '../../src/learning/scene'
+import { CAMINHOS_LIVRES_MEU_JEITO_D } from './caminhos-livres/meu-jeito-d'
+import { CAMINHOS_LIVRES_MEU_JEITO_E } from './caminhos-livres/meu-jeito-e'
+import { CAMINHOS_LIVRES_NAVE_A } from './caminhos-livres/nave-a'
+import { CAMINHOS_LIVRES_NAVE_B } from './caminhos-livres/nave-b'
+import { CAMINHOS_LIVRES_NAVE_C } from './caminhos-livres/nave-c'
 import { scenePaths } from './exploration-paths'
 
 /** Current free-exploration lessons require comparisons beyond the original guided journeys. */
 export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
+  // Os caminhos da exploração livre da Nave e do Meu Jeito (02/11/2026). As entradas escritas
+  // abaixo vêm depois e vencem se alguma cena se repetir.
+  ...CAMINHOS_LIVRES_NAVE_A,
+  ...CAMINHOS_LIVRES_NAVE_B,
+  ...CAMINHOS_LIVRES_NAVE_C,
+  ...CAMINHOS_LIVRES_MEU_JEITO_D,
+  ...CAMINHOS_LIVRES_MEU_JEITO_E,
   'touch-response': [
     { type: 'touch-hiding-place', id: 0 },
     { type: 'connect', port: 'touch', enabled: true },

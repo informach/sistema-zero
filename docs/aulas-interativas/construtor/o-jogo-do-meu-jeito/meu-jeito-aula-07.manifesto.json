@@ -31,14 +31,14 @@
   "blocks": [
     {
       "key": "video-dois-relogios",
-      "plannedVideo": "Título: Compare nascer e animar\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-dois-relogios-K1: Debinha substitui “Dá para nascer menos pedra e o desenho trocar mais rápido?”. Antes: “1. Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.”. Depois: “Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais”.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare nascer e animar\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Pense numa máquina que solta piões\", mostrar o meme ilustrado (2 a 3 s) do Zappy ao lado da máquina de piões [na edição: meme dos piões]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o relógio de nascer [apontar \"Relógio de nascer (conta os quadros do jogo)\"]. No \"e o relógio do giro, em desenhos por segundo\", apontar o relógio do giro [apontar \"Relógio do giro (troca o desenho de cada pedra)\"]. No \"Este botão faz o tempo passar\", apontar o botão [apontar \"Passar o tempo\"]. No \"e este outro volta ao começo\", apontar o botão [apontar \"Voltar ao começo\"]. Não passar o tempo nem mudar os relógios: o que cada relógio muda é a descoberta da criança. Nesta parte, quadro é só o do jogo; o desenho da animação é desenho 1 e desenho 2. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-dois-relogios-K1: Debinha substitui “Se a máquina soltar mais rápido, os piões giram mais rápido também?”. Antes: “vezes a cada segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o relógio de nascer,”.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-dois-relogios",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que cada relógio muda nas pedras. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -47,8 +47,12 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare nascer e animar",
-        "instructions": "Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no Tempo, o botão com o triângulo. Deixe nascerem três pedras e veja o número em cada uma ao entrar. Clique em Tempo para parar. Mude o nascimento para 40 e os desenhos por segundo para 16. Clique em Voltar ao começo, ligue Tempo e observe por três segundos.",
-        "hints": [],
+        "instructions": "Mude um relógio de cada vez, volte ao começo e deixe o tempo passar. Compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Mude um relógio de cada vez e compare as pedras desde o começo.",
+          "Compare o relógio de nascer em 20 quadros com o giro em 16 desenhos por segundo, sempre voltando ao começo antes.",
+          "Clique em Passar o tempo até nascerem três pedras. Depois escolha A cada 20 quadros, clique em Voltar ao começo e em Passar o tempo. Por último, escolha A cada 40 quadros e 16 desenhos por segundo, volte ao começo e passe o tempo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "two-clocks",
@@ -64,7 +68,22 @@
           },
           "cenario": "meu-jeito",
           "setup": {
-            "goals": ["more-rocks", "faster-spin", "each-one"]
+            "goals": ["more-rocks", "faster-spin", "each-one"],
+            "freeExploration": true,
+            "goalCopy": {
+              "more-rocks": {
+                "label": "Mudou só o relógio de nascer",
+                "pedido": "Escolha A cada 20 quadros, deixe o giro em 8 desenhos por segundo, clique em Voltar ao começo e em Passar o tempo."
+              },
+              "faster-spin": {
+                "label": "Mudou só o relógio do giro",
+                "pedido": "Escolha 16 desenhos por segundo, deixe o nascer em A cada 40 quadros, clique em Voltar ao começo e em Passar o tempo."
+              },
+              "each-one": {
+                "label": "Olhou o desenho de cada pedra que nasce",
+                "pedido": "Clique em Passar o tempo até nascerem três pedras e olhe o desenho de cada uma na hora em que ela entra."
+              }
+            }
           }
         },
         "semPerguntaFinal": true
@@ -72,7 +91,7 @@
     },
     {
       "key": "video-folha-pedra",
-      "plannedVideo": "Título: Prepare a folha do asteroide\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado e conferir os recortes nas duas folhas. Depois, voltar à prévia, começar uma partida com Enter e apontar as pedras ainda com o desenho antigo. Não pedir para observar as pedras enquanto só os blocos ou a abertura estão na tela. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Prepare a folha do asteroide\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No \"Nesta parte, clique em Abrir meu Estúdio\", clicar no botão, abrir o cartão do jogo na outra aba e começar a partida na prévia. No \"Tá vendo?\", apontar as pedras antigas. No \"A folha nova vai entrar no fim de Ao iniciar\", mostrar o fim de Ao iniciar. No \"Abra Jogo 2D, Sprites e Animação\", abrir as categorias e encaixar o bloco depois da animação da nave. No \"Repare: o bloco fala em quadros\", apontar a palavra quadros no bloco. No \"Escreva folha-asteroide\", preencher o nome, a imagem e os dois 64. No \"Confira as duas folhas\", apontar 32 por 32 e 64 por 64. No \"Repare: as pedras ainda usam\", mostrar as pedras ainda com o desenho antigo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-folha-pedra",
@@ -84,7 +103,7 @@
     },
     {
       "key": "video-trocar-pedra",
-      "plannedVideo": "Título: Troque a imagem das pedras que nascem\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trocar-pedra-K1: Debinha substitui “Por que a pedra ficou espremida?”. Antes: “relógio. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.”. Depois: “Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra. Se no seu jogo não”.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Troque a imagem das pedras que nascem\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No seu Estúdio, abra o cartão do seu jogo\", mostrar o cartão aberto na outra aba. No \"encontre a área Enquanto estiver rodando\", arrastar até a área aparecer. No \"Dentro dela está o bloco A cada 40 quadros\", apontar o bloco. No \"Olha aqui: este é o criador das pedras\", apontar o criador e os valores. No \"Abra Jogo 2D, Grupos e Criar e percorrer\", abrir as categorias e soltar o bloco no espaço livre. No \"Clique em inimigos e escolha asteroides\", trocar o grupo, escrever o nome e escolher a imagem. No \"Agora os números\", apontar os valores de fábrica e trocar o y, a largura, a altura e o vy. No \"arraste a peça do sorteio\", mover o sorteio para o x do novo. No \"Clique com o botão direito no criador antigo\", apagar e encaixar o novo no lugar. No \"Agora comece a partida\", jogar e apontar as pedras novas. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-trocar-pedra-K1: Debinha substitui “Por que a pedra ficou espremida?”. Antes: “imagem. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.”. Depois: “É que cada pedra ainda mostra a folha inteira, com os dois desenhos. Falta ligar a animação de cada pedra, e isso fica”.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-trocar-pedra",
@@ -96,7 +115,7 @@
     },
     {
       "key": "video-animar-pedra",
-      "plannedVideo": "Título: Anime cada pedra depois de criar\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Anime cada pedra depois de criar\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No seu Estúdio, abra o cartão do seu jogo\", mostrar o cartão aberto na outra aba e começar a partida. No \"Tá vendo?\", apontar as pedras espremidas. No \"Deixe esse lugar à vista\", mostrar o criador novo dentro do Se jogando. No \"Abra Jogo 2D, Sprites e Animação\", abrir as categorias e encaixar o bloco logo abaixo do criador. No \"Escolha sprite asteroide\", preencher sprite, folha e girando. No \"Aqui também, quadro 0 e quadro 1\", apontar o 0 e o 1. No \"Agora comece uma partida e observe\", jogar e apontar três pedras girando, um ponto e uma vida perdida. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-animar-pedra",
@@ -146,7 +165,7 @@
             "choices": [
               {
                 "id": "a",
-                "label": "Os quadros por segundo da animação."
+                "label": "Os desenhos por segundo da animação."
               },
               {
                 "id": "b",
@@ -158,7 +177,7 @@
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "O relógio controla os nascimentos. Os quadros por segundo controlam a alternância dos desenhos de cada pedra."
+            "explanation": "O relógio de nascer controla quantas pedras nascem. Os desenhos por segundo controlam a troca dos desenhos de cada pedra."
           },
           {
             "id": "q3",
@@ -185,7 +204,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie o jogo com as duas artes\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie o jogo com as duas artes\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"confira no seu jogo\", mostrar a nave e as pedras animadas. No \"espere aparecer Guardado na sua conta\", mostrar o aviso no Estúdio. No \"clique em Escolher no Estúdio\", voltar à aba da aula e abrir a galeria. No \"selecione o cartão do seu jogo\", marcar o cartão. No \"Depois clique em Enviar (1)\", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"Por último, clique em Concluir aula\", clicar em **Concluir aula**.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-07.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
@@ -251,7 +270,7 @@
     {
       "key": "dois-relogios",
       "title": "Compare nascer e animar",
-      "objective": "Sua vez! Mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que cada relógio muda nas pedras. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-dois-relogios", "fala-dois-relogios", "experimento-dois-relogios"],
       "workspaceKey": null,

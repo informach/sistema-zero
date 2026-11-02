@@ -6,34 +6,46 @@
 
 ### Clipe `video-nomes` · Separe os nomes que os blocos procuram
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-nomes`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do bloco de cima criando nave e do bloco de baixo sem nome: apontar Criar sprite: nave e os três blocos que procuram nave. Clicar em Tempo e deixar ver a nave voar na prévia. Clicar em Tirar este bloco e deixar ver os pontos de exclamação, o aviso e a prévia parada. Clicar em Pôr de volta. Em Nome do bloco de baixo, escolher nave e deixar ver o aviso e a prévia parada. Escolher folha-nave e deixar ver os avisos sumirem e a nave voar de novo. Meme na comparação: na frase do time, o Zappy de técnico, com apito, chamando "nave!", e a nave e a folha da nave, com a mesma camisa escrita nave, olhando ao mesmo tempo, com a legenda "nave? qual das duas?". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Imagina um time com duas pessoas", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico chamando um nome [na edição: meme do time]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o bloco de cima e os três blocos que procuram nave. No "Este botão tira o bloco de cima", apontar o botão [apontar "Tirar o bloco de cima"]. No "Aqui você escolhe o nome do bloco de baixo", apontar os nomes [apontar "Nome no bloco de baixo"]. No "E este outro faz a prévia andar", apontar o botão [apontar "Ver a prévia andando"]. Não tirar o bloco nem trocar nomes: os avisos são a descoberta da criança. Nesta parte, o bloco é o próprio conceito e pode ser nomeado. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender por que cada coisa do jogo precisa de um nome só dela.
+[engaging, energetic, conversational voice] Nesta aula, a sua nave animada vai entrar no jogo. Para isso, o jogo vai usar duas coisas com nome: a nave, que é o personagem que anda na tela, e a folha, que é a imagem com os dois desenhos da sua nave, um do lado do outro.
 
-[interested, animated voice] Olha aqui: o bloco de cima cria o sprite nave, e três blocos procuram esse nome: Mover nave, Desenhar nave e Ler nave. Quando eu clico em Tempo, a nave voa na prévia.
+[engaging, energetic, conversational voice] No Estúdio, um bloco cria a nave com o nome nave. Outros blocos procuram esse nome para mover, desenhar e conferir a nave. Ou seja, os blocos acham cada coisa pelo nome dela.
 
-[engaging, energetic, conversational voice] Agora eu clico em Tirar este bloco. Tá vendo? Os três blocos ganham um ponto de exclamação, e o aviso diz que o nome nave ainda não foi criado neste jogo. É que os blocos procuram nave, e ninguém criou esse nome. Por isso, a prévia para na última versão que funcionava.
+[curious] Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder?
 
-[engaging, energetic, conversational voice] Eu clico em Pôr de volta, e os avisos somem. Depois, em Nome do bloco de baixo, eu escolho nave. [confident, clear, unhurried voice] Repare: aparece outro aviso, dizendo que o nome nave já foi criado neste trecho, e o Estúdio pede um nome diferente. Isso acontece porque, com dois blocos criando o mesmo nome, os outros blocos não sabem qual procurar.
+[curious] E se a nave e a folha tiverem o mesmo nome?
 
-[engaging, energetic, conversational voice] Imagina você num time com duas pessoas que têm o mesmo nome. Se você chamar por esse nome, as duas vão olhar, né? Para chamar só uma, você pode usar o sobrenome ou um apelido. No seu jogo, a nave e a folha são os dois jogadores: cada um precisa de um nome só dele.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Por isso, eu escolho folha-nave. [interested, animated voice] Olha só: os avisos somem, e a nave volta a voar na prévia, porque a folha ganhou um nome só dela, e a nave continua com o nome nave.
+[interested, animated voice] Olha aqui: nesta experiência, o bloco de cima cria a nave, e estes três blocos procuram o nome nave. Este botão tira o bloco de cima. Aqui você escolhe o nome do bloco de baixo, que cria a folha. E este outro faz a prévia andar.
 
-[engaging, energetic, conversational voice] Daqui a pouco, no seu jogo, a folha da nave vai se chamar folha-nave, e o sprite continua com o nome nave.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: tire o bloco de cima e dê nomes diferentes ao bloco de baixo. Compare os avisos dos blocos e a prévia em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-nomes-K1 | Dedé | 1 | dela. Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder? | E se a nave e a folha tiverem o mesmo nome? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o bloco de cima cria a nave, e | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-nomes-K1`: entrada — Manter o meme do time e a experiência com o bloco de cima no lugar. Saída — Seguir sem trocar nomes: a professora só convida a testar e aponta os controles.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/unique-names.ts`, com a tela em `packages/member-shell/src/components/scene-livre/unique-names.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Traga seus desenhos para o projeto
 
@@ -43,20 +55,24 @@
 
 **Clipe:** `video-trazer-artes`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. No "Nesta parte, clique em Abrir meu Estúdio", abrir o Estúdio na outra aba e o cartão do jogo. No "abra Mais opções, Materiais e Imagens", abrir a janela de materiais. No "clique em Trazer do Pinta", mostrar os cartões das artes. No "clique em Adicionar ao projeto", adicionar nave e asteroide e mostrar a marca no projeto. No "Clique na prévia e toque na tecla Enter", começar uma partida. No "Tá vendo?", apontar a nave e as pedras antigas. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Os blocos achavam a nave pelo nome, por isso o nome precisava estar certinho. Agora a gente vai trazer os seus desenhos para o jogo, com os nomes que você deu no Pinta: nave e asteroide.
 
-[confident, clear, unhurried voice] Clique em Abrir meu Estúdio nesta parte. Em Meus Jogos, abra o cartão que você nomeou e enviou na aula 1. Depois abra Mais opções, Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.
+[engaging, energetic, conversational voice] Nesta parte, clique em Abrir meu Estúdio. Em Meus Jogos, abra o cartão que você nomeou e enviou na aula 1.
 
-[engaging, energetic, conversational voice] Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.
+[engaging, energetic, conversational voice] Depois abra Mais opções, Materiais e Imagens. Na janela Materiais do jogo, clique em Trazer do Pinta.
 
-[curious] Já trouxe os desenhos. Eles já vão aparecer?
+[engaging, energetic, conversational voice] Nos cartões nave e asteroide, clique em Adicionar ao projeto e confira a marca no projeto nos dois. Depois feche a escolha e a janela de materiais.
 
-[confident, clear, unhurried voice] Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As suas imagens já estão nos materiais, mas nenhum bloco mandou o jogo usar essas imagens ainda. É isso que a gente vai fazer nas próximas partes.
+[engaging, energetic, conversational voice] Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.
+
+[curious] Já trouxe os desenhos. Eles já vão aparecer no jogo?
+
+[confident, clear, unhurried voice] Clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos, porque nenhum bloco mandou o jogo usar as suas imagens. É isso que você vai fazer nas próximas partes.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -65,13 +81,13 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-trazer-artes-K1 | Dedé | 1 | e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta. | Já trouxe os desenhos. Eles já vão aparecer? | Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As | [curious] |
+| video-trazer-artes-K1 | Dedé | 1 | e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta. | Já trouxe os desenhos. Eles já vão aparecer no jogo? | Clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos, porque | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-trazer-artes-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-trazer-artes-K1`: entrada — Mostrar a marca no projeto nos cartões nave e asteroide e fechar a janela de materiais. Saída — Começar uma partida na prévia e deixar ver os desenhos antigos.
 
 
 **Recado na página (não gravar):** Agora traga os seus desenhos para o jogo! Adicione nave e asteroide aos materiais da cópia do seu jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
@@ -80,73 +96,81 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-recorte` · Separe o quadro do tamanho no jogo
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-recorte`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do jogo vazio e da folha de 64 por 32: escolher 64 em Largura do recorte e mostrar as duas naves espremidas no jogo; escolher 16 e mostrar meia nave esticada; escolher 32 e mostrar uma nave inteira, com o retângulo tracejado do recorte sobre a folha. Escolher Quadro 1 e Quadro 2 em Quadro do recorte, deixando ver o fogo pequeno e o grande. Levar tamanho no jogo até 80 e soltar; mostrar a nave maior no jogo e a faixa com recorte 32 por 32. Meme na comparação: na frase dos adesivos, o Zappy destacando um adesivo da nave de uma cartela com duas naves, com a legenda "um quadro de cada vez". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Sabe uma cartela de adesivos", mostrar o meme ilustrado (2 a 3 s) do Zappy destacando um adesivo da nave [na edição: meme da cartela]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os recortes [apontar "Recorte de 32"]. No "aqui você escolhe o Quadro 1 ou o Quadro 2", apontar os quadros, ainda fechados [apontar "Quadro do recorte"]. No "E aqui fica o tamanho da nave no jogo", apontar os tamanhos [apontar "Tamanho da nave no jogo"]. Não escolher recorte: o que aparece no jogo é a descoberta da criança. Nesta parte, recorte, folha e quadro da folha são o próprio conceito. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o recorte, que é o jeito de o jogo pegar um desenho da folha.
+[engaging, energetic, conversational voice] Lembra da folha? É a imagem da sua nave com os dois desenhos lado a lado. No Pinta, cada desenho é um quadro, e cada quadro da sua nave tem 32 por 32. Por isso, a folha inteira tem 64 de largura e 32 de altura.
 
-[interested, animated voice] Olha aqui: a folha tem 64 por 32, com a nave do quadro 1 e a do quadro 2 lado a lado. O jogo ainda está vazio, porque eu ainda não escolhi a Largura do recorte.
+[engaging, energetic, conversational voice] Para mostrar um desenho só, o jogo recorta um pedaço da folha. O tamanho desse pedaço se chama recorte.
 
-[engaging, energetic, conversational voice] Quando eu coloco Largura do recorte em 64, o jogo mostra a folha inteira, com as duas naves espremidas num quadrado só. Com 16, aparece só metade de uma nave, esticada. E, com 32, olha só: aparece uma nave inteira, porque o recorte ficou do tamanho de um quadro da folha.
+[engaging, energetic, conversational voice] Sabe uma cartela de adesivos? Para colar um adesivo, você destaca só aquele pedaço da cartela.
 
-[engaging, energetic, conversational voice] Quando você quer colar um adesivo, destaca só ele da cartela, certo? Se pegar a cartela inteira, vêm todos juntos. E, se cortar no meio, vai levar só um pedaço do adesivo. A Largura do recorte é o tamanho do adesivo que o jogo destaca da folha.
+[engaging, energetic, conversational voice] Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.
 
-[engaging, energetic, conversational voice] Com 32, eu escolho o Quadro 1, e o jogo mostra a nave com o fogo pequeno. Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.
+[curious] E se o recorte for maior ou menor que um desenho?
 
-[curious] Posso deixar a nave maior no jogo sem mudar o recorte?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu mudo tamanho no jogo para 80. [confident, clear, unhurried voice] Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o tamanho no jogo é outra escolha, por isso ele não muda o recorte da folha.
+[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem a largura do recorte. Quando o recorte pega um quadro só, aqui você escolhe o Quadro 1 ou o Quadro 2. E aqui fica o tamanho da nave no jogo.
 
-[engaging, energetic, conversational voice] No seu jogo vai ser assim: o recorte da folha-nave fica 32 por 32, e o tamanho da nave na tela vai ser 54 por 54, no criador.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: experimente cada largura de recorte e ache a que mostra uma nave inteira. Depois mude o tamanho da nave no jogo e olhe a folha. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-recorte-K1 | Dedé | 1 | Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação. | Posso deixar a nave maior no jogo sem mudar o recorte? | Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o | [curious] |
+| video-recorte-K1 | Dedé | 1 | pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela. | E se o recorte for maior ou menor que um desenho? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem a largura do | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-recorte-K1`: entrada — Concluir o recorte correto de 32 e comparar os quadros 1 e 2. Saída — Mudar somente tamanho no jogo para 80 e apontar o recorte ainda em 32 por 32.
+- `video-recorte-K1`: entrada — Mostrar a experiência sem recorte, logo depois do meme da cartela. Saída — Seguir sem escolher recorte: a professora só convida a testar e aponta os controles.
 
 
-**Recado na página (não gravar):** Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/sheet-vs-sprite.ts`, com a tela em `packages/member-shell/src/components/scene-livre/sheet-vs-sprite.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Use sua imagem no criador da nave
 
 ### Clipe `video-trocar-nave` · Use sua imagem no criador da nave
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-trocar-nave`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No "No seu Estúdio, comece uma partida", mostrar o Estúdio na outra aba e começar a partida na prévia. No "Tá vendo?", apontar a nave antiga. No "encontre Criar nave", apontar o bloco e o x e o y dele. No "Deixe à vista um espaço livre", mostrar o espaço livre. No "abra Jogo 2D, Sprites e Criar e trocar aparência", abrir as categorias e soltar o bloco no espaço livre. No "No nome, clique em heroi", apontar o heroi do nome e o da imagem, escrever nave no nome e escolher a imagem nave. No "Agora os números", apontar os valores de fábrica e trocar o x, o y, a largura e a altura. No "Clique com o botão direito só nele", apagar o Criar nave antigo. No "Encaixe o novo criador", encaixar abaixo de Preparar o jogo em tela cheia. No "Comece uma partida de novo", começar e apontar a nave espremida e as setas movendo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Clique na prévia e comece uma partida. Tá vendo? A nave é a de antes, porque Criar nave ainda não usa a sua imagem. Lembra da experiência da parte anterior? Com o recorte em 64, apareciam as duas naves espremidas. Agora a gente vai pôr a sua folha no jogo!
+[engaging, energetic, conversational voice] No seu Estúdio, comece uma partida do seu jogo. Tá vendo? A nave é a antiga, porque o bloco não usa sua imagem. Lembra da experiência da primeira parte desta aula? Os blocos acham a nave pelo nome. Agora a gente vai trocar o bloco, com o mesmo nome!
 
-[engaging, energetic, conversational voice] Para isso, troque o criador da nave. Em Ao iniciar, encontre Criar nave e leia o x e o y dele, porque o bloco novo vai usar os mesmos. Depois deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Sprites, Criar e trocar aparência e arraste Criar sprite em x y largura altura com imagem até esse espaço livre. Preencha nome nave, x 400, y 410, largura 54, altura 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.
+[engaging, energetic, conversational voice] Em Ao iniciar, encontre Criar nave, que é o bloco que cria a nave hoje. Leia o x e o y dele, porque o bloco novo vai usar os mesmos.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço livre da área de blocos. Depois abra Jogo 2D, Sprites e Criar e trocar aparência, pegue Criar sprite em x y largura altura com imagem e solte nesse espaço livre.
+
+[confident, clear, unhurried voice] Repare: o bloco novo chega com heroi no nome e na imagem. No nome, clique em heroi e escreva nave. Na imagem, clique em heroi e escolha nave.
+
+[engaging, energetic, conversational voice] Agora os números, que chegam com 100 no x e no y e 40 na largura e na altura. Coloque 400 no x e 410 no y, os mesmos do Criar nave. Na largura e na altura, coloque 54. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.
 
 [curious] O bloco novo já está preenchido. E o antigo?
 
-[confident, clear, unhurried voice] Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador no lugar dele, abaixo de Preparar o jogo em tela cheia e acima dos grupos. Se apagar outra peça sem querer, use Ctrl+Z para desfazer.
+[engaging, energetic, conversational voice] Agora o Criar nave antigo sai. Clique com o botão direito só nele e escolha Apagar este bloco. Se apagar outra peça sem querer, use Ctrl+Z para desfazer.
 
-[confident, clear, unhurried voice] Agora clique na prévia e comece uma partida de novo. [interested, animated voice] Olha só: a sua nave aparece, com os dois desenhos espremidos, porque o criador está usando a folha inteira, como na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é por esse nome que os controles e as colisões procuram o sprite.
+[engaging, energetic, conversational voice] Encaixe o novo criador no lugar do antigo, abaixo de Preparar o jogo em tela cheia e acima dos grupos. É este bloco que cria a nave com a sua imagem.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia e com os blocos de baixo ligados. [reassuring, encouraging voice] Depois de corrigir, teste de novo. Na próxima parte, a gente vai recortar cada quadro.
+[engaging, energetic, conversational voice] Comece uma partida de novo. [interested, animated voice] Olha só: a sua nave aparece, mas com os dois desenhos espremidos, porque o bloco usa a folha inteira, como o recorte de 64 na experiência. E as setas continuam movendo a nave, porque o nome continua nave, e é esse nome que os outros blocos procuram.
+
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, com nome nave, x 400, y 410, largura 54, altura 54 e imagem nave, abaixo de Preparar o jogo em tela cheia. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -155,13 +179,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-trocar-nave-K1 | Dedé | 1 | 54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado. | O bloco novo já está preenchido. E o antigo? | Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador | [curious] |
+| video-trocar-nave-K1 | Dedé | 1 | coloque 54. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado. | O bloco novo já está preenchido. E o antigo? | Agora o Criar nave antigo sai. Clique com o botão direito só nele e escolha Apagar este bloco. Se apagar outra peça sem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-trocar-nave-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-trocar-nave-K1`: entrada — Mostrar o bloco novo preenchido, ainda solto, ao lado do Criar nave antigo. Saída — Clicar com o botão direito só no Criar nave antigo e apagar.
 
 
 **Recado na página (não gravar):** Agora use a sua imagem no criador da nave! Troque o criador por um sprite com imagem, conservando o nome nave. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
@@ -174,22 +198,26 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-folha-nave`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No "No seu Estúdio, comece uma partida", mostrar o Estúdio na outra aba e começar a partida na prévia. No "Tá vendo?", apontar as duas naves espremidas. No "deixe primeiro esse lugar à vista", mostrar o fim de Ao iniciar. No "abra Jogo 2D, Sprites e Animação", abrir as categorias e encaixar o bloco no fim de Ao iniciar. No "Escreva folha-nave no nome da folha", escrever o nome e escolher a imagem nave. No "deixe 32 e 32", apontar os tamanhos. No "Comece uma partida", mostrar a nave ainda espremida. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Clique na prévia e comece uma partida. Tá vendo? Aparecem as duas naves espremidas, porque o criador usa a folha inteira. Lembra da experiência da terceira parte desta aula? Com o recorte de 32, apareceu uma nave inteira. Agora a gente vai recortar a folha da sua nave!
+[engaging, energetic, conversational voice] No seu Estúdio, comece uma partida do seu jogo. Tá vendo? Aparecem as duas naves espremidas, porque o bloco usa a folha inteira. Lembra da experiência da terceira parte desta aula? O recorte de 32 mostrou uma nave inteira. Agora a gente vai recortar a sua folha!
 
-[engaging, energetic, conversational voice] A folha vai entrar no fim de Ao iniciar, por isso deixe primeiro esse lugar à vista. Se precisar, arraste um espaço vazio da área de blocos até encontrar o último bloco.
+[engaging, energetic, conversational voice] A folha vai entrar no fim de Ao iniciar. Por isso, deixe primeiro esse lugar à vista. Se precisar, arraste um espaço vazio da área de blocos até aparecer o último bloco.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, Sprites, Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, Sprites e Animação e pegue Carregar folha de quadros da imagem com quadros de x px. Encaixe esse bloco no fim de Ao iniciar, depois dos blocos que já estavam ali.
 
 [curious] Que nome eu dou para essa folha?
 
-[confident, clear, unhurried voice] No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta aula. Na imagem, escolha nave e deixe largura e altura dos quadros em 32.
+[engaging, energetic, conversational voice] Um nome só dela: folha-nave, como na experiência da primeira parte desta aula. Escreva folha-nave no nome da folha. Na imagem, escolha nave.
 
-[confident, clear, unhurried voice] Confira o nome folha-nave e o recorte 32 por 32. Não troque o tamanho 54 por 54 no criador, porque aquele é o tamanho da nave na tela, e não o do recorte. Com isso, a folha está preparada. Para a nave animar, ainda falta ligar essa folha ao sprite, e é isso que você vai fazer na próxima parte.
+[engaging, energetic, conversational voice] Nos tamanhos dos quadros, deixe 32 e 32, porque cada desenho da sua nave tem 32 por 32. É este bloco que recorta a folha em quadros.
+
+[engaging, energetic, conversational voice] Não troque o 54 do criador, porque ele é o tamanho da nave na tela, e não o do recorte.
+
+[engaging, energetic, conversational voice] Comece uma partida. [confident, clear, unhurried voice] Repare: a nave continua espremida, porque a folha está pronta, mas a nave ainda não usa os quadros dela. É isso que você vai fazer na próxima parte.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -198,13 +226,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-folha-nave-K1 | Dedé | 1 | da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali. | Que nome eu dou para essa folha? | No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta aula. Na imagem, | [curious] |
+| video-folha-nave-K1 | Dedé | 1 | quadros da imagem com quadros de x px. Encaixe esse bloco no fim de Ao iniciar, depois dos blocos que já estavam ali. | Que nome eu dou para essa folha? | Um nome só dela: folha-nave, como na experiência da primeira parte desta aula. Escreva folha-nave no nome da folha. Na | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-folha-nave-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-folha-nave-K1`: entrada — Mostrar o bloco Carregar folha de quadros encaixado no fim de Ao iniciar, com os campos ainda de fábrica. Saída — Escrever folha-nave no nome da folha e escolher a imagem nave.
 
 
 **Recado na página (não gravar):** Agora prepare o recorte da sua nave! Carregue folha-nave com quadros de 32 por 32 no fim de Ao iniciar. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
@@ -217,24 +245,30 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-animar-nave`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "No seu Estúdio, abra o cartão do seu jogo", mostrar o cartão aberto na outra aba e começar a partida na prévia. No "Tá vendo?", apontar a nave espremida. No "Deixe esse bloco à vista", mostrar Carregar folha de quadros folha-nave. No "Abra Jogo 2D, Sprites e Animação", abrir as categorias e encaixar o bloco logo abaixo. No "No sprite, escolha nave", preencher sprite e folha. No "clique em Escolher", escolher voando. No "Repare nos valores", apontar o 0, o 1 e o 8. No "Agora comece a partida com Enter", jogar um pouco e apontar o fogo pulsando. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora a gente vai mandar o jogo animar a sua nave. A animação vai logo abaixo de Carregar folha de quadros folha-nave, no fim de Ao iniciar, porque a folha precisa estar carregada antes de a nave usar os quadros dela. Por isso, deixe esse bloco à vista.
+[engaging, energetic, conversational voice] No seu Estúdio, abra o cartão do seu jogo e comece uma partida na prévia. Tá vendo? A nave ainda aparece espremida, porque ela não usa os quadros da folha-nave. Agora o jogo vai animar a sua nave com esses quadros.
 
-[engaging, energetic, conversational voice] Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo de Carregar folha de quadros folha-nave.
+[engaging, energetic, conversational voice] A animação vai logo abaixo de Carregar folha de quadros folha-nave, porque a folha precisa estar carregada antes de a nave usar os quadros dela. Deixe esse bloco à vista.
 
-[engaging, energetic, conversational voice] No sprite, escolha nave, e, na folha, escolha folha-nave. Depois clique em Escolher na animação e selecione voando. [confident, clear, unhurried voice] Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.
+[confident, clear, unhurried voice] Abra Jogo 2D, Sprites e Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo de Carregar folha de quadros folha-nave.
+
+[engaging, energetic, conversational voice] No sprite, escolha nave. Na folha, escolha folha-nave. Depois clique em Escolher, na animação, e selecione voando.
+
+[confident, clear, unhurried voice] Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps. Fps quer dizer quadros por segundo.
 
 [curious] No Pinta era um e dois. Por que aqui é zero e um?
 
-[engaging, energetic, conversational voice] O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1.
+[engaging, energetic, conversational voice] É que o bloco começa a contar do zero. Por isso, o quadro 0 é o desenho que o Pinta chama de quadro 1, e o quadro 1 é o quadro 2 do Pinta. São os mesmos dois desenhos.
 
-[confident, clear, unhurried voice] Agora clique na prévia e comece a partida com Enter. Mova a nave com as setas e atire com Espaço. [interested, animated voice] Olha só: agora a nave aparece inteira, com o fogo pulsando.
+[engaging, energetic, conversational voice] É este bloco que faz a nave trocar os desenhos da folha.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. [reassuring, encouraging voice] Depois de corrigir, teste de novo. E, se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto antes de escolher de novo.
+[engaging, energetic, conversational voice] Agora comece a partida com Enter, mova a nave com as setas e atire com Espaço. [interested, animated voice] Olha só: a nave aparece inteira, com o fogo pulsando.
+
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite nave com a folha folha-nave na animação voando, do quadro 0 ao 1, a 8 fps, logo abaixo de Carregar folha de quadros folha-nave. [reassuring, encouraging voice] Depois de corrigir, teste de novo. Se voando não aparecer na lista, confira se a animação ficou guardada no Pinta e se a imagem foi trazida ao projeto.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -243,13 +277,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-animar-nave-K1 | Dedé | 1 | voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo. | No Pinta era um e dois. Por que aqui é zero e um? | O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1. Agora clique na prévia e | [curious] |
+| video-animar-nave-K1 | Dedé | 1 | voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps. Fps quer dizer quadros por segundo. | No Pinta era um e dois. Por que aqui é zero e um? | É que o bloco começa a contar do zero. Por isso, o quadro 0 é o desenho que o Pinta chama de quadro 1, e o quadro 1 é o | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-animar-nave-K1`: entrada — Concluir a escolha de voando e mostrar os campos preenchidos, sem alterar os números. Saída — Apontar 0 e 1 no bloco durante a explicação; depois testar movimento, tiro e animação.
+- `video-animar-nave-K1`: entrada — Mostrar os campos preenchidos depois de escolher voando, sem alterar os números. Saída — Apontar o 0 e o 1 no bloco durante a explicação.
 
 
 **Recado na página (não gravar):** Agora ligue a animação voando! Anime nave com folha-nave e confira os dois quadros no jogo. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
@@ -262,7 +296,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "confira no seu jogo", mostrar a nave inteira e animada no jogo. No "espere aparecer Guardado na sua conta", mostrar o aviso no Estúdio. No "clique em Escolher no Estúdio", voltar à aba da aula e abrir a galeria. No "selecione o cartão do seu jogo", marcar o cartão. No "Depois clique em Enviar (1)", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "Por último, clique em Concluir aula", clicar em **Concluir aula**.
 
 **Fala para ElevenLabs:**
 

@@ -7,17 +7,34 @@
     "alvoDeEdicaoSegundos": 3,
     "duracaoGarantidaPelaTag": false
   },
-  "clipes": ["video-estado-do-jogo", "video-embrulhar", "video-relogio-e-tiro", "video-enter"],
+  "clipes": [
+    "video-estado-do-jogo",
+    "video-embrulhar",
+    "video-tela-de-abertura",
+    "video-relogio-e-tiro",
+    "video-enter"
+  ],
   "intervencoes": [
+    {
+      "id": "video-estado-do-jogo-K1",
+      "clipe": "video-estado-do-jogo",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a",
+      "falaPrincipal": "E na tela de início, as pedras nascem?",
+      "falaPersonagem": "E na tela de início, as pedras nascem?",
+      "tags": ["[curious]"]
+    },
     {
       "id": "video-embrulhar-K1",
       "clipe": "video-embrulhar",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.",
-      "ancoraDepois": "Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda",
-      "falaPrincipal": "E como o jogo sabe que deve começar na abertura?",
-      "falaPersonagem": "E como o jogo sabe que deve começar na abertura?",
+      "ancoraAntes": "momentos, cada um com um nome: inicio, a tela de abertura, e jogando, a partida. Esse momento se chama estado do jogo.",
+      "ancoraDepois": "O jogo começa no estado inicio, e isso acontece uma vez, quando ele abre. Por isso, o bloco do estado vai no fim de Ao",
+      "falaPrincipal": "E como o jogo sabe que deve começar na tela de início?",
+      "falaPersonagem": "E como o jogo sabe que deve começar na tela de início?",
       "tags": ["[curious]"]
     },
     {
@@ -25,10 +42,10 @@
       "clipe": "video-relogio-e-tiro",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.",
-      "ancoraDepois": "Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e",
-      "falaPrincipal": "Qual pergunta vai dentro desse relógio?",
-      "falaPersonagem": "Qual pergunta vai dentro desse relógio?",
+      "ancoraAntes": "o bloco Se e solte dentro dele. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira.",
+      "ancoraDepois": "A mesma da partida. Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e",
+      "falaPrincipal": "Qual pergunta vai aqui?",
+      "falaPersonagem": "Qual pergunta vai aqui?",
       "tags": ["[curious]"]
     },
     {
@@ -36,8 +53,8 @@
       "clipe": "video-relogio-e-tiro",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.",
-      "ancoraDepois": "Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem",
+      "ancoraAntes": "abertura na tela. Escute: não sai mais som de tiro, porque a resposta da pergunta é não enquanto o jogo está em inicio.",
+      "ancoraDepois": "Para isso, a gente precisa olhar os blocos. As pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não",
       "falaPrincipal": "E como eu confiro se as pedras também esperam?",
       "falaPersonagem": "E como eu confiro se as pedras também esperam?",
       "tags": ["[curious]"]
@@ -48,7 +65,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.",
-      "ancoraDepois": "O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista",
+      "ancoraDepois": "Isso! O Enter só pode começar a partida na tela de início. Por isso, dentro desse evento vai um Se. Deixe à vista o",
       "falaPrincipal": "Mas só pode começar se estiver na abertura, né?",
       "falaPersonagem": "Mas só pode começar se estiver na abertura, né?",
       "tags": ["[curious]"]
@@ -59,7 +76,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.",
-      "ancoraDepois": "Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é",
+      "ancoraDepois": "Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se do Enter só muda o estado",
       "falaPrincipal": "E se eu tocar em Enter no meio da partida?",
       "falaPersonagem": "E se eu tocar em Enter no meio da partida?",
       "tags": ["[curious]"]

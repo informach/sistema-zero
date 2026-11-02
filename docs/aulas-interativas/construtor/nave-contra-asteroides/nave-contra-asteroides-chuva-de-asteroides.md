@@ -14,6 +14,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Separa criar obstáculos de programar a colisão. Intervalo e sorteio são observados diretamente no jogo que a pessoa acabou de montar.
 
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -24,31 +26,37 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 ## Proposta final
 
-### Seção 1. Compare o intervalo entre as pedras
+### Seção 1. Quando nasce uma pedra nova?
 
-**Tarefa:** Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-intervalo-das-pedras → fala-intervalo-das-pedras → experiencia-relogio.
 
-**Recado na página (não gravar):** Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-intervalo-das-pedras-K1: Dedé substitui “Se eu diminuir a espera, a pedra cai mais rápido?”. Antes: “pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.”. Depois: “Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas”.
+video-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo quadro?”. Antes: “em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.”. Depois: “O que você acha que aparece na tela? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões”.
 
-**Experiência existente:** `spawn`. Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência em exploração livre:** `spawn` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/spawn.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/spawn.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram. Escolha De 40 em 40 quadros e deixe o tempo passar até nascerem duas pedras. Observe onde cada uma aparece.
+
+**Pistas, do aberto ao direto:** 1) Observe quantas pedras nascem e o espaço entre elas. 2) Compare as pedras que nascem em todo quadro com as que esperam alguns quadros. 3) Escolha Em todo quadro e clique em Passar 1 segundo. Depois escolha De 40 em 40 quadros e clique em Passar 1 segundo até nascerem duas pedras. Sem palpite e sem pergunta final.
 
 ### Seção 2. Prepare a criação dos asteroides
 
-**Tarefa:** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Tarefa:** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque a espera de 40 quadros logo abaixo de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-grupo-e-relogio → fala-relogio.
 
-**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque a espera de 40 quadros logo abaixo de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”. Antes: “e solte no fim de Ao iniciar. Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.”. Depois: “Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de”.
+video-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”. Antes: “vem asteroides, que é o nome certo para este grupo. Deixe assim. É este bloco que cria a lista das pedras, ainda vazia.”. Depois: “De 40 em 40 quadros, como na experiência. A pedra não nasce em todo quadro, e sim de tempos em tempos. Por isso, ela”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
@@ -56,31 +64,37 @@ video-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”.
 - Crie os asteroides em um relógio com intervalo positivo, fora de A cada quadro.
 - Os dois relógios são vizinhos em Enquanto estiver rodando.
 
-### Seção 3. Sorteie onde a pedra nasce
+### Seção 3. Onde nasce cada pedra?
 
-**Tarefa:** Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-posicao-sorteada → fala-posicao-sorteada → experiencia-sorteio.
 
-**Recado na página (não gravar):** Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-posicao-sorteada-K1: Dedé substitui “Mas por que criar a pedra fora da tela?”. Antes: “entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.”. Depois: “A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo”.
+video-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no meio da tela?”. Antes: “lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta”.
 
-**Experiência existente:** `random`. Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência em exploração livre:** `random` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/random.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/random.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Sorteie o lugar da pedra algumas vezes e compare as marquinhas na régua. Depois observe de onde a pedra entra na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua. Clique em Passar 1 segundo e observe de onde a pedra entra na tela.
+
+**Pistas, do aberto ao direto:** 1) Compare as marquinhas na régua depois de cada sorteio. 2) Depois de sortear, deixe o tempo passar e observe a borda de cima da tela. 3) Clique em Sortear um lugar três vezes. Depois clique em Passar 1 segundo e observe a pedra. Sem palpite e sem pergunta final.
 
 ### Seção 4. Crie e mostre as pedras caindo
 
-**Tarefa:** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça as pedras caírem! Crie o asteroide dentro da espera, com o x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-asteroide → fala-asteroide.
 
-**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça as pedras caírem! Crie o asteroide dentro da espera, com o x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-asteroide-K1: Dedé substitui “E como tira as pedras que saem da tela?”. Antes: “usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.”. Depois: “Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e”.
+video-asteroide-K1: Dedé substitui “E como tira as pedras que saem da tela?”. Antes: “velocidades e solte nesse lugar. Repare: o grupo já vem asteroides, e nos dois próximos blocos também. Deixe assim.”. Depois: “Do mesmo jeito que os tiros. Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 

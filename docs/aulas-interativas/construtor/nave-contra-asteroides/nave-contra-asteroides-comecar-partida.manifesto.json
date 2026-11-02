@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-estado-do-jogo",
-      "plannedVideo": "Título: Escolha quando o jogo pode agir\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Confirmar rótulo Criar asteroide via cast. A cena game-state usa Toque para começar, no palco, diferente do Enter que será construído no projeto. Com Criar asteroide no relógio, fora do Se, clicar em Tempo na abertura e mostrar o contador de asteroides criados subindo. Levar a peça para dentro de Se o estado do jogo é jogando, deixar passar uns quatro segundos e mostrar o contador em esperando, com os toques do relógio subindo na faixa. Clicar em Toque para começar e mostrar as pedras nascendo de novo. A caixa do relógio mostra No relógio, a cada 40 quadros, o mesmo intervalo do projeto. Meme na comparação: na frase da corrida, mostrar por 2 a 3 segundos o meme ilustrado nosso, os asteroides parados atrás da linha de largada e o Zappy segurando a bandeira, com a legenda \"só depois da largada\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: A partida já começou?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Ligar a pergunta\"]. No \"este contador mostra quantos asteroides\", apontar o contador de asteroides criados. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-estado-do-jogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,9 +22,13 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Escolha quando o jogo pode agir",
-        "instructions": "Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare.",
-        "hints": [],
+        "title": "A partida já começou?",
+        "instructions": "Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Observe o contador de asteroides criados enquanto o tempo passa.",
+          "Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar?",
+          "Deixe o tempo passar na tela de início. Depois clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos. Por último, clique em Começar a partida e deixe o tempo passar."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "game-state",
@@ -40,6 +44,7 @@
           },
           "cenario": "nave",
           "setup": {
+            "freeExploration": true,
             "preset": {
               "id": "pedra-40-quadros",
               "clockFrames": 40,
@@ -49,14 +54,16 @@
             "goals": ["outside", "waiting", "playing"],
             "goalCopy": {
               "outside": {
-                "label": "Sem a pergunta, as pedras nasceram antes de começar"
+                "label": "Sem a pergunta, os asteroides nasceram antes de começar",
+                "pedido": "Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador."
               },
               "waiting": {
-                "label": "Com a pergunta, o relógio tocou três vezes e nenhuma pedra nasceu",
-                "pedido": "Leve Criar asteroide para dentro de Se o estado do jogo é jogando e deixe o tempo passar 4 segundos no início."
+                "label": "Com a pergunta, na tela de início, nenhum asteroide nasceu",
+                "pedido": "Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador."
               },
               "playing": {
-                "label": "Começando a partida, as pedras voltaram a nascer"
+                "label": "Com a partida começada, os asteroides voltaram a nascer",
+                "pedido": "Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador."
               }
             }
           }
@@ -66,31 +73,43 @@
     },
     {
       "key": "video-embrulhar",
-      "plannedVideo": "Título: Separe a abertura da partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: abrir o jogo e, no \"Tá vendo?\", mostrar as pedras caindo desde o começo. A pergunta x > 0 do Se é um bloco de verdade: arrastá-la para a lixeira do espaço dos blocos antes de encaixar a pergunta nova; conferir antes da gravação onde fica a lixeira. O bloco de estado inicial entra depois de criar os ramos, para reduzir tempo em tela vazia. Mostrar toda a pilha transferida. No \"Olha aqui\", apontar os dois + da linha de baixo do Se e clicar no que fica antes de senão se. Não colocar o relógio de 40 quadros dentro do quadro principal.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na abertura?”. Antes: “é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.”. Depois: “Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça a partida esperar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"Olhe o seu jogo logo que ele abre\", apontar as pedras caindo na prévia [apontar prévia 400 120]. No \"Deixe à vista o fim de Ao iniciar\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Jogo 2D, depois Jogo e telas\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida] e encaixar o bloco [encaixar \"Mudar o estado do jogo para\" abaixo de \"Dar ao sprite\"]. No \"É este bloco que diz em que estado\", apontar o bloco [apontar bloco \"Mudar o estado do jogo para\"]. No \"Pegue a sequência pelo primeiro bloco, Limpar a tela\", levar a sequência inteira com a mão, pelo **Limpar a tela**, até o lugar livre e soltar. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e encaixar o bloco [encaixar \"Se\" em \"A cada quadro do jogo\"]. No \"É este bloco que faz uma pergunta\", apontar o Se [apontar bloco \"Se\"]. No \"arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco o estado do jogo é e solte nesse lugar\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco ao lado de Se e escolher jogando. No \"Agora devolva a sequência para dentro do Se\", levar a sequência pelo **Limpar a tela** e soltar dentro do então. No \"Agora olhe a prévia\", apontar a prévia sem nave e sem pedras [apontar prévia 400 240]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na tela de início?”. Antes: “momentos, cada um com um nome: inicio, a tela de abertura, e jogando, a partida. Esse momento se chama estado do jogo.”. Depois: “O jogo começa no estado inicio, e isso acontece uma vez, quando ele abre. Por isso, o bloco do estado vai no fim de Ao”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-embrulhar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte."
+        "text": "Agora faça a partida esperar! Comece o jogo em inicio, leve os blocos da partida para dentro de Se jogando e clique em Verificar projeto. Depois, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-tela-de-abertura",
+      "plannedVideo": "Título: Mostre a tela de abertura\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Olhe o seu jogo logo que ele abre\", apontar a prévia vazia [apontar prévia 400 240]. No \"Olha aqui: na linha de baixo do bloco Se\", apontar a linha dos sinais de mais [apontar bloco \"Se\"]. No \"Clique uma vez no primeiro\", clicar no sinal de mais que fica antes de senão se. No \"Arraste essa pergunta para a lixeira\", levar a pergunta x > 0 do ramo novo com a mão até a lixeira. No \"Abra de novo Jogo 2D\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar **o estado do jogo é** ao lado de senão se e deixar inicio. No \"pegue o bloco Mostrar tela com título\", soltar o bloco no então desse senão se. No \"É este bloco que desenha a tela de abertura\", apontar o bloco [apontar bloco \"Mostrar tela\"]. No \"Agora olhe a prévia\", apontar a abertura [apontar prévia 400 240]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-abertura",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora mostre a tela de abertura! Crie o ramo de inicio no Se, coloque a tela com a dica do Enter e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-relogio-e-tiro",
-      "plannedVideo": "Título: Espere a partida para criar pedras e tiros\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar tocando na barra de espaço com a abertura na tela e, no \"Percebeu?\", deixar ouvir o som do tiro, sem música por cima. A pergunta x > 0 de cada Se vai para a lixeira antes de encaixar a pergunta nova. Conferir condições e contagem única dos criadores. A abertura opaca esconde objetos: não usar sua aparência isolada como prova de que nada nasce.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-relogio-e-tiro-K1: Dedé substitui “Qual pergunta vai dentro desse relógio?”. Antes: “de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.”. Depois: “Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e”.\n\nvideo-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras também esperam?”. Antes: “com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.”. Depois: “Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Espere a partida para criar pedras e tiros\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Com a abertura no seu jogo, toque na barra de espaço\", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space]. No \"Deixe à vista o bloco A cada 40 quadros\", arrastar até o bloco aparecer [arrastar até \"A cada 40 quadros\"]. No \"Pegue o bloco que cria asteroides\", levar o bloco com a mão até o espaço livre e soltar. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e encaixar o bloco [encaixar \"Se\" em \"A cada 40 quadros\"]. No \"arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco ao lado de Se e escolher jogando. No \"Agora leve o bloco que cria asteroides\", levar o bloco para dentro do então. No \"Encontre o evento da barra de espaço\", arrastar até o evento aparecer [arrastar até \"Quando apertar a tecla\"]. No \"Pegue a sequência pelo primeiro bloco, Criar tiro\", levar a sequência com a mão até o espaço livre. No \"pegue outro Se e solte dentro do evento\", abrir as categorias [categoria Programação > Lógica & Se], encaixar o bloco [encaixar \"Se\" em \"Quando apertar a tecla\"] e levar a pergunta pronta até a lixeira. No \"solte nesse lugar e escolha jogando\", soltar **o estado do jogo é** ao lado de Se e escolher jogando. No \"Agora leve Criar tiro e Tocar efeito\", levar a sequência para dentro do então. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space], deixando ouvir o silêncio sem fala por cima. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-relogio-e-tiro-K1: Dedé substitui “Qual pergunta vai aqui?”. Antes: “o bloco Se e solte dentro dele. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira.”. Depois: “A mesma da partida. Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e”.\n\nvideo-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras também esperam?”. Antes: “abertura na tela. Escute: não sai mais som de tiro, porque a resposta da pergunta é não enquanto o jogo está em inicio.”. Depois: “Para isso, a gente precisa olhar os blocos. As pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio-e-tiro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte."
+        "text": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio das pedras e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-enter",
-      "plannedVideo": "Título: Use Enter para começar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar tocando em Enter com a abertura na tela e, no \"Tá vendo?\", mostrar que nada muda. Testar a transição real inicio → jogando e Enter durante jogando. Não exigir reinício, vitória ou derrota ainda.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-enter-K1: Dedé substitui “Mas só pode começar se estiver na abertura, né?”. Antes: “e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.”. Depois: “O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista”.\n\nvideo-enter-K2: Dedé substitui “E se eu tocar em Enter no meio da partida?”. Antes: “e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”. Depois: “Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Use Enter para começar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"clique na área do jogo e toque em Enter\", clicar no jogo [tocar prévia 400 240] e tocar em Enter [tecla Enter]. No \"Deixe esse lugar à vista\", arrastar até o evento da barra de espaço aparecer [arrastar até \"Quando apertar a tecla\"]. No \"Abra Jogo 2D, depois Controles\", abrir as categorias [categoria Jogo 2D > Controles > Teclado, ações e toque] e soltar o bloco abaixo do evento inteiro da barra de espaço. No \"No menu da tecla, escolha Enter\", escolher Enter no menu do bloco novo. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se], soltar o Se dentro do evento Enter e levar a pergunta pronta até a lixeira. No \"pegue o bloco o estado do jogo é, solte nesse lugar e deixe inicio\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida] e soltar o bloco ao lado de Se. No \"pegue o bloco Mudar o estado do jogo para, solte dentro do então\", soltar o bloco e escolher jogando. No \"É este bloco que começa a partida\", apontar o bloco. No \"Agora teste: clique na área do jogo e toque em Enter\", clicar no jogo [tocar prévia 400 240] e tocar em Enter [tecla Enter], depois mover a nave e atirar [tecla Space]. No \"Agora toque em Enter durante a partida\", tocar em Enter [tecla Enter] e mostrar a partida continuando. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"clique em Enviar meu projeto\", enviar e confirmar [enviar projeto]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-enter-K1: Dedé substitui “Mas só pode começar se estiver na abertura, né?”. Antes: “e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.”. Depois: “Isso! O Enter só pode começar a partida na tela de início. Por isso, dentro desse evento vai um Se. Deixe à vista o”.\n\nvideo-enter-K2: Dedé substitui “E se eu tocar em Enter no meio da partida?”. Antes: “e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”. Depois: “Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se do Enter só muda o estado”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-enter",
@@ -1212,9 +1231,9 @@
   "sections": [
     {
       "key": "estado-do-jogo",
-      "title": "Escolha quando o jogo pode agir",
+      "title": "A partida já começou?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-estado-do-jogo", "fala-estado-do-jogo", "experiencia-estado"],
       "workspaceKey": null,
       "externalTool": null,
@@ -1226,9 +1245,9 @@
     },
     {
       "key": "embrulhar",
-      "title": "Separe a abertura da partida",
+      "title": "Faça a partida esperar",
       "intent": "application",
-      "objective": "Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "objective": "Agora faça a partida esperar! Comece o jogo em inicio, leve os blocos da partida para dentro de Se jogando e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1348,7 +1367,23 @@
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame"
             }
-          },
+          }
+        ]
+      }
+    },
+    {
+      "key": "abertura",
+      "title": "Mostre a tela de abertura",
+      "intent": "application",
+      "objective": "Agora mostre a tela de abertura! Crie o ramo de inicio no Se, coloque a tela com a dica do Enter e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "blockKeys": ["video-tela-de-abertura", "fala-abertura"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-tela-de-abertura"],
+        "projectChecks": [
           {
             "id": "tela-inicio",
             "label": "No senão se inicio, encaixe Mostrar tela com a dica de Enter.",
@@ -1393,7 +1428,7 @@
       "key": "relogio-e-tiro",
       "title": "Espere a partida para criar pedras e tiros",
       "intent": "application",
-      "objective": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "objective": "Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio das pedras e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-relogio-e-tiro", "fala-relogio-e-tiro"],
       "workspaceKey": "projeto",
       "externalTool": null,

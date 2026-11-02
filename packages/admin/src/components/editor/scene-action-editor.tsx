@@ -142,6 +142,7 @@ const TODAS: { label: string; value: SceneAction }[] = [
     label: `Nascer a cada ${frames} quadros`,
     value: { type: 'birth-every' as const, frames },
   })),
+  { label: 'Voltar ao começo (guarda as descobertas)', value: { type: 'restart-case' } },
   { label: 'Exportar um arquivo', value: { type: 'export-file' } },
   { label: 'Importar o arquivo', value: { type: 'import-file' } },
   { label: 'Publicar no Mural', value: { type: 'publish' } },

@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mudança é experimentado antes do segundo quadro. O nome girando identifica a animação; não promete uma rotação completa que os dois desenhos não fazem.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). Camadas e o tanto que muda viraram exploração livre. A parte do miolo responde à pergunta da Debinha com o gesto exato na lista Camadas, e a frase longa foi dividida. Revisão independente de 02/11/2026: o vídeo do tanto que muda saiu da pergunta retórica (a bola pergunta o que precisa mudar de um quadro para o outro); a retomada diz girar, a mesma palavra da animação girando.**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -26,15 +28,15 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 ### Seção 1. Troque o que fica na frente
 
-**Tarefa / Zappy na página:** Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-camadas → fala-camadas → experimento-camadas.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo.”. Depois: “Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra”.
+video-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a”.
 
-**Experiência existente:** `layers`. Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `layers`, com `setup.freeExploration`. Suba e desça a pedra na lista Camadas e compare qual forma aparece na frente no desenho. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Desenhe fogo atrás da pedra
 
@@ -44,7 +46,7 @@ video-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-chama-K1: Debinha substitui “E se a chama ficar na frente da pedra?”. Antes: “espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.”. Depois: “Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma”.
+video-chama-K1: Debinha substitui “Ué, a chama ficou na frente da pedra?”. Antes: “chama no espaço acima da pedra e clique no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.”. Depois: “Tá vendo? A base da chama cobre um pedaço da pedra, porque a chama foi a última forma desenhada e ficou em cima na”.
 
 **Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
@@ -56,21 +58,21 @@ video-chama-K1: Debinha substitui “E se a chama ficar na frente da pedra?”. 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-miolo-fogo-K1: Debinha substitui “Como eu trago o miolo claro para a frente?”. Antes: “as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas.”. Depois: “Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com”.
+video-miolo-fogo-K1: Debinha substitui “Como eu levo o miolo para esse lugar da lista?”. Antes: “Camadas, ele fica logo acima da chama maior e abaixo da pedra, porque a forma mais acima na lista aparece na frente.”. Depois: “Com o miolo selecionado, olhe onde ele está na lista Camadas. Se ele estiver acima da pedra, clique em Uma camada para”.
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 4. Compare mudanças entre quadros
 
-**Tarefa / Zappy na página:** Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-mudanca-pequena → fala-mudanca-pequena → experimento-tanto-que-muda.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-mudanca-pequena-K1: Debinha substitui “E se eu mover a pedra inteira?”. Antes: “É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda.”. Depois: “Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia,”.
+video-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante?”. Antes: “futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a Prévia troca dois desenhos da”.
 
-**Experiência existente:** `motion-amount`. Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0 e olhe a Prévia tocar por um instante. Se ela estiver parada, clique em Tocar a Prévia. Deixe a pedra em 0 e coloque a cratera em 4; olhe outra vez. Depois coloque a pedra inteira em 10 e compare a Prévia. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `motion-amount`, com `setup.freeExploration`. Compare a pedra na Prévia com os dois números em 0, com só a cratera andando um pouco e com a pedra inteira andando muito. Se a Prévia estiver parada, clique em Tocar a Prévia. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 5. Mude detalhes no segundo quadro
 

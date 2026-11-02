@@ -14,6 +14,7 @@ import {
   SeloDoQuadro,
   SetaDeSegurar,
   TiraDeQuadros,
+  useQuemAnda,
   useRitmoDosQuadros,
 } from './scene-walk-camera-lenta'
 
@@ -32,6 +33,8 @@ import {
 export function WalkNaBeirada() {
   const context = useDiscovery()
   const { state, dispatch, activity } = context
+  // ⭐ Farol ou Nave (02/11/2026): o nome de quem anda e o cenário vêm de `activity.cenario`.
+  const quem = useQuemAnda()
   const w = state.walk
   const seen = new Set(state.evidence.discoveries)
   const completed = [
@@ -40,8 +43,8 @@ export function WalkNaBeirada() {
     seen.has('stayed-inside'),
   ]
   const goals = [
-    'Leve o personagem até a beirada com o limite desligado.',
-    'Ligue o limite com o personagem fora da tela.',
+    `Leve ${quem.nome} até a beirada com o limite desligado.`,
+    `Ligue o limite com ${quem.nome} fora da tela.`,
     'Segure a seta na beirada com o limite ligado.',
   ]
   const saiu = lighthouseWalkGone(w)
@@ -98,14 +101,14 @@ export function WalkNaBeirada() {
       }}
       hud={<SeloDoQuadro ritmo={ritmo} />}
       stage={
-        <SceneCenarioProvider cenario="farol">
+        <SceneCenarioProvider cenario={activity.cenario}>
           <LighthouseWalkStage state={state} semPasso />
         </SceneCenarioProvider>
       }
       after={
         saiu && !w.keepInside ? (
           <Note label="Fora da tela" tone="gold">
-            Ele saiu da janela do jogo. Ligue o limite da tela ou clique em Voltar ao início.
+            {quem.Ele} saiu da janela do jogo. Ligue o limite da tela ou clique em Voltar ao início.
           </Note>
         ) : undefined
       }
@@ -113,9 +116,9 @@ export function WalkNaBeirada() {
       <TiraDeQuadros />
       <p className="slow-quadro-agora" data-puxou={agora !== null} aria-live="polite">
         {agora === 'segurou'
-          ? 'Neste quadro: o passinho ia levar ele para fora; depois o jogo conferiu a beirada e segurou ele dentro.'
+          ? `Neste quadro: o passinho ia levar ${quem.ele} para fora; depois o jogo conferiu a beirada e segurou ${quem.ele} dentro.`
           : agora === 'voltou'
-            ? 'Neste quadro: ele estava fora; o jogo conferiu a beirada e puxou de volta para dentro.'
+            ? `Neste quadro: ${quem.ele} estava fora; o jogo conferiu a beirada e puxou de volta para dentro.`
             : w.keepInside
               ? 'O limite está ligado: depois de cada passinho, o jogo confere a beirada.'
               : 'O limite está desligado.'}

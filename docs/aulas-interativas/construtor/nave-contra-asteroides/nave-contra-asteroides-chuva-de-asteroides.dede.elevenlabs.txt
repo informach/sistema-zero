@@ -1,4 +1,4 @@
-[curious] Se eu diminuir a espera, a pedra cai mais rápido?
+[curious] E se nascer uma pedra em todo quadro?
 
 [long pause]
 
@@ -6,7 +6,7 @@
 
 [long pause]
 
-[curious] Mas por que criar a pedra fora da tela?
+[curious] E a pedra aparece de repente, no meio da tela?
 
 [long pause]
 

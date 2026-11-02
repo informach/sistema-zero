@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; luz e sombra precedem o acabamento. O desenho continua autoral: medidas e nomes permitem a integração, sem impor cores ou uma silhueta única.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). As três experiências (bordas, espelho e luz) viraram exploração livre com o Zappy; os vídeos explicam a ideia com uma analogia e convidam a investigar. As montagens no Pinta ficaram com uma ação por parágrafo. Revisão independente de 02/11/2026: o vídeo das bordas não explica mais o resultado do vetor (o Zappy explica depois); a retomada da folha da nave liga os quadradinhos ao Pixel art; o botão é "Abrir meu Pinta".**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -27,11 +29,11 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 ### Seção 1. Aproxime duas formas de desenhar
 
-**Tarefa / Zappy na página:** Sua vez! Aproxime as duas pedras e compare as bordas. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue a borda de cada pedra, de perto e de longe. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-bordas → fala-bordas → experimento-bordas.
 
-**Experiência existente:** `pixel-vector`. Aumente Aproximar até 6 e observe as bordas das duas pedras. Depois volte para 1 e compare de longe. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `pixel-vector`, com `setup.freeExploration`. Aproxime e afaste as duas pedras e compare as bordas, de perto e de longe. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare a folha da nave
 
@@ -41,21 +43,21 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-nova-nave-K1: Dedé substitui “E por que o nome tem que ser nave?”. Antes: “Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.”. Depois: “Confira o nome nave e a grade quadrada. O nome precisa ser nave, porque é por esse nome que você vai encontrar o”.
+video-nova-nave-K1: Dedé substitui “E por que o nome tem que ser nave?”. Antes: “Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.”. Depois: “O nome precisa ser nave, porque é por esse nome que você vai encontrar o desenho quando ele for para o jogo. Se você já”.
 
 **Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Descubra o que o espelho repete
 
-**Tarefa / Zappy na página:** Sua vez! Pinte com cada espelho e veja onde a cópia aparece. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue onde a tinta aparece com cada espelho e com o Balde. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-espelho → fala-espelho → experimento-espelho.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-espelho-K1: Dedé substitui “E esse espelho de cima e de baixo?”. Antes: “A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.”. Depois: “Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia”.
+video-espelho-K1: Dedé substitui “E o Balde de tinta, o espelho copia também?”. Antes: “folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões ligam e desligam”.
 
-**Experiência existente:** `symmetry`. Com os dois espelhos desligados, clique em Pintar a asa. Ligue apenas Espelho lado a lado e pinte a asa novamente. Desligue esse espelho, ligue apenas Espelho de cima e de baixo e clique em Pintar a ponta. Depois deixe só o espelho lado a lado ligado e use Balde de tinta: encher a asa. Compare as duas asas. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `symmetry`, com `setup.freeExploration`. Pinte a asa com os espelhos desligados e com cada espelho ligado. Depois use o Balde de tinta com o Espelho lado a lado. Compare onde a tinta aparece em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Feche o contorno da nave
 
@@ -73,21 +75,21 @@ video-espelho-K1: Dedé substitui “E esse espelho de cima e de baixo?”. Ante
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-cores-K1: Dedé substitui “Posso escolher outra cor, como roxo?”. Antes: “Agora pinte o corpo da sua nave.”. Depois: “Pode ser roxa, sim. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até”.
+video-cores-K1: Dedé substitui “Posso escolher outra cor, como roxo?”. Antes: “Agora pinte o corpo da sua nave.”. Depois: “Pode ser roxa, sim. Escolha uma cor, pegue o Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo”.
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 6. Mude o lado da luz
 
-**Tarefa / Zappy na página:** Sua vez! Ligue A sombra e a luz e mude o lado do sol. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que a sombra, a luz e o lado do sol fazem com a bola. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-luz → fala-luz → experiencia-luz.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-luz-K1: Dedé substitui “E se a luz vier do outro lado?”. Antes: “para ela, vai ver um lado mais claro, virado para o sol, e outro mais escuro. É isso que A sombra e a luz desenha.”. Depois: “Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai”.
+video-luz-K1: Dedé substitui “E se o sol mudar de lado?”. Antes: “uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga A sombra”.
 
-**Experiência existente:** `shading`. Ligue A sombra e a luz e observe a forma. Desligue para comparar. Ligue de novo e troque O sol da esquerda para a direita. Compare os lados claros e escuros. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `shading`, com `setup.freeExploration`. Ligue e desligue a sombra e a luz e troque o sol de lado. Compare a forma da bola e os tons de azul. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 7. Escolha um lado para a luz
 

@@ -1,8 +1,12 @@
-[curious] Já trouxe os desenhos. Eles já vão aparecer?
+[curious] E se a nave e a folha tiverem o mesmo nome?
 
 [long pause]
 
-[curious] Posso deixar a nave maior no jogo sem mudar o recorte?
+[curious] Já trouxe os desenhos. Eles já vão aparecer no jogo?
+
+[long pause]
+
+[curious] E se o recorte for maior ou menor que um desenho?
 
 [long pause]
 

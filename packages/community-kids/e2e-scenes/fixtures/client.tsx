@@ -21,19 +21,19 @@ const params = new URLSearchParams(location.search)
 // "primeira-nave"; a de camadas continua no Dia 1.
 // Os quatro Poderes da Faísca (02/11/2026): a experiência de cada um é o bloco `experiencia` da
 // aula 1, escolhido por `?course=<poder>`.
-const PODERES: Record<string, { blocks: { key: string; content: unknown }[] }> = {
-  ponte,
-  moedas,
-  simbolos,
-  cabana,
+type BlocoDoManifesto = { key: string; content?: unknown }
+// Os JSON importados têm tipos literais diferentes entre si: aqui só importa a chave e o conteúdo.
+const PODERES: Record<string, BlocoDoManifesto[]> = {
+  ponte: ponte.blocks as BlocoDoManifesto[],
+  moedas: moedas.blocks as BlocoDoManifesto[],
+  simbolos: simbolos.blocks as BlocoDoManifesto[],
+  cabana: cabana.blocks as BlocoDoManifesto[],
 }
 const curso = params.get('course') ?? ''
-const blocks =
+const blocks: BlocoDoManifesto[] =
   curso === 'farol'
-    ? [...farolDia1.blocks, ...farolDia2.blocks, ...farolDia3.blocks]
-    : PODERES[curso]
-      ? PODERES[curso].blocks
-      : [...navePrimeira.blocks, ...naveDia1.blocks]
+    ? ([...farolDia1.blocks, ...farolDia2.blocks, ...farolDia3.blocks] as BlocoDoManifesto[])
+    : (PODERES[curso] ?? ([...navePrimeira.blocks, ...naveDia1.blocks] as BlocoDoManifesto[]))
 const source = blocks.find(
   (block) =>
     block.key === (params.get('block') ?? (PODERES[curso] ? 'experiencia' : 'experiencia-areas')),
@@ -43,6 +43,9 @@ if (!source || !isInteractiveBlock(source.content)) throw new Error('Experiênci
  * Os testes de layout do palpite precisam de uma cena com palpite. Os cursos deixaram de usá-lo
  * nessas cenas (Diretrizes, 05/10/2026), mas o player continua oferecendo o recurso; por isso os
  * dois palpites de antes ficam aqui, como dado do teste, e não no manifesto.
+ * ⚠️ Com a exploração livre (02/11/2026) eles continuam valendo: o palpite abre ANTES da tela livre,
+ * e responder abre a tela livre (`.sz-scene-prancha` da `Frame`). As metas do `revealOn` (`down` e
+ * `hidden`) são metas dos blocos livres.
  */
 const PALPITES_DE_TESTE: Record<string, unknown> = {
   'experiencia-coordenadas': {

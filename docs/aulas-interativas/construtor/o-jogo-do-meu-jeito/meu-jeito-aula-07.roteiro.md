@@ -6,67 +6,77 @@
 
 ### Clipe `video-dois-relogios` · Compare nascer e animar
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-dois-relogios`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do quadro 0, com uma pedra a cada 40 quadros e 8 desenhos por segundo: escolher 20 quadros em A cada quantos quadros nasce uma pedra, deixar 8 por segundo, clicar em Voltar ao começo e no Tempo. Deixar o tempo passar até o contador mostrar Quadro 60 e três pedras, mostrando o quadro 0 em cada pedra ao entrar; parar o Tempo. Escolher 40 quadros e 16 por segundo, dizendo que cada relógio vai para um lado, clicar em Voltar ao começo, ligar o Tempo por três segundos e deixar ver duas pedras com o número trocando mais depressa. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Pense numa máquina que solta piões", mostrar o meme ilustrado (2 a 3 s) do Zappy ao lado da máquina de piões [na edição: meme dos piões]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o relógio de nascer [apontar "Relógio de nascer (conta os quadros do jogo)"]. No "e o relógio do giro, em desenhos por segundo", apontar o relógio do giro [apontar "Relógio do giro (troca o desenho de cada pedra)"]. No "Este botão faz o tempo passar", apontar o botão [apontar "Passar o tempo"]. No "e este outro volta ao começo", apontar o botão [apontar "Voltar ao começo"]. Não passar o tempo nem mudar os relógios: o que cada relógio muda é a descoberta da criança. Nesta parte, quadro é só o do jogo; o desenho da animação é desenho 1 e desenho 2. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender dois relógios que trabalham ao mesmo tempo: um faz as pedras nascerem, e o outro troca os desenhos de cada pedra.
+[engaging, energetic, conversational voice] Nas pedras, duas coisas acontecem ao mesmo tempo: pedras novas nascem de tempos em tempos, e cada pedra troca de desenho para parecer que gira.
 
-[interested, animated voice] Olha aqui: eu deixo Desenhos por segundo de cada pedra em 8 e coloco A cada quantos quadros nasce uma pedra em 20. Depois clico em Voltar ao começo e no Tempo. Em dois segundos, o contador chega ao quadro 60, e nasceram três pedras, nos quadros 20, 40 e 60. [confident, clear, unhurried voice] Repare: cada pedra entra mostrando o quadro 0, e depois o número em cima dela troca entre 0 e 1.
+[engaging, energetic, conversational voice] O relógio de nascer conta os quadros do jogo. O jogo se desenha de novo muitas vezes por segundo, e cada vez dessas é um quadro do jogo. No seu jogo, nasce uma pedra a cada 40 quadros.
 
-[engaging, energetic, conversational voice] Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.
+[engaging, energetic, conversational voice] O relógio do giro conta desenhos por segundo. Com 8 desenhos por segundo, cada pedra troca de desenho oito vezes a cada segundo.
 
-[curious] Dá para nascer menos pedra e o desenho trocar mais rápido?
+[engaging, energetic, conversational voice] Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.
 
-[engaging, energetic, conversational voice] Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais devagar, e Desenhos por segundo de cada pedra em 16, que é mais depressa. Clico em Voltar ao começo e ligo o Tempo. Tá vendo? Em três segundos, nascem só duas pedras, porque o relógio de nascer ficou mais lento. Mas o número em cima de cada pedra troca entre 0 e 1 bem mais depressa, porque o relógio dos desenhos ficou mais rápido.
+[curious] Se a máquina soltar mais rápido, os piões giram mais rápido também?
 
-[engaging, energetic, conversational voice] Ou seja, cada relógio mudou só o que é dele. E cada pedra começa o próprio giro no quadro 0, na hora em que nasce.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] No seu jogo, o bloco A cada 40 quadros faz cada pedra nascer, e a animação chamada girando troca os desenhos de cada pedra 8 vezes por segundo. No bloco, isso aparece como 8 fps.
+[interested, animated voice] Olha aqui: nesta experiência, você escolhe o relógio de nascer, em quadros do jogo, e o relógio do giro, em desenhos por segundo. Este botão faz o tempo passar, e este outro volta ao começo. Em cima de cada pedra aparece o desenho que ela está mostrando.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: mude um relógio de cada vez, volte ao começo e deixe o tempo passar. Compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-dois-relogios-K1 | Debinha | 1 | 1. Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo. | Dá para nascer menos pedra e o desenho trocar mais rápido? | Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais | [curious] |
+| video-dois-relogios-K1 | Debinha | 1 | vezes a cada segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira. | Se a máquina soltar mais rápido, os piões giram mais rápido também? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o relógio de nascer, | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-dois-relogios-K1`: entrada — Parar o Tempo após o primeiro teste, com os dois controles e os contadores à vista. Saída — Mudar nascimento para 40 e desenhos por segundo para 16; recomeçar e comparar os dois efeitos.
+- `video-dois-relogios-K1`: entrada — Manter o meme dos piões e a experiência parada no começo. Saída — Seguir sem mudar os relógios: a professora só convida a testar e aponta os controles.
 
 
-**Recado na página (não gravar):** Sua vez! Mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/two-clocks.ts`, com a tela em `packages/member-shell/src/components/scene-livre/two-clocks.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que cada relógio muda nas pedras. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare a folha do asteroide
 
 ### Clipe `video-folha-pedra` · Prepare a folha do asteroide
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-folha-pedra`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado e conferir os recortes nas duas folhas. Depois, voltar à prévia, começar uma partida com Enter e apontar as pedras ainda com o desenho antigo. Não pedir para observar as pedras enquanto só os blocos ou a abertura estão na tela. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No "Nesta parte, clique em Abrir meu Estúdio", clicar no botão, abrir o cartão do jogo na outra aba e começar a partida na prévia. No "Tá vendo?", apontar as pedras antigas. No "A folha nova vai entrar no fim de Ao iniciar", mostrar o fim de Ao iniciar. No "Abra Jogo 2D, Sprites e Animação", abrir as categorias e encaixar o bloco depois da animação da nave. No "Repare: o bloco fala em quadros", apontar a palavra quadros no bloco. No "Escreva folha-asteroide", preencher o nome, a imagem e os dois 64. No "Confira as duas folhas", apontar 32 por 32 e 64 por 64. No "Repare: as pedras ainda usam", mostrar as pedras ainda com o desenho antigo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Um relógio fazia as pedras nascerem, e o outro trocava os desenhos de cada pedra. O de nascer já existe no seu jogo, por isso agora a gente vai ligar o dos desenhos, começando pela folha do asteroide.
+[engaging, energetic, conversational voice] Nesta parte, clique em Abrir meu Estúdio, abra o cartão do seu jogo e comece uma partida. Tá vendo? As pedras são as antigas, porque o jogo não usa seu asteroide. Lembra da experiência da parte anterior? Cada pedra girava com dois desenhos. Agora a gente vai preparar esses desenhos.
 
-[confident, clear, unhurried voice] Clique em Abrir meu Estúdio e retome o mesmo cartão da aula anterior. A nova folha vai entrar no fim de Ao iniciar, logo depois da animação da nave, por isso deixe esse lugar à vista.
+[engaging, energetic, conversational voice] Para girar, cada pedra vai usar a folha do asteroide, que é a imagem com os dois desenhos da pedra lado a lado. Nesta parte, você prepara essa folha.
 
-[engaging, energetic, conversational voice] Agora, em Jogo 2D, Sprites, Animação, pegue Carregar folha de quadros e encaixe no fim de Ao iniciar, depois da animação da nave. Escreva folha-asteroide, escolha a imagem asteroide e coloque 64 nos dois tamanhos do quadro, porque o seu asteroide foi desenhado em 64 por 64.
+[engaging, energetic, conversational voice] A folha nova vai entrar no fim de Ao iniciar, logo depois da animação da nave. Deixe esse lugar à vista.
 
-[confident, clear, unhurried voice] Confira as duas folhas: folha-nave continua 32 por 32, e folha-asteroide usa 64 por 64. Depois, clique na prévia e comece uma partida com Enter. [confident, clear, unhurried voice] Repare que as pedras ainda usam o desenho antigo, porque carregar a folha só deixa os quadros prontos. Ainda falta trocar o criador das pedras.
+[confident, clear, unhurried voice] Abra Jogo 2D, Sprites e Animação, pegue Carregar folha de quadros e encaixe no fim de Ao iniciar, depois da animação da nave.
+
+[confident, clear, unhurried voice] Repare: o bloco fala em quadros. Aqui, quadro quer dizer cada desenho da folha, como no Pinta, e não o quadro do jogo que o relógio de nascer conta.
+
+[engaging, energetic, conversational voice] Escreva folha-asteroide no nome da folha e escolha a imagem asteroide. Coloque 64 nos dois tamanhos do quadro, porque o seu asteroide foi desenhado em 64 por 64.
+
+[engaging, energetic, conversational voice] É este bloco que recorta a folha do asteroide nos dois desenhos.
+
+[confident, clear, unhurried voice] Confira as duas folhas: folha-nave continua com 32 por 32, e folha-asteroide usa 64 por 64. Comece uma partida. [confident, clear, unhurried voice] Repare: as pedras ainda usam o desenho antigo, porque carregar a folha só deixa os desenhos prontos. Ainda falta trocar a imagem das pedras.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -78,28 +88,38 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-trocar-pedra` · Troque a imagem das pedras que nascem
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-trocar-pedra`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "No seu Estúdio, abra o cartão do seu jogo", mostrar o cartão aberto na outra aba. No "encontre a área Enquanto estiver rodando", arrastar até a área aparecer. No "Dentro dela está o bloco A cada 40 quadros", apontar o bloco. No "Olha aqui: este é o criador das pedras", apontar o criador e os valores. No "Abra Jogo 2D, Grupos e Criar e percorrer", abrir as categorias e soltar o bloco no espaço livre. No "Clique em inimigos e escolha asteroides", trocar o grupo, escrever o nome e escolher a imagem. No "Agora os números", apontar os valores de fábrica e trocar o y, a largura, a altura e o vy. No "arraste a peça do sorteio", mover o sorteio para o x do novo. No "Clique com o botão direito no criador antigo", apagar e encaixar o novo no lugar. No "Agora comece a partida", jogar e apontar as pedras novas. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora a gente vai fazer as pedras nascerem com a sua imagem. Encontre A cada 40 quadros e, dentro dele, Se o estado do jogo é jogando. [interested, animated voice] Olha aqui: este é o criador das pedras. Antes de trocar, observe o grupo asteroides, o sorteio do x, o y e as velocidades, porque o bloco novo vai precisar dos mesmos valores.
+[engaging, energetic, conversational voice] Agora as pedras vão nascer com a sua imagem. No seu Estúdio, abra o cartão do seu jogo. Depois encontre a área Enquanto estiver rodando. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.
 
-[confident, clear, unhurried voice] Deixe à vista um espaço livre da área de blocos. Em Jogo 2D, Grupos, Criar e percorrer, pegue No grupo criar um sprite chamado em x y largura altura com imagem vx vy e solte nesse espaço, sem encaixar ainda. Com o bloco solto, preencha: grupo asteroides, nome asteroide, imagem asteroide, y -30, largura 40, altura 40, vx 0 e vy 3.
+[engaging, energetic, conversational voice] Dentro dela está o bloco A cada 40 quadros. Lembra? É o relógio de nascer. Dentro dele, no Se o estado do jogo é jogando, está o criador das pedras.
 
-[engaging, energetic, conversational voice] Depois mova a peça do sorteio que está no x do criador antigo para o x do novo. Assim você conserva os limites do seu jogo. Agora clique com o botão direito no criador antigo, escolha Apagar este bloco e encaixe o novo no mesmo lugar, dentro do Se jogando do relógio.
+[interested, animated voice] Olha aqui: este é o criador das pedras. Antes de trocar, observe o grupo asteroides, o sorteio do x, o y e as velocidades, porque o bloco novo vai precisar dos mesmos valores.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço livre da área de blocos. Abra Jogo 2D, Grupos e Criar e percorrer, pegue No grupo criar um sprite chamado em x y largura altura com imagem vx vy e solte nesse espaço, sem encaixar ainda.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com o grupo inimigos, o nome vazio e a imagem inimigo. Clique em inimigos e escolha asteroides. No nome, escreva asteroide. Na imagem, clique em inimigo e escolha asteroide. O grupo junta todas as pedras, e o nome é de cada pedra que nasce.
+
+[engaging, energetic, conversational voice] Agora os números, que chegam com 100 no x e no y, 32 na largura e na altura e 0 no vx e no vy. O x fica para o próximo passo. Troque o y por -30 e coloque 40 na largura e na altura. O vx já vem em 0; deixe assim. No vy, coloque 3.
+
+[engaging, energetic, conversational voice] Agora arraste a peça do sorteio que está no x do criador antigo para o x do novo. Assim, as pedras continuam nascendo em lugares diferentes.
+
+[confident, clear, unhurried voice] Clique com o botão direito no criador antigo e escolha Apagar este bloco. Depois encaixe o novo no mesmo lugar, dentro do Se jogando. É este bloco que faz cada pedra nascer com a sua imagem.
 
 [engaging, energetic, conversational voice] Agora comece a partida. [interested, animated voice] Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.
 
 [curious] Por que a pedra ficou espremida?
 
-[engaging, energetic, conversational voice] Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra.
+[engaging, energetic, conversational voice] É que cada pedra ainda mostra a folha inteira, com os dois desenhos. Falta ligar a animação de cada pedra, e isso fica para a próxima parte.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, dentro do Se jogando do A cada 40 quadros, com grupo asteroides, nome asteroide, imagem asteroide e o sorteio no x, e os outros blocos ligados. O grupo junta todas as pedras, e o nome é de cada pedra que nasce. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: um criador só, dentro do Se jogando do A cada 40 quadros, com grupo asteroides, nome asteroide, imagem asteroide e o sorteio no x. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -108,13 +128,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-trocar-pedra-K1 | Debinha | 1 | relógio. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x. | Por que a pedra ficou espremida? | Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra. Se no seu jogo não | [curious] |
+| video-trocar-pedra-K1 | Debinha | 1 | imagem. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x. | Por que a pedra ficou espremida? | É que cada pedra ainda mostra a folha inteira, com os dois desenhos. Falta ligar a animação de cada pedra, e isso fica | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-trocar-pedra-K1`: entrada — Concluir a troca do criador e mostrar a folha inteira espremida no teste, sem corrigir o recorte antes da hora. Saída — Apontar a folha inteira espremida e explicar que falta ligar a animação. Depois retomar a conferência do criador e a autoconferência, mantendo a animação para a próxima parte.
+- `video-trocar-pedra-K1`: entrada — Mostrar as pedras novas caindo espremidas, sem corrigir antes da hora. Saída — Apontar a folha inteira espremida numa pedra enquanto a professora explica.
 
 
 **Recado na página (não gravar):** Agora troque a imagem das pedras que nascem! Substitua o criador das pedras, conservando o grupo, o sorteio e a velocidade. Quando aparecer Salvo, volte a esta aba e clique em Próxima parte.
@@ -127,20 +147,26 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-animar-pedra`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "No seu Estúdio, abra o cartão do seu jogo", mostrar o cartão aberto na outra aba e começar a partida. No "Tá vendo?", apontar as pedras espremidas. No "Deixe esse lugar à vista", mostrar o criador novo dentro do Se jogando. No "Abra Jogo 2D, Sprites e Animação", abrir as categorias e encaixar o bloco logo abaixo do criador. No "Escolha sprite asteroide", preencher sprite, folha e girando. No "Aqui também, quadro 0 e quadro 1", apontar o 0 e o 1. No "Agora comece uma partida e observe", jogar e apontar três pedras girando, um ponto e uma vida perdida. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora cada pedra vai ganhar a animação girando. Ela vai ficar logo abaixo do novo criador da pedra, dentro do Se jogando do A cada 40 quadros, porque cada pedra precisa existir antes de receber a animação. Por isso, deixe esse lugar à vista.
+[engaging, energetic, conversational voice] No seu Estúdio, abra o cartão do seu jogo e comece uma partida. Tá vendo? As pedras aparecem espremidas, porque cada pedra ainda mostra a folha inteira. Agora cada pedra vai ganhar a animação girando.
 
-[engaging, energetic, conversational voice] Em Jogo 2D, Sprites, Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo do criador. Assim, cada pedra recebe a animação na hora em que nasce, como na experiência dos dois relógios.
+[engaging, energetic, conversational voice] A animação vai logo abaixo do novo criador da pedra, dentro do Se jogando do A cada 40 quadros, porque cada pedra precisa existir antes de receber a animação. Deixe esse lugar à vista.
 
-[engaging, energetic, conversational voice] Escolha sprite asteroide e folha folha-asteroide. Em Escolher, selecione girando, e os valores chegam preenchidos, como na nave. [confident, clear, unhurried voice] Repare: o carregamento da folha continua no Ao iniciar, e o comando de animar fica aqui, depois de cada nascimento.
+[confident, clear, unhurried voice] Abra Jogo 2D, Sprites e Animação, pegue Animar sprite com a folha na animação, do quadro ao a fps e encaixe logo abaixo do criador.
 
-[engaging, energetic, conversational voice] Agora comece uma partida e observe pelo menos três pedras entrando com a animação. Mova a nave e atire. Acerte uma pedra para conferir os pontos e deixe uma encostar na nave para conferir a perda de vida.
+[engaging, energetic, conversational voice] Escolha sprite asteroide e folha folha-asteroide. Depois clique em Escolher, na animação, e selecione girando. Os valores chegam preenchidos, como na nave: do quadro 0 ao 1, a 8 fps.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1, a 8 fps, logo abaixo do criador, dentro do mesmo Se, e folha-asteroide com quadros de 64 por 64. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[engaging, energetic, conversational voice] Aqui também, quadro 0 e quadro 1 são os dois desenhos da folha. E os 8 fps são o relógio do giro: oito desenhos por segundo.
+
+[engaging, energetic, conversational voice] É este bloco que faz cada pedra girar. Ele fica junto do criador porque, como na experiência, cada pedra começa o giro na hora em que nasce. O carregamento da folha continua no Ao iniciar.
+
+[engaging, energetic, conversational voice] Agora comece uma partida e observe pelo menos três pedras entrando. [interested, animated voice] Olha só: cada pedra gira com os seus desenhos. Mova a nave, atire e acerte uma pedra para conferir os pontos. Depois deixe uma pedra encostar na nave para conferir a perda de vida.
+
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Animar sprite asteroide com a folha folha-asteroide na animação girando, do quadro 0 ao 1, a 8 fps, logo abaixo do criador e dentro do mesmo Se. E folha-asteroide tem quadros de 64 por 64. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -162,7 +188,7 @@ Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "confira no seu jogo", mostrar a nave e as pedras animadas. No "espere aparecer Guardado na sua conta", mostrar o aviso no Estúdio. No "clique em Escolher no Estúdio", voltar à aba da aula e abrir a galeria. No "selecione o cartão do seu jogo", marcar o cartão. No "Depois clique em Enviar (1)", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "Por último, clique em Concluir aula", clicar em **Concluir aula**.
 
 **Fala para ElevenLabs:**
 
