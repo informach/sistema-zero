@@ -8,7 +8,7 @@ import { projetoDaParte } from '../src/lib/projeto-da-parte'
 import { projetoAntes } from '../src/lib/projeto-gravado'
 import { safeReturn } from '../src/lib/safe-return'
 import { staffFromClaims } from '../src/lib/staff'
-import { agir, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
+import { agir, agirNaPagina, type JogoDaAula, ocupado, VERBOS } from '../src/lib/verbos'
 
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
@@ -27,7 +27,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
     para: { seletor: '[data-palco-alvo="a3"]', u: 0.4, v: 0.2 },
   }),
   rolagemDoCampo: () => 'visivel',
-  fundoLivre: () => ({ seletor: '[data-palco-alvo="a8"]', u: 0.85, v: 0.85 }),
+  organizar: async () => true,
   temBotao: () => false,
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
@@ -135,7 +135,7 @@ describe('verbos do palco', () => {
     )
   })
 
-  test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', () => {
+  test('Estúdio: rolar, encaixar ao lado de fazer, trocar campo de menu e número', async () => {
     expect(agir('arrastar até "Quando acontecer"', jogos, pagina())[0]).toMatchObject({
       fazer: 'arrastar',
     })
@@ -226,10 +226,20 @@ describe('verbos do palco', () => {
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
       { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
     ])
-    expect(agir('organizar blocos', jogos, pagina())).toEqual([
-      { fazer: 'clique direito', alvo: { seletor: '[data-palco-alvo="a8"]', u: 0.85, v: 0.85 } },
-      { fazer: 'clicar', alvo: { texto: 'Organizar blocos', dentro: '.blocklyWidgetDiv' } },
+    // Organizar blocos: a página faz pelo menu, e a mão só espera.
+    let organizou = 0
+    const arrumavel = pagina({ organizar: async () => ++organizou > 0 })
+    expect(await agirNaPagina('organizar blocos', jogos, arrumavel)).toEqual([
+      { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 5 },
     ])
+    expect(organizou).toBe(1)
+    await expect(
+      agirNaPagina('organizar blocos', jogos, pagina({ organizar: async () => false })),
+    ).rejects.toThrow(/não abriu/)
+    // Os outros verbos são os mesmos do agir.
+    expect(await agirNaPagina('próxima parte', jogos, arrumavel)).toEqual(
+      agir('próxima parte', jogos, arrumavel),
+    )
     // Fora da vista ou coberto, o campo vem para o centro antes do clique.
     const longe = pagina({
       rolagemDoCampo: () => ({

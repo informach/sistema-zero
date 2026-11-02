@@ -23,7 +23,7 @@ export interface Alvo {
 
 export type Passo =
   | {
-      fazer: 'apontar' | 'clicar' | 'clique duplo' | 'clique direito'
+      fazer: 'apontar' | 'clicar' | 'clique duplo'
       alvo: Alvo
       espera?: 'acelerar' | 'cortar'
       /** apontar: o ponto é onde a mão descansa (ao lado do bloco, não em cima). */
@@ -178,7 +178,7 @@ export const VERBOS: Verbo[] = [
     verbo: 'organizar blocos',
     exemplo: 'organizar blocos',
     descricao:
-      'Botão direito no fundo da área de trabalho e Organizar blocos: arruma blocos um por cima do outro.',
+      'Arruma blocos um por cima do outro, como o botão direito e Organizar blocos (a página faz sozinha, sem a mão).',
   },
   {
     verbo: 'abrir campo',
@@ -333,16 +333,11 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       { fazer: 'continuar', acao: texto },
     ]
 
-  // Blocos um por cima do outro (um projeto que veio de outra parte): o menu da área de trabalho
-  // arruma, como a professora faz com o botão direito.
-  if (f === 'organizar blocos') {
-    const fundo = precisaDaPagina(pagina).fundoLivre()
-    if (!fundo) throw new Error('Não achei um espaço vazio na área de trabalho para o menu.')
+  // Organizado pela própria página (`agirNaPagina`): a mão não faz nada.
+  if (f === 'organizar blocos')
     return [
-      { fazer: 'clique direito', alvo: fundo },
-      { fazer: 'clicar', alvo: { texto: 'Organizar blocos', dentro: '.blocklyWidgetDiv' } },
+      { fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' }, estado: 'aparecer', maximo: 5 },
     ]
-  }
 
   const achar = /^achar (.+)$/i.exec(texto)
   if (achar?.[1]) {
@@ -593,6 +588,22 @@ function trazerCampo(
     { fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para },
     { fazer: 'continuar', acao: texto },
   ]
+}
+
+/**
+ * O `agir` da ponte na página. Organizar blocos se faz por eventos dentro da página: o botão
+ * direito da mão do robô trava a janela de gravação no menu do Blockly. A Parte que usa isso põe
+ * o verbo num trecho que a edição troca por outra imagem.
+ */
+export async function agirNaPagina(
+  acao: string,
+  jogos: readonly JogoDaAula[],
+  pagina: PaginaDoPalco,
+): Promise<Passo[]> {
+  const f = fold(acao.replace(/\s+/g, ' ').trim())
+  if (f === 'organizar blocos' && pagina.areaPronta() && !(await pagina.organizar()))
+    throw new Error('O menu da área de trabalho não abriu para organizar os blocos.')
+  return agir(acao, jogos, pagina)
 }
 
 /**
