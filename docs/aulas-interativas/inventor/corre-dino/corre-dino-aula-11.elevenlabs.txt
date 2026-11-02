@@ -1,24 +1,34 @@
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a variável: um lugar que guarda um número, que pode mudar e aparecer na tela.
+[engaging, energetic, conversational voice] Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.
 
-[interested, animated voice] Olha aqui: quando eu coloco o número guardado em pontos em 1, a caixa pontos é criada e guarda 1. Depois eu coloco 0, e ela passa a guardar 0.
+[engaging, energetic, conversational voice] No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.
 
-[engaging, energetic, conversational voice] Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. A caixa vai de 0 para 1 e depois para 2, e os cactos da tela vão sendo atingidos, mas nenhum número aparece. O jogo mudou o valor sem desenhar o placar.
+[curious] E se o número não estiver na tela, ele continua mudando?
 
-[engaging, energetic, conversational voice] Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] É como anotar os pontos num caderno: a conta fica guardada mesmo com o caderno fechado, e mostrar o placar é abrir o caderno para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
+[interested, animated voice] Olha aqui: nesta experiência, esta caixa guarda o número dos pontos, e estes botões guardam o número, fazem o Dino ganhar um ponto e mostram o número na tela.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a caixa pontos e a tela do jogo quando você guarda o número, quando o Dino ganha um ponto com o número fora da tela e quando o número aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] No seu jogo, olhe Ao iniciar. Tá vendo? Não tem nenhum bloco que guarde os pontos, porque o jogo ainda não conta nada.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O número ficava guardado na caixa pontos, mesmo sem aparecer na tela. Agora a gente vai criar essa caixa no seu jogo!
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A caixa pontos guardava o número, mesmo com o placar desligado. Agora a gente vai criar essa variável!
+[engaging, energetic, conversational voice] Uma caixa que guarda um número se chama variável. A variável nasce quando o jogo começa. Por isso, ela vai no fim de Ao iniciar.
 
-[engaging, energetic, conversational voice] A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. [confident, clear, unhurried voice] Repare: o nome chega como contador. Troque contador por pontos e mantenha o valor em 0.
+[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar.
 
-[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar. E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.
+[confident, clear, unhurried voice] Agora abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim.
+
+[engaging, energetic, conversational voice] É este bloco que cria a caixa e guarda um número dentro dela.
+
+[confident, clear, unhurried voice] Repare: o nome chega como contador. Clique em contador, troque por pontos e clique fora do campo.
+
+[engaging, energetic, conversational voice] O valor já vem em 0: mantenha, porque cada partida começa sem pontos.
+
+[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar.
+
+[engaging, energetic, conversational voice] E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
@@ -26,13 +36,25 @@
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida. Tá vendo? Nenhum número aparece, porque nada desenha o placar.
 
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? O número só apareceu quando você ligou Mostrar placar. Agora a gente vai mostrar os pontos no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? O número só apareceu na tela quando você mandou mostrar. Agora a gente vai mostrar os pontos no seu jogo!
 
-[engaging, energetic, conversational voice] O placar só aparece durante a partida. Por isso, deixe à vista o fim do então de Se jogando, logo depois da regra que tira do grupo os cactos. Depois, abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim.
+[engaging, energetic, conversational voice] O placar só aparece durante a partida. Por isso, ele vai no fim do então de Se jogando, logo depois de Tirar do grupo quem sair da tela.
 
-[confident, clear, unhurried voice] Repare: o placar já chega com Pontos: escrito. Mantenha. Depois, deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número. Escolha pontos, e assim o placar lê o número guardado em pontos.
+[confident, clear, unhurried voice] Deixe à vista o fim do então de Se jogando, logo depois de Tirar do grupo quem sair da tela.
 
-[engaging, energetic, conversational voice] O x 12, o y 30 e o tamanho 24 também já vêm certos: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim.
+
+[engaging, energetic, conversational voice] É este bloco que mostra um número na tela, para quem joga.
+
+[confident, clear, unhurried voice] Repare: o placar já chega com Pontos: escrito. Mantenha.
+
+[confident, clear, unhurried voice] Agora deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número.
+
+[confident, clear, unhurried voice] Repare: ele chega com x. Clique em x e escolha pontos.
+
+[engaging, energetic, conversational voice] É este bloco que lê o número guardado em pontos. Agora o placar mostra esse número.
+
+[engaging, energetic, conversational voice] O placar já vem em x 12, y 30 e tamanho 24: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta.
 
 [engaging, energetic, conversational voice] Agora comece uma partida. [interested, animated voice] Olha só: o placar aparece, mostrando zero, e ainda não cresce, porque nenhuma regra soma pontos! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim do então de Se jogando, está Mostrar placar, com o valor da variável pontos no campo valor, x 12, y 30 e uma cor escura. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -40,49 +62,63 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender em que momento o placar deve crescer.
+[engaging, energetic, conversational voice] Sabe o cronômetro de uma corrida? Ele só começa a contar depois da largada.
 
-[interested, animated voice] Olha aqui: quando eu coloco Somar ponto em A cada quadro do jogo e deixo o tempo passar um segundo, o placar dispara e chega a 60. Ele soma em cada quadro, e um segundo tem muitos quadros.
+[curious] No seu jogo, cada segundo de corrida vale um ponto. E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?
 
-[engaging, energetic, conversational voice] Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar.
+[curious] E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?
 
-[curious] Como faz para contar só durante a corrida?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu levo Somar ponto para o relógio de um segundo, dentro do Se que pergunta se o estado do jogo é jogando. Na tela de início, o placar fica em 0, porque a pergunta responde não. Eu clico em Próxima tela até Jogando, e os pontos sobem, um por segundo. Clico em Próxima tela até Fim, e o placar para no valor que tinha.
+[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o ponto soma e liga ou desliga a pergunta. Estes botões passam um segundo e mudam de tela.
 
-[engaging, energetic, conversational voice] É como o cronômetro de uma corrida: ele só conta depois da largada e para na chegada. No seu jogo, você vai pôr Somar em variável dentro de um relógio de 1 segundo, num Se jogando.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o placar em cada jeito de somar, na tela de início, na partida e no fim. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] No seu jogo, comece uma partida e olhe o placar. Tá vendo? Ele fica em zero, porque nenhuma regra soma pontos.
+[engaging, energetic, conversational voice] Comece uma partida e olhe o placar. Tá vendo? Ele fica em zero, porque nada soma os pontos ainda.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? No relógio de 1 segundo, dentro de jogando, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Somando a cada segundo, só durante a partida, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos!
 
-[engaging, energetic, conversational voice] A soma vai num relógio só dela, separado do relógio dos cactos. Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.
+[engaging, energetic, conversational voice] A soma vai num relógio só dela, separado do relógio dos cactos, porque os cactos nascem a cada 1.4 segundo, e os pontos contam de 1 em 1 segundo.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço em Enquanto estiver rodando, fora de A cada quadro do jogo e do relógio dos cactos.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço.
+
+[confident, clear, unhurried voice] Clique no 2 e troque por 1. É este relógio que toca uma vez por segundo.
 
 [curious] Mas só vale somar durante a partida, né?
 
-[engaging, energetic, conversational voice] Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
+[engaging, energetic, conversational voice] Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali.
 
-[confident, clear, unhurried voice] Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando.
+[confident, clear, unhurried voice] Repare: ele chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então. Escolha pontos e deixe a soma em 1.
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então.
+
+[engaging, energetic, conversational voice] É este bloco que soma um número ao que está guardado na caixa.
+
+[confident, clear, unhurried voice] Repare: ele chega com contador. Clique em contador e escolha pontos. O número já vem 1: mantenha.
 
 [engaging, energetic, conversational voice] Agora comece uma partida. [interested, animated voice] Olha só: os pontos sobem, um por segundo! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1 segundo, o Se jogando tem, no então, Somar em variável pontos, com 1, e esse é o único Somar em pontos. O relógio dos cactos continua em 1.4. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
-
-[upbeat, encouraging voice] Se quiser, você pode escolher um intervalo de 0.5 a 3 e comparar o ritmo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] O seu placar já lê a variável pontos durante a partida. Primeiro, deixe uma batida acontecer e olhe a tela de fim. Tá vendo? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos. Por isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.
+[engaging, energetic, conversational voice] Deixe uma batida acontecer e olhe a tela de fim. Tá vendo? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos.
+
+[engaging, energetic, conversational voice] O seu placar já lê a variável pontos durante a partida. Por isso, vamos usar a mesma leitura na frase da tela de fim, para mostrar quantos pontos você fez na partida.
 
 [curious] Esse número vai mudar a cada partida?
 
-[engaging, energetic, conversational voice] Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. Depois, abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.
+[engaging, energetic, conversational voice] Vai mostrar os pontos daquela partida. É como montar uma frase com três partes: um pedaço escrito, o número dos pontos e outro pedaço escrito. É este bloco, juntar texto, que junta essas partes numa frase só.
+
+[confident, clear, unhurried voice] Deixe à vista o subtítulo da tela de fim, no ramo fim do Se de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] Agora abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.
 
 [confident, clear, unhurried voice] Clique três vezes no + do bloco juntar texto. [confident, clear, unhurried voice] Repare: ele ganha três entradas, que começam com números. Você vai preencher essas entradas com texto, valor e texto, nessa ordem.
 
@@ -92,7 +128,9 @@
 
 [engaging, energetic, conversational voice] Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos.
 
-[confident, clear, unhurried voice] Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número. Apague Olá e escreva um espaço no começo, seguido de: pontos. Tente bater essa marca!
+[confident, clear, unhurried voice] Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número.
+
+[engaging, energetic, conversational voice] Apague Olá. Toque na barra de espaço e escreva pontos, com ponto final. Toque na barra de espaço de novo e escreva: Tente bater essa marca! A frase inteira está no Passo a passo do projeto.
 
 [engaging, energetic, conversational voice] Agora comece, espere o placar crescer e deixe uma batida acontecer. [interested, animated voice] Olha só: a frase mostra os pontos da partida! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no subtítulo da tela de fim, o juntar texto tem Você fez, com um espaço no fim, o valor de pontos no meio e o resto da frase, começando com um espaço. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 

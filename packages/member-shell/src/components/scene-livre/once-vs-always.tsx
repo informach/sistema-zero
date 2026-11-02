@@ -26,7 +26,21 @@ import { DicaLivre, LinhaDaIdeia, Numeros, useMetasLivres } from './nave-a-comum
  *
  * Três casos da Nave (`casoDoOnceVsAlways`): a nave que anda (Primeira nave), o tiro (Dia 2) e as
  * vidas (Dia 4). As falas do Zappy estão em `guia-livre/once-vs-always.ts`.
+ *
+ * ⭐ O Corre Dino (02/11/2026) usa a mesma tela: o Dino que anda (Aula 1, o caso `nave` com o elenco
+ * do Dino) e o som do pulo (Aula 4, `tres-caixas-som`: o caso do evento com a ficha de SOM, que a
+ * tela chama de `som`). As falas do Dino estão em `guia-livre/dino/once-vs-always.ts`.
  */
+
+/** O caso da tela: o da Nave, com o evento de som (o pulo do Dino) separado do tiro. */
+type CasoDaTela = 'nave' | 'vidas' | 'tiro' | 'som'
+function casoDaTela(preset: OnceVsAlwaysPreset): CasoDaTela {
+  const caso = casoDoOnceVsAlways(preset)
+  if (caso !== 'tiro') return caso
+  return preset.cards.find((card) => card.id === fichaDoOnceVsAlways(preset))?.kind === 'sound'
+    ? 'som'
+    : 'tiro'
+}
 
 /** O nome de cada jeito: os botões, a figura e as falas usam as mesmas palavras. */
 export const JEITOS: Record<OnceArea, string> = {
@@ -51,6 +65,12 @@ const O_QUE_COMPARAR = {
     'key-fires': 'Compare os tiros quando o tiro espera e você aperta a tecla.',
     flood: 'Compare os tiros quando o tiro sai sempre, em todo quadro.',
   },
+  som: {
+    'on-event':
+      'Compare o contador de sons quando o som espera a hora em que algo acontece, sem a tecla.',
+    'key-fires': 'Compare o contador de sons quando o som espera e a tecla é apertada.',
+    flood: 'Compare o contador de sons quando o som toca sempre, em todo quadro.',
+  },
 } as const
 
 /** A pergunta de cada caso, acima dos jeitos. */
@@ -58,6 +78,7 @@ const PERGUNTA = {
   nave: 'Quando o Dino anda um pouquinho?',
   vidas: 'Quando o Dino ganha três vidas?',
   tiro: 'Quando sai um tiro?',
+  som: 'Quando toca o som do pulo?',
 } as const
 
 /**
@@ -101,6 +122,27 @@ export function proximoGestoDoOnce(
       return 'tecla'
     case 'once-vs-always-tiro-key':
       return usada ? 'jogarDeNovo' : 'comecar'
+    // O Corre Dino: o Dino que anda (Aula 1) e o som do pulo (Aula 4).
+    case 'once-vs-always-dino-start':
+    case 'once-vs-always-dino-always':
+      return 'uma'
+    case 'once-vs-always-dino-once':
+    case 'once-vs-always-dino-som-event-loop':
+      return 'sempre'
+    case 'once-vs-always-dino-som-start':
+    case 'once-vs-always-dino-som-loop':
+    case 'once-vs-always-dino-som-once':
+      return 'evento'
+    case 'once-vs-always-dino-try-once':
+    case 'once-vs-always-dino-try-always':
+    case 'once-vs-always-dino-som-try-event':
+    case 'once-vs-always-dino-som-try-loop':
+    case 'once-vs-always-dino-som-try-start':
+      return testar
+    case 'once-vs-always-dino-som-event':
+      return 'tecla'
+    case 'once-vs-always-dino-som-key':
+      return usada ? 'jogarDeNovo' : 'comecar'
     default:
       return null
   }
@@ -109,7 +151,7 @@ export function proximoGestoDoOnce(
 export function LivreOnceVsAlways() {
   const { activity, state, dispatch, instruction, running, setRunning } = useDiscovery()
   const preset = oncePreset(activity.setup?.preset)
-  const caso = casoDoOnceVsAlways(preset)
+  const caso = casoDaTela(preset)
   const ficha = fichaDoOnceVsAlways(preset)
   const o = state.once
   const lugar = o.placement[ficha]
@@ -151,7 +193,7 @@ export function LivreOnceVsAlways() {
   // O tiro do jeito "uma vez" não é meta: ele aparece na figura enquanto está à vista.
   const tiroDoComeco = lugar === 'start' && o.frames > 0 && o.fires[ficha] > 0
   const revelado: Record<OnceArea, boolean> =
-    caso === 'tiro'
+    caso === 'tiro' || caso === 'som'
       ? { start: tiroDoComeco, loop: tem('flood'), event: tem('on-event') || tem('key-fires') }
       : { start: tem('once'), loop: tem(caso === 'vidas' ? 'lives-loop' : 'always'), event: false }
   const resultado: Record<OnceArea, string> =
@@ -169,16 +211,27 @@ export function LivreOnceVsAlways() {
             loop: 'As vidas voltam a três em todo quadro, mesmo depois das batidas.',
             event: '',
           }
-        : {
-            start: 'Sai um tiro só, no primeiro quadro.',
-            loop: 'Sai um tiro novo em todo quadro.',
-            event:
-              tem('on-event') && tem('key-fires')
-                ? 'O tiro espera e sai na hora em que a tecla é apertada.'
-                : tem('on-event')
-                  ? 'Sem a tecla, nenhum tiro sai.'
-                  : 'Com a tecla, sai um tiro na hora.',
-          }
+        : caso === 'som'
+          ? {
+              start: 'O som toca uma vez só, no primeiro quadro.',
+              loop: 'O som toca de novo em todo quadro.',
+              event:
+                tem('on-event') && tem('key-fires')
+                  ? 'O som espera e toca na hora em que a tecla é apertada.'
+                  : tem('on-event')
+                    ? 'Sem a tecla, o som não toca nenhuma vez.'
+                    : 'Com a tecla, o som toca na hora.',
+            }
+          : {
+              start: 'Sai um tiro só, no primeiro quadro.',
+              loop: 'Sai um tiro novo em todo quadro.',
+              event:
+                tem('on-event') && tem('key-fires')
+                  ? 'O tiro espera e sai na hora em que a tecla é apertada.'
+                  : tem('on-event')
+                    ? 'Sem a tecla, nenhum tiro sai.'
+                    : 'Com a tecla, sai um tiro na hora.',
+            }
   const icone = {
     start: <Sunrise size={19} />,
     loop: <Repeat size={19} />,
@@ -193,10 +246,12 @@ export function LivreOnceVsAlways() {
         ] as [string, string][])
       : caso === 'tiro'
         ? ([['Tiros', String(o.shots)]] as [string, string][])
-        : ([[vestir('O Dino andou'), `${vezes} ${vezes === 1 ? 'vez' : 'vezes'}`]] as [
-            string,
-            string,
-          ][])),
+        : caso === 'som'
+          ? ([['Sons', String(o.sounds)]] as [string, string][])
+          : ([[vestir('O Dino andou'), `${vezes} ${vezes === 1 ? 'vez' : 'vezes'}`]] as [
+              string,
+              string,
+            ][])),
   ]
   return (
     <Frame

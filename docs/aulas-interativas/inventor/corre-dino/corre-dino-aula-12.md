@@ -6,36 +6,45 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 - Estado de entrada: Cactos nascendo sempre em x 560 e velocidade -5; partida completa com pontos.
 - Resultado da aula: Nascimento com x de 500 a 560 e vx igual a -5 menos um número de 0 a 1.
-- Seções: 4. Vídeos: 4.
+- Seções: 5. Vídeos: 5.
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
 ## Diagnóstico e decisão
 
-O sorteio vem antes das duas aplicações. A experiência mostra posições, repetições e as contas de velocidade. Lugar e velocidade têm montagens separadas. A fala não promete partidas sempre diferentes: números podem repetir.
+O sorteio vem antes das duas aplicações. A experiência mostra posições, repetições e as raias das duas velocidades. Lugar e velocidade têm montagens separadas, e a régua dos negativos vem logo antes da velocidade, que faz uma conta com números negativos. A fala não promete partidas sempre diferentes: números podem repetir.
+
+**Revisão de 02/11/2026.** D3 (decisão da coordenação, 02/11/2026): a régua dos números negativos veio da Aula 13 com as mesmas chaves (video-regua-negativos, fala-regua-negativos, experiencia-number-line) e ficou entre o lugar e a velocidade, porque a velocidade sorteada já faz conta com negativos (-5 menos 0 ou 1). A Aula 12 tem agora cinco partes. O sorteio (o dado) e a régua (o termômetro deitado) passaram à exploração livre; as raias ficaram como observação, sem a conta no vídeo nem na nota de tela. A retomada da velocidade liga a régua às raias ("Tirar 1 é o mesmo que somar -1"), e as montagens ganharam "É este bloco que…", um campo por fala e a resposta à pergunta do Dedé ("Por que a conta usa menos?") começando pelo porquê.
 
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
 | --- | --- | --- |
 | Sorteio e faixa | random antes dos valores sorteados | Ver resultados dentro da faixa, inclusive repetições. |
-| Variação da velocidade | mesma experiência compara -5 - 0 e -5 - 1 | Relacionar a conta com a direção já observada na aula 5. |
+| Números negativos e comparação | number-line logo antes da velocidade sorteada (D3, 02/11/2026) | Ver que somar -1 leva o número para a esquerda e que -5 é maior que -9, antes de fazer a conta da velocidade. |
+| Variação da velocidade | random antes da velocidade; as raias comparam -5 e -6, sem a conta | Relacionar a conta com a direção já observada na aula 5. |
 
 ## Proposta final
 
-### Seção 1. Compare os resultados de um sorteio
+### Seção 1. Onde nasce o próximo cacto?
 
-**Tarefa:** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-sorteio-tira-na-hora → fala-sorteio-tira-na-hora → experiencia-random.
 
-**Recado na página (não gravar):** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-sorteio-tira-na-hora-K1: Dedé substitui “Ué, pode sair o mesmo lugar outra vez?”. Antes: “de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.”. Depois: “Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os”.
+video-sorteio-tira-na-hora-K1: Dedé substitui “Ué, pode sair o mesmo lugar duas vezes?”. Antes: “sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta”.
 
-**Experiência existente:** `random`. Na experiência, clique em Sortear lugar até aparecerem duas posições diferentes. Depois clique mais oito vezes. Observe os limites da régua e as posições que se repetem. Clique em Sortear velocidade até aparecer um cacto -5 e um -6. Compare as distâncias nas duas raias. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `random` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/random.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/random.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Sorteie o lugar de cada cacto e compare as marquinhas na régua; depois sorteie a velocidade e compare as raias. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua. Clique em Sortear um lugar mais algumas vezes até um lugar ganhar duas marquinhas. Clique em Sortear uma velocidade até aparecerem um −5 e um −6 e compare as raias.
+
+**Pistas, do aberto ao direto:** 1) Compare as marquinhas na régua depois de cada sorteio. 2) Sorteie uma coisa por vez: o lugar, depois a velocidade. 3) Clique em Sortear um lugar várias vezes. Depois clique em Sortear uma velocidade até sair um −5 e um −6. Sem palpite e sem pergunta final.
 
 ### Seção 2. Sorteie onde cada cacto nasce
 
@@ -47,7 +56,7 @@ video-sorteio-tira-na-hora-K1: Dedé substitui “Ué, pode sair o mesmo lugar o
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio?”. Antes: “e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.”. Depois: “O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares”.
+video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio?”. Antes: “em cima do 560, para ele tomar o lugar do número. É este bloco que sorteia um número, cada vez que um cacto nasce.”. Depois: “Os números do começo e do fim da faixa. Clique no 1 e troque por 500. Agora clique no 6 e troque por 560. A tela”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
@@ -55,7 +64,27 @@ video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
 - Use um único bloco de criar cacto no projeto inteiro.
 
-### Seção 3. Sorteie uma variação na velocidade
+### Seção 3. Qual número é maior?
+
+**Tarefa:** Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+**Blocos na página:** video-regua-negativos → fala-regua-negativos → experiencia-number-line.
+
+**Recado na página (não gravar):** Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-regua-negativos-K1: Dedé substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o marcador anda pela régua, este”.
+
+**Experiência em exploração livre:** `number-line` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/number-line.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/number-line.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Ande pela reta com Somar -1 e escolha o sinal da pergunta: >, = ou <. Compare onde a resposta é sim e onde é não. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Somar -1 três vezes. Com o marcador no -5, clique em > maior que. Com > maior que escolhido, clique em Somar -1 até o marcador chegar no -9. Clique em Voltar ao começo, depois em = igual a, e em Somar -1 quatro vezes.
+
+**Pistas, do aberto ao direto:** 1) Olhe para que lado o marcador anda a cada -1 e onde cada número mora na reta. 2) A reta é parecida com um termômetro deitado. Olhe a resposta embaixo dela: ela muda conforme o marcador anda e o sinal muda. 3) Clique em Voltar ao começo e em > maior que; depois clique em Somar -1 até o -9 e olhe a resposta. Sem palpite e sem pergunta final.
+
+### Seção 4. Sorteie uma variação na velocidade
 
 **Tarefa:** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
@@ -65,15 +94,15 @@ video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-velocidade-propria-K1: Dedé substitui “Por que a conta usa menos?”. Antes: “depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.”. Depois: “Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal”.
+video-velocidade-propria-K1: Dedé substitui “Por que a conta usa menos?”. Antes: “que faz uma conta com dois números. Clique no primeiro 0 e troque por -5. No sinal, troque + por −, o sinal de menos.”. Depois: “Porque, com o sinal de mais, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos. Com o menos, sai -5 ou -6,”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Sorteie a posição de entrada dos cactos, a partir da direita da pista.
-- Use uma base negativa menos uma variação não negativa na velocidade dos cactos.
+- Use um número negativo menos uma variação não negativa na velocidade dos cactos.
 - Use um único bloco de criar cacto no projeto inteiro.
 
-### Seção 4. Teste e envie seu jogo
+### Seção 5. Teste e envie seu jogo
 
 **Tarefa:** Hora de testar e enviar o seu jogo! Jogue duas partidas e observe os cactos, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.
 
@@ -84,7 +113,7 @@ video-velocidade-propria-K1: Dedé substitui “Por que a conta usa menos?”. A
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
 - Sorteie a posição de entrada dos cactos, a partir da direita da pista.
-- Use uma base negativa menos uma variação não negativa na velocidade dos cactos.
+- Use um número negativo menos uma variação não negativa na velocidade dos cactos.
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
 - Use um único bloco de criar cacto no projeto inteiro.
 

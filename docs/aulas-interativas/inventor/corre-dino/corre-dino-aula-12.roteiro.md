@@ -2,48 +2,48 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare os resultados de um sorteio
+## Seção 1. Onde nasce o próximo cacto?
 
-### Clipe `video-sorteio-tira-na-hora` · Compare os resultados de um sorteio
+### Clipe `video-sorteio-tira-na-hora` · Onde nasce o próximo cacto?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-sorteio-tira-na-hora`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem sorteios. Clicar em Sortear lugar até aparecerem lugares diferentes e uma repetição marcada na régua. Clicar em Sortear velocidade até aparecerem um -5 e um -6 nas raias. Na frase da conta, mostrar a legenda -5 - 0 = -5 e -5 - 1 = -6 ao lado das raias, sem cobrir a experiência: a cena não escreve essas contas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tirando papeizinhos de um saquinho, com os números 500, 530 e 560. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você joga um dado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Sortear um lugar"]. No "Este outro sorteia a velocidade", apontar o botão, sem clicar [apontar "Sortear uma velocidade"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o sorteio, que escolhe um valor na hora em que cada cacto nasce.
+[engaging, energetic, conversational voice] Sabe quando você joga um dado? Ninguém sabe antes qual número vai sair, e cada jogada pode dar um número diferente. Isso é um sorteio.
 
-[interested, animated voice] Olha aqui: quando eu clico em Sortear lugar (velocidade fica −5), sai um lugar na régua. Clico de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu.
+[engaging, energetic, conversational voice] No seu jogo, se todos os cactos nascessem no mesmo lugar, a corrida ficaria sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.
 
-[curious] Ué, pode sair o mesmo lugar outra vez?
+[curious] Ué, pode sair o mesmo lugar duas vezes?
 
-[engaging, energetic, conversational voice] Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os limites, e um lugar pode repetir.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Depois eu clico em Sortear velocidade (lugar fica 500) até sair um cacto -5 e um -6. Nas raias, o -6 chega mais longe em um segundo: ele é mais rápido. A conta é -5 menos o número sorteado: se sair 0, fica -5, e, se sair 1, fica -6.
+[interested, animated voice] Olha aqui: nesta experiência, este botão sorteia um lugar, e esta régua marca cada lugar que já saiu. Este outro sorteia a velocidade, e as raias mostram até onde cada cacto chega.
 
-[engaging, energetic, conversational voice] É como tirar um papel de um saco e devolver: cada vez sai um, e o mesmo pode sair de novo. No seu jogo, você vai trocar o x 560 por um sorteio de 500 a 560.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os lugares que saem, os que se repetem e os limites da régua, e depois até onde chegam os cactos de cada velocidade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-sorteio-tira-na-hora-K1 | Dedé | 1 | de novo, e sai outro. Eu continuo clicando, e alguns lugares saem de novo: a régua marca quantas vezes cada um saiu. | Ué, pode sair o mesmo lugar outra vez? | Pode acontecer num sorteio. Todos ficam entre 500 e 560, depois da borda 480, fora da tela. O sorteio respeita os | [curious] |
+| video-sorteio-tira-na-hora-K1 | Dedé | 1 | sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade. | Ué, pode sair o mesmo lugar duas vezes? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-sorteio-tira-na-hora-K1`: entrada — Sortear até aparecer uma repetição e apontar a marca na régua; não avançar para as velocidades. Saída — Continuar explicando os limites e a repetição; depois demonstrar o sorteio das velocidades.
+- `video-sorteio-tira-na-hora-K1`: entrada — Manter o meme do dado até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem sortear.
 
 
-**Recado na página (não gravar):** Sua vez! Sorteie lugares até ver diferenças e repetições e, depois, compare as duas velocidades. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/random.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/random.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Sorteie onde cada cacto nasce
 
@@ -62,11 +62,21 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Cada sorteio tirava um lugar de 500 a 560. Agora a gente vai sortear o lugar dos seus cactos!
 
-[confident, clear, unhurried voice] Deixe à vista o x 560 do bloco No grupo criar obstáculo, no então de Se jogando, dentro do relógio de 1.4 segundo. Depois, abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número.
+[engaging, energetic, conversational voice] O lugar é sorteado na hora em que cada cacto nasce. Por isso, o sorteio vai no x do bloco que cria os cactos, no então de Se jogando, dentro do relógio de 1.4 segundo.
+
+[confident, clear, unhurried voice] Deixe à vista o 560 do campo x do bloco No grupo criar obstáculo.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Sorteios e depois Números e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560, para ele tomar o lugar do número.
+
+[engaging, energetic, conversational voice] É este bloco que sorteia um número, cada vez que um cacto nasce.
 
 [curious] Quais números eu coloco no sorteio?
 
-[engaging, energetic, conversational voice] O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido. Mantenha o tamanho 44 e o vx -5 no bloco.
+[engaging, energetic, conversational voice] Os números do começo e do fim da faixa. Clique no 1 e troque por 500.
+
+[confident, clear, unhurried voice] Agora clique no 6 e troque por 560. A tela termina em x 480, por isso todos esses lugares ficam além da borda direita, e o cacto continua entrando escondido.
+
+[engaging, energetic, conversational voice] Mantenha o tamanho 44 e o vx -5 no bloco.
 
 [engaging, energetic, conversational voice] Agora comece e observe vários cactos entrarem. [confident, clear, unhurried voice] Repare: a distância entre eles muda um pouco, porque cada um sorteia o lugar quando nasce, e dois cactos podem até nascer no mesmo lugar. [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: o x do único No grupo criar obstáculo tem um número de 500 a 560, e o relógio continua em 1.4 segundo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -77,7 +87,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-lugar-diferente-K1 | Dedé | 1 | e posições, pegue o bloco um número de 1 a 6 e solte em cima do 560 do campo x, para ele tomar o lugar do número. | Quais números eu coloco no sorteio? | O sorteio chega com 1 e 6: troque o 1 por 500 e o 6 por 560. A tela termina em x 480, por isso todos esses lugares | [curious] |
+| video-lugar-diferente-K1 | Dedé | 1 | em cima do 560, para ele tomar o lugar do número. É este bloco que sorteia um número, cada vez que um cacto nasce. | Quais números eu coloco no sorteio? | Os números do começo e do fim da faixa. Clique no 1 e troque por 500. Agora clique no 6 e troque por 560. A tela | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -88,7 +98,50 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora sorteie onde cada cacto nasce! Troque o x 560 do bloco que cria os cactos por um número de 500 a 560. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 3. Sorteie uma variação na velocidade
+## Seção 3. Qual número é maior?
+
+### Clipe `video-regua-negativos` · Qual número é maior?
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-regua-negativos`
+
+**Na tela:** No "Sabe o termômetro num dia muito frio", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Somar -1"]. No "e esta pergunta compara dois números", apontar os sinais, sem clicar [apontar "> maior que"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Sabe o termômetro num dia muito frio? A temperatura pode ficar abaixo de zero, com o sinal de menos: menos cinco graus, menos nove graus.
+
+[engaging, energetic, conversational voice] Os números com o sinal de menos se chamam negativos, e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos.
+
+[curious] Qual é maior: menos cinco ou menos nove?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, o marcador anda pela régua, este botão muda o número, e esta pergunta compara dois números e responde sim ou não.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o marcador anda quando o número diminui, e qual número é maior em cada comparação. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-regua-negativos-K1 | Dedé | 1 | e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos. | Qual é maior: menos cinco ou menos nove? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o marcador anda pela régua, este | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-regua-negativos-K1`: entrada — Manter o meme do termômetro deitado até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o marcador no começo, sem clicar.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/number-line.ts`, na tela `packages/member-shell/src/components/scene-livre/number-line.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Seção 4. Sorteie uma variação na velocidade
 
 ### Clipe `video-velocidade-propria` · Sorteie uma variação na velocidade
 
@@ -101,17 +154,29 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, comece e olhe os cactos. Tá vendo? Todos andam no mesmo ritmo, porque todos têm vx -5.
+[engaging, energetic, conversational voice] Olhe os cactos. Tá vendo? Todos andam no mesmo ritmo, porque todos têm vx -5.
 
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Nas raias, o cacto de -6 andou mais longe que o de -5. Agora a gente vai sortear a velocidade também!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na régua, somar -1 levava de -5 para -6, e, nas raias da primeira parte, o -6 chegava mais longe. Agora a gente vai sortear essa diferença!
 
-[confident, clear, unhurried voice] Deixe à vista o campo vx, com -5, no bloco que cria os cactos. Depois, abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.
+[engaging, energetic, conversational voice] Tirar 1 é o mesmo que somar -1. Por isso, a velocidade vai ser uma conta: -5 menos um número sorteado, de 0 a 1. Se sair 0, fica -5; se sair 1, fica -6.
 
-[engaging, energetic, conversational voice] Na conta, troque o primeiro 0 por -5 e, no sinal, troque + por −, o sinal de menos. Depois, deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1.
+[confident, clear, unhurried voice] Deixe à vista o campo vx, com -5, no bloco que cria os cactos.
+
+[confident, clear, unhurried voice] Agora abra Programação e depois Matemática, pegue o bloco da conta, que aparece como 0 + 0, e solte em cima desse número, para ele tomar o lugar do -5.
+
+[engaging, energetic, conversational voice] É este bloco que faz uma conta com dois números.
+
+[confident, clear, unhurried voice] Clique no primeiro 0 e troque por -5.
+
+[engaging, energetic, conversational voice] No sinal, troque + por −, o sinal de menos.
 
 [curious] Por que a conta usa menos?
 
-[engaging, energetic, conversational voice] Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal de mais, porque, com ele, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos.
+[engaging, energetic, conversational voice] Porque, com o sinal de mais, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos. Com o menos, sai -5 ou -6, que anda mais para a esquerda em cada quadro.
+
+[confident, clear, unhurried voice] Agora deixe à vista o 0 do lado direito. Abra Jogo 2D, depois Sorteios e depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0.
+
+[confident, clear, unhurried voice] Clique no 1 e troque por 0. Depois, clique no 6 e troque por 1.
 
 [engaging, energetic, conversational voice] Agora comece e compare vários cactos. [confident, clear, unhurried voice] Repare: alguns andam um pouco mais rápido, e cada um guarda a velocidade que recebeu ao nascer. [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no vx, está a conta -5 menos um número de 0 a 1, e o x continua com o sorteio de 500 a 560, no mesmo bloco, com tamanho 44 e o relógio em 1.4. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -122,7 +187,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-velocidade-propria-K1 | Dedé | 1 | depois Números e posições, pegue outro bloco um número de 1 a 6 e solte em cima desse 0. Troque o 1 por 0 e o 6 por 1. | Por que a conta usa menos? | Assim, se sair 0, a velocidade é -5, e, se sair 1, é -6, que anda mais para a esquerda em cada quadro. Não use o sinal | [curious] |
+| video-velocidade-propria-K1 | Dedé | 1 | que faz uma conta com dois números. Clique no primeiro 0 e troque por -5. No sinal, troque + por −, o sinal de menos. | Por que a conta usa menos? | Porque, com o sinal de mais, a conta daria -5 ou -4, e alguns cactos ficariam mais lentos. Com o menos, sai -5 ou -6, | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -133,7 +198,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora sorteie uma variação na velocidade! No vx do mesmo bloco, use a conta -5 menos um número de 0 a 1. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 4. Teste e envie seu jogo
+## Seção 5. Teste e envie seu jogo
 
 ### Clipe `video-entrega` · Teste e envie seu jogo
 

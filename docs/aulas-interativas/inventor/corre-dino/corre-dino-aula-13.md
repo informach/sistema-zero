@@ -6,53 +6,46 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 - Estado de entrada: Corrida completa com placar e sorteios, usando base fixa -5.
 - Resultado da aula: Base velocidade começa em -5, diminui a cada 5 segundos até -9, com variação de 0 a 1; descrição dos três controles e publicação opcional.
-- Seções: 8. Vídeos: 7.
+- Seções: 7. Vídeos: 6.
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
 ## Diagnóstico e decisão
 
-A régua prepara a comparação de números negativos. A experiência de aceleração vem antes da mudança da base e do relógio. Guardar a base, preparar o relógio e limitar a soma são montagens separadas. O fechamento testa e publica o próprio jogo; a visita ao modo Ponte, indisponível neste curso, foi retirada.
+A experiência de aceleração vem antes da mudança da base e do relógio; a régua dos negativos, que ela pressupõe, passou para a Aula 12. Guardar a base, preparar o relógio e limitar a soma são montagens separadas. O fechamento testa e publica o próprio jogo; a visita ao modo Ponte, indisponível neste curso, foi retirada.
+
+**Revisão de 02/11/2026.** D3: a régua foi para a Aula 12, e a Aula 13 ficou com sete partes e uma experiência só, a da base que acelera (o botão de volume, no lugar do freio da bicicleta, que fazia pensar em reduzir). As retomadas citam a "primeira parte" e o limite lembra a régua da aula anterior ("-5 fica à direita de -9, por isso é maior"). P10: o relógio dos pontos é dito como de 1 segundo, sem "o intervalo que você escolheu". "Velocidade" ficou com um sentido por vez: a variável velocidade guarda a base, e cada cacto tem o seu vx. As três montagens só lembram a experiência, porque o efeito não aparece no jogo antes do fim; o Se dentro do Se é explicado, a resposta à Debinha começa pelo limite, e a publicação ficou em cinco falas, com a ajuda de um adulto. No quiz, "o bloco que cria os cactos".
 
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
 | --- | --- | --- |
-| Números negativos e comparação | number-line antes da condição | Ver -5 maior que -9 e o efeito de somar -1. |
 | Mudança da base e limite | acceleration antes da variável velocidade e do acelerador | Separar a base do valor copiado por cada cacto. |
 | Descrição completa e publicação | reaplicação e operação da plataforma | Concluir o acesso aos controles e compartilhar opcionalmente. |
 
 ## Proposta final
 
-### Seção 1. Compare os números negativos
+### Seção 1. Até onde a corrida acelera?
 
-**Tarefa:** Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.
-
-**Blocos na página:** video-regua-negativos → fala-regua-negativos → experiencia-number-line.
-
-**Recado na página (não gravar):** Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.
-
-**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
-
-video-regua-negativos-K1: Debinha substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “Somar um número negativo deixa o valor menor. No seu jogo, velocidade mais para a esquerda é cacto mais rápido.”. Depois: “Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >. Com o marcador em -5, a pergunta -5 > -9”.
-
-**Experiência existente:** `number-line`. Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
-
-### Seção 2. Compare a base com cada cacto
-
-**Tarefa:** Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-o-que-o-freio-segura → fala-o-que-o-freio-segura → experiencia-aceleracao.
 
-**Recado na página (não gravar):** Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-o-que-o-freio-segura-K1: Debinha substitui “Com a base em menos nove, pode nascer um cacto mais rápido?”. Antes: “a responder não. Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.”. Depois: “Com a base parada em -9, eu continuo clicando até nascer um cacto com -10. A base é -9, mas o sorteio tirou mais 1. A”.
+video-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão na pista também ficam mais rápidos?”. Antes: “forte, até um limite. No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7…”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão passa cinco segundos de”.
 
-**Experiência existente:** `acceleration`. Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram. Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base. Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `acceleration` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/acceleration.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/acceleration.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-### Seção 3. Guarde a velocidade base
+**Instrução:** A cada 5 segundos o número da base ganha -1, e a pergunta "a base é maior que -9?" pode estar ligada ou desligada. Passe 5 segundos várias vezes e compare o número da base com o número de cada cacto, com a pergunta ligada e desligada. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Passar 5 segundos algumas vezes e olhe o número embaixo de cada cacto. Com a pergunta ligada, clique em Passar 5 segundos até a base chegar no -9 e mais uma vez. Com a pergunta ligada, continue clicando em Passar 5 segundos e olhe o número de cada cacto novo. Clique em Desligar a pergunta e em Passar 5 segundos algumas vezes.
+
+**Pistas, do aberto ao direto:** 1) Olhe o número embaixo de cada cacto e o número da base. 2) Passe 5 segundos até a resposta da pergunta virar não. 3) Com a base parada no -9, passe mais 5 segundos algumas vezes e olhe cada cacto novo; depois desligue a pergunta e compare a base. Sem palpite e sem pergunta final.
+
+### Seção 2. Guarde a velocidade base
 
 **Tarefa:** Agora guarde a velocidade base numa variável! Crie velocidade com -5 em Ao iniciar e use o valor dela na conta do vx dos cactos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
@@ -66,7 +59,7 @@ video-o-que-o-freio-segura-K1: Debinha substitui “Com a base em menos nove, po
 - No vx dos cactos, use velocidade menos uma variação não negativa sorteada.
 - Sorteie a posição de entrada dos cactos, a partir da direita da pista.
 
-### Seção 4. Prepare o relógio da dificuldade
+### Seção 3. Prepare o relógio da dificuldade
 
 **Tarefa:** Agora prepare o relógio da dificuldade! Crie um relógio de 5 segundos com um Se jogando, separado dos outros dois. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
@@ -78,7 +71,7 @@ video-o-que-o-freio-segura-K1: Debinha substitui “Com a base em menos nove, po
 
 - Prepare um relógio de 2 a 10 segundos com Se jogando.
 
-### Seção 5. Diminua a base até o limite
+### Seção 4. Diminua a base até o limite
 
 **Tarefa:** Agora faça a corrida acelerar até um limite! No relógio de 5 segundos, some -1 em velocidade só enquanto a base for maior que -9. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
@@ -88,14 +81,14 @@ video-o-que-o-freio-segura-K1: Debinha substitui “Com a base em menos nove, po
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mudar?”. Antes: “e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.”. Depois: “O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade”.
+video-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mudar?”. Antes: “pegue o bloco valor da variável e solte em cima desse x. Ele também chega com x: clique nele e escolha velocidade.”. Depois: “Até -9. Por isso, a pergunta vai ser: velocidade maior que -9? O sinal já chega como maior que: mantenha. No lado”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Num relógio próprio, se o estado do jogo é jogando e a velocidade é maior que o limite, some -1 em velocidade. O relógio é seu, de 2 a 10 segundos, e o limite também, de -14 a -7.
 - Use um único Somar em variável velocidade no projeto inteiro.
 
-### Seção 6. Complete a descrição dos controles
+### Seção 5. Complete a descrição dos controles
 
 **Tarefa:** Agora complete a descrição do seu jogo! Troque a descrição pela frase Corra com o dino e pule os cactos com espaço, seta pra cima ou tocando na tela, sem ponto no fim. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
@@ -107,7 +100,7 @@ video-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mu
 
 - Descreva objetivo e os três controles em Ao iniciar.
 
-### Seção 7. Confira o que você construiu
+### Seção 6. Confira o que você construiu
 
 **Tarefa:** Hora de lembrar o que você construiu! As perguntas falam dos sorteios e da dificuldade da corrida. Depois de clicar em Responder!, leia as explicações: se alguma resposta não estiver certa, é só clicar em Tentar de novo! e responder outra vez. Quando acertar todas, clique em Próxima parte.
 
@@ -117,7 +110,7 @@ video-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mu
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta parte.
 
-### Seção 8. Teste e envie seu jogo
+### Seção 7. Teste e envie seu jogo
 
 **Tarefa:** Hora de testar e enviar o seu Corre, Dino! Teste a corrida inteira, clique em Verificar projeto e depois em Enviar meu projeto, confirmando em Enviar. Se quiser, mostre o seu jogo no Mural e, por último, clique em Concluir aula.
 
@@ -135,7 +128,7 @@ video-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mu
 - Preserve o relógio de 1,4 s, com o nascimento protegido pelo estado do jogo é jogando.
 - Use um único bloco de criar cacto no projeto inteiro.
 - No Ao iniciar, mantenha a variável pontos com valor 0.
-- Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Aula 11.
+- Mantenha o relógio de 1 segundo somando 1 em pontos só quando o estado do jogo é jogando.
 - Mantenha retirado o desenho provisório da área de colisão.
 - Descreva objetivo e os três controles em Ao iniciar.
 

@@ -12,9 +12,21 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Pense em você andando: dá para dar passinhos de formiga ou passos de gigante. Em cada passo você anda um pouco, e o tamanho de cada passo é você quem escolhe.
+
+[engaging, energetic, conversational voice] No jogo é igual: em cada quadro, a nave dá um passinho, e esse passinho pode ser pequeno ou grande.
+
+[engaging, energetic, conversational voice] E o que muda quando o passinho fica maior? O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem o tamanho do passinho, e esta caixa, Os dois passinhos, guarda o rastro de cada passinho que você já testou.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
 [engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e segure uma seta. Tá vendo? A nave fica parada, porque o jogo ainda não olha a seta.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da câmera lenta? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!
 
 [engaging, energetic, conversational voice] Como o jogo olha a seta em todo quadro, o passinho vai dentro de A cada quadro do jogo. E ele vem antes do desenho, para o desenho já mostrar a nave no lugar novo.
 
@@ -28,15 +40,13 @@
 
 [curious] E qual velocidade eu uso?
 
-[engaging, energetic, conversational voice] Testando duas velocidades, você vai sentir a diferença. A velocidade é o tamanho do passinho que a nave dá em cada quadro. Para comparar, clique no 6 da velocidade, troque por 1 e clique fora do campo.
+[engaging, energetic, conversational voice] Você escolhe! Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama velocidade: é este número que diz quanto a nave anda em cada quadro.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e segure uma seta por um instante. [confident, clear, unhurried voice] Repare: a nave anda bem devagar, porque o passinho é pequeno.
+[engaging, energetic, conversational voice] Escolha a velocidade da sua nave: clique no 6, troque pelo número que você quiser e clique fora do campo. Aqui, eu troco por 7.
 
-[confident, clear, unhurried voice] Agora clique no 1 da velocidade, troque por 7 e teste de novo. [interested, animated voice] Olha só: com um passinho maior, a nave anda mais depressa!
+[upbeat, encouraging voice] Agora teste: clique na área do jogo e segure uma seta por um instante. [interested, animated voice] Olha só: em cada quadro, a nave dá o passinho que você escolheu!
 
 [confident, clear, unhurried voice] Repare: fica um rastro de naves, porque o jogo desenha a nave no lugar novo e ainda não apaga o desenho de antes. Isso fica para a próxima parte.
-
-[engaging, energetic, conversational voice] Agora escolha a velocidade que você achar melhor para a sua nave e teste. Aqui, eu deixo em 7.
 
 [reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com uma velocidade maior que zero, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 

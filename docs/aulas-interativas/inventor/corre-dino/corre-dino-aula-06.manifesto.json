@@ -50,14 +50,14 @@
   "blocks": [
     {
       "key": "video-visivel-guardado",
-      "plannedVideo": "Título: Compare a tela com o grupo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-visivel-guardado-K1: Dedé substitui “Sair da tela não tira o cacto do grupo?”. Antes: “mas nos bastidores continuam na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.”. Depois: “Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que”.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Para onde vai o cacto que sai da tela?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os bastidores, sem passar o tempo. No \"e este botão faz o jogo tirar quem sai da tela\", apontar o botão, sem clicar [apontar \"Tirar do jogo quem sai da tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-visivel-guardado-K1: Dedé substitui “E quando o cacto some da tela, ele sai do grupo também?”. Antes: “que é a lista que o jogo guarda e move em todo quadro. Quando um cacto passa da borda da esquerda, ele some da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, ao lado da tela ficam os”.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-visivel-guardado",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -65,20 +65,38 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare a tela com o grupo",
-        "instructions": "Na experiência, deixe Tirar do grupo quem sair da tela desligado. Clique em Tempo para o tempo passar. Espere dois cactos saírem pela esquerda e compare a tela com os bastidores. A chave da limpeza fica disponível depois desse teste. Ligue Tirar do grupo quem sair da tela e deixe o tempo passar mais alguns segundos. Observe os que já saíram e o cacto que ainda chega pela direita.",
-        "hints": [],
+        "title": "Para onde vai o cacto que sai da tela?",
+        "instructions": "Compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Observe a tela, os bastidores e o número de cactos no grupo.",
+          "Compare o grupo quando o jogo tira quem sai da tela e quando não tira.",
+          "Clique em Passar 1 segundo até dois cactos saírem. Depois clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois saírem."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "cleanup",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["invisible-stored", "rule-removes"],
+            "goalCopy": {
+              "invisible-stored": {
+                "label": "O cacto saiu da tela e continuou no grupo",
+                "pedido": "Sem tirar ninguém do jogo, clique em Passar 1 segundo até dois cactos saírem da tela e observe o grupo."
+              },
+              "rule-removes": {
+                "label": "Tirando quem sai da tela, o cacto saiu do grupo",
+                "pedido": "Clique em Tirar do jogo quem sai da tela e passe o tempo até mais dois cactos saírem. Compare o grupo."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-faxina",
-      "plannedVideo": "Título: Retire do grupo quem já saiu\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-faxina-K1: Dedé substitui “Onde essa regra entra?”. Antes: “cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!”. Depois: “A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de”.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Retire do grupo quem já saiu\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-faxina-K1: Dedé substitui “E onde isso entra no jogo?”. Antes: “parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai tirar esses cactos de lá!”. Depois: “O jogo confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, o bloco vai no fim de A”.\n\nFala completa em corre-dino-aula-06.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-faxina",
@@ -112,7 +130,7 @@
               },
               {
                 "id": "b",
-                "label": "Somente em Quando apertar Espaço."
+                "label": "Só quando alguém toca na barra de espaço."
               },
               {
                 "id": "c",
@@ -665,9 +683,9 @@
   "sections": [
     {
       "key": "visivel-guardado",
-      "title": "Compare a tela com o grupo",
+      "title": "Para onde vai o cacto que sai da tela?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-visivel-guardado",
         "fala-visivel-guardado",

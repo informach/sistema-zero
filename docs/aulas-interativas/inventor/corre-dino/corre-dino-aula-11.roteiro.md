@@ -2,34 +2,48 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare guardar, mudar e mostrar
+## Seção 1. Guardar ou mostrar?
 
-### Clipe `video-guardar-mudar-mostrar` · Compare guardar, mudar e mostrar
+### Clipe `video-guardar-mudar-mostrar` · Guardar ou mostrar?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-guardar-mudar-mostrar`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um caderno em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando alguém vai contando os gols", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar a caixa e os botões, sem clicar [apontar "Guardar o número 0"] [apontar "Mostrar o número na tela"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a variável: um lugar que guarda um número, que pode mudar e aparecer na tela.
+[engaging, energetic, conversational voice] Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.
 
-[interested, animated voice] Olha aqui: quando eu coloco o número guardado em pontos em 1, a caixa pontos é criada e guarda 1. Depois eu coloco 0, e ela passa a guardar 0.
+[engaging, energetic, conversational voice] No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.
 
-[engaging, energetic, conversational voice] Com Mostrar placar desligado, eu clico em Somar 1 em pontos duas vezes. A caixa vai de 0 para 1 e depois para 2, e os cactos da tela vão sendo atingidos, mas nenhum número aparece. O jogo mudou o valor sem desenhar o placar.
+[curious] E se o número não estiver na tela, ele continua mudando?
 
-[engaging, energetic, conversational voice] Quando eu ligo Mostrar placar, a tela mostra 2, o mesmo número da caixa. Eu clico em Somar 1 em pontos mais uma vez, e os dois vão para 3. Mostrar só lê o que está guardado.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] É como anotar os pontos num caderno: a conta fica guardada mesmo com o caderno fechado, e mostrar o placar é abrir o caderno para todo mundo ver. No seu jogo, você vai criar a variável pontos com 0 e, depois, mostrar o placar.
+[interested, animated voice] Olha aqui: nesta experiência, esta caixa guarda o número dos pontos, e estes botões guardam o número, fazem o Dino ganhar um ponto e mostram o número na tela.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a caixa pontos e a tela do jogo quando você guarda o número, quando o Dino ganha um ponto com o número fora da tela e quando o número aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-guardar-mudar-mostrar-K1 | Debinha | 1 | coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável. | E se o número não estiver na tela, ele continua mudando? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número dos | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-guardar-mudar-mostrar-K1`: entrada — Manter o meme dos gols contados de cabeça até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem clicar em nada.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/variable.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare os pontos em zero
 
@@ -39,18 +53,28 @@
 
 **Clipe:** `video-caixinha-dos-pontos`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco que guarde os pontos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, olhe Ao iniciar. Tá vendo? Não tem nenhum bloco que guarde os pontos, porque o jogo ainda não conta nada.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O número ficava guardado na caixa pontos, mesmo sem aparecer na tela. Agora a gente vai criar essa caixa no seu jogo!
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A caixa pontos guardava o número, mesmo com o placar desligado. Agora a gente vai criar essa variável!
+[engaging, energetic, conversational voice] Uma caixa que guarda um número se chama variável. A variável nasce quando o jogo começa. Por isso, ela vai no fim de Ao iniciar.
 
-[engaging, energetic, conversational voice] A variável nasce quando o jogo começa. Por isso, deixe à vista o fim de Ao iniciar. Depois, abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim. [confident, clear, unhurried voice] Repare: o nome chega como contador. Troque contador por pontos e mantenha o valor em 0.
+[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar.
 
-[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar. E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.
+[confident, clear, unhurried voice] Agora abra Programação e depois Variáveis, pegue o bloco Criar variável com valor e solte nesse fim.
+
+[engaging, energetic, conversational voice] É este bloco que cria a caixa e guarda um número dentro dela.
+
+[confident, clear, unhurried voice] Repare: o nome chega como contador. Clique em contador, troque por pontos e clique fora do campo.
+
+[engaging, energetic, conversational voice] O valor já vem em 0: mantenha, porque cada partida começa sem pontos.
+
+[confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar, está Criar variável pontos com valor 0. Na área do jogo, ainda não aparece nenhum número, porque guardar um número não desenha o placar.
+
+[engaging, energetic, conversational voice] E, como Reiniciar o jogo repete a preparação de Ao iniciar, os pontos voltam para zero a cada partida nova.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -73,13 +97,25 @@
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida. Tá vendo? Nenhum número aparece, porque nada desenha o placar.
 
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? O número só apareceu quando você ligou Mostrar placar. Agora a gente vai mostrar os pontos no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? O número só apareceu na tela quando você mandou mostrar. Agora a gente vai mostrar os pontos no seu jogo!
 
-[engaging, energetic, conversational voice] O placar só aparece durante a partida. Por isso, deixe à vista o fim do então de Se jogando, logo depois da regra que tira do grupo os cactos. Depois, abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim.
+[engaging, energetic, conversational voice] O placar só aparece durante a partida. Por isso, ele vai no fim do então de Se jogando, logo depois de Tirar do grupo quem sair da tela.
 
-[confident, clear, unhurried voice] Repare: o placar já chega com Pontos: escrito. Mantenha. Depois, deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número. Escolha pontos, e assim o placar lê o número guardado em pontos.
+[confident, clear, unhurried voice] Deixe à vista o fim do então de Se jogando, logo depois de Tirar do grupo quem sair da tela.
 
-[engaging, energetic, conversational voice] O x 12, o y 30 e o tamanho 24 também já vêm certos: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Vida e placar e depois Indicadores e texto na tela, pegue o bloco Mostrar placar e solte nesse fim.
+
+[engaging, energetic, conversational voice] É este bloco que mostra um número na tela, para quem joga.
+
+[confident, clear, unhurried voice] Repare: o placar já chega com Pontos: escrito. Mantenha.
+
+[confident, clear, unhurried voice] Agora deixe à vista o número do campo valor. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima desse número, para ele tomar o lugar do número.
+
+[confident, clear, unhurried voice] Repare: ele chega com x. Clique em x e escolha pontos.
+
+[engaging, energetic, conversational voice] É este bloco que lê o número guardado em pontos. Agora o placar mostra esse número.
+
+[engaging, energetic, conversational voice] O placar já vem em x 12, y 30 e tamanho 24: mantenha. Só troque a cor, que chega branca, por uma cor escura, que apareça sobre a floresta.
 
 [engaging, energetic, conversational voice] Agora comece uma partida. [interested, animated voice] Olha só: o placar aparece, mostrando zero, e ainda não cresce, porque nenhuma regra soma pontos! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim do então de Se jogando, está Mostrar placar, com o valor da variável pontos no campo valor, x 12, y 30 e uma cor escura. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -89,48 +125,48 @@
 
 **Recado na página (não gravar):** Agora mostre os pontos na tela! Coloque Mostrar placar no fim do Se jogando, lendo a variável pontos. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 4. Compare quando somar os pontos
+## Seção 4. Quando o placar cresce?
 
-### Clipe `video-quando-o-placar-cresce` · Compare quando somar os pontos
+### Clipe `video-quando-o-placar-cresce` · Quando o placar cresce?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-quando-o-placar-cresce`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe o cronômetro de uma corrida", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "A cada quadro"] [apontar "A cada segundo"] [apontar "Ligar a pergunta"]. No "Estes botões passam um segundo e mudam de tela", apontar os botões, sem clicar [apontar "Passar 1 segundo"] [apontar "Começar a partida"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender em que momento o placar deve crescer.
+[engaging, energetic, conversational voice] Sabe o cronômetro de uma corrida? Ele só começa a contar depois da largada.
 
-[interested, animated voice] Olha aqui: quando eu coloco Somar ponto em A cada quadro do jogo e deixo o tempo passar um segundo, o placar dispara e chega a 60. Ele soma em cada quadro, e um segundo tem muitos quadros.
+[curious] No seu jogo, cada segundo de corrida vale um ponto. E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?
 
-[engaging, energetic, conversational voice] Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar.
+[curious] E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?
 
-[curious] Como faz para contar só durante a corrida?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu levo Somar ponto para o relógio de um segundo, dentro do Se que pergunta se o estado do jogo é jogando. Na tela de início, o placar fica em 0, porque a pergunta responde não. Eu clico em Próxima tela até Jogando, e os pontos sobem, um por segundo. Clico em Próxima tela até Fim, e o placar para no valor que tinha.
+[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o ponto soma e liga ou desliga a pergunta. Estes botões passam um segundo e mudam de tela.
 
-[engaging, energetic, conversational voice] É como o cronômetro de uma corrida: ele só conta depois da largada e para na chegada. No seu jogo, você vai pôr Somar em variável dentro de um relógio de 1 segundo, num Se jogando.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o placar em cada jeito de somar, na tela de início, na partida e no fim. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-quando-o-placar-cresce-K1 | Debinha | 1 | Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar. | Como faz para contar só durante a corrida? | Agora eu levo Somar ponto para o relógio de um segundo, dentro do Se que pergunta se o estado do jogo é jogando. Na | [curious] |
+| video-quando-o-placar-cresce-K1 | Debinha | 1 | E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora? | E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o ponto soma e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-quando-o-placar-cresce-K1`: entrada — Testar a soma por quadro e depois em Solto, ainda na abertura; manter o placar à vista. Saída — Levar a soma ao relógio de 1 segundo dentro da condição e testar início, partida e fim.
+- `video-quando-o-placar-cresce-K1`: entrada — Manter o meme do cronômetro até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência na tela de início, sem passar o tempo.
 
 
-**Recado na página (não gravar):** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/score.ts`, na tela `packages/member-shell/src/components/scene-livre/score.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Some um ponto por segundo de partida
 
@@ -145,23 +181,33 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, comece uma partida e olhe o placar. Tá vendo? Ele fica em zero, porque nenhuma regra soma pontos.
+[engaging, energetic, conversational voice] Comece uma partida e olhe o placar. Tá vendo? Ele fica em zero, porque nada soma os pontos ainda.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? No relógio de 1 segundo, dentro de jogando, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Somando a cada segundo, só durante a partida, o placar contou um ponto por segundo. Agora a gente vai somar os seus pontos!
 
-[engaging, energetic, conversational voice] A soma vai num relógio só dela, separado do relógio dos cactos. Deixe à vista um espaço em Enquanto estiver rodando, fora do quadro e do relógio dos cactos. Depois, abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.
+[engaging, energetic, conversational voice] A soma vai num relógio só dela, separado do relógio dos cactos, porque os cactos nascem a cada 1.4 segundo, e os pontos contam de 1 em 1 segundo.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço em Enquanto estiver rodando, fora de A cada quadro do jogo e do relógio dos cactos.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos e solte nesse espaço.
+
+[confident, clear, unhurried voice] Clique no 2 e troque por 1. É este relógio que toca uma vez por segundo.
 
 [curious] Mas só vale somar durante a partida, né?
 
-[engaging, energetic, conversational voice] Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
+[engaging, energetic, conversational voice] Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali.
 
-[confident, clear, unhurried voice] Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e escolha jogando.
+[confident, clear, unhurried voice] Repare: ele chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então. Escolha pontos e deixe a soma em 1.
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então desse Se. Abra Programação e depois Variáveis, pegue o bloco Somar em variável e solte no então.
+
+[engaging, energetic, conversational voice] É este bloco que soma um número ao que está guardado na caixa.
+
+[confident, clear, unhurried voice] Repare: ele chega com contador. Clique em contador e escolha pontos. O número já vem 1: mantenha.
 
 [engaging, energetic, conversational voice] Agora comece uma partida. [interested, animated voice] Olha só: os pontos sobem, um por segundo! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no relógio de 1 segundo, o Se jogando tem, no então, Somar em variável pontos, com 1, e esse é o único Somar em pontos. O relógio dos cactos continua em 1.4. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
-
-[upbeat, encouraging voice] Se quiser, você pode escolher um intervalo de 0.5 a 3 e comparar o ritmo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -170,7 +216,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-relogio-dos-pontos-K1 | Debinha | 1 | Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1. | Mas só vale somar durante a partida, né? | Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra | [curious] |
+| video-relogio-dos-pontos-K1 | Debinha | 1 | bloco A cada 2 segundos e solte nesse espaço. Clique no 2 e troque por 1. É este relógio que toca uma vez por segundo. | Mas só vale somar durante a partida, né? | Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -185,7 +231,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-frase-da-tela-de-fim` · Mostre os pontos na tela de fim
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-frase-da-tela-de-fim`
 
@@ -194,11 +240,17 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O seu placar já lê a variável pontos durante a partida. Primeiro, deixe uma batida acontecer e olhe a tela de fim. Tá vendo? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos. Por isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.
+[engaging, energetic, conversational voice] Deixe uma batida acontecer e olhe a tela de fim. Tá vendo? Ela mostra a sua frase, mas não diz quantos pontos você fez, porque não lê os pontos.
+
+[engaging, energetic, conversational voice] O seu placar já lê a variável pontos durante a partida. Por isso, vamos usar a mesma leitura na frase da tela de fim, para mostrar quantos pontos você fez na partida.
 
 [curious] Esse número vai mudar a cada partida?
 
-[engaging, energetic, conversational voice] Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. Depois, abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.
+[engaging, energetic, conversational voice] Vai mostrar os pontos daquela partida. É como montar uma frase com três partes: um pedaço escrito, o número dos pontos e outro pedaço escrito. É este bloco, juntar texto, que junta essas partes numa frase só.
+
+[confident, clear, unhurried voice] Deixe à vista o subtítulo da tela de fim, no ramo fim do Se de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] Agora abra Programação e depois Valores, pegue o bloco juntar texto e solte em cima desse subtítulo, para ele tomar o lugar do texto antigo.
 
 [confident, clear, unhurried voice] Clique três vezes no + do bloco juntar texto. [confident, clear, unhurried voice] Repare: ele ganha três entradas, que começam com números. Você vai preencher essas entradas com texto, valor e texto, nessa ordem.
 
@@ -208,7 +260,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em cima do número do meio e escolha pontos.
 
-[confident, clear, unhurried voice] Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número. Apague Olá e escreva um espaço no começo, seguido de: pontos. Tente bater essa marca!
+[confident, clear, unhurried voice] Por último, deixe à vista a última entrada. Em Programação e Valores, pegue outro texto Olá e solte em cima do último número.
+
+[engaging, energetic, conversational voice] Apague Olá. Toque na barra de espaço e escreva pontos, com ponto final. Toque na barra de espaço de novo e escreva: Tente bater essa marca! A frase inteira está no Passo a passo do projeto.
 
 [engaging, energetic, conversational voice] Agora comece, espere o placar crescer e deixe uma batida acontecer. [interested, animated voice] Olha só: a frase mostra os pontos da partida! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no subtítulo da tela de fim, o juntar texto tem Você fez, com um espaço no fim, o valor de pontos no meio e o resto da frase, começando com um espaço. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -219,7 +273,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-frase-da-tela-de-fim-K1 | Debinha | 1 | isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida. | Esse número vai mudar a cada partida? | Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro. | [curious] |
+| video-frase-da-tela-de-fim-K1 | Debinha | 1 | partida. Por isso, vamos usar a mesma leitura na frase da tela de fim, para mostrar quantos pontos você fez na partida. | Esse número vai mudar a cada partida? | Vai mostrar os pontos daquela partida. É como montar uma frase com três partes: um pedaço escrito, o número dos pontos | [curious] |
 | video-frase-da-tela-de-fim-K2 | Debinha | 1 | de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez. | E o número dos pontos vai no meio? | Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.

@@ -73,8 +73,58 @@
   ],
   "blocks": [
     {
+      "key": "video-meta-do-jogo",
+      "plannedVideo": "Título: A meta do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os botões, sem clicar [apontar \"Maior que (>)\"] [apontar \"Maior ou igual (≥)\"] [apontar \"Acertar uma pedra\"] [apontar \"Tentar mudar a placa\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-meta-do-jogo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-meta-do-jogo",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A meta do jogo",
+        "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e tente mudar a placa no meio de uma partida. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?",
+          "Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa.",
+          "Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa."
+        ],
+        "semPerguntaFinal": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "score-goal",
+          "cenario": "nave",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["igual-conta", "maior-pula", "placa-fixa"],
+            "goalCopy": {
+              "igual-conta": {
+                "label": "Com maior ou igual, chegar a 26 já deu a vitória",
+                "pedido": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória."
+              },
+              "maior-pula": {
+                "label": "Com maior que, o 26 não deu a vitória; só o 27",
+                "pedido": "Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória."
+              },
+              "placa-fixa": {
+                "label": "No meio da partida, a placa da meta não mudou",
+                "pedido": "Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "key": "video-finais",
-      "plannedVideo": "Título: Defina quando você ganha\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"comece uma partida e faça alguns pontos\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. Do \"Sabe aquele brinquedo do parque\" até o \"ou passaram\", a tela fica parada, e a edição troca esse trecho pelo desenho da placa do brinquedo e da nave com o placar perto de 26 [na edição: a placa do brinquedo do parque e a meta de 26 pontos]. No \"Deixe à vista o espaço entre Dar ao sprite\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Programação e depois Variáveis\", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar \"Criar constante\" abaixo de \"Dar ao sprite\"]. No \"Clique em PI, troque por alvo\", trocar o nome [trocar \"PI\" por \"alvo\" em \"Criar constante\"]. No \"Agora clique no 0 do valor\", trocar o número [trocar \"0\" por \"26\" em \"Criar constante\"]. No \"É este bloco que guarda a meta\", apontar o bloco [apontar bloco \"Criar constante\"]. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No \"No lado esquerdo, clique em x\", escolher pontos. No \"No meio, clique no sinal de maior\", escolher o sinal de maior ou igual. No \"Abra Programação e depois Valores\", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No \"pegue o bloco Mudar o estado do jogo para, solte dentro desse então\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-finais-K1: Debinha substitui “E do outro lado vai a meta?”. Antes: “de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque.”. Depois: “Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Defina quando você ganha\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"comece uma partida e faça alguns pontos\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. No \"Lembra da experiência da meta\", a tela fica parada, sem refazer a experiência nem mostrar o resultado dela. No \"Deixe à vista o espaço entre Dar ao sprite\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Programação e depois Variáveis\", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar \"Criar constante\" abaixo de \"Dar ao sprite\"]. No \"Clique em PI, troque por alvo\", trocar o nome [trocar \"PI\" por \"alvo\" em \"Criar constante\"]. No \"Agora clique no 0 do valor\", trocar o número [trocar \"0\" por \"26\" em \"Criar constante\"]. No \"É este bloco que guarda a meta\", apontar o bloco [apontar bloco \"Criar constante\"]. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No \"No lado esquerdo, clique em x\", escolher pontos. No \"No meio, clique no sinal de maior\", escolher o sinal de maior ou igual. No \"Abra Programação e depois Valores\", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No \"pegue o bloco Mudar o estado do jogo para, solte dentro desse então\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-finais-K1: Debinha substitui “E do outro lado vai a meta?”. Antes: “de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.”. Depois: “Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-finais",
@@ -1615,6 +1665,20 @@
     }
   ],
   "sections": [
+    {
+      "key": "meta-do-jogo",
+      "title": "A meta do jogo",
+      "intent": "exploration",
+      "objective": "Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "blockKeys": ["video-meta-do-jogo", "fala-meta-do-jogo", "experiencia-meta-do-jogo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-meta-do-jogo", "experiencia-meta-do-jogo"]
+      }
+    },
     {
       "key": "finais",
       "title": "Defina quando você ganha",

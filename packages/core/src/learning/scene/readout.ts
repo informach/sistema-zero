@@ -284,6 +284,17 @@ function leituras(
         { label: 'arquivo', value: state.copies.fileColor ?? 'ainda não existe', tone: 'plain' },
         { label: 'projeto no Estúdio', value: state.copies.studioColor ?? 'vazio', tone: 'b' },
       ]
+    case 'score-goal':
+      // ⚠️ Sem "vitória" nem "ainda não": em que acerto ela vem é a descoberta.
+      return [
+        { label: 'placar', value: String(state.scoreGoal.points), tone: 'a' },
+        { label: 'meta', value: String(state.scoreGoal.goal), tone: 'b' },
+        {
+          label: 'sinal',
+          value: state.scoreGoal.op === '>' ? 'maior que' : 'maior ou igual',
+          tone: 'plain',
+        },
+      ]
     case 'published-copy':
       return [
         { label: 'seu projeto', value: state.copies.projectColor, tone: 'a' },
@@ -1114,6 +1125,10 @@ function situacao(scene: SceneId, state: SceneState): string {
       return `Quadro ${state.twoClocks.frames}. Nasceram ${state.twoClocks.born} pedras; cada uma troca desenhos a ${state.twoClocks.animationRate} por segundo. A última nasceu no quadro ${state.twoClocks.lastBornAt}.`
     case 'copy-vs-original':
       return `O jogo da aula está ${state.copies.lessonColor}. ${state.copies.fileColor ? 'O arquivo foi exportado.' : 'Ainda não há arquivo.'} ${state.copies.studioColor ? `O projeto do Estúdio está ${state.copies.studioColor}.` : 'O Estúdio ainda não tem projeto.'}`
+    case 'score-goal': {
+      const g = state.scoreGoal
+      return `O placar está em ${g.points} e a placa da meta diz ${g.goal}. A vitória vem com o placar ${g.op === '>' ? 'maior que a' : 'maior ou igual à'} meta.${g.won ? ' A partida acabou.' : ''}`
+    }
     case 'published-copy':
       return `Seu projeto está ${state.copies.projectColor}. O Mural tem ${state.copies.posts.length} ${state.copies.posts.length === 1 ? 'publicação' : 'publicações'}; ${state.copies.posts.length ? `a mais recente está ${state.copies.posts.at(-1)?.color}.` : 'a tela está vazia.'}`
     case 'same-rules-new-skin':
@@ -1251,7 +1266,7 @@ function situacao(scene: SceneId, state: SceneState): string {
       // ⚠️⚠️ Com as metas feitas e a peça de volta na tecla, a frase diz o que falta (consertos do review
       // da onda A do lote 5), como na `layers`: a cena não concluía e ninguém dizia por quê.
       if (!state.sound.onJump && state.evidence.discoveries.includes('every-jump'))
-        return `${quantos(state.sound.jumps, 'pulo', 'pulos')} e ${quantos(state.sound.count, 'som', 'sons')}. Leve Tocar efeito de volta para Quando o Dino pular, como fica no jogo.`
+        return `${quantos(state.sound.jumps, 'pulo', 'pulos')} e ${quantos(state.sound.count, 'som', 'sons')}. O som precisa voltar para o pulo do Dino, como fica no jogo.`
       return state.sound.jumps + state.sound.count === 0
         ? 'Nenhum pulo e nenhum som ainda.'
         : `${quantos(state.sound.jumps, 'pulo', 'pulos')} e ${quantos(state.sound.count, 'som', 'sons')}.`

@@ -1,8 +1,12 @@
+[curious] E se o Dino for desenhado em todo quadro, sem apagar a tela?
+
+[long pause]
+
 [curious] E como tira essa sombra escura?
 
 [long pause]
 
-[curious] Como eu trago o Dino para a frente?
+[curious] E se a floresta for desenhada depois do Dino, quem fica na frente?
 
 [long pause]
 
@@ -10,7 +14,7 @@
 
 [long pause]
 
-[curious] E se a gente escrever como se joga?
+[curious] E o leitor de tela consegue contar como se joga o Corre, Dino?
 
 [long pause]
 

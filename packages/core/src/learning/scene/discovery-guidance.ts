@@ -6,7 +6,12 @@ import { PONTE_SPEECH, ponteGuidance } from './guidance-ponte'
 import { SIMBOLOS_SPEECH, simbolosGuidance } from './guidance-simbolos'
 import type { SceneActivity } from './index'
 import { ISLAND_SPEECH, islandGuidance } from './island-3d'
-import { lighthouseWalkMaxX, lighthouseWalkOutSeenX, type SceneState } from './state'
+import {
+  lighthouseKeyNotCase,
+  lighthouseWalkMaxX,
+  lighthouseWalkOutSeenX,
+  type SceneState,
+} from './state'
 
 /** Shared authored speech: player and recording inventory always use the same text. */
 const speech = {
@@ -73,6 +78,21 @@ const speech = {
     'Em cada quadro, o passinho ia levar a nave para fora, e depois o jogo confere a beirada e segura a nave dentro. Quer comparar? Desligue o limite e deixe a nave ir até a beirada.',
   'border-complete-nave':
     'Você viu a nave sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
+  // ⭐ "O tamanho do passinho" (Nave, Dia 1, 02/11/2026): só a ideia (o passinho de cada quadro pode
+  // ser pequeno ou grande), sem bloco nem número de velocidade. Só existe na Nave, por isso as falas
+  // já dizem "a nave". Antes do teste, a fala pergunta e diz o que comparar; o resultado vem depois.
+  'stride-start':
+    'Escolha um tamanho de passinho: Passinho pequeno ou Passinho grande. Depois clique em Câmera lenta, segure a seta e observe as marcas e a tira: quanto a nave anda em cada quadro?',
+  'stride-small':
+    'Com o passinho pequeno, a nave anda só um pouquinho em cada quadro, e as marcas ficam juntinhas. E com o passinho grande, o que muda? Clique em Passinho grande, segure a seta em câmera lenta e compare as marcas.',
+  'stride-try-big':
+    'Agora o passinho é grande. O que você acha que muda nas marcas? Clique em Câmera lenta, segure a seta e compare as marcas e a tira com as do passinho pequeno.',
+  'stride-big':
+    'Com o passinho grande, a nave vai mais longe em cada quadro, e as marcas ficam bem separadas. E com o passinho pequeno, o que muda? Clique em Passinho pequeno, segure a seta em câmera lenta e compare as marcas.',
+  'stride-try-small':
+    'Agora o passinho é pequeno. O que você acha que muda nas marcas? Clique em Câmera lenta, segure a seta e compare as marcas e a tira com as do passinho grande.',
+  'stride-complete':
+    'Nos dois casos, a nave dá um passinho em cada quadro. O que muda é o tamanho do passinho: com o passinho grande, a nave vai mais longe em cada quadro e, por isso, voa mais depressa. Quer sentir a diferença? Clique em Velocidade de verdade com cada passinho.',
   // ⚠️ As falas da bancada antiga do quadro: valem só para o bloco que ainda não foi reimportado.
   'walk-empty':
     'A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco.',
@@ -124,6 +144,28 @@ const speech = {
     'Com temChave falso, a resposta foi não: a porta ficou fechada e avisou que falta a chave. E com a chave, o que a porta faz? Dê a chave ao personagem e teste a mesma porta.',
   'door-complete':
     'A pergunta foi a mesma nas duas vezes. O que mudou foi o valor de temChave, e por isso a porta escolheu outra resposta. Pode mudar a situação e testar quantas vezes quiser.',
+  // ⭐ A pergunta com o não (Ilha do Farol, aula 3, parte 3, 02/11/2026): a mesma porta, e a pergunta
+  // pode ser "a porta está trancada?" ou "a porta não está trancada?". Sem a chave a porta está
+  // trancada. Só a ideia: nada de bloco, Se, então, senão nem variável. Antes do teste, a fala pergunta;
+  // a resposta de cada situação só vem depois de testada.
+  'door-not-start':
+    'Sem a chave, a porta está trancada. Com a chave, ela fica destrancada. A porta obedece à resposta da pergunta: com a resposta sim, ela abre; com a resposta não, ela fica fechada. Repare na pergunta que a porta faz agora. O que você acha que ela vai responder? Clique em Testar a porta e observe a resposta e a porta.',
+  'door-not-try':
+    'A situação mudou. O que você acha que a porta vai responder agora? Clique em Testar a porta e compare com o que você já viu.',
+  'door-not-plain-with':
+    'A pergunta era: a porta está trancada? Com a chave, ela não está. A resposta foi não, e a porta obedece ao não: ficou fechada, mesmo destrancada. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta.',
+  'door-not-plain-without':
+    'A pergunta era: a porta está trancada? Sem a chave, ela está. A resposta foi sim, e a porta obedece ao sim: abriu, mesmo trancada. É por isso que a pergunta precisa mudar. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta.',
+  'door-not-not-with':
+    'A pergunta era: a porta não está trancada? Com a chave, ela não está. A resposta foi sim, e a porta obedece ao sim: abriu. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta.',
+  'door-not-not-without':
+    'A pergunta era: a porta não está trancada? Sem a chave, ela está. A resposta foi não, e a porta obedece ao não: ficou fechada. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta.',
+  'door-not-other-with':
+    'Sem a chave, o não trocou a resposta: o que era sim virou não. E com a chave, o que acontece com as duas perguntas? Clique em Dar a chave ao personagem e teste a porta com e sem o não.',
+  'door-not-other-without':
+    'Com a chave, o não trocou a resposta: o que era não virou sim. E sem a chave, o que acontece com as duas perguntas? Clique em Tirar a chave do personagem e teste a porta com e sem o não.',
+  'door-not-complete':
+    'Nos dois casos, o não trocou a resposta: o que era sim virou não, e o que era não virou sim. Para a porta abrir só quando ela não está trancada, a pergunta precisa do não. Pode testar quantas vezes quiser.',
   'position-start':
     'Mude só o x, para mais ou para menos, e observe a chave. Para onde ela vai? O y também está livre: você escolhe o que explorar primeiro.',
   'position-height':
@@ -155,6 +197,47 @@ const speech = {
   'count-complete':
     'Você comparou novos achados, vazio, repetição e reinício. Continue explorando na ordem que quiser.',
 } as const
+/**
+ * O caso do tamanho do passinho (Nave, Dia 1, 02/11/2026): a exploração livre que cobra as metas da
+ * velocidade sem a comparação antiga da seta solta (`still-without-arrow`, a bancada de antes). É a
+ * mesma régua que escolhe a tela no member-shell.
+ */
+export function lighthouseWalkStrideCase(
+  activity: Pick<SceneActivity, 'scene' | 'setup'>,
+): boolean {
+  const metas = activity.setup?.goals ?? []
+  return (
+    activity.scene === 'lighthouse-walk' &&
+    activity.setup?.freeExploration === true &&
+    (metas.includes('step-speed-1') || metas.includes('step-speed-3')) &&
+    !metas.includes('still-without-arrow')
+  )
+}
+/**
+ * A fala da porta no caso do não (Ilha do Farol, aula 3, 02/11/2026). Testada a situação de agora, o
+ * Zappy explica ESTA resposta e propõe a outra pergunta com a mesma chave; com as duas perguntas vistas
+ * nessa chave, propõe a outra chave (se a atividade a cobra). A tela destaca o botão que a fala pede.
+ */
+export function portaDoNaoGuidance(
+  activity: Pick<SceneActivity, 'setup'>,
+  state: SceneState,
+  has: (id: string) => boolean,
+): keyof typeof speech {
+  const l = state.lighthouse
+  const chave = l.hasKey ? 'with-key' : 'without-key'
+  const metas = activity.setup?.goals ?? []
+  const falta = (k: string) => metas.includes(`not-flips-${k}`) && !has(`not-flips-${k}`)
+  if (!falta('with-key') && !falta('without-key')) return 'door-not-complete'
+  // Esta chave já viu as duas perguntas: a outra chave. ⚠️ Pelo que ela VIU (`has`), não pelo que
+  // falta: numa atividade que só cobra a outra chave, esta nunca "falta" e a fala afirmaria a troca.
+  if (has(`not-flips-${chave}`)) return l.hasKey ? 'door-not-other-without' : 'door-not-other-with'
+  if (l.checkedKey != null)
+    return `door-not-${l.checkedNot ? 'not' : 'plain'}-${l.hasKey ? 'with' : 'without'}`
+  const testouAlguma = ['locked', 'not-locked'].some((q) =>
+    ['with-key', 'without-key'].some((k) => has(`asked-${q}-${k}`)),
+  )
+  return testouAlguma ? 'door-not-try' : 'door-not-start'
+}
 export function discoverySpeechSteps(scene?: SceneId) {
   const livre = scene ? GUIAS_LIVRES[scene] : undefined
   if (livre) return Object.entries(livre.speech).map(([id, text]) => ({ id, text }))
@@ -166,7 +249,7 @@ export function discoverySpeechSteps(scene?: SceneId) {
         : scene === 'found-counter'
           ? ['count']
           : scene === 'lighthouse-walk'
-            ? ['slow', 'walk', 'border', 'edge']
+            ? ['slow', 'walk', 'border', 'edge', 'stride']
             : scene === 'collect-and-remember'
               ? ['memory']
               : scene === 'lighthouse-key'
@@ -233,7 +316,22 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
             : !has('compared-command-order')
               ? 'edge-order'
               : 'edge-complete'
-      else if (activity.setup?.goals?.includes('walked-real-speed'))
+      else if (lighthouseWalkStrideCase(activity)) {
+        const pequeno = has('step-speed-1')
+        const grande = has('step-speed-3')
+        id =
+          pequeno && grande
+            ? 'stride-complete'
+            : pequeno
+              ? state.walk.speed === 1
+                ? 'stride-small'
+                : 'stride-try-big'
+              : grande
+                ? state.walk.speed === 3
+                  ? 'stride-big'
+                  : 'stride-try-small'
+                : 'stride-start'
+      } else if (activity.setup?.goals?.includes('walked-real-speed'))
         id = !has('moves-each-frame')
           ? 'slow-start'
           : !has('stopped-after-release')
@@ -279,6 +377,10 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
                     : 'memory-complete'
       break
     case 'lighthouse-key':
+      if (lighthouseKeyNotCase(activity.setup)) {
+        id = portaDoNaoGuidance(activity, state, has)
+        break
+      }
       id =
         has('opened-with-key') && has('locked-without-key')
           ? 'door-complete'

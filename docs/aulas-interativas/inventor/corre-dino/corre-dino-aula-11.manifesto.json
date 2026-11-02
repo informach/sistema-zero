@@ -41,35 +41,57 @@
   "blocks": [
     {
       "key": "video-guardar-mudar-mostrar",
-      "plannedVideo": "Título: Compare guardar, mudar e mostrar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar sem a caixa pontos. Colocar o número guardado em 1 e depois em 0. Com Mostrar placar desligado, clicar duas vezes em Somar 1 em pontos, mostrando a caixa mudar e a tela sem número. Ligar Mostrar placar e somar mais uma vez, com a caixa e a tela à vista juntas. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy abrindo um caderno em que está escrito pontos: 2. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Guardar ou mostrar?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar a caixa e os botões, sem clicar [apontar \"Guardar o número 0\"] [apontar \"Mostrar o número na tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-guardar-mudar-mostrar-K1: Debinha substitui “E se o número não estiver na tela, ele continua mudando?”. Antes: “coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número dos”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-guardar-mudar-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-variavel",
       "content": {
         "kind": "interactive",
-        "title": "Compare guardar, mudar e mostrar",
-        "instructions": "Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado. Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois.",
-        "hints": [],
+        "title": "Guardar ou mostrar?",
+        "instructions": "Compare a caixa pontos com a tela do jogo quando você guarda um número, quando o Dino ganha um ponto com o número fora da tela e quando o número aparece na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Depois de cada botão, compare a caixa pontos com a tela do jogo.",
+          "O número muda mesmo sem aparecer? Ganhe um ponto com o número fora da tela.",
+          "Clique em Guardar o número 0. Depois clique em Ganhar 1 ponto duas vezes. Por último, clique em Mostrar o número na tela."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
           "scene": "variable",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["stored", "changed-hidden", "shown"],
+            "goalCopy": {
+              "stored": {
+                "label": "A caixa pontos guardou o número, e a tela continuou sem número",
+                "pedido": "Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo."
+              },
+              "changed-hidden": {
+                "label": "Com o número fora da tela, ganhar um ponto mudou pontos",
+                "pedido": "Com o número fora da tela, clique em Ganhar 1 ponto e compare a caixa pontos com a tela."
+              },
+              "shown": {
+                "label": "Mostrar o número não mudou o que estava guardado",
+                "pedido": "Clique em Mostrar o número na tela e compare com a caixa pontos."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-caixinha-dos-pontos",
-      "plannedVideo": "Título: Prepare os pontos em zero\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco que guarde os pontos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare os pontos em zero\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-caixinha-dos-pontos",
@@ -93,35 +115,71 @@
     },
     {
       "key": "video-quando-o-placar-cresce",
-      "plannedVideo": "Título: Compare quando somar os pontos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Somar ponto em Solto. Levar a peça para A cada quadro do jogo e deixar o tempo passar um segundo. Voltar a peça para Solto e deixar passar mais um segundo. Levar para A cada 1 segundos, dentro do bloco o estado do jogo é jogando ?, e passar pelas telas com Próxima tela, deixando o tempo correr em cada uma, com o placar à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino na linha de largada com um cronômetro parado, e depois correndo com o cronômetro contando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quando-o-placar-cresce-K1: Debinha substitui “Como faz para contar só durante a corrida?”. Antes: “Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar.”. Depois: “Agora eu levo Somar ponto para o relógio de um segundo, dentro do Se que pergunta se o estado do jogo é jogando. Na”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando o placar cresce?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o cronômetro de uma corrida\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"A cada quadro\"] [apontar \"A cada segundo\"] [apontar \"Ligar a pergunta\"]. No \"Estes botões passam um segundo e mudam de tela\", apontar os botões, sem clicar [apontar \"Passar 1 segundo\"] [apontar \"Começar a partida\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quando-o-placar-cresce-K1: Debinha substitui “E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?”. Antes: “E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o ponto soma e”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-quando-o-placar-cresce",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-score",
       "content": {
         "kind": "interactive",
-        "title": "Compare quando somar os pontos",
-        "instructions": "Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar. Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe. Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo.",
-        "hints": [],
+        "title": "Quando o placar cresce?",
+        "instructions": "O ponto pode somar a cada quadro ou a cada segundo, a qualquer hora ou só quando o jogo pergunta: estamos jogando agora? Teste cada jeito nas três telas e compare o placar. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Olhe o placar a cada segundo que passa, em cada tela.",
+          "Compare o ponto a cada quadro e a cada segundo; depois ligue a pergunta e passe pelas três telas.",
+          "Clique em A cada quadro e em Passar 1 segundo; depois em A cada segundo e em Passar 1 segundo; depois em Ligar a pergunta, Passar 1 segundo, Começar a partida, Passar 1 segundo, Terminar a partida e Passar 1 segundo."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
           "scene": "score",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": [
+              "score-runaway",
+              "score-idle-wrong",
+              "score-start",
+              "score-playing",
+              "score-end"
+            ],
+            "goalCopy": {
+              "score-runaway": {
+                "label": "A cada quadro, o placar disparou: 60 pontos por segundo",
+                "pedido": "Com a pergunta desligada, clique em A cada quadro e depois em Passar 1 segundo."
+              },
+              "score-idle-wrong": {
+                "label": "A cada segundo e sem a pergunta, o placar cresceu na tela de início",
+                "pedido": "Clique em A cada segundo e, com a pergunta desligada e na tela de início, clique em Passar 1 segundo."
+              },
+              "score-start": {
+                "label": "Com a pergunta, a tela de início esperou",
+                "pedido": "Depois do teste sem a pergunta na tela de início, clique em Ligar a pergunta e, ainda na tela de início, em Passar 1 segundo."
+              },
+              "score-playing": {
+                "label": "Jogando, a resposta foi sim: um ponto a cada segundo",
+                "pedido": "Com a pergunta ligada, clique em Começar a partida e depois em Passar 1 segundo."
+              },
+              "score-end": {
+                "label": "No fim, o placar parou no valor da partida",
+                "pedido": "Depois do teste jogando, com a pergunta ligada, clique em Terminar a partida e depois em Passar 1 segundo."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-relogio-dos-pontos",
-      "plannedVideo": "Título: Some um ponto por segundo de partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-relogio-dos-pontos-K1: Debinha substitui “Mas só vale somar durante a partida, né?”. Antes: “Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.”. Depois: “Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Some um ponto por segundo de partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-relogio-dos-pontos-K1: Debinha substitui “Mas só vale somar durante a partida, né?”. Antes: “bloco A cada 2 segundos e solte nesse espaço. Clique no 2 e troque por 1. É este relógio que toca uma vez por segundo.”. Depois: “Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio-dos-pontos",
@@ -133,7 +191,7 @@
     },
     {
       "key": "video-frase-da-tela-de-fim",
-      "plannedVideo": "Título: Mostre os pontos na tela de fim\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-frase-da-tela-de-fim-K1: Debinha substitui “Esse número vai mudar a cada partida?”. Antes: “isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.”. Depois: “Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro.”.\n\nvideo-frase-da-tela-de-fim-K2: Debinha substitui “E o número dos pontos vai no meio?”. Antes: “de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.”. Depois: “Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre os pontos na tela de fim\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-frase-da-tela-de-fim-K1: Debinha substitui “Esse número vai mudar a cada partida?”. Antes: “partida. Por isso, vamos usar a mesma leitura na frase da tela de fim, para mostrar quantos pontos você fez na partida.”. Depois: “Vai mostrar os pontos daquela partida. É como montar uma frase com três partes: um pedaço escrito, o número dos pontos”.\n\nvideo-frase-da-tela-de-fim-K2: Debinha substitui “E o número dos pontos vai no meio?”. Antes: “de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.”. Depois: “Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-frase-da-tela-de-fim",
@@ -175,7 +233,7 @@
               }
             ],
             "correctChoiceIds": ["c"],
-            "explanation": "O mostrador precisa receber valor da variável pontos para acompanhar a memória. Um número escrito permanece fixo."
+            "explanation": "O placar precisa receber o valor da variável pontos para acompanhar a caixa pontos. Um número escrito fica sempre igual."
           },
           {
             "id": "q2",
@@ -195,7 +253,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "O relógio controla o intervalo, e a condição controla em qual estado a soma acontece."
+            "explanation": "O relógio cuida do intervalo, e a pergunta jogando cuida da tela em que a soma acontece."
           },
           {
             "id": "q3",
@@ -1185,9 +1243,9 @@
   "sections": [
     {
       "key": "guardar-mudar-mostrar",
-      "title": "Compare guardar, mudar e mostrar",
+      "title": "Guardar ou mostrar?",
       "intent": "exploration",
-      "objective": "Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-guardar-mudar-mostrar",
         "fala-guardar-mudar-mostrar",
@@ -1303,9 +1361,9 @@
     },
     {
       "key": "quando-o-placar-cresce",
-      "title": "Compare quando somar os pontos",
+      "title": "Quando o placar cresce?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-quando-o-placar-cresce",
         "fala-quando-o-placar-cresce",
@@ -1334,7 +1392,7 @@
         "projectChecks": [
           {
             "id": "relogio-pontos",
-            "label": "Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.",
+            "label": "Num relógio próprio de 1 segundo, some 1 em pontos somente quando o estado do jogo é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",
@@ -1548,7 +1606,7 @@
           },
           {
             "id": "relogio-pontos",
-            "label": "Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.",
+            "label": "Num relógio próprio de 1 segundo, some 1 em pontos somente quando o estado do jogo é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",

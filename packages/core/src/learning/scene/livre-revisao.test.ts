@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { CAMINHOS_LIVRES_DINO_C } from '../../../tests/fixtures/caminhos-livres/dino-c'
 import { CAMINHOS_LIVRES_MEU_JEITO_E } from '../../../tests/fixtures/caminhos-livres/meu-jeito-e'
 import {
   CAMINHOS_LIVRES_NAVE_B,
@@ -17,7 +18,7 @@ import {
 import { SPAWN_PRESETS } from './presets'
 import { initialExperiment, stepExperiment } from './session'
 import type { SceneStart } from './state'
-import { SCENE_SPEECH_SLOTS } from './voz'
+import { falasDaCena, SCENE_SPEECH_SLOTS } from './voz'
 
 /**
  * Full review do Construtor (02/11/2026): os consertos que a revisão independente pediu.
@@ -25,6 +26,8 @@ import { SCENE_SPEECH_SLOTS } from './voz'
 const CAMINHOS: Partial<Record<SceneId, SceneAction[]>> = {
   ...CAMINHOS_LIVRES_NAVE_B,
   ...CAMINHOS_LIVRES_MEU_JEITO_E,
+  // A reta e a aceleração do Corre Dino (frente C) também têm o "Voltar ao começo".
+  ...CAMINHOS_LIVRES_DINO_C,
 }
 const livre = (scene: SceneId): SceneStart => ({ scene, setup: { freeExploration: true } })
 const percorrer = (start: SceneStart, acoes: readonly SceneAction[]) =>
@@ -141,4 +144,53 @@ test('as falas das telas livres podem ter a pronúncia ajustada no Admin', () =>
   const slots = new Set<string>(SCENE_SPEECH_SLOTS)
   for (const id of ['velocity-up', 'spawn-complete-two', 'spawn-start'])
     expect(slots.has(`discovery:${id}`)).toBe(true)
+})
+
+describe('a voz do Zappy só lista as falas que o bloco pode tocar', () => {
+  const ids = (activity: Parameters<typeof falasDaCena>[0]['activity']) =>
+    falasDaCena({ activity })
+      .map((f) => f.slot)
+      .filter((s) => s.startsWith('discovery:'))
+  test('porta do Farol × porta do não da Ilha', () => {
+    const farol = ids({
+      type: 'experimentation',
+      scene: 'lighthouse-key',
+      setup: { freeExploration: true },
+    })
+    expect(farol.length).toBeGreaterThan(0)
+    expect(farol.some((s) => s.startsWith('discovery:door-not-'))).toBe(false)
+    const ilha = ids({
+      type: 'experimentation',
+      scene: 'lighthouse-key',
+      setup: { freeExploration: true, goals: ['not-flips-with-key', 'not-flips-without-key'] },
+    })
+    expect(ilha.length).toBeGreaterThan(0)
+    expect(ilha.every((s) => s.startsWith('discovery:door-not-'))).toBe(true)
+  })
+  test('caminhada do Farol sem as falas da Nave nem do passinho', () => {
+    const farol = ids({
+      type: 'experimentation',
+      scene: 'lighthouse-walk',
+      cenario: 'farol',
+      setup: { freeExploration: true },
+    })
+    expect(farol.some((s) => s.endsWith('-nave') || s.includes(':stride-'))).toBe(false)
+  })
+  test('variante do Dino × da Nave na mesma cena', () => {
+    const dino = ids({
+      type: 'experimentation',
+      scene: 'velocity',
+      cenario: 'corre-dino',
+      setup: { freeExploration: true },
+    })
+    const nave = ids({
+      type: 'experimentation',
+      scene: 'velocity',
+      cenario: 'nave',
+      setup: { freeExploration: true },
+    })
+    expect(dino.length).toBeGreaterThan(0)
+    expect(dino.every((s) => s.includes('-dino-'))).toBe(true)
+    expect(nave.some((s) => s.includes('-dino-'))).toBe(false)
+  })
 })

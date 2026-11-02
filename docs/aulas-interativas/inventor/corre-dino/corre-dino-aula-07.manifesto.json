@@ -28,35 +28,57 @@
   "blocks": [
     {
       "key": "video-condicao",
-      "plannedVideo": "Título: Escolha quando o jogo pode agir\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Criar cacto no relógio, fora do Se. Clicar em Tempo até nascer um cacto. Levar a peça para Se o estado do jogo é jogando e deixar passar três segundos, com os toques do relógio subindo e os nascimentos em 0 na faixa. Clicar em Toque para começar, deixar o tempo passar e mostrar os nascimentos voltando. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino diante de uma porta trancada, girando uma chave escrita jogando. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-condicao-K1: Debinha substitui “Mas a partida nem começou. Por que já tem cacto?”. Antes: “deixo o tempo passar na tela de início. Nascem cactos antes de alguém jogar. O relógio cria cactos sem perguntar nada.”. Depois: “Vamos fazer os cactos esperarem a partida. Agora eu levo Criar cacto para dentro de Se o estado do jogo é jogando, e”.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: A partida já começou?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Ligar a pergunta\"]. No \"e este contador mostra quantos cactos\", apontar o contador de cactos criados. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-condicao-K1: Debinha substitui “E na tela de início, os cactos nascem?”. Antes: “cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a”.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-condicao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-condicao",
       "content": {
         "kind": "interactive",
-        "title": "Escolha quando o jogo pode agir",
-        "instructions": "Na experiência, deixe Criar cacto fora de Se o estado do jogo é jogando. Sem começar a partida, clique em Tempo e espere nascer pelo menos um cacto. Leve Criar cacto para dentro de Se o estado do jogo é jogando. Na tela de início, deixe o tempo passar três segundos e observe o contador. Depois clique em Toque para começar e deixe o tempo passar novamente. Compare os nascimentos nos dois momentos.",
-        "hints": [],
+        "title": "A partida já começou?",
+        "instructions": "Compare o contador de cactos com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Observe o contador de cactos criados enquanto o tempo passa.",
+          "Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar?",
+          "Deixe o tempo passar na tela de início. Depois clique em Ligar a pergunta e deixe o tempo passar uns 3 segundos. Por último, clique em Começar a partida e deixe o tempo passar."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
           "scene": "game-state",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["outside", "waiting", "playing"],
+            "goalCopy": {
+              "outside": {
+                "label": "Sem a pergunta, os cactos nasceram antes de começar",
+                "pedido": "Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador."
+              },
+              "waiting": {
+                "label": "Com a pergunta, na tela de início, nenhum cacto nasceu",
+                "pedido": "Clique em Ligar a pergunta e deixe o tempo passar uns 3 segundos na tela de início. Observe o contador."
+              },
+              "playing": {
+                "label": "Com a partida começada, os cactos voltaram a nascer",
+                "pedido": "Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-estado-inicio",
-      "plannedVideo": "Título: Guarde em que momento o jogo está\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começar?”. Antes: “e partida, pegue o bloco Mudar o estado do jogo para e solte no fim de Ao iniciar. Ele já chega com inicio: mantenha.”. Depois: “Ainda falta ligar as ações a esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o estado do jogo”.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Guarde em que momento o jogo está\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-estado-inicio-K1: Debinha substitui “O jogo já vai esperar para começar?”. Antes: “de Ao iniciar. Ele já chega com inicio: mantenha. É este bloco que diz em que estado o jogo começa: na tela de início.”. Depois: “Ainda não: falta fazer o jogo perguntar por esse estado. Confira se ficou assim: no fim de Ao iniciar, está Mudar o”.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-estado-inicio",
@@ -68,19 +90,19 @@
     },
     {
       "key": "video-embrulhar",
-      "plannedVideo": "Título: Separe as ações da partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Na troca do estado para jogando, mostrar o teste e, antes de Verificar projeto, mostrar o estado de volta em inicio. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça a partida esperar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-embrulhar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
+        "text": "Agora faça a partida esperar! Coloque as ações da partida num Se o estado do jogo é jogando, logo depois da floresta, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-relogio",
-      "plannedVideo": "Título: Faça o relógio esperar a partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Na troca do estado para jogando, mostrar o teste e, antes de Verificar projeto, mostrar o estado de volta em inicio. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça o relógio esperar a partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio",
@@ -92,14 +114,14 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Na troca do estado para jogando, mostrar o teste e, antes de Verificar projeto, mostrar o estado de volta em inicio. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie seu jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-07.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
+        "text": "Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando e o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula."
       }
     },
     {
@@ -610,9 +632,9 @@
   "sections": [
     {
       "key": "condicao",
-      "title": "Escolha quando o jogo pode agir",
+      "title": "A partida já começou?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare a tela de início e a partida, com Criar cacto fora e dentro de Se o estado do jogo é jogando. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-condicao", "fala-condicao", "experiencia-condicao"],
       "workspaceKey": null,
       "externalTool": null,
@@ -652,9 +674,9 @@
     },
     {
       "key": "embrulhar",
-      "title": "Separe as ações da partida",
+      "title": "Faça a partida esperar",
       "intent": "application",
-      "objective": "Agora separe as ações da partida! Coloque essas ações num Se o estado do jogo é jogando, com a limpeza e a floresta antes dele, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
+      "objective": "Agora faça a partida esperar! Coloque as ações da partida num Se o estado do jogo é jogando, logo depois da floresta, e deixe o estado em inicio. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-embrulhar", "fala-embrulhar"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -926,7 +948,7 @@
       "key": "entrega",
       "title": "Teste e envie seu jogo",
       "intent": "delivery",
-      "objective": "Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando, deixe o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
+      "objective": "Hora de testar e enviar o seu jogo! Confira as duas perguntas de jogando e o estado em inicio, clique em Verificar projeto e depois em Enviar meu projeto. Confirme em Enviar e, quando o envio terminar, clique em Concluir aula.",
       "blockKeys": ["video-entrega", "fala-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,

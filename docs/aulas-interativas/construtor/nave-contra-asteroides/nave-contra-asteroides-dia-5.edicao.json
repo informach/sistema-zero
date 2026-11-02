@@ -8,6 +8,7 @@
     "duracaoGarantidaPelaTag": false
   },
   "clipes": [
+    "video-meta-do-jogo",
     "video-finais",
     "video-derrota",
     "video-mostrar-telas",
@@ -17,11 +18,22 @@
   ],
   "intervencoes": [
     {
+      "id": "video-meta-do-jogo-K1",
+      "clipe": "video-meta-do-jogo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal",
+      "falaPrincipal": "Com maior que, chegar a 26 já dá a vitória?",
+      "falaPersonagem": "Com maior que, chegar a 26 já dá a vitória?",
+      "tags": ["[curious]"]
+    },
+    {
       "id": "video-finais-K1",
       "clipe": "video-finais",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque.",
+      "ancoraAntes": "de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.",
       "ancoraDepois": "Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco",
       "falaPrincipal": "E do outro lado vai a meta?",
       "falaPersonagem": "E do outro lado vai a meta?",

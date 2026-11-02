@@ -1407,6 +1407,11 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
     manipulates: 'A chave e a tentativa de abrir a porta do farol',
     success:
       'A porta consultou a mesma informação nas duas tentativas. Quando o valor mudou, ela escolheu outra resposta.',
+    // O caso do não (Ilha do Farol, aula 3, 02/11/2026): só a ideia, sem bloco nem variável.
+    successNoCaso: {
+      'not-flips-with-key+not-flips-without-key':
+        'Nos dois casos, o não trocou a resposta: o que era sim virou não, e o que era não virou sim. Para a porta abrir só quando não está trancada, a pergunta precisa do não.',
+    },
     extra: 'Se você deixar a chave para trás, a porta abriria?',
     goals: [
       {
@@ -1418,6 +1423,22 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         id: 'opened-with-key',
         label: 'A porta abriu com a chave',
         pedido: 'Leve a chave e teste a porta outra vez.',
+      },
+      // ⭐ O caso do não (Ilha do Farol, aula 3, 02/11/2026): cobrar uma destas liga o modo
+      // (`lighthouseKeyNotCase`). Cada uma pede as DUAS perguntas testadas com a mesma chave.
+      {
+        id: 'not-flips-with-key',
+        label: 'Com a chave, o não trocou a resposta da porta',
+        pedido:
+          'Com a chave, teste a porta com a pergunta sem o não e com o não: clique em Testar a porta em cada uma.',
+        soNoCaso: true,
+      },
+      {
+        id: 'not-flips-without-key',
+        label: 'Sem a chave, o não trocou a resposta da porta',
+        pedido:
+          'Sem a chave, teste a porta com a pergunta sem o não e com o não: clique em Testar a porta em cada uma.',
+        soNoCaso: true,
       },
     ],
     hints: [
@@ -1450,7 +1471,8 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'moves-each-frame+still-without-arrow':
         'A cada quadro o jogo confere a seta. Com a seta segurada, o personagem anda um pouco; com a seta solta, o personagem fica parado.',
       'step-speed-1+step-speed-3':
-        'A velocidade é o tanto que o personagem anda a cada quadro: com 3, anda 3; com 1, anda 1.',
+        // O tamanho do passinho da Nave (02/11/2026) fala só da ideia, sem quem anda nem número.
+        'A velocidade é o tamanho do passinho de cada quadro: quanto maior o passinho, mais longe se vai em cada quadro, e mais depressa.',
       // ⚠️ Os dois de baixo servem também à Nave (`cenario: 'nave'`): dizem "o sprite", a palavra dos
       // blocos do Estúdio ("Mover o sprite…", "Manter o sprite… dentro da tela"), que vale nos dois jogos.
       'left-the-screen+stayed-inside':
@@ -2959,6 +2981,46 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'Com a sombra e a luz ligadas, leve o sol para o outro lado.',
     ],
   },
+  /**
+   * ⭐ A meta do jogo (Nave contra Asteroides, Dia 5, 02/11/2026): o placar sobe a cada acerto, a
+   * placa da meta é uma constante (26) e o sinal decide se chegar a 26 já vale (≥) ou se precisa
+   * passar (>). Só a ideia: nada de bloco nem de Se. A partida começa no 23.
+   */
+  'score-goal': {
+    id: 'score-goal',
+    group: 'events',
+    title: 'A meta do jogo',
+    instruction:
+      'Escolha o sinal da vitória e clique em Acertar uma pedra até o jogo dar a vitória. Compare em que acerto ela veio com cada sinal. No meio de uma partida, tente mudar a placa.',
+    manipulates: 'O sinal da vitória, os acertos da partida e a placa da meta',
+    success:
+      'A placa da meta é uma constante: durante a partida ela não muda. Com maior ou igual, chegar a 26 já vale; com maior que, é preciso passar de 26.',
+    extra: 'E se a placa dissesse 10? Com cada sinal, em que acerto viria a vitória?',
+    goals: [
+      {
+        id: 'igual-conta',
+        label: 'Com maior ou igual, chegar a 26 já deu a vitória',
+        pedido:
+          'Clique em Maior ou igual (≥) e clique em Acertar uma pedra até o jogo dar a vitória.',
+      },
+      {
+        id: 'maior-pula',
+        label: 'Com maior que, o 26 não deu a vitória; só o 27',
+        pedido: 'Clique em Maior que (>) e clique em Acertar uma pedra até o jogo dar a vitória.',
+      },
+      {
+        id: 'placa-fixa',
+        label: 'No meio da partida, a placa da meta não mudou',
+        pedido:
+          'Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa.',
+      },
+    ],
+    hints: [
+      'Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?',
+      'Jogue uma partida com cada sinal e compare o acerto da vitória. Depois tente mudar a placa no meio de uma partida.',
+      'Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa.',
+    ],
+  },
 }
 
 const PREVIA_INICIAL: ScenePredictionPreview = { initial: true, conceal: [] }
@@ -3035,6 +3097,7 @@ const SCENE_PREDICTION_PREVIEWS: Record<SceneId, ScenePredictionPreview> = {
   'pick-ray': PREVIA_INICIAL,
   'fill-stroke': PREVIA_INICIAL,
   shading: PREVIA_INICIAL,
+  'score-goal': PREVIA_INICIAL,
 }
 
 export const SCENE_MODELS: Record<SceneId, SceneModel> = Object.fromEntries(

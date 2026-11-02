@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 A condição da aula anterior é reaplicada ao ramo inicio. A experiência de controles vem antes do evento, e o evento final é montado diretamente. O convite escrito e os controles aceitos terminam coerentes.
 
+**Revisão de 02/11/2026.** D2 (variante leve, decisão da coordenação de 02/11/2026): sem seção nem cena nova. A tela de início abre retomando a experiência da Aula 7 (na tela de início, a pergunta respondia não, e nada acontecia), explica o senão se como a segunda pergunta e o que é um ramo, e a ordem das perguntas com o controle remoto: de cima para baixo, até a primeira que responde sim. O + do senão se é localizado como na Nave, e cada campo da tela vem numa fala. A experiência de começar a partida passou à exploração livre com a visita que toca a campainha ou bate na porta. A resposta ao Dedé começa pelo que ele perguntou, e o bloco que muda o estado ganhou "É este bloco que começa a partida".
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -25,29 +27,35 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 ### Seção 1. Desenhe a tela de início
 
-**Tarefa:** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Tarefa:** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se de A cada quadro do jogo, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-menu → fala-menu.
 
-**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se de A cada quadro do jogo, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No senão se o estado do jogo é inicio, mostre a tela de início com a dica dos dois jeitos.
 
-### Seção 2. Compare tecla e toque para começar
+### Seção 2. O que começa a partida?
 
-**Tarefa:** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-convite → fala-convite → experiencia-convite.
 
-**Recado na página (não gravar):** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Descubra o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-convite-K1: Dedé substitui “E quem quiser começar pelo toque?”. Antes: “de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.”. Depois: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco”.
+video-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem joga no celular consegue começar?”. Antes: “o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o jogo escuta”.
 
-**Experiência existente:** `controls`. Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `controls` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/controls.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/controls.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Para começar a partida, o jogo pode escutar só o Enter, ou qualquer tecla ou toque. Teste o toque e o Enter nos dois jeitos e compare o que começa a partida. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com Só o Enter escolhido, clique em Tocar na tela. Na tela de início, clique em Apertar Enter. Clique em Qualquer tecla ou toque e, na tela de início, em Tocar na tela.
+
+**Pistas, do aberto ao direto:** 1) Toque na tela de início e observe se a partida começa. 2) Compare os dois jeitos de escutar: só o Enter, ou qualquer tecla ou toque. 3) Clique em Só o Enter e em Tocar na tela; depois clique em Voltar à tela de início, em Qualquer tecla ou toque e em Tocar na tela de novo. Sem palpite e sem pergunta final.
 
 ### Seção 3. Ligue a entrada ao início da partida
 
@@ -59,7 +67,7 @@ video-convite-K1: Dedé substitui “E quem quiser começar pelo toque?”. Ante
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-entrada-ampla-K1: Dedé substitui “E a tecla do pulo, vai começar a partida de novo?”. Antes: “e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Depois: “Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de”.
+video-entrada-ampla-K1: Dedé substitui “E a tecla do pulo, vai começar a partida de novo?”. Antes: “qualquer tecla ou tocar na tela e solte nesse espaço. É este bloco que escuta qualquer tecla e também o toque na tela.”. Depois: “Não, se o evento perguntar antes. É que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 

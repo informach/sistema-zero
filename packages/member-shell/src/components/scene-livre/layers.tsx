@@ -4,6 +4,7 @@ import { castText, discoveryGuidance, emCamadas } from '@sistemazero/core/learni
 import { ArrowDown, ArrowUp, Layers, ScanEye } from 'lucide-react'
 import { ExplorationStage } from '../exploration-stage'
 import { Frame, SceneButton, useDiscovery } from '../scene-discovery-frame'
+import { semDino } from './dino/comum'
 import { DicaLivre, LinhaDaIdeia, useMetasLivres } from './nave-a-comum'
 
 /**
@@ -55,7 +56,7 @@ export function LivreLayers() {
   const frente = state.world.front
   const textos = O_QUE_COMPARAR[camadas ? 'camadas' : 'blocos']
   const { tem, goals, completed, done } = useMetasLivres(textos)
-  const gesto = proximoGestoDasCamadas(discoveryGuidance(activity, state)?.id)
+  const gesto = proximoGestoDasCamadas(semDino(discoveryGuidance(activity, state)?.id))
   const vestir = (texto: string) => castText(texto, activity.cast)
   const heroi = vestir('Dino')
   const cenario = vestir('Floresta')

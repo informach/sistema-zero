@@ -341,7 +341,8 @@ describe('os manifestos atuais das aulas', () => {
     )
     expect(
       experiments.map((b) => b.activity.type === 'experimentation' && b.activity.scene),
-    ).toEqual(['lighthouse-walk', 'lighthouse-walk', 'layers'])
+      // A câmera lenta, o tamanho do passinho (02/11/2026), a beirada e as camadas.
+    ).toEqual(['lighthouse-walk', 'lighthouse-walk', 'lighthouse-walk', 'layers'])
     for (const experiment of experiments) expect(blockCheckpoint(experiment)).toBeUndefined()
     const source = JSON.parse(
       readFileSync(caminhoAula('nave-contra-asteroides-primeira-nave.manifesto.json'), 'utf8'),
@@ -548,6 +549,16 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     { type: 'place-in-area', card: 'lives', area: 'loop' },
     ...quadros(9),
   ],
+  // A pergunta com o não (Ilha do Farol, aula 3, 02/11/2026): as duas perguntas em cada chave.
+  'ilha-aula-3.manifesto.json/experiencia-pergunta-com-nao': [
+    { type: 'try-lighthouse-door' },
+    { type: 'door-question', not: true },
+    { type: 'try-lighthouse-door' },
+    { type: 'key-state', hasKey: true },
+    { type: 'try-lighthouse-door' },
+    { type: 'door-question', not: false },
+    { type: 'try-lighthouse-door' },
+  ],
   'nave-contra-asteroides-dia-5.manifesto.json/experiencia-reiniciar': [
     ...scenePaths.restart,
     ...segundos(3),
@@ -623,6 +634,8 @@ describe('o cenário das cenas dos cursos', () => {
     'jornada-faisca-poder-2': 'farol',
     'jornada-faisca-poder-3': 'farol',
     'jornada-faisca-poder-4': 'farol',
+    // A Ilha do Farol: a ilha 3D tem palco próprio; a porta do não (aula 3, 02/11/2026) é a do Farol.
+    'jornada-faisca-base-3d': 'farol',
     'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }

@@ -13,6 +13,8 @@ import {
   falaDaInstrucao,
   falasDaCena,
   gardenStep,
+  lighthouseKeyNotCase,
+  lighthouseWalkStrideCase,
   oncePreset,
   onceRunFinished,
   openScene,
@@ -94,6 +96,7 @@ import { Door, Memory, Position, Walk } from './scene-discovery-controls'
 import { DiscoveryContext } from './scene-discovery-frame'
 import { ProposedGarden } from './scene-discovery-garden'
 import { sceneDisplaySamples } from './scene-display-samples'
+import { PortaDoNao } from './scene-door-not'
 import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LearningRecap } from './scene-garden-learning'
 import { IslandDiscovery } from './scene-island-discovery'
@@ -118,6 +121,7 @@ import {
 import { ScenePredictionPreview } from './scene-prediction-preview'
 import { WalkNaBeirada } from './scene-walk-beirada'
 import { WalkEmCameraLenta } from './scene-walk-camera-lenta'
+import { WalkComPassinho } from './scene-walk-passinho'
 import { SceneWorkspace } from './scene-workspace'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
 
@@ -1377,13 +1381,21 @@ export function SceneActivityView({
                         <WalkEmCameraLenta />
                       ) : activity.setup?.goals?.includes('came-back-inside') ? (
                         <WalkNaBeirada />
+                      ) : lighthouseWalkStrideCase(activity) ? (
+                        // O tamanho do passinho (Nave, Dia 1, 02/11/2026).
+                        <WalkComPassinho />
                       ) : (
                         <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
                       )
                     ) : m === 'collect-and-remember' ? (
                       <Memory />
                     ) : m === 'lighthouse-key' ? (
-                      <Door />
+                      // A pergunta com o não (Ilha do Farol, aula 3, 02/11/2026) é um caso da porta.
+                      lighthouseKeyNotCase(activity.setup) ? (
+                        <PortaDoNao />
+                      ) : (
+                        <Door />
+                      )
                     ) : m === 'timed-bridge' ? (
                       <PonteLivre />
                     ) : m === 'coin-counter' ? (

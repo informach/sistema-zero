@@ -2,46 +2,48 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare o salto com e sem gravidade
+## Seção 1. O que traz o Dino de volta?
 
-### Clipe `video-gravidade-modelo` · Compare o salto com e sem gravidade
+### Clipe `video-gravidade-modelo` · O que traz o Dino de volta?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-gravidade-modelo`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy jogando uma bola para cima e a bola voltando para a mão dele. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você joga uma bola para cima", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando uma bola para cima, com a bola ainda subindo [na edição: meme da bola jogada para cima]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os botões, sem clicar [apontar "Pular"] [apontar "Ligar a gravidade"]. No "Este número mostra a altura do Dino", apontar o número da altura, sem pular. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a gravidade, a força que traz o Dino de volta ao chão.
+[engaging, energetic, conversational voice] Sabe quando você joga uma bola para cima? Ela não fica lá no alto para sempre.
 
-[interested, animated voice] Olha aqui: com a gravidade desligada, eu toco no Dino. Ele pula e sobe sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.
+[engaging, energetic, conversational voice] Quem puxa a bola de volta é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.
 
-[curious] E agora? Como ele volta para o chão?
+[curious] E sem gravidade, o Dino volta para o chão depois do pulo?
 
-[engaging, energetic, conversational voice] Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o chão. A gravidade puxa o Dino para baixo um pouco em cada quadro.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] É como jogar uma bola para cima: ela sobe, vai ficando mais devagar e volta para a sua mão. No seu jogo, você vai encaixar Aplicar a gravidade do mundo ao sprite dentro de A cada quadro do jogo, para puxar o Dino em todos os quadros.
+[interested, animated voice] Olha aqui: nesta experiência, este botão faz o Dino pular, e este outro liga e desliga a gravidade. Este número mostra a altura do Dino.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-gravidade-modelo-K1 | Debinha | 1 | sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto. | E agora? Como ele volta para o chão? | Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o | [curious] |
+| video-gravidade-modelo-K1 | Debinha | 1 | é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não. | E sem gravidade, o Dino volta para o chão depois do pulo? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o Dino pular, e este | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-gravidade-modelo-K1`: entrada — Tocar no Dino sem gravidade e esperar a experiência parar com ele no alto. Saída — Ligar o fio da Gravidade com o Dino no ar e acompanhar a subida, a parada e a queda.
+- `video-gravidade-modelo-K1`: entrada — Manter o meme da bola até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o Dino no chão, sem pular.
 
 
-**Recado na página (não gravar):** Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/gravity.ts`, na tela `packages/member-shell/src/components/scene-livre/gravity.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Deixe a gravidade pronta
 
@@ -58,9 +60,19 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Sem gravidade, o Dino subia sem parar. Agora a gente vai colocar a gravidade no seu jogo!
 
-[engaging, energetic, conversational voice] A gravidade tem que puxar o Dino em todo quadro, antes de ele ser desenhado. Por isso, deixe à vista o espaço entre Desenhar fundo de floresta e Desenhar o sprite dino, dentro de A cada quadro do jogo. Depois, abra Jogo 2D, depois Movimento e depois Velocidade e gravidade, pegue o bloco Aplicar a gravidade do mundo ao sprite e solte nesse espaço. No nome, escolha dino.
+[engaging, energetic, conversational voice] A gravidade tem que puxar o Dino em todo quadro, antes de ele ser desenhado. Por isso, ela vai dentro de A cada quadro do jogo, entre Desenhar fundo de floresta e Desenhar o sprite dino.
 
-[confident, clear, unhurried voice] Confira se ficou assim: dentro de A cada quadro do jogo, a gravidade está depois da floresta e antes do desenho do Dino, com o nome dino. O Dino continua parado, e está certo: a gravidade já puxa, mas quem move o Dino com essa força e faz ele pousar na grama é o controle do pulo, que você monta daqui a pouco.
+[confident, clear, unhurried voice] Deixe à vista o espaço entre Desenhar fundo de floresta e Desenhar o sprite dino.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Velocidade e gravidade, pegue o bloco Aplicar a gravidade do mundo ao sprite e solte nesse espaço.
+
+[engaging, energetic, conversational voice] É este bloco que aplica a gravidade ao Dino, em cada quadro.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com o nome jogador. Clique em jogador e escolha dino.
+
+[confident, clear, unhurried voice] Confira se ficou assim: dentro de A cada quadro do jogo, a gravidade está depois da floresta e antes do desenho do Dino, com o nome dino.
+
+[engaging, energetic, conversational voice] O Dino continua parado, e está certo: a gravidade já está pronta, mas quem faz o Dino se mexer com ela e pousar na grama é o bloco do pulo, que você monta daqui a pouco.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -68,32 +80,48 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora deixe a gravidade pronta no seu Dino! Coloque Aplicar a gravidade do mundo ao sprite depois da floresta e antes do desenho do Dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 3. Compare duas alturas de pulo
+## Seção 3. Quanto o Dino sobe?
 
-### Clipe `video-impulso-modelo` · Compare duas alturas de pulo
+### Clipe `video-impulso-modelo` · Quanto o Dino sobe?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-impulso-modelo`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino numa cama elástica, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você pula numa cama elástica", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino em cima de uma cama elástica, se preparando para pular [na edição: meme da cama elástica]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os impulsos, sem clicar [apontar "Impulso 9"] [apontar "Impulso 14"]. No "e este outro faz o Dino pular", apontar o botão, sem clicar [apontar "Pular"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o impulso, a força que começa o pulo.
+[engaging, energetic, conversational voice] Sabe quando você pula numa cama elástica? Dá para pular com pouca força ou com muita força.
 
-[interested, animated voice] Olha aqui: com o impulso em 9, eu toco no Dino. Ele sobe, volta ao chão e deixa uma marca na altura 68.
+[engaging, energetic, conversational voice] No pulo do Dino também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.
 
-[engaging, energetic, conversational voice] Agora eu mudo o impulso para 14 e toco no Dino de novo. A marca nova fica na altura 163, bem acima da primeira. A gravidade foi a mesma nos dois saltos. O que mudou foi a força do começo do pulo.
+[curious] E com mais impulso, até onde o Dino chega?
 
-[engaging, energetic, conversational voice] É como pular numa cama elástica: com mais força, você vai mais alto, e mesmo assim volta para baixo. No seu jogo, você vai colocar força do pulo 14 no bloco Controlar o dinossauro.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem o impulso, e este outro faz o Dino pular. Cada pulo deixa uma marca da altura.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as marcas da altura dos pulos com impulsos diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-impulso-modelo-K1 | Debinha | 1 | também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos. | E com mais impulso, até onde o Dino chega? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem o impulso, e | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-impulso-modelo-K1`: entrada — Manter o meme da cama elástica até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o Dino no chão, sem pular.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/impulse.ts`, na tela `packages/member-shell/src/components/scene-livre/impulse.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Dê os controles de pulo ao Dino
 
@@ -108,19 +136,31 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Clique na área do seu jogo e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.
+[confident, clear, unhurried voice] Clique em Atualizar, a seta circular no alto da prévia, e toque na barra de espaço. Tá vendo? O Dino não pula, porque ainda não tem controle.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com impulso 14, o pulo foi bem mais alto. Agora a gente vai dar os controles de pulo ao seu Dino!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Mais impulso deixava o pulo mais alto. Agora a gente vai dar os controles ao seu Dino!
 
-[engaging, energetic, conversational voice] O controle vai depois da gravidade e antes do desenho, dentro de A cada quadro do jogo: a gravidade puxa o Dino para baixo, o controle move o Dino, faz ele pousar na grama e confere o pulo, e só depois o Dino é desenhado no lugar novo. Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço. O bloco já chega com o nome dino: mantenha. Na força do pulo, troque 15 por 14.
+[engaging, energetic, conversational voice] Em todo quadro, a gravidade puxa o Dino para baixo, o controle move o Dino e confere o pulo, e só depois o Dino é desenhado no lugar novo. Por isso, o controle fica entre a gravidade e o desenho.
 
-[upbeat, encouraging voice] Agora teste! Clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque e solte a barra de espaço e espere o Dino pousar. [interested, animated voice] Olha só: ele pula e volta para o chão! Depois, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.
+[confident, clear, unhurried voice] Deixe à vista o espaço entre Aplicar a gravidade do mundo ao sprite e Desenhar o sprite.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Controlar o dinossauro e solte nesse espaço.
+
+[engaging, energetic, conversational voice] É este bloco que faz o Dino pular quando alguém toca na tecla ou na tela, e pousar na grama.
+
+[confident, clear, unhurried voice] Repare: o bloco já chega com o nome dino. Mantenha esse nome.
+
+[confident, clear, unhurried voice] Clique no 15 da força do pulo e troque por 14. A força do pulo é o impulso da experiência.
+
+[upbeat, encouraging voice] Agora teste! Clique em Atualizar e, sem clicar no jogo, toque e solte a barra de espaço. [interested, animated voice] Olha só: o Dino pula e volta para o chão!
+
+[engaging, energetic, conversational voice] Depois que ele pousar, faça outro salto com a seta para cima e mais um tocando na parte de cima da tela, porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.
 
 [curious] Dá para pular de novo lá no alto?
 
 [engaging, energetic, conversational voice] Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. [confident, clear, unhurried voice] Repare: o segundo toque não faz o Dino pular de novo no ar, porque ele só começa um salto quando está no chão.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, a ordem é floresta, gravidade, controle e desenho do Dino, com o nome dino e força do pulo 14. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -129,7 +169,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-comando-de-pulo-K1 | Debinha | 1 | o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular. | Dá para pular de novo lá no alto? | Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino | [curious] |
+| video-comando-de-pulo-K1 | Debinha | 1 | porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular. | Dá para pular de novo lá no alto? | Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

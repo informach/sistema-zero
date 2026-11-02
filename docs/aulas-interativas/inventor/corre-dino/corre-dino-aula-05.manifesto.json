@@ -65,14 +65,14 @@
   "blocks": [
     {
       "key": "video-espaco-e-tempo",
-      "plannedVideo": "Título: Compare o intervalo entre cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Criar cacto em A cada quadro. Clicar em Tempo, deixar passar cerca de um segundo e parar, com a parede de cactos e o número na faixa. Levar a peça para o relógio, escolher 1,4 s, clicar em Tempo e esperar dois nascimentos, com a comparação das duas tentativas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino e os cactos numa fila para passar por uma porta, um de cada vez. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-espaco-e-tempo-K1: Debinha substitui “Como eu deixo um espaço entre eles?”. Antes: “Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.”. Depois: “Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Todo quadro ou de tempos em tempos?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Em todo quadro\"] [apontar \"A cada 1,4 segundo\"]. No \"e este passa um segundo de jogo\", apontar o botão, sem clicar [apontar \"Passar 1 segundo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-espaco-e-tempo-K1: Debinha substitui “E se nascer um cacto em todo quadro, o Dino consegue pular?”. Antes: “um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem quando nasce”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-espaco-e-tempo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -80,39 +80,57 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare o intervalo entre cactos",
-        "instructions": "Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa.",
-        "hints": [],
+        "title": "Todo quadro ou de tempos em tempos?",
+        "instructions": "Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Observe quantos cactos nascem e o espaço entre eles.",
+          "Compare os cactos que nascem em todo quadro com os que esperam no relógio.",
+          "Escolha Em todo quadro e clique em Passar 1 segundo. Depois escolha A cada 1,4 segundo e clique em Passar 1 segundo até nascerem dois cactos."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "spawn",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["every-frame", "with-timer"],
+            "goalCopy": {
+              "every-frame": {
+                "label": "Em todo quadro, os cactos nasceram colados",
+                "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe os cactos e quantos nasceram."
+              },
+              "with-timer": {
+                "label": "Esperando no relógio, sobrou espaço entre os cactos",
+                "pedido": "Escolha A cada 1,4 segundo e clique em Passar 1 segundo até nascerem dois cactos. Observe onde cada um aparece."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-grupo-e-relogio",
-      "plannedVideo": "Título: Prepare o grupo e o relógio\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-grupo-e-relogio-K1: Debinha substitui “E como eu faço aparecer um cacto de cada vez?”. Antes: “solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”. Depois: “Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare o grupo e o relógio\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-grupo-e-relogio-K1: Debinha substitui “E como eu faço aparecer um cacto de cada vez?”. Antes: “Clique em asteroides, troque por cactos e clique fora do campo. É este bloco que cria a lista dos cactos, ainda vazia.”. Depois: “Com um relógio, que cria um cacto de tempos em tempos. O relógio fica em Enquanto estiver rodando, mas fora de A cada”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-grupo-e-relogio",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
+        "text": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora de A cada quadro do jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-numero-negativo",
-      "plannedVideo": "Título: Compare a direção da velocidade\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o cacto parado em x 60 e as duas velocidades em 0. Escolher 5 na velocidade para o lado e clicar em Avançar 1 quadro algumas vezes, com o x à vista na faixa. Trocar para -5 e avançar. Deixar as duas em 0 e avançar de novo. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-numero-negativo-K1: Debinha substitui “E se eu quiser que o cacto vá para o outro lado?”. Antes: “1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.”. Depois: “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Para que lado anda o cacto?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os números, sem clicar [apontar \"Velocidade para o lado\"]. No \"e este botão passa um quadro\", apontar o botão, sem clicar [apontar \"Avançar 1 quadro\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-numero-negativo-K1: Debinha substitui “E com um número negativo, o cacto vai para onde?”. Antes: “quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-numero-negativo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -120,26 +138,48 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare a direção da velocidade",
-        "instructions": "Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo.",
-        "hints": [],
+        "title": "Para que lado anda o cacto?",
+        "instructions": "Compare para que lado o cacto anda e o que acontece com o x com a velocidade para o lado em 5, em −5 e em 0. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Observe o número do x em cada quadro.",
+          "Compare o cacto e o x com um número positivo, com um negativo e com zero.",
+          "Escolha 5 e clique em Avançar 1 quadro três vezes. Depois escolha −5 e avance três quadros. Por último, escolha 0 e avance."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "velocity",
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["moves", "left", "stopped"],
+            "goalCopy": {
+              "moves": {
+                "label": "Com um número positivo, o cacto foi para a direita",
+                "pedido": "Escolha 5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o x."
+              },
+              "left": {
+                "label": "Com um número negativo, o cacto foi para a esquerda",
+                "pedido": "Escolha −5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o x."
+              },
+              "stopped": {
+                "label": "Com zero, o cacto ficou parado",
+                "pedido": "Depois de ver o cacto andar, escolha 0 e clique em Avançar 1 quadro. Observe o x."
+              }
+            }
+          },
           "cast": {
             "hero": {
               "name": "cacto",
               "gender": "m"
             }
-          },
-          "cenario": "corre-dino"
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-criar-cactos",
-      "plannedVideo": "Título: Crie os cactos no relógio\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o relógio de 1.4 segundo vazio no projeto. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Crie os cactos no relógio\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-criar-cactos",
@@ -151,7 +191,7 @@
     },
     {
       "key": "video-mover-e-desenhar",
-      "plannedVideo": "Título: Mova e mostre o grupo de cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”. Depois: “A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto.”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mova e mostre o grupo de cactos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda! Pule um deles para testar o controle.”. Depois: “Porque a batida ainda não foi programada. Isso vem daqui a algumas aulas. Se no seu jogo não aconteceu isso, volte aos”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-mover-e-desenhar",
@@ -532,9 +572,9 @@
   "sections": [
     {
       "key": "espaco-e-tempo",
-      "title": "Compare o intervalo entre cactos",
+      "title": "Todo quadro ou de tempos em tempos?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-espaco-e-tempo", "fala-espaco-e-tempo", "experiencia-ritmo"],
       "workspaceKey": null,
       "externalTool": null,
@@ -548,7 +588,7 @@
       "key": "grupo-e-relogio",
       "title": "Prepare o grupo e o relógio",
       "intent": "application",
-      "objective": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
+      "objective": "Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora de A cada quadro do jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-grupo-e-relogio", "fala-grupo-e-relogio"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -594,9 +634,9 @@
     },
     {
       "key": "numero-negativo",
-      "title": "Compare a direção da velocidade",
+      "title": "Para que lado anda o cacto?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-numero-negativo", "fala-numero-negativo", "experiencia-velocidade"],
       "workspaceKey": null,
       "externalTool": null,

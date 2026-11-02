@@ -14,10 +14,10 @@
       "clipe": "video-convite",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.",
-      "ancoraDepois": "Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco",
-      "falaPrincipal": "E quem quiser começar pelo toque?",
-      "falaPersonagem": "E quem quiser começar pelo toque?",
+      "ancoraAntes": "o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o jogo escuta",
+      "falaPrincipal": "E se o jogo só escutar o teclado, quem joga no celular consegue começar?",
+      "falaPersonagem": "E se o jogo só escutar o teclado, quem joga no celular consegue começar?",
       "tags": ["[curious]"]
     },
     {
@@ -25,8 +25,8 @@
       "clipe": "video-entrada-ampla",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.",
-      "ancoraDepois": "Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de",
+      "ancoraAntes": "qualquer tecla ou tocar na tela e solte nesse espaço. É este bloco que escuta qualquer tecla e também o toque na tela.",
+      "ancoraDepois": "Não, se o evento perguntar antes. É que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele",
       "falaPrincipal": "E a tecla do pulo, vai começar a partida de novo?",
       "falaPersonagem": "E a tecla do pulo, vai começar a partida de novo?",
       "tags": ["[curious]"]

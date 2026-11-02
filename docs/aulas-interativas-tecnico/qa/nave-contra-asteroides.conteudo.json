@@ -484,7 +484,7 @@
         "key": "motor-e-nave",
         "title": "Mostre a nave a cada quadro",
         "bridge": "Agora faça a sua nave aparecer! Coloque o desenho da nave dentro de A cada quadro do jogo, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.",
-        "screen": "A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Olhe a tela do seu jogo\", apontar a prévia sem a nave [apontar prévia 400 410]. No \"Deixe à vista o espaço de dentro de Enquanto estiver rodando\", arrastar até a área aparecer [arrastar até \"Enquanto estiver rodando\"]. No \"Agora abra Jogo 2D, depois Tempo\", abrir as categorias [categoria Jogo 2D > Tempo > Quadros e intervalos]. No \"Arraste para dentro de Enquanto estiver rodando\", encaixar o bloco [encaixar \"A cada quadro do jogo\" em \"Enquanto estiver rodando\"]. No \"É este bloco que faz tudo\", apontar o bloco [apontar bloco \"A cada quadro do jogo\"]. No \"Abra Jogo 2D, depois Sprites\", abrir as categorias [categoria Jogo 2D > Sprites > Criar e trocar aparência]. No \"pegue o bloco Desenhar o sprite e solte\", encaixar o bloco [encaixar \"Desenhar o sprite\" em \"A cada quadro do jogo\"]. No \"No nome do sprite, escolha nave\", escolher o nome [abrir campo \"heroi\" em \"Desenhar o sprite\"] [escolher \"nave\" em \"Desenhar o sprite\"]. No \"Agora olhe a prévia\", apontar a nave [apontar prévia 400 410]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"clique em Enviar meu projeto\", enviar e confirmar [enviar projeto]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula]. Conferir no Estúdio o nome que o bloco Desenhar o sprite traz antes de gravar; se não for heroi, trocar a tag do campo.",
+        "screen": "A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Olhe a tela do seu jogo\", apontar a prévia sem a nave [apontar prévia 400 410]. No \"Deixe à vista o espaço de dentro de Enquanto estiver rodando\", arrastar até a área aparecer [arrastar até \"Enquanto estiver rodando\"]. No \"Agora abra Jogo 2D, depois Tempo\", abrir as categorias [categoria Jogo 2D > Tempo > Quadros e intervalos]. No \"Arraste para dentro de Enquanto estiver rodando\", encaixar o bloco [encaixar \"A cada quadro do jogo\" em \"Enquanto estiver rodando\"]. No \"É este bloco que faz tudo\", apontar o bloco [apontar bloco \"A cada quadro do jogo\"]. No \"Abra Jogo 2D, depois Sprites\", abrir as categorias [categoria Jogo 2D > Sprites > Criar e trocar aparência]. No \"pegue o bloco Desenhar o sprite e solte\", encaixar o bloco [encaixar \"Desenhar o sprite\" em \"A cada quadro do jogo\"]. No \"No nome do sprite, escolha nave\", escolher o nome [abrir campo \"jogador\" em \"Desenhar o sprite\"] [escolher \"nave\" em \"Desenhar o sprite\"]. No \"Agora olhe a prévia\", apontar a nave [apontar prévia 400 410]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"clique em Enviar meu projeto\", enviar e confirmar [enviar projeto]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].",
         "speech": [
           "Olhe a tela do seu jogo. Tá vendo? A nave não aparece, porque ela existe nos bastidores, mas ainda não é desenhada.",
           "Lembra do que você viu na experiência da parte anterior? Desenhada em todo quadro, a nave aparecia no lugar de agora. Agora a gente vai desenhar a nave do seu jogo!",
@@ -603,12 +603,12 @@
     "entry": "Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.",
     "outcome": "Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original.",
     "reason": "Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiências usam o cenário da nave e preparam a regra antes dos blocos. A limpeza retoma a comparação já feita na primeira aula.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades saiu da experiência e foi para a montagem das setas: a criança testa 1 e 7 e escolhe a velocidade da sua nave.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades virou uma experiência curta própria, \"O tamanho do passinho\" (02/11/2026, a pedido da responsável: trocar um valor para ver o efeito é papel da experiência): a nave compara o passinho pequeno com o grande, em câmera lenta, e a montagem das setas só liga o número da velocidade a essa ideia e escolhe a velocidade da nave, sem refazer a comparação.",
     "concepts": [
       [
         "Movimento e velocidade",
-        "lighthouse-walk antes das setas",
-        "Comparar quadro a quadro e aplicar a mesma regra ao próprio projeto, com velocidade 7."
+        "lighthouse-walk (câmera lenta e tamanho do passinho) antes das setas",
+        "Comparar quadro a quadro e o tamanho do passinho na experiência; na montagem, ligar o número da velocidade à ideia e escolher a da nave (7 na gravação)."
       ],
       [
         "Limpeza",
@@ -685,23 +685,69 @@
         }
       },
       {
+        "key": "tamanho-do-passinho",
+        "title": "O tamanho do passinho",
+        "kind": "exploration",
+        "videoKey": "video-tamanho-do-passinho",
+        "bridge": "Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Pense em você andando\", a tela fica parada, e a edição mostra por 2 a 3 segundos o desenho ilustrado, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: uma fileira de pegadas de formiga ao lado de uma fileira de pegadas de gigante, com o mesmo número de pegadas [na edição: pegadas de formiga e de gigante]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os dois botões, sem clicar [apontar \"Passinho pequeno\"] [apontar \"Passinho grande\"]. No \"e esta caixa, Os dois passinhos\", apontar a caixa ainda sem rastro [apontar \"Os dois passinhos\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que muda com o passinho grande nem com o pequeno. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra, código nem do número da velocidade (decisões de 01/11 e 02/11/2026).",
+        "speech": [
+          "Pense em você andando: dá para dar passinhos de formiga ou passos de gigante. Em cada passo você anda um pouco, e o tamanho de cada passo é você quem escolhe.",
+          "No jogo é igual: em cada quadro, a nave dá um passinho, e esse passinho pode ser pequeno ou grande.",
+          "E o que muda quando o passinho fica maior? O que você acha? Isso você vai testar na experiência.",
+          "Olha aqui: nesta experiência, estes botões escolhem o tamanho do passinho, e esta caixa, Os dois passinhos, guarda o rastro de cada passinho que você já testou.",
+          "Agora é a sua vez de investigar: compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+        ],
+        "activityKey": "experiencia-tamanho-do-passinho",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "O tamanho do passinho",
+          "instructions": "Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "hints": [
+            "Repare na distância entre as marcas e no quanto a nave sai da linha em cada quadro da tira.",
+            "Teste um tamanho de passinho em câmera lenta, troque o tamanho e compare as marcas e Os dois passinhos.",
+            "Clique em Passinho pequeno, clique em Câmera lenta e segure a seta por alguns quadros. Depois clique em Passinho grande e segure a seta de novo, em câmera lenta."
+          ],
+          "semPerguntaFinal": true,
+          "activity": {
+            "type": "experimentation",
+            "scene": "lighthouse-walk",
+            "cenario": "nave",
+            "setup": {
+              "freeExploration": true,
+              "goals": ["step-speed-1", "step-speed-3"],
+              "goalCopy": {
+                "step-speed-1": {
+                  "label": "Passinho pequeno: a nave anda pouquinho em cada quadro",
+                  "pedido": "Clique em Passinho pequeno, clique em Câmera lenta e segure a seta por alguns quadros."
+                },
+                "step-speed-3": {
+                  "label": "Passinho grande: a nave vai mais longe em cada quadro",
+                  "pedido": "Clique em Passinho grande, clique em Câmera lenta e segure a seta por alguns quadros."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
         "key": "setas",
         "title": "Faça a nave responder às setas",
-        "bridge": "Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, compare duas velocidades, escolha a sua e clique em Verificar projeto. Depois, clique em Próxima parte.",
-        "screen": "A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"clique na área do jogo e segure uma seta\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita do teclado por um instante. No \"Tá vendo? A nave fica parada\", manter a nave parada à vista. No \"Deixe à vista o começo de A cada quadro do jogo\", arrastar até o bloco aparecer [arrastar até \"A cada quadro do jogo\"]. No \"Agora abra Jogo 2D, depois Movimento\", abrir as categorias [categoria Jogo 2D > Movimento > Movimentos prontos]. No \"Arraste e solte no começo de A cada quadro do jogo\", encaixar o bloco no começo [encaixar \"Mover o sprite com as setas\" em \"A cada quadro do jogo\"]. No \"É este bloco que dá o passinho\", apontar o bloco [apontar bloco \"Mover o sprite com as setas\"]. No \"clique no 6 da velocidade\", trocar o número [trocar \"6\" por \"1\" em \"Mover o sprite com as setas\"]. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita por um instante, sem chegar à beirada. No \"Agora clique no 1 da velocidade\", trocar o número [trocar \"1\" por \"7\" em \"Mover o sprite com as setas\"] e, no \"teste de novo\", segurar a seta outra vez [tocar prévia 400 240]. No \"fica um rastro de naves\", apontar o rastro [apontar prévia 400 410]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
+        "bridge": "Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, escolha o tamanho do passinho dela e clique em Verificar projeto. Depois, clique em Próxima parte.",
+        "screen": "A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"clique na área do jogo e segure uma seta\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita do teclado por um instante. No \"Tá vendo? A nave fica parada\", manter a nave parada à vista. No \"Deixe à vista o começo de A cada quadro do jogo\", arrastar até o bloco aparecer [arrastar até \"A cada quadro do jogo\"]. No \"Agora abra Jogo 2D, depois Movimento\", abrir as categorias [categoria Jogo 2D > Movimento > Movimentos prontos]. No \"Arraste e solte no começo de A cada quadro do jogo\", encaixar o bloco no começo [encaixar \"Mover o sprite com as setas\" em \"A cada quadro do jogo\"]. No \"É este bloco que dá o passinho\", apontar o bloco [apontar bloco \"Mover o sprite com as setas\"]. No \"é este número que diz\", apontar o número da velocidade, sem trocar [apontar bloco \"Mover o sprite com as setas\"]. No \"clique no 6\", trocar o número [trocar \"6\" por \"7\" em \"Mover o sprite com as setas\"]. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240] e segurar a seta da direita por um instante, sem chegar à beirada. Não refazer a comparação de duas velocidades: ela é da experiência anterior. No \"fica um rastro de naves\", apontar o rastro [apontar prévia 400 410]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
         "speech": [
           "Aqui no seu jogo, clique na área do jogo e segure uma seta. Tá vendo? A nave fica parada, porque o jogo ainda não olha a seta.",
-          "Lembra da experiência da parte anterior? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!",
+          "Lembra da experiência da câmera lenta? Com a seta segurada, a nave dava um passinho em cada quadro. Agora a gente vai pôr esse passinho no seu jogo!",
           "Como o jogo olha a seta em todo quadro, o passinho vai dentro de A cada quadro do jogo. E ele vem antes do desenho, para o desenho já mostrar a nave no lugar novo.",
           "Deixe à vista o começo de A cada quadro do jogo, logo acima de Desenhar o sprite nave.",
           "Agora abra Jogo 2D, depois Movimento e depois Movimentos prontos, e pegue o bloco Mover o sprite com as setas, que tem as setas para a esquerda e para a direita. Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.",
           "É este bloco que dá o passinho: em cada quadro, ele olha qual seta você está segurando e leva a nave para aquele lado.",
           "Repare: o nome do sprite já vem nave, por isso deixe assim.",
-          "A velocidade é o tamanho do passinho que a nave dá em cada quadro. Para comparar, clique no 6 da velocidade, troque por 1 e clique fora do campo.",
-          "Agora teste: clique na área do jogo e segure uma seta por um instante. Repare: a nave anda bem devagar, porque o passinho é pequeno.",
-          "Agora clique no 1 da velocidade, troque por 7 e teste de novo. Olha só: com um passinho maior, a nave anda mais depressa!",
+          "Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama velocidade: é este número que diz quanto a nave anda em cada quadro.",
+          "Escolha a velocidade da sua nave: clique no 6, troque pelo número que você quiser e clique fora do campo. Aqui, eu troco por 7.",
+          "Agora teste: clique na área do jogo e segure uma seta por um instante. Olha só: em cada quadro, a nave dá o passinho que você escolheu!",
           "Repare: fica um rastro de naves, porque o jogo desenha a nave no lugar novo e ainda não apaga o desenho de antes. Isso fica para a próxima parte.",
-          "Agora escolha a velocidade que você achar melhor para a sua nave e teste. Aqui, eu deixo em 7.",
           "Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Mover o sprite nave com as setas, com uma velocidade maior que zero, e logo abaixo vem Desenhar o sprite nave. E clique na área do jogo antes de segurar a seta, porque é assim que o jogo recebe as teclas. Depois de corrigir, teste de novo."
         ],
         "checks": [
@@ -737,7 +783,7 @@
         "avatar": {
           "after": "Repare: o nome do sprite já vem nave, por isso deixe assim.",
           "speech": "E qual velocidade eu uso?",
-          "reply": "Testando duas velocidades, você vai sentir a diferença.",
+          "reply": "Você escolhe!",
           "beforeScreen": "Manter à vista o bloco de movimento recém-encaixado.",
           "afterScreen": "Depois da saída, apontar o número da velocidade antes de trocá-lo."
         }
@@ -5427,12 +5473,12 @@
     "entry": "Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.",
     "outcome": "Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.",
     "reason": "Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual não têm cena que sirva em exploração livre: a montagem abre com uma retomada didática, a placa do brinquedo do parque (o número não muda; quem tem a altura exata ou mais entra). A proposta de uma experiência própria está registrada no mapa do curso.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual ganharam uma experiência própria (02/11/2026, proposta aprovada pela responsável): \"A meta do jogo\" (cena `score-goal`), com o placar que sobe a cada acerto, a placa fixa em 26 e o sinal > ou ≥; a placa do brinquedo do parque virou a analogia do vídeo de convite, e a montagem dos finais abre com a retomada dessa experiência, sem refazê-la.",
     "concepts": [
       [
         "Constante e comparação",
-        "Meta de 26 pontos no projeto",
-        "A constante guarda uma meta que não muda durante a partida; comparar o valor atual com ela."
+        "score-goal (a meta do jogo) antes da montagem de finais; meta de 26 pontos no projeto",
+        "Na experiência, a placa (constante) não muda durante a partida e o sinal decide se chegar a 26 já vale; a montagem liga a ideia à constante alvo e ao maior ou igual."
       ],
       [
         "Finais",
@@ -5452,26 +5498,83 @@
     ],
     "sections": [
       {
+        "key": "meta-do-jogo",
+        "title": "A meta do jogo",
+        "kind": "exploration",
+        "videoKey": "video-meta-do-jogo",
+        "bridge": "Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os botões, sem clicar [apontar \"Maior que (>)\"] [apontar \"Maior ou igual (≥)\"] [apontar \"Acertar uma pedra\"] [apontar \"Tentar mudar a placa\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "speech": [
+          "Sabe aquele brinquedo do parque com uma placa na entrada, com a altura que a criança precisa ter? Cada criança que chega é comparada com o número da placa.",
+          "No seu jogo também tem uma placa: a meta de 26 pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.",
+          "O que você acha? Isso você vai testar na experiência.",
+          "Olha aqui: nesta experiência, estes dois botões escolhem o sinal da vitória, este faz um acerto, e este tenta mudar a placa no meio da partida.",
+          "Agora é a sua vez de investigar: compare em que acerto vem a vitória com maior que e com maior ou igual, e tente mudar a placa no meio de uma partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+        ],
+        "checks": [],
+        "final": false,
+        "avatar": {
+          "after": "e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.",
+          "speech": "Com maior que, chegar a 26 já dá a vitória?",
+          "beforeScreen": "Manter o meme da placa do parque até o fim da frase da professora.",
+          "afterScreen": "Depois da saída, ampliar a experiência parada, sem acertar nenhuma pedra."
+        },
+        "activityKey": "experiencia-meta-do-jogo",
+        "activity": {
+          "kind": "interactive",
+          "required": true,
+          "title": "A meta do jogo",
+          "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e tente mudar a placa no meio de uma partida. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "hints": [
+            "Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?",
+            "Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa.",
+            "Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa."
+          ],
+          "semPerguntaFinal": true,
+          "activity": {
+            "type": "experimentation",
+            "scene": "score-goal",
+            "cenario": "nave",
+            "setup": {
+              "freeExploration": true,
+              "goals": ["igual-conta", "maior-pula", "placa-fixa"],
+              "goalCopy": {
+                "igual-conta": {
+                  "label": "Com maior ou igual, chegar a 26 já deu a vitória",
+                  "pedido": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória."
+                },
+                "maior-pula": {
+                  "label": "Com maior que, o 26 não deu a vitória; só o 27",
+                  "pedido": "Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória."
+                },
+                "placa-fixa": {
+                  "label": "No meio da partida, a placa da meta não mudou",
+                  "pedido": "Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa."
+                }
+              }
+            }
+          }
+        }
+      },
+      {
         "key": "finais",
         "title": "Defina quando você ganha",
         "bridge": "Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.",
-        "screen": "A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"comece uma partida e faça alguns pontos\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. Do \"Sabe aquele brinquedo do parque\" até o \"ou passaram\", a tela fica parada, e a edição troca esse trecho pelo desenho da placa do brinquedo e da nave com o placar perto de 26 [na edição: a placa do brinquedo do parque e a meta de 26 pontos]. No \"Deixe à vista o espaço entre Dar ao sprite\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Programação e depois Variáveis\", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar \"Criar constante\" abaixo de \"Dar ao sprite\"]. No \"Clique em PI, troque por alvo\", trocar o nome [trocar \"PI\" por \"alvo\" em \"Criar constante\"]. No \"Agora clique no 0 do valor\", trocar o número [trocar \"0\" por \"26\" em \"Criar constante\"]. No \"É este bloco que guarda a meta\", apontar o bloco [apontar bloco \"Criar constante\"]. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No \"No lado esquerdo, clique em x\", escolher pontos. No \"No meio, clique no sinal de maior\", escolher o sinal de maior ou igual. No \"Abra Programação e depois Valores\", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No \"pegue o bloco Mudar o estado do jogo para, solte dentro desse então\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
+        "screen": "A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"comece uma partida e faça alguns pontos\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. No \"Lembra da experiência da meta\", a tela fica parada, sem refazer a experiência nem mostrar o resultado dela. No \"Deixe à vista o espaço entre Dar ao sprite\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Programação e depois Variáveis\", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar \"Criar constante\" abaixo de \"Dar ao sprite\"]. No \"Clique em PI, troque por alvo\", trocar o nome [trocar \"PI\" por \"alvo\" em \"Criar constante\"]. No \"Agora clique no 0 do valor\", trocar o número [trocar \"0\" por \"26\" em \"Criar constante\"]. No \"É este bloco que guarda a meta\", apontar o bloco [apontar bloco \"Criar constante\"]. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No \"No lado esquerdo, clique em x\", escolher pontos. No \"No meio, clique no sinal de maior\", escolher o sinal de maior ou igual. No \"Abra Programação e depois Valores\", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No \"pegue o bloco Mudar o estado do jogo para, solte dentro desse então\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].",
         "speech": [
           "Aqui no seu jogo, comece uma partida e faça alguns pontos. Tá vendo? A partida continua sem fim, porque o jogo ainda não sabe quando você ganha.",
-          "Sabe aquele brinquedo do parque que tem uma placa na entrada: só entra quem tem 1 metro e 20 ou mais? Quem tem exatamente 1 metro e 20 entra, e quem tem mais também. E a placa não muda: é a mesma o dia inteiro.",
-          "No seu jogo, a meta é como essa placa: 26 pontos, um número que não muda durante a partida. E a pergunta da vitória é: os pontos já chegaram a 26, ou passaram?",
-          "Agora a gente vai pôr essa placa e essa pergunta no seu jogo!",
+          "Lembra da experiência da meta? A placa nunca mudou, e com maior ou igual o 26 já valia. Agora a gente vai pôr isso no seu jogo!",
           "Um nome que guarda um valor que não muda se chama constante. A meta vai numa constante, criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar.",
           "Deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, em Ao iniciar.",
           "Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte logo abaixo de Dar ao sprite nave 3 de vida.",
           "Repare: o nome chega como PI. Clique em PI, troque por alvo e clique fora do campo.",
           "Agora clique no 0 do valor, troque por 26 e clique fora do campo.",
-          "É este bloco que guarda a meta, 26, com o nome alvo, como a placa do parque.",
+          "É este bloco que guarda a meta, 26, com o nome alvo, como a placa da experiência.",
           "Agora a pergunta da vitória. O jogo faz essa pergunta em todo quadro, durante a partida. Por isso, ela vai no fim do então de Se o estado do jogo é jogando, logo depois de Desenhar as vidas do sprite.",
           "Deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.",
           "Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor.",
           "No lado esquerdo, clique em x e escolha pontos.",
-          "No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque.",
+          "No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.",
           "Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do 0 e escolha alvo.",
           "Agora a pergunta ficou assim: pontos maior ou igual a alvo. Ou seja, a partida já chegou à meta?",
           "Deixe à vista o espaço do então dessa comparação. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.",
@@ -5557,7 +5660,7 @@
         "videoKey": "video-finais",
         "kind": "practice",
         "avatar": {
-          "after": "Esse sinal quer dizer chegou ou passou, como na placa do parque.",
+          "after": "Esse sinal quer dizer chegou ou passou, como você viu na experiência.",
           "speech": "E do outro lado vai a meta?",
           "reply": "Isso: a constante alvo.",
           "beforeScreen": "Manter à vista a comparação com pontos e o sinal de maior ou igual.",

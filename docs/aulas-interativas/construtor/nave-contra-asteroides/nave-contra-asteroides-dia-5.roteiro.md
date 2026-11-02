@@ -2,7 +2,50 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Defina quando você ganha
+## Seção 1. A meta do jogo
+
+### Clipe `video-meta-do-jogo` · A meta do jogo
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-meta-do-jogo`
+
+**Na tela:** No "Sabe aquele brinquedo do parque", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No "Olha aqui: nesta experiência", ampliar a experiência parada [ampliar experiência] e apontar os botões, sem clicar [apontar "Maior que (>)"] [apontar "Maior ou igual (≥)"] [apontar "Acertar uma pedra"] [apontar "Tentar mudar a placa"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Sabe aquele brinquedo do parque com uma placa na entrada, com a altura que a criança precisa ter? Cada criança que chega é comparada com o número da placa.
+
+[engaging, energetic, conversational voice] No seu jogo também tem uma placa: a meta de 26 pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.
+
+[curious] Com maior que, chegar a 26 já dá a vitória?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem o sinal da vitória, este faz um acerto, e este tenta mudar a placa no meio da partida.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare em que acerto vem a vitória com maior que e com maior ou igual, e tente mudar a placa no meio de uma partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-meta-do-jogo-K1 | Debinha | 1 | pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual. | Com maior que, chegar a 26 já dá a vitória? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-meta-do-jogo-K1`: entrada — Manter o meme da placa do parque até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência parada, sem acertar nenhuma pedra.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/score-goal.ts`, na tela `packages/member-shell/src/components/scene-livre/score-goal.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Seção 2. Defina quando você ganha
 
 ### Clipe `video-finais` · Defina quando você ganha
 
@@ -10,18 +53,14 @@
 
 **Clipe:** `video-finais`
 
-**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "comece uma partida e faça alguns pontos", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. Do "Sabe aquele brinquedo do parque" até o "ou passaram", a tela fica parada, e a edição troca esse trecho pelo desenho da placa do brinquedo e da nave com o placar perto de 26 [na edição: a placa do brinquedo do parque e a meta de 26 pontos]. No "Deixe à vista o espaço entre Dar ao sprite", apontar o lugar [apontar abaixo de "Dar ao sprite"]. No "Agora abra Programação e depois Variáveis", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar "Criar constante" abaixo de "Dar ao sprite"]. No "Clique em PI, troque por alvo", trocar o nome [trocar "PI" por "alvo" em "Criar constante"]. No "Agora clique no 0 do valor", trocar o número [trocar "0" por "26" em "Criar constante"]. No "É este bloco que guarda a meta", apontar o bloco [apontar bloco "Criar constante"]. No "Abra Programação e depois Lógica e Se", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No "No lado esquerdo, clique em x", escolher pontos. No "No meio, clique no sinal de maior", escolher o sinal de maior ou igual. No "Abra Programação e depois Valores", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No "pegue o bloco Mudar o estado do jogo para, solte dentro desse então", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "comece uma partida e faça alguns pontos", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. No "Lembra da experiência da meta", a tela fica parada, sem refazer a experiência nem mostrar o resultado dela. No "Deixe à vista o espaço entre Dar ao sprite", apontar o lugar [apontar abaixo de "Dar ao sprite"]. No "Agora abra Programação e depois Variáveis", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar "Criar constante" abaixo de "Dar ao sprite"]. No "Clique em PI, troque por alvo", trocar o nome [trocar "PI" por "alvo" em "Criar constante"]. No "Agora clique no 0 do valor", trocar o número [trocar "0" por "26" em "Criar constante"]. No "É este bloco que guarda a meta", apontar o bloco [apontar bloco "Criar constante"]. No "Abra Programação e depois Lógica e Se", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No "No lado esquerdo, clique em x", escolher pontos. No "No meio, clique no sinal de maior", escolher o sinal de maior ou igual. No "Abra Programação e depois Valores", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No "pegue o bloco Mudar o estado do jogo para, solte dentro desse então", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida e faça alguns pontos. Tá vendo? A partida continua sem fim, porque o jogo ainda não sabe quando você ganha.
 
-[engaging, energetic, conversational voice] Sabe aquele brinquedo do parque que tem uma placa na entrada: só entra quem tem 1 metro e 20 ou mais? Quem tem exatamente 1 metro e 20 entra, e quem tem mais também. E a placa não muda: é a mesma o dia inteiro.
-
-[curious] No seu jogo, a meta é como essa placa: 26 pontos, um número que não muda durante a partida. E a pergunta da vitória é: os pontos já chegaram a 26, ou passaram?
-
-[engaging, energetic, conversational voice] Agora a gente vai pôr essa placa e essa pergunta no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da meta? A placa nunca mudou, e com maior ou igual o 26 já valia. Agora a gente vai pôr isso no seu jogo!
 
 [engaging, energetic, conversational voice] Um nome que guarda um valor que não muda se chama constante. A meta vai numa constante, criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar.
 
@@ -33,7 +72,7 @@
 
 [confident, clear, unhurried voice] Agora clique no 0 do valor, troque por 26 e clique fora do campo.
 
-[engaging, energetic, conversational voice] É este bloco que guarda a meta, 26, com o nome alvo, como a placa do parque.
+[engaging, energetic, conversational voice] É este bloco que guarda a meta, 26, com o nome alvo, como a placa da experiência.
 
 [engaging, energetic, conversational voice] Agora a pergunta da vitória. O jogo faz essa pergunta em todo quadro, durante a partida. Por isso, ela vai no fim do então de Se o estado do jogo é jogando, logo depois de Desenhar as vidas do sprite.
 
@@ -43,7 +82,7 @@
 
 [engaging, energetic, conversational voice] No lado esquerdo, clique em x e escolha pontos.
 
-[engaging, energetic, conversational voice] No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque.
+[engaging, energetic, conversational voice] No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.
 
 [curious] E do outro lado vai a meta?
 
@@ -66,7 +105,7 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-finais-K1 | Debinha | 1 | de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque. | E do outro lado vai a meta? | Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco | [curious] |
+| video-finais-K1 | Debinha | 1 | de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência. | E do outro lado vai a meta? | Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -77,7 +116,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 2. Defina quando você perde
+## Seção 3. Defina quando você perde
 
 ### Clipe `video-derrota` · Defina quando você perde
 
@@ -132,7 +171,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora defina quando você perde! Monte a pergunta da derrota logo abaixo da vitória e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 3. Mostre a vitória e a derrota
+## Seção 4. Mostre a vitória e a derrota
 
 ### Clipe `video-mostrar-telas` · Mostre a vitória e a derrota
 
@@ -193,7 +232,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 4. Jogar outra vez
+## Seção 5. Jogar outra vez
 
 ### Clipe `video-reiniciar` · Jogar outra vez
 
@@ -236,7 +275,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-## Seção 5. Faça Enter preparar outra partida
+## Seção 6. Faça Enter preparar outra partida
 
 ### Clipe `video-enter` · Faça Enter preparar outra partida
 
@@ -297,13 +336,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 6. Confira o que você construiu
+## Seção 7. Confira o que você construiu
 
 **Recado na página (não gravar):** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
-## Seção 7. Teste o jogo completo e compartilhe
+## Seção 8. Teste o jogo completo e compartilhe
 
 ### Clipe `video-ciclo-completo` · Teste o jogo completo e compartilhe
 

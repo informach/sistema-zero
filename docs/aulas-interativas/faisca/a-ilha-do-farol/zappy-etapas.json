@@ -78,6 +78,44 @@
         "id": "island-contact-complete",
         "text": "Você comparou os dois casos. A imagem pode enganar: para encostar, os dois precisam se encontrar no chão e também na altura. Continue testando quando quiser."
       }
+    ],
+    "experiencia-pergunta-com-nao": [
+      {
+        "id": "door-not-start",
+        "text": "Sem a chave, a porta está trancada. Com a chave, ela fica destrancada. A porta obedece à resposta da pergunta: com a resposta sim, ela abre; com a resposta não, ela fica fechada. Repare na pergunta que a porta faz agora. O que você acha que ela vai responder? Clique em Testar a porta e observe a resposta e a porta."
+      },
+      {
+        "id": "door-not-try",
+        "text": "A situação mudou. O que você acha que a porta vai responder agora? Clique em Testar a porta e compare com o que você já viu."
+      },
+      {
+        "id": "door-not-plain-with",
+        "text": "A pergunta era: a porta está trancada? Com a chave, ela não está. A resposta foi não, e a porta obedece ao não: ficou fechada, mesmo destrancada. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta."
+      },
+      {
+        "id": "door-not-plain-without",
+        "text": "A pergunta era: a porta está trancada? Sem a chave, ela está. A resposta foi sim, e a porta obedece ao sim: abriu, mesmo trancada. É por isso que a pergunta precisa mudar. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta."
+      },
+      {
+        "id": "door-not-not-with",
+        "text": "A pergunta era: a porta não está trancada? Com a chave, ela não está. A resposta foi sim, e a porta obedece ao sim: abriu. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta."
+      },
+      {
+        "id": "door-not-not-without",
+        "text": "A pergunta era: a porta não está trancada? Sem a chave, ela está. A resposta foi não, e a porta obedece ao não: ficou fechada. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta."
+      },
+      {
+        "id": "door-not-other-with",
+        "text": "Sem a chave, o não trocou a resposta: o que era sim virou não. E com a chave, o que acontece com as duas perguntas? Clique em Dar a chave ao personagem e teste a porta com e sem o não."
+      },
+      {
+        "id": "door-not-other-without",
+        "text": "Com a chave, o não trocou a resposta: o que era não virou sim. E sem a chave, o que acontece com as duas perguntas? Clique em Tirar a chave do personagem e teste a porta com e sem o não."
+      },
+      {
+        "id": "door-not-complete",
+        "text": "Nos dois casos, o não trocou a resposta: o que era sim virou não, e o que era não virou sim. Para a porta abrir só quando ela não está trancada, a pergunta precisa do não. Pode testar quantas vezes quiser."
+      }
     ]
   }
 }

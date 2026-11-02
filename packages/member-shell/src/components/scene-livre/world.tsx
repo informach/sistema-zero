@@ -4,6 +4,7 @@ import { castText, discoveryGuidance, type SceneState } from '@sistemazero/core/
 import { Eye, EyeOff, NotebookPen } from 'lucide-react'
 import { ExplorationStage } from '../exploration-stage'
 import { Frame, SceneButton, useDiscovery } from '../scene-discovery-frame'
+import { semDino } from './dino/comum'
 import { DicaLivre, LinhaDaIdeia, useMetasLivres } from './nave-a-comum'
 
 /**
@@ -41,7 +42,7 @@ export function LivreWorld() {
   const { activity, state, dispatch, instruction } = useDiscovery()
   const w = state.world
   const { tem, goals, completed, done } = useMetasLivres(O_QUE_COMPARAR)
-  const gesto = proximoGestoDoMundo(discoveryGuidance(activity, state)?.id, w)
+  const gesto = proximoGestoDoMundo(semDino(discoveryGuidance(activity, state)?.id), w)
   const vestir = (texto: string) => castText(texto, activity.cast)
   const naTela = w.created && w.drawn
   return (

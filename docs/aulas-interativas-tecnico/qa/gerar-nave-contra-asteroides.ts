@@ -108,7 +108,8 @@ export function semChamados(paragrafo: string): string {
 }
 /**
  * Exploração livre (02/11/2026): cada experiência usa a tela nova e as falas do Zappy do seu
- * arquivo. A `lighthouse-walk` do Dia 1 usa as telas do Farol, escolhidas pelas metas.
+ * arquivo. A `lighthouse-walk` do Dia 1 usa as telas do Farol, escolhidas pelas metas, e a do tamanho
+ * do passinho (`step-speed-*`, 02/11/2026).
  */
 export function telaDaExperiencia(activity: InteractiveBlock): { tela: string; falas: string } {
   if (activity.activity.type !== 'experimentation') throw new Error('Experiência sem cena')
@@ -118,7 +119,9 @@ export function telaDaExperiencia(activity: InteractiveBlock): { tela: string; f
     return {
       tela: metas.includes('walked-real-speed')
         ? 'packages/member-shell/src/components/scene-walk-camera-lenta.tsx'
-        : 'packages/member-shell/src/components/scene-walk-beirada.tsx',
+        : metas.includes('step-speed-1')
+          ? 'packages/member-shell/src/components/scene-walk-passinho.tsx'
+          : 'packages/member-shell/src/components/scene-walk-beirada.tsx',
       falas: 'packages/core/src/learning/scene/discovery-guidance.ts',
     }
   }

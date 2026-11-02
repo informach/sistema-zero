@@ -6,7 +6,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 - Estado de entrada: Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.
 - Resultado da aula: Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original.
-- Seções: 9. Vídeos: 8.
+- Seções: 10. Vídeos: 9.
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
@@ -14,13 +14,13 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiências usam o cenário da nave e preparam a regra antes dos blocos. A limpeza retoma a comparação já feita na primeira aula.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades saiu da experiência e foi para a montagem das setas: a criança testa 1 e 7 e escolhe a velocidade da sua nave.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades virou uma experiência curta própria, "O tamanho do passinho" (02/11/2026, a pedido da responsável: trocar um valor para ver o efeito é papel da experiência): a nave compara o passinho pequeno com o grande, em câmera lenta, e a montagem das setas só liga o número da velocidade a essa ideia e escolhe a velocidade da nave, sem refazer a comparação.
 
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
 | --- | --- | --- |
-| Movimento e velocidade | lighthouse-walk antes das setas | Comparar quadro a quadro e aplicar a mesma regra ao próprio projeto, com velocidade 7. |
+| Movimento e velocidade | lighthouse-walk (câmera lenta e tamanho do passinho) antes das setas | Comparar quadro a quadro e o tamanho do passinho na experiência; na montagem, ligar o número da velocidade à ideia e escolher a da nave (7 na gravação). |
 | Limpeza | Retomar draw-loop antes de corrigir o rastro | Uma montagem própria para apagar a imagem anterior. |
 | Limite | lighthouse-walk antes da montagem da borda | Comparar o limite e aplicar a mesma regra à nave; testar os dois lados. |
 | Ordem dos desenhos | layers antes das estrelas | Comparar quem cobre quem antes de encaixar o fundo. |
@@ -47,23 +47,39 @@ video-seta-e-velocidade-K1: Dedé substitui “E quando a seta está solta?”. 
 
 **Pistas, do aberto ao direto:** 1) Repare nas marcas e na tira de quadros enquanto você segura a seta. 2) Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade. 3) Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos. Sem palpite e sem pergunta final.
 
-### Seção 2. Faça a nave responder às setas
+### Seção 2. O tamanho do passinho
 
-**Tarefa:** Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, compare duas velocidades, escolha a sua e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Tarefa:** Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+**Blocos na página:** video-tamanho-do-passinho → fala-tamanho-do-passinho → experiencia-tamanho-do-passinho.
+
+**Recado na página (não gravar):** Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+**Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-passinho.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Passinho pequeno, clique em Câmera lenta e segure a seta por alguns quadros. Clique em Passinho grande, clique em Câmera lenta e segure a seta por alguns quadros.
+
+**Pistas, do aberto ao direto:** 1) Repare na distância entre as marcas e no quanto a nave sai da linha em cada quadro da tira. 2) Teste um tamanho de passinho em câmera lenta, troque o tamanho e compare as marcas e Os dois passinhos. 3) Clique em Passinho pequeno, clique em Câmera lenta e segure a seta por alguns quadros. Depois clique em Passinho grande e segure a seta de novo, em câmera lenta. Sem palpite e sem pergunta final.
+
+### Seção 3. Faça a nave responder às setas
+
+**Tarefa:** Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, escolha o tamanho do passinho dela e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-setas-e-rastro → fala-setas.
 
-**Recado na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, compare duas velocidades, escolha a sua e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça a sua nave andar! Coloque o movimento antes do desenho da nave, escolha o tamanho do passinho dela e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-setas-e-rastro-K1: Dedé substitui “E qual velocidade eu uso?”. Antes: “seta você está segurando e leva a nave para aquele lado. Repare: o nome do sprite já vem nave, por isso deixe assim.”. Depois: “Testando duas velocidades, você vai sentir a diferença. A velocidade é o tamanho do passinho que a nave dá em cada”.
+video-setas-e-rastro-K1: Dedé substitui “E qual velocidade eu uso?”. Antes: “seta você está segurando e leva a nave para aquele lado. Repare: o nome do sprite já vem nave, por isso deixe assim.”. Depois: “Você escolhe! Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Mova nave com as setas, com velocidade positiva, antes de desenhá-la.
 
-### Seção 3. Tire o rastro da nave
+### Seção 4. Tire o rastro da nave
 
 **Tarefa:** Agora tire o rastro da nave! Coloque Limpar a tela no começo de A cada quadro do jogo, teste a seta de novo e clique em Verificar projeto. Depois, clique em Próxima parte.
 
@@ -79,7 +95,7 @@ video-limpeza-K1: Dedé substitui “Isso vai apagar a minha nave?”. Antes: �
 
 - Limpe a tela antes de mover e desenhar a nave.
 
-### Seção 4. A beirada da tela
+### Seção 5. A beirada da tela
 
 **Tarefa:** Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
@@ -99,7 +115,7 @@ video-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave 
 
 **Pistas, do aberto ao direto:** 1) Olhe a faixa fora da tela quando a nave chega na beirada. 2) E se o limite for ligado com a nave já fora da tela? Observe o próximo quadro. 3) Com o limite desligado, clique em Velocidade de verdade e segure a seta até a nave sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada. Sem palpite e sem pergunta final.
 
-### Seção 5. Mantenha a nave na tela
+### Seção 6. Mantenha a nave na tela
 
 **Tarefa:** Agora mantenha a sua nave na tela! Coloque o limite entre o movimento e o desenho, teste as duas beiradas e clique em Verificar projeto. Depois, clique em Próxima parte.
 
@@ -116,7 +132,7 @@ video-limite-da-nave-K1: Dedé substitui “Esse nome heroi é o da minha nave?�
 - Mova nave antes de prendê-la à tela.
 - Mantenha nave dentro da tela antes de desenhá-la.
 
-### Seção 6. Quem fica na frente?
+### Seção 7. Quem fica na frente?
 
 **Tarefa:** Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
@@ -136,7 +152,7 @@ video-ordem-dos-desenhos-K1: Dedé substitui “E se o fundo de estrelas for des
 
 **Pistas, do aberto ao direto:** 1) Observe quem fica na frente depois de cada troca. 2) Compare a nave quando ela é desenhada por último e quando o fundo é desenhado por último. 3) Clique em Desenhar a nave por último. Depois clique em Desenhar o fundo de estrelas por último. Por último, clique em Desenhar a nave por último de novo. Sem palpite e sem pergunta final.
 
-### Seção 7. Coloque as estrelas atrás da nave
+### Seção 8. Coloque as estrelas atrás da nave
 
 **Tarefa:** Agora coloque as estrelas no seu jogo! Deixe o fundo de estrelas logo abaixo de Limpar a tela, confira a ordem dos cinco blocos e clique em Verificar projeto. Depois, clique em Próxima parte.
 
@@ -153,7 +169,7 @@ video-fundo-estrelado-K1: Dedé substitui “Ué, cadê a nave?”. Antes: “Ar
 - Limpe antes de desenhar o céu estrelado.
 - Desenhe o fundo de estrelas em movimento a cada quadro.
 
-### Seção 8. Confira o que você construiu
+### Seção 9. Confira o que você construiu
 
 **Tarefa:** Hora de conferir o que você construiu! Responda sobre as estrelas e o limite da tela, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
@@ -163,7 +179,7 @@ video-fundo-estrelado-K1: Dedé substitui “Ué, cadê a nave?”. Antes: “Ar
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta parte.
 
-### Seção 9. Teste e envie sua nave
+### Seção 10. Teste e envie sua nave
 
 **Tarefa:** Hora de testar a sua nave! Leve a nave até as duas beiradas, confira a ordem dos blocos, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 

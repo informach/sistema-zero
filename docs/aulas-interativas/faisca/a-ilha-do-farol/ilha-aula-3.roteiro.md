@@ -110,11 +110,37 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-## Parte 3. O farol acende uma vez só
+## Parte 3. O que muda com o não?
+
+**Clipe:** `video-pergunta-com-nao`
+
+**Na tela:** Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a plaquinha da porta de uma loja dos dois lados, Pode entrar e Não pode entrar, com a palavra não destacada. Depois mostrar a experiência parada, sem a chave e com a pergunta sem o não, e apontar os botões Dar a chave ao personagem, Pôr o não na pergunta e Testar a porta, sem clicar. Apontar a tabela das quatro situações, ainda com Teste para descobrir. Não testar a porta nem dizer qual resposta a porta dá em nenhuma situação: a criança descobre na experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis.
+
+**Fala para ElevenLabs:**
+
+```text
+[curious] Sabe a plaquinha na porta de uma loja? “Pode entrar” e “Não pode entrar” são quase iguais, mas a palavrinha não troca tudo.
+
+[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter o não. Nesta experiência, a porta do farol faz uma pergunta. A porta pergunta: a porta está trancada? E ela é muito obediente: abre sempre que a resposta é sim.
+
+[engaging, energetic, conversational voice] Sem a chave, a porta está trancada. Com a chave, ela fica destrancada.
+
+[curious] Agora pense: com o não na pergunta, a resposta da porta muda?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[interested, animated voice] Olha aqui: nesta experiência, estes botões dão ou tiram a chave, põem ou tiram o não da pergunta e testam a porta. E esta tabela guarda a resposta de cada situação que você testar.
+
+[upbeat, encouraging voice] Sua vez de investigar: teste a porta com a pergunta sem o não e com o não, com a chave e sem a chave, e compare as respostas. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.
+```
+
+**Recado na página (não gravar):** Sua vez! Descubra o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Parte 4. O farol acende uma vez só
 
 **Clipe:** `video-uma-vez`
 
-**Na tela:** Projeto decisao. Ao vivo: partida com a chave, farol aceso, andar para trás pelo cais e voltar; mostrar a luz apagando e acendendo de novo. Meme de 2 a 3 segundos no apito final: Zappy de juiz apitando e a bola entrando no gol depois, com o placar parado. Na comparação da porta trancada, ilustrar a porta com e sem tranca. Montar Se não ganhou: Se novo num espaço vazio ao lado do encontro com farol, a pergunta x maior que zero na lixeira, não no lugar da pergunta, valor da variável ganhou dentro do não, o Se temChave arrastado para o então do Se novo e o Se novo no fazer do encontro. Testar de novo: ao voltar, a luz continua acesa e o feixe segue girando.
+**Na tela:** Projeto decisao. Ao vivo: partida com a chave, farol aceso, andar para trás pelo cais e voltar; mostrar a luz apagando e acendendo de novo. Meme de 2 a 3 segundos no apito final: Zappy de juiz apitando e a bola entrando no gol depois, com o placar parado. Na lembrança da porta da experiência, só a fala: não refazer a experiência nem mostrar a tabela dela. Montar Se não ganhou: Se novo num espaço vazio ao lado do encontro com farol, a pergunta x maior que zero na lixeira, não no lugar da pergunta, valor da variável ganhou dentro do não, o Se temChave arrastado para o então do Se novo e o Se novo no fazer do encontro. Testar de novo: ao voltar, a luz continua acesa e o feixe segue girando.
 
 **Fala para ElevenLabs:**
 
@@ -129,7 +155,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [engaging, energetic, conversational voice] Por isso, o encontro vai fazer uma pergunta antes de tudo: a partida ainda não foi ganha? Para fazer essa pergunta, a gente usa a palavra não.
 
-[curious] Pense numa porta que só abre quando não está trancada. Se ela está trancada, a resposta é não, e ela fica fechada. Se ela não está trancada, a resposta é sim, e ela abre.
+[engaging, energetic, conversational voice] Lembra da porta da experiência? Com o não na pergunta, a resposta virava ao contrário, e a porta só abria quando não estava trancada.
 
 [engaging, energetic, conversational voice] No seu jogo é igual. Enquanto ganhou é falso, a partida ainda não foi ganha: a resposta é sim, e o farol responde.
 
@@ -170,13 +196,13 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-## Parte 4. O que você descobriu no 3D
+## Parte 5. O que você descobriu no 3D
 
 Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 **Recado na página (não gravar):** Escolha uma resposta e clique em Ver o que acontece. Observe a cena e a explicação. Você pode tentar de novo.
 
-## Parte 5. Deixe o jogo com a sua cara
+## Parte 6. Deixe o jogo com a sua cara
 
 **Clipe:** `video-aparencia`
 
@@ -216,7 +242,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 **Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
-## Parte 6. Escolha seu esconderijo e teste de verdade
+## Parte 7. Escolha seu esconderijo e teste de verdade
 
 **Clipe:** `video-personalizar`
 
@@ -248,7 +274,7 @@ Quiz sem vídeo: escolha, demonstração, explicação e nova tentativa.
 
 **Recado na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 
-## Parte 7. Sua ilha está pronta
+## Parte 8. Sua ilha está pronta
 
 **Clipe:** `video-fecho`
 

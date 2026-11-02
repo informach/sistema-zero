@@ -190,6 +190,21 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
         'symmetry',
         'two-clocks',
         'unique-names',
+        // O Corre Dino, frente B (02/11/2026): tela, leitor de tela, gravidade, impulso e som do pulo.
+        'stage-size',
+        'screen-reader',
+        'gravity',
+        'impulse',
+        'jump-sound',
+        // O Corre Dino, frente C (02/11/2026): começar a partida, área de contato, placar, a reta
+        // dos números negativos e a base que acelera.
+        'controls',
+        'hitbox',
+        'score',
+        'number-line',
+        'acceleration',
+        // A meta do jogo (Nave, Dia 5, frente D, 02/11/2026).
+        'score-goal',
       ].includes(scene))
   )
     return false
@@ -394,4 +409,8 @@ export function sceneHintsFor(activity: SceneActivity): readonly string[] {
   return sceneModel(activity.scene).hints
 }
 
-export { discoveryGuidance, discoverySpeechSteps } from './discovery-guidance'
+export {
+  discoveryGuidance,
+  discoverySpeechSteps,
+  lighthouseWalkStrideCase,
+} from './discovery-guidance'

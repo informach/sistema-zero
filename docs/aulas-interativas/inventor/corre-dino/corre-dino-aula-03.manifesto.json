@@ -46,14 +46,14 @@
   "blocks": [
     {
       "key": "video-gravidade-modelo",
-      "plannedVideo": "Título: Compare o salto com e sem gravidade\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a gravidade desligada e o Dino no chão. Tocar no Dino e deixar a altura crescer até o tempo parar, com o Dino no alto. Ligar o fio da Gravidade ao Dino com ele no ar e acompanhar a subida mais lenta, a parada e a queda até o chão, com a altura à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy jogando uma bola para cima e a bola voltando para a mão dele. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-gravidade-modelo-K1: Debinha substitui “E agora? Como ele volta para o chão?”. Antes: “sem parar: o número da altura só cresce. Nada puxa o Dino para baixo. A experiência para o tempo com ele lá no alto.”. Depois: “Com o Dino no ar, eu ligo a Gravidade ao Dino. Ele ainda sobe um pouquinho, cada vez mais devagar, para e cai até o”.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O que traz o Dino de volta?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você joga uma bola para cima\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando uma bola para cima, com a bola ainda subindo [na edição: meme da bola jogada para cima]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os botões, sem clicar [apontar \"Pular\"] [apontar \"Ligar a gravidade\"]. No \"Este número mostra a altura do Dino\", apontar o número da altura, sem pular. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta para o chão depois do pulo?”. Antes: “é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o Dino pular, e este”.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-gravidade-modelo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -61,13 +61,31 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare o salto com e sem gravidade",
-        "instructions": "Nesta experiência, deixe a gravidade desligada. Toque no Dino para pular e espere a altura parar de crescer. Com o Dino no ar, ligue Gravidade ao Dino e acompanhe até ele chegar ao chão.",
-        "hints": [],
+        "title": "O que traz o Dino de volta?",
+        "instructions": "Compare um pulo do Dino sem gravidade e com gravidade. Observe o Dino e o número da altura em cada um. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Clique em Pular e olhe o número da altura. Ele para de crescer?",
+          "Com o Dino lá no alto, ligue a gravidade e observe o número.",
+          "Com a gravidade desligada, clique em Pular; com o Dino no ar, clique em Ligar a gravidade."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "gravity",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["floating", "landed"],
+            "goalCopy": {
+              "floating": {
+                "label": "Sem gravidade, não parou de subir",
+                "pedido": "Com a gravidade desligada, clique em Pular e observe o número da altura."
+              },
+              "landed": {
+                "label": "Com gravidade, o pulo voltou ao chão",
+                "pedido": "Depois do pulo sem gravidade, clique em Ligar a gravidade e observe o Dino até o fim."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
@@ -86,14 +104,14 @@
     },
     {
       "key": "video-impulso-modelo",
-      "plannedVideo": "Título: Compare duas alturas de pulo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Impulso do salto em 9. Tocar no Dino e esperar o pouso, com a marca 68 à vista. Escolher Impulso 14, tocar no Dino de novo e esperar o pouso, com as duas marcas à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino numa cama elástica, com uma marca baixa escrita 9 e uma marca alta escrita 14. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quanto o Dino sobe?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você pula numa cama elástica\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino em cima de uma cama elástica, se preparando para pular [na edição: meme da cama elástica]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os impulsos, sem clicar [apontar \"Impulso 9\"] [apontar \"Impulso 14\"]. No \"e este outro faz o Dino pular\", apontar o botão, sem clicar [apontar \"Pular\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-impulso-modelo-K1: Debinha substitui “E com mais impulso, até onde o Dino chega?”. Antes: “também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem o impulso, e”.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-impulso-modelo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -101,20 +119,38 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare duas alturas de pulo",
-        "instructions": "Na experiência, escolha impulso 9, toque no Dino e espere o salto terminar. Observe a marca da altura. Mude o impulso para 14, toque no Dino de novo e espere cair. Compare as duas marcas.",
-        "hints": [],
+        "title": "Quanto o Dino sobe?",
+        "instructions": "Descubra o que o impulso muda no pulo. Faça saltos com impulsos diferentes e compare as marcas da altura. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "A marca azul é o salto de antes; a laranja, o deste.",
+          "Mude só o impulso. A gravidade fica igual.",
+          "Clique em Impulso 14 e depois em Pular, e compare as marcas."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "impulse",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["first-height", "other-height"],
+            "goalCopy": {
+              "first-height": {
+                "label": "Um salto chegou ao chão",
+                "pedido": "Clique em Pular e espere o salto terminar."
+              },
+              "other-height": {
+                "label": "Outro impulso, marca bem diferente",
+                "pedido": "Pule com Impulso 9 e depois com Impulso 14, esperando cada salto terminar."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-comando-de-pulo",
-      "plannedVideo": "Título: Dê os controles de pulo ao Dino\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-comando-de-pulo-K1: Debinha substitui “Dá para pular de novo lá no alto?”. Antes: “o mesmo bloco já cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino”.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Dê os controles de pulo ao Dino\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Nos testes por tecla, clicar em Atualizar e não clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-comando-de-pulo-K1: Debinha substitui “Dá para pular de novo lá no alto?”. Antes: “porque o mesmo bloco cuida dos três controles. Se você tocar embaixo, perto do chão, o Dino se abaixa em vez de pular.”. Depois: “Vamos ver. Agora toque duas vezes na barra de espaço durante o mesmo salto. Repare: o segundo toque não faz o Dino”.\n\nFala completa em corre-dino-aula-03.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-comando-de-pulo",
@@ -156,11 +192,11 @@
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "Criar prepara o objeto. Desenhar mostra sua imagem; repetir a criação não substitui o desenho."
+            "explanation": "Criar faz o Dino existir, nos bastidores. Desenhar mostra a imagem dele na tela; criar outro Dino não substitui o desenho."
           },
           {
             "id": "q2",
-            "prompt": "O Dino sobe e fica no ar sem voltar. Que regra falta observar?",
+            "prompt": "O Dino sobe e fica no ar sem voltar. O que está faltando?",
             "choices": [
               {
                 "id": "a",
@@ -483,9 +519,9 @@
   "sections": [
     {
       "key": "gravidade-modelo",
-      "title": "Compare o salto com e sem gravidade",
+      "title": "O que traz o Dino de volta?",
       "intent": "exploration",
-      "objective": "Sua vez! Faça o Dino pular sem gravidade e ligue a Gravidade ao Dino enquanto ele está no ar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-gravidade-modelo", "fala-gravidade-modelo", "experiencia-gravidade"],
       "workspaceKey": null,
       "externalTool": null,
@@ -549,9 +585,9 @@
     },
     {
       "key": "impulso-modelo",
-      "title": "Compare duas alturas de pulo",
+      "title": "Quanto o Dino sobe?",
       "intent": "exploration",
-      "objective": "Sua vez! Faça um salto com impulso 9 e outro com 14, esperando o Dino cair entre eles. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-impulso-modelo", "fala-impulso-modelo", "experiencia-impulso"],
       "workspaceKey": null,
       "externalTool": null,
