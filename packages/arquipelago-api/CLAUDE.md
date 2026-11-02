@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Publicar antes da atualização dos cursos, 02/11/2026
+
+`analisarRepertorio` conserva `sem-curso` nos avisos de cobertura, sem convertê-lo em erro
+de publicação. A equipe pode preparar o jogo antes dos cursos, nos dois públicos. A mesma
+regra vale para publicar, importar e reativar. Catálogo desconhecido, execução inválida,
+retirada de requisito derivado, fonte de posto futuro e Quadro dependente de curso opcional
+continuam impeditivos. Não conceder blocos nem alterar cursos para publicar um desafio.
+O acesso de quem joga permanece condicionado aos blocos efetivamente conquistados no Members;
+sem eles, abrir e conferir são recusados antes de chamar o executor. Testes em
+`repertorio-do-desafio`, `equipe`, `manifestos` e `desafios-do-jogador`.
+
 ## As lacunas do levantamento de 31/10 (01/11/2026)
 
 Registro completo: `docs/superpowers/plans/2026-11-01-arquipelago-lacunas.md`. No serviço:
