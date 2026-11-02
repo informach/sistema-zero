@@ -10,10 +10,18 @@ import {
 /** Papéis obrigatórios da trilha. Escolher um Poder não obriga a escolher todos os outros. */
 const PAPEIS_DA_TRILHA = new Set(['base2d', 'base3d', 'mission'])
 
+/** Fonte editorial, sem matrícula, UUID de curso ou concessão de ferramentas. */
+export interface FontePlanejadaDeBlocos {
+  posto: string
+  papel: string
+  blocos: readonly string[]
+}
+
 export function analisarRepertorio(
   exigidos: readonly string[],
   curriculo: CurriculoDeBlocos,
   metadados: Pick<MetadadosDoDesafio, 'ilha' | 'tipo'>,
+  fontesPlanejadas: readonly FontePlanejadaDeBlocos[] = [],
 ) {
   const posto = ilha(metadados.ilha).posto
   const limite = POSTOS_DA_JORNADA.indexOf(posto)
@@ -21,6 +29,15 @@ export function analisarRepertorio(
   const problemas: ProblemaDoDesafio[] = []
   for (const c of cobertura) {
     const nome = c.rotulo || c.bloco
+    const fontePlanejadaDaTrilha = fontesPlanejadas.some((fonte) => {
+      const posicao = POSTOS_DA_JORNADA.indexOf(fonte.posto as typeof posto)
+      return (
+        fonte.blocos.includes(c.bloco) &&
+        PAPEIS_DA_TRILHA.has(fonte.papel) &&
+        posicao >= 0 &&
+        posicao <= limite
+      )
+    })
     for (const aviso of c.avisos) {
       if (aviso === 'bloco-desconhecido')
         problemas.push({
@@ -29,13 +46,14 @@ export function analisarRepertorio(
         })
       // Preparar o jogo não depende da publicação dos cursos. A cobertura conserva o
       // aviso sem-curso; jogar continua exigindo os blocos conquistados no Members.
-      if (aviso === 'curso-depois-da-ilha')
+      if (aviso === 'curso-depois-da-ilha' && !fontePlanejadaDaTrilha)
         problemas.push({
           codigo: 'CURSO_DEPOIS_DA_ILHA',
           mensagem: `${nome}: o ensino não está disponível até o posto desta ilha. Use um repertório anterior ou publique em outra ilha.`,
         })
     }
-    if (metadados.tipo !== 'quadro-das-cores' || c.avisos.length > 0) continue
+    if (fontePlanejadaDaTrilha || metadados.tipo !== 'quadro-das-cores' || c.avisos.length > 0)
+      continue
     const fonteDaTrilha = curriculo.cursos.some((curso) => {
       const posicao = POSTOS_DA_JORNADA.indexOf(curso.posto as typeof posto)
       return (

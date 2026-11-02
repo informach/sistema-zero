@@ -21,6 +21,7 @@ import { ServicoDosInsumos } from './application/servico-dos-insumos'
 import { ServicoDosMinijogos } from './application/servico-dos-minijogos'
 import { ServicoDosPedidos } from './application/servico-dos-pedidos'
 import type { Env } from './infrastructure/config/env'
+import repertorioPlanejado from './infrastructure/config/repertorio-planejado.json'
 import { AvatarHttp } from './infrastructure/members/avatar-http'
 import { MembrosHttp, TEMPO_DA_CONFERENCIA_MS } from './infrastructure/members/membros-http'
 import { MoedasHttp } from './infrastructure/members/moedas-http'
@@ -87,6 +88,9 @@ export function createApplication(env: Env): Application {
     membros,
     leituras,
     mapa,
+    undefined,
+    undefined,
+    repertorioPlanejado.fontes,
   )
   const moedas =
     env.MEMBERS_URL && env.ARQUIPELAGO_COINS_TOKEN

@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/arquipelago-api
 
+## Planejamento editorial antes dos cursos, 02/11/2026
+
+O catálogo remoto só inclui cursos publicados. No adulto, ter somente o Cadê como extra
+não prova que número ou condição sejam exclusivos de extras. A composição injeta em
+`ServicoDaEquipe` o `infrastructure/config/repertorio-planejado.json`, gerado das listas
+versionadas das cinco bases/missão já escritas. Uma fonte obrigatória do mesmo posto ou
+anterior é evidência editorial para publicação e reativação. Extras/Poderes não entram;
+catálogo desconhecido, gabarito inválido e fontes futuras sem alternativa continuam recusados.
+
+Conferir com `node scripts/sync-arquipelago-repertorio-planejado.mjs`; depois de mudar uma
+lista, regenerar com `--write` e revisar. O teste compara hashes semânticos e blocos com
+os arquivos reais. Não muda contrato, banco, curso, desbloqueio nem `Aprenda isso em`:
+indicações e acesso continuam exclusivamente no Members e no público correspondente.
+
 ## Publicar antes da atualização dos cursos, 02/11/2026
 
 `analisarRepertorio` conserva `sem-curso` nos avisos de cobertura, sem convertê-lo em erro
