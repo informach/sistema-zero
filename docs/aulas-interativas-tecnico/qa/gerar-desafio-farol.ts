@@ -451,7 +451,7 @@ const dia2 = {
     video('video-d2-contexto', 'O jogo guardou a chave?', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-contexto',
-      'Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que o jogo guarda quando o personagem pega a chave, com a memória da chave ligada e desligada. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-memoria',
@@ -460,14 +460,41 @@ const dia2 = {
         required: true,
         title: 'O jogo guardou a chave?',
         semPerguntaFinal: true,
+        // Dias 2 e 3 (02/11/2026): só a ideia (a memória da chave) e o convite à investigação. As
+        // pistas do modelo citam "Guardar a coleta", que esta tela não tem: do aberto ao direto.
         instructions:
-          'Compare uma coleta com e sem a ação de guardar. Observe também o valor ao afastar e recomeçar a partida. Você escolhe a ordem dos testes.',
-        hints: [],
+          'Compare uma coleta com a memória da chave ligada e desligada, observando a chave, o aviso e temChave. Teste também afastar o personagem e começar uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+        hints: [
+          'Olhe a chave, o aviso e temChave: são três coisas diferentes.',
+          'Compare temChave depois de uma coleta com a memória desligada e com a memória ligada.',
+          'Se a chave não estiver no chão, clique em Recomeçar a partida. Com a memória desligada, clique em Encostar na chave. Depois clique em Ligar a memória da chave, em Recomeçar a partida e em Encostar na chave. Por último, clique em Afastar e em Recomeçar a partida, observando temChave.',
+        ],
         activity: {
           type: 'experimentation',
           scene: 'collect-and-remember',
           cenario: 'farol',
-          setup: { freeExploration: true },
+          setup: {
+            freeExploration: true,
+            // O "Ainda falta" e o relatório da equipe com os botões desta tela (o catálogo cita
+            // "Guardar a coleta", da bancada antiga).
+            goalCopy: {
+              'collected-without-memory': {
+                pedido:
+                  'Com a memória da chave desligada, clique em Encostar na chave e observe temChave.',
+              },
+              'collected-with-memory': {
+                pedido:
+                  'Clique em Ligar a memória da chave, recomece a partida e clique em Encostar na chave.',
+              },
+              'remembered-after-leaving': {
+                pedido: 'Depois de o jogo guardar a chave, clique em Afastar e observe temChave.',
+              },
+              'reset-after-remembering': {
+                pedido:
+                  'Depois de o jogo guardar a chave, clique em Recomeçar a partida e observe temChave.',
+              },
+            },
+          },
         },
       },
     },
@@ -536,25 +563,39 @@ const dia3 = {
   lessonSlug: 'dia-3',
   title: 'A luz do farol',
   blocks: [
-    video('video-d3-condicao', 'Quando a porta pode abrir?', 'desafio-dia-3.roteiro.md'),
+    video('video-d3-condicao', 'O que a porta precisa?', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-condicao',
-      'Sua vez! Teste a mesma porta sem a chave e com a chave e repare em qual resposta a porta escolhe. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que a porta faz quando o personagem chega sem a chave e com a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-porta',
       content: {
         kind: 'interactive',
         required: true,
-        title: 'A porta precisa da chave',
+        title: 'O que a porta precisa?',
         semPerguntaFinal: true,
+        // A pergunta da porta com "sim" e "não" (então/senão ficam para a montagem). A pista do
+        // modelo cita "Levar a chave", que esta tela não tem.
         instructions:
-          'Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.',
-        hints: [],
+          'Teste a mesma porta com o personagem sem a chave e com a chave, observando temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+        hints: [
+          'Olhe temChave antes de testar a porta.',
+          'Compare a resposta da porta com temChave falso e com temChave verdadeiro.',
+          'Se o personagem estiver com a chave, clique em Tirar a chave do personagem. Clique em Testar a porta. Depois clique em Dar a chave ao personagem e em Testar a porta de novo.',
+        ],
         activity: {
           type: 'experimentation',
           scene: 'lighthouse-key',
-          setup: { freeExploration: true },
+          setup: {
+            freeExploration: true,
+            goalCopy: {
+              'locked-without-key': { pedido: 'Sem a chave, clique em Testar a porta.' },
+              'opened-with-key': {
+                pedido: 'Clique em Dar a chave ao personagem e em Testar a porta.',
+              },
+            },
+          },
           cenario: 'farol',
         },
       },
@@ -582,7 +623,7 @@ const dia3 = {
     video('video-d3-posicao', 'Como escolher um lugar para a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-posicao',
-      'Sua vez! Mude um número de cada vez e repare para onde a chave vai. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue para onde a chave vai quando o x e o y aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-posicao',
@@ -591,8 +632,10 @@ const dia3 = {
         required: true,
         title: 'Como escolher um lugar para a chave',
         semPerguntaFinal: true,
+        // Sem pistas escritas de propósito: a missão restrita pede a meta que falta ("Tente: mude o
+        // x para menos…"), sem contar para que lado o número leva a chave.
         instructions:
-          'Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.',
+          'Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui, no x e no y. Você escolhe a ordem dos testes. Se quiser um desafio, mostre um alvo e leve a chave até ele.',
         hints: [],
         activity: {
           type: 'experimentation',

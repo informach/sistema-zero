@@ -37,14 +37,12 @@ A montagem da resposta com chave tem três entradas: no problema inicial, depois
 
 | Entrada | Fala de Debinha |
 | --- | --- |
-| F3P1-D01 | “E se eu trouxer a chave agora?” |
+| F3P1-D01 | “E se a resposta for não?” |
 | F3P2-D01 | “E onde eu escrevo que falta a chave?” |
-| F3P3-D01 | “Mas eu trouxe a chave!” |
+| F3P3-D01 | “E quem está jogando vai saber que deu certo?” |
 | F3P3-D02 | “Acendeu! E se eu quiser jogar de novo?” |
-| F3P4-D01 | “Quero fazer um curso de pirata!” |
 | F3P6-D01 | “E para subir ou descer?” |
-| F3P7-D01 | “Eu tenho que escolher um desses três lugares?” |
-| F3P8-D01 | “Quero mandar o jogo para os meus amigos!” |
+| F3P7-D01 | “Preciso escolher um desses três lugares?” |
 
 As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
@@ -53,7 +51,7 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
 | --- | --- | --- | --- | --- | --- |
 | Condição | Sim | Na experiência da porta | Testar sem chave e com chave | Explicação e experiência juntas, antes da montagem | Comparar duas respostas para a mesma pergunta |
-| Se, então e senão | Sim | Na experiência e no projeto | Mostrar a pergunta e o ramo escolhido; construir senão antes de então | Duas etapas após a experiência | Conectar a relação observada aos blocos com um teste entre as montagens |
+| Se, então e senão | Sim | Na montagem, ligados às respostas sim e não da experiência | Mostrar a pergunta e o ramo escolhido; construir senão antes de então | Duas etapas após a experiência | Conectar a relação observada aos blocos com um teste entre as montagens |
 | Persistência da coleta | Sim | No percurso até o farol | Pegar a chave, afastar-se do lugar e chegar ao farol | Teste final | A informação continua guardada depois que a chave sai do chão |
 | Ativar consequência preparada | Não exige cena | No barco chegando | Alterar ganhou para verdadeiro | Dentro de então | Reconhecer o que foi preparado e o que a criança programa |
 | Troca de imagem e avisos | Não | No jogo | Conferir luz, mensagem e barco nos dois caminhos | Depois da montagem | Ver se cada resposta ficou no ramo certo |
@@ -78,9 +76,11 @@ A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O 
 - **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
 - **Metas da experiência:** `locked-without-key`, `opened-with-key`.
 
-Preparar com ou sem chave em qualquer ordem. Dar/tirar a chave prepara a situação e limpa o destaque anterior; somente Testar a porta escolhe um ramo. Exibir a pergunta, os dois caminhos e o caminho executado. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
+Preparar com ou sem chave em qualquer ordem. Dar/tirar a chave prepara a situação e limpa o destaque anterior; somente Testar a porta escolhe um ramo. Exibir a pergunta, as duas respostas (sim e não) e a resposta escolhida; o que cada resposta faz aparece depois do primeiro teste daquele caso. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
 
-**Convite da experiência:** Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.
+**Convite da experiência:** Teste a mesma porta com o personagem sem a chave e com a chave, observando temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**Só a ideia e convite à investigação, 02/11/2026 (decisões da responsável, régua do Dia 1 e do Cadê):** a experiência mostra "A pergunta da porta" com as respostas **Sim** e **Não**, sem regra, então nem senão (os nomes do bloco Se ficam para a montagem, que diz "é este bloco que faz a pergunta da porta" e liga o senão à resposta do não e o então à do sim). O que cada resposta faz só aparece depois de a criança testar aquele caso ("Teste para descobrir"). O vídeo devolve a pergunta da Debinha ("O que você acha que a porta faz? Isso você vai testar na experiência."). O Zappy pergunta antes de cada teste e explica depois; as pistas vão do aberto ao direto, com os botões reais.
 
 ### Seção 2. Avise quando faltar a chave
 
@@ -145,9 +145,11 @@ Editar os quatro textos de aviso: inicial em Ao iniciar, coleta no encontro com 
 - **Blocos:** `video-d3-posicao`, `ponte-d3-posicao`, `experiencia-posicao`.
 - **Metas da experiência:** `x-minus`, `x-plus`, `y-minus`, `y-plus`.
 
-Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 20 em 20, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
+Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 60 em 60 no x e de 40 em 40 no y, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
 
-**Convite da experiência:** Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.
+**Convite da experiência:** Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui, no x e no y. Você escolhe a ordem dos testes. Se quiser um desafio, mostre um alvo e leve a chave até ele.
+
+**Convite à investigação, 02/11/2026:** o vídeo usa a analogia do mapa do tesouro, diz qual número cuida de cada direção e deixa para a criança descobrir para que lado cada um leva a chave quando aumenta (a pergunta da Debinha vira teste). O Zappy explica depois de cada eixo, inclusive por que um y maior leva para baixo, e a retomada da parte 7 repete essa explicação. Sem pistas escritas: a missão restrita pede a meta que falta.
 
 ### Seção 7. Escolha onde fica a chave
 
@@ -177,19 +179,19 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 - **Situação:** cena existente, ampliada com informação, pergunta e respostas visíveis.
 - **Elenco/cenário:** farol, personagem e chave, com `cenario: farol`.
 - **Metas:** `locked-without-key` e `opened-with-key`.
-- **Instrução:** "Sem levar a chave, clique em Testar a porta. Depois clique em Levar a chave e em Testar a porta de novo. Compare temChave e a resposta escolhida nas duas vezes." (13/10/2026: o botão se chama só **Testar a porta**, e a marca da tela é **✓ escolhido**).
+- **Instrução:** "Teste a mesma porta com o personagem sem a chave e com a chave, observando temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser." (02/11/2026; os botões são **Dar a chave ao personagem** / **Tirar a chave do personagem** e **Testar a porta**, e a marca da tela é **✓ escolhido**).
 - **Observação:** trocar o estado da chave sozinho não conclui. Sem palpite obrigatório ou pergunta final redundante; semPerguntaFinal fica no bloco interativo.
 
 ## Vídeos
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d3-condicao` | Demonstração explicada: testar a porta sem e com a chave | Cena ampliada | 80 a 95 s | Regravar |
+| `video-d3-condicao` | Analogia da porta e convite à investigação, sem testar a porta | Cena ampliada | 80 a 95 s | Regravar |
 | `video-d3-sem-chave` | Evento, condição, senão, teste e verificação intermediária | Vídeo novo | 5,5 a 6,5 min | Gravar |
 | `video-d3-decisao` | Completar então, testar o jogo e verificar | Roteiro revisado | 4,5 a 5,5 min, sem acelerar os percursos | Regravar |
 | `video-d3-personalizar` | Revelar a surpresa do final; trocar personagem, barco, chave, o par do farol e cenário; testar e verificar | Mesmo projeto em construção | 4,5 a 5,5 min | Regravar |
 | `video-d3-farol-mensagens` | Escrever os quatro avisos e testar | Mesmo projeto em construção | 120 a 150 s | Gravar |
-| `video-d3-posicao` | Mudar x e y separadamente na experiência | Cena nova | 85 a 105 s | Gravar |
+| `video-d3-posicao` | Analogia do mapa do tesouro e convite à investigação, sem mover a chave | Cena nova | 85 a 105 s | Gravar |
 | `video-d3-posicionar-chave` | Escolher um lugar, testar o percurso e enviar o jogo | Mesmo projeto em construção | 2 a 3 min | Gravar |
 | `video-d3-fecho` | Publicar, comemorar e copiar o link de jogar para a família | Mesmo projeto enviado | 75 a 95 s, incluindo espera | Regravar |
 

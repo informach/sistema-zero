@@ -177,31 +177,31 @@
     "id": "memoria-experiencia",
     "kicker": "Dia 2 · Parte 1 · Experiência antes da montagem",
     "title": "O jogo guardou a chave?",
-    "subtitle": "Compare o que some da tela com a informação que fica guardada.",
+    "subtitle": "Compare o que some da tela com o que o jogo guarda.",
     "items": [
       {
         "kind": "text",
-        "text": "Na experiência, acompanhe <b>temChave</b>. Uma variável guarda um valor que pode mudar. Aqui, <b>falso</b> quer dizer que o personagem ainda não está com a chave."
+        "text": "Uma <b>variável</b> guarda um valor que pode mudar, como um recado anotado para não esquecer. Aqui ela se chama <b>temChave</b>: <b>verdadeiro</b> quer dizer que o personagem está com a chave, e <b>falso</b>, que ainda não está."
       },
       {
         "kind": "step",
-        "title": "Compare uma coleta",
-        "text": "Use <b>Adicionar ação de guardar</b> ou <b>Retirar ação de guardar</b>. Depois, <b>Encostar na chave</b> testa o encontro. Observe chave, aviso e temChave."
+        "title": "Com a memória desligada",
+        "text": "Encoste na chave com a <b>memória da chave</b> desligada. Observe três coisas: a chave, o aviso e temChave."
       },
       {
         "kind": "step",
-        "title": "Mude a regra e compare",
-        "text": "Você pode editar a regra quando quiser. A mudança vale para o próximo encontro. <b>Recomeçar a partida</b> traz outra chave e conserva a regra escolhida."
+        "title": "Com a memória ligada",
+        "text": "Clique em <b>Ligar a memória da chave</b>, recomece a partida e encoste na chave de novo. O que mudou?"
       },
       {
         "kind": "step",
-        "title": "Observe ao afastar e recomeçar",
-        "text": "Depois de guardar uma coleta, use <b>Afastar</b> e observe temChave. Compare com uma partida nova. Escolha a ordem e repita os testes."
+        "title": "Longe da chave e numa partida nova",
+        "text": "Depois de o jogo guardar a chave, clique em <b>Afastar</b> e observe temChave. Depois clique em <b>Recomeçar a partida</b>. O jogo esquece?"
       },
       {
         "kind": "box",
-        "title": "O que fica guardado?",
-        "text": "A regra atual e a coleta anterior são coisas diferentes. Editar a regra não muda o que já aconteceu. Ao terminar, clique em <b>Próxima parte</b>.",
+        "title": "Você escolhe a ordem",
+        "text": "Ligar ou desligar a memória vale para o próximo encontro, sem mudar o que já aconteceu. Repita os testes do seu jeito e, ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "note"
       }
     ]
@@ -238,7 +238,7 @@
     "id": "guardar-coleta",
     "kicker": "Dia 2 · Parte 3 · Montagem",
     "title": "Guarde que a chave foi encontrada",
-    "subtitle": "Como na experiência com Guardar a coleta desligado: a chave some, mas nada guarda que ela foi encontrada.",
+    "subtitle": "Como na experiência com a memória da chave desligada: a chave some, mas nada guarda que ela foi encontrada.",
     "items": [
       {
         "kind": "text",
@@ -314,7 +314,7 @@
     "items": [
       {
         "kind": "text",
-        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere. Na experiência, veja o mostrador <b>temChave</b>, a pergunta da porta e as duas respostas: o <b>então</b> e o <b>senão</b>."
+        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere para decidir. Na experiência, veja <b>temChave</b>, a pergunta da porta e as duas respostas possíveis: uma para o sim e outra para o não."
       },
       {
         "kind": "step",
@@ -324,12 +324,12 @@
       {
         "kind": "step",
         "title": "Teste e compare",
-        "text": "Clique em <b>Testar a porta</b> e veja o valor de temChave e a resposta escolhida. Prepare a outra situação e compare. Você pode começar por qualquer uma e repetir."
+        "text": "Clique em <b>Testar a porta</b> e observe temChave e a resposta que a porta escolhe. Prepare a outra situação e compare. Você pode começar por qualquer uma e repetir."
       },
       {
         "kind": "box",
         "title": "Da experiência para o seu jogo",
-        "text": "Depois dos dois testes, clique em <b>Próxima parte</b>. Você vai montar primeiro o aviso de falta da chave e, na parte seguinte, completar a luz e a chegada do barco.",
+        "text": "Depois dos dois testes, clique em <b>Próxima parte</b>. Nas próximas partes, você vai ensinar o farol do seu jogo a responder do mesmo jeito que a porta.",
         "tone": "experience"
       }
     ]
@@ -606,7 +606,7 @@
       {
         "kind": "box",
         "title": "Dois números, um lugar",
-        "text": "<b>x:</b> posição horizontal. Um número menor leva para a esquerda; um maior, para a direita.<br/><b>y:</b> posição vertical. A contagem começa no 0, lá em cima, e cresce para baixo: um número menor leva para cima; um maior, para baixo.",
+        "text": "<b>x:</b> posição horizontal, para os lados.<br/><b>y:</b> posição vertical, para cima e para baixo.<br/>Para que lado a chave vai quando cada número aumenta? Descubra na experiência.",
         "tone": "experience"
       },
       {
@@ -617,7 +617,7 @@
       {
         "kind": "step",
         "title": "Compare os lugares",
-        "text": "Mude um número por vez. A marca de início permanece, e o pontilhado mostra o lugar anterior. Se quiser números exatos, abra <b>Escolher os números</b>."
+        "text": "Mude um número por vez. A marca de início permanece, e o pontilhado mostra o lugar anterior. Se quiser um número exato, digite no campo e clique fora dele."
       },
       {
         "kind": "box",
