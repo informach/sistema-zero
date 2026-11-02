@@ -27,8 +27,8 @@ export interface SecaoDino {
   speech?: string[]
   /**
    * Os passos que o Passo a passo do projeto imprime, no imperativo. Existe só no jogo pronto, cujo
-   * vídeo é um exemplo na primeira pessoa. As experiências imprimem a instrução e o que investigar
-   * (o `pedido` de cada meta), e as montagens, a fala sem os chamados do vídeo.
+   * vídeo é um exemplo na primeira pessoa. As experiências imprimem só a instrução (o que investigar,
+   * sem sequência), e as montagens, a fala sem os chamados do vídeo.
    */
   caderno?: string[]
   videoKey?: string
@@ -86,8 +86,9 @@ export function ehExperiencia(section: SecaoDino): boolean {
 
 /**
  * A nota "Na tela" do vídeo, escrita na fonte com a receita da ESPEC-ROTEIRO §9.8. Desde a
- * exploração livre (02/11/2026), as experiências também a escrevem por inteiro: o vídeo só aponta
- * os controles e o Zappy, sem fazer os testes pela criança.
+ * exploração livre (02/11/2026), as experiências também a escrevem por inteiro. No molde do convite
+ * (Cadê, 02/11/2026), o vídeo da experiência só amplia a cena parada e mostra o Zappy: não aponta os
+ * controles nem faz os testes pela criança.
  */
 export function telaSecao(section: SecaoDino): string {
   return section.screen ?? ''

@@ -6,42 +6,44 @@
 
 ### Clipe `video-quadros` · Desenhar uma vez ou em todo quadro?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-quadros`
 
-**Na tela:** No "Lembra do desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, um quadro em cada folha [na edição: meme das folhas de desenho]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas [apontar "Desenhar só no começo"] [apontar "Apagar a tela antes de desenhar"]. No "Este botão passa um quadro", apontar o botão, sem clicar [apontar "Avançar 1 quadro"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Lembra do desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, um quadro em cada folha [na edição: meme das folhas de desenho]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar quadros. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? No seu jogo, o Dino pode mudar de lugar por dentro do jogo, mas a tela só mostra o que foi desenhado nela.
+[engaging, energetic, conversational voice] Num jogo, desenhar o Dino é pintar o Dino na tela.
+
+[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Cada quadro é um desenho que aparece na tela.
+
+[engaging, energetic, conversational voice] No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.
 
 [curious] E se o Dino for desenhado em todo quadro, sem apagar a tela?
 
-[engaging, energetic, conversational voice] O que você acha que aparece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o Dino é desenhado e se a tela é apagada antes de cada desenho. Este botão passa um quadro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando o Dino é desenhado só no começo, em todo quadro sem apagar a tela e em todo quadro apagando a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra em cada jeito de desenhar o Dino, com e sem apagar a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-quadros-K1 | Dedé | 1 | do outro? No seu jogo, o Dino pode mudar de lugar por dentro do jogo, mas a tela só mostra o que foi desenhado nela. | E se o Dino for desenhado em todo quadro, sem apagar a tela? | O que você acha que aparece? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o | [curious] |
+| video-quadros-K1 | Dedé | 1 | aparece na tela. No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes. | E se o Dino for desenhado em todo quadro, sem apagar a tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra em cada jeito de | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-quadros-K1`: entrada — Manter o meme das folhas de desenho até o fim da frase. Saída — Depois da saída, voltar à experiência parada, sem passar quadros.
+- `video-quadros-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/draw-loop.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Mostre o Dino a cada quadro
 
@@ -141,44 +143,44 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-camadas` · Quem fica na frente?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-camadas`
 
-**Na tela:** No "Sabe quando você cola figurinhas", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas do Dino e da floresta na mão, escolhendo qual colar primeiro no álbum [na edição: meme das figurinhas]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os botões, sem clicar [apontar "Desenhar o Dino por último"] [apontar "Desenhar a floresta por último"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você cola figurinhas", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas do Dino e da floresta na mão, escolhendo qual colar primeiro no álbum [na edição: meme das figurinhas]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem trocar a ordem. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Em cada quadro, o jogo monta a tela desenhando uma coisa depois da outra, na mesma tela.
+
 [engaging, energetic, conversational voice] Sabe quando você cola figurinhas num álbum, umas por cima das outras? A ordem em que você cola faz diferença.
 
-[engaging, energetic, conversational voice] A tela do jogo também é montada assim: em cada quadro, o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados o Dino e a floresta.
+[engaging, energetic, conversational voice] No seu jogo, vão ser desenhados o Dino e a floresta.
 
 [curious] E se a floresta for desenhada depois do Dino, quem fica na frente?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem quem é desenhado por último, o Dino ou a floresta.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na tela quando muda a ordem em que o Dino e a floresta são desenhados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-camadas-K1 | Dedé | 1 | quadro, o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados o Dino e a floresta. | E se a floresta for desenhada depois do Dino, quem fica na frente? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem quem é | [curious] |
+| video-camadas-K1 | Dedé | 1 | umas por cima das outras? A ordem em que você cola faz diferença. No seu jogo, vão ser desenhados o Dino e a floresta. | E se a floresta for desenhada depois do Dino, quem fica na frente? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando muda a ordem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-camadas-K1`: entrada — Manter o meme das figurinhas até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem trocar a ordem.
+- `video-camadas-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/layers.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Coloque a floresta atrás do Dino
 
@@ -268,40 +270,40 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-descricao`
 
-**Na tela:** No "Sabe quando você explica um jogo", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao telefone, falando com um amigo do outro lado da linha [na edição: meme do telefone]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Ouvir a tela"]. No "Depois da primeira escuta, aparece um campo", manter a experiência sem escuta: o campo Descrição do jogo só abre depois da primeira escuta, que fica para a criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você explica um jogo", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao telefone, falando com um amigo do outro lado da linha [na edição: meme do telefone]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem ouvir a tela: a primeira escuta fica para a criança. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.
+
 [engaging, energetic, conversational voice] Sabe quando você explica um jogo para alguém pelo telefone? A pessoa do outro lado não vê nada, só ouve o que você conta.
 
-[engaging, energetic, conversational voice] Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.
+[engaging, energetic, conversational voice] No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.
 
 [curious] E o leitor de tela consegue contar como se joga o Corre, Dino?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão faz o leitor ler a tela do jogo. Depois da primeira escuta, aparece um campo para você escrever uma frase.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o que o leitor diz com o campo vazio e com uma frase que conta o que fazer e como jogar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-descricao-K1 | Dedé | 1 | Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta. | E o leitor de tela consegue contar como se joga o Corre, Dino? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o leitor ler a tela | [curious] |
+| video-descricao-K1 | Dedé | 1 | só ouve o que você conta. No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo. | E o leitor de tela consegue contar como se joga o Corre, Dino? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o leitor de tela diz sem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-descricao-K1`: entrada — Manter o meme do telefone até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem clicar em Ouvir a tela.
+- `video-descricao-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/screen-reader.ts`, na tela `packages/member-shell/src/components/scene-livre/screen-reader.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 8. Escreva a descrição do jogo
 

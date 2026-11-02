@@ -52,14 +52,14 @@
   "blocks": [
     {
       "key": "video-area-que-espera",
-      "plannedVideo": "Título: Uma vez, sempre ou na hora certa?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os jeitos [apontar \"Na hora em que algo acontece\"]. No \"e este botão faz o papel da tecla\", apontar o botão, sem clicar [apontar \"Apertar a tecla\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-area-que-espera-K1: Dedé substitui “E se o som ficar esperando a tecla, ele aparece quando o jogo começa?”. Antes: “e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o som do pulo”.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Uma vez, sempre ou na hora certa?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-area-que-espera-K1: Dedé substitui “E se o som ficar esperando a tecla, ele aparece quando o jogo começa?”. Antes: “você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o som do pulo aparece em cada”.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-area-que-espera",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -68,7 +68,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Uma vez, sempre ou na hora certa?",
-        "instructions": "Compare o som do pulo nos três jeitos, principalmente na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare quando o som do pulo aparece em cada jeito, principalmente na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe o contador de sons e em que momento o som aparece.",
           "Compare o jeito Na hora em que algo acontece com a tecla e sem a tecla.",
@@ -124,14 +124,14 @@
     },
     {
       "key": "video-dedo-e-pulo",
-      "plannedVideo": "Título: Som na tecla ou no pulo?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o sininho da porta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Quando a tecla Espaço é apertada\"] [apontar \"Quando o Dino pula\"]. No \"e estes botões fazem o Dino pular\", apontar os botões, sem clicar [apontar \"Apertar Espaço\"] [apontar \"Tocar para pular\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-dedo-e-pulo-K1: Dedé substitui “E se o som estiver ligado à tecla, o pulo do toque também tem som?”. Antes: “No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe a que o som fica”.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Som na tecla ou no pulo?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o sininho da porta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a linha do tempo vazia. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-dedo-e-pulo-K1: Dedé substitui “E se o som estiver ligado à tecla, o pulo do toque também tem som?”. Antes: “No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos sons e quantos pulos acontecem”.\n\nFala completa em corre-dino-aula-04.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-dedo-e-pulo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -140,7 +140,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Som na tecla ou no pulo?",
-        "instructions": "Descubra em que momento o som do pulo deve tocar. Teste os dois momentos e compare quantos sons e quantos pulos aparecem na linha do tempo. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare quantos sons e quantos pulos aparecem na linha do tempo com o som ligado à tecla e com o som ligado ao pulo. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Em cada jeito, conte os sons e os pulos na linha do tempo.",
           "Com o som ligado à tecla, compare um pulo pela tecla e um pulo pelo toque.",
@@ -515,7 +515,7 @@
       "key": "area-que-espera",
       "title": "Uma vez, sempre ou na hora certa?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-area-que-espera", "fala-area-que-espera", "experiencia-tres-areas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -529,7 +529,7 @@
       "key": "dedo-e-pulo",
       "title": "Som na tecla ou no pulo?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-dedo-e-pulo", "fala-dedo-e-pulo", "experiencia-dedo-e-pulo"],
       "workspaceKey": null,
       "externalTool": null,

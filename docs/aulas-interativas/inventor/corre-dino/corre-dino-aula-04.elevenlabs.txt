@@ -1,16 +1,18 @@
-[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo no botão.
+[engaging, energetic, conversational voice] Você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Existe um terceiro jeito: na hora em que algo acontece.
 
-[engaging, energetic, conversational voice] No seu jogo, você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.
+[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo nela.
+
+[engaging, energetic, conversational voice] No seu jogo, você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.
 
 [curious] E se o som ficar esperando a tecla, ele aparece quando o jogo começa?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o som do pulo aparece, e este botão faz o papel da tecla.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o som do pulo nos três jeitos: uma vez, no começo, sempre, em todo quadro, e na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o som do pulo aparece em cada jeito, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
+
+[engaging, energetic, conversational voice] Num jogo, um som pode ficar ligado a um momento: ele aparece toda vez que aquele momento acontece.
 
 [engaging, energetic, conversational voice] Sabe o sininho da porta de uma loja? Ele fica preso na porta e toca quando ela abre.
 
@@ -20,9 +22,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe a que o som fica ligado, e estes botões fazem o Dino pular com a tecla ou com o toque. A linha do tempo mostra cada pulo e cada som.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quantos sons e quantos pulos aparecem com o som ligado à tecla e com o som ligado ao pulo, também com dois toques na tecla no mesmo pulo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos sons e quantos pulos acontecem com o som ligado à tecla e com o som ligado ao pulo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

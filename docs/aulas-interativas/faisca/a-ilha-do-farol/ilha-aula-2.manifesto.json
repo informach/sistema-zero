@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Mude um número da chave de cada vez, para mais e para menos, e observe para onde ela vai. Você escolhe por onde começar, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,7 +22,7 @@
         "kind": "interactive",
         "title": "Para onde vai a chave?",
         "required": true,
-        "instructions": "A chave tem três números: x, y e z. Mude um de cada vez, para mais e para menos, e observe para onde ela vai. Compare com a marca dourada do lugar inicial e troque a vista quando quiser.",
+        "instructions": "Compare para onde a chave vai quando o x, o y e o z aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Escolha um dos três números da chave e observe para onde ela vai.",
           "Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.",
@@ -60,7 +60,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Teste se a chave e o personagem estão encostando e compare com o que a imagem mostra. Procure um caso em que eles encostam e outro em que ficam separados. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -69,7 +69,7 @@
         "kind": "interactive",
         "title": "Parece junto, mas está encostando?",
         "required": true,
-        "instructions": "Teste se a chave e o personagem estão encostando. Compare o resultado com o que a imagem mostra de cima e de lado. Mude um dos dois de lugar e teste de novo, na ordem que quiser.",
+        "instructions": "Compare quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Antes de testar, pense: a chave e o personagem estão encostando?",
           "Teste o encontro e compare a vista de cima com a vista de lado.",

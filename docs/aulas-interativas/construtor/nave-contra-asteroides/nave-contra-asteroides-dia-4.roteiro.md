@@ -6,11 +6,11 @@
 
 ### Clipe `video-vidas-no-comeco` · Quando a nave ganha as vidas?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-vidas-no-comeco`
 
-**Na tela:** No "Sabe quando você ganha três fichas", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na entrada do parque com três fichas na mão [na edição: meme das fichas do parque]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os jeitos, sem clicar [apontar "Uma vez, no começo"] [apontar "Sempre, em todo quadro"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você ganha três fichas", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na entrada do parque com três fichas na mão [na edição: meme das fichas do parque]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -21,18 +21,16 @@
 
 [curious] E se a nave ganhar as três vidas sempre, em todo quadro?
 
-[engaging, energetic, conversational voice] O que você acha que acontece depois das batidas? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando a nave ganha as três vidas, e um asteroide bate nela de tempos em tempos.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as vidas depois das batidas quando a nave ganha as vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantas vidas a nave tem depois das batidas quando ela ganha as três vidas uma vez só e quando ganha o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-vidas-no-comeco-K1 | Debinha | 1 | vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro. | E se a nave ganhar as três vidas sempre, em todo quadro? | O que você acha que acontece depois das batidas? Isso você vai testar na experiência. Olha aqui: nesta experiência, | [curious] |
+| video-vidas-no-comeco-K1 | Debinha | 1 | vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro. | E se a nave ganhar as três vidas sempre, em todo quadro? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas a nave tem depois das | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -43,7 +41,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Dê e mostre as três vidas
 
@@ -165,11 +163,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-protecao` · O tempinho de proteção
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-protecao`
 
-**Na tela:** No "Sabe quando você brinca de pega-pega", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy correndo de um amigo, com um reloginho contando o respiro [na edição: meme do respiro no pega-pega]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as proteções, sem clicar [apontar "Nenhuma"] [apontar "45 quadros"]. No "três pedras batem na nave", apontar o botão, sem clicar [apontar "Avançar até a próxima pedra"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você brinca de pega-pega", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy correndo de um amigo, com um reloginho contando o respiro [na edição: meme do respiro no pega-pega]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -182,16 +180,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quanto tempo dura a proteção depois de bater, e três pedras batem na nave, uma de cada vez.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quantas vidas sobram sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantas vidas sobram depois de três pedras sem proteção, com uma proteção curta e com uma proteção longa. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-protecao-K1 | Debinha | 1 | jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez. | E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quanto tempo dura a | [curious] |
+| video-protecao-K1 | Debinha | 1 | jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez. | E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas sobram depois de três | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -202,7 +198,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/invincibility.ts`, na tela `packages/member-shell/src/components/scene-livre/invincibility.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Tire uma vida a cada batida
 

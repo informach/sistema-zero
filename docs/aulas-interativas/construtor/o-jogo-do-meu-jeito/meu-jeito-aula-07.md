@@ -34,9 +34,9 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-dois-relogios-K1: Debinha substitui “Se a máquina soltar mais rápido, os piões giram mais rápido também?”. Antes: “vezes a cada segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o relógio de nascer,”.
+video-dois-relogios-K1: Debinha substitui “Se a máquina soltar mais rápido, os piões giram mais rápido também?”. Antes: “desenhos por segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que cada relógio muda nas pedras, e”.
 
-**Experiência em exploração livre:** `two-clocks`, com `setup.freeExploration`. Mude um relógio de cada vez, volte ao começo e deixe o tempo passar. Compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `two-clocks`, com `setup.freeExploration`. Mude um relógio de cada vez e compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare a folha do asteroide
 

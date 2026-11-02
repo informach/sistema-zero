@@ -6,44 +6,44 @@
 
 ### Clipe `video-gravidade-modelo` · O que traz o Dino de volta?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-gravidade-modelo`
 
-**Na tela:** No "Sabe quando você joga uma bola para cima", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando uma bola para cima, com a bola ainda subindo [na edição: meme da bola jogada para cima]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os botões, sem clicar [apontar "Pular"] [apontar "Ligar a gravidade"]. No "Este número mostra a altura do Dino", apontar o número da altura, sem pular. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você joga uma bola para cima", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando uma bola para cima, com a bola ainda subindo [na edição: meme da bola jogada para cima]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no chão. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] A gravidade é uma força que puxa tudo para baixo, e cada jogo decide se usa essa força.
+
 [engaging, energetic, conversational voice] Sabe quando você joga uma bola para cima? Ela não fica lá no alto para sempre.
 
-[engaging, energetic, conversational voice] Quem puxa a bola de volta é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.
+[engaging, energetic, conversational voice] No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.
 
 [curious] E sem gravidade, o Dino volta para o chão depois do pulo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão faz o Dino pular, e este outro liga e desliga a gravidade. Este número mostra a altura do Dino.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-gravidade-modelo-K1 | Debinha | 1 | é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não. | E sem gravidade, o Dino volta para o chão depois do pulo? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o Dino pular, e este | [curious] |
+| video-gravidade-modelo-K1 | Debinha | 1 | para sempre. No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não. | E sem gravidade, o Dino volta para o chão depois do pulo? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-gravidade-modelo-K1`: entrada — Manter o meme da bola até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o Dino no chão, sem pular.
+- `video-gravidade-modelo-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/gravity.ts`, na tela `packages/member-shell/src/components/scene-livre/gravity.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Deixe a gravidade pronta
 
@@ -88,40 +88,40 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-impulso-modelo`
 
-**Na tela:** No "Sabe quando você pula numa cama elástica", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino em cima de uma cama elástica, se preparando para pular [na edição: meme da cama elástica]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os impulsos, sem clicar [apontar "Impulso 9"] [apontar "Impulso 14"]. No "e este outro faz o Dino pular", apontar o botão, sem clicar [apontar "Pular"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você pula numa cama elástica", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino em cima de uma cama elástica, se preparando para pular [na edição: meme da cama elástica]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no chão. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Impulso é a força do começo de um pulo. É ele que diz com quanta força um personagem sai do chão.
+
 [engaging, energetic, conversational voice] Sabe quando você pula numa cama elástica? Dá para pular com pouca força ou com muita força.
 
-[engaging, energetic, conversational voice] No pulo do Dino também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.
+[engaging, energetic, conversational voice] No seu jogo, você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.
 
 [curious] E com mais impulso, até onde o Dino chega?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem o impulso, e este outro faz o Dino pular. Cada pulo deixa uma marca da altura.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as marcas da altura dos pulos com impulsos diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o impulso muda nas marcas da altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-impulso-modelo-K1 | Debinha | 1 | também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos. | E com mais impulso, até onde o Dino chega? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem o impulso, e | [curious] |
+| video-impulso-modelo-K1 | Debinha | 1 | você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos. | E com mais impulso, até onde o Dino chega? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda nas marcas da | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-impulso-modelo-K1`: entrada — Manter o meme da cama elástica até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o Dino no chão, sem pular.
+- `video-impulso-modelo-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/impulse.ts`, na tela `packages/member-shell/src/components/scene-livre/impulse.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Dê os controles de pulo ao Dino
 

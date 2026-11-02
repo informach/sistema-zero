@@ -10,40 +10,40 @@
 
 **Clipe:** `video-guardar-mudar-mostrar`
 
-**Na tela:** No "Sabe quando alguém vai contando os gols", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar a caixa e os botões, sem clicar [apontar "Guardar o número 0"] [apontar "Mostrar o número na tela"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando alguém vai contando os gols", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem clicar em nada. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Para lembrar um número, o jogo usa uma caixa com nome. Uma caixa que guarda um número se chama variável.
+
 [engaging, energetic, conversational voice] Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.
 
-[engaging, energetic, conversational voice] No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.
+[engaging, energetic, conversational voice] No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela.
 
 [curious] E se o número não estiver na tela, ele continua mudando?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, esta caixa guarda o número dos pontos, e estes botões guardam o número, fazem o Dino ganhar um ponto e mostram o número na tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a caixa pontos e a tela do jogo quando você guarda o número, quando o Dino ganha um ponto com o número fora da tela e quando o número aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na caixa pontos e na tela do jogo quando o número muda e quando ele aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-guardar-mudar-mostrar-K1 | Debinha | 1 | coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável. | E se o número não estiver na tela, ele continua mudando? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número dos | [curious] |
+| video-guardar-mudar-mostrar-K1 | Debinha | 1 | para todo mundo. No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela. | E se o número não estiver na tela, ele continua mudando? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na caixa pontos e na tela do | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-guardar-mudar-mostrar-K1`: entrada — Manter o meme dos gols contados de cabeça até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem clicar em nada.
+- `video-guardar-mudar-mostrar-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/variable.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare os pontos em zero
 
@@ -129,44 +129,44 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-quando-o-placar-cresce` · Quando o placar cresce?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-quando-o-placar-cresce`
 
-**Na tela:** No "Sabe o cronômetro de uma corrida", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "A cada quadro"] [apontar "A cada segundo"] [apontar "Ligar a pergunta"]. No "Estes botões passam um segundo e mudam de tela", apontar os botões, sem clicar [apontar "Passar 1 segundo"] [apontar "Começar a partida"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o cronômetro de uma corrida", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe o cronômetro de uma corrida? Ele só começa a contar depois da largada.
+[engaging, energetic, conversational voice] Os pontos de um jogo ficam no placar, e é o jogo que decide quando somar cada ponto.
 
-[curious] No seu jogo, cada segundo de corrida vale um ponto. E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?
+[engaging, energetic, conversational voice] Sabe o cronômetro de uma corrida? Alguém precisa decidir quando ele conta.
+
+[curious] No seu jogo, o ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora?
 
 [curious] E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o ponto soma e liga ou desliga a pergunta. Estes botões passam um segundo e mudam de tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o placar em cada jeito de somar, na tela de início, na partida e no fim. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o placar cresce em cada jeito de somar, com e sem a pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-quando-o-placar-cresce-K1 | Debinha | 1 | E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora? | E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o ponto soma e | [curious] |
+| video-quando-o-placar-cresce-K1 | Debinha | 1 | ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora? | E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o placar cresce em cada jeito de | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-quando-o-placar-cresce-K1`: entrada — Manter o meme do cronômetro até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência na tela de início, sem passar o tempo.
+- `video-quando-o-placar-cresce-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/score.ts`, na tela `packages/member-shell/src/components/scene-livre/score.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Some um ponto por segundo de partida
 

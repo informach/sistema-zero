@@ -10,40 +10,40 @@
 
 **Clipe:** `video-area-que-espera`
 
-**Na tela:** No "Sabe a campainha de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os jeitos [apontar "Na hora em que algo acontece"]. No "e este botão faz o papel da tecla", apontar o botão, sem clicar [apontar "Apertar a tecla"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe a campainha de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo no botão.
+[engaging, energetic, conversational voice] Você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Existe um terceiro jeito: na hora em que algo acontece.
 
-[engaging, energetic, conversational voice] No seu jogo, você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.
+[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo nela.
+
+[engaging, energetic, conversational voice] No seu jogo, você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.
 
 [curious] E se o som ficar esperando a tecla, ele aparece quando o jogo começa?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o som do pulo aparece, e este botão faz o papel da tecla.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o som do pulo nos três jeitos: uma vez, no começo, sempre, em todo quadro, e na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o som do pulo aparece em cada jeito, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-area-que-espera-K1 | Dedé | 1 | e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla. | E se o som ficar esperando a tecla, ele aparece quando o jogo começa? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o som do pulo | [curious] |
+| video-area-que-espera-K1 | Dedé | 1 | você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla. | E se o som ficar esperando a tecla, ele aparece quando o jogo começa? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o som do pulo aparece em cada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-area-que-espera-K1`: entrada — Manter o meme da campainha até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem escolher nenhum jeito.
+- `video-area-que-espera-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Som na tecla ou no pulo?
 
@@ -53,11 +53,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-dedo-e-pulo`
 
-**Na tela:** No "Sabe o sininho da porta", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Quando a tecla Espaço é apertada"] [apontar "Quando o Dino pula"]. No "e estes botões fazem o Dino pular", apontar os botões, sem clicar [apontar "Apertar Espaço"] [apontar "Tocar para pular"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o sininho da porta", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a linha do tempo vazia. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Num jogo, um som pode ficar ligado a um momento: ele aparece toda vez que aquele momento acontece.
+
 [engaging, energetic, conversational voice] Sabe o sininho da porta de uma loja? Ele fica preso na porta e toca quando ela abre.
 
 [engaging, energetic, conversational voice] No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.
@@ -66,27 +68,25 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe a que o som fica ligado, e estes botões fazem o Dino pular com a tecla ou com o toque. A linha do tempo mostra cada pulo e cada som.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quantos sons e quantos pulos aparecem com o som ligado à tecla e com o som ligado ao pulo, também com dois toques na tecla no mesmo pulo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos sons e quantos pulos acontecem com o som ligado à tecla e com o som ligado ao pulo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-dedo-e-pulo-K1 | Dedé | 1 | No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo. | E se o som estiver ligado à tecla, o pulo do toque também tem som? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe a que o som fica | [curious] |
+| video-dedo-e-pulo-K1 | Dedé | 1 | No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo. | E se o som estiver ligado à tecla, o pulo do toque também tem som? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos sons e quantos pulos acontecem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-dedo-e-pulo-K1`: entrada — Manter o meme do sininho até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com a linha do tempo vazia, sem pular.
+- `video-dedo-e-pulo-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/jump-sound.ts`, na tela `packages/member-shell/src/components/scene-livre/jump-sound.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 3. Ligue o som ao pulo do Dino
 

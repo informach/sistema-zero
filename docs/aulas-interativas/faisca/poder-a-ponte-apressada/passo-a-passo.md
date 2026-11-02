@@ -4,7 +4,7 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 
 ## A experiência: a ponte apressada
 
-**A ideia:** A alavanca baixa a ponte, e o jogo lembra disso em ponteAberta, como quem anota num papelzinho. Um relógio conta 4 segundos. Na experiência, você descobre o que acontece com a ponte em cada momento.
+**A ideia:** A ponte tem uma alavanca, e o jogo lembra em ponteAberta se ela está baixada, como quem anota num papelzinho. Um relógio conta 4 segundos. Na experiência, você descobre o que acontece com a ponte em cada momento.
 
 **O que investigar:**
 

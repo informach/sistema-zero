@@ -2196,7 +2196,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando a cabana abre e quando continua fechada: sem nenhuma peça, com uma, com as duas e em ordens diferentes. Depois compare com a cabana que pede uma das peças. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2206,7 +2206,7 @@
         "required": true,
         "title": "A porta com duas peças",
         "semPerguntaFinal": true,
-        "instructions": "Tente a cabana sem nenhuma peça, com uma e com as duas, e observe temChave, temEmblema e a porta. Pegue as peças em ordens diferentes e compare com a cabana que pede uma das peças. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe temChave e temEmblema antes de encostar na cabana: quantos estão em verdadeiro?",
           "Compare a cabana sem nenhuma peça, com uma e com as duas. Depois recomece e pegue as peças na outra ordem.",

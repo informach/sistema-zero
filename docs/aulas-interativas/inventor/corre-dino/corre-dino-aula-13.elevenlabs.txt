@@ -1,14 +1,14 @@
-[engaging, energetic, conversational voice] Sabe o botão de volume? Cada toque deixa o som mais forte, até um limite.
+[engaging, energetic, conversational voice] Num jogo, a dificuldade pode crescer aos poucos, enquanto a partida acontece.
 
-[engaging, energetic, conversational voice] No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7…
+[engaging, energetic, conversational voice] Sabe o botão de volume? Cada toque deixa o som um pouco mais forte.
+
+[curious] No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?
 
 [curious] E os cactos que já estão na pista também ficam mais rápidos?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão passa cinco segundos de corrida, e este outro liga e desliga a pergunta: a base é maior que -9? Embaixo de cada cacto aparece o número dele.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a base e os números dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

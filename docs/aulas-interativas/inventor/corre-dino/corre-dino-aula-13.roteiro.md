@@ -10,40 +10,40 @@
 
 **Clipe:** `video-o-que-o-freio-segura`
 
-**Na tela:** No "Sabe o botão de volume", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Passar 5 segundos"]. No "e este outro liga e desliga a pergunta", apontar o botão da pergunta, sem clicar. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o botão de volume", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe o botão de volume? Cada toque deixa o som mais forte, até um limite.
+[engaging, energetic, conversational voice] Num jogo, a dificuldade pode crescer aos poucos, enquanto a partida acontece.
 
-[engaging, energetic, conversational voice] No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7…
+[engaging, energetic, conversational voice] Sabe o botão de volume? Cada toque deixa o som um pouco mais forte.
+
+[curious] No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?
 
 [curious] E os cactos que já estão na pista também ficam mais rápidos?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão passa cinco segundos de corrida, e este outro liga e desliga a pergunta: a base é maior que -9? Embaixo de cada cacto aparece o número dele.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a base e os números dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a base e com os números dos cactos novos e antigos, com a pergunta ligada e desligada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-o-que-o-freio-segura-K1 | Debinha | 1 | forte, até um limite. No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7… | E os cactos que já estão na pista também ficam mais rápidos? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão passa cinco segundos de | [curious] |
+| video-o-que-o-freio-segura-K1 | Debinha | 1 | -7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9? | E os cactos que já estão na pista também ficam mais rápidos? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a base e com os | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-o-que-o-freio-segura-K1`: entrada — Manter o meme do botão de volume até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem passar o tempo.
+- `video-o-que-o-freio-segura-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/acceleration.ts`, na tela `packages/member-shell/src/components/scene-livre/acceleration.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Guarde a velocidade base
 

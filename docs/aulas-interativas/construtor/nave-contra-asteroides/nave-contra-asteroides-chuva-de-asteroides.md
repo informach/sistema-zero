@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Separa criar obstáculos de programar a colisão. Intervalo e sorteio são observados diretamente no jogo que a pessoa acabou de montar.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -28,19 +28,19 @@ Separa criar obstáculos de programar a colisão. Intervalo e sorteio são obser
 
 ### Seção 1. Quando nasce uma pedra nova?
 
-**Tarefa:** Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-intervalo-das-pedras → fala-intervalo-das-pedras → experiencia-relogio.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo quadro?”. Antes: “em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.”. Depois: “O que você acha que aparece na tela? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões”.
+video-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo quadro?”. Antes: “em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na chuva de pedras quando”.
 
 **Experiência em exploração livre:** `spawn` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/spawn.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/spawn.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram. Escolha De 40 em 40 quadros e deixe o tempo passar até nascerem duas pedras. Observe onde cada uma aparece.
 
@@ -66,19 +66,19 @@ video-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”.
 
 ### Seção 3. Onde nasce cada pedra?
 
-**Tarefa:** Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-posicao-sorteada → fala-posicao-sorteada → experiencia-sorteio.
 
-**Recado na página (não gravar):** Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no meio da tela?”. Antes: “lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta”.
+video-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no meio da tela?”. Antes: “lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde cada pedra nova nasce quando o”.
 
 **Experiência em exploração livre:** `random` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/random.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/random.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Sorteie o lugar da pedra algumas vezes e compare as marquinhas na régua. Depois observe de onde a pedra entra na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua. Clique em Passar 1 segundo e observe de onde a pedra entra na tela.
 

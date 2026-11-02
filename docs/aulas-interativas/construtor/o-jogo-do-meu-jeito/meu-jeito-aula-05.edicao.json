@@ -23,7 +23,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra",
       "falaPrincipal": "Como faz para a pedra aparecer na frente da chama?",
       "falaPersonagem": "Como faz para a pedra aparecer na frente da chama?",
       "tags": ["[curious]"]
@@ -55,10 +55,10 @@
       "clipe": "video-mudanca-pequena",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar?",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a Prévia troca dois desenhos da",
-      "falaPrincipal": "E se a pedra inteira andar bastante?",
-      "falaPersonagem": "E se a pedra inteira andar bastante?",
+      "ancoraAntes": "lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1",
+      "falaPrincipal": "E se a pedra inteira andar bastante de um quadro para o outro?",
+      "falaPersonagem": "E se a pedra inteira andar bastante de um quadro para o outro?",
       "tags": ["[curious]"]
     }
   ]

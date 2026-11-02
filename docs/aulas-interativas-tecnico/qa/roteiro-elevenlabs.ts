@@ -97,7 +97,12 @@ function intencaoDaFala(texto: string): string {
   if (/^(?:Se (?:no seu|algo não|alguma|a frase|os blocos)|Depois de corrigir)/i.test(texto))
     return '[reassuring, encouraging voice]'
   if (/^(?:Oi\b|Olá\b)/i.test(texto)) return '[upbeat, welcoming voice]'
-  if (/^(?:Agora é a sua vez|Agora (?:vamos testar|teste|jogue)|Se quiser)/i.test(texto))
+  // O convite da experiência (molde do Cadê, 02/11/2026) tem o mesmo tom do "Agora é a sua vez".
+  if (
+    /^(?:Agora é a sua vez|Agora você vai (?:investigar|comparar)|Agora (?:vamos testar|teste|jogue)|Se quiser)/i.test(
+      texto,
+    )
+  )
     return '[upbeat, encouraging voice]'
   if (/^(?:Pronto\b|Olha só o que você|Seu jogo está no Mural|Parabéns)/i.test(texto))
     return '[pleased, lively voice]'

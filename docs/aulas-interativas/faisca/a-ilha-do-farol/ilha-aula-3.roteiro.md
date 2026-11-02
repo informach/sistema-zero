@@ -114,27 +114,25 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-pergunta-com-nao`
 
-**Na tela:** Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a plaquinha da porta de uma loja dos dois lados, Pode entrar e Não pode entrar, com a palavra não destacada. Depois mostrar a experiência parada, sem a chave e com a pergunta sem o não, e apontar os botões Dar a chave ao personagem, Pôr o não na pergunta e Testar a porta, sem clicar. Apontar a tabela das quatro situações, ainda com Teste para descobrir. Não testar a porta nem dizer qual resposta a porta dá em nenhuma situação: a criança descobre na experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis.
+**Na tela:** Vídeo conceitual. Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: duas lojas lado a lado, uma com a plaquinha Pode entrar e outra com a plaquinha Não pode entrar, com a palavra não destacada, sem mostrar ninguém entrando nem barrado. Depois ampliar a experiência e mostrar a cena parada, sem a chave e com a pergunta sem o não, sem apontar controles nem a tabela e sem clicar: qual resposta a porta dá em cada situação é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Sabe a plaquinha na porta de uma loja? “Pode entrar” e “Não pode entrar” são quase iguais, mas a palavrinha não troca tudo.
+[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não.
 
-[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter o não. Nesta experiência, a porta do farol faz uma pergunta. A porta pergunta: a porta está trancada? E ela é muito obediente: abre sempre que a resposta é sim.
+[curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença.
 
-[engaging, energetic, conversational voice] Sem a chave, a porta está trancada. Com a chave, ela fica destrancada.
+[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Na experiência, a porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim.
 
-[curious] Agora pense: com o não na pergunta, a resposta da porta muda?
+[curious] Com o não na pergunta, o que a porta faz?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões dão ou tiram a chave, põem ou tiram o não da pergunta e testam a porta. E esta tabela guarda a resposta de cada situação que você testar.
-
-[upbeat, encouraging voice] Sua vez de investigar: teste a porta com a pergunta sem o não e com o não, com a chave e sem a chave, e compare as respostas. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Descubra o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. O farol acende uma vez só
 

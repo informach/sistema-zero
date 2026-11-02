@@ -1,14 +1,12 @@
 [engaging, energetic, conversational voice] Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.
 
-[engaging, energetic, conversational voice] No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.
+[engaging, energetic, conversational voice] No seu jogo, o número guardado vai se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.
 
 [curious] E se o número não estiver na tela, ele continua mudando?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, esta caixa guarda o número, e estes botões guardam o número, fazem a nave acertar um asteroide e mostram o número na tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a caixa pontos e a tela do jogo quando você guarda o número, quando a nave acerta um asteroide com o número fora da tela e quando o número aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar a diferença entre o número que o jogo guarda e o número que aparece na tela, quando a nave acerta um asteroide. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

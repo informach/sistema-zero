@@ -14,7 +14,7 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar retorno à batida e reiniciar têm montagens próprias. A experiência de reinício antecede o ramo de fim do evento. O quiz retoma o ciclo completo.
 
-**Revisão de 02/11/2026.** A batida (os carrinhos de bate-bate) e o recomeço (o tabuleiro, com o toque no lugar do Enter da Nave) passaram à exploração livre. As montagens dizem os nomes de fábrica da colisão e da explosão e onde clicar, ligam cada bloco à ideia, separam os campos da tela de fim e localizam o + do senão se como na Nave. As respostas à Debinha começam pelo que ela perguntou ("A partida acaba: o estado muda para fim"; "Com um bloco que começa tudo de novo"). D2: a retomada do recomeço lembra a experiência logo antes, e o mesmo toque passa a fazer outra coisa no fim da partida, num ramo novo do Se. No quiz, "faz o quadro esperar".
+**Revisão de 02/11/2026.** A batida (o combinado do pega-pega, no lugar dos carrinhos de bate-bate, cujo para-choque respondia a pergunta) e o recomeço (o tabuleiro, com o toque no lugar do Enter da Nave) passaram à exploração livre. As montagens dizem os nomes de fábrica da colisão e da explosão e onde clicar, ligam cada bloco à ideia, separam os campos da tela de fim e localizam o + do senão se como na Nave. As respostas à Debinha começam pelo que ela perguntou ("A partida acaba: o estado muda para fim"; "Com um bloco que começa tudo de novo"). D2: a retomada do recomeço lembra a experiência logo antes, e o mesmo toque passa a fazer outra coisa no fim da partida, num ramo novo do Se. No quiz, "faz o quadro esperar".
 
 ## Triagem dos conceitos
 
@@ -28,19 +28,19 @@ O contato é observado antes de montar a colisão. Encerrar, mostrar o fim, dar 
 
 ### Seção 1. Quando o jogo marca a batida?
 
-**Tarefa:** Sua vez! Descubra quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-contato → fala-contato → experiencia-contato.
 
-**Recado na página (não gravar):** Sua vez! Descubra quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?”. Antes: “cada desenho também tem uma área, como esse para-choque. Quando o Dino e o cacto se aproximam, o jogo marca uma batida.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o retângulo pontilhado em volta do”.
+video-contato-K1: Debinha substitui “E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?”. Antes: “combina o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as”.
 
 **Experiência em exploração livre:** `hitbox` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/hitbox.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/hitbox.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** O retângulo pontilhado em volta do Dino é a área de contato. Aproxime o cacto um toque de cada vez e compare, quando aparecer BATEU, os desenhos e as áreas. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Aproximar o cacto, um toque de cada vez, até aparecer BATEU. Compare os desenhos com as áreas.
 
@@ -94,19 +94,19 @@ video-batida-sentida-K1: Debinha substitui “O som vem antes de mostrar a tela 
 
 ### Seção 5. Voltar ou começar tudo de novo?
 
-**Tarefa:** Sua vez! Descubra o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-trocar-nao-limpa → fala-trocar-nao-limpa → experiencia-restart.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-trocar-nao-limpa-K1: Debinha substitui “E qual é a diferença entre os dois?”. Antes: “jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o toque faz no”.
+video-trocar-nao-limpa-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar como começa a partida nova em cada”.
 
 **Experiência em exploração livre:** `restart` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/restart.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/restart.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os cactos que ficam na pista quando o toque do fim só volta para a tela de início e quando começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Só voltar para a tela de início. Clique em Tocar na tela, deixe o tempo passar até um cacto bater e clique em Tocar na tela até começar outra partida. Observe os cactos. Escolha Começar tudo de novo. Clique em Tocar na tela, deixe o tempo passar até um cacto bater e clique em Tocar na tela até começar outra partida. Observe a pista.
 

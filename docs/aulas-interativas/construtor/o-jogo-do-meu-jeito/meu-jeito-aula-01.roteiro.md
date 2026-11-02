@@ -58,7 +58,7 @@
 
 **Clipe:** `video-aparencia-e-regras`
 
-**Na tela:** No "a aparência e o que o jogo faz", mostrar a experiência na aula, na Nave no espaço. No "Sabe o uniforme de um time de futebol", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico com dois uniformes [na edição: meme dos uniformes]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as três histórias [apontar "Carrinho na estrada"]. No "Este outro desliga o tiro", apontar o botão [apontar "Desligar o tiro"]. No "na lista O que o jogo faz", apontar a lista [apontar "O que o jogo faz"]. Não trocar a história nem desligar o tiro: o que muda em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "a aparência e o que o jogo faz", mostrar a experiência na aula, parada na Nave no espaço. No "Sabe o uniforme de um time de futebol", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico com dois uniformes [na edição: meme dos uniformes]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a cena parada na Nave no espaço, sem trocar a história nem desligar o tiro: o que muda em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -73,22 +73,20 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes três botões trocam a história do jogo: Nave no espaço, Carrinho na estrada e Submarino no mar. Este outro desliga o tiro. E aqui, na lista O que o jogo faz, você acompanha o que acontece no jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: troque a história e desligue o tiro, jogando um pouco em cada caso. Compare a tela e a lista O que o jogo faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no jogo quando você troca a história e quando desliga o tiro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-aparencia-e-regras-K1 | Debinha | 1 | Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo. | E se eu trocar a nave por um carrinho, o jogo muda? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes três botões trocam a história | [curious] |
+| video-aparencia-e-regras-K1 | Debinha | 1 | Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo. | E se eu trocar a nave por um carrinho, o jogo muda? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-aparencia-e-regras-K1`: entrada — Mostrar a experiência ainda na Nave no espaço, sem trocar a história. Saída — Seguir sem fazer o teste: a professora só convida a testar e aponta os controles.
+- `video-aparencia-e-regras-K1`: entrada — Mostrar a experiência ainda na Nave no espaço, sem trocar a história. Saída — Seguir sem fazer o teste: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/same-rules-new-skin.ts`, com a tela em `packages/member-shell/src/components/scene-livre/same-rules-new-skin.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
@@ -103,37 +101,35 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-copias`
 
-**Na tela:** No "Sabe quando você copia o desenho de um gibi", mostrar o meme ilustrado (2 a 3 s) do Zappy copiando a nave de um gibi numa folha [na edição: meme do gibi]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e mostrar o jogo da aula e o Estúdio, ainda sem arquivo. No "Estes são os botões Baixar o projeto", apontar o botão [apontar "Baixar o projeto"]. No "e Importar no Estúdio", apontar o botão fechado [apontar "Importar no Estúdio"]. No "a cor da nave de cada lado", apontar as cores da nave da aula [apontar "Cor da nave da aula"]. Não baixar, importar nem pintar: o que acontece em cada lado é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "Para criar do seu jeito", mostrar a experiência na aula, parada, ainda sem arquivo. No "Sabe quando você copia o desenho de um gibi", mostrar o meme ilustrado (2 a 3 s) do Zappy copiando a nave de um gibi numa folha [na edição: meme do gibi]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar o jogo da aula e o Estúdio parados, ainda sem arquivo, sem baixar, importar nem pintar: o que acontece em cada lado é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Para criar do seu jeito sem perder o jogo que você terminou, você vai trabalhar numa cópia dele.
 
-[engaging, energetic, conversational voice] Uma cópia é outro jogo igualzinho ao primeiro, guardado num arquivo. Na plataforma, você faz essa cópia com Baixar o projeto.
+[engaging, energetic, conversational voice] Uma cópia é outro jogo igualzinho ao primeiro, guardado num arquivo. No seu jogo, o original fica na plataforma, e a cópia vai para o seu Estúdio.
 
 [engaging, energetic, conversational voice] Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.
 
-[curious] Se eu pintar a cópia, o desenho do gibi muda também?
+[curious] Se eu mudar a nave da cópia, a nave do jogo da aula muda também?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência aparecem o jogo da aula e o seu Estúdio. Estes são os botões Baixar o projeto e Importar no Estúdio. E aqui você escolhe a cor da nave de cada lado.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o jogo da aula com o Estúdio depois de baixar, de importar e de pintar um lado só. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a cópia guarda do jogo da aula e o que acontece quando você muda só um dos lados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-copias-K1 | Debinha | 1 | Baixar o projeto. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original. | Se eu pintar a cópia, o desenho do gibi muda também? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência aparecem o jogo da aula e o seu | [curious] |
+| video-copias-K1 | Debinha | 1 | o seu Estúdio. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original. | Se eu mudar a nave da cópia, a nave do jogo da aula muda também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a cópia guarda do jogo da aula e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-copias-K1`: entrada — Manter o meme do gibi e a experiência ainda sem arquivo. Saída — Seguir sem fazer o teste: a professora só convida a testar e aponta os controles.
+- `video-copias-K1`: entrada — Manter o meme do gibi e a experiência ainda sem arquivo. Saída — Seguir sem fazer o teste: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/copy-vs-original.ts`, com a tela em `packages/member-shell/src/components/scene-livre/copy-vs-original.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.

@@ -16,25 +16,21 @@
 
 [long pause]
 
-[curious] Sabe quando você vai andar de bicicleta? Para sair, você pega duas coisas: a bicicleta e o capacete.
+[engaging, energetic, conversational voice] Às vezes, o jogo precisa conferir duas coisas antes de decidir o que acontece. Para decidir, ele faz uma pergunta, e uma pergunta que ajuda o jogo a decidir se chama condição.
 
-[engaging, energetic, conversational voice] No seu jogo, a cabana do faroleiro também pede duas coisas: a chave e o emblema.
+[curious] Sabe quando alguém pergunta antes de você sair: pegou o casaco? Pegou a garrafinha? A pergunta fala de duas coisas.
+
+[engaging, energetic, conversational voice] No seu jogo, a pergunta da cabana do faroleiro fala de duas peças: a chave e o emblema.
 
 [engaging, energetic, conversational voice] Para saber o que o personagem já pegou, o jogo guarda duas informações em duas variáveis: temChave e temEmblema. Cada uma vale verdadeiro ou falso.
 
-[interested, animated voice] Quando o personagem encosta na cabana, ela faz uma pergunta. Uma pergunta que ajuda o jogo a decidir se chama condição.
+[engaging, energetic, conversational voice] E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças.
 
-[curious] E a cabana do seu jogo? O que ela faz quando o personagem chega sem nenhuma peça? A ordem em que ele pega as peças importa? E se ela pedisse só uma das peças? O que você acha? Isso você vai testar na experiência.
+[curious] E a ordem em que ele pega as peças importa?
 
-[interested, animated voice] Olha aqui: nesta atividade, estes botões pegam a chave e o emblema, e este leva o personagem até a cabana. Aqui ficam temChave e temEmblema, e embaixo do jogo fica a pergunta da cabana, com uma resposta para o sim e outra para o não.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] E aqui você escolhe o que a cabana pede: as duas peças ou uma das peças.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: tente a cabana sem nenhuma peça, com uma e com as duas. Observe temChave, temEmblema e a porta.
-
-[upbeat, encouraging voice] Depois pegue as peças em ordens diferentes. E compare com uma cabana que pede só uma das peças.
-
-[reassuring, encouraging voice] Você escolhe por onde começar, e o Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

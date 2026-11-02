@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimento, sorteio e pontuação.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -27,19 +27,19 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 ### Seção 1. Quem sai do jogo na trombada?
 
-**Tarefa:** Sua vez! Descubra quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-apelidos → fala-trombada → experiencia-trombada.
 
-**Recado na página (não gravar):** Sua vez! Descubra quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. Antes: “tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.”. Depois: “O que você acha que acontece com os outros tiros e pedras? Isso você vai testar na experiência. Olha aqui: nesta”.
+video-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. Antes: “tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o”.
 
 **Experiência em exploração livre:** `collision-pair` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/collision-pair.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/collision-pair.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare quem sai do jogo quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Depois da trombada, observe as outras pedras. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores. Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores. Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras.
 

@@ -24,10 +24,10 @@
       "clipe": "video-seta-e-velocidade",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "que andar? Em cada quadro, o jogo olha a seta. Se você está segurando a seta, a nave dá um passinho para aquele lado.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, quando você clica em Câmera lenta,",
-      "falaPrincipal": "E quando a seta está solta?",
-      "falaPersonagem": "E quando a seta está solta?",
+      "ancoraAntes": "dá só um passinho. Para saber quando a nave tem que andar, o jogo olha a seta em cada quadro, antes de mexer a nave.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a nave faz em cada quadro com a",
+      "falaPrincipal": "E o que a nave faz num quadro em que a seta está solta?",
+      "falaPersonagem": "E o que a nave faz num quadro em que a seta está solta?",
       "tags": ["[curious]"]
     },
     {
@@ -57,8 +57,8 @@
       "clipe": "video-limite-da-tela",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "o jogo confere se ela passou da beirada e, se passou, puxa a nave de volta para dentro. Isso é o limite da tela.",
-      "ancoraDepois": "O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e",
+      "ancoraAntes": "conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,",
       "falaPrincipal": "E se o limite for ligado com a nave já fora da tela?",
       "falaPersonagem": "E se o limite for ligado com a nave já fora da tela?",
       "tags": ["[curious]"]
@@ -80,7 +80,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.",
-      "ancoraDepois": "O que você acha que acontece com a nave? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando a ordem dos",
       "falaPrincipal": "E se o fundo de estrelas for desenhado depois da nave?",
       "falaPersonagem": "E se o fundo de estrelas for desenhado depois da nave?",
       "tags": ["[curious]"]

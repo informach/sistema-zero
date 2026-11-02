@@ -9,14 +9,14 @@
   "blocks": [
     {
       "key": "video-d2-contexto",
-      "plannedVideo": "Título: O jogo guardou a chave?\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-contexto-K1\",\"clipe\":\"video-d2-contexto\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"some da tela. Repare em três coisas nesse momento: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a memória\",\"falaPrincipal\":\"Mas, se a chave some, isso já quer dizer que o jogo guardou?\",\"falaPersonagem\":\"Mas, se a chave some, isso já quer dizer que o jogo guardou?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: O jogo guardou a chave?\n\nMaster integral da professora. Roteiro: desafio-dia-2.roteiro.md. Substituições kids: [{\"id\":\"video-d2-contexto-K1\",\"clipe\":\"video-d2-contexto\",\"personagem\":\"Dedé\",\"ocorrencia\":1,\"ancoraAntes\":\"o personagem tem chave? A resposta fica guardada como verdadeiro, que quer dizer sim, ou falso, que quer dizer não.\",\"ancoraDepois\":\"O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o jogo guarda que o personagem\",\"falaPrincipal\":\"Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?\",\"falaPersonagem\":\"Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d2-contexto",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue o que o jogo guarda quando o personagem pega a chave, com a memória da chave ligada e desligada. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -26,7 +26,7 @@
         "required": true,
         "title": "O jogo guardou a chave?",
         "semPerguntaFinal": true,
-        "instructions": "Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe a chave, o aviso e temChave: são três coisas diferentes.",
           "Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.",

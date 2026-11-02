@@ -21,9 +21,9 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta",
-      "falaPrincipal": "Ué, pode sair o mesmo lugar duas vezes?",
-      "falaPersonagem": "Ué, pode sair o mesmo lugar duas vezes?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde os cactos nascem e com que",
+      "falaPrincipal": "E pode sair o mesmo lugar duas vezes?",
+      "falaPersonagem": "E pode sair o mesmo lugar duas vezes?",
       "tags": ["[curious]"]
     },
     {
@@ -42,8 +42,8 @@
       "clipe": "video-regua-negativos",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o marcador anda pela régua, este",
+      "ancoraAntes": "dos cactos são números negativos. E o jogo pode fazer uma pergunta sobre eles, como: o número é maior que -9?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar como os números negativos ficam na reta",
       "falaPrincipal": "Qual é maior: menos cinco ou menos nove?",
       "falaPersonagem": "Qual é maior: menos cinco ou menos nove?",
       "tags": ["[curious]"]

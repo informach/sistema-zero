@@ -451,7 +451,7 @@ const dia2 = {
     video('video-d2-contexto', 'O jogo guardou a chave?', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-contexto',
-      'Sua vez! Investigue o que o jogo guarda quando o personagem pega a chave, com a memória da chave ligada e desligada. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-memoria',
@@ -462,8 +462,9 @@ const dia2 = {
         semPerguntaFinal: true,
         // Dias 2 e 3 (02/11/2026): só a ideia (a memória da chave) e o convite à investigação. As
         // pistas do modelo citam "Guardar a coleta", que esta tela não tem: do aberto ao direto.
+        // Molde do Cadê (02/11/2026): a instrução diz o que comparar, sem sequência de testes.
         instructions:
-          'Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+          'Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [
           'Olhe a chave, o aviso e temChave: são três coisas diferentes.',
           'Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.',
@@ -578,7 +579,7 @@ const dia3 = {
         // A pergunta da porta com "sim" e "não" (então/senão ficam para a montagem). A pista do
         // modelo cita "Levar a chave", que esta tela não tem.
         instructions:
-          'Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+          'Compare a resposta da porta e temChave com o personagem sem a chave e com a chave. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [
           'Olhe temChave antes de testar a porta.',
           'Compare a resposta da porta com temChave falso e com temChave verdadeiro.',
@@ -633,9 +634,10 @@ const dia3 = {
         title: 'Como escolher um lugar para a chave',
         semPerguntaFinal: true,
         // Sem pistas escritas de propósito: a missão restrita pede a meta que falta ("Tente: mude o
-        // x para menos…"), sem contar para que lado o número leva a chave.
+        // x para menos…"), sem contar para que lado o número leva a chave. O alvo opcional fica na
+        // própria cena (molde do Cadê, 02/11/2026: a instrução diz só o que comparar).
         instructions:
-          'Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. Você escolhe a ordem dos testes. Se quiser um desafio, clique em Mostrar um alvo e leve a chave até ele.',
+          'Compare para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',

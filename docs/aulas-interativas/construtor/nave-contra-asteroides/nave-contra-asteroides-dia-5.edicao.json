@@ -23,7 +23,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada",
       "falaPrincipal": "Com maior que, chegar a 26 já dá a vitória?",
       "falaPersonagem": "Com maior que, chegar a 26 já dá a vitória?",
       "tags": ["[curious]"]
@@ -67,9 +67,9 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o Enter faz no",
-      "falaPrincipal": "E qual é a diferença entre os dois?",
-      "falaPersonagem": "E qual é a diferença entre os dois?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o",
+      "falaPrincipal": "E a partida nova começa igual nos dois jeitos?",
+      "falaPersonagem": "E a partida nova começa igual nos dois jeitos?",
       "tags": ["[curious]"]
     },
     {

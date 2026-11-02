@@ -1,8 +1,4 @@
-[engaging, energetic, conversational voice] Nas pedras, duas coisas acontecem ao mesmo tempo: pedras novas nascem de tempos em tempos, e cada pedra troca de desenho para parecer que gira.
-
-[engaging, energetic, conversational voice] O relógio de nascer conta os quadros do jogo. O jogo se desenha de novo muitas vezes por segundo, e cada vez dessas é um quadro do jogo. No seu jogo, nasce uma pedra a cada 40 quadros.
-
-[engaging, energetic, conversational voice] O relógio do giro conta desenhos por segundo. Com 8 desenhos por segundo, cada pedra troca de desenho oito vezes a cada segundo.
+[engaging, energetic, conversational voice] Nas pedras, duas coisas acontecem ao mesmo tempo: pedras novas nascem de tempos em tempos, e cada pedra troca de desenho para parecer que gira. Por isso, o jogo tem dois relógios: um conta quadros do jogo, que são as vezes em que o jogo se desenha de novo, e o outro conta desenhos por segundo.
 
 [engaging, energetic, conversational voice] Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.
 
@@ -10,9 +6,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o relógio de nascer, em quadros do jogo, e o relógio do giro, em desenhos por segundo. Este botão faz o tempo passar, e este outro volta ao começo. Em cima de cada pedra aparece o desenho que ela está mostrando.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: mude um relógio de cada vez, volte ao começo e deixe o tempo passar. Compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que cada relógio muda nas pedras, e se mexer num muda o que o outro faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

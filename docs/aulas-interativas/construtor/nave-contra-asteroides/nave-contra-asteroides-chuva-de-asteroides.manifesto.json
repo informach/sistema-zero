@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-intervalo-das-pedras",
-      "plannedVideo": "Título: Quando nasce uma pedra nova?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando [na edição: meme da torneira]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Em todo quadro\"] [apontar \"De 40 em 40 quadros\"]. No \"e este passa um segundo de jogo\", apontar o botão [apontar \"Passar 1 segundo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo quadro?”. Antes: “em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.”. Depois: “O que você acha que aparece na tela? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando nasce uma pedra nova?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando [na edição: meme da torneira]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo quadro?”. Antes: “em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na chuva de pedras quando”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-intervalo-das-pedras",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -23,7 +23,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Quando nasce uma pedra nova?",
-        "instructions": "Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe quantas pedras nascem e o espaço entre elas.",
           "Compare as pedras que nascem em todo quadro com as que esperam alguns quadros.",
@@ -81,14 +81,14 @@
     },
     {
       "key": "video-posicao-sorteada",
-      "plannedVideo": "Título: Onde nasce cada pedra?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente da nave [na edição: meme do dado]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Sortear um lugar\"]. No \"esta régua marca cada lugar\", apontar a régua de cima, ainda sem marcas. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no meio da tela?”. Antes: “lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Onde nasce cada pedra?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente da nave [na edição: meme do dado]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no meio da tela?”. Antes: “lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde cada pedra nova nasce quando o”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-posicao-sorteada",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -97,7 +97,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Onde nasce cada pedra?",
-        "instructions": "Sorteie o lugar da pedra algumas vezes e compare as marquinhas na régua. Depois observe de onde a pedra entra na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Compare as marquinhas na régua depois de cada sorteio.",
           "Depois de sortear, deixe o tempo passar e observe a borda de cima da tela.",
@@ -671,7 +671,7 @@
       "key": "intervalo-das-pedras",
       "title": "Quando nasce uma pedra nova?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-intervalo-das-pedras",
         "fala-intervalo-das-pedras",
@@ -748,7 +748,7 @@
       "key": "posicao-sorteada",
       "title": "Onde nasce cada pedra?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-posicao-sorteada", "fala-posicao-sorteada", "experiencia-sorteio"],
       "workspaceKey": null,
       "externalTool": null,

@@ -46,35 +46,31 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 **Clipe:** `video-experiencia`
 
-**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy de capacete, segurando uma bicicleta. Depois mostrar a experiência parada: a cabana fechada, as duas peças no chão, temChave e temEmblema em falso e a pergunta da cabana com as duas respostas ainda em "?". No "Olha aqui", apontar os botões das peças, Encostar na cabana, temChave e temEmblema, a pergunta e os dois botões do pedido [apontar botões das peças; apontar Encostar na cabana; apontar as variáveis; apontar a pergunta; apontar o pedido]. Não encostar na cabana: o que ela faz em cada caso, e se a ordem das peças importa, é a descoberta da criança. Não falar de blocos, regra, Se, então, senão nem dos blocos e e ou: eles ficam para a montagem (decisão de 02/11/2026).
+**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy na porta de casa, pensativo, com um balão de pensamento mostrando um casaco e uma garrafinha, sem mostrar ele saindo. No convite, ampliar a experiência e mostrar a cena parada: a cabana fechada, as duas peças no chão, temChave e temEmblema em falso e a pergunta da cabana com as duas respostas ainda em "?", sem apontar controles. Não encostar na cabana: o que ela faz em cada caso, em cada jeito de perguntar, e se a ordem das peças importa, é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então, senão nem dos blocos e e ou: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Sabe quando você vai andar de bicicleta? Para sair, você pega duas coisas: a bicicleta e o capacete.
+[engaging, energetic, conversational voice] Às vezes, o jogo precisa conferir duas coisas antes de decidir o que acontece. Para decidir, ele faz uma pergunta, e uma pergunta que ajuda o jogo a decidir se chama condição.
 
-[engaging, energetic, conversational voice] No seu jogo, a cabana do faroleiro também pede duas coisas: a chave e o emblema.
+[curious] Sabe quando alguém pergunta antes de você sair: pegou o casaco? Pegou a garrafinha? A pergunta fala de duas coisas.
+
+[engaging, energetic, conversational voice] No seu jogo, a pergunta da cabana do faroleiro fala de duas peças: a chave e o emblema.
 
 [engaging, energetic, conversational voice] Para saber o que o personagem já pegou, o jogo guarda duas informações em duas variáveis: temChave e temEmblema. Cada uma vale verdadeiro ou falso.
 
-[interested, animated voice] Quando o personagem encosta na cabana, ela faz uma pergunta. Uma pergunta que ajuda o jogo a decidir se chama condição.
+[engaging, energetic, conversational voice] E a cabana pode perguntar de dois jeitos: pedindo as duas peças ou pedindo uma das peças.
 
-[curious] E a cabana do seu jogo? O que ela faz quando o personagem chega sem nenhuma peça? A ordem em que ele pega as peças importa? E se ela pedisse só uma das peças? O que você acha? Isso você vai testar na experiência.
+[curious] E a ordem em que ele pega as peças importa?
 
-[interested, animated voice] Olha aqui: nesta atividade, estes botões pegam a chave e o emblema, e este leva o personagem até a cabana. Aqui ficam temChave e temEmblema, e embaixo do jogo fica a pergunta da cabana, com uma resposta para o sim e outra para o não.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] E aqui você escolhe o que a cabana pede: as duas peças ou uma das peças.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: tente a cabana sem nenhuma peça, com uma e com as duas. Observe temChave, temEmblema e a porta.
-
-[upbeat, encouraging voice] Depois pegue as peças em ordens diferentes. E compare com uma cabana que pede só uma das peças.
-
-[reassuring, encouraging voice] Você escolhe por onde começar, e o Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-cabana.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue quando a cabana abre e quando continua fechada: sem nenhuma peça, com uma, com as duas e em ordens diferentes. Depois compare com a cabana que pede uma das peças. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Guarde o emblema
 

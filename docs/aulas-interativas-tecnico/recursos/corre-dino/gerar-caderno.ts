@@ -232,21 +232,15 @@ const chapters = aulasDino.map((lesson, i) => {
       )
       continue
     }
-    // Exploração livre (02/11/2026): a página da experiência é o objetivo de investigação, sem
-    // resultado. Ficam a instrução e o que comparar em cada meta (o `pedido` do `goalCopy`, com os
-    // botões da tela); o que cada teste mostra é descoberta da criança. O jogo pronto traz os passos
-    // no imperativo (`caderno`), e as montagens usam a fala do Passo a passo (`mapa`): sem "Olha
-    // aqui", "Olha só", "Repare" e "Tá vendo?", que apontam para um gesto do vídeo que o PDF não tem.
-    const atividade = section.activity?.activity
+    // Exploração livre e molde do convite (02/11/2026): a página da experiência diz só o que
+    // investigar, sem resultado e sem sequência. Fica a instrução (o que comparar e a ordem livre); os
+    // pedidos do `goalCopy` citam os botões em sequência e são do Zappy, dentro da experiência. O jogo
+    // pronto traz os passos no imperativo (`caderno`), e as montagens usam a fala do Passo a passo
+    // (`mapa`): sem "Olha aqui", "Olha só", "Repare" e "Tá vendo?", que apontam para um gesto do vídeo
+    // que o PDF não tem.
     const speech =
-      atividade?.type === 'experimentation'
-        ? [
-            section.activity!.instructions,
-            `O que investigar: ${(atividade.setup?.goals ?? [])
-              .map((meta) => atividade.setup?.goalCopy?.[meta]?.pedido)
-              .filter(Boolean)
-              .join(' ')}`,
-          ]
+      section.activity?.activity.type === 'experimentation'
+        ? [section.activity.instructions]
         : (section.caderno ?? falasSecao(section, 'mapa'))
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.

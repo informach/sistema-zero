@@ -6,44 +6,44 @@
 
 ### Clipe `video-sorteio-tira-na-hora` · Onde nasce o próximo cacto?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-sorteio-tira-na-hora`
 
-**Na tela:** No "Sabe quando você joga um dado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Sortear um lugar"]. No "Este outro sorteia a velocidade", apontar o botão, sem clicar [apontar "Sortear uma velocidade"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você joga um dado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem sortear. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe quando você joga um dado? Ninguém sabe antes qual número vai sair, e cada jogada pode dar um número diferente. Isso é um sorteio.
+[engaging, energetic, conversational voice] Sortear é deixar o jogo escolher um valor por acaso. Isso deixa cada partida um pouco diferente.
+
+[engaging, energetic, conversational voice] Sabe quando você joga um dado? Ninguém sabe antes qual número vai sair, e cada jogada pode dar um número diferente.
 
 [engaging, energetic, conversational voice] No seu jogo, se todos os cactos nascessem no mesmo lugar, a corrida ficaria sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.
 
-[curious] Ué, pode sair o mesmo lugar duas vezes?
+[curious] E pode sair o mesmo lugar duas vezes?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão sorteia um lugar, e esta régua marca cada lugar que já saiu. Este outro sorteia a velocidade, e as raias mostram até onde cada cacto chega.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os lugares que saem, os que se repetem e os limites da régua, e depois até onde chegam os cactos de cada velocidade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-sorteio-tira-na-hora-K1 | Dedé | 1 | sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade. | Ué, pode sair o mesmo lugar duas vezes? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta | [curious] |
+| video-sorteio-tira-na-hora-K1 | Dedé | 1 | sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade. | E pode sair o mesmo lugar duas vezes? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde os cactos nascem e com que | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-sorteio-tira-na-hora-K1`: entrada — Manter o meme do dado até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem sortear.
+- `video-sorteio-tira-na-hora-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/random.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/random.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Sorteie onde cada cacto nasce
 
@@ -106,40 +106,40 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-regua-negativos`
 
-**Na tela:** No "Sabe o termômetro num dia muito frio", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Somar -1"]. No "e esta pergunta compara dois números", apontar os sinais, sem clicar [apontar "> maior que"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o termômetro num dia muito frio", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o marcador no começo. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Os números com o sinal de menos se chamam negativos. Eles ficam abaixo de zero e cabem numa reta de números, como uma régua.
+
 [engaging, energetic, conversational voice] Sabe o termômetro num dia muito frio? A temperatura pode ficar abaixo de zero, com o sinal de menos: menos cinco graus, menos nove graus.
 
-[engaging, energetic, conversational voice] Os números com o sinal de menos se chamam negativos, e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos.
+[curious] No seu jogo, as velocidades dos cactos são números negativos. E o jogo pode fazer uma pergunta sobre eles, como: o número é maior que -9?
 
 [curious] Qual é maior: menos cinco ou menos nove?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, o marcador anda pela régua, este botão muda o número, e esta pergunta compara dois números e responde sim ou não.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o marcador anda quando o número diminui, e qual número é maior em cada comparação. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar como os números negativos ficam na reta e quando a pergunta responde sim ou não. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-regua-negativos-K1 | Dedé | 1 | e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos. | Qual é maior: menos cinco ou menos nove? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o marcador anda pela régua, este | [curious] |
+| video-regua-negativos-K1 | Dedé | 1 | dos cactos são números negativos. E o jogo pode fazer uma pergunta sobre eles, como: o número é maior que -9? | Qual é maior: menos cinco ou menos nove? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar como os números negativos ficam na reta | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-regua-negativos-K1`: entrada — Manter o meme do termômetro deitado até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o marcador no começo, sem clicar.
+- `video-regua-negativos-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/number-line.ts`, na tela `packages/member-shell/src/components/scene-livre/number-line.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Sorteie uma variação na velocidade
 

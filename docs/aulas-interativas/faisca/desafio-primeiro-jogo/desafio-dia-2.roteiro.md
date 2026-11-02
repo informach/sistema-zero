@@ -6,45 +6,37 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d2-contexto`
 
-**Na tela:** A experiência aparece no tamanho da aula, com a chave no chão e a memória da chave desligada. No "Sabe quando você anota um recado", mostrar o meme ilustrado (2 a 3 s) do Zappy anotando um recado num papelzinho [na edição: meme do papelzinho]. No "essa variável vai se chamar temChave", mostrar o nome temChave com as duas respostas: verdadeiro quer dizer sim e falso quer dizer não. No "Nesta parte tem uma experiência", ampliar a experiência [ampliar experiência]. No "Repare em três coisas", apontar o valor de temChave [apontar "temChave"], depois de mostrar a chave e o aviso. No "Olha aqui: nesta experiência", apontar o botão **Ligar a memória da chave** [apontar "Ligar a memória da chave"]. No "E aqui você vê", apontar de novo o valor de temChave [apontar "temChave"]. No "O Zappy vai te ajudando", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não encostar na chave nem ligar a memória: o que acontece em cada caso é a descoberta da criança. Não falar de blocos, regra, ações nem comandos: a experiência trabalha só a ideia, e os blocos ficam para as partes seguintes (decisões de 01/11 e 02/11/2026).
+**Na tela:** A experiência aparece no tamanho da aula, com a chave no chão e a memória da chave desligada. No "Sabe quando você anota um recado", mostrar o meme ilustrado (2 a 3 s) do Zappy anotando um recado num papelzinho [na edição: meme do papelzinho]. No "essa variável vai se chamar temChave", mostrar o nome temChave com as duas respostas: verdadeiro quer dizer sim e falso quer dizer não [na edição: temChave, verdadeiro e falso]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não encostar na chave nem ligar a memória: o que acontece em cada caso é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, ações nem comandos: a experiência trabalha só a ideia, e os blocos ficam para as partes seguintes (decisões de 01/11 e 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] O seu personagem já anda. Agora pense na porta do farol: ela só vai abrir para quem tiver a chave. Para isso, o jogo precisa lembrar se o personagem já pegou a chave.
 
-[engaging, energetic, conversational voice] Para lembrar uma coisa, o jogo usa uma variável. A variável é um lugar com nome onde o jogo guarda uma informação.
+[engaging, energetic, conversational voice] Para lembrar uma coisa, o jogo usa uma variável: um lugar com nome onde o jogo guarda uma informação.
 
 [engaging, energetic, conversational voice] Sabe quando você anota um recado num papelzinho para não esquecer? A variável é como esse papelzinho: o jogo escreve ali o que precisa lembrar e olha de novo quando precisar.
 
 [engaging, energetic, conversational voice] No seu jogo, essa variável vai se chamar temChave. O nome é uma pergunta: o personagem tem chave? A resposta fica guardada como verdadeiro, que quer dizer sim, ou falso, que quer dizer não.
 
-[confident, clear, unhurried voice] Nesta parte tem uma experiência com o personagem e a chave. Quando ele encosta na chave, ela sai do chão e some da tela. Repare em três coisas nesse momento: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave.
-
-[curious] Mas, se a chave some, isso já quer dizer que o jogo guardou?
+[curious] Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga a memória da chave. E aqui você vê o que está guardado em temChave agora: falso ou verdadeiro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar! Faça o personagem pegar a chave com a memória ligada e depois com a memória desligada. Nas duas vezes, compare a chave, o aviso e temChave.
-
-[engaging, energetic, conversational voice] Depois, teste mais duas coisas. O jogo esquece que o personagem pegou a chave quando ele se afasta? E quando começa uma partida nova?
-
-[upbeat, encouraging voice] Você escolhe por onde começar e pode repetir quantas vezes quiser. O Zappy vai te ajudando a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d2-contexto-K1 | Dedé | 1 | some da tela. Repare em três coisas nesse momento: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave. | Mas, se a chave some, isso já quer dizer que o jogo guardou? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a memória | [curious] |
+| video-d2-contexto-K1 | Dedé | 1 | o personagem tem chave? A resposta fica guardada como verdadeiro, que quer dizer sim, ou falso, que quer dizer não. | Mas, se a chave some do chão, isso já quer dizer que o jogo guardou? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o jogo guarda que o personagem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que o jogo guarda quando o personagem pega a chave, com a memória da chave ligada e desligada. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Recolha a chave
 

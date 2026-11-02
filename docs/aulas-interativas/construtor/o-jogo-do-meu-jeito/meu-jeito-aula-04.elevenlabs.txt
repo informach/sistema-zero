@@ -8,9 +8,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão troca o Preenchimento entre com cor e Sem cor, e este outro faz o mesmo com o Contorno.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: deixe uma parte de cada vez em Sem cor e depois as duas com cor. Compare o que sobra da pedra em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que sobra da pedra quando o Preenchimento ou o Contorno fica em Sem cor. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

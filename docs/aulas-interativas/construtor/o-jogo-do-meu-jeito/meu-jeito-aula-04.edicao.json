@@ -22,7 +22,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão troca o Preenchimento",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o",
       "falaPrincipal": "E se uma das partes ficar em Sem cor, o que sobra?",
       "falaPersonagem": "E se uma das partes ficar em Sem cor, o que sobra?",
       "tags": ["[curious]"]

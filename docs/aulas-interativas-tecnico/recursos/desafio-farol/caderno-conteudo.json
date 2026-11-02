@@ -182,24 +182,15 @@
         "text": "A porta do farol só vai abrir para quem tiver a chave. Por isso, o jogo precisa lembrar se o personagem já pegou a chave. Para lembrar, ele usa uma <b>variável</b>: um lugar com nome onde o jogo guarda uma informação, como um recado num papelzinho. Aqui ela se chama <b>temChave</b>, que quer dizer: o personagem tem chave? A resposta fica guardada como <b>verdadeiro</b>, que quer dizer sim, ou <b>falso</b>, que quer dizer não."
       },
       {
-        "kind": "step",
-        "title": "Com a memória desligada",
-        "text": "Com a <b>memória da chave</b> desligada, faça o personagem pegar a chave. Observe três coisas: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave."
-      },
-      {
-        "kind": "step",
-        "title": "Com a memória ligada",
-        "text": "Clique em <b>Ligar a memória da chave</b>, recomece a partida e faça o personagem pegar a chave de novo. Compare a chave, o aviso e temChave."
-      },
-      {
-        "kind": "step",
-        "title": "Longe da chave e numa partida nova",
-        "text": "O jogo esquece que o personagem pegou a chave quando ele se afasta? Depois de o jogo guardar a chave, clique em <b>Afastar</b> e observe temChave. E quando começa uma partida nova? Clique em <b>Recomeçar a partida</b> e observe de novo."
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Compare temChave com a <b>memória da chave</b> ligada e desligada.",
+        "tone": "experience"
       },
       {
         "kind": "box",
         "title": "Você escolhe a ordem",
-        "text": "Ligar ou desligar a memória vale para o próximo encontro, sem mudar o que já aconteceu. Repita os testes do seu jeito e, ao terminar, clique em <b>Próxima parte</b>.",
+        "text": "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em <b>Próxima parte</b>.",
         "tone": "note"
       }
     ]
@@ -306,23 +297,19 @@
     "items": [
       {
         "kind": "text",
-        "text": "Sabe a porta da sua casa? Ela só abre para quem está com a chave. É como se, antes de abrir, ela perguntasse: você está com a chave? A porta do farol faz a mesma pergunta, com o nome que o jogo usa: <b>temChave é verdadeiro?</b> A resposta só pode ser sim ou não. Uma pergunta assim, que o jogo faz para decidir o que acontece, se chama <b>condição</b>."
+        "text": "Sabe quando você pergunta “está chovendo?” antes de sair? A resposta, sim ou não, decide se você leva o guarda-chuva. A porta do farol também faz uma pergunta, com o nome que o jogo usa: <b>temChave é verdadeiro?</b> A resposta só pode ser sim ou não. Uma pergunta assim, que o jogo faz para decidir o que acontece, se chama <b>condição</b>."
       },
       {
-        "kind": "step",
-        "title": "Prepare uma situação",
-        "text": "Use <b>Dar a chave ao personagem</b> ou <b>Tirar a chave do personagem</b>. Esses botões preparam o teste; no jogo, o personagem precisa pegar a chave."
-      },
-      {
-        "kind": "step",
-        "title": "Teste e compare",
-        "text": "Clique em <b>Testar a porta</b> e observe temChave e a resposta que a porta escolhe. Prepare a outra situação e compare. A pergunta da porta é sempre a mesma: a resposta muda? Você pode começar por qualquer uma e repetir."
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. Compare temChave e a resposta que a porta escolhe. Na experiência, você pode dar ou tirar a chave só para preparar o teste; no seu jogo, o personagem precisa pegar a chave.",
+        "tone": "experience"
       },
       {
         "kind": "box",
         "title": "Da experiência para o seu jogo",
-        "text": "Depois dos dois testes, clique em <b>Próxima parte</b>. Nas próximas partes, você vai ensinar o farol do seu jogo a responder do mesmo jeito que a porta.",
-        "tone": "experience"
+        "text": "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em <b>Próxima parte</b>. Nas próximas partes, você vai ensinar o farol do seu jogo a responder do mesmo jeito que a porta.",
+        "tone": "note"
       }
     ]
   },
@@ -596,20 +583,16 @@
         "tone": "experience"
       },
       {
-        "kind": "step",
-        "title": "Explore os dois eixos",
-        "text": "Use os controles <b>Horizontal x</b> e <b>Vertical y</b>, com os botões ou deslizantes. Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y; você escolhe por onde começar."
-      },
-      {
-        "kind": "step",
-        "title": "Compare os lugares",
-        "text": "A marca de início mostra onde a chave estava no começo, e o pontilhado mostra o lugar anterior. Se quiser um número exato, digite no campo. Depois clique fora do campo."
+        "kind": "box",
+        "title": "O que investigar",
+        "text": "Investigue para onde a chave vai quando o x e o y aumentam e quando diminuem. A marca de início mostra onde a chave estava no começo, para você comparar.",
+        "tone": "experience"
       },
       {
         "kind": "box",
-        "title": "Um desafio opcional",
-        "text": "Se quiser um desafio, clique em <b>Mostrar um alvo</b> e leve a chave até ele. Todos os controles continuam livres. Ao terminar, clique em <b>Próxima parte</b>.",
-        "tone": "experience"
+        "title": "Você escolhe a ordem",
+        "text": "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Se quiser um desafio, a experiência também mostra um alvo para você levar a chave até ele. Quando terminar, clique em <b>Próxima parte</b>.",
+        "tone": "note"
       }
     ]
   },

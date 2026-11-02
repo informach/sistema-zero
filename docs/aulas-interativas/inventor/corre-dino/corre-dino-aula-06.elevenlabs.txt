@@ -1,14 +1,14 @@
+[engaging, energetic, conversational voice] Um jogo pode guardar várias coisas parecidas juntas, numa lista que ele move em todo quadro. Essa lista se chama grupo.
+
 [engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, que é a lista que o jogo guarda e move em todo quadro. Quando um cacto passa da borda da esquerda, ele some da tela.
+[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.
 
 [curious] E quando o cacto some da tela, ele sai do grupo também?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, ao lado da tela ficam os bastidores, com os cactos do grupo, e este botão faz o jogo tirar quem sai da tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

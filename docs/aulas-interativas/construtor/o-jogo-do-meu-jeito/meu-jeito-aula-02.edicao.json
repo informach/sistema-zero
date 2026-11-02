@@ -35,7 +35,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões ligam e desligam",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde a tinta aparece com os espelhos",
       "falaPrincipal": "E o Balde de tinta, o espelho copia também?",
       "falaPersonagem": "E o Balde de tinta, o espelho copia também?",
       "tags": ["[curious]"]
@@ -57,7 +57,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga A sombra",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a sombra, a luz e o lado do sol",
       "falaPrincipal": "E se o sol mudar de lado?",
       "falaPersonagem": "E se o sol mudar de lado?",
       "tags": ["[curious]"]

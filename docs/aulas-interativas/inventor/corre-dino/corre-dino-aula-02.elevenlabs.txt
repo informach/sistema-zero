@@ -1,12 +1,14 @@
-[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? No seu jogo, o Dino pode mudar de lugar por dentro do jogo, mas a tela só mostra o que foi desenhado nela.
+[engaging, energetic, conversational voice] Num jogo, desenhar o Dino é pintar o Dino na tela.
+
+[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Cada quadro é um desenho que aparece na tela.
+
+[engaging, energetic, conversational voice] No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.
 
 [curious] E se o Dino for desenhado em todo quadro, sem apagar a tela?
 
-[engaging, energetic, conversational voice] O que você acha que aparece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o Dino é desenhado e se a tela é apagada antes de cada desenho. Este botão passa um quadro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando o Dino é desenhado só no começo, em todo quadro sem apagar a tela e em todo quadro apagando a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra em cada jeito de desenhar o Dino, com e sem apagar a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -62,17 +64,17 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Em cada quadro, o jogo monta a tela desenhando uma coisa depois da outra, na mesma tela.
+
 [engaging, energetic, conversational voice] Sabe quando você cola figurinhas num álbum, umas por cima das outras? A ordem em que você cola faz diferença.
 
-[engaging, energetic, conversational voice] A tela do jogo também é montada assim: em cada quadro, o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados o Dino e a floresta.
+[engaging, energetic, conversational voice] No seu jogo, vão ser desenhados o Dino e a floresta.
 
 [curious] E se a floresta for desenhada depois do Dino, quem fica na frente?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem quem é desenhado por último, o Dino ou a floresta.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na tela quando muda a ordem em que o Dino e a floresta são desenhados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -114,17 +116,17 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.
+
 [engaging, energetic, conversational voice] Sabe quando você explica um jogo para alguém pelo telefone? A pessoa do outro lado não vê nada, só ouve o que você conta.
 
-[engaging, energetic, conversational voice] Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.
+[engaging, energetic, conversational voice] No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.
 
 [curious] E o leitor de tela consegue contar como se joga o Corre, Dino?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão faz o leitor ler a tela do jogo. Depois da primeira escuta, aparece um campo para você escrever uma frase.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o que o leitor diz com o campo vazio e com uma frase que conta o que fazer e como jogar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

@@ -24,8 +24,8 @@
       "clipe": "video-quadros",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "do outro? No seu jogo, o Dino pode mudar de lugar por dentro do jogo, mas a tela só mostra o que foi desenhado nela.",
-      "ancoraDepois": "O que você acha que aparece? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o",
+      "ancoraAntes": "aparece na tela. No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra em cada jeito de",
       "falaPrincipal": "E se o Dino for desenhado em todo quadro, sem apagar a tela?",
       "falaPersonagem": "E se o Dino for desenhado em todo quadro, sem apagar a tela?",
       "tags": ["[curious]"]
@@ -46,8 +46,8 @@
       "clipe": "video-camadas",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "quadro, o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados o Dino e a floresta.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem quem é",
+      "ancoraAntes": "umas por cima das outras? A ordem em que você cola faz diferença. No seu jogo, vão ser desenhados o Dino e a floresta.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando muda a ordem",
       "falaPrincipal": "E se a floresta for desenhada depois do Dino, quem fica na frente?",
       "falaPersonagem": "E se a floresta for desenhada depois do Dino, quem fica na frente?",
       "tags": ["[curious]"]
@@ -68,8 +68,8 @@
       "clipe": "video-descricao",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o leitor ler a tela",
+      "ancoraAntes": "só ouve o que você conta. No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o leitor de tela diz sem",
       "falaPrincipal": "E o leitor de tela consegue contar como se joga o Corre, Dino?",
       "falaPersonagem": "E o leitor de tela consegue contar como se joga o Corre, Dino?",
       "tags": ["[curious]"]

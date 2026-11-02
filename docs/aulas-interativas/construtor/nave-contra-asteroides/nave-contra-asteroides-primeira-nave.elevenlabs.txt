@@ -24,9 +24,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando a nave anda um pouquinho, uma vez, no começo, ou sempre, em todo quadro. E este botão começa o jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a nave quando ela anda uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na nave quando ela anda uma vez só e quando ela anda o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -70,9 +68,7 @@
 
 [engaging, energetic, conversational voice] E para que lado cada número leva a nave? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você muda o x e o y da nave, um número de cada vez, e vê onde ela vai parar.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o lugar da nave quando o x aumenta e quando o y aumenta, e descubra onde a nave fica com os dois números em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado a nave vai quando cada número muda, e onde ela fica quando os dois são zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -84,9 +80,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, de um lado ficam os bastidores, e do outro, a tela do jogo. Os botões fazem a nave existir e aparecer.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar a diferença entre a nave existir nos bastidores e aparecer na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -120,15 +114,13 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? No seu jogo, a nave pode mudar de lugar, mas a tela só mostra o que foi desenhado nela.
+[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Desenhar a nave é pintar a nave na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.
 
 [curious] E se a nave for desenhada em todo quadro, sem apagar a tela?
 
-[engaging, energetic, conversational voice] O que você acha que aparece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando a nave é desenhada e se a tela é apagada antes de cada desenho. Este botão passa um quadro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando a nave é desenhada só no começo, em todo quadro sem apagar a tela e em todo quadro apagando a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra quando a nave é desenhada em momentos diferentes, com e sem apagar a tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

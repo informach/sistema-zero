@@ -128,10 +128,19 @@ test('a etapa da abertura espera Enter e preserva movimento, tiros e asteroides 
   expect(g.api.sceneIs('jogando')).toBe(true)
 })
 
-// Convite à investigação (02/11/2026): o vídeo explica a ideia e aponta os controles uma vez
-// ("Olha aqui: nesta experiência"); o fim diz o que comparar e passa a vez, sem sequência de cliques.
+// O molde do Cadê (decisão da responsável, 02/11/2026): o vídeo explica o conceito, dá uma analogia,
+// diz o nome no jogo dela e termina num convite de UMA frase, com o fecho combinado. A investigação é
+// da criança e quem acompanha cada teste é o Zappy, dentro da experiência.
 const FIM_DA_EXPERIENCIA =
-  /^Agora é a sua vez de investigar: compare .+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+  /^Agora você vai investigar [^.!?]+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+// Nada de tour pelos controles: "Olha aqui: nesta experiência", "este botão", "esta régua"...
+const TOUR =
+  /Olha aqui|nesta experiência|\baqui você vê\b|\b(?:este|estes|esta|estas) (?:botão|botões|campo|campos|lista|régua|caixa|faixa|tira|contador|controles?|números?)\b/i
+// Nada de roteiro de testes: "primeiro… depois…", "faça… e depois…", "Nas duas vezes"...
+const ROTEIRO_DE_TESTES =
+  /\bPrimeiro,|\bnas duas vezes\b|\bteste mais (?:uma|duas|três)\b|\bfaça [^.]* e depois\b|\bdepois,? (?:teste|faça|clique|compare)\b|\bRepare em (?:duas|três) coisas\b/i
+const PERGUNTA_DEVOLVIDA = 'O que você acha? Isso você vai testar na experiência.'
+const ESCOLHA_DA_ORDEM = 'Você escolhe a ordem e pode repetir quando quiser.'
 // A experiência trabalha só a IDEIA (01/11/2026): nada de bloco, área do Estúdio, regra nem código.
 const ESTUDIO_NA_EXPERIENCIA =
   /\b(?:blocos?|Ao iniciar|Enquanto estiver rodando|Quando acontecer|A cada quadro do jogo|regras?|comandos?|código|Se o estado|então|senão|Estúdio)\b/i
@@ -153,8 +162,18 @@ test('experiências: ideia, convite e controles reais, sem blocos nem resultado 
         if (a.activity.type !== 'experimentation') throw new Error(id)
         expect(a.activity.setup?.freeExploration, id).toBe(true)
         expect(fala.at(-1), id).toMatch(FIM_DA_EXPERIENCIA)
-        expect(video.match(/Olha aqui: nesta experiência/g), id).toHaveLength(1)
+        expect(fala.join(' '), id).not.toMatch(TOUR)
+        expect(fala.join(' '), id).not.toMatch(ROTEIRO_DE_TESTES)
         expect(video, id).not.toMatch(SEQUENCIA)
+        // A pergunta do avatar fica (uma) e volta para a criança, igual ao molde.
+        if (s.avatar) {
+          expect(participacoes(s), id).toHaveLength(1)
+          expect(fala, id).toContain(PERGUNTA_DEVOLVIDA)
+        }
+        // Na tela: só ampliar a experiência e mostrar a cena parada, sem apontar os controles dela.
+        expect(s.screen, id).toContain('[ampliar experiência]')
+        expect(s.screen, id).not.toMatch(/\[apontar "/)
+        expect(s.screen, id).not.toMatch(TOUR)
         expect(video, id).not.toMatch(
           /Esta é (?:uma|a mesma) experiência|faça esses mesmos testes|Vou te mostrar/,
         )
@@ -176,7 +195,18 @@ test('experiências: ideia, convite e controles reais, sem blocos nem resultado 
         for (const t of textos) expect(t, id).not.toMatch(ESTUDIO_NA_EXPERIENCIA)
         // A ponte convida à investigação e não repete a instrução.
         expect(s.bridge, id).not.toContain(a.instructions)
-        expect(a.instructions, id).toContain('Você escolhe a ordem dos testes')
+        expect(s.bridge, id).toMatch(
+          /^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/,
+        )
+        // A instrução diz o que comparar, numa frase, e devolve a ordem à criança: sem sequência.
+        expect(a.instructions, id).toMatch(/^Compare [^.!?]+\. /)
+        expect(a.instructions, id).toEndWith(ESCOLHA_DA_ORDEM)
+        expect(
+          a.instructions.split(/[.!?](?:\s|$)/).filter((f) => f.trim()),
+          id,
+        ).toHaveLength(2)
+        expect(a.instructions, id).not.toMatch(ROTEIRO_DE_TESTES)
+        expect(a.instructions, id).not.toMatch(/\bDepois\b|\bClique em\b/)
       } else {
         // Três vozes (06/10/2026): a autoria é dela e o convite é junto.
         expect(fala[0], id).toStartWith(

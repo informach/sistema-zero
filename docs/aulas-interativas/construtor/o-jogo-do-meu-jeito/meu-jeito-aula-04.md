@@ -34,9 +34,9 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão troca o Preenchimento”.
+video-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o”.
 
-**Experiência em exploração livre:** `fill-stroke`, com `setup.freeExploration`. Deixe uma parte de cada vez em Sem cor e depois as duas com cor. Compare o que sobra da pedra em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `fill-stroke`, com `setup.freeExploration`. Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare o desenho em vetor
 

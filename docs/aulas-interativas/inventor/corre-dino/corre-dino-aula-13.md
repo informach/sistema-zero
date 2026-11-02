@@ -14,7 +14,7 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 A experiência de aceleração vem antes da mudança da base e do relógio; a régua dos negativos, que ela pressupõe, passou para a Aula 12. Guardar a base, preparar o relógio e limitar a soma são montagens separadas. O fechamento testa e publica o próprio jogo; a visita ao modo Ponte, indisponível neste curso, foi retirada.
 
-**Revisão de 02/11/2026.** D3: a régua foi para a Aula 12, e a Aula 13 ficou com sete partes e uma experiência só, a da base que acelera (o botão de volume, no lugar do freio da bicicleta, que fazia pensar em reduzir). As retomadas citam a "primeira parte" e o limite lembra a régua da aula anterior ("-5 fica à direita de -9, por isso é maior"). P10: o relógio dos pontos é dito como de 1 segundo, sem "o intervalo que você escolheu". "Velocidade" ficou com um sentido por vez: a variável velocidade guarda a base, e cada cacto tem o seu vx. As três montagens só lembram a experiência, porque o efeito não aparece no jogo antes do fim; o Se dentro do Se é explicado, a resposta à Debinha começa pelo limite, e a publicação ficou em cinco falas, com a ajuda de um adulto. No quiz, "o bloco que cria os cactos".
+**Revisão de 02/11/2026.** D3: a régua foi para a Aula 12, e a Aula 13 ficou com sete partes e uma experiência só, a da base que acelera (o botão de volume, sem o “até um limite” que entregava a descoberta, no lugar do freio da bicicleta, que fazia pensar em reduzir). As retomadas citam a "primeira parte" e o limite lembra a régua da aula anterior ("-5 fica à direita de -9, por isso é maior"). P10: o relógio dos pontos é dito como de 1 segundo, sem "o intervalo que você escolheu". "Velocidade" ficou com um sentido por vez: a variável velocidade guarda a base, e cada cacto tem o seu vx. As três montagens só lembram a experiência, porque o efeito não aparece no jogo antes do fim; o Se dentro do Se é explicado, a resposta à Debinha começa pelo limite, e a publicação ficou em cinco falas, com a ajuda de um adulto. No quiz, "o bloco que cria os cactos".
 
 ## Triagem dos conceitos
 
@@ -27,19 +27,19 @@ A experiência de aceleração vem antes da mudança da base e do relógio; a r�
 
 ### Seção 1. Até onde a corrida acelera?
 
-**Tarefa:** Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-o-que-o-freio-segura → fala-o-que-o-freio-segura → experiencia-aceleracao.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão na pista também ficam mais rápidos?”. Antes: “forte, até um limite. No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7…”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão passa cinco segundos de”.
+video-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão na pista também ficam mais rápidos?”. Antes: “-7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a base e com os”.
 
 **Experiência em exploração livre:** `acceleration` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/acceleration.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/acceleration.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** A cada 5 segundos o número da base ganha -1, e a pergunta "a base é maior que -9?" pode estar ligada ou desligada. Passe 5 segundos várias vezes e compare o número da base com o número de cada cacto, com a pergunta ligada e desligada. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Passar 5 segundos algumas vezes e olhe o número embaixo de cada cacto. Com a pergunta ligada, clique em Passar 5 segundos até a base chegar no -9 e mais uma vez. Com a pergunta ligada, continue clicando em Passar 5 segundos e olhe o número de cada cacto novo. Clique em Desligar a pergunta e em Passar 5 segundos algumas vezes.
 

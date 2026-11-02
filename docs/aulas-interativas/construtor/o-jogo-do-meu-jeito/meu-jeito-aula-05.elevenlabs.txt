@@ -8,9 +8,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a chama. Em cada linha, um botão leva aquela forma Uma camada para a frente ou Uma camada para trás.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: suba e desça a pedra na lista Camadas e compare qual forma aparece na frente no desenho. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -52,17 +50,15 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2.
+[engaging, energetic, conversational voice] A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2. Dá para mudar só um pedaço da pedra, como a cratera, ou mudar a pedra inteira de lugar.
 
-[curious] Imagina uma bola de futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar?
+[engaging, energetic, conversational voice] Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.
 
-[curious] E se a pedra inteira andar bastante?
+[curious] E se a pedra inteira andar bastante de um quadro para o outro?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, a Prévia troca dois desenhos da pedra, o do quadro 1 e o do quadro 2. Estes números dizem O tanto que a cratera anda e O tanto que a pedra inteira anda no segundo desenho. E este botão toca e para a Prévia.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: deixe os dois números em 0, depois mexa só na cratera e depois na pedra inteira. Compare a pedra na Prévia em cada caso. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quanto a pedra pode mudar do quadro 1 para o quadro 2, mexendo só na cratera ou na pedra inteira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

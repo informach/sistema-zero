@@ -23,8 +23,8 @@
       "clipe": "video-d3-condicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "assim, que o jogo faz para decidir o que acontece, tem um nome: condição. E a resposta dela só pode ser sim ou não.",
-      "ancoraDepois": "O que você acha que a porta faz? Isso você vai testar na experiência. Uma dica: a pergunta da porta é sempre a mesma.",
+      "ancoraAntes": "a porta do farol também faz uma pergunta, com o nome que o jogo usa: temChave é verdadeiro? Essa é a condição da porta.",
+      "ancoraDepois": "O que você acha que a porta faz? Isso você vai testar na experiência. Agora você vai investigar o que a porta faz",
       "falaPrincipal": "E se a resposta for não?",
       "falaPersonagem": "E se a resposta for não?",
       "tags": ["[curious]"]
@@ -67,10 +67,10 @@
       "clipe": "video-d3-posicao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "da chave também é dito com dois números: o x e o y. O x cuida dos lados, a direção que também se chama horizontal.",
-      "ancoraDepois": "Para isso existe o y, que cuida de cima e de baixo, a direção vertical. Mas, quando o y aumenta, a chave sobe ou desce?",
-      "falaPrincipal": "E para subir ou descer?",
-      "falaPersonagem": "E para subir ou descer?",
+      "ancoraAntes": "e o y. O x cuida dos lados, a direção que também se chama horizontal. O y cuida de cima e de baixo, a direção vertical.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde a chave vai quando o x e o y",
+      "falaPrincipal": "Mas, quando o y aumenta, a chave sobe ou desce?",
+      "falaPersonagem": "Mas, quando o y aumenta, a chave sobe ou desce?",
       "tags": ["[curious]"]
     },
     {

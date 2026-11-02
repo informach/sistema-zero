@@ -6,9 +6,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem o sinal da vitória, este faz um acerto, e este tenta mudar a placa no meio da partida.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare em que acerto vem a vitória com maior que e com maior ou igual, e tente mudar a placa no meio de uma partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar em que acerto vem a vitória com cada sinal, e se a placa da meta pode mudar no meio da partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -118,17 +116,15 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Dá para só combinar uma partida nova e recomeçar, ou recolher tudo e arrumar o tabuleiro do zero.
+[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Antes de recomeçar, vale olhar como ficou o tabuleiro.
 
 [engaging, energetic, conversational voice] No seu jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.
 
-[curious] E qual é a diferença entre os dois?
+[curious] E a partida nova começa igual nos dois jeitos?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o Enter faz no fim da partida, e este botão faz o papel da tecla Enter.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os asteroides que ficam na tela e a tela de início quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na partida nova quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

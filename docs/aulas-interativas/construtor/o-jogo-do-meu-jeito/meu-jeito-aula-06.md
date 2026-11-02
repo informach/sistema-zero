@@ -34,9 +34,9 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-nomes-K1: Dedé substitui “E se a nave e a folha tiverem o mesmo nome?”. Antes: “dela. Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o bloco de cima cria a nave, e”.
+video-nomes-K1: Dedé substitui “E se a nave e a folha tiverem o mesmo nome?”. Antes: “acham cada coisa pelo nome dela. Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com os blocos quando o”.
 
-**Experiência em exploração livre:** `unique-names`, com `setup.freeExploration`. Tire o bloco de cima e dê nomes diferentes ao bloco de baixo. Compare os avisos dos blocos e a prévia em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `unique-names`, com `setup.freeExploration`. Compare os avisos dos blocos e a prévia quando falta o bloco que cria a nave e quando a folha recebe outro nome, inclusive o nome nave. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Traga seus desenhos para o projeto
 
@@ -58,9 +58,9 @@ video-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-recorte-K1: Dedé substitui “E se o recorte for maior ou menor que um desenho?”. Antes: “pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem a largura do”.
+video-recorte-K1: Dedé substitui “E se o recorte for maior ou menor que um desenho?”. Antes: “pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar qual recorte mostra uma nave inteira e”.
 
-**Experiência em exploração livre:** `sheet-vs-sprite`, com `setup.freeExploration`. Experimente cada largura de recorte e ache a que mostra uma nave inteira. Depois mude o tamanho da nave no jogo e olhe a folha. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `sheet-vs-sprite`, com `setup.freeExploration`. Ache o recorte que mostra uma nave inteira e compare o jogo e a folha quando o tamanho da nave no jogo muda. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Use sua imagem no criador da nave
 

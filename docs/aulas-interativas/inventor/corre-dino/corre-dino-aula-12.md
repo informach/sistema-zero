@@ -28,19 +28,19 @@ O sorteio vem antes das duas aplicações. A experiência mostra posições, rep
 
 ### Seção 1. Onde nasce o próximo cacto?
 
-**Tarefa:** Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-sorteio-tira-na-hora → fala-sorteio-tira-na-hora → experiencia-random.
 
-**Recado na página (não gravar):** Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-sorteio-tira-na-hora-K1: Dedé substitui “Ué, pode sair o mesmo lugar duas vezes?”. Antes: “sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta”.
+video-sorteio-tira-na-hora-K1: Dedé substitui “E pode sair o mesmo lugar duas vezes?”. Antes: “sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde os cactos nascem e com que”.
 
 **Experiência em exploração livre:** `random` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/random.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/random.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Sorteie o lugar de cada cacto e compare as marquinhas na régua; depois sorteie a velocidade e compare as raias. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os lugares sorteados na régua e até onde chegam os cactos de cada velocidade nas raias. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua. Clique em Sortear um lugar mais algumas vezes até um lugar ganhar duas marquinhas. Clique em Sortear uma velocidade até aparecerem um −5 e um −6 e compare as raias.
 
@@ -66,19 +66,19 @@ video-lugar-diferente-K1: Dedé substitui “Quais números eu coloco no sorteio
 
 ### Seção 3. Qual número é maior?
 
-**Tarefa:** Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-regua-negativos → fala-regua-negativos → experiencia-number-line.
 
-**Recado na página (não gravar):** Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-regua-negativos-K1: Dedé substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o marcador anda pela régua, este”.
+video-regua-negativos-K1: Dedé substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “dos cactos são números negativos. E o jogo pode fazer uma pergunta sobre eles, como: o número é maior que -9?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar como os números negativos ficam na reta”.
 
 **Experiência em exploração livre:** `number-line` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/number-line.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/number-line.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Ande pela reta com Somar -1 e escolha o sinal da pergunta: >, = ou <. Compare onde a resposta é sim e onde é não. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare para que lado o marcador anda quando o número diminui e onde a pergunta responde sim ou não. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Somar -1 três vezes. Com o marcador no -5, clique em > maior que. Com > maior que escolhido, clique em Somar -1 até o marcador chegar no -9. Clique em Voltar ao começo, depois em = igual a, e em Somar -1 quatro vezes.
 

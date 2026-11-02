@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um valor.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -27,19 +27,19 @@ Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um
 
 ### Seção 1. Guardar e mostrar um número
 
-**Tarefa:** Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-variavel → fala-caixa-de-pontos → experiencia-variavel.
 
-**Recado na página (não gravar):** Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-variavel-K1: Dedé substitui “E se o número não estiver na tela, ele continua mudando?”. Antes: “mundo. No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número, e estes”.
+video-variavel-K1: Dedé substitui “E se o número não estiver na tela, ele continua mudando?”. Antes: “se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre o número que o jogo”.
 
 **Experiência em exploração livre:** `variable` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/variable.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/variable.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a caixa pontos com a tela do jogo quando você guarda um número, quando a nave acerta um asteroide com o número fora da tela e quando o número aparece na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare a caixa pontos com a tela do jogo, com o número mostrado na tela e sem ele, quando a nave acerta um asteroide. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo. Com o número fora da tela, clique em Acertar um asteroide e compare a caixa pontos com a tela. Clique em Mostrar o número na tela e compare com a caixa pontos.
 

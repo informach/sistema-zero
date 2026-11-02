@@ -14,7 +14,7 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 Gravidade e impulso são observados antes de cada montagem. Não é preciso programar primeiro um pulo sem gravidade para fabricar um defeito. O quiz retoma preparação, desenho, gravidade e impulso depois dos testes.
 
-**Revisão de 02/11/2026.** Gravidade e impulso passaram à exploração livre, com a bola jogada para cima e a cama elástica, a pergunta da Debinha devolvida e os controles apontados uma vez. A montagem do pulo, a mais carregada do curso, virou uma fala por momento (o porquê da ordem, o destino, o bloco, "É este bloco que…", o nome, a força do pulo ligada ao impulso, o teste por tecla e o teste por toque) e começa por Atualizar, como a nota de tela pede. A gravidade diz por que o Dino ainda não se mexe sem contradizer a experiência. A retomada do pulo diz a relação ("com mais impulso, o pulo ia mais alto"), porque a criança pode não ter testado o 14. No quiz, "Criar faz o Dino existir" e "O que está faltando?".
+**Revisão de 02/11/2026.** Gravidade e impulso passaram à exploração livre, com a bola jogada para cima e a cama elástica, a pergunta da Debinha devolvida e o convite a investigar, sem apontar os controles. A montagem do pulo, a mais carregada do curso, virou uma fala por momento (o porquê da ordem, o destino, o bloco, "É este bloco que…", o nome, a força do pulo ligada ao impulso, o teste por tecla e o teste por toque) e começa por Atualizar, como a nota de tela pede. A gravidade diz por que o Dino ainda não se mexe sem contradizer a experiência. A retomada do pulo diz a relação ("com mais impulso, o pulo ia mais alto"), porque a criança pode não ter testado o 14. No quiz, "Criar faz o Dino existir" e "O que está faltando?".
 
 ## Triagem dos conceitos
 
@@ -27,19 +27,19 @@ Gravidade e impulso são observados antes de cada montagem. Não é preciso prog
 
 ### Seção 1. O que traz o Dino de volta?
 
-**Tarefa:** Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-gravidade-modelo → fala-gravidade-modelo → experiencia-gravidade.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o pulo do Dino com e sem gravidade. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta para o chão depois do pulo?”. Antes: “é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o Dino pular, e este”.
+video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta para o chão depois do pulo?”. Antes: “para sempre. No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com”.
 
 **Experiência em exploração livre:** `gravity` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/gravity.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/gravity.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare um pulo do Dino sem gravidade e com gravidade. Observe o Dino e o número da altura em cada um. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a gravidade desligada, clique em Pular e observe o número da altura. Depois do pulo sem gravidade, clique em Ligar a gravidade e observe o Dino até o fim.
 
@@ -60,19 +60,19 @@ video-gravidade-modelo-K1: Debinha substitui “E sem gravidade, o Dino volta pa
 
 ### Seção 3. Quanto o Dino sobe?
 
-**Tarefa:** Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-impulso-modelo → fala-impulso-modelo → experiencia-impulso.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o impulso muda no pulo do Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-impulso-modelo-K1: Debinha substitui “E com mais impulso, até onde o Dino chega?”. Antes: “também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem o impulso, e”.
+video-impulso-modelo-K1: Debinha substitui “E com mais impulso, até onde o Dino chega?”. Antes: “você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda nas marcas da”.
 
 **Experiência em exploração livre:** `impulse` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/impulse.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/impulse.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Descubra o que o impulso muda no pulo. Faça saltos com impulsos diferentes e compare as marcas da altura. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare as marcas da altura dos pulos com impulsos diferentes. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Pular e espere o salto terminar. Pule com Impulso 9 e depois com Impulso 14, esperando cada salto terminar.
 

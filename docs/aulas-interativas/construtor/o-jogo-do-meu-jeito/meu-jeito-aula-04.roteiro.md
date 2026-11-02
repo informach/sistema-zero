@@ -10,7 +10,7 @@
 
 **Clipe:** `video-preenchimento-contorno`
 
-**Na tela:** No "Sabe um livro de colorir", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão [apontar "Preenchimento: com cor"]. No "e este outro faz o mesmo com o Contorno", apontar o botão [apontar "Contorno: com cor"]. Não tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "A sua pedra vai ser desenhada em vetor", mostrar a experiência na aula, parada, com as duas partes da pedra coloridas. No "Sabe um livro de colorir", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com as duas partes coloridas, sem tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -25,22 +25,20 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão troca o Preenchimento entre com cor e Sem cor, e este outro faz o mesmo com o Contorno.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: deixe uma parte de cada vez em Sem cor e depois as duas com cor. Compare o que sobra da pedra em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que sobra da pedra quando o Preenchimento ou o Contorno fica em Sem cor. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-preenchimento-contorno-K1 | Dedé | 1 | Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha. | E se uma das partes ficar em Sem cor, o que sobra? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão troca o Preenchimento | [curious] |
+| video-preenchimento-contorno-K1 | Dedé | 1 | Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha. | E se uma das partes ficar em Sem cor, o que sobra? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-preenchimento-contorno-K1`: entrada — Manter o meme do livro de colorir e a pedra com as duas partes coloridas. Saída — Seguir sem tirar nenhuma cor: a professora só convida a testar e aponta os controles.
+- `video-preenchimento-contorno-K1`: entrada — Manter o meme do livro de colorir e a pedra com as duas partes coloridas. Saída — Seguir sem tirar nenhuma cor: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/fill-stroke.ts`, com a tela em `packages/member-shell/src/components/scene-livre/fill-stroke.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.

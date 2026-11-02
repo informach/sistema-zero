@@ -21,7 +21,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com a",
       "falaPrincipal": "E na tela de início, as pedras nascem?",
       "falaPersonagem": "E na tela de início, as pedras nascem?",
       "tags": ["[curious]"]

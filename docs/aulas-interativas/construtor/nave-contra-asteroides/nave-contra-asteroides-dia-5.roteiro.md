@@ -10,7 +10,7 @@
 
 **Clipe:** `video-meta-do-jogo`
 
-**Na tela:** No "Sabe aquele brinquedo do parque", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No "Olha aqui: nesta experiência", ampliar a experiência parada [ampliar experiência] e apontar os botões, sem clicar [apontar "Maior que (>)"] [apontar "Maior ou igual (≥)"] [apontar "Acertar uma pedra"] [apontar "Tentar mudar a placa"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe aquele brinquedo do parque", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -23,16 +23,14 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem o sinal da vitória, este faz um acerto, e este tenta mudar a placa no meio da partida.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare em que acerto vem a vitória com maior que e com maior ou igual, e tente mudar a placa no meio de uma partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar em que acerto vem a vitória com cada sinal, e se a placa da meta pode mudar no meio da partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-meta-do-jogo-K1 | Debinha | 1 | pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual. | Com maior que, chegar a 26 já dá a vitória? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal | [curious] |
+| video-meta-do-jogo-K1 | Debinha | 1 | pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual. | Com maior que, chegar a 26 já dá a vitória? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -43,7 +41,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/score-goal.ts`, na tela `packages/member-shell/src/components/scene-livre/score-goal.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Defina quando você ganha
 
@@ -236,33 +234,31 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-reiniciar` · Jogar outra vez
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-reiniciar`
 
-**Na tela:** No "Sabe quando você termina um jogo de tabuleiro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Só voltar para a tela de início"] [apontar "Começar tudo de novo"]. No "e este botão faz o papel da tecla Enter", apontar o botão, sem clicar [apontar "Apertar Enter"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você termina um jogo de tabuleiro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Dá para só combinar uma partida nova e recomeçar, ou recolher tudo e arrumar o tabuleiro do zero.
+[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Antes de recomeçar, vale olhar como ficou o tabuleiro.
 
 [engaging, energetic, conversational voice] No seu jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.
 
-[curious] E qual é a diferença entre os dois?
+[curious] E a partida nova começa igual nos dois jeitos?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o Enter faz no fim da partida, e este botão faz o papel da tecla Enter.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os asteroides que ficam na tela e a tela de início quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na partida nova quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-reiniciar-K1 | Debinha | 1 | jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo. | E qual é a diferença entre os dois? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o Enter faz no | [curious] |
+| video-reiniciar-K1 | Debinha | 1 | jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo. | E a partida nova começa igual nos dois jeitos? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -273,7 +269,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/restart.ts`, na tela `packages/member-shell/src/components/scene-livre/restart.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 6. Faça Enter preparar outra partida
 

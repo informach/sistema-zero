@@ -42,14 +42,14 @@
   "blocks": [
     {
       "key": "video-o-que-o-freio-segura",
-      "plannedVideo": "Título: Até onde a corrida acelera?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o botão de volume\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Passar 5 segundos\"]. No \"e este outro liga e desliga a pergunta\", apontar o botão da pergunta, sem clicar. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão na pista também ficam mais rápidos?”. Antes: “forte, até um limite. No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7…”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão passa cinco segundos de”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Até onde a corrida acelera?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o botão de volume\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão na pista também ficam mais rápidos?”. Antes: “-7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a base e com os”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-o-que-o-freio-segura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -57,7 +57,7 @@
       "content": {
         "kind": "interactive",
         "title": "Até onde a corrida acelera?",
-        "instructions": "A cada 5 segundos o número da base ganha -1, e a pergunta \"a base é maior que -9?\" pode estar ligada ou desligada. Passe 5 segundos várias vezes e compare o número da base com o número de cada cacto, com a pergunta ligada e desligada. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe o número embaixo de cada cacto e o número da base.",
           "Passe 5 segundos até a resposta da pergunta virar não.",
@@ -1499,7 +1499,7 @@
       "key": "o-que-o-freio-segura",
       "title": "Até onde a corrida acelera?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-o-que-o-freio-segura",
         "fala-o-que-o-freio-segura",

@@ -14,10 +14,10 @@
       "clipe": "video-d2-contexto",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "some da tela. Repare em três coisas nesse momento: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a memória",
-      "falaPrincipal": "Mas, se a chave some, isso já quer dizer que o jogo guardou?",
-      "falaPersonagem": "Mas, se a chave some, isso já quer dizer que o jogo guardou?",
+      "ancoraAntes": "o personagem tem chave? A resposta fica guardada como verdadeiro, que quer dizer sim, ou falso, que quer dizer não.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o jogo guarda que o personagem",
+      "falaPrincipal": "Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?",
+      "falaPersonagem": "Mas, se a chave some do chão, isso já quer dizer que o jogo guardou?",
       "tags": ["[curious]"]
     },
     {

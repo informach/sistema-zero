@@ -1,16 +1,14 @@
 [engaging, energetic, conversational voice] Nesta aula, a sua nave animada vai entrar no jogo. Para isso, o jogo vai usar duas coisas com nome: a nave, que é o personagem que anda na tela, e a folha, que é a imagem com os dois desenhos da sua nave, um do lado do outro.
 
-[engaging, energetic, conversational voice] No Estúdio, um bloco cria a nave com o nome nave. Outros blocos procuram esse nome para mover, desenhar e conferir a nave. Ou seja, os blocos acham cada coisa pelo nome dela.
+[engaging, energetic, conversational voice] No Estúdio, um bloco cria a nave com o nome nave, e outro bloco cria a folha, também com um nome. Outros blocos procuram o nome nave para mover, desenhar e conferir a nave. Ou seja, os blocos acham cada coisa pelo nome dela.
 
-[curious] Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder?
+[engaging, energetic, conversational voice] Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.
 
 [curious] E se a nave e a folha tiverem o mesmo nome?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, o bloco de cima cria a nave, e estes três blocos procuram o nome nave. Este botão tira o bloco de cima. Aqui você escolhe o nome do bloco de baixo, que cria a folha. E este outro faz a prévia andar.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: tire o bloco de cima e dê nomes diferentes ao bloco de baixo. Compare os avisos dos blocos e a prévia em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com os blocos quando o nome nave falta ou aparece duas vezes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -32,7 +30,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra da folha? É a imagem da sua nave com os dois desenhos lado a lado. No Pinta, cada desenho é um quadro, e cada quadro da sua nave tem 32 por 32. Por isso, a folha inteira tem 64 de largura e 32 de altura.
+[engaging, energetic, conversational voice] Lembra da folha? É a imagem da sua nave com os dois desenhos lado a lado.
 
 [engaging, energetic, conversational voice] Para mostrar um desenho só, o jogo recorta um pedaço da folha. O tamanho desse pedaço se chama recorte.
 
@@ -44,9 +42,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem a largura do recorte. Quando o recorte pega um quadro só, aqui você escolhe o Quadro 1 ou o Quadro 2. E aqui fica o tamanho da nave no jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: experimente cada largura de recorte e ache a que mostra uma nave inteira. Depois mude o tamanho da nave no jogo e olhe a folha. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar qual recorte mostra uma nave inteira e o que o tamanho da nave no jogo muda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

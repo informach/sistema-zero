@@ -6,33 +6,31 @@
 
 ### Clipe `video-apelidos` · Quem sai do jogo na trombada?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-apelidos`
 
-**Na tela:** No "Sabe o jogo de queimada", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com só um jogador saindo da quadra [na edição: meme da queimada]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "O grupo dos tiros"] [apontar "O tiro que encostou"]. No "e este botão passa um segundo de jogo", apontar o botão [apontar "Passar 1 segundo"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o jogo de queimada", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com a bola no ar, antes de acertar alguém [na edição: meme da queimada]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe o jogo de queimada? Quando a bola acerta alguém, só quem foi acertado sai da quadra, e o resto do time continua jogando.
+[engaging, energetic, conversational voice] Sabe o jogo de queimada? Quando a bola acerta alguém, o combinado do jogo diz quem sai da quadra.
 
 [engaging, energetic, conversational voice] No seu jogo, quando um tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.
 
 [curious] E se o jogo tirar o grupo inteiro?
 
-[engaging, energetic, conversational voice] O que você acha que acontece com os outros tiros e pedras? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quem sai do jogo na trombada, de cada lado, e este botão passa um segundo de jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quem sai do jogo quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram, e observe as outras pedras depois da trombada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quem sai do jogo na trombada quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-apelidos-K1 | Debinha | 1 | tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram. | E se o jogo tirar o grupo inteiro? | O que você acha que acontece com os outros tiros e pedras? Isso você vai testar na experiência. Olha aqui: nesta | [curious] |
+| video-apelidos-K1 | Debinha | 1 | tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram. | E se o jogo tirar o grupo inteiro? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -43,7 +41,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/collision-pair.ts`, na tela `packages/member-shell/src/components/scene-livre/collision-pair.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Programe o acerto
 

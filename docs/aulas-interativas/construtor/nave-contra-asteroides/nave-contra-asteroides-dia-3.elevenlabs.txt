@@ -1,14 +1,12 @@
-[engaging, energetic, conversational voice] Sabe o jogo de queimada? Quando a bola acerta alguém, só quem foi acertado sai da quadra, e o resto do time continua jogando.
+[engaging, energetic, conversational voice] Sabe o jogo de queimada? Quando a bola acerta alguém, o combinado do jogo diz quem sai da quadra.
 
 [engaging, energetic, conversational voice] No seu jogo, quando um tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.
 
 [curious] E se o jogo tirar o grupo inteiro?
 
-[engaging, energetic, conversational voice] O que você acha que acontece com os outros tiros e pedras? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quem sai do jogo na trombada, de cada lado, e este botão passa um segundo de jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quem sai do jogo quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram, e observe as outras pedras depois da trombada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quem sai do jogo na trombada quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

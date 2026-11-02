@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiências usam o cenário da nave e preparam a regra antes dos blocos. A limpeza retoma a comparação já feita na primeira aula.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades virou uma experiência curta própria, "O tamanho do passinho" (02/11/2026, a pedido da responsável: trocar um valor para ver o efeito é papel da experiência): a nave compara o passinho pequeno com o grande, em câmera lenta, e a montagem das setas só liga o número da velocidade a essa ideia e escolhe a velocidade da nave, sem refazer a comparação.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades virou uma experiência curta própria, "O tamanho do passinho" (02/11/2026, a pedido da responsável: trocar um valor para ver o efeito é papel da experiência): a nave compara o passinho pequeno com o grande, em câmera lenta, e a montagem das setas só liga o número da velocidade a essa ideia e escolhe a velocidade da nave, sem refazer a comparação. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -29,19 +29,19 @@ Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiênc
 
 ### Seção 1. A nave em câmera lenta
 
-**Tarefa:** Sua vez! Descubra o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-seta-e-velocidade → fala-seta-e-velocidade → experiencia-seta-e-velocidade.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-seta-e-velocidade-K1: Dedé substitui “E quando a seta está solta?”. Antes: “que andar? Em cada quadro, o jogo olha a seta. Se você está segurando a seta, a nave dá um passinho para aquele lado.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, quando você clica em Câmera lenta,”.
+video-seta-e-velocidade-K1: Dedé substitui “E o que a nave faz num quadro em que a seta está solta?”. Antes: “dá só um passinho. Para saber quando a nave tem que andar, o jogo olha a seta em cada quadro, antes de mexer a nave.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a nave faz em cada quadro com a”.
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-camera-lenta.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Câmera lenta, segure a seta e observe a tira de quadros. Em câmera lenta, solte a seta e observe os próximos quadros. Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare.
 
@@ -49,15 +49,15 @@ video-seta-e-velocidade-K1: Dedé substitui “E quando a seta está solta?”. 
 
 ### Seção 2. O tamanho do passinho
 
-**Tarefa:** Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-tamanho-do-passinho → fala-tamanho-do-passinho → experiencia-tamanho-do-passinho.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-passinho.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Passinho pequeno, clique em Câmera lenta e segure a seta por alguns quadros. Clique em Passinho grande, clique em Câmera lenta e segure a seta por alguns quadros.
 
@@ -97,19 +97,19 @@ video-limpeza-K1: Dedé substitui “Isso vai apagar a minha nave?”. Antes: �
 
 ### Seção 5. A beirada da tela
 
-**Tarefa:** Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-tela → fala-limite-da-tela → experiencia-limite-da-tela.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave já fora da tela?”. Antes: “o jogo confere se ela passou da beirada e, se passou, puxa a nave de volta para dentro. Isso é o limite da tela.”. Depois: “O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e”.
+video-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave já fora da tela?”. Antes: “conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,”.
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-beirada.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela. Com a nave fora da tela, clique em Ligar o limite da tela e observe o próximo quadro. Com o limite ligado, leve a nave até a beirada, clique em Câmera lenta e observe a tira.
 
@@ -134,19 +134,19 @@ video-limite-da-nave-K1: Dedé substitui “Esse nome heroi é o da minha nave?�
 
 ### Seção 7. Quem fica na frente?
 
-**Tarefa:** Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-ordem-dos-desenhos → fala-ordem-dos-desenhos → experiencia-camadas.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-ordem-dos-desenhos-K1: Dedé substitui “E se o fundo de estrelas for desenhado depois da nave?”. Antes: “o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.”. Depois: “O que você acha que acontece com a nave? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois”.
+video-ordem-dos-desenhos-K1: Dedé substitui “E se o fundo de estrelas for desenhado depois da nave?”. Antes: “o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando a ordem dos”.
 
 **Experiência em exploração livre:** `layers` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/layers.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/layers.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Desenhar a nave por último e observe a tela. Depois, clique em Desenhar o fundo de estrelas por último e observe a nave. Clique em Desenhar a nave por último outra vez, como no jogo, e compare.
 

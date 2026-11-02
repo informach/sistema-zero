@@ -63,40 +63,40 @@
 
 **Clipe:** `video-convite`
 
-**Na tela:** No "Sabe quando chega visita", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Só o Enter"] [apontar "Qualquer tecla ou toque"]. No "e estes botões fazem o papel do toque e da tecla", apontar os botões, sem clicar [apontar "Tocar na tela"] [apontar "Apertar Enter"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando chega visita", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Para a partida começar, o jogo precisa escutar quem joga: pode ser uma tecla, um toque ou os dois.
+
 [engaging, energetic, conversational voice] Sabe quando chega visita? Tem gente que toca a campainha e tem gente que bate na porta.
 
-[engaging, energetic, conversational voice] No seu jogo, quem joga pode usar o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque.
+[engaging, energetic, conversational voice] No seu jogo, quem joga pode usar o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.
 
 [curious] E se o jogo só escutar o teclado, quem joga no celular consegue começar?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o jogo escuta para começar a partida, e estes botões fazem o papel do toque e da tecla.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o toque e o Enter, na tela de início, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-convite-K1 | Dedé | 1 | o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque. | E se o jogo só escutar o teclado, quem joga no celular consegue começar? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o jogo escuta | [curious] |
+| video-convite-K1 | Dedé | 1 | o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque. | E se o jogo só escutar o teclado, quem joga no celular consegue começar? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-convite-K1`: entrada — Manter o meme da visita até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência na tela de início, sem clicar em nada.
+- `video-convite-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/controls.ts`, na tela `packages/member-shell/src/components/scene-livre/controls.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 3. Ligue a entrada ao início da partida
 

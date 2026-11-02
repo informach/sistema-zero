@@ -1,3 +1,5 @@
+[engaging, energetic, conversational voice] Um jogo pode criar coisas novas enquanto a partida acontece. E ele decide de quanto em quanto tempo cada coisa nova nasce.
+
 [engaging, energetic, conversational voice] Sabe uma torneira pingando? Ela pode pingar sem parar ou esperar um pouco entre uma gota e outra.
 
 [engaging, energetic, conversational voice] No seu jogo, os cactos vão nascer na direita e vir na direção do Dino. E o jogo pode criar um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.
@@ -6,9 +8,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem quando nasce um cacto novo, e este passa um segundo de jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera o relógio para nascer. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na fila de cactos quando um cacto novo nasce em todo quadro e quando cada um espera o relógio. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -42,17 +42,17 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Velocidade é quanto uma coisa anda de cada vez, e para que lado.
+
 [engaging, energetic, conversational voice] Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.
 
-[engaging, energetic, conversational voice] No seu jogo, a velocidade do cacto é assim: ela diz quanto o cacto anda em cada quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.
+[engaging, energetic, conversational voice] No seu jogo, a velocidade do cacto diz quanto ele anda em cada quadro, e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.
 
 [curious] E com um número negativo, o cacto vai para onde?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes números escolhem a velocidade para o lado do cacto, e este botão passa um quadro. Ao lado, aparece o x do cacto.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o cacto anda e o que acontece com o x com um número positivo, com um número negativo e com zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado o cacto anda e o que acontece com o x com um número positivo, com um negativo e com zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

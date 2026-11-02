@@ -24,7 +24,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.",
-      "ancoraDepois": "O que você acha que aparece? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando sai",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que momento o tiro sai em cada um",
       "falaPrincipal": "E se o tiro sair sempre, em todo quadro?",
       "falaPersonagem": "E se o tiro sair sempre, em todo quadro?",
       "tags": ["[curious]"]
@@ -35,7 +35,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe de onde vem o número",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde o tiro nasce quando a nave muda de",
       "falaPrincipal": "E se a nave mudar de lugar, o tiro vai junto?",
       "falaPersonagem": "E se a nave mudar de lugar, o tiro vai junto?",
       "tags": ["[curious]"]
@@ -46,7 +46,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o tiro anda, e o que",
       "falaPrincipal": "E com um número negativo, o tiro vai para onde?",
       "falaPersonagem": "E com um número negativo, o tiro vai para onde?",
       "tags": ["[curious]"]
@@ -68,7 +68,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, ao lado da tela ficam os",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o grupo de tiros quando o jogo tira do",
       "falaPrincipal": "E quando o tiro some da tela, ele sai do grupo também?",
       "falaPersonagem": "E quando o tiro some da tela, ele sai do grupo também?",
       "tags": ["[curious]"]

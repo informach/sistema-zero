@@ -10,7 +10,7 @@
 
 **Clipe:** `video-camadas`
 
-**Na tela:** No "Sabe quando você empilha figurinhas", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar a lista [apontar "Camadas"]. No "Em cada linha, um botão leva aquela forma", apontar o botão da pedra [apontar "Uma camada para a frente: pedra"]. Não mover as camadas: qual forma fica na frente é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "No seu asteroide", mostrar a experiência na aula, parada, com a chama na frente da pedra. No "Sabe quando você empilha figurinhas", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar o desenho e a lista Camadas parados, sem mover as camadas: qual forma fica na frente é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -25,22 +25,20 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a chama. Em cada linha, um botão leva aquela forma Uma camada para a frente ou Uma camada para trás.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: suba e desça a pedra na lista Camadas e compare qual forma aparece na frente no desenho. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-camadas-K1 | Debinha | 1 | lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo. | Como faz para a pedra aparecer na frente da chama? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a | [curious] |
+| video-camadas-K1 | Debinha | 1 | lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo. | Como faz para a pedra aparecer na frente da chama? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-camadas-K1`: entrada — Mostrar a chama na frente da pedra e a lista Camadas, sem mover nenhuma camada. Saída — Seguir sem mover camadas: a professora só convida a testar e aponta os controles.
+- `video-camadas-K1`: entrada — Mostrar a chama na frente da pedra e a lista Camadas, sem mover nenhuma camada. Saída — Seguir sem mover camadas: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/layers.ts`, com a tela em `packages/member-shell/src/components/scene-livre/layers.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
@@ -147,35 +145,33 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-mudanca-pequena`
 
-**Na tela:** No "Imagina uma bola de futebol girando", mostrar o meme ilustrado (2 a 3 s) do Zappy girando a bola na ponta do dedo [na edição: meme da bola girando]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e mostrar a pedra. No "Estes números dizem O tanto que a cratera anda", apontar os números [apontar "O tanto que a cratera anda"]. No "E este botão toca e para a Prévia", apontar o botão [apontar "Tocar a Prévia"]. Não mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "A sua pedra também vai ganhar dois quadros", mostrar a experiência na aula, com a Prévia parada. No "Sabe aqueles livrinhos de folhear", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho [na edição: meme do livrinho]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com a Prévia parada, sem mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2.
+[engaging, energetic, conversational voice] A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2. Dá para mudar só um pedaço da pedra, como a cratera, ou mudar a pedra inteira de lugar.
 
-[curious] Imagina uma bola de futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar?
+[engaging, energetic, conversational voice] Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.
 
-[curious] E se a pedra inteira andar bastante?
+[curious] E se a pedra inteira andar bastante de um quadro para o outro?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, a Prévia troca dois desenhos da pedra, o do quadro 1 e o do quadro 2. Estes números dizem O tanto que a cratera anda e O tanto que a pedra inteira anda no segundo desenho. E este botão toca e para a Prévia.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: deixe os dois números em 0, depois mexa só na cratera e depois na pedra inteira. Compare a pedra na Prévia em cada caso. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quanto a pedra pode mudar do quadro 1 para o quadro 2, mexendo só na cratera ou na pedra inteira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-mudanca-pequena-K1 | Debinha | 1 | futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar? | E se a pedra inteira andar bastante? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a Prévia troca dois desenhos da | [curious] |
+| video-mudanca-pequena-K1 | Debinha | 1 | lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito. | E se a pedra inteira andar bastante de um quadro para o outro? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1 | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-mudanca-pequena-K1`: entrada — Manter o meme da bola girando e a experiência com a Prévia parada. Saída — Seguir sem mudar os números: a professora só convida a testar e aponta os controles.
+- `video-mudanca-pequena-K1`: entrada — Manter o meme do livrinho e a experiência com a Prévia parada. Saída — Seguir sem mudar os números: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/motion-amount.ts`, com a tela em `packages/member-shell/src/components/scene-livre/motion-amount.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.

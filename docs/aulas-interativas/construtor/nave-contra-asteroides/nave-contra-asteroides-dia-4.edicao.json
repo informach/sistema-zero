@@ -22,7 +22,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.",
-      "ancoraDepois": "O que você acha que acontece depois das batidas? Isso você vai testar na experiência. Olha aqui: nesta experiência,",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas a nave tem depois das",
       "falaPrincipal": "E se a nave ganhar as três vidas sempre, em todo quadro?",
       "falaPersonagem": "E se a nave ganhar as três vidas sempre, em todo quadro?",
       "tags": ["[curious]"]
@@ -55,7 +55,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quanto tempo dura a",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas sobram depois de três",
       "falaPrincipal": "E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?",
       "falaPersonagem": "E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?",
       "tags": ["[curious]"]

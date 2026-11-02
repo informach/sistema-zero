@@ -10,40 +10,40 @@
 
 **Clipe:** `video-visivel-guardado`
 
-**Na tela:** No "Sabe quando uma bola cai no quintal", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os bastidores, sem passar o tempo. No "e este botão faz o jogo tirar quem sai da tela", apontar o botão, sem clicar [apontar "Tirar do jogo quem sai da tela"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando uma bola cai no quintal", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Um jogo pode guardar várias coisas parecidas juntas, numa lista que ele move em todo quadro. Essa lista se chama grupo.
+
 [engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, que é a lista que o jogo guarda e move em todo quadro. Quando um cacto passa da borda da esquerda, ele some da tela.
+[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.
 
 [curious] E quando o cacto some da tela, ele sai do grupo também?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, ao lado da tela ficam os bastidores, com os cactos do grupo, e este botão faz o jogo tirar quem sai da tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-visivel-guardado-K1 | Dedé | 1 | que é a lista que o jogo guarda e move em todo quadro. Quando um cacto passa da borda da esquerda, ele some da tela. | E quando o cacto some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, ao lado da tela ficam os | [curious] |
+| video-visivel-guardado-K1 | Dedé | 1 | num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela. | E quando o cacto some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-visivel-guardado-K1`: entrada — Manter o meme da bola no quintal até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o tempo parado.
+- `video-visivel-guardado-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/cleanup.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Retire do grupo quem já saiu
 

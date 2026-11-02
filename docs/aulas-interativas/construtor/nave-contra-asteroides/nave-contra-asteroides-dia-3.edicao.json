@@ -15,7 +15,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.",
-      "ancoraDepois": "O que você acha que acontece com os outros tiros e pedras? Isso você vai testar na experiência. Olha aqui: nesta",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o",
       "falaPrincipal": "E se o jogo tirar o grupo inteiro?",
       "falaPersonagem": "E se o jogo tirar o grupo inteiro?",
       "tags": ["[curious]"]

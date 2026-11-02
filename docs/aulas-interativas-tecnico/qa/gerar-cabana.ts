@@ -126,7 +126,7 @@ for (const [index, aula] of cabanaAulas.entries()) {
           // das peças, sem blocos. As pistas e o "Ainda falta" citam os botões desta tela (o
           // catálogo cita "e" e "ou", da bancada antiga).
           instructions:
-            'Tente a cabana sem nenhuma peça, com uma e com as duas, e observe temChave, temEmblema e a porta. Pegue as peças em ordens diferentes e compare com a cabana que pede uma das peças. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+            'Compare quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
             'Olhe temChave e temEmblema antes de encostar na cabana: quantos estão em verdadeiro?',
             'Compare a cabana sem nenhuma peça, com uma e com as duas. Depois recomece e pegue as peças na outra ordem.',

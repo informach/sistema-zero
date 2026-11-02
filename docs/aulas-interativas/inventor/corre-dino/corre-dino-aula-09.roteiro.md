@@ -6,44 +6,44 @@
 
 ### Clipe `video-contato` · Quando o jogo marca a batida?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-contato`
 
-**Na tela:** No "Sabe os carrinhos de bate-bate", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e o Dino em dois carrinhos de bate-bate, ainda longe um do outro [na edição: meme do bate-bate]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as áreas pontilhadas, sem mover o cacto. No "e estes botões aproximam e afastam o cacto", apontar os botões, sem clicar [apontar "Aproximar o cacto"] [apontar "Afastar o cacto"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você brinca de pega-pega", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma reunidos antes do pega-pega, combinando a brincadeira, com o Dino ainda longe de todo mundo [na edição: meme do combinado do pega-pega]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe os carrinhos de bate-bate? Em volta de cada carrinho tem um para-choque de borracha.
+[engaging, energetic, conversational voice] Para a corrida acabar, o jogo precisa saber quando o Dino bate num cacto. Esse momento se chama batida.
 
-[engaging, energetic, conversational voice] No seu jogo, em volta de cada desenho também tem uma área, como esse para-choque. Quando o Dino e o cacto se aproximam, o jogo marca uma batida.
+[engaging, energetic, conversational voice] Sabe quando você brinca de pega-pega? Antes de começar, a turma combina o que vale como pegar.
+
+[engaging, energetic, conversational voice] No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.
 
 [curious] E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, o retângulo pontilhado em volta do Dino e do cacto é a área de cada um, e estes botões aproximam e afastam o cacto.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que se encosta, os desenhos ou as áreas pontilhadas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-contato-K1 | Debinha | 1 | cada desenho também tem uma área, como esse para-choque. Quando o Dino e o cacto se aproximam, o jogo marca uma batida. | E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o retângulo pontilhado em volta do | [curious] |
+| video-contato-K1 | Debinha | 1 | combina o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado. | E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-contato-K1`: entrada — Manter o meme do bate-bate até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o cacto longe, sem mexer nele.
+- `video-contato-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/hitbox.ts`, na tela `packages/member-shell/src/components/scene-livre/hitbox.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o jogo reconhece a batida entre o cacto e o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Encerre a partida na batida
 
@@ -204,44 +204,44 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-trocar-nao-limpa` · Voltar ou começar tudo de novo?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-trocar-nao-limpa`
 
-**Na tela:** No "Sabe quando você termina um jogo de tabuleiro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Só voltar para a tela de início"] [apontar "Começar tudo de novo"]. No "e este botão faz o papel do toque", apontar o botão, sem clicar [apontar "Tocar na tela"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você termina um jogo de tabuleiro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem jogar. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Dá para só dizer “de novo!” e voltar a jogar, ou recolher tudo e arrumar o tabuleiro do zero.
+[engaging, energetic, conversational voice] Quando uma partida acaba, o jogo precisa saber o que fazer para começar outra.
+
+[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Antes de recomeçar, vale olhar como o tabuleiro ficou.
 
 [engaging, energetic, conversational voice] No seu jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.
 
-[curious] E qual é a diferença entre os dois?
+[curious] E a partida nova começa igual nos dois jeitos?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o toque faz no fim da partida, e este botão faz o papel do toque.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os cactos que ficam na pista quando uma partida nova começa, quando o toque do fim só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar como começa a partida nova em cada jeito de o toque recomeçar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-trocar-nao-limpa-K1 | Debinha | 1 | jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo. | E qual é a diferença entre os dois? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o toque faz no | [curious] |
+| video-trocar-nao-limpa-K1 | Debinha | 1 | jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo. | E a partida nova começa igual nos dois jeitos? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar como começa a partida nova em cada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-trocar-nao-limpa-K1`: entrada — Manter o meme do tabuleiro até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem jogar.
+- `video-trocar-nao-limpa-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/restart.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/restart.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o toque recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 6. Prepare uma nova partida
 

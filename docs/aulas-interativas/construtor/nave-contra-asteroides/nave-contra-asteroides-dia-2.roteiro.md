@@ -6,11 +6,11 @@
 
 ### Clipe `video-tecla-e-repeticao` · Quando sai o tiro?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-tecla-e-repeticao`
 
-**Na tela:** No "Sabe a campainha de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa e a nave abrindo a porta [na edição: meme da campainha]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os jeitos [apontar "Na hora em que algo acontece"]. No "este botão faz o papel da tecla", apontar o botão, sem clicar [apontar "Apertar a tecla"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe a campainha de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa e a nave abrindo a porta [na edição: meme da campainha]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -21,18 +21,16 @@
 
 [curious] E se o tiro sair sempre, em todo quadro?
 
-[engaging, energetic, conversational voice] O que você acha que aparece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando sai um tiro, e este botão faz o papel da tecla.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os tiros nos três jeitos: uma vez, no começo, sempre, em todo quadro, e na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar em que momento o tiro sai em cada um dos três jeitos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-tecla-e-repeticao-K1 | Debinha | 1 | e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla. | E se o tiro sair sempre, em todo quadro? | O que você acha que aparece? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando sai | [curious] |
+| video-tecla-e-repeticao-K1 | Debinha | 1 | e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla. | E se o tiro sair sempre, em todo quadro? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que momento o tiro sai em cada um | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -43,7 +41,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Faça a barra de espaço disparar
 
@@ -102,16 +100,16 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-escrito-e-lido` · Onde o tiro nasce?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-escrito-e-lido`
 
-**Na tela:** No "Tem dois jeitos de dizer onde você está", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy escrevendo num papelzinho e, ao lado, o Zappy respondendo a um amigo que pergunta onde ele está [na edição: meme do papelzinho e da resposta na hora]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Número escrito: 400"] [apontar "Número lido da nave"]. No "muda a nave de lugar e atira", apontar os lugares e o botão de atirar, sem clicar [apontar "Atirar"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Tem dois jeitos de dizer onde você está", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy escrevendo num papelzinho e, ao lado, o Zappy respondendo a um amigo que pergunta onde ele está [na edição: meme do papelzinho e da resposta na hora]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Tem dois jeitos de dizer onde você está: escrever num papelzinho, que fica com o que você escreveu, ou responder na hora em que alguém pergunta.
+[engaging, energetic, conversational voice] Tem dois jeitos de dizer onde você está: escrever num papelzinho ou responder na hora em que alguém pergunta.
 
 [engaging, energetic, conversational voice] O tiro do seu jogo precisa de um número que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.
 
@@ -119,16 +117,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe de onde vem o número do tiro, muda a nave de lugar e atira. Cada tiro deixa uma marca no lugar onde nasceu.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes, e descubra de que ponto da nave o tiro sai. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar onde o tiro nasce quando a nave muda de lugar, com o número escrito e com o número lido da nave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-escrito-e-lido-K1 | Debinha | 1 | que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro. | E se a nave mudar de lugar, o tiro vai junto? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe de onde vem o número | [curious] |
+| video-escrito-e-lido-K1 | Debinha | 1 | que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro. | E se a nave mudar de lugar, o tiro vai junto? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde o tiro nasce quando a nave muda de | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -139,17 +135,17 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/fixed-vs-read.ts`, na tela `packages/member-shell/src/components/scene-livre/fixed-vs-read.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Para que lado o tiro anda?
 
 ### Clipe `video-direcao-do-tiro` · Para que lado o tiro anda?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-direcao-do-tiro`
 
-**Na tela:** No "Sabe quando você atravessa a sala", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os números, sem clicar [apontar "Velocidade para baixo"]. No "este botão passa um quadro", apontar o botão [apontar "Avançar 1 quadro"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você atravessa a sala", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -162,16 +158,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes números escolhem a velocidade para baixo do tiro, e este botão passa um quadro. Ao lado, aparece o y do tiro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado o tiro anda, e o que acontece com o y, com um número positivo e com um número negativo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-direcao-do-tiro-K1 | Debinha | 1 | cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos. | E com um número negativo, o tiro vai para onde? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade | [curious] |
+| video-direcao-do-tiro-K1 | Debinha | 1 | cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos. | E com um número negativo, o tiro vai para onde? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o tiro anda, e o que | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -182,7 +176,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/velocity.ts`, na tela `packages/member-shell/src/components/scene-livre/velocity.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Faça o tiro nascer na nave
 
@@ -306,11 +300,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-tiro-fora-da-tela` · O tiro saiu da tela. E do jogo?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-tiro-fora-da-tela`
 
-**Na tela:** No "Sabe quando uma bola cai no quintal", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho [na edição: meme da bola no quintal]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os bastidores, sem passar o tempo. No "este botão faz o jogo tirar quem sai da tela", apontar o botão, sem clicar [apontar "Tirar do jogo quem sai da tela"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando uma bola cai no quintal", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho [na edição: meme da bola no quintal]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -323,16 +317,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, ao lado da tela ficam os bastidores, com os tiros do grupo, e este botão faz o jogo tirar quem sai da tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o grupo de tiros quando o jogo tira do grupo quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-tiro-fora-da-tela-K1 | Debinha | 1 | é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela. | E quando o tiro some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, ao lado da tela ficam os | [curious] |
+| video-tiro-fora-da-tela-K1 | Debinha | 1 | é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela. | E quando o tiro some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o grupo de tiros quando o jogo tira do | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -343,7 +335,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/cleanup.ts`, na tela `packages/member-shell/src/components/scene-livre/cleanup.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 8. Retire os tiros que saíram
 

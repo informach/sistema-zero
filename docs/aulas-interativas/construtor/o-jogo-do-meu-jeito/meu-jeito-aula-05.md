@@ -34,9 +34,9 @@ A ordem das formas é experimentada antes de desenhar as chamas. O tamanho da mu
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a”.
+video-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra”.
 
-**Experiência em exploração livre:** `layers`, com `setup.freeExploration`. Suba e desça a pedra na lista Camadas e compare qual forma aparece na frente no desenho. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `layers`, com `setup.freeExploration`. Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Desenhe fogo atrás da pedra
 
@@ -70,9 +70,9 @@ video-miolo-fogo-K1: Debinha substitui “Como eu levo o miolo para esse lugar d
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante?”. Antes: “futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a Prévia troca dois desenhos da”.
+video-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante de um quadro para o outro?”. Antes: “lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1”.
 
-**Experiência em exploração livre:** `motion-amount`, com `setup.freeExploration`. Compare a pedra na Prévia com os dois números em 0, com só a cratera andando um pouco e com a pedra inteira andando muito. Se a Prévia estiver parada, clique em Tocar a Prévia. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `motion-amount`, com `setup.freeExploration`. Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 5. Mude detalhes no segundo quadro
 

@@ -10,37 +10,35 @@
 
 **Clipe:** `video-nomes`
 
-**Na tela:** No "Imagina um time com duas pessoas", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico chamando um nome [na edição: meme do time]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o bloco de cima e os três blocos que procuram nave. No "Este botão tira o bloco de cima", apontar o botão [apontar "Tirar o bloco de cima"]. No "Aqui você escolhe o nome do bloco de baixo", apontar os nomes [apontar "Nome no bloco de baixo"]. No "E este outro faz a prévia andar", apontar o botão [apontar "Ver a prévia andando"]. Não tirar o bloco nem trocar nomes: os avisos são a descoberta da criança. Nesta parte, o bloco é o próprio conceito e pode ser nomeado. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
+**Na tela:** No "Nesta aula, a sua nave animada", mostrar a experiência na aula, parada, com o bloco de cima no lugar. No "Imagina um time com duas pessoas", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico chamando um nome [na edição: meme do time]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar os blocos e a prévia parados, sem tirar o bloco nem trocar nomes: o que cada aviso diz é a descoberta da criança. Nesta parte, o bloco é o próprio conceito e pode ser nomeado. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Nesta aula, a sua nave animada vai entrar no jogo. Para isso, o jogo vai usar duas coisas com nome: a nave, que é o personagem que anda na tela, e a folha, que é a imagem com os dois desenhos da sua nave, um do lado do outro.
 
-[engaging, energetic, conversational voice] No Estúdio, um bloco cria a nave com o nome nave. Outros blocos procuram esse nome para mover, desenhar e conferir a nave. Ou seja, os blocos acham cada coisa pelo nome dela.
+[engaging, energetic, conversational voice] No Estúdio, um bloco cria a nave com o nome nave, e outro bloco cria a folha, também com um nome. Outros blocos procuram o nome nave para mover, desenhar e conferir a nave. Ou seja, os blocos acham cada coisa pelo nome dela.
 
-[curious] Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder?
+[engaging, energetic, conversational voice] Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.
 
 [curious] E se a nave e a folha tiverem o mesmo nome?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, o bloco de cima cria a nave, e estes três blocos procuram o nome nave. Este botão tira o bloco de cima. Aqui você escolhe o nome do bloco de baixo, que cria a folha. E este outro faz a prévia andar.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: tire o bloco de cima e dê nomes diferentes ao bloco de baixo. Compare os avisos dos blocos e a prévia em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com os blocos quando o nome nave falta ou aparece duas vezes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-nomes-K1 | Dedé | 1 | dela. Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder? | E se a nave e a folha tiverem o mesmo nome? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o bloco de cima cria a nave, e | [curious] |
+| video-nomes-K1 | Dedé | 1 | acham cada coisa pelo nome dela. Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome. | E se a nave e a folha tiverem o mesmo nome? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com os blocos quando o | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-nomes-K1`: entrada — Manter o meme do time e a experiência com o bloco de cima no lugar. Saída — Seguir sem trocar nomes: a professora só convida a testar e aponta os controles.
+- `video-nomes-K1`: entrada — Manter o meme do time e a experiência com o bloco de cima no lugar. Saída — Seguir sem trocar nomes: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/unique-names.ts`, com a tela em `packages/member-shell/src/components/scene-livre/unique-names.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
@@ -100,12 +98,12 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-recorte`
 
-**Na tela:** No "Sabe uma cartela de adesivos", mostrar o meme ilustrado (2 a 3 s) do Zappy destacando um adesivo da nave [na edição: meme da cartela]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os recortes [apontar "Recorte de 32"]. No "aqui você escolhe o Quadro 1 ou o Quadro 2", apontar os quadros, ainda fechados [apontar "Quadro do recorte"]. No "E aqui fica o tamanho da nave no jogo", apontar os tamanhos [apontar "Tamanho da nave no jogo"]. Não escolher recorte: o que aparece no jogo é a descoberta da criança. Nesta parte, recorte, folha e quadro da folha são o próprio conceito. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
+**Na tela:** No "Lembra da folha?", mostrar a experiência na aula, parada, sem recorte. No "Sabe uma cartela de adesivos", mostrar o meme ilustrado (2 a 3 s) do Zappy destacando um adesivo da nave [na edição: meme da cartela]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a folha e o jogo parados, sem escolher recorte: o que aparece no jogo é a descoberta da criança. Nesta parte, recorte, folha e quadro da folha são o próprio conceito. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da folha? É a imagem da sua nave com os dois desenhos lado a lado. No Pinta, cada desenho é um quadro, e cada quadro da sua nave tem 32 por 32. Por isso, a folha inteira tem 64 de largura e 32 de altura.
+[engaging, energetic, conversational voice] Lembra da folha? É a imagem da sua nave com os dois desenhos lado a lado.
 
 [engaging, energetic, conversational voice] Para mostrar um desenho só, o jogo recorta um pedaço da folha. O tamanho desse pedaço se chama recorte.
 
@@ -117,22 +115,20 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem a largura do recorte. Quando o recorte pega um quadro só, aqui você escolhe o Quadro 1 ou o Quadro 2. E aqui fica o tamanho da nave no jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: experimente cada largura de recorte e ache a que mostra uma nave inteira. Depois mude o tamanho da nave no jogo e olhe a folha. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar qual recorte mostra uma nave inteira e o que o tamanho da nave no jogo muda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-recorte-K1 | Dedé | 1 | pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela. | E se o recorte for maior ou menor que um desenho? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem a largura do | [curious] |
+| video-recorte-K1 | Dedé | 1 | pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela. | E se o recorte for maior ou menor que um desenho? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar qual recorte mostra uma nave inteira e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-recorte-K1`: entrada — Mostrar a experiência sem recorte, logo depois do meme da cartela. Saída — Seguir sem escolher recorte: a professora só convida a testar e aponta os controles.
+- `video-recorte-K1`: entrada — Mostrar a experiência sem recorte, logo depois do meme da cartela. Saída — Seguir sem escolher recorte: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/sheet-vs-sprite.ts`, com a tela em `packages/member-shell/src/components/scene-livre/sheet-vs-sprite.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.

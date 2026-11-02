@@ -33,7 +33,7 @@ Pixel e vetor são comparados antes da escolha. O espelho precede o contorno; lu
 
 **Blocos na página:** video-bordas → fala-bordas → experimento-bordas.
 
-**Experiência em exploração livre:** `pixel-vector`, com `setup.freeExploration`. Aproxime e afaste as duas pedras e compare as bordas, de perto e de longe. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `pixel-vector`, com `setup.freeExploration`. Compare a borda das duas pedras de perto e de longe. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare a folha da nave
 
@@ -55,9 +55,9 @@ video-nova-nave-K1: Dedé substitui “E por que o nome tem que ser nave?”. An
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-espelho-K1: Dedé substitui “E o Balde de tinta, o espelho copia também?”. Antes: “folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões ligam e desligam”.
+video-espelho-K1: Dedé substitui “E o Balde de tinta, o espelho copia também?”. Antes: “folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde a tinta aparece com os espelhos”.
 
-**Experiência em exploração livre:** `symmetry`, com `setup.freeExploration`. Pinte a asa com os espelhos desligados e com cada espelho ligado. Depois use o Balde de tinta com o Espelho lado a lado. Compare onde a tinta aparece em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `symmetry`, com `setup.freeExploration`. Compare onde a tinta aparece na asa com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Feche o contorno da nave
 
@@ -87,9 +87,9 @@ video-cores-K1: Dedé substitui “Posso escolher outra cor, como roxo?”. Ante
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-luz-K1: Dedé substitui “E se o sol mudar de lado?”. Antes: “uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga A sombra”.
+video-luz-K1: Dedé substitui “E se o sol mudar de lado?”. Antes: “uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a sombra, a luz e o lado do sol”.
 
-**Experiência em exploração livre:** `shading`, com `setup.freeExploration`. Ligue e desligue a sombra e a luz e troque o sol de lado. Compare a forma da bola e os tons de azul. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `shading`, com `setup.freeExploration`. Compare a forma da bola e os tons de azul com a sombra e a luz ligadas e desligadas e com o sol de cada lado. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 7. Escolha um lado para a luz
 

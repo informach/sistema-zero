@@ -1,14 +1,14 @@
+[engaging, energetic, conversational voice] Para lembrar um número, o jogo usa uma caixa com nome. Uma caixa que guarda um número se chama variável.
+
 [engaging, energetic, conversational voice] Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.
 
-[engaging, energetic, conversational voice] No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.
+[engaging, energetic, conversational voice] No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela.
 
 [curious] E se o número não estiver na tela, ele continua mudando?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, esta caixa guarda o número dos pontos, e estes botões guardam o número, fazem o Dino ganhar um ponto e mostram o número na tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a caixa pontos e a tela do jogo quando você guarda o número, quando o Dino ganha um ponto com o número fora da tela e quando o número aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na caixa pontos e na tela do jogo quando o número muda e quando ele aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -62,17 +62,17 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sabe o cronômetro de uma corrida? Ele só começa a contar depois da largada.
+[engaging, energetic, conversational voice] Os pontos de um jogo ficam no placar, e é o jogo que decide quando somar cada ponto.
 
-[curious] No seu jogo, cada segundo de corrida vale um ponto. E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?
+[engaging, energetic, conversational voice] Sabe o cronômetro de uma corrida? Alguém precisa decidir quando ele conta.
+
+[curious] No seu jogo, o ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora?
 
 [curious] E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o ponto soma e liga ou desliga a pergunta. Estes botões passam um segundo e mudam de tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o placar em cada jeito de somar, na tela de início, na partida e no fim. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o placar cresce em cada jeito de somar, com e sem a pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

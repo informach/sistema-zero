@@ -14,8 +14,8 @@
       "clipe": "video-visivel-guardado",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "que é a lista que o jogo guarda e move em todo quadro. Quando um cacto passa da borda da esquerda, ele some da tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, ao lado da tela ficam os",
+      "ancoraAntes": "num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos",
       "falaPrincipal": "E quando o cacto some da tela, ele sai do grupo também?",
       "falaPersonagem": "E quando o cacto some da tela, ele sai do grupo também?",
       "tags": ["[curious]"]

@@ -21,7 +21,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.",
-      "ancoraDepois": "O que você acha que aparece na tela? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na chuva de pedras quando",
       "falaPrincipal": "E se nascer uma pedra em todo quadro?",
       "falaPersonagem": "E se nascer uma pedra em todo quadro?",
       "tags": ["[curious]"]
@@ -43,7 +43,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde cada pedra nova nasce quando o",
       "falaPrincipal": "E a pedra aparece de repente, no meio da tela?",
       "falaPersonagem": "E a pedra aparece de repente, no meio da tela?",
       "tags": ["[curious]"]

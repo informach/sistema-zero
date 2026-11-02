@@ -40,7 +40,7 @@ O que aparece quando você muda de lugar?
 
 
 
-**Zappy na página (não gravar):** Sua vez! Procure a chave olhando a ilha de lugares diferentes. Compare o que muda na imagem e o que continua onde estava. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Zappy na página (não gravar):** Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ### Parte 4. Faça o personagem andar
 

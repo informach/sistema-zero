@@ -20,8 +20,8 @@
       "clipe": "video-gravidade-modelo",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão faz o Dino pular, e este",
+      "ancoraAntes": "para sempre. No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o pulo do Dino sem gravidade e com",
       "falaPrincipal": "E sem gravidade, o Dino volta para o chão depois do pulo?",
       "falaPersonagem": "E sem gravidade, o Dino volta para o chão depois do pulo?",
       "tags": ["[curious]"]
@@ -31,8 +31,8 @@
       "clipe": "video-impulso-modelo",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem o impulso, e",
+      "ancoraAntes": "você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o impulso muda nas marcas da",
       "falaPrincipal": "E com mais impulso, até onde o Dino chega?",
       "falaPersonagem": "E com mais impulso, até onde o Dino chega?",
       "tags": ["[curious]"]

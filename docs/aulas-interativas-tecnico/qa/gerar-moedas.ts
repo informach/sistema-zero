@@ -128,7 +128,7 @@ for (const [index, aula] of moedasAulas.entries()) {
           // "Sem sumir, a mesma moeda contou de novo" entra na lista: é a comparação que explica por
           // que a montagem tira a moeda do jogo.
           instructions:
-            'Investigue quando o número moedas muda e quando continua igual: encoste em moedas, afaste o personagem e volte ao lugar de uma moeda já pega, com o sumiço ligado e desligado. Depois compare as duas perguntas do baú. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+            'Compare quando o número moedas muda e quando continua igual, e o que o baú responde com cada pergunta. Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
             'Olhe o número moedas antes e depois de cada encontro: quando ele muda e quando continua igual?',
             'Compare voltar a uma moeda já pega com o sumiço ligado e desligado. Depois tente o baú com poucas moedas e com mais de cinco, nas duas perguntas.',
