@@ -6,33 +6,37 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d2-contexto`
 
-**Na tela:** Apresentar a analogia de anotar para lembrar. Mostrar a chave, o aviso e a memória como três elementos distintos. Nomear temChave e os valores falso/verdadeiro sem demonstrar a sequência inteira. A atividade permite mudar a regra, recolher, afastar e iniciar outra partida.
+**Na tela:** Apresentar a analogia do recado anotado para não esquecer. Mostrar a chave, o aviso e temChave como três coisas distintas e nomear os valores falso e verdadeiro. No "Olha aqui: nesta atividade", apontar o botão **Ligar a memória da chave** e o valor de temChave [apontar botão da memória; apontar temChave], sem encostar na chave: o que acontece em cada caso é a descoberta da criança. Não falar de blocos, regra, ações nem comandos: a experiência trabalha só a ideia, e os blocos ficam para as partes seguintes (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O seu personagem já anda. Agora o jogo vai precisar lembrar quando ele encontrou a chave. Para guardar essa informação, a gente usa uma variável, que é um lugar com nome onde o jogo guarda um valor.
+[engaging, energetic, conversational voice] O seu personagem já anda. Agora o jogo vai precisar lembrar se ele já pegou a chave. Para guardar essa informação, a gente usa uma variável, que é um lugar com nome onde o jogo guarda um valor.
 
-[engaging, energetic, conversational voice] Sabe quando você anota uma coisa para lembrar depois? Aqui, o jogo usa a variável temChave. O nome ajuda a entender a pergunta: o personagem tem chave? Verdadeiro quer dizer sim; falso quer dizer não.
+[engaging, energetic, conversational voice] Sabe quando você anota um recado para não esquecer? A variável é como esse recado. Aqui, ela se chama temChave, e o nome ajuda a entender a pergunta: o personagem tem chave? Verdadeiro quer dizer sim; falso quer dizer não.
+
+[confident, clear, unhurried voice] Quando o personagem encosta na chave, ela sai do chão e some da tela. Repare em três coisas: a chave, o aviso e temChave.
 
 [curious] Mas a chave sumiu. Isso já quer dizer que o jogo guardou?
 
-[engaging, energetic, conversational voice] Fazer a chave sumir, mudar o aviso e guardar a coleta são ações diferentes. A informação só fica guardada se a regra também fizer isso.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora compare essas ações na experiência. Observe a chave, o aviso e temChave. Experimente também se afastar e recomeçar a partida. Você escolhe a ordem dos testes. Quando terminar, clique em Próxima parte.
+[interested, animated voice] Olha aqui: nesta atividade, este botão liga e desliga a memória da chave, e aqui você vê o valor de temChave.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare uma coleta com a memória da chave ligada e desligada, e observe a chave, o aviso e temChave. Teste também se o jogo esquece quando o personagem se afasta e quando começa uma partida nova. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d2-contexto-K1 | Dedé | 1 | is? Aqui, o jogo usa a variável temChave. O nome ajuda a entender a pergunta: o personagem tem chave? Verdadeiro quer dizer sim; falso quer dizer não. | Mas a chave sumiu. Isso já quer dizer que o jogo guardou? | Fazer a chave sumir, mudar o aviso e guardar a coleta são ações diferentes. A informação só fica guardada se a regra também fizer isso. Agora compare  | [curious] |
+| video-d2-contexto-K1 | Dedé | 1 | o personagem encosta na chave, ela sai do chão e some da tela. Repare em três coisas: a chave, o aviso e temChave. | Mas a chave sumiu. Isso já quer dizer que o jogo guardou? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta atividade, este botão liga e desliga a memória | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o jogo guarda quando o personagem pega a chave, com a memória da chave ligada e desligada. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Recolha a chave
 
@@ -63,7 +67,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [confident, clear, unhurried voice] Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, e pegue o bloco Destruir o sprite.
 
-[confident, clear, unhurried voice] Arraste e solte no espaço vazio ao lado de fazer. O bloco chega com o nome resposta: clique em resposta e escolha chave.
+[confident, clear, unhurried voice] Arraste e solte no espaço vazio ao lado de fazer. O bloco chega com o nome resposta: clique em resposta e escolha chave. É este bloco que tira a chave do chão, como na experiência.
 
 [curious] A chave some para sempre?
 
@@ -84,7 +88,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d2-recolher-K2 | Dedé | 1 | e solte no espaço vazio ao lado de fazer. O bloco chega com o nome resposta: clique em resposta e escolha chave. | A chave some para sempre? | Aqui, destruir só tira a chave desta partida. Quando você começa outra, ela volta. E repare que quem sai é a chave, não | [curious] |
+| video-d2-recolher-K2 | Dedé | 1 | com o nome resposta: clique em resposta e escolha chave. É este bloco que tira a chave do chão, como na experiência. | A chave some para sempre? | Aqui, destruir só tira a chave desta partida. Quando você começa outra, ela volta. E repare que quem sai é a chave, não | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -99,7 +103,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com Guardar a coleta desligado, a chave sumia, mas temChave continuava falso. O seu jogo está assim. Agora a gente vai ensinar o seu jogo a guardar que a chave foi pega!
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a memória da chave desligada, a chave sumia, mas temChave continuava falso. O seu jogo está assim. Agora a gente vai ensinar o seu jogo a guardar que a chave foi pega!
 
 [engaging, energetic, conversational voice] Primeiro, a gente precisa criar a variável temChave. Ela nasce quando o jogo começa. Por isso, encontre o fim da área Ao iniciar, logo abaixo de Ativar controles clássicos. Se esse lugar não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 
@@ -122,6 +126,8 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 [confident, clear, unhurried voice] Arraste e solte logo abaixo de Destruir o sprite. Esse bloco também chega com contador: clique em contador e escolha temChave.
 
 [engaging, energetic, conversational voice] O valor dele vem com o número 1. Troque do mesmo jeito: abra Programação e depois Lógica e Se, pegue o bloco verdadeiro e solte em cima do 1. Desta vez, deixe em verdadeiro, porque agora o personagem está com a chave.
+
+[engaging, energetic, conversational voice] É este bloco que liga a memória da chave: no encontro, ele guarda verdadeiro em temChave.
 
 [confident, clear, unhurried voice] Confira se ficou assim: no encontro com a chave, primeiro vem Destruir o sprite chave e, logo abaixo, Alterar temChave para verdadeiro.
 
@@ -161,7 +167,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [confident, clear, unhurried voice] Abra Programação e depois Variáveis, e pegue outro bloco Alterar variável para.
 
-[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de temChave. Clique em contador e escolha aviso. É essa variável que mostra a mensagem na tela.
+[confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de temChave. Clique em contador e escolha aviso. É este bloco que muda o aviso, como na experiência: aviso é a variável que mostra a mensagem na tela.
 
 [engaging, energetic, conversational voice] Agora a gente precisa trocar o número desse bloco por um texto, que é a mensagem. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do número.
 

@@ -31,10 +31,9 @@ As participações distinguem a chave sumir, a informação ficar guardada e o a
 
 | Entrada | Fala de Dedé |
 | --- | --- |
-| F2P1-D01 | “Mas a chave sumiu. Por que ainda está falso?” |
+| F2P1-D01 | “Mas a chave sumiu. Isso já quer dizer que o jogo guardou?” |
 | F2P2-D01 | “A chave some para sempre?” |
 | F2P3-D01 | “Como eu vejo se o jogo guardou a chave?” |
-| F2P4-D01 | “Agora quem joga vai saber para onde ir!” |
 
 As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
@@ -43,11 +42,11 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 | O que a aula ensina | Abstrato? | Vira concreto? | Como | Quando | Por quê |
 | --- | --- | --- | --- | --- | --- |
 | Falta da coleta | Não | No próprio jogo | Personagem passa por cima da chave; ela continua no chão | Na retomada da parte 2, antes de montar | Problema real, sem simular defeito |
-| Variável | Sim | No mostrador da experiência e depois na construção | Comparar a coleta com a regra de guardar desligada e ligada | Antes da montagem | Separar aparência, aviso e informação guardada |
+| Variável | Sim | No mostrador da experiência e depois na construção | Comparar a coleta com a memória da chave desligada e ligada | Antes da montagem | Separar aparência, aviso e informação guardada |
 | Falso e verdadeiro | Sim | No mostrador temChave | Falso: coleta ainda não guardada; verdadeiro: guardada | Na experiência e no valor inicial | Evitar confundir falso com erro do aluno |
 | Evento | Sim, mas próximo da ação | No encontro real | Contato personagem/chave dispara ações | Explicar fazendo, na experiência da parte 1; lembrar na seção 2 antes de pegar o bloco | Ligar acontecimento a resposta |
 | Retirar um sprite | Não | No jogo | A chave desaparece uma vez por partida | Depois de montar | O bloco tem efeito visível imediato |
-| Guardar e mostrar | Sim | Mesmo sumiço e aviso, memória diferente | Comparar as duas regras, afastar e reiniciar | Experiência; retomada na construção | A mensagem sozinha não prova que a memória foi alterada |
+| Guardar e mostrar | Sim | Mesmo sumiço e aviso, memória diferente | Comparar a memória ligada e desligada, afastar e reiniciar | Experiência; retomada na construção | A mensagem sozinha não prova que a memória foi alterada |
 
 A nova cena `collect-and-remember` concretiza a memória booleana deste jogo. A retirada da chave e o aviso são iguais nos dois modos; só a informação guardada muda. A cena de contagem de Cadê Todo Mundo continua específica à contagem. O uso da memória para decidir a resposta será retomado no Dia 3.
 
@@ -68,9 +67,11 @@ A verificação aceitava temChave verdadeiro em outro encontro e não cobrava a 
 - **Blocos:** `video-d2-contexto`, `ponte-d2-contexto`, `experiencia-memoria`.
 - **Metas da experiência:** `collected-without-memory`, `collected-with-memory`, `remembered-after-leaving`, `reset-after-remembering`.
 
-Comparar os dois modos em qualquer ordem: recolher sem guardar; recolher guardando; afastar-se depois de guardar; recomeçar uma partida depois de guardar. A regra pode ser editada a qualquer momento. Uma edição após a coleta vale para o próximo encontro, sem alterar retroativamente o valor guardado. A cena distingue chave retirada, aviso e memória. Recomeçar a partida mantém a regra e as descobertas; Recomeçar experiência limpa tudo.
+Comparar os dois modos em qualquer ordem: recolher sem guardar; recolher guardando; afastar-se depois de guardar; recomeçar uma partida depois de guardar. A memória da chave pode ser ligada ou desligada a qualquer momento. Uma mudança após a coleta vale para o próximo encontro, sem alterar retroativamente o valor guardado. A cena distingue chave retirada, aviso e memória. Recomeçar a partida mantém a memória escolhida e as descobertas; Recomeçar experiência limpa tudo.
 
-**Convite da experiência:** Compare uma coleta com e sem a ação de guardar. Observe também o valor ao afastar e recomeçar a partida. Você escolhe a ordem dos testes.
+**Convite da experiência:** Compare uma coleta com a memória da chave ligada e desligada, observando a chave, o aviso e temChave. Teste também afastar o personagem e começar uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**Só a ideia e convite à investigação, 02/11/2026 (decisões da responsável, régua do Dia 1 e do Cadê):** a experiência não fala de regra, ação nem bloco. O que liga e desliga é a **memória da chave** (botão **Ligar a memória da chave**), e a figura do encontro diz "A chave sai do chão", "O jogo guarda em temChave" e "O aviso muda". O vídeo apresenta as três coisas que podem acontecer no encontro e devolve a pergunta do Dedé ("O que você acha? Isso você vai testar na experiência."). O Zappy pergunta e diz o que observar antes de cada teste e explica depois; as pistas vão do aberto ao direto, com os botões reais. Na montagem, cada bloco é ligado à ideia ("É este bloco que tira a chave do chão", "É este bloco que liga a memória da chave", "É este bloco que muda o aviso").
 
 ### Seção 2. Recolha a chave
 
@@ -107,7 +108,7 @@ Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Ag
 
 ## Experiências e demonstrações desta aula
 
-Cena `collect-and-remember`, cenário Farol: Guardar a coleta, Encostar na chave, Afastar e Recomeçar a partida. Quatro metas: coletar sem memória, coletar com memória, conservar a informação ao afastar e reiniciar depois da coleta guardada. O reinício mantém a regra escolhida e as descobertas, mas recoloca a chave e temChave falso. O controle da regra fica indisponível depois da coleta, com motivo visível, até reiniciar. Sem palpite ou pergunta final obrigatórios.
+Cena `collect-and-remember`, cenário Farol, em exploração livre: Ligar a memória da chave, Encostar na chave, Afastar e Recomeçar a partida. Quatro metas: coletar sem memória, coletar com memória, conservar a informação ao afastar e reiniciar depois da coleta guardada. O reinício mantém a memória escolhida e as descobertas, mas recoloca a chave e temChave falso. A memória pode ser ligada ou desligada depois da coleta; a mudança vale para o próximo encontro. Sem palpite ou pergunta final obrigatórios.
 
 A verificação é cumulativa em cada montagem: a parte 2 confere o movimento e a retirada; a parte 3 acrescenta temChave; a entrega confere os nove critérios. O texto do aviso pode usar palavras próprias; o teste jogado confere seu sentido.
 
@@ -115,7 +116,7 @@ A verificação é cumulativa em cada montagem: a parte 2 confere o movimento e 
 
 | Chave | O que mostra | Origem | Duração alvo | Reaproveita gravação? |
 | --- | --- | --- | --- | --- |
-| `video-d2-contexto` | Demonstração explicada da memória | Nova experiência, aberta direto na cena | 160 a 190 s | Gravar |
+| `video-d2-contexto` | Analogia e convite à investigação da memória, sem demonstrar os testes | Nova experiência, aberta direto na cena | 100 a 120 s | Gravar (revisão de 02/11/2026) |
 | `video-d2-recolher` | Encontro com a chave, retirada, teste e verificação | Projeto do Dia 1 | 4 a 5 min | Gravar |
 | `video-d2-guardar` | temChave em falso e verdadeiro no encontro, verificação | Mesmo projeto | 4 a 5 min | Gravar |
 | `video-d2-programar` | Aviso, teste e envio (o aviso com as palavras da criança fica para o Dia 3) | Mesmo projeto | 3 a 4 min | Gravar |

@@ -1,4 +1,8 @@
-import type { SceneAction } from '@sistemazero/core/learning/scene'
+import {
+  discoveryGuidance,
+  type SceneAction,
+  type SceneState,
+} from '@sistemazero/core/learning/scene'
 import { KeyRound, NotebookPen, Pause, Play, RotateCcw, StepForward } from 'lucide-react'
 import { useState } from 'react'
 import { Medida } from './scene-bench'
@@ -265,15 +269,49 @@ export function Walk({ boundary = false }: { boundary?: boolean }) {
   )
 }
 
+/**
+ * O botão em destaque é o gesto que a fala do Zappy pede agora (full review de 02/11/2026): com
+ * regras soltas por botão, quem começava com a memória ligada via "Afastar" aceso enquanto o
+ * Zappy pedia uma partida nova com a memória desligada.
+ */
+export type GestoDaMemoria = 'memoria' | 'encostar' | 'afastar' | 'recomecar' | null
+export function proximoGestoDaMemoria(
+  fala: string | undefined,
+  c: SceneState['collection'],
+): GestoDaMemoria {
+  const encostarOuRecomecar = c.keyPresent ? 'encostar' : 'recomecar'
+  switch (fala) {
+    case 'memory-first':
+    case 'memory-first-saved':
+      return 'encostar'
+    case 'memory-compare':
+      return c.remember ? encostarOuRecomecar : 'memoria'
+    case 'memory-compare-off':
+      return c.remember ? 'memoria' : encostarOuRecomecar
+    case 'memory-edited':
+      return 'recomecar'
+    case 'memory-away':
+      if (c.hasKey && c.position === 'touching') return 'afastar'
+      return c.remember ? encostarOuRecomecar : 'memoria'
+    case 'memory-restart':
+      if (c.hasKey && !c.keyPresent) return 'recomecar'
+      return c.remember ? encostarOuRecomecar : 'memoria'
+    default:
+      return null
+  }
+}
+
 export function Memory() {
   const m = useExploration('memoria'),
     c = m.state.collection
+  const gesto = proximoGestoDaMemoria(discoveryGuidance(m.activity, m.state)?.id, c)
+  const tom = (qual: GestoDaMemoria) => (gesto === qual ? 'gesto' : 'ferramenta')
   const completed = ['without-memory', 'with-memory', 'away', 'restart'].map((id) => !!m.seen[id])
   const goals = [
-    'Compare uma coleta sem guardar.',
-    'Compare uma coleta guardando a informação.',
-    'Afaste-se depois de guardar e observe o valor.',
-    'Comece outra partida depois de guardar.',
+    'Compare uma coleta com a memória desligada.',
+    'Compare uma coleta com a memória ligada.',
+    'Afaste o personagem depois de guardar e observe temChave.',
+    'Comece uma partida nova depois de guardar e observe temChave.',
   ]
   const text = m.instruction
   return (
@@ -309,31 +347,36 @@ export function Memory() {
         </div>
       }
     >
-      <MemoryRule remember={c.remember} collected={!c.keyPresent} saved={c.hasKey} />
+      <MemoryRule
+        remember={c.remember}
+        collected={!c.keyPresent}
+        saved={c.hasKey}
+        revealed={{ any: completed[0] || completed[1], on: completed[1] }}
+      />
       <div className="sz-discovery-controls free-controls">
         <SceneButton
           aria-pressed={c.remember}
-          tom={!completed[1] && !c.remember ? 'gesto' : 'ferramenta'}
+          tom={tom('memoria')}
           onClick={() => m.dispatch({ type: 'remember-collection', enabled: !c.remember })}
         >
-          {c.remember ? 'Retirar ação de guardar' : 'Adicionar ação de guardar'}
+          {c.remember ? 'Desligar a memória da chave' : 'Ligar a memória da chave'}
         </SceneButton>
         <SceneButton
-          tom={c.keyPresent ? 'gesto' : 'ferramenta'}
+          tom={tom('encostar')}
           disabled={!c.keyPresent}
           onClick={() => m.dispatch({ type: 'collect-key' })}
         >
           Encostar na chave
         </SceneButton>
         <SceneButton
-          tom={!completed[2] && c.hasKey && c.position === 'touching' ? 'gesto' : 'ferramenta'}
+          tom={tom('afastar')}
           disabled={c.position !== 'touching'}
           onClick={() => m.dispatch({ type: 'leave-key' })}
         >
           Afastar
         </SceneButton>
         <SceneButton
-          tom={!c.keyPresent && (c.position === 'away' || !c.hasKey) ? 'gesto' : 'ferramenta'}
+          tom={tom('recomecar')}
           onClick={() => m.dispatch({ type: 'restart-collection' })}
         >
           Recomeçar a partida
@@ -354,31 +397,33 @@ export function Door() {
   const m = useExploration('porta'),
     l = m.state.lighthouse
   const completed = ['without-key', 'with-key'].map((id) => !!m.seen[id])
+  // O caso de agora já foi testado? Então o destaque vai para o outro caso, como pede o Zappy.
+  const casoTestado = l.hasKey ? completed[1] : completed[0]
   const text = m.instruction
   return (
     <Frame
-      title="A porta precisa da chave"
+      title="O que a porta precisa?"
       stage={<Stage kind="porta" state={m.state} />}
       kind="porta"
       activity={m.activity}
       state={m.state}
       text={text}
-      goals={['Teste a porta sem a chave.', 'Teste a mesma regra com a chave.']}
+      goals={['Teste a porta sem a chave.', 'Teste a mesma porta com a chave.']}
       completed={completed}
       done={completed.filter(Boolean).length}
       reset={m.reset}
     >
-      <DoorRule checked={l.checkedKey ?? null} />
+      <DoorRule checked={l.checkedKey ?? null} revealed={{ yes: completed[1], no: completed[0] }} />
       <div className="sz-discovery-controls free-controls">
         <SceneButton
-          tom={l.checkedKey !== null && !completed.every(Boolean) ? 'gesto' : 'ferramenta'}
+          tom={casoTestado && !completed.every(Boolean) ? 'gesto' : 'ferramenta'}
           aria-pressed={l.hasKey}
           onClick={() => m.dispatch({ type: 'key-state', hasKey: !l.hasKey })}
         >
           {l.hasKey ? 'Tirar a chave do personagem' : 'Dar a chave ao personagem'}
         </SceneButton>
         <SceneButton
-          tom={l.checkedKey == null ? 'gesto' : 'ferramenta'}
+          tom={!casoTestado ? 'gesto' : 'ferramenta'}
           onClick={() => m.dispatch({ type: 'try-lighthouse-door' })}
         >
           Testar a porta
@@ -458,10 +503,10 @@ export function Position() {
       state={m.state}
       text={text}
       goals={[
-        'Experimente levar a chave para a esquerda.',
-        'Experimente levar a chave para a direita.',
-        'Experimente levar a chave para cima.',
-        'Experimente levar a chave para baixo.',
+        'Diminua o x e observe a chave.',
+        'Aumente o x e observe a chave.',
+        'Diminua o y e observe a chave.',
+        'Aumente o y e observe a chave.',
       ]}
       completed={completed}
       done={completed.filter(Boolean).length}

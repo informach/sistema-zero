@@ -62,36 +62,43 @@ const speech = {
     'Você comparou com e sem o bloco de limite. Abra o teste das duas ordens para ver por que a ordem importa.',
   'edge-complete':
     'Você comparou as duas regras e as duas ordens. Pode repetir os testes e continuar explorando.',
+  // ⭐ Dias 2 e 3 do Farol (02/11/2026): só a ideia (memória da chave, a pergunta da porta, os dois
+  // números) e o convite à investigação do Cadê: antes do teste, a fala pergunta e diz o que
+  // observar; o resultado só vem depois dele. Nada de regra, ação, bloco, então ou senão.
   'memory-edited':
-    'Você mudou a regra para o próximo encontro. A coleta que já aconteceu continua como estava. Recomece a partida para testar a mudança.',
+    'Você mudou a memória da chave. temChave continua como estava, porque a mudança só vale para o próximo encontro. Recomece a partida para testar.',
   'memory-first-saved':
-    'Pode começar guardando a coleta. Depois experimente outra partida sem a ação de guardar e compare.',
+    'A memória da chave está ligada. Encoste na chave e observe três coisas: a chave, o aviso e temChave. Se preferir, desligue a memória primeiro e compare depois.',
   'memory-first':
-    'Encoste na chave e compare o que some com o que fica guardado. Você pode mudar a regra e repetir em outra partida.',
+    'A memória da chave está desligada. Encoste na chave e observe três coisas: a chave, o aviso e temChave. Se preferir, ligue a memória primeiro e compare depois.',
   'memory-compare':
-    'Você viu a chave sumir sem guardar. Experimente adicionar a ação de guardar e encostar numa chave de uma nova partida.',
+    'Sem a memória, a chave saiu do chão e o aviso mudou, mas temChave continuou falso. E com a memória ligada, o que muda? Teste numa partida nova com a memória ligada e observe temChave.',
+  'memory-compare-off':
+    'Com a memória ligada, a chave saiu do chão, o aviso mudou e temChave virou verdadeiro. E com a memória desligada, o que muda? Teste numa partida nova com a memória desligada e observe temChave.',
   'memory-away':
-    'Você comparou os dois modos. Depois de uma coleta guardada, afaste o personagem e observe se a memória muda.',
+    'Você comparou a memória ligada e desligada. E se o personagem se afastar depois de o jogo guardar a chave, temChave muda? Depois de pegar a chave com a memória ligada, clique em Afastar e observe.',
   'memory-restart':
-    'Afastar não apagou a memória. Quando quiser, recomece uma partida depois de guardar a coleta.',
+    'Afastar não apagou temChave: o jogo continua lembrando, mesmo longe da chave. E numa partida nova, o que acontece com temChave? Depois de guardar a chave, clique em Recomeçar a partida e observe.',
   'memory-complete':
-    'Você comparou os quatro casos. Continue adicionando ou retirando a ação de guardar, recolhendo a chave e recomeçando.',
+    'Você comparou os quatro casos. Só com a memória ligada temChave vira verdadeiro, e ele continua assim mesmo longe da chave. Numa partida nova, o jogo começa do zero, e temChave volta a falso. Pode continuar ligando e desligando a memória e testando de novo.',
   'door-with':
-    'Neste teste, o personagem está com a chave. Teste a porta quando quiser. Também pode mudar a situação antes de testar.',
+    'O personagem está com a chave. O que você acha que a porta vai fazer? Teste a porta e observe temChave e a resposta que ela escolhe.',
   'door-without':
-    'Neste teste, o personagem está sem a chave. Teste a porta quando quiser. Também pode mudar a situação antes de testar.',
+    'O personagem está sem a chave. O que você acha que a porta vai fazer? Teste a porta e observe temChave e a resposta que ela escolhe.',
   'door-compare-without':
-    'A porta abriu com a chave. Tire a chave do personagem e teste outra vez para comparar.',
+    'Com temChave verdadeiro, a resposta foi sim: a porta abriu e o farol acendeu. E sem a chave, o que a porta faz? Tire a chave do personagem e teste a mesma porta.',
   'door-compare-with':
-    'Sem chave, a porta avisou. Experimente dar a chave ao personagem e testar novamente. Você também pode repetir este caso.',
+    'Com temChave falso, a resposta foi não: a porta ficou fechada e avisou que falta a chave. E com a chave, o que a porta faz? Dê a chave ao personagem e teste a mesma porta.',
   'door-complete':
-    'Você testou com e sem chave. Pode mudar de situação e testar a porta quantas vezes quiser.',
+    'A pergunta foi a mesma nas duas vezes. O que mudou foi o valor de temChave, e por isso a porta escolheu outra resposta. Pode mudar a situação e testar quantas vezes quiser.',
   'position-start':
-    'O x muda o lugar para os lados. Experimente ir e voltar. O y também está livre: você escolhe o que explorar primeiro.',
+    'Mude só o x, para mais ou para menos, e observe a chave. Para onde ela vai? O y também está livre: você escolhe o que explorar primeiro.',
   'position-height':
-    'Você comparou os lados. Agora experimente aumentar e diminuir o y, observando a altura. Pode continuar mexendo no x também.',
+    'O x leva a chave para os lados: um x maior leva para a direita, e um menor, para a esquerda. E o y? Aumente e diminua o y e observe a chave.',
+  'position-width':
+    'O y leva a chave para cima e para baixo: um y maior leva para baixo, e um menor, para cima, porque na tela do jogo a contagem começa em zero lá em cima. E o x? Aumente e diminua o x e observe a chave.',
   'position-complete':
-    'Você explorou as quatro direções. Continue escolhendo lugares. Se quiser um desafio, mostre um alvo e leve a chave até ele.',
+    'O x leva a chave para os lados, e o y, para cima e para baixo. Repare: um y maior leva a chave para baixo, porque na tela do jogo a contagem começa em zero lá em cima. Continue escolhendo lugares ou mostre um alvo e leve a chave até ele.',
   'touch-first':
     'Escolha um esconderijo e toque nele. A reação está desligada. Você também pode ligá-la primeiro e depois comparar.',
   'touch-with-first':
@@ -208,23 +215,28 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
       id =
         !state.collection.keyPresent && state.caption.includes('próximo encontro')
           ? 'memory-edited'
-          : !has('collected-without-memory')
+          : !has('collected-without-memory') && !has('collected-with-memory')
             ? state.collection.remember
               ? 'memory-first-saved'
               : 'memory-first'
-            : !has('collected-with-memory')
-              ? 'memory-compare'
-              : !has('remembered-after-leaving')
-                ? 'memory-away'
-                : !has('reset-after-remembering')
-                  ? 'memory-restart'
-                  : 'memory-complete'
+            : // Quem começou com a memória ligada compara agora com ela desligada.
+              !has('collected-without-memory')
+              ? 'memory-compare-off'
+              : !has('collected-with-memory')
+                ? 'memory-compare'
+                : !has('remembered-after-leaving')
+                  ? 'memory-away'
+                  : !has('reset-after-remembering')
+                    ? 'memory-restart'
+                    : 'memory-complete'
       break
     case 'lighthouse-key':
       id =
         has('opened-with-key') && has('locked-without-key')
           ? 'door-complete'
-          : state.lighthouse.checkedKey == null
+          : // Preparar de novo um caso já testado não repete a pergunta: o Zappy propõe o outro.
+            state.lighthouse.checkedKey == null &&
+              !has(state.lighthouse.hasKey ? 'opened-with-key' : 'locked-without-key')
             ? state.lighthouse.hasKey
               ? 'door-with'
               : 'door-without'
@@ -237,7 +249,9 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
         ? 'position-complete'
         : has('x-plus') && has('x-minus')
           ? 'position-height'
-          : 'position-start'
+          : has('y-plus') && has('y-minus')
+            ? 'position-width'
+            : 'position-start'
       break
     case 'touch-response':
       id = ['no-response', 'responds', 'second-target'].every(has)

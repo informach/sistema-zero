@@ -1,12 +1,14 @@
-[engaging, energetic, conversational voice] O seu jogo já guarda se o personagem pegou a chave. Agora ele vai usar essa informação para escolher uma resposta. Uma pergunta que ajuda o jogo a decidir se chama condição.
+[engaging, energetic, conversational voice] O seu jogo já guarda se o personagem pegou a chave. Agora ele vai usar essa informação para decidir o que fazer. Uma pergunta que ajuda o jogo a decidir se chama condição.
 
 [engaging, energetic, conversational voice] É como a porta da sua casa: para abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?
 
 [curious] E se a resposta for não?
 
-[engaging, energetic, conversational voice] A regra tem dois caminhos. O então diz o que fazer quando a resposta é sim. O senão diz o que fazer quando a resposta é não. A pergunta é a mesma, mas a resposta pode mudar com o valor guardado.
+[engaging, energetic, conversational voice] O que você acha que a porta faz? Isso você vai testar na experiência. Repare só numa coisa: a pergunta é sempre a mesma. E a resposta, será que muda?
 
-[engaging, energetic, conversational voice] Na experiência, prepare o personagem com ou sem chave e teste a porta. Observe qual caminho a regra escolhe. Você pode começar por qualquer situação e repetir. Quando terminar, clique em Próxima parte.
+[interested, animated voice] Olha aqui: nesta atividade, este botão dá ou tira a chave do personagem, e este outro testa a porta. Aqui fica a pergunta da porta, com uma resposta para o sim e outra para o não.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: teste a mesma porta com o personagem sem a chave e com a chave, e observe temChave e a resposta que a porta escolhe. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -24,7 +26,7 @@
 
 [engaging, energetic, conversational voice] Dentro desse encontro, o farol vai fazer a mesma pergunta da porta. Por isso, deixe à vista o espaço vazio ao lado da palavra fazer, dentro do encontro com o farol.
 
-[engaging, energetic, conversational voice] Quem faz uma pergunta no jogo é o bloco Se. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço.
+[engaging, energetic, conversational voice] Quem faz uma pergunta no jogo é o bloco Se. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço. É este bloco que faz a pergunta da porta, como na experiência.
 
 [confident, clear, unhurried voice] Repare que o Se já vem com uma condição pronta: x maior que 0. Mas não é isso que o farol precisa perguntar, por isso segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos. O lugar ao lado de Se fica vazio, e é ali que vai a pergunta certa. Deixe esse lugar à vista.
 
@@ -36,7 +38,7 @@
 
 [curious] E onde eu escrevo que falta a chave?
 
-[engaging, energetic, conversational voice] Esse aviso vai no espaço do senão. O senão guarda a resposta para quando temChave é falso, ou seja, para quando o personagem chega sem a chave. Só que o Se chega sem esse espaço.
+[engaging, energetic, conversational voice] Lembra da resposta do não, na experiência? Esse aviso vai no espaço do senão. O senão guarda a resposta para quando temChave é falso, ou seja, para quando o personagem chega sem a chave. Só que o Se chega sem esse espaço.
 
 [engaging, energetic, conversational voice] Olha aqui, na linha de baixo do bloco Se, depois do então: tem dois sinais de mais. O primeiro fica antes de senão se, e o segundo fica antes da palavra senão, no fim da linha. Clique no segundo. Não clique no primeiro.
 
@@ -48,7 +50,7 @@
 
 [confident, clear, unhurried voice] Agora troque o número desse bloco pela mensagem. Abra Programação e depois Valores, pegue o bloco texto e solte em cima do número. Depois, apague Olá e escreva: A porta não abriu. Falta a chave.
 
-[engaging, energetic, conversational voice] O espaço do então fica vazio por enquanto, porque é nele que vai a resposta para quem chega com a chave.
+[engaging, energetic, conversational voice] O espaço do então fica vazio por enquanto. Ele guarda a resposta do sim, para quem chega com a chave.
 
 [upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar, logo acima do jogo, para começar uma partida nova. Se o espaço do jogo estiver estreito, esse botão aparece só como uma seta dando a volta.
 
@@ -64,7 +66,7 @@
 
 [engaging, energetic, conversational voice] No seu jogo, clique em Atualizar, pegue a chave e vá até a porta do farol. Tá vendo? A luz não acende.
 
-[engaging, energetic, conversational voice] É que o espaço do então está vazio.
+[engaging, energetic, conversational voice] É que o espaço do então, o da resposta do sim, está vazio.
 
 [engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com temChave verdadeiro, a porta acendia o farol. Agora a gente vai pôr essa resposta no então!
 
@@ -158,17 +160,19 @@
 
 [engaging, energetic, conversational voice] Você pode escolher outro lugar para a chave na sua aventura. Para dizer esse lugar ao jogo, a gente usa dois números: x e y.
 
-[engaging, energetic, conversational voice] O x escolhe o lugar na horizontal, para os lados. Um número menor leva para a esquerda; um maior leva para a direita.
+[engaging, energetic, conversational voice] É como explicar o caminho até um tesouro num mapa: quantos passos andar para os lados e quantos andar para cima ou para baixo. O x cuida da horizontal, para os lados.
 
 [curious] E para subir ou descer?
 
-[engaging, energetic, conversational voice] A gente muda o y, que escolhe o lugar na vertical. Na tela do jogo, a contagem começa em zero lá em cima e cresce para baixo. Por isso, um y maior leva para baixo, e um menor leva para cima.
+[engaging, energetic, conversational voice] Para isso, a gente muda o y, que cuida da vertical. Mas, quando o y aumenta, a chave sobe ou desce? O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora explore os dois números na experiência. Mude um por vez e observe a chave. Você pode começar pelo x ou pelo y, ir e voltar, e escolher lugares bem diferentes. Se quiser, tente levar a chave até o alvo. Quando terminar, clique em Próxima parte.
+[interested, animated voice] Olha aqui: nesta atividade, você muda o x e o y com estes controles, e esta marca mostra onde a chave começou.
+
+[upbeat, encouraging voice] Agora é a sua vez de investigar: mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui, no x e no y. Você escolhe por onde começar e pode repetir os testes. Se quiser um desafio, mostre um alvo e leve a chave até ele. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O x mudava o lugar para os lados, e o y mudava para cima e para baixo. Agora você pode escolher onde fica a chave do seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Um x maior levava a chave para a direita, e um y maior levava a chave para baixo, porque na tela do jogo a contagem começa em zero lá em cima. Agora você pode escolher onde fica a chave do seu jogo!
 
 [engaging, energetic, conversational voice] Encontre Ao iniciar e deixe à vista Criar sprite chave. [interested, animated voice] Olha aqui: esse bloco também tem os campos x e y. São eles que escolhem onde a chave aparece quando a partida começa.
 

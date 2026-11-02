@@ -652,6 +652,18 @@
 .door-forks strong {
   font-size: 12px;
 }
+/* O que a resposta faz, antes de a criança testar aquele caso (Farol, Dia 3, 02/11/2026). */
+.door-forks .door-fork-unknown {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border: 2px dashed var(--color-border);
+  border-radius: 50%;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--color-muted-foreground);
+}
 .door-forks small {
   font-size: 10px;
   color: var(--color-muted-foreground);
