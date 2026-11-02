@@ -25,28 +25,36 @@
     ],
     "experiencia-limite": [
       {
-        "id": "edge-start",
-        "text": "O bloco de mover já está na regra. Aperte a tecla no teclado de teste e avance os quadros. Observe a borda."
+        "id": "border-start",
+        "text": "Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando e veja o que acontece."
       },
       {
-        "id": "edge-limited-first",
-        "text": "O bloco de limite já está na regra. Você pode retirá-lo e comparar o que acontece na borda."
+        "id": "border-out",
+        "text": "Ele saiu da janela do jogo. Agora clique em Ligar o limite da tela e veja o próximo quadro."
       },
       {
-        "id": "edge-out",
-        "text": "Ele saiu da tela. Adicione o bloco de limite e avance outro quadro. O que muda?"
+        "id": "border-on-out",
+        "text": "O limite está ligado e ele ainda está fora. Deixe passar um quadro e veja o que acontece."
       },
       {
-        "id": "edge-hold",
-        "text": "Avance mais quadros junto à borda. Veja como o bloco de limite mantém o personagem dentro da tela."
+        "id": "border-back",
+        "text": "Ele voltou para dentro! Agora, em câmera lenta, segure a seta junto à beirada e olhe cada quadro."
       },
       {
-        "id": "edge-order",
-        "text": "Você comparou com e sem o bloco de limite. Abra o teste das duas ordens para ver por que a ordem importa."
+        "id": "border-edge",
+        "text": "O limite está ligado. Em câmera lenta, segure a seta até a beirada e olhe cada quadro."
       },
       {
-        "id": "edge-complete",
-        "text": "Você comparou as duas regras e as duas ordens. Pode repetir os testes e continuar explorando."
+        "id": "border-edge-off",
+        "text": "Agora clique em Ligar o limite da tela e, em câmera lenta, segure a seta até a beirada."
+      },
+      {
+        "id": "border-hold",
+        "text": "Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Agora desligue o limite e deixe ele sair para comparar."
+      },
+      {
+        "id": "border-complete",
+        "text": "Você viu ele sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser."
       }
     ],
     "experiencia-memoria": [

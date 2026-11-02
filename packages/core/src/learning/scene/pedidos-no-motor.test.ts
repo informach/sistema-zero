@@ -1562,6 +1562,18 @@ const CENAS: Record<SceneId, Cena> = {
           m.tempo(3)
         },
       },
+      // A beirada (01/11/2026): sai sem o limite, liga o limite e deixa passar um quadro.
+      'came-back-inside': {
+        texto:
+          'Com o limite desligado, segure a seta até ele sair da tela. Depois clique em Ligar o limite da tela e deixe passar um quadro.',
+        faz: (m) => {
+          m.faz({ type: 'keep-on-screen', enabled: false })
+          m.faz({ type: 'hold-arrow', held: true })
+          m.ate((s) => s.walk.x >= 448)
+          m.faz({ type: 'keep-on-screen', enabled: true })
+          m.faz({ type: 'advance', seconds: 1 / 30 })
+        },
+      },
       // A câmera lenta (01/11/2026): "Velocidade de verdade" é o relógio no tempo real.
       'walked-real-speed': {
         texto:

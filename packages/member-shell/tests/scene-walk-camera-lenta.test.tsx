@@ -80,7 +80,9 @@ describe('a câmera lenta do Farol', () => {
     expect(texto(html)).toContain('Quadro 3')
     expect(texto(html)).toContain('passinho')
     expect(texto(html)).toContain('parado')
-    expect(html.match(/class="slow-tira-quadro"/g)?.length).toBe(4)
+    // Seis lugares sempre (os vazios reservam a tira), quatro com quadro.
+    expect(html.match(/class="slow-tira-quadro"/g)?.length).toBe(6)
+    expect(html.match(/data-current=/g)?.length).toBe(4)
   })
 
   test('a seta segurada aparece no selo e no botão', () => {

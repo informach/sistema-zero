@@ -25,8 +25,11 @@ export interface PaginaDoPalco {
   encaixe(bloco: string, rotulo: string): Alvo | null
   /** Um arrasto do fundo da área de trabalho que traz o bloco à vista (nulo se já está). */
   rolagem(bloco: string): { de: Alvo; para: Alvo } | 'visivel' | null
-  /** Um ponto do fundo da área de trabalho à vista, sem bloco em cima (para o menu dela). */
-  fundoLivre(): Alvo | null
+  /**
+   * Arruma os blocos um por cima do outro pelo menu da área de trabalho (botão direito e
+   * Organizar blocos), por eventos dentro da página. Falso se o menu não abriu.
+   */
+  organizar(): Promise<boolean>
   /** O mesmo para um campo de bloco, que também precisa estar descoberto para o clique. */
   rolagemDoCampo(valor: string, bloco?: string): { de: Alvo; para: Alvo } | 'visivel' | null
   /** Algum botão visível com este texto. */
@@ -325,18 +328,44 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return pontoEm(area, r.left + 12, r.bottom + 10)
     },
 
-    fundoLivre() {
+    async organizar() {
       const area = areaDeTrabalho(doc)
-      if (!area) return null
+      if (!area) return false
       const view = areaVisivel(doc, area)
+      let ponto: { x: number; y: number } | null = null
       for (const fy of [0.85, 0.15, 0.5, 0.7, 0.3])
         for (const fx of [0.85, 0.5, 0.15, 0.7, 0.3]) {
           const x = view.left + view.width * fx
           const y = view.top + view.height * fy
-          if (doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
-            return pontoEm(area, x, y)
+          if (!ponto && doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
+            ponto = { x, y }
         }
-      return null
+      const fundo = ponto && doc.elementFromPoint(ponto.x, ponto.y)
+      if (!ponto || !fundo) return false
+      const evento = (x: number, y: number) =>
+        ({
+          bubbles: true,
+          cancelable: true,
+          clientX: x,
+          clientY: y,
+          pointerType: 'mouse',
+          isPrimary: true,
+        }) as const
+      const em = evento(ponto.x, ponto.y)
+      fundo.dispatchEvent(new PointerEvent('pointerdown', { ...em, button: 2, buttons: 2 }))
+      fundo.dispatchEvent(new PointerEvent('pointerup', { ...em, button: 2, buttons: 0 }))
+      fundo.dispatchEvent(new MouseEvent('contextmenu', { ...em, button: 2 }))
+      await new Promise((r) => setTimeout(r, 300))
+      const item = [...doc.querySelectorAll('.blocklyContextMenu .blocklyMenuItem')].find(
+        (e) => texto(e) === 'Organizar blocos',
+      )
+      if (!item) return false
+      const r = item.getBoundingClientRect()
+      const no = { ...evento(r.left + 10, r.top + r.height / 2), button: 0 }
+      item.dispatchEvent(new PointerEvent('pointerdown', { ...no, buttons: 1 }))
+      item.dispatchEvent(new PointerEvent('pointerup', { ...no, buttons: 0 }))
+      item.dispatchEvent(new MouseEvent('click', no))
+      return true
     },
 
     perto(texto) {

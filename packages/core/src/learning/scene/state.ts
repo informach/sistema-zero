@@ -231,6 +231,12 @@ export interface SceneLighthouseWalk {
   keepInside: boolean
   /** O x de cada um dos últimos quadros, do mais antigo ao de agora (`LIGHTHOUSE_WALK.trail`). */
   trail: number[]
+  /**
+   * O x de cada quadro ANTES do limite, alinhado ao `trail` (mesmo tamanho). Onde ele difere do
+   * `trail`, o limite puxou o personagem de volta: é o que a beirada do Farol mostra (01/11/2026).
+   * Ausente nos retratos anteriores e até o primeiro quadro.
+   */
+  reach?: number[]
   /** Quadros seguidos sem o x mudar. É a régua que para o "Rodar" quando nada mais acontece. */
   idle: number
   /**
@@ -2228,6 +2234,7 @@ export function cloneScene(state: SceneState): SceneState {
     walk: {
       ...state.walk,
       trail: [...state.walk.trail],
+      ...(state.walk.reach ? { reach: [...state.walk.reach] } : {}),
       ...(state.walk.testedOrders ? { testedOrders: [...state.walk.testedOrders] } : {}),
     },
     keyPosition: {
@@ -2450,7 +2457,11 @@ function isSceneLighthouseWalk(value: unknown): value is SceneLighthouseWalk {
     trail.length <= LIGHTHOUSE_WALK.trail &&
     trail.length <= (frame as number) + 1 &&
     trail.every((t) => inteiro(t, LIGHTHOUSE_WALK.max)) &&
-    trail[trail.length - 1] === x
+    trail[trail.length - 1] === x &&
+    (value.reach === undefined ||
+      (Array.isArray(value.reach) &&
+        value.reach.length === trail.length &&
+        value.reach.every((t) => inteiro(t, LIGHTHOUSE_WALK.max))))
   )
 }
 const between = (v: unknown, min: number, max: number): v is number =>

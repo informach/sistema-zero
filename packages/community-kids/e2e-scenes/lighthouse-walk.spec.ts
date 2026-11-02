@@ -1,12 +1,11 @@
 import { expect, type Page, test } from '@playwright/test'
 
-// Manifestos reais. O quadro é a câmera lenta (01/11/2026): só a ideia, sem blocos; o limite segue
-// separando editar a regra, a entrada e a passagem dos quadros.
+// Manifestos reais. As duas experiências do Dia 1 trabalham só a ideia (01/11/2026): a câmera lenta
+// (quadro) e a beirada da tela (limite), sem blocos nem ordem dos blocos.
 const SETA_DO_QUADRO = 'Segure a seta ▶'
 const abrir = async (page: Page, bloco: string) => {
   await page.goto(`/?course=farol&block=${bloco}&width=680`)
-  const seta = bloco === 'experiencia-quadro' ? SETA_DO_QUADRO : 'Apertar tecla →'
-  await expect(page.getByRole('button', { name: seta, exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: SETA_DO_QUADRO, exact: true })).toBeVisible()
 }
 
 test('a câmera lenta mostra os passinhos, a parada e a caminhada de verdade, sem blocos', async ({
@@ -60,28 +59,32 @@ test('segurar a seta com o jogo pausado põe os quadros para passar em câmera l
   )
 })
 
-test('limite compara fora e dentro, permite pausar e testar ambas as ordens', async ({ page }) => {
+test('a beirada: sem o limite ele sai, com o limite ligado ele volta e fica, sem blocos', async ({
+  page,
+}) => {
   await abrir(page, 'experiencia-limite')
-  await page.getByRole('button', { name: 'Apertar tecla →', exact: true }).click()
-  await page.getByRole('button', { name: 'Passar quadros automaticamente', exact: true }).click()
+  await expect(page.getByText(/bloco|teclado de teste|ordem dos/i)).toHaveCount(0)
+  await page.getByRole('button', { name: 'Velocidade de verdade', exact: true }).click()
+  await page.getByRole('button', { name: SETA_DO_QUADRO, exact: true }).hover()
+  await page.mouse.down()
   await expect(page.locator('[data-personagem="fora"]')).toBeVisible({ timeout: 10000 })
-  const pause = page.getByRole('button', { name: 'Pausar quadros', exact: true })
-  if (await pause.isVisible()) await pause.click()
-  await page.getByRole('button', { name: 'Voltar ao início', exact: true }).click()
-  await page.getByRole('button', { name: 'Adicionar bloco de limite', exact: true }).click()
-  await page.getByRole('button', { name: 'Passar quadros automaticamente', exact: true }).click()
+  await page.mouse.up()
+  // Ligar o limite com ele fora: no quadro seguinte ele volta para dentro.
+  await page.getByRole('button', { name: 'Ligar o limite da tela', exact: true }).click()
+  await page.getByRole('button', { name: 'Câmera lenta', exact: true }).click()
+  await page.getByRole('button', { name: SETA_DO_QUADRO, exact: true }).hover()
+  await page.mouse.down()
   await expect(page.locator('[data-personagem="dentro"]')).toHaveAttribute('data-x', '416', {
     timeout: 10000,
   })
-  if (await pause.isVisible()) await pause.click()
-  await page.getByText('Experimentar a ordem dos comandos', { exact: true }).click()
-  await page.getByRole('button', { name: 'Limitar → mover', exact: true }).click()
-  await page.getByRole('button', { name: 'Avançar nessa ordem', exact: true }).click()
-  await expect(page.locator('.edge-zoom')).toHaveAttribute('data-out', 'true')
-  await page.getByRole('button', { name: 'Mover → limitar', exact: true }).click()
-  await page.getByRole('button', { name: 'Avançar nessa ordem', exact: true }).click()
-  await expect(page.locator('.edge-zoom')).toHaveAttribute('data-out', 'false')
-  await expect(page.locator('.sz-discovery-discoveries li[data-done="true"]')).toHaveCount(3)
+  await expect(page.getByText('↩ voltou').first()).toBeVisible({ timeout: 5000 })
+  // Segurando na beirada em câmera lenta: cada quadro passa e volta.
+  await expect(page.locator('.sz-discovery-discoveries li[data-done="true"]')).toHaveCount(3, {
+    timeout: 5000,
+  })
+  await expect(page.getByText(/Neste quadro: o passinho ia levar/)).toBeVisible()
+  await expect(page.getByText('✋ segurou').first()).toBeVisible()
+  await page.mouse.up()
 })
 
 for (const largura of [320, 360, 390]) {
@@ -91,10 +94,6 @@ for (const largura of [320, 360, 390]) {
     await page.setViewportSize({ width: largura, height: 844 })
     for (const bloco of ['experiencia-quadro', 'experiencia-limite']) {
       await abrir(page, bloco)
-      if (bloco === 'experiencia-limite') {
-        await page.getByText('Experimentar a ordem dos comandos', { exact: true }).click()
-        await expect(page.getByRole('button', { name: 'Avançar nessa ordem' })).toBeVisible()
-      }
       const medida = await page.evaluate(() => {
         const caixa = document.querySelector('.sz-scene-console')?.getBoundingClientRect()
         const controles = [...document.querySelectorAll('.sz-scene-prancha button')]
@@ -112,9 +111,7 @@ for (const largura of [320, 360, 390]) {
       })
       const caixa = medida.caixa
       if (!caixa) throw new Error(`${bloco}: sem o console`)
-      expect(medida.controles.map((c) => c.nome)).toContain(
-        bloco === 'experiencia-quadro' ? SETA_DO_QUADRO : 'Apertar tecla →',
-      )
+      expect(medida.controles.map((c) => c.nome)).toContain(SETA_DO_QUADRO)
       const fora = medida.controles
         .filter((c) => c.esquerda < caixa.esquerda - 0.5 || c.direita > caixa.direita + 0.5)
         .map((c) => `${c.nome} (${Math.round(c.esquerda)}..${Math.round(c.direita)})`)
@@ -127,26 +124,3 @@ for (const largura of [320, 360, 390]) {
     }
   })
 }
-
-test('o comando de ordem cabe no painel estreito também com texto ampliado', async ({ page }) => {
-  await page.setViewportSize({ width: 320, height: 844 })
-  await abrir(page, 'experiencia-limite')
-  await page.getByText('Experimentar a ordem dos comandos', { exact: true }).click()
-  const button = page.getByRole('button', { name: 'Avançar nessa ordem', exact: true })
-  await button.evaluate((element) => {
-    element.style.fontSize = '20px'
-  })
-  const bounds = await button.evaluate((element) => {
-    const parent = element.parentElement
-    if (!parent) throw new Error('Painel de ordem ausente')
-    const panel = parent.getBoundingClientRect()
-    const rect = element.getBoundingClientRect()
-    return {
-      inside: rect.left >= panel.left && rect.right <= panel.right,
-      clipped: element.scrollWidth > element.clientWidth,
-    }
-  })
-  expect(bounds).toEqual({ inside: true, clipped: false })
-  await button.click()
-  await expect(page.locator('.edge-zoom')).toHaveAttribute('data-out', 'false')
-})

@@ -359,19 +359,35 @@ const dia1 = {
     video('video-d1-limite', 'Até onde ele pode ir?', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-limite',
-      'Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Leve o personagem até a beirada sem o limite e depois com ele. Quando terminar, clique em Próxima parte.',
     ),
+    // ⭐ "A beirada da tela" (01/11/2026, decisão dela): só a IDEIA, sem blocos nem a comparação
+    // das ordens dos blocos. A ordem aparece dentro de cada quadro (passinho, depois a conferência).
     experienciaAndar(
       'experiencia-limite',
-      'Até onde ele pode ir?',
-      'Compare o que acontece na borda com e sem o bloco de limite. Teste também as duas ordens dos blocos. Você pode repetir e mudar a regra durante o teste.',
-      ['left-the-screen', 'stayed-inside', 'compared-command-order'],
+      'A beirada da tela',
+      'Sem o limite, leve o personagem até a beirada e veja ele sair da tela. Depois ligue o limite da tela e olhe, em câmera lenta, cada quadro na beirada.',
+      ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       {
         'left-the-screen': {
-          pedido: 'Retire o bloco de limite, use o teclado de teste e avance até a borda.',
+          label: 'Sem o limite, ele saiu da tela',
+          pedido:
+            'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada.',
         },
-        'stayed-inside': { pedido: 'Adicione o bloco de limite e avance mais quadros na borda.' },
+        'came-back-inside': {
+          label: 'Com o limite ligado, ele voltou para dentro',
+          pedido: 'Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.',
+        },
+        'stayed-inside': {
+          label: 'Com o limite, ele ficou na beirada',
+          pedido: 'Com o limite ligado, clique em Câmera lenta e segure a seta junto à beirada.',
+        },
       },
+      [
+        'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando.',
+        'Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.',
+        'Com o limite ligado, clique em Câmera lenta e segure a seta na beirada. Olhe a tira e a frase de cada quadro.',
+      ],
     ),
     video('video-d1-borda', 'Mantenha o personagem na tela', 'desafio-dia-1.roteiro.md'),
     fala(
@@ -404,7 +420,7 @@ const dia1 = {
       'limite',
       'Até onde ele pode ir?',
       'exploration',
-      'Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado.',
+      'Ver que, sem o limite, o personagem sai da tela e que, com o limite, depois de cada passinho o jogo confere a beirada e o puxa de volta.',
       ['video-d1-limite', 'ponte-d1-limite', 'experiencia-limite'],
       ['video-d1-limite', 'experiencia-limite'],
     ),
@@ -788,7 +804,7 @@ gravarArquivo(
       experiences: Object.fromEntries(
         Object.entries({
           'experiencia-quadro': 'slow',
-          'experiencia-limite': 'edge',
+          'experiencia-limite': 'border',
           'experiencia-memoria': 'memory',
           'experiencia-porta': 'door',
           'experiencia-posicao': 'position',

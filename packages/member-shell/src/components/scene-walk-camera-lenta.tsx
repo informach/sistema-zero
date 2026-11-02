@@ -1,6 +1,10 @@
 'use client'
 
-import { LIGHTHOUSE_WALK, lighthouseWalkGone } from '@sistemazero/core/learning/scene'
+import {
+  LIGHTHOUSE_WALK,
+  lighthouseWalkGone,
+  lighthouseWalkOutSeenX,
+} from '@sistemazero/core/learning/scene'
 import { farolSvgUrl } from '@sistemazero/studio/arte'
 import { Footprints, Pause, Play, RotateCcw, Turtle } from 'lucide-react'
 import { type KeyboardEvent, type PointerEvent, useEffect, useId, useRef, useState } from 'react'
@@ -27,6 +31,8 @@ import { limiarDoRelogio, useSceneClock } from './use-scene-clock'
  * da tela, quando outra mídia da aula pede a vez e depois de um tempo parado com a descoberta feita.
  * ⚠️ O ritmo mora no motor (`walk.pace`): Desfazer e retomar a sessão mostram o botão certo. Só
  * "pausado" é local.
+ * ⭐ O ritmo, os botões, o selo, a tira e a seta são divididos com a beirada da tela
+ * (`scene-walk-beirada.tsx`, parte 5).
  */
 
 /** Um quadro a cada meio segundo: devagar o bastante para ver cada passinho. */
@@ -40,8 +46,10 @@ const VIEW = { w: 260, h: 170, y: 55 } as const
 const CHAVE_X = 372
 const FAROL_X = 404
 const QUADROS_NA_TIRA = 6
-/** Uns 10 s parado (quadros no ritmo de cada um), depois de já ter visto a parada: pausa sozinho. */
-const PARADO_ATE_PAUSAR = { lenta: 20, real: 300 } as const
+/** Uns 10 s parado (quadros no ritmo de cada um): pausa sozinho. */
+export const PARADO_ATE_PAUSAR = { lenta: 20, real: 300 } as const
+
+export type Ritmo = 'lenta' | 'real'
 
 /** Onde fica cada pegada: um passinho por quadro andado, do começo até agora. */
 function pegadas(x: number, passo: number): number[] {
@@ -61,32 +69,31 @@ function setaDaExperiencia(alvo: EventTarget | null, raiz: Element | null): bool
   )
 }
 
-export function WalkEmCameraLenta() {
+/**
+ * O ritmo dos quadros que as experiências do andar do Farol dividem: o relógio (o MESMO
+ * `useSceneClock` do player: aba escondida não conta tempo), a vez da mídia da aula e a pausa quando
+ * `pararQuando` vira verdade. `reiniciarAoRodar` volta ao início antes de rodar (o personagem saiu
+ * da tela e não há o que ver).
+ */
+export function useRitmoDosQuadros({
+  pararQuando,
+  reiniciarAoRodar,
+}: {
+  pararQuando: boolean
+  reiniciarAoRodar: boolean
+}) {
   const context = useDiscovery()
-  const { state, dispatch, activity } = context
-  const w = state.walk
+  const { state, dispatch } = context
   const [rodando, setRodando] = useState(false)
-  const ritmo = w.pace ?? 'lenta'
+  const ritmo: Ritmo = state.walk.pace ?? 'lenta'
   const reduced = useMenosMovimento()
-  const seen = new Set(state.evidence.discoveries)
-  const completed = [
-    seen.has('moves-each-frame'),
-    seen.has('stopped-after-release'),
-    seen.has('walked-real-speed'),
-  ]
-  const goals = [
-    'Segure a seta e veja um passinho em cada quadro.',
-    'Solte a seta e veja os quadros passarem sem ele sair do lugar.',
-    'Veja os passinhos na velocidade de verdade.',
-  ]
-  const saiu = lighthouseWalkGone(w)
-  const dono = useRef(Symbol('camera-lenta'))
+  const dono = useRef(Symbol('ritmo-dos-quadros'))
 
   // Outra mídia da aula (o vídeo da parte) pede a vez: os quadros param.
   useEffect(() => registerLessonMedia(dono.current, () => setRodando(false)), [])
 
-  const rodar = (novo: 'lenta' | 'real') => {
-    if (saiu) dispatch({ type: 'restart-walk' })
+  const rodar = (novo: Ritmo, { reiniciar = reiniciarAoRodar } = {}) => {
+    if (reiniciar) dispatch({ type: 'restart-walk' })
     // Sempre manda o ritmo: zera a sequência de passinhos, inclusive numa sessão retomada.
     dispatch({ type: 'walk-pace', pace: novo })
     setRodando(true)
@@ -110,11 +117,105 @@ export function WalkEmCameraLenta() {
     lento: false,
     onTick: passarQuadros,
   })
-  // Saiu inteiro da tela, ou ficou parado muito tempo depois de já ter visto a parada: pausa.
-  const paradoDemais = seen.has('stopped-after-release') && w.idle >= PARADO_ATE_PAUSAR[ritmo]
   useEffect(() => {
-    if (rodando && (saiu || paradoDemais)) setRodando(false)
-  }, [rodando, saiu, paradoDemais])
+    if (rodando && pararQuando) setRodando(false)
+  }, [rodando, pararQuando])
+  return { rodando, ritmo, rodar, parar: () => setRodando(false) }
+}
+
+/** Câmera lenta, Velocidade de verdade, Pausar e Voltar ao início, com o botão pedido em destaque. */
+export function BotoesDoRitmo({
+  rodando,
+  ritmo,
+  rodar,
+  parar,
+  pedeLenta,
+  pedeReal,
+}: ReturnType<typeof useRitmoDosQuadros> & { pedeLenta: boolean; pedeReal: boolean }) {
+  const { dispatch } = useDiscovery()
+  return (
+    <>
+      <div className="slow-ritmo-label">Os quadros do jogo</div>
+      <div
+        className="sz-discovery-controls free-controls slow-ritmo"
+        role="group"
+        aria-label="Ritmo dos quadros"
+      >
+        <SceneButton
+          tom={pedeLenta ? 'gesto' : rodando && ritmo === 'lenta' ? 'ligado' : 'ferramenta'}
+          aria-pressed={rodando && ritmo === 'lenta'}
+          onClick={() => rodar('lenta')}
+        >
+          <Turtle size={16} /> Câmera lenta
+        </SceneButton>
+        <SceneButton
+          tom={pedeReal ? 'gesto' : rodando && ritmo === 'real' ? 'ligado' : 'ferramenta'}
+          aria-pressed={rodando && ritmo === 'real'}
+          onClick={() => rodar('real')}
+        >
+          <Play size={16} /> Velocidade de verdade
+        </SceneButton>
+        <SceneButton tom="ferramenta" aria-pressed={!rodando} onClick={parar}>
+          <Pause size={16} /> Pausar
+        </SceneButton>
+        <SceneButton
+          onClick={() => {
+            parar()
+            dispatch({ type: 'restart-walk' })
+          }}
+        >
+          <RotateCcw size={16} /> Voltar ao início
+        </SceneButton>
+      </div>
+    </>
+  )
+}
+
+/**
+ * O selo do quadro de agora. A piscada recomeça a cada quadro só na câmera lenta: a 30 por segundo,
+ * tremeria.
+ */
+export function SeloDoQuadro({ ritmo }: { ritmo: Ritmo }) {
+  const w = useDiscovery().state.walk
+  return (
+    <div className="walk-hud slow-hud">
+      <strong>Quadro {w.frame}</strong>
+      <span
+        key={ritmo === 'lenta' ? w.frame : 'real'}
+        className="slow-seta"
+        data-on={w.arrow}
+        data-pulse={ritmo === 'lenta' && w.frame > 0}
+      >
+        Seta apertada? {w.arrow ? '✓ sim' : '✗ não'}
+      </span>
+    </div>
+  )
+}
+
+export function WalkEmCameraLenta() {
+  const context = useDiscovery()
+  const { state, dispatch, activity } = context
+  const w = state.walk
+  const seen = new Set(state.evidence.discoveries)
+  const completed = [
+    seen.has('moves-each-frame'),
+    seen.has('stopped-after-release'),
+    seen.has('walked-real-speed'),
+  ]
+  const goals = [
+    'Segure a seta e veja um passinho em cada quadro.',
+    'Solte a seta e veja os quadros passarem sem ele sair do lugar.',
+    'Veja os passinhos na velocidade de verdade.',
+  ]
+  const saiu = lighthouseWalkGone(w)
+  // Saiu inteiro da tela, ou ficou parado muito tempo depois de já ter visto a parada: pausa.
+  const paradoDemais =
+    seen.has('stopped-after-release') && w.idle >= PARADO_ATE_PAUSAR[w.pace ?? 'lenta']
+  const ritmoDosQuadros = useRitmoDosQuadros({
+    pararQuando: saiu || paradoDemais,
+    reiniciarAoRodar: saiu,
+  })
+  const { rodando, ritmo, rodar, parar } = ritmoDosQuadros
 
   // O desafio extra: o quadro em que ele chegou à chave pela PRIMEIRA vez, fixo até voltar ao início.
   const [chegada, setChegada] = useState<number | null>(null)
@@ -140,23 +241,10 @@ export function WalkEmCameraLenta() {
       done={completed.filter(Boolean).length}
       completed={completed}
       reset={() => {
-        setRodando(false)
+        parar()
         dispatch({ type: 'reset' })
       }}
-      hud={
-        <div className="walk-hud slow-hud">
-          <strong>Quadro {w.frame}</strong>
-          {/* A piscada recomeça a cada quadro só na câmera lenta: a 30 por segundo, tremeria. */}
-          <span
-            key={ritmo === 'lenta' ? w.frame : 'real'}
-            className="slow-seta"
-            data-on={w.arrow}
-            data-pulse={ritmo === 'lenta' && w.frame > 0}
-          >
-            Seta apertada? {w.arrow ? '✓ sim' : '✗ não'}
-          </span>
-        </div>
-      }
+      hud={<SeloDoQuadro ritmo={ritmo} />}
       stage={<PalcoEmCameraLenta />}
       after={
         saiu ? (
@@ -178,38 +266,7 @@ export function WalkEmCameraLenta() {
           if (!rodando) rodar(ritmo)
         }}
       />
-      <div className="slow-ritmo-label">Os quadros do jogo</div>
-      <div
-        className="sz-discovery-controls free-controls slow-ritmo"
-        role="group"
-        aria-label="Ritmo dos quadros"
-      >
-        <SceneButton
-          tom={pedeCameraLenta ? 'gesto' : rodando && ritmo === 'lenta' ? 'ligado' : 'ferramenta'}
-          aria-pressed={rodando && ritmo === 'lenta'}
-          onClick={() => rodar('lenta')}
-        >
-          <Turtle size={16} /> Câmera lenta
-        </SceneButton>
-        <SceneButton
-          tom={pedeVelocidade ? 'gesto' : rodando && ritmo === 'real' ? 'ligado' : 'ferramenta'}
-          aria-pressed={rodando && ritmo === 'real'}
-          onClick={() => rodar('real')}
-        >
-          <Play size={16} /> Velocidade de verdade
-        </SceneButton>
-        <SceneButton tom="ferramenta" aria-pressed={!rodando} onClick={() => setRodando(false)}>
-          <Pause size={16} /> Pausar
-        </SceneButton>
-        <SceneButton
-          onClick={() => {
-            setRodando(false)
-            dispatch({ type: 'restart-walk' })
-          }}
-        >
-          <RotateCcw size={16} /> Voltar ao início
-        </SceneButton>
-      </div>
+      <BotoesDoRitmo {...ritmoDosQuadros} pedeLenta={pedeCameraLenta} pedeReal={pedeVelocidade} />
     </Frame>
   )
 }
@@ -289,31 +346,62 @@ function PalcoEmCameraLenta() {
   )
 }
 
-/** Os últimos quadros lado a lado: o desenho animado aberto, um desenho de cada vez. */
-function TiraDeQuadros() {
+/**
+ * Os últimos quadros lado a lado: o desenho animado aberto, um desenho de cada vez. Num quadro em
+ * que o limite agiu (`walk.reach` difere do `trail`), o quadrinho diz o resultado: "↩ voltou" (estava fora da tela, com o fantasma de onde estava) ou "✋ segurou" (na
+ * beirada: o passinho ia levar além, e o jogo conferiu e segurou). A frase do quadro de agora conta o
+ * resto. É assim que a beirada mostra a ordem sem falar de blocos.
+ */
+export function TiraDeQuadros() {
   const { state } = useDiscovery()
   const w = state.walk
   const desde = Math.max(0, w.trail.length - QUADROS_NA_TIRA)
+  const alcance = w.reach?.slice(desde)
   const quadros = w.trail.slice(desde).map((x, i, lista) => {
+    const levou = alcance?.[i] ?? x
     const anterior = lista[i - 1]
+    const puxou = levou !== x
     return {
       numero: w.frame - (lista.length - 1 - i),
       x,
+      levou,
+      puxou,
+      // Puxado de FORA da tela (a régua do "saiu da tela") é voltar; na beirada, é segurar: o
+      // passinho ia levar a caixa um pouco além, e o desenho nem chegou a sair.
+      voltou: puxou && levou >= lighthouseWalkOutSeenX(),
       andou: anterior === undefined ? null : x > anterior,
     }
   })
   // Todos os quadrinhos usam a MESMA janela e a mesma linha de referência: o passinho aparece como o
-  // personagem saindo da linha.
+  // personagem saindo da linha. Quando o limite agiu em algum deles, a janela fica na borda: o
+  // personagem dentro e a borda à vista (ancorada no primeiro quadro, ele sumia dos quadrinhos).
+  const borda = LIGHTHOUSE_WALK.screen
   const referencia = quadros[0]?.x ?? w.x
-  const janela = { x: referencia + CAIXA / 2 - 30, w: 70 }
+  const janela = quadros.some((q) => q.puxou)
+    ? { x: borda - 50, w: 70 }
+    : { x: referencia + CAIXA / 2 - 30, w: 70 }
+  const bordaNaJanela = borda > janela.x && borda < janela.x + janela.w
+  // ⚠️ Os lugares vazios reservam a tira inteira desde o quadro 0: sem eles, os primeiros quadros
+  // empurravam a seta e os botões para baixo, e o dedo apertava no lugar errado.
+  const vazios = Array.from({ length: QUADROS_NA_TIRA - quadros.length }, (_, i) => i)
   return (
     <div className="slow-tira" role="group" aria-label="Os últimos quadros do jogo">
+      {vazios.map((i) => (
+        <figure key={`vazio-${i}`} className="slow-tira-quadro" data-vazio="" aria-hidden="true">
+          <svg viewBox={`0 0 ${janela.w} ${CAIXA + 10}`} aria-hidden="true" />
+          <figcaption>
+            &nbsp;
+            <small />
+          </figcaption>
+        </figure>
+      ))}
       {quadros.map((q, i) => (
         <figure
           key={q.numero}
           className="slow-tira-quadro"
           data-current={i === quadros.length - 1}
           data-andou={q.andou ?? undefined}
+          data-puxou={q.puxou || undefined}
         >
           <svg
             viewBox={`${janela.x} ${CAMINHO_Y - 4} ${janela.w} ${CAIXA + 10}`}
@@ -326,6 +414,25 @@ function TiraDeQuadros() {
               height={CAIXA + 10}
               fill="#e9f6f1"
             />
+            {bordaNaJanela && (
+              <>
+                <rect
+                  className="fill-scene-b-wash"
+                  x={borda}
+                  y={CAMINHO_Y - 4}
+                  width={janela.x + janela.w - borda}
+                  height={CAIXA + 10}
+                />
+                <line
+                  className="stroke-scene-ink"
+                  x1={borda}
+                  x2={borda}
+                  y1={CAMINHO_Y - 4}
+                  y2={CAMINHO_Y + CAIXA + 6}
+                  strokeWidth="1.5"
+                />
+              </>
+            )}
             <line
               x1={referencia + CAIXA / 2}
               x2={referencia + CAIXA / 2}
@@ -334,6 +441,16 @@ function TiraDeQuadros() {
               stroke="#8a5c00"
               strokeDasharray="3 3"
             />
+            {q.voltou && (
+              <image
+                href={farolSvgUrl('aventureiro')}
+                x={q.levou}
+                y={CAMINHO_Y}
+                width={CAIXA}
+                height={CAIXA}
+                opacity={0.35}
+              />
+            )}
             <image
               href={farolSvgUrl('aventureiro')}
               x={q.x}
@@ -345,7 +462,11 @@ function TiraDeQuadros() {
           <figcaption>
             Quadro {q.numero}
             <small>
-              {q.andou === null ? (
+              {q.voltou ? (
+                '↩ voltou'
+              ) : q.puxou ? (
+                '✋ segurou'
+              ) : q.andou === null ? (
                 ''
               ) : q.andou ? (
                 <>
@@ -369,7 +490,7 @@ function TiraDeQuadros() {
  * molde do `BancadaDaTecla` (`scene-nucleo-controls.tsx`), com a ação desta cena.
  * ⚠️ Sair da parte com a seta segurada a solta: na volta, ela não anda sozinha.
  */
-function SetaDeSegurar({ pedida, aoSegurar }: { pedida: boolean; aoSegurar: () => void }) {
+export function SetaDeSegurar({ pedida, aoSegurar }: { pedida: boolean; aoSegurar: () => void }) {
   const { state, dispatch } = useDiscovery()
   const raiz = useRef<HTMLDivElement>(null)
   const segurando = useRef(false)

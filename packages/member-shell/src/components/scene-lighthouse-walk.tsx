@@ -93,7 +93,14 @@ function ondeEsta(x: number, corpo: Corpo): 'dentro' | 'parte' | 'fora' {
 const ehNave = (cenario: SceneCenarioId | undefined) =>
   sceneCenario(undefined, 'lighthouse-walk', cenario) === 'nave'
 
-export function LighthouseWalkStage({ state }: { state: SceneState }) {
+export function LighthouseWalkStage({
+  state,
+  semPasso = false,
+}: {
+  state: SceneState
+  /** A beirada da tela (01/11/2026) trabalha só a ideia: sem o "+N" do passo, que é número. */
+  semPasso?: boolean
+}) {
   const id = useId()
   const cenario = useSceneCenario(undefined, 'lighthouse-walk')
   const nave = cenario === 'nave'
@@ -144,7 +151,7 @@ export function LighthouseWalkStage({ state }: { state: SceneState }) {
       </g>
       {/* O passo sai UMA vez, sempre do lado de dentro da borda: partido pela borda, o "+3" virava
           um "‹3" metade inteiro e metade esmaecido. */}
-      {passo !== null && comDados && (
+      {passo !== null && comDados && !semPasso && (
         <Texto
           data-passo={passo}
           x={Math.min((penultimo ?? ultimo) + CAIXA / 2 + passo / 2, LIGHTHOUSE_WALK.screen - 16)}
