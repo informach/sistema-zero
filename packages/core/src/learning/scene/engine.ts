@@ -212,7 +212,14 @@ function esquecerOGesto(aberto: SceneState, base: SceneState, scene: SceneId): v
   // ⚠️ O andar do Farol: o caso escolhe só a velocidade e o limite (a seta e ONDE o personagem está
   // são sempre os de fábrica, ver `isSceneSetup`); os quadros que passaram, o rastro e a espera do
   // Rodar são história, e ela começa vazia.
-  aberto.walk = { ...aberto.walk, frame: 0, trail: [aberto.walk.x], idle: 0, run: 0 }
+  aberto.walk = {
+    ...aberto.walk,
+    frame: 0,
+    trail: [aberto.walk.x],
+    reach: undefined,
+    idle: 0,
+    run: 0,
+  }
   // Os fantasmas e os "onde eu estava antes" passam a apontar para onde a cena ABRE.
   aberto.place = { ...aberto.place, fromX: aberto.place.x, fromY: aberto.place.y }
   aberto.drive = {
@@ -876,6 +883,7 @@ export function stepScene(
         frame: 0,
         x: LIGHTHOUSE_WALK.start,
         trail: [LIGHTHOUSE_WALK.start],
+        reach: undefined,
         idle: 0,
         run: 0,
       }
@@ -2471,6 +2479,8 @@ export function stepScene(
  *   continuou inteiro na tela: é o limite segurando, e não ele chegando.
  * - `walked-real-speed`: no ritmo `real`, um segundo de passinhos SEGUIDOS (`LIGHTHOUSE_WALK.realWalk`),
  *   depois de `moves-each-frame`. No ritmo `real`, `moves-each-frame` e `stopped-after-release` não caem.
+ * - `came-back-inside`: com o limite, o quadro anterior estava FORA da tela (a régua do
+ *   `left-the-screen`) e este acabou na borda (o limite foi ligado com o personagem fora).
  */
 function quadroDoAndar(s: SceneState): void {
   const walk = s.walk
@@ -2479,7 +2489,9 @@ function quadroDoAndar(s: SceneState): void {
   walk.frame = Math.min(walk.frame + 1, LIGHTHOUSE_WALK.max)
   if (walk.arrow && walk.movement !== false)
     walk.x = Math.min(walk.x + walk.speed, LIGHTHOUSE_WALK.max)
+  const alcancou = walk.x
   if (walk.keepInside) walk.x = Math.max(0, Math.min(walk.x, limite))
+  walk.reach = [...(walk.reach ?? walk.trail), alcancou].slice(-LIGHTHOUSE_WALK.trail)
   walk.trail = [...walk.trail, walk.x].slice(-LIGHTHOUSE_WALK.trail)
   walk.idle = walk.x === antes ? Math.min(walk.idle + 1, walk.frame) : 0
   walk.run = walk.arrow && walk.x > antes ? Math.min(walk.run + 1, walk.frame) : 0
@@ -2520,6 +2532,11 @@ function quadroDoAndar(s: SceneState): void {
     observe(s, 'left-the-screen', 'Sem o limite, o sprite saiu da tela')
   if (walk.keepInside && walk.arrow && antes === limite && walk.x === limite)
     observe(s, 'stayed-inside', 'Com o limite, o sprite ficou inteiro na tela')
+  // A beirada do Farol (01/11/2026): ligar o limite com ele FORA da tela (a mesma régua do
+  // `left-the-screen`: metade da caixa além da borda) o traz de volta. Uns pixels além da caixa não
+  // contam: o desenho ainda está inteiro na tela, e a criança não viu nada sair.
+  if (walk.keepInside && antes >= saida && walk.x === limite)
+    observe(s, 'came-back-inside', 'Com o limite ligado, o sprite voltou para dentro da tela')
 }
 
 /** Nomes alternativos de metas, aplicados somente quando a aula os escolhe. */

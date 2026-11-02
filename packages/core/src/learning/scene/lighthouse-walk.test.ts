@@ -364,6 +364,7 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
       ...CASOS.velocidade,
       ...CASOS.limite,
       'walked-real-speed',
+      'came-back-inside',
     ])
     const rotulos = Object.fromEntries(m.goals.map((g) => [g.id, g.label]))
     expect(rotulos).toEqual({
@@ -377,6 +378,7 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
       'left-the-screen': 'Sem o limite, o sprite saiu da tela',
       'stayed-inside': 'Com o limite, o sprite ficou inteiro na tela',
       'walked-real-speed': 'Na velocidade de verdade, os passinhos viraram uma caminhada',
+      'came-back-inside': 'Com o limite ligado, o sprite voltou para dentro da tela',
     })
   })
 
@@ -394,6 +396,7 @@ describe('lighthouse-walk: o modelo e os três usos do Dia 1', () => {
       'Manter dentro da tela',
       'Recomeçar',
       'Velocidade de verdade',
+      'Ligar o limite da tela',
     ]
     for (const g of sceneModel('lighthouse-walk').goals) {
       expect(g.pedido, g.id).not.toMatch(RESULTADO)
@@ -561,5 +564,69 @@ describe('lighthouse-walk: a câmera lenta', () => {
     const frase = sceneSuccess('lighthouse-walk', undefined, [...CAMERA_LENTA])
     expect(frase).toContain('passinho')
     expect(frase).not.toMatch(/bloco|regra|comando|\bx\b|sprite/i)
+  })
+})
+
+/**
+ * "A beirada da tela" (Farol, Dia 1, parte 5, 01/11/2026): só a ideia. Em cada quadro, depois do
+ * passinho, o jogo confere a beirada e puxa de volta; o `reach` guarda onde o passinho o levou.
+ */
+describe('lighthouse-walk: a beirada da tela', () => {
+  const BEIRADA = ['left-the-screen', 'came-back-inside', 'stayed-inside'] as const
+  const caso: SceneStart = { scene: 'lighthouse-walk', setup: { goals: [...BEIRADA] } }
+  const tocar = (actions: SceneAction[], from?: SceneState) => play(actions, from, caso)
+  const DESLIGA: SceneAction = { type: 'keep-on-screen', enabled: false }
+
+  test('o reach guarda onde o passinho levou, alinhado ao rastro, e é história', () => {
+    const naBorda = tocar([LIMITE, SETA, ...quadros(80)])
+    const { trail, reach, x } = naBorda.walk
+    expect(x).toBe(lighthouseWalkMaxX())
+    expect(reach).toHaveLength(trail.length)
+    expect(reach?.at(-1)).toBe(lighthouseWalkMaxX() + naBorda.walk.speed)
+    expect(trail.at(-1)).toBe(lighthouseWalkMaxX())
+    expect(isSceneState(naBorda)).toBe(true)
+    expect(isSceneState({ ...naBorda, walk: { ...naBorda.walk, reach: [1] } })).toBe(false)
+    expect(tocar([{ type: 'restart-walk' }], naBorda).walk.reach).toBeUndefined()
+    expect(openScene(caso).walk.reach).toBeUndefined()
+    // Retrato antigo, sem o campo, continua válido.
+    const { reach: _fora, ...semReach } = naBorda.walk
+    expect(isSceneState({ ...naBorda, walk: semReach })).toBe(true)
+  })
+
+  test('ligar o limite com ele além da borda o traz de volta, e só então cai a meta', () => {
+    const fora = tocar([SETA, ...quadros(80)])
+    expect(fora.walk.x).toBeGreaterThan(lighthouseWalkMaxX())
+    expect(viu(fora, 'left-the-screen')).toBe(true)
+    expect(viu(fora, 'came-back-inside')).toBe(false)
+    const ligou = tocar([LIMITE], fora)
+    expect(viu(ligou, 'came-back-inside')).toBe(false)
+    const voltou = tocar([QUADRO], ligou)
+    expect(voltou.walk.x).toBe(lighthouseWalkMaxX())
+    expect(viu(voltou, 'came-back-inside')).toBe(true)
+  })
+
+  test('⚠️ ligar o limite com ele só uns pixels além da borda não é voltar: ele não saiu', () => {
+    const quase = tocar([SETA, ...quadros(71)])
+    expect(quase.walk.x).toBeGreaterThan(lighthouseWalkMaxX())
+    expect(quase.walk.x).toBeLessThan(lighthouseWalkOutSeenX())
+    const s = tocar([LIMITE, QUADRO], quase)
+    expect(s.walk.x).toBe(lighthouseWalkMaxX())
+    expect(viu(s, 'came-back-inside')).toBe(false)
+  })
+
+  test('chegar à borda com o limite já ligado não é voltar', () => {
+    const s = tocar([LIMITE, SETA, ...quadros(80)])
+    expect(viu(s, 'stayed-inside')).toBe(true)
+    expect(viu(s, 'came-back-inside')).toBe(false)
+  })
+
+  test('o caminho inteiro conclui, com a frase da ideia', () => {
+    const s = tocar([SETA, ...quadros(80), LIMITE, QUADRO, QUADRO, DESLIGA, LIMITE, QUADRO])
+    expect(
+      evaluateExperimentation('lighthouse-walk', s, true, undefined, [...BEIRADA]).passed,
+    ).toBe(true)
+    const frase = sceneSuccess('lighthouse-walk', undefined, [...BEIRADA])
+    expect(frase).toContain('beirada')
+    expect(frase).not.toMatch(/bloco|regra|comando|\bx\b|sprite|ordem/i)
   })
 })

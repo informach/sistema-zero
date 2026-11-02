@@ -1,7 +1,7 @@
 import type { SceneId } from './actions'
 import type { SceneActivity } from './index'
 import { ISLAND_SPEECH, islandGuidance } from './island-3d'
-import type { SceneState } from './state'
+import { lighthouseWalkMaxX, lighthouseWalkOutSeenX, type SceneState } from './state'
 
 /** Shared authored speech: player and recording inventory always use the same text. */
 const speech = {
@@ -18,6 +18,24 @@ const speech = {
     'Continue segurando: com os quadros passando bem rápido, os passinhos viram uma caminhada.',
   'slow-complete':
     'Você viu os passinhos, a parada e a caminhada. Se quiser, tente chegar à chave em câmera lenta e conte os quadros.',
+  // ⭐ "A beirada da tela" (Farol, Dia 1, parte 5, 01/11/2026): só a ideia, sem blocos nem ordem dos
+  // blocos. A ordem aparece dentro de cada quadro: primeiro o passinho, depois a conferência.
+  'border-start':
+    'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando e veja o que acontece.',
+  'border-out':
+    'Ele saiu da janela do jogo. Agora clique em Ligar o limite da tela e veja o próximo quadro.',
+  'border-on-out':
+    'O limite está ligado e ele ainda está fora. Deixe passar um quadro e veja o que acontece.',
+  'border-back':
+    'Ele voltou para dentro! Agora, em câmera lenta, segure a seta junto à beirada e olhe cada quadro.',
+  'border-edge':
+    'O limite está ligado. Em câmera lenta, segure a seta até a beirada e olhe cada quadro.',
+  'border-edge-off':
+    'Agora clique em Ligar o limite da tela e, em câmera lenta, segure a seta até a beirada.',
+  'border-hold':
+    'Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Agora desligue o limite e deixe ele sair para comparar.',
+  'border-complete':
+    'Você viu ele sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
   // ⚠️ As falas da bancada antiga do quadro: valem só para o bloco que ainda não foi reimportado.
   'walk-empty':
     'A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco.',
@@ -102,7 +120,7 @@ export function discoverySpeechSteps(scene?: SceneId) {
         : scene === 'found-counter'
           ? ['count']
           : scene === 'lighthouse-walk'
-            ? ['slow', 'walk', 'edge']
+            ? ['slow', 'walk', 'border', 'edge']
             : scene === 'collect-and-remember'
               ? ['memory']
               : scene === 'lighthouse-key'
@@ -121,7 +139,26 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
   let id: keyof typeof speech = 'count-start'
   switch (activity.scene) {
     case 'lighthouse-walk':
-      if (activity.setup?.goals?.includes('left-the-screen'))
+      if (activity.setup?.goals?.includes('came-back-inside')) {
+        const { keepInside, x } = state.walk
+        // "Fora" é a régua do `left-the-screen`: metade da caixa além da borda.
+        id =
+          has('left-the-screen') && has('came-back-inside') && has('stayed-inside')
+            ? 'border-complete'
+            : keepInside && x > lighthouseWalkMaxX()
+              ? 'border-on-out'
+              : !keepInside
+                ? x >= lighthouseWalkOutSeenX()
+                  ? 'border-out'
+                  : has('left-the-screen') && has('came-back-inside')
+                    ? 'border-edge-off'
+                    : 'border-start'
+                : !has('stayed-inside')
+                  ? has('came-back-inside')
+                    ? 'border-back'
+                    : 'border-edge'
+                  : 'border-hold'
+      } else if (activity.setup?.goals?.includes('left-the-screen'))
         id = !has('left-the-screen')
           ? state.walk.keepInside
             ? 'edge-limited-first'

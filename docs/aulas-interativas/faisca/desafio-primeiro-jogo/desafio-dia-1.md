@@ -37,7 +37,7 @@ O vídeo do Passo a passo do projeto continua só com a professora. As participa
 | --- | --- |
 | F1P1-D01 | “E como eu levo o personagem até a chave?” |
 | F1P3-D01 | “E como o jogo sabe quando ele tem que andar?” |
-| F1P5-D01 | “E a ordem dos blocos faz diferença?” |
+| F1P5-D01 | “E se eu ligar o limite com ele já fora da tela?” |
 | F1P6-D01 | “E onde eu coloco esse limite?” |
 
 As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-R02.
@@ -55,7 +55,7 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 | Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |
 | Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar que os controles sozinhos não movem ninguém |
 | A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`, câmera lenta), só a ideia, sem blocos | Segurar a seta em câmera lenta, soltar e ver os quadros passarem, depois a velocidade de verdade | Seção 3, antes da montagem `andar` | Ver o passinho de cada quadro antes de pôr o movimento dentro de A cada quadro do jogo |
-| Borda e ordem | Relação concreta | Na experiência `limite` e depois no próprio jogo | Rodar sem e com Manter dentro da tela e apontar, na regra, o limite logo abaixo do movimento; no jogo, ver o personagem sair e pôr o limite logo abaixo do movimento | Seções 5 e 6 | Mover primeiro, conferir o limite depois |
+| Borda e ordem | Relação concreta | Na experiência `limite` (só a ideia: a beirada da tela) e depois no próprio jogo | Sem o limite, ver o personagem sair; ligar o limite com ele fora e ver voltar; em câmera lenta, ver em cada quadro o passinho e depois a conferência. No jogo, pôr o limite logo abaixo do movimento | Seções 5 e 6 | Primeiro o passinho, depois a conferência da beirada |
 
 ## Diagnóstico do desenho atual
 
@@ -127,11 +127,13 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 - **Intenção:** exploração (`exploration`).
 - **Conclui quando:** vídeo e 3 descobertas observadas, sem ordem obrigatória.
 - **Blocos:** `video-d1-limite`, `ponte-d1-limite`, `experiencia-limite`.
-- **Metas da experiência:** `left-the-screen`, `stayed-inside`, `compared-command-order`.
+- **Metas da experiência:** `left-the-screen`, `came-back-inside`, `stayed-inside`.
 
-Comparar com e sem o bloco de limite em qualquer ordem, chegando à borda com vários quadros. O limite pode ser acrescentado enquanto o personagem está fora. Comparar também mover → limitar e limitar → mover no teste junto à borda. As três descobertas registram testes reais. Não mostrar coordenadas. Voltar ao início prepara outra tentativa sem apagar descobertas ou a regra.
+**"A beirada da tela" (revisão de 01/11/2026, decisão da responsável):** como a câmera lenta da parte 3, a experiência trabalha só a IDEIA, sem blocos, regra, comando nem a comparação das ordens dos blocos. A ideia: a tela é uma janela; em cada quadro, depois do passinho, o jogo confere se o personagem passou da beirada e, se passou, puxa de volta para dentro. Isso é o limite da tela. A ordem aparece DENTRO de cada quadro: na beirada, a tira diz "segurou" e a frase do quadro diz "o passinho ia levar ele para fora; depois o jogo conferiu a beirada e segurou ele dentro"; quando o limite é ligado com ele fora, a tira mostra o fantasma de onde ele estava e diz "voltou". A ordem dos blocos fica para a parte 6. Full review de 01/11/2026: "fora" é a régua do "saiu da tela" (metade da caixa além da borda), no motor, no Zappy e no botão; ligar o limite com ele fora e os quadros parados põe a câmera lenta para rodar; a frase do quadro tem a altura reservada.
 
-**Convite da experiência:** Compare o que acontece na borda com e sem o bloco de limite. Teste também as duas ordens dos blocos. Você pode repetir e mudar a regra durante o teste.
+Na tela: o palco do limite (borda, faixa **fora da tela**, fantasma do que passou), o botão **Ligar o limite da tela / Desligar o limite da tela**, a seta que se segura, a tira e o ritmo da câmera lenta. Três descobertas, em qualquer ordem: sem o limite, ele sai da tela; ligando o limite com ele fora, ele volta; com o limite, segurando a seta na beirada, ele fica. Sem o limite, sair inteiro pausa os quadros (Voltar ao início); com o limite ligado, rodar de novo o traz de volta. Não mostrar coordenadas.
+
+**Convite da experiência:** Sem o limite, leve o personagem até a beirada e veja ele sair da tela. Depois ligue o limite da tela e olhe, em câmera lenta, cada quadro na beirada.
 
 ### Seção 6. Mantenha o personagem na tela
 
@@ -147,7 +149,7 @@ Primeiro a pessoa vê o personagem sair pela beirada no próprio jogo. Depois, c
 ## Experiências e demonstrações desta aula
 
 - **Jogo pronto:** atividade project-play com a cópia concluída de A Chave do Farol, `completion: participation` e targets vazio. Deixa jogar por toque ou teclado. Experimentar basta; não exigir vencer. É uma atividade isolada, sem Estúdio de entrega, e não alimenta a cadeia de criação.
-- **Cena `lighthouse-walk`, cenário Farol:** criada em 05/10/2026 para o Dia 1. O personagem anda para a direita no mapa do farol. Os controles são Segurar a seta para a direita, Avançar 1 quadro, Rodar/Parar, Manter dentro da tela e Recomeçar. A mesma cena serve às duas experiências, cada uma com as metas do seu conceito (`setup.goals`); o controle de limite só aparece quando o caso cobra essa meta. Não se pedem metas nem controles de comparação de velocidades.
+- **Cena `lighthouse-walk`, cenário Farol:** criada em 05/10/2026 para o Dia 1. O personagem anda para a direita no mapa do farol. Desde 01/11/2026 as duas experiências trabalham só a ideia: a câmera lenta (parte 3) e a beirada da tela (parte 5), com a seta que se segura, Câmera lenta, Velocidade de verdade, Pausar, Voltar ao início e, na beirada, Ligar o limite da tela. Cada uma cobra as metas do seu conceito (`setup.goals`). Não se pedem metas nem controles de comparação de velocidades nem de ordens de blocos.
 - **Montagens:** o projeto é o mesmo nas partes 4 e 6. A prévia atualiza sozinha; Atualizar não é um passo a repetir a cada encaixe.
 
 Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstração resolve o jogo pela pessoa.
@@ -160,8 +162,8 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 | `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar (se houver mídia antiga no Admin, substituir) |
 | `video-d1-quadro` | A ideia do quadro e do passinho, sem blocos, e o convite para a câmera lenta | Câmera lenta | 80 a 100 s | Gravar (revisão de 01/11/2026) |
 | `video-d1-andar` | Controles e movimento ligados à ideia do passinho, teste e verificação | Projeto inicial | 5 a 6 min | Gravar (revisão de 01/11/2026) |
-| `video-d1-limite` | Experiência: sem e com o limite, a faixa fora da tela e a ordem na regra | Cena nova | 75 a 95 s | Gravar |
-| `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (se houver mídia antiga no Admin, substituir) |
+| `video-d1-limite` | A janela, o limite da tela depois do passinho, sem blocos, e o convite para a beirada | Beirada da tela | 75 a 95 s | Gravar (revisão de 01/11/2026) |
+| `video-d1-borda` | Borda no jogo, o limite ligado à conferência da beirada, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (revisão de 01/11/2026) |
 
 ## Continuidade
 

@@ -72,29 +72,33 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo funciona assim: o que passa da borda pode sair de vista.
+[engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se o personagem passa da beirada, ele vai sumindo da sua vista.
 
-[engaging, energetic, conversational voice] Para o personagem continuar aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro.
+[engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. Primeiro, o personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
 
-[curious] E a ordem dos blocos faz diferença?
+[curious] E se eu ligar o limite com ele já fora da tela?
 
-[engaging, energetic, conversational voice] Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à borda.
+[engaging, energetic, conversational voice] Aí, no quadro seguinte, ele volta para dentro! É que, em todo quadro, o jogo confere a beirada: se ele estiver fora, puxa de volta.
 
-[engaging, energetic, conversational voice] Você também pode adicionar e retirar o bloco de limite durante o teste. Observe o que acontece na borda e repita quantas vezes quiser. Quando terminar, clique em Próxima parte.
+[interested, animated voice] Olha aqui: nesta atividade, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
+
+[upbeat, encouraging voice] Agora é a sua vez: primeiro, com o limite desligado, leve o personagem até a beirada e veja o que acontece. Depois, ligue o limite e olhe, em câmera lenta, cada quadro na beirada. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
 [engaging, energetic, conversational voice] Aqui no seu jogo, segure uma seta até o personagem chegar à beirada e continue segurando. Tá vendo? Ele passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o limite da tela ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!
 
 [curious] E onde eu coloco esse limite?
 
-[engaging, energetic, conversational voice] O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido em todo quadro, logo depois que o personagem anda. Deixe esse lugar à vista.
+[engaging, energetic, conversational voice] O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que, como você viu na experiência, o jogo confere a beirada logo depois do passinho: o bloco de cima dá o passinho, e o de baixo confere a beirada. Deixe esse lugar à vista.
 
 [confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.
 
 [confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de movimento. [confident, clear, unhurried voice] Repare que esse bloco também chega com heroi: clique em heroi e escolha personagem.
+
+[engaging, energetic, conversational voice] É este bloco que confere a beirada: se o personagem passou dela, ele puxa de volta para dentro.
 
 [upbeat, encouraging voice] Agora teste as quatro direções até chegar às beiradas. [interested, animated voice] Olha só: ele para em cada beirada e não sai mais da tela!
 

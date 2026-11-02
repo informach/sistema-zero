@@ -29,6 +29,15 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
     { type: 'test-walk-order' },
     { type: 'walk-order', order: 'reverse' },
     { type: 'test-walk-order' },
+    // A beirada (01/11/2026): sai sem o limite e volta ao ligar o limite.
+    { type: 'restart-walk' },
+    { type: 'keep-on-screen', enabled: false },
+    { type: 'hold-arrow', held: true },
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
+    { type: 'keep-on-screen', enabled: true },
+    { type: 'advance', seconds: 1 / 30 },
     // A câmera lenta (01/11/2026): um segundo de caminhada na velocidade de verdade.
     { type: 'restart-walk' },
     { type: 'walk-pace', pace: 'real' },
