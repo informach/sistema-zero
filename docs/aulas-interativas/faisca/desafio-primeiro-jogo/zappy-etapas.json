@@ -3,24 +3,24 @@
   "experiences": {
     "experiencia-quadro": [
       {
-        "id": "walk-empty",
-        "text": "A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco."
+        "id": "slow-start",
+        "text": "Clique em Câmera lenta para os quadros passarem devagar. Depois segure a seta e veja o personagem dar um passinho a cada quadro."
       },
       {
-        "id": "walk-no-command",
-        "text": "A tecla está apertada, mas falta o comando de mover. Avance um quadro para testar. Depois adicione o bloco e compare."
+        "id": "slow-walking",
+        "text": "Um quadro novo, um passinho, uma pegada. Agora solte a seta e deixe passar uns quadros."
       },
       {
-        "id": "walk-no-key",
-        "text": "O bloco está na regra, mas a tecla está solta. Avance um quadro para comparar. Apertar a tecla não muda os blocos."
+        "id": "slow-released",
+        "text": "Os quadros continuam passando, mas sem a seta ele fica no lugar. Agora clique em Velocidade de verdade e segure a seta."
       },
       {
-        "id": "walk-both",
-        "text": "Bloco na regra e tecla apertada. Avance um ou vários quadros e observe os passos. Você pode retirar o bloco ou soltar a tecla para comparar."
+        "id": "slow-real",
+        "text": "Continue segurando: com os quadros passando bem rápido, os passinhos viram uma caminhada."
       },
       {
-        "id": "walk-complete",
-        "text": "Você comparou o comando, a tecla e a passagem dos quadros. Continue experimentando: todas as opções permanecem livres."
+        "id": "slow-complete",
+        "text": "Você viu os passinhos, a parada e a caminhada. Se quiser, tente chegar à chave em câmera lenta e conte os quadros."
       }
     ],
     "experiencia-limite": [

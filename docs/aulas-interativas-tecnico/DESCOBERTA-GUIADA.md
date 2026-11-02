@@ -68,6 +68,8 @@ Ao usar notas de 1 a 10, justificar cada nota com o que a pessoa consegue fazer 
 
 ## Explorar para compreender, direção de 26/10/2026
 
+⚠️ **Revisto em 01/11/2026 (decisão da responsável): a experiência trabalha só a IDEIA, sem blocos nem código.** Ela torna o conceito concreto com o que a criança vê e sente (quadros, passinhos, a seta, o toque, a chave); os blocos aparecem só na montagem do Estúdio, que liga cada bloco à ideia ("este bloco é a ação; a reação é este aqui"). Por isso, na tabela abaixo, "editar a regra" é ligar ou desligar uma relação dita com palavras da ideia (como "Ligar a reação ao toque" no Cadê), nunca adicionar ou retirar um bloco com o nome do Estúdio. Primeira aplicação: a câmera lenta do Farol (Dia 1, parte `quadro`). O limite do Farol e as experiências que ainda mostram blocos seguem a mesma régua na próxima revisão.
+
 O objetivo da experiência é compreender uma relação e conseguir usá-la em outra situação. A lista de descobertas apresenta propósitos observáveis; não é uma senha de cliques. Registrar o efeito real, inclusive quando os testes acontecem fora da ordem sugerida. Não conceder uma descoberta só porque uma opção foi ligada ou um botão de configuração foi escolhido.
 
 A pessoa deve poder repetir, inverter uma comparação, testar extremos seguros, mudar uma regra durante a execução e continuar depois de cumprir os objetivos. Em movimento, oferecer muitos quadros e manter visíveis o início, o lugar anterior, o atual e a indicação do próximo passo. Nos eixos, disponibilizar x e y desde o início, permitindo percorrer as duas direções de cada eixo. Um alvo pode propor um desafio opcional, sem bloquear a investigação.

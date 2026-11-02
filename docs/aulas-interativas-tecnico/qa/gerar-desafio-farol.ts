@@ -273,6 +273,8 @@ const experienciaAndar = (
   // As descobertas da cena dizem "o sprite" (a palavra dos blocos); antes da parte 4, que explica
   // a palavra, a experiência do quadro troca o rótulo por "personagem" (revisão de 13/10/2026).
   goalCopy?: Record<string, { label?: string; pedido?: string }>,
+  // A pista da aula vence a do modelo, que fala de x e de sprite (câmera lenta, 01/11/2026).
+  hints: string[] = [],
 ) => ({
   key,
   content: {
@@ -281,16 +283,13 @@ const experienciaAndar = (
     title,
     semPerguntaFinal: true,
     instructions,
-    hints: [],
+    hints,
     activity: {
       type: 'experimentation',
       scene: 'lighthouse-walk',
       cenario: 'farol',
       setup: {
         freeExploration: true,
-        ...(key === 'experiencia-quadro'
-          ? { actions: [{ type: 'movement-command', enabled: false }] }
-          : {}),
         goals,
         ...(goalCopy ? { goalCopy } : {}),
       },
@@ -322,24 +321,35 @@ const dia1 = {
     video('video-d1-quadro', 'Como o personagem anda', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-quadro',
-      'Sua vez! Compare a regra de movimento, a tecla e a passagem dos quadros. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Clique em Câmera lenta, segure a seta e veja o personagem andar quadro a quadro. Quando terminar, clique em Próxima parte.',
     ),
+    // ⭐ "O jogo em câmera lenta" (01/11/2026, decisão dela): a experiência trabalha só a IDEIA
+    // (quadro, passinho, seta), sem bloco, regra nem código. Os blocos ficam para a parte `andar`.
     experienciaAndar(
       'experiencia-quadro',
-      'Como o personagem anda',
-      'Compare o comando de mover na regra, a tecla do teclado de teste e a passagem dos quadros. Você escolhe a ordem e pode repetir quantas vezes quiser.',
-      ['no-movement-command', 'still-without-arrow', 'moves-each-frame', 'stopped-after-release'],
+      'O jogo em câmera lenta',
+      'Clique em Câmera lenta e segure a seta: veja um passinho em cada quadro. Depois solte a seta e experimente a velocidade de verdade.',
+      ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       {
-        'still-without-arrow': {
-          label: 'Com o bloco e a tecla solta, o personagem ficou parado',
-          pedido: 'Com o bloco na regra, solte a tecla e avance um quadro.',
-        },
         'moves-each-frame': {
-          label: 'Com o bloco e a tecla apertada, ele andou a cada quadro',
+          label: 'Um passinho a cada quadro',
+          pedido: 'Clique em Câmera lenta e segure a seta. Olhe o personagem a cada quadro.',
+        },
+        'stopped-after-release': {
+          label: 'Seta solta, personagem parado',
+          pedido: 'Depois de andar, solte a seta e deixe passar alguns quadros.',
+        },
+        'walked-real-speed': {
+          label: 'Os passinhos viraram uma caminhada',
           pedido:
-            'Adicione o bloco de mover, aperte a tecla no teclado de teste e avance vários quadros.',
+            'Depois de ver os passinhos em câmera lenta, clique em Velocidade de verdade e segure a seta por alguns segundos.',
         },
       },
+      [
+        'Clique em Câmera lenta e segure a seta. A cada quadro, olhe a pegada nova e o quadro novo na tira.',
+        'Depois de andar, solte a seta e deixe passar alguns quadros. Repare se aparece pegada nova.',
+        'Clique em Velocidade de verdade e segure a seta por alguns segundos.',
+      ],
     ),
     video('video-d1-andar', 'Faça o personagem andar', 'desafio-dia-1.roteiro.md'),
     fala(
@@ -376,7 +386,7 @@ const dia1 = {
       'quadro',
       'Como o personagem anda',
       'exploration',
-      'Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição.',
+      'Ver que o jogo desenha um quadro atrás do outro e que, em cada quadro com a seta apertada, o personagem dá um passinho.',
       ['video-d1-quadro', 'ponte-d1-quadro', 'experiencia-quadro'],
       ['video-d1-quadro', 'experiencia-quadro'],
     ),
@@ -777,7 +787,7 @@ gravarArquivo(
       version: 1,
       experiences: Object.fromEntries(
         Object.entries({
-          'experiencia-quadro': 'walk',
+          'experiencia-quadro': 'slow',
           'experiencia-limite': 'edge',
           'experiencia-memoria': 'memory',
           'experiencia-porta': 'door',

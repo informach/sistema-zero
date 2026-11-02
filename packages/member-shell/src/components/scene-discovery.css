@@ -986,3 +986,97 @@
 .sz-island-inputs:disabled {
   opacity: 0.55;
 }
+
+/* "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): só a ideia, sem blocos. */
+.slow-hud .slow-seta {
+  border-radius: 999px;
+  padding: 4px 10px;
+  background: var(--color-card);
+  color: var(--color-muted-foreground);
+}
+.slow-hud .slow-seta[data-on="true"] {
+  background: #e3f4eb;
+  color: #145e45;
+}
+.slow-hud .slow-seta[data-pulse="true"] {
+  animation: slow-seta-pulse 0.35s ease-out;
+}
+@keyframes slow-seta-pulse {
+  from {
+    transform: scale(1.12);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+.slow-tira {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.slow-tira-quadro {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  border: 2px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-card);
+  overflow: hidden;
+}
+.slow-tira-quadro[data-current="true"] {
+  border-color: var(--color-primary);
+}
+.slow-tira-quadro svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.slow-tira-quadro figcaption {
+  white-space: nowrap;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3px 2px 5px;
+  font-size: 11px;
+  font-weight: 800;
+  text-align: center;
+}
+.slow-tira-quadro small {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  min-height: 15px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--color-muted-foreground);
+}
+.slow-tira-quadro[data-andou="true"] small {
+  color: #145e45;
+}
+.slow-seta-bancada {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.slow-seta-botao {
+  min-height: 56px;
+  font-size: 16px;
+}
+.slow-ritmo-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--color-muted-foreground);
+  margin-bottom: 6px;
+}
+/* No celular, os quatro quadros mais novos: seis não cabem com o nome inteiro. */
+@media (max-width: 480px) {
+  .slow-tira-quadro:nth-last-child(n + 5) {
+    display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .slow-hud .slow-seta[data-pulse="true"] {
+    animation: none;
+  }
+}

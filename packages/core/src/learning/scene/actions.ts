@@ -199,6 +199,8 @@ export type SceneAction =
   | { type: 'keep-on-screen'; enabled: boolean }
   /** `lighthouse-walk`: o personagem volta ao começo e o quadro zera; as escolhas ficam. */
   | { type: 'restart-walk' }
+  /** `lighthouse-walk`: o ritmo da experiência em câmera lenta (`LIGHTHOUSE_WALK_PACES`). */
+  | { type: 'walk-pace'; pace: LighthouseWalkPace }
   /** Um campo por vez: mudar x não muda y, como no bloco que cria a chave. */
   | { type: 'key-position'; axis: 'x' | 'y'; value: number }
   | { type: 'restart-key-position' }
@@ -357,6 +359,14 @@ export type SceneAction =
  */
 export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
 export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
+
+/**
+ * Os ritmos da experiência "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): os quadros passando
+ * devagar ou na velocidade de verdade. O relógio é do player; o motor só guarda o ritmo para saber
+ * quando a caminhada aconteceu de verdade (`walked-real-speed`).
+ */
+export const LIGHTHOUSE_WALK_PACES = ['lenta', 'real'] as const
+export type LighthouseWalkPace = (typeof LIGHTHOUSE_WALK_PACES)[number]
 
 /**
  * O contador de moedas: seis moedas e a meta "5" do baú, as do jogo do Poder (o projeto e esta
@@ -853,6 +863,8 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-walk' && typeof value.enabled === 'boolean'
     case 'restart-walk':
       return scene === 'lighthouse-walk'
+    case 'walk-pace':
+      return scene === 'lighthouse-walk' && LIGHTHOUSE_WALK_PACES.some((v) => v === value.pace)
     case 'key-position':
       return (
         scene === 'lighthouse-position' &&

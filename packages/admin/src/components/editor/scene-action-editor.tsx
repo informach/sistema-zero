@@ -102,6 +102,9 @@ const TODAS: { label: string; value: SceneAction }[] = [
   { label: 'Ligar Manter dentro da tela', value: { type: 'keep-on-screen', enabled: true } },
   { label: 'Desligar Manter dentro da tela', value: { type: 'keep-on-screen', enabled: false } },
   { label: 'Recomeçar o andar', value: { type: 'restart-walk' } },
+  // A câmera lenta do Farol (01/11/2026): o ritmo dos quadros, com os nomes dos botões da criança.
+  { label: 'Câmera lenta', value: { type: 'walk-pace', pace: 'lenta' } },
+  { label: 'Velocidade de verdade', value: { type: 'walk-pace', pace: 'real' } },
   { label: 'Posição horizontal x', value: { type: 'key-position', axis: 'x', value: 160 } },
   { label: 'Posição vertical y', value: { type: 'key-position', axis: 'y', value: 250 } },
   { label: 'Recomeçar a posição da chave', value: { type: 'restart-key-position' } },
@@ -348,6 +351,7 @@ const DISTINGUE: Partial<Record<SceneAction['type'], readonly string[]>> = {
   'remember-collection': ['enabled'],
   'hold-arrow': ['held'],
   'walk-speed': ['speed'],
+  'walk-pace': ['pace'],
   'keep-on-screen': ['enabled'],
   'key-position': ['axis'],
   'play-move': ['direction'],

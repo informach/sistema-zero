@@ -32,10 +32,10 @@
       "clipe": "video-d1-quadro",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "colocar esse comando na regra. Outra coisa é usar a tecla durante o jogo. A tecla sozinha não diz quem deve se mover: é o bloco que dá essa instrução.",
-      "ancoraDepois": "O bloco continua na regra. O que muda é a tecla que ele encontra no próximo quadro. Assim, a gente pode comparar o programa, as teclas e os passos do",
-      "falaPrincipal": "E se eu soltar a tecla?",
-      "falaPersonagem": "E se eu soltar a tecla?",
+      "ancoraAntes": "que você nem percebe. Por isso, o personagem não pula de uma vez até a chave: em cada quadro, ele dá só um passinho.",
+      "ancoraDepois": "Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. Se ela está",
+      "falaPrincipal": "E como o jogo sabe quando ele tem que andar?",
+      "falaPersonagem": "E como o jogo sabe quando ele tem que andar?",
       "tags": ["[curious]"]
     },
     {

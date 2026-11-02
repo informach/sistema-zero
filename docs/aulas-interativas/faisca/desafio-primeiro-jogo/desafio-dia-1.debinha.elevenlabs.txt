@@ -2,7 +2,7 @@
 
 [long pause]
 
-[curious] E se eu soltar a tecla?
+[curious] E como o jogo sabe quando ele tem que andar?
 
 [long pause]
 

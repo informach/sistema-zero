@@ -1710,14 +1710,14 @@
     },
     {
       "key": "video-d1-quadro",
-      "plannedVideo": "Título: Como o personagem anda\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-quadro-K1\",\"clipe\":\"video-d1-quadro\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"colocar esse comando na regra. Outra coisa é usar a tecla durante o jogo. A tecla sozinha não diz quem deve se mover: é o bloco que dá essa instrução.\",\"ancoraDepois\":\"O bloco continua na regra. O que muda é a tecla que ele encontra no próximo quadro. Assim, a gente pode comparar o programa, as teclas e os passos do\",\"falaPrincipal\":\"E se eu soltar a tecla?\",\"falaPersonagem\":\"E se eu soltar a tecla?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Como o personagem anda\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-quadro-K1\",\"clipe\":\"video-d1-quadro\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"que você nem percebe. Por isso, o personagem não pula de uma vez até a chave: em cada quadro, ele dá só um passinho.\",\"ancoraDepois\":\"Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. Se ela está\",\"falaPrincipal\":\"E como o jogo sabe quando ele tem que andar?\",\"falaPersonagem\":\"E como o jogo sabe quando ele tem que andar?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-quadro",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare a regra de movimento, a tecla e a passagem dos quadros. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Clique em Câmera lenta, segure a seta e veja o personagem andar quadro a quadro. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1725,36 +1725,33 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Como o personagem anda",
+        "title": "O jogo em câmera lenta",
         "semPerguntaFinal": true,
-        "instructions": "Compare o comando de mover na regra, a tecla do teclado de teste e a passagem dos quadros. Você escolhe a ordem e pode repetir quantas vezes quiser.",
-        "hints": [],
+        "instructions": "Clique em Câmera lenta e segure a seta: veja um passinho em cada quadro. Depois solte a seta e experimente a velocidade de verdade.",
+        "hints": [
+          "Clique em Câmera lenta e segure a seta. A cada quadro, olhe a pegada nova e o quadro novo na tira.",
+          "Depois de andar, solte a seta e deixe passar alguns quadros. Repare se aparece pegada nova.",
+          "Clique em Velocidade de verdade e segure a seta por alguns segundos."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
             "freeExploration": true,
-            "actions": [
-              {
-                "type": "movement-command",
-                "enabled": false
-              }
-            ],
-            "goals": [
-              "no-movement-command",
-              "still-without-arrow",
-              "moves-each-frame",
-              "stopped-after-release"
-            ],
+            "goals": ["moves-each-frame", "stopped-after-release", "walked-real-speed"],
             "goalCopy": {
-              "still-without-arrow": {
-                "label": "Com o bloco e a tecla solta, o personagem ficou parado",
-                "pedido": "Com o bloco na regra, solte a tecla e avance um quadro."
-              },
               "moves-each-frame": {
-                "label": "Com o bloco e a tecla apertada, ele andou a cada quadro",
-                "pedido": "Adicione o bloco de mover, aperte a tecla no teclado de teste e avance vários quadros."
+                "label": "Um passinho a cada quadro",
+                "pedido": "Clique em Câmera lenta e segure a seta. Olhe o personagem a cada quadro."
+              },
+              "stopped-after-release": {
+                "label": "Seta solta, personagem parado",
+                "pedido": "Depois de andar, solte a seta e deixe passar alguns quadros."
+              },
+              "walked-real-speed": {
+                "label": "Os passinhos viraram uma caminhada",
+                "pedido": "Depois de ver os passinhos em câmera lenta, clique em Velocidade de verdade e segure a seta por alguns segundos."
               }
             }
           }
@@ -7182,7 +7179,7 @@
       "key": "quadro",
       "title": "Como o personagem anda",
       "intent": "exploration",
-      "objective": "Ver que o jogo repete a cada quadro e que, com a seta, o personagem anda um pouco em cada repetição.",
+      "objective": "Ver que o jogo desenha um quadro atrás do outro e que, em cada quadro com a seta apertada, o personagem dá um passinho.",
       "blockKeys": ["video-d1-quadro", "ponte-d1-quadro", "experiencia-quadro"],
       "workspaceKey": null,
       "externalTool": null,

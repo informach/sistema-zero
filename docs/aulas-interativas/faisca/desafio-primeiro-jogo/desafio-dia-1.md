@@ -36,12 +36,11 @@ O vídeo do Passo a passo do projeto continua só com a professora. As participa
 | Entrada | Fala de Debinha |
 | --- | --- |
 | F1P1-D01 | “E como eu levo o personagem até a chave?” |
-| F1P3-D01 | “E se eu clicar em Rodar?” |
-| F1P4-D01 | “As setas apareceram, mas ele ainda não anda!” |
-| F1P5-D01 | “Como eu faço ele parar na borda?” |
+| F1P3-D01 | “E como o jogo sabe quando ele tem que andar?” |
+| F1P5-D01 | “E a ordem dos blocos faz diferença?” |
 | F1P6-D01 | “E onde eu coloco esse limite?” |
 
-As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-D01, F1P4-R02.
+As três entradas da revisão de ritmo (F1P4-R01, F1P4-R02 e F1P6-R01) estão na tabela do fim desta proposta. Na ordem de corte da parte 4: F1P4-R01, F1P4-R02.
 
 As falas estão aplicadas aos documentos; gravação, edição e publicação desta versão ainda não foram confirmadas. As durações da tabela foram revistas em 10/10/2026 com as participações: cobrem a fala estimada a 137 palavras por minuto e, nas montagens, os gestos sem fala. Medir a montagem final sem acelerar. Zappy permanece nas instruções da página e no recurso Ouvir; no vídeo, sua presença em memes ou na interface é visual. Manter o passo a passo completo, sem intervenções durante um arraste. [Direção e âncoras de edição](../../../aulas-interativas-tecnico/AVATARES-NOS-VIDEOS.md#chave-do-farol).
 
@@ -55,7 +54,7 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 | Navegar e pedir ajuda | Interface | No Como Fazer | Links diretos opcionais | Quando necessário | Evitar aula de navegação antes da atividade |
 | Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |
 | Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar que os controles sozinhos não movem ninguém |
-| A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`) | Avançar quadro a quadro sem e com a seta, depois Rodar | Seção 3, antes da montagem `andar` | Ver a repetição antes de pôr o movimento dentro dela |
+| A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`, câmera lenta), só a ideia, sem blocos | Segurar a seta em câmera lenta, soltar e ver os quadros passarem, depois a velocidade de verdade | Seção 3, antes da montagem `andar` | Ver o passinho de cada quadro antes de pôr o movimento dentro de A cada quadro do jogo |
 | Borda e ordem | Relação concreta | Na experiência `limite` e depois no próprio jogo | Rodar sem e com Manter dentro da tela e apontar, na regra, o limite logo abaixo do movimento; no jogo, ver o personagem sair e pôr o limite logo abaixo do movimento | Seções 5 e 6 | Mover primeiro, conferir o limite depois |
 
 ## Diagnóstico do desenho atual
@@ -93,13 +92,17 @@ Anexar somente `docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-pass
 ### Seção 3. Como o personagem anda
 
 - **Intenção:** exploração (`exploration`).
-- **Conclui quando:** vídeo e 4 descobertas observadas, sem ordem obrigatória.
+- **Conclui quando:** vídeo e 3 descobertas observadas, sem ordem obrigatória.
 - **Blocos:** `video-d1-quadro`, `ponte-d1-quadro`, `experiencia-quadro`.
-- **Metas da experiência:** `no-movement-command`, `still-without-arrow`, `moves-each-frame`, `stopped-after-release`.
+- **Metas da experiência:** `moves-each-frame`, `stopped-after-release`, `walked-real-speed`.
 
-Separar três gestos: editar a regra com Adicionar/Retirar bloco de mover; apertar ou soltar a tecla no teclado de teste; avançar 1 ou 10 quadros ou passar os quadros automaticamente. O bloco consulta a tecla; apertar a tecla não adiciona o comando. Quatro descobertas, em qualquer ordem. Manter início, lugar anterior, agora e próximo quadro visíveis, com percurso desde a origem. Não apresentar x/y nesta experiência. Todos os controles continuam disponíveis depois da conclusão.
+**"O jogo em câmera lenta" (revisão de 01/11/2026, decisão da responsável):** a experiência trabalha só a IDEIA, sem blocos, regra, comando nem código; os blocos aparecem só na parte 4, que liga cada um à ideia (como o Cadê faz com ação e reação). A ideia numa frase: o jogo desenha um quadro atrás do outro e, em cada quadro, olha a seta; apertada, o personagem dá um passinho; solta, ele fica parado. A versão anterior era um Estúdio em miniatura (painel da regra com os blocos, Adicionar/Retirar bloco de mover, teclado de teste que alternava) e misturava quadro, comando, tecla e regra.
 
-**Convite da experiência:** Compare o comando de mover na regra, a tecla do teclado de teste e a passagem dos quadros. Você escolhe a ordem e pode repetir quantas vezes quiser.
+Na tela: o personagem com uma pegada a cada passinho, a chave e o farol à frente, o selo **Seta apertada?** que pisca a cada quadro e a tira com os últimos quadros ("passinho" ou "parado" embaixo de cada um). A seta se SEGURA (dedo, mouse, Espaço ou a seta → do teclado). O ritmo: **Câmera lenta** (um quadro a cada meio segundo), **Velocidade de verdade**, **Pausar** e **Voltar ao início**. Saiu o liga/desliga do bloco de mover: a falta do passinho aparece de verdade no jogo da criança, na parte 4. Desafio extra, sem meta: ao chegar à chave, a tela diz em quantos quadros. Não apresentar x/y nem velocidade. Todos os controles continuam disponíveis depois da conclusão.
+
+**Convite da experiência:** Clique em Câmera lenta e segure a seta: veja um passinho em cada quadro. Depois solte a seta e experimente a velocidade de verdade.
+
+A caminhada de verdade só conta depois dos passinhos em câmera lenta, e na velocidade de verdade o passinho e a parada não contam: um quadro dura 33 ms, rápido demais para ver (full review de 01/11/2026). Segurar a seta com o jogo pausado põe os quadros para passar em câmera lenta. As pistas da experiência usam as palavras da ideia.
 
 ### Seção 4. Faça o personagem andar
 
@@ -155,8 +158,8 @@ Não apresentar evento, variável ou condição antes do uso. Nenhuma demonstra�
 | --- | --- | --- | --- | --- |
 | `video-intro-farol` | Jogo, contexto, demonstração de um gesto, sem resolver, o aviso da partida e a surpresa do final plantada | Versão pronta | 80 a 100 s | Gravar (se houver mídia antiga no Admin, substituir) |
 | `video-intro-caderno` | Capa e página real do PDF | Caderno anexado | 30 a 40 s | Gravar (se houver mídia antiga no Admin, substituir) |
-| `video-d1-quadro` | Experiência: sem a seta e com a seta, quadro a quadro | Cena nova | 100 a 120 s | Gravar |
-| `video-d1-andar` | Controles e movimento, teste e verificação | Projeto inicial | 5 a 6 min | Gravar |
+| `video-d1-quadro` | A ideia do quadro e do passinho, sem blocos, e o convite para a câmera lenta | Câmera lenta | 80 a 100 s | Gravar (revisão de 01/11/2026) |
+| `video-d1-andar` | Controles e movimento ligados à ideia do passinho, teste e verificação | Projeto inicial | 5 a 6 min | Gravar (revisão de 01/11/2026) |
 | `video-d1-limite` | Experiência: sem e com o limite, a faixa fora da tela e a ordem na regra | Cena nova | 75 a 95 s | Gravar |
 | `video-d1-borda` | Borda no jogo, limite, testes e entrega | Mesmo projeto | 150 a 190 s | Gravar (se houver mídia antiga no Admin, substituir) |
 
