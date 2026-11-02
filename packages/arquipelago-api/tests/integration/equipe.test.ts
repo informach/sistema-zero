@@ -270,7 +270,7 @@ describe('análise e publicação', () => {
     expect(analise.problemas.filter((p) => p.codigo === 'BLOCO_DESCONHECIDO')).toHaveLength(1)
   })
 
-  test('cobertura sem curso impede publicar mesmo com gabarito correto', async () => {
+  test('publica antes dos cursos sem ocultar o aviso ou retirar os requisitos', async () => {
     membros = membrosDeMentira({
       analisarObjetivos: async () => analiseOk,
       lerCurriculo: async () => ({ ...curriculo, cursos: [] }),
@@ -280,19 +280,21 @@ describe('análise e publicação', () => {
     const previa = await chamar('POST', `/desafios/${d.resumo.id}/analisar`, equipe(), {
       revisaoBase: 1,
     })
-    expect(
-      AnaliseDoDesafioSchema.parse(previa.json).problemas.some(
-        (p) => p.codigo === 'BLOCO_SEM_CURSO',
-      ),
-    ).toBe(true)
+    const analise = AnaliseDoDesafioSchema.parse(previa.json)
+    expect(analise.problemas).toEqual([])
+    expect(analise.cobertura.every((c) => c.avisos.includes('sem-curso'))).toBe(true)
     const r = await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), {
       revisaoBase: 1,
     })
-    expect(r.status).toBe(422)
-    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
+    expect(r.status).toBe(200)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('publicado')
+    expect(desafios.linhas.get(d.resumo.id)?.blocosPublicados).toEqual([
+      'mover_dir',
+      'sz_js_repeat',
+    ])
   })
 
-  test('reativar confere a cobertura da publicação anterior sem confiar no rascunho', async () => {
+  test('reativar preserva os requisitos publicados enquanto os cursos ainda são preparados', async () => {
     const d = await criar()
     await chamar('POST', `/desafios/${d.resumo.id}/publicar`, equipe(), { revisaoBase: 1 })
     await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 })
@@ -304,8 +306,12 @@ describe('análise e publicação', () => {
     const r = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
       revisaoBase: 2,
     })
-    expect(r.status).toBe(422)
-    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('arquivado')
+    expect(r.status).toBe(200)
+    expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('publicado')
+    expect(desafios.linhas.get(d.resumo.id)?.blocosPublicados).toEqual([
+      'mover_dir',
+      'sz_js_repeat',
+    ])
   })
 
   test('reativar recusa lista histórica que omite um requisito agora derivado, mesmo com curso', async () => {

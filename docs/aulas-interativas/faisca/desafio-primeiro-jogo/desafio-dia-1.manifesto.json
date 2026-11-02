@@ -1772,14 +1772,14 @@
     },
     {
       "key": "video-d1-limite",
-      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro.\",\"ancoraDepois\":\"Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à bord\",\"falaPrincipal\":\"E a ordem dos blocos faz diferença?\",\"falaPersonagem\":\"E a ordem dos blocos faz diferença?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.\",\"ancoraDepois\":\"Aí, no quadro seguinte, ele volta para dentro! É que, em todo quadro, o jogo confere a beirada: se ele estiver fora,\",\"falaPrincipal\":\"E se eu ligar o limite com ele já fora da tela?\",\"falaPersonagem\":\"E se eu ligar o limite com ele já fora da tela?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-limite",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Leve o personagem até a beirada sem o limite e depois com ele. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -1787,23 +1787,33 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Até onde ele pode ir?",
+        "title": "A beirada da tela",
         "semPerguntaFinal": true,
-        "instructions": "Compare o que acontece na borda com e sem o bloco de limite. Teste também as duas ordens dos blocos. Você pode repetir e mudar a regra durante o teste.",
-        "hints": [],
+        "instructions": "Sem o limite, leve o personagem até a beirada e veja ele sair da tela. Depois ligue o limite da tela e olhe, em câmera lenta, cada quadro na beirada.",
+        "hints": [
+          "Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando.",
+          "Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.",
+          "Com o limite ligado, clique em Câmera lenta e segure a seta na beirada. Olhe a tira e a frase de cada quadro."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-walk",
           "cenario": "farol",
           "setup": {
             "freeExploration": true,
-            "goals": ["left-the-screen", "stayed-inside", "compared-command-order"],
+            "goals": ["left-the-screen", "came-back-inside", "stayed-inside"],
             "goalCopy": {
               "left-the-screen": {
-                "pedido": "Retire o bloco de limite, use o teclado de teste e avance até a borda."
+                "label": "Sem o limite, ele saiu da tela",
+                "pedido": "Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada."
+              },
+              "came-back-inside": {
+                "label": "Com o limite ligado, ele voltou para dentro",
+                "pedido": "Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro."
               },
               "stayed-inside": {
-                "pedido": "Adicione o bloco de limite e avance mais quadros na borda."
+                "label": "Com o limite, ele ficou na beirada",
+                "pedido": "Com o limite ligado, clique em Câmera lenta e segure a seta junto à beirada."
               }
             }
           }
@@ -1812,7 +1822,7 @@
     },
     {
       "key": "video-d1-borda",
-      "plannedVideo": "Título: Mantenha o personagem na tela\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-borda-K1\",\"clipe\":\"video-d1-borda\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!\",\"ancoraDepois\":\"O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido\",\"falaPrincipal\":\"E onde eu coloco esse limite?\",\"falaPersonagem\":\"E onde eu coloco esse limite?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Mantenha o personagem na tela\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-borda-K1\",\"clipe\":\"video-d1-borda\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!\",\"ancoraDepois\":\"O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que, como você viu na\",\"falaPrincipal\":\"E onde eu coloco esse limite?\",\"falaPersonagem\":\"E onde eu coloco esse limite?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-borda",
@@ -7342,7 +7352,7 @@
       "key": "limite",
       "title": "Até onde ele pode ir?",
       "intent": "exploration",
-      "objective": "Ver o personagem sair da tela sem limite e ficar inteiro com o limite ligado.",
+      "objective": "Ver que, sem o limite, o personagem sai da tela e que, com o limite, depois de cada passinho o jogo confere a beirada e o puxa de volta.",
       "blockKeys": ["video-d1-limite", "ponte-d1-limite", "experiencia-limite"],
       "workspaceKey": null,
       "externalTool": null,

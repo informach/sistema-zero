@@ -8,12 +8,15 @@ versões anteriores registram a evolução; não substituem o contrato atual.
 ## Repertório antes de publicar desafios (C01a, 30/10/2026)
 
 Chegar a um posto abre a ilha, mas não ensina os cursos daquele posto. Cada desafio continua
-pedindo os blocos que a pessoa realmente conquistou. Antes de publicar, a equipe precisa
-ter uma fonte de ensino publicada na mesma comunidade, naquele posto ou antes. Bloco sem
-curso, inexistente ou de posto futuro impede publicar, mesmo com gabarito aprovado.
+pedindo os blocos que a pessoa realmente conquistou. Desde a decisão da dona em 02/11/2026,
+a equipe pode publicar os desafios antes de atualizar os cursos. A ausência de curso publicado
+continua como aviso `sem-curso` na cobertura e não impede publicar, importar ou reativar.
+Nenhum bloco é concedido por essa publicação. Bloco inexistente e fonte curricular já
+cadastrada somente em posto futuro continuam impedindo publicar, mesmo com gabarito aprovado.
 
-Um Quadro das Cores não pode obrigar toda a comunidade a escolher um Poder específico.
-Seu repertório precisa aparecer em uma base 2D, base 3D ou missão. Desafios opcionais podem
+Quando um bloco já tem fontes de ensino publicadas, um Quadro das Cores não pode obrigar toda
+a comunidade a escolher um Poder específico: precisa haver uma base 2D, base 3D ou missão
+que ensine esse bloco. Desafios opcionais podem
 usar Poderes escolhidos; quem ainda não tem o bloco vê onde aprender. A regra vale também
 para importar e reativar. Reativar confere a versão publicada; editar o rascunho não altera
 essa versão. Conquistas anteriores continuam válidas. Nada muda na promoção da Jornada.

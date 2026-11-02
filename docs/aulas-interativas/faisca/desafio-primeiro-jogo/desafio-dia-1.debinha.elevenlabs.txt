@@ -6,7 +6,7 @@
 
 [long pause]
 
-[curious] E a ordem dos blocos faz diferença?
+[curious] E se eu ligar o limite com ele já fora da tela?
 
 [long pause]
 

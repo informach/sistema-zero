@@ -227,12 +227,14 @@ kids não mudam o plano: ele usa a voz da professora, que tem a fala inteira.
 A gravação acontece no palco de gravação do staging (`packages/palco-gravacao`), que mostra a
 aula como a criança vê e não salva nada (progresso, envio, Mural).
 
-Cada parte é gravada à parte. O palco leva o projeto do Estúdio de uma parte para a seguinte: a
-parte abre com o que a parte de antes montou na gravação mais recente dela, ou, sem ela, com o
+Cada parte é gravada à parte, e a gravação começa já nela: o Na tela não volta à parte de antes
+para sair dela por Próxima parte, porque a parte de antes sem fala não tem vídeo. O palco leva o
+projeto do Estúdio de uma parte para a seguinte: a parte abre com o que a parte de antes montou na gravação mais recente dela, ou, sem ela, com o
 projeto de entrada da parte nos exemplos da aula. Por isso, grave as partes em ordem: a última
-parte (a do Compartilhar) mostra o jogo com tudo o que foi montado. Se o projeto que veio da parte
-de antes tiver blocos um por cima do outro, `[organizar blocos]` arruma pelo botão direito; ponha
-num trecho que a edição troca por outra imagem. O envio não passa de uma
+parte (a do Compartilhar) mostra o jogo com tudo o que foi montado. Os blocos começam sempre
+organizados: quando o Estúdio abre com pilhas uma por cima da outra, o palco usa Organizar blocos
+sozinho, e o EdiAula só liga o vídeo depois disso. O roteiro não precisa pedir; `[organizar
+blocos]` fica para quando a aula quer mostrar o gesto do botão direito. O envio não passa de uma
 parte para a outra: a parte que vem depois do envio do projeto (a do Compartilhar, que só libera
 depois dele) começa com "A parte começa com o projeto já enviado na Parte N", e o endereço dela
 no palco leva `&enviado=1`.

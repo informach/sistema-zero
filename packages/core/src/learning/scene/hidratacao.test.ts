@@ -36,6 +36,8 @@ const CAMPOS_COMPATIVEIS = new Set([
   'match.gardenFound',
   'match.counterUpdate',
   'lighthouse.checkedKey',
+  // O x antes do limite (a beirada do Farol, 01/11/2026): os retratos anteriores não têm.
+  'walk.reach',
 ])
 
 /** Os 31 grupos que a hidratação conhece. Fora deles, grupo ausente já recusava o retrato. */

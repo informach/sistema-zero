@@ -22,8 +22,10 @@ const curriculo = (cursos: CurriculoDeBlocos['cursos']): CurriculoDeBlocos => ({
 const analisar = (c: CurriculoDeBlocos, tipo: TipoDeDesafio = 'quadro-das-cores') =>
   analisarRepertorio(['sz_js_if_else'], c, { ilha: 'bosque', tipo })
 
-test('curso publicado ausente ou bloco desconhecido não é só aviso', () => {
-  expect(analisar(curriculo([])).problemas.map((p) => p.codigo)).toEqual(['BLOCO_SEM_CURSO'])
+test('curso ainda não publicado é aviso; bloco desconhecido continua impedindo publicar', () => {
+  const previa = analisar(curriculo([]))
+  expect(previa.problemas).toEqual([])
+  expect(previa.cobertura[0]?.avisos).toEqual(['sem-curso'])
   expect(
     analisar({ ...curriculo([curso('base2d')]), catalogo: [] }).problemas.map((p) => p.codigo),
   ).toEqual(['BLOCO_DESCONHECIDO'])
@@ -69,12 +71,13 @@ test('uma base alternativa válida basta; base futura não legitima Poder obriga
     analisar(curriculo([curso('power'), curso('base3d', 'hacker')])).problemas.map((p) => p.codigo),
   ).toEqual(['QUADRO_DEPENDE_DE_OPCIONAL'])
 })
-test('desafio do dia e pedido podem aplicar Poder escolhido, mas não curso futuro ou ausente', () => {
+test('desafio do dia e pedido podem ser preparados sem curso, mas recusam fonte de posto futuro', () => {
   for (const tipo of ['desafio-do-dia', 'pedido-de-morador'] as const) {
     expect(analisar(curriculo([curso('power')]), tipo).problemas).toEqual([])
     expect(analisar(curriculo([curso('power', 'hacker')]), tipo).problemas[0]?.codigo).toBe(
       'CURSO_DEPOIS_DA_ILHA',
     )
-    expect(analisar(curriculo([]), tipo).problemas[0]?.codigo).toBe('BLOCO_SEM_CURSO')
+    expect(analisar(curriculo([]), tipo).problemas).toEqual([])
+    expect(analisar(curriculo([]), tipo).cobertura[0]?.avisos).toContain('sem-curso')
   }
 })

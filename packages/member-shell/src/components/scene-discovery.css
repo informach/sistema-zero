@@ -1023,6 +1023,9 @@
   background: var(--color-card);
   overflow: hidden;
 }
+.slow-tira-quadro[data-vazio] {
+  visibility: hidden;
+}
 .slow-tira-quadro[data-current="true"] {
   border-color: var(--color-primary);
 }
@@ -1069,8 +1072,30 @@
   color: var(--color-muted-foreground);
   margin-bottom: 6px;
 }
+.slow-tira-quadro[data-puxou="true"] small {
+  color: #8a4b00;
+}
+.slow-quadro-agora {
+  /* A frase muda a cada quadro na beirada: a altura da mais longa, para a seta não pular sob o dedo. */
+  min-height: calc(2 * 1.4em + 20px);
+  line-height: 1.4;
+  margin: 0 0 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 700;
+  background: var(--color-secondary);
+  color: var(--color-muted-foreground);
+}
+.slow-quadro-agora[data-puxou="true"] {
+  background: #fff3df;
+  color: #6b3a00;
+}
 /* No celular, os quatro quadros mais novos: seis não cabem com o nome inteiro. */
 @media (max-width: 480px) {
+  .slow-quadro-agora {
+    min-height: calc(4 * 1.4em + 20px);
+  }
   .slow-tira-quadro:nth-last-child(n + 5) {
     display: none;
   }
