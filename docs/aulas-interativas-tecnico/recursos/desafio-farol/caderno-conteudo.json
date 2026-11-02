@@ -7,12 +7,12 @@
     "items": [
       {
         "kind": "text",
-        "text": "Neste jogo, o barco só chega quando o farol acende. Você faz o personagem andar, recolher a chave e decidir quando acender o farol. E lá no fim desta aventura tem uma surpresa guardada para você: com ela, o jogo vai ficar do seu jeito."
+        "text": "Neste jogo, o barco só chega quando o farol acende. Você faz o personagem andar, pegar a chave e decidir quando acender o farol. E lá no fim desta aventura tem uma surpresa guardada para você: com ela, o jogo vai ficar do seu jeito."
       },
       {
         "kind": "box",
         "title": "Use quando precisar",
-        "text": "Este é o seu Passo a passo do projeto! Nele estão os caminhos dos blocos, os encaixes e os testes. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui na tela. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
+        "text": "Este é o seu Passo a passo do projeto! Nele estão os passos para montar o seu jogo nos três dias, com os blocos que você vai usar e o lugar de cada um. Se esquecer algum passo, é só voltar aqui. Em cada encaixe, deixe primeiro à vista o lugar do bloco; depois pegue o bloco e arraste até lá. Se quiser, leia aqui mesmo. E, se preferir, clique em <b>Baixar</b> para guardar e consultar onde quiser.",
         "tone": "note"
       },
       {
@@ -23,7 +23,7 @@
       {
         "kind": "box",
         "title": "Antes de montar",
-        "text": "No começo do Dia 1, jogue a versão pronta. Use as setas da tela ou, no computador, clique no jogo e use as setas do teclado. Tente pegar a chave e levar o personagem até o farol. Você pode seguir mesmo sem terminar a partida.",
+        "text": "No começo do Dia 1, jogue a versão pronta. Use as setas no canto de baixo do jogo. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. Pegue a chave e leve o personagem até o farol: jogue até o farol acender e o barco chegar. Depois, clique em <b>Próxima parte</b>.",
         "tone": "experience"
       }
     ]
@@ -36,7 +36,7 @@
     "items": [
       {
         "kind": "text",
-        "text": "O jogo é como um desenho animado: ele desenha um <b>quadro</b> atrás do outro, bem rápido. Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho. E quando ela está solta? Descubra na experiência."
+        "text": "O jogo é como um desenho animado: ele desenha um <b>quadro</b> atrás do outro, tão rápido que você nem percebe. Por isso, o personagem não pula de uma vez até a chave: em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela está solta? Descubra na experiência."
       },
       {
         "kind": "step",
@@ -65,12 +65,16 @@
     "id": "p2",
     "kicker": "Dia 1 · Parte 4 · Montagem",
     "title": "Faça o personagem andar",
-    "subtitle": "No seu jogo, o personagem ainda está parado e não há setas na tela. Agora você coloca as setas e o movimento.",
+    "subtitle": "No seu jogo, o personagem não sai do lugar. Para ele andar, faltam duas coisas: as setas na tela e o passinho do personagem.",
     "items": [
+      {
+        "kind": "text",
+        "text": "Primeiro, tente andar. No computador, clique dentro do jogo e use as setas do teclado. No celular ou no tablet, procure as setas no canto de baixo do jogo. Para o jogo fazer alguma coisa, a gente usa blocos: <b>cada bloco é uma ordem para o jogo</b>. Eles ficam na paleta de comandos."
+      },
       {
         "kind": "step",
         "title": "1. Mostre as quatro setas",
-        "text": "Deixe à vista o fim de <b>Ao iniciar</b>, depois dos blocos que já estão lá.<br/><b>Jogo 2D &gt; Controles &gt; Teclado, ações e toque.</b> Pegue <b>Ativar controles clássicos</b> e solte ali.<br/>O bloco chega com <b>automáticos no celular</b>: clique nesse nome e escolha <b>só as quatro direções</b>."
+        "text": "As setas só precisam aparecer uma vez, quando o jogo começa. Por isso, o bloco delas vai na área <b>Ao iniciar</b>. Deixe à vista o fim dela, depois dos blocos que já estão lá. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/><b>Jogo 2D &gt; Controles &gt; Teclado, ações e toque.</b> Pegue <b>Ativar controles clássicos</b> e solte ali.<br/>O bloco chega com <b>automáticos no celular</b>: clique nesse nome e escolha <b>só as quatro direções</b>. Assim, as setas aparecem na tela no computador, no celular e no tablet, sem outros botões que o seu jogo não usa."
       },
       {
         "kind": "drawing",
@@ -78,15 +82,9 @@
         "title": "No fim da área Ao iniciar"
       },
       {
-        "kind": "box",
-        "title": "Uma palavra que aparece aqui",
-        "text": "<b>Sprite:</b> um objeto do jogo que você pode programar, como o personagem. Lembra que o jogo olha a seta em todo quadro? Por isso, o bloco que dá o passinho fica dentro de <b>A cada quadro do jogo</b>: tudo o que está dentro dele acontece de novo, em todo quadro.",
-        "tone": "experience"
-      },
-      {
         "kind": "step",
         "title": "2. Programe o movimento",
-        "text": "Encontre a área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Dentro dela, no bloco <b>A cada quadro do jogo</b>, deixe à vista o <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/><b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b> Pegue <b>Mover sprite em 4 direções com setas</b> e solte logo abaixo de <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/>O bloco chega com <b>heroi</b>: clique em <b>heroi</b> e escolha <b>personagem</b>. A velocidade já vem em <b>3</b>; deixe assim."
+        "text": "O jogo olha a seta em todo quadro. Por isso, o passinho vai dentro de <b>A cada quadro do jogo</b>, na área <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Lá, deixe à vista <b>Desenhar o cenário <span class='nome'>praia-tropical</span></b>.<br/>Cada objeto do jogo que você pode programar se chama <b>sprite</b>, como o personagem.<br/><b>Jogo 2D &gt; Movimento &gt; Movimentos prontos.</b> Pegue <b>Mover sprite em 4 direções com setas</b> e solte logo abaixo de Desenhar o cenário.<br/>O bloco chega com <b>heroi</b>: clique em <b>heroi</b> e escolha <b>personagem</b>. A velocidade fica em <b>3</b>.<br/>É este bloco que dá o passinho: em cada quadro, ele leva o personagem para o lado da seta apertada."
       }
     ]
   },
@@ -99,7 +97,7 @@
       {
         "kind": "step",
         "title": "Teste no seu jogo",
-        "text": "Segure uma seta da tela ou, no computador, clique no jogo e use as setas do teclado. O personagem deve andar na direção da seta.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: <b>Ativar controles clássicos</b>, com <b>só as quatro direções</b>, no fim de Ao iniciar, e o bloco de movimento, com o sprite <b>personagem</b>, dentro de A cada quadro do jogo. Depois de corrigir, teste de novo."
+        "text": "Segure uma seta da tela. No computador, você também pode clicar dentro do jogo e usar as setas do teclado. O personagem deve andar na direção da seta.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: <b>Ativar controles clássicos</b>, com <b>só as quatro direções</b>, está no fim de Ao iniciar. E o bloco de movimento, com o sprite <b>personagem</b>, está dentro de A cada quadro do jogo. Depois de corrigir, teste de novo."
       },
       {
         "kind": "drawing",
@@ -110,7 +108,7 @@
         "kind": "box",
         "tone": "test",
         "title": "Verificar e continuar",
-        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.<br/>Seu jogo é salvo automaticamente. O envio fica no fim de <b>Mantenha o personagem na tela</b>."
+        "text": "Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente.<br/>O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula, em <b>Mantenha o personagem na tela</b>. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -122,7 +120,7 @@
     "items": [
       {
         "kind": "text",
-        "text": "A tela do jogo é como uma janela: o que passa da beirada some da vista. Com o <b>limite da tela</b> ligado, em cada quadro, depois do passinho, o jogo confere se o personagem passou da beirada e puxa de volta para dentro."
+        "text": "Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se o personagem passa da beirada, ele vai sumindo da sua vista. Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro: primeiro, o personagem dá o passinho; depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o <b>limite da tela</b>."
       },
       {
         "kind": "step",
@@ -151,12 +149,12 @@
     "id": "p3",
     "kicker": "Dia 1 · Parte 6 · Montagem e envio",
     "title": "Mantenha o personagem na tela",
-    "subtitle": "O personagem anda. Agora ele precisa continuar inteiro na tela quando chega ao limite.",
+    "subtitle": "No seu jogo, o personagem passa da beirada e vai sumindo da tela: o jogo ainda não tem limite.",
     "items": [
       {
         "kind": "step",
         "title": "1. Limite o caminho",
-        "text": "Deixe à vista o bloco de movimento, dentro de <b>A cada quadro do jogo</b>.<br/><b>Jogo 2D &gt; Movimento &gt; Bordas e rebatidas.</b> Pegue <b>Manter o sprite dentro da tela</b> e solte logo abaixo do bloco de movimento. Ele também chega com <b>heroi</b>: clique em <b>heroi</b> e escolha <b>personagem</b>."
+        "text": "O jogo confere a beirada logo depois do passinho. Por isso, o limite vai logo abaixo do bloco de movimento, dentro de <b>A cada quadro do jogo</b>. Deixe esse lugar à vista.<br/><b>Jogo 2D &gt; Movimento &gt; Bordas e rebatidas.</b> Pegue <b>Manter o sprite dentro da tela</b> e solte ali.<br/>Ele chega com <b>heroi</b>: clique em <b>heroi</b> e escolha <b>personagem</b>. É este bloco que confere a beirada."
       },
       {
         "kind": "drawing",
@@ -165,7 +163,7 @@
       },
       {
         "kind": "text",
-        "text": "Teste as quatro direções até as beiradas: o personagem deve continuar inteiro na tela. Se algo não funcionou no seu jogo, confira se ficou como no desenho: o limite logo abaixo do movimento."
+        "text": "Segure cada seta até o personagem chegar à beirada daquele lado: ele deve parar ali. Se algo não funcionou no seu jogo, confira o desenho e, depois de corrigir, teste de novo."
       },
       {
         "kind": "delivery",
@@ -181,22 +179,22 @@
     "items": [
       {
         "kind": "text",
-        "text": "Uma <b>variável</b> guarda um valor que pode mudar, como um recado anotado para não esquecer. Aqui ela se chama <b>temChave</b>: <b>verdadeiro</b> quer dizer que o personagem está com a chave, e <b>falso</b>, que ainda não está."
+        "text": "A porta do farol só vai abrir para quem tiver a chave. Por isso, o jogo precisa lembrar se o personagem já pegou a chave. Para lembrar, ele usa uma <b>variável</b>: um lugar com nome onde o jogo guarda uma informação, como um recado num papelzinho. Aqui ela se chama <b>temChave</b>, que quer dizer: o personagem tem chave? A resposta fica guardada como <b>verdadeiro</b>, que quer dizer sim, ou <b>falso</b>, que quer dizer não."
       },
       {
         "kind": "step",
         "title": "Com a memória desligada",
-        "text": "Encoste na chave com a <b>memória da chave</b> desligada. Observe três coisas: a chave, o aviso e temChave."
+        "text": "Com a <b>memória da chave</b> desligada, faça o personagem pegar a chave. Observe três coisas: a chave, o aviso, que é a mensagem que diz o que fazer, e temChave."
       },
       {
         "kind": "step",
         "title": "Com a memória ligada",
-        "text": "Clique em <b>Ligar a memória da chave</b>, recomece a partida e encoste na chave de novo. O que mudou?"
+        "text": "Clique em <b>Ligar a memória da chave</b>, recomece a partida e faça o personagem pegar a chave de novo. Compare a chave, o aviso e temChave."
       },
       {
         "kind": "step",
         "title": "Longe da chave e numa partida nova",
-        "text": "Depois de o jogo guardar a chave, clique em <b>Afastar</b> e observe temChave. Depois clique em <b>Recomeçar a partida</b>. O jogo esquece?"
+        "text": "O jogo esquece que o personagem pegou a chave quando ele se afasta? Depois de o jogo guardar a chave, clique em <b>Afastar</b> e observe temChave. E quando começa uma partida nova? Clique em <b>Recomeçar a partida</b> e observe de novo."
       },
       {
         "kind": "box",
@@ -210,17 +208,17 @@
     "id": "p4",
     "kicker": "Dia 2 · Parte 2 · Montagem",
     "title": "Recolha a chave",
-    "subtitle": "No seu jogo, o personagem passa pela chave e nada acontece: nenhuma ação está ligada a esse encontro. Faça essa ligação.",
+    "subtitle": "O personagem passa pela chave, e ela fica no chão: o seu jogo ainda não sabe o que fazer quando os dois se encostam.",
     "items": [
       {
         "kind": "step",
         "title": "1. Programe o encontro",
-        "text": "O encontro é um <b>evento</b>, um acontecimento ao qual o jogo pode responder.<br/>Seu projeto ainda não tem a área <b>Quando acontecer</b>. Deixe à vista um lugar sem blocos, ao lado das áreas. Em <b>Áreas do projeto</b>, pegue <b>Quando acontecer</b> e solte nesse lugar.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte dentro de Quando acontecer.<br/>O bloco chega com dois nomes, <b>jogador</b> e <b>inimigo</b>. Clique em <b>jogador</b> e escolha <b>personagem</b>. Depois clique em <b>inimigo</b> e escolha <b>chave</b>."
+        "text": "Uma coisa que acontece no jogo, como esse encontro, se chama <b>evento</b>. Os eventos ficam na área <b>Quando acontecer</b>, que o seu projeto ainda não tem. Deixe à vista um lugar sem blocos, ao lado das áreas; se não houver, arraste um espaço vazio entre os blocos até aparecer um.<br/>Em <b>Áreas do projeto</b>, pegue <b>Quando acontecer</b> e solte nesse lugar.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte dentro de Quando acontecer.<br/>O bloco chega com <b>jogador</b> e <b>inimigo</b>: clique em <b>jogador</b> e escolha <b>personagem</b>; depois clique em <b>inimigo</b> e escolha <b>chave</b>. É este bloco que percebe o encontro."
       },
       {
         "kind": "step",
         "title": "2. Retire a chave do chão",
-        "text": "Deixe à vista o espaço vazio ao lado da palavra <b>fazer</b>, dentro do encontro.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Destruir o sprite</b> e solte nesse espaço.<br/>O bloco chega com o nome <b>resposta</b>: clique em <b>resposta</b> e escolha <b>chave</b>. Isso retira a chave da partida, sem apagar a imagem do projeto."
+        "text": "No encontro, a chave sai do chão. O bloco que faz isso se chama <b>Destruir o sprite</b>. Destruir, aqui, quer dizer tirar a chave da partida. Deixe à vista o espaço vazio ao lado de <b>fazer</b>.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Destruir o sprite</b> e solte ali.<br/>Ele chega com <b>resposta</b>: clique e escolha <b>chave</b>. É este bloco que tira a chave do chão."
       },
       {
         "kind": "drawing",
@@ -230,7 +228,7 @@
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Leve o personagem até a chave: ela deve sumir. Clique em <b>Atualizar</b>, logo acima do jogo (com o espaço do jogo estreito, ele aparece só como uma seta dando a volta): começa uma partida nova, e a chave volta ao chão. Se algo não funcionou no seu jogo, confira se ficou como no desenho: <b>Destruir o sprite chave</b> dentro do encontro entre personagem e chave. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Segure uma seta da tela (no computador, também dá para clicar no jogo e usar as setas do teclado) e leve o personagem até a chave: ela deve sair do chão. Clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo: a chave volta. Se algo não funcionou, confira o desenho e teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -238,32 +236,26 @@
     "id": "guardar-coleta",
     "kicker": "Dia 2 · Parte 3 · Montagem",
     "title": "Guarde que a chave foi encontrada",
-    "subtitle": "Como na experiência com a memória da chave desligada: a chave some, mas nada guarda que ela foi encontrada.",
+    "subtitle": "O seu jogo está igual à memória desligada: a chave sai do chão, mas o jogo não guarda que ela foi pega.",
     "items": [
-      {
-        "kind": "text",
-        "text": "A <b>variável</b> temChave guarda se o personagem está com a chave: <b>falso</b> é sem, <b>verdadeiro</b> é com."
-      },
       {
         "kind": "step",
         "title": "1. Crie temChave",
-        "text": "Deixe à vista o fim de <b>Ao iniciar</b>, logo abaixo de Ativar controles clássicos.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte ali.<br/>Ele chega com <b>contador</b>: clique em <b>contador</b>, apague e escreva <b>temChave</b> (C maiúsculo).<br/>O valor vem com o número <b>0</b>. Abra <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b>, solte em cima do 0 e, no menu, troque para <b>falso</b>."
+        "text": "temChave precisa existir desde o começo. Por isso, deixe à vista o fim de <b>Ao iniciar</b>. Se ele não aparecer, arraste um espaço vazio entre os blocos até ele aparecer.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Criar variável com valor</b> e solte ali.<br/>Ele chega com <b>contador</b>: clique, apague e escreva <b>temChave</b> (C maiúsculo). Depois clique fora do campo.<br/>temChave não guarda número: em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima do <b>0</b>.<br/>Clique em verdadeiro e escolha <b>falso</b>, porque a partida começa sem a chave."
       },
       {
         "kind": "drawing",
         "name": "memoria",
-        "title": "A informação começa em falso"
+        "title": "Confira se ficou assim"
       },
       {
         "kind": "step",
-        "title": "2. Guarde verdadeiro",
-        "text": "Em <b>Quando acontecer</b>, deixe à vista o lugar logo abaixo de Destruir o sprite, dentro do encontro.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele também chega com <b>contador</b>: clique em <b>contador</b> e escolha <b>temChave</b>.<br/>Em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima do número <b>1</b>."
+        "title": "2. Guarde verdadeiro no encontro",
+        "text": "Em <b>Quando acontecer</b>, deixe à vista o lugar logo abaixo de Destruir o sprite. Se a área não aparecer, arraste um espaço vazio entre os blocos até ela aparecer.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte ali. Ele chega com <b>contador</b>: escolha <b>temChave</b>.<br/>temChave também não guarda número: em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima do <b>1</b>. Deixe em verdadeiro: agora o personagem está com a chave."
       },
       {
-        "kind": "box",
-        "title": "Verifique esta parte",
-        "text": "Você ainda não vê temChave no jogo: a porta do farol vai usá-la no Dia 3. Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>.",
-        "tone": "test"
+        "kind": "text",
+        "text": "Jogando, você não vê temChave: a porta do farol vai usá-la na próxima aula. Por isso, clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -271,12 +263,12 @@
     "id": "p5",
     "kicker": "Dia 2 · Parte 4 · Montagem",
     "title": "Avise quem está jogando",
-    "subtitle": "No seu jogo, a chave some, mas o aviso continua: Encontre a chave e vá ao farol. Faça o aviso mudar.",
+    "subtitle": "No seu jogo, a chave sai do chão, mas o aviso continua dizendo Encontre a chave e vá ao farol: o jogo ainda não manda o aviso mudar quando a chave é pega.",
     "items": [
       {
         "kind": "step",
         "title": "1. Mude o aviso",
-        "text": "O próximo bloco vai logo abaixo do bloco de temChave, no encontro. Deixe esse lugar à vista.<br/>Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b> e solte ali.<br/>Clique em <b>contador</b> e escolha <b>aviso</b>.<br/>Para trocar o número desse bloco por um texto, abra <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número.<br/>Clique em <b>Olá</b>, apague e escreva:<br/><b>Você pegou a chave! Agora vá ao farol.</b>"
+        "text": "O aviso tem que mudar no encontro com a chave. Encontre a área <b>Quando acontecer</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista o lugar logo abaixo do bloco de temChave, dentro do encontro.<br/>Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b> e solte ali.<br/>Ele chega com <b>contador</b>: clique em <b>contador</b> e escolha <b>aviso</b>. É este bloco que muda o aviso.<br/>No fim vem o número <b>1</b>. Mas o aviso guarda uma mensagem, que é um texto. Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do 1.<br/>O texto chega com <b>Olá</b>: clique em Olá, apague e escreva:<br/><b>Você pegou a chave! Agora vá ao farol.</b><br/>Depois clique fora do campo."
       },
       {
         "kind": "drawing",
@@ -285,20 +277,20 @@
       },
       {
         "kind": "note",
-        "text": "O aviso conta o que aconteceu. Quem guarda a informação da coleta é <strong>temChave</strong>. O jogo pode continuar sabendo da chave mesmo quando ela não está mais no chão."
+        "text": "O aviso conta o que aconteceu. Quem guarda a informação de que a chave foi pega é <strong>temChave</strong>. O jogo pode continuar sabendo da chave mesmo quando ela não está mais no chão."
       }
     ]
   },
   {
     "id": "coleta-testes",
     "kicker": "Dia 2 · Parte 4 · Teste e envio",
-    "title": "Teste a coleta e envie",
-    "subtitle": "Retire a chave, guarde a informação e conte o que aconteceu a quem está jogando.",
+    "title": "Teste a chave e envie",
+    "subtitle": "A chave sai do chão, o jogo guarda que ela foi pega, e o aviso conta isso a quem está jogando.",
     "items": [
       {
         "kind": "step",
-        "title": "Teste a coleta",
-        "text": "Leve o personagem até a chave: ela deve sumir, e o aviso deve mudar. Depois clique em <b>Atualizar</b>: começa uma partida nova, a chave volta para o chão e o aviso diz de novo Encontre a chave e vá ao farol. Se algo não funcionou no seu jogo, confira se ficou assim: dentro do encontro com a chave estão <b>Destruir o sprite chave</b>, <b>Alterar temChave para verdadeiro</b> e <b>Alterar aviso</b> com a sua mensagem. Depois de corrigir, teste de novo."
+        "title": "Teste a chave",
+        "text": "Segure as setas e leve o personagem até a chave: ela deve sair do chão, e o aviso deve mudar para a sua mensagem. Depois clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo: começa uma partida nova, a chave volta para o chão e o aviso diz de novo Encontre a chave e vá ao farol.<br/>Se algo não funcionou no seu jogo, confira se ficou assim: dentro do encontro com a chave estão três blocos, primeiro <b>Destruir o sprite chave</b>, depois <b>Alterar temChave para verdadeiro</b> e, por último, <b>Alterar aviso</b> para a sua mensagem. Depois de corrigir, teste de novo."
       },
       {
         "kind": "delivery",
@@ -310,21 +302,21 @@
     "id": "porta-experiencia",
     "kicker": "Dia 3 · Parte 1 · Experiência antes da montagem",
     "title": "O que a porta precisa?",
-    "subtitle": "A coleta guarda uma informação. A porta vai usar esse valor para escolher uma resposta.",
+    "subtitle": "O seu jogo já guarda em temChave se o personagem pegou a chave. Agora o farol vai usar essa informação.",
     "items": [
       {
         "kind": "text",
-        "text": "Uma <b>condição</b> é uma pergunta que o jogo confere para decidir. Na experiência, veja <b>temChave</b>, a pergunta da porta e as duas respostas possíveis: uma para o sim e outra para o não."
+        "text": "Sabe a porta da sua casa? Ela só abre para quem está com a chave. É como se, antes de abrir, ela perguntasse: você está com a chave? A porta do farol faz a mesma pergunta, com o nome que o jogo usa: <b>temChave é verdadeiro?</b> A resposta só pode ser sim ou não. Uma pergunta assim, que o jogo faz para decidir o que acontece, se chama <b>condição</b>."
       },
       {
         "kind": "step",
         "title": "Prepare uma situação",
-        "text": "Use <b>Dar a chave ao personagem</b> ou <b>Tirar a chave do personagem</b>. Esses botões preparam o teste; no jogo, o personagem precisa encontrar a chave."
+        "text": "Use <b>Dar a chave ao personagem</b> ou <b>Tirar a chave do personagem</b>. Esses botões preparam o teste; no jogo, o personagem precisa pegar a chave."
       },
       {
         "kind": "step",
         "title": "Teste e compare",
-        "text": "Clique em <b>Testar a porta</b> e observe temChave e a resposta que a porta escolhe. Prepare a outra situação e compare. Você pode começar por qualquer uma e repetir."
+        "text": "Clique em <b>Testar a porta</b> e observe temChave e a resposta que a porta escolhe. Prepare a outra situação e compare. A pergunta da porta é sempre a mesma: a resposta muda? Você pode começar por qualquer uma e repetir."
       },
       {
         "kind": "box",
@@ -338,27 +330,27 @@
     "id": "p6",
     "kicker": "Dia 3 · Parte 2 · Resposta sem chave",
     "title": "Avise quando faltar a chave",
-    "subtitle": "No seu jogo, o personagem chega à porta do farol e nada acontece: o farol ainda não confere a chave. Comece pelo aviso de falta.",
+    "subtitle": "Nada acontece no farol: o seu jogo ainda não sabe o que fazer quando o personagem chega ao farol.",
     "items": [
       {
         "kind": "step",
         "title": "1. Crie outro encontro",
-        "text": "Em <b>Quando acontecer</b>, deixe à vista o encontro com a chave e o espaço abaixo dele.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte abaixo do encontro com a chave. Não coloque um encontro dentro do outro.<br/>Clique em <b>jogador</b> e escolha <b>personagem</b>. Depois clique em <b>inimigo</b> e escolha <b>farol</b>."
+        "text": "Chegar ao farol é um encontro, como pegar a chave. Em <b>Quando acontecer</b>, deixe à vista o espaço abaixo do encontro com a chave. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/><b>Jogo 2D &gt; Colisões &gt; Encostar e bloquear.</b> Pegue <b>Quando o sprite começar a encostar no sprite</b> e solte ali, fora do outro encontro.<br/>O bloco chega com <b>jogador</b> e <b>inimigo</b>. Clique em jogador e escolha <b>personagem</b>. Depois clique em inimigo e escolha <b>farol</b>."
       },
       {
         "kind": "step",
         "title": "2. Faça a pergunta",
-        "text": "Deixe à vista o espaço vazio ao lado da palavra <b>fazer</b>, dentro do encontro com o farol.<br/>Quem faz uma pergunta no jogo é o bloco Se. <b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte ali.<br/>O Se já vem com a condição pronta <b>x &gt; 0</b>: segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita, do espaço dos blocos.<br/>Deixe à vista o lugar vazio ao lado de Se. Em <b>Programação &gt; Valores</b>, pegue <b>valor da variável</b> e solte nesse lugar.<br/>Esse bloco chega com <b>x</b>: clique no x e escolha <b>temChave</b>. A palavra verdadeiro não aparece no bloco, e nem precisa: com temChave sozinho ao lado do Se, a pergunta já é essa."
+        "text": "Deixe à vista o espaço vazio ao lado de <b>fazer</b>, dentro do encontro com o farol.<br/>Para fazer uma pergunta, o seu jogo usa o bloco Se. É ele que vai fazer a pergunta da porta. <b>Programação &gt; Lógica &amp; Se.</b> Pegue <b>Se</b> e solte ali.<br/>O Se chega com uma pergunta pronta, <b>x &gt; 0</b>, que não é a do farol: segure essa pergunta pelo sinal de maior e arraste até a lixeira, no canto de baixo, à direita.<br/>A pergunta certa é sobre temChave, e quem traz o que ela guarda é o valor da variável. Em <b>Programação &gt; Valores</b>, pegue <b>valor da variável</b> e solte no lugar vazio ao lado de Se.<br/>O bloco chega com <b>x</b>: clique no x e escolha <b>temChave</b>. A palavra verdadeiro não aparece, e nem precisa: com temChave sozinho, a pergunta já é essa."
       },
       {
         "kind": "step",
         "title": "3. Prepare a resposta sem chave",
-        "text": "Na linha de baixo do bloco Se, depois do então, tem dois sinais de mais. O primeiro fica antes de <b>senão se</b>, e o segundo fica antes da palavra <b>senão</b>, no fim da linha.<br/>Clique no segundo. Não clique no primeiro.<br/>Com o espaço do <b>senão</b> à vista, em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e solte dentro do senão.<br/>Clique em <b>contador</b> e escolha <b>aviso</b>.<br/>Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número.<br/>Clique em <b>Olá</b>, apague e escreva: <b>A porta não abriu. Falta a chave.</b>"
+        "text": "No espaço do <b>então</b> vai a resposta do sim, com a chave. No do <b>senão</b> vai a do não, sem a chave: é lá que vai o aviso. O Se chega sem o senão. Na linha de baixo do Se tem dois sinais de mais: o primeiro fica antes de <b>senão se</b>, e o segundo, antes da palavra <b>senão</b>, no fim da linha.<br/>Clique no segundo sinal de mais, não no primeiro. Deixe à vista o espaço do senão.<br/>Em <b>Programação &gt; Variáveis</b>, pegue <b>Alterar variável para</b> e solte dentro do senão.<br/>O bloco chega com <b>contador</b>: clique em contador e escolha <b>aviso</b>.<br/>O aviso é uma mensagem: em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número.<br/>O texto chega com <b>Olá</b>: clique em Olá, apague e escreva: <b>A porta não abriu. Falta a chave.</b> Depois clique fora do campo."
       },
       {
         "kind": "step",
         "title": "Teste antes de continuar",
-        "text": "Clique em <b>Atualizar</b> e vá até a porta do farol, na base da torre, sem passar pela chave. A luz deve continuar apagada, e o aviso deve dizer que falta a chave. Se algo não funcionou no seu jogo, confira se ficou como no desenho da página {{pagina:sem-chave-blocos}}. Depois de corrigir, teste de novo."
+        "text": "Clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo, para começar uma partida nova. Vá até a porta do farol, na base da torre, sem pegar a chave: a luz continua apagada, e o aviso diz que falta a chave. Se algo não funcionou, confira o desenho da página {{pagina:sem-chave-blocos}} e teste de novo."
       }
     ]
   },
@@ -366,7 +358,7 @@
     "id": "sem-chave-blocos",
     "kicker": "Dia 3 · Parte 2 · Confira e verifique",
     "title": "A resposta sem chave",
-    "subtitle": "Por enquanto, só o senão tem um bloco. O então fica para a próxima parte.",
+    "subtitle": "Por enquanto, só o senão tem um bloco. O espaço do então, onde vai a resposta do sim, fica para a próxima parte.",
     "items": [
       {
         "kind": "drawing",
@@ -385,26 +377,26 @@
     "id": "p7",
     "kicker": "Dia 3 · Parte 3 · Resposta com chave",
     "title": "Acenda o farol com a chave",
-    "subtitle": "Com a chave, o farol ainda não acende: o espaço do então está vazio. Complete essa resposta no mesmo Se.",
+    "subtitle": "No seu jogo, com a chave, a luz não acende, porque o espaço do então, onde vai a resposta do sim, ainda está vazio. Complete essa resposta no mesmo Se.",
     "items": [
       {
         "kind": "text",
-        "text": "A resposta com a chave vai ter três blocos: um que chama o barco, um que acende a luz e um aviso para quem está jogando."
+        "text": "A resposta do sim vai ter três blocos, um embaixo do outro, dentro do então: um que chama o barco, um que acende a luz e um aviso para quem está jogando."
       },
       {
         "kind": "step",
         "title": "1. Ligue a chegada do barco",
-        "text": "Deixe à vista o espaço do <b>então</b>, ainda vazio.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte dentro do então.<br/>Clique em <b>contador</b> e escolha <b>ganhou</b>.<br/>Abra <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b> e solte em cima do número.<br/>É essa variável que chama o barco: quando <b>ganhou</b> fica <b>verdadeiro</b>, o barco começa a chegar."
+        "text": "Quem chama o barco é a variável <b>ganhou</b>: quando ganhou fica verdadeiro, o barco começa a chegar.<br/>Deixe à vista o espaço do <b>então</b>, ainda vazio.<br/><b>Programação &gt; Variáveis.</b> Pegue <b>Alterar variável para</b> e solte dentro do então.<br/>O bloco chega com <b>contador</b>: clique em contador e escolha <b>ganhou</b>.<br/>Troque o número por verdadeiro, como fez com temChave no Dia 2: em <b>Programação &gt; Lógica &amp; Se</b>, pegue <b>verdadeiro</b>, solte em cima do número e deixe em verdadeiro."
       },
       {
         "kind": "step",
         "title": "2. Acenda o farol",
-        "text": "O próximo bloco vai logo abaixo de ganhou, ainda dentro do então. Deixe esse lugar à vista.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite para</b> e solte ali.<br/>Esse bloco chega com <b>heroi</b> nos dois nomes. Clique no primeiro heroi e escolha <b>farol</b>.<br/>Depois clique no segundo e escolha a imagem <b class='nome'>farol-listrado-aceso</b>. Se não achar, role a lista."
+        "text": "Para acender a luz, o farol troca de imagem: sai o farol apagado e entra o farol aceso. Esse bloco vai logo abaixo de ganhou, ainda dentro do então. Deixe esse lugar à vista.<br/><b>Jogo 2D &gt; Sprites &gt; Criar e trocar aparência.</b> Pegue <b>Trocar imagem do sprite para</b> e solte ali.<br/>O bloco chega com <b>heroi</b> em dois lugares. Clique no primeiro heroi e escolha <b>farol</b>: é o farol que vai trocar de imagem.<br/>Depois clique no segundo heroi e escolha a imagem <b class='nome'>farol-listrado-aceso</b>. Se não achar, role a lista."
       },
       {
         "kind": "step",
         "title": "3. Conte o que aconteceu",
-        "text": "O próximo bloco vai logo abaixo da troca de imagem, dentro do então. Deixe esse lugar à vista.<br/>Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b> e solte ali.<br/>Clique em <b>contador</b> e escolha <b>aviso</b>.<br/>Em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número.<br/>Clique em <b>Olá</b>, apague e escreva: <b>Você acendeu o farol! Olhe o barco chegando.</b>"
+        "text": "O aviso conta a quem está jogando que deu certo. Ele vai logo abaixo da troca de imagem, dentro do então. Deixe esse lugar à vista.<br/>Em <b>Programação &gt; Variáveis</b>, pegue outro <b>Alterar variável para</b> e solte ali.<br/>O bloco chega com <b>contador</b>: clique em contador e escolha <b>aviso</b>.<br/>Troque o número pela mensagem, como no senão: em <b>Programação &gt; Valores</b>, pegue <b>texto</b> e solte em cima do número.<br/>O texto chega com <b>Olá</b>: clique em Olá, apague e escreva: <b>Você acendeu o farol! Olhe o barco chegando.</b> Depois clique fora do campo."
       }
     ]
   },
@@ -421,7 +413,7 @@
       },
       {
         "kind": "note",
-        "text": "As ações da luz, do barco e da mensagem de chegada ficam no <strong>então</strong>. A mensagem de falta da chave fica no <strong>senão</strong>. Depois da montagem, teste os dois caminhos."
+        "text": "Os blocos que chamam o barco, acendem a luz e avisam a chegada ficam no <strong>então</strong>, onde vai a resposta do sim. O aviso de que falta a chave fica no <strong>senão</strong>, onde vai a resposta do não. Depois da montagem, teste os dois caminhos."
       }
     ]
   },
@@ -429,24 +421,24 @@
     "id": "p8",
     "kicker": "Dia 3 · Parte 3 · Teste e verificação",
     "title": "Teste o jogo inteiro",
-    "subtitle": "A condição está montada. Confira se cada situação recebe a resposta certa.",
+    "subtitle": "A pergunta da porta está montada. Confira se cada situação recebe a resposta certa.",
     "items": [
       {
         "kind": "box",
         "title": "Teste 1 · Sem a chave",
-        "text": "Clique em <b>Atualizar</b> para recomeçar. Vá direto até a porta do farol, na base da torre, sem passar pela chave. A luz deve continuar apagada, e o aviso deve dizer que falta a chave.",
+        "text": "Clique em <b>Atualizar</b>, o botão com uma seta redonda, logo acima do jogo, e vá até a porta do farol, na base da torre, sem pegar a chave. A luz deve continuar apagada, e o aviso deve dizer que falta a chave.",
         "tone": "note"
       },
       {
         "kind": "box",
         "title": "Teste 2 · Busque e volte na mesma partida",
-        "text": "Sem recomeçar a partida, busque a chave e volte até a porta do farol. O jogo guarda a coleta em <b>temChave</b> durante o caminho. A luz deve acender, o aviso deve mudar e o barco deve chegar.",
+        "text": "Sem recomeçar a partida, busque a chave e volte até a porta do farol, lá na base da torre. O jogo guarda em <b>temChave</b> que a chave foi pega. A luz deve acender, o aviso deve mudar e o barco deve chegar perto do farol.",
         "tone": "test"
       },
       {
         "kind": "box",
         "title": "Teste 3 · Uma nova partida",
-        "text": "Depois da vitória, clique em <b>Atualizar</b>. A chave deve voltar ao chão. Vá direto até a porta do farol, sem pegar a chave. Ele deve continuar apagado e voltar a avisar que falta a chave.",
+        "text": "Depois da vitória, clique em <b>Atualizar</b> de novo. A chave volta para o chão, porque começou uma partida nova, e o personagem está outra vez sem a chave. Vá direto até a porta do farol, sem pegar a chave: o farol tem que continuar apagado e avisar outra vez que falta a chave.",
         "tone": "note"
       },
       {
@@ -471,33 +463,27 @@
       {
         "kind": "step",
         "title": "1. Escolha o personagem",
-        "text": "Em <b>Ao iniciar</b>, encontre <b>Criar sprite personagem</b>. No fim do bloco, depois de <b>com imagem</b>, clique no nome da imagem, como <b>aventureiro</b>, e escolha um personagem. Se não achar o que quer, role a lista. O nome do sprite continua <b>personagem</b>: troque só a imagem."
+        "text": "O personagem fica em <b>Ao iniciar</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. No bloco <b>Criar sprite personagem</b>, depois de <b>com imagem</b>, clique no nome da imagem, como <b>aventureiro</b>, e escolha outro. Se não achar, role a lista. O nome do sprite continua <b>personagem</b>, porque os outros blocos usam esse nome. Por isso, troque só a imagem e deixe os números do bloco como estão."
       },
       {
         "kind": "step",
         "title": "2. Escolha o barco e a chave",
-        "text": "Ainda em <b>Ao iniciar</b>, em <b>Criar sprite barco</b> e em <b>Criar sprite chave</b>, clique no nome da imagem, como <b>veleiro</b> ou <b class='nome'>chave-dourada</b>, e escolha outro. A chave nova já aparece no jogo; o barco novo você vê no teste, porque ele só chega quando o farol acende."
+        "text": "Ainda em Ao iniciar, em <b>Criar sprite barco</b> e em <b>Criar sprite chave</b>, clique no nome da imagem, como <b>veleiro</b> ou <b class='nome'>chave-dourada</b>, e escolha outro. O barco novo você vê no teste, quando o farol acende."
       },
       {
         "kind": "step",
         "title": "3. Escolha o par do farol",
-        "text": "O farol tem duas imagens, apagado e aceso, e as duas precisam ser do mesmo modelo. Por isso, se você trocar o farol, troque o par. Em <b>Criar sprite farol</b>, clique no nome da imagem, como <b class='nome'>farol-listrado-apagado</b>, e escolha o modelo <b>apagado</b> que quiser. Em <b>Quando acontecer</b>, dentro do então, clique no nome da imagem em <b>Trocar imagem do sprite farol para</b>, como <b class='nome'>farol-listrado-aceso</b>, e escolha o mesmo modelo <b>aceso</b>."
+        "text": "O farol tem duas imagens, apagado e aceso, que precisam ser do mesmo modelo para ele continuar o mesmo quando acende. Por isso, troque as duas.<br/>Em Ao iniciar, em <b>Criar sprite farol</b>, clique no nome da imagem, como <b class='nome'>farol-listrado-apagado</b>, e escolha o modelo <b>apagado</b>.<br/>O aceso fica em <b>Quando acontecer</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. No encontro com o farol, dentro do então, clique na imagem de <b>Trocar imagem do sprite farol para</b> e escolha o mesmo modelo <b>aceso</b>."
       },
       {
         "kind": "step",
         "title": "4. Escolha o cenário",
-        "text": "Em <b>Enquanto estiver rodando</b>, dentro de <b>A cada quadro do jogo</b>, clique no nome do cenário, como <b class='nome'>praia-tropical</b>, no bloco <b>Desenhar o cenário</b>, e escolha outro cenário."
-      },
-      {
-        "kind": "box",
-        "title": "Mesmo tipo, mesmo tamanho",
-        "text": "Personagem com personagem, barco com barco, chave com chave, farol com farol e cenário com cenário: cada tipo tem desenhos do mesmo tamanho. Deixe x, y, largura, altura e nomes dos sprites como estão.",
-        "tone": "note"
+        "text": "O cenário fica em <b>Enquanto estiver rodando</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Em <b>A cada quadro do jogo</b>, clique no nome do cenário, como <b class='nome'>praia-tropical</b>, e escolha outro."
       },
       {
         "kind": "step",
         "title": "Teste e verifique",
-        "text": "Clique em <b>Atualizar</b> e vá até a porta do farol sem a chave: ele continua apagado. Busque a chave e volte até a porta: o mesmo modelo acende e o barco chega. Se algo não funcionou no seu jogo, confira se ficou assim: cada imagem está no bloco do mesmo tipo, e o farol tem o mesmo modelo nos dois blocos, apagado em Ao iniciar e aceso dentro do então. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e vá até a porta do farol sem a chave: ele continua apagado. Busque a chave e volte, na mesma partida: o mesmo modelo acende e o barco chega. Se algo não funcionou, confira se cada imagem está no bloco do mesmo tipo e se o farol tem o mesmo modelo nos dois blocos. Depois de corrigir, teste de novo.<br/>Funcionou? Clique em <b>Verificar projeto</b>. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer <b>Objetivo cumprido!</b>, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -588,12 +574,12 @@
       {
         "kind": "step",
         "title": "Mude os quatro avisos",
-        "text": "Mude só o texto de cada <b>aviso</b>: clique no texto, apague e escreva uma frase curta. Tudo o que você escrever fica no seu jogo. Se um bloco não estiver aparecendo, arraste um espaço vazio entre os blocos. Procure estes textos:<br/><b>Ao iniciar</b>, no bloco que cria a variável aviso: <i>Encontre a chave e vá ao farol.</i><br/><b>Quando acontecer</b>, no encontro com a chave: <i>Você pegou a chave! Agora vá ao farol.</i><br/><b>No encontro com o farol, dentro do senão:</b> <i>A porta não abriu. Falta a chave.</i><br/><b>No encontro com o farol, dentro do então:</b> <i>Você acendeu o farol! Olhe o barco chegando.</i><br/>Deixe os nomes das variáveis como estão."
+        "text": "O seu jogo tem quatro avisos. Em cada um, mude só o texto: clique nele, apague e escreva uma frase curta. Depois clique fora do campo. Tudo o que você escrever fica no seu jogo.<br/><b>O do começo</b>, que aparece quando a partida começa: em Ao iniciar, no bloco Criar variável aviso, <i>Encontre a chave e vá ao farol.</i><br/><b>O de quando a chave é pega:</b> em Quando acontecer, no encontro com a chave, <i>Você pegou a chave! Agora vá ao farol.</i><br/><b>O de quando falta a chave:</b> no encontro com o farol, dentro do senão, <i>A porta não abriu. Falta a chave.</i><br/><b>O de quando o farol acende:</b> dentro do então, <i>Você acendeu o farol! Olhe o barco chegando.</i><br/>Se uma área não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer.<br/>Os nomes aviso, temChave e ganhou ficam como estão, porque os outros blocos usam esses nomes."
       },
       {
         "kind": "step",
         "title": "Teste os avisos",
-        "text": "Clique em <b>Atualizar</b> e leia o aviso do começo. Vá até a porta do farol sem a chave e leia o aviso de quando falta a chave. Depois busque a chave, leia o aviso da coleta e volte até a porta do farol para ver a comemoração.<br/>Se algo não funcionou no seu jogo, volte ao bloco daquele aviso: se a frase passou da tela, deixe mais curta; se o aviso não mudou, confira se você escreveu no texto daquele bloco. Depois de corrigir, teste de novo. Quando terminar, clique em <b>Próxima parte</b>."
+        "text": "Clique em <b>Atualizar</b> e leia o aviso do começo. Vá até a porta do farol sem a chave e leia o aviso de quando falta a chave. Depois busque a chave, leia o aviso de quando a chave é pega e volte até a porta do farol para ver a comemoração.<br/>Se algo não funcionou no seu jogo, volte ao bloco daquele aviso: se a frase passou da tela, deixe mais curta; se o aviso não mudou, confira se você escreveu no texto daquele bloco. Depois de corrigir, teste de novo. Quando terminar, clique em <b>Próxima parte</b>."
       }
     ]
   },
@@ -606,23 +592,23 @@
       {
         "kind": "box",
         "title": "Dois números, um lugar",
-        "text": "<b>x:</b> posição horizontal, para os lados.<br/><b>y:</b> posição vertical, para cima e para baixo.<br/>Para que lado a chave vai quando cada número aumenta? Descubra na experiência.",
+        "text": "É como explicar o caminho até um tesouro num mapa: quantos passos para os lados e quantos para cima ou para baixo. No jogo, o lugar da chave é dito com dois números:<br/><b>x:</b> cuida dos lados, a direção que também se chama horizontal.<br/><b>y:</b> cuida de cima e de baixo, a direção vertical.<br/>Quando cada número aumenta, para que lado a chave vai? Descubra na experiência.",
         "tone": "experience"
       },
       {
         "kind": "step",
         "title": "Explore os dois eixos",
-        "text": "Os controles de <b>x</b> e <b>y</b> estão disponíveis desde o começo. Use os botões ou deslizantes. Vá para os lados, para cima e para baixo; você escolhe por onde começar."
+        "text": "Use os controles <b>Horizontal x</b> e <b>Vertical y</b>, com os botões ou deslizantes. Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y; você escolhe por onde começar."
       },
       {
         "kind": "step",
         "title": "Compare os lugares",
-        "text": "Mude um número por vez. A marca de início permanece, e o pontilhado mostra o lugar anterior. Se quiser um número exato, digite no campo e clique fora dele."
+        "text": "A marca de início mostra onde a chave estava no começo, e o pontilhado mostra o lugar anterior. Se quiser um número exato, digite no campo. Depois clique fora do campo."
       },
       {
         "kind": "box",
         "title": "Um desafio opcional",
-        "text": "Use <b>Mostrar um alvo</b> para tentar levar a chave até ele. Todos os controles continuam livres. Ao terminar, clique em <b>Próxima parte</b>.",
+        "text": "Se quiser um desafio, clique em <b>Mostrar um alvo</b> e leve a chave até ele. Todos os controles continuam livres. Ao terminar, clique em <b>Próxima parte</b>.",
         "tone": "experience"
       }
     ]
@@ -636,23 +622,23 @@
       {
         "kind": "step",
         "title": "1. Encontre os dois campos",
-        "text": "Em <b>Ao iniciar</b>, deixe à vista <b>Criar sprite chave</b>. Mude só os campos <b>x</b> e <b>y</b>. Deixe nome, imagem, largura e altura como estão."
+        "text": "Lembra? Um y maior leva a chave para baixo, porque na tela do jogo o y começa em zero lá no alto e vai crescendo para baixo. Encontre a área <b>Ao iniciar</b>. Se ela não estiver aparecendo, arraste um espaço vazio entre os blocos até ela aparecer. Deixe à vista <b>Criar sprite chave</b>. Os campos <b>x</b> e <b>y</b> escolhem onde a chave aparece. Mude só esses dois."
       },
       {
         "kind": "box",
         "title": "Três lugares para experimentar",
-        "text": "<b>Perto da trilha:</b> x 211 e y 53.<br/><b>Na parte de baixo:</b> x 160 e y 250.<br/><b>Perto da ponte:</b> x 280 e y 160.",
+        "text": "<b>Perto da trilha:</b> x 211 e y 53.<br/><b>Na parte de baixo:</b> x 160 e y 250.<br/><b>Perto da ponte:</b> x 280 e y 160.<br/>Você pode escolher um deles ou experimentar outro lugar.",
         "tone": "experience"
       },
       {
         "kind": "step",
         "title": "2. Escreva os números",
-        "text": "No campo <b>x</b>, troque o número pelo x do lugar que você escolheu, como 160; no campo <b>y</b>, coloque o y, como 250. Depois clique fora do campo e espere o jogo atualizar."
+        "text": "No campo <b>x</b>, troque o número pelo x do lugar que você escolheu, como 160.<br/>No campo <b>y</b>, coloque o y do lugar, como 250.<br/>Depois clique fora do campo e espere o jogo atualizar. O nome, a imagem, a largura e a altura ficam como estão."
       },
       {
         "kind": "step",
         "title": "3. Confira o lugar",
-        "text": "Repare se a chave aparece inteira. Se ela ficar atrás do farol ou da faixa do aviso, quem joga não vai achar; se ficar em cima do personagem, ele já começa com a chave. Nesses casos, escolha outro lugar visível e acessível."
+        "text": "Repare se a chave aparece inteira. Se ela ficar atrás do farol ou da faixa do aviso, quem joga não vai achar. Se ficar em cima do personagem, ele já começa com a chave. Nesses casos, escolha um dos três lugares deste Passo a passo do projeto."
       },
       {
         "kind": "step",
@@ -671,22 +657,22 @@
     "id": "p9",
     "kicker": "Dia 3 · Parte 8 · Publicação",
     "title": "Publique seu jogo",
-    "subtitle": "Você enviou o seu jogo. Agora outras pessoas também podem jogar.",
+    "subtitle": "Seu jogo está pronto! Se quiser, publique no Mural, o lugar da plataforma onde ficam os jogos publicados: lá, a sua família e os seus amigos podem jogar o seu jogo. Se não quiser, clique em Concluir aula.",
     "items": [
       {
         "kind": "step",
         "title": "1. Abra Compartilhar",
-        "text": "Continue no mesmo Estúdio da aula. No alto do Estúdio, clique em <b>Compartilhar</b>. Ele pode aparecer só como uma setinha para cima. O resumo do projeto já vem preenchido. Deixe como está."
+        "text": "Continue no mesmo Estúdio da aula. No alto do Estúdio, clique em <b>Compartilhar</b>. Ele pode aparecer só como uma setinha para cima.<br/>Abre uma janela. O resumo do projeto já vem preenchido, por isso pode deixar como está."
       },
       {
         "kind": "step",
         "title": "2. Prepare a capa",
-        "text": "Clique em <b>Gerar capa</b> e espere a imagem aparecer. Confira a imagem: ela vai apresentar seu jogo no Mural."
+        "text": "O seu jogo precisa de uma capa, a imagem que apresenta o jogo no Mural. Clique em <b>Gerar capa</b> e espere a imagem aparecer. Confira se a capa ficou boa."
       },
       {
         "kind": "step",
         "title": "3. Publique e comemore",
-        "text": "Clique em <b>Publicar</b> e comemore: <b>Seu jogo está no Mural!</b> Pronto! Clique em <b>Copiar link de jogar</b> e mande o link para os seus amigos e a sua família. Se precisar, peça ajuda a um adulto. Depois clique em <b>Fechar</b> e em <b>Concluir aula</b>."
+        "text": "Clique em <b>Publicar</b> e espere a publicação terminar: <b>Seu jogo está no Mural!</b> Para mandar o jogo para a sua família e os seus amigos, clique em <b>Copiar link de jogar</b> e mande o link, com a ajuda de um adulto se precisar. Quem receber o link pode jogar direto, até no celular. Depois clique em <b>Fechar</b> e, por fim, em <b>Concluir aula</b>."
       },
       {
         "kind": "box",
@@ -712,26 +698,26 @@
       {
         "kind": "activity",
         "pill": "Na aula, antes do certificado",
-        "text": "Aqui não tem vídeo: leia a fala do Zappy e responda às quatro perguntas sobre o seu jogo."
+        "text": "Aqui não tem vídeo. Agora você vai lembrar as regras do seu jogo: o personagem que anda, a memória da chave e o farol que só acende com ela."
       },
       {
         "kind": "step",
         "title": "Escolha e veja acontecendo",
-        "text": "As quatro perguntas retomam movimento, memória e porta. Escolha uma resposta e clique em <b>Ver o que acontece</b>. Observe a cena antes de continuar."
+        "text": "São quatro perguntas. Em cada uma, escolha uma resposta e clique em <b>Ver o que acontece</b>. A cena mostra o resultado, e a explicação conta o porquê."
       },
       {
         "kind": "step",
-        "title": "Compare e tente de novo",
-        "text": "Leia a explicação. Se precisar, clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta conferida, use <b>Próxima pergunta</b>; na última, <b>Concluir revisão</b>."
+        "title": "Se errar, tente de novo",
+        "text": "Se errar, você pode tentar de novo: clique em <b>Tentar de novo</b> na mesma pergunta. Com a resposta certa, clique em <b>Próxima pergunta</b>; na última, em <b>Concluir revisão</b>."
       },
       {
         "kind": "step",
-        "title": "3. Siga para a celebração",
-        "text": "Quando todas as respostas estiverem corretas, clique em <b>Próxima parte</b>. O vídeo e o certificado ficam na parte seguinte."
+        "title": "Siga para a comemoração",
+        "text": "Quando todas as respostas estiverem certas, clique em <b>Próxima parte</b>. O vídeo e o certificado ficam na parte seguinte."
       },
       {
         "kind": "note",
-        "text": "Se quiser rever uma regra, volte ao seu jogo e aos passos deste mapa. A revisão ajuda a entender o jogo que você programou."
+        "text": "Se quiser rever uma regra, volte ao seu jogo e às páginas deste Passo a passo do projeto. A revisão ajuda a entender o jogo que você programou."
       }
     ]
   },
@@ -739,19 +725,19 @@
     "id": "p10",
     "kicker": "Seu certificado · Parte 2",
     "title": "Guarde o que você criou",
-    "subtitle": "Você programou o personagem que anda, a coleta da chave e o farol que confere se você tem a chave.",
+    "subtitle": "Você programou o personagem que anda, a memória da chave e o farol que só acende com a chave.",
     "lit": true,
     "items": [
       {
         "kind": "box",
         "title": "Comemore sua criação",
-        "text": "Clique em <b>Baixar meu certificado</b>. Se você já pegou o certificado, clique em <b>Baixar certificado (PDF)</b>. Quando o certificado baixar, clique em <b>Concluir aula</b>.",
+        "text": "Parabéns! Agora você ganha um <b>certificado</b>, um documento com o seu nome que mostra que você criou este jogo. Clique em <b>Baixar meu certificado</b> para guardar essa conquista. Se você já pegou o certificado, clique em <b>Baixar certificado (PDF)</b>. Quando o certificado baixar, clique em <b>Concluir aula</b>.",
         "tone": "test"
       },
       {
         "kind": "step",
         "title": "Se travar em alguma parte",
-        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página daquela parte neste mapa: no alto de cada página estão o dia e a parte."
+        "text": "Volte ao trecho do vídeo que mostra aquele encaixe e compare com o seu projeto. Você também pode consultar a página daquela parte neste Passo a passo do projeto: no alto de cada página estão o dia e a parte."
       },
       {
         "kind": "box",

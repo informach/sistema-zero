@@ -86,7 +86,7 @@ export const cadeTodoMundo = {
 export const farol = {
   title: 'As regras do seu jogo',
   intro:
-    'Você fez o personagem andar, pegar a chave e acender o farol. Escolha uma resposta em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo.',
+    'Agora você vai lembrar as regras do seu jogo: o personagem que anda, a memória da chave e o farol que só acende com ela. Em cada pergunta, escolha uma resposta e clique em Ver o que acontece. A cena mostra o resultado, e a explicação conta o porquê. Se errar, você pode tentar de novo.',
   content: {
     kind: 'quiz',
     passingScore: 100,
@@ -135,7 +135,7 @@ export const farol = {
         ],
         correctChoiceIds: ['b'],
         explanation:
-          'Fazer a chave sumir e mudar o aviso não guarda a coleta. A ação de guardar precisa colocar verdadeiro em temChave. É essa informação que a porta consulta.',
+          'Fazer a chave sair do chão e mudar o aviso não faz o jogo lembrar. A memória da chave é o bloco Alterar temChave para verdadeiro, dentro do encontro com a chave. É essa informação que a porta confere.',
       },
       {
         id: 'q3',

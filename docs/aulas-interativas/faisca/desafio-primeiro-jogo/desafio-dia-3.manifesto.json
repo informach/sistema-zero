@@ -6,7 +6,7 @@
   "blocks": [
     {
       "key": "video-d3-condicao",
-      "plannedVideo": "Título: O que a porta precisa?\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-condicao-K1\",\"clipe\":\"video-d3-condicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"abrir, você precisa da chave. No jogo, a pergunta é: temChave é verdadeiro? Ou seja, o personagem está com a chave?\",\"ancoraDepois\":\"O que você acha que a porta faz? Isso você vai testar na experiência. Repare só numa coisa: a pergunta é sempre a\",\"falaPrincipal\":\"E se a resposta for não?\",\"falaPersonagem\":\"E se a resposta for não?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: O que a porta precisa?\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-condicao-K1\",\"clipe\":\"video-d3-condicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"assim, que o jogo faz para decidir o que acontece, tem um nome: condição. E a resposta dela só pode ser sim ou não.\",\"ancoraDepois\":\"O que você acha que a porta faz? Isso você vai testar na experiência. Uma dica: a pergunta da porta é sempre a mesma.\",\"falaPrincipal\":\"E se a resposta for não?\",\"falaPersonagem\":\"E se a resposta for não?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-condicao",
@@ -23,7 +23,7 @@
         "required": true,
         "title": "O que a porta precisa?",
         "semPerguntaFinal": true,
-        "instructions": "Teste a mesma porta com o personagem sem a chave e com a chave, observando temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.",
         "hints": [
           "Olhe temChave antes de testar a porta.",
           "Compare a resposta da porta com temChave falso e com temChave verdadeiro.",
@@ -49,26 +49,26 @@
     },
     {
       "key": "video-d3-sem-chave",
-      "plannedVideo": "Título: Avise quando faltar a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-sem-chave-K2\",\"clipe\":\"video-d3-sem-chave\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"a pergunta já é essa. Pronto: agora, quando o personagem encostar no farol, o jogo confere se temChave é verdadeiro.\",\"ancoraDepois\":\"Lembra da resposta do não, na experiência? Esse aviso vai no espaço do senão. O senão guarda a resposta para quando\",\"falaPrincipal\":\"E onde eu escrevo que falta a chave?\",\"falaPersonagem\":\"E onde eu escrevo que falta a chave?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Avise quando faltar a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-sem-chave-K2\",\"clipe\":\"video-d3-sem-chave\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"A palavra verdadeiro não aparece no bloco, e nem precisa. Com temChave sozinho ao lado do Se, a pergunta já é essa.\",\"ancoraDepois\":\"Num espaço do próprio Se. Lembra das duas respostas da porta, o sim e o não? No bloco Se, cada resposta tem o seu\",\"falaPrincipal\":\"E onde eu escrevo que falta a chave?\",\"falaPersonagem\":\"E onde eu escrevo que falta a chave?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-sem-chave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+        "text": "Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o bloco Se e o aviso no espaço do senão. Depois teste: vá até a porta do farol sem pegar a chave. Funcionou? Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
       "key": "video-d3-decisao",
-      "plannedVideo": "Título: Acenda o farol com a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-decisao-K2\",\"clipe\":\"video-d3-decisao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"heroi e escolha farol. Depois clique no segundo e escolha a imagem farol listrado aceso. Se não achar, role a lista.\",\"ancoraDepois\":\"Vai, sim! É para isso que serve o último bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do então.\",\"falaPrincipal\":\"E quem está jogando vai saber que deu certo?\",\"falaPersonagem\":\"E quem está jogando vai saber que deu certo?\",\"tags\":[\"[curious]\"]},{\"id\":\"video-d3-decisao-K3\",\"clipe\":\"video-d3-decisao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco já chegou perto do farol!\",\"ancoraDepois\":\"Clique em Atualizar de novo. Repare que a chave volta para o chão, porque começou uma partida nova. Vá direto até a\",\"falaPrincipal\":\"Acendeu! E se eu quiser jogar de novo?\",\"falaPersonagem\":\"Acendeu! E se eu quiser jogar de novo?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Acenda o farol com a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-decisao-K2\",\"clipe\":\"video-d3-decisao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"trocar de imagem. Depois clique no segundo heroi e escolha a imagem farol listrado aceso. Se não achar, role a lista.\",\"ancoraDepois\":\"Vai, sim! É para isso que serve o terceiro bloco: o aviso. Ele vai logo abaixo da troca de imagem, ainda dentro do\",\"falaPrincipal\":\"E quem está jogando vai saber que deu certo?\",\"falaPersonagem\":\"E quem está jogando vai saber que deu certo?\",\"tags\":[\"[curious]\"]},{\"id\":\"video-d3-decisao-K3\",\"clipe\":\"video-d3-decisao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"até a porta do farol, lá na base da torre. Olha só: a luz acende, o aviso muda, e o barco vem chegando perto do farol!\",\"ancoraDepois\":\"É só clicar em Atualizar de novo. Repare: a chave volta para o chão, porque começou uma partida nova, e o personagem\",\"falaPrincipal\":\"Acendeu! E se eu quiser jogar de novo?\",\"falaPersonagem\":\"Acendeu! E se eu quiser jogar de novo?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-decisao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
+        "text": "Agora acenda o farol! Complete o espaço do então, onde vai a resposta do sim. Teste sem a chave, com a chave e numa partida nova. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte."
       }
     },
     {
@@ -97,7 +97,7 @@
     },
     {
       "key": "video-d3-posicao",
-      "plannedVideo": "Título: Como escolher um lugar para a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-posicao-K1\",\"clipe\":\"video-d3-posicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"quantos passos andar para os lados e quantos andar para cima ou para baixo. O x cuida da horizontal, para os lados.\",\"ancoraDepois\":\"Para isso, a gente muda o y, que cuida da vertical. Mas, quando o y aumenta, a chave sobe ou desce? O que você acha?\",\"falaPrincipal\":\"E para subir ou descer?\",\"falaPersonagem\":\"E para subir ou descer?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Como escolher um lugar para a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-posicao-K1\",\"clipe\":\"video-d3-posicao\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"da chave também é dito com dois números: o x e o y. O x cuida dos lados, a direção que também se chama horizontal.\",\"ancoraDepois\":\"Para isso existe o y, que cuida de cima e de baixo, a direção vertical. Mas, quando o y aumenta, a chave sobe ou desce?\",\"falaPrincipal\":\"E para subir ou descer?\",\"falaPersonagem\":\"E para subir ou descer?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-posicao",
@@ -114,7 +114,7 @@
         "required": true,
         "title": "Como escolher um lugar para a chave",
         "semPerguntaFinal": true,
-        "instructions": "Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui, no x e no y. Você escolhe a ordem dos testes. Se quiser um desafio, mostre um alvo e leve a chave até ele.",
+        "instructions": "Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. Você escolhe a ordem dos testes. Se quiser um desafio, clique em Mostrar um alvo e leve a chave até ele.",
         "hints": [],
         "activity": {
           "type": "experimentation",
@@ -129,14 +129,14 @@
     },
     {
       "key": "video-d3-posicionar-chave",
-      "plannedVideo": "Título: Escolha onde fica a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-posicionar-chave-K1\",\"clipe\":\"video-d3-posicionar-chave\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"perto da trilha, com x 211 e y 53; na parte de baixo, com x 160 e y 250; ou perto da ponte, com x 280 e y 160.\",\"ancoraDepois\":\"Você pode escolher um deles ou experimentar outro. Eu vou colocar na parte de baixo. No campo x do bloco, troque o\",\"falaPrincipal\":\"Preciso escolher um desses três lugares?\",\"falaPersonagem\":\"Preciso escolher um desses três lugares?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Escolha onde fica a chave\n\nMaster integral da professora. Roteiro: desafio-dia-3.roteiro.md. Substituições kids: [{\"id\":\"video-d3-posicionar-chave-K1\",\"clipe\":\"video-d3-posicionar-chave\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"perto da trilha, com x 211 e y 53; na parte de baixo, com x 160 e y 250; ou perto da ponte, com x 280 e y 160.\",\"ancoraDepois\":\"Você pode escolher um deles ou experimentar outro lugar. Eu vou colocar na parte de baixo. No campo x do bloco, troque\",\"falaPrincipal\":\"Preciso escolher um desses três lugares?\",\"falaPersonagem\":\"Preciso escolher um desses três lugares?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d3-posicionar-chave",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste o caminho até a chave e até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
+        "text": "Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste: busque a chave no lugar novo e leve até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte."
       }
     },
     {
@@ -148,7 +148,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar."
+        "text": "Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você também pode clicar em Concluir aula e continuar a jornada sem publicar."
       }
     },
     {
