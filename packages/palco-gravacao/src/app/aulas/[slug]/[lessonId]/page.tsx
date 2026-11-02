@@ -61,7 +61,7 @@ export default async function AulaPage({
     throw new Error(`Não consegui ler a aula (${courseRes.status}, ${lessonRes.status}).`)
   // A parte pedida vira o `#section=` que o player do Kids já entende, na mesma tomada.
   const secao = numero ? lesson.sections?.[numero - 1] : undefined
-  if (numero && !secao) notFound()
+  if (inicio && !lesson.sections?.[inicio - 1]) notFound()
   if (secao)
     redirect(
       `${here}?tomada=${tomada}&desde=${numero}${sent}#section=${encodeURIComponent(secao.id)}`,

@@ -294,11 +294,14 @@ function TiraDeQuadros() {
   const { state } = useDiscovery()
   const w = state.walk
   const desde = Math.max(0, w.trail.length - QUADROS_NA_TIRA)
-  const quadros = w.trail.slice(desde).map((x, i, lista) => ({
-    numero: w.frame - (lista.length - 1 - i),
-    x,
-    andou: i === 0 ? null : x > lista[i - 1],
-  }))
+  const quadros = w.trail.slice(desde).map((x, i, lista) => {
+    const anterior = lista[i - 1]
+    return {
+      numero: w.frame - (lista.length - 1 - i),
+      x,
+      andou: anterior === undefined ? null : x > anterior,
+    }
+  })
   // Todos os quadrinhos usam a MESMA janela e a mesma linha de referência: o passinho aparece como o
   // personagem saindo da linha.
   const referencia = quadros[0]?.x ?? w.x

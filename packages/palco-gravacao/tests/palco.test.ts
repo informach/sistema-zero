@@ -406,6 +406,10 @@ describe('rotas da aula no palco', () => {
     expect(projetoDaParte(publicada, ids, 4)).toEqual(studio.examples[solucao])
     expect(projetoDaParte(publicada, ids, 5)).toEqual(studio.examples[solucao])
     expect(projetoDaParte(publicada, ids, 2)).toBeNull()
+    expect(projetoDaParte(publicada, ids, ids.length + 1)).toBeNull()
+    expect(projetoDaParte(publicada, ids, Number.MAX_SAFE_INTEGER)).toBeNull()
+    expect(projetoDaParte(publicada, ids, Number.POSITIVE_INFINITY)).toBeNull()
+    expect(projetoDaParte(publicada, ids, Number.NaN)).toBeNull()
     expect(projetoDaParte(undefined, ids, 4)).toBeNull()
   })
 
