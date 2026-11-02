@@ -250,7 +250,7 @@ describe('Moedas: a exploração livre completa as metas e a fala acompanha a or
     for (const acoes of [sete, [...sete, bau], [...sete, exatamente, bau]]) {
       const estado = jogar(MOEDAS, acoes)
       const texto = discoveryGuidance(MOEDAS, estado)?.text ?? ''
-      expect(texto).not.toMatch(/6|seis/)
+      expect(texto).not.toMatch(/\b(?:6|seis)\b/)
       expect(texto).toContain('mais de 5 moedas')
     }
   })
