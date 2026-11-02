@@ -111,6 +111,7 @@ import {
   ScenePrediction,
 } from './scene-prediction'
 import { ScenePredictionPreview } from './scene-prediction-preview'
+import { WalkNaBeirada } from './scene-walk-beirada'
 import { WalkEmCameraLenta } from './scene-walk-camera-lenta'
 import { SceneWorkspace } from './scene-workspace'
 import { estadoVistoDaCena, relogioDaCena, tempoDeLeitura, useSceneClock } from './use-scene-clock'
@@ -1369,6 +1370,8 @@ export function SceneActivityView({
                       // caso antigo (antes de reimportar o manifesto) segue com a bancada antiga.
                       activity.setup?.goals?.includes('walked-real-speed') ? (
                         <WalkEmCameraLenta />
+                      ) : activity.setup?.goals?.includes('came-back-inside') ? (
+                        <WalkNaBeirada />
                       ) : (
                         <Walk boundary={activity.setup?.goals?.includes('left-the-screen')} />
                       )

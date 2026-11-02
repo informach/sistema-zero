@@ -55,7 +55,11 @@ const manifesto = (desafios: DesafioDoManifesto[], escopo?: ManifestoDeDesafios[
     desafios,
   })
 
-const curriculo: CurriculoDeBlocos = { versao: 1, cursos: [], catalogo: [] }
+const curriculo: CurriculoDeBlocos = {
+  versao: 1,
+  cursos: [],
+  catalogo: [{ type: 'sz_js_if_else', rotulo: 'Se e senão', categoria: 'Lógica' }],
+}
 const analiseOk: AnaliseDosMembros = {
   blocosDoGabarito: [],
   blocosDesconhecidos: [],
@@ -154,18 +158,15 @@ describe('manifesto de desafios', () => {
     expect([...desafios.linhas.values()][0]?.situacao).toBe('rascunho')
   })
 
-  test('gabarito aprovado sem curso fica em rascunho ao importar, com motivo na prévia e no resultado', async () => {
+  test('manifesto publica antes do curso e mantém os blocos exigidos e o aviso', async () => {
     analisar.mockImplementation(async () => ({ ...analiseOk, blocosDoGabarito: ['sz_js_if_else'] }))
-    const m = manifesto([item('sem-fonte-de-ensino')])
-    const { conferencia, aplicacao } = await subir(m)
-    expect(conferencia.contagem.publica).toBe(0)
-    expect(conferencia.contagem.comProblema).toBe(1)
-    expect(conferencia.itens[0]?.analise?.problemas.map((p) => p.codigo)).toContain(
-      'BLOCO_SEM_CURSO',
-    )
-    expect(aplicacao.itens[0]?.publicado).toBe(false)
-    expect(aplicacao.itens[0]?.problemas.map((p) => p.codigo)).toContain('BLOCO_SEM_CURSO')
-    expect([...desafios.linhas.values()][0]?.situacao).toBe('rascunho')
+    const { conferencia, aplicacao } = await subir(manifesto([item('ensino-em-preparacao')]))
+    expect(conferencia.contagem.publica).toBe(1)
+    expect(conferencia.contagem.comProblema).toBe(0)
+    expect(conferencia.itens[0]?.analise?.cobertura[0]?.avisos).toContain('sem-curso')
+    expect(aplicacao.itens[0]?.publicado).toBe(true)
+    expect(aplicacao.itens[0]?.problemas).toEqual([])
+    expect([...desafios.linhas.values()][0]?.blocosPublicados).toEqual(['sz_js_if_else'])
   })
 
   const LINGUAGEM_DO_POSTO: Record<string, string> = {

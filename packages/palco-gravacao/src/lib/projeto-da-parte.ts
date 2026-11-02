@@ -12,6 +12,7 @@ export function projetoDaParte(
   sectionIds: readonly string[],
   numero: number,
 ): unknown | null {
+  if (!Number.isSafeInteger(numero) || numero < 1 || numero > sectionIds.length) return null
   const read = readStudioProjectExamples(projectExamples)
   if (read.kind !== 'valid') return null
   const of = (index: number) => {

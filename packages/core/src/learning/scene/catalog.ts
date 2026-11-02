@@ -1456,6 +1456,8 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
       'left-the-screen+stayed-inside':
         'Sem o limite, o sprite passou da borda. Com Manter dentro da tela, o sprite parou inteiro na tela.',
       // A câmera lenta do Farol fala só da IDEIA: nada de bloco, regra ou x (decisão de 01/11/2026).
+      'came-back-inside+left-the-screen+stayed-inside':
+        'Em cada quadro, depois do passinho, o jogo confere a beirada. Sem o limite, o personagem sai da tela; com o limite, ele é puxado de volta para dentro.',
       'moves-each-frame+stopped-after-release+walked-real-speed':
         'Em cada quadro o jogo olha a seta. Apertada, o personagem dá um passinho; solta, ele fica parado. Bem rápido, os passinhos viram uma caminhada.',
       'moves-each-frame+step-speed-1+step-speed-3+still-without-arrow':
@@ -1528,6 +1530,14 @@ const SCENE_MODEL_DEFINITIONS: Record<SceneId, Omit<SceneModel, 'predictionPrevi
         label: 'Na velocidade de verdade, os passinhos viraram uma caminhada',
         pedido:
           'Clique em Câmera lenta e segure a seta por alguns quadros. Depois clique em Velocidade de verdade e segure a seta por alguns segundos.',
+        soNoCaso: true,
+      },
+      // ⭐ A beirada do Farol (01/11/2026): ligar o limite com o personagem fora o traz de volta.
+      {
+        id: 'came-back-inside',
+        label: 'Com o limite ligado, o sprite voltou para dentro da tela',
+        pedido:
+          'Com o limite desligado, segure a seta até ele sair da tela. Depois clique em Ligar o limite da tela e deixe passar um quadro.',
         soNoCaso: true,
       },
     ],

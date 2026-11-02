@@ -138,54 +138,58 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-limite`
 
-**Na tela:** Usar uma janela ilustrada para explicar a borda. Mostrar o personagem junto à borda e os blocos de mover e limitar, sem executar as duas ordens completas. A experiência oferece comparação ampliada da borda e teclado de teste; não antecipar coordenadas.
+**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "Primeiro, o personagem dá o passinho" até o "puxa ele de volta para dentro", mostrar a experiência com o limite ligado, na beirada em câmera lenta, e apontar na tira o quadro que diz "segurou" e a frase do quadro embaixo dela [apontar tira de quadros; apontar frase do quadro]. No "Olha aqui: nesta atividade", apontar o botão **Ligar o limite da tela** e a faixa **fora da tela** [apontar botão do limite; apontar faixa fora da tela]. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo funciona assim: o que passa da borda pode sair de vista.
+[engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se o personagem passa da beirada, ele vai sumindo da sua vista.
 
-[engaging, energetic, conversational voice] Para o personagem continuar aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro.
+[engaging, energetic, conversational voice] Para ele não sumir, o jogo pode fazer mais uma coisa em cada quadro. Primeiro, o personagem dá o passinho. Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.
 
-[curious] E a ordem dos blocos faz diferença?
+[curious] E se eu ligar o limite com ele já fora da tela?
 
-[engaging, energetic, conversational voice] Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à borda.
+[engaging, energetic, conversational voice] Aí, no quadro seguinte, ele volta para dentro! É que, em todo quadro, o jogo confere a beirada: se ele estiver fora, puxa de volta.
 
-[engaging, energetic, conversational voice] Você também pode adicionar e retirar o bloco de limite durante o teste. Observe o que acontece na borda e repita quantas vezes quiser. Quando terminar, clique em Próxima parte.
+[interested, animated voice] Olha aqui: nesta atividade, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
+
+[upbeat, encouraging voice] Agora é a sua vez: primeiro, com o limite desligado, leve o personagem até a beirada e veja o que acontece. Depois, ligue o limite e olhe, em câmera lenta, cada quadro na beirada. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-limite-K1 | Debinha | 1 | aparecendo, o jogo precisa conferir se ele ainda cabe na tela. O bloco de limite faz essa conferência e pode trazer o personagem de volta para dentro. | E a ordem dos blocos faz diferença? | Faz. Uma regra pode conferir o limite antes do movimento ou depois dele. Na experiência, você vai comparar o resultado dessas duas ordens junto à bord | [curious] |
+| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se eu ligar o limite com ele já fora da tela? | Aí, no quadro seguinte, ele volta para dentro! É que, em todo quadro, o jogo confere a beirada: se ele estiver fora, | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Teste sem o limite e com ele e repare no que acontece na borda. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Leve o personagem até a beirada sem o limite e depois com ele. Quando terminar, clique em Próxima parte.
 
 ## Parte 6. Mantenha o personagem na tela
 
 **Clipe:** `video-d1-borda`
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no projeto (levar o personagem até a beirada da direita, continuar segurando e soltar a seta quando parte dele já estiver fora da tela; no "Tá vendo?", manter essa parte cortada à vista), depois a lembrança e o anúncio. Pausar para a pessoa testar.
+**Na tela:** Começar pela retomada, antes de qualquer bloco e nesta ordem: primeiro o problema no projeto (levar o personagem até a beirada da direita, continuar segurando e soltar a seta quando parte dele já estiver fora da tela; no "Tá vendo?", manter essa parte cortada à vista), depois a lembrança e o anúncio. Pausar para a pessoa testar. No "É este bloco que confere a beirada", apontar o bloco **Manter o sprite personagem dentro da tela** já encaixado, logo abaixo do bloco de movimento.
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, segure uma seta até o personagem chegar à beirada e continue segurando. Tá vendo? Ele passa da beirada e vai sumindo da tela, porque o seu jogo ainda não tem limite.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o limite da tela ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo!
 
 [curious] E onde eu coloco esse limite?
 
-[engaging, energetic, conversational voice] O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido em todo quadro, logo depois que o personagem anda. Deixe esse lugar à vista.
+[engaging, energetic, conversational voice] O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que, como você viu na experiência, o jogo confere a beirada logo depois do passinho: o bloco de cima dá o passinho, e o de baixo confere a beirada. Deixe esse lugar à vista.
 
 [confident, clear, unhurried voice] Agora abra Jogo 2D, depois Movimento e depois Bordas e rebatidas, e pegue o bloco Manter o sprite dentro da tela.
 
 [confident, clear, unhurried voice] Arraste e solte logo abaixo do bloco de movimento. [confident, clear, unhurried voice] Repare que esse bloco também chega com heroi: clique em heroi e escolha personagem.
+
+[engaging, energetic, conversational voice] É este bloco que confere a beirada: se o personagem passou dela, ele puxa de volta para dentro.
 
 [upbeat, encouraging voice] Agora teste as quatro direções até chegar às beiradas. [interested, animated voice] Olha só: ele para em cada beirada e não sai mais da tela!
 
@@ -204,7 +208,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-borda-K1 | Debinha | 1 | parte anterior? Com Manter dentro da tela ligado, ele parava na borda. Agora a gente vai pôr esse limite no seu jogo! | E onde eu coloco esse limite? | O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que ele precisa ser conferido | [curious] |
+| video-d1-borda-K1 | Debinha | 1 | ligado, depois de cada passinho o jogo puxava ele de volta para dentro. Agora a gente vai pôr esse limite no seu jogo! | E onde eu coloco esse limite? | O limite vai logo abaixo do bloco de movimento, ainda dentro de A cada quadro do jogo. É que, como você viu na | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

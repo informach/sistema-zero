@@ -477,6 +477,32 @@ describe('abrir', () => {
     expect(JSON.stringify(r.corpo)).not.toContain('segredo-da-regra')
   })
 
+  for (const publico of ['kids', 'adulto'] as const) {
+    test(`${publico}: publicação preparada sem curso não concede blocos nem acesso`, async () => {
+      curriculo = { ...CURRICULO, cursos: [] }
+      blocos = []
+      publicar(BORBOLETA, metadados({ publico }), conteudo('A borboleta que voa'), ['sz_js_repeat'])
+      montar()
+      const headers = publico === 'kids' ? crianca() : adulto
+      const lista = DesafiosDoJogadorSchema.parse((await chamar('GET', '', headers)).corpo)
+      const desafio = lista.desafios.find((d) => d.id === BORBOLETA)
+      expect(desafio?.situacao).toBe('faltam-blocos')
+      expect(desafio?.faltam).toEqual([
+        { bloco: 'sz_js_repeat', rotulo: 'Repetir vezes', cursos: [] },
+      ])
+      expect((await chamar('GET', `/${BORBOLETA}`, headers)).status).toBe(403)
+      expect(
+        (await chamar('POST', `/${BORBOLETA}/verificar`, headers, { revisao: 1, projeto })).status,
+      ).toBe(403)
+      expect(verificar).not.toHaveBeenCalled()
+      expect(repo.concluidos.size).toBe(0)
+      expect(blocos).toEqual([])
+      blocos = ['sz_js_repeat']
+      montar()
+      expect((await chamar('GET', `/${BORBOLETA}`, headers)).status).toBe(200)
+    })
+  }
+
   test('faltam blocos ou ilha fechada: 403 DESAFIO_BLOQUEADO com a situação', async () => {
     const ponte = await chamar('GET', `/${PONTE}`, crianca())
     expect(ponte.status).toBe(403)
