@@ -31,7 +31,11 @@ const NOMES: { id: Nome; rotulo: string }[] = [
 ]
 
 /** O botão em destaque é o gesto que a fala do Zappy pede agora (a régua de `proximoGestoDaMemoria`). */
-export type GestoDosNomes = { gesto: 'tirar' | 'por' } | { gesto: 'nome'; nome: Nome } | null
+export type GestoDosNomes =
+  | { gesto: 'tirar' }
+  | { gesto: 'por' }
+  | { gesto: 'nome'; nome: Nome }
+  | null
 export function proximoGestoDosNomes(fala: string | undefined, n: SceneUniqueNames): GestoDosNomes {
   switch (fala) {
     case 'unique-names-start':

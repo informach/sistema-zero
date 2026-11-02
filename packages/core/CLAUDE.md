@@ -783,6 +783,13 @@ POST genérico de aprendizagem.
 - [ ] Subpath novo? Adicionou ao `exports` do `package.json`.
 - [ ] Mudou contrato público? Ciente de que redeploya os consumidores (é dependência de todos).
 
+## Ações iniciais das experiências (02/11/2026)
+
+`scene/actions.isSceneSetupAction` é a régua única do Admin, da validação de manifesto e
+de `openScene`. Reinícios (`reset`, `restart-case`) e pistas não são estado de partida.
+Uma chamada direta com configuração inválida ignora essas ações, sem voltar recursivamente
+ao próprio caso. `restart-case` continua sendo uma ação de interação nas cenas que a oferecem.
+
 ## Período confirmado de renovação (24/10/2026)
 
 `@sistemazero/core/billing` valida períodos ISO canônicos e a evidência

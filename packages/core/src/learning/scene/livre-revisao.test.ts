@@ -8,7 +8,12 @@ import {
 } from '../../../tests/fixtures/caminhos-livres/nave-b'
 import { isSceneAction, RESTART_CASE_SCENES, type SceneAction, type SceneId } from './actions'
 import { openScene, stepScene } from './engine'
-import { discoveryGuidance, type ExperimentationActivity } from './index'
+import {
+  discoveryGuidance,
+  type ExperimentationActivity,
+  isSceneSetup,
+  isSceneSetupAction,
+} from './index'
 import { SPAWN_PRESETS } from './presets'
 import { initialExperiment, stepExperiment } from './session'
 import type { SceneStart } from './state'
@@ -24,6 +29,23 @@ const CAMINHOS: Partial<Record<SceneId, SceneAction[]>> = {
 const livre = (scene: SceneId): SceneStart => ({ scene, setup: { freeExploration: true } })
 const percorrer = (start: SceneStart, acoes: readonly SceneAction[]) =>
   acoes.reduce((s, a) => stepExperiment(start, s, a).session, initialExperiment(start))
+
+describe('reiniciar o caso não pode fazer parte da própria abertura', () => {
+  test.each([...RESTART_CASE_SCENES])('%s recusa reinício nas ações iniciais', (scene) => {
+    const action: SceneAction = { type: 'restart-case' }
+    expect(isSceneSetupAction(action, scene)).toBe(false)
+    expect(isSceneSetup({ freeExploration: true, actions: [action] }, scene)).toBe(false)
+  })
+  test.each([
+    ...RESTART_CASE_SCENES,
+  ])('%s abre sem recursão mesmo com configuração inválida', (scene) => {
+    const start: SceneStart = {
+      scene,
+      setup: { freeExploration: true, actions: [{ type: 'restart-case' }] },
+    }
+    expect(openScene(start)).toEqual(openScene(livre(scene)))
+  })
+})
 
 describe('"Voltar ao começo" no meio dos controles guarda as descobertas', () => {
   test.each([...RESTART_CASE_SCENES])('%s', (scene) => {

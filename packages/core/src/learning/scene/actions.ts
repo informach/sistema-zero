@@ -1291,7 +1291,7 @@ export function scenePorts(scene: SceneId): readonly ScenePort[] {
 export interface SceneSetup {
   /** Exploração livre com orientação por objetivos nos cursos introdutórios. */
   freeExploration?: boolean
-  /** O que já aconteceu quando a criança chega. `reset` não entra: ele volta para cá. */
+  /** O que já aconteceu na chegada. Reinícios não entram: eles voltariam para este caso. */
   actions?: SceneAction[]
   /** Quais metas do modelo esta atividade cobra. Sem lista, são todas as do modelo. */
   goals?: string[]
@@ -1301,3 +1301,25 @@ export interface SceneSetup {
   goalCopy?: Record<string, { label?: string; pedido?: string }>
 }
 export const SETUP_LIMITS = { actions: 8, goals: 8 } as const
+
+/**
+ * Esta ação pode entrar num CASO (`setup.actions`) desta cena? É a régua do `isSceneSetup` e a
+ * mesma que o editor do Admin usa para oferecer as escolhas: um caso com uma ação que a cena
+ * recusa nem chega a ser salvo.
+ */
+export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is SceneAction {
+  if (!isSceneAction(acao, scene)) return false
+  // Reinícios voltam para o próprio caso: dentro dele seriam um laço.
+  // `hint` é gesto de quem está travado, não estado de partida.
+  if (acao.type === 'reset' || acao.type === 'restart-case' || acao.type === 'hint') return false
+  // ⚠️ No andar do Farol o caso escolhe a velocidade e o limite, nunca ONDE o personagem está: o
+  // "Recomeçar" da bancada volta ao começo de fábrica, e um caso que abrisse fora da tela
+  // poria a criança num lugar ao qual ela não consegue voltar. Sem tempo e sem seta, o x não
+  // sai do começo.
+  if (
+    scene === 'lighthouse-walk' &&
+    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order', 'walk-pace'].includes(acao.type)
+  )
+    return false
+  return true
+}

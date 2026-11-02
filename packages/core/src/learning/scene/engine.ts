@@ -1,6 +1,7 @@
 import {
   COIN_COUNTER,
   isSceneAction,
+  isSceneSetupAction,
   LIGHTHOUSE_POSITION,
   type MeshLevel,
   SCENE_LIMITS,
@@ -142,7 +143,10 @@ export function openScene(start: SceneStart): SceneState {
     base.motionAmount.playing = false
   const acoes = start.setup?.actions
   if (!acoes?.length) return base
-  const montado = acoes.reduce((estado, acao) => stepScene(start, estado, acao), base)
+  // A mesma régua do Admin protege também chamadas diretas com uma configuração inválida.
+  const montado = acoes
+    .filter((acao) => isSceneSetupAction(acao, start.scene))
+    .reduce((estado, acao) => stepScene(start, estado, acao), base)
   const aberto = { ...montado, evidence: initialScene(start).evidence, caption: '' }
   esquecerOGesto(aberto, base, start.scene)
   // ⚠️⚠️ Um caso não abre com um salto que ainda não saiu do chão. Com `setup: [jump]` (e nenhum

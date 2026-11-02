@@ -27,7 +27,8 @@ const CORES: SceneCopyColor[] = ['azul', 'rosa', 'verde', 'laranja']
 
 /** O botão em destaque é o gesto que a fala do Zappy pede agora (a régua de `proximoGestoDaMemoria`). */
 export type GestoDaCopia =
-  | { gesto: 'baixar' | 'importar' }
+  | { gesto: 'baixar' }
+  | { gesto: 'importar' }
   | { gesto: 'pintar'; cor: SceneCopyColor }
   | null
 export function proximoGestoDaCopia(fala: string | undefined, c: SceneCopies): GestoDaCopia {
