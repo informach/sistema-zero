@@ -23,7 +23,7 @@ export interface Alvo {
 
 export type Passo =
   | {
-      fazer: 'apontar' | 'clicar' | 'clique duplo'
+      fazer: 'apontar' | 'clicar' | 'clique duplo' | 'clique direito'
       alvo: Alvo
       espera?: 'acelerar' | 'cortar'
       /** apontar: o ponto é onde a mão descansa (ao lado do bloco, não em cima). */
@@ -175,6 +175,12 @@ export const VERBOS: Verbo[] = [
       'Troca um campo de bloco: escolhe no menu ou no seletor que ele abre, ou reescreve um número ou texto (em "<bloco>" para dizer qual).',
   },
   {
+    verbo: 'organizar blocos',
+    exemplo: 'organizar blocos',
+    descricao:
+      'Botão direito no fundo da área de trabalho e Organizar blocos: arruma blocos um por cima do outro.',
+  },
+  {
     verbo: 'abrir campo',
     exemplo: 'abrir campo "jogador" em "Deixar o sprite"',
     descricao:
@@ -312,7 +318,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // blocos aparecerem e pergunta de novo.
   if (
     pagina &&
-    /^(arrastar at[eé]|apontar (bloco|encaixe|abaixo de)|encaixar|abrir campo|trocar) /i.test(
+    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |encaixar |abrir campo |trocar |organizar blocos$)/i.test(
       texto,
     ) &&
     !pagina.areaPronta()
@@ -326,6 +332,17 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       },
       { fazer: 'continuar', acao: texto },
     ]
+
+  // Blocos um por cima do outro (um projeto que veio de outra parte): o menu da área de trabalho
+  // arruma, como a professora faz com o botão direito.
+  if (f === 'organizar blocos') {
+    const fundo = precisaDaPagina(pagina).fundoLivre()
+    if (!fundo) throw new Error('Não achei um espaço vazio na área de trabalho para o menu.')
+    return [
+      { fazer: 'clique direito', alvo: fundo },
+      { fazer: 'clicar', alvo: { texto: 'Organizar blocos', dentro: '.blocklyWidgetDiv' } },
+    ]
+  }
 
   const achar = /^achar (.+)$/i.exec(texto)
   if (achar?.[1]) {

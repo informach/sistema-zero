@@ -25,6 +25,8 @@ export interface PaginaDoPalco {
   encaixe(bloco: string, rotulo: string): Alvo | null
   /** Um arrasto do fundo da área de trabalho que traz o bloco à vista (nulo se já está). */
   rolagem(bloco: string): { de: Alvo; para: Alvo } | 'visivel' | null
+  /** Um ponto do fundo da área de trabalho à vista, sem bloco em cima (para o menu dela). */
+  fundoLivre(): Alvo | null
   /** O mesmo para um campo de bloco, que também precisa estar descoberto para o clique. */
   rolagemDoCampo(valor: string, bloco?: string): { de: Alvo; para: Alvo } | 'visivel' | null
   /** Algum botão visível com este texto. */
@@ -321,6 +323,20 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       )
       const r = (path ?? block).getBoundingClientRect()
       return pontoEm(area, r.left + 12, r.bottom + 10)
+    },
+
+    fundoLivre() {
+      const area = areaDeTrabalho(doc)
+      if (!area) return null
+      const view = areaVisivel(doc, area)
+      for (const fy of [0.85, 0.15, 0.5, 0.7, 0.3])
+        for (const fx of [0.85, 0.5, 0.15, 0.7, 0.3]) {
+          const x = view.left + view.width * fx
+          const y = view.top + view.height * fy
+          if (doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
+            return pontoEm(area, x, y)
+        }
+      return null
     },
 
     perto(texto) {
