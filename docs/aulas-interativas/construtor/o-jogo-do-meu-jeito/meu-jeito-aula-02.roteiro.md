@@ -10,7 +10,7 @@
 
 **Clipe:** `video-bordas`
 
-**Na tela:** No "Imagina um desenho montado com pecinhas", mostrar o meme ilustrado (2 a 3 s) do Zappy montando uma pedra com pecinhas [na edição: meme das pecinhas]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e mostrar as duas pedras de longe, com a Lupa em 1. No "Os botões Aproximar e Afastar", apontar o botão [apontar "Aproximar"]. Não aproximar: o que acontece com cada borda é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "No Pinta, existem dois jeitos de desenhar", mostrar a experiência na aula, parada, com as duas pedras de longe. No "Imagina um desenho montado com pecinhas", mostrar o meme ilustrado (2 a 3 s) do Zappy montando uma pedra com pecinhas [na edição: meme das pecinhas]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar as duas pedras paradas, de longe, sem aproximar: o que acontece com cada borda é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -21,11 +21,9 @@
 
 [engaging, energetic, conversational voice] Imagina um desenho montado com pecinhas quadradas de brinquedo. Ele é como o desenho em pixel: cada pecinha é um quadradinho.
 
-[engaging, energetic, conversational voice] Será que, de perto, as duas bordas continuam parecidas? O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Pense numa pedra em pixel e numa pedra em vetor, com a mesma forma, vistas bem de perto, como numa lupa. Será que as bordas continuam parecidas? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, as duas pedras têm a mesma forma, uma em pixel e a outra em vetor. Os botões Aproximar e Afastar funcionam como a Lupa do Pinta.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: aproxime e afaste as duas pedras e compare as bordas, de perto e de longe. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar a borda de cada pedra, de perto e de longe. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 
@@ -86,14 +84,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-espelho`
 
-**Na tela:** No "Sabe quando você pinga tinta numa folha", mostrar o meme ilustrado (2 a 3 s) do Zappy abrindo a folha dobrada [na edição: meme da folha dobrada]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o primeiro espelho [apontar "Espelho lado a lado: desligado"]. No "Com estes outros, você pinta", apontar os botões de pintar [apontar "Pintar a asa"] e o Balde [apontar "Balde de tinta: encher a asa"]. Não pintar nem ligar espelho: onde a tinta aparece é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "o Pinta tem o espelho", mostrar a experiência na aula, parada, com o papel em branco. No "Sabe quando você pinga tinta numa folha", mostrar o meme ilustrado (2 a 3 s) do Zappy abrindo a folha dobrada [na edição: meme da folha dobrada]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com o papel em branco, sem pintar nem ligar espelho: onde a tinta aparece é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] A sua nave vai ter dois lados iguais, como a maioria das naves. Para você não desenhar cada lado duas vezes, o Pinta tem o espelho.
 
-[engaging, energetic, conversational voice] O espelho repete o seu traço do outro lado de uma linha do meio. No Pinta, existem dois: o Espelho lado a lado e o Espelho de cima e de baixo.
+[engaging, energetic, conversational voice] O espelho repete o seu traço do outro lado de uma linha do meio. O Pinta tem dois espelhos, cada um com a sua própria linha do meio, e tem o Balde de tinta, que pinta uma parte inteira de uma vez.
 
 [engaging, energetic, conversational voice] Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.
 
@@ -101,22 +99,20 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões ligam e desligam cada espelho. Com estes outros, você pinta uma parte da nave ou usa o Balde de tinta.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: pinte com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Compare onde a tinta aparece em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar onde a tinta aparece com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-espelho-K1 | Dedé | 1 | folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio. | E o Balde de tinta, o espelho copia também? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões ligam e desligam | [curious] |
+| video-espelho-K1 | Dedé | 1 | folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio. | E o Balde de tinta, o espelho copia também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde a tinta aparece com os espelhos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-espelho-K1`: entrada — Manter o meme da folha dobrada e a experiência com o papel em branco. Saída — Seguir sem fazer o teste: a professora só convida a testar e aponta os controles.
+- `video-espelho-K1`: entrada — Manter o meme da folha dobrada e a experiência com o papel em branco. Saída — Seguir sem fazer o teste: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/symmetry.ts`, com a tela em `packages/member-shell/src/components/scene-livre/symmetry.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
@@ -203,11 +199,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-luz` · Mude o lado da luz
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-luz`
 
-**Na tela:** No "Imagina uma bola deixada no quintal", mostrar o meme ilustrado (2 a 3 s) do Zappy de óculos escuros ao lado da bola [na edição: meme da bola no sol]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão [apontar "A sombra e a luz: desligadas"]. No "e este outro muda O sol de lado", apontar o botão [apontar "O sol: na esquerda"]. Não ligar a sombra e a luz nem mudar o sol: o que acontece com a bola é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "Agora falta ela parecer redonda", mostrar a experiência na aula, parada, com a bola de um tom só. No "Imagina uma bola deixada no quintal", mostrar o meme ilustrado (2 a 3 s) do Zappy de óculos escuros ao lado da bola [na edição: meme da bola no sol]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a bola parada, com um tom só, sem ligar a sombra e a luz nem mudar o sol: o que acontece com a bola é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -222,16 +218,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga A sombra e a luz da bola, e este outro muda O sol de lado.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: ligue e desligue a sombra e a luz e troque o sol de lado. Compare a forma da bola e os tons de azul. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a sombra, a luz e o lado do sol fazem com a forma da bola. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-luz-K1 | Dedé | 1 | uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário. | E se o sol mudar de lado? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga A sombra | [curious] |
+| video-luz-K1 | Dedé | 1 | uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário. | E se o sol mudar de lado? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a sombra, a luz e o lado do sol | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

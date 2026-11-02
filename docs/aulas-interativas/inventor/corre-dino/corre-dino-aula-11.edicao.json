@@ -22,8 +22,8 @@
       "clipe": "video-guardar-mudar-mostrar",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número dos",
+      "ancoraAntes": "para todo mundo. No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na caixa pontos e na tela do",
       "falaPrincipal": "E se o número não estiver na tela, ele continua mudando?",
       "falaPersonagem": "E se o número não estiver na tela, ele continua mudando?",
       "tags": ["[curious]"]
@@ -33,8 +33,8 @@
       "clipe": "video-quando-o-placar-cresce",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o ponto soma e",
+      "ancoraAntes": "ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o placar cresce em cada jeito de",
       "falaPrincipal": "E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?",
       "falaPersonagem": "E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?",
       "tags": ["[curious]"]

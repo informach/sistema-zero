@@ -74,14 +74,14 @@
   "blocks": [
     {
       "key": "video-meta-do-jogo",
-      "plannedVideo": "Título: A meta do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os botões, sem clicar [apontar \"Maior que (>)\"] [apontar \"Maior ou igual (≥)\"] [apontar \"Acertar uma pedra\"] [apontar \"Tentar mudar a placa\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: A meta do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-meta-do-jogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -90,7 +90,7 @@
         "kind": "interactive",
         "required": true,
         "title": "A meta do jogo",
-        "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e tente mudar a placa no meio de uma partida. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?",
           "Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa.",
@@ -160,14 +160,14 @@
     },
     {
       "key": "video-reiniciar",
-      "plannedVideo": "Título: Jogar outra vez\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Só voltar para a tela de início\"] [apontar \"Começar tudo de novo\"]. No \"e este botão faz o papel da tecla Enter\", apontar o botão, sem clicar [apontar \"Apertar Enter\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-reiniciar-K1: Debinha substitui “E qual é a diferença entre os dois?”. Antes: “jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o Enter faz no”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Jogar outra vez\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-reiniciar-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-reiniciar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -176,7 +176,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Jogar outra vez",
-        "instructions": "Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe os asteroides que ficam na tela quando uma partida nova começa.",
           "Compare os dois jeitos do Enter no fim da partida: só voltar para a tela de início e começar tudo de novo.",
@@ -1669,7 +1669,7 @@
       "key": "meta-do-jogo",
       "title": "A meta do jogo",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-meta-do-jogo", "fala-meta-do-jogo", "experiencia-meta-do-jogo"],
       "workspaceKey": null,
       "externalTool": null,
@@ -2015,7 +2015,7 @@
       "key": "reiniciar",
       "title": "Jogar outra vez",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-reiniciar", "fala-reiniciar", "experiencia-reiniciar"],
       "workspaceKey": null,
       "externalTool": null,

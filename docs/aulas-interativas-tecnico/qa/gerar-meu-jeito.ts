@@ -123,8 +123,10 @@ const comecaPelaRetomada = (s: SecaoMeuJeito) =>
 export const EXPERIENCIAS_DO_BLOCO = new Set(['nomes', 'recorte', 'dois-relogios'])
 /**
  * A nota "Na tela" (ESPEC-ROTEIRO, seção 9.8). Desde 02/11/2026 a experiência é EXPLORAÇÃO LIVRE com
- * o Zappy: o vídeo explica a ideia, aponta os controles e convida a investigar, sem fazer os testes
- * pela criança nem contar o resultado (DESCOBERTA-GUIADA, revisão de 01/11 e 02/11/2026). A nota de
+ * o Zappy: o vídeo explica a ideia e convida a investigar, no molde do Cadê, sem apontar os controles,
+ * sem ditar a sequência de testes nem contar o resultado (DESCOBERTA-GUIADA, revisão de 01/11 e
+ * 02/11/2026; DIRETRIZES, "O vídeo da experiência explica o conceito e convida a investigar"). Na tela
+ * da experiência, o vídeo só amplia a cena parada e mostra os memes. A nota de
  * cada seção cita a fala (`No "..."`) e traz os gestos entre colchetes; as aplicações no Pinta e no
  * Estúdio ganham a retomada (quando vêm logo depois de uma experiência) e a saída da parte.
  */

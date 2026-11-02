@@ -19,10 +19,10 @@
       "clipe": "video-copia-publicada",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "o que vai para lá quando você publica. Sabe quando você tira uma foto de um desenho e manda para alguém da família?",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado está o seu projeto, e do",
-      "falaPrincipal": "E se eu pintar mais o desenho depois, a foto muda?",
-      "falaPersonagem": "E se eu pintar mais o desenho depois, a foto muda?",
+      "ancoraAntes": "nada dela vai para o Mural de verdade. Sabe quando você tira uma foto de um desenho e manda para alguém da família?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você",
+      "falaPrincipal": "E se eu mudar o projeto depois de publicar, o Mural muda junto?",
+      "falaPersonagem": "E se eu mudar o projeto depois de publicar, o Mural muda junto?",
       "tags": ["[curious]"]
     },
     {

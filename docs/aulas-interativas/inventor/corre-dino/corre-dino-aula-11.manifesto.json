@@ -41,14 +41,14 @@
   "blocks": [
     {
       "key": "video-guardar-mudar-mostrar",
-      "plannedVideo": "Título: Guardar ou mostrar?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar a caixa e os botões, sem clicar [apontar \"Guardar o número 0\"] [apontar \"Mostrar o número na tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-guardar-mudar-mostrar-K1: Debinha substitui “E se o número não estiver na tela, ele continua mudando?”. Antes: “coisas: o número que o jogo guarda e o número que aparece na tela. Uma caixa que guarda um número se chama variável.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número dos”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Guardar ou mostrar?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem clicar em nada. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-guardar-mudar-mostrar-K1: Debinha substitui “E se o número não estiver na tela, ele continua mudando?”. Antes: “para todo mundo. No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na caixa pontos e na tela do”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-guardar-mudar-mostrar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -56,7 +56,7 @@
       "content": {
         "kind": "interactive",
         "title": "Guardar ou mostrar?",
-        "instructions": "Compare a caixa pontos com a tela do jogo quando você guarda um número, quando o Dino ganha um ponto com o número fora da tela e quando o número aparece na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare a caixa pontos com a tela do jogo quando o número é guardado, quando muda e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Depois de cada botão, compare a caixa pontos com a tela do jogo.",
           "O número muda mesmo sem aparecer? Ganhe um ponto com o número fora da tela.",
@@ -115,14 +115,14 @@
     },
     {
       "key": "video-quando-o-placar-cresce",
-      "plannedVideo": "Título: Quando o placar cresce?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o cronômetro de uma corrida\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"A cada quadro\"] [apontar \"A cada segundo\"] [apontar \"Ligar a pergunta\"]. No \"Estes botões passam um segundo e mudam de tela\", apontar os botões, sem clicar [apontar \"Passar 1 segundo\"] [apontar \"Começar a partida\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quando-o-placar-cresce-K1: Debinha substitui “E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?”. Antes: “E o jogo pode somar o ponto em todo quadro ou a cada segundo, e pode perguntar antes de somar: estamos jogando agora?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o ponto soma e”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando o placar cresce?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o cronômetro de uma corrida\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na linha de largada, com o Zappy segurando um cronômetro [na edição: meme do cronômetro da corrida]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quando-o-placar-cresce-K1: Debinha substitui “E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?”. Antes: “ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o placar cresce em cada jeito de”.\n\nFala completa em corre-dino-aula-11.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-quando-o-placar-cresce",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -130,7 +130,7 @@
       "content": {
         "kind": "interactive",
         "title": "Quando o placar cresce?",
-        "instructions": "O ponto pode somar a cada quadro ou a cada segundo, a qualquer hora ou só quando o jogo pergunta: estamos jogando agora? Teste cada jeito nas três telas e compare o placar. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare o placar em cada jeito de somar, com e sem a pergunta. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe o placar a cada segundo que passa, em cada tela.",
           "Compare o ponto a cada quadro e a cada segundo; depois ligue a pergunta e passe pelas três telas.",
@@ -1245,7 +1245,7 @@
       "key": "guardar-mudar-mostrar",
       "title": "Guardar ou mostrar?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-guardar-mudar-mostrar",
         "fala-guardar-mudar-mostrar",
@@ -1363,7 +1363,7 @@
       "key": "quando-o-placar-cresce",
       "title": "Quando o placar cresce?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-quando-o-placar-cresce",
         "fala-quando-o-placar-cresce",

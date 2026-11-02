@@ -1,14 +1,14 @@
+[engaging, energetic, conversational voice] A gravidade é uma força que puxa tudo para baixo, e cada jogo decide se usa essa força.
+
 [engaging, energetic, conversational voice] Sabe quando você joga uma bola para cima? Ela não fica lá no alto para sempre.
 
-[engaging, energetic, conversational voice] Quem puxa a bola de volta é a gravidade, uma força que puxa tudo para baixo. No seu jogo, o Dino vai pular, e o jogo pode ter gravidade ou não.
+[engaging, energetic, conversational voice] No seu jogo, o Dino vai pular, e a altura dele aparece num número. E o jogo pode ter gravidade ou não.
 
 [curious] E sem gravidade, o Dino volta para o chão depois do pulo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão faz o Dino pular, e este outro liga e desliga a gravidade. Este número mostra a altura do Dino.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o pulo do Dino sem gravidade e com gravidade, de olho no número da altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -32,17 +32,17 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Impulso é a força do começo de um pulo. É ele que diz com quanta força um personagem sai do chão.
+
 [engaging, energetic, conversational voice] Sabe quando você pula numa cama elástica? Dá para pular com pouca força ou com muita força.
 
-[engaging, energetic, conversational voice] No pulo do Dino também tem uma força, no começo do pulo. Essa força se chama impulso. A gravidade continua a mesma em todos os pulos.
+[engaging, energetic, conversational voice] No seu jogo, você escolhe o impulso do Dino, e cada pulo deixa uma marca da altura. A gravidade continua a mesma em todos os pulos.
 
 [curious] E com mais impulso, até onde o Dino chega?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem o impulso, e este outro faz o Dino pular. Cada pulo deixa uma marca da altura.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as marcas da altura dos pulos com impulsos diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o impulso muda nas marcas da altura dos pulos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

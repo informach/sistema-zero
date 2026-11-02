@@ -34,9 +34,9 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”. Antes: “em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mostram o Quadro 1 e o”.
+video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”. Antes: “em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e”.
 
-**Experiência em exploração livre:** `frames`, com `setup.freeExploration`. Compare os dois quadros com a Prévia parada. Depois ponha a Prévia para tocar rápido e devagar, pare a Prévia e teste os dois quadros iguais. Observe o fogo em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `frames`, com `setup.freeExploration`. Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Desenhe o primeiro fogo
 
@@ -54,9 +54,9 @@ video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-fantasma-K1: Debinha substitui “Dá para acertar o tamanho do fogo sem o Fantasma?”. Antes: “fina por cima de um desenho? Dá para ver as linhas de baixo através dela. O Fantasma funciona como essa folha fina.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mostram o Quadro 1 e o”.
+video-fantasma-K1: Debinha substitui “Dá para acertar o tamanho do fogo sem o Fantasma?”. Antes: “que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele”.
 
-**Experiência em exploração livre:** `onion-skin`, com `setup.freeExploration`. No quadro 2, mude o tamanho do fogo com o Fantasma desligado e com ele ligado. Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `onion-skin`, com `setup.freeExploration`. Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Mude só o fogo no segundo quadro
 

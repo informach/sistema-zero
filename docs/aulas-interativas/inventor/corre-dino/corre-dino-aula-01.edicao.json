@@ -25,8 +25,8 @@
       "clipe": "video-uma-vez-e-sempre",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "tem coisa que você faz uma vez, antes de sair, como amarrar o tênis, e tem coisa que você faz o caminho inteiro.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o Dino dá um",
+      "ancoraAntes": "jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no Dino quando o passinho",
       "falaPrincipal": "E se o Dino der um passinho uma vez só, no começo? Ele continua andando?",
       "falaPersonagem": "E se o Dino der um passinho uma vez só, no começo? Ele continua andando?",
       "tags": ["[curious]"]
@@ -36,8 +36,8 @@
       "clipe": "video-limite-da-tela",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "que caber nela. O seu jogo também tem uma folha: a tela. O tamanho dela é feito de dois números, a largura e a altura.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mudam a largura e a",
+      "ancoraAntes": "da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na borda quando muda a",
       "falaPrincipal": "E se a largura diminuir, a tela fica mais baixa ou mais estreita?",
       "falaPersonagem": "E se a largura diminuir, a tela fica mais baixa ou mais estreita?",
       "tags": ["[curious]"]
@@ -58,8 +58,8 @@
       "clipe": "video-coordenadas",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você muda o x e o y do Dino, um",
+      "ancoraAntes": "a pessoa acha você. No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde o Dino vai quando o x muda,",
       "falaPrincipal": "E para que lado cada número leva o Dino?",
       "falaPersonagem": "E para que lado cada número leva o Dino?",
       "tags": ["[curious]"]
@@ -69,8 +69,8 @@
       "clipe": "video-criar-e-mostrar",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado ficam os bastidores, e",
+      "ancoraAntes": "o palco, que a plateia vê. No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda nos bastidores e na tela do",
       "falaPrincipal": "E quando o Dino passa a existir, ele já aparece na tela?",
       "falaPersonagem": "E quando o Dino passa a existir, ele já aparece na tela?",
       "tags": ["[curious]"]

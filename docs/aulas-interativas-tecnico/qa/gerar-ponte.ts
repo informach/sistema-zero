@@ -121,7 +121,7 @@ for (const [index, aula] of ponteAulas.entries()) {
           // à investigação. As pistas e os pedidos do modelo citam "Dentro da alavanca" e "No começo
           // do jogo", da bancada antiga: aqui vão do aberto ao direto com os botões desta tela.
           instructions:
-            'Investigue a ponte antes de puxar a alavanca, assim que puxar e quando o relógio chega a 4, observando a ponte, ponteAberta e o relógio. Compare também o relógio começando na alavanca e junto com a partida. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+            'Compare o que acontece com a ponte enquanto o relógio conta, com o relógio começando na alavanca e junto com a partida. Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
             'Olhe a ponte, ponteAberta e o relógio antes e após cada teste.',
             'Compare ir até a ponte antes de puxar a alavanca, assim que puxar e quando o relógio já chegou a 4. Depois compare o relógio começando na alavanca e junto com a partida.',

@@ -5,7 +5,7 @@
     "entry": "Projeto vazio, com Programação e Jogo 2D disponíveis.",
     "outcome": "Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.",
     "reason": "A primeira aula conserva jogo pronto e caderno, mas termina com a nave construída e visível. Preparação, coordenadas, criação e desenho ganham experiências e montagens curtas antes do envio.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A primeira experiência apresenta a palavra quadro (o desenho animado), que a tela livre usa em \"Sempre, em todo quadro\".",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A primeira experiência apresenta a palavra quadro (o desenho animado), que a tela livre usa em \"Sempre, em todo quadro\". O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Preparação e repetição",
@@ -61,21 +61,20 @@
         "title": "Uma vez ou sempre?",
         "kind": "exploration",
         "videoKey": "video-uma-vez-e-sempre",
-        "bridge": "Sua vez! Descubra o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Você já reparou\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para andar de bicicleta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os jeitos [apontar \"Uma vez, no começo\"] [apontar \"Sempre, em todo quadro\"]. No \"E este botão começa o jogo\", apontar o botão, sem clicar [apontar \"Começar o jogo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Você já reparou\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No \"É como sair para andar de bicicleta\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Você já reparou como um desenho animado parece se mexer? Na verdade, são vários desenhos parados, passando bem rápido, um depois do outro. Cada desenho desses se chama quadro.",
           "O seu jogo também é feito de quadros: enquanto a partida acontece, ele mostra um quadro atrás do outro. E tem coisa que o jogo faz uma vez só, no começo, e coisa que ele faz sempre, em todo quadro.",
           "É como sair para andar de bicicleta: tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe quando a nave anda um pouquinho, uma vez, no começo, ou sempre, em todo quadro. E este botão começa o jogo.",
-          "Agora é a sua vez de investigar: compare a nave quando ela anda uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda na nave quando ela anda uma vez só e quando ela anda o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Uma vez ou sempre?",
-          "instructions": "Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare a nave quando ela anda um pouquinho uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe quantas vezes a nave anda enquanto os quadros passam.",
             "Compare o que a nave faz depois do primeiro quadro nos dois jeitos.",
@@ -193,14 +192,13 @@
       {
         "key": "coordenadas",
         "title": "Onde fica a nave?",
-        "bridge": "Sua vez! Descubra como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os dois números [apontar \"x\"] [apontar \"y\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você combina\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando você combina com alguém de se encontrar na praça e diz: fico no banco perto da fonte? Com esse endereço, a pessoa acha você.",
           "No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.",
           "E para que lado cada número leva a nave? O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você muda o x e o y da nave, um número de cada vez, e vê onde ela vai parar.",
-          "Agora é a sua vez de investigar: compare o lugar da nave quando o x aumenta e quando o y aumenta, e descubra onde a nave fica com os dois números em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar para que lado a nave vai quando cada número muda, e onde ela fica quando os dois são zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -210,7 +208,7 @@
           "kind": "interactive",
           "required": true,
           "title": "Onde fica a nave?",
-          "instructions": "Compare o lugar da nave em três testes: aumente x sem mudar y, aumente y sem mudar x e coloque x e y em zero. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare para onde a nave vai quando o x muda e quando o y muda, e onde ela fica com os dois números em zero. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Mude um número só e compare o lugar novo da nave com o de antes.",
             "Depois de testar o x, faça o mesmo com o y. E onde será que fica o zero dos dois?",
@@ -266,21 +264,20 @@
         "title": "Existir e aparecer",
         "kind": "exploration",
         "videoKey": "video-criar-e-mostrar",
-        "bridge": "Sua vez! Descubra se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os bastidores e a tela, sem clicar. No \"Os botões fazem a nave existir e aparecer\", apontar o primeiro botão, sem clicar [apontar \"Criar a nave nos bastidores\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o teatro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe o teatro? Tem os bastidores, atrás da cortina, e tem o palco, que a plateia vê.",
           "No seu jogo também existem esses dois lugares. Existir no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, de um lado ficam os bastidores, e do outro, a tela do jogo. Os botões fazem a nave existir e aparecer.",
-          "Agora é a sua vez de investigar: compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar a diferença entre a nave existir nos bastidores e aparecer na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "semPerguntaFinal": true,
           "title": "Existir e aparecer",
-          "instructions": "Compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece na tela. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Olhe os dois lados, os bastidores e a tela do jogo, depois de cada botão.",
             "Compare a tela antes e depois de mostrar a nave. E se a nave sair da tela, ela continua nos bastidores?",
@@ -423,19 +420,18 @@
         "title": "O desenho de cada quadro",
         "kind": "exploration",
         "videoKey": "video-desenho-por-quadro",
-        "bridge": "Sua vez! Descubra o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas [apontar \"Desenhar só no começo\"] [apontar \"Apagar a tela antes de desenhar\"]. No \"Este botão passa um quadro\", apontar o botão, sem clicar [apontar \"Avançar 1 quadro\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
-          "Lembra do desenho animado, um quadro atrás do outro? No seu jogo, a nave pode mudar de lugar, mas a tela só mostra o que foi desenhado nela.",
-          "O que você acha que aparece? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe quando a nave é desenhada e se a tela é apagada antes de cada desenho. Este botão passa um quadro.",
-          "Agora é a sua vez de investigar: compare a tela quando a nave é desenhada só no começo, em todo quadro sem apagar a tela e em todo quadro apagando a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Lembra do desenho animado, um quadro atrás do outro? Desenhar a nave é pintar a nave na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.",
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar o que a tela mostra quando a nave é desenhada em momentos diferentes, com e sem apagar a tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "O desenho de cada quadro",
-          "instructions": "Compare a tela em três jeitos: a nave desenhada só no começo, desenhada em todo quadro sem apagar a tela e desenhada em todo quadro apagando a tela antes. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare o que a tela mostra quando a nave é desenhada só no começo ou em todo quadro, com e sem apagar a tela antes. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Depois de cada quadro, compare a tela com o x da nave.",
             "Conte quantas naves ficam na tela em cada jeito.",
@@ -474,7 +470,7 @@
         },
         "activityKey": "experiencia-quadro",
         "avatar": {
-          "after": "mas a tela só mostra o que foi desenhado nela.",
+          "after": "e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.",
           "speech": "E se a nave for desenhada em todo quadro, sem apagar a tela?",
           "beforeScreen": "Manter o meme do bloquinho de folhear até o fim da frase.",
           "afterScreen": "Depois da saída, voltar à experiência parada, sem passar quadros."
@@ -603,7 +599,7 @@
     "entry": "Tela 800 × 480 e nave visível em x 400, y 410, ainda parada.",
     "outcome": "Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original.",
     "reason": "Movimento, limpeza, limite e ordem do fundo têm etapas próprias. As experiências usam o cenário da nave e preparam a regra antes dos blocos. A limpeza retoma a comparação já feita na primeira aula.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades virou uma experiência curta própria, \"O tamanho do passinho\" (02/11/2026, a pedido da responsável: trocar um valor para ver o efeito é papel da experiência): a nave compara o passinho pequeno com o grande, em câmera lenta, e a montagem das setas só liga o número da velocidade a essa ideia e escolhe a velocidade da nave, sem refazer a comparação.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A experiência do movimento usa as metas da câmera lenta do Farol (moves-each-frame, stopped-after-release, walked-real-speed) e a da beirada usa left-the-screen, came-back-inside e stayed-inside. A comparação das velocidades virou uma experiência curta própria, \"O tamanho do passinho\" (02/11/2026, a pedido da responsável: trocar um valor para ver o efeito é papel da experiência): a nave compara o passinho pequeno com o grande, em câmera lenta, e a montagem das setas só liga o número da velocidade a essa ideia e escolhe a velocidade da nave, sem refazer a comparação. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Movimento e velocidade",
@@ -632,21 +628,20 @@
         "title": "A nave em câmera lenta",
         "kind": "exploration",
         "videoKey": "video-seta-e-velocidade",
-        "bridge": "Sua vez! Descubra o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "Do \"Lembra do desenho animado\" até o \"ela dá só um passinho\", a tela fica parada, e a edição troca esse trecho pelo desenho da nave em três quadros seguidos, um passinho em cada [na edição: a nave em três quadros, um passinho em cada]. No \"E como o jogo sabe\", ampliar a experiência parada [ampliar experiência] e apontar o selo da seta [apontar \"Seta apertada?\"]. No \"Olha aqui: nesta experiência\", apontar o botão, sem clicar [apontar \"Câmera lenta\"]. No \"cada quadro novo aparece nesta tira\", apontar a tira ainda vazia [apontar \"Os últimos quadros do jogo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que acontece com a seta solta. A comparação das velocidades saiu desta experiência e fica na montagem da parte seguinte. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "Do \"Lembra do desenho animado\" até o \"ela dá só um passinho\", a tela fica parada, e a edição troca esse trecho pelo desenho da nave em três quadros seguidos, um passinho em cada [na edição: a nave em três quadros, um passinho em cada]. No \"Para saber quando a nave tem que andar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que a nave faz com a seta segurada nem com a seta solta. A comparação dos tamanhos de passinho fica na experiência da parte seguinte, O tamanho do passinho. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Lembra do desenho animado, com um quadro atrás do outro? Quando a nave anda, ela também não pula de uma vez de um lado da tela para o outro: em cada quadro, ela dá só um passinho.",
-          "E como o jogo sabe quando a nave tem que andar? Em cada quadro, o jogo olha a seta. Se você está segurando a seta, a nave dá um passinho para aquele lado.",
+          "Para saber quando a nave tem que andar, o jogo olha a seta em cada quadro, antes de mexer a nave.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, quando você clica em Câmera lenta, os quadros passam devagar, e cada quadro novo aparece nesta tira, um do lado do outro.",
-          "Agora é a sua vez de investigar: compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que a nave faz em cada quadro com a seta segurada e com a seta solta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activityKey": "experiencia-seta-e-velocidade",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "A nave em câmera lenta",
-          "instructions": "Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Repare nas marcas e na tira de quadros enquanto você segura a seta.",
             "Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.",
@@ -678,8 +673,8 @@
           }
         },
         "avatar": {
-          "after": "Se você está segurando a seta, a nave dá um passinho para aquele lado.",
-          "speech": "E quando a seta está solta?",
+          "after": "o jogo olha a seta em cada quadro, antes de mexer a nave.",
+          "speech": "E o que a nave faz num quadro em que a seta está solta?",
           "beforeScreen": "Manter a experiência parada, com o selo da seta à vista.",
           "afterScreen": "Depois da saída, continuar com a experiência parada, sem rodar quadros."
         }
@@ -689,21 +684,20 @@
         "title": "O tamanho do passinho",
         "kind": "exploration",
         "videoKey": "video-tamanho-do-passinho",
-        "bridge": "Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Pense em você andando\", a tela fica parada, e a edição mostra por 2 a 3 segundos o desenho ilustrado, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: uma fileira de pegadas de formiga ao lado de uma fileira de pegadas de gigante, com o mesmo número de pegadas [na edição: pegadas de formiga e de gigante]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os dois botões, sem clicar [apontar \"Passinho pequeno\"] [apontar \"Passinho grande\"]. No \"e esta caixa, Os dois passinhos\", apontar a caixa ainda sem rastro [apontar \"Os dois passinhos\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que muda com o passinho grande nem com o pequeno. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra, código nem do número da velocidade (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Pense em você andando\", a tela fica parada, e a edição mostra por 2 a 3 segundos o desenho ilustrado, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao lado de uma pegada de formiga e de uma pegada de gigante, soltas, sem fileira [na edição: pegadas de formiga e de gigante]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que muda com o passinho grande nem com o pequeno. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra, código nem do número da velocidade (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Pense em você andando: dá para dar passinhos de formiga ou passos de gigante. Em cada passo você anda um pouco, e o tamanho de cada passo é você quem escolhe.",
           "No jogo é igual: em cada quadro, a nave dá um passinho, e esse passinho pode ser pequeno ou grande.",
           "E o que muda quando o passinho fica maior? O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, estes botões escolhem o tamanho do passinho, e esta caixa, Os dois passinhos, guarda o rastro de cada passinho que você já testou.",
-          "Agora é a sua vez de investigar: compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda no caminho da nave quando o passinho é pequeno e quando ele é grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activityKey": "experiencia-tamanho-do-passinho",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "O tamanho do passinho",
-          "instructions": "Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Repare na distância entre as marcas e no quanto a nave sai da linha em cada quadro da tira.",
             "Teste um tamanho de passinho em câmera lenta, troque o tamanho e compare as marcas e Os dois passinhos.",
@@ -832,21 +826,21 @@
         "title": "A beirada da tela",
         "kind": "exploration",
         "videoKey": "video-limite-da-tela",
-        "bridge": "Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Quando você olha por uma janela\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando por uma janela, com a nave cortada pela moldura [na edição: meme da janela]. Do \"Primeiro, a nave dá o passinho\" até o \"Isso é o limite da tela\", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva a nave além da beirada e o jogo puxando a nave de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando a nave de volta]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Ligar o limite da tela\"]. No \"esta faixa mostra o que ficou fora da janela\", apontar a faixa [apontar \"Fora da tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não responder a pergunta do Dedé. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você olha por uma janela\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando por uma janela para o céu, sem a nave [na edição: meme da janela]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não responder a pergunta do Dedé nem mostrar o que acontece com a nave na beirada. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
-          "Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se a nave passa da beirada, ela vai sumindo da sua vista.",
-          "Para ela não sumir, o jogo pode fazer mais uma coisa em cada quadro. Primeiro, a nave dá o passinho. Depois, o jogo confere se ela passou da beirada e, se passou, puxa a nave de volta para dentro. Isso é o limite da tela.",
-          "O que você acha que acontece? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.",
-          "Agora é a sua vez de investigar: compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "A tela do jogo tem beiradas: é até ali que a gente vê o jogo.",
+          "Sabe quando você olha por uma janela? Você só vê o que está dentro da moldura.",
+          "No seu jogo, em cada quadro, o jogo pode conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.",
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar o que acontece com a nave na beirada, com o limite desligado e ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activityKey": "experiencia-limite-da-tela",
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "A beirada da tela",
-          "instructions": "Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Olhe a faixa fora da tela quando a nave chega na beirada.",
             "E se o limite for ligado com a nave já fora da tela? Observe o próximo quadro.",
@@ -878,7 +872,7 @@
           }
         },
         "avatar": {
-          "after": "Isso é o limite da tela.",
+          "after": "e ela pode ficar ligada ou desligada.",
           "speech": "E se o limite for ligado com a nave já fora da tela?",
           "beforeScreen": "Manter a tela parada, sem rodar a experiência na beirada.",
           "afterScreen": "Depois da saída, ampliar a experiência parada."
@@ -958,21 +952,20 @@
         "title": "Quem fica na frente?",
         "kind": "exploration",
         "videoKey": "video-ordem-dos-desenhos",
-        "bridge": "Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy colando uma figurinha das estrelas por cima da figurinha da nave [na edição: meme das figurinhas]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os botões, sem clicar [apontar \"Desenhar a nave por último\"] [apontar \"Desenhar o fundo de estrelas por último\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas da nave e das estrelas na mão, escolhendo qual colar primeiro [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
-          "Sabe quando você cola figurinhas num álbum, uma por cima da outra? A figurinha que você cola depois cobre um pedaço da que já estava lá.",
+          "Sabe quando você cola figurinhas num álbum, umas por cima das outras? A ordem em que você cola faz diferença.",
           "A tela do jogo também é montada assim: em cada quadro, o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.",
-          "O que você acha que acontece com a nave? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, estes dois botões escolhem quem é desenhado por último, a nave ou o fundo de estrelas.",
-          "Agora é a sua vez de investigar: compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar o que muda na tela quando a ordem dos desenhos muda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "semPerguntaFinal": true,
           "title": "Quem fica na frente?",
-          "instructions": "Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe quem fica na frente depois de cada troca.",
             "Compare a nave quando ela é desenhada por último e quando o fundo é desenhado por último.",
@@ -1393,7 +1386,7 @@
     "entry": "Nave com setas, limpeza, bordas e estrelas; mesmo resultado do primeiro marco original.",
     "outcome": "Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair da tela.",
     "reason": "O evento é ensinado no próprio projeto. Duas experiências cobrem informações invisíveis: ler a posição no disparo e retirar objetos que não aparecem mais.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do disparo (652 palavras) virou duas partes: criar-tiro (o evento da barra de espaço com o som, logo depois da experiência do evento) e tiro-da-nave (id novo: o grupo, o tiro lendo o lugar da nave e a velocidade, logo depois das experiências do número lido e da direção). A ordem das partes mudou para cada montagem vir logo depois da sua experiência; os ids existentes ficam.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do disparo (652 palavras) virou duas partes: criar-tiro (o evento da barra de espaço com o som, logo depois da experiência do evento) e tiro-da-nave (id novo: o grupo, o tiro lendo o lugar da nave e a velocidade, logo depois das experiências do número lido e da direção). A ordem das partes mudou para cada montagem vir logo depois da sua experiência; os ids existentes ficam. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Evento",
@@ -1414,20 +1407,19 @@
         "title": "Quando sai o tiro?",
         "kind": "exploration",
         "videoKey": "video-tecla-e-repeticao",
-        "bridge": "Sua vez! Descubra em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa e a nave abrindo a porta [na edição: meme da campainha]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os jeitos [apontar \"Na hora em que algo acontece\"]. No \"este botão faz o papel da tecla\", apontar o botão, sem clicar [apontar \"Apertar a tecla\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue em que momento o tiro sai em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe a campainha de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa e a nave abrindo a porta [na edição: meme da campainha]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo no botão.",
           "No seu jogo, você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.",
-          "O que você acha que aparece? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe quando sai um tiro, e este botão faz o papel da tecla.",
-          "Agora é a sua vez de investigar: compare os tiros nos três jeitos: uma vez, no começo, sempre, em todo quadro, e na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar em que momento o tiro sai em cada um dos três jeitos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Quando sai o tiro?",
-          "instructions": "Compare os tiros em três jeitos: uma vez, no começo, sempre, em todo quadro, e na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare quando o tiro sai em cada um dos três jeitos, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe quantos tiros saem e em que momento cada um aparece.",
             "Compare o jeito Na hora em que algo acontece, com a tecla e sem a tecla, com o jeito Sempre, em todo quadro.",
@@ -1565,14 +1557,13 @@
       {
         "key": "escrito-e-lido",
         "title": "Onde o tiro nasce?",
-        "bridge": "Sua vez! Descubra onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Tem dois jeitos de dizer onde você está\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy escrevendo num papelzinho e, ao lado, o Zappy respondendo a um amigo que pergunta onde ele está [na edição: meme do papelzinho e da resposta na hora]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Número escrito: 400\"] [apontar \"Número lido da nave\"]. No \"muda a nave de lugar e atira\", apontar os lugares e o botão de atirar, sem clicar [apontar \"Atirar\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue onde o tiro nasce quando a nave muda de lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Tem dois jeitos de dizer onde você está\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy escrevendo num papelzinho e, ao lado, o Zappy respondendo a um amigo que pergunta onde ele está [na edição: meme do papelzinho e da resposta na hora]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
-          "Tem dois jeitos de dizer onde você está: escrever num papelzinho, que fica com o que você escreveu, ou responder na hora em que alguém pergunta.",
+          "Tem dois jeitos de dizer onde você está: escrever num papelzinho ou responder na hora em que alguém pergunta.",
           "O tiro do seu jogo precisa de um número que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe de onde vem o número do tiro, muda a nave de lugar e atira. Cada tiro deixa uma marca no lugar onde nasceu.",
-          "Agora é a sua vez de investigar: compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes, e descubra de que ponto da nave o tiro sai. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar onde o tiro nasce quando a nave muda de lugar, com o número escrito e com o número lido da nave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -1582,7 +1573,7 @@
           "kind": "interactive",
           "required": true,
           "title": "Onde o tiro nasce?",
-          "instructions": "Compare onde nascem os tiros com o número escrito e com o número lido da nave, mudando a nave de lugar entre um tiro e outro. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Compare as marcas dos tiros depois de mudar a nave de lugar.",
             "Faça o mesmo teste com o número escrito e com o número lido da nave.",
@@ -1626,20 +1617,19 @@
         "title": "Para que lado o tiro anda?",
         "kind": "exploration",
         "videoKey": "video-direcao-do-tiro",
-        "bridge": "Sua vez! Descubra o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os números, sem clicar [apontar \"Velocidade para baixo\"]. No \"este botão passa um quadro\", apontar o botão [apontar \"Avançar 1 quadro\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que o número da velocidade faz com o tiro e com o y. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.",
           "No seu jogo, a velocidade do tiro é assim: ela diz quanto o tiro anda em cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, estes números escolhem a velocidade para baixo do tiro, e este botão passa um quadro. Ao lado, aparece o y do tiro.",
-          "Agora é a sua vez de investigar: compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar para que lado o tiro anda, e o que acontece com o y, com um número positivo e com um número negativo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Para que lado o tiro anda?",
-          "instructions": "Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade para baixo. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo na velocidade. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe o número do y em cada quadro.",
             "Compare o tiro e o y com um número negativo e com um número positivo.",
@@ -1912,14 +1902,13 @@
       {
         "key": "tiro-que-sai-da-tela",
         "title": "O tiro saiu da tela. E do jogo?",
-        "bridge": "Sua vez! Descubra o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho [na edição: meme da bola no quintal]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os bastidores, sem passar o tempo. No \"este botão faz o jogo tirar quem sai da tela\", apontar o botão, sem clicar [apontar \"Tirar do jogo quem sai da tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que acontece com o tiro que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando uma bola cai no quintal\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho [na edição: meme da bola no quintal]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.",
           "No seu jogo, os tiros ficam num grupo, que é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, ao lado da tela ficam os bastidores, com os tiros do grupo, e este botão faz o jogo tirar quem sai da tela.",
-          "Agora é a sua vez de investigar: compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o grupo de tiros quando o jogo tira do grupo quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -1929,7 +1918,7 @@
           "kind": "interactive",
           "required": true,
           "title": "O tiro saiu da tela. E do jogo?",
-          "instructions": "Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe a tela, os bastidores e o número de tiros no grupo.",
             "Compare o grupo quando o jogo tira quem sai da tela e quando não tira.",
@@ -2247,7 +2236,7 @@
     "entry": "Tiros saem da nave, sobem, têm som e são retirados do grupo ao sair da tela.",
     "outcome": "Asteroides nascem a cada 40 quadros, caem e saem do grupo; tiros ainda atravessam as pedras.",
     "reason": "Separa criar obstáculos de programar a colisão. Intervalo e sorteio são observados diretamente no jogo que a pessoa acabou de montar.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Intervalo",
@@ -2271,20 +2260,19 @@
         "title": "Quando nasce uma pedra nova?",
         "kind": "exploration",
         "videoKey": "video-intervalo-das-pedras",
-        "bridge": "Sua vez! Descubra o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando [na edição: meme da torneira]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Em todo quadro\"] [apontar \"De 40 em 40 quadros\"]. No \"e este passa um segundo de jogo\", apontar o botão [apontar \"Passar 1 segundo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando [na edição: meme da torneira]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe uma torneira pingando? Ela pode pingar sem parar ou esperar um pouco entre uma gota e outra.",
           "No seu jogo, as pedras vão nascer lá em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.",
-          "O que você acha que aparece na tela? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, estes botões escolhem quando nasce uma pedra nova, e este passa um segundo de jogo.",
-          "Agora é a sua vez de investigar: compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar o que muda na chuva de pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Quando nasce uma pedra nova?",
-          "instructions": "Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe quantas pedras nascem e o espaço entre elas.",
             "Compare as pedras que nascem em todo quadro com as que esperam alguns quadros.",
@@ -2417,20 +2405,19 @@
         "title": "Onde nasce cada pedra?",
         "kind": "exploration",
         "videoKey": "video-posicao-sorteada",
-        "bridge": "Sua vez! Descubra onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente da nave [na edição: meme do dado]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Sortear um lugar\"]. No \"esta régua marca cada lugar\", apontar a régua de cima, ainda sem marcas. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente da nave [na edição: meme do dado]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando você joga um dado? Ninguém sabe antes qual número vai sair, e cada jogada pode dar um número diferente. Isso é um sorteio.",
           "No seu jogo, se todas as pedras nascessem no mesmo lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, este botão sorteia um lugar, e esta régua marca cada lugar que já saiu.",
-          "Agora é a sua vez de investigar: compare os lugares sorteados e observe de onde a pedra entra na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar onde cada pedra nova nasce quando o jogo sorteia o lugar, e de onde ela entra na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Onde nasce cada pedra?",
-          "instructions": "Sorteie o lugar da pedra algumas vezes e compare as marquinhas na régua. Depois observe de onde a pedra entra na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Compare as marquinhas na régua depois de cada sorteio.",
             "Depois de sortear, deixe o tempo passar e observe a borda de cima da tela.",
@@ -2780,7 +2767,7 @@
     "entry": "Asteroides nascem a cada 40 quadros, caem e saem do grupo; tiros ainda atravessam as pedras.",
     "outcome": "Cada colisão retira somente o tiro e o asteroide envolvidos, com explosão e som.",
     "reason": "Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimento, sorteio e pontuação.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Grupo e objeto da colisão",
@@ -2797,14 +2784,13 @@
       {
         "key": "trombada",
         "title": "Quem sai do jogo na trombada?",
-        "bridge": "Sua vez! Descubra quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe o jogo de queimada\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com só um jogador saindo da quadra [na edição: meme da queimada]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"O grupo dos tiros\"] [apontar \"O tiro que encostou\"]. No \"e este botão passa um segundo de jogo\", apontar o botão [apontar \"Passar 1 segundo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe o jogo de queimada\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com a bola no ar, antes de acertar alguém [na edição: meme da queimada]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
-          "Sabe o jogo de queimada? Quando a bola acerta alguém, só quem foi acertado sai da quadra, e o resto do time continua jogando.",
+          "Sabe o jogo de queimada? Quando a bola acerta alguém, o combinado do jogo diz quem sai da quadra.",
           "No seu jogo, quando um tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.",
-          "O que você acha que acontece com os outros tiros e pedras? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe quem sai do jogo na trombada, de cada lado, e este botão passa um segundo de jogo.",
-          "Agora é a sua vez de investigar: compare quem sai do jogo quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram, e observe as outras pedras depois da trombada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar quem sai do jogo na trombada quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -2814,7 +2800,7 @@
           "kind": "interactive",
           "required": true,
           "title": "Quem sai do jogo na trombada?",
-          "instructions": "Compare quem sai do jogo quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Depois da trombada, observe as outras pedras. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe os dois contadores e as pedras que não encostaram em nada.",
             "Compare tirar os grupos inteiros com tirar só o tiro e a pedra que encostaram.",
@@ -3455,7 +3441,7 @@
     "entry": "Cada colisão retira somente o tiro e o asteroide envolvidos, com explosão e som.",
     "outcome": "Variável pontos começa em zero, aumenta somente no acerto e aparece no placar.",
     "reason": "Separa contagem de vidas. A experiência distingue guardar, alterar e mostrar um valor.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Variável",
@@ -3472,14 +3458,13 @@
       {
         "key": "caixa-de-pontos",
         "title": "Guardar e mostrar um número",
-        "bridge": "Sua vez! Descubra a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar a caixa e os botões, sem clicar [apontar \"Guardar o número 0\"] [apontar \"Mostrar o número na tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando alguém vai contando os gols\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy contando os gols nos dedos e, ao fundo, o placar do campo [na edição: meme dos gols contados de cabeça]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando alguém vai contando os gols de cabeça durante a partida? E tem também o placar, onde o número aparece para todo mundo.",
-          "No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.",
+          "No seu jogo, o número guardado vai se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, esta caixa guarda o número, e estes botões guardam o número, fazem a nave acertar um asteroide e mostram o número na tela.",
-          "Agora é a sua vez de investigar: compare a caixa pontos e a tela do jogo quando você guarda o número, quando a nave acerta um asteroide com o número fora da tela e quando o número aparece na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar a diferença entre o número que o jogo guarda e o número que aparece na tela, quando a nave acerta um asteroide. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -3489,7 +3474,7 @@
           "kind": "interactive",
           "required": true,
           "title": "Guardar e mostrar um número",
-          "instructions": "Compare a caixa pontos com a tela do jogo quando você guarda um número, quando a nave acerta um asteroide com o número fora da tela e quando o número aparece na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare a caixa pontos com a tela do jogo, com o número mostrado na tela e sem ele, quando a nave acerta um asteroide. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Depois de cada botão, compare a caixa pontos com a tela do jogo.",
             "O número muda mesmo sem aparecer? Teste um acerto com o número fora da tela.",
@@ -3693,7 +3678,7 @@
     "entry": "Variável pontos começa em zero, aumenta somente no acerto e aparece no placar.",
     "outcome": "Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.",
     "reason": "Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montagem própria; a comparação da proteção prepara a colisão da nave. Um quiz e o teste final retomam acertos, erros e batidas.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem da batida (535 palavras) virou duas: batida (a colisão, a pedra que sai e a explosão) e dano (id novo: a vida e a proteção, com o tremor). A experiência da proteção passou para logo antes da montagem do dano.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem da batida (535 palavras) virou duas: batida (a colisão, a pedra que sai e a explosão) e dano (id novo: a vida e a proteção, com o tremor). A experiência da proteção passou para logo antes da montagem do dano. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Preparar vidas",
@@ -3717,20 +3702,19 @@
         "title": "Quando a nave ganha as vidas?",
         "kind": "exploration",
         "videoKey": "video-vidas-no-comeco",
-        "bridge": "Sua vez! Descubra quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você ganha três fichas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na entrada do parque com três fichas na mão [na edição: meme das fichas do parque]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os jeitos, sem clicar [apontar \"Uma vez, no começo\"] [apontar \"Sempre, em todo quadro\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você ganha três fichas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na entrada do parque com três fichas na mão [na edição: meme das fichas do parque]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando você ganha três fichas na entrada do parque, e cada brinquedo gasta uma?",
           "No seu jogo, a nave vai ter três vidas, e cada pedra que bater vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.",
-          "O que você acha que acontece depois das batidas? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe quando a nave ganha as três vidas, e um asteroide bate nela de tempos em tempos.",
-          "Agora é a sua vez de investigar: compare as vidas depois das batidas quando a nave ganha as vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "O que você acha? Isso você vai testar na experiência.",
+          "Agora você vai investigar quantas vidas a nave tem depois das batidas quando ela ganha as três vidas uma vez só e quando ganha o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "activity": {
           "kind": "interactive",
           "required": true,
           "title": "Quando a nave ganha as vidas?",
-          "instructions": "Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe as vidas logo depois de cada batida do asteroide.",
             "Compare as vidas no fim do jogo nos dois jeitos.",
@@ -3938,14 +3922,13 @@
       {
         "key": "respiro",
         "title": "O tempinho de proteção",
-        "bridge": "Sua vez! Descubra quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy correndo de um amigo, com um reloginho contando o respiro [na edição: meme do respiro no pega-pega]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as proteções, sem clicar [apontar \"Nenhuma\"] [apontar \"45 quadros\"]. No \"três pedras batem na nave\", apontar o botão, sem clicar [apontar \"Avançar até a próxima pedra\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você brinca de pega-pega\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy correndo de um amigo, com um reloginho contando o respiro [na edição: meme do respiro no pega-pega]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe quando você brinca de pega-pega e, depois de ser pego, tem um tempinho para se afastar antes de poderem pegar você de novo? É um respiro.",
           "No seu jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe quanto tempo dura a proteção depois de bater, e três pedras batem na nave, uma de cada vez.",
-          "Agora é a sua vez de investigar: compare quantas vidas sobram sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quantas vidas sobram depois de três pedras sem proteção, com uma proteção curta e com uma proteção longa. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -3955,7 +3938,7 @@
           "kind": "interactive",
           "required": true,
           "title": "O tempinho de proteção",
-          "instructions": "Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe as vidas e os quadros de proteção que ainda restam em cada batida.",
             "Compare as três proteções: Nenhuma, 15 quadros e 45 quadros.",
@@ -4578,7 +4561,7 @@
     "entry": "Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.",
     "outcome": "Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.",
     "reason": "Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida. Os finais ficam para a aula seguinte.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do embrulho (699 palavras) virou duas: embrulhar (o estado inicio e a partida dentro de Se jogando) e abertura (id novo: o senão se inicio com a tela de abertura).",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do embrulho (699 palavras) virou duas: embrulhar (o estado inicio e a partida dentro de Se jogando) e abertura (id novo: o senão se inicio com a tela de abertura). O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Estado e condição",
@@ -4600,14 +4583,13 @@
       {
         "key": "estado-do-jogo",
         "title": "A partida já começou?",
-        "bridge": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Ligar a pergunta\"]. No \"este contador mostra quantos asteroides\", apontar o contador de asteroides criados. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe a porta de casa, que só abre com a chave? Antes de abrir, é como se ela fizesse uma pergunta: a chave está aqui? E a resposta decide o que acontece.",
           "O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, este botão liga e desliga a pergunta, e este contador mostra quantos asteroides foram criados.",
-          "Agora é a sua vez de investigar: compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar quantos asteroides o jogo cria, com a pergunta ligada e desligada, na tela de início e com a partida já começada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -4617,7 +4599,7 @@
           "kind": "interactive",
           "required": true,
           "title": "A partida já começou?",
-          "instructions": "Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe o contador de asteroides criados enquanto o tempo passa.",
             "Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar?",
@@ -5473,7 +5455,7 @@
     "entry": "Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.",
     "outcome": "Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.",
     "reason": "Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.",
-    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual ganharam uma experiência própria (02/11/2026, proposta aprovada pela responsável): \"A meta do jogo\" (cena `score-goal`), com o placar que sobe a cada acerto, a placa fixa em 26 e o sinal > ou ≥; a placa do brinquedo do parque virou a analogia do vídeo de convite, e a montagem dos finais abre com a retomada dessa experiência, sem refazê-la.",
+    "revisao": "As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira \"O que você acha? Isso você vai testar na experiência.\"; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo \"Tá vendo?\" no jogo, retomam a experiência e ligam cada bloco à ideia (\"É este bloco que…\"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual ganharam uma experiência própria (02/11/2026, proposta aprovada pela responsável): \"A meta do jogo\" (cena `score-goal`), com o placar que sobe a cada acerto, a placa fixa em 26 e o sinal > ou ≥; a placa do brinquedo do parque virou a analogia do vídeo de convite, e a montagem dos finais abre com a retomada dessa experiência, sem refazê-la. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.",
     "concepts": [
       [
         "Constante e comparação",
@@ -5502,14 +5484,13 @@
         "title": "A meta do jogo",
         "kind": "exploration",
         "videoKey": "video-meta-do-jogo",
-        "bridge": "Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os botões, sem clicar [apontar \"Maior que (>)\"] [apontar \"Maior ou igual (≥)\"] [apontar \"Acertar uma pedra\"] [apontar \"Tentar mudar a placa\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
           "Sabe aquele brinquedo do parque com uma placa na entrada, com a altura que a criança precisa ter? Cada criança que chega é comparada com o número da placa.",
           "No seu jogo também tem uma placa: a meta de 26 pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, estes dois botões escolhem o sinal da vitória, este faz um acerto, e este tenta mudar a placa no meio da partida.",
-          "Agora é a sua vez de investigar: compare em que acerto vem a vitória com maior que e com maior ou igual, e tente mudar a placa no meio de uma partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar em que acerto vem a vitória com cada sinal, e se a placa da meta pode mudar no meio da partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -5524,7 +5505,7 @@
           "kind": "interactive",
           "required": true,
           "title": "A meta do jogo",
-          "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e tente mudar a placa no meio de uma partida. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?",
             "Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa.",
@@ -5946,14 +5927,13 @@
       {
         "key": "reiniciar",
         "title": "Jogar outra vez",
-        "bridge": "Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
-        "screen": "No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Só voltar para a tela de início\"] [apontar \"Começar tudo de novo\"]. No \"e este botão faz o papel da tecla Enter\", apontar o botão, sem clicar [apontar \"Apertar Enter\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
+        "bridge": "Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+        "screen": "No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).",
         "speech": [
-          "Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Dá para só combinar uma partida nova e recomeçar, ou recolher tudo e arrumar o tabuleiro do zero.",
+          "Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Antes de recomeçar, vale olhar como ficou o tabuleiro.",
           "No seu jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.",
           "O que você acha? Isso você vai testar na experiência.",
-          "Olha aqui: nesta experiência, você escolhe o que o Enter faz no fim da partida, e este botão faz o papel da tecla Enter.",
-          "Agora é a sua vez de investigar: compare os asteroides que ficam na tela e a tela de início quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+          "Agora você vai investigar o que muda na partida nova quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
         ],
         "checks": [],
         "final": false,
@@ -5963,7 +5943,7 @@
           "kind": "interactive",
           "required": true,
           "title": "Jogar outra vez",
-          "instructions": "Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+          "instructions": "Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Observe os asteroides que ficam na tela quando uma partida nova começa.",
             "Compare os dois jeitos do Enter no fim da partida: só voltar para a tela de início e começar tudo de novo.",
@@ -6003,7 +5983,7 @@
         "activityKey": "experiencia-reiniciar",
         "avatar": {
           "after": "só voltar para a tela de início, ou começar tudo de novo.",
-          "speech": "E qual é a diferença entre os dois?",
+          "speech": "E a partida nova começa igual nos dois jeitos?",
           "beforeScreen": "Manter o meme do tabuleiro até o fim da frase da professora.",
           "afterScreen": "Depois da saída, ampliar a experiência sem jogar."
         }

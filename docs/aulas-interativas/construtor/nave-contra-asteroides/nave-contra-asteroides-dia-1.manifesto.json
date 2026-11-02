@@ -57,14 +57,14 @@
   "blocks": [
     {
       "key": "video-seta-e-velocidade",
-      "plannedVideo": "Título: A nave em câmera lenta\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Do \"Lembra do desenho animado\" até o \"ela dá só um passinho\", a tela fica parada, e a edição troca esse trecho pelo desenho da nave em três quadros seguidos, um passinho em cada [na edição: a nave em três quadros, um passinho em cada]. No \"E como o jogo sabe\", ampliar a experiência parada [ampliar experiência] e apontar o selo da seta [apontar \"Seta apertada?\"]. No \"Olha aqui: nesta experiência\", apontar o botão, sem clicar [apontar \"Câmera lenta\"]. No \"cada quadro novo aparece nesta tira\", apontar a tira ainda vazia [apontar \"Os últimos quadros do jogo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que acontece com a seta solta. A comparação das velocidades saiu desta experiência e fica na montagem da parte seguinte. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-seta-e-velocidade-K1: Dedé substitui “E quando a seta está solta?”. Antes: “que andar? Em cada quadro, o jogo olha a seta. Se você está segurando a seta, a nave dá um passinho para aquele lado.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, quando você clica em Câmera lenta,”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: A nave em câmera lenta\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Do \"Lembra do desenho animado\" até o \"ela dá só um passinho\", a tela fica parada, e a edição troca esse trecho pelo desenho da nave em três quadros seguidos, um passinho em cada [na edição: a nave em três quadros, um passinho em cada]. No \"Para saber quando a nave tem que andar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que a nave faz com a seta segurada nem com a seta solta. A comparação dos tamanhos de passinho fica na experiência da parte seguinte, O tamanho do passinho. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-seta-e-velocidade-K1: Dedé substitui “E o que a nave faz num quadro em que a seta está solta?”. Antes: “dá só um passinho. Para saber quando a nave tem que andar, o jogo olha a seta em cada quadro, antes de mexer a nave.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a nave faz em cada quadro com a”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-seta-e-velocidade",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -73,7 +73,7 @@
         "kind": "interactive",
         "required": true,
         "title": "A nave em câmera lenta",
-        "instructions": "Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Repare nas marcas e na tira de quadros enquanto você segura a seta.",
           "Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.",
@@ -107,14 +107,14 @@
     },
     {
       "key": "video-tamanho-do-passinho",
-      "plannedVideo": "Título: O tamanho do passinho\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Pense em você andando\", a tela fica parada, e a edição mostra por 2 a 3 segundos o desenho ilustrado, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: uma fileira de pegadas de formiga ao lado de uma fileira de pegadas de gigante, com o mesmo número de pegadas [na edição: pegadas de formiga e de gigante]. No \"Olha aqui: nesta experiência\", ampliar a experiência parada [ampliar experiência] e apontar os dois botões, sem clicar [apontar \"Passinho pequeno\"] [apontar \"Passinho grande\"]. No \"e esta caixa, Os dois passinhos\", apontar a caixa ainda sem rastro [apontar \"Os dois passinhos\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que muda com o passinho grande nem com o pequeno. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra, código nem do número da velocidade (decisões de 01/11 e 02/11/2026).\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O tamanho do passinho\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Pense em você andando\", a tela fica parada, e a edição mostra por 2 a 3 segundos o desenho ilustrado, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao lado de uma pegada de formiga e de uma pegada de gigante, soltas, sem fileira [na edição: pegadas de formiga e de gigante]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer o que muda com o passinho grande nem com o pequeno. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra, código nem do número da velocidade (decisões de 01/11 e 02/11/2026).\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-tamanho-do-passinho",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -123,7 +123,7 @@
         "kind": "interactive",
         "required": true,
         "title": "O tamanho do passinho",
-        "instructions": "Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande, em câmera lenta. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Repare na distância entre as marcas e no quanto a nave sai da linha em cada quadro da tira.",
           "Teste um tamanho de passinho em câmera lenta, troque o tamanho e compare as marcas e Os dois passinhos.",
@@ -177,14 +177,14 @@
     },
     {
       "key": "video-limite-da-tela",
-      "plannedVideo": "Título: A beirada da tela\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Quando você olha por uma janela\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando por uma janela, com a nave cortada pela moldura [na edição: meme da janela]. Do \"Primeiro, a nave dá o passinho\" até o \"Isso é o limite da tela\", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva a nave além da beirada e o jogo puxando a nave de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando a nave de volta]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Ligar o limite da tela\"]. No \"esta faixa mostra o que ficou fora da janela\", apontar a faixa [apontar \"Fora da tela\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não responder a pergunta do Dedé. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave já fora da tela?”. Antes: “o jogo confere se ela passou da beirada e, se passou, puxa a nave de volta para dentro. Isso é o limite da tela.”. Depois: “O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: A beirada da tela\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você olha por uma janela\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando por uma janela para o céu, sem a nave [na edição: meme da janela]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não responder a pergunta do Dedé nem mostrar o que acontece com a nave na beirada. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave já fora da tela?”. Antes: “conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limite-da-tela",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -193,7 +193,7 @@
         "kind": "interactive",
         "required": true,
         "title": "A beirada da tela",
-        "instructions": "Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe a faixa fora da tela quando a nave chega na beirada.",
           "E se o limite for ligado com a nave já fora da tela? Observe o próximo quadro.",
@@ -239,14 +239,14 @@
     },
     {
       "key": "video-ordem-dos-desenhos",
-      "plannedVideo": "Título: Quem fica na frente?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy colando uma figurinha das estrelas por cima da figurinha da nave [na edição: meme das figurinhas]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os botões, sem clicar [apontar \"Desenhar a nave por último\"] [apontar \"Desenhar o fundo de estrelas por último\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-ordem-dos-desenhos-K1: Dedé substitui “E se o fundo de estrelas for desenhado depois da nave?”. Antes: “o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.”. Depois: “O que você acha que acontece com a nave? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quem fica na frente?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas da nave e das estrelas na mão, escolhendo qual colar primeiro [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-ordem-dos-desenhos-K1: Dedé substitui “E se o fundo de estrelas for desenhado depois da nave?”. Antes: “o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando a ordem dos”.\n\nFala completa em nave-contra-asteroides-dia-1.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ordem-dos-desenhos",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -256,7 +256,7 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Quem fica na frente?",
-        "instructions": "Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe quem fica na frente depois de cada troca.",
           "Compare a nave quando ela é desenhada por último e quando o fundo é desenhado por último.",
@@ -614,7 +614,7 @@
       "key": "seta-e-velocidade",
       "title": "A nave em câmera lenta",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que a nave faz em cada quadro, e o que a seta tem a ver com isso. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-seta-e-velocidade",
         "fala-seta-e-velocidade",
@@ -632,7 +632,7 @@
       "key": "tamanho-do-passinho",
       "title": "O tamanho do passinho",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda quando a nave dá um passinho pequeno ou um passinho grande em cada quadro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-tamanho-do-passinho",
         "fala-tamanho-do-passinho",
@@ -718,7 +718,7 @@
       "key": "limite-da-tela",
       "title": "A beirada da tela",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que o jogo faz com a nave na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-limite-da-tela", "fala-limite-da-tela", "experiencia-limite-da-tela"],
       "workspaceKey": null,
       "externalTool": null,
@@ -787,7 +787,7 @@
       "key": "ordem-dos-desenhos",
       "title": "Quem fica na frente?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-ordem-dos-desenhos", "fala-ordem-dos-desenhos", "experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,

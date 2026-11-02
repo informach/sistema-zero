@@ -34,9 +34,9 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-copia-publicada-K1: Dedé substitui “E se eu pintar mais o desenho depois, a foto muda?”. Antes: “o que vai para lá quando você publica. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado está o seu projeto, e do”.
+video-copia-publicada-K1: Dedé substitui “E se eu mudar o projeto depois de publicar, o Mural muda junto?”. Antes: “nada dela vai para o Mural de verdade. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você”.
 
-**Experiência em exploração livre:** `published-copy`, com `setup.freeExploration`. Publique, mude a cor da nave no projeto e publique de novo. A cada passo, compare o seu projeto com o Mural. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `published-copy`, com `setup.freeExploration`. Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Jogue do começo ao reinício
 

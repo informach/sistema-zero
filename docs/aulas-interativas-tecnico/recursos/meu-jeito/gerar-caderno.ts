@@ -209,25 +209,14 @@ const diagrams: string[][] = [
   ],
 ]
 /**
- * A página de uma experiência (02/11/2026): o que comparar, um pedido por descoberta (o `goalCopy`
- * do manifesto, com os botões da tela livre) e a liberdade de ordem. Sem o resultado dos testes.
+ * A página de uma experiência (02/11/2026, molde do Cadê): o que investigar e a liberdade de ordem,
+ * sem a sequência de testes nem o resultado. Os pedidos de cada descoberta ficam na experiência,
+ * com o Zappy; no papel, uma lista numerada deles virava o roteiro dos testes.
  */
 function objetivosDaInvestigacao(section: SecaoMeuJeito): string[] {
-  const atividade = section.activity!
-  const pedidos =
-    atividade.activity.type === 'experimentation'
-      ? (atividade.activity.setup?.goals ?? []).flatMap((meta) => {
-          const pedido =
-            atividade.activity.type === 'experimentation'
-              ? atividade.activity.setup?.goalCopy?.[meta]?.pedido
-              : undefined
-          return pedido ? [`Teste: ${pedido}`] : []
-        })
-      : []
   return [
-    atividade.instructions,
-    ...pedidos,
-    'Você escolhe a ordem dos testes, e o Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+    section.activity!.instructions,
+    'O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
   ]
 }
 const chapters = aulasMeuJeito.map((lesson, i) => {
@@ -241,8 +230,8 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
       continue
     }
     // O caderno é da criança. Desde 02/11/2026 a experiência é exploração livre com o Zappy: a
-    // página dela traz os OBJETIVOS DE INVESTIGAÇÃO (o que comparar e o pedido de cada descoberta,
-    // com os botões reais), nunca o resultado. O resto usa a fala do Mapa (`falasSecao(…, 'mapa')`):
+    // página dela traz o que investigar (a instrução da experiência), sem sequência de testes e
+    // nunca o resultado. O resto usa a fala do Mapa (`falasSecao(…, 'mapa')`):
     // sem os parágrafos do narrador no jogo pronto, sem os chamados de atenção, que apontam para o
     // vídeo, e com um fecho que não manda pausar nem voltar a "esta aba", que o PDF não tem.
     const speech = section.activity ? objetivosDaInvestigacao(section) : falasSecao(section, 'mapa')

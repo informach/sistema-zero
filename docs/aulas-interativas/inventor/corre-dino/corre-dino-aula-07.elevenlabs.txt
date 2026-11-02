@@ -1,4 +1,6 @@
-[engaging, energetic, conversational voice] Sabe a porta de casa, que só abre com a chave? Antes de abrir, é como se ela fizesse uma pergunta: a chave está aqui? E a resposta decide o que acontece.
+[engaging, energetic, conversational voice] Antes de fazer alguma coisa, um jogo pode fazer uma pergunta. A resposta, sim ou não, decide o que ele faz.
+
+[curious] Sabe a porta de casa, que só abre com a chave? É como se ela perguntasse: a chave está aqui?
 
 [curious] O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?
 
@@ -6,9 +8,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga a pergunta, e este contador mostra quantos cactos foram criados.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o contador de cactos com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos cactos nascem com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

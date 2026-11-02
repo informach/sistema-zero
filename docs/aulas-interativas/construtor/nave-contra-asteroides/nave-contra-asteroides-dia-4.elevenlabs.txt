@@ -4,11 +4,9 @@
 
 [curious] E se a nave ganhar as três vidas sempre, em todo quadro?
 
-[engaging, energetic, conversational voice] O que você acha que acontece depois das batidas? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando a nave ganha as três vidas, e um asteroide bate nela de tempos em tempos.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as vidas depois das batidas quando a nave ganha as vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantas vidas a nave tem depois das batidas quando ela ganha as três vidas uma vez só e quando ganha o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -82,9 +80,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quanto tempo dura a proteção depois de bater, e três pedras batem na nave, uma de cada vez.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quantas vidas sobram sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantas vidas sobram depois de três pedras sem proteção, com uma proteção curta e com uma proteção longa. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

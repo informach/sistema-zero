@@ -44,25 +44,25 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-ponto-de-vista`
 
-**Na tela:** Ilustrar a comparação: uma pessoa na frente tapa a vista, e um passo para o lado deixa ver o que estava atrás. Depois mostrar a experiência na vista de frente, com a pedra escondendo a chave, e apontar os botões de vista sem trocar a vista: o que muda e o que fica igual é a descoberta da criança. Não falar de blocos nem de código.
+**Na tela:** Vídeo conceitual. Ilustrar a comparação: uma pessoa na frente tapa a vista de alguém, que pensa em mudar de lugar para olhar, sem mostrar o que está atrás. Depois ampliar a experiência e mostrar a cena parada, na vista de frente, com a pedra escondendo a chave, sem apontar controles nem trocar a vista: o que muda e o que fica igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você dá um passo para o lado, e o que estava escondido aparece.
-
 [engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes três botões mudam o lugar de onde você olha a ilha.
+[curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar.
 
-[curious] Agora pense: quando a chave aparece atrás da pedra, foi a chave que mudou de lugar? Ou foi outra coisa?
+[engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida.
+
+[curious] Se a câmera mudar de lugar, a chave também muda de lugar?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Sua vez de investigar: procure a chave olhando a ilha de lugares diferentes. Observe o que muda na imagem e o que continua onde estava. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Procure a chave olhando a ilha de lugares diferentes. Compare o que muda na imagem e o que continua onde estava. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Faça o personagem andar
 

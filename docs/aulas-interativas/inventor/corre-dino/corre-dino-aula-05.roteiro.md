@@ -10,11 +10,13 @@
 
 **Clipe:** `video-espaco-e-tempo`
 
-**Na tela:** No "Sabe uma torneira pingando", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Em todo quadro"] [apontar "A cada 1,4 segundo"]. No "e este passa um segundo de jogo", apontar o botão, sem clicar [apontar "Passar 1 segundo"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe uma torneira pingando", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Um jogo pode criar coisas novas enquanto a partida acontece. E ele decide de quanto em quanto tempo cada coisa nova nasce.
+
 [engaging, energetic, conversational voice] Sabe uma torneira pingando? Ela pode pingar sem parar ou esperar um pouco entre uma gota e outra.
 
 [engaging, energetic, conversational voice] No seu jogo, os cactos vão nascer na direita e vir na direção do Dino. E o jogo pode criar um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.
@@ -23,27 +25,25 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem quando nasce um cacto novo, e este passa um segundo de jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera o relógio para nascer. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na fila de cactos quando um cacto novo nasce em todo quadro e quando cada um espera o relógio. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-espaco-e-tempo-K1 | Debinha | 1 | um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos. | E se nascer um cacto em todo quadro, o Dino consegue pular? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem quando nasce | [curious] |
+| video-espaco-e-tempo-K1 | Debinha | 1 | um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos. | E se nascer um cacto em todo quadro, o Dino consegue pular? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na fila de cactos quando um | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-espaco-e-tempo-K1`: entrada — Manter o meme da torneira até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o tempo parado.
+- `video-espaco-e-tempo-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/spawn.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/spawn.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Prepare o grupo e o relógio
 
@@ -110,40 +110,40 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-numero-negativo`
 
-**Na tela:** No "Sabe quando você atravessa a sala", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os números, sem clicar [apontar "Velocidade para o lado"]. No "e este botão passa um quadro", apontar o botão, sem clicar [apontar "Avançar 1 quadro"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você atravessa a sala", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto parado. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
+[engaging, energetic, conversational voice] Velocidade é quanto uma coisa anda de cada vez, e para que lado.
+
 [engaging, energetic, conversational voice] Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.
 
-[engaging, energetic, conversational voice] No seu jogo, a velocidade do cacto é assim: ela diz quanto o cacto anda em cada quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.
+[engaging, energetic, conversational voice] No seu jogo, a velocidade do cacto diz quanto ele anda em cada quadro, e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.
 
 [curious] E com um número negativo, o cacto vai para onde?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes números escolhem a velocidade para o lado do cacto, e este botão passa um quadro. Ao lado, aparece o x do cacto.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o cacto anda e o que acontece com o x com um número positivo, com um número negativo e com zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado o cacto anda e o que acontece com o x com um número positivo, com um negativo e com zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-numero-negativo-K1 | Debinha | 1 | quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero. | E com um número negativo, o cacto vai para onde? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade | [curious] |
+| video-numero-negativo-K1 | Debinha | 1 | e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero. | E com um número negativo, o cacto vai para onde? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o cacto anda e o que | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-numero-negativo-K1`: entrada — Manter o meme dos passos até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o cacto parado.
+- `video-numero-negativo-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/velocity.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/velocity.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Crie os cactos no relógio
 

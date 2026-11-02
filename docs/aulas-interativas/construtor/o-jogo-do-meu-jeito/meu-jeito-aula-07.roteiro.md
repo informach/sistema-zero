@@ -10,16 +10,12 @@
 
 **Clipe:** `video-dois-relogios`
 
-**Na tela:** No "Pense numa máquina que solta piões", mostrar o meme ilustrado (2 a 3 s) do Zappy ao lado da máquina de piões [na edição: meme dos piões]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o relógio de nascer [apontar "Relógio de nascer (conta os quadros do jogo)"]. No "e o relógio do giro, em desenhos por segundo", apontar o relógio do giro [apontar "Relógio do giro (troca o desenho de cada pedra)"]. No "Este botão faz o tempo passar", apontar o botão [apontar "Passar o tempo"]. No "e este outro volta ao começo", apontar o botão [apontar "Voltar ao começo"]. Não passar o tempo nem mudar os relógios: o que cada relógio muda é a descoberta da criança. Nesta parte, quadro é só o do jogo; o desenho da animação é desenho 1 e desenho 2. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
+**Na tela:** No "Nas pedras, duas coisas acontecem", mostrar a experiência na aula, parada no começo. No "Pense numa máquina que solta piões", mostrar o meme ilustrado (2 a 3 s) do Zappy ao lado da máquina de piões [na edição: meme dos piões]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar as pedras paradas no começo, sem passar o tempo nem mudar os relógios: o que cada relógio muda é a descoberta da criança. Nesta parte, quadro é só o do jogo; o desenho da animação é desenho 1 e desenho 2. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Nas pedras, duas coisas acontecem ao mesmo tempo: pedras novas nascem de tempos em tempos, e cada pedra troca de desenho para parecer que gira.
-
-[engaging, energetic, conversational voice] O relógio de nascer conta os quadros do jogo. O jogo se desenha de novo muitas vezes por segundo, e cada vez dessas é um quadro do jogo. No seu jogo, nasce uma pedra a cada 40 quadros.
-
-[engaging, energetic, conversational voice] O relógio do giro conta desenhos por segundo. Com 8 desenhos por segundo, cada pedra troca de desenho oito vezes a cada segundo.
+[engaging, energetic, conversational voice] Nas pedras, duas coisas acontecem ao mesmo tempo: pedras novas nascem de tempos em tempos, e cada pedra troca de desenho para parecer que gira. Por isso, o jogo tem dois relógios: um conta quadros do jogo, que são as vezes em que o jogo se desenha de novo, e o outro conta desenhos por segundo.
 
 [engaging, energetic, conversational voice] Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.
 
@@ -27,22 +23,20 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o relógio de nascer, em quadros do jogo, e o relógio do giro, em desenhos por segundo. Este botão faz o tempo passar, e este outro volta ao começo. Em cima de cada pedra aparece o desenho que ela está mostrando.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: mude um relógio de cada vez, volte ao começo e deixe o tempo passar. Compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que cada relógio muda nas pedras, e se mexer num muda o que o outro faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-dois-relogios-K1 | Debinha | 1 | vezes a cada segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira. | Se a máquina soltar mais rápido, os piões giram mais rápido também? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o relógio de nascer, | [curious] |
+| video-dois-relogios-K1 | Debinha | 1 | desenhos por segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira. | Se a máquina soltar mais rápido, os piões giram mais rápido também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que cada relógio muda nas pedras, e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-dois-relogios-K1`: entrada — Manter o meme dos piões e a experiência parada no começo. Saída — Seguir sem mudar os relógios: a professora só convida a testar e aponta os controles.
+- `video-dois-relogios-K1`: entrada — Manter o meme dos piões e a experiência parada no começo. Saída — Seguir sem mudar os relógios: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/two-clocks.ts`, com a tela em `packages/member-shell/src/components/scene-livre/two-clocks.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.

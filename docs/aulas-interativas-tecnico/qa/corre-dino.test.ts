@@ -227,16 +227,25 @@ test('linguagem comum nas falas, no Zappy e no Passo a passo do projeto', () => 
 // só depois de "Agora é a sua vez".
 const ordemParaQuemAssiste =
   /(?:^|[.!?:]\s+)(?:Clique|Toque|Leve|Mude|Observe|Compare|Deixe|Escolha|Aumente|Coloque|Troque|Ligue|Desligue|Aproxime|Escreva|Espere|Volte|Teste|Use|Acompanhe|Mantenha|Aperte|Diminua|Pule|Repita|Continue|Faça|Veja|Sorteie|Jogue|Experimente|Mexa)\b/
-// Convite à investigação (02/11/2026, como na Nave): o vídeo explica a ideia e aponta os controles uma
-// vez ("Olha aqui: nesta experiência"); o fim diz o que comparar e passa a vez, sem sequência de cliques.
+// O molde do convite (decisão da responsável, 02/11/2026, o do Cadê): o vídeo explica o conceito, dá
+// uma analogia, diz o conceito no jogo da criança e devolve a pergunta; o fim é UM convite de uma frase
+// (o que investigar, "Agora você vai investigar …", como no exemplo aprovado e nos outros cursos) e o
+// fecho comum. A investigação é da criança e quem acompanha cada teste é o Zappy.
 const FIM_DA_EXPERIENCIA =
-  /^Agora é a sua vez de investigar: compare .+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+  /^Agora você vai investigar [^.!?]+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+const DEVOLVE = 'O que você acha? Isso você vai testar na experiência.'
+// Proibido no vídeo da experiência: o tour pelos controles ("Olha aqui: nesta experiência, este
+// botão…", "aqui você vê…"), os nomes dos botões ditos como gesto ("clique em…", "escolha…") e a
+// sequência de testes ("primeiro… depois…", "faça… e depois…", "teste mais duas coisas", "nas duas
+// vezes", "Repare em três coisas").
+const TOUR =
+  /Olha aqui|nesta experiência,|aqui você vê|\b(?:este|estes|esta|estas)\s+(?:outros?|botão|botões|campos?|listas?|régua|controles?|caixa|contador|números?|pergunta|marcador|linha)\b|\bclique em (?!Próxima parte\.$)|\b(?:escolha|aperte|toque em)\b/i
+const SEQUENCIA_DE_TESTES =
+  /\bprimeiro\b[^.]*\bdepois\b|\bfaça\b[^.]*\be depois\b|\bteste mais\b|\bnas duas vezes\b|\bdepois,? teste\b|(?:^|[.!?;:]\s+)por último\b|Repare em (?:duas|três) coisas|\bdepois clique\b/i
 // A experiência trabalha só a IDEIA (01/11/2026): nada de bloco, área do Estúdio, regra nem código.
 const ESTUDIO_NA_EXPERIENCIA =
   /\b(?:blocos?|Ao iniciar|Enquanto estiver rodando|Quando acontecer|A cada quadro do jogo|regras?|comandos?|código|Se o estado|então|senão|Estúdio|peças?)\b/i
-// O vídeo não narra uma sequência de cliques: só aponta os controles e convida.
-const SEQUENCIA = /\b(?:depois clique|clique em [^.]*\. Depois|e clique em [^.]* de novo)\b/i
-test('experiências: ideia, convite e controles reais, sem blocos nem resultado antes do teste (02/11/2026)', () => {
+test('experiências: conceito, analogia, o jogo dela e um convite, sem tour nem roteiro de testes (02/11/2026)', () => {
   let total = 0
   for (const aula of aulasDino)
     for (const section of aula.sections) {
@@ -249,8 +258,24 @@ test('experiências: ideia, convite e controles reais, sem blocos nem resultado 
       const video = fala.slice(0, -1).join(' ')
       expect(a.activity.setup?.freeExploration, id).toBe(true)
       expect(fala.at(-1), id).toMatch(FIM_DA_EXPERIENCIA)
-      expect(video.match(/Olha aqui: nesta experiência/g), id).toHaveLength(1)
-      expect(video, id).not.toMatch(SEQUENCIA)
+      // A ordem do molde: conceito e analogia, o conceito no jogo dela, a pergunta devolvida e o convite.
+      expect(fala.length, id).toBeGreaterThanOrEqual(5)
+      expect(fala.at(-2), id).toBe(DEVOLVE)
+      expect(fala.at(-3), id).toMatch(/^(?:No|O) seu jogo\b/)
+      expect(fala.slice(0, -3).join(' '), id).not.toMatch(/\bseu jogo\b/i)
+      expect(fala.slice(1, -3).join(' '), id).toMatch(/(?<!\p{L})(?:Sabe|Lembra|É como)(?!\p{L})/u)
+      // No máximo UMA pergunta do avatar, logo depois do conceito no jogo e antes da devolução.
+      const avatar = participacoes(section)
+      expect(avatar.length, id).toBeLessThanOrEqual(1)
+      for (const p of avatar) {
+        expect(fala.at(-3)?.endsWith(p.after), id).toBe(true)
+        expect(p.speech, id).toMatch(/\?$/)
+        expect(p.reply, id).toBeUndefined()
+      }
+      for (const t of [...fala, ...vozesDoAvatar(section)]) {
+        expect(t, id).not.toMatch(TOUR)
+        expect(t, id).not.toMatch(SEQUENCIA_DE_TESTES)
+      }
       expect(video, id).not.toMatch(
         /Esta é (?:uma|a mesma) experiência|faça esses mesmos testes|Vou te mostrar|\beu\b/,
       )
@@ -276,13 +301,32 @@ test('experiências: ideia, convite e controles reais, sem blocos nem resultado 
       for (const t of textos) expect(t, id).not.toMatch(ESTUDIO_NA_EXPERIENCIA)
       // A ponte convida à investigação e não repete a instrução.
       expect(section.bridge, id).not.toContain(a.instructions)
-      expect(a.instructions, id).toContain('Você escolhe a ordem dos testes')
-      // O Passo a passo imprime a instrução e os pedidos: a experiência não tem mais passos próprios.
+      // O convite é uma frase só, sem um imperativo misturado ("e descubra…", "e chegue…").
+      expect(fala.at(-1), id).not.toMatch(
+        /\b(?:e|depois) (?:descubra|chegue|termine|compare|observe|teste|veja)\b/,
+      )
+      // A instrução da página: o que comparar (e, no máximo, uma frase de contexto) e o fecho do Cadê,
+      // sem sequência de cliques nem "termine com…".
+      expect(a.instructions, id).toMatch(
+        /^Compare [^.!?]+\.(?: [^.!?]+\.)? Você escolhe a ordem e pode repetir quando quiser\.$/,
+      )
+      expect(a.instructions, id).not.toMatch(SEQUENCIA_DE_TESTES)
+      for (const t of [a.instructions, section.bridge])
+        expect(t, id).not.toMatch(/\btermine com\b/i)
+      // A ponte: uma frase do que investigar, a ordem livre e o Zappy.
+      expect(section.bridge, id).toMatch(
+        /^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/,
+      )
+      // O Passo a passo imprime só a instrução: a experiência não tem mais passos próprios.
       expect(section.caderno, id).toBeUndefined()
-      // A nota de tela segue a receita da ESPEC-ROTEIRO §9.8: aponta os controles, sem fazer os testes.
+      // A nota de tela só amplia a experiência, mostra a cena parada e o Zappy: nada de apontar ou
+      // clicar nos controles, nem gesto dentro da experiência.
       const tela = telaSecao(section)
       expect(tela, id).toContain('[ampliar experiência]')
+      expect(tela, id).toContain('mostrar a cena parada')
       expect(tela, id).toContain('[apontar zappy]')
+      expect(tela, id).not.toMatch(/\[apontar "|\[(?:clicar|tocar|escolher|arrastar|abrir)\b/)
+      expect(tela, id).not.toMatch(/Olha aqui|apontar os (?:botões|números|jeitos|impulsos|sinais)/)
       expect(tela, id).toContain('Não fazer os testes pela criança')
       expect(tela, id).not.toMatch(/quem faz os testes é o narrador|Demonstração/)
       if (/meme/i.test(tela))

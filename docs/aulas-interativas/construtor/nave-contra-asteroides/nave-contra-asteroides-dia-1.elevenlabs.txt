@@ -1,14 +1,12 @@
 [engaging, energetic, conversational voice] Lembra do desenho animado, com um quadro atrás do outro? Quando a nave anda, ela também não pula de uma vez de um lado da tela para o outro: em cada quadro, ela dá só um passinho.
 
-[engaging, energetic, conversational voice] E como o jogo sabe quando a nave tem que andar? Em cada quadro, o jogo olha a seta. Se você está segurando a seta, a nave dá um passinho para aquele lado.
+[engaging, energetic, conversational voice] Para saber quando a nave tem que andar, o jogo olha a seta em cada quadro, antes de mexer a nave.
 
-[curious] E quando a seta está solta?
+[curious] E o que a nave faz num quadro em que a seta está solta?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, quando você clica em Câmera lenta, os quadros passam devagar, e cada quadro novo aparece nesta tira, um do lado do outro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a nave faz em cada quadro com a seta segurada e com a seta solta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -18,9 +16,7 @@
 
 [engaging, energetic, conversational voice] E o que muda quando o passinho fica maior? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem o tamanho do passinho, e esta caixa, Os dois passinhos, guarda o rastro de cada passinho que você já testou.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as marcas e a tira de quadros com o passinho pequeno e com o passinho grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no caminho da nave quando o passinho é pequeno e quando ele é grande. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -76,17 +72,17 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Quando você olha por uma janela, só vê o que está dentro dela. A tela do jogo é igual: se a nave passa da beirada, ela vai sumindo da sua vista.
+[engaging, energetic, conversational voice] A tela do jogo tem beiradas: é até ali que a gente vê o jogo.
 
-[engaging, energetic, conversational voice] Para ela não sumir, o jogo pode fazer mais uma coisa em cada quadro. Primeiro, a nave dá o passinho. Depois, o jogo confere se ela passou da beirada e, se passou, puxa a nave de volta para dentro. Isso é o limite da tela.
+[engaging, energetic, conversational voice] Sabe quando você olha por uma janela? Você só vê o que está dentro da moldura.
+
+[engaging, energetic, conversational voice] No seu jogo, em cada quadro, o jogo pode conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.
 
 [curious] E se o limite for ligado com a nave já fora da tela?
 
-[engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a nave na beirada, com o limite desligado e ligado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -116,17 +112,15 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sabe quando você cola figurinhas num álbum, uma por cima da outra? A figurinha que você cola depois cobre um pedaço da que já estava lá.
+[engaging, energetic, conversational voice] Sabe quando você cola figurinhas num álbum, umas por cima das outras? A ordem em que você cola faz diferença.
 
 [engaging, energetic, conversational voice] A tela do jogo também é montada assim: em cada quadro, o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.
 
 [curious] E se o fundo de estrelas for desenhado depois da nave?
 
-[engaging, energetic, conversational voice] O que você acha que acontece com a nave? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões escolhem quem é desenhado por último, a nave ou o fundo de estrelas.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando a nave é desenhada por último e quando o fundo de estrelas é desenhado por último. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na tela quando a ordem dos desenhos muda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

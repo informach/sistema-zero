@@ -27,19 +27,19 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 ### Seção 1. Uma vez, sempre ou na hora certa?
 
-**Tarefa:** Sua vez! Descubra em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-area-que-espera → fala-area-que-espera → experiencia-tres-areas.
 
-**Recado na página (não gravar):** Sua vez! Descubra em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-area-que-espera-K1: Dedé substitui “E se o som ficar esperando a tecla, ele aparece quando o jogo começa?”. Antes: “e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o som do pulo”.
+video-area-que-espera-K1: Dedé substitui “E se o som ficar esperando a tecla, ele aparece quando o jogo começa?”. Antes: “você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o som do pulo aparece em cada”.
 
 **Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o som do pulo nos três jeitos, principalmente na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare quando o som do pulo aparece em cada jeito, principalmente na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe o contador de sons. Com Na hora em que algo acontece escolhido, clique em Apertar a tecla e observe o contador de sons.
 
@@ -47,19 +47,19 @@ video-area-que-espera-K1: Dedé substitui “E se o som ficar esperando a tecla,
 
 ### Seção 2. Som na tecla ou no pulo?
 
-**Tarefa:** Sua vez! Descubra se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-dedo-e-pulo → fala-dedo-e-pulo → experiencia-dedo-e-pulo.
 
-**Recado na página (não gravar):** Sua vez! Descubra se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-dedo-e-pulo-K1: Dedé substitui “E se o som estiver ligado à tecla, o pulo do toque também tem som?”. Antes: “No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe a que o som fica”.
+video-dedo-e-pulo-K1: Dedé substitui “E se o som estiver ligado à tecla, o pulo do toque também tem som?”. Antes: “No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos sons e quantos pulos acontecem”.
 
 **Experiência em exploração livre:** `jump-sound` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/jump-sound.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/jump-sound.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Descubra em que momento o som do pulo deve tocar. Teste os dois momentos e compare quantos sons e quantos pulos aparecem na linha do tempo. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare quantos sons e quantos pulos aparecem na linha do tempo com o som ligado à tecla e com o som ligado ao pulo. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com Quando a tecla Espaço é apertada, clique em Apertar Espaço duas vezes no mesmo pulo. Com Quando a tecla Espaço é apertada, clique em Tocar para pular. Clique em Quando o Dino pula. Depois clique em Apertar Espaço e, com o Dino no chão, em Tocar para pular.
 

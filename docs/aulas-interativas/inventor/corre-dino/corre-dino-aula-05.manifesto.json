@@ -65,14 +65,14 @@
   "blocks": [
     {
       "key": "video-espaco-e-tempo",
-      "plannedVideo": "Título: Todo quadro ou de tempos em tempos?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar \"Em todo quadro\"] [apontar \"A cada 1,4 segundo\"]. No \"e este passa um segundo de jogo\", apontar o botão, sem clicar [apontar \"Passar 1 segundo\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-espaco-e-tempo-K1: Debinha substitui “E se nascer um cacto em todo quadro, o Dino consegue pular?”. Antes: “um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem quando nasce”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Todo quadro ou de tempos em tempos?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando, com o Dino ao lado [na edição: meme da torneira]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-espaco-e-tempo-K1: Debinha substitui “E se nascer um cacto em todo quadro, o Dino consegue pular?”. Antes: “um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na fila de cactos quando um”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-espaco-e-tempo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -81,7 +81,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Todo quadro ou de tempos em tempos?",
-        "instructions": "Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe quantos cactos nascem e o espaço entre eles.",
           "Compare os cactos que nascem em todo quadro com os que esperam no relógio.",
@@ -123,14 +123,14 @@
     },
     {
       "key": "video-numero-negativo",
-      "plannedVideo": "Título: Para que lado anda o cacto?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar os números, sem clicar [apontar \"Velocidade para o lado\"]. No \"e este botão passa um quadro\", apontar o botão, sem clicar [apontar \"Avançar 1 quadro\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-numero-negativo-K1: Debinha substitui “E com um número negativo, o cacto vai para onde?”. Antes: “quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Para que lado anda o cacto?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você atravessa a sala\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy atravessando a sala em passos marcados no chão [na edição: meme dos passos]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto parado. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-numero-negativo-K1: Debinha substitui “E com um número negativo, o cacto vai para onde?”. Antes: “e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o cacto anda e o que”.\n\nFala completa em corre-dino-aula-05.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-numero-negativo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -139,7 +139,7 @@
         "kind": "interactive",
         "required": true,
         "title": "Para que lado anda o cacto?",
-        "instructions": "Compare para que lado o cacto anda e o que acontece com o x com a velocidade para o lado em 5, em −5 e em 0. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare para que lado o cacto anda e o que acontece com o x com a velocidade em 5, em −5 e em 0. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe o número do x em cada quadro.",
           "Compare o cacto e o x com um número positivo, com um negativo e com zero.",
@@ -574,7 +574,7 @@
       "key": "espaco-e-tempo",
       "title": "Todo quadro ou de tempos em tempos?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-espaco-e-tempo", "fala-espaco-e-tempo", "experiencia-ritmo"],
       "workspaceKey": null,
       "externalTool": null,
@@ -636,7 +636,7 @@
       "key": "numero-negativo",
       "title": "Para que lado anda o cacto?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-numero-negativo", "fala-numero-negativo", "experiencia-velocidade"],
       "workspaceKey": null,
       "externalTool": null,

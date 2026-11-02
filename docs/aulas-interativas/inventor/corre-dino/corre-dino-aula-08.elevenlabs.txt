@@ -36,17 +36,17 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Para a partida começar, o jogo precisa escutar quem joga: pode ser uma tecla, um toque ou os dois.
+
 [engaging, energetic, conversational voice] Sabe quando chega visita? Tem gente que toca a campainha e tem gente que bate na porta.
 
-[engaging, energetic, conversational voice] No seu jogo, quem joga pode usar o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque.
+[engaging, energetic, conversational voice] No seu jogo, quem joga pode usar o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.
 
 [curious] E se o jogo só escutar o teclado, quem joga no celular consegue começar?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o jogo escuta para começar a partida, e estes botões fazem o papel do toque e da tecla.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o toque e o Enter, na tela de início, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

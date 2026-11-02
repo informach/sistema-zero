@@ -56,7 +56,7 @@
 
 **Clipe:** `video-uma-vez-e-sempre`
 
-**Na tela:** No "Você já reparou", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No "É como sair para andar de bicicleta", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os jeitos [apontar "Uma vez, no começo"] [apontar "Sempre, em todo quadro"]. No "E este botão começa o jogo", apontar o botão, sem clicar [apontar "Começar o jogo"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Você já reparou", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No "É como sair para andar de bicicleta", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -71,16 +71,14 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando a nave anda um pouquinho, uma vez, no começo, ou sempre, em todo quadro. E este botão começa o jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a nave quando ela anda uma vez, no começo, e quando ela anda sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na nave quando ela anda uma vez só e quando ela anda o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-uma-vez-e-sempre-K1 | Debinha | 1 | tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro. | E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando a nave anda um | [curious] |
+| video-uma-vez-e-sempre-K1 | Debinha | 1 | tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro. | E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na nave quando ela anda uma | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -91,7 +89,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Prepare a tela do jogo
 
@@ -146,11 +144,11 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-coordenadas` · Onde fica a nave?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-coordenadas`
 
-**Na tela:** No "Sabe quando você combina", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os dois números [apontar "x"] [apontar "y"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe quando você combina", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -161,25 +159,23 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] E para que lado cada número leva a nave? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você muda o x e o y da nave, um número de cada vez, e vê onde ela vai parar.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o lugar da nave quando o x aumenta e quando o y aumenta, e descubra onde a nave fica com os dois números em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado a nave vai quando cada número muda, e onde ela fica quando os dois são zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/coordinates.ts`, na tela `packages/member-shell/src/components/scene-livre/coordinates.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 6. Existir e aparecer
 
 ### Clipe `video-criar-e-mostrar` · Existir e aparecer
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-criar-e-mostrar`
 
-**Na tela:** No "Sabe o teatro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os bastidores e a tela, sem clicar. No "Os botões fazem a nave existir e aparecer", apontar o primeiro botão, sem clicar [apontar "Criar a nave nos bastidores"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe o teatro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -192,16 +188,14 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, de um lado ficam os bastidores, e do outro, a tela do jogo. Os botões fazem a nave existir e aparecer.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os bastidores e a tela do jogo quando a nave passa a existir e quando ela aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar a diferença entre a nave existir nos bastidores e aparecer na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-criar-e-mostrar-K1 | Debinha | 1 | no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver. | E quando a nave passa a existir, ela já aparece na tela? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado ficam os bastidores, e | [curious] |
+| video-criar-e-mostrar-K1 | Debinha | 1 | no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver. | E quando a nave passa a existir, ela já aparece na tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre a nave existir nos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -212,7 +206,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/world.ts`, na tela `packages/member-shell/src/components/scene-livre/world.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 7. Crie a nave nos bastidores
 
@@ -275,31 +269,29 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-desenho-por-quadro` · O desenho de cada quadro
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-desenho-por-quadro`
 
-**Na tela:** No "Lembra do desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas [apontar "Desenhar só no começo"] [apontar "Apagar a tela antes de desenhar"]. No "Este botão passa um quadro", apontar o botão, sem clicar [apontar "Avançar 1 quadro"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Lembra do desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? No seu jogo, a nave pode mudar de lugar, mas a tela só mostra o que foi desenhado nela.
+[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Desenhar a nave é pintar a nave na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.
 
 [curious] E se a nave for desenhada em todo quadro, sem apagar a tela?
 
-[engaging, energetic, conversational voice] O que você acha que aparece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando a nave é desenhada e se a tela é apagada antes de cada desenho. Este botão passa um quadro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare a tela quando a nave é desenhada só no começo, em todo quadro sem apagar a tela e em todo quadro apagando a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra quando a nave é desenhada em momentos diferentes, com e sem apagar a tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-desenho-por-quadro-K1 | Debinha | 1 | um quadro atrás do outro? No seu jogo, a nave pode mudar de lugar, mas a tela só mostra o que foi desenhado nela. | E se a nave for desenhada em todo quadro, sem apagar a tela? | O que você acha que aparece? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando a | [curious] |
+| video-desenho-por-quadro-K1 | Debinha | 1 | na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes. | E se a nave for desenhada em todo quadro, sem apagar a tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra quando a nave é | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -310,7 +302,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/draw-loop.ts`, na tela `packages/member-shell/src/components/scene-livre/draw-loop.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 9. Mostre a nave a cada quadro
 

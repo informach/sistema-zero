@@ -10,12 +10,14 @@
 
 **Clipe:** `video-caixa-decide`
 
-**Na tela:** No "Lembra dos carrinhos de bate-bate", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: dois carrinhos de bate-bate parados, um com o para-choque grande e outro com o para-choque pequeno [na edição: meme dos para-choques]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os tamanhos, sem clicar [apontar "100%"] [apontar "80%"] [apontar "40%"]. No "e estes botões aproximam e afastam o cacto", apontar os botões, sem clicar [apontar "Aproximar o cacto"] [apontar "Afastar o cacto"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Lembra do pega-pega", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy e a turma de novo reunidos antes do pega-pega, conversando sobre a brincadeira [na edição: meme do novo combinado do pega-pega]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o cacto longe e a área em 100%. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Lembra dos carrinhos de bate-bate e do para-choque em volta deles? E se o para-choque fosse maior ou menor?
+[engaging, energetic, conversational voice] Num jogo, a área da batida não precisa ter o tamanho do desenho: quem faz o jogo pode deixar essa área maior ou menor.
+
+[engaging, energetic, conversational voice] Lembra do pega-pega, em que a turma combina o que vale como pegar? Dá para combinar um jeito mais fácil ou mais difícil de pegar alguém.
 
 [engaging, energetic, conversational voice] No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele.
 
@@ -23,27 +25,25 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, a mesma da aula anterior, agora você também escolhe o tamanho da área do Dino, e estes botões aproximam e afastam o cacto.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quando aparece BATEU com a área inteira, um pouco menor e bem pequena. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o jogo marca a batida com a área inteira, um pouco menor e bem pequena. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-caixa-decide-K1 | Dedé | 1 | o para-choque fosse maior ou menor? No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele. | E se a área ficar menor que o desenho, o que acontece com a batida? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a mesma da aula anterior, agora | [curious] |
+| video-caixa-decide-K1 | Dedé | 1 | ou mais difícil de pegar alguém. No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele. | E se a área ficar menor que o desenho, o que acontece com a batida? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o jogo marca a batida com a área | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-caixa-decide-K1`: entrada — Manter o meme dos para-choques até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o cacto longe e a área em 100%.
+- `video-caixa-decide-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/hitbox.ts`, na tela `packages/member-shell/src/components/scene-livre/hitbox.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Mostre a área no seu jogo
 

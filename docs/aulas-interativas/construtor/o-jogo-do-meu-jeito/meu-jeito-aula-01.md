@@ -50,9 +50,9 @@ Anexar `docs/aulas-interativas/construtor/o-jogo-do-meu-jeito/passo-a-passo-do-p
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes três botões trocam a história”.
+video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a”.
 
-**Experiência em exploração livre:** `same-rules-new-skin`, com `setup.freeExploration`. Troque a história do jogo e desligue o tiro, jogando um pouco em cada caso. Compare a tela e a lista O que o jogo faz. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `same-rules-new-skin`, com `setup.freeExploration`. Compare a tela e a lista O que o jogo faz quando você troca a história e quando desliga o tiro. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Veja o que uma cópia guarda
 
@@ -62,9 +62,9 @@ video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um c
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-copias-K1: Debinha substitui “Se eu pintar a cópia, o desenho do gibi muda também?”. Antes: “Baixar o projeto. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência aparecem o jogo da aula e o seu”.
+video-copias-K1: Debinha substitui “Se eu mudar a nave da cópia, a nave do jogo da aula muda também?”. Antes: “o seu Estúdio. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a cópia guarda do jogo da aula e”.
 
-**Experiência em exploração livre:** `copy-vs-original`, com `setup.freeExploration`. Baixe o projeto, importe a cópia no Estúdio e pinte a nave de um lado só. Depois de cada teste, compare o jogo da aula com o Estúdio. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
+**Experiência em exploração livre:** `copy-vs-original`, com `setup.freeExploration`. Compare o jogo da aula com a cópia no Estúdio, antes e depois de mudar um dos lados. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 5. Baixe o seu jogo concluído
 

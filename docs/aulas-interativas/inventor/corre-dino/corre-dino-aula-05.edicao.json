@@ -22,7 +22,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem quando nasce",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na fila de cactos quando um",
       "falaPrincipal": "E se nascer um cacto em todo quadro, o Dino consegue pular?",
       "falaPersonagem": "E se nascer um cacto em todo quadro, o Dino consegue pular?",
       "tags": ["[curious]"]
@@ -43,8 +43,8 @@
       "clipe": "video-numero-negativo",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "quadro, e para que lado. E a velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes números escolhem a velocidade",
+      "ancoraAntes": "e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o cacto anda e o que",
       "falaPrincipal": "E com um número negativo, o cacto vai para onde?",
       "falaPersonagem": "E com um número negativo, o cacto vai para onde?",
       "tags": ["[curious]"]

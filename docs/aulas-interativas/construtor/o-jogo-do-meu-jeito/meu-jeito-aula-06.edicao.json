@@ -22,8 +22,8 @@
       "clipe": "video-nomes",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "dela. Imagina um time com duas pessoas que têm o mesmo nome. Quando o técnico chama esse nome, quem deve responder?",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o bloco de cima cria a nave, e",
+      "ancoraAntes": "acham cada coisa pelo nome dela. Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com os blocos quando o",
       "falaPrincipal": "E se a nave e a folha tiverem o mesmo nome?",
       "falaPersonagem": "E se a nave e a folha tiverem o mesmo nome?",
       "tags": ["[curious]"]
@@ -45,7 +45,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões escolhem a largura do",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar qual recorte mostra uma nave inteira e",
       "falaPrincipal": "E se o recorte for maior ou menor que um desenho?",
       "falaPersonagem": "E se o recorte for maior ou menor que um desenho?",
       "tags": ["[curious]"]

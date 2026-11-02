@@ -199,48 +199,29 @@ pages.push({
       'experience',
     ),
 })
-// Objetivos de investigação (02/11/2026): o que comparar e observar, sem o resultado e sem uma
-// sequência de cliques. A montagem continua com os passos completos.
+// A experiência só com a ideia e o convite (molde do Cadê, 02/11/2026): a ideia e uma pergunta
+// que convida, e o que investigar sai da instrução da própria atividade (`instrucao`), sem
+// sequência de cliques nem resultado. A montagem continua com os passos completos.
 // A pergunta com o não (aula 3, 02/11/2026) é a porta do Farol, em 2D: sem ilustração da ilha 3D.
-const experiences: Record<string, { intro: string; steps: string[]; image?: string }> = {
+const experiences: Record<string, { intro: string; image?: string }> = {
   'ponto-de-vista': {
     intro:
-      'A câmera é o lugar de onde você olha a ilha. Investigue: quando a chave aparece atrás da pedra, o que mudou?',
-    steps: [
-      'Olhe a ilha de frente, de lado e de cima, na ordem que quiser. Em cada vista, procure a chave e repare na pedra.',
-      'Compare as vistas: o que muda na imagem e o que continua onde estava?',
-      'Responda à pergunta da experiência. Se precisar, olhe de novo antes de tentar outra resposta. Você pode continuar explorando depois das descobertas.',
-    ],
+      'A câmera é o lugar de onde você olha a ilha, como os seus olhos dentro do jogo. Se a câmera mudar de lugar, a chave também muda de lugar?',
     image: 'vista-frente',
   },
   'posicao-3d': {
     intro:
-      'Na ilha, o lugar da chave tem três números: x, y e z. No jogo 2D, você usava só x e y. Investigue o que cada número muda aqui.',
-    steps: [
-      'Escolha um dos números e mude para mais e para menos. Observe para onde a chave vai.',
-      'Compare com a marca dourada do lugar inicial. Quando ficar difícil de ver, troque a vista.',
-      'Faça o mesmo com os outros números, na ordem que quiser. Você pode voltar à posição inicial e repetir.',
-    ],
+      'Na ilha, o lugar da chave tem três números: x, y e z. No jogo 2D, você usava só x e y. E o y, será que continua fazendo o que fazia no jogo 2D?',
     image: 'posicao',
   },
   'contato-3d': {
     intro:
-      'De cima, a chave parece estar em cima do personagem. Investigue: eles estão mesmo encostando?',
-    steps: [
-      'Teste o encontro e compare o resultado com o que a imagem mostra de cima e de lado.',
-      'Mude a chave ou o personagem de lugar e teste de novo. Procure um caso em que eles encostam e outro em que ficam separados.',
-      'Se quiser, mostre onde cada um encosta. Repita os testes na ordem que preferir.',
-    ],
+      'Encostar é quando duas coisas do jogo se tocam de verdade. Olhando de cima, a chave pode parecer estar em cima do personagem. Será que eles estão encostando?',
     image: 'contato',
   },
   'pergunta-com-nao': {
     intro:
-      'A porta do farol faz uma pergunta e faz o que a resposta mandar: sim abre, não deixa fechada. Sem a chave, a porta está trancada. Investigue: o que a palavra não faz com a resposta?',
-    steps: [
-      'Repare se a porta está trancada e qual pergunta ela está fazendo. Depois clique em Testar a porta.',
-      'Com a mesma chave, teste a pergunta sem o não e com o não. Compare as respostas na tabela.',
-      'Faça o mesmo com a outra chave, na ordem que quiser. Você pode repetir os testes.',
-    ],
+      'A porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim. Com o não na pergunta, o que a porta faz?',
   },
 }
 for (const [li, a] of ilhaAulas.entries()) {
@@ -271,15 +252,16 @@ for (const [li, a] of ilhaAulas.entries()) {
     if (t.kind === 'intro' || t.kind === 'material') continue
     if (t.kind === 'closing' && li < 2) continue
     const e = experiences[t.key]
+    if (e && !t.instrucao) throw new Error(`${t.key}: experiência sem instrução`)
     const body = e
       ? text(e.intro) +
         (e.image
           ? `<img class="experiment" data-image="${e.image}" alt="Cena da experiência 3D">`
           : '') +
-        steps(e.steps) +
+        box('O que investigar', t.instrucao!, 'experience') +
         box(
           'Sua investigação',
-          'Os controles ficam livres. Quando fizer as comparações, clique em Próxima parte.',
+          'O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
           'experience',
         )
       : t.steps

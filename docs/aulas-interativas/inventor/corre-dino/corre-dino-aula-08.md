@@ -39,19 +39,19 @@ A condição da aula anterior é reaplicada ao ramo inicio. A experiência de co
 
 ### Seção 2. O que começa a partida?
 
-**Tarefa:** Sua vez! Descubra o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-convite → fala-convite → experiencia-convite.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem joga no celular consegue começar?”. Antes: “o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o jogo escuta”.
+video-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem joga no celular consegue começar?”. Antes: “o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo”.
 
 **Experiência em exploração livre:** `controls` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/controls.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/controls.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Para começar a partida, o jogo pode escutar só o Enter, ou qualquer tecla ou toque. Teste o toque e o Enter nos dois jeitos e compare o que começa a partida. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com Só o Enter escolhido, clique em Tocar na tela. Na tela de início, clique em Apertar Enter. Clique em Qualquer tecla ou toque e, na tela de início, em Tocar na tela.
 

@@ -14,33 +14,31 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Você já reparou como um desenho animado parece se mexer? Na verdade, são vários desenhos parados, passando bem rápido, um depois do outro. Cada desenho desses se chama quadro.
-
-[engaging, energetic, conversational voice] O seu jogo também é feito de quadros: enquanto a corrida acontece, ele mostra um quadro atrás do outro. E tem coisa que o jogo faz uma vez só, no começo, e coisa que ele faz sempre, em todo quadro.
+[engaging, energetic, conversational voice] Um jogo mostra um quadro atrás do outro, bem rápido. Cada quadro é uma imagem parada, como os desenhos de um desenho animado. E o jogo precisa saber quando fazer cada coisa: uma vez só, no começo, ou sempre, em todo quadro.
 
 [engaging, energetic, conversational voice] É como sair para correr: tem coisa que você faz uma vez, antes de sair, como amarrar o tênis, e tem coisa que você faz o caminho inteiro.
+
+[engaging, energetic, conversational voice] No seu jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.
 
 [curious] E se o Dino der um passinho uma vez só, no começo? Ele continua andando?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando o Dino dá um passinho: uma vez, no começo, ou sempre, em todo quadro. E este botão começa o jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o Dino quando ele dá um passinho uma vez, no começo, e quando dá um passinho sempre, em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no Dino quando o passinho acontece uma vez só e quando acontece em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
+[engaging, energetic, conversational voice] Todo jogo acontece dentro de uma tela, e essa tela tem um tamanho. É o tamanho que diz até onde as coisas do jogo podem ir.
+
 [engaging, energetic, conversational voice] Sabe quando você escolhe o tamanho da folha antes de desenhar? Tudo o que você desenhar vai ter que caber nela.
 
-[engaging, energetic, conversational voice] O seu jogo também tem uma folha: a tela. O tamanho dela é feito de dois números, a largura e a altura.
+[engaging, energetic, conversational voice] No seu jogo, a borda é o contorno que mostra onde a tela acaba. O tamanho da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.
 
 [curious] E se a largura diminuir, a tela fica mais baixa ou mais estreita?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões mudam a largura e a altura da tela, e este botão mostra a borda, o contorno de onde a tela acaba.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o contorno da tela quando você muda só a largura e quando muda só a altura, e termine com a tela do seu jogo, de 480 por 270. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na borda quando muda a largura e quando muda a altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -104,31 +102,31 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Para o jogo saber onde desenhar cada coisa, cada uma tem um lugar na tela, dito com números.
+
 [engaging, energetic, conversational voice] Sabe quando você combina com alguém de se encontrar na praça e diz: fico no banco perto da fonte? Com esse endereço, a pessoa acha você.
 
-[engaging, energetic, conversational voice] No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.
+[engaging, energetic, conversational voice] No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.
 
 [curious] E para que lado cada número leva o Dino?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você muda o x e o y do Dino, um número de cada vez, e vê onde ele vai parar.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o lugar do Dino quando o x aumenta e quando o y aumenta, e descubra onde ele fica com os dois números em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde o Dino vai quando o x muda, quando o y muda e quando os dois ficam em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
+[engaging, energetic, conversational voice] Num jogo, uma coisa pode existir e pode aparecer. Existir é o jogo guardar essa coisa, com nome e lugar. Aparecer é ela estar na tela, onde quem joga consegue ver.
+
 [engaging, energetic, conversational voice] Sabe o teatro? Tem o camarim, nos bastidores, onde o ator se arruma, e tem o palco, que a plateia vê.
 
-[engaging, energetic, conversational voice] No seu jogo também existem esses dois lugares. Existir no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.
+[engaging, energetic, conversational voice] No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.
 
 [curious] E quando o Dino passa a existir, ele já aparece na tela?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, de um lado ficam os bastidores, e do outro, a tela do jogo. Os botões fazem o Dino existir e aparecer.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os bastidores e a tela do jogo quando o Dino passa a existir e quando ele aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda nos bastidores e na tela do jogo quando o Dino passa a existir e quando ele aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

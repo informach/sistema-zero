@@ -10,14 +10,14 @@
 
 **Clipe:** `video-quadros`
 
-**Na tela:** No "Já viu aqueles livrinhos", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho da nave [na edição: meme do livrinho]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os quadros [apontar "Quadro 2"]. No "Este outro toca e para a Prévia", apontar o botão [apontar "Tocar a Prévia"]. No "Aqui você escolhe a Velocidade", apontar os números [apontar "Velocidade, em quadros por segundo"]. No "E este último deixa o quadro 2 igual", apontar o botão [apontar "Quadro 2 igual ao quadro 1: desligado"]. Não tocar a Prévia: o que o fogo faz em cada velocidade é a descoberta da criança. Na fala desta aula, quadro é sempre um desenho da animação. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "Um desenho animado é feito de muitos desenhos", mostrar a experiência na aula, com a Prévia parada. No "Já viu aqueles livrinhos", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho da nave [na edição: meme do livrinho]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a nave parada, com a Prévia parada, sem tocar a Prévia: o que o fogo faz em cada velocidade é a descoberta da criança. Na fala desta aula, quadro é sempre um desenho da animação. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] Um desenho animado é feito de muitos desenhos, mostrados um depois do outro. De um desenho para o outro, quase tudo fica igual, e só um pedacinho muda.
 
-[engaging, energetic, conversational voice] No Pinta, cada desenho da animação se chama quadro. A sua nave vai ter dois quadros: no quadro 1, o fogo do motor é pequeno, e no quadro 2, ele é maior.
+[engaging, energetic, conversational voice] No Pinta, cada desenho da animação se chama quadro. A sua nave vai ter dois quadros: no quadro 1, o fogo do motor é pequeno, e no quadro 2, ele é maior. E dá para escolher quantos quadros passam por segundo.
 
 [engaging, energetic, conversational voice] Já viu aqueles livrinhos com um desenho em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.
 
@@ -25,22 +25,20 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões mostram o Quadro 1 e o Quadro 2. Este outro toca e para a Prévia, que mostra a animação. Aqui você escolhe a Velocidade, que é quantos quadros passam por segundo. E este último deixa o quadro 2 igual ao quadro 1.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o fogo da nave com a Prévia parada e tocando, rápido e devagar, e também quando os dois quadros ficam iguais. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-quadros-K1 | Debinha | 1 | em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro. | E se as páginas passarem bem rápido? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mostram o Quadro 1 e o | [curious] |
+| video-quadros-K1 | Debinha | 1 | em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro. | E se as páginas passarem bem rápido? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-quadros-K1`: entrada — Manter o meme do livrinho e a experiência com a Prévia parada. Saída — Seguir sem tocar a Prévia: a professora só convida a testar e aponta os controles.
+- `video-quadros-K1`: entrada — Manter o meme do livrinho e a experiência com a Prévia parada. Saída — Seguir sem tocar a Prévia: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/frames.ts`, com a tela em `packages/member-shell/src/components/scene-livre/frames.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
@@ -82,37 +80,35 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-fantasma`
 
-**Na tela:** No "Sabe quando você põe uma folha fina", mostrar o meme ilustrado (2 a 3 s) do Zappy desenhando sobre a folha fina [na edição: meme da folha fina]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar os quadros [apontar "Quadro 2"]. No "Este liga e desliga o Fantasma", apontar o botão [apontar "Fantasma: desligado"]. No "você muda o tamanho do fogo do quadro 2", apontar o botão [apontar "Fogo 2 maior"]. Não mudar o fogo nem ligar o Fantasma: o que dá para comparar em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
+**Na tela:** No "No quadro 2, o fogo da sua nave", mostrar a experiência na aula, parada no quadro 1. No "Sabe quando você quer desenhar uma coisa", mostrar o meme ilustrado (2 a 3 s) do Zappy desenhando um balão ao lado de outro [na edição: meme dos dois balões]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a nave parada no quadro 1, sem mudar o fogo nem ligar o Fantasma: o que dá para comparar em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] No quadro 2, o fogo da sua nave vai ser só um pouco maior que o do quadro 1. Mas, enquanto você desenha o quadro 2, o quadro 1 não fica na tela.
 
-[engaging, energetic, conversational voice] O Pinta tem o Fantasma. Ligado, ele mostra o desenho do quadro anterior, clarinho, junto do quadro que você está desenhando. O Fantasma não vira parte da animação.
+[engaging, energetic, conversational voice] Sabe quando você quer desenhar uma coisa só um pouco maior que outra? Fica mais fácil quando as duas estão à vista.
 
-[engaging, energetic, conversational voice] Sabe quando você põe uma folha fina por cima de um desenho? Dá para ver as linhas de baixo através dela. O Fantasma funciona como essa folha fina.
+[engaging, energetic, conversational voice] O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.
 
 [curious] Dá para acertar o tamanho do fogo sem o Fantasma?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões mostram o Quadro 1 e o Quadro 2. Este liga e desliga o Fantasma. E, com Fogo 2 menor e Fogo 2 maior, você muda o tamanho do fogo do quadro 2.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: no quadro 2, mude o fogo com o Fantasma desligado e depois com ele ligado. Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o Fantasma mostra e como ele ajuda a deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-fantasma-K1 | Debinha | 1 | fina por cima de um desenho? Dá para ver as linhas de baixo através dela. O Fantasma funciona como essa folha fina. | Dá para acertar o tamanho do fogo sem o Fantasma? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mostram o Quadro 1 e o | [curious] |
+| video-fantasma-K1 | Debinha | 1 | que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma. | Dá para acertar o tamanho do fogo sem o Fantasma? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-fantasma-K1`: entrada — Manter o meme da folha fina e a experiência no quadro 1. Saída — Seguir sem mudar o fogo: a professora só convida a testar e aponta os controles.
+- `video-fantasma-K1`: entrada — Manter o meme dos dois balões e a experiência no quadro 1. Saída — Seguir sem mudar o fogo: a professora só convida a testar.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/onion-skin.ts`, com a tela em `packages/member-shell/src/components/scene-livre/onion-skin.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.

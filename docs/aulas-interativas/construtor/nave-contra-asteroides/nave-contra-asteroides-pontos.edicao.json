@@ -14,8 +14,8 @@
       "clipe": "video-variavel",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "mundo. No seu jogo, os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta caixa guarda o número, e estes",
+      "ancoraAntes": "se chamar pontos. E os pontos também vão ter as duas coisas: o número que o jogo guarda e o número que aparece na tela.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre o número que o jogo",
       "falaPrincipal": "E se o número não estiver na tela, ele continua mudando?",
       "falaPersonagem": "E se o número não estiver na tela, ele continua mudando?",
       "tags": ["[curious]"]

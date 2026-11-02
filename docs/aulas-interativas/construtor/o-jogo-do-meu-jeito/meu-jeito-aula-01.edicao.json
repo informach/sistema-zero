@@ -23,7 +23,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes três botões trocam a história",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a",
       "falaPrincipal": "E se eu trocar a nave por um carrinho, o jogo muda?",
       "falaPersonagem": "E se eu trocar a nave por um carrinho, o jogo muda?",
       "tags": ["[curious]"]
@@ -33,10 +33,10 @@
       "clipe": "video-copias",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "Baixar o projeto. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência aparecem o jogo da aula e o seu",
-      "falaPrincipal": "Se eu pintar a cópia, o desenho do gibi muda também?",
-      "falaPersonagem": "Se eu pintar a cópia, o desenho do gibi muda também?",
+      "ancoraAntes": "o seu Estúdio. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a cópia guarda do jogo da aula e",
+      "falaPrincipal": "Se eu mudar a nave da cópia, a nave do jogo da aula muda também?",
+      "falaPersonagem": "Se eu mudar a nave da cópia, a nave do jogo da aula muda também?",
       "tags": ["[curious]"]
     }
   ]

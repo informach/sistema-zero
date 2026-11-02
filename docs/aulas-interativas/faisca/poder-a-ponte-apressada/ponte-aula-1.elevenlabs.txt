@@ -16,21 +16,19 @@
 
 [long pause]
 
-[curious] Sabe o botão do semáforo de pedestre? Você aperta, e o sinal fica verde para você atravessar.
+[engaging, energetic, conversational voice] Um jogo também sabe esperar. Ele pode contar alguns segundos e, quando o tempo acaba, fazer alguma coisa sozinho, sem ninguém apertar nada.
 
-[engaging, energetic, conversational voice] Mas o verde não fica para sempre. O semáforo conta um tempo e, quando esse tempo acaba, volta para o vermelho sozinho. Ninguém precisa apertar outro botão para isso: o semáforo sabe esperar.
+[curious] Sabe o semáforo de pedestre? Ele conta um tempo e troca de cor sozinho, sem ninguém mexer nele.
 
-[engaging, energetic, conversational voice] No seu jogo, a alavanca faz o papel do botão, e a ponte baixada faz o papel do sinal verde.
+[engaging, energetic, conversational voice] No seu jogo, a ponte tem uma alavanca e um relógio que conta 4 segundos.
 
 [engaging, energetic, conversational voice] E o jogo precisa lembrar se a ponte está baixada, como quem anota num papelzinho. Ele guarda isso numa variável chamada ponteAberta: verdadeiro quando a ponte está baixada, falso quando ela está levantada.
 
-[curious] E a ponte do seu jogo: quando o relógio dela começa a contar? E se a alavanca for puxada de novo, o que acontece com o relógio?
+[curious] E a ponte do seu jogo: quando o relógio dela começa a contar?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta atividade, estes botões puxam a alavanca, deixam o tempo passar um segundo por vez e levam o personagem até a ponte. Aqui fica o relógio, e aqui, ponteAberta. E aqui você escolhe quando o relógio começa a contar: quando a alavanca é puxada ou quando a partida começa.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: observe a ponte antes de alguém puxar a alavanca, assim que a alavanca é puxada e quando o relógio chega a 4. Depois compare o relógio começando na alavanca e junto com a partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com a ponte enquanto o relógio conta, com o relógio começando na alavanca e junto com a partida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

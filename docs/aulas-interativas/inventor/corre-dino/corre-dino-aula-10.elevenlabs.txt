@@ -1,4 +1,6 @@
-[curious] Lembra dos carrinhos de bate-bate e do para-choque em volta deles? E se o para-choque fosse maior ou menor?
+[engaging, energetic, conversational voice] Num jogo, a área da batida não precisa ter o tamanho do desenho: quem faz o jogo pode deixar essa área maior ou menor.
+
+[engaging, energetic, conversational voice] Lembra do pega-pega, em que a turma combina o que vale como pegar? Dá para combinar um jeito mais fácil ou mais difícil de pegar alguém.
 
 [engaging, energetic, conversational voice] No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele.
 
@@ -6,9 +8,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, a mesma da aula anterior, agora você também escolhe o tamanho da área do Dino, e estes botões aproximam e afastam o cacto.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare quando aparece BATEU com a área inteira, um pouco menor e bem pequena. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o jogo marca a batida com a área inteira, um pouco menor e bem pequena. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

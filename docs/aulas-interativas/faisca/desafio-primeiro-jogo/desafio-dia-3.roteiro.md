@@ -6,39 +6,31 @@ A professora grava toda a fala principal. Na edição kids, substituir apenas os
 
 **Clipe:** `video-d3-condicao`
 
-**Na tela:** A experiência aparece no tamanho da aula, com o personagem sem a chave. Do "Sabe a porta da sua casa" até o "você está com a chave", a tela fica parada, e a edição troca esse trecho por uma porta de casa que só abre para quem está com a chave [na edição: porta de casa e chave]. No "A porta do farol faz a mesma pergunta", a tela volta para a experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência]. No "Olha aqui: nesta experiência, este botão", apontar o botão de dar a chave [apontar "Dar a chave ao personagem"]. No "Este outro, Testar a porta", apontar o botão [apontar "Testar a porta"]. No "E aqui fica a pergunta da porta", apontar a pergunta e os lugares das respostas sim e não [apontar "A pergunta da porta"]. No "O Zappy ajuda você a comparar", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dar a chave nem testar a porta: qual resposta a porta escolhe é a descoberta da criança. Os botões de dar e tirar a chave preparam situações de teste; no jogo, o personagem precisa encontrar a chave. Não falar de blocos, regra, então, senão nem comandos: eles ficam para a montagem (decisões de 01/11 e 02/11/2026).
+**Na tela:** A experiência aparece no tamanho da aula, com o personagem sem a chave. Do "Sabe quando você pergunta" até o "leva o guarda-chuva", a tela fica parada, e a edição troca esse trecho por uma criança na porta de casa olhando o céu, com um guarda-chuva fechado ao lado, sem mostrar se chove [na edição: a pergunta da chuva e o guarda-chuva]. No "a porta do farol também faz uma pergunta", a tela volta para a experiência. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dar a chave nem testar a porta: qual resposta a porta escolhe é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, então, senão nem comandos: eles ficam para a montagem (decisões de 01/11 e 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] O seu jogo já guarda em temChave se o personagem pegou a chave. Agora o farol vai usar essa informação para decidir o que fazer quando o personagem chegar à porta dele.
 
-[engaging, energetic, conversational voice] Sabe a porta da sua casa? Ela só abre para quem está com a chave. É como se, antes de abrir, ela perguntasse: você está com a chave?
+[confident, clear, unhurried voice] Uma pergunta que o jogo faz para decidir o que acontece tem um nome: condição. E a resposta dela só pode ser sim ou não.
 
-[engaging, energetic, conversational voice] A porta do farol faz a mesma pergunta, com o nome que o jogo usa: temChave é verdadeiro?
+[engaging, energetic, conversational voice] Sabe quando você pergunta “está chovendo?” antes de sair? A resposta, sim ou não, decide se você leva o guarda-chuva.
 
-[confident, clear, unhurried voice] Uma pergunta assim, que o jogo faz para decidir o que acontece, tem um nome: condição. E a resposta dela só pode ser sim ou não.
+[engaging, energetic, conversational voice] No seu jogo, a porta do farol também faz uma pergunta, com o nome que o jogo usa: temChave é verdadeiro? Essa é a condição da porta.
 
 [curious] E se a resposta for não?
 
-[engaging, energetic, conversational voice] O que você acha que a porta faz? Isso você vai testar na experiência. Uma dica: a pergunta da porta é sempre a mesma. Observe se a resposta muda.
+[engaging, energetic, conversational voice] O que você acha que a porta faz? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão dá a chave ao personagem ou tira a chave dele.
-
-[interested, animated voice] Este outro, Testar a porta, faz a porta conferir se o personagem está com a chave.
-
-[interested, animated voice] E aqui fica a pergunta da porta, com um lugar para a resposta sim e outro para a resposta não.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar! Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe.
-
-[upbeat, encouraging voice] Você escolhe por onde começar e pode repetir quantas vezes quiser. O Zappy ajuda você a comparar. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d3-condicao-K1 | Debinha | 1 | assim, que o jogo faz para decidir o que acontece, tem um nome: condição. E a resposta dela só pode ser sim ou não. | E se a resposta for não? | O que você acha que a porta faz? Isso você vai testar na experiência. Uma dica: a pergunta da porta é sempre a mesma. | [curious] |
+| video-d3-condicao-K1 | Debinha | 1 | a porta do farol também faz uma pergunta, com o nome que o jogo usa: temChave é verdadeiro? Essa é a condição da porta. | E se a resposta for não? | O que você acha que a porta faz? Isso você vai testar na experiência. Agora você vai investigar o que a porta faz | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -351,37 +343,29 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d3-posicao`
 
-**Na tela:** A experiência aparece no tamanho da aula. Apresentar somente aqui as coordenadas x/y. Do "É como explicar o caminho até um tesouro" até o "para cima ou para baixo", a tela fica parada, e a edição troca esse trecho por um mapa do tesouro com setas para os lados e para cima e para baixo, na mesma arte do jogo [na edição: mapa do tesouro com setas]. No "No jogo, o lugar da chave", a tela volta para a experiência. No "Isso você vai testar na experiência", ampliar a experiência [ampliar experiência]. No "Olha aqui: nesta experiência, você muda o x e o y", apontar os dois controles [apontar "Horizontal x"] [apontar "Vertical y"]. No "E esta marca mostra", apontar a marca de início [apontar "Início"]. No "clique em Mostrar um alvo", apontar o botão, sem clicar [apontar "Mostrar um alvo"]. No "O Zappy ajuda você a comparar", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não mover a chave: para que lado cada número leva a chave é a descoberta da criança. Não prescrever números, ordem de eixos nem uma sequência obrigatória. O alvo é opcional.
+**Na tela:** A experiência aparece no tamanho da aula. Apresentar somente aqui as coordenadas x/y. Do "É como explicar o caminho até um tesouro" até o "para cima ou para baixo", a tela fica parada, e a edição troca esse trecho por um mapa do tesouro com setas para os lados e para cima e para baixo, na mesma arte do jogo [na edição: mapa do tesouro com setas]. No "No jogo, o lugar da chave", a tela volta para a experiência. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e deixar a cena parada, sem apontar controles. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não mover a chave: para que lado cada número leva a chave é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não prescrever números, ordem de eixos nem uma sequência obrigatória. O alvo é opcional e fica na experiência. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, a chave começa sempre no mesmo lugar. Daqui a pouco, você vai escolher outro lugar para ela. Para isso, primeiro a gente precisa entender como o jogo sabe onde fica cada coisa na tela.
+[engaging, energetic, conversational voice] No seu jogo, a chave começa sempre no mesmo lugar. Daqui a pouco, você vai escolher outro lugar para ela. Para isso, a gente precisa entender como o jogo sabe onde fica cada coisa na tela.
 
 [engaging, energetic, conversational voice] É como explicar o caminho até um tesouro num mapa: quantos passos andar para os lados e quantos passos andar para cima ou para baixo.
 
-[engaging, energetic, conversational voice] No jogo, o lugar da chave também é dito com dois números: o x e o y. O x cuida dos lados, a direção que também se chama horizontal.
+[engaging, energetic, conversational voice] No jogo, o lugar da chave também é dito com dois números: o x e o y. O x cuida dos lados, a direção que também se chama horizontal. O y cuida de cima e de baixo, a direção vertical.
 
-[curious] E para subir ou descer?
+[curious] Mas, quando o y aumenta, a chave sobe ou desce?
 
-[engaging, energetic, conversational voice] Para isso existe o y, que cuida de cima e de baixo, a direção vertical. Mas, quando o y aumenta, a chave sobe ou desce? O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você muda o x e o y com estes controles.
-
-[interested, animated voice] E esta marca mostra onde a chave estava no começo, para você comparar.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar! Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y.
-
-[upbeat, encouraging voice] Você escolhe por onde começar e pode repetir quantas vezes quiser. Se quiser um desafio, clique em Mostrar um alvo e leve a chave até ele.
-
-[upbeat, encouraging voice] O Zappy ajuda você a comparar. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d3-posicao-K1 | Debinha | 1 | da chave também é dito com dois números: o x e o y. O x cuida dos lados, a direção que também se chama horizontal. | E para subir ou descer? | Para isso existe o y, que cuida de cima e de baixo, a direção vertical. Mas, quando o y aumenta, a chave sobe ou desce? | [curious] |
+| video-d3-posicao-K1 | Debinha | 1 | e o y. O x cuida dos lados, a direção que também se chama horizontal. O y cuida de cima e de baixo, a direção vertical. | Mas, quando o y aumenta, a chave sobe ou desce? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde a chave vai quando o x e o y | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

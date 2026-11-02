@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida. Os finais ficam para a aula seguinte.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do embrulho (699 palavras) virou duas: embrulhar (o estado inicio e a partida dentro de Se jogando) e abertura (id novo: o senão se inicio com a tela de abertura).
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do embrulho (699 palavras) virou duas: embrulhar (o estado inicio e a partida dentro de Se jogando) e abertura (id novo: o senão se inicio com a tela de abertura). O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -28,19 +28,19 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ### Seção 1. A partida já começou?
 
-**Tarefa:** Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-estado-do-jogo → fala-estado-do-jogo → experiencia-estado.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a”.
+video-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com a”.
 
 **Experiência em exploração livre:** `game-state` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/game-state.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/game-state.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador. Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador. Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador.
 

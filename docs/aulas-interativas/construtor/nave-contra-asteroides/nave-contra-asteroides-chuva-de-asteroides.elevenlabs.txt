@@ -4,11 +4,9 @@
 
 [curious] E se nascer uma pedra em todo quadro?
 
-[engaging, energetic, conversational voice] O que você acha que aparece na tela? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões escolhem quando nasce uma pedra nova, e este passa um segundo de jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na chuva de pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -54,9 +52,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão sorteia um lugar, e esta régua marca cada lugar que já saiu.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os lugares sorteados e observe de onde a pedra entra na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar onde cada pedra nova nasce quando o jogo sorteia o lugar, e de onde ela entra na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

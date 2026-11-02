@@ -14,8 +14,8 @@
       "clipe": "video-convite",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "o teclado, ou só o dedo, no celular. E a tela de início pode escutar só uma tecla, ou qualquer tecla e também um toque.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o jogo escuta",
+      "ancoraAntes": "o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo",
       "falaPrincipal": "E se o jogo só escutar o teclado, quem joga no celular consegue começar?",
       "falaPersonagem": "E se o jogo só escutar o teclado, quem joga no celular consegue começar?",
       "tags": ["[curious]"]

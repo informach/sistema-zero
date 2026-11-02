@@ -10,12 +10,14 @@
 
 **Clipe:** `video-condicao`
 
-**Na tela:** No "Sabe a porta de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar "Ligar a pergunta"]. No "e este contador mostra quantos cactos", apontar o contador de cactos criados. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+**Na tela:** No "Sabe a porta de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No "O seu jogo vai ganhar", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Sabe a porta de casa, que só abre com a chave? Antes de abrir, é como se ela fizesse uma pergunta: a chave está aqui? E a resposta decide o que acontece.
+[engaging, energetic, conversational voice] Antes de fazer alguma coisa, um jogo pode fazer uma pergunta. A resposta, sim ou não, decide o que ele faz.
+
+[curious] Sabe a porta de casa, que só abre com a chave? É como se ela perguntasse: a chave está aqui?
 
 [curious] O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou?
 
@@ -23,27 +25,25 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga a pergunta, e este contador mostra quantos cactos foram criados.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o contador de cactos com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos cactos nascem com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-condicao-K1 | Debinha | 1 | cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou? | E na tela de início, os cactos nascem? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a | [curious] |
+| video-condicao-K1 | Debinha | 1 | cada vez que o relógio dos cactos toca, o jogo pode fazer uma pergunta antes de criar um cacto: a partida já começou? | E na tela de início, os cactos nascem? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos cactos nascem com a pergunta | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-condicao-K1`: entrada — Manter o meme da porta com a chave até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o tempo parado.
+- `video-condicao-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/game-state.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Guarde em que momento o jogo está
 

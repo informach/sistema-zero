@@ -8,25 +8,27 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-posicao-3d`
 
-**Na tela:** Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois mostrar a experiência parada, com os três números da chave e a marca dourada, sem mudar nenhum valor: o que cada número muda é a descoberta da criança. Não falar de blocos nem de código.
+**Na tela:** Vídeo conceitual. Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois ampliar a experiência e mostrar a cena parada, com a chave no lugar inicial, sem apontar controles nem mudar nenhum valor: o que cada número muda é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
 [engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela.
 
-[interested, animated voice] Aqui a ilha tem profundidade, e o lugar de cada objeto tem três números: x, y e z.
+[interested, animated voice] No 3D, o mundo tem profundidade, e o lugar de cada objeto tem três números.
 
 [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar.
 
-[curious] Será que cada número da chave muda um desses jeitos? E o y, será que continua fazendo o que fazia no jogo 2D?
+[engaging, energetic, conversational voice] No seu jogo, o lugar da chave na ilha também tem três números: x, y e z.
+
+[curious] E o y, será que continua fazendo o que fazia no jogo 2D?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Sua vez de investigar: mude um número de cada vez, para mais e para menos, e observe para onde a chave vai. Compare com a marca dourada do lugar inicial e, se ficar difícil de ver, troque a vista. Você escolhe por onde começar. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Mude um número da chave de cada vez, para mais e para menos, e observe para onde ela vai. Você escolhe por onde começar, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 2. Coloque a chave na ilha
 
@@ -68,23 +70,25 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-contato-3d`
 
-**Na tela:** Ilustrar a lâmpada bem acima da cabeça de alguém. Depois mostrar a experiência na vista de cima, com a chave alta parecendo estar sobre o personagem, e apontar Testar o encontro e Mostrar onde encosta sem testar: o resultado é a descoberta da criança. Não falar de blocos nem de código.
+**Na tela:** Vídeo conceitual. Ilustrar duas mãos batendo palmas, desenho nosso com o Zappy. Depois ampliar a experiência e mostrar a cena parada, na vista de cima, com a chave alta parecendo estar sobre o personagem, sem apontar controles nem testar: o resultado é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Sabe quando uma lâmpada fica bem em cima da sua cabeça? Olhando de baixo, parece que ela está grudada em você. Mas ela pode estar lá no teto.
+[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela.
 
-[engaging, energetic, conversational voice] No seu jogo, o personagem vai pegar a chave quando encostar nela. Só que a imagem da tela também pode enganar.
+[curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade.
 
-[curious] Na experiência, olhando de cima, a chave parece estar em cima do personagem. Será que eles estão encostando?
+[engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem.
+
+[curious] Será que eles estão encostando?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Sua vez de investigar: teste o encontro e compare com o que a imagem mostra de cima e de lado. Depois mude a chave ou o personagem de lugar e procure um caso em que eles encostam e outro em que ficam separados. Se quiser, clique em Mostrar onde encosta. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Teste se a chave e o personagem estão encostando e compare com o que a imagem mostra. Procure um caso em que eles encostam e outro em que ficam separados. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Recolha a chave
 

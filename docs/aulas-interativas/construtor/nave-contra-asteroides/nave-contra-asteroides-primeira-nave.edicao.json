@@ -25,7 +25,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando a nave anda um",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na nave quando ela anda uma",
       "falaPrincipal": "E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?",
       "falaPersonagem": "E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?",
       "tags": ["[curious]"]
@@ -36,7 +36,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado ficam os bastidores, e",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre a nave existir nos",
       "falaPrincipal": "E quando a nave passa a existir, ela já aparece na tela?",
       "falaPersonagem": "E quando a nave passa a existir, ela já aparece na tela?",
       "tags": ["[curious]"]
@@ -57,8 +57,8 @@
       "clipe": "video-desenho-por-quadro",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "um quadro atrás do outro? No seu jogo, a nave pode mudar de lugar, mas a tela só mostra o que foi desenhado nela.",
-      "ancoraDepois": "O que você acha que aparece? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando a",
+      "ancoraAntes": "na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra quando a nave é",
       "falaPrincipal": "E se a nave for desenhada em todo quadro, sem apagar a tela?",
       "falaPersonagem": "E se a nave for desenhada em todo quadro, sem apagar a tela?",
       "tags": ["[curious]"]

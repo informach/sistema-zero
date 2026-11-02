@@ -28,14 +28,14 @@
   "blocks": [
     {
       "key": "video-sorteio-tira-na-hora",
-      "plannedVideo": "Título: Onde nasce o próximo cacto?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Sortear um lugar\"]. No \"Este outro sorteia a velocidade\", apontar o botão, sem clicar [apontar \"Sortear uma velocidade\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-sorteio-tira-na-hora-K1: Dedé substitui “Ué, pode sair o mesmo lugar duas vezes?”. Antes: “sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão sorteia um lugar, e esta”.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Onde nasce o próximo cacto?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente do Dino [na edição: meme do dado]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem sortear. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-sorteio-tira-na-hora-K1: Dedé substitui “E pode sair o mesmo lugar duas vezes?”. Antes: “sempre igual. Por isso, o jogo pode sortear o lugar de cada cacto novo, e também uma pequena diferença na velocidade.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde os cactos nascem e com que”.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-sorteio-tira-na-hora",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -43,7 +43,7 @@
       "content": {
         "kind": "interactive",
         "title": "Onde nasce o próximo cacto?",
-        "instructions": "Sorteie o lugar de cada cacto e compare as marquinhas na régua; depois sorteie a velocidade e compare as raias. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare os lugares sorteados na régua e até onde chegam os cactos de cada velocidade nas raias. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Compare as marquinhas na régua depois de cada sorteio.",
           "Sorteie uma coisa por vez: o lugar, depois a velocidade.",
@@ -96,14 +96,14 @@
     },
     {
       "key": "video-regua-negativos",
-      "plannedVideo": "Título: Qual número é maior?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o termômetro num dia muito frio\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Somar -1\"]. No \"e esta pergunta compara dois números\", apontar os sinais, sem clicar [apontar \"> maior que\"]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-regua-negativos-K1: Dedé substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “e cabem numa régua, como um termômetro deitado. No seu jogo, as velocidades dos cactos são números negativos.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o marcador anda pela régua, este”.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Qual número é maior?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o termômetro num dia muito frio\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino de cachecol olhando um termômetro deitado, igual a uma régua de números [na edição: meme do termômetro deitado]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o marcador no começo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-regua-negativos-K1: Dedé substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “dos cactos são números negativos. E o jogo pode fazer uma pergunta sobre eles, como: o número é maior que -9?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar como os números negativos ficam na reta”.\n\nFala completa em corre-dino-aula-12.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-regua-negativos",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -111,7 +111,7 @@
       "content": {
         "kind": "interactive",
         "title": "Qual número é maior?",
-        "instructions": "Ande pela reta com Somar -1 e escolha o sinal da pergunta: >, = ou <. Compare onde a resposta é sim e onde é não. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare para que lado o marcador anda quando o número diminui e onde a pergunta responde sim ou não. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe para que lado o marcador anda a cada -1 e onde cada número mora na reta.",
           "A reta é parecida com um termômetro deitado. Olhe a resposta embaixo dela: ela muda conforme o marcador anda e o sinal muda.",
@@ -1354,7 +1354,7 @@
       "key": "sorteio-tira-na-hora",
       "title": "Onde nasce o próximo cacto?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue onde os cactos nascem e com que velocidade quando o jogo sorteia. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-sorteio-tira-na-hora",
         "fala-sorteio-tira-na-hora",
@@ -1470,7 +1470,7 @@
       "key": "regua-negativos",
       "title": "Qual número é maior?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue como os números negativos ficam na régua e qual deles é o maior. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-regua-negativos", "fala-regua-negativos", "experiencia-number-line"],
       "workspaceKey": null,
       "externalTool": null,

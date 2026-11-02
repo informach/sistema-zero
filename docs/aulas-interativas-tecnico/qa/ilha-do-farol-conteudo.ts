@@ -56,17 +56,17 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'O que aparece quando você muda de lugar?',
         kind: 'experience',
         screen:
-          'Ilustrar a comparação: uma pessoa na frente tapa a vista, e um passo para o lado deixa ver o que estava atrás. Depois mostrar a experiência na vista de frente, com a pedra escondendo a chave, e apontar os botões de vista sem trocar a vista: o que muda e o que fica igual é a descoberta da criança. Não falar de blocos nem de código.',
+          'Vídeo conceitual. Ilustrar a comparação: uma pessoa na frente tapa a vista de alguém, que pensa em mudar de lugar para olhar, sem mostrar o que está atrás. Depois ampliar a experiência e mostrar a cena parada, na vista de frente, com a pedra escondendo a chave, sem apontar controles nem trocar a vista: o que muda e o que fica igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Procure a chave olhando a ilha de lugares diferentes. Compare o que muda na imagem e o que continua onde estava. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Olhe a mesma ilha de frente, de lado e de cima. Em cada vista, procure a chave e repare no que muda e no que continua igual. Você escolhe a ordem e pode repetir.',
+          'Procure a chave olhando a ilha de lugares diferentes e compare o que muda na imagem e o que continua no mesmo lugar. Você escolhe a ordem e pode repetir quando quiser.',
         pistas: [
           'Olhe a ilha de outro lugar e procure a chave.',
           'Compare duas vistas. Repare na pedra e na chave em cada uma delas.',
           'Clique em Ver de lado e procure a chave. Depois clique em Ver de frente e compare. Por fim, responda à pergunta: quando a chave apareceu, o que mudou?',
         ],
-        text: '[curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você dá um passo para o lado, e o que estava escondido aparece. [engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo. [interested, animated voice] Olha aqui: nesta experiência, estes três botões mudam o lugar de onde você olha a ilha. [curious] Agora pense: quando a chave aparece atrás da pedra, foi a chave que mudou de lugar? Ou foi outra coisa? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Sua vez de investigar: procure a chave olhando a ilha de lugares diferentes. Observe o que muda na imagem e o que continua onde estava. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo. [curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar. [engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida. [curious] Se a câmera mudar de lugar, a chave também muda de lugar? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'movimento',
@@ -120,17 +120,17 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Para onde vai a chave?',
         kind: 'experience',
         screen:
-          'Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois mostrar a experiência parada, com os três números da chave e a marca dourada, sem mudar nenhum valor: o que cada número muda é a descoberta da criança. Não falar de blocos nem de código.',
+          'Vídeo conceitual. Ilustrar a estante de livros: andar para os lados, chegar mais perto ou mais longe e olhar numa prateleira mais alta. Depois ampliar a experiência e mostrar a cena parada, com a chave no lugar inicial, sem apontar controles nem mudar nenhum valor: o que cada número muda é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Mude um número da chave de cada vez, para mais e para menos, e observe para onde ela vai. Você escolhe por onde começar, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'A chave tem três números: x, y e z. Mude um de cada vez, para mais e para menos, e observe para onde ela vai. Compare com a marca dourada do lugar inicial e troque a vista quando quiser.',
+          'Compare para onde a chave vai quando o x, o y e o z aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.',
         pistas: [
           'Escolha um dos três números da chave e observe para onde ela vai.',
           'Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.',
           'Na linha do X, clique no + e depois no −, observando a chave. Faça o mesmo nas linhas do Z e do Y. Para ver melhor, clique em Ver de lado ou em Ver de cima.',
         ],
-        text: '[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. [interested, animated voice] Aqui a ilha tem profundidade, e o lugar de cada objeto tem três números: x, y e z. [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. [curious] Será que cada número da chave muda um desses jeitos? E o y, será que continua fazendo o que fazia no jogo 2D? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Sua vez de investigar: mude um número de cada vez, para mais e para menos, e observe para onde a chave vai. Compare com a marca dourada do lugar inicial e, se ficar difícil de ver, troque a vista. Você escolhe por onde começar. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo 2D, você usou dois números, x e y, para escolher um lugar na tela. [interested, animated voice] No 3D, o mundo tem profundidade, e o lugar de cada objeto tem três números. [curious] Imagine procurar um livro numa estante. Você pode andar para os lados, chegar mais perto ou mais longe e ainda olhar numa prateleira mais alta. São três jeitos diferentes de mudar de lugar. [engaging, energetic, conversational voice] No seu jogo, o lugar da chave na ilha também tem três números: x, y e z. [curious] E o y, será que continua fazendo o que fazia no jogo 2D? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar para onde a chave vai quando cada um dos três números aumenta e quando diminui. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'posicao',
@@ -155,17 +155,17 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Parece junto, mas está encostando?',
         kind: 'experience',
         screen:
-          'Ilustrar a lâmpada bem acima da cabeça de alguém. Depois mostrar a experiência na vista de cima, com a chave alta parecendo estar sobre o personagem, e apontar Testar o encontro e Mostrar onde encosta sem testar: o resultado é a descoberta da criança. Não falar de blocos nem de código.',
+          'Vídeo conceitual. Ilustrar duas mãos batendo palmas, desenho nosso com o Zappy. Depois ampliar a experiência e mostrar a cena parada, na vista de cima, com a chave alta parecendo estar sobre o personagem, sem apontar controles nem testar: o resultado é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Teste se a chave e o personagem estão encostando e compare com o que a imagem mostra. Procure um caso em que eles encostam e outro em que ficam separados. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Teste se a chave e o personagem estão encostando. Compare o resultado com o que a imagem mostra de cima e de lado. Mude um dos dois de lugar e teste de novo, na ordem que quiser.',
+          'Compare quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem e pode repetir quando quiser.',
         pistas: [
           'Antes de testar, pense: a chave e o personagem estão encostando?',
           'Teste o encontro e compare a vista de cima com a vista de lado.',
           'Clique em Testar o encontro e depois em Ver de lado. Na linha do Y, clique no − até a chave chegar perto do personagem e clique em Testar o encontro de novo. Se quiser, clique em Mostrar onde encosta.',
         ],
-        text: '[curious] Sabe quando uma lâmpada fica bem em cima da sua cabeça? Olhando de baixo, parece que ela está grudada em você. Mas ela pode estar lá no teto. [engaging, energetic, conversational voice] No seu jogo, o personagem vai pegar a chave quando encostar nela. Só que a imagem da tela também pode enganar. [curious] Na experiência, olhando de cima, a chave parece estar em cima do personagem. Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Sua vez de investigar: teste o encontro e compare com o que a imagem mostra de cima e de lado. Depois mude a chave ou o personagem de lugar e procure um caso em que eles encostam e outro em que ficam separados. Se quiser, clique em Mostrar onde encosta. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela. [curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. [engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. [curious] Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'recolher',
@@ -280,11 +280,11 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'O que muda com o não?',
         kind: 'experience',
         screen:
-          'Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a plaquinha da porta de uma loja dos dois lados, Pode entrar e Não pode entrar, com a palavra não destacada. Depois mostrar a experiência parada, sem a chave e com a pergunta sem o não, e apontar os botões Dar a chave ao personagem, Pôr o não na pergunta e Testar a porta, sem clicar. Apontar a tabela das quatro situações, ainda com Teste para descobrir. Não testar a porta nem dizer qual resposta a porta dá em nenhuma situação: a criança descobre na experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis.',
+          'Vídeo conceitual. Ilustrar a comparação por 2 a 3 segundos, desenho nosso com o Zappy, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: duas lojas lado a lado, uma com a plaquinha Pode entrar e outra com a plaquinha Não pode entrar, com a palavra não destacada, sem mostrar ninguém entrando nem barrado. Depois ampliar a experiência e mostrar a cena parada, sem a chave e com a pergunta sem o não, sem apontar controles nem a tabela e sem clicar: qual resposta a porta dá em cada situação é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, de Se, de então, de senão nem de variáveis. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Descubra o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
         instrucao:
-          'Teste a mesma porta com a pergunta sem o não e com o não, com a chave e sem a chave. Compare as respostas em cada situação. Você escolhe a ordem e pode repetir.',
+          'Compare a resposta da porta com a pergunta sem o não e com o não, com a chave e sem a chave. Você escolhe a ordem e pode repetir quando quiser.',
         pistas: [
           'Antes de testar, repare se a porta está trancada e qual pergunta ela está fazendo.',
           'Com a mesma chave, teste as duas perguntas e compare as respostas na tabela.',
@@ -295,7 +295,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           cenario: 'farol',
           goals: ['not-flips-with-key', 'not-flips-without-key'],
         },
-        text: '[curious] Sabe a plaquinha na porta de uma loja? “Pode entrar” e “Não pode entrar” são quase iguais, mas a palavrinha não troca tudo. [engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter o não. Nesta experiência, a porta do farol faz uma pergunta. A porta pergunta: a porta está trancada? E ela é muito obediente: abre sempre que a resposta é sim. [engaging, energetic, conversational voice] Sem a chave, a porta está trancada. Com a chave, ela fica destrancada. [curious] Agora pense: com o não na pergunta, a resposta da porta muda? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [interested, animated voice] Olha aqui: nesta experiência, estes botões dão ou tiram a chave, põem ou tiram o não da pergunta e testam a porta. E esta tabela guarda a resposta de cada situação que você testar. [upbeat, encouraging voice] Sua vez de investigar: teste a porta com a pergunta sem o não e com o não, com a chave e sem a chave, e compare as respostas. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.',
+        text: '[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não. [curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença. [engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Na experiência, a porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim. [curious] Com o não na pergunta, o que a porta faz? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
       },
       {
         key: 'uma-vez',

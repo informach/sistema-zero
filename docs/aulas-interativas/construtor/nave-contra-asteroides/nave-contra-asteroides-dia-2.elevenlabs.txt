@@ -4,11 +4,9 @@
 
 [curious] E se o tiro sair sempre, em todo quadro?
 
-[engaging, energetic, conversational voice] O que você acha que aparece? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe quando sai um tiro, e este botão faz o papel da tecla.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os tiros nos três jeitos: uma vez, no começo, sempre, em todo quadro, e na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar em que momento o tiro sai em cada um dos três jeitos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -50,7 +48,7 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Tem dois jeitos de dizer onde você está: escrever num papelzinho, que fica com o que você escreveu, ou responder na hora em que alguém pergunta.
+[engaging, energetic, conversational voice] Tem dois jeitos de dizer onde você está: escrever num papelzinho ou responder na hora em que alguém pergunta.
 
 [engaging, energetic, conversational voice] O tiro do seu jogo precisa de um número que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.
 
@@ -58,9 +56,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe de onde vem o número do tiro, muda a nave de lugar e atira. Cada tiro deixa uma marca no lugar onde nasceu.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare onde nascem os tiros com o número escrito e com o número lido da nave, com a nave em lugares diferentes, e descubra de que ponto da nave o tiro sai. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar onde o tiro nasce quando a nave muda de lugar, com o número escrito e com o número lido da nave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -72,9 +68,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes números escolhem a velocidade para baixo do tiro, e este botão passa um quadro. Ao lado, aparece o y do tiro.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare para que lado o tiro anda e o que acontece com o y com um número negativo e com um número positivo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado o tiro anda, e o que acontece com o y, com um número positivo e com um número negativo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -162,9 +156,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, ao lado da tela ficam os bastidores, com os tiros do grupo, e este botão faz o jogo tirar quem sai da tela.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o grupo de tiros quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o grupo de tiros quando o jogo tira do grupo quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

@@ -84,19 +84,17 @@
 
 [long pause]
 
-[curious] Sabe a plaquinha na porta de uma loja? “Pode entrar” e “Não pode entrar” são quase iguais, mas a palavrinha não troca tudo.
+[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter a palavra não.
 
-[engaging, energetic, conversational voice] No jogo, uma pergunta também pode ter o não. Nesta experiência, a porta do farol faz uma pergunta. A porta pergunta: a porta está trancada? E ela é muito obediente: abre sempre que a resposta é sim.
+[curious] Sabe a plaquinha na porta de uma loja? Tem loja que escreve “Pode entrar” e tem loja que escreve “Não pode entrar”. As duas frases só têm uma palavrinha de diferença.
 
-[engaging, energetic, conversational voice] Sem a chave, a porta está trancada. Com a chave, ela fica destrancada.
+[engaging, energetic, conversational voice] Daqui a pouco, o farol do seu jogo vai usar o não. Na experiência, a porta do farol pergunta: a porta está trancada? E ela abre quando a resposta é sim.
 
-[curious] Agora pense: com o não na pergunta, a resposta da porta muda?
+[curious] Com o não na pergunta, o que a porta faz?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes botões dão ou tiram a chave, põem ou tiram o não da pergunta e testam a porta. E esta tabela guarda a resposta de cada situação que você testar.
-
-[upbeat, encouraging voice] Sua vez de investigar: teste a porta com a pergunta sem o não e com o não, com a chave e sem a chave, e compare as respostas. Você escolhe a ordem e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

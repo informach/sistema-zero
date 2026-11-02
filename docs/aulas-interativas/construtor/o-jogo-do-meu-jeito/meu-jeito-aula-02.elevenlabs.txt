@@ -4,11 +4,9 @@
 
 [engaging, energetic, conversational voice] Imagina um desenho montado com pecinhas quadradas de brinquedo. Ele é como o desenho em pixel: cada pecinha é um quadradinho.
 
-[engaging, energetic, conversational voice] Será que, de perto, as duas bordas continuam parecidas? O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] Pense numa pedra em pixel e numa pedra em vetor, com a mesma forma, vistas bem de perto, como numa lupa. Será que as bordas continuam parecidas? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, as duas pedras têm a mesma forma, uma em pixel e a outra em vetor. Os botões Aproximar e Afastar funcionam como a Lupa do Pinta.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: aproxime e afaste as duas pedras e compare as bordas, de perto e de longe. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar a borda de cada pedra, de perto e de longe. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -32,7 +30,7 @@
 
 [engaging, energetic, conversational voice] A sua nave vai ter dois lados iguais, como a maioria das naves. Para você não desenhar cada lado duas vezes, o Pinta tem o espelho.
 
-[engaging, energetic, conversational voice] O espelho repete o seu traço do outro lado de uma linha do meio. No Pinta, existem dois: o Espelho lado a lado e o Espelho de cima e de baixo.
+[engaging, energetic, conversational voice] O espelho repete o seu traço do outro lado de uma linha do meio. O Pinta tem dois espelhos, cada um com a sua própria linha do meio, e tem o Balde de tinta, que pinta uma parte inteira de uma vez.
 
 [engaging, energetic, conversational voice] Sabe quando você pinga tinta numa folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.
 
@@ -40,9 +38,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes dois botões ligam e desligam cada espelho. Com estes outros, você pinta uma parte da nave ou usa o Balde de tinta.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: pinte com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Compare onde a tinta aparece em cada teste. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar onde a tinta aparece com os espelhos desligados, com cada espelho ligado e com o Balde de tinta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -90,9 +86,7 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga A sombra e a luz da bola, e este outro muda O sol de lado.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: ligue e desligue a sombra e a luz e troque o sol de lado. Compare a forma da bola e os tons de azul. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a sombra, a luz e o lado do sol fazem com a forma da bola. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

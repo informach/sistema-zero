@@ -14,7 +14,7 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 A abertura e o caderno ficam junto da primeira construção. Preparação, tamanho, coordenadas e criação têm experiências antes da aplicação. O Dino invisível é explicado como resultado da criação sem desenho, sem suspense obrigatório para a aula seguinte.
 
-**Revisão de 02/11/2026.** As quatro experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): o vídeo explica a ideia com uma analogia (desenho animado e tênis, folha de desenho, encontro na praça, teatro), aponta os controles uma vez e devolve a pergunta da Debinha ("O que você acha? Isso você vai testar na experiência."); a primeira experiência apresenta a palavra quadro. A primeira montagem apresenta os blocos e a paleta, e cada montagem liga o bloco à ideia ("É este bloco que…"), com um gesto ou um campo por fala (a troca 800 → 480 e 480 → 270 virou dois passos). A resposta à pergunta da cor começa pela cor, e o "cadê o Dino?" é respondido com o que a criança vê. A definição de sprite foi para a Aula 2, junto do bloco Desenhar o sprite.
+**Revisão de 02/11/2026.** As quatro experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): o vídeo explica a ideia com uma analogia (desenho animado e tênis, folha de desenho, encontro na praça, teatro), convida a investigar sem apontar os controles e devolve a pergunta da Debinha ("O que você acha? Isso você vai testar na experiência."); a primeira experiência apresenta a palavra quadro. A primeira montagem apresenta os blocos e a paleta, e cada montagem liga o bloco à ideia ("É este bloco que…"), com um gesto ou um campo por fala (a troca 800 → 480 e 480 → 270 virou dois passos). A resposta à pergunta da cor começa pela cor, e o "cadê o Dino?" é respondido com o que a criança vê. A definição de sprite foi para a Aula 2, junto do bloco Desenhar o sprite.
 
 ## Triagem dos conceitos
 
@@ -49,19 +49,19 @@ Anexar somente `docs/aulas-interativas/inventor/corre-dino/passo-a-passo-do-proj
 
 ### Seção 3. Uma vez ou sempre?
 
-**Tarefa:** Sua vez! Descubra o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-uma-vez-e-sempre → fala-uma-vez-e-sempre → experiencia-uma-vez-e-sempre.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-uma-vez-e-sempre-K1: Debinha substitui “E se o Dino der um passinho uma vez só, no começo? Ele continua andando?”. Antes: “tem coisa que você faz uma vez, antes de sair, como amarrar o tênis, e tem coisa que você faz o caminho inteiro.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quando o Dino dá um”.
+video-uma-vez-e-sempre-K1: Debinha substitui “E se o Dino der um passinho uma vez só, no começo? Ele continua andando?”. Antes: “jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no Dino quando o passinho”.
 
 **Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o Dino quando ele anda um pouquinho uma vez, no começo, e quando anda sempre, em todo quadro. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare o Dino quando o passinho acontece uma vez, no começo, e quando acontece sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Uma vez, no começo, clique em Começar o jogo e observe o Dino e os quadros. Escolha Sempre, em todo quadro, clique em Começar o jogo e observe o Dino e os quadros.
 
@@ -69,19 +69,19 @@ video-uma-vez-e-sempre-K1: Debinha substitui “E se o Dino der um passinho uma 
 
 ### Seção 4. Qual é o tamanho da tela?
 
-**Tarefa:** Sua vez! Descubra o que a largura e a altura mudam na tela do jogo e termine com a tela em 480 por 270. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-limite-da-tela → fala-limite-da-tela → experiencia-tela.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que a largura e a altura mudam na tela do jogo e termine com a tela em 480 por 270. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-limite-da-tela-K1: Debinha substitui “E se a largura diminuir, a tela fica mais baixa ou mais estreita?”. Antes: “que caber nela. O seu jogo também tem uma folha: a tela. O tamanho dela é feito de dois números, a largura e a altura.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes botões mudam a largura e a”.
+video-limite-da-tela-K1: Debinha substitui “E se a largura diminuir, a tela fica mais baixa ou mais estreita?”. Antes: “da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na borda quando muda a”.
 
 **Experiência em exploração livre:** `stage-size` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/stage-size.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/stage-size.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Com a borda ligada, compare o contorno da tela quando você muda só a largura e quando muda só a altura. Termine com a tela em 480 por 270. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare a borda quando muda só a largura e quando muda só a altura. A tela do seu jogo tem 480 por 270. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Ligar a borda. Com a borda ligada, clique em outra largura ou altura, como Largura 600. Com a borda ligada, clique em Largura 480 e em Altura 270.
 
@@ -119,19 +119,19 @@ video-borda-K1: Debinha substitui “Qual cor vai aparecer melhor?”. Antes: �
 
 ### Seção 7. Onde fica o Dino?
 
-**Tarefa:** Sua vez! Descubra como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-coordenadas → fala-coordenadas → experiencia-coordenadas.
 
-**Recado na página (não gravar):** Sua vez! Descubra como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-coordenadas-K1: Debinha substitui “E para que lado cada número leva o Dino?”. Antes: “No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você muda o x e o y do Dino, um”.
+video-coordenadas-K1: Debinha substitui “E para que lado cada número leva o Dino?”. Antes: “a pessoa acha você. No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde o Dino vai quando o x muda,”.
 
 **Experiência em exploração livre:** `coordinates` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/coordinates.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare o lugar do Dino em três testes: aumente o x sem mudar o y, aumente o y sem mudar o x e coloque x e y em zero. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare o lugar do Dino quando muda só o x e quando muda só o y, e descubra onde ele fica com x e y em zero. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Aumente só o x e observe para onde o Dino vai. Aumente só o y e observe para onde o Dino vai. Coloque 0 no x e 0 no y e observe em que canto o Dino fica.
 
@@ -139,19 +139,19 @@ video-coordenadas-K1: Debinha substitui “E para que lado cada número leva o D
 
 ### Seção 8. Existir e aparecer
 
-**Tarefa:** Sua vez! Descubra se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-criar-e-mostrar → fala-criar-e-mostrar → descoberta.
 
-**Recado na página (não gravar):** Sua vez! Descubra se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-criar-e-mostrar-K1: Debinha substitui “E quando o Dino passa a existir, ele já aparece na tela?”. Antes: “no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, de um lado ficam os bastidores, e”.
+video-criar-e-mostrar-K1: Debinha substitui “E quando o Dino passa a existir, ele já aparece na tela?”. Antes: “o palco, que a plateia vê. No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda nos bastidores e na tela do”.
 
 **Experiência em exploração livre:** `world` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/world.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os bastidores e a tela do jogo quando o Dino passa a existir e quando aparece na tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os bastidores e a tela do jogo quando o Dino passa a existir e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Criar o Dino nos bastidores e compare os bastidores com a tela do jogo. Clique em Mostrar o Dino na tela e compare os bastidores com a tela do jogo.
 

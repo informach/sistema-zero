@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual ganharam uma experiência própria (02/11/2026, proposta aprovada pela responsável): "A meta do jogo" (cena `score-goal`), com o placar que sobe a cada acerto, a placa fixa em 26 e o sinal > ou ≥; a placa do brinquedo do parque virou a analogia do vídeo de convite, e a montagem dos finais abre com a retomada dessa experiência, sem refazê-la.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual ganharam uma experiência própria (02/11/2026, proposta aprovada pela responsável): "A meta do jogo" (cena `score-goal`), com o placar que sobe a cada acerto, a placa fixa em 26 e o sinal > ou ≥; a placa do brinquedo do parque virou a analogia do vídeo de convite, e a montagem dos finais abre com a retomada dessa experiência, sem refazê-la. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -29,19 +29,19 @@ Amplia a abertura já testada. As regras de final e o reinício são construído
 
 ### Seção 1. A meta do jogo
 
-**Tarefa:** Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-meta-do-jogo → fala-meta-do-jogo → experiencia-meta-do-jogo.
 
-**Recado na página (não gravar):** Sua vez! Descubra em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes dois botões escolhem o sinal”.
+video-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada”.
 
 **Experiência em exploração livre:** `score-goal` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/score-goal.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/score-goal.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e tente mudar a placa no meio de uma partida. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória. Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória. Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa.
 
@@ -101,19 +101,19 @@ video-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. A
 
 ### Seção 5. Jogar outra vez
 
-**Tarefa:** Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-reiniciar → fala-reiniciar → experiencia-reiniciar.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-reiniciar-K1: Debinha substitui “E qual é a diferença entre os dois?”. Antes: “jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o Enter faz no”.
+video-reiniciar-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o”.
 
 **Experiência em exploração livre:** `restart` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/restart.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/restart.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela. Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início.
 

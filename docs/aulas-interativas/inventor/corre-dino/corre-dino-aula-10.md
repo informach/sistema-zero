@@ -14,7 +14,7 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 A aula retoma o contato observado antes da colisão e compara agora a porcentagem da área. O contorno temporário é instrumento para conferir o ajuste, não uma regra nova. A escolha entre 70 e 85% continua permitida.
 
-**Revisão de 02/11/2026.** P10 (decisão da coordenação, 02/11/2026): a área fica em 80 por cento, sem "se quiser, teste 70 e 85" na montagem nem "a porcentagem que você escolheu" na entrega; o rótulo do critério também diz 80 (a régua do critério continua aceitando de 70 a 85). A experiência da área passou à exploração livre, voltando aos carrinhos de bate-bate da aula anterior. As montagens ligam área e caixa de colisão ("No Estúdio, a área da batida se chama caixa de colisão"), explicam a porcentagem, dizem o nome de fábrica jogador e nomeiam o bloco que vem logo abaixo do contorno, Mover os sprites do grupo cactos. A retomada diz a relação ("a área um pouco menor que o desenho").
+**Revisão de 02/11/2026.** P10 (decisão da coordenação, 02/11/2026): a área fica em 80 por cento, sem "se quiser, teste 70 e 85" na montagem nem "a porcentagem que você escolheu" na entrega; o rótulo do critério também diz 80 (a régua do critério continua aceitando de 70 a 85). A experiência da área passou à exploração livre, voltando ao combinado do pega-pega da aula anterior. As montagens ligam área e caixa de colisão ("No Estúdio, a área da batida se chama caixa de colisão"), explicam a porcentagem, dizem o nome de fábrica jogador e nomeiam o bloco que vem logo abaixo do contorno, Mover os sprites do grupo cactos. A retomada diz a relação ("a área um pouco menor que o desenho").
 
 ## Triagem dos conceitos
 
@@ -27,19 +27,19 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ### Seção 1. E se a área mudar de tamanho?
 
-**Tarefa:** Sua vez! Descubra o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-caixa-decide → fala-caixa-decide → experiencia-hitbox.
 
-**Recado na página (não gravar):** Sua vez! Descubra o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-caixa-decide-K1: Dedé substitui “E se a área ficar menor que o desenho, o que acontece com a batida?”. Antes: “o para-choque fosse maior ou menor? No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a mesma da aula anterior, agora”.
+video-caixa-decide-K1: Dedé substitui “E se a área ficar menor que o desenho, o que acontece com a batida?”. Antes: “ou mais difícil de pegar alguém. No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o jogo marca a batida com a área”.
 
 **Experiência em exploração livre:** `hitbox` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/hitbox.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/hitbox.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare três tamanhos da área de contato do Dino: 100%, 80% e 40%. Aproxime o cacto um toque de cada vez e compare a indicação BATEU com os desenhos em cada área. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare quando aparece BATEU com a área do Dino em 100%, 80% e 40%. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Com a área em 100%, clique em Aproximar o cacto, um toque de cada vez, até aparecer BATEU. Com o cacto onde apareceu BATEU, clique em 80%. Clique em Aproximar o cacto até o cacto encostar no desenho do Dino e clique em 40%.
 

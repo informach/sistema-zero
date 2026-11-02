@@ -48,35 +48,31 @@ Master integral da professora. Montagem guiada completa no vídeo, um gesto por 
 
 **Clipe:** `video-experiencia`
 
-**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy girando os números de um cadeado de bicicleta, pensativo. Depois mostrar a experiência parada: as três pedras, a placa, o baú, o número passo e a pergunta "É a minha vez?" com as duas respostas ainda em "?". No "Olha aqui", apontar os botões dos símbolos, passo, a pergunta e os dois botões dos baús [apontar botões dos símbolos; apontar passo; apontar a pergunta; apontar os baús]. Não tocar nenhum símbolo: o que passo faz a cada toque, e o que acontece fora da vez, é a descoberta da criança. Não falar de blocos, regra, Se, então nem senão: eles ficam para a montagem (decisão de 02/11/2026).
+**Na tela:** Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy girando os números de um cadeado de bicicleta, pensativo, sem mostrar o cadeado abrindo. No convite, ampliar a experiência e mostrar a cena parada: as três pedras, a placa, o baú, o número passo e a pergunta "É a minha vez?" com as duas respostas ainda em "?", sem apontar controles. Não tocar nenhum símbolo: o que passo faz a cada toque, o que acontece fora da vez e o que muda em cada jeito de o baú conferir é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então nem senão: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Sabe o cadeado de bicicleta com números, ou a senha de desenhar no celular? Não basta acertar os números: eles precisam vir na ordem certa.
+[engaging, energetic, conversational voice] No seu jogo, o baú abre com uma senha de símbolos. Para conferir a senha, o jogo precisa lembrar até onde você chegou. Ele guarda isso numa variável: um lugar onde o jogo guarda uma informação para usar depois.
 
-[engaging, energetic, conversational voice] No seu jogo vai ser igual. Os símbolos são os números da senha, e a placa mostra a ordem.
+[curious] Sabe o cadeado de bicicleta com números? A senha dele é uma sequência de números.
 
-[engaging, energetic, conversational voice] Para isso funcionar, o jogo precisa lembrar até onde você chegou. Ele guarda isso numa variável chamada passo. Uma variável é um lugar onde o jogo guarda uma informação para usar depois.
+[engaging, energetic, conversational voice] No seu jogo, os símbolos são os números da senha, e a placa mostra a sequência. A variável que lembra até onde você chegou se chama passo.
 
 [interested, animated voice] E cada símbolo, quando é tocado, faz uma pergunta: é a minha vez?
 
-[curious] Como o símbolo sabe se é a vez dele? E o que acontece com passo quando um símbolo vem fora da vez? O que você acha? Isso você vai testar na experiência.
+[engaging, energetic, conversational voice] O baú pode conferir a senha de dois jeitos: só contando os símbolos tocados ou conferindo a vez de cada um.
 
-[interested, animated voice] Olha aqui: nesta atividade, estes botões tocam o sol, a lua e a estrela, e aqui fica passo. Embaixo do jogo fica a pergunta de cada símbolo, com uma resposta para o sim e outra para o não.
+[curious] E o que acontece com passo quando um símbolo vem fora da vez?
 
-[interested, animated voice] E aqui você escolhe o baú: o que confere a vez ou o que só conta.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez de investigar: toque os símbolos e observe o número passo a cada toque.
-
-[upbeat, encouraging voice] Compare a ordem da placa com um símbolo fora da vez e com um começo pelo meio. Depois compare com o baú que só conta os símbolos tocados.
-
-[reassuring, encouraging voice] Você escolhe por onde começar, e o Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-simbolos.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Investigue o que acontece com passo quando os símbolos vêm na ordem da placa, fora da vez e começando pelo meio. Depois compare com o baú que só conta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. O sol começa
 

@@ -2758,7 +2758,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Investigue quando o número moedas muda e quando continua igual, compare a moeda sumindo e sem sumir, e compare as duas perguntas do baú. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando o número moedas muda e quando continua igual, e o que o baú responde com cada pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -2768,7 +2768,7 @@
         "required": true,
         "title": "O contador de moedas",
         "semPerguntaFinal": true,
-        "instructions": "Investigue quando o número moedas muda e quando continua igual: encoste em moedas, afaste o personagem e volte ao lugar de uma moeda já pega, com o sumiço ligado e desligado. Depois compare as duas perguntas do baú. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare quando o número moedas muda e quando continua igual, e o que o baú responde com cada pergunta. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe o número moedas antes e depois de cada encontro: quando ele muda e quando continua igual?",
           "Compare voltar a uma moeda já pega com o sumiço ligado e desligado. Depois tente o baú com poucas moedas e com mais de cinco, nas duas perguntas.",

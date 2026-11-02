@@ -21,8 +21,8 @@
       "clipe": "video-o-que-o-freio-segura",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "forte, até um limite. No seu jogo, a corrida fica mais rápida aos poucos, e o número da base vai descendo: -5, -6, -7…",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão passa cinco segundos de",
+      "ancoraAntes": "-7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a base e com os",
       "falaPrincipal": "E os cactos que já estão na pista também ficam mais rápidos?",
       "falaPersonagem": "E os cactos que já estão na pista também ficam mais rápidos?",
       "tags": ["[curious]"]

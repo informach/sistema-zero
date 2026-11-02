@@ -14,19 +14,19 @@
 
 [long pause]
 
+[engaging, energetic, conversational voice] Para saber quantas moedas o personagem já pegou, o jogo precisa contar. Ele guarda essa conta numa variável: um número que o jogo guarda e que pode mudar durante a partida.
+
 [curious] Sabe quando você guarda moedas num cofrinho? Cada moeda que cai lá dentro faz o total crescer um pouco.
 
-[engaging, energetic, conversational voice] No seu jogo, o cofrinho é uma variável chamada moedas: um número que o jogo guarda e muda durante a partida. Quando a partida começa, ela está em zero.
+[engaging, energetic, conversational voice] No seu jogo, o cofrinho é uma variável chamada moedas. Quando a partida começa, ela está em zero.
 
 [engaging, energetic, conversational voice] E o baú faz uma pergunta sobre esse número, como quando você confere se tem moedas suficientes para comprar alguma coisa. Só que dá para perguntar de dois jeitos: moedas é pelo menos cinco? Ou moedas é exatamente cinco?
 
-[curious] E as moedas do caminho? Se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo? E, com mais de cinco moedas, as duas perguntas do baú dão a mesma resposta?
+[curious] E se o personagem voltar ao lugar de uma moeda que ele já pegou, ela conta de novo?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta atividade, estes números levam o personagem até cada moeda, este botão liga ou desliga o sumiço da moeda, e aqui você escolhe a pergunta do baú. O número moedas aparece aqui, no canto do jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: observe quando o número moedas muda e quando continua igual, compare a moeda sumindo e sem sumir, e compare as duas perguntas do baú. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o número moedas muda e quando continua igual, e o que o baú responde com cada pergunta. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

@@ -14,7 +14,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montagem própria; a comparação da proteção prepara a colisão da nave. Um quiz e o teste final retomam acertos, erros e batidas.
 
-**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem da batida (535 palavras) virou duas: batida (a colisão, a pedra que sai e a explosão) e dano (id novo: a vida e a proteção, com o tremor). A experiência da proteção passou para logo antes da montagem do dano.
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem da batida (535 palavras) virou duas: batida (a colisão, a pedra que sai e a explosão) e dano (id novo: a vida e a proteção, com o tremor). A experiência da proteção passou para logo antes da montagem do dano. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -28,19 +28,19 @@ Os pontos já vêm da aula anterior. A preparação das vidas fica em uma montag
 
 ### Seção 1. Quando a nave ganha as vidas?
 
-**Tarefa:** Sua vez! Descubra quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-vidas-no-comeco → fala-vidas-no-comeco → experiencia-uma-vez.
 
-**Recado na página (não gravar):** Sua vez! Descubra quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando a nave precisa ganhar as três vidas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-vidas-no-comeco-K1: Debinha substitui “E se a nave ganhar as três vidas sempre, em todo quadro?”. Antes: “vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.”. Depois: “O que você acha que acontece depois das batidas? Isso você vai testar na experiência. Olha aqui: nesta experiência,”.
+video-vidas-no-comeco-K1: Debinha substitui “E se a nave ganhar as três vidas sempre, em todo quadro?”. Antes: “vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas a nave tem depois das”.
 
 **Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare as vidas depois das batidas quando a nave ganha as três vidas uma vez, no começo, e quando ganha sempre, em todo quadro. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Uma vez, no começo, clique em Começar o jogo e observe as vidas e as batidas. Escolha Sempre, em todo quadro, clique em Começar o jogo e observe as vidas e as batidas.
 
@@ -81,19 +81,19 @@ video-batida-e-coracoes-K1: Debinha substitui “Qual pedra o jogo vai tirar?”
 
 ### Seção 4. O tempinho de proteção
 
-**Tarefa:** Sua vez! Descubra quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-protecao → fala-respiro → experiencia-protecao.
 
-**Recado na página (não gravar):** Sua vez! Descubra quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quantas vidas sobram com e sem um tempinho de proteção depois de bater. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-protecao-K1: Debinha substitui “E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?”. Antes: “jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quanto tempo dura a”.
+video-protecao-K1: Debinha substitui “E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?”. Antes: “jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantas vidas sobram depois de três”.
 
 **Experiência em exploração livre:** `invincibility` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/invincibility.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/invincibility.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe a ordem dos testes e pode repetir quando quiser.
+**Instrução:** Compare quantas vidas sobram depois das três pedras sem proteção, com uma proteção longa e com uma proteção curta. Você escolhe a ordem e pode repetir quando quiser.
 
 **O que investigar (metas, em qualquer ordem):** Escolha Nenhuma e clique em Avançar até a próxima pedra até a terceira pedra bater. Observe as vidas. Escolha 45 quadros e clique em Avançar até a próxima pedra até a terceira pedra bater. Compare as vidas. Escolha 15 quadros e avance pedra por pedra. Observe quando a proteção acaba e quantas vidas sobram.
 

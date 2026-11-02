@@ -1,14 +1,14 @@
-[engaging, energetic, conversational voice] Sabe os carrinhos de bate-bate? Em volta de cada carrinho tem um para-choque de borracha.
+[engaging, energetic, conversational voice] Para a corrida acabar, o jogo precisa saber quando o Dino bate num cacto. Esse momento se chama batida.
 
-[engaging, energetic, conversational voice] No seu jogo, em volta de cada desenho também tem uma área, como esse para-choque. Quando o Dino e o cacto se aproximam, o jogo marca uma batida.
+[engaging, energetic, conversational voice] Sabe quando você brinca de pega-pega? Antes de começar, a turma combina o que vale como pegar.
+
+[engaging, energetic, conversational voice] No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.
 
 [curious] E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, o retângulo pontilhado em volta do Dino e do cacto é a área de cada um, e estes botões aproximam e afastam o cacto.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os desenhos e as áreas pontilhadas no momento em que aparece BATEU. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que se encosta, os desenhos ou as áreas pontilhadas, no momento em que o jogo marca a batida. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -98,17 +98,17 @@
 
 [long pause]
 
-[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Dá para só dizer “de novo!” e voltar a jogar, ou recolher tudo e arrumar o tabuleiro do zero.
+[engaging, energetic, conversational voice] Quando uma partida acaba, o jogo precisa saber o que fazer para começar outra.
+
+[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Antes de recomeçar, vale olhar como o tabuleiro ficou.
 
 [engaging, energetic, conversational voice] No seu jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.
 
-[curious] E qual é a diferença entre os dois?
+[curious] E a partida nova começa igual nos dois jeitos?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o toque faz no fim da partida, e este botão faz o papel do toque.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os cactos que ficam na pista quando uma partida nova começa, quando o toque do fim só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar como começa a partida nova em cada jeito de o toque recomeçar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 

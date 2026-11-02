@@ -22,8 +22,8 @@
       "clipe": "video-contato",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "cada desenho também tem uma área, como esse para-choque. Quando o Dino e o cacto se aproximam, o jogo marca uma batida.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, o retângulo pontilhado em volta do",
+      "ancoraAntes": "combina o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as",
       "falaPrincipal": "E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?",
       "falaPersonagem": "E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?",
       "tags": ["[curious]"]
@@ -56,9 +56,9 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.",
-      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o toque faz no",
-      "falaPrincipal": "E qual é a diferença entre os dois?",
-      "falaPersonagem": "E qual é a diferença entre os dois?",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar como começa a partida nova em cada",
+      "falaPrincipal": "E a partida nova começa igual nos dois jeitos?",
+      "falaPersonagem": "E a partida nova começa igual nos dois jeitos?",
       "tags": ["[curious]"]
     },
     {

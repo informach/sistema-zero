@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-estado-do-jogo",
-      "plannedVideo": "Título: A partida já começou?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão, sem clicar [apontar \"Ligar a pergunta\"]. No \"este contador mostra quantos asteroides\", apontar o contador de asteroides criados. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e desliga a”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: A partida já começou?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe a porta de casa\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy na frente da porta, com um balão de pergunta e uma chave na mão [na edição: meme da porta com a chave]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com a”.\n\nFala completa em nave-contra-asteroides-comecar-partida.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-estado-do-jogo",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -23,7 +23,7 @@
         "kind": "interactive",
         "required": true,
         "title": "A partida já começou?",
-        "instructions": "Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Observe o contador de asteroides criados enquanto o tempo passa.",
           "Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar?",
@@ -1233,7 +1233,7 @@
       "key": "estado-do-jogo",
       "title": "A partida já começou?",
       "intent": "exploration",
-      "objective": "Sua vez! Descubra o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-estado-do-jogo", "fala-estado-do-jogo", "experiencia-estado"],
       "workspaceKey": null,
       "externalTool": null,

@@ -126,7 +126,7 @@ for (const [index, aula] of simbolosAulas.entries()) {
           // sem blocos. As pistas e o "Ainda falta" citam os botões desta tela (o catálogo cita
           // "Na ordem" e "Só contando", da bancada antiga).
           instructions:
-            'Toque os símbolos e observe passo a cada toque: na ordem da placa, fora da vez e começando pelo meio. Depois compare com o baú que só conta. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+            'Compare o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
             'Olhe o número passo depois de cada toque: ele muda? Para quanto?',
             'Compare a ordem da placa com um símbolo fora da vez: o que acontece com passo e com os símbolos acesos?',

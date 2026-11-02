@@ -342,13 +342,22 @@ test('as experiências convidam a investigar: ideia, controles, sem resultado an
   for (const s of experiencias) {
     const fala = falasSecao(s)
     const atividade = s.activity!
-    // "Olha aqui: nesta experiência…" aponta os controles; o convite final diz o que comparar.
-    expect(
-      fala.some((p) => p.startsWith('Olha aqui: nesta experiência')),
-      s.key,
-    ).toBe(true)
-    expect(fala.at(-1)?.startsWith('Agora é a sua vez de investigar: '), s.key).toBe(true)
+    // Molde do Cadê (02/11/2026): conceito, analogia, o conceito no jogo dela, a pergunta e UM
+    // convite de uma frase com o fecho. Sem tour pelos controles nem sequência de testes: quem
+    // acompanha cada teste é o Zappy, dentro da experiência.
+    const falaToda = fala.join(' ')
+    expect(falaToda, s.key).not.toMatch(/Olha aqui|nesta experiência|aqui você/i)
+    expect(falaToda, s.key).not.toMatch(
+      /\b(?:este|estes|esta|estas|esse|esses|essa|essas|outro|último) (?:botão|botões|campo|campos|lista|listas|régua|controle|controles|número|números)\b/i,
+    )
+    expect(falaToda, s.key).not.toMatch(
+      /\bnas duas vezes\b|\bteste mais\b|\bdepois (?:teste|faça|clique|mude|ligue|desligue)\b|\bRepare em (?:duas|três) coisas\b|\bClique em (?!Próxima parte)/i,
+    )
+    expect(fala.at(-1)?.startsWith('Agora você vai investigar '), s.key).toBe(true)
     expect(fala.at(-1)?.endsWith(CONVITE), s.key).toBe(true)
+    // O convite tem uma frase só antes do fecho.
+    expect(frases([fala.at(-1)!]), s.key).toHaveLength(frases([CONVITE]).length + 1)
+    expect(fala.at(-2), s.key).toEndWith(VAI_TESTAR)
     expect(
       frases(fala.slice(0, -1)).filter((f) => ORDEM.test(f)),
       s.key,
@@ -380,13 +389,20 @@ test('as experiências convidam a investigar: ideia, controles, sem resultado an
     ])
       expect(tela, s.key).toContain(gesto)
     if (s.meme) expect(tela, s.key).toContain('[na edição: meme')
+    // Na tela, o vídeo só amplia a cena parada: nada de apontar um controle da experiência.
+    expect(tela, s.key).not.toMatch(/\[apontar (?!zappy\])/)
+    expect(tela, s.key).toContain('No "Agora você vai investigar", ampliar a experiência')
     // A instrução e a ponte convidam; as pistas vão do aberto (o que observar) ao direto (a sequência).
+    // A instrução tem o que comparar e a liberdade de ordem, sem cliques nem sequência (02/11/2026).
     expect(
-      atividade.instructions.endsWith(
-        'Você escolhe a ordem dos testes e pode repetir quando quiser.',
-      ),
+      atividade.instructions.endsWith(' Você escolhe a ordem e pode repetir quando quiser.'),
       s.key,
     ).toBe(true)
+    expect(frases([atividade.instructions]), s.key).toHaveLength(2)
+    // "antes e depois de" compara dois estados; "depois" sozinho encadeia testes.
+    expect(atividade.instructions, s.key).not.toMatch(
+      /\bclique em\b|(?<!antes e )\bdepois\b|\bpor último\b/i,
+    )
     expect(atividade.hints, s.key).toHaveLength(3)
     expect(atividade.hints[2]!.length, s.key).toBeGreaterThan(atividade.hints[0]!.length)
     if (atividade.activity.type === 'experimentation') {

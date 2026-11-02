@@ -26,25 +26,21 @@
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, estes três botões trocam a história do jogo: Nave no espaço, Carrinho na estrada e Submarino no mar. Este outro desliga o tiro. E aqui, na lista O que o jogo faz, você acompanha o que acontece no jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: troque a história e desligue o tiro, jogando um pouco em cada caso. Compare a tela e a lista O que o jogo faz. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no jogo quando você troca a história e quando desliga o tiro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
 [engaging, energetic, conversational voice] Para criar do seu jeito sem perder o jogo que você terminou, você vai trabalhar numa cópia dele.
 
-[engaging, energetic, conversational voice] Uma cópia é outro jogo igualzinho ao primeiro, guardado num arquivo. Na plataforma, você faz essa cópia com Baixar o projeto.
+[engaging, energetic, conversational voice] Uma cópia é outro jogo igualzinho ao primeiro, guardado num arquivo. No seu jogo, o original fica na plataforma, e a cópia vai para o seu Estúdio.
 
 [engaging, energetic, conversational voice] Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.
 
-[curious] Se eu pintar a cópia, o desenho do gibi muda também?
+[curious] Se eu mudar a nave da cópia, a nave do jogo da aula muda também?
 
 [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência aparecem o jogo da aula e o seu Estúdio. Estes são os botões Baixar o projeto e Importar no Estúdio. E aqui você escolhe a cor da nave de cada lado.
-
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o jogo da aula com o Estúdio depois de baixar, de importar e de pintar um lado só. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a cópia guarda do jogo da aula e o que acontece quando você muda só um dos lados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
