@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 As duas experiências mostram espera por um evento e diferença entre tecla e pulo. A construção aplica diretamente o evento do Dino, evitando programar um som na tecla só para desfazê-lo. O resultado e o som do projeto original são preservados.
 
+**Revisão de 02/11/2026.** As duas experiências passaram à exploração livre: o terceiro jeito, na hora em que algo acontece (a campainha, como na Nave), e o som ligado à tecla ou ao pulo (o sininho da porta da loja, que antes não tinha analogia). A montagem define evento antes de criar a área ("Um pulo é um evento, que é algo que acontece no jogo"), diz o que é a área Quando acontecer e liga cada bloco à ideia; a retomada fala do som ligado ao pulo, sem citar o rótulo antigo da experiência.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -23,29 +25,45 @@ As duas experiências mostram espera por um evento e diferença entre tecla e pu
 
 ## Proposta final
 
-### Seção 1. Compare esperar e repetir
+### Seção 1. Uma vez, sempre ou na hora certa?
 
-**Tarefa:** Sua vez! Comece o teste sem clicar em Apertar a tecla e só depois clique nesse botão, de olho no contador. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-area-que-espera → fala-area-que-espera → experiencia-tres-areas.
 
-**Recado na página (não gravar):** Sua vez! Comece o teste sem clicar em Apertar a tecla e só depois clique nesse botão, de olho no contador. Quando terminar, clique em Próxima parte.
-
-**Experiência existente:** `once-vs-always`. Na experiência, coloque Tocar efeito · pulo em Quando acontecer. Clique em Começar o jogo e espere o teste parar sem clicar em Apertar a tecla. Observe o contador. Depois clique em Apertar a tecla. Compare o contador antes e depois desse clique. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
-
-### Seção 2. Compare a tecla com o pulo
-
-**Tarefa:** Sua vez! Teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima parte.
-
-**Blocos na página:** video-dedo-e-pulo → fala-dedo-e-pulo → experiencia-dedo-e-pulo.
-
-**Recado na página (não gravar):** Sua vez! Teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-dedo-e-pulo-K1: Dedé substitui “Como faz para o som tocar em todo pulo?”. Antes: “que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço.”. Depois: “Vamos ligar o som ao pulo. Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes. Duas vezes”.
+video-area-que-espera-K1: Dedé substitui “E se o som ficar esperando a tecla, ele aparece quando o jogo começa?”. Antes: “você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o som do pulo aparece em cada”.
 
-**Experiência existente:** `jump-sound`. Deixe Tocar efeito em Quando apertar Espaço. Clique em Apertar Espaço duas vezes durante o mesmo pulo e compare os contadores de sons e pulos. Depois de pousar, clique em Tocar para pular. Leve Tocar efeito para Quando o Dino pular. Espere pousar e repita os dois testes: Apertar Espaço duas vezes no mesmo salto e Tocar para pular uma vez. Compare os contadores. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `once-vs-always` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare quando o som do pulo aparece em cada jeito, principalmente na hora em que algo acontece, com a tecla e sem a tecla. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Escolha Na hora em que algo acontece, clique em Começar o jogo e deixe o jogo terminar sem clicar em Apertar a tecla. Observe o contador de sons. Com Na hora em que algo acontece escolhido, clique em Apertar a tecla e observe o contador de sons.
+
+**Pistas, do aberto ao direto:** 1) Observe o contador de sons e em que momento o som aparece. 2) Compare o jeito Na hora em que algo acontece com a tecla e sem a tecla. 3) Escolha Na hora em que algo acontece e clique em Começar o jogo sem clicar em mais nada. Depois clique em Apertar a tecla. Sem palpite e sem pergunta final.
+
+### Seção 2. Som na tecla ou no pulo?
+
+**Tarefa:** Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+**Blocos na página:** video-dedo-e-pulo → fala-dedo-e-pulo → experiencia-dedo-e-pulo.
+
+**Recado na página (não gravar):** Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-dedo-e-pulo-K1: Dedé substitui “E se o som estiver ligado à tecla, o pulo do toque também tem som?”. Antes: “No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos sons e quantos pulos acontecem”.
+
+**Experiência em exploração livre:** `jump-sound` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/jump-sound.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/jump-sound.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare quantos sons e quantos pulos aparecem na linha do tempo com o som ligado à tecla e com o som ligado ao pulo. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com Quando a tecla Espaço é apertada, clique em Apertar Espaço duas vezes no mesmo pulo. Com Quando a tecla Espaço é apertada, clique em Tocar para pular. Clique em Quando o Dino pula. Depois clique em Apertar Espaço e, com o Dino no chão, em Tocar para pular.
+
+**Pistas, do aberto ao direto:** 1) Em cada jeito, conte os sons e os pulos na linha do tempo. 2) Com o som ligado à tecla, compare um pulo pela tecla e um pulo pelo toque. 3) Clique em Quando a tecla Espaço é apertada, clique em Apertar Espaço duas vezes no mesmo pulo e, com o Dino no chão, em Tocar para pular. Depois clique em Quando o Dino pula e repita os dois pulos. Sem palpite e sem pergunta final.
 
 ### Seção 3. Ligue o som ao pulo do Dino
 

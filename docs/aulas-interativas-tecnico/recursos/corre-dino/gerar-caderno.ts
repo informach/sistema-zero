@@ -232,8 +232,16 @@ const chapters = aulasDino.map((lesson, i) => {
       )
       continue
     }
-    // Onde o vídeo é demonstração na primeira pessoa, o caderno traz os passos no imperativo.
-    const speech = (section.caderno ?? falasSecao(section)).map((paragraph) => paragraph)
+    // Exploração livre e molde do convite (02/11/2026): a página da experiência diz só o que
+    // investigar, sem resultado e sem sequência. Fica a instrução (o que comparar e a ordem livre); os
+    // pedidos do `goalCopy` citam os botões em sequência e são do Zappy, dentro da experiência. O jogo
+    // pronto traz os passos no imperativo (`caderno`), e as montagens usam a fala do Passo a passo
+    // (`mapa`): sem "Olha aqui", "Olha só", "Repare" e "Tá vendo?", que apontam para um gesto do vídeo
+    // que o PDF não tem.
+    const speech =
+      section.activity?.activity.type === 'experimentation'
+        ? [section.activity.instructions]
+        : (section.caderno ?? falasSecao(section, 'mapa'))
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {

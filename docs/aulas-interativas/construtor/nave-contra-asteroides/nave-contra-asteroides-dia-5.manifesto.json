@@ -40,7 +40,6 @@
     "video-guardar-tiro",
     "fala-guardar-tiro",
     "video-vitoria",
-    "video-derrota",
     "fala-mostrar-telas",
     "entrega-fala-v6",
     "video-fecho-v6",
@@ -52,7 +51,6 @@
     "fala-tela-preta",
     "fala-embrulhar-tiro",
     "fala-teste-menu",
-    "fala-derrota",
     "fala-ordem-dos-finais",
     "fala-telas-finais",
     "fala-abertura-apareceu",
@@ -75,20 +73,82 @@
   ],
   "blocks": [
     {
+      "key": "video-meta-do-jogo",
+      "plannedVideo": "Título: A meta do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe aquele brinquedo do parque\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante da placa de altura do brinquedo do parque [na edição: meme da placa do parque]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer em que acerto vem a vitória com nenhum dos sinais nem o que acontece com a placa. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-meta-do-jogo",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-meta-do-jogo",
+      "content": {
+        "kind": "interactive",
+        "required": true,
+        "title": "A meta do jogo",
+        "instructions": "Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória?",
+          "Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa.",
+          "Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa."
+        ],
+        "semPerguntaFinal": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "score-goal",
+          "cenario": "nave",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["igual-conta", "maior-pula", "placa-fixa"],
+            "goalCopy": {
+              "igual-conta": {
+                "label": "Com maior ou igual, chegar a 26 já deu a vitória",
+                "pedido": "Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória."
+              },
+              "maior-pula": {
+                "label": "Com maior que, o 26 não deu a vitória; só o 27",
+                "pedido": "Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória."
+              },
+              "placa-fixa": {
+                "label": "No meio da partida, a placa da meta não mudou",
+                "pedido": "Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa."
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "key": "video-finais",
-      "plannedVideo": "Título: Defina quando ganhar e perder\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-finais-K1: Debinha substitui “E do outro lado vai a meta?”. Antes: “No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.”. Depois: “Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco”.\n\nvideo-finais-K2: Debinha substitui “Chegou na meta, ganhou! E se acabarem as vidas?”. Antes: “telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.”. Depois: “Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e”.\n\nvideo-finais-K3: Debinha substitui “E se as duas coisas acontecerem juntas?”. Antes: “Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.”. Depois: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Defina quando você ganha\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"comece uma partida e faça alguns pontos\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. No \"Lembra da experiência da meta\", a tela fica parada, sem refazer a experiência nem mostrar o resultado dela. No \"Deixe à vista o espaço entre Dar ao sprite\", apontar o lugar [apontar abaixo de \"Dar ao sprite\"]. No \"Agora abra Programação e depois Variáveis\", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar \"Criar constante\" abaixo de \"Dar ao sprite\"]. No \"Clique em PI, troque por alvo\", trocar o nome [trocar \"PI\" por \"alvo\" em \"Criar constante\"]. No \"Agora clique no 0 do valor\", trocar o número [trocar \"0\" por \"26\" em \"Criar constante\"]. No \"É este bloco que guarda a meta\", apontar o bloco [apontar bloco \"Criar constante\"]. No \"Abra Programação e depois Lógica e Se\", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No \"No lado esquerdo, clique em x\", escolher pontos. No \"No meio, clique no sinal de maior\", escolher o sinal de maior ou igual. No \"Abra Programação e depois Valores\", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No \"pegue o bloco Mudar o estado do jogo para, solte dentro desse então\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-finais-K1: Debinha substitui “E do outro lado vai a meta?”. Antes: “de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.”. Depois: “Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-finais",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte."
+        "text": "Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-derrota",
+      "plannedVideo": "Título: Defina quando você perde\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"comece uma partida e deixe as vidas acabarem\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as pedras baterem na nave. No \"Deixe à vista o encaixe logo abaixo do Se da vitória\", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se nesse encaixe. No \"Arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco as vidas do sprite acabaram\", abrir as categorias [categoria Jogo 2D > Vida e placar > Vida], soltar o bloco ao lado de Se e escolher nave. No \"pegue o bloco Mudar o estado do jogo para, solte dentro do então\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher fim. No \"Olha aqui: a ordem no fim de jogando\", apontar as duas perguntas, uma depois da outra. No \"Agora teste: comece uma partida\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as vidas acabarem. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-derrota-K1: Debinha substitui “E se as duas coisas acontecerem juntas?”. Antes: “Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.”. Depois: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+    },
+    {
+      "key": "fala-derrota",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Agora defina quando você perde! Monte a pergunta da derrota logo abaixo da vitória e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-mostrar-telas",
-      "plannedVideo": "Título: Mostre a vitória e a derrota\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. Antes: “subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Depois: “Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Mostre a vitória e a derrota\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"comece uma partida e deixe as vidas acabarem\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as pedras baterem na nave. No \"Encontre esse Se\", arrastar até o Se aparecer [arrastar até \"Se\"]. No \"clique uma vez no sinal de mais\", clicar no sinal de mais que fica antes de senão se. No \"arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No \"pegue o bloco Mostrar tela com título\", soltar o bloco no então do ramo vitoria. No \"Agora os textos da vitória\", escrever Você ganhou! no título, apagar o subtítulo e escrever a dica. No \"Agora a derrota, do mesmo jeito\", repetir com o estado fim e os textos da derrota. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as vidas acabarem até a tela Você perdeu aparecer. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. Antes: “subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Depois: “Ela vem do mesmo jeito. Agora a derrota, do mesmo jeito. Clique de novo no sinal de mais que fica antes de senão se e”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-telas",
@@ -100,14 +160,14 @@
     },
     {
       "key": "video-reiniciar",
-      "plannedVideo": "Título: Compare voltar à abertura e reiniciar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda \"Reiniciar o jogo: tudo no lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-reiniciar-K1: Debinha substitui “Como faz para começar outra partida com tudo no lugar?”. Antes: “jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.”. Depois: “Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Jogar outra vez\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você termina um jogo de tabuleiro\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-reiniciar-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-reiniciar",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -115,9 +175,13 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare voltar à abertura e reiniciar",
-        "instructions": "Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar.",
-        "hints": [],
+        "title": "Jogar outra vez",
+        "instructions": "Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Observe os asteroides que ficam na tela quando uma partida nova começa.",
+          "Compare os dois jeitos do Enter no fim da partida: só voltar para a tela de início e começar tudo de novo.",
+          "Escolha Só voltar para a tela de início, clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter de novo. Depois faça o mesmo com Começar tudo de novo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "restart",
@@ -133,15 +197,16 @@
           },
           "cenario": "nave",
           "setup": {
+            "freeExploration": true,
             "goals": ["screen-only", "back-to-menu"],
             "goalCopy": {
               "screen-only": {
-                "label": "Mudando só o momento, as pedras da partida anterior continuaram caindo",
-                "pedido": "Escolha Mudar o estado do jogo para inicio, clique em Apertar Enter no fim e comece outra partida."
+                "label": "Só voltando para a tela de início, os asteroides ficaram na tela",
+                "pedido": "Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela."
               },
               "back-to-menu": {
-                "label": "Reiniciar levou para a abertura, e foi preciso outro Enter para jogar",
-                "pedido": "Escolha Reiniciar o jogo, clique em Apertar Enter no fim e olhe em que momento o jogo ficou."
+                "label": "Começando tudo de novo, os asteroides saíram e a abertura voltou",
+                "pedido": "Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início."
               }
             }
           }
@@ -151,7 +216,7 @@
     },
     {
       "key": "video-enter",
-      "plannedVideo": "Título: Faça Enter preparar outra partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: perder, tocar em Enter e, no \"Tá vendo?\", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de novo!”. Antes: “o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.”. Depois: “Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Faça Enter preparar outra partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"perca uma partida e toque em Enter\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter], deixar as vidas acabarem e tocar em Enter de novo [tecla Enter]. No \"Encontre o evento Enter\", arrastar até o evento aparecer [arrastar até \"Quando apertar a tecla\"]. No \"clique uma vez no sinal de mais\", clicar no sinal de mais que fica antes de senão se, no Se do evento Enter. No \"arraste essa pergunta para a lixeira\", levar a pergunta x > 0 com a mão até a lixeira. No \"pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim\", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher fim. No \"pegue o bloco Reiniciar o jogo\", soltar o bloco no então do ramo fim. No \"É este bloco que começa tudo de novo\", apontar o bloco [apontar bloco \"Reiniciar o jogo\"]. No \"Agora a vitória, do mesmo jeito\", repetir com o estado vitoria e outro Reiniciar o jogo. No \"Agora teste: perca uma partida e toque em Enter\", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter], deixar as vidas acabarem e tocar em Enter [tecla Enter]. No \"Toque em Enter outra vez\", tocar em Enter [tecla Enter] e apontar o placar e os corações [apontar prévia 60 40]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de novo!”. Antes: “bloco que começa tudo de novo: o jogo volta ao começo, faz outra vez a preparação de Ao iniciar e mostra a abertura.”. Depois: “Por isso, a vitória ganha um ramo igual. Agora a vitória, do mesmo jeito. Clique de novo no sinal de mais que fica”.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-enter",
@@ -193,7 +258,7 @@
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "Reiniciar executa Ao iniciar novamente, que define inicio. O próximo Enter muda de inicio para jogando."
+            "explanation": "Reiniciar o jogo faz outra vez a preparação de Ao iniciar, que muda o estado para inicio. Por isso, a abertura aparece, e o próximo Enter muda de inicio para jogando."
           },
           {
             "id": "q2",
@@ -240,7 +305,7 @@
     },
     {
       "key": "video-ciclo-completo",
-      "plannedVideo": "Título: Teste o jogo completo e compartilhe\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste o jogo completo e compartilhe\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Na abertura, clique na área do jogo e toque na barra de espaço\", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space], deixando ouvir o silêncio. No \"Toque em Enter, mova a nave e atire\", tocar em Enter [tecla Enter], segurar uma seta e atirar [tecla Space]. No \"deixe as três vidas acabarem\", esperar a tela Você perdeu. No \"Toque em Enter para voltar à abertura\", tocar em Enter duas vezes [tecla Enter] [tecla Enter] e apontar o placar e os corações [apontar prévia 60 40]. No \"tente chegar a 26 pontos\", jogar até a vitória; se a gravação ficar longa, cortar na edição e manter só a chegada à tela Você ganhou!. No \"Na vitória, toque na barra de espaço\", tocar na barra de espaço [tecla Space] e depois em Enter duas vezes [tecla Enter] [tecla Enter]. No \"Olha só o que você programou\", mostrar o jogo rodando. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"clique em Enviar meu projeto\", enviar e confirmar [enviar projeto]. No \"clique em Compartilhar depois do envio\", abrir o Compartilhar [compartilhar]. No \"O resumo do projeto já vem preenchido\", mostrar o resumo [apontar \"Resumo do projeto\"]. No \"clique em Gerar capa\", gerar a capa [clicar \"Gerar capa\"]. No \"clique em Publicar\", publicar [clicar \"Publicar\"]. No \"Clique em Copiar link de jogar\", copiar o link [clicar \"Copiar link de jogar\"]. No \"clique em Fechar\", fechar [clicar \"Fechar\"]. No \"Por último, clique em Concluir aula\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-5.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -1601,10 +1666,24 @@
   ],
   "sections": [
     {
+      "key": "meta-do-jogo",
+      "title": "A meta do jogo",
+      "intent": "exploration",
+      "objective": "Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
+      "blockKeys": ["video-meta-do-jogo", "fala-meta-do-jogo", "experiencia-meta-do-jogo"],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-meta-do-jogo", "experiencia-meta-do-jogo"]
+      }
+    },
+    {
       "key": "finais",
-      "title": "Defina quando ganhar e perder",
+      "title": "Defina quando você ganha",
       "intent": "application",
-      "objective": "Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "objective": "Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-finais", "fala-finais"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -1662,6 +1741,45 @@
               "withinBlock": "sz_g2d_update_each_frame"
             }
           },
+          {
+            "id": "alvo",
+            "label": "Crie uma meta positiva na constante alvo, em Ao iniciar.",
+            "rule": {
+              "type": "usesBlock",
+              "blockType": "sz_js_const_create",
+              "area": "start",
+              "fields": {
+                "NAME": "alvo"
+              },
+              "inputBlocks": {
+                "VALUE": {
+                  "blockType": "sz_val_number",
+                  "fieldRanges": {
+                    "NUM": {
+                      "min": 0,
+                      "minExclusive": true
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "key": "derrota",
+      "title": "Defina quando você perde",
+      "intent": "application",
+      "objective": "Agora defina quando você perde! Monte a pergunta da derrota logo abaixo da vitória e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "blockKeys": ["video-derrota", "fala-derrota"],
+      "workspaceKey": "projeto",
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-derrota"],
+        "projectChecks": [
           {
             "id": "ordem-dos-finais",
             "label": "Na partida, coloque a pergunta de vitória antes da pergunta de derrota.",
@@ -1761,29 +1879,6 @@
               },
               "area": "loops",
               "withinBlock": "sz_g2d_update_each_frame"
-            }
-          },
-          {
-            "id": "alvo",
-            "label": "Crie uma meta positiva na constante alvo, em Ao iniciar.",
-            "rule": {
-              "type": "usesBlock",
-              "blockType": "sz_js_const_create",
-              "area": "start",
-              "fields": {
-                "NAME": "alvo"
-              },
-              "inputBlocks": {
-                "VALUE": {
-                  "blockType": "sz_val_number",
-                  "fieldRanges": {
-                    "NUM": {
-                      "min": 0,
-                      "minExclusive": true
-                    }
-                  }
-                }
-              }
             }
           }
         ]
@@ -1918,9 +2013,9 @@
     },
     {
       "key": "reiniciar",
-      "title": "Compare voltar à abertura e reiniciar",
+      "title": "Jogar outra vez",
       "intent": "exploration",
-      "objective": "Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-reiniciar", "fala-reiniciar", "experiencia-reiniciar"],
       "workspaceKey": null,
       "externalTool": null,

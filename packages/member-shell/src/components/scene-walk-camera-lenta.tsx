@@ -4,11 +4,13 @@ import {
   LIGHTHOUSE_WALK,
   lighthouseWalkGone,
   lighthouseWalkOutSeenX,
+  sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { farolSvgUrl } from '@sistemazero/studio/arte'
 import { Footprints, Pause, Play, RotateCcw, Turtle } from 'lucide-react'
 import { type KeyboardEvent, type PointerEvent, useEffect, useId, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import { ALTURA_NA_CENA, ArteSvg, FundoDoCenario, larguraNaCena } from './scene-arte'
 import { SceneCanvas } from './scene-canvas'
 import { Frame, Note, SceneButton, useDiscovery } from './scene-discovery-frame'
 import { limiarDoRelogio, useSceneClock } from './use-scene-clock'
@@ -34,6 +36,95 @@ import { limiarDoRelogio, useSceneClock } from './use-scene-clock'
  * ⭐ O ritmo, os botões, o selo, a tira e a seta são divididos com a beirada da tela
  * (`scene-walk-beirada.tsx`, parte 5).
  */
+
+/**
+ * ⭐ Quem anda (02/11/2026): as duas telas do andar servem ao Farol (o personagem, no mapa da praia)
+ * e à Nave contra Asteroides (`activity.cenario: 'nave'`, a nave no espaço). A escolha é a MESMA do
+ * palco do limite (`sceneCenario` da `lighthouse-walk`: só `nave` troca; sem cenário, o Farol).
+ * ⚠️ Não é o elenco (`castText`): a figura é o sprite do PROJETO, `SCENE_ROLES['lighthouse-walk']` é
+ * vazio, e o Dia 1 da Nave não declara `cast`. O texto do Farol fica letra por letra o de antes.
+ */
+export type QuemAnda = {
+  nave: boolean
+  /** "O personagem" / "A nave": o nome no começo da frase. */
+  Nome: string
+  /** "o personagem" / "a nave": o nome no meio da frase. */
+  nome: string
+  /** "Ele" / "A nave": quem anda, no começo da frase (a nave repete o nome, sem pronome). */
+  Ele: string
+  /** "ele" / "a nave": quem anda, no meio da frase. */
+  ele: string
+  /** "pegada" / "marca": o que cada passinho deixa no chão (a nave não pisa). */
+  pegada: string
+}
+const QUEM_ANDA: Record<'farol' | 'nave', QuemAnda> = {
+  farol: {
+    nave: false,
+    Nome: 'O personagem',
+    nome: 'o personagem',
+    Ele: 'Ele',
+    ele: 'ele',
+    pegada: 'pegada',
+  },
+  nave: {
+    nave: true,
+    Nome: 'A nave',
+    nome: 'a nave',
+    Ele: 'A nave',
+    ele: 'a nave',
+    pegada: 'marca',
+  },
+}
+export function quemAnda(cenario: Parameters<typeof sceneCenario>[2]): QuemAnda {
+  return sceneCenario(undefined, 'lighthouse-walk', cenario) === 'nave'
+    ? QUEM_ANDA.nave
+    : QUEM_ANDA.farol
+}
+export function useQuemAnda(): QuemAnda {
+  return quemAnda(useDiscovery().activity.cenario)
+}
+
+/** A nave cabe na caixa de 64 do motor, centrada e ancorada no chão dela (a régua do palco do limite). */
+const ESCALA_DA_NAVE = Math.min(
+  LIGHTHOUSE_WALK.hero / larguraNaCena('nave'),
+  LIGHTHOUSE_WALK.hero / ALTURA_NA_CENA.nave,
+)
+
+/** A figura que anda: o aventureiro do Farol ou a nave, na caixa de 64 que começa em `x`. */
+function FiguraQueAnda({
+  x,
+  y,
+  nave,
+  opacity,
+  dados,
+}: {
+  x: number
+  y: number
+  nave: boolean
+  opacity?: number
+  dados?: number
+}) {
+  const caixa = LIGHTHOUSE_WALK.hero
+  return nave ? (
+    <g
+      data-walk-hero={dados}
+      opacity={opacity}
+      transform={`translate(${x + caixa / 2} ${y + caixa}) scale(${ESCALA_DA_NAVE})`}
+    >
+      <ArteSvg nome="nave" />
+    </g>
+  ) : (
+    <image
+      data-walk-hero={dados}
+      href={farolSvgUrl('aventureiro')}
+      x={x}
+      y={y}
+      width={caixa}
+      height={caixa}
+      opacity={opacity}
+    />
+  )
+}
 
 /** Um quadro a cada meio segundo: devagar o bastante para ver cada passinho. */
 const CAMERA_LENTA_SEGUNDOS = 0.5
@@ -195,6 +286,7 @@ export function SeloDoQuadro({ ritmo }: { ritmo: Ritmo }) {
 export function WalkEmCameraLenta() {
   const context = useDiscovery()
   const { state, dispatch, activity } = context
+  const quem = useQuemAnda()
   const w = state.walk
   const seen = new Set(state.evidence.discoveries)
   const completed = [
@@ -203,9 +295,9 @@ export function WalkEmCameraLenta() {
     seen.has('walked-real-speed'),
   ]
   const goals = [
-    'Segure a seta e veja um passinho em cada quadro.',
-    'Solte a seta e veja os quadros passarem sem ele sair do lugar.',
-    'Veja os passinhos na velocidade de verdade.',
+    'Compare os quadros com a seta apertada.',
+    'Compare os quadros com a seta solta.',
+    'Compare a câmera lenta com a velocidade de verdade.',
   ]
   const saiu = lighthouseWalkGone(w)
   // Saiu inteiro da tela, ou ficou parado muito tempo depois de já ter visto a parada: pausa.
@@ -225,7 +317,11 @@ export function WalkEmCameraLenta() {
     else if (chegou) setChegada((antes) => antes ?? w.frame)
   }, [chegou, w.frame])
 
-  const pedeCameraLenta = !seen.has('moves-each-frame') && !(rodando && ritmo === 'lenta')
+  // A parada só se vê em câmera lenta: quem foi para a velocidade de verdade antes dela volta a ver
+  // Câmera lenta em destaque.
+  const pedeCameraLenta =
+    (!seen.has('moves-each-frame') || !seen.has('stopped-after-release')) &&
+    !(rodando && ritmo === 'lenta')
   const pedeVelocidade =
     seen.has('stopped-after-release') &&
     !seen.has('walked-real-speed') &&
@@ -249,9 +345,9 @@ export function WalkEmCameraLenta() {
       after={
         saiu ? (
           <Note label="Fora da tela" tone="gold">
-            Ele saiu da tela. Clique em Voltar ao início.
+            {quem.Ele} saiu da tela. Clique em Voltar ao início.
           </Note>
-        ) : chegada !== null ? (
+        ) : chegada !== null && !quem.nave ? (
           <Note label="Chegou à chave" tone="gold">
             Ele chegou à chave em {chegada} quadros.
           </Note>
@@ -272,9 +368,10 @@ export function WalkEmCameraLenta() {
 }
 
 /** O personagem, as pegadas, a chave e o farol, numa janela que acompanha quem anda. */
-function PalcoEmCameraLenta() {
+export function PalcoEmCameraLenta() {
   const id = useId()
   const { state } = useDiscovery()
+  const quem = useQuemAnda()
   const w = state.walk
   const viewX = Math.max(0, Math.min(w.x - 70, LIGHTHOUSE_WALK.screen - VIEW.w))
   const marcas = pegadas(w.x, w.speed)
@@ -282,34 +379,47 @@ function PalcoEmCameraLenta() {
   return (
     <SceneCanvas
       view={{ x: viewX, y: VIEW.y, w: VIEW.w, h: VIEW.h }}
-      mundo="farol"
-      titulo="O personagem andando no mapa do Farol"
+      mundo={quem.nave ? 'nave' : 'farol'}
+      titulo={quem.nave ? 'A nave se movendo no espaço' : 'O personagem andando no mapa do Farol'}
       descricao={`${
         marcas.length === 0
-          ? 'O personagem ainda não deu nenhum passinho.'
-          : `O personagem já deu ${marcas.length} ${marcas.length === 1 ? 'passinho' : 'passinhos'}, e cada um deixou uma pegada.`
-      }${parado ? ' Neste quadro, ele ficou no mesmo lugar.' : ' Neste quadro, ele deu mais um passinho.'}`}
+          ? `${quem.Nome} ainda não deu nenhum passinho.`
+          : `${quem.Nome} já deu ${marcas.length} ${marcas.length === 1 ? 'passinho' : 'passinhos'}, e cada um deixou uma ${quem.pegada}.`
+      }${parado ? ` Neste quadro, ${quem.ele} ficou no mesmo lugar.` : ` Neste quadro, ${quem.ele} deu mais um passinho.`}`}
     >
-      <defs>
-        <pattern id={id} width="480" height="360" patternUnits="userSpaceOnUse">
-          <image href={farolSvgUrl('praia-tropical')} width="480" height="360" />
-        </pattern>
-      </defs>
-      <rect x={viewX} y={VIEW.y} width={VIEW.w} height={VIEW.h} fill={`url(#${id})`} />
-      <image
-        href={farolSvgUrl('farol-apagado')}
-        x={FAROL_X}
-        y={CAMINHO_Y - 60}
-        width={76}
-        height={124}
-      />
-      <image
-        href={farolSvgUrl('chave-dourada')}
-        x={CHAVE_X - 10}
-        y={PE_Y - 22}
-        width={20}
-        height={20}
-      />
+      {quem.nave ? (
+        // O espaço da Nave, sem a chave nem o farol (o desafio extra da chave é só do Farol).
+        <FundoDoCenario
+          cenario="nave"
+          w={LIGHTHOUSE_WALK.screen}
+          h={360}
+          chao={360}
+          detalhe="calmo"
+        />
+      ) : (
+        <>
+          <defs>
+            <pattern id={id} width="480" height="360" patternUnits="userSpaceOnUse">
+              <image href={farolSvgUrl('praia-tropical')} width="480" height="360" />
+            </pattern>
+          </defs>
+          <rect x={viewX} y={VIEW.y} width={VIEW.w} height={VIEW.h} fill={`url(#${id})`} />
+          <image
+            href={farolSvgUrl('farol-apagado')}
+            x={FAROL_X}
+            y={CAMINHO_Y - 60}
+            width={76}
+            height={124}
+          />
+          <image
+            href={farolSvgUrl('chave-dourada')}
+            x={CHAVE_X - 10}
+            y={PE_Y - 22}
+            width={20}
+            height={20}
+          />
+        </>
+      )}
       {/* O começo: uma estaca, para a distância andada ter de onde contar. */}
       <line
         data-walk-origin=""
@@ -317,7 +427,7 @@ function PalcoEmCameraLenta() {
         x2={LIGHTHOUSE_WALK.start + CAIXA / 2}
         y1={PE_Y - 6}
         y2={PE_Y + 8}
-        stroke="#8a5c00"
+        stroke={quem.nave ? '#e3edff' : '#8a5c00'}
         strokeWidth="1.4"
         strokeDasharray="2 2"
       />
@@ -329,19 +439,12 @@ function PalcoEmCameraLenta() {
             cy={PE_Y + (i % 2 === 0 ? 2 : 5)}
             rx={2}
             ry={1.2}
-            fill="#5a3a12"
+            fill={quem.nave ? '#e3edff' : '#5a3a12'}
             opacity={0.75}
           />
         ))}
       </g>
-      <image
-        data-walk-hero={w.x}
-        href={farolSvgUrl('aventureiro')}
-        x={w.x}
-        y={CAMINHO_Y}
-        width={CAIXA}
-        height={CAIXA}
-      />
+      <FiguraQueAnda x={w.x} y={CAMINHO_Y} nave={quem.nave} dados={w.x} />
     </SceneCanvas>
   )
 }
@@ -354,6 +457,7 @@ function PalcoEmCameraLenta() {
  */
 export function TiraDeQuadros() {
   const { state } = useDiscovery()
+  const quem = useQuemAnda()
   const w = state.walk
   const desde = Math.max(0, w.trail.length - QUADROS_NA_TIRA)
   const alcance = w.reach?.slice(desde)
@@ -412,7 +516,7 @@ export function TiraDeQuadros() {
               y={CAMINHO_Y - 4}
               width={janela.w}
               height={CAIXA + 10}
-              fill="#e9f6f1"
+              fill={quem.nave ? '#16224a' : '#e9f6f1'}
             />
             {bordaNaJanela && (
               <>
@@ -438,26 +542,13 @@ export function TiraDeQuadros() {
               x2={referencia + CAIXA / 2}
               y1={CAMINHO_Y}
               y2={PE_Y + 6}
-              stroke="#8a5c00"
+              stroke={quem.nave ? '#e3edff' : '#8a5c00'}
               strokeDasharray="3 3"
             />
             {q.voltou && (
-              <image
-                href={farolSvgUrl('aventureiro')}
-                x={q.levou}
-                y={CAMINHO_Y}
-                width={CAIXA}
-                height={CAIXA}
-                opacity={0.35}
-              />
+              <FiguraQueAnda x={q.levou} y={CAMINHO_Y} nave={quem.nave} opacity={0.35} />
             )}
-            <image
-              href={farolSvgUrl('aventureiro')}
-              x={q.x}
-              y={CAMINHO_Y}
-              width={CAIXA}
-              height={CAIXA}
-            />
+            <FiguraQueAnda x={q.x} y={CAMINHO_Y} nave={quem.nave} />
           </svg>
           <figcaption>
             Quadro {q.numero}

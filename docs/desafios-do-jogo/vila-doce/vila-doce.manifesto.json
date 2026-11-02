@@ -2697,7 +2697,7 @@
                 {
                   "action": "press",
                   "key": "Space",
-                  "holdMs": 30
+                  "holdMs": 80
                 },
                 {
                   "action": "wait",
@@ -21516,11 +21516,15 @@
                 {
                   "action": "press",
                   "key": "Space",
-                  "holdMs": 30
+                  "holdMs": 80
                 },
                 {
                   "action": "wait",
                   "ms": 200
+                },
+                {
+                  "action": "wait",
+                  "ms": 700
                 }
               ],
               "expect": {
@@ -21528,8 +21532,8 @@
                   "kind": "value",
                   "path": "entregador.y"
                 },
-                "compare": "lessThan",
-                "value": 90
+                "compare": "atLeast",
+                "value": 168
               },
               "checkpoints": [
                 {
@@ -21541,6 +21545,17 @@
                     },
                     "compare": "atLeast",
                     "value": 168
+                  }
+                },
+                {
+                  "afterStep": 4,
+                  "expect": {
+                    "target": {
+                      "kind": "value",
+                      "path": "entregador.y"
+                    },
+                    "compare": "lessThan",
+                    "value": 90
                   }
                 }
               ]
@@ -24301,9 +24316,7 @@
                 "GROUP": "pedras"
               },
               "fieldOptions": {
-                "SHAPE": [
-                  "random"
-                ]
+                "SHAPE": ["random"]
               }
             },
             "programmingLanguage": "javascript"
@@ -27002,36 +27015,11 @@
                 "DESCRIPTION": {
                   "nonBlank": true,
                   "containsAll": [
-                    [
-                      "pular",
-                      "pule",
-                      "pulo",
-                      "saltar",
-                      "salte",
-                      "salto",
-                      "desvie",
-                      "desviar"
-                    ],
-                    [
-                      "pedra",
-                      "pedras",
-                      "obstáculo",
-                      "obstáculos"
-                    ],
-                    [
-                      "espaço",
-                      "space"
-                    ],
-                    [
-                      "cima",
-                      "seta para cima",
-                      "arrowup"
-                    ],
-                    [
-                      "toque",
-                      "tocar",
-                      "tocando"
-                    ]
+                    ["pular", "pule", "pulo", "saltar", "salte", "salto", "desvie", "desviar"],
+                    ["pedra", "pedras", "obstáculo", "obstáculos"],
+                    ["espaço", "space"],
+                    ["cima", "seta para cima", "arrowup"],
+                    ["toque", "tocar", "tocando"]
                   ]
                 }
               }

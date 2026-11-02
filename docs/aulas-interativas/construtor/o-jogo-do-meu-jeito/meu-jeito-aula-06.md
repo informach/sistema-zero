@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganham resultados próprios. A troca do criador é feita numa mesma aplicação; não se transforma a exclusão do bloco em uma aula de erro fabricado. A folha entra no fim do Ao iniciar, como no programa de referência.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). A folha é apresentada antes de ser usada; nomes e recorte viraram exploração livre (o bloco pode ser nomeado, porque é o conceito). As montagens dizem "É este bloco que…" e o zero do bloco é explicado. Revisão independente de 02/11/2026: o botão é "Abrir meu Estúdio"; as montagens abrem o jogo no Estúdio antes da partida; a retomada do criador da nave lembra a experiência dos nomes; o tamanho da nave no jogo vem antes da pergunta do Dedé; os campos do criador saem em frases curtas, com o que já vem no bloco.**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -26,11 +28,15 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 ### Seção 1. Separe os nomes que os blocos procuram
 
-**Tarefa / Zappy na página:** Sua vez! Tire o bloco, troque o nome e veja quando os avisos aparecem. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que acontece com os blocos quando um nome falta ou se repete. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-nomes → fala-nomes → experimento-nomes.
 
-**Experiência existente:** `unique-names`. Clique em Tempo para a nave voar na prévia. Clique em Tirar este bloco e observe os avisos. Clique em Pôr de volta. Em Nome do bloco de baixo, escolha nave e compare os avisos. Depois escolha folha-nave. Sem palpite, pistas ou pergunta final.
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-nomes-K1: Dedé substitui “E se a nave e a folha tiverem o mesmo nome?”. Antes: “acham cada coisa pelo nome dela. Imagina um time com duas pessoas que têm o mesmo nome, e o técnico chama esse nome.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com os blocos quando o”.
+
+**Experiência em exploração livre:** `unique-names`, com `setup.freeExploration`. Compare os avisos dos blocos e a prévia quando falta o bloco que cria a nave e quando a folha recebe outro nome, inclusive o nome nave. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Traga seus desenhos para o projeto
 
@@ -40,21 +46,21 @@ Trazer uma imagem, criar o sprite, preparar a folha e iniciar a animação ganha
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão aparecer?”. Antes: “e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Depois: “Agora clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos. As”.
+video-trazer-artes-K1: Dedé substitui “Já trouxe os desenhos. Eles já vão aparecer no jogo?”. Antes: “e a janela de materiais. Se uma arte não estiver na lista, volte ao Pinta e confira se ela ficou guardada na sua conta.”. Depois: “Clique na prévia e toque na tecla Enter para começar uma partida. Tá vendo? Os desenhos ainda são os antigos, porque”.
 
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 3. Separe o quadro do tamanho no jogo
 
-**Tarefa / Zappy na página:** Sua vez! Mude a Largura do recorte até aparecer uma nave inteira. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue qual recorte mostra uma nave inteira e o que o tamanho no jogo muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-recorte → fala-recorte → experimento-recorte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-recorte-K1: Dedé substitui “Posso deixar a nave maior no jogo sem mudar o recorte?”. Antes: “Depois escolho o Quadro 2, e aparece a nave com o fogo grande. São esses dois quadros que vão se revezar na animação.”. Depois: “Agora eu mudo tamanho no jogo para 80. Repare: a nave do jogo fica maior, e o recorte continua 32 por 32. É que o”.
+video-recorte-K1: Dedé substitui “E se o recorte for maior ou menor que um desenho?”. Antes: “pedaço da cartela. Tem mais uma medida: o tamanho da nave no jogo, que diz se a nave aparece grande ou pequena na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar qual recorte mostra uma nave inteira e”.
 
-**Experiência existente:** `sheet-vs-sprite`. Coloque Largura do recorte em 64 e observe a nave. Mude para 16 e depois para 32. Com 32, escolha os quadros 1 e 2. Mude tamanho no jogo para 80 e confira se o recorte continua 32 por 32. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `sheet-vs-sprite`, com `setup.freeExploration`. Ache o recorte que mostra uma nave inteira e compare o jogo e a folha quando o tamanho da nave no jogo muda. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Use sua imagem no criador da nave
 
@@ -64,7 +70,7 @@ video-recorte-K1: Dedé substitui “Posso deixar a nave maior no jogo sem mudar
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-trocar-nave-K1: Dedé substitui “O bloco novo já está preenchido. E o antigo?”. Antes: “54 e imagem nave. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Depois: “Agora clique com o botão direito apenas no Criar nave antigo e escolha Apagar este bloco. Depois encaixe o novo criador”.
+video-trocar-nave-K1: Dedé substitui “O bloco novo já está preenchido. E o antigo?”. Antes: “coloque 54. A altura agora é 54, igual à largura, porque o seu desenho é quadrado e assim ele não fica esticado.”. Depois: “Agora o Criar nave antigo sai. Clique com o botão direito só nele e escolha Apagar este bloco. Se apagar outra peça sem”.
 
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
@@ -76,7 +82,7 @@ video-trocar-nave-K1: Dedé substitui “O bloco novo já está preenchido. E o 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-folha-nave-K1: Dedé substitui “Que nome eu dou para essa folha?”. Antes: “da imagem com quadros de x px. Encaixe esse bloco no fim da pilha Ao iniciar, depois dos blocos que já estavam ali.”. Depois: “No nome da folha, escreva folha-nave, um nome só dela, como na experiência da primeira parte desta aula. Na imagem,”.
+video-folha-nave-K1: Dedé substitui “Que nome eu dou para essa folha?”. Antes: “quadros da imagem com quadros de x px. Encaixe esse bloco no fim de Ao iniciar, depois dos blocos que já estavam ali.”. Depois: “Um nome só dela: folha-nave, como na experiência da primeira parte desta aula. Escreva folha-nave no nome da folha. Na”.
 
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
@@ -88,7 +94,7 @@ video-folha-nave-K1: Dedé substitui “Que nome eu dou para essa folha?”. Ant
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-animar-nave-K1: Dedé substitui “No Pinta era um e dois. Por que aqui é zero e um?”. Antes: “voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps, que quer dizer 8 quadros por segundo.”. Depois: “O Pinta mostra os desenhos como 1 e 2, mas o bloco começa a contagem em 0, por isso usa 0 e 1. Agora clique na prévia e”.
+video-animar-nave-K1: Dedé substitui “No Pinta era um e dois. Por que aqui é zero e um?”. Antes: “voando. Repare nos valores que chegam preenchidos: do quadro 0 ao 1, a 8 fps. Fps quer dizer quadros por segundo.”. Depois: “É que o bloco começa a contar do zero. Por isso, o quadro 0 é o desenho que o Pinta chama de quadro 1, e o quadro 1 é o”.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

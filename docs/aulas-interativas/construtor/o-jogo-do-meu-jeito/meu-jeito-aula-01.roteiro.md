@@ -10,18 +10,18 @@
 
 **Clipe:** `video-jogo-pronto`
 
-**Na tela:** Mostrar o jogo pronto, ao lado ou abaixo do vídeo, conforme a tela, ainda na abertura. No Olha aqui, o narrador clica no jogo, toca em Enter e segura a seta para a direita por um instante, deixando ver a nave andar. No Olha só, parar e apontar o fogo da nave pulsando e uma pedra caindo, com os desenhos deste exemplo. Não jogar a partida nem mostrar pontos, vidas ou o fim. No convite final, apontar a área jogável e, no fim, Próxima parte. O mesmo convite precisa funcionar com o jogo ao lado ou abaixo do vídeo.
+**Na tela:** No "Oi! Você vai criar", mostrar o jogo pronto parado na abertura, sem tocar nele. No "Olha aqui: eu clico no jogo", ampliar o jogo pronto [ampliar jogo] e clicar no meio dele [apontar jogo]. No "toco na tecla Enter para começar", tocar em Enter [tecla Enter]. No "Quando eu seguro a seta para a direita", segurar a seta para a direita por um instante, deixando ver a nave andar. No "Olha só: o fogo da nave pulsa", apontar o fogo da nave e uma pedra caindo [apontar jogo]. Não jogar a partida nem mostrar pontos, vidas ou o fim. No "Agora é a sua vez", mostrar a área jogável [apontar jogo]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, welcoming voice] Oi! Você vai criar a sua versão do jogo da nave: vai desenhar a sua nave e o seu asteroide no Pinta e colocar os dois no jogo que você terminou em Nave Contra Asteroides. Antes de criar as suas artes, vamos ver como o jogo fica com artes novas nesta versão pronta.
+[upbeat, welcoming voice] Oi! Você vai criar a sua versão do jogo da nave. Você vai desenhar a sua nave e o seu asteroide no Pinta e colocar os dois no jogo que você terminou em Nave Contra Asteroides. Antes de criar as suas artes, vamos ver como o jogo fica com artes novas nesta versão pronta.
 
 [interested, animated voice] Olha aqui: eu clico no jogo e toco na tecla Enter para começar. Quando eu seguro a seta para a direita, a nave anda para a direita. O objetivo é atirar nas pedras para fazer pontos antes de perder as vidas.
 
-[interested, animated voice] Olha só: o fogo da nave pulsa, e as pedras também mudam um pouquinho enquanto caem. É que cada desenho deste exemplo tem duas versões, que se revezam bem rápido. E as regras continuam as mesmas do jogo que você terminou em Nave Contra Asteroides: só os desenhos são novos, e é isso que você vai fazer com as suas próprias artes.
+[interested, animated voice] Olha só: o fogo da nave pulsa, e as pedras também mudam um pouquinho enquanto caem. Os desenhos deste exemplo foram feitos para esta versão, e é isso que você vai fazer com as suas próprias artes.
 
-[upbeat, encouraging voice] Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura e outro Enter começa uma partida nova. Você pode seguir mesmo sem vencer. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez: jogue um pouco. Use as setas para mover a nave e Espaço para atirar. Depois que a partida terminar, Enter volta para a abertura, e outro Enter começa uma partida nova. Você pode seguir mesmo sem vencer. Quando terminar, clique em Próxima parte.
 ```
 
 
@@ -35,12 +35,12 @@
 
 **Clipe:** `video-caderno`
 
-**Na tela:** Mostrar o PDF real do Passo a passo do projeto anexado ao bloco, com a capa e a página da cópia. No Olha aqui, apontar o material. Ao falar em baixar, apontar o botão Baixar, sem clicar; não demonstrar o download nem a impressão. Gravar depois de vincular o arquivo revisado.
+**Na tela:** No "aqui está o Passo a passo do projeto", colocar o livro em tela cheia [livro tela cheia] e passar as páginas [livro próxima] [livro próxima]. No "Se quiser, você pode ler aqui mesmo", sair da tela cheia [livro sair da tela cheia] e mostrar o livro [apontar livro]. No "também pode clicar em Baixar", apontar o botão **Baixar**, sem clicar [apontar baixar]. No "Agora clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Gravar depois de vincular o PDF revisado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos de cada aula, desde a cópia do seu jogo até as suas artes dentro dele, e também as referências da nave, do asteroide e dos encaixes dos blocos. Por isso, quando você esquecer algum passo, é só abrir o material.
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos de cada aula, desde a cópia do seu jogo até as suas artes dentro dele, e também as referências da nave, do asteroide e dos blocos. Por isso, quando você esquecer algum passo, é só abrir o material.
 
 [upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
 
@@ -50,50 +50,48 @@
 
 **Recado na página (não gravar):** Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
-## Seção 3. Troque a história, observe as regras
+## Seção 3. Troque a história do jogo
 
-### Clipe `video-aparencia-e-regras` · Troque a história, observe as regras
+### Clipe `video-aparencia-e-regras` · Troque a história do jogo
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-aparencia-e-regras`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir do tema Nave no espaço, com a regra ligada: clicar em Mover e em Atirar e deixar ver a nave andar e o tiro sair. Apontar a lista Regras do jogo. Em Tema do mesmo jogo, escolher Carrinho na estrada, Submarino no mar e Nave no espaço, deixando ver os desenhos mudarem e a lista continuar com as quatro regras. Clicar em Regra: a tecla atira para desligar, mostrar essa regra apagada na lista, clicar em Atirar e deixar ver que não sai tiro, com a frase embaixo do jogo. Esperar um instante e ligar a regra de novo. Meme na comparação: dois times em campo trocando a cor das camisas, com a legenda: cores novas, mesmas regras. Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "a aparência e o que o jogo faz", mostrar a experiência na aula, parada na Nave no espaço. No "Sabe o uniforme de um time de futebol", mostrar o meme ilustrado (2 a 3 s) do Zappy de técnico com dois uniformes [na edição: meme dos uniformes]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar a cena parada na Nave no espaço, sem trocar a história nem desligar o tiro: o que muda em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a diferença entre o tema de um jogo, que são os desenhos, e as regras, que dizem o que o jogo faz.
+[engaging, energetic, conversational voice] Nas próximas aulas, você vai trocar os desenhos do seu jogo pelos seus. Antes disso, vale separar duas coisas que todo jogo tem: a aparência e o que o jogo faz.
 
-[interested, animated voice] Olha aqui: quando eu clico em Mover, a nave anda para o lado, e quando eu clico em Atirar, sai um tiro. Quem decide isso são as regras da lista Regras do jogo, que tem quatro regras. Uma delas é a tecla atira.
+[engaging, energetic, conversational voice] A aparência é o que você vê na tela, como a nave, as pedras e o fundo. O que o jogo faz é o que acontece quando você joga: as setas movem, a tecla solta um tiro, as pedras caem e, quando uma encosta, você perde vida.
 
-[engaging, energetic, conversational voice] Agora, em Tema do mesmo jogo, eu escolho Carrinho na estrada. [interested, animated voice] Olha só: a nave virou um carrinho e o asteroide também mudou de desenho, mas a lista continua com as mesmas quatro regras. Depois eu escolho Submarino no mar, e acontece a mesma coisa: os desenhos mudam e as regras ficam. Por último, eu volto para Nave no espaço.
+[engaging, energetic, conversational voice] Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.
 
-[engaging, energetic, conversational voice] É como trocar as camisas dos times numa partida de futebol: as cores mudam, mas as regras continuam iguais. Na experiência, Tema do mesmo jogo troca a aparência, e a lista Regras do jogo mostra o que continua igual.
+[curious] E se eu trocar a nave por um carrinho, o jogo muda?
 
-[curious] E se eu mudar uma dessas regras?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada. Quando eu clico em Atirar, não sai tiro nenhum. Tá vendo? É que a regra que faz a tecla atirar está desligada, e a frase embaixo do jogo avisa isso. Ou seja, trocar o tema mudou só os desenhos, mas desligar uma regra mudou o que o jogo faz. Depois eu clico de novo e ligo a regra.
-
-[engaging, energetic, conversational voice] Nas próximas aulas, você vai trocar os desenhos da nave e das pedras pelos seus, e as regras do seu jogo vão continuar as mesmas.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no jogo quando você troca a história e quando desliga o tiro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-aparencia-e-regras-K1 | Debinha | 1 | iguais. Na experiência, Tema do mesmo jogo troca a aparência, e a lista Regras do jogo mostra o que continua igual. | E se eu mudar uma dessas regras? | Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada. | [curious] |
+| video-aparencia-e-regras-K1 | Debinha | 1 | Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo. | E se eu trocar a nave por um carrinho, o jogo muda? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-aparencia-e-regras-K1`: entrada — Testar os temas, voltar para Nave no espaço e concluir a comparação com as fantasias. Saída — Desligar a regra da tecla e testar Atirar somente quando a professora anunciar esse teste.
+- `video-aparencia-e-regras-K1`: entrada — Mostrar a experiência ainda na Nave no espaço, sem trocar a história. Saída — Seguir sem fazer o teste: a professora só convida a testar.
 
 
-**Recado na página (não gravar):** Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/same-rules-new-skin.ts`, com a tela em `packages/member-shell/src/components/scene-livre/same-rules-new-skin.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando você troca a história e quando desliga o tiro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Veja o que uma cópia guarda
 
@@ -103,61 +101,67 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-copias`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da nave azul no jogo da aula, sem arquivo e sem projeto no Estúdio: clicar em Exportar e deixar ver o arquivo jogo-da-nave com azul e a nave do jogo da aula no lugar. Clicar em Importar e deixar ver a nave azul no lado do Estúdio. Em Cor da nave no Estúdio, escolher rosa e deixar ver a nave do Estúdio rosa e a do jogo da aula azul. Meme na comparação: na frase do gibi, o Zappy copiando a nave de um gibi numa folha e pintando a cópia de rosa, enquanto a nave do gibi continua azul, com a legenda "a cópia é sua". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Para criar do seu jeito", mostrar a experiência na aula, parada, ainda sem arquivo. No "Sabe quando você copia o desenho de um gibi", mostrar o meme ilustrado (2 a 3 s) do Zappy copiando a nave de um gibi numa folha [na edição: meme do gibi]. No "Agora você vai investigar", ampliar a experiência [ampliar experiência] e mostrar o jogo da aula e o Estúdio parados, ainda sem arquivo, sem baixar, importar nem pintar: o que acontece em cada lado é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o que é uma cópia de um jogo.
+[engaging, energetic, conversational voice] Para criar do seu jeito sem perder o jogo que você terminou, você vai trabalhar numa cópia dele.
 
-[interested, animated voice] Olha aqui: quando eu clico em Exportar, aparece o arquivo jogo-da-nave, guardando a nave azul. E o jogo da aula continua no lugar, com a mesma nave azul, porque exportar não leva o jogo embora: só faz uma cópia dele num arquivo.
+[engaging, energetic, conversational voice] Uma cópia é outro jogo igualzinho ao primeiro, guardado num arquivo. No seu jogo, o original fica na plataforma, e a cópia vai para o seu Estúdio.
 
-[engaging, energetic, conversational voice] Depois eu clico em Importar, e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.
+[engaging, energetic, conversational voice] Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.
 
-[curious] Se eu mudar essa cópia, o outro jogo muda também?
+[curious] Se eu mudar a nave da cópia, a nave do jogo da aula muda também?
 
-[engaging, energetic, conversational voice] Agora, em Cor da nave no Estúdio, eu escolho rosa. [interested, animated voice] Olha só: a nave do Estúdio fica rosa, e a nave do jogo da aula continua azul. É que, depois da cópia, cada um segue o seu caminho, por isso mudar um lado não muda o outro.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] É como copiar o desenho de um gibi numa folha sua. Se você pinta o desenho da folha, o do gibi continua igual. Com o seu jogo vai ser assim: Exportar faz a cópia, e Importar leva essa cópia para o Estúdio, onde você muda o que quiser sem mexer no jogo da aula.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a cópia guarda do jogo da aula e o que acontece quando você muda só um dos lados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-copias-K1 | Debinha | 1 | e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio. | Se eu mudar essa cópia, o outro jogo muda também? | Agora, em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da aula | [curious] |
+| video-copias-K1 | Debinha | 1 | o seu Estúdio. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original. | Se eu mudar a nave da cópia, a nave do jogo da aula muda também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a cópia guarda do jogo da aula e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-copias-K1`: entrada — Concluir Exportar e Importar na experiência; mostrar as duas naves ainda azuis. Saída — Mudar só a cor da nave do Estúdio para rosa e comparar com a nave azul do jogo da aula.
+- `video-copias-K1`: entrada — Manter o meme do gibi e a experiência ainda sem arquivo. Saída — Seguir sem fazer o teste: a professora só convida a testar.
 
 
-**Recado na página (não gravar):** Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/copy-vs-original.ts`, com a tela em `packages/member-shell/src/components/scene-livre/copy-vs-original.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que uma cópia guarda e o que acontece quando você muda um lado só. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Baixe o seu jogo concluído
 
 ### Clipe `video-exportar` · Baixe o seu jogo concluído
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-exportar`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Do "Lembra da experiência" até o "na cópia", mostrar a experiência da parte anterior com o arquivo baixado e o jogo da aula no lugar [na edição: lembrança da experiência da cópia]. No "Nesta parte, clique em Abrir meu Estúdio", clicar no botão e mostrar o Estúdio na outra aba. No "abra Cursos", abrir Cursos, Nave Contra Asteroides e a última aula. No "Se o projeto abriu vazio", apontar o botão de três pontinhos, que é Mais opções, e mostrar O meu jogo e Trazer o que eu enviei, sem clicar, porque o projeto da gravação já abriu com os blocos. No "jogue uma partida", jogar uma partida curta até o recomeço. No "abra Mais opções de novo", abrir o botão de três pontinhos e mostrar Levar o jogo. No "clique em Baixar o projeto", clicar e mostrar o arquivo .szproject.json nos downloads. No "Olha só", apontar o nome do arquivo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Exportar fez uma cópia do jogo num arquivo, e o jogo da aula ficou no lugar. Agora a gente vai fazer isso com o seu jogo de verdade, porque é na cópia que você vai criar do seu jeito.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Baixar o projeto tirou uma cópia, e o jogo da aula ficou no lugar. Por isso, agora a gente vai baixar o seu jogo de verdade, para você criar do seu jeito na cópia.
 
-[engaging, energetic, conversational voice] No Estúdio, esse comando se chama Baixar o projeto. Para começar, clique em Abrir meu Estúdio nesta parte. Na outra aba, se o menu estiver escondido, clique em Mostrar menu. Depois abra Cursos, entre em Nave Contra Asteroides e abra a última aula, Termine e recomece a partida.
+[engaging, energetic, conversational voice] Nesta parte, clique em Abrir meu Estúdio. Na outra aba, se o menu estiver escondido, clique em Mostrar menu.
 
-[engaging, energetic, conversational voice] Retome ali o projeto que você concluiu e confira início, pontos, vidas e reinício. Se ele abriu vazio, traga o que você enviou em Mais opções, O meu jogo, Trazer o que eu enviei. E, se ainda falta terminar, conclua esse jogo antes de fazer a cópia, porque a cópia guarda o jogo do jeito que ele está agora.
+[engaging, energetic, conversational voice] Depois abra Cursos, entre em Nave Contra Asteroides e abra a última aula, Termine e recomece a partida. Retome ali o projeto que você concluiu.
 
-[engaging, energetic, conversational voice] Com o jogo pronto, abra Mais opções, no botão de três pontinhos do Estúdio dessa aula. Em Levar o jogo, clique em Baixar o projeto e espere o arquivo que termina em .szproject.json chegar à pasta de downloads do seu aparelho. [interested, animated voice] Olha só: esse arquivo é a cópia do projeto que você está vendo. [confident, clear, unhurried voice] Confira o nome do arquivo antes de voltar à aba da aula.
+[engaging, energetic, conversational voice] Se o projeto abriu vazio, abra Mais opções, no botão de três pontinhos do Estúdio dessa aula. Em O meu jogo, clique em Trazer o que eu enviei.
+
+[engaging, energetic, conversational voice] Antes de baixar, jogue uma partida e confira o começo, os pontos, as vidas e o recomeço, porque a cópia guarda o jogo do jeito que ele está agora. Se ainda falta terminar alguma coisa, termine antes de fazer a cópia.
+
+[engaging, energetic, conversational voice] Com o jogo pronto, abra Mais opções de novo. Em Levar o jogo, clique em Baixar o projeto.
+
+[interested, animated voice] Olha só: um arquivo que termina em .szproject.json chega à pasta de downloads do seu aparelho. Esse arquivo é a cópia do seu jogo.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o nome do arquivo com a conferência que a gente acabou de fazer. Quando o arquivo .szproject.json estiver nos seus downloads, volte a esta aba e clique em Próxima parte.
 ```
@@ -173,16 +177,22 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-importar`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No "No seu Estúdio, abra Meus Jogos", mostrar Meus Jogos sem a cópia. No "Tá vendo?", apontar os cartões que já existem. No "clique em Importar", clicar e escolher o arquivo .szproject.json. No "Repare: os blocos de Jogo 2D vêm junto", apontar a paleta Jogo 2D. No "Clique no nome do projeto", trocar o nome por Minha nave e confirmar. No "teste a prévia", tocar em Enter, mover a nave e atirar. No "Por último, volte a Meus Jogos", voltar pelo nome do Estúdio e abrir o cartão de novo, mostrando o nome e os blocos. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora a gente vai levar o arquivo que você baixou para o seu Estúdio. Clique em Abrir meu Estúdio nesta parte e, na outra aba, em Meus Jogos, clique em Importar. Escolha o arquivo .szproject.json que você acabou de baixar e abra o projeto importado. [confident, clear, unhurried voice] Repare: os blocos de Jogo 2D vêm junto, porque o arquivo guarda o projeto inteiro.
+[engaging, energetic, conversational voice] No seu Estúdio, abra Meus Jogos. Tá vendo? A cópia ainda não está ali, porque o arquivo ficou na pasta de downloads. Lembra da experiência da quarta parte desta aula? Importar transformou a cópia num projeto seu. Agora a gente vai importar o seu arquivo.
 
-[engaging, energetic, conversational voice] Agora dê um nome a essa cópia. Clique no nome do projeto no alto, escreva um nome que você reconheça, como Minha nave, e confirme a edição. Depois confira a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.
+[engaging, energetic, conversational voice] Em Meus Jogos, clique em Importar e escolha o arquivo .szproject.json que você baixou. Depois abra o projeto importado.
 
-[engaging, energetic, conversational voice] Por último, volte a Meus Jogos pelo nome do Estúdio na barra de cima e abra esse cartão de novo. Tá vendo? O nome e os blocos continuam lá, porque o Estúdio guardou a sua cópia. É esse cartão que você vai retomar nas próximas aulas.
+[confident, clear, unhurried voice] Repare: os blocos de Jogo 2D vêm junto, porque o arquivo guarda o projeto inteiro.
+
+[engaging, energetic, conversational voice] Agora dê um nome a essa cópia. Clique no nome do projeto, no alto, escreva um nome que você reconheça, como Minha nave, e confirme.
+
+[engaging, energetic, conversational voice] Depois teste a prévia: Enter começa, as setas movem e Espaço atira. Se aparecer um jogo diferente, volte a Meus Jogos e confira qual arquivo você importou. Não apague os seus outros jogos.
+
+[engaging, energetic, conversational voice] Por último, volte a Meus Jogos pelo nome do Estúdio, na barra de cima, e abra esse cartão de novo. Tá vendo? O nome e os blocos continuam lá, porque o Estúdio guardou a sua cópia. É esse cartão que você vai retomar nas próximas aulas.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu jogo. Se o Estúdio ainda não estiver aberto, clique em Abrir meu Estúdio. Depois compare o seu jogo com a conferência que a gente acabou de fazer e espere aparecer Salvo, porque é assim que o seu jogo fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -198,7 +208,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "confira no seu jogo", mostrar o cartão com o nome escolhido e o jogo funcionando. No "espere aparecer Guardado na sua conta", mostrar o aviso no Estúdio. No "clique em Escolher no Estúdio", voltar à aba da aula e abrir a galeria. No "selecione o cartão do seu jogo", marcar o cartão. No "Depois clique em Enviar (1)", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "Por último, clique em Concluir aula", clicar em **Concluir aula**.
 
 **Fala para ElevenLabs:**
 

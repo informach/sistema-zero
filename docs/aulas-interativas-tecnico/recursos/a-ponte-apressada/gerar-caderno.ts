@@ -7,7 +7,7 @@ import { gameTwoDBlocks } from '../../../../packages/studio/src/official-extensi
 import { gameThreeDBlocks } from '../../../../packages/studio/src/official-extensions/game-3d/blocks'
 import { FONTE as baloo } from '../../../../packages/studio/src/official-extensions/gameUiFonts/baloo2'
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
-import { ponteAjuda, ponteAulas } from '../../qa/ponte-conteudo'
+import { ponteAjuda, ponteAulas, ponteExperiencia } from '../../qa/ponte-conteudo'
 import { PONTE_ASSETS_2D } from '../../qa/ponte-projeto'
 
 // O mesmo template do Cadê Todo Mundo, com as fontes e as cores reais dos blocos do Estúdio,
@@ -146,9 +146,18 @@ const pages: { title: string; kicker: string; subtitle: string; body: string; le
   {
     title: 'O que você vai construir',
     kicker: 'Poder do Faísca',
-    subtitle: 'Uma ponte que baixa com a alavanca, espera alguns segundos e sobe sozinha.',
+    subtitle: 'Uma ponte que baixa com a alavanca e um relógio que conta os segundos.',
     lesson: 1,
-    body: `${box('O seu jogo', 'No Farol aparece um laguinho com a pedra do sino no meio e uma ponte levadiça. A alavanca baixa a ponte, e o jogo guarda em ponteAberta se ela está baixada. Depois de 4 segundos a ponte sobe sozinha: quem chega a tempo atravessa e toca o sino. O farol continua pedindo a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+    body: `${box('O seu jogo', 'No Farol aparece um laguinho com a pedra do sino no meio e uma ponte levadiça. A alavanca baixa a ponte, e o jogo guarda em ponteAberta se ela está baixada. O que a ponte faz com o tempo, e quem consegue atravessar, você descobre na experiência. O farol continua pedindo a chave.') + box('Duas aulas, a mesma regra', 'Na primeira aula você monta tudo no jogo 2D, com o vídeo mostrando cada passo. Na segunda, leva a mesma regra para a Ilha do Farol, em 3D. Este Passo a passo tem as duas montagens completas.')}<div class="index"></div>${box('Consulte quando quiser', 'A experiência tem o que investigar. Cada montagem tem a ideia, o caminho na paleta, o desenho dos encaixes, um teste e o que conferir se algo não funcionar.', 'test')}`,
+  },
+  // Revisão de 02/11/2026: a experiência ganha uma página com a ideia e os objetivos de
+  // investigação (os mesmos da lista da tela), sem a sequência de cliques e sem as respostas.
+  {
+    title: ponteAulas[0]!.trechos.find((t) => t.kind === 'experience')!.title,
+    kicker: 'Aula 1 · Experiência',
+    subtitle: 'Investigue a ideia antes de montar.',
+    lesson: 1,
+    body: `${box('A ideia', ponteExperiencia.idea)}<div class="steps">${ponteExperiencia.goals.map((g, n) => `<div class="step"><span class="number">${n + 1}</span><p>${esc(g)}</p></div>`).join('')}</div>${box('Como investigar', ponteExperiencia.observe, 'test')}`,
   },
 ]
 for (const [i, aula] of ponteAulas.entries())
@@ -176,7 +185,7 @@ pages.push({
   body:
     box(
       'Antes de enviar',
-      'Jogue uma partida inteira: encoste na ponte sem puxar, puxe a alavanca e atravesse a tempo, depois puxe e espere a ponte subir antes de chegar. Puxe de novo: ela baixa outra vez. Pressione R: a ponte volta levantada.',
+      'Jogue uma partida inteira: encoste na ponte sem puxar, puxe a alavanca e atravesse a tempo, depois puxe e espere a ponte subir antes de chegar. Puxe de novo: ela baixa outra vez. Toque na tecla R: a ponte volta levantada.',
       'test',
     ) +
     box(
@@ -196,7 +205,7 @@ pages[0]!.body = pages[0]!.body.replace(
   '<div class="index"></div>',
   box(
     'Encontre a sua aula',
-    `Jogo 2D: página 3. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
+    `Experiência: página 3. Jogo 2D: página 4. Ilha 3D: página ${pages.findIndex((p) => p.lesson === 2) + 2}. Entrega: página ${pages.length + 1}.`,
   ),
 )
 const cover = `<section class="page cover" data-id="capa"><div class="cover-art"><img class="scene" src="${image}" alt="Praia do Farol"><img class="cabin" src="${bridge}" alt="Ponte levadiça baixada"><img class="piece p1" src="${bell}" alt=""><img class="piece p2" src="${lever}" alt=""></div><div class="cover-copy"><span class="badge">Passo a passo do projeto</span><h1>A ponte<br><em>apressada</em></h1><p>Ajuda para construir o Poder em 2D e em 3D.</p><div class="cover-bottom">A alavanca baixa a ponte.<br>Quatro segundos depois, ela sobe.</div></div></section>`

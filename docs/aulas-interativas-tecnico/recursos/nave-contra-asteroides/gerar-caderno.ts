@@ -240,13 +240,16 @@ const chapters = aulasNave.map((lesson, i) => {
       )
       continue
     }
-    // Os vídeos da experiência e do jogo pronto são demonstrações do narrador, na primeira pessoa
-    // (Diretrizes, 06/10/2026). O caderno é a consulta de quem faz: ali ficam os passos no imperativo.
-    // As montagens usam a fala do Mapa (`mapa`): sem "Olha aqui", "Olha só", "Repare" e "Tá vendo?",
-    // que apontam para um gesto do vídeo que o PDF não tem (revisão independente de 06/10/2026).
+    // Exploração livre (02/11/2026): a página da experiência é o objetivo de investigação, sem
+    // resultado nem sequência. Fica só a instrução (o que comparar e "Você escolhe a ordem"), no
+    // molde do Cadê; os pedidos de cada meta são gestos em ordem e ficam com o Zappy, dentro da
+    // experiência. As montagens usam a fala do Mapa (`mapa`): sem "Olha aqui", "Olha só", "Repare"
+    // e "Tá vendo?", que apontam para um gesto do vídeo que o PDF não tem (revisão independente de
+    // 06/10/2026).
+    const atividade = section.activity?.activity
     const speech = (
-      section.activity?.activity.type === 'experimentation'
-        ? [section.activity.instructions]
+      atividade?.type === 'experimentation'
+        ? [section.activity!.instructions]
         : section.play
           ? [section.bridge]
           : falasSecao(section, 'mapa')

@@ -302,9 +302,19 @@ Consulta histórica opcional; não é preciso reconstruir as regras a partir des
 - O vídeo da experiência e a experiência não nomeiam blocos, áreas do Estúdio, comandos, regra de programação nem código. Usam a comparação do dia a dia e o que acontece no próprio jogo (o desenho animado, o passinho, a seta; a cócega e a risada, o toque e o esconderijo).
 - A montagem que vem depois liga cada bloco à ideia, com o nome que aparece na tela: "É este bloco que dá o passinho"; "Lembra que o jogo olha a seta em todo quadro? Por isso, o passinho vai dentro do bloco A cada quadro do jogo".
 - Uma ideia por fala: não juntar na mesma explicação o que é quadro, o que a tecla faz e onde o bloco fica.
-- Quando a Debinha ou o Dedé perguntam o que acontece ("E se eu soltar a seta?"), a resposta começa pelo que a criança vê ("Aí ele para!") e depois dá o porquê.
+- Quando a Debinha ou o Dedé perguntam o que acontece, a resposta começa pelo que a criança vê e depois dá o porquê, exceto quando a pergunta antecipa uma descoberta da experiência seguinte: aí a resposta convida a prever e testar ("O que você acha? Isso você vai testar na experiência"), sem resolver (02/11/2026, convite à investigação do Cadê).
 
 Primeira aplicação: a câmera lenta do Farol, Dia 1 (registro em `modulos-desafio-primeiro-jogo.md`). O que vem abaixo, de 26/10/2026, continua valendo onde não contradiz esta regra.
+
+**O vídeo da experiência explica o conceito e convida a investigar, como no Cadê (02/11/2026).** Decisão da responsável depois de ler a aula 2 do Desafio, em que o vídeo apontava os botões da experiência e ditava os testes ("tá guiando tudo que é para fazer"). A investigação é da criança; quem acompanha cada teste é o Zappy, dentro da experiência. O vídeo de uma parte de experiência tem, nesta ordem:
+
+1. o conceito: o que é e para que serve no jogo;
+2. uma analogia curta do dia a dia, sem o resultado do teste;
+3. o conceito no jogo dela, com o nome que ela vai ver, sem descrever o que acontece quando ela testar;
+4. se houver, a pergunta do avatar, seguida de "O que você acha? Isso você vai testar na experiência.";
+5. um convite de uma frase dizendo o que investigar, e o fecho "Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte."
+
+Ficam fora do vídeo: o tour pelos controles ("Olha aqui: nesta experiência, este botão…", "aqui você vê…"), os nomes dos botões, a sequência de testes ("faça X e depois Y", "nas duas vezes", "depois teste mais…") e o que a cena mostra quando ela testa. Na tela, o vídeo só amplia a experiência e mostra a cena parada. A instrução da página tem uma ou duas frases no mesmo molde ("Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser."). Referência: `cade-todo-mundo-aula-2.roteiro.md`, parte 2. A aula 1 do Desafio e o Cadê já estavam gravados e ficaram como estão; o guarda é `qa/convite-da-experiencia.test.ts`.
 
 Aplicar a direção de 26/10/2026 em [Conceito, investigação e construção](DESCOBERTA-GUIADA.md#explorar-para-compreender-direção-de-26102026). Distinguir editar uma regra, dar uma entrada e executar o teste. As palavras do controle precisam dizer qual dessas operações acontece. Não apresentar uma tecla como se fosse um bloco nem apagar uma coleta ao editar a regra depois do encontro.
 

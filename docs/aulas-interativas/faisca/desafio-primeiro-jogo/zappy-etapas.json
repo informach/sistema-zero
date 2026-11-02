@@ -4,19 +4,19 @@
     "experiencia-quadro": [
       {
         "id": "slow-start",
-        "text": "Clique em Câmera lenta para os quadros passarem devagar. Depois segure a seta e veja o personagem dar um passinho a cada quadro."
+        "text": "Clique em Câmera lenta e segure a seta. Olhe a tira: o que muda de um quadro para o outro?"
       },
       {
         "id": "slow-walking",
-        "text": "Um quadro novo, um passinho, uma pegada. Agora solte a seta e deixe passar uns quadros."
+        "text": "Um quadro novo, um passinho. E se você soltar a seta? Em câmera lenta, observe os próximos quadros na tira."
       },
       {
         "id": "slow-released",
-        "text": "Os quadros continuam passando, mas sem a seta ele fica no lugar. Agora clique em Velocidade de verdade e segure a seta."
+        "text": "Sem a seta, os quadros continuam passando, mas ele fica no lugar. E na velocidade de verdade, como fica? Clique em Velocidade de verdade e segure a seta."
       },
       {
         "id": "slow-real",
-        "text": "Continue segurando: com os quadros passando bem rápido, os passinhos viram uma caminhada."
+        "text": "Continue segurando e compare com a câmera lenta: o que mudou?"
       },
       {
         "id": "slow-complete",
@@ -26,31 +26,35 @@
     "experiencia-limite": [
       {
         "id": "border-start",
-        "text": "Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando e veja o que acontece."
+        "text": "O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela. Se preferir, ligue o limite primeiro e compare depois."
+      },
+      {
+        "id": "border-off",
+        "text": "O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela."
       },
       {
         "id": "border-out",
-        "text": "Ele saiu da janela do jogo. Agora clique em Ligar o limite da tela e veja o próximo quadro."
+        "text": "Ele saiu da janela do jogo. E se você ligar o limite agora, com ele fora? Clique em Ligar o limite da tela e observe o próximo quadro."
       },
       {
         "id": "border-on-out",
-        "text": "O limite está ligado e ele ainda está fora. Deixe passar um quadro e veja o que acontece."
+        "text": "O limite está ligado e ele ainda está fora. Deixe passar um quadro e observe."
       },
       {
         "id": "border-back",
-        "text": "Ele voltou para dentro! Agora, em câmera lenta, segure a seta junto à beirada e olhe cada quadro."
+        "text": "Ele voltou para dentro: em todo quadro, o jogo confere a beirada. E se você segurar a seta junto à beirada? Clique em Câmera lenta e olhe cada quadro."
       },
       {
         "id": "border-edge",
-        "text": "O limite está ligado. Em câmera lenta, segure a seta até a beirada e olhe cada quadro."
+        "text": "O limite está ligado. Leve o personagem até a beirada e continue segurando a seta. Lá, clique em Câmera lenta e observe a tira e a frase de cada quadro."
       },
       {
         "id": "border-edge-off",
-        "text": "Agora clique em Ligar o limite da tela e, em câmera lenta, segure a seta até a beirada."
+        "text": "Ligue o limite da tela e leve o personagem até a beirada. Lá, clique em Câmera lenta, segure a seta e observe a tira e a frase de cada quadro."
       },
       {
         "id": "border-hold",
-        "text": "Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Agora desligue o limite e deixe ele sair para comparar."
+        "text": "Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Quer comparar? Desligue o limite e deixe ele ir até a beirada."
       },
       {
         "id": "border-complete",
@@ -60,67 +64,75 @@
     "experiencia-memoria": [
       {
         "id": "memory-edited",
-        "text": "Você mudou a regra para o próximo encontro. A coleta que já aconteceu continua como estava. Recomece a partida para testar a mudança."
+        "text": "Você mudou a memória da chave. temChave continua como estava, porque a mudança só vale para o próximo encontro. Recomece a partida para testar."
       },
       {
         "id": "memory-first-saved",
-        "text": "Pode começar guardando a coleta. Depois experimente outra partida sem a ação de guardar e compare."
+        "text": "A memória da chave está ligada. Encoste na chave e observe três coisas: a chave, o aviso e temChave. Se preferir, desligue a memória primeiro e compare depois."
       },
       {
         "id": "memory-first",
-        "text": "Encoste na chave e compare o que some com o que fica guardado. Você pode mudar a regra e repetir em outra partida."
+        "text": "A memória da chave está desligada. Encoste na chave e observe três coisas: a chave, o aviso e temChave. Se preferir, ligue a memória primeiro e compare depois."
       },
       {
         "id": "memory-compare",
-        "text": "Você viu a chave sumir sem guardar. Experimente adicionar a ação de guardar e encostar numa chave de uma nova partida."
+        "text": "Sem a memória, a chave saiu do chão e o aviso mudou, mas temChave continuou falso. E com a memória ligada, o que muda? Teste numa partida nova com a memória ligada e observe temChave."
+      },
+      {
+        "id": "memory-compare-off",
+        "text": "Com a memória ligada, a chave saiu do chão, o aviso mudou e temChave virou verdadeiro. E com a memória desligada, o que muda? Teste numa partida nova com a memória desligada e observe temChave."
       },
       {
         "id": "memory-away",
-        "text": "Você comparou os dois modos. Depois de uma coleta guardada, afaste o personagem e observe se a memória muda."
+        "text": "Você comparou a memória ligada e desligada. E se o personagem se afastar depois de o jogo guardar a chave, temChave muda? Depois de pegar a chave com a memória ligada, clique em Afastar e observe."
       },
       {
         "id": "memory-restart",
-        "text": "Afastar não apagou a memória. Quando quiser, recomece uma partida depois de guardar a coleta."
+        "text": "Afastar não apagou temChave: o jogo continua lembrando, mesmo longe da chave. E numa partida nova, o que acontece com temChave? Depois de guardar a chave, clique em Recomeçar a partida e observe."
       },
       {
         "id": "memory-complete",
-        "text": "Você comparou os quatro casos. Continue adicionando ou retirando a ação de guardar, recolhendo a chave e recomeçando."
+        "text": "Você comparou os quatro casos. Só com a memória ligada temChave vira verdadeiro, e ele continua assim mesmo longe da chave. Numa partida nova, o jogo começa do zero, e temChave volta a falso. Pode continuar ligando e desligando a memória e testando de novo."
       }
     ],
     "experiencia-porta": [
       {
         "id": "door-with",
-        "text": "Neste teste, o personagem está com a chave. Teste a porta quando quiser. Também pode mudar a situação antes de testar."
+        "text": "O personagem está com a chave. O que você acha que a porta vai fazer? Teste a porta e observe temChave e a resposta que ela escolhe."
       },
       {
         "id": "door-without",
-        "text": "Neste teste, o personagem está sem a chave. Teste a porta quando quiser. Também pode mudar a situação antes de testar."
+        "text": "O personagem está sem a chave. O que você acha que a porta vai fazer? Teste a porta e observe temChave e a resposta que ela escolhe."
       },
       {
         "id": "door-compare-without",
-        "text": "A porta abriu com a chave. Tire a chave do personagem e teste outra vez para comparar."
+        "text": "Com temChave verdadeiro, a resposta foi sim: a porta abriu e o farol acendeu. E sem a chave, o que a porta faz? Tire a chave do personagem e teste a mesma porta."
       },
       {
         "id": "door-compare-with",
-        "text": "Sem chave, a porta avisou. Experimente dar a chave ao personagem e testar novamente. Você também pode repetir este caso."
+        "text": "Com temChave falso, a resposta foi não: a porta ficou fechada e avisou que falta a chave. E com a chave, o que a porta faz? Dê a chave ao personagem e teste a mesma porta."
       },
       {
         "id": "door-complete",
-        "text": "Você testou com e sem chave. Pode mudar de situação e testar a porta quantas vezes quiser."
+        "text": "A pergunta foi a mesma nas duas vezes. O que mudou foi o valor de temChave, e por isso a porta escolheu outra resposta. Pode mudar a situação e testar quantas vezes quiser."
       }
     ],
     "experiencia-posicao": [
       {
         "id": "position-start",
-        "text": "O x muda o lugar para os lados. Experimente ir e voltar. O y também está livre: você escolhe o que explorar primeiro."
+        "text": "Mude só o x, para mais ou para menos, e observe a chave. Para onde ela vai? O y também está livre: você escolhe o que explorar primeiro."
       },
       {
         "id": "position-height",
-        "text": "Você comparou os lados. Agora experimente aumentar e diminuir o y, observando a altura. Pode continuar mexendo no x também."
+        "text": "O x leva a chave para os lados: um x maior leva para a direita, e um menor, para a esquerda. E o y? Aumente e diminua o y e observe a chave."
+      },
+      {
+        "id": "position-width",
+        "text": "O y leva a chave para cima e para baixo: um y maior leva para baixo, e um menor, para cima, porque na tela do jogo a contagem começa em zero lá em cima. E o x? Aumente e diminua o x e observe a chave."
       },
       {
         "id": "position-complete",
-        "text": "Você explorou as quatro direções. Continue escolhendo lugares. Se quiser um desafio, mostre um alvo e leve a chave até ele."
+        "text": "O x leva a chave para os lados, e o y, para cima e para baixo. Repare: um y maior leva a chave para baixo, porque na tela do jogo a contagem começa em zero lá em cima. Continue escolhendo lugares ou mostre um alvo e leve a chave até ele."
       }
     ]
   }

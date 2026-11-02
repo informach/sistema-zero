@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno são comparados antes da pintura. Construir a forma, suavizar pontos e acrescentar crateras tornam-se aplicações separadas.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). Preenchimento e Contorno viraram exploração livre. Ponto suave e alças ganharam explicação no momento do uso; o canto da caixa de seleção não é mais chamado de alça. Revisão independente de 02/11/2026: o livro de colorir fica na situação, sem dizer o que sobra; a montagem fala da borda da pedra, para não confundir com o Contorno do Pinta; o botão é "Abrir meu Pinta".**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -26,15 +28,15 @@ A diferença entre pixel e vetor já foi experimentada. Preenchimento e contorno
 
 ### Seção 1. Separe o miolo da borda
 
-**Tarefa / Zappy na página:** Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-preenchimento-contorno → fala-preenchimento-contorno → experiencia-cores.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-preenchimento-contorno-K1: Dedé substitui “Cadê a cor de dentro?”. Antes: “cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.”. Depois: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo. Quando você pega um desenho para colorir, as”.
+video-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o”.
 
-**Experiência existente:** `fill-stroke`. Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `fill-stroke`, com `setup.freeExploration`. Compare o que sobra da pedra com o Preenchimento em Sem cor, com o Contorno em Sem cor e com as duas partes com cor. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare o desenho em vetor
 
@@ -68,7 +70,7 @@ video-preenchimento-contorno-K1: Dedé substitui “Cadê a cor de dentro?”. A
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-crateras-K1: Dedé substitui “Posso fazer uma cratera grande e outra pequena?”. Antes: “criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.”. Depois: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e”.
+video-crateras-K1: Dedé substitui “Posso fazer uma cratera grande e outra pequena?”. Antes: “Arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, onde você desenhou.”. Depois: “Pode, sim. Os tamanhos são escolha sua. Para fazer outras, use Selecionar, clique na cratera e use Ctrl+C e Ctrl+V para”.
 
 **Aplicação no Pinta:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

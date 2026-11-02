@@ -10,7 +10,12 @@ import {
   stepScene,
 } from './engine'
 import { evaluateExperimentation, sceneGoals, sceneSuccess } from './evaluate'
-import { isExperimentationActivity, isSceneSetup, sceneTargets } from './index'
+import {
+  discoverySpeechSteps,
+  isExperimentationActivity,
+  isSceneSetup,
+  sceneTargets,
+} from './index'
 import { sceneReadout, sceneSituation } from './readout'
 import {
   hydrateSceneState,
@@ -628,5 +633,31 @@ describe('lighthouse-walk: a beirada da tela', () => {
     const frase = sceneSuccess('lighthouse-walk', undefined, [...BEIRADA])
     expect(frase).toContain('beirada')
     expect(frase).not.toMatch(/bloco|regra|comando|\bx\b|sprite|ordem/i)
+  })
+})
+
+/**
+ * Convite à investigação, como no Cadê (02/11/2026): antes do teste, o Zappy pergunta e diz o que
+ * observar; o resultado só aparece na fala de DEPOIS dele.
+ */
+describe('lighthouse-walk: o Zappy não conta o resultado antes do teste', () => {
+  const ANTES = [
+    'slow-start',
+    'slow-walking',
+    'slow-real',
+    'border-start',
+    'border-off',
+    'border-out',
+    'border-on-out',
+    'border-edge',
+    'border-edge-off',
+  ]
+  const falas = new Map(discoverySpeechSteps('lighthouse-walk').map(({ id, text }) => [id, text]))
+  test.each(ANTES)('%s', (id) => {
+    const fala = falas.get(id)
+    expect(fala).toBeString()
+    expect(fala).not.toMatch(
+      /fic(a|ou) no lugar|fic(a|ou) parado|sai(u)? da tela|volt(a|ou) para dentro|segur(a|ou) ele dentro|caminhada|veja o que acontece/i,
+    )
   })
 })

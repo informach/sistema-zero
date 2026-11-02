@@ -21,10 +21,10 @@
       "clipe": "video-preenchimento-contorno",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.",
-      "ancoraDepois": "É que Sem cor não é branco: é transparente, por isso dá para ver o fundo. Quando você pega um desenho para colorir, as",
-      "falaPrincipal": "Cadê a cor de dentro?",
-      "falaPersonagem": "Cadê a cor de dentro?",
+      "ancoraAntes": "Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que sobra da pedra quando o",
+      "falaPrincipal": "E se uma das partes ficar em Sem cor, o que sobra?",
+      "falaPersonagem": "E se uma das partes ficar em Sem cor, o que sobra?",
       "tags": ["[curious]"]
     },
     {
@@ -32,8 +32,8 @@
       "clipe": "video-crateras",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.",
-      "ancoraDepois": "Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e",
+      "ancoraAntes": "Arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, onde você desenhou.",
+      "ancoraDepois": "Pode, sim. Os tamanhos são escolha sua. Para fazer outras, use Selecionar, clique na cratera e use Ctrl+C e Ctrl+V para",
       "falaPrincipal": "Posso fazer uma cratera grande e outra pequena?",
       "falaPersonagem": "Posso fazer uma cratera grande e outra pequena?",
       "tags": ["[curious]"]

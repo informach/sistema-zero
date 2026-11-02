@@ -6,10 +6,11 @@ import {
   LEARNING_IMPORT_BODY_MAX_BYTES,
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
-import { cabanaAjuda, cabanaAulas } from './cabana-conteudo'
+import { cabanaAjuda, cabanaAulas, cabanaExperiencia } from './cabana-conteudo'
 import { cabanaChecks } from './cabana-criterios'
 import {
   CABANA_CURSO,
@@ -27,7 +28,7 @@ mkdirSync(dir, { recursive: true })
 const write = (name: string, v: unknown) =>
   gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
 
-const help = `# Passo a passo do projeto — O segredo da cabana\n\nPoder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n${cabanaAulas
+const help = `# Passo a passo do projeto — O segredo da cabana\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${cabanaExperiencia.title}\n\n**A ideia:** ${cabanaExperiencia.idea}\n\n**O que investigar:**\n\n${cabanaExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${cabanaExperiencia.observe}\n\n${cabanaAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${cabanaAjuda(
@@ -41,7 +42,7 @@ const help = `# Passo a passo do projeto — O segredo da cabana\n\nPoder do Fa�
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas, pressione R e confira que as peças voltam e a cabana volta fechada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.\n\nDepois clique em Verificar projeto e corrija o que faltar.\n\nPor fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 write('passo-a-passo.md', help)
 
 const inventory: Record<string, string[]> = {}
@@ -121,10 +122,43 @@ for (const [index, aula] of cabanaAulas.entries()) {
           required: true,
           title: 'A porta com duas peças',
           semPerguntaFinal: true,
+          // Só a ideia e o convite à investigação (02/11/2026): a cabana pede as duas peças ou uma
+          // das peças, sem blocos. As pistas e o "Ainda falta" citam os botões desta tela (o
+          // catálogo cita "e" e "ou", da bancada antiga).
           instructions:
-            'Tente a cabana sem nada, com uma peça só e com as duas. Pegue as peças em ordens diferentes e compare o "e" com o "ou". Você pode repetir quantas vezes quiser.',
-          hints: [],
-          activity: { type: 'experimentation', scene: 'two-pieces', cenario: 'farol' },
+            'Compare quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem e pode repetir quando quiser.',
+          hints: [
+            'Olhe temChave e temEmblema antes de encostar na cabana: quantos estão em verdadeiro?',
+            'Compare a cabana sem nenhuma peça, com uma e com as duas. Depois recomece e pegue as peças na outra ordem.',
+            'Clique em Encostar na cabana. Clique em Pegar a chave e em Encostar na cabana. Clique em Pegar o emblema e em Encostar na cabana. Clique em Recomeçar a partida, Pegar o emblema, Pegar a chave e Encostar na cabana. Por fim, clique em A cabana pede uma das peças, Recomeçar a partida, Pegar a chave e Encostar na cabana.',
+          ],
+          activity: {
+            type: 'experimentation',
+            scene: 'two-pieces',
+            cenario: 'farol',
+            setup: {
+              freeExploration: true,
+              goalCopy: {
+                'none-closed': {
+                  pedido:
+                    'Com A cabana pede as duas peças escolhido, clique em Encostar na cabana antes de pegar qualquer peça.',
+                },
+                'one-closed': {
+                  pedido:
+                    'Com A cabana pede as duas peças escolhido, clique em Pegar a chave ou em Pegar o emblema e depois em Encostar na cabana.',
+                },
+                'both-open': {
+                  pedido:
+                    'Com A cabana pede as duas peças escolhido, pegue as duas peças e clique em Encostar na cabana.',
+                },
+                'and-vs-or': {
+                  label: 'Pedindo uma das peças, uma peça só já abriu',
+                  pedido:
+                    'Clique em A cabana pede uma das peças, pegue uma peça só e clique em Encostar na cabana.',
+                },
+              },
+            },
+          },
         },
       })
     }
@@ -231,7 +265,7 @@ for (const [index, aula] of cabanaAulas.entries()) {
     script +=
       t.kind === 'quiz'
         ? `## Parte ${i + 1}. ${t.title}\n\nSem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.\n\n`
-        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n${t.kind === 'experience' ? '**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-cabana.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.\n\n' : ''}`
   script = sincronizarRecadosNaPagina(script, manifest)
   write(`cabana-${aula.slug}.roteiro.md`, script)
   for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
@@ -250,6 +284,11 @@ for (const [index, aula] of cabanaAulas.entries()) {
   })
 }
 write('blocos.json', inventory)
+// As falas do Zappy dentro da experiência (02/11/2026), para gravar e auditar com o resto da aula.
+write('zappy-etapas.json', {
+  version: 1,
+  experiences: { experiencia: discoverySpeechSteps('two-pieces') },
+})
 write(
   'modulos.md',
   '# O segredo da cabana — organização do curso\n\nPoder 2 do posto Faísca (`jornada-faisca-poder-2`). Módulo: **O segredo da cabana**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +

@@ -14,7 +14,7 @@
 
 [long pause]
 
-[curious] E para subir ou descer?
+[curious] Mas, quando o y aumenta, a chave sobe ou desce?
 
 [long pause]
 

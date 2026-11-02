@@ -8,7 +8,9 @@
     "duracaoGarantidaPelaTag": false
   },
   "clipes": [
+    "video-meta-do-jogo",
     "video-finais",
+    "video-derrota",
     "video-mostrar-telas",
     "video-reiniciar",
     "video-enter",
@@ -16,30 +18,30 @@
   ],
   "intervencoes": [
     {
+      "id": "video-meta-do-jogo-K1",
+      "clipe": "video-meta-do-jogo",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada",
+      "falaPrincipal": "Com maior que, chegar a 26 já dá a vitória?",
+      "falaPersonagem": "Com maior que, chegar a 26 já dá a vitória?",
+      "tags": ["[curious]"]
+    },
+    {
       "id": "video-finais-K1",
       "clipe": "video-finais",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.",
-      "ancoraDepois": "Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco",
+      "ancoraAntes": "de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.",
+      "ancoraDepois": "Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco",
       "falaPrincipal": "E do outro lado vai a meta?",
       "falaPersonagem": "E do outro lado vai a meta?",
       "tags": ["[curious]"]
     },
     {
-      "id": "video-finais-K2",
-      "clipe": "video-finais",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.",
-      "ancoraDepois": "Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e",
-      "falaPrincipal": "Chegou na meta, ganhou! E se acabarem as vidas?",
-      "falaPersonagem": "Chegou na meta, ganhou! E se acabarem as vidas?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-finais-K3",
-      "clipe": "video-finais",
+      "id": "video-derrota-K1",
+      "clipe": "video-derrota",
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.",
@@ -54,7 +56,7 @@
       "personagem": "Debinha",
       "ocorrencia": 1,
       "ancoraAntes": "subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.",
-      "ancoraDepois": "Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a",
+      "ancoraDepois": "Ela vem do mesmo jeito. Agora a derrota, do mesmo jeito. Clique de novo no sinal de mais que fica antes de senão se e",
       "falaPrincipal": "E a tela de quando eu perder?",
       "falaPersonagem": "E a tela de quando eu perder?",
       "tags": ["[curious]"]
@@ -64,10 +66,10 @@
       "clipe": "video-reiniciar",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.",
-      "ancoraDepois": "Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica",
-      "falaPrincipal": "Como faz para começar outra partida com tudo no lugar?",
-      "falaPersonagem": "Como faz para começar outra partida com tudo no lugar?",
+      "ancoraAntes": "jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o",
+      "falaPrincipal": "E a partida nova começa igual nos dois jeitos?",
+      "falaPersonagem": "E a partida nova começa igual nos dois jeitos?",
       "tags": ["[curious]"]
     },
     {
@@ -75,8 +77,8 @@
       "clipe": "video-enter",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.",
-      "ancoraDepois": "Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do",
+      "ancoraAntes": "bloco que começa tudo de novo: o jogo volta ao começo, faz outra vez a preparação de Ao iniciar e mostra a abertura.",
+      "ancoraDepois": "Por isso, a vitória ganha um ramo igual. Agora a vitória, do mesmo jeito. Clique de novo no sinal de mais que fica",
       "falaPrincipal": "E quando eu ganhar? Também quero jogar de novo!",
       "falaPersonagem": "E quando eu ganhar? Também quero jogar de novo!",
       "tags": ["[thoughtful]"]

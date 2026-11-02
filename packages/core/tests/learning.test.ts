@@ -341,7 +341,8 @@ describe('os manifestos atuais das aulas', () => {
     )
     expect(
       experiments.map((b) => b.activity.type === 'experimentation' && b.activity.scene),
-    ).toEqual(['lighthouse-walk', 'lighthouse-walk', 'layers'])
+      // A câmera lenta, o tamanho do passinho (02/11/2026), a beirada e as camadas.
+    ).toEqual(['lighthouse-walk', 'lighthouse-walk', 'lighthouse-walk', 'layers'])
     for (const experiment of experiments) expect(blockCheckpoint(experiment)).toBeUndefined()
     const source = JSON.parse(
       readFileSync(caminhoAula('nave-contra-asteroides-primeira-nave.manifesto.json'), 'utf8'),
@@ -445,14 +446,15 @@ describe('progressão inicial de Nave Contra Asteroides', () => {
     expect(order.indexOf('setas')).toBeLessThan(order.indexOf('borda'))
     expect(order.indexOf('borda')).toBeLessThan(order.indexOf('fundo-estrelado'))
   })
-  test('coordenadas está na primeira aula e orienta os três testes sem palpite ou pergunta final', () => {
+  test('coordenadas está na primeira aula e convida às três comparações sem ditar a ordem', () => {
     const m = read('primeira-nave')
     const entry = m.blocks.find((b) => b.key === 'experiencia-coordenadas')
     const bloco = entry && 'content' in entry ? entry.content : undefined
     if (!isInteractiveBlock(bloco)) throw new Error('Coordenadas ausentes')
-    expect(bloco.instructions).toMatch(/x sem mudar y/)
-    expect(bloco.instructions).toMatch(/y sem mudar x/)
-    expect(bloco.instructions).toMatch(/x e y em zero/)
+    expect(bloco.instructions).toMatch(/quando o x muda/)
+    expect(bloco.instructions).toMatch(/quando o y muda/)
+    expect(bloco.instructions).toMatch(/dois números em zero/)
+    expect(bloco.instructions).toMatch(/Você escolhe a ordem/)
     expect(publicInteractiveBlock(bloco).prediction).toBeUndefined()
     expect(publicInteractiveBlock(bloco).checkpoint).toBeUndefined()
     expect(evaluateLearning(bloco, {}).passed).toBe(false)
@@ -505,10 +507,11 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     ...quadros(3),
     { type: 'trigger' },
   ],
+  // ⚠️ Sem `reset` nas três da Nave (exploração livre, 02/11/2026): lá o "Recomeçar experiência" apaga
+  // as descobertas. Trocar de jeito já começa uma partida nova (`placeOnce`).
   'nave-contra-asteroides-primeira-nave.manifesto.json/experiencia-areas': [
     { type: 'place-in-area', card: 'move', area: 'start' },
     ...quadros(3),
-    { type: 'reset' },
     { type: 'place-in-area', card: 'move', area: 'loop' },
     ...quadros(24),
   ],
@@ -521,7 +524,6 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     { type: 'place-in-area', card: 'event', area: 'event' },
     ...quadros(3),
     { type: 'trigger' },
-    { type: 'reset' },
     { type: 'place-in-area', card: 'event', area: 'loop' },
     ...quadros(5),
   ],
@@ -545,9 +547,18 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
   'nave-contra-asteroides-dia-4.manifesto.json/experiencia-uma-vez': [
     { type: 'place-in-area', card: 'lives', area: 'start' },
     ...quadros(6),
-    { type: 'reset' },
     { type: 'place-in-area', card: 'lives', area: 'loop' },
     ...quadros(9),
+  ],
+  // A pergunta com o não (Ilha do Farol, aula 3, 02/11/2026): as duas perguntas em cada chave.
+  'ilha-aula-3.manifesto.json/experiencia-pergunta-com-nao': [
+    { type: 'try-lighthouse-door' },
+    { type: 'door-question', not: true },
+    { type: 'try-lighthouse-door' },
+    { type: 'key-state', hasKey: true },
+    { type: 'try-lighthouse-door' },
+    { type: 'door-question', not: false },
+    { type: 'try-lighthouse-door' },
   ],
   'nave-contra-asteroides-dia-5.manifesto.json/experiencia-reiniciar': [
     ...scenePaths.restart,
@@ -624,6 +635,8 @@ describe('o cenário das cenas dos cursos', () => {
     'jornada-faisca-poder-2': 'farol',
     'jornada-faisca-poder-3': 'farol',
     'jornada-faisca-poder-4': 'farol',
+    // A Ilha do Farol: a ilha 3D tem palco próprio; a porta do não (aula 3, 02/11/2026) é a do Farol.
+    'jornada-faisca-base-3d': 'farol',
     'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }

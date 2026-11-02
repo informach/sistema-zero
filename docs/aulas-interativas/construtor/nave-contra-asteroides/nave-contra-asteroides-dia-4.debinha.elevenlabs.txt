@@ -1,12 +1,8 @@
-[curious] E se eu der as vidas o tempo todo?
+[curious] E se a nave ganhar as três vidas sempre, em todo quadro?
 
 [long pause]
 
-[curious] E como eu vejo quantas vidas tenho?
-
-[long pause]
-
-[curious] E quando esse tempinho de proteção acabar?
+[curious] E como eu vejo quantas vidas eu tenho?
 
 [long pause]
 
@@ -14,4 +10,8 @@
 
 [long pause]
 
-[curious] Falta tirar a vida da nave, né?
+[curious] E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?
+
+[long pause]
+
+[curious] E a tela pode tremer na batida?

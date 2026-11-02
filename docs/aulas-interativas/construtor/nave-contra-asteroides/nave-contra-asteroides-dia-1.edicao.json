@@ -9,6 +9,7 @@
   },
   "clipes": [
     "video-seta-e-velocidade",
+    "video-tamanho-do-passinho",
     "video-setas-e-rastro",
     "video-limpeza",
     "video-limite-da-tela",
@@ -23,10 +24,10 @@
       "clipe": "video-seta-e-velocidade",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "do passo quando você anda: passo grande leva mais longe. A velocidade é o tamanho do passo da nave em cada quadro.",
-      "ancoraDepois": "Depois, eu clico em Recomeçar, escolho Velocidade 1 e avanço de novo. Agora o x vai de 208 para 209, depois 210. O",
-      "falaPrincipal": "E se a gente testar um passo menor?",
-      "falaPersonagem": "E se a gente testar um passo menor?",
+      "ancoraAntes": "dá só um passinho. Para saber quando a nave tem que andar, o jogo olha a seta em cada quadro, antes de mexer a nave.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a nave faz em cada quadro com a",
+      "falaPrincipal": "E o que a nave faz num quadro em que a seta está solta?",
+      "falaPersonagem": "E o que a nave faz num quadro em que a seta está solta?",
       "tags": ["[curious]"]
     },
     {
@@ -34,8 +35,8 @@
       "clipe": "video-setas-e-rastro",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "Arraste e solte no começo de A cada quadro do jogo, logo acima de Desenhar o sprite, quando aparecer o encaixe.",
-      "ancoraDepois": "Repare: o nome do sprite já vem nave, por isso mantenha. Depois, troque a velocidade para 7, um passo maior do que os",
+      "ancoraAntes": "seta você está segurando e leva a nave para aquele lado. Repare: o nome do sprite já vem nave, por isso deixe assim.",
+      "ancoraDepois": "Você escolhe! Lembra da experiência da parte anterior, do tamanho do passinho? Aqui, o tamanho do passinho se chama",
       "falaPrincipal": "E qual velocidade eu uso?",
       "falaPersonagem": "E qual velocidade eu uso?",
       "tags": ["[curious]"]
@@ -45,8 +46,8 @@
       "clipe": "video-limpeza",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "cada quadro, na primeira aula? Com a limpeza ligada, sobrava uma nave só. Agora a gente vai limpar a tela do seu jogo!",
-      "ancoraDepois": "Só o desenho anterior. A nave continua no jogo e vai ser desenhada de novo. A limpeza tem que acontecer no começo de",
+      "ancoraAntes": "na primeira aula? Apagando a tela antes de desenhar, sobrava uma nave só. Agora a gente vai apagar a tela do seu jogo!",
+      "ancoraDepois": "Só o desenho de antes. A nave continua no jogo e é desenhada de novo, no lugar novo. A tela precisa ser apagada no",
       "falaPrincipal": "Isso vai apagar a minha nave?",
       "falaPersonagem": "Isso vai apagar a minha nave?",
       "tags": ["[curious]"]
@@ -56,10 +57,10 @@
       "clipe": "video-limite-da-tela",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "e continua até sair inteira da tela, porque, sem limite, o jogo soma o passo em cada quadro, mesmo depois da borda.",
-      "ancoraDepois": "Vamos colocar um limite para ela ficar na tela. Agora eu clico em Recomeçar, ligo Manter dentro da tela e clico em",
-      "falaPrincipal": "E se a nave sair da tela?",
-      "falaPersonagem": "E se a nave sair da tela?",
+      "ancoraAntes": "conferir se a nave passou da beirada. Essa conferência se chama limite da tela, e ela pode ficar ligada ou desligada.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a nave na beirada,",
+      "falaPrincipal": "E se o limite for ligado com a nave já fora da tela?",
+      "falaPersonagem": "E se o limite for ligado com a nave já fora da tela?",
       "tags": ["[curious]"]
     },
     {
@@ -67,10 +68,21 @@
       "clipe": "video-limite-da-nave",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "dentro da tela. Arraste e solte entre Mover o sprite com as setas e Desenhar o sprite, quando aparecer o encaixe.",
-      "ancoraDepois": "Repare: o bloco chega com o nome heroi, que não é o da sua nave. Por isso, clique em heroi e escolha nave. Agora teste:",
+      "ancoraAntes": "e solte logo abaixo de Mover o sprite com as setas, quando aparecer o encaixe. Repare: o bloco chega com o nome heroi.",
+      "ancoraDepois": "Não é: a sua nave se chama nave. Por isso, a gente troca. Clique em heroi e escolha nave na lista. É este bloco que",
       "falaPrincipal": "Esse nome heroi é o da minha nave?",
       "falaPersonagem": "Esse nome heroi é o da minha nave?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-ordem-dos-desenhos-K1",
+      "clipe": "video-ordem-dos-desenhos",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "o jogo desenha uma coisa depois da outra, na mesma tela. No seu jogo, vão ser desenhados a nave e um fundo de estrelas.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando a ordem dos",
+      "falaPrincipal": "E se o fundo de estrelas for desenhado depois da nave?",
+      "falaPersonagem": "E se o fundo de estrelas for desenhado depois da nave?",
       "tags": ["[curious]"]
     },
     {
@@ -78,8 +90,8 @@
       "clipe": "video-fundo-estrelado",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "A cada quadro do jogo, logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: mantenha.",
-      "ancoraDepois": "Olha só: as estrelas cobriram a nave! Isso acontece porque elas foram desenhadas depois da nave, igualzinho ao que você",
+      "ancoraAntes": "Arraste e solte logo depois de Desenhar o sprite, quando aparecer o encaixe. A velocidade já vem em 1: deixe assim.",
+      "ancoraDepois": "Olha só: as estrelas cobriram a nave! É que agora elas são desenhadas por último, depois da nave, e ficam na frente.",
       "falaPrincipal": "Ué, cadê a nave?",
       "falaPersonagem": "Ué, cadê a nave?",
       "tags": ["[curious]"]

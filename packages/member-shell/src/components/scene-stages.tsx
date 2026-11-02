@@ -310,6 +310,7 @@ export function ScreenReaderStage({
   interactive,
   preview = false,
   cast,
+  soAIdeia = false,
 }: {
   state: SceneState
   dispatch?: (action: SceneAction) => void
@@ -317,6 +318,11 @@ export function ScreenReaderStage({
   /** A prévia não mostra campo, botão ou controle da cena. */
   preview?: boolean
   cast?: SceneCast
+  /**
+   * A exploração livre (02/11/2026): só a IDEIA. Sem o nome do bloco embaixo do campo, e o cadeado
+   * pede "clique em", como as falas do Zappy. Sem a prop, o palco fica como sempre foi.
+   */
+  soAIdeia?: boolean
 }) {
   const id = useId()
   const { text, heard, heardEmpty, said, listens } = state.description
@@ -566,9 +572,11 @@ export function ScreenReaderStage({
             <label className="block text-sm font-semibold" htmlFor={`${id}-desc`}>
               Descrição do jogo
             </label>
-            <p className="mb-2 text-xs text-muted-foreground">
-              É o campo do bloco Descrever o jogo para leitor de tela.
-            </p>
+            {!soAIdeia && (
+              <p className="mb-2 text-xs text-muted-foreground">
+                É o campo do bloco Descrever o jogo para leitor de tela.
+              </p>
+            )}
             <textarea
               id={`${id}-desc`}
               rows={2}
@@ -584,7 +592,9 @@ export function ScreenReaderStage({
              ela digitava e nada aparecia, e o único sinal era a borda tracejada e uma nota de 12px. */
               placeholder={
                 fechado
-                  ? '🔒 Primeiro aperte Ouvir a tela.'
+                  ? soAIdeia
+                    ? '🔒 Primeiro clique em Ouvir a tela.'
+                    : '🔒 Primeiro aperte Ouvir a tela.'
                   : 'Escreva o que é o seu jogo e como se joga'
               }
               onChange={(e) => escrever(e.target.value)}
@@ -630,7 +640,17 @@ export function ScreenReaderStage({
  * era o tracejado do alvo, maior); com a borda ligada, 800 × 480 e 480 × 270 saíam quase do mesmo
  * tamanho. Hoje o espaço em volta é sempre o de 800 × 480, e 480 fica visivelmente mais estreito.
  */
-export function StageSizeStage({ state }: { state: SceneState }) {
+export function StageSizeStage({
+  state,
+  alvo: mostrarAlvo = true,
+}: {
+  state: SceneState
+  /**
+   * As cantoneiras do 480 × 270. A exploração livre (02/11/2026) as esconde: lá a tela do jogo é um
+   * dos testes, e o tamanho dela só aparece quando a criança chega nele. Sem a prop, ficam.
+   */
+  alvo?: boolean
+}) {
   const { width, height, border } = state.stage
   const id = useId()
   const noAlvo = width === STAGE_TARGET.width && height === STAGE_TARGET.height
@@ -691,7 +711,7 @@ export function StageSizeStage({ state }: { state: SceneState }) {
       </g>
       {/* ⭐ O ALVO só com a borda à vista, e como CANTONEIRAS (lote 5): o retângulo tracejado era um
           segundo retângulo que não é a tela, e o texto dele ficava embaixo do Dino. */}
-      {border && !noAlvo && (
+      {mostrarAlvo && border && !noAlvo && (
         <g
           data-alvo=""
           className="stroke-scene-ink-soft"

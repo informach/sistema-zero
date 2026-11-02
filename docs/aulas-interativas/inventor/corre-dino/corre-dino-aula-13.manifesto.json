@@ -23,6 +23,8 @@
     "fala-criar-velocidade",
     "fala-ler-a-base",
     "video-memoria-e-leitura",
+    "fala-regua-negativos",
+    "experiencia-number-line",
     "fala-relogio-acelerador",
     "fala-se-do-estado",
     "fala-se-da-comparacao",
@@ -34,61 +36,60 @@
     "fala-teste-final",
     "video-ponte",
     "video-fecho-curso",
-    "quiz-final"
+    "quiz-final",
+    "video-regua-negativos"
   ],
   "blocks": [
     {
-      "key": "video-regua-negativos",
-      "plannedVideo": "Título: Compare os números negativos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o marcador em -5. Clicar em Somar -1 três vezes, com o marcador à vista. Clicar em Voltar ao começo, escolher > maior que e mudar valor da base para -9, com a pergunta e a resposta à vista. Voltar ao começo, escolher = igual a e clicar em Somar -1 quatro vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino de cachecol olhando dois termômetros, um em -5 e outro em -9. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-regua-negativos-K1: Debinha substitui “Qual é maior: menos cinco ou menos nove?”. Antes: “Somar um número negativo deixa o valor menor. No seu jogo, velocidade mais para a esquerda é cacto mais rápido.”. Depois: “Eu clico em Voltar ao começo e escolho o sinal maior que, o símbolo >. Com o marcador em -5, a pergunta -5 > -9”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
-    },
-    {
-      "key": "fala-regua-negativos",
-      "content": {
-        "kind": "dialogue",
-        "pose": "speaking",
-        "text": "Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte."
-      }
-    },
-    {
-      "key": "experiencia-number-line",
-      "content": {
-        "kind": "interactive",
-        "title": "Compare os números negativos",
-        "instructions": "Clique em Somar -1 três vezes e observe o marcador. Clique em Voltar ao começo. No sinal da pergunta, escolha maior que, o símbolo >. Observe a resposta com o marcador em -5. Depois mude valor da base para -9 e compare a resposta. Clique em Voltar ao começo novamente. Escolha o sinal de igual e clique em Somar -1 quatro vezes. Acompanhe quando a pergunta muda de resposta.",
-        "hints": [],
-        "required": true,
-        "activity": {
-          "type": "experimentation",
-          "scene": "number-line",
-          "cenario": "corre-dino"
-        },
-        "semPerguntaFinal": true
-      }
-    },
-    {
       "key": "video-o-que-o-freio-segura",
-      "plannedVideo": "Título: Compare a base com cada cacto\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a base em -5 e a condição ligada. Clicar em Passar 5 segundos cinco vezes, com a base e o número de cada cacto à vista. Continuar até nascer um cacto -10 com a base em -9. Desligar a condição e clicar mais cinco vezes. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino descendo uma ladeira de bicicleta, apertando o freio. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-o-que-o-freio-segura-K1: Debinha substitui “Com a base em menos nove, pode nascer um cacto mais rápido?”. Antes: “a responder não. Os cactos que já nasceram não trocam de número: cada um guarda a velocidade que recebeu ao nascer.”. Depois: “Com a base parada em -9, eu continuo clicando até nascer um cacto com -10. A base é -9, mas o sorteio tirou mais 1. A”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Até onde a corrida acelera?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o botão de volume\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy girando o botão de volume de um rádio, com o Dino dançando ao lado [na edição: meme do botão de volume]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar o tempo. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-o-que-o-freio-segura-K1: Debinha substitui “E os cactos que já estão na pista também ficam mais rápidos?”. Antes: “-7… Cada cacto nasce com o número dele. E o jogo pode fazer uma pergunta antes de mudar a base: a base é maior que -9?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com a base e com os”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-o-que-o-freio-segura",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-aceleracao",
       "content": {
         "kind": "interactive",
-        "title": "Compare a base com cada cacto",
-        "instructions": "Deixe a condição ligada. Clique em Passar 5 segundos cinco vezes. Observe a base e os números escritos nos cactos que já nasceram. Com a base em -9 e a condição ligada, continue clicando em Passar 5 segundos até aparecer um cacto com -10. Compare a conta desse cacto com a base. Desligue a condição e clique em Passar 5 segundos mais cinco vezes. Compare até onde a base foi e observe se os cactos antigos trocaram de número.",
-        "hints": [],
+        "title": "Até onde a corrida acelera?",
+        "instructions": "Compare o número da base com o número dos cactos novos e dos antigos, com a pergunta ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Olhe o número embaixo de cada cacto e o número da base.",
+          "Passe 5 segundos até a resposta da pergunta virar não.",
+          "Com a base parada no -9, passe mais 5 segundos algumas vezes e olhe cada cacto novo; depois desligue a pergunta e compare a base."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
           "scene": "acceleration",
           "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["old-speed", "base-limit", "variation-limit", "past-limit"],
+            "goalCopy": {
+              "old-speed": {
+                "label": "Os cactos que já nasceram guardaram o número deles",
+                "pedido": "Clique em Passar 5 segundos algumas vezes e olhe o número embaixo de cada cacto."
+              },
+              "base-limit": {
+                "label": "Com a pergunta ligada, a base parou no -9",
+                "pedido": "Com a pergunta ligada, clique em Passar 5 segundos até a base chegar no -9 e mais uma vez."
+              },
+              "variation-limit": {
+                "label": "Mesmo com a base parada no -9, nasceu um cacto com -10",
+                "pedido": "Com a pergunta ligada, continue clicando em Passar 5 segundos e olhe o número de cada cacto novo."
+              },
+              "past-limit": {
+                "label": "Sem a pergunta, a base passou do -9",
+                "pedido": "Clique em Desligar a pergunta e em Passar 5 segundos algumas vezes."
+              }
+            }
+          },
           "cast": {
             "obstacle": {
               "name": "cacto",
@@ -101,7 +102,7 @@
     },
     {
       "key": "video-numero-que-manda",
-      "plannedVideo": "Título: Guarde a velocidade base\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o -5 escrito na conta do vx. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Guarde a velocidade base\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-numero-que-manda",
@@ -113,7 +114,7 @@
     },
     {
       "key": "video-relogio-da-dificuldade",
-      "plannedVideo": "Título: Prepare o relógio da dificuldade\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar os dois relógios que já existem em Enquanto estiver rodando. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare o relógio da dificuldade\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio-da-dificuldade",
@@ -125,7 +126,7 @@
     },
     {
       "key": "video-acelerador-e-freio",
-      "plannedVideo": "Título: Diminua a base até o limite\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: no “Tá vendo?”, apontar o então vazio do relógio de 5 segundos. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mudar?”. Antes: “e depois Valores, pegue o bloco valor da variável, solte em cima do x, do lado esquerdo, e escolha velocidade.”. Depois: “O sinal já chega como >, maior que: mantenha. No lado direito, troque o 0 por -9. Assim, a pergunta fica: velocidade”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Diminua a base até o limite\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte ainda não aparece: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-acelerador-e-freio-K1: Debinha substitui “Até onde a velocidade pode mudar?”. Antes: “pegue o bloco valor da variável e solte em cima desse x. Ele também chega com x: clique nele e escolha velocidade.”. Depois: “Até -9. Por isso, a pergunta vai ser: velocidade maior que -9? O sinal já chega como maior que: mantenha. No lado”.\n\nFala completa em corre-dino-aula-13.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-acelerador-e-freio",
@@ -183,7 +184,7 @@
           },
           {
             "id": "q2",
-            "prompt": "A base parou em -9, mas o criador ainda subtrai um sorteio de 0 a 1. Que velocidade pode sair?",
+            "prompt": "A base parou em -9, mas o bloco que cria os cactos ainda tira um sorteio de 0 a 1. Que velocidade pode sair?",
             "choices": [
               {
                 "id": "a",
@@ -219,7 +220,7 @@
               }
             ],
             "correctChoiceIds": ["a"],
-            "explanation": "O criador lê a base no nascimento. Essa leitura dá um valor ao novo cacto; não mantém todos ligados à variável."
+            "explanation": "O bloco que cria os cactos lê a base na hora em que cada cacto nasce. Essa leitura dá um número ao cacto novo; os cactos antigos não mudam."
           }
         ]
       }
@@ -1495,24 +1496,10 @@
   ],
   "sections": [
     {
-      "key": "regua-negativos",
-      "title": "Compare os números negativos",
-      "intent": "exploration",
-      "objective": "Sua vez! Compare os sinais da pergunta e acompanhe o marcador na régua, de -5 até -9. Quando terminar, clique em Próxima parte.",
-      "blockKeys": ["video-regua-negativos", "fala-regua-negativos", "experiencia-number-line"],
-      "workspaceKey": null,
-      "externalTool": null,
-      "pendingMedia": [],
-      "completion": {
-        "version": 1,
-        "blockIds": ["video-regua-negativos", "experiencia-number-line"]
-      }
-    },
-    {
       "key": "o-que-o-freio-segura",
-      "title": "Compare a base com cada cacto",
+      "title": "Até onde a corrida acelera?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare a base com os cactos novos e os antigos e, depois, desligue a condição e avance. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda nos cactos quando a base muda, com e sem a pergunta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-o-que-o-freio-segura",
         "fala-o-que-o-freio-segura",
@@ -2111,7 +2098,7 @@
           },
           {
             "id": "relogio-pontos",
-            "label": "Mantenha o relógio dos pontos somando 1 em pontos só quando o estado do jogo é jogando. O intervalo continua sendo o que você escolheu na Aula 11.",
+            "label": "Mantenha o relógio de 1 segundo somando 1 em pontos só quando o estado do jogo é jogando.",
             "rule": {
               "type": "usesBlock",
               "blockType": "sz_g2d_every_seconds",

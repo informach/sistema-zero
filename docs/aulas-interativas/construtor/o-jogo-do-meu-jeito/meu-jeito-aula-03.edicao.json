@@ -21,10 +21,10 @@
       "clipe": "video-quadros",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "vai ver o desenho se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.",
-      "ancoraDepois": "Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por",
-      "falaPrincipal": "E se os dois desenhos forem iguais?",
-      "falaPersonagem": "E se os dois desenhos forem iguais?",
+      "ancoraAntes": "em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e",
+      "falaPrincipal": "E se as páginas passarem bem rápido?",
+      "falaPersonagem": "E se as páginas passarem bem rápido?",
       "tags": ["[curious]"]
     },
     {
@@ -32,10 +32,10 @@
       "clipe": "video-fantasma",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.",
-      "ancoraDepois": "Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que",
-      "falaPrincipal": "E se o fogo 2 ficar maior que o tracejado?",
-      "falaPersonagem": "E se o fogo 2 ficar maior que o tracejado?",
+      "ancoraAntes": "que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele",
+      "falaPrincipal": "Dá para acertar o tamanho do fogo sem o Fantasma?",
+      "falaPersonagem": "Dá para acertar o tamanho do fogo sem o Fantasma?",
       "tags": ["[curious]"]
     },
     {
@@ -43,8 +43,8 @@
       "clipe": "video-segundo-fogo",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.",
-      "ancoraDepois": "Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo. Olha só: no espaço",
+      "ancoraAntes": "quadro anterior. Repare: por enquanto, você não vê diferença, porque o quadro 2 é uma cópia igual e cobre o fantasma.",
+      "ancoraDepois": "Só a ponta do fogo muda. Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para",
       "falaPrincipal": "Ainda está igual. Qual pedaço eu mudo?",
       "falaPersonagem": "Ainda está igual. Qual pedaço eu mudo?",
       "tags": ["[curious]"]

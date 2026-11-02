@@ -22,10 +22,10 @@
       "clipe": "video-contato",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "acontece. Quando as áreas pontilhadas se encostam, aparece BATEU! Mas os desenhos ainda têm um espacinho entre eles.",
-      "ancoraDepois": "O jogo não olha o desenho: ele confere se as áreas se encostaram. É como os carrinhos de bate-bate: o para-choque",
-      "falaPrincipal": "Ué, a batida aconteceu antes de os desenhos encostarem?",
-      "falaPersonagem": "Ué, a batida aconteceu antes de os desenhos encostarem?",
+      "ancoraAntes": "combina o que vale como pegar. No seu jogo, em volta de cada desenho tem uma área, marcada por um retângulo pontilhado.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que se encosta, os desenhos ou as",
+      "falaPrincipal": "E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?",
+      "falaPersonagem": "E o jogo marca a batida quando os desenhos se encostam ou quando as áreas se encostam?",
       "tags": ["[curious]"]
     },
     {
@@ -33,8 +33,8 @@
       "clipe": "video-batida-acaba-partida",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "de: ela chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu.",
-      "ancoraDepois": "Agora deixe à vista o espaço vazio dentro da colisão. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue",
+      "ancoraAntes": "de chega com inimigo. Clique em inimigo e escreva cacto. É o nome que o seu jogo vai usar para o cacto que bateu.",
+      "ancoraDepois": "A partida acaba: o estado muda para fim, o estado de quando a partida termina. Deixe à vista o espaço vazio dentro da",
       "falaPrincipal": "E o que vai acontecer quando ele bater?",
       "falaPersonagem": "E o que vai acontecer quando ele bater?",
       "tags": ["[curious]"]
@@ -55,10 +55,10 @@
       "clipe": "video-trocar-nao-limpa",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "com os cactos da anterior e acaba na hora, com uma batida. Mudar o estado só troca a tela. Ele não arruma a pista.",
-      "ancoraDepois": "É porque os cactos da outra partida ficaram ali. Agora, no fim, eu troco a ação para Reiniciar o jogo. Clico em Tocar",
-      "falaPrincipal": "Mas por que a partida recomeça e já termina?",
-      "falaPersonagem": "Mas por que a partida recomeça e já termina?",
+      "ancoraAntes": "jogo, quando a partida acaba, o toque pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar como começa a partida nova em cada",
+      "falaPrincipal": "E a partida nova começa igual nos dois jeitos?",
+      "falaPersonagem": "E a partida nova começa igual nos dois jeitos?",
       "tags": ["[curious]"]
     },
     {
@@ -66,8 +66,8 @@
       "clipe": "video-caminho-de-volta",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "clique uma vez no + ao lado de senão se. O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira.",
-      "ancoraDepois": "A gente vai dizer o que fazer no estado fim. Deixe à vista o lugar vazio da pergunta desse ramo. Abra Jogo 2D, depois",
+      "ancoraAntes": "o que fica antes de senão se. O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira.",
+      "ancoraDepois": "Com um bloco que começa tudo de novo, no estado fim. Deixe à vista o lugar vazio da pergunta desse ramo. Abra Jogo 2D,",
       "falaPrincipal": "E como ele volta para o começo?",
       "falaPersonagem": "E como ele volta para o começo?",
       "tags": ["[curious]"]

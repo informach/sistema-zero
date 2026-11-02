@@ -14,10 +14,10 @@
       "clipe": "video-apelidos",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.",
-      "ancoraDepois": "Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando. Agora eu clico em",
-      "falaPrincipal": "Eu só acertei uma. Por que sumiram todas?",
-      "falaPersonagem": "Eu só acertei uma. Por que sumiram todas?",
+      "ancoraAntes": "tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o",
+      "falaPrincipal": "E se o jogo tirar o grupo inteiro?",
+      "falaPersonagem": "E se o jogo tirar o grupo inteiro?",
       "tags": ["[curious]"]
     },
     {
@@ -25,8 +25,8 @@
       "clipe": "video-colisao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.",
-      "ancoraDepois": "Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e",
+      "ancoraAntes": "que confere, em todo quadro, se algum tiro encostou em alguma pedra. O que fica dentro dele acontece a cada trombada.",
+      "ancoraDepois": "Pelos apelidos que o bloco dá aos dois. Repare na linha de baixo do bloco: chamar os sprites de tiro e asteroide. Esses",
       "falaPrincipal": "Como ele sabe qual tiro acertou qual pedra?",
       "falaPersonagem": "Como ele sabe qual tiro acertou qual pedra?",
       "tags": ["[curious]"]

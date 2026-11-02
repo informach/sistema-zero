@@ -6,12 +6,13 @@ import {
   LEARNING_IMPORT_BODY_MAX_BYTES,
   learningImportBodyBytes,
 } from '../../../packages/core/src/learning/authoring-manifest-projection'
+import { discoverySpeechSteps } from '../../../packages/core/src/learning/scene/discovery-guidance'
 import type { StudioProjectExamples } from '../../../packages/core/src/learning/studio-project-examples'
 import { isStudioAuthoringProject } from '../../../packages/core/src/studio/authoring-project'
 import { resolveCourseModels } from '../../../packages/studio/src/core/courseModels'
 import { derivadosDeVoz } from './gerar-falas-elevenlabs'
 import { gravarArquivo } from './gravar-arquivo'
-import { moedasAjuda, moedasAulas } from './moedas-conteudo'
+import { moedasAjuda, moedasAulas, moedasExperiencia } from './moedas-conteudo'
 import { moedasChecks } from './moedas-criterios'
 import {
   MOEDAS_CURSO,
@@ -27,7 +28,7 @@ mkdirSync(dir, { recursive: true })
 const write = (name: string, v: unknown) =>
   gravarArquivo(resolve(dir, name), typeof v === 'string' ? v : `${JSON.stringify(v, null, 2)}\n`)
 
-const help = `# Passo a passo do projeto — Moedas no caminho\n\nPoder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n${moedasAulas
+const help = `# Passo a passo do projeto — Moedas no caminho\n\nPoder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.\n\n## ${moedasExperiencia.title}\n\n**A ideia:** ${moedasExperiencia.idea}\n\n**O que investigar:**\n\n${moedasExperiencia.goals.map((g) => `- ${g}`).join('\n')}\n\n${moedasExperiencia.observe}\n\n${moedasAulas
   .map(
     (a) =>
       `## ${a.dimension === '2d' ? 'Aula 1 · Jogo 2D' : 'Aula 2 · Ilha 3D'}: ${a.title}\n\n${moedasAjuda(
@@ -41,7 +42,7 @@ const help = `# Passo a passo do projeto — Moedas no caminho\n\nPoder do Faís
   )
   .join(
     '\n\n',
-  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, pressione R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
+  )}\n\n## Entrega\n\nEm cada aula, jogue uma partida inteira, toque na tecla R e confira que o número volta para 0 e o baú volta fechado. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.\n`
 write('passo-a-passo.md', help)
 
 const inventory: Record<string, string[]> = {}
@@ -121,10 +122,55 @@ for (const [index, aula] of moedasAulas.entries()) {
           required: true,
           title: 'O contador de moedas',
           semPerguntaFinal: true,
+          // Faísca, 02/11/2026: só a ideia (o cofrinho, o sumiço da moeda e a pergunta do baú) e o
+          // convite à investigação. As pistas e os pedidos do modelo citam "A moeda some" e "Igual a
+          // 5", da bancada antiga: aqui vão do aberto ao direto com os botões desta tela. A meta
+          // "Sem sumir, a mesma moeda contou de novo" entra na lista: é a comparação que explica por
+          // que a montagem tira a moeda do jogo.
           instructions:
-            'Pegue as moedas e observe quando o número muda e quando continua igual. Volte ao lugar de uma moeda que já pegou, tente o baú com poucas e compare as duas regras do baú. Você pode repetir quantas vezes quiser.',
-          hints: [],
-          activity: { type: 'experimentation', scene: 'coin-counter', cenario: 'farol' },
+            'Compare quando o número moedas muda e quando continua igual, e o que o baú responde com cada pergunta. Você escolhe a ordem e pode repetir quando quiser.',
+          hints: [
+            'Olhe o número moedas antes e depois de cada encontro: quando ele muda e quando continua igual?',
+            'Compare voltar a uma moeda já pega com o sumiço ligado e desligado. Depois tente o baú com poucas moedas e com mais de cinco, nas duas perguntas.',
+            'Clique nas moedas 1 e 2, em Afastar, na moeda 1 de novo e em Encostar no baú. Depois clique em Desligar o sumiço da moeda e nas moedas 3, 4 e 3 de novo. Depois clique em Recomeçar a partida, pegue as seis moedas e clique em Encostar no baú com Pelo menos 5 e depois com Exatamente 5.',
+          ],
+          activity: {
+            type: 'experimentation',
+            scene: 'coin-counter',
+            cenario: 'farol',
+            setup: {
+              freeExploration: true,
+              goals: [
+                'each-adds',
+                'no-double',
+                'counts-again',
+                'kept',
+                'below-goal',
+                'compare-rules',
+              ],
+              // O "Ainda falta" e o relatório da equipe com os botões desta tela.
+              goalCopy: {
+                'each-adds': { pedido: 'Encoste em duas moedas diferentes e observe moedas.' },
+                'no-double': {
+                  pedido:
+                    'Com o sumiço da moeda ligado, pegue uma moeda, encoste em outra e volte à primeira.',
+                },
+                'counts-again': {
+                  pedido:
+                    'Clique em Desligar o sumiço da moeda, pegue uma moeda, encoste em outra e volte à primeira.',
+                },
+                kept: { pedido: 'Depois de pegar uma moeda, clique em Afastar e observe moedas.' },
+                'below-goal': {
+                  pedido: 'Pegue de uma a quatro moedas e clique em Encostar no baú.',
+                },
+                'compare-rules': {
+                  label: 'Com mais de 5 moedas, "pelo menos 5" abriu e "exatamente 5" não',
+                  pedido:
+                    'Junte mais de 5 moedas e clique em Encostar no baú com Pelo menos 5 e depois com Exatamente 5.',
+                },
+              },
+            },
+          },
         },
       })
     }
@@ -231,7 +277,7 @@ for (const [index, aula] of moedasAulas.entries()) {
     script +=
       t.kind === 'quiz'
         ? `## Parte ${i + 1}. ${t.title}\n\nSem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha; resposta corrigida pelo servidor.\n\n`
-        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n`
+        : `## Parte ${i + 1}. ${t.title}\n\n**Clipe:** \`video-${t.key}\`\n\n**Na tela:** ${t.screen}\n\n**Fala para ElevenLabs:**\n\n\`\`\`text\n${t.text.replace(/ (?=\[)/g, '\n\n')}\n\`\`\`\n\n${t.kind === 'experience' ? '**Falas dentro da experiência:** `packages/core/src/learning/scene/guidance-moedas.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.\n\n' : ''}`
   script = sincronizarRecadosNaPagina(script, manifest)
   write(`moedas-${aula.slug}.roteiro.md`, script)
   for (const [ext, text] of derivadosDeVoz(extrairPartesElevenLabs(script)))
@@ -250,6 +296,11 @@ for (const [index, aula] of moedasAulas.entries()) {
   })
 }
 write('blocos.json', inventory)
+// As falas do Zappy dentro da experiência, para a gravação e a auditoria (como no Farol).
+write('zappy-etapas.json', {
+  version: 1,
+  experiences: { experiencia: discoverySpeechSteps('coin-counter') },
+})
 write(
   'modulos.md',
   '# Moedas no caminho — organização do curso\n\nPoder 1 do posto Faísca (`jornada-faisca-poder-1`). Módulo: **Moedas no caminho**. Preservar o ID do curso, do módulo reservado e da `aula-1`; a `aula-2` é criada no Admin, no mesmo curso, antes da importação.\n\n' +

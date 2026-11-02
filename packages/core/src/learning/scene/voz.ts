@@ -1,7 +1,9 @@
 import type { SceneId } from './actions'
 import { isSceneAudioUrl } from './audio-url'
-import { discoverySpeechSteps } from './discovery-guidance'
+import { discoverySpeechSteps, lighthouseWalkStrideCase } from './discovery-guidance'
 import { gardenSpeechSteps } from './garden'
+import { GUIAS_LIVRES } from './guia-livre'
+import { lighthouseKeyNotCase } from './state'
 
 /**
  * A voz do Zappy nas cenas: o dicionário `roteiro efetivo → arquivo`.
@@ -234,6 +236,11 @@ export function falaDaInstrucao(instruction: string): string {
 
 export const SCENE_SPEECH_SLOTS = [
   ...discoverySpeechSteps().map((step) => `discovery:${step.id}` as const),
+  // As falas das telas livres do Construtor (02/11/2026) moram no registro, fora da tabela base:
+  // sem elas aqui, a pronúncia ajustada no Admin sumia em silêncio.
+  ...Object.values(GUIAS_LIVRES).flatMap((guia) =>
+    Object.keys(guia?.speech ?? {}).map((id) => `discovery:${id}` as const),
+  ),
   'instruction',
   'prediction-context',
   'prediction-question',
@@ -276,6 +283,32 @@ export interface ZappySpeech {
  * palpite com a escolha da criança) fica DE FORA por definição: depende do estado. Nessas falas o
  * player cai inteiro na voz do navegador — ver `filaDeVoz`.
  */
+/**
+ * As falas livres que ESTE bloco pode tocar (full review de 02/11/2026). A cena guarda as falas de
+ * todos os cursos que a usam: a porta do Farol e a do "não" da Ilha, a caminhada do Farol, da Nave e o
+ * passinho, e as variantes do Dino das cenas da Nave. Sem o filtro, a voz do Zappy seria gerada (e
+ * paga) para falas que o bloco nunca toca.
+ */
+function falasLivresDoBloco(activity: {
+  scene?: SceneId
+  cenario?: string
+  setup?: { freeExploration?: boolean; goals?: string[] }
+}) {
+  const { scene, setup } = activity
+  const passos = discoverySpeechSteps(scene)
+  const temDino = passos.some((p) => p.id.includes('-dino-'))
+  const doDino = activity.cenario === 'corre-dino'
+  return passos.filter(({ id }) => {
+    if (scene === 'lighthouse-key')
+      return id.startsWith('door-not-') === lighthouseKeyNotCase(setup)
+    if (scene === 'lighthouse-walk') {
+      if (id.startsWith('stride-') !== lighthouseWalkStrideCase({ scene, setup })) return false
+      return activity.cenario === 'nave' || !id.endsWith('-nave')
+    }
+    return !temDino || id.includes('-dino-') === doDino
+  })
+}
+
 export function falasDaCena(bloco: {
   instructions?: string
   checkpoint?: { prompt: string; choices: readonly { label: string }[] }
@@ -288,13 +321,14 @@ export function falasDaCena(bloco: {
     type: string
     scene?: SceneId
     zappySpeech?: SceneSpeechOverrides
-    setup?: { freeExploration?: boolean }
+    cenario?: string
+    setup?: { freeExploration?: boolean; goals?: string[] }
   }
 }): readonly ZappySpeech[] {
   const falas: readonly [SceneSpeechSlot, string][] = [
     ['instruction', falaDaInstrucao(bloco.instructions ?? '')],
     ...(bloco.activity?.setup?.freeExploration
-      ? discoverySpeechSteps(bloco.activity.scene).map((step): [SceneSpeechSlot, string] => [
+      ? falasLivresDoBloco(bloco.activity).map((step): [SceneSpeechSlot, string] => [
           `discovery:${step.id}`,
           step.text,
         ])

@@ -15,6 +15,7 @@ import { SCENE_QUESTIONS } from './questions'
 import { drawLoopOnScreen, sceneSituation } from './readout'
 import {
   DELTA_RACE,
+  LIGHTHOUSE_NOT_GOALS,
   type SceneStart,
   type SceneState,
   sceneAreaPercent,
@@ -1206,6 +1207,22 @@ const CENAS: Record<SceneId, Cena> = {
           m.faz({ type: 'try-lighthouse-door' })
         },
       },
+      // O caso do não (Ilha do Farol, aula 3, 02/11/2026): as duas perguntas com a mesma chave.
+      ...Object.fromEntries(
+        ([true, false] as const).map((comChave) => [
+          comChave ? 'not-flips-with-key' : 'not-flips-without-key',
+          {
+            texto: `${comChave ? 'Com' : 'Sem'} a chave, teste a porta com a pergunta sem o não e com o não: clique em Testar a porta em cada uma.`,
+            faz: (m: Maos) => {
+              m.faz({ type: 'key-state', hasKey: comChave })
+              m.faz({ type: 'door-question', not: false })
+              m.faz({ type: 'try-lighthouse-door' })
+              m.faz({ type: 'door-question', not: true })
+              m.faz({ type: 'try-lighthouse-door' })
+            },
+          },
+        ]),
+      ),
     },
     mostra: (s) =>
       s.lighthouse.door === 'closed' && s.evidence.discoveries.includes('locked-without-key'),
@@ -2493,6 +2510,37 @@ const CENAS: Record<SceneId, Cena> = {
     },
     mostra: (s) => s.light.shade,
   },
+  // A meta do jogo (Nave, Dia 5, 02/11/2026): acertar até o jogo dar a vitória.
+  'score-goal': {
+    pedidos: {
+      'igual-conta': {
+        texto:
+          'Clique em Maior ou igual (≥) e clique em Acertar uma pedra até o jogo dar a vitória.',
+        faz: (m) => {
+          m.faz({ type: 'goal-op', op: '>=' })
+          while (!m.estado.scoreGoal.won) m.faz({ type: 'goal-hit' })
+        },
+      },
+      'maior-pula': {
+        texto: 'Clique em Maior que (>) e clique em Acertar uma pedra até o jogo dar a vitória.',
+        faz: (m) => {
+          m.faz({ type: 'goal-op', op: '>' })
+          while (!m.estado.scoreGoal.won) m.faz({ type: 'goal-hit' })
+        },
+      },
+      'placa-fixa': {
+        texto:
+          'Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa.',
+        faz: (m) => {
+          m.faz({ type: 'goal-restart' })
+          m.faz({ type: 'goal-hit' })
+          m.faz({ type: 'goal-edit' })
+        },
+      },
+    },
+    // A resposta da previsão: com maior que, a vitória veio no 27 (o 26 passou sem ela).
+    mostra: (s) => s.scoreGoal.op === '>' && s.scoreGoal.won && s.scoreGoal.points === 27,
+  },
 }
 
 function startForGoal(scene: SceneId, goal: string): SceneStart {
@@ -2508,6 +2556,8 @@ function startForGoal(scene: SceneId, goal: string): SceneStart {
         freeExploration: true,
       },
     }
+  if (scene === 'lighthouse-key' && goal.startsWith('not-flips-'))
+    return { scene, setup: { goals: [...LIGHTHOUSE_NOT_GOALS], freeExploration: true } }
   if (['touched-bush', 'touched-rocks', 'x-minus', 'x-plus', 'y-minus', 'y-plus'].includes(goal))
     return { scene, setup: { freeExploration: true } }
   if (scene === 'once-vs-always' && goal === 'lives-loop')
@@ -2721,7 +2771,9 @@ describe('as previsões das aulas atuais, no motor', () => {
     expect(blocos.length).toBeGreaterThan(25)
   })
 
-  test('o piloto compara a mesma ficha em Ao iniciar e Enquanto estiver rodando', () => {
+  // ⭐ Exploração livre (02/11/2026): os pedidos falam da IDEIA, com os rótulos da tela livre ("Uma
+  // vez, no começo" e "Sempre, em todo quadro"); os nomes das áreas do Estúdio ficam para a montagem.
+  test('o piloto compara a mesma ficha uma vez, no começo, e sempre, em todo quadro', () => {
     const piloto = blocos.find(
       ({ onde, bloco }) =>
         onde === 'nave-contra-asteroides-primeira-nave.manifesto.json' &&
@@ -2729,9 +2781,13 @@ describe('as previsões das aulas atuais, no motor', () => {
     )
     const setup = piloto?.bloco.activity.setup
     expect(setup?.goals).toEqual(['once', 'always'])
+    // A mesma ficha nas duas metas (o preset tem só `move`): a comparação é do momento, não da ação.
     expect(setup?.preset).toEqual(ONCE_VS_ALWAYS_PRESETS['duas-caixas-nave'])
-    expect(setup?.goalCopy?.once?.pedido).toContain('Ao iniciar')
-    expect(setup?.goalCopy?.always?.pedido).toContain('Enquanto estiver rodando')
+    expect(setup?.freeExploration).toBe(true)
+    expect(setup?.goalCopy?.once?.pedido).toContain('Uma vez, no começo')
+    expect(setup?.goalCopy?.always?.pedido).toContain('Sempre, em todo quadro')
+    for (const meta of ['once', 'always'] as const)
+      expect(setup?.goalCopy?.[meta]?.pedido).not.toMatch(/Ao iniciar|Enquanto estiver rodando/)
   })
 
   /**

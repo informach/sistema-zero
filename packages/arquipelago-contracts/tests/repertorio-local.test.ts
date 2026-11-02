@@ -27,13 +27,19 @@ test('inventário reproduz os arquivos locais sem confundir duas versões com at
       'utf8',
     ),
   ).toBe(relatorioDeRepertorio())
-  // C01b: só pede publicação o que tem todas as fontes na trilha. A43 (decisão da dona,
-  // 31/10/2026): o Vale e as Nuvens publicam esperando os cursos do Arquiteto e do Gênio; a lista
-  // exata do que cada um espera fica em `docs/desafios-do-jogo/publicacao.test.ts`.
-  for (const d of inventario.filter(
-    (d) => d.publicarAutomaticamente && d.ilha !== 'vale-dos-dinos' && d.ilha !== 'nuvens',
-  ))
-    expect(d.semFonteNaTrilha, d.slug).toEqual([])
+  // C01b: repertório da trilha em todas as ilhas. Em 02/11 a dona também autorizou
+  // a noite opcional, sem cor nem quadro obrigatório. A fonte continua sendo um extra real.
+  for (const d of inventario.filter((d) => d.publicarAutomaticamente)) {
+    const noite = d.slug.replace(/-adulto$/, '') === 'bosque-corrida-dos-bichos-noite'
+    expect(d.semFonteNaTrilha, d.slug).toEqual(noite ? ['sz_g2d_set_opacity'] : [])
+    if (noite) {
+      expect(d.tipo).toBe('desafio-do-dia')
+      expect(d.quadro).toBeNull()
+      expect(d.cobertura.find((b) => b.bloco === 'sz_g2d_set_opacity')?.opcionais).toEqual([
+        'faisca/cade-todo-mundo',
+      ])
+    }
+  }
 })
 test('fontes opcionais não comprovam repertório universal e cursos futuros não são inventados', () => {
   expect(

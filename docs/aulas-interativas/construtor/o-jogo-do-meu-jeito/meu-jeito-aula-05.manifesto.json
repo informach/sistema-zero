@@ -32,14 +32,14 @@
   "blocks": [
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Troque o que fica na frente\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente. Meme na comparação: na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda \"a de cima fica na frente\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo.”. Depois: “Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Troque o que fica na frente\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"No seu asteroide\", mostrar a experiência na aula, parada, com a chama na frente da pedra. No \"Sabe quando você empilha figurinhas\", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar o desenho e a lista Camadas parados, sem mover as camadas: qual forma fica na frente é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-camadas-K1: Debinha substitui “Como faz para a pedra aparecer na frente da chama?”. Antes: “lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no desenho quando a pedra”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -48,8 +48,12 @@
         "kind": "interactive",
         "required": true,
         "title": "Troque o que fica na frente",
-        "instructions": "Na lista Camadas, coloque a pedra acima da chama usando Uma camada para a frente na linha da pedra. Depois clique em Uma camada para trás nessa linha e observe o que fica coberto. Traga a pedra para a frente novamente e compare a ordem da lista.",
-        "hints": [],
+        "instructions": "Compare qual forma aparece na frente no desenho com a pedra em cima e embaixo na lista Camadas. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Repare na ordem da lista Camadas e no que aparece na frente no desenho.",
+          "Compare o desenho com a pedra em cima na lista e com a pedra embaixo.",
+          "Na linha da pedra, clique em Uma camada para a frente. Depois, na mesma linha, clique em Uma camada para trás. Por último, clique em Uma camada para a frente de novo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "layers",
@@ -69,16 +73,19 @@
             "goals": ["front", "covered", "back-in-front"],
             "goalCopy": {
               "front": {
-                "pedido": "Na linha da pedra, clique em Uma camada para a frente."
+                "label": "Levou a pedra para cima na lista Camadas",
+                "pedido": "Na linha da pedra, clique em Uma camada para a frente e observe o desenho."
               },
               "covered": {
-                "pedido": "Com a pedra em cima da lista Camadas, clique em Uma camada para trás na linha da pedra."
+                "label": "Levou a pedra para baixo na lista de novo",
+                "pedido": "Com a pedra em cima da lista Camadas, clique em Uma camada para trás na linha da pedra e observe."
               },
               "back-in-front": {
-                "label": "A de cima na lista Camadas é a que aparece na frente",
+                "label": "Deixou a pedra em cima na lista, como no jogo",
                 "pedido": "Na linha da pedra, clique em Uma camada para a frente de novo."
               }
-            }
+            },
+            "freeExploration": true
           }
         },
         "semPerguntaFinal": true
@@ -86,7 +93,7 @@
     },
     {
       "key": "video-chama",
-      "plannedVideo": "Título: Desenhe fogo atrás da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-chama-K1: Debinha substitui “E se a chama ficar na frente da pedra?”. Antes: “espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.”. Depois: “Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Desenhe fogo atrás da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. No \"Abra o asteroide no Pinta\", selecionar o quadro 1 e clicar fora das formas. No \"Escolha uma cor quente\", escolher a cor e deixar o Contorno em Sem cor. No \"Com a Caneta\", desenhar a chama acima da pedra e fechar no primeiro ponto. No \"Tá vendo?\", apontar a base da chama sobre a pedra e a chama em cima na lista Camadas. No \"clique em Uma camada para trás\", clicar até a chama ficar abaixo da pedra. No \"Olha só\", apontar a pedra na frente do fogo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-chama-K1: Debinha substitui “Ué, a chama ficou na frente da pedra?”. Antes: “chama no espaço acima da pedra e clique no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.”. Depois: “Tá vendo? A base da chama cobre um pedaço da pedra, porque a chama foi a última forma desenhada e ficou em cima na”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-chama",
@@ -98,7 +105,7 @@
     },
     {
       "key": "video-miolo-fogo",
-      "plannedVideo": "Título: Acrescente um centro mais claro\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-miolo-fogo-K1: Debinha substitui “Como eu trago o miolo claro para a frente?”. Antes: “as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas.”. Depois: “Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Acrescente um centro mais claro\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Selecione a chama e use Ctrl+C e Ctrl+V\", copiar e colar a chama. No \"escolha uma cor mais clara\", trocar a cor da cópia e diminuir pelo canto da caixa. No \"Leve esse miolo para dentro da chama maior\", mover o miolo. No \"Agora confira a ordem\", apontar a lista Camadas. No \"Com o miolo selecionado\", clicar em Uma camada para trás ou Uma camada para a frente até o miolo ficar entre a chama maior e a pedra. No \"Olha só\", apontar o miolo dentro da chama. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-miolo-fogo-K1: Debinha substitui “Como eu levo o miolo para esse lugar da lista?”. Antes: “Camadas, ele fica logo acima da chama maior e abaixo da pedra, porque a forma mais acima na lista aparece na frente.”. Depois: “Com o miolo selecionado, olhe onde ele está na lista Camadas. Se ele estiver acima da pedra, clique em Uma camada para”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-miolo-fogo",
@@ -110,14 +117,14 @@
     },
     {
       "key": "video-mudanca-pequena",
-      "plannedVideo": "Título: Compare mudanças entre quadros\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia. Meme na comparação: na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda \"o corpo fica, os detalhes andam\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mudanca-pequena-K1: Debinha substitui “E se eu mover a pedra inteira?”. Antes: “É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda.”. Depois: “Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia,”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Compare mudanças entre quadros\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"A sua pedra também vai ganhar dois quadros\", mostrar a experiência na aula, com a Prévia parada. No \"Sabe aqueles livrinhos de folhear\", mostrar o meme ilustrado (2 a 3 s) do Zappy folheando o livrinho [na edição: meme do livrinho]. No \"Agora você vai investigar\", ampliar a experiência [ampliar experiência] e mostrar a pedra parada, com a Prévia parada, sem mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-mudanca-pequena-K1: Debinha substitui “E se a pedra inteira andar bastante de um quadro para o outro?”. Antes: “lugar. Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quanto a pedra pode mudar do quadro 1”.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-mudanca-pequena",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -126,8 +133,12 @@
         "kind": "interactive",
         "required": true,
         "title": "Compare mudanças entre quadros",
-        "instructions": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0 e olhe a Prévia tocar por um instante. Se ela estiver parada, clique em Tocar a Prévia. Deixe a pedra em 0 e coloque a cratera em 4; olhe outra vez. Depois coloque a pedra inteira em 10 e compare a Prévia.",
-        "hints": [],
+        "instructions": "Compare a pedra na Prévia sem mudança nenhuma, com só a cratera andando um pouco e com a pedra inteira andando muito. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Repare se o corpo da pedra fica no lugar ou muda de lugar na Prévia.",
+          "Compare a Prévia com os dois números em 0, com só a cratera andando um pouco e com a pedra inteira andando muito.",
+          "Deixe os dois números em 0 e clique em Tocar a Prévia. Depois ponha a cratera em 4. Por último, ponha a pedra inteira em 10."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "motion-amount",
@@ -139,7 +150,22 @@
           },
           "cenario": "meu-jeito",
           "setup": {
-            "goals": ["no-change", "local-move", "too-much"]
+            "goals": ["no-change", "local-move", "too-much"],
+            "freeExploration": true,
+            "goalCopy": {
+              "no-change": {
+                "label": "Comparou com os dois desenhos iguais",
+                "pedido": "Deixe O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, clique em Tocar a Prévia e observe a pedra."
+              },
+              "local-move": {
+                "label": "Fez só a cratera andar um pouco",
+                "pedido": "Deixe a pedra inteira em 0, ponha a cratera em 4 e observe a Prévia tocando."
+              },
+              "too-much": {
+                "label": "Fez a pedra inteira andar muito",
+                "pedido": "Ponha O tanto que a pedra inteira anda em 10 e observe a Prévia tocando."
+              }
+            }
           }
         },
         "semPerguntaFinal": true
@@ -147,7 +173,7 @@
     },
     {
       "key": "video-quadro-pedra",
-      "plannedVideo": "Título: Mude detalhes no segundo quadro\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Mude detalhes no segundo quadro\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No \"Ligue a Prévia do asteroide\", tocar a Prévia com um quadro só. No \"Tá vendo?\", apontar a pedra parada. No \"clique em Duplicar quadro\", duplicar o quadro 1 na faixa Spritesheet. No \"mova uma cratera um pouco para o lado\", mover a cratera no quadro 2. No \"escolha Editar os pontos numa chama\", mexer a ponta da chama e do miolo. No \"troque entre os dois quadros\", alternar os quadros e mostrar o corpo parado. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-quadro-pedra",
@@ -159,7 +185,7 @@
     },
     {
       "key": "video-girando",
-      "plannedVideo": "Título: Confira o ritmo da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Confira o ritmo da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"clique em Renomear animação\", trocar parado por girando. No \"deixe a Velocidade em 8 quadros por segundo\", ajustar e tocar a Prévia. No \"Olha só\", apontar as crateras e o fogo mudando. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-girando",
@@ -248,7 +274,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie suas duas artes\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie suas duas artes\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"confira nas suas duas artes\", mostrar a nave e o asteroide com as animações. No \"espere aparecer Guardado na sua conta\", mostrar o aviso no Pinta. No \"clique em Escolher no Pinta\", voltar à aba da aula e abrir a galeria. No \"selecione a nave e o asteroide\", marcar as duas artes. No \"Depois clique em Enviar (2)\", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"Por último, clique em Concluir aula\", clicar em **Concluir aula**.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-05.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
@@ -275,7 +301,7 @@
     {
       "key": "camadas",
       "title": "Troque o que fica na frente",
-      "objective": "Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-camadas", "fala-camadas", "experimento-camadas"],
       "workspaceKey": null,
@@ -317,7 +343,7 @@
     {
       "key": "mudanca-pequena",
       "title": "Compare mudanças entre quadros",
-      "objective": "Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": ["video-mudanca-pequena", "fala-mudanca-pequena", "experimento-tanto-que-muda"],
       "workspaceKey": null,

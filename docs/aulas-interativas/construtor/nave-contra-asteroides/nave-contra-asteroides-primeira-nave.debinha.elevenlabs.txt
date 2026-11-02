@@ -1,4 +1,8 @@
-[curious] E para ela continuar andando?
+[curious] E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?
+
+[long pause]
+
+[curious] E quando a nave passa a existir, ela já aparece na tela?
 
 [long pause]
 
@@ -6,8 +10,4 @@
 
 [long pause]
 
-[curious] A nave mudou de lugar e o desenho ficou parado?
-
-[long pause]
-
-[curious] E como apaga esse rastro?
+[curious] E se a nave for desenhada em todo quadro, sem apagar a tela?

@@ -10,7 +10,7 @@ explicam sua introdução, não a versão atual da resposta.
 `ConteudoDoDesafioV1Schema` aceita `resumo` (até `LIMITES_DO_DESAFIO.resumo`, 60) e `imagem`
 (`ImagemDoDesafioSchema`: data URL PNG, JPEG ou WebP até `imagemCaracteres`, 40 mil), os dois
 opcionais: o conteúdo guardado antes continua V1. A lista leva `resumo` (o escrito ou a primeira
-frase do enunciado, `resumoDoDesafio`) e `imagem` só nos quadros de ilha aberta; a abertura leva `imagem`. Todos
+frase do enunciado, `resumoDoDesafio`) e `imagem` só nos quadros de ilha aberta; a abertura leva `imagem` e `moedasExtra` (02/11/2026). Todos
 opcionais nas vistas estritas. Implantar a API antes de importar manifestos com os campos (uma API
 antiga recusaria o conteúdo). Teste: `tests/desafios-resumo.test.ts`.
 

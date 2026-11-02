@@ -103,12 +103,11 @@ também levaria as imagens e poderia exceder o limite de observação do executo
 bun docs/desafios-do-jogo/bosque/gerar-manifesto.ts
 ```
 
-Todos os itens Kids e adultos usam `publicar: false`, incluindo os quatro principais anteriores,
-para conferir os vínculos reais antes da publicação. Não existe
-liberação artificial de blocos. Importar e publicar exige a conferência normal do Admin, incluindo
-cobertura no currículo publicado e disponibilidade dos quadros. Esta entrega não consulta nem
-grava dados de alunos, staging ou produção. Não inclui o brinquedo na ilha ou o rodízio diário,
-que são outras partes do plano.
+Os itens Kids e adultos pedem publicação pela conferência normal do Admin. Em 02/11/2026,
+a dona autorizou também as duas versões noturnas como desafios do dia opcionais. A noite não
+concede cor nem ocupa um quadro obrigatório. A transparência continua dependendo do bloco
+conquistado no curso Cadê Todo Mundo. Não existe liberação artificial de blocos. A publicação
+confere o gabarito, o projeto inicial, a cobertura curricular e a disponibilidade dos quadros.
 
 ## Verificações
 

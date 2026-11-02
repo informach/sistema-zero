@@ -15,6 +15,7 @@ import { ServicoDaEquipe } from '../../src/application/servico-da-equipe'
 import { ServicoDasCartas } from '../../src/application/servico-das-cartas'
 import { ServicoDoJogo } from '../../src/application/servico-do-jogo'
 import type { PortaDosMembros } from '../../src/domain/membros.port'
+import type { FontePlanejadaDeBlocos } from '../../src/domain/repertorio-do-desafio'
 import { CORPO_DA_EQUIPE, createServer } from '../../src/interfaces/http/server'
 import { DesafiosEmMemoria, desafiosDesligados } from '../fakes/desafios'
 import { membrosDeMentira } from '../fakes/membros'
@@ -80,7 +81,7 @@ let membros: PortaDosMembros | null
 let analisar: ReturnType<typeof mock>
 let app: ReturnType<typeof createServer>
 
-function montar() {
+function montar(fontesPlanejadas: readonly FontePlanejadaDeBlocos[] = []) {
   const politica = {
     modo: 'aberto' as const,
     publicos: new Set(['kids' as const]),
@@ -98,6 +99,7 @@ function montar() {
       new ConferenciaDoMapa(membros, createLogger({ level: 'error' })),
       () => AGORA,
       () => '88888888-8888-4888-8888-888888888888',
+      fontesPlanejadas,
     ),
     desafios: desafiosDesligados(politica),
     cliente: { dir: '/nao-existe', servirMapas: false },
@@ -552,6 +554,55 @@ describe('análise e publicação', () => {
       problemas: [{ codigo: 'GABARITO_NAO_PASSA' }],
     })
     expect(desafios.linhas.get(d.resumo.id)?.situacao).toBe('rascunho')
+  })
+
+  test.each([
+    'kids',
+    'adulto',
+  ] as const)('publica em %s com fonte obrigatória planejada sem editar cursos ou a conferência', async (publico) => {
+    const soOpcional = {
+      ...curriculo,
+      cursos: curriculo.cursos.map((c) => ({ ...c, papel: 'extra' })),
+    }
+    membros = membrosDeMentira({
+      analisarObjetivos: analisar as unknown as PortaDosMembros['analisarObjetivos'],
+      lerCurriculo: async () => soOpcional,
+    })
+    montar()
+    const creation = await chamar('POST', '/desafios', equipe(), pedido({ publico }))
+    expect(creation.status).toBe(201)
+    const d = DesafioDaEquipeSchema.parse(creation.json)
+    const path = `/desafios/${d.resumo.id}/publicar`
+    expect((await chamar('POST', path, equipe(), { revisaoBase: 1 })).status).toBe(422)
+    montar([{ posto: 'noob', papel: 'base2d', blocos: ['mover_dir', 'sz_js_repeat'] }])
+    const published = await chamar('POST', path, equipe(), { revisaoBase: 1 })
+    expect(published.status).toBe(200)
+    expect(DesafioDaEquipeSchema.parse(published.json).blocosPublicados).toEqual([
+      'mover_dir',
+      'sz_js_repeat',
+    ])
+    expect(soOpcional.cursos.every((c) => c.papel === 'extra')).toBe(true)
+    expect(analisar).toHaveBeenCalledWith(
+      expect.objectContaining({ audience: publico === 'kids' ? 'kids' : 'adult' }),
+    )
+    // A fonte editorial não aprova um gabarito que o executor recusou.
+    analisar.mockImplementation(async () => ({
+      ...analiseOk,
+      problemas: [
+        { codigo: 'GABARITO_NAO_PASSA', mensagem: 'O gabarito não passa', objetivoId: 'o1' },
+      ],
+    }))
+    expect((await chamar('POST', path, equipe(), { revisaoBase: 1 })).status).toBe(422)
+    analisar.mockImplementation(async () => analiseOk)
+    expect(
+      (await chamar('POST', `/desafios/${d.resumo.id}/arquivar`, equipe(), { revisaoBase: 1 }))
+        .status,
+    ).toBe(200)
+    const reactivated = await chamar('POST', `/desafios/${d.resumo.id}/reativar`, equipe(), {
+      revisaoBase: 2,
+    })
+    expect(reactivated.status).toBe(200)
+    expect(DesafioDaEquipeSchema.parse(reactivated.json).resumo.revisaoPublicada).toBe(1)
   })
 
   test('publicar uma revisão velha é 409; sem Members é 424', async () => {

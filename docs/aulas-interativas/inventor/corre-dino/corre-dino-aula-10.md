@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 A aula retoma o contato observado antes da colisão e compara agora a porcentagem da área. O contorno temporário é instrumento para conferir o ajuste, não uma regra nova. A escolha entre 70 e 85% continua permitida.
 
+**Revisão de 02/11/2026.** P10 (decisão da coordenação, 02/11/2026): a área fica em 80 por cento, sem "se quiser, teste 70 e 85" na montagem nem "a porcentagem que você escolheu" na entrega; o rótulo do critério também diz 80 (a régua do critério continua aceitando de 70 a 85). A experiência da área passou à exploração livre, voltando ao combinado do pega-pega da aula anterior. As montagens ligam área e caixa de colisão ("No Estúdio, a área da batida se chama caixa de colisão"), explicam a porcentagem, dizem o nome de fábrica jogador e nomeiam o bloco que vem logo abaixo do contorno, Mover os sprites do grupo cactos. A retomada diz a relação ("a área um pouco menor que o desenho").
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -23,19 +25,25 @@ A aula retoma o contato observado antes da colisão e compara agora a porcentage
 
 ## Proposta final
 
-### Seção 1. Compare a área com o desenho
+### Seção 1. E se a área mudar de tamanho?
 
-**Tarefa:** Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-caixa-decide → fala-caixa-decide → experiencia-hitbox.
 
-**Recado na página (não gravar):** Sua vez! Mude só a área com o cacto parado e, depois, compare a batida com a área em 40%. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na batida quando a área do Dino muda de tamanho. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-caixa-decide-K1: Dedé substitui “Dá para diminuir só essa área?”. Antes: “o cacto até aparecer BATEU! Os desenhos ainda nem se encostaram: a área pega um pedaço vazio em volta do desenho.”. Depois: “Sem mudar a distância, eu diminuo Tamanho da área do Dino para 80%. O BATEU some. O Dino continua do mesmo tamanho; só”.
+video-caixa-decide-K1: Dedé substitui “E se a área ficar menor que o desenho, o que acontece com a batida?”. Antes: “ou mais difícil de pegar alguém. No seu jogo, dá para mudar só o tamanho da área do Dino, sem mudar o desenho dele.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o jogo marca a batida com a área”.
 
-**Experiência existente:** `hitbox`. Na experiência, deixe a área do Dino em 100%. Aproxime o cacto um toque de cada vez até aparecer BATEU! Observe os desenhos nesse momento. Sem mudar a distância, diminua Tamanho da área do Dino para 80%. Observe a indicação. Depois aproxime o cacto até encostar no desenho do Dino e diminua a área para 40%. Compare de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `hitbox` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/hitbox.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/hitbox.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare quando aparece BATEU com a área do Dino em 100%, 80% e 40%. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com a área em 100%, clique em Aproximar o cacto, um toque de cada vez, até aparecer BATEU. Com o cacto onde apareceu BATEU, clique em 80%. Clique em Aproximar o cacto até o cacto encostar no desenho do Dino e clique em 40%.
+
+**Pistas, do aberto ao direto:** 1) Quando aparecer BATEU, olhe os desenhos e as áreas pontilhadas. 2) Deixe o cacto onde bateu e mude só o tamanho da área. 3) Clique em 80% sem mexer no cacto; depois encoste o cacto no desenho do Dino e clique em 40%. Sem palpite e sem pergunta final.
 
 ### Seção 2. Mostre a área no seu jogo
 
@@ -59,7 +67,7 @@ video-caixa-decide-K1: Dedé substitui “Dá para diminuir só essa área?”. 
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
-- Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
+- Em Ao iniciar, ajuste a área de colisão do dino para 80 por cento.
 - Desenhe a área de colisão do dino a cada quadro.
 - Mantenha a criação do Dino e ajuste a área de colisão separadamente.
 
@@ -73,11 +81,11 @@ video-caixa-decide-K1: Dedé substitui “Dá para diminuir só essa área?”. 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-retirar-contorno-K1: Dedé substitui “Como eu tiro só o contorno?”. Antes: “para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe a regra que escolhe a porcentagem.”. Depois: “Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos”.
+video-retirar-contorno-K1: Dedé substitui “Como eu tiro só o contorno?”. Antes: “para você enxergar a área enquanto ajustava. Por isso, retire só o contorno e deixe o bloco que escolhe a porcentagem.”. Depois: “Deixe à vista o bloco Mostrar a caixa de colisão do sprite, no então de Se jogando. Se você puxar esse bloco, os blocos”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
-- Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
+- Em Ao iniciar, ajuste a área de colisão do dino para 80 por cento.
 - Retire o desenho provisório da área de colisão.
 - Mantenha a criação do Dino e ajuste a área de colisão separadamente.
 
@@ -91,7 +99,7 @@ video-retirar-contorno-K1: Dedé substitui “Como eu tiro só o contorno?”. A
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio em Enviar meu projeto confirmado em Enviar.
 
-- Em Ao iniciar, ajuste a área de colisão do dino. Vale qualquer número de 70 a 85 por cento.
+- Em Ao iniciar, ajuste a área de colisão do dino para 80 por cento.
 - Retire o desenho provisório da área de colisão.
 - Mantenha a criação do Dino e ajuste a área de colisão separadamente.
 

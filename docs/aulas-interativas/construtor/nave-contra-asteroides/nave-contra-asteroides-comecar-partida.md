@@ -6,13 +6,15 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 - Estado de entrada: Três vidas, dano de uma vida, proteção de 45 quadros e corações na tela; jogo ainda sem encerramento.
 - Resultado da aula: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.
-- Seções: 4. Vídeos: 4.
+- Seções: 5. Vídeos: 5.
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
 ## Diagnóstico e decisão
 
 Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida. Os finais ficam para a aula seguinte.
+
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem do embrulho (699 palavras) virou duas: embrulhar (o estado inicio e a partida dentro de Se jogando) e abertura (id novo: o senão se inicio com a tela de abertura). O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
 
 ## Triagem dos conceitos
 
@@ -24,27 +26,37 @@ Constrói primeiro um ciclo parcial que já pode ser testado: abertura e partida
 
 ## Proposta final
 
-### Seção 1. Escolha quando o jogo pode agir
+### Seção 1. A partida já começou?
 
-**Tarefa:** Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-estado-do-jogo → fala-estado-do-jogo → experiencia-estado.
 
-**Recado na página (não gravar):** Sua vez! Compare Criar asteroide fora e dentro de Se jogando, antes e depois de começar. Quando terminar, clique em Próxima parte.
-
-**Experiência existente:** `game-state`. Use Tempo para soltar o tempo se estiver parado. Na abertura, deixe Criar asteroide fora de Se o estado do jogo é jogando e observe o tempo e as pedras. Mova para dentro do Se e observe de novo sem começar. Depois toque na tela para começar e compare. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
-
-### Seção 2. Separe a abertura da partida
-
-**Tarefa:** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.
-
-**Blocos na página:** video-embrulhar → fala-embrulhar.
-
-**Recado na página (não gravar):** Agora separe a abertura da partida! Leve os blocos da partida para dentro de Se jogando, crie o ramo da abertura e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o jogo pergunta se a partida já começou. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na abertura?”. Antes: “é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.”. Depois: “Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda”.
+video-estado-do-jogo-K1: Dedé substitui “E na tela de início, as pedras nascem?”. Antes: “que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos asteroides o jogo cria, com a”.
+
+**Experiência em exploração livre:** `game-state` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/game-state.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/game-state.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare o contador de asteroides com a pergunta desligada e ligada, na tela de início e depois de a partida começar. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com a pergunta desligada, clique em Deixar o tempo passar na tela de início e observe o contador. Clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos na tela de início. Observe o contador. Com a pergunta ligada, clique em Começar a partida, deixe o tempo passar e observe o contador.
+
+**Pistas, do aberto ao direto:** 1) Observe o contador de asteroides criados enquanto o tempo passa. 2) Compare a tela de início com a pergunta desligada e ligada. E depois de a partida começar? 3) Deixe o tempo passar na tela de início. Depois clique em Ligar a pergunta e deixe o tempo passar uns 4 segundos. Por último, clique em Começar a partida e deixe o tempo passar. Sem palpite e sem pergunta final.
+
+### Seção 2. Faça a partida esperar
+
+**Tarefa:** Agora faça a partida esperar! Comece o jogo em inicio, leve os blocos da partida para dentro de Se jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Blocos na página:** video-embrulhar → fala-embrulhar.
+
+**Recado na página (não gravar):** Agora faça a partida esperar! Comece o jogo em inicio, leve os blocos da partida para dentro de Se jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na tela de início?”. Antes: “momentos, cada um com um nome: inicio, a tela de abertura, e jogando, a partida. Esse momento se chama estado do jogo.”. Depois: “O jogo começa no estado inicio, e isso acontece uma vez, quando ele abre. Por isso, o bloco do estado vai no fim de Ao”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
@@ -52,21 +64,32 @@ video-embrulhar-K1: Dedé substitui “E como o jogo sabe que deve começar na a
 - Leve a sequência para o então de Se jogando, começando por Limpar.
 - O movimento da nave fica dentro de Se jogando.
 - Mostre as vidas da nave dentro de Se jogando.
+
+### Seção 3. Mostre a tela de abertura
+
+**Tarefa:** Agora mostre a tela de abertura! Crie o ramo de inicio no Se, coloque a tela com a dica do Enter e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Blocos na página:** video-tela-de-abertura → fala-abertura.
+
+**Recado na página (não gravar):** Agora mostre a tela de abertura! Crie o ramo de inicio no Se, coloque a tela com a dica do Enter e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
+
 - No senão se inicio, encaixe Mostrar tela com a dica de Enter.
 
-### Seção 3. Espere a partida para criar pedras e tiros
+### Seção 4. Espere a partida para criar pedras e tiros
 
-**Tarefa:** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio das pedras e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-relogio-e-tiro → fala-relogio-e-tiro.
 
-**Recado na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça as pedras e os tiros esperarem a partida! Coloque a pergunta jogando no relógio das pedras e na barra de espaço e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-relogio-e-tiro-K1: Dedé substitui “Qual pergunta vai dentro desse relógio?”. Antes: “de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.”. Depois: “Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e”.
+video-relogio-e-tiro-K1: Dedé substitui “Qual pergunta vai aqui?”. Antes: “o bloco Se e solte dentro dele. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira.”. Depois: “A mesma da partida. Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e”.
 
-video-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras também esperam?”. Antes: “com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.”. Depois: “Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem”.
+video-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras também esperam?”. Antes: “abertura na tela. Escute: não sai mais som de tiro, porque a resposta da pergunta é não enquanto o jogo está em inicio.”. Depois: “Para isso, a gente precisa olhar os blocos. As pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
@@ -75,7 +98,7 @@ video-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras tamb�
 - Dentro de Espaço, coloque criar tiro e som no então de Se jogando.
 - Não deixe outro criador de tiro fora da condição.
 
-### Seção 4. Use Enter para começar
+### Seção 5. Use Enter para começar
 
 **Tarefa:** Agora faça o Enter começar a partida! Programe o evento Enter, teste a abertura e a partida, clique em Verificar projeto e envie o seu projeto. Depois, clique em Concluir aula.
 
@@ -85,9 +108,9 @@ video-relogio-e-tiro-K2: Dedé substitui “E como eu confiro se as pedras tamb�
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-enter-K1: Dedé substitui “Mas só pode começar se estiver na abertura, né?”. Antes: “e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.”. Depois: “O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista”.
+video-enter-K1: Dedé substitui “Mas só pode começar se estiver na abertura, né?”. Antes: “e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.”. Depois: “Isso! O Enter só pode começar a partida na tela de início. Por isso, dentro desse evento vai um Se. Deixe à vista o”.
 
-video-enter-K2: Dedé substitui “E se eu tocar em Enter no meio da partida?”. Antes: “e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”. Depois: “Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é”.
+video-enter-K2: Dedé substitui “E se eu tocar em Enter no meio da partida?”. Antes: “e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.”. Depois: “Agora toque em Enter durante a partida. Repare: ela continua, sem recomeçar, porque o Se do Enter só muda o estado”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto, com o envio confirmado em Enviar meu projeto → Enviar.
 

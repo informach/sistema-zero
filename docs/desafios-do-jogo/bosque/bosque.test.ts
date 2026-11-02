@@ -15,6 +15,17 @@ import { SZIRV2Schema } from '../../../packages/studio/src/ir/schema'
 import { criarManifesto } from './gerar-manifesto'
 
 export const manifesto = criarManifesto()
+
+test('a noite pede publicação opcional nos dois públicos sem conceder cor ou blocos', () => {
+  for (const publico of ['kids', 'adulto'] as const) {
+    const noite = criarManifesto(publico).desafios.find((d) => d.slug.includes('bichos-noite'))!
+    expect(noite.publicar).toBe(true)
+    expect(noite.tipo).toBe('desafio-do-dia')
+    expect(noite.quadro).toBeNull()
+    expect(noite.conteudo.recompensa.cor).toBe(false)
+    expect(noite.conteudo.blocosManuais).toEqual({ acrescentar: [], retirar: [] })
+  }
+})
 const raiz = new URL('../../aulas-interativas/', import.meta.url)
 const cursos = [
   'faisca/cade-todo-mundo',

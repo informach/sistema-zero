@@ -427,3 +427,16 @@ As estimativas de simplicidade e didática não devem receber notas definitivas 
 Recomendações centrais: manter O Jardim Secreto e duas aulas; usar regador e flor com uma informação central de coleta; preparar somente a infraestrutura que a criança não montou; exigir os conceitos investigados e os comandos completados nos Faróis, incluindo movimento, limite 2D, coleta, memória, avisos, decisão e posição; verificar ponto de vista e altura sem cobrar programação de câmera; oferecer ajuda completa sob demanda; usar quatro perguntas de transferência; concluir com os dois projetos enviados, sem certificado ou publicação obrigatória. As artes seguem os Faróis e podem se inspirar no Cadê Todo Mundo, com qualidade equivalente avaliada na cena real.
 
 As regras de acesso e promoção já pertencem ao currículo aprovado. A aprovação solicitada aqui é da forma pedagógica e da produção da missão. Depois dela, o próximo artefato deve ser o protótipo para avaliar clareza e apresentação antes de autorar e publicar o curso completo.
+
+## Revisão de didática das falas (02/11/2026)
+
+Revisão das falas dos vídeos com a régua das diretrizes (uma ideia por fala; "clique em", "toque" e "segure"; o porquê antes do como; analogia curta) e com o Farol revisado. A missão continua sem experiência e sem montagem no vídeo; a mudança é só no texto falado e no Passo a passo.
+
+- Aula 1, movimento: sai a mistura de controles, comando executado, quadro, tecla e regra. A retomada fica a da Chave do Farol: em cada quadro, o jogo olha a seta; se você está segurando a seta, o personagem dá um passinho. Por isso o passinho precisa acontecer em todo quadro. O teste pede para segurar a seta e soltar.
+- Aula 1, limite: sai "Lembra da ordem dos comandos no Farol?". Entra o problema no próprio jogo (o personagem passa da beirada) e a ideia do Farol: primeiro o passinho, depois o jogo confere a beirada e puxa de volta.
+- Aula 1, coleta e decisão: "sumir e lembrar" ganha fala própria e a variável volta com a comparação do recado anotado; a decisão lembra o farol que acendia com a chave e o aviso sem ela.
+- Aula 1, posição: o papel de x e y é lembrado antes de pedir a mudança.
+- Aula 2, decisão: a fala que juntava ganhou, Se e não foi dividida (duas respostas; animação pronta; o farol da Ilha que acendia de novo; o apito final; criar ganhou; Se não ganhou). Sai o "então" usado como ligação.
+- Aula 2, abertura, movimento, coleta e posição: a abertura lembra a descoberta da Ilha sobre a altura (dois objetos podem parecer juntos na tela e estar separados, um mais alto que o outro); uma ideia por fala, a pergunta "Lembra?" antes da instrução e a ideia da memória antes da montagem.
+- Todas as partes de montagem e as entregas: "pressione R" vira "toque na tecla R", e a verificação usa a fórmula comum ("Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente."). Na entrega 3D, o registro na jornada vem antes da saída, e a fala termina em Concluir aula.
+- Passo a passo (e o texto do caderno): as ideias de movimento, limite e decisão seguem a mesma linguagem; "pressione", "apertar" e "seta apertada" saem (fica "se você está segurando a seta"), e a ajuda usa o rótulo da tela, "o bloco verdadeiro", em vez do nome de catálogo "verdadeiro ou falso". O PDF do Passo a passo do projeto foi regenerado em 02/11/2026.

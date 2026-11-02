@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 O intervalo e a direção da velocidade são observados antes dos blocos. Grupo e relógio são preparados numa seção; criação e depois atualização e desenho têm montagens próprias. A avalanche fica na experiência, sem exigir montar e desmontar uma regra errada no projeto.
 
+**Revisão de 02/11/2026.** O intervalo entre cactos (a torneira) e a direção da velocidade (os passos na sala) passaram à exploração livre; é aqui que o sinal de menos entra como direção, antes da régua dos negativos (Aula 12). As montagens definem grupo antes de usá-lo, ligam o relógio ao bloco A cada 2 segundos ("É este bloco… que faz o papel do relógio"), dizem o nome de fábrica (asteroides, obstaculos) e onde clicar, dão o porquê do x 560 antes da troca e um campo por fala, e corrigem o decimal ("1.4, com ponto: é quase um segundo e meio"). A retomada da criação dos cactos só lembra a experiência (o relógio vazio não mostra nada no jogo), e o teste do pulo veio antes da conferência.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -24,50 +26,62 @@ O intervalo e a direção da velocidade são observados antes dos blocos. Grupo 
 
 ## Proposta final
 
-### Seção 1. Compare o intervalo entre cactos
+### Seção 1. Todo quadro ou de tempos em tempos?
 
-**Tarefa:** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-espaco-e-tempo → fala-espaco-e-tempo → experiencia-ritmo.
 
-**Recado na página (não gravar):** Sua vez! Compare os cactos nascendo a cada quadro com os cactos nascendo no relógio de 1,4 segundo. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na fila de cactos com e sem uma espera entre eles. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-espaco-e-tempo-K1: Debinha substitui “Como eu deixo um espaço entre eles?”. Antes: “Nascem uns 30 cactos, um em cada quadro, colados uns nos outros. Eles formam uma parede, e o Dino não teria como pular.”. Depois: “Agora eu levo Criar cacto para o relógio e escolho 1,4 s. Tudo recomeça do zero. Eu deixo passar uns três segundos, e”.
+video-espaco-e-tempo-K1: Debinha substitui “E se nascer um cacto em todo quadro, o Dino consegue pular?”. Antes: “um cacto novo em todo quadro, ou esperar um tempo entre um cacto e outro, como um relógio que toca de tempos em tempos.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na fila de cactos quando um”.
 
-**Experiência existente:** `spawn`. Na experiência, deixe Criar cacto em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo. Observe os cactos que nascem. Leve Criar cacto para o relógio e escolha 1,4 s. Clique em Tempo e deixe passar pelo menos três segundos, até nascerem dois cactos. Compare com a primeira tentativa. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `spawn` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/spawn.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/spawn.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare os cactos quando nasce um cacto novo em todo quadro e quando cada cacto espera um tempo no relógio para nascer. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Escolha Em todo quadro, clique em Passar 1 segundo e observe os cactos e quantos nasceram. Escolha A cada 1,4 segundo e clique em Passar 1 segundo até nascerem dois cactos. Observe onde cada um aparece.
+
+**Pistas, do aberto ao direto:** 1) Observe quantos cactos nascem e o espaço entre eles. 2) Compare os cactos que nascem em todo quadro com os que esperam no relógio. 3) Escolha Em todo quadro e clique em Passar 1 segundo. Depois escolha A cada 1,4 segundo e clique em Passar 1 segundo até nascerem dois cactos. Sem palpite e sem pergunta final.
 
 ### Seção 2. Prepare o grupo e o relógio
 
-**Tarefa:** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Tarefa:** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora de A cada quadro do jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Blocos na página:** video-grupo-e-relogio → fala-grupo-e-relogio.
 
-**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora do quadro. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora prepare o grupo e o relógio dos cactos! Crie o grupo cactos em Ao iniciar e um relógio de 1.4 segundo, fora de A cada quadro do jogo. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-grupo-e-relogio-K1: Debinha substitui “E como eu faço aparecer um cacto de cada vez?”. Antes: “solte no fim de Ao iniciar. No nome, escreva cactos. É esse grupo que vai guardar todos os cactos que o relógio criar.”. Depois: “Agora vem o relógio. Ele fica em Enquanto estiver rodando, mas fora de A cada quadro do jogo, porque não pode criar um”.
+video-grupo-e-relogio-K1: Debinha substitui “E como eu faço aparecer um cacto de cada vez?”. Antes: “Clique em asteroides, troque por cactos e clique fora do campo. É este bloco que cria a lista dos cactos, ainda vazia.”. Depois: “Com um relógio, que cria um cacto de tempos em tempos. O relógio fica em Enquanto estiver rodando, mas fora de A cada”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Crie o grupo cactos em Ao iniciar.
 - Prepare um relógio com intervalo positivo em Enquanto estiver rodando.
 
-### Seção 3. Compare a direção da velocidade
+### Seção 3. Para que lado anda o cacto?
 
-**Tarefa:** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-numero-negativo → fala-numero-negativo → experiencia-velocidade.
 
-**Recado na página (não gravar):** Sua vez! Compare a velocidade para o lado em 5, em -5 e em 0, de olho no x do cacto. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o número da velocidade faz com o cacto e com o x. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-numero-negativo-K1: Debinha substitui “E se eu quiser que o cacto vá para o outro lado?”. Antes: “1 quadro. O x do cacto vai de 60 para 65: ele andou 5 para a direita. Em cada quadro, o jogo soma a velocidade ao x.”. Depois: “Quando eu troco a velocidade para o lado por -5 e avanço, o x diminui 5 em cada quadro, e o cacto vai para a esquerda.”.
+video-numero-negativo-K1: Debinha substitui “E com um número negativo, o cacto vai para onde?”. Antes: “e o lugar dele é o x. A velocidade pode ser um número positivo, um número negativo, com o sinal de menos, ou zero.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar para que lado o cacto anda e o que”.
 
-**Experiência existente:** `velocity`. Na experiência, deixe a velocidade para baixo em 0. Escolha velocidade para o lado 5 e clique em Avançar 1 quadro algumas vezes. Observe o x. Troque a velocidade para o lado por -5 e avance mais alguns quadros. Compare a direção. Por último, deixe as duas velocidades em 0 e avance de novo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `velocity` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/velocity.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/velocity.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare para que lado o cacto anda e o que acontece com o x com a velocidade em 5, em −5 e em 0. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Escolha 5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o x. Escolha −5 e clique em Avançar 1 quadro três vezes. Observe o cacto e o x. Depois de ver o cacto andar, escolha 0 e clique em Avançar 1 quadro. Observe o x.
+
+**Pistas, do aberto ao direto:** 1) Observe o número do x em cada quadro. 2) Compare o cacto e o x com um número positivo, com um negativo e com zero. 3) Escolha 5 e clique em Avançar 1 quadro três vezes. Depois escolha −5 e avance três quadros. Por último, escolha 0 e avance. Sem palpite e sem pergunta final.
 
 ### Seção 4. Crie os cactos no relógio
 
@@ -93,7 +107,7 @@ video-numero-negativo-K1: Debinha substitui “E se eu quiser que o cacto vá pa
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “No grupo criar obstáculo continua no relógio, fora do quadro, com x 560 e vx -5. Depois de corrigir, teste de novo.”. Depois: “A batida ainda não foi programada. Agora pule um deles para testar o controle. Funcionou? Clique em Verificar projeto.”.
+video-mover-e-desenhar-K1: Debinha substitui “O cacto passou pelo Dino. Por que a partida não terminou?”. Antes: “cactos nascerem. Olha só: eles entram pela direita e passam para a esquerda! Pule um deles para testar o controle.”. Depois: “Porque a batida ainda não foi programada. Isso vem daqui a algumas aulas. Se no seu jogo não aconteceu isso, volte aos”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 

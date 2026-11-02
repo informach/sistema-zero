@@ -41036,7 +41036,7 @@
       "tipo": "desafio-do-dia",
       "quadro": null,
       "ordem": 62,
-      "publicar": false,
+      "publicar": true,
       "conteudo": {
         "versao": 1,
         "titulo": "Corrida dos bichos: noite",

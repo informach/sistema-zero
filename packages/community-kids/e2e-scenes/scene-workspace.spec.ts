@@ -1,9 +1,20 @@
 import { expect, type Locator, type Page, test } from '@playwright/test'
 
-const chip = (page: Page) =>
-  page
-    .getByRole('button', { name: /Mover a nave um pouquinho/ })
-    .filter({ has: page.locator('.sz-once-card-label') })
+/**
+ * ⭐ Exploração livre (02/11/2026): a `experiencia-areas` deixou a bancada das fichas e das áreas do
+ * Estúdio. A criança escolhe QUANDO a nave anda ("Uma vez, no começo" × "Sempre, em todo quadro") e
+ * começa o jogo; a faixa diz quantas vezes a nave andou e quantas descobertas já caíram.
+ */
+const UMA_VEZ = 'Uma vez, no começo'
+const SEMPRE = 'Sempre, em todo quadro'
+const jeito = (page: Page, nome: string) => page.getByRole('button', { name: nome, exact: true })
+const jogo = (page: Page) =>
+  page.getByRole('button', {
+    name: /^(Começar o jogo|Continuar o jogo|Pausar o jogo|Jogo terminado)$/,
+  })
+const terminado = (page: Page) => page.getByRole('button', { name: 'Jogo terminado', exact: true })
+const andou = (page: Page) => page.locator('.sz-discovery-simple-hud .position-hud')
+const descobertas = (page: Page) => page.locator('.sz-discovery-count')
 const expand = (page: Page) => page.getByRole('button', { name: 'Ampliar experiência' })
 const close = (page: Page) => page.getByRole('button', { name: 'Voltar à aula' })
 
@@ -61,6 +72,17 @@ async function expectMundoSemRolagem(page: Page) {
     .toEqual({ rola: false, overflow: 'visible' })
 }
 
+/**
+ * ⚠️ A tela livre (`.sz-discovery-proposed`, a do Cadê e do Farol, aprovada em 27/10/2026) fica em
+ * duas colunas a partir de uma JANELA de 1100px, qualquer que seja a largura do painel, além da
+ * regra do painel de 52rem (a da bancada antiga e do palpite). Por isso, nos testes da tela livre,
+ * quem garante que nada corta é o `fits`.
+ */
+
+/**
+ * Lado a lado = a grade do console tem duas colunas, com a cena antes das ações. ⚠️ Não compara o
+ * topo das duas: na tela livre a coluna da cena é `sticky`, e com a página rolada o topo dela anda.
+ */
 async function expectLayout(page: Page, sideBySide: boolean) {
   await expect
     .poll(() =>
@@ -68,7 +90,10 @@ async function expectLayout(page: Page, sideBySide: boolean) {
         const visual = el.querySelector('.sz-scene-console-visual')?.getBoundingClientRect()
         const actions = el.querySelector('.sz-scene-console-actions')?.getBoundingClientRect()
         if (!visual || !actions) throw new Error('Regiões da experiência ausentes')
-        return visual.right <= actions.left + 1 && Math.abs(visual.top - actions.top) < 1
+        const estilo = getComputedStyle(el)
+        const colunas =
+          estilo.display === 'grid' ? estilo.gridTemplateColumns.trim().split(/\s+/).length : 1
+        return colunas >= 2 && visual.right <= actions.left + 1
       }),
     )
     .toBe(sideBySide)
@@ -76,31 +101,32 @@ async function expectLayout(page: Page, sideBySide: boolean) {
 
 async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  for (const button of await page.locator('.sz-once-card').all()) {
+  // Os controles da tela livre cabem na coluna das ações, sem texto cortado.
+  for (const button of await page.locator('.sz-scene-prancha button').all()) {
     expect(
       await button.evaluate((el) => {
-        const area = el.closest('[data-once-area]')?.getBoundingClientRect()
+        const coluna = el.closest('.sz-scene-console-actions')?.getBoundingClientRect()
         const box = el.getBoundingClientRect()
         return (
-          !!area &&
-          box.left >= area.left &&
-          box.right <= area.right &&
-          el.scrollWidth <= el.clientWidth
-        )
-      }),
-    ).toBe(true)
-    expect(
-      await page.locator('.sz-scene-workspace-header').evaluate((el) => {
-        const heading = el.firstElementChild!.getBoundingClientRect()
-        const button = el.lastElementChild!.getBoundingClientRect()
-        const title = el.firstElementChild as HTMLElement
-        return (
-          title.scrollWidth <= title.clientWidth &&
-          (heading.right <= button.left || heading.bottom <= button.top)
+          !!coluna &&
+          box.left >= coluna.left - 0.5 &&
+          box.right <= coluna.right + 0.5 &&
+          el.scrollWidth <= el.clientWidth + 1
         )
       }),
     ).toBe(true)
   }
+  expect(
+    await page.locator('.sz-scene-workspace-header').evaluate((el) => {
+      const heading = el.firstElementChild!.getBoundingClientRect()
+      const button = el.lastElementChild!.getBoundingClientRect()
+      const title = el.firstElementChild as HTMLElement
+      return (
+        title.scrollWidth <= title.clientWidth &&
+        (heading.right <= button.left || heading.bottom <= button.top)
+      )
+    }),
+  ).toBe(true)
 }
 
 test('margens laterais da cena ficam equilibradas no painel dividido', async ({ page }) => {
@@ -128,13 +154,14 @@ async function expectBalancedSceneMargins(page: Page) {
   expect(edges.gutter).toBe('stable both-edges')
 }
 
-test('a divisória adapta o painel sem ampliar nem perder seleção e progresso', async ({
+test('a divisória muda o painel sem ampliar nem perder seleção e progresso', async ({
   page,
 }, info) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   await page.goto('/?split')
-  await expectLayout(page, false)
-  await chip(page).click()
+  await expectLayout(page, true)
+  await fits(page)
+  await jeito(page, UMA_VEZ).click()
   await page.evaluate(() => window.scrollTo(0, 0))
   const divider = page.getByRole('separator', { name: 'Mudar o tamanho dos dois lados' })
   const box = await divider.boundingBox()
@@ -146,17 +173,12 @@ test('a divisória adapta o painel sem ampliar nem perder seleção e progresso'
   await expectLayout(page, true)
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await expect(page.getByText('Vídeo da aula', { exact: true })).toBeInViewport({ ratio: 1 })
-  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true')
-  await page
-    .getByRole('button', { name: 'Colocar em Ao iniciar: Mover a nave um pouquinho', exact: true })
-    .click()
-  const run = page.getByRole('button', {
-    name: /^(Começar o jogo|Pausar o jogo|Teste encerrado)$/,
-  })
+  await expect(jeito(page, UMA_VEZ)).toHaveAttribute('aria-pressed', 'true')
+  const run = jogo(page)
   await run.click()
-  await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible()
-  await expect(chip(page)).toContainText('1 vez')
-  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
+  await expect(terminado(page)).toBeVisible()
+  await expect(andou(page)).toContainText('1 vez')
+  await expect(descobertas(page)).toHaveText('1 de 2 descobertas')
   await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
   await expect(run).toBeInViewport({ ratio: 1 })
   await fits(page)
@@ -164,9 +186,10 @@ test('a divisória adapta o painel sem ampliar nem perder seleção e progresso'
 
   await divider.focus()
   await divider.press('End')
+  // No painel mínimo a tela livre empilha (a grade dela não cabe em duas colunas).
   await expectLayout(page, false)
-  await expect(chip(page)).toContainText('1 vez')
-  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
+  await expect(andou(page)).toContainText('1 vez')
+  await expect(descobertas(page)).toHaveText('1 de 2 descobertas')
   await fits(page)
   await expand(page).click()
   const dialog = page.getByRole('dialog')
@@ -176,12 +199,14 @@ test('a divisória adapta o painel sem ampliar nem perder seleção e progresso'
   await page.keyboard.press('Escape')
   await expect(expand(page)).toBeFocused()
   await expectLayout(page, false)
-  await expect(chip(page)).toContainText('1 vez')
+  await fits(page)
+  await expect(andou(page)).toContainText('1 vez')
   await divider.focus()
   await divider.press('Home')
   await expectLayout(page, true)
-  await expect(chip(page)).toContainText('1 vez')
-  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
+  await expect(jeito(page, UMA_VEZ)).toHaveAttribute('aria-pressed', 'true')
+  await expect(andou(page)).toContainText('1 vez')
+  await expect(descobertas(page)).toHaveText('1 de 2 descobertas')
 })
 
 test('o palpite também adapta pela largura do painel e preserva a resposta', async ({ page }) => {
@@ -204,16 +229,18 @@ test('o palpite também adapta pela largura do painel e preserva a resposta', as
   await expect(page.getByRole('button', { name: 'Para baixo', exact: true })).toHaveCount(0)
 })
 
-test('fontes maiores empilham sem cortar os controles no modo ampliado', async ({ page }) => {
+test('fontes maiores não cortam os controles no modo ampliado', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   await page.goto('/?width=1000')
   await page.evaluate(() => {
     document.documentElement.style.fontSize = '32px'
   })
-  await expectLayout(page, false)
+  await fits(page)
   await expand(page).click()
-  await expectLayout(page, false)
-  const run = page.getByRole('button', { name: 'Coloque uma ação para começar' })
+  await fits(page)
+  // Antes de escolher um jeito o botão do jogo fica fechado (mas no Tab e à vista).
+  const run = page.getByRole('button', { name: 'Começar o jogo', exact: true })
+  await expect(run).toHaveAttribute('aria-disabled', 'true')
   await run.scrollIntoViewIfNeeded()
   await expect(run).toBeInViewport({ ratio: 1 })
   await expect(close(page)).toBeInViewport({ ratio: 1 })
@@ -221,13 +248,44 @@ test('fontes maiores empilham sem cortar os controles no modo ampliado', async (
   await expect(expand(page)).toBeFocused()
 })
 
+test('HUD cabe em 320px com fonte de sistema larga, sem cortar números ou descobertas', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 568 })
+  await page.goto('/?width=620')
+  await page.addStyleTag({
+    content:
+      '.sz-discovery-simple-hud { font-family: monospace; letter-spacing: .12em; word-spacing: .16em; }',
+  })
+  await expect(jeito(page, SEMPRE)).toBeVisible()
+  const geometry = await page.evaluate(() => ({
+    page: document.documentElement.scrollWidth,
+    viewport: innerWidth,
+    hud: [...document.querySelectorAll('.position-hud, .sz-discovery-simple-hud-top')].map(
+      (el) => ({
+        width: el.clientWidth,
+        content: el.scrollWidth,
+      }),
+    ),
+  }))
+  expect(geometry.page, JSON.stringify(geometry)).toBeLessThanOrEqual(geometry.viewport)
+  for (const box of geometry.hud)
+    expect(box.content, JSON.stringify(geometry)).toBeLessThanOrEqual(box.width)
+  await fits(page)
+})
+
 for (const size of [
-  { panel: 860, height: 768, sideBySide: false },
-  { panel: 900, height: 768, sideBySide: true },
-  { panel: 1000, height: 480, sideBySide: false },
+  { width: 1366, panel: 860, height: 768, sideBySide: true },
+  { width: 1366, panel: 900, height: 768, sideBySide: true },
+  { width: 1366, panel: 1000, height: 480, sideBySide: true },
+  // Abaixo de 1100px quem decide é o painel (52rem): 900 cabe em duas colunas, 700 empilha.
+  { width: 1024, panel: 900, height: 768, sideBySide: true },
+  { width: 1024, panel: 700, height: 768, sideBySide: false },
 ]) {
-  test(`layout inline: painel ${size.panel}, altura ${size.height}`, async ({ page }, info) => {
-    await page.setViewportSize({ width: 1366, height: size.height })
+  test(`layout inline: janela ${size.width}, painel ${size.panel}, altura ${size.height}`, async ({
+    page,
+  }, info) => {
+    await page.setViewportSize({ width: size.width, height: size.height })
     await page.goto(`/?width=${size.panel}`)
     await expectLayout(page, size.sideBySide)
     await fits(page)
@@ -235,28 +293,19 @@ for (const size of [
   })
 }
 
-test('ampliar/recolher preserva seleção, montagem, execução e descobertas', async ({
-  page,
-}, info) => {
+test('ampliar/recolher preserva escolha, execução e descobertas', async ({ page }, info) => {
   await page.setViewportSize({ width: 1366, height: 768 })
   await page.goto('/')
-  await chip(page).click()
+  await jeito(page, UMA_VEZ).click()
   await expand(page).click()
-  await expect(page.getByRole('dialog', { name: 'Uma vez e sempre' })).toBeVisible()
-  await expect(chip(page)).toHaveAttribute('aria-pressed', 'true')
-  await page
-    .getByRole('button', { name: 'Colocar em Ao iniciar: Mover a nave um pouquinho', exact: true })
-    .click()
-  const run = page.getByRole('button', {
-    name: /^(Começar o jogo|Pausar o jogo|Teste encerrado)$/,
-  })
+  await expect(page.getByRole('dialog', { name: 'Uma vez ou sempre?' })).toBeVisible()
+  await expect(jeito(page, UMA_VEZ)).toHaveAttribute('aria-pressed', 'true')
+  const run = jogo(page)
   await run.click()
-  await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible({
-    timeout: 20_000,
-  })
-  await expect(chip(page)).toContainText('1 vez')
-  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
-  await expectFullyVisible(page.locator('.sz-scene-console-visual'))
+  await expect(terminado(page)).toBeVisible({ timeout: 20_000 })
+  await expect(andou(page)).toContainText('1 vez')
+  await expect(descobertas(page)).toHaveText('1 de 2 descobertas')
+  await expectFullyVisible(page.locator('.sz-scene-console-mundo svg').first())
   await expect(run).toBeInViewport({ ratio: 1 })
   const visual = await page.locator('.sz-scene-console-visual').boundingBox()
   const actions = await page.locator('.sz-scene-console-actions').boundingBox()
@@ -267,27 +316,20 @@ test('ampliar/recolher preserva seleção, montagem, execução e descobertas', 
   await page.keyboard.press('Escape')
   await expect(expand(page)).toBeFocused()
   await expect(page.getByRole('dialog')).toHaveCount(0)
-  await expect(chip(page)).toContainText('1 vez')
-  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '1')
-  await expect(page.locator('[data-once-area="start"] .sz-once-card')).toHaveCount(1)
+  await expect(andou(page)).toContainText('1 vez')
+  await expect(descobertas(page)).toHaveText('1 de 2 descobertas')
+  await expect(jeito(page, UMA_VEZ)).toHaveAttribute('aria-pressed', 'true')
   await expand(page).click()
-  await page.getByRole('button', { name: 'Voltar ao começo', exact: true }).click()
-  await chip(page).click()
-  await page
-    .getByRole('button', {
-      name: 'Colocar em Enquanto estiver rodando: Mover a nave um pouquinho',
-      exact: true,
-    })
-    .click()
+  // Trocar de jeito começa uma partida nova (o que a bancada antiga fazia com "Voltar ao começo").
+  await jeito(page, SEMPRE).click()
+  await expect(run).toHaveText(/Começar o jogo/)
   await run.click()
-  await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible({
-    timeout: 20_000,
-  })
-  await expect(chip(page)).toContainText(/[1-9]\d* vezes/)
-  await expect(page.getByRole('meter')).toHaveAttribute('aria-valuenow', '2')
-  const count = await chip(page).textContent()
+  await expect(terminado(page)).toBeVisible({ timeout: 20_000 })
+  await expect(andou(page)).toContainText(/[1-9]\d* vezes/)
+  await expect(descobertas(page)).toHaveText('2 de 2 descobertas')
+  const count = await andou(page).textContent()
   await close(page).click()
-  await expect(chip(page)).toHaveText(count ?? '')
+  await expect(andou(page)).toHaveText(count ?? '')
   expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden')
 })
 
@@ -392,20 +434,14 @@ for (const size of [
   { width: 1280, height: 600, panel: 620 },
   { width: 1920, height: 600, panel: 620 },
 ]) {
-  test(`fichas cabem em ${size.width}x${size.height}, painel ${size.panel}`, async ({
+  test(`os controles cabem em ${size.width}x${size.height}, painel ${size.panel}`, async ({
     page,
   }, info) => {
     await page.setViewportSize(size)
     await page.goto(`/?width=${size.panel}`)
-    await expect(chip(page)).toBeVisible()
+    await expect(jeito(page, SEMPRE)).toBeVisible()
     await fits(page)
-    await chip(page).click()
-    await page
-      .getByRole('button', {
-        name: 'Colocar em Enquanto estiver rodando: Mover a nave um pouquinho',
-        exact: true,
-      })
-      .click()
+    await jeito(page, SEMPRE).click()
     await fits(page)
     await page.screenshot({ path: info.outputPath('inline.png'), fullPage: true })
     await expand(page).click()
@@ -416,10 +452,8 @@ for (const size of [
     }
     await expect(close(page)).toBeInViewport({ ratio: 1 })
     await page.getByRole('button', { name: 'Começar o jogo', exact: true }).click()
-    await expect(page.getByRole('button', { name: 'Teste encerrado' })).toBeVisible({
-      timeout: 20_000,
-    })
-    await expect(chip(page)).toContainText(/[1-9]\d* vezes/)
+    await expect(terminado(page)).toBeVisible({ timeout: 20_000 })
+    await expect(andou(page)).toContainText(/[1-9]\d* vezes/)
     await expect(close(page)).toBeInViewport({ ratio: 1 })
     await close(page).click()
   })
@@ -436,11 +470,13 @@ const CABE = { cartaoRola: false }
 const CARTAO_ROLA = { cartaoRola: true }
 for (const caso of [
   {
+    // ⚠️ Na tela livre a figura da ideia mora embaixo do palco, no mesmo cartão: a 1366×657 o
+    // desenho chega ao piso e o cartão rola (a regra dela), e numa janela alta tudo cabe.
     block: 'experiencia-areas',
     nome: 'palco simples',
     janelas: [
-      { width: 1366, height: 657, ...CABE },
-      { width: 1280, height: 600, ...CARTAO_ROLA },
+      { width: 1920, height: 937, ...CABE },
+      { width: 1366, height: 657, ...CARTAO_ROLA },
     ],
   },
   {
@@ -459,8 +495,8 @@ for (const caso of [
     block: 'experiencia-camadas',
     nome: 'recorte estreito',
     janelas: [
-      { width: 1366, height: 657, ...CABE },
-      { width: 1280, height: 600, ...CARTAO_ROLA },
+      { width: 1920, height: 937, ...CABE },
+      { width: 1366, height: 657, ...CARTAO_ROLA },
     ],
   },
 ]) {
@@ -481,7 +517,7 @@ for (const caso of [
           .locator('button')
           .first()
           .click()
-        await expect(page.locator('.sz-scene-mundo-rodape')).toBeVisible()
+        await expect(page.locator('.sz-discovery-proposed')).toBeVisible()
       }
       await expectMundoSemRolagem(page)
       const desenho = page.locator('.sz-scene-console-mundo svg').first()
@@ -500,15 +536,10 @@ for (const caso of [
             .evaluate((el) => el.scrollHeight <= el.clientHeight + 1),
         ).toBe(true)
       }
-      // O pé do mundo numa linha só: a situação ao lado dos botões, não embaixo deles.
-      const pe = await page.locator('.sz-scene-mundo-rodape').evaluate((el) => {
-        const botoes = el.querySelector('.sz-scene-mundo-ferramentas')?.getBoundingClientRect()
-        const situacao = el.querySelector('.sz-scene-situacao')?.getBoundingClientRect()
-        return botoes && situacao
-          ? { mesmaLinha: situacao.top < botoes.bottom && situacao.left >= botoes.right }
-          : null
-      })
-      expect(pe).toEqual({ mesmaLinha: true })
+      // ⚠️ O pé do mundo (Desfazer, Recomeçar e a frase da situação numa linha) era da bancada
+      // antiga: na tela livre, Desfazer e Uma pista ficam na coluna das ações, e embaixo do palco
+      // fica a figura da ideia, no mesmo cartão do mundo.
+      await expect(page.locator('.sz-scene-console-visual .sz-discovery-evidence')).toBeVisible()
     })
   }
 }

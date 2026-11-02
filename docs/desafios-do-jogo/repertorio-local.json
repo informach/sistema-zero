@@ -1935,7 +1935,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acender",
@@ -2544,7 +2544,7 @@
       "classificacao": "aplicacao-em-blocos",
       "linguagem": "javascript",
       "modo": "blocks",
-      "publicarAutomaticamente": false,
+      "publicarAutomaticamente": true,
       "objetivosObrigatorios": [
         {
           "id": "acender",

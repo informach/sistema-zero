@@ -13,7 +13,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -25,7 +25,43 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "video-pergunta-com-nao",
+      "plannedVideo": "Título: O que muda com o não?\n\nMaster integral da professora. Roteiro: ilha-aula-3.roteiro.md, clipe video-pergunta-com-nao. Gravação pendente."
+    },
+    {
+      "key": "ponte-pergunta-com-nao",
+      "content": {
+        "kind": "dialogue",
+        "pose": "speaking",
+        "text": "Sua vez! Investigue o que a palavra não faz com a resposta da porta, com a chave e sem a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
+      }
+    },
+    {
+      "key": "experiencia-pergunta-com-nao",
+      "content": {
+        "kind": "interactive",
+        "title": "O que muda com o não?",
+        "required": true,
+        "instructions": "Compare a resposta da porta com a pergunta sem o não e com o não, com a chave e sem a chave. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Antes de testar, repare se a porta está trancada e qual pergunta ela está fazendo.",
+          "Com a mesma chave, teste as duas perguntas e compare as respostas na tabela.",
+          "Clique em Testar a porta. Depois clique em Pôr o não na pergunta e em Testar a porta de novo. Por fim, clique em Dar a chave ao personagem e teste as duas perguntas outra vez."
+        ],
+        "semPerguntaFinal": true,
+        "activity": {
+          "type": "experimentation",
+          "scene": "lighthouse-key",
+          "cenario": "farol",
+          "setup": {
+            "goals": ["not-flips-with-key", "not-flips-without-key"],
+            "freeExploration": true
+          }
+        }
       }
     },
     {
@@ -37,7 +73,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -150,7 +186,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -13230,6 +13266,24 @@
             }
           }
         ]
+      }
+    },
+    {
+      "key": "pergunta-com-nao",
+      "title": "O que muda com o não?",
+      "intent": "exploration",
+      "objective": "O que muda com o não?",
+      "blockKeys": [
+        "video-pergunta-com-nao",
+        "ponte-pergunta-com-nao",
+        "experiencia-pergunta-com-nao"
+      ],
+      "workspaceKey": null,
+      "externalTool": null,
+      "pendingMedia": [],
+      "completion": {
+        "version": 1,
+        "blockIds": ["video-pergunta-com-nao", "experiencia-pergunta-com-nao"]
       }
     },
     {

@@ -9,11 +9,11 @@ import {
 import {
   initialExperiment,
   packExperiment,
-  type SceneAction,
   sceneEmitsSound,
   sceneStart,
   stepExperiment,
 } from '../../../packages/core/src/learning/scene'
+import { freeExplorationPaths } from '../../../packages/core/tests/fixtures/free-exploration-paths'
 import { evaluateStudioSectionProject } from '../../../packages/studio/src/blockly/projectCheckAuthoring'
 import { participacoes } from './avatares-video'
 import { etapasDino, ORDEM_DINO, projetoDino } from './corre-dino-etapas'
@@ -25,7 +25,7 @@ import {
   falasSecao,
   gerarManifestoDino,
   type SecaoDino,
-  SUA_VEZ,
+  semChamados,
   telaSecao,
 } from './gerar-corre-dino'
 import { concordanciasErradas, PALAVRAS_DA_ESCOLA } from './palavras-da-escola'
@@ -57,7 +57,7 @@ const A_GENTE_FEZ = /\ba gente\s+(?:já\s+)?(?:fez|pôs|\p{L}+(?:ou|eu|iu))(?!\p
  * que a criança escreve no jogo (a dica da abertura e a descrição para o leitor de tela).
  */
 const ROTULOS_COM_APERTAR =
-  /Quando apertar (?:Espaço|a tecla|qualquer tecla ou tocar na tela)|Apertar (?:Espaço|Enter|a tecla)|Aperte qualquer tecla ou toque (?:na tela para começar|para jogar de novo)|pule os cactos apertando espaço/g
+  /Quando apertar (?:Espaço|a tecla|qualquer tecla ou tocar na tela)|Quando a tecla Espaço é apertada|Na hora em que a tecla foi apertada|Apertar (?:Espaço|Enter|a tecla)|Aperte qualquer tecla ou toque (?:na tela para começar|para jogar de novo)|pule os cactos apertando espaço/g
 const apertarForaDosRotulos = (texto: string): string[] =>
   texto.replace(ROTULOS_COM_APERTAR, '').match(/(?<!\p{L})apert\p{L}*/giu) ?? []
 
@@ -216,52 +216,126 @@ test('linguagem comum nas falas, no Zappy e no Passo a passo do projeto', () => 
   const mapa = aulasDino[0]!.sections[1]!
   expect(mapa.title).toBe('Seu passo a passo do projeto')
   const fala = falasSecao(mapa).join(' ')
-  expect(fala).toStartWith('Olha, aqui está o Passo a passo do projeto.')
+  expect(fala).toStartWith('Olha aqui: este é o seu Passo a passo do projeto!')
   expect(fala).toContain(
     'Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.',
   )
   expect(`${fala} ${mapa.bridge}`).not.toMatch(/não precisa/i)
 })
 
-// Diretrizes, seção 2 (06/10/2026): o vídeo da experiência e o do jogo pronto são demonstrações.
-// Quem faz os testes é o narrador; ordens para quem assiste só depois de "Agora é a sua vez".
+// O jogo pronto continua um exemplo na primeira pessoa (Diretrizes, seção 2): ordens para quem assiste
+// só depois de "Agora é a sua vez".
 const ordemParaQuemAssiste =
   /(?:^|[.!?:]\s+)(?:Clique|Toque|Leve|Mude|Observe|Compare|Deixe|Escolha|Aumente|Coloque|Troque|Ligue|Desligue|Aproxime|Escreva|Espere|Volte|Teste|Use|Acompanhe|Mantenha|Aperte|Diminua|Pule|Repita|Continue|Faça|Veja|Sorteie|Jogue|Experimente|Mexa)\b/
-test('experiências: o conceito primeiro, a demonstração na primeira pessoa e a vez só no fim', () => {
-  const cenasVistas = new Set<string>()
+// O molde do convite (decisão da responsável, 02/11/2026, o do Cadê): o vídeo explica o conceito, dá
+// uma analogia, diz o conceito no jogo da criança e devolve a pergunta; o fim é UM convite de uma frase
+// (o que investigar, "Agora você vai investigar …", como no exemplo aprovado e nos outros cursos) e o
+// fecho comum. A investigação é da criança e quem acompanha cada teste é o Zappy.
+const FIM_DA_EXPERIENCIA =
+  /^Agora você vai investigar [^.!?]+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+const DEVOLVE = 'O que você acha? Isso você vai testar na experiência.'
+// Proibido no vídeo da experiência: o tour pelos controles ("Olha aqui: nesta experiência, este
+// botão…", "aqui você vê…"), os nomes dos botões ditos como gesto ("clique em…", "escolha…") e a
+// sequência de testes ("primeiro… depois…", "faça… e depois…", "teste mais duas coisas", "nas duas
+// vezes", "Repare em três coisas").
+const TOUR =
+  /Olha aqui|nesta experiência,|aqui você vê|\b(?:este|estes|esta|estas)\s+(?:outros?|botão|botões|campos?|listas?|régua|controles?|caixa|contador|números?|pergunta|marcador|linha)\b|\bclique em (?!Próxima parte\.$)|\b(?:escolha|aperte|toque em)\b/i
+const SEQUENCIA_DE_TESTES =
+  /\bprimeiro\b[^.]*\bdepois\b|\bfaça\b[^.]*\be depois\b|\bteste mais\b|\bnas duas vezes\b|\bdepois,? teste\b|(?:^|[.!?;:]\s+)por último\b|Repare em (?:duas|três) coisas|\bdepois clique\b/i
+// A experiência trabalha só a IDEIA (01/11/2026): nada de bloco, área do Estúdio, regra nem código.
+const ESTUDIO_NA_EXPERIENCIA =
+  /\b(?:blocos?|Ao iniciar|Enquanto estiver rodando|Quando acontecer|A cada quadro do jogo|regras?|comandos?|código|Se o estado|então|senão|Estúdio|peças?)\b/i
+test('experiências: conceito, analogia, o jogo dela e um convite, sem tour nem roteiro de testes (02/11/2026)', () => {
   let total = 0
   for (const aula of aulasDino)
     for (const section of aula.sections) {
       if (!ehExperiencia(section) || section.activity?.activity.type !== 'experimentation') continue
       total++
-      const falas = falasSecao(section)
-      const cena = section.activity.activity.scene
-      // A primeira frase diz o conceito; a cena repetida se apresenta como a mesma experiência.
-      expect(falas[0], section.key).toStartWith(
-        cenasVistas.has(cena)
-          ? 'Esta é a mesma experiência'
-          : 'Esta é uma experiência para a gente entender',
+      const id = `${aula.slug}/${section.key}`
+      const a = section.activity
+      if (a.activity.type !== 'experimentation') throw new Error(id)
+      const fala = falasSecao(section)
+      const video = fala.slice(0, -1).join(' ')
+      expect(a.activity.setup?.freeExploration, id).toBe(true)
+      expect(fala.at(-1), id).toMatch(FIM_DA_EXPERIENCIA)
+      // A ordem do molde: conceito e analogia, o conceito no jogo dela, a pergunta devolvida e o convite.
+      expect(fala.length, id).toBeGreaterThanOrEqual(5)
+      expect(fala.at(-2), id).toBe(DEVOLVE)
+      expect(fala.at(-3), id).toMatch(/^(?:No|O) seu jogo\b/)
+      expect(fala.slice(0, -3).join(' '), id).not.toMatch(/\bseu jogo\b/i)
+      expect(fala.slice(1, -3).join(' '), id).toMatch(/(?<!\p{L})(?:Sabe|Lembra|É como)(?!\p{L})/u)
+      // No máximo UMA pergunta do avatar, logo depois do conceito no jogo e antes da devolução.
+      const avatar = participacoes(section)
+      expect(avatar.length, id).toBeLessThanOrEqual(1)
+      for (const p of avatar) {
+        expect(fala.at(-3)?.endsWith(p.after), id).toBe(true)
+        expect(p.speech, id).toMatch(/\?$/)
+        expect(p.reply, id).toBeUndefined()
+      }
+      for (const t of [...fala, ...vozesDoAvatar(section)]) {
+        expect(t, id).not.toMatch(TOUR)
+        expect(t, id).not.toMatch(SEQUENCIA_DE_TESTES)
+      }
+      expect(video, id).not.toMatch(
+        /Esta é (?:uma|a mesma) experiência|faça esses mesmos testes|Vou te mostrar|\beu\b/,
       )
-      cenasVistas.add(cena)
-      // Na demonstração do leitor de tela, o resultado precisa ser ouvido.
-      expect(falas[1], section.key).toStartWith(
-        section.key === 'descricao' ? 'Escute o que acontece' : 'Olha aqui: ',
-      )
-      expect(falas.at(-1)).toBe(SUA_VEZ)
-      // A criança e a resposta da professora entram no vídeo antes de "Agora é a sua vez".
-      const demonstracao = [...falas.slice(0, -1), ...vozesDoAvatar(section)].join(' ')
-      expect(demonstracao, section.key).not.toMatch(ordemParaQuemAssiste)
-      expect(demonstracao, section.key).toMatch(/\beu\b/)
-      expect(demonstracao).not.toContain('Vou te mostrar')
+      // A pergunta que anteciparia a descoberta é devolvida à criança.
+      expect(fala.join(' '), id).toContain('Isso você vai testar na experiência.')
       // Cena muda (a once-vs-always só escreve "♪ N vezes"): a fala não promete um som real.
-      if (!sceneEmitsSound(cena)) expect(demonstracao, section.key).not.toMatch(/som toca/i)
+      if (!sceneEmitsSound(a.activity.scene))
+        expect([video, ...vozesDoAvatar(section)].join(' '), id).not.toMatch(/som toca/i)
+      // Ponte, instrução, metas e pistas: só a ideia, com os botões da tela livre.
+      const goals = a.activity.setup?.goals ?? []
+      const copy = a.activity.setup?.goalCopy ?? {}
+      expect(goals.length, id).toBeGreaterThan(0)
+      expect(Object.keys(copy).sort(), id).toEqual([...goals].sort())
+      expect(a.hints, id).toHaveLength(3)
+      const textos = [
+        section.bridge,
+        a.instructions,
+        ...a.hints,
+        ...Object.values(copy).flatMap((c) => [c.label ?? '', c.pedido ?? '']),
+        ...fala,
+        ...vozesDoAvatar(section),
+      ]
+      for (const t of textos) expect(t, id).not.toMatch(ESTUDIO_NA_EXPERIENCIA)
+      // A ponte convida à investigação e não repete a instrução.
+      expect(section.bridge, id).not.toContain(a.instructions)
+      // O convite é uma frase só, sem um imperativo misturado ("e descubra…", "e chegue…").
+      expect(fala.at(-1), id).not.toMatch(
+        /\b(?:e|depois) (?:descubra|chegue|termine|compare|observe|teste|veja)\b/,
+      )
+      // A instrução da página: o que comparar (e, no máximo, uma frase de contexto) e o fecho do Cadê,
+      // sem sequência de cliques nem "termine com…".
+      expect(a.instructions, id).toMatch(
+        /^Compare [^.!?]+\.(?: [^.!?]+\.)? Você escolhe a ordem e pode repetir quando quiser\.$/,
+      )
+      expect(a.instructions, id).not.toMatch(SEQUENCIA_DE_TESTES)
+      for (const t of [a.instructions, section.bridge])
+        expect(t, id).not.toMatch(/\btermine com\b/i)
+      // A ponte: uma frase do que investigar, a ordem livre e o Zappy.
+      expect(section.bridge, id).toMatch(
+        /^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/,
+      )
+      // O Passo a passo imprime só a instrução: a experiência não tem mais passos próprios.
+      expect(section.caderno, id).toBeUndefined()
+      // A nota de tela só amplia a experiência, mostra a cena parada e o Zappy: nada de apontar ou
+      // clicar nos controles, nem gesto dentro da experiência.
       const tela = telaSecao(section)
-      expect(tela).toContain('quem faz os testes é o narrador')
-      expect(tela).not.toContain('antecipar')
-      if (section.meme) expect(tela).toContain('Meme ilustrado')
-      // O caderno é da criança: continua com os passos no imperativo, sem a demonstração.
-      expect(section.caderno?.join(' '), section.key).toMatch(/Próxima parte\.$/)
-      expect(section.caderno?.join(' ')).not.toMatch(/\beu\b|Olha aqui/)
+      expect(tela, id).toContain('[ampliar experiência]')
+      expect(tela, id).toContain('mostrar a cena parada')
+      expect(tela, id).toContain('[apontar zappy]')
+      expect(tela, id).not.toMatch(/\[apontar "|\[(?:clicar|tocar|escolher|arrastar|abrir)\b/)
+      expect(tela, id).not.toMatch(/Olha aqui|apontar os (?:botões|números|jeitos|impulsos|sinais)/)
+      expect(tela, id).toContain('Não fazer os testes pela criança')
+      expect(tela, id).not.toMatch(/quem faz os testes é o narrador|Demonstração/)
+      if (/meme/i.test(tela))
+        for (const regra of [
+          'desenho nosso',
+          'sem foto de pessoa real',
+          'sem cobrir a experiência',
+        ])
+          expect(tela, id).toContain(regra)
     }
   expect(total).toBe(24)
 })
@@ -292,12 +366,21 @@ test('montagens seguem no imperativo e a publicação comemora com o link', () =
       )
       if (!section.checks?.length) continue
       expect(section.caderno, section.key).toBeUndefined()
-      expect(falasSecao(section)).not.toContain(SUA_VEZ)
     }
   const entrega = aulasDino[12]!.sections.at(-1)!
   expect(entrega.publish).toBe(true)
   const fala = falasSecao(entrega).join(' ')
   expect(fala).toContain('O resumo do projeto já vem preenchido. Deixe como está.')
+  // Um parágrafo por momento e a ajuda de um adulto (Diretrizes, seção 5; revisão de 02/11/2026).
+  expect(falasSecao(entrega).length).toBeGreaterThanOrEqual(5)
+  expect(fala).toContain('Se precisar, peça ajuda a um adulto.')
+  expect(fala).not.toContain('as regras que fazem essas partes')
+  // O Passo a passo não aponta gestos do vídeo.
+  for (const aula of aulasDino)
+    for (const section of aula.sections)
+      for (const paragrafo of falasSecao(section, 'mapa'))
+        expect(paragrafo, section.key).not.toMatch(/Tá vendo\?|Olha aqui:|Olha só:|Repare:/)
+  expect(semChamados('Olhe o jogo. Tá vendo? Nada acontece.')).toBe('Olhe o jogo. Nada acontece.')
   expect(fala).not.toContain('título')
   expect(fala).toContain(
     'Seu jogo está no Mural! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar',
@@ -323,7 +406,8 @@ test('falas conversam: ponte com convite e saída, retomada no jogo e sem "entã
       ]) {
         expect(fala, id).not.toMatch(/(?:^|[.!?,;:]\s*)então\b/i)
         expect(fala, id).not.toMatch(/\b(?:nós|nosso|nossa|montamos)\b/i)
-        expect(primeiraDoPlural(fala), id).toEqual([])
+        // "estamos jogando agora?" é a pergunta escrita na tela do placar (aula 11), citada como está.
+        expect(primeiraDoPlural(fala.replaceAll('estamos jogando agora?', '')), id).toEqual([])
         expect(fala, id).not.toMatch(A_GENTE_FEZ)
         expect(fala, id).not.toContain('—')
         expect(apertarForaDosRotulos(fala), id).toEqual([])
@@ -360,11 +444,18 @@ test('falas conversam: ponte com convite e saída, retomada no jogo e sem "entã
 // aparece no jogo. Teto de 50 palavras, para a versão longa não voltar.
 const RETOMADA_SEM_TESTE = new Set([
   'aula-01/criar-dino',
+  'aula-02/descrever-jogo',
   'aula-03/aplicar-gravidade',
   'aula-05/grupo-e-relogio',
+  'aula-05/criar-cactos',
   'aula-06/faxina',
   'aula-07/relogio',
+  'aula-11/caixinha-dos-pontos',
+  'aula-13/numero-que-manda',
+  'aula-13/relogio-da-dificuldade',
+  'aula-13/acelerador-e-freio',
 ])
+const LEMBRA = /^Lembra d(?:a|as duas) experiências?\b/
 test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
   const palavras = (texto: string) => texto.split(/\s+/).filter(Boolean).length
   let total = 0
@@ -372,7 +463,7 @@ test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
     for (const section of aula.sections) {
       const id = `${aula.slug}/${section.key}`
       const falas = section.speech ?? []
-      const lembra = falas.findIndex((f) => f.startsWith('Lembra da experiência'))
+      const lembra = falas.findIndex((f) => LEMBRA.test(f))
       if (!section.checks?.length || lembra < 0 || lembra > 1) continue
       total++
       const retomada = falas.slice(0, lembra + 1)
@@ -397,12 +488,14 @@ test('retomadas curtas: o problema, a lembrança e um anúncio só', () => {
       expect(texto, id).not.toMatch(/Por isso, vamos|Então, vamos|É como|Na vida/)
       expect(palavras(texto), id).toBeLessThanOrEqual(50)
     }
-  expect(total).toBe(30)
+  // 31 desde 02/11/2026: a criação do Dino retoma as duas experiências antes dela ("Lembra das duas
+  // experiências"); 11 delas só lembram, porque o efeito ainda não aparece no jogo.
+  expect(total).toBe(31)
   // O lembrete de arrastar um espaço vazio fica só na primeira montagem e na aula 7, quando o
   // projeto cresce; cada passo já diz "Deixe à vista…".
   const lembrete = aulasDino.flatMap((aula) =>
     aula.sections
-      .filter((s) => s.speech?.some((f) => f.startsWith('Antes de pegar cada peça')))
+      .filter((s) => s.speech?.some((f) => f.startsWith('Antes de pegar cada bloco')))
       .map((s) => `${aula.slug}/${s.key}`),
   )
   expect(lembrete).toEqual(['aula-01/area-e-tela', 'aula-07/embrulhar'])
@@ -422,7 +515,13 @@ test('falas citam os rótulos que a criança vê', () => {
         ...vozesDoAvatar(section),
         ...(section.caderno ?? []),
       ].join(' ')
-      expect(texto, id).not.toMatch(/\+ ao lado de senão(?! se)/)
+      expect(texto, id).not.toMatch(/\+ ao lado de senão/)
+      // Lido em voz alta (P11, 02/11/2026): "x maior que 0" e "o estado do jogo é", sem símbolos soltos.
+      expect(texto, id).not.toMatch(
+        /x > 0|velocidade > -9|é \?|\(velocidade fica|\(lugar fica|um segundo e quase meio/,
+      )
+      // P6: "quadro" é a imagem do jogo; o bloco é A cada quadro do jogo.
+      expect(texto, id).not.toMatch(/(?:dentro|fora) do quadro|Se do quadro|solte dentro do quadro/)
       expect(texto, id).not.toMatch(/um número entre|mínimo \d|máximo \d/)
       expect(texto, id).not.toContain('Conta matemática')
       expect(texto, id).not.toMatch(/apelido|campo de item/)
@@ -431,19 +530,16 @@ test('falas citam os rótulos que a criança vê', () => {
     }
 })
 
-// A troca temporária para jogando (fase 7) volta para inicio num passo próprio, logo antes de
-// verificar, com o efeito visível no lugar de um "confira". A verificação das partes 3 e 4 também
-// confere o estado inicio.
-test('fase 7: o estado volta para inicio no último passo antes de verificar', () => {
+// D1 (02/11/2026): sem a troca temporária do estado para jogando. A montagem tem um caminho só, e a
+// aula 7 termina com o jogo esperando em inicio; a partida começa na aula 8.
+test('fase 7: sem trocar o estado para jogando e voltar, e o envio confere o estado inicio', () => {
   const fase7 = aulasDino[6]!
   for (const key of ['embrulhar', 'relogio', 'entrega']) {
     const section = fase7.sections.find((s) => s.key === key)!
-    const falas = section.speech!
-    expect(falas.at(-1), key).toStartWith(
-      'Antes de verificar, troque o estado em Ao iniciar de volta para inicio, porque',
+    const texto = [section.bridge, ...falasSecao(section)].join(' ')
+    expect(texto, key).not.toMatch(
+      /por um momento|de volta para inicio|troque o estado|para jogando\. Teste/i,
     )
-    expect(falas.at(-1), key).not.toContain('Confira se o estado voltou')
-    expect(falas.slice(0, -1).join(' '), key).not.toMatch(/de volta para inicio|devolva/i)
     expect(
       section.checks?.map((c) => c.id),
       key,
@@ -454,184 +550,48 @@ test('fase 7: o estado volta para inicio no último passo antes de verificar', (
   )
 })
 
-const seconds = (count: number): SceneAction[] =>
-  Array.from({ length: count }, () => ({ type: 'advance', seconds: 1 }))
-// Cada percurso encena a instrução escrita, inclusive ações antes ocultas nas pistas.
-const routes: Record<string, SceneAction[]> = {
-  'aula-01/experiencia-uma-vez-e-sempre': [
-    { type: 'place-in-area', card: 'move', area: 'start' },
-    ...seconds(6),
-    { type: 'place-in-area', card: 'move', area: 'loop' },
-    ...seconds(6),
-  ],
-  'aula-04/experiencia-tres-areas': [
-    { type: 'place-in-area', card: 'event', area: 'event' },
-    ...seconds(3),
-    { type: 'trigger' },
-  ],
-  'stage-size': [
-    { type: 'border', visible: true },
-    { type: 'stage', width: 600, height: 300 },
-    { type: 'stage', width: 480, height: 270 },
-  ],
-  coordinates: [
-    { type: 'place', x: 300, y: 150 },
-    { type: 'place', x: 300, y: 240 },
-    { type: 'place', x: 0, y: 0 },
-  ],
-  world: [{ type: 'create' }, { type: 'connect', port: 'draw', enabled: true }],
-  'draw-loop': [
-    { type: 'advance', seconds: 0.5 },
-    { type: 'loop', on: true },
-    { type: 'advance', seconds: 0.5 },
-    { type: 'erase', on: true },
-    { type: 'advance', seconds: 0.5 },
-  ],
-  layers: [
-    { type: 'layer', front: true },
-    { type: 'layer', front: false },
-    { type: 'layer', front: true },
-  ],
-  'screen-reader': [
-    { type: 'listen' },
-    { type: 'describe', text: 'Corra com o dino e pule os cactos apertando espaço' },
-    { type: 'listen' },
-  ],
-  gravity: [
-    { type: 'jump', input: 'tap' },
-    ...seconds(2),
-    { type: 'connect', port: 'gravity', enabled: true },
-    ...seconds(3),
-  ],
-  impulse: [
-    { type: 'impulse', force: 9 },
-    { type: 'jump', input: 'tap' },
-    ...seconds(2),
-    { type: 'impulse', force: 14 },
-    { type: 'jump', input: 'tap' },
-    ...seconds(2),
-  ],
-  'jump-sound': [
-    { type: 'jump', input: 'key' },
-    { type: 'advance', seconds: 0.2 },
-    { type: 'jump', input: 'key' },
-    ...seconds(2),
-    { type: 'jump', input: 'tap' },
-    ...seconds(2),
-    { type: 'connect', port: 'sound', enabled: true },
-    { type: 'jump', input: 'key' },
-    { type: 'advance', seconds: 0.2 },
-    { type: 'jump', input: 'key' },
-    ...seconds(2),
-    { type: 'jump', input: 'tap' },
-    ...seconds(2),
-  ],
-  spawn: [
-    ...seconds(1),
-    { type: 'connect', port: 'timer', enabled: true },
-    { type: 'interval', seconds: 1.4 },
-    ...seconds(3),
-  ],
-  velocity: [
-    { type: 'velocity', vx: 5, vy: 0 },
-    ...seconds(1),
-    { type: 'velocity', vx: -5, vy: 0 },
-    ...seconds(1),
-    { type: 'velocity', vx: 0, vy: 0 },
-    ...seconds(1),
-  ],
-  cleanup: [...seconds(6), { type: 'connect', port: 'cleanup', enabled: true }, ...seconds(3)],
-  'game-state': [
-    ...seconds(1),
-    { type: 'connect', port: 'condition', enabled: true },
-    ...seconds(3),
-    { type: 'start', input: 'tap' },
-    ...seconds(3),
-  ],
-  controls: [
-    { type: 'start', input: 'tap' },
-    { type: 'start', input: 'key' },
-    { type: 'home' },
-    { type: 'connect', port: 'touch', enabled: true },
-    { type: 'start', input: 'tap' },
-    { type: 'home' },
-    { type: 'start', input: 'key' },
-  ],
-  'aula-09/experiencia-contato': [{ type: 'move', distance: 50 }],
-  hitbox: [
-    { type: 'move', distance: 50 },
-    { type: 'resize', width: 51.2 },
-    { type: 'move', distance: 40 },
-    { type: 'resize', width: 25.6 },
-  ],
-  restart: [
-    { type: 'start', input: 'key' },
-    ...seconds(3),
-    { type: 'start', input: 'key' },
-    { type: 'start', input: 'key' },
-    ...seconds(3),
-    { type: 'connect', port: 'restart', enabled: true },
-    { type: 'start', input: 'key' },
-    { type: 'start', input: 'key' },
-  ],
-  variable: [
-    { type: 'store', value: 1 },
-    { type: 'store', value: 0 },
-    { type: 'change', by: 1 },
-    { type: 'change', by: 1 },
-    { type: 'show', on: true },
-    { type: 'change', by: 1 },
-  ],
-  score: [
-    { type: 'score-place', clock: 'frame', guarded: false },
-    ...seconds(1),
-    { type: 'score-place', clock: 'loose', guarded: false },
-    ...seconds(1),
-    { type: 'connect', port: 'condition', enabled: true },
-    ...seconds(1),
-    { type: 'start', input: 'key' },
-    ...seconds(3),
-    { type: 'collide' },
-    ...seconds(2),
-  ],
-  random: [
-    { type: 'sample', kind: 'position', unit: 0.1, guided: false },
-    { type: 'sample', kind: 'position', unit: 0.9, guided: false },
-    ...Array.from({ length: 8 }, () => ({
-      type: 'sample' as const,
-      kind: 'position' as const,
-      unit: 0.1,
-      guided: false,
-    })),
-    { type: 'sample', kind: 'velocity', unit: 0.1, guided: false },
-    { type: 'sample', kind: 'velocity', unit: 0.9, guided: false },
-  ],
-  'number-line': [
-    ...Array.from({ length: 3 }, () => ({ type: 'sum-minus-one' as const })),
-    { type: 'reset' },
-    { type: 'compare-op', operator: '>' },
-    { type: 'step-value', value: -9 },
-    { type: 'reset' },
-    { type: 'compare-op', operator: '=' },
-    ...Array.from({ length: 4 }, () => ({ type: 'sum-minus-one' as const })),
-  ],
-  acceleration: [
-    ...Array.from({ length: 5 }, () => ({
-      type: 'sample' as const,
-      kind: 'velocity' as const,
-      unit: 0,
-      guided: false,
-    })),
-    { type: 'sample', kind: 'velocity', unit: 1, guided: false },
-    { type: 'connect', port: 'limit', enabled: false },
-    ...Array.from({ length: 5 }, () => ({
-      type: 'sample' as const,
-      kind: 'velocity' as const,
-      unit: 0,
-      guided: false,
-    })),
-  ],
-}
+// P10 (02/11/2026): a área fica em 80 e os pontos, em 1 segundo, sem escolha opcional na montagem.
+test('P10: sem valor opcional na montagem da área e dos pontos', () => {
+  for (const aula of aulasDino)
+    for (const section of aula.sections) {
+      const texto = [
+        section.bridge,
+        ...falasSecao(section),
+        ...(section.checks ?? []).map((c) => c.label),
+      ].join(' ')
+      expect(texto, `${aula.slug}/${section.key}`).not.toMatch(
+        /Se quiser, (?:teste|você pode escolher)|você pode escolher um (?:valor|intervalo)|(?:porcentagem|intervalo) que você escolheu|O intervalo é seu|Vale qualquer número de 70/,
+      )
+    }
+})
+
+// D3 (02/11/2026): a régua dos negativos vem logo antes da velocidade sorteada, com as mesmas chaves.
+test('D3: a régua dos negativos fica na aula 12, entre o lugar e a velocidade', () => {
+  expect(aulasDino[11]!.sections.map((s) => s.key)).toEqual([
+    'sorteio-tira-na-hora',
+    'lugar-diferente',
+    'regua-negativos',
+    'velocidade-propria',
+    'entrega',
+  ])
+  const regua = aulasDino[11]!.sections[2]!
+  expect(regua.videoKey).toBe('video-regua-negativos')
+  expect(regua.activityKey).toBe('experiencia-number-line')
+  expect(aulasDino[12]!.sections.some((s) => s.key === 'regua-negativos')).toBe(false)
+  const m12 = manifests[11]!
+  const m13 = manifests[12]!
+  for (const key of ['video-regua-negativos', 'fala-regua-negativos', 'experiencia-number-line']) {
+    expect(m12.blocks.map((b) => b.key)).toContain(key)
+    expect(m13.retireBlockKeys).toContain(key)
+  }
+  const fala13 = aulasDino[12]!.sections.flatMap((s) => falasSecao(s)).join(' ')
+  expect(fala13).not.toMatch(/segunda parte desta aula/)
+  expect(fala13).toContain('Lembra da régua da aula anterior?')
+  expect(falasSecao(aulasDino[11]!.sections[3]!).join(' ')).toContain(
+    'Tirar 1 é o mesmo que somar -1.',
+  )
+})
+
 for (const manifest of manifests)
   for (const block of manifest.blocks) {
     const content = block.content
@@ -644,8 +604,8 @@ for (const manifest of manifests)
       expect(evaluateLearning(content, {}).passed).toBe(false)
       const start = sceneStart(content.activity)
       let session = initialExperiment(start)
-      const actions =
-        routes[`${manifest.lessonSlug}/${block.key}`] ?? routes[content.activity.scene]
+      // Exploração livre (02/11/2026): o caminho de sucesso da cena, o mesmo dos testes do core.
+      const actions = freeExplorationPaths[content.activity.scene]
       if (!actions) throw new Error(`Percurso ausente: ${content.activity.scene}`)
       for (const action of actions) session = stepExperiment(start, session, action).session
       const result = evaluateLearning(content, {

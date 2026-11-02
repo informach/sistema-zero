@@ -1,80 +1,92 @@
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender as camadas, que decidem qual forma aparece na frente.
+[engaging, energetic, conversational voice] No seu asteroide, o fogo vai ficar atrás da pedra, saindo por cima dela. Quando duas formas ficam uma em cima da outra, uma delas aparece na frente e cobre um pedaço da outra.
 
-[interested, animated voice] Olha aqui: no começo, a chama cobre quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo.
+[engaging, energetic, conversational voice] No Pinta, a lista Camadas mostra a ordem das formas. Cada forma ocupa uma linha da lista.
+
+[engaging, energetic, conversational voice] Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.
 
 [curious] Como faz para a pedra aparecer na frente da chama?
 
-[engaging, energetic, conversational voice] Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada, porque o que mudou foi só a ordem.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Sabe quando você empilha figurinhas na mesa? A de cima tapa um pedaço da de baixo. Na lista Camadas é igual: a forma que está em cima aparece na frente.
-
-[engaging, energetic, conversational voice] Agora eu clico em Uma camada para trás, na linha da pedra. Tá vendo? A pedra desce na lista, e a chama volta a cobrir a pedra, porque agora é a chama que está em cima. Depois eu clico em Uma camada para a frente de novo, e a pedra volta para a frente.
-
-[engaging, energetic, conversational voice] Daqui a pouco, no seu asteroide, você vai desenhar a chama e usar Uma camada para trás até a pedra e as crateras ficarem na frente dela.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A chama cobria a pedra porque estava em cima na lista Camadas. Agora a gente vai pôr o fogo do seu asteroide atrás da pedra!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A chama cobria a pedra quando estava em cima na lista Camadas. Por isso, agora a gente vai desenhar o fogo do seu asteroide e deixar a chama abaixo da pedra na lista.
 
-[engaging, energetic, conversational voice] Primeiro, abra o asteroide no Pinta e selecione o quadro 1. Clique fora das formas, escolha uma cor quente em Preenchimento e deixe o Contorno em Sem cor. Depois, com a Caneta, marque pontos formando uma chama no espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.
+[confident, clear, unhurried voice] Abra o asteroide no Pinta e selecione o quadro 1. Clique fora das formas para não deixar nada selecionado.
 
-[curious] E se a chama ficar na frente da pedra?
+[engaging, energetic, conversational voice] Escolha uma cor quente em Preenchimento e deixe o Contorno em Sem cor.
 
-[engaging, energetic, conversational voice] Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma desenhada fica em cima na lista Camadas. Por isso, use Uma camada para trás até a pedra e as crateras ficarem na frente dela.
+[engaging, energetic, conversational voice] Com a Caneta, marque pontos formando uma chama no espaço acima da pedra e clique no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.
 
-[engaging, energetic, conversational voice] Depois disso, a pedra e as crateras aparecem na frente do fogo. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira na lista Camadas: a pedra e as crateras ficam acima da chama.
+[curious] Ué, a chama ficou na frente da pedra?
+
+[interested, animated voice] Tá vendo? A base da chama cobre um pedaço da pedra, porque a chama foi a última forma desenhada e ficou em cima na lista Camadas.
+
+[engaging, energetic, conversational voice] Para mudar isso, use Selecionar e clique na chama. Depois clique em Uma camada para trás até a pedra e as crateras ficarem na frente dela.
+
+[interested, animated voice] Olha só: a pedra e as crateras aparecem na frente do fogo. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira na lista Camadas: a pedra e as crateras ficam acima da chama.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Agora faça um centro mais claro no fogo. Selecione a chama e use Ctrl+C e Ctrl+V para fazer uma cópia. Na cópia, escolha uma cor mais clara, diminua pelas alças e coloque esse miolo dentro da chama maior. Se precisar, selecione os pontos para ajustar a ponta.
+[engaging, energetic, conversational voice] Agora faça um centro mais claro no fogo, que vai ser o miolo da chama. Selecione a chama e use Ctrl+C e Ctrl+V para fazer uma cópia dela.
 
-[engaging, energetic, conversational voice] Depois confira a ordem: a pedra e as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas.
+[engaging, energetic, conversational voice] Na cópia, escolha uma cor mais clara em Preenchimento. Depois arraste um canto da caixa em volta dela para deixar a cópia menor.
 
-[curious] Como eu trago o miolo claro para a frente?
+[engaging, energetic, conversational voice] Leve esse miolo para dentro da chama maior. Se precisar, use Editar os pontos para ajustar a ponta.
 
-[engaging, energetic, conversational voice] Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com a chama. Por último, confira se as duas chamas cabem inteiras no quadro.
+[engaging, energetic, conversational voice] Agora confira a ordem. O miolo precisa aparecer na frente da chama maior e atrás da pedra. Na lista Camadas, ele fica logo acima da chama maior e abaixo da pedra, porque a forma mais acima na lista aparece na frente.
 
-[engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
+[curious] Como eu levo o miolo para esse lugar da lista?
 
-[long pause]
+[engaging, energetic, conversational voice] Com o miolo selecionado, olhe onde ele está na lista Camadas. Se ele estiver acima da pedra, clique em Uma camada para trás. Se estiver abaixo da chama maior, clique em Uma camada para a frente. Clique uma vez de cada vez, olhando a lista, até ele ficar entre a chama maior e a pedra.
 
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender quanto um desenho pode mudar de um quadro para o outro.
-
-[interested, animated voice] Olha aqui: a Prévia já está tocando, trocando os dois quadros 8 vezes por segundo. Com O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, a pedra fica parada na Prévia, porque os dois quadros são iguais.
-
-[engaging, energetic, conversational voice] Agora eu coloco O tanto que a cratera anda em 4 e deixo a pedra inteira em 0. No quadro 2, só as crateras mudam um pouco de lugar. [interested, animated voice] Olha só: na Prévia, as crateras andam, o corpo fica no lugar, e a pedra parece rolar.
-
-[engaging, energetic, conversational voice] Imagina uma bola girando na sua frente, sem sair do lugar. Você percebe que ela gira porque os desenhos na bola vão mudando de posição. É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda.
-
-[curious] E se eu mover a pedra inteira?
-
-[engaging, energetic, conversational voice] Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia, o desenho pula de um lado para o outro, em vez de rolar, porque uma mudança grande demais vira pulo.
-
-[engaging, energetic, conversational voice] Daqui a pouco, no segundo quadro do seu asteroide, você vai mover uma cratera um pouco e deixar o corpo da pedra no mesmo lugar.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Ligue a Prévia. Tá vendo? A pedra fica parada, porque a animação só tem um quadro. Lembra da experiência da parte anterior? Quando só as crateras andavam um pouco, a pedra parecia rolar. Agora a gente vai fazer isso no seu asteroide!
-
-[engaging, energetic, conversational voice] Primeiro, em Spritesheet, selecione o quadro 1 e clique em Duplicar quadro. Depois, no quadro 2, com Selecionar, mova uma cratera um pouco para o lado, mantendo a cratera dentro da pedra. Se quiser, faça uma mudança pequena em outra cratera.
-
-[engaging, energetic, conversational voice] Agora escolha Editar os pontos numa chama e ajuste a ponta dela um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro, e mantenha o corpo da pedra na mesma posição.
-
-[engaging, energetic, conversational voice] Por último, troque entre os dois quadros: o corpo fica no lugar, e só os detalhes mudam. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo da pedra está na mesma posição nos dois quadros, e a pedra e as crateras continuam na frente do fogo, porque uma chama na frente num quadro só pisca por cima da pedra na animação.
+[interested, animated voice] Olha só: o miolo claro aparece dentro da chama, e a pedra continua na frente do fogo. Por último, confira se as duas chamas cabem inteiras no quadro.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Agora dê um nome à animação da pedra. Em Spritesheet, use Renomear animação para trocar parado por girando. Esse nome vai ajudar você a escolher essa animação no Estúdio. Depois deixe a Velocidade em 8 quadros por segundo e ligue a Prévia.
+[engaging, energetic, conversational voice] A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2. Dá para mudar só um pedaço da pedra, como a cratera, ou mudar a pedra inteira de lugar.
 
-[interested, animated voice] Olha só: as crateras e o fogo mudam um pouco, e o corpo fica no lugar. Os dois desenhos criam uma impressão de movimento, e não uma volta completa da pedra, porque só os detalhes mudam de um quadro para o outro. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo está no mesmo lugar nos dois quadros, nenhuma ponta é cortada na borda e a animação girando tem dois quadros.
+[engaging, energetic, conversational voice] Sabe aqueles livrinhos de folhear? De uma página para a outra, o desenho pode mudar um pouquinho ou mudar muito.
+
+[curious] E se a pedra inteira andar bastante de um quadro para o outro?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar quanto a pedra pode mudar do quadro 1 para o quadro 2, mexendo só na cratera ou na pedra inteira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Ligue a Prévia do asteroide. Tá vendo? A pedra fica parada, porque a animação tem um quadro só. Lembra da experiência da parte anterior? Quando só a cratera andava um pouco, a pedra parecia girar. Agora a gente vai fazer isso no seu asteroide!
+
+[engaging, energetic, conversational voice] Na faixa Spritesheet, selecione o quadro 1 e clique em Duplicar quadro.
+
+[engaging, energetic, conversational voice] No quadro 2, use Selecionar e mova uma cratera um pouco para o lado, mantendo a cratera dentro da pedra. Se quiser, faça uma mudança pequena em outra cratera.
+
+[engaging, energetic, conversational voice] Depois escolha Editar os pontos numa chama e mexa a ponta dela um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro.
+
+[engaging, energetic, conversational voice] Não mova o corpo da pedra, porque, se ele mudar de lugar, a pedra pula na animação.
+
+[engaging, energetic, conversational voice] Por último, troque entre os dois quadros: o corpo fica no lugar, e só os detalhes mudam. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo da pedra está na mesma posição nos dois quadros, e a pedra e as crateras continuam na frente do fogo nos dois.
+
+[engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Agora dê um nome à animação da pedra. Na faixa Spritesheet, clique em Renomear animação e troque parado por girando.
+
+[engaging, energetic, conversational voice] Esse nome vai ajudar você a escolher essa animação no Estúdio.
+
+[engaging, energetic, conversational voice] Depois deixe a Velocidade em 8 quadros por segundo e ligue a Prévia. [interested, animated voice] Olha só: as crateras e o fogo mudam um pouco, e o corpo fica no lugar.
+
+[engaging, energetic, conversational voice] A pedra não dá uma volta completa, porque só os detalhes mudam de um quadro para o outro. Mesmo assim, os dois desenhos dão a impressão de que ela está girando.
+
+[reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo está no mesmo lugar nos dois quadros, nenhuma ponta é cortada na borda e a animação girando tem dois quadros.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 

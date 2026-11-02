@@ -133,6 +133,24 @@ Transferência, como as aulas 3D dos outros Poderes: o conceito já foi visto.
 
 ## 7. Experiência "A ponte apressada"
 
+> **Revisão de 02/11/2026 (decisões da responsável, régua do Farol e do Cadê).** A experiência e o
+> vídeo conceitual trabalham **só a ideia**: a alavanca, a ponte, `ponteAberta` e um **relógio**
+> que conta 4 segundos. Saíram da tela a regra montada como blocos, o "depois de", o Se, o então e o
+> senão; eles aparecem só na montagem, que liga cada bloco à ideia ("É este bloco que faz o papel do
+> relógio da experiência"). O lugar do "depois de" virou **Quando o relógio começa a contar?**
+> (*Quando puxa a alavanca* / *Quando a partida começa*). A pergunta da ponte aparece como "ponteAberta é
+> verdadeiro?", com **Sim** e **Não**, e o que cada resposta faz, o que a alavanca faz e o que
+> acontece quando o relógio chega a 4 só aparecem depois do teste daquele caso. O Zappy pergunta e diz
+> o que observar antes do teste, e explica depois; o botão em destaque é o gesto que ele pede. Pistas
+> do aberto ao direto com os botões reais; ir até a ponte logo depois de puxar também conta como
+> chegar a tempo. O vídeo conceitual mantém o semáforo, explica ponteAberta com a ideia do papelzinho (não "bloquinho", que se confunde com os blocos)
+> e convida a investigar ("O que você acha? Isso você vai testar na experiência"), sem sequência de
+> cliques nem resultado. As montagens começam pelo "Tá vendo?" no jogo, retomam a experiência, explicam
+> "condição" e dividem as falas em uma ideia por vez; a parte 4 explica ponteAberta com o papelzinho.
+> A aula 2 ficou com o resumo mais leve. O Passo a passo ganhou a página da experiência com os
+> objetivos de investigação. Falas: `packages/core/src/learning/scene/guidance-ponte.ts`; tela:
+> `packages/member-shell/src/components/scene-poder-ponte.tsx`. O texto abaixo é o registro de 29/10.
+
 Cena com o personagem real do Farol, a alavanca, a ponte, a pedra do sino e um **relógio de
 segundos** visível (cada segundo que passa acende uma marquinha, até 4). Mostra a informação
 guardada como na diretriz (`ponteAberta`: verdadeiro ou falso) e a regra montada como os blocos do

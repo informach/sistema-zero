@@ -14,6 +14,8 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimento, sorteio e pontuação.
 
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -23,31 +25,37 @@ Uma aula dedicada a identificar os dois objetos do acerto, sem misturar nascimen
 
 ## Proposta final
 
-### Seção 1. Escolha quem sai no acerto
+### Seção 1. Quem sai do jogo na trombada?
 
-**Tarefa:** Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-apelidos → fala-trombada → experiencia-trombada.
 
-**Recado na página (não gravar):** Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-apelidos-K1: Debinha substitui “Eu só acertei uma. Por que sumiram todas?”. Antes: “todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.”. Depois: “Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando. Agora eu clico em”.
+video-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. Antes: “tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o”.
 
-**Experiência existente:** `collision-pair`. Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência em exploração livre:** `collision-pair` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/collision-pair.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/collision-pair.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores. Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores. Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras.
+
+**Pistas, do aberto ao direto:** 1) Observe os dois contadores e as pedras que não encostaram em nada. 2) Compare tirar os grupos inteiros com tirar só o tiro e a pedra que encostaram. 3) Escolha O grupo dos tiros e O grupo das pedras e clique em Passar 1 segundo. Depois clique em Voltar ao começo, escolha O tiro que encostou e A pedra que encostou e passe o tempo até as outras pedras saírem por baixo. Sem palpite e sem pergunta final.
 
 ### Seção 2. Programe o acerto
 
-**Tarefa:** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Tarefa:** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o tiro e a pedra da trombada, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Blocos na página:** video-colisao → fala-colisao.
 
-**Recado na página (não gravar):** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o tiro e a pedra da trombada, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-colisao-K1: Debinha substitui “Como ele sabe qual tiro acertou qual pedra?”. Antes: “colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.”. Depois: “Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e”.
+video-colisao-K1: Debinha substitui “Como ele sabe qual tiro acertou qual pedra?”. Antes: “que confere, em todo quadro, se algum tiro encostou em alguma pedra. O que fica dentro dele acontece a cada trombada.”. Depois: “Pelos apelidos que o bloco dá aos dois. Repare na linha de baixo do bloco: chamar os sprites de tiro e asteroide. Esses”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 

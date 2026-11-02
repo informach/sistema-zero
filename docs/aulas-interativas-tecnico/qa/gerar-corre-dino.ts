@@ -24,12 +24,11 @@ export interface SecaoDino {
   title: string
   bridge: string
   screen?: string
-  /** Experiência: o meme ilustrado que acompanha a comparação do dia a dia (nota de tela). */
-  meme?: string
   speech?: string[]
   /**
-   * Os passos que o Passo a passo do projeto imprime, no imperativo. Existe onde o vídeo é demonstração
-   * na primeira pessoa (experiências e jogo pronto), que não serve como passo para a criança.
+   * Os passos que o Passo a passo do projeto imprime, no imperativo. Existe só no jogo pronto, cujo
+   * vídeo é um exemplo na primeira pessoa. As experiências imprimem só a instrução (o que investigar,
+   * sem sequência), e as montagens, a fala sem os chamados do vídeo.
    */
   caderno?: string[]
   videoKey?: string
@@ -52,6 +51,8 @@ export interface AulaDino {
   entry: string
   outcome: string
   reason: string
+  /** O que a revisão de 02/11/2026 mudou nesta aula (exploração livre e didática das falas). */
+  revisao?: string
   concepts: string[][]
   sections: SecaoDino[]
   legacyKeys: string[]
@@ -68,37 +69,101 @@ const checkExit =
 const send =
   'Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.'
 // Na aula, o Compartilhar não mostra o campo Título e traz o resumo do manifesto (showcase).
-const publish =
-  'Quando o envio terminar, se quiser mostrar o seu jogo no Mural, clique em Compartilhar. Você pode publicar agora ou deixar para outra hora. O resumo do projeto já vem preenchido. Deixe como está. Clique em Gerar capa e confira a imagem. Depois, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Agora você, sua família e seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para a sua família e seus amigos. Quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar.'
-/** O fim de todo vídeo de experiência: só aqui a vez passa para quem faz a aula. */
-export const SUA_VEZ =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
-/** O modelo da nota de tela das experiências (Diretrizes, seção 2: o vídeo é uma demonstração). */
-const telaExperiencia =
-  'Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado.'
+// Um parágrafo por momento (revisão de 02/11/2026, como na Nave): o convite opcional e o
+// Compartilhar, o resumo, a capa, a publicação com a comemoração, e o link e a saída. Antes era um
+// parágrafo só, longo demais, e sem a ajuda de um adulto (Diretrizes, seção 5).
+const publish = [
+  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Se precisar, peça ajuda a um adulto. Para publicar, clique em Compartilhar depois do envio.',
+  'O resumo do projeto já vem preenchido. Deixe como está.',
+  'Depois, clique em Gerar capa e confira a imagem.',
+  'Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Agora você, sua família e seus amigos podem jogar o jogo que você criou.',
+  'Clique em Copiar link de jogar e mande o link para a sua família e os seus amigos, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.',
+]
 
 export function ehExperiencia(section: SecaoDino): boolean {
   return section.activity?.activity.type === 'experimentation'
 }
 
-/** A nota "Na tela" do vídeo. Nas montagens, é a nota da fonte; nas experiências, o modelo. */
+/**
+ * A nota "Na tela" do vídeo, escrita na fonte com a receita da ESPEC-ROTEIRO §9.8. Desde a
+ * exploração livre (02/11/2026), as experiências também a escrevem por inteiro. No molde do convite
+ * (Cadê, 02/11/2026), o vídeo da experiência só amplia a cena parada e mostra o Zappy: não aponta os
+ * controles nem faz os testes pela criança.
+ */
 export function telaSecao(section: SecaoDino): string {
-  if (!ehExperiencia(section)) return section.screen ?? ''
-  const meme = section.meme
-    ? ` Meme ilustrado na frase da comparação, por 2 a 3 segundos: ${section.meme} Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência.`
-    : ''
-  return `${telaExperiencia} ${section.screen}${meme} Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.`
+  return section.screen ?? ''
 }
 
-export function falasSecao(section: SecaoDino): string[] {
+/**
+ * Onde a fala aparece: no vídeo (`video`) ou no Passo a passo do projeto (`mapa`), que é lido e não
+ * assistido. Mesmo modelo da Nave (revisão independente de 06/10/2026).
+ */
+export type MeioDaFala = 'video' | 'mapa'
+
+export function falasSecao(section: SecaoDino, meio: MeioDaFala = 'video'): string[] {
   const speech = [...(section.speech ?? [])]
-  if (ehExperiencia(section)) speech.push(SUA_VEZ)
   if (section.checks?.length) {
-    speech.push(
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir aula.` : 'Quando aparecer Projeto enviado!, clique em Concluir aula.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
-    )
+    if (section.final && section.publish) speech.push(`${checkExit} ${send}`, ...publish)
+    else
+      speech.push(
+        `${checkExit} ${section.final ? `${send} Quando aparecer Projeto enviado!, clique em Concluir aula.` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
+      )
   }
-  return speech
+  return meio === 'video' ? speech : speech.map(semChamados)
+}
+/**
+ * No PDF não há vídeo para apontar: "Olha aqui", "Olha só", "Repare" e "Tá vendo?" puxam o olhar
+ * para um gesto da gravação (Diretrizes, seção 6). No Passo a passo eles saem e a frase seguinte
+ * começa com maiúscula; "Repare nos/nas…" vira "Confira os/as…", que é o que a criança faz no papel.
+ */
+export function semChamados(paragrafo: string): string {
+  return paragrafo
+    .replace(/\bRepare n([oa]s?) /g, 'Confira $1 ')
+    .replace(/, (?:olha aqui|olha só|repare): /g, ', ')
+    .replace(
+      /(?:(?:Tá vendo|Percebeu)\? |(?:Olha aqui|Olha só|Repare): |Repare que )(\p{L})/gu,
+      (_, letra: string) => letra.toUpperCase(),
+    )
+}
+/** As cenas divididas com a Nave que ganharam uma tela própria do Dino (frente A, 02/11/2026). */
+const TELAS_DO_DINO = new Set([
+  'spawn',
+  'velocity',
+  'cleanup',
+  'game-state',
+  'restart',
+  'variable',
+  'random',
+])
+/** As cenas com falas próprias do Dino em `guia-livre/dino/`. */
+const FALAS_PROPRIAS_DO_DINO = new Set(['once-vs-always', 'spawn', 'velocity', 'restart', 'random'])
+/** As cenas cujas falas do Dino espelham as da Nave, trocando só as palavras. */
+const ESPELHOS_DO_DINO = new Set([
+  'coordinates',
+  'world',
+  'draw-loop',
+  'layers',
+  'cleanup',
+  'game-state',
+  'variable',
+])
+/**
+ * Exploração livre (02/11/2026): a tela e as falas do Zappy de cada experiência. As cenas que o Corre
+ * Dino divide com a Nave escolhem a variante do Dino pelo `cenario` do bloco; as outras (frentes B e
+ * C) são telas próprias do curso.
+ */
+export function telaDaExperiencia(activity: InteractiveBlock): { tela: string; falas: string } {
+  if (activity.activity.type !== 'experimentation') throw new Error('Experiência sem cena')
+  const scene = activity.activity.scene
+  const falas = FALAS_PROPRIAS_DO_DINO.has(scene)
+    ? `dino/${scene}.ts`
+    : ESPELHOS_DO_DINO.has(scene)
+      ? 'dino/espelhos.ts'
+      : `${scene}.ts`
+  return {
+    tela: `packages/member-shell/src/components/scene-livre/${TELAS_DO_DINO.has(scene) ? 'dino/' : ''}${scene}.tsx`,
+    falas: `packages/core/src/learning/scene/guia-livre/${falas}`,
+  }
 }
 function types(value: unknown): string[] {
   const found = new Set<string>()
@@ -241,6 +306,13 @@ function roteiro(lesson: AulaDino, index: number) {
         '',
       )
     }
+    if (s.activity?.activity.type === 'experimentation') {
+      const { tela, falas } = telaDaExperiencia(s.activity)
+      lines.push(
+        `**Falas dentro da experiência:** \`${falas}\`, na tela \`${tela}\`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.`,
+        '',
+      )
+    }
     lines.push(`**Recado na página (não gravar):** ${s.bridge}`, '')
     if (s.questions)
       lines.push(
@@ -268,6 +340,7 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
     '',
     lesson.reason,
     '',
+    ...(lesson.revisao ? [`**Revisão de 02/11/2026.** ${lesson.revisao}`, ''] : []),
     '## Triagem dos conceitos',
     '',
     '| Conceito | Como e quando trabalhar | Razão |',
@@ -292,8 +365,18 @@ function proposta(lesson: AulaDino, index: number, manifest: LearningManifest) {
       lines.push(`**Participação no vídeo:** ${planoAvatar(s, falasSecao(s), index)}`, '')
     if (s.activity)
       lines.push(
-        `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.`,
-        '',
+        ...(s.activity.activity.type === 'experimentation'
+          ? [
+              `**Experiência em exploração livre:** \`${s.activity.activity.scene}\` (\`setup.freeExploration\`), tela \`${telaDaExperiencia(s.activity).tela}\` e falas do Zappy em \`${telaDaExperiencia(s.activity).falas}\`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.`,
+              '',
+              `**Instrução:** ${s.activity.instructions}`,
+              '',
+              `**O que investigar (metas, em qualquer ordem):** ${(s.activity.activity.setup?.goals ?? []).map((g) => (s.activity!.activity.type === 'experimentation' ? (s.activity!.activity.setup?.goalCopy?.[g]?.pedido ?? g) : g)).join(' ')}`,
+              '',
+              `**Pistas, do aberto ao direto:** ${s.activity.hints.map((h, n) => `${n + 1}) ${h}`).join(' ')} Sem palpite e sem pergunta final.`,
+              '',
+            ]
+          : [`**Atividade:** \`${s.activity.activity.type}\`. ${s.activity.instructions}`, '']),
       )
     if (s.play)
       lines.push(

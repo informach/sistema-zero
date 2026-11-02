@@ -18,7 +18,7 @@ const FiltroDaIlha = FiltroDaApresentacao.extend({ ilha: z.enum(ILHA_IDS).option
 // Telas já abertas usam contratos estritos. Só quem pede a apresentação recebe os campos
 // novos; o domínio e a publicação continuam únicos, sem duplicar regras nem afrouxar schemas.
 const semApresentacao = ({ resumo: _resumo, imagem: _imagem, ...d }: DesafioNaLista) => d
-const semImagem = ({ imagem: _imagem, ...d }: DesafioAberto) => d
+const semImagem = ({ imagem: _imagem, moedasExtra: _moedasExtra, ...d }: DesafioAberto) => d
 
 function validar<T>(
   schema: { safeParse(v: unknown): { success: true; data: T } | { success: false } },

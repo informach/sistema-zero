@@ -10,7 +10,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Você fez o personagem andar, pegar a chave e acender o farol. Escolha uma resposta em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo."
+        "text": "Agora você vai lembrar as regras do seu jogo: o personagem que anda, a memória da chave e o farol que só acende com ela. Em cada pergunta, escolha uma resposta e clique em Ver o que acontece. A cena mostra o resultado, e a explicação conta o porquê. Se errar, você pode tentar de novo."
       }
     },
     {
@@ -59,7 +59,7 @@
               }
             ],
             "correctChoiceIds": ["b"],
-            "explanation": "Fazer a chave sumir e mudar o aviso não guarda a coleta. A ação de guardar precisa colocar verdadeiro em temChave. É essa informação que a porta consulta."
+            "explanation": "Fazer a chave sair do chão e mudar o aviso não faz o jogo lembrar. A memória da chave é o bloco Alterar temChave para verdadeiro, dentro do encontro com a chave. É essa informação que a porta confere."
           },
           {
             "id": "q3",
@@ -115,7 +115,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Parabéns! Você programou o personagem que anda, a coleta da chave e o farol que confere se você tem a chave. Agora clique em Baixar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir aula."
+        "text": "Parabéns! Você programou o personagem que anda, a memória da chave e o farol que só acende com a chave. Agora clique em Baixar meu certificado para guardar essa conquista. Quando ele baixar, clique em Concluir aula."
       }
     },
     {

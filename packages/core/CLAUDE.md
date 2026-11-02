@@ -403,6 +403,27 @@ quando um ritmo mudar):
 | `enemy-type`, `aim`, `stage-size` | o deslizante no batente reenvia o MESMO valor | o valor mudar de verdade |
 | todas as de tempo | um quadro por chamada: o mesmo gesto dava números diferentes no ▶, no passo e no roteiro | o relógio de quadro fixo |
 | `score` (`score-start`/`score-end`) | a sobra de ANTES do gesto atravessava: "o placar ficou parado" caía 0,05 s depois de bater | nas cenas de `sceneLongFrame` o gesto recomeça o quadro |
+| `symbol-sequence` (`count-vs-order`, exploração livre) | "só contando" com a ordem errada caía no primeiro gesto, sem a criança ter visto o baú que confere a vez | no modo livre, só depois de ter visto o baú que confere a vez responder (`right-order`, `out-of-turn` ou `middle-start`) |
+| `timed-bridge` (`in-time`, exploração livre) | ir à ponte no segundo 0 contava "a tempo" também com o relógio da partida, onde não há contagem que comece na puxada | a exceção do segundo 0 vale só com o relógio da alavanca (`place === 'lever'`) |
+| `motion-amount` (`no-change`, exploração livre) | a Prévia abria tocando: o relógio fechava "desenhos iguais" 0,25 s depois de abrir, sem gesto | no modo livre a Prévia abre parada (`openScene`), e o "Tocar a Prévia" da criança é o teste |
+| `fixed-vs-read` (`follows`/`box-marks`, exploração livre) | um tiro lido longe do 400 fechava "segue a nave"; as marcas com o número escrito e a nave no 400 fechavam por coincidência | no modo livre, `follows` pede dois tiros lidos com a nave em lugares diferentes; `box-marks` só com o número lido |
+| `invincibility` (exploração livre) | trocar a proteção no meio das batidas fechava a meta da proteção nova sobre batidas decididas pela outra | no modo livre, trocar a proteção recomeça as batidas |
+| `spawn` (`same-fall`, exploração livre) | medir de 20 em 20 antes de 40 em 40 nunca comparava | no modo livre, as duas medidas guardadas e iguais, em qualquer ordem |
+| `lighthouse-walk` (`step-speed-*`, exploração livre, o tamanho do passinho da Nave) | um quadro só, ou um passinho de 33 ms na velocidade de verdade, fechava a meta; trocar o passinho no meio da caminhada misturava as marcas | no modo livre, `LIGHTHOUSE_WALK.runSeen` passinhos seguidos em câmera lenta; trocar o passinho volta ao começo (as escolhas ficam) |
+| `lighthouse-key` (`not-flips-*`, o caso do não da Ilha do Farol) | nova (02/11/2026): uma tentativa só não compara as duas perguntas | as DUAS perguntas testadas com a MESMA chave (`asked-*` guarda cada situação); trocar a chave ou a pergunta limpa a tentativa; o modo liga pelas metas (`lighthouseKeyNotCase`), e a porta do Farol fica igual |
+| `score-goal` (cena nova, a meta do jogo da Nave, Dia 5) | nova (02/11/2026): a vitória por acaso no começo da partida, ou a placa "testada" fora da partida | `igual-conta` só com a vitória no 26 com ≥; `maior-pula` só com a vitória no 27 com > (o 26 passou à vista); `placa-fixa` só no MEIO de uma partida (um acerto, sem vitória); trocar o sinal recomeça a partida; o caso só escolhe o sinal |
+| `velocity` (`moves`/`left`, exploração livre, o cacto do Corre Dino) | começando pelo −5, `moves` e `left` caíam no mesmo passo e o número positivo nunca era testado; um passo de 5 px fechava a meta | no modo livre, `moves` é o positivo levando para a DIREITA e `left` o negativo para a esquerda, cada um com três quadros naquele sentido (`drive.steps`); `stopped` segue depois de `moves` |
+| `restart` (`clean-track`, exploração livre, o Corre Dino) | a comparação obrigatória (só depois de `screen-only`) prendia quem começava tudo de novo primeiro: via a pista limpa e a meta não caía | no modo livre, `clean-track` cai com `match.cleared > 0` (o recomeço TIROU cactos que estavam na pista), em qualquer ordem; fora dele continua pedindo `screen-only` antes |
+
+⚠️ **Dois recomeços na exploração livre (02/11/2026).** O `reset` livre é o "Recomeçar experiência" do
+rodapé e APAGA as descobertas (`stepExperiment` volta a `initialExperiment`). O "Voltar ao começo" que
+algumas telas têm no meio dos controles (`RESTART_CASE_SCENES`: `two-clocks`, `velocity`,
+`collision-pair`, `invincibility`, e desde a frente C do Corre Dino `number-line` e `acceleration`) é a
+ação `restart-case`: o mesmo recomeço do `reset` do motor, que guarda descobertas e escolhas (na
+`acceleration` livre, a pergunta como a criança deixou; fora do modo livre o recomeço religa a condição
+de fábrica). Fora do modo livre ela não faz nada. Os recomeços do motor dentro de um
+gesto (`shield`, `command-target`) partem de `initialScene`, nunca de `openScene`: o gesto pode estar nas
+ações do caso, e `openScene` as repete (recursão sem fim). Testes: `livre-revisao.test.ts`.
 
 Regras que saem da tabela:
 - Meta de COMPARAÇÃO pede o primeiro termo visto antes: `stopped` depois de `moves`, `landed` depois de
@@ -768,6 +789,13 @@ POST genérico de aprendizagem.
 - [ ] Nada de framework nem de import de pacote de serviço/app entrou aqui.
 - [ ] Subpath novo? Adicionou ao `exports` do `package.json`.
 - [ ] Mudou contrato público? Ciente de que redeploya os consumidores (é dependência de todos).
+
+## Ações iniciais das experiências (02/11/2026)
+
+`scene/actions.isSceneSetupAction` é a régua única do Admin, da validação de manifesto e
+de `openScene`. Reinícios (`reset`, `restart-case`) e pistas não são estado de partida.
+Uma chamada direta com configuração inválida ignora essas ações, sem voltar recursivamente
+ao próprio caso. `restart-case` continua sendo uma ação de interação nas cenas que a oferecem.
 
 ## Período confirmado de renovação (24/10/2026)
 
