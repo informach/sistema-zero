@@ -357,16 +357,30 @@ export function createArquipelagoRoutes(deps: {
     arquipelagoCoresConquistadas: { GET: () => chamar('/desafios/cores', 'GET') },
     arquipelagoDesafios: {
       GET: (req: Request) => {
-        const ilha = new URL(req.url).searchParams.get('ilha')
+        const params = new URL(req.url).searchParams
+        const ilha = params.get('ilha')
+        const apresentacao = params.get('apresentacao')
         if (ilha !== null && !ILHA.test(ilha)) return invalido()
-        return chamar('/desafios', 'GET', undefined, ilha ? { query: { ilha } } : {})
+        if (apresentacao !== null && apresentacao !== '1') return invalido()
+        const query = {
+          ...(ilha ? { ilha } : {}),
+          ...(apresentacao ? { apresentacao } : {}),
+        }
+        return chamar('/desafios', 'GET', undefined, Object.keys(query).length ? { query } : {})
       },
     },
     /** O desafio aberto para o Estúdio de desafio (sem gabarito nem regra: o serviço garante). */
     arquipelagoDesafio: {
-      GET: async (_req: Request, ctx: { params: Promise<{ id: string }> }) => {
+      GET: async (req: Request, ctx: { params: Promise<{ id: string }> }) => {
         const id = await idDe(ctx)
-        return id ? chamar(`/desafios/${id}`, 'GET') : invalido()
+        const apresentacao = new URL(req.url).searchParams.get('apresentacao')
+        if (!id || (apresentacao !== null && apresentacao !== '1')) return invalido()
+        return chamar(
+          `/desafios/${id}`,
+          'GET',
+          undefined,
+          apresentacao ? { query: { apresentacao } } : {},
+        )
       },
     },
     /** Conferir o projeto da pessoa: o serviço confere no Members e dá o prêmio uma vez só. */

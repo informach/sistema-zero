@@ -94,7 +94,13 @@ export interface RespostaDoServico {
 export interface ServicoDoJogo {
   buscar(
     caminho: string,
-    opcoes?: { metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE'; corpo?: unknown; sinal?: AbortSignal },
+    opcoes?: {
+      metodo?: 'GET' | 'POST' | 'PUT' | 'DELETE'
+      corpo?: unknown
+      sinal?: AbortSignal
+      /** Pede resumo/print da lista. Hosts anteriores ignoram e devolvem a vista sem eles. */
+      apresentacaoDosDesafios?: true
+    },
   ): Promise<RespostaDoServico>
 }
 

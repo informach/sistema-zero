@@ -1,4 +1,6 @@
 import {
+  type DesafioAberto,
+  type DesafioNaLista,
   ILHA_IDS,
   PedirAmbienteDoDesafioSchema,
   VerificarDesafioSchema,
@@ -10,7 +12,13 @@ import type { ServicoDosDesafios } from '../../application/servico-dos-desafios'
 import { exigirGateway, lerJogador } from './identidade'
 import { CorpoInvalidoError } from './rotas-do-jogo'
 
-const FiltroDaIlha = z.object({ ilha: z.enum(ILHA_IDS).optional() })
+const FiltroDaApresentacao = z.object({ apresentacao: z.literal('1').optional() })
+const FiltroDaIlha = FiltroDaApresentacao.extend({ ilha: z.enum(ILHA_IDS).optional() })
+
+// Telas já abertas usam contratos estritos. Só quem pede a apresentação recebe os campos
+// novos; o domínio e a publicação continuam únicos, sem duplicar regras nem afrouxar schemas.
+const semApresentacao = ({ resumo: _resumo, imagem: _imagem, ...d }: DesafioNaLista) => d
+const semImagem = ({ imagem: _imagem, ...d }: DesafioAberto) => d
 
 function validar<T>(
   schema: { safeParse(v: unknown): { success: true; data: T } | { success: false } },
@@ -31,11 +39,19 @@ export function rotasDosDesafios(deps: { desafios: ServicoDosDesafios; tokenInte
   const { desafios } = deps
   return new Elysia({ prefix: '/arquipelago/desafios' })
     .onBeforeHandle(({ headers }) => exigirGateway(headers['x-internal-token'], deps.tokenInterno))
-    .get('', ({ headers, query }) =>
-      desafios.listar(lerJogador(headers), validar(FiltroDaIlha, query).ilha),
-    )
+    .get('', async ({ headers, query }) => {
+      const filtro = validar(FiltroDaIlha, query)
+      const resposta = await desafios.listar(lerJogador(headers), filtro.ilha)
+      return filtro.apresentacao === '1'
+        ? resposta
+        : { ...resposta, desafios: resposta.desafios.map(semApresentacao) }
+    })
     .get('/cores', ({ headers }) => desafios.cores(lerJogador(headers)))
-    .get('/:id', ({ headers, params }) => desafios.abrir(lerJogador(headers), idDe(params)))
+    .get('/:id', async ({ headers, params, query }) => {
+      const filtro = validar(FiltroDaApresentacao, query)
+      const resposta = await desafios.abrir(lerJogador(headers), idDe(params))
+      return filtro.apresentacao === '1' ? resposta : semImagem(resposta)
+    })
     .post('/:id/verificar', ({ headers, params, body }) =>
       desafios.verificar(lerJogador(headers), idDe(params), validar(VerificarDesafioSchema, body)),
     )

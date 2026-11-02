@@ -3860,3 +3860,9 @@ A escala da caixa agora vem do contrato. Testes: `tests/arquipelago-aparencia.te
 pedido. V2 mostra o clima e o humor congelados na abertura e executa o intérprete compartilhado;
 não altera a ilha nem presume que o contexto continuará igual depois de fechar. V1 conserva a
 prévia sem bônus. Nunca duplicar regras de colheita no componente.
+## Apresentação dos desafios durante a implantação, 01/11/2026
+
+O host só acrescenta `apresentacao=1` à lista quando o jogo pede
+`apresentacaoDosDesafios: true`. A abertura feita pelo host novo também pede essa vista.
+O BFF valida e repassa somente `ilha` e `apresentacao`; chamadas antigas continuam sem a opção.
+Assim a API não manda campos novos para um jogo ou uma página antiga com schema estrito.

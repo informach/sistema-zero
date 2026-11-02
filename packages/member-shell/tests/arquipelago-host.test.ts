@@ -39,6 +39,27 @@ const plataforma = () =>
     voltarPara: '/',
   })
 
+test('a apresentação dos desafios é pedida só pelo jogo que conhece os campos novos', async () => {
+  const pedidos = servir({
+    'GET /api/arquipelago/desafios': { status: 200, body: {} },
+    'GET /api/arquipelago/desafios?apresentacao=1': { status: 200, body: {} },
+    'GET /api/arquipelago/desafios?ilha=bosque&apresentacao=1': { status: 200, body: {} },
+    'GET /api/arquipelago/mural': { status: 200, body: {} },
+  })
+  const p = plataforma()
+  await p.servico.buscar('/desafios')
+  await p.servico.buscar('/desafios', { apresentacaoDosDesafios: true })
+  await p.servico.buscar('/desafios?ilha=bosque', { apresentacaoDosDesafios: true })
+  await p.servico.buscar('/mural', { apresentacaoDosDesafios: true })
+  expect(pedidos.map((pedido) => pedido.url)).toEqual([
+    '/api/arquipelago/desafios',
+    '/api/arquipelago/desafios?apresentacao=1',
+    '/api/arquipelago/desafios?ilha=bosque&apresentacao=1',
+    '/api/arquipelago/mural',
+  ])
+  expect(caminhoDoJogo('/desafios?apresentacao=1')).toBe(false)
+})
+
 test('as três portas de visita adulta são exatas e o host Kids recusa antes da rede', async () => {
   const caminhos = [
     '/visitas-adultas/convite',
