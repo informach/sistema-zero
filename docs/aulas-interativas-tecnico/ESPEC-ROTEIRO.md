@@ -230,7 +230,9 @@ aula como a criança vê e não salva nada (progresso, envio, Mural).
 Cada parte é gravada à parte. O palco leva o projeto do Estúdio de uma parte para a seguinte: a
 parte abre com o que a parte de antes montou na gravação mais recente dela, ou, sem ela, com o
 projeto de entrada da parte nos exemplos da aula. Por isso, grave as partes em ordem: a última
-parte (a do Compartilhar) mostra o jogo com tudo o que foi montado. O envio não passa de uma
+parte (a do Compartilhar) mostra o jogo com tudo o que foi montado. Se o projeto que veio da parte
+de antes tiver blocos um por cima do outro, `[organizar blocos]` arruma pelo botão direito; ponha
+num trecho que a edição troca por outra imagem. O envio não passa de uma
 parte para a outra: a parte que vem depois do envio do projeto (a do Compartilhar, que só libera
 depois dele) começa com "A parte começa com o projeto já enviado na Parte N", e o endereço dela
 no palco leva `&enviado=1`.

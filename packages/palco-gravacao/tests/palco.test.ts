@@ -27,6 +27,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
     para: { seletor: '[data-palco-alvo="a3"]', u: 0.4, v: 0.2 },
   }),
   rolagemDoCampo: () => 'visivel',
+  fundoLivre: () => ({ seletor: '[data-palco-alvo="a8"]', u: 0.85, v: 0.85 }),
   temBotao: () => false,
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
@@ -224,6 +225,10 @@ describe('verbos do palco', () => {
     expect(agir('escolher "escolhido" em "Deixar o sprite"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
       { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+    ])
+    expect(agir('organizar blocos', jogos, pagina())).toEqual([
+      { fazer: 'clique direito', alvo: { seletor: '[data-palco-alvo="a8"]', u: 0.85, v: 0.85 } },
+      { fazer: 'clicar', alvo: { texto: 'Organizar blocos', dentro: '.blocklyWidgetDiv' } },
     ])
     // Fora da vista ou coberto, o campo vem para o centro antes do clique.
     const longe = pagina({
