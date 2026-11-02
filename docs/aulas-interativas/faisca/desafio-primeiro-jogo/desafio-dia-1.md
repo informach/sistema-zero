@@ -54,8 +54,8 @@ As falas estão aplicadas aos documentos; gravação, edição e publicação de
 | Navegar e pedir ajuda | Interface | No Como Fazer | Links diretos opcionais | Quando necessário | Evitar aula de navegação antes da atividade |
 | Sprite | Vocabulário | Na identificação do personagem | Definição curta antes de nomear o bloco | Na montagem | Evitar termo desconhecido na instrução |
 | Controles e movimento | Não | No jogo | Setas aparecem; personagem se move depois do segundo bloco | Após cada montagem | Mostrar que os controles sozinhos não movem ninguém |
-| A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`, câmera lenta), só a ideia, sem blocos | Segurar a seta em câmera lenta, soltar e ver os quadros passarem, depois a velocidade de verdade | Seção 3, antes da montagem `andar` | Ver o passinho de cada quadro antes de pôr o movimento dentro de A cada quadro do jogo |
-| Borda e ordem | Relação concreta | Na experiência `limite` (só a ideia: a beirada da tela) e depois no próprio jogo | Sem o limite, ver o personagem sair; ligar o limite com ele fora e ver voltar; em câmera lenta, ver em cada quadro o passinho e depois a conferência. No jogo, pôr o limite logo abaixo do movimento | Seções 5 e 6 | Primeiro o passinho, depois a conferência da beirada |
+| A cada quadro do jogo | Sim, em nível inicial | Na experiência `quadro` (cena `lighthouse-walk`, câmera lenta), só a ideia, sem blocos | Comparar os quadros com a seta apertada e solta, em câmera lenta e na velocidade de verdade | Seção 3, antes da montagem `andar` | Ver o passinho de cada quadro antes de pôr o movimento dentro de A cada quadro do jogo |
+| Borda e ordem | Relação concreta | Na experiência `limite` (só a ideia: a beirada da tela) e depois no próprio jogo | Comparar a beirada com o limite desligado e ligado, inclusive ligando o limite com ele fora; em câmera lenta, ver em cada quadro o passinho e depois a conferência. No jogo, pôr o limite logo abaixo do movimento | Seções 5 e 6 | Primeiro o passinho, depois a conferência da beirada |
 
 ## Diagnóstico do desenho atual
 
@@ -100,7 +100,9 @@ Anexar somente `docs/aulas-interativas/faisca/desafio-primeiro-jogo/passo-a-pass
 
 Na tela: o personagem com uma pegada a cada passinho, a chave e o farol à frente, o selo **Seta apertada?** que pisca a cada quadro e a tira com os últimos quadros ("passinho" ou "parado" embaixo de cada um). A seta se SEGURA (dedo, mouse, Espaço ou a seta → do teclado). O ritmo: **Câmera lenta** (um quadro a cada meio segundo), **Velocidade de verdade**, **Pausar** e **Voltar ao início**. Saiu o liga/desliga do bloco de mover: a falta do passinho aparece de verdade no jogo da criança, na parte 4. Desafio extra, sem meta: ao chegar à chave, a tela diz em quantos quadros. Não apresentar x/y nem velocidade. Todos os controles continuam disponíveis depois da conclusão.
 
-**Convite da experiência:** Clique em Câmera lenta e segure a seta: veja um passinho em cada quadro. Depois solte a seta e experimente a velocidade de verdade.
+**Convite da experiência:** Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** o vídeo, a instrução, a ponte, a lista de descobertas, o Zappy e o Passo a passo dizem o que comparar e o que observar, sem sequência de cliques e sem contar o resultado antes do teste. O vídeo explica que em cada quadro o jogo olha a seta e deixa o caso da seta solta para a criança prever e testar; a gravação aponta a tira ainda vazia, sem rodar quadros. Na beirada, o Zappy leva o personagem até lá na velocidade de verdade e só pede a câmera lenta perto da beirada (em câmera lenta, do meio da tela até lá, seriam uns 40 s), e o botão em destaque acompanha. As pistas vão do aberto (o que observar) ao direto (a sequência).
 
 A caminhada de verdade só conta depois dos passinhos em câmera lenta, e na velocidade de verdade o passinho e a parada não contam: um quadro dura 33 ms, rápido demais para ver (full review de 01/11/2026). Segurar a seta com o jogo pausado põe os quadros para passar em câmera lenta. As pistas da experiência usam as palavras da ideia.
 
@@ -133,7 +135,9 @@ Com o destino à vista antes de cada bloco: controles com só as quatro direçõ
 
 Na tela: o palco do limite (borda, faixa **fora da tela**, fantasma do que passou), o botão **Ligar o limite da tela / Desligar o limite da tela**, a seta que se segura, a tira e o ritmo da câmera lenta. Três descobertas, em qualquer ordem: sem o limite, ele sai da tela; ligando o limite com ele fora, ele volta; com o limite, segurando a seta na beirada, ele fica. Sem o limite, sair inteiro pausa os quadros (Voltar ao início); com o limite ligado, rodar de novo o traz de volta. Não mostrar coordenadas.
 
-**Convite da experiência:** Sem o limite, leve o personagem até a beirada e veja ele sair da tela. Depois ligue o limite da tela e olhe, em câmera lenta, cada quadro na beirada.
+**Convite da experiência:** Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.
+
+**Convite à investigação, 02/11/2026 (decisão da responsável, régua do Cadê):** como na parte 3. No vídeo, a pergunta da Debinha ("E se eu ligar o limite com ele já fora da tela?") vira um dos testes ("O que você acha que acontece? Isso você vai testar na experiência."), e a ideia do passinho seguido da conferência é ilustrada na edição, sem mostrar a experiência na beirada.
 
 ### Seção 6. Mantenha o personagem na tela
 

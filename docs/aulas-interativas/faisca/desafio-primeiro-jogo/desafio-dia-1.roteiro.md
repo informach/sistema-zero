@@ -58,7 +58,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-quadro`
 
-**Na tela:** No "Você já reparou", mostrar o meme ilustrado (2 a 3 s) do Zappy correndo num bloquinho de folhear, uma folha por desenho, cada uma com ele um pouquinho mais adiante [na edição: meme do bloquinho de folhear]. No "Cada desenho desses se chama quadro", mostrar as folhas lado a lado. Do "E como o jogo sabe" até o "ele fica onde está", mostrar a experiência pausada e o selo **Seta apertada?** [apontar selo da seta]. No "Olha aqui: nesta atividade", clicar em **Câmera lenta** sem segurar a seta e apontar a tira de quadros, que ganha um quadro a cada meio segundo [clicar em Câmera lenta; apontar tira de quadros]. Não falar de blocos, regra, comando, x ou velocidade: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança.
+**Na tela:** No "Você já reparou", mostrar o meme ilustrado (2 a 3 s) do Zappy correndo num bloquinho de folhear, uma folha por desenho, cada uma com ele um pouquinho mais adiante [na edição: meme do bloquinho de folhear]. No "Cada desenho desses se chama quadro", mostrar as folhas lado a lado. Do "E como o jogo sabe" até o "testar na experiência", mostrar a experiência pausada e o selo **Seta apertada?** [apontar selo da seta]. No "Olha aqui: nesta atividade", com a experiência pausada, apontar o botão **Câmera lenta** e a tira de quadros, ainda vazia, sem rodar quadros [apontar Câmera lenta; apontar tira de quadros]: com a seta solta, a tira mostraria "parado", que é a descoberta da criança. Não falar de blocos, regra, comando, x ou velocidade: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança nem dizer o que acontece com a seta solta: a criança descobre na experiência (convite à investigação, como no Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -69,24 +69,24 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] E como o jogo sabe quando ele tem que andar?
 
-[engaging, energetic, conversational voice] Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. Se ela está solta, ele fica onde está.
+[engaging, energetic, conversational voice] Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela está solta? O que você acha? Isso você vai testar na experiência.
 
 [interested, animated voice] Olha aqui: nesta atividade, quando você clica em Câmera lenta, os quadros passam devagar, e cada quadro novo aparece nesta tira, um do lado do outro.
 
-[upbeat, encouraging voice] Agora é a sua vez: clique em Câmera lenta, segure a seta e veja os passinhos aparecendo, um em cada quadro. Depois, solte a seta e veja o que acontece. Por último, experimente a velocidade de verdade. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-quadro-K1 | Debinha | 1 | que você nem percebe. Por isso, o personagem não pula de uma vez até a chave: em cada quadro, ele dá só um passinho. | E como o jogo sabe quando ele tem que andar? | Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. Se ela está | [curious] |
+| video-d1-quadro-K1 | Debinha | 1 | que você nem percebe. Por isso, o personagem não pula de uma vez até a chave: em cada quadro, ele dá só um passinho. | E como o jogo sabe quando ele tem que andar? | Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Clique em Câmera lenta, segure a seta e veja o personagem andar quadro a quadro. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece em cada quadro, com a seta apertada e com a seta solta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Faça o personagem andar
 
@@ -138,7 +138,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-d1-limite`
 
-**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "Primeiro, o personagem dá o passinho" até o "puxa ele de volta para dentro", mostrar a experiência com o limite ligado, na beirada em câmera lenta, e apontar na tira o quadro que diz "segurou" e a frase do quadro embaixo dela [apontar tira de quadros; apontar frase do quadro]. No "Olha aqui: nesta atividade", apontar o botão **Ligar o limite da tela** e a faixa **fora da tela** [apontar botão do limite; apontar faixa fora da tela]. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança.
+**Na tela:** No "Quando você olha por uma janela", mostrar o meme ilustrado (2 a 3 s) do Zappy olhando por uma janela, com o personagem cortado pela moldura [na edição: meme da janela]. Do "Primeiro, o personagem dá o passinho" até o "Isso é o limite da tela", a tela fica parada, e a edição troca esse trecho por dois desenhos em sequência: o passinho que leva o personagem além da beirada e o jogo puxando ele de volta para dentro [na edição: o passinho que passa da beirada e o jogo puxando de volta]. Não rodar a experiência na beirada: testar é a vez da criança. No "Olha aqui: nesta atividade", apontar o botão **Ligar o limite da tela** e a faixa **fora da tela** [apontar botão do limite; apontar faixa fora da tela]. Não falar de blocos, regra, comando, ordem dos blocos nem x: a experiência trabalha só a ideia, e os blocos ficam para a parte seguinte (decisão de 01/11/2026). Não fazer os testes pela criança nem responder a pergunta da Debinha: a criança descobre na experiência (convite à investigação, como no Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
@@ -149,24 +149,24 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] E se eu ligar o limite com ele já fora da tela?
 
-[engaging, energetic, conversational voice] Aí, no quadro seguinte, ele volta para dentro! É que, em todo quadro, o jogo confere a beirada: se ele estiver fora, puxa de volta.
+[engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
 
 [interested, animated voice] Olha aqui: nesta atividade, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
 
-[upbeat, encouraging voice] Agora é a sua vez: primeiro, com o limite desligado, leve o personagem até a beirada e veja o que acontece. Depois, ligue o limite e olhe, em câmera lenta, cada quadro na beirada. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se eu ligar o limite com ele já fora da tela? | Aí, no quadro seguinte, ele volta para dentro! É que, em todo quadro, o jogo confere a beirada: se ele estiver fora, | [curious] |
+| video-d1-limite-K1 | Debinha | 1 | Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela. | E se eu ligar o limite com ele já fora da tela? | O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta atividade, este botão liga e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Falas dentro da experiência:** `packages/core/src/learning/scene/discovery-guidance.ts`, exportadas em `zappy-etapas.json`. A orientação sugere comparações pelo estado observado; os controles permanecem livres.
 
-**Recado na página (não gravar):** Sua vez! Leve o personagem até a beirada sem o limite e depois com ele. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que o jogo faz na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 6. Mantenha o personagem na tela
 

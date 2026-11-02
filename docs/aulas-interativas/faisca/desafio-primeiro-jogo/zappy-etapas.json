@@ -4,19 +4,19 @@
     "experiencia-quadro": [
       {
         "id": "slow-start",
-        "text": "Clique em Câmera lenta para os quadros passarem devagar. Depois segure a seta e veja o personagem dar um passinho a cada quadro."
+        "text": "Clique em Câmera lenta e segure a seta. Olhe a tira: o que muda de um quadro para o outro?"
       },
       {
         "id": "slow-walking",
-        "text": "Um quadro novo, um passinho, uma pegada. Agora solte a seta e deixe passar uns quadros."
+        "text": "Um quadro novo, um passinho. E se você soltar a seta? Em câmera lenta, observe os próximos quadros na tira."
       },
       {
         "id": "slow-released",
-        "text": "Os quadros continuam passando, mas sem a seta ele fica no lugar. Agora clique em Velocidade de verdade e segure a seta."
+        "text": "Sem a seta, os quadros continuam passando, mas ele fica no lugar. E na velocidade de verdade, como fica? Clique em Velocidade de verdade e segure a seta."
       },
       {
         "id": "slow-real",
-        "text": "Continue segurando: com os quadros passando bem rápido, os passinhos viram uma caminhada."
+        "text": "Continue segurando e compare com a câmera lenta: o que mudou?"
       },
       {
         "id": "slow-complete",
@@ -26,31 +26,35 @@
     "experiencia-limite": [
       {
         "id": "border-start",
-        "text": "Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando e veja o que acontece."
+        "text": "O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela. Se preferir, ligue o limite primeiro e compare depois."
+      },
+      {
+        "id": "border-off",
+        "text": "O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela."
       },
       {
         "id": "border-out",
-        "text": "Ele saiu da janela do jogo. Agora clique em Ligar o limite da tela e veja o próximo quadro."
+        "text": "Ele saiu da janela do jogo. E se você ligar o limite agora, com ele fora? Clique em Ligar o limite da tela e observe o próximo quadro."
       },
       {
         "id": "border-on-out",
-        "text": "O limite está ligado e ele ainda está fora. Deixe passar um quadro e veja o que acontece."
+        "text": "O limite está ligado e ele ainda está fora. Deixe passar um quadro e observe."
       },
       {
         "id": "border-back",
-        "text": "Ele voltou para dentro! Agora, em câmera lenta, segure a seta junto à beirada e olhe cada quadro."
+        "text": "Ele voltou para dentro: em todo quadro, o jogo confere a beirada. E se você segurar a seta junto à beirada? Clique em Câmera lenta e olhe cada quadro."
       },
       {
         "id": "border-edge",
-        "text": "O limite está ligado. Em câmera lenta, segure a seta até a beirada e olhe cada quadro."
+        "text": "O limite está ligado. Leve o personagem até a beirada e continue segurando a seta. Lá, clique em Câmera lenta e observe a tira e a frase de cada quadro."
       },
       {
         "id": "border-edge-off",
-        "text": "Agora clique em Ligar o limite da tela e, em câmera lenta, segure a seta até a beirada."
+        "text": "Ligue o limite da tela e leve o personagem até a beirada. Lá, clique em Câmera lenta, segure a seta e observe a tira e a frase de cada quadro."
       },
       {
         "id": "border-hold",
-        "text": "Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Agora desligue o limite e deixe ele sair para comparar."
+        "text": "Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Quer comparar? Desligue o limite e deixe ele ir até a beirada."
       },
       {
         "id": "border-complete",

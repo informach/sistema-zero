@@ -8,32 +8,36 @@ const speech = {
   ...ISLAND_SPEECH,
   // ⭐ "O jogo em câmera lenta" (Farol, Dia 1, 01/11/2026): só a IDEIA (quadro, passinho, seta). Os
   // blocos aparecem só na montagem do Estúdio; aqui não se fala de bloco, regra nem comando.
+  // ⭐ Convite à investigação, como no Cadê (02/11/2026): antes do teste, a fala pergunta e diz o
+  // que observar, sem contar o resultado; depois dele, explica.
   'slow-start':
-    'Clique em Câmera lenta para os quadros passarem devagar. Depois segure a seta e veja o personagem dar um passinho a cada quadro.',
+    'Clique em Câmera lenta e segure a seta. Olhe a tira: o que muda de um quadro para o outro?',
   'slow-walking':
-    'Um quadro novo, um passinho, uma pegada. Agora solte a seta e deixe passar uns quadros.',
+    'Um quadro novo, um passinho. E se você soltar a seta? Em câmera lenta, observe os próximos quadros na tira.',
   'slow-released':
-    'Os quadros continuam passando, mas sem a seta ele fica no lugar. Agora clique em Velocidade de verdade e segure a seta.',
-  'slow-real':
-    'Continue segurando: com os quadros passando bem rápido, os passinhos viram uma caminhada.',
+    'Sem a seta, os quadros continuam passando, mas ele fica no lugar. E na velocidade de verdade, como fica? Clique em Velocidade de verdade e segure a seta.',
+  'slow-real': 'Continue segurando e compare com a câmera lenta: o que mudou?',
   'slow-complete':
     'Você viu os passinhos, a parada e a caminhada. Se quiser, tente chegar à chave em câmera lenta e conte os quadros.',
   // ⭐ "A beirada da tela" (Farol, Dia 1, parte 5, 01/11/2026): só a ideia, sem blocos nem ordem dos
   // blocos. A ordem aparece dentro de cada quadro: primeiro o passinho, depois a conferência.
+  // ⚠️ Em câmera lenta, ir do meio da tela até a beirada leva uns 40 s: o caminho até lá é na
+  // velocidade de verdade, e a câmera lenta só na beirada (o botão em destaque acompanha).
   'border-start':
-    'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando e veja o que acontece.',
+    'O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela. Se preferir, ligue o limite primeiro e compare depois.',
+  'border-off':
+    'O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela.',
   'border-out':
-    'Ele saiu da janela do jogo. Agora clique em Ligar o limite da tela e veja o próximo quadro.',
-  'border-on-out':
-    'O limite está ligado e ele ainda está fora. Deixe passar um quadro e veja o que acontece.',
+    'Ele saiu da janela do jogo. E se você ligar o limite agora, com ele fora? Clique em Ligar o limite da tela e observe o próximo quadro.',
+  'border-on-out': 'O limite está ligado e ele ainda está fora. Deixe passar um quadro e observe.',
   'border-back':
-    'Ele voltou para dentro! Agora, em câmera lenta, segure a seta junto à beirada e olhe cada quadro.',
+    'Ele voltou para dentro: em todo quadro, o jogo confere a beirada. E se você segurar a seta junto à beirada? Clique em Câmera lenta e olhe cada quadro.',
   'border-edge':
-    'O limite está ligado. Em câmera lenta, segure a seta até a beirada e olhe cada quadro.',
+    'O limite está ligado. Leve o personagem até a beirada e continue segurando a seta. Lá, clique em Câmera lenta e observe a tira e a frase de cada quadro.',
   'border-edge-off':
-    'Agora clique em Ligar o limite da tela e, em câmera lenta, segure a seta até a beirada.',
+    'Ligue o limite da tela e leve o personagem até a beirada. Lá, clique em Câmera lenta, segure a seta e observe a tira e a frase de cada quadro.',
   'border-hold':
-    'Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Agora desligue o limite e deixe ele sair para comparar.',
+    'Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Quer comparar? Desligue o limite e deixe ele ir até a beirada.',
   'border-complete':
     'Você viu ele sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
   // ⚠️ As falas da bancada antiga do quadro: valem só para o bloco que ainda não foi reimportado.
@@ -152,9 +156,13 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
                   ? 'border-out'
                   : has('left-the-screen') && has('came-back-inside')
                     ? 'border-edge-off'
-                    : 'border-start'
+                    : // Quem já testou com o limite ligado não ouve "ligue o limite primeiro".
+                      has('came-back-inside') || has('stayed-inside')
+                      ? 'border-off'
+                      : 'border-start'
                 : !has('stayed-inside')
-                  ? has('came-back-inside')
+                  ? // "Ele voltou para dentro" só enquanto ele está lá, na beirada.
+                    has('came-back-inside') && x === lighthouseWalkMaxX()
                     ? 'border-back'
                     : 'border-edge'
                   : 'border-hold'

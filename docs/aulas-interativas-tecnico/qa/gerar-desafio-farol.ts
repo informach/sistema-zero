@@ -321,34 +321,36 @@ const dia1 = {
     video('video-d1-quadro', 'Como o personagem anda', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-quadro',
-      'Sua vez! Clique em Câmera lenta, segure a seta e veja o personagem andar quadro a quadro. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que acontece em cada quadro, com a seta apertada e com a seta solta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     // ⭐ "O jogo em câmera lenta" (01/11/2026, decisão dela): a experiência trabalha só a IDEIA
     // (quadro, passinho, seta), sem bloco, regra nem código. Os blocos ficam para a parte `andar`.
+    // Convite à investigação, como no Cadê (02/11/2026): a instrução e a ponte dizem o que comparar,
+    // nunca o resultado; as pistas vão do aberto (o que observar) ao direto (a sequência).
     experienciaAndar(
       'experiencia-quadro',
       'O jogo em câmera lenta',
-      'Clique em Câmera lenta e segure a seta: veja um passinho em cada quadro. Depois solte a seta e experimente a velocidade de verdade.',
+      'Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.',
       ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       {
         'moves-each-frame': {
           label: 'Um passinho a cada quadro',
-          pedido: 'Clique em Câmera lenta e segure a seta. Olhe o personagem a cada quadro.',
+          pedido: 'Clique em Câmera lenta, segure a seta e observe a tira de quadros.',
         },
         'stopped-after-release': {
           label: 'Seta solta, personagem parado',
-          pedido: 'Depois de andar, solte a seta e deixe passar alguns quadros.',
+          pedido: 'Em câmera lenta, solte a seta e observe os próximos quadros.',
         },
         'walked-real-speed': {
           label: 'Os passinhos viraram uma caminhada',
           pedido:
-            'Depois de ver os passinhos em câmera lenta, clique em Velocidade de verdade e segure a seta por alguns segundos.',
+            'Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare.',
         },
       },
       [
-        'Clique em Câmera lenta e segure a seta. A cada quadro, olhe a pegada nova e o quadro novo na tira.',
-        'Depois de andar, solte a seta e deixe passar alguns quadros. Repare se aparece pegada nova.',
-        'Clique em Velocidade de verdade e segure a seta por alguns segundos.',
+        'Repare nas pegadas e na tira de quadros enquanto a seta está apertada.',
+        'Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.',
+        'Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos.',
       ],
     ),
     video('video-d1-andar', 'Faça o personagem andar', 'desafio-dia-1.roteiro.md'),
@@ -359,34 +361,36 @@ const dia1 = {
     video('video-d1-limite', 'Até onde ele pode ir?', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-limite',
-      'Sua vez! Leve o personagem até a beirada sem o limite e depois com ele. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que o jogo faz na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     // ⭐ "A beirada da tela" (01/11/2026, decisão dela): só a IDEIA, sem blocos nem a comparação
     // das ordens dos blocos. A ordem aparece dentro de cada quadro (passinho, depois a conferência).
     experienciaAndar(
       'experiencia-limite',
       'A beirada da tela',
-      'Sem o limite, leve o personagem até a beirada e veja ele sair da tela. Depois ligue o limite da tela e olhe, em câmera lenta, cada quadro na beirada.',
+      'Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.',
       ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       {
         'left-the-screen': {
           label: 'Sem o limite, ele saiu da tela',
           pedido:
-            'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada.',
+            'Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela.',
         },
         'came-back-inside': {
           label: 'Com o limite ligado, ele voltou para dentro',
-          pedido: 'Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.',
+          pedido:
+            'Com ele fora da tela, clique em Ligar o limite da tela e observe o próximo quadro.',
         },
         'stayed-inside': {
           label: 'Com o limite, ele ficou na beirada',
-          pedido: 'Com o limite ligado, clique em Câmera lenta e segure a seta junto à beirada.',
+          pedido:
+            'Com o limite ligado, leve o personagem até a beirada, clique em Câmera lenta e observe a tira.',
         },
       },
       [
-        'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando.',
-        'Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.',
-        'Com o limite ligado, clique em Câmera lenta e segure a seta na beirada. Olhe a tira e a frase de cada quadro.',
+        'Olhe a faixa fora da tela quando o personagem chega na beirada.',
+        'E se o limite for ligado com ele já fora da tela? Observe o próximo quadro.',
+        'Com o limite desligado, clique em Velocidade de verdade e segure a seta até ele sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada.',
       ],
     ),
     video('video-d1-borda', 'Mantenha o personagem na tela', 'desafio-dia-1.roteiro.md'),

@@ -302,7 +302,7 @@ Consulta histórica opcional; não é preciso reconstruir as regras a partir des
 - O vídeo da experiência e a experiência não nomeiam blocos, áreas do Estúdio, comandos, regra de programação nem código. Usam a comparação do dia a dia e o que acontece no próprio jogo (o desenho animado, o passinho, a seta; a cócega e a risada, o toque e o esconderijo).
 - A montagem que vem depois liga cada bloco à ideia, com o nome que aparece na tela: "É este bloco que dá o passinho"; "Lembra que o jogo olha a seta em todo quadro? Por isso, o passinho vai dentro do bloco A cada quadro do jogo".
 - Uma ideia por fala: não juntar na mesma explicação o que é quadro, o que a tecla faz e onde o bloco fica.
-- Quando a Debinha ou o Dedé perguntam o que acontece ("E se eu soltar a seta?"), a resposta começa pelo que a criança vê ("Aí ele para!") e depois dá o porquê.
+- Quando a Debinha ou o Dedé perguntam o que acontece, a resposta começa pelo que a criança vê e depois dá o porquê, exceto quando a pergunta antecipa uma descoberta da experiência seguinte: aí a resposta convida a prever e testar ("O que você acha? Isso você vai testar na experiência"), sem resolver (02/11/2026, convite à investigação do Cadê).
 
 Primeira aplicação: a câmera lenta do Farol, Dia 1 (registro em `modulos-desafio-primeiro-jogo.md`). O que vem abaixo, de 26/10/2026, continua valendo onde não contradiz esta regra.
 
