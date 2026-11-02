@@ -505,10 +505,11 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     ...quadros(3),
     { type: 'trigger' },
   ],
+  // ⚠️ Sem `reset` nas três da Nave (exploração livre, 02/11/2026): lá o "Recomeçar experiência" apaga
+  // as descobertas. Trocar de jeito já começa uma partida nova (`placeOnce`).
   'nave-contra-asteroides-primeira-nave.manifesto.json/experiencia-areas': [
     { type: 'place-in-area', card: 'move', area: 'start' },
     ...quadros(3),
-    { type: 'reset' },
     { type: 'place-in-area', card: 'move', area: 'loop' },
     ...quadros(24),
   ],
@@ -521,7 +522,6 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
     { type: 'place-in-area', card: 'event', area: 'event' },
     ...quadros(3),
     { type: 'trigger' },
-    { type: 'reset' },
     { type: 'place-in-area', card: 'event', area: 'loop' },
     ...quadros(5),
   ],
@@ -545,7 +545,6 @@ const ROTAS_DAS_AULAS: Record<string, SceneAction[]> = {
   'nave-contra-asteroides-dia-4.manifesto.json/experiencia-uma-vez': [
     { type: 'place-in-area', card: 'lives', area: 'start' },
     ...quadros(6),
-    { type: 'reset' },
     { type: 'place-in-area', card: 'lives', area: 'loop' },
     ...quadros(9),
   ],

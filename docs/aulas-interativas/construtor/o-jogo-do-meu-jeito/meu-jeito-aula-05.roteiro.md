@@ -10,42 +10,42 @@
 
 **Clipe:** `video-camadas`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da chama na frente da pedra: apontar a lista Camadas, com a chama em cima. Clicar em Uma camada para a frente, na linha da pedra, e mostrar a pedra subir na lista e aparecer na frente. Clicar em Uma camada para trás, na linha da pedra, e mostrar a chama cobrindo de novo. Clicar em Uma camada para a frente outra vez e mostrar a pedra na frente. Meme na comparação: na frase das figurinhas, o Zappy colando uma figurinha da pedra por cima de uma figurinha da chama, com a legenda "a de cima fica na frente". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Sabe quando você empilha figurinhas", mostrar o meme ilustrado (2 a 3 s) do Zappy empilhando as figurinhas da pedra e da chama [na edição: meme das figurinhas]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar a lista [apontar "Camadas"]. No "Em cada linha, um botão leva aquela forma", apontar o botão da pedra [apontar "Uma camada para a frente: pedra"]. Não mover as camadas: qual forma fica na frente é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender as camadas, que decidem qual forma aparece na frente.
+[engaging, energetic, conversational voice] No seu asteroide, o fogo vai ficar atrás da pedra, saindo por cima dela. Quando duas formas ficam uma em cima da outra, uma delas aparece na frente e cobre um pedaço da outra.
 
-[interested, animated voice] Olha aqui: no começo, a chama cobre quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo.
+[engaging, energetic, conversational voice] No Pinta, a lista Camadas mostra a ordem das formas. Cada forma ocupa uma linha da lista.
+
+[engaging, energetic, conversational voice] Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo.
 
 [curious] Como faz para a pedra aparecer na frente da chama?
 
-[engaging, energetic, conversational voice] Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra sobe na lista e aparece na frente da chama, sem nada cobrindo. Nenhuma forma foi apagada, porque o que mudou foi só a ordem.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Sabe quando você empilha figurinhas na mesa? A de cima tapa um pedaço da de baixo. Na lista Camadas é igual: a forma que está em cima aparece na frente.
+[interested, animated voice] Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a chama. Em cada linha, um botão leva aquela forma Uma camada para a frente ou Uma camada para trás.
 
-[engaging, energetic, conversational voice] Agora eu clico em Uma camada para trás, na linha da pedra. Tá vendo? A pedra desce na lista, e a chama volta a cobrir a pedra, porque agora é a chama que está em cima. Depois eu clico em Uma camada para a frente de novo, e a pedra volta para a frente.
-
-[engaging, energetic, conversational voice] Daqui a pouco, no seu asteroide, você vai desenhar a chama e usar Uma camada para trás até a pedra e as crateras ficarem na frente dela.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: suba e desça a pedra na lista Camadas e compare qual forma aparece na frente no desenho. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-camadas-K1 | Debinha | 1 | quase toda a pedra, e só um pedacinho da pedra aparece. Na lista Camadas, a chama está em cima, e a pedra está embaixo. | Como faz para a pedra aparecer na frente da chama? | Vamos trazer a pedra para a frente. Quando eu clico em Uma camada para a frente, na linha da pedra, olha só: a pedra | [curious] |
+| video-camadas-K1 | Debinha | 1 | lista. Sabe quando você empilha figurinhas na mesa? Uma fica por cima da outra, e só dá para ver um pedaço da de baixo. | Como faz para a pedra aparecer na frente da chama? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a lista Camadas mostra a pedra e a | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-camadas-K1`: entrada — Mostrar a chama na frente e a ordem inicial na lista, sem mover nenhuma camada ainda. Saída — Trazer a pedra uma camada para a frente e mostrar o resultado antes de explicar a ordem.
+- `video-camadas-K1`: entrada — Mostrar a chama na frente da pedra e a lista Camadas, sem mover nenhuma camada. Saída — Seguir sem mover camadas: a professora só convida a testar e aponta os controles.
 
 
-**Recado na página (não gravar):** Sua vez! Suba e desça a pedra na lista Camadas e veja qual fica na frente. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/layers.ts`, com a tela em `packages/member-shell/src/components/scene-livre/layers.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que muda no desenho quando a pedra sobe e desce na lista Camadas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Desenhe fogo atrás da pedra
 
@@ -55,20 +55,26 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-chama`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. No "Abra o asteroide no Pinta", selecionar o quadro 1 e clicar fora das formas. No "Escolha uma cor quente", escolher a cor e deixar o Contorno em Sem cor. No "Com a Caneta", desenhar a chama acima da pedra e fechar no primeiro ponto. No "Tá vendo?", apontar a base da chama sobre a pedra e a chama em cima na lista Camadas. No "clique em Uma camada para trás", clicar até a chama ficar abaixo da pedra. No "Olha só", apontar a pedra na frente do fogo. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A chama cobria a pedra porque estava em cima na lista Camadas. Agora a gente vai pôr o fogo do seu asteroide atrás da pedra!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A chama cobria a pedra quando estava em cima na lista Camadas. Por isso, agora a gente vai desenhar o fogo do seu asteroide e deixar a chama abaixo da pedra na lista.
 
-[engaging, energetic, conversational voice] Primeiro, abra o asteroide no Pinta e selecione o quadro 1. Clique fora das formas, escolha uma cor quente em Preenchimento e deixe o Contorno em Sem cor. Depois, com a Caneta, marque pontos formando uma chama no espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.
+[confident, clear, unhurried voice] Abra o asteroide no Pinta e selecione o quadro 1. Clique fora das formas para não deixar nada selecionado.
 
-[curious] E se a chama ficar na frente da pedra?
+[engaging, energetic, conversational voice] Escolha uma cor quente em Preenchimento e deixe o Contorno em Sem cor.
 
-[engaging, energetic, conversational voice] Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma desenhada fica em cima na lista Camadas. Por isso, use Uma camada para trás até a pedra e as crateras ficarem na frente dela.
+[engaging, energetic, conversational voice] Com a Caneta, marque pontos formando uma chama no espaço acima da pedra e clique no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra.
 
-[engaging, energetic, conversational voice] Depois disso, a pedra e as crateras aparecem na frente do fogo. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira na lista Camadas: a pedra e as crateras ficam acima da chama.
+[curious] Ué, a chama ficou na frente da pedra?
+
+[interested, animated voice] Tá vendo? A base da chama cobre um pedaço da pedra, porque a chama foi a última forma desenhada e ficou em cima na lista Camadas.
+
+[engaging, energetic, conversational voice] Para mudar isso, use Selecionar e clique na chama. Depois clique em Uma camada para trás até a pedra e as crateras ficarem na frente dela.
+
+[interested, animated voice] Olha só: a pedra e as crateras aparecem na frente do fogo. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira na lista Camadas: a pedra e as crateras ficam acima da chama.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -77,13 +83,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-chama-K1 | Debinha | 1 | espaço acima da pedra e termine clicando no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra. | E se a chama ficar na frente da pedra? | Agora, com Selecionar, clique na chama. Tá vendo? A base da chama cobre um pedaço da pedra, porque a última forma | [curious] |
+| video-chama-K1 | Debinha | 1 | chama no espaço acima da pedra e clique no primeiro ponto para fechar. Deixe a base da chama entrar um pouco na pedra. | Ué, a chama ficou na frente da pedra? | Tá vendo? A base da chama cobre um pedaço da pedra, porque a chama foi a última forma desenhada e ficou em cima na | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-chama-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-chama-K1`: entrada — Fechar a chama e deixar à vista a base dela cobrindo a pedra. Saída — Apontar a base da chama sobre a pedra e a chama em cima na lista Camadas.
 
 
 **Recado na página (não gravar):** Agora desenhe o fogo atrás da sua pedra! Faça uma chama acima do asteroide e coloque a chama atrás do corpo. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
@@ -92,22 +98,28 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 ### Clipe `video-miolo-fogo` · Acrescente um centro mais claro
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.
 
 **Clipe:** `video-miolo-fogo`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "Selecione a chama e use Ctrl+C e Ctrl+V", copiar e colar a chama. No "escolha uma cor mais clara", trocar a cor da cópia e diminuir pelo canto da caixa. No "Leve esse miolo para dentro da chama maior", mover o miolo. No "Agora confira a ordem", apontar a lista Camadas. No "Com o miolo selecionado", clicar em Uma camada para trás ou Uma camada para a frente até o miolo ficar entre a chama maior e a pedra. No "Olha só", apontar o miolo dentro da chama. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora faça um centro mais claro no fogo. Selecione a chama e use Ctrl+C e Ctrl+V para fazer uma cópia. Na cópia, escolha uma cor mais clara, diminua pelas alças e coloque esse miolo dentro da chama maior. Se precisar, selecione os pontos para ajustar a ponta.
+[engaging, energetic, conversational voice] Agora faça um centro mais claro no fogo, que vai ser o miolo da chama. Selecione a chama e use Ctrl+C e Ctrl+V para fazer uma cópia dela.
 
-[engaging, energetic, conversational voice] Depois confira a ordem: a pedra e as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas.
+[engaging, energetic, conversational voice] Na cópia, escolha uma cor mais clara em Preenchimento. Depois arraste um canto da caixa em volta dela para deixar a cópia menor.
 
-[curious] Como eu trago o miolo claro para a frente?
+[engaging, energetic, conversational voice] Leve esse miolo para dentro da chama maior. Se precisar, use Editar os pontos para ajustar a ponta.
 
-[engaging, energetic, conversational voice] Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com a chama. Por último, confira se as duas chamas cabem inteiras no quadro.
+[engaging, energetic, conversational voice] Agora confira a ordem. O miolo precisa aparecer na frente da chama maior e atrás da pedra. Na lista Camadas, ele fica logo acima da chama maior e abaixo da pedra, porque a forma mais acima na lista aparece na frente.
+
+[curious] Como eu levo o miolo para esse lugar da lista?
+
+[engaging, energetic, conversational voice] Com o miolo selecionado, olhe onde ele está na lista Camadas. Se ele estiver acima da pedra, clique em Uma camada para trás. Se estiver abaixo da chama maior, clique em Uma camada para a frente. Clique uma vez de cada vez, olhando a lista, até ele ficar entre a chama maior e a pedra.
+
+[interested, animated voice] Olha só: o miolo claro aparece dentro da chama, e a pedra continua na frente do fogo. Por último, confira se as duas chamas cabem inteiras no quadro.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -116,13 +128,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-miolo-fogo-K1 | Debinha | 1 | as crateras ficam na frente, e o miolo claro aparece sobre a chama maior, porque ele está acima dela na lista Camadas. | Como eu trago o miolo claro para a frente? | Para chegar a essa ordem, use Uma camada para trás ou Uma camada para a frente na forma selecionada, como você fez com | [curious] |
+| video-miolo-fogo-K1 | Debinha | 1 | Camadas, ele fica logo acima da chama maior e abaixo da pedra, porque a forma mais acima na lista aparece na frente. | Como eu levo o miolo para esse lugar da lista? | Com o miolo selecionado, olhe onde ele está na lista Camadas. Se ele estiver acima da pedra, clique em Uma camada para | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-miolo-fogo-K1`: entrada — Concluir a cópia e o ajuste do miolo e apontar a ordem desejada na lista Camadas; não apagar formas nem fabricar um erro para representar a dificuldade do avatar. Saída — Mostrar os botões para mover a camada e conferir se as duas chamas cabem inteiras no quadro.
+- `video-miolo-fogo-K1`: entrada — Concluir a cópia e o ajuste do miolo e apontar a lista Camadas. Saída — Com o miolo selecionado, clicar em Uma camada para trás ou Uma camada para a frente, uma vez de cada vez, olhando a lista.
 
 
 **Recado na página (não gravar):** Agora acrescente um centro mais claro ao fogo! Faça uma chama menor dentro da primeira, atrás da pedra. Quando aparecer Guardado na sua conta, volte a esta aba e clique em Próxima parte.
@@ -135,42 +147,40 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-mudanca-pequena`
 
-**Na tela:** Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da Prévia tocando, com os dois controles em 0: deixar ver a pedra parada na Prévia. Levar O tanto que a cratera anda até 4 e soltar; deixar ver as crateras mudarem no quadro 2 e a pedra parecer rolar na Prévia. Levar O tanto que a pedra inteira anda até 10 e soltar; deixar ver a pedra pular na Prévia. Meme na comparação: na frase da bola, o Zappy girando uma bola na ponta do dedo: a bola fica no lugar enquanto os desenhos dela andam um pouquinho, com a legenda "o corpo fica, os detalhes andam". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.
+**Na tela:** No "Imagina uma bola de futebol girando", mostrar o meme ilustrado (2 a 3 s) do Zappy girando a bola na ponta do dedo [na edição: meme da bola girando]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e mostrar a pedra. No "Estes números dizem O tanto que a cratera anda", apontar os números [apontar "O tanto que a cratera anda"]. No "E este botão toca e para a Prévia", apontar o botão [apontar "Tocar a Prévia"]. Não mudar os números nem tocar a Prévia: o que a pedra faz em cada caso é a descoberta da criança. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender quanto um desenho pode mudar de um quadro para o outro.
+[engaging, energetic, conversational voice] A sua pedra também vai ganhar dois quadros, como a nave. Por isso, vale pensar em quanto o desenho deve mudar do quadro 1 para o quadro 2.
 
-[interested, animated voice] Olha aqui: a Prévia já está tocando, trocando os dois quadros 8 vezes por segundo. Com O tanto que a cratera anda e O tanto que a pedra inteira anda em 0, a pedra fica parada na Prévia, porque os dois quadros são iguais.
+[curious] Imagina uma bola de futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar?
 
-[engaging, energetic, conversational voice] Agora eu coloco O tanto que a cratera anda em 4 e deixo a pedra inteira em 0. No quadro 2, só as crateras mudam um pouco de lugar. [interested, animated voice] Olha só: na Prévia, as crateras andam, o corpo fica no lugar, e a pedra parece rolar.
+[curious] E se a pedra inteira andar bastante?
 
-[engaging, energetic, conversational voice] Imagina uma bola girando na sua frente, sem sair do lugar. Você percebe que ela gira porque os desenhos na bola vão mudando de posição. É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[curious] E se eu mover a pedra inteira?
+[interested, animated voice] Olha aqui: nesta experiência, a Prévia troca dois desenhos da pedra, o do quadro 1 e o do quadro 2. Estes números dizem O tanto que a cratera anda e O tanto que a pedra inteira anda no segundo desenho. E este botão toca e para a Prévia.
 
-[engaging, energetic, conversational voice] Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia, o desenho pula de um lado para o outro, em vez de rolar, porque uma mudança grande demais vira pulo.
-
-[engaging, energetic, conversational voice] Daqui a pouco, no segundo quadro do seu asteroide, você vai mover uma cratera um pouco e deixar o corpo da pedra no mesmo lugar.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: deixe os dois números em 0, depois mexa só na cratera e depois na pedra inteira. Compare a pedra na Prévia em cada caso. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-mudanca-pequena-K1 | Debinha | 1 | É essa mudança pequena que faz a gente ver a bola girar. Na pedra, essa mudança pequena é O tanto que a cratera anda. | E se eu mover a pedra inteira? | Depois eu coloco O tanto que a pedra inteira anda em 10, e no quadro 2 a pedra toda muda de lugar. Tá vendo? Na Prévia, | [curious] |
+| video-mudanca-pequena-K1 | Debinha | 1 | futebol girando na ponta do dedo. Num desenho, o que precisaria mudar de um quadro para o outro para ela parecer girar? | E se a pedra inteira andar bastante? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, a Prévia troca dois desenhos da | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-mudanca-pequena-K1`: entrada — Concluir a animação com só as crateras mudando e a comparação com a bola. Saída — Mudar o deslocamento da pedra inteira para 10 e mostrar o pulo de um lado para o outro.
+- `video-mudanca-pequena-K1`: entrada — Manter o meme da bola girando e a experiência com a Prévia parada. Saída — Seguir sem mudar os números: a professora só convida a testar e aponta os controles.
 
 
-**Recado na página (não gravar):** Sua vez! Mude só a cratera, depois a pedra inteira, e compare a Prévia. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/motion-amount.ts`, com a tela em `packages/member-shell/src/components/scene-livre/motion-amount.tsx`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue quanto a pedra pode mudar do quadro 1 para o quadro 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Mude detalhes no segundo quadro
 
@@ -180,18 +190,22 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-quadro-pedra`
 
-**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista: primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência. No "Ligue a Prévia do asteroide", tocar a Prévia com um quadro só. No "Tá vendo?", apontar a pedra parada. No "clique em Duplicar quadro", duplicar o quadro 1 na faixa Spritesheet. No "mova uma cratera um pouco para o lado", mover a cratera no quadro 2. No "escolha Editar os pontos numa chama", mexer a ponta da chama e do miolo. No "troque entre os dois quadros", alternar os quadros e mostrar o corpo parado. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Ligue a Prévia. Tá vendo? A pedra fica parada, porque a animação só tem um quadro. Lembra da experiência da parte anterior? Quando só as crateras andavam um pouco, a pedra parecia rolar. Agora a gente vai fazer isso no seu asteroide!
+[engaging, energetic, conversational voice] Ligue a Prévia do asteroide. Tá vendo? A pedra fica parada, porque a animação tem um quadro só. Lembra da experiência da parte anterior? Quando só a cratera andava um pouco, a pedra parecia girar. Agora a gente vai fazer isso no seu asteroide!
 
-[engaging, energetic, conversational voice] Primeiro, em Spritesheet, selecione o quadro 1 e clique em Duplicar quadro. Depois, no quadro 2, com Selecionar, mova uma cratera um pouco para o lado, mantendo a cratera dentro da pedra. Se quiser, faça uma mudança pequena em outra cratera.
+[engaging, energetic, conversational voice] Na faixa Spritesheet, selecione o quadro 1 e clique em Duplicar quadro.
 
-[engaging, energetic, conversational voice] Agora escolha Editar os pontos numa chama e ajuste a ponta dela um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro, e mantenha o corpo da pedra na mesma posição.
+[engaging, energetic, conversational voice] No quadro 2, use Selecionar e mova uma cratera um pouco para o lado, mantendo a cratera dentro da pedra. Se quiser, faça uma mudança pequena em outra cratera.
 
-[engaging, energetic, conversational voice] Por último, troque entre os dois quadros: o corpo fica no lugar, e só os detalhes mudam. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo da pedra está na mesma posição nos dois quadros, e a pedra e as crateras continuam na frente do fogo, porque uma chama na frente num quadro só pisca por cima da pedra na animação.
+[engaging, energetic, conversational voice] Depois escolha Editar os pontos numa chama e mexa a ponta dela um pouco. Faça o mesmo no miolo, sem levar o fogo para fora do quadro.
+
+[engaging, energetic, conversational voice] Não mova o corpo da pedra, porque, se ele mudar de lugar, a pedra pula na animação.
+
+[engaging, energetic, conversational voice] Por último, troque entre os dois quadros: o corpo fica no lugar, e só os detalhes mudam. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo da pedra está na mesma posição nos dois quadros, e a pedra e as crateras continuam na frente do fogo nos dois.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -207,14 +221,20 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-girando`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "clique em Renomear animação", trocar parado por girando. No "deixe a Velocidade em 8 quadros por segundo", ajustar e tocar a Prévia. No "Olha só", apontar as crateras e o fogo mudando. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora dê um nome à animação da pedra. Em Spritesheet, use Renomear animação para trocar parado por girando. Esse nome vai ajudar você a escolher essa animação no Estúdio. Depois deixe a Velocidade em 8 quadros por segundo e ligue a Prévia.
+[engaging, energetic, conversational voice] Agora dê um nome à animação da pedra. Na faixa Spritesheet, clique em Renomear animação e troque parado por girando.
 
-[interested, animated voice] Olha só: as crateras e o fogo mudam um pouco, e o corpo fica no lugar. Os dois desenhos criam uma impressão de movimento, e não uma volta completa da pedra, porque só os detalhes mudam de um quadro para o outro. [reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo está no mesmo lugar nos dois quadros, nenhuma ponta é cortada na borda e a animação girando tem dois quadros.
+[engaging, energetic, conversational voice] Esse nome vai ajudar você a escolher essa animação no Estúdio.
+
+[engaging, energetic, conversational voice] Depois deixe a Velocidade em 8 quadros por segundo e ligue a Prévia. [interested, animated voice] Olha só: as crateras e o fogo mudam um pouco, e o corpo fica no lugar.
+
+[engaging, energetic, conversational voice] A pedra não dá uma volta completa, porque só os detalhes mudam de um quadro para o outro. Mesmo assim, os dois desenhos dão a impressão de que ela está girando.
+
+[reassuring, encouraging voice] Se no seu desenho não ficou assim, confira: o corpo está no mesmo lugar nos dois quadros, nenhuma ponta é cortada na borda e a animação girando tem dois quadros.
 
 [engaging, energetic, conversational voice] Pause aqui e faça esta parte no seu desenho. Se o Pinta ainda não estiver aberto, clique em Abrir meu Pinta. Depois compare o seu desenho com a conferência que a gente acabou de fazer e espere aparecer Guardado na sua conta, porque é assim que o seu desenho fica guardado para a próxima parte. Quando aparecer, volte a esta aba e clique em Próxima parte.
 ```
@@ -236,7 +256,7 @@ Sem vídeo nem ferramenta. O quiz vem imediatamente depois do Zappy. Correção 
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.
+**Na tela:** No "confira nas suas duas artes", mostrar a nave e o asteroide com as animações. No "espere aparecer Guardado na sua conta", mostrar o aviso no Pinta. No "clique em Escolher no Pinta", voltar à aba da aula e abrir a galeria. No "selecione a nave e o asteroide", marcar as duas artes. No "Depois clique em Enviar (2)", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No "Por último, clique em Concluir aula", clicar em **Concluir aula**.
 
 **Fala para ElevenLabs:**
 

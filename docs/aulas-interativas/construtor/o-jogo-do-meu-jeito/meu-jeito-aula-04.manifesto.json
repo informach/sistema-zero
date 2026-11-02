@@ -38,14 +38,14 @@
   "blocks": [
     {
       "key": "video-preenchimento-contorno",
-      "plannedVideo": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. A partir da pedra com Preenchimento azul e Contorno laranja: deixar o Contorno em Sem cor e mostrar só o azul. Voltar o Contorno com cor e deixar o Preenchimento em Sem cor, mostrando a linha laranja com o xadrez do fundo por dentro. Voltar o Preenchimento com cor e mostrar as duas partes. Em cada troca, apontar as amostras Preenchimento e Contorno ao lado da pedra. Meme na comparação: na frase do livro de colorir, o Zappy pintando por dentro do contorno de uma pedra num livro de colorir, com a legenda \"linha: Contorno · dentro: Preenchimento\". Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra. No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-preenchimento-contorno-K1: Dedé substitui “Cadê a cor de dentro?”. Antes: “cor e deixo o Preenchimento em Sem cor. Olha só: a linha laranja volta, e por dentro dela aparece o xadrez do fundo.”. Depois: “É que Sem cor não é branco: é transparente, por isso dá para ver o fundo. Quando você pega um desenho para colorir, as”.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Separe o miolo da borda\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe um livro de colorir\", mostrar o meme ilustrado (2 a 3 s) do Zappy pintando um livro de colorir [na edição: meme do livro de colorir]. No \"Olha aqui: nesta experiência\", ampliar a experiência [ampliar experiência] e apontar o botão [apontar \"Preenchimento: com cor\"]. No \"e este outro faz o mesmo com o Contorno\", apontar o botão [apontar \"Contorno: com cor\"]. Não tirar nenhuma cor: o que sobra da pedra é a descoberta da criança. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele. Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026). Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-preenchimento-contorno-K1: Dedé substitui “E se uma das partes ficar em Sem cor, o que sobra?”. Antes: “Sabe um livro de colorir? Você pinta por dentro de cada desenho com uma cor e pode passar outra cor por cima da linha.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão troca o Preenchimento”.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-preenchimento-contorno",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -54,14 +54,33 @@
         "kind": "interactive",
         "required": true,
         "title": "Separe o miolo da borda",
-        "instructions": "Deixe Preenchimento com cor e Contorno em Sem cor. Depois ligue Contorno e deixe Preenchimento em Sem cor. Por fim deixe os dois com cor. Compare as três versões.",
-        "hints": [],
+        "instructions": "Deixe uma parte de cada vez em Sem cor e depois as duas com cor. Compare o que sobra da pedra em cada teste. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "hints": [
+          "Repare no que sobra da pedra a cada clique.",
+          "Compare a pedra com o Contorno em Sem cor, com o Preenchimento em Sem cor e com as duas partes com cor.",
+          "Clique em Contorno e observe. Clique em Contorno de novo e depois em Preenchimento. Por último, clique em Preenchimento de novo para deixar as duas partes com cor."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "fill-stroke",
           "cenario": "meu-jeito",
           "setup": {
-            "goals": ["only-fill", "only-stroke", "both"]
+            "goals": ["only-fill", "only-stroke", "both"],
+            "freeExploration": true,
+            "goalCopy": {
+              "only-fill": {
+                "label": "Deixou o Contorno em Sem cor",
+                "pedido": "Clique em Contorno para deixar o Contorno em Sem cor e observe a pedra."
+              },
+              "only-stroke": {
+                "label": "Deixou o Preenchimento em Sem cor",
+                "pedido": "Com o Contorno com cor, clique em Preenchimento para deixar o Preenchimento em Sem cor e observe a pedra."
+              },
+              "both": {
+                "label": "Voltou as duas partes com cor",
+                "pedido": "Depois de testar uma parte em Sem cor, deixe as duas partes com cor e compare as três versões."
+              }
+            }
           }
         },
         "semPerguntaFinal": true
@@ -69,7 +88,7 @@
     },
     {
       "key": "video-novo-asteroide",
-      "plannedVideo": "Título: Prepare o desenho em vetor\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Prepare o desenho em vetor\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista. No \"Nesta parte, clique em Abrir meu Pinta\", clicar no botão e mostrar o Pinta na outra aba. No \"clique em Criar novo\", abrir a escolha. No \"escolha Vetor\", escolher Vetor, Personagem e Médio, 64 por 64. No \"Escreva asteroide\", escrever o nome e começar a desenhar. No \"Confira o nome asteroide\", apontar o nome e a área quadrada. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-novo-asteroide",
@@ -81,7 +100,7 @@
     },
     {
       "key": "video-forma-pedra",
-      "plannedVideo": "Título: Feche a forma da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Feche a forma da pedra\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"escolha uma cor em Preenchimento\", escolher a cor e deixar o Contorno em Sem cor. No \"Pegue a Caneta\", marcar seis pontos ao redor da pedra. No \"Para fechar, clique no primeiro ponto\", fechar a forma. No \"Olha só\", apontar o interior colorido. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-forma-pedra",
@@ -93,7 +112,7 @@
     },
     {
       "key": "video-curvas",
-      "plannedVideo": "Título: Arredonde os pontos\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Arredonde os pontos\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Escolha Editar os pontos\", escolher a ferramenta e clicar na pedra. No \"Repare\", apontar os pontos. No \"clique em Ponto suave\", selecionar um ponto e clicar no botão. No \"Olha só\", apontar as duas alças. No \"Arraste uma alça devagar\", arredondar um trecho. No \"Depois afaste a imagem\", afastar e mostrar a pedra inteira. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-curvas",
@@ -105,7 +124,7 @@
     },
     {
       "key": "video-crateras",
-      "plannedVideo": "Título: Acrescente crateras\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-crateras-K1: Dedé substitui “Posso fazer uma cratera grande e outra pequena?”. Antes: “criar uma cratera. Olha só: a cratera aparece por cima da pedra, porque a forma desenhada por último fica na frente.”. Depois: “Você pode variar os tamanhos. Para fazer outras, use Selecionar, escolha a cratera e use Ctrl+C e Ctrl+V para copiar e”.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Acrescente crateras\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"clique fora da pedra\", tirar a seleção. No \"Escolha um tom mais escuro e a ferramenta Círculo\", escolher a cor e o Círculo. No \"Arraste dentro da pedra\", desenhar a cratera. No \"Olha só\", apontar a cratera por cima da pedra. No \"use Ctrl+C e Ctrl+V\", copiar e colar a cratera. No \"arraste um canto da caixa\", mudar o tamanho da cópia. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"volte a esta aba e clique em Próxima parte\", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-crateras-K1: Dedé substitui “Posso fazer uma cratera grande e outra pequena?”. Antes: “Arraste dentro da pedra para criar uma cratera. Olha só: a cratera aparece por cima da pedra, onde você desenhou.”. Depois: “Pode, sim. Os tamanhos são escolha sua. Para fazer outras, use Selecionar, clique na cratera e use Ctrl+C e Ctrl+V para”.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-crateras",
@@ -117,7 +136,7 @@
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Envie seu asteroide\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar cada gesto narrado, os nomes dos controles e o resultado comparável, sem acelerar a execução. Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
+      "plannedVideo": "Título: Envie seu asteroide\n\nProduzir nas ferramentas atuais. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"confira no seu asteroide\", mostrar o asteroide em Vetor com 64 por 64. No \"espere aparecer Guardado na sua conta\", mostrar o aviso no Pinta. No \"clique em Escolher no Pinta\", voltar à aba da aula e abrir a galeria. No \"selecione o seu asteroide\", marcar o asteroide. No \"Depois clique em Enviar (1)\", clicar e mostrar Recebido!. O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar. No \"Por último, clique em Concluir aula\", clicar em **Concluir aula**.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em meu-jeito-aula-04.roteiro.md. Estimar a duração pela fala e pelos gestos; não acelerar para caber. Preservar a mídia existente até a substituição revisada. Este campo não publica nem substitui gravações."
     },
     {
       "key": "fala-entrega",
@@ -144,7 +163,7 @@
     {
       "key": "preenchimento-contorno",
       "title": "Separe o miolo da borda",
-      "objective": "Sua vez! Tire a cor de uma parte de cada vez e compare a pedra. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que sobra da pedra quando cada parte fica em Sem cor. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "intent": "exploration",
       "blockKeys": [
         "video-preenchimento-contorno",

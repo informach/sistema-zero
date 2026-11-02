@@ -15,7 +15,20 @@ import { SceneCanvas, Texto } from './scene-canvas'
 import { useSceneCenario } from './scene-cenario-context'
 import { ActorFigure } from './scene-figures'
 
-export function TwoClocksStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+/**
+ * ⚠️ `livre` (exploração livre, 02/11/2026): o desenho da animação de cada pedra vira "desenho 1" e
+ * "desenho 2", e "quadro" fica só para o relógio do jogo. Sem ele, o palco é o de antes, byte a byte.
+ */
+export function TwoClocksStage({
+  state,
+  cast,
+  livre = false,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  livre?: boolean
+}) {
+  const desenho = (frame: 0 | 1) => (livre ? `desenho ${frame + 1}` : `quadro ${frame}`)
   const actors = sceneNativeCast('two-clocks', cast)
   const mundo = useSceneCenario(actors, 'two-clocks')
   const clocks = state.twoClocks
@@ -24,7 +37,7 @@ export function TwoClocksStage({ state, cast }: { state: SceneState; cast?: Scen
       cast={actors}
       mundo={mundo}
       titulo="Um relógio faz nascer; outro troca desenhos"
-      descricao={`Quadro ${clocks.frames}. ${clocks.born} pedras nasceram. Uma nasce a cada ${clocks.birthEvery} quadros e cada pedra troca ${clocks.animationRate} desenhos por segundo. A mais recente começou no desenho 0.`}
+      descricao={`Quadro ${clocks.frames}. ${clocks.born} pedras nasceram. Uma nasce a cada ${clocks.birthEvery} quadros e cada pedra troca ${clocks.animationRate} desenhos por segundo. A mais recente começou no desenho ${livre ? 1 : 0}.`}
     >
       {(palco) => (
         <>
@@ -79,7 +92,7 @@ export function TwoClocksStage({ state, cast }: { state: SceneState; cast?: Scen
                   className="fill-scene-ink"
                   fontWeight="700"
                 >
-                  {`quadro ${frame}`}
+                  {desenho(frame)}
                 </Texto>
               </g>
             )
@@ -90,7 +103,7 @@ export function TwoClocksStage({ state, cast }: { state: SceneState; cast?: Scen
               y={287}
               tamanho={palco.estreito ? 14 : 12}
               className="fill-scene-ink"
-            >{`Pedra ${clocks.born} nasceu mostrando o quadro 0`}</Texto>
+            >{`Pedra ${clocks.born} nasceu mostrando o ${desenho(0)}`}</Texto>
           )}
         </>
       )}

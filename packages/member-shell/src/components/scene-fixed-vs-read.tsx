@@ -17,7 +17,19 @@ import { ActorFigure } from './scene-figures'
 const palcoX = (x: number) => 28 + x * 0.63
 const palcoY = (y: number) => 24 + y * 0.48
 
-export function FixedVsReadStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function FixedVsReadStage({
+  state,
+  cast,
+  semCodigo = false,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  /**
+   * A exploração livre da Nave (02/11/2026) trabalha só a IDEIA: "número escrito" e "número lido da
+   * nave" no lugar de "x do tiro = …", e "meio da nave" no lugar de "centro x".
+   */
+  semCodigo?: boolean
+}) {
   const actors = sceneNativeCast('fixed-vs-read', cast)
   const mundo = useSceneCenario(actors, 'fixed-vs-read')
   const hero = actorFigure(actors, 'hero')
@@ -74,7 +86,7 @@ export function FixedVsReadStage({ state, cast }: { state: SceneState; cast?: Sc
                 textAnchor="middle"
                 className="fill-scene-ink"
               >
-                centro x
+                {semCodigo ? 'meio da nave' : 'centro x'}
               </Texto>
             </g>
           )}
@@ -109,9 +121,13 @@ export function FixedVsReadStage({ state, cast }: { state: SceneState; cast?: Sc
             className="fill-scene-ink"
             fontWeight="700"
           >
-            {state.fixedRead.source === 'fixed'
-              ? 'x do tiro = 400'
-              : 'x do tiro = centro x da nave'}
+            {semCodigo
+              ? state.fixedRead.source === 'fixed'
+                ? 'número escrito: 400'
+                : 'número lido da nave'
+              : state.fixedRead.source === 'fixed'
+                ? 'x do tiro = 400'
+                : 'x do tiro = centro x da nave'}
           </Texto>
         </>
       )}

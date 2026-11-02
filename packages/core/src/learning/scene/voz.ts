@@ -2,6 +2,7 @@ import type { SceneId } from './actions'
 import { isSceneAudioUrl } from './audio-url'
 import { discoverySpeechSteps } from './discovery-guidance'
 import { gardenSpeechSteps } from './garden'
+import { GUIAS_LIVRES } from './guia-livre'
 
 /**
  * A voz do Zappy nas cenas: o dicionário `roteiro efetivo → arquivo`.
@@ -234,6 +235,11 @@ export function falaDaInstrucao(instruction: string): string {
 
 export const SCENE_SPEECH_SLOTS = [
   ...discoverySpeechSteps().map((step) => `discovery:${step.id}` as const),
+  // As falas das telas livres do Construtor (02/11/2026) moram no registro, fora da tabela base:
+  // sem elas aqui, a pronúncia ajustada no Admin sumia em silêncio.
+  ...Object.values(GUIAS_LIVRES).flatMap((guia) =>
+    Object.keys(guia?.speech ?? {}).map((id) => `discovery:${id}` as const),
+  ),
   'instruction',
   'prediction-context',
   'prediction-question',

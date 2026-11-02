@@ -45,6 +45,8 @@ export interface AulaNave {
   entry: string
   outcome: string
   reason: string
+  /** O que a revisão de 02/11/2026 mudou nesta aula (exploração livre e didática das falas). */
+  revisao?: string
   concepts: string[][]
   sections: SecaoNave[]
   legacyKeys: string[]
@@ -64,8 +66,13 @@ const send =
 // Na aula, o Compartilhar não mostra o campo de título e já traz o resumo do curso. A comemoração
 // do Mural oferece Copiar link de jogar antes de Fechar (ajuste do responsável em 06/10/2026).
 // O opcional vira convite, e as frases conversam em vez de virar lista (revisão de 06/10/2026).
-const publish =
-  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. Seu jogo está no Mural! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar.'
+// Um parágrafo por momento (revisão de 02/11/2026): verificar e enviar, o convite opcional, os
+// gestos do Compartilhar e, por fim, o link e a saída. Antes era um parágrafo só, longo demais.
+const publish = [
+  'Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora.',
+  'Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação.',
+  'Seu jogo está no Mural! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.',
+]
 
 /**
  * Onde a fala aparece: no vídeo (`video`) ou no Passo a passo do projeto (`mapa`), que é lido e não
@@ -76,10 +83,12 @@ export type MeioDaFala = 'video' | 'mapa'
 export function falasSecao(section: SecaoNave, meio: MeioDaFala = 'video'): string[] {
   const speech = [...(section.speech ?? [])]
   if (section.checks?.length) {
-    speech.push(
-      // Depois da publicação, o fecho diz "Por último": a fala já termina em "Depois de copiar o link".
-      `${checkExit} ${section.final ? `${send} ${section.publish ? `${publish} Por último, clique em Concluir aula.` : 'Quando aparecer Projeto enviado!, clique em Concluir aula.'}` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
-    )
+    // Depois da publicação, o fecho diz "Por último": a fala já termina em "Depois de copiar o link".
+    if (section.final && section.publish) speech.push(`${checkExit} ${send}`, ...publish)
+    else
+      speech.push(
+        `${checkExit} ${section.final ? `${send} Quando aparecer Projeto enviado!, clique em Concluir aula.` : 'Quando aparecer Objetivo cumprido!, clique em Próxima parte.'}`,
+      )
   }
   return meio === 'video' ? speech : speech.map(semChamados)
 }
@@ -97,6 +106,28 @@ export function semChamados(paragrafo: string): string {
       (_, letra: string) => letra.toUpperCase(),
     )
 }
+/**
+ * Exploração livre (02/11/2026): cada experiência usa a tela nova e as falas do Zappy do seu
+ * arquivo. A `lighthouse-walk` do Dia 1 usa as telas do Farol, escolhidas pelas metas.
+ */
+export function telaDaExperiencia(activity: InteractiveBlock): { tela: string; falas: string } {
+  if (activity.activity.type !== 'experimentation') throw new Error('Experiência sem cena')
+  const scene = activity.activity.scene
+  if (scene === 'lighthouse-walk') {
+    const metas = activity.activity.setup?.goals ?? []
+    return {
+      tela: metas.includes('walked-real-speed')
+        ? 'packages/member-shell/src/components/scene-walk-camera-lenta.tsx'
+        : 'packages/member-shell/src/components/scene-walk-beirada.tsx',
+      falas: 'packages/core/src/learning/scene/discovery-guidance.ts',
+    }
+  }
+  return {
+    tela: `packages/member-shell/src/components/scene-livre/${scene}.tsx`,
+    falas: `packages/core/src/learning/scene/guia-livre/${scene}.ts`,
+  }
+}
+
 function types(value: unknown): string[] {
   const found = new Set<string>()
   const walk = (v: unknown) => {
@@ -238,6 +269,13 @@ function roteiro(lesson: AulaNave, index: number) {
         '',
       )
     }
+    if (s.activity?.activity.type === 'experimentation') {
+      const { tela, falas } = telaDaExperiencia(s.activity)
+      lines.push(
+        `**Falas dentro da experiência:** \`${falas}\`, na tela \`${tela}\`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.`,
+        '',
+      )
+    }
     lines.push(`**Recado na página (não gravar):** ${s.bridge}`, '')
     if (s.questions)
       lines.push(
@@ -265,6 +303,7 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
     '',
     lesson.reason,
     '',
+    ...(lesson.revisao ? [`**Revisão de 02/11/2026.** ${lesson.revisao}`, ''] : []),
     '## Triagem dos conceitos',
     '',
     '| Conceito | Como e quando trabalhar | Razão |',
@@ -289,8 +328,18 @@ function proposta(lesson: AulaNave, index: number, manifest: LearningManifest) {
       lines.push(`**Participação no vídeo:** ${planoAvatar(s, falasSecao(s), index)}`, '')
     if (s.activity)
       lines.push(
-        `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.`,
-        '',
+        ...(s.activity.activity.type === 'experimentation'
+          ? [
+              `**Experiência em exploração livre:** \`${s.activity.activity.scene}\` (\`setup.freeExploration\`), tela \`${telaDaExperiencia(s.activity).tela}\` e falas do Zappy em \`${telaDaExperiencia(s.activity).falas}\`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.`,
+              '',
+              `**Instrução:** ${s.activity.instructions}`,
+              '',
+              `**O que investigar (metas, em qualquer ordem):** ${(s.activity.activity.setup?.goals ?? []).map((g) => `${s.activity!.activity.type === 'experimentation' ? (s.activity!.activity.setup?.goalCopy?.[g]?.pedido ?? g) : g}`).join(' ')}`,
+              '',
+              `**Pistas, do aberto ao direto:** ${s.activity.hints.map((h, n) => `${n + 1}) ${h}`).join(' ')} Sem palpite e sem pergunta final.`,
+              '',
+            ]
+          : [`**Atividade:** \`${s.activity.activity.type}\`. ${s.activity.instructions}`, '']),
       )
     if (s.play)
       lines.push(

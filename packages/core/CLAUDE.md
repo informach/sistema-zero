@@ -405,6 +405,18 @@ quando um ritmo mudar):
 | `score` (`score-start`/`score-end`) | a sobra de ANTES do gesto atravessava: "o placar ficou parado" caía 0,05 s depois de bater | nas cenas de `sceneLongFrame` o gesto recomeça o quadro |
 | `symbol-sequence` (`count-vs-order`, exploração livre) | "só contando" com a ordem errada caía no primeiro gesto, sem a criança ter visto o baú que confere a vez | no modo livre, só depois de ter visto o baú que confere a vez responder (`right-order`, `out-of-turn` ou `middle-start`) |
 | `timed-bridge` (`in-time`, exploração livre) | ir à ponte no segundo 0 contava "a tempo" também com o relógio da partida, onde não há contagem que comece na puxada | a exceção do segundo 0 vale só com o relógio da alavanca (`place === 'lever'`) |
+| `motion-amount` (`no-change`, exploração livre) | a Prévia abria tocando: o relógio fechava "desenhos iguais" 0,25 s depois de abrir, sem gesto | no modo livre a Prévia abre parada (`openScene`), e o "Tocar a Prévia" da criança é o teste |
+| `fixed-vs-read` (`follows`/`box-marks`, exploração livre) | um tiro lido longe do 400 fechava "segue a nave"; as marcas com o número escrito e a nave no 400 fechavam por coincidência | no modo livre, `follows` pede dois tiros lidos com a nave em lugares diferentes; `box-marks` só com o número lido |
+| `invincibility` (exploração livre) | trocar a proteção no meio das batidas fechava a meta da proteção nova sobre batidas decididas pela outra | no modo livre, trocar a proteção recomeça as batidas |
+| `spawn` (`same-fall`, exploração livre) | medir de 20 em 20 antes de 40 em 40 nunca comparava | no modo livre, as duas medidas guardadas e iguais, em qualquer ordem |
+
+⚠️ **Dois recomeços na exploração livre (02/11/2026).** O `reset` livre é o "Recomeçar experiência" do
+rodapé e APAGA as descobertas (`stepExperiment` volta a `initialExperiment`). O "Voltar ao começo" que
+algumas telas têm no meio dos controles (`RESTART_CASE_SCENES`: `two-clocks`, `velocity`,
+`collision-pair`, `invincibility`) é a ação `restart-case`: o mesmo recomeço do `reset` do motor, que
+guarda descobertas e escolhas. Fora do modo livre ela não faz nada. Os recomeços do motor dentro de um
+gesto (`shield`, `command-target`) partem de `initialScene`, nunca de `openScene`: o gesto pode estar nas
+ações do caso, e `openScene` as repete (recursão sem fim). Testes: `livre-revisao.test.ts`.
 
 Regras que saem da tabela:
 - Meta de COMPARAÇÃO pede o primeiro termo visto antes: `stopped` depois de `moves`, `landed` depois de

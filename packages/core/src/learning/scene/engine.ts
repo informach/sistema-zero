@@ -61,6 +61,8 @@ import {
   onceDiscoveries,
   onceRunFinished,
   placeOnce,
+  prepararOnceLivre,
+  recomecarPartidaOnce,
   triggerOnce,
 } from './once-vs-always'
 import {
@@ -129,6 +131,15 @@ import {
 export function openScene(start: SceneStart): SceneState {
   const base = initialScene(start)
   if (start.setup?.freeExploration && start.scene === 'touch-response') base.match.gardenRound = 2
+  // ⭐ Exploração livre do Construtor (02/11/2026): no caso do evento, só a ficha do evento é escolha
+  // da criança; as outras abrem no lugar em que o jogo as usa (`prepararOnceLivre`).
+  if (start.setup?.freeExploration && start.scene === 'once-vs-always')
+    prepararOnceLivre(base.once, oncePreset(start.setup.preset))
+  // ⚠️ Exploração livre (02/11/2026): a Prévia da `motion-amount` abre PARADA. Tocando de fábrica, o
+  // relógio do player fechava `no-change` 0,25 s depois de abrir, sem gesto nenhum da criança; aqui
+  // é o "Tocar a Prévia" dela que testa os dois desenhos iguais.
+  if (start.setup?.freeExploration && start.scene === 'motion-amount')
+    base.motionAmount.playing = false
   const acoes = start.setup?.actions
   if (!acoes?.length) return base
   const montado = acoes.reduce((estado, acao) => stepScene(start, estado, acao), base)
@@ -1028,10 +1039,27 @@ export function stepScene(
       s.caption = 'As marcas de nascimento saíram. Os tiros que já nasceram continuam subindo.'
       break
     case 'command-target':
+      // ⚠️ Na exploração livre (02/11/2026), trocar a escolha depois de o tempo andar RECOMEÇA a
+      // trombada: escolher depois da batida não mudava nada na tela, e a criança lia a troca como inútil.
+      // ⚠️ `initialScene`, nunca `openScene`: este gesto pode estar nas ações do próprio caso, e
+      // `openScene` as repete (recursão sem fim ao abrir a cena).
+      if (start.setup?.freeExploration && s.collisionPair.frames > 0) {
+        const { shotTarget, rockTarget } = s.collisionPair
+        s.collisionPair = { ...initialScene(start).collisionPair, shotTarget, rockTarget }
+        s.clock.carry = 0
+      }
       if (action.subject === 'shot') s.collisionPair.shotTarget = action.target
       else s.collisionPair.rockTarget = action.target
       break
     case 'shield':
+      // ⚠️⚠️ Na exploração livre (02/11/2026), trocar a proteção RECOMEÇA as batidas: trocada no meio,
+      // a meta da proteção nova caía sobre batidas que a outra proteção decidiu (0 até o quadro 5, 45
+      // até o 30 e depois 15 fechava `expires` sem a criança ter visto 15 quadros acabarem).
+      // ⚠️ `initialScene`, nunca `openScene` (a mesma recursão da `command-target`).
+      if (start.setup?.freeExploration) {
+        s.invincibility = { ...initialScene(start).invincibility }
+        s.clock.carry = 0
+      }
       s.invincibility.protection = action.frames
       break
     case 'advance-to': {
@@ -1092,6 +1120,12 @@ export function stepScene(
       s.twoClocks.birthEvery = action.frames
       if (s.twoClocks.frames === 0) s.twoClocks.birthAtStart = action.frames
       break
+    // "Voltar ao começo" no meio dos controles da tela livre (02/11/2026): o mesmo recomeço do `reset`
+    // do motor, que guarda as descobertas e as escolhas (os relógios passam a valer DESDE o começo).
+    // Só na exploração livre: na bancada guiada o próprio `reset` já faz isso.
+    case 'restart-case':
+      if (!start.setup?.freeExploration) return previous
+      return stepScene(start, previous, { type: 'reset' })
     case 'export-file':
       s.copies.fileColor = s.copies.lessonColor
       observe(s, 'exported', 'O arquivo saiu, e o jogo continuou na aula')
@@ -1190,8 +1224,24 @@ export function stepScene(
       break
     case 'place-in-area': {
       const preset = oncePreset(start.setup?.preset)
+      // ⭐ Exploração livre (02/11/2026): escolher de novo o MESMO jeito é o "Jogar de novo" da tela
+      // livre, uma partida nova com a mesma montagem. Sem ele, quem apertou a tecla cedo demais não
+      // tinha como ver o tiro esperando sem trocar de jeito e voltar.
+      if (
+        start.setup?.freeExploration &&
+        preset.cards.some((card) => card.id === action.card) &&
+        action.area !== 'outside' &&
+        s.once.placement[action.card] === action.area
+      ) {
+        recomecarPartidaOnce(s.once, preset)
+        s.caption = ''
+        break
+      }
       if (!placeOnce(s.once, preset, action.card, action.area)) return previous
-      s.caption = 'A ação mudou de área. Comece o jogo para ver quando ela acontece.'
+      // ⚠️ Sem o nome das áreas na exploração livre: a tela fala só da ideia (uma vez, sempre, na hora).
+      s.caption = start.setup?.freeExploration
+        ? ''
+        : 'A ação mudou de área. Comece o jogo para ver quando ela acontece.'
       break
     }
     case 'trigger': {
@@ -1553,7 +1603,8 @@ export function stepScene(
       }
       s.crowd.interval = action.seconds
       resetTrack(s)
-      if (scene === 'spawn') s.crowd.fallComparison = undefined
+      // ⚠️ Na exploração livre a medida de 20 FICA: a queda pode ser medida de 20 em 20 antes de 40.
+      if (scene === 'spawn' && !start.setup?.freeExploration) s.crowd.fallComparison = undefined
       s.caption =
         scene === 'spawn' && isSpawnPreset(start.setup?.preset) && start.setup.preset.falling
           ? `Tudo recomeçou do zero, com o intervalo de ${Math.round(action.seconds * 30)} quadros.`
@@ -2184,9 +2235,21 @@ export function stepScene(
           )
         )
           observe(s, 'same-spot', 'Com o número escrito, os dois tiros nasceram no mesmo lugar')
-        if (source === 'read' && heroX !== 400 && shot.x === heroX)
+        // ⭐ Na exploração livre (Nave, 02/11/2026) o número lido é a COMPARAÇÃO irmã do escrito:
+        // dois tiros lidos com a nave em lugares diferentes, cada um nascendo onde ela estava. Um
+        // tiro só, longe do 400, não mostra que o tiro SEGUE a nave. E as marcas da nave só contam
+        // com o número lido: com o escrito e a nave parada no 400, o tiro sair do meio dela é
+        // coincidência, não a leitura.
+        const livre = start.setup?.freeExploration === true
+        const lidos = s.fixedRead.marks.filter((mark) => mark.source === 'read')
+        if (
+          livre
+            ? source === 'read' &&
+              lidos.some((other) => other.id !== shot.id && other.heroX !== heroX)
+            : source === 'read' && heroX !== 400 && shot.x === heroX
+        )
           observe(s, 'follows', 'Com a leitura, o tiro nasceu onde a nave estava')
-        if (boxMarks && shot.x === heroX)
+        if (boxMarks && shot.x === heroX && (!livre || source === 'read'))
           observe(s, 'box-marks', 'O tiro sai do meio da caixa e da borda de cima dela')
         s.caption = `O tiro nasceu em x ${shot.x} e continua subindo desse lugar.`
         break
@@ -2725,7 +2788,10 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
       clocks.born++
       clocks.lastBornAt = clocks.frames
       clocks.rocks.push({ id: clocks.born, bornAt: clocks.frames })
-      s.caption = `Pedra ${clocks.born} nasceu no quadro 0 do próprio giro.`
+      // ⚠️ Na exploração livre, "quadro" é só o do jogo: o desenho da animação é "desenho 1" (02/11/2026).
+      s.caption = start.setup?.freeExploration
+        ? `Pedra ${clocks.born} nasceu no desenho 1 do próprio giro.`
+        : `Pedra ${clocks.born} nasceu no quadro 0 do próprio giro.`
       if (clocks.born >= 3)
         observe(s, 'each-one', 'Cada pedra começou no quadro 0, na hora em que ela nasceu')
     }
@@ -2828,6 +2894,7 @@ function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
         isCleanupPreset(start.setup?.preset) &&
         start.setup.preset.exit === 'top',
       scene === 'game-state' ? gameStatePreset(start.setup?.preset).waitingSeconds : 2,
+      scene === 'spawn' && start.setup?.freeExploration === true,
     )
   if (scene === 'score') advanceScore(s, 1 / fps)
   // ⚠️ `random` e `acceleration` não têm mais relógio geral (lote 5): o tempo delas mora no gesto.
@@ -3653,6 +3720,8 @@ function advanceCrowd(
   falling = false,
   exitTop = false,
   waitingSeconds = 2,
+  /** A `spawn` em exploração livre: a queda se compara nas duas ordens (20 antes de 40 também). */
+  livre = false,
 ): void {
   const seconds = 1 / fps
   const bornBefore = s.crowd.born
@@ -3729,6 +3798,14 @@ function advanceCrowd(
       if (intervalFrames === 20 && s.crowd.fallBaseline === travel) {
         s.crowd.fallComparison = travel
         observe(s, 'same-fall', 'Com mais pedras nascendo, cada pedra desce na mesma velocidade.')
+      }
+      // ⚠️ Na exploração livre (02/11/2026) a medida de 20 é guardada sozinha, e a meta cai quando as
+      // DUAS medidas existem e são iguais, em qualquer ordem: quem mediu 20 e depois 40 também comparou.
+      if (livre) {
+        if (intervalFrames === 20 && s.crowd.fallComparison === undefined)
+          s.crowd.fallComparison = travel
+        if (s.crowd.fallBaseline !== undefined && s.crowd.fallBaseline === s.crowd.fallComparison)
+          observe(s, 'same-fall', 'Com mais pedras nascendo, cada pedra desce na mesma velocidade.')
       }
     }
   }

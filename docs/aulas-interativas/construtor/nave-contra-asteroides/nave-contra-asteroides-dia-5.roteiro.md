@@ -2,48 +2,62 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Defina quando ganhar e perder
+## Seção 1. Defina quando você ganha
 
-### Clipe `video-finais` · Defina quando ganhar e perder
+### Clipe `video-finais` · Defina quando você ganha
 
-**Estimativa de gravação:** aproximadamente 6 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-finais`
 
-**Na tela:** Começar mostrando a partida que continua sem vidas. Não apresentar uma tela final ainda ausente como teste aprovado. Manter a prioridade real da derrota no empate e a comparação >= do código original. Na pergunta da derrota, a pergunta x > 0 vai para a lixeira antes de encaixar as vidas do sprite acabaram?. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "comece uma partida e faça alguns pontos", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e atirar [tecla Space] até acertar uma pedra. Do "Sabe aquele brinquedo do parque" até o "ou passaram", a tela fica parada, e a edição troca esse trecho pelo desenho da placa do brinquedo e da nave com o placar perto de 26 [na edição: a placa do brinquedo do parque e a meta de 26 pontos]. No "Deixe à vista o espaço entre Dar ao sprite", apontar o lugar [apontar abaixo de "Dar ao sprite"]. No "Agora abra Programação e depois Variáveis", abrir as categorias [categoria Programação > Variáveis] e encaixar o bloco [encaixar "Criar constante" abaixo de "Dar ao sprite"]. No "Clique em PI, troque por alvo", trocar o nome [trocar "PI" por "alvo" em "Criar constante"]. No "Agora clique no 0 do valor", trocar o número [trocar "0" por "26" em "Criar constante"]. No "É este bloco que guarda a meta", apontar o bloco [apontar bloco "Criar constante"]. No "Abra Programação e depois Lógica e Se", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se logo depois de Desenhar as vidas do sprite. No "No lado esquerdo, clique em x", escolher pontos. No "No meio, clique no sinal de maior", escolher o sinal de maior ou igual. No "Abra Programação e depois Valores", abrir as categorias [categoria Programação > Valores], soltar **valor da variável** em cima do 0 e escolher alvo. No "pegue o bloco Mudar o estado do jogo para, solte dentro desse então", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, comece uma partida e deixe as vidas acabarem. A partida continua, porque você ainda não programou quando ela termina. Agora faça a partida acabar quando chegar a 26 pontos ou quando as vidas acabarem.
+[engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida e faça alguns pontos. Tá vendo? A partida continua sem fim, porque o jogo ainda não sabe quando você ganha.
 
-[engaging, energetic, conversational voice] Primeiro, a meta. Os 26 pontos não mudam durante a partida, por isso a meta vai numa constante, que é um nome que guarda um valor que não muda. A constante é criada uma vez, quando o jogo começa, em Ao iniciar: deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio.
+[engaging, energetic, conversational voice] Sabe aquele brinquedo do parque que tem uma placa na entrada: só entra quem tem 1 metro e 20 ou mais? Quem tem exatamente 1 metro e 20 entra, e quem tem mais também. E a placa não muda: é a mesma o dia inteiro.
 
-[confident, clear, unhurried voice] Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio. O nome chega como PI: troque PI por alvo e o 0 do valor por 26.
+[curious] No seu jogo, a meta é como essa placa: 26 pontos, um número que não muda durante a partida. E a pergunta da vitória é: os pontos já chegaram a 26, ou passaram?
 
-[engaging, energetic, conversational voice] Agora a pergunta da vitória, que o jogo faz em todo quadro, durante a partida. Ela vai no fim do então de Se o estado do jogo é jogando, dentro de A cada quadro do jogo, logo depois de Desenhar as vidas do sprite: deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.
+[engaging, energetic, conversational voice] Agora a gente vai pôr essa placa e essa pergunta no seu jogo!
 
-[engaging, energetic, conversational voice] Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor. No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.
+[engaging, energetic, conversational voice] Um nome que guarda um valor que não muda se chama constante. A meta vai numa constante, criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, em Ao iniciar.
+
+[confident, clear, unhurried voice] Agora abra Programação e depois Variáveis, e pegue o bloco Criar constante com valor. Arraste e solte logo abaixo de Dar ao sprite nave 3 de vida.
+
+[confident, clear, unhurried voice] Repare: o nome chega como PI. Clique em PI, troque por alvo e clique fora do campo.
+
+[confident, clear, unhurried voice] Agora clique no 0 do valor, troque por 26 e clique fora do campo.
+
+[engaging, energetic, conversational voice] É este bloco que guarda a meta, 26, com o nome alvo, como a placa do parque.
+
+[engaging, energetic, conversational voice] Agora a pergunta da vitória. O jogo faz essa pergunta em todo quadro, durante a partida. Por isso, ela vai no fim do então de Se o estado do jogo é jogando, logo depois de Desenhar as vidas do sprite.
+
+[engaging, energetic, conversational voice] Deixe esse lugar à vista. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse lugar.
+
+[engaging, energetic, conversational voice] Desta vez, a pergunta que vem no Se vai ser usada. Ela é uma comparação: um valor, um sinal e outro valor.
+
+[engaging, energetic, conversational voice] No lado esquerdo, clique em x e escolha pontos.
+
+[engaging, energetic, conversational voice] No meio, clique no sinal de maior e escolha o sinal de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque.
 
 [curious] E do outro lado vai a meta?
 
-[curious] Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável e solte em cima do 0. Escolha alvo. Assim, a pergunta fica pontos maior ou igual a alvo, ou seja, a partida já chegou à meta?
+[engaging, energetic, conversational voice] Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco valor da variável, solte em cima do 0 e escolha alvo.
+
+[curious] Agora a pergunta ficou assim: pontos maior ou igual a alvo. Ou seja, a partida já chegou à meta?
 
 [confident, clear, unhurried voice] Deixe à vista o espaço do então dessa comparação. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.
 
-[curious] Chegou na meta, ganhou! E se acabarem as vidas?
+[engaging, energetic, conversational voice] É este bloco que leva o jogo para o estado vitoria quando a meta é alcançada.
 
-[engaging, energetic, conversational voice] Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e depois Lógica e Se, pegue outro Se e solte nesse encaixe. Desta vez, a pergunta x maior que 0 não serve, por isso arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.
+[confident, clear, unhurried voice] Confira se ficou assim: em Ao iniciar, entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, está Criar constante alvo com valor 26. E, no fim de jogando, depois de Desenhar as vidas do sprite, está o Se pontos maior ou igual a alvo, que muda o estado para vitoria.
 
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco as vidas do sprite acabaram?, solte nesse lugar e escolha nave. Depois, deixe à vista o então desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.
-
-[curious] E se as duas coisas acontecerem juntas?
-
-[interested, animated voice] Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota. Se as duas coisas acontecerem no mesmo quadro, a derrota vem por último, e é ela que vale.
-
-[confident, clear, unhurried voice] Confira se ficou assim: em Ao iniciar, entre Dar ao sprite nave 3 de vida e Mudar o estado do jogo para inicio, está Criar constante alvo com valor 26. E, no fim de jogando, depois de Desenhar as vidas do sprite, estão o Se pontos ≥ alvo, que muda o estado para vitoria, e o Se as vidas do sprite nave acabaram?, que muda o estado para fim.
-
-[engaging, energetic, conversational voice] As telas da vitória e da derrota ainda não existem, por isso o jogo ainda não mostra esses finais. Desta vez, quem confere o que você montou é a verificação, e as telas vêm na próxima parte.
+[engaging, energetic, conversational voice] A tela da vitória ainda não existe, e chegar a 26 pontos leva tempo. Por isso, desta vez quem confere o que você montou é a verificação. A tela vem daqui a duas partes.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -52,22 +66,73 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-finais-K1 | Debinha | 1 | No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual. | E do outro lado vai a meta? | Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco | [curious] |
-| video-finais-K2 | Debinha | 1 | telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria. | Chegou na meta, ganhou! E se acabarem as vidas? | Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e | [curious] |
-| video-finais-K3 | Debinha | 1 | Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim. | E se as duas coisas acontecerem juntas? | Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da | [curious] |
+| video-finais-K1 | Debinha | 1 | de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como na placa do parque. | E do outro lado vai a meta? | Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-finais-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
-- `video-finais-K2`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
-- `video-finais-K3`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-finais-K1`: entrada — Manter à vista a comparação com pontos e o sinal de maior ou igual. Saída — Depois da saída, apontar o 0 à direita da comparação.
 
 
-**Recado na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 2. Mostre a vitória e a derrota
+## Seção 2. Defina quando você perde
+
+### Clipe `video-derrota` · Defina quando você perde
+
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-derrota`
+
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "comece uma partida e deixe as vidas acabarem", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as pedras baterem na nave. No "Deixe à vista o encaixe logo abaixo do Se da vitória", abrir as categorias [categoria Programação > Lógica & Se] e soltar o Se nesse encaixe. No "Arraste essa pergunta para a lixeira", levar a pergunta x > 0 com a mão até a lixeira. No "pegue o bloco as vidas do sprite acabaram", abrir as categorias [categoria Jogo 2D > Vida e placar > Vida], soltar o bloco ao lado de Se e escolher nave. No "pegue o bloco Mudar o estado do jogo para, solte dentro do então", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher fim. No "Olha aqui: a ordem no fim de jogando", apontar as duas perguntas, uma depois da outra. No "Agora teste: comece uma partida", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as vidas acabarem. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida e deixe as vidas acabarem. Tá vendo? A partida continua, porque o jogo ainda não sabe quando você perde.
+
+[engaging, energetic, conversational voice] A pergunta da derrota é outra: as vidas da nave acabaram? Ela também vai em jogando, logo abaixo da pergunta da vitória.
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e depois Lógica e Se, pegue outro Se e solte nesse encaixe.
+
+[engaging, energetic, conversational voice] Desta vez, a pergunta x maior que 0 não serve. Arraste essa pergunta para a lixeira.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco as vidas do sprite acabaram?, solte nesse lugar e escolha nave.
+
+[engaging, energetic, conversational voice] É este bloco que pergunta se a nave ficou sem vidas.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço do então desse Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.
+
+[curious] E se as duas coisas acontecerem juntas?
+
+[interested, animated voice] Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da derrota. Se as duas coisas acontecerem no mesmo quadro, a derrota vem por último, e é ela que vale.
+
+[upbeat, encouraging voice] Agora teste: comece uma partida e deixe as vidas acabarem. [confident, clear, unhurried voice] Repare: a partida para, porque o estado mudou para fim, e o jogo não está mais jogando.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de jogando, depois do Se da vitória, está o Se as vidas do sprite nave acabaram?, que muda o estado para fim. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] A tela da derrota ainda não aparece. Ela vem na próxima parte.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-derrota-K1 | Debinha | 1 | Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim. | E se as duas coisas acontecerem juntas? | Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-derrota-K1`: entrada — Manter à vista as duas perguntas, a da vitória e a da derrota. Saída — Depois da saída, apontar a ordem das perguntas no fim de jogando.
+
+
+**Recado na página (não gravar):** Agora defina quando você perde! Monte a pergunta da derrota logo abaixo da vitória e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+## Seção 3. Mostre a vitória e a derrota
 
 ### Clipe `video-mostrar-telas` · Mostre a vitória e a derrota
 
@@ -75,16 +140,20 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-mostrar-telas`
 
-**Na tela:** Começar mostrando a partida parada sem tela de fim. Criar um ramo por vez, sem remontar inicio, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Não alegar que Enter reinicia nesta etapa. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "comece uma partida e deixe as vidas acabarem", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as pedras baterem na nave. No "Encontre esse Se", arrastar até o Se aparecer [arrastar até "Se"]. No "clique uma vez no sinal de mais", clicar no sinal de mais que fica antes de senão se. No "arraste essa pergunta para a lixeira", levar a pergunta x > 0 com a mão até a lixeira. No "pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher vitoria. No "pegue o bloco Mostrar tela com título", soltar o bloco no então do ramo vitoria. No "Agora os textos da vitória", escrever Você ganhou! no título, apagar o subtítulo e escrever a dica. No "Agora a derrota, do mesmo jeito", repetir com o estado fim e os textos da derrota. No "Agora teste: clique na área do jogo", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter] e deixar as vidas acabarem até a tela Você perdeu aparecer. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Repare: quando as vidas acabam, a partida para, mas nenhuma tela de fim aparece. É que o Se grande de A cada quadro do jogo só tem os ramos de jogando e de inicio, e nenhum para vitoria ou fim. Agora mostre uma tela para cada final.
+[engaging, energetic, conversational voice] Aqui no seu jogo, comece uma partida e deixe as vidas acabarem. Tá vendo? A partida para, mas nenhuma tela de fim aparece, porque o Se grande ainda não tem um ramo para fim.
 
-[engaging, energetic, conversational voice] Encontre esse Se, dentro de A cada quadro do jogo. [interested, animated voice] Olha aqui: na linha de baixo dele, clique uma vez no + que fica antes de senão se, para criar o ramo da vitória.
+[engaging, energetic, conversational voice] O Se grande de A cada quadro do jogo tem os ramos de jogando e de inicio. Agora ele vai ganhar mais dois: um para vitoria e um para fim.
 
-[engaging, energetic, conversational voice] O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.
+[engaging, energetic, conversational voice] Encontre esse Se, dentro de A cada quadro do jogo. [interested, animated voice] Olha aqui: na linha de baixo dele, clique uma vez no sinal de mais que fica antes de senão se, para criar o ramo da vitória.
+
+[engaging, energetic, conversational voice] O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado desse senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha vitoria.
 
 [confident, clear, unhurried voice] Deixe à vista o espaço do então do ramo vitoria. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.
 
@@ -92,13 +161,19 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [curious] E a tela de quando eu perder?
 
-[engaging, energetic, conversational voice] Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio. Na mesma categoria Telas e partida, pegue o estado do jogo é, solte nesse lugar e escolha fim.
+[engaging, energetic, conversational voice] Ela vem do mesmo jeito. Agora a derrota, do mesmo jeito. Clique de novo no sinal de mais que fica antes de senão se e arraste a pergunta x maior que 0 do ramo novo para a lixeira.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço. No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro.
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio. Na mesma categoria Telas e partida, pegue o estado do jogo é, solte nesse lugar e escolha fim.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo, comece com Enter e deixe as vidas acabarem. [interested, animated voice] Olha só: aparece a tela Você perdeu! Isso acontece porque a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela. A dica já fala em voltar ao início, mas o Enter ainda não faz isso: essa resposta vem depois da próxima experiência.
+[confident, clear, unhurried voice] Deixe à vista o espaço do então do ramo fim. Pegue outro Mostrar tela com título subtítulo dica fundo, na mesma categoria, e solte nesse espaço.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de jogando, a pergunta das vidas muda o estado para fim, e o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem. Os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[engaging, energetic, conversational voice] No título, escreva Você perdeu, apague o subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro.
+
+[upbeat, encouraging voice] Agora teste: clique na área do jogo, toque em Enter e deixe as vidas acabarem. [interested, animated voice] Olha só: aparece a tela Você perdeu! É que a pergunta das vidas muda o estado para fim, e o ramo fim mostra essa tela.
+
+[engaging, energetic, conversational voice] A dica já fala em voltar ao início, mas o Enter ainda não faz isso: essa resposta vem depois da próxima experiência.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: o Se grande tem os ramos jogando, inicio, vitoria e fim, nessa ordem, e os ramos vitoria e fim mostram as telas Você ganhou! e Você perdeu, com a dica Aperte Enter para voltar ao início. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -107,59 +182,61 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-mostrar-telas-K1 | Debinha | 1 | subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis. | E a tela de quando eu perder? | Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a | [curious] |
+| video-mostrar-telas-K1 | Debinha | 1 | subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis. | E a tela de quando eu perder? | Ela vem do mesmo jeito. Agora a derrota, do mesmo jeito. Clique de novo no sinal de mais que fica antes de senão se e | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-mostrar-telas-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-mostrar-telas-K1`: entrada — Manter à vista a tela da vitória preenchida no bloco. Saída — Depois da saída, apontar a linha dos sinais de mais do Se grande.
 
 
 **Recado na página (não gravar):** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 3. Compare voltar à abertura e reiniciar
+## Seção 4. Jogar outra vez
 
-### Clipe `video-reiniciar` · Compare voltar à abertura e reiniciar
+### Clipe `video-reiniciar` · Jogar outra vez
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-reiniciar`
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. A experiência restart usa Apertar Enter. A abertura pode cobrir indicadores: compará-los quando a partida começa. Com Mudar o estado do jogo para inicio, clicar em Apertar Enter, esperar a batida e o fim, clicar em Apertar Enter para voltar à abertura com as pedras ainda na pista e clicar de novo para mostrar a partida que acaba na hora. No fim, trocar para Reiniciar o jogo, clicar em Apertar Enter para mostrar a abertura com a pista vazia e clicar outra vez para mostrar a partida com a pista limpa. Meme na comparação: na frase do jogo de tabuleiro, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy arrumando as peças de um tabuleiro de volta na saída, com a legenda "Reiniciar o jogo: tudo no lugar"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Na tela:** No "Sabe quando você termina um jogo de tabuleiro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy diante de um tabuleiro no fim da partida, pensando em como recomeçar [na edição: meme do tabuleiro]. No "Olha aqui: nesta experiência", ampliar a experiência [ampliar experiência] e apontar as escolhas, sem clicar [apontar "Só voltar para a tela de início"] [apontar "Começar tudo de novo"]. No "e este botão faz o papel da tecla Enter", apontar o botão, sem clicar [apontar "Apertar Enter"]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como preparar uma partida nova depois do fim. Aqui, o Enter começa a partida, e dá para escolher o que ele faz no fim.
+[engaging, energetic, conversational voice] Sabe quando você termina um jogo de tabuleiro e quer jogar de novo? Dá para só combinar uma partida nova e recomeçar, ou recolher tudo e arrumar o tabuleiro do zero.
 
-[interested, animated voice] Olha aqui: em No fim, o Enter faz, eu escolho Mudar o estado do jogo para inicio. Clico em Apertar Enter, e a partida começa. Uma pedra bate na nave, e a partida termina. Clico em Apertar Enter, e o jogo volta para a abertura, mas tá vendo? As pedras da partida continuam na pista. Clico de novo para jogar, e a partida nova começa com as pedras velhas e acaba na hora, com uma batida. Ou seja, mudar só o estado não arruma o que ficou da partida anterior.
+[engaging, energetic, conversational voice] No seu jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.
 
-[engaging, energetic, conversational voice] É como um jogo de tabuleiro: para jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.
+[curious] E qual é a diferença entre os dois?
 
-[curious] Como faz para começar outra partida com tudo no lugar?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. [interested, animated voice] Olha só: a abertura volta, e a pista fica vazia. Clico outra vez, e a partida começa com a pista limpa, porque Reiniciar o jogo faz de novo a preparação de Ao iniciar. No seu jogo, o Enter vai reiniciar o jogo quando a partida terminar.
+[interested, animated voice] Olha aqui: nesta experiência, você escolhe o que o Enter faz no fim da partida, e este botão faz o papel da tecla Enter.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os asteroides que ficam na tela e a tela de início quando o Enter só volta para a tela de início e quando ele começa tudo de novo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-reiniciar-K1 | Debinha | 1 | jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada. | Como faz para começar outra partida com tudo no lugar? | Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica | [curious] |
+| video-reiniciar-K1 | Debinha | 1 | jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo. | E qual é a diferença entre os dois? | O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe o que o Enter faz no | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-reiniciar-K1`: entrada — Concluir o teste em que mudar o estado mantém as pedras antigas e terminar a comparação com o tabuleiro. Saída — Trocar para Reiniciar o jogo e mostrar abertura e nova partida com a pista limpa.
+- `video-reiniciar-K1`: entrada — Manter o meme do tabuleiro até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência sem jogar.
 
 
-**Recado na página (não gravar):** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/restart.ts`, na tela `packages/member-shell/src/components/scene-livre/restart.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-## Seção 4. Faça Enter preparar outra partida
+**Recado na página (não gravar):** Sua vez! Descubra o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Seção 5. Faça Enter preparar outra partida
 
 ### Clipe `video-enter` · Faça Enter preparar outra partida
 
@@ -167,28 +244,40 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-enter`
 
-**Na tela:** Começar pela retomada: perder, tocar em Enter e, no "Tá vendo?", mostrar que a tela Você perdeu continua. Ampliar o evento existente, sem criar um segundo Enter, clicando no + que fica antes de senão se; a pergunta x > 0 de cada ramo novo vai para a lixeira. Verificar pontos e corações somente após começar, porque a tela de abertura os cobre. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "perca uma partida e toque em Enter", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter], deixar as vidas acabarem e tocar em Enter de novo [tecla Enter]. No "Encontre o evento Enter", arrastar até o evento aparecer [arrastar até "Quando apertar a tecla"]. No "clique uma vez no sinal de mais", clicar no sinal de mais que fica antes de senão se, no Se do evento Enter. No "arraste essa pergunta para a lixeira", levar a pergunta x > 0 com a mão até a lixeira. No "pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim", abrir as categorias [categoria Jogo 2D > Jogo e telas > Telas e partida], soltar o bloco e escolher fim. No "pegue o bloco Reiniciar o jogo", soltar o bloco no então do ramo fim. No "É este bloco que começa tudo de novo", apontar o bloco [apontar bloco "Reiniciar o jogo"]. No "Agora a vitória, do mesmo jeito", repetir com o estado vitoria e outro Reiniciar o jogo. No "Agora teste: perca uma partida e toque em Enter", clicar no jogo [tocar prévia 400 240], tocar em Enter [tecla Enter], deixar as vidas acabarem e tocar em Enter [tecla Enter]. No "Toque em Enter outra vez", tocar em Enter [tecla Enter] e apontar o placar e os corações [apontar prévia 60 40]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, comece uma partida, perca e toque em Enter. Tá vendo? Você perdeu continua na tela, porque o Enter só sabe começar a partida.
+[engaging, energetic, conversational voice] Aqui no seu jogo, perca uma partida e toque em Enter. Tá vendo? Você perdeu continua na tela, porque o Enter só sabe começar a partida.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Reiniciar o jogo deixava tudo limpo para outra partida. Agora a gente vai ensinar isso ao Enter do seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Começando tudo de novo, os asteroides saíam e a abertura voltava. Agora a gente vai ensinar isso ao Enter do seu jogo!
 
-[engaging, energetic, conversational voice] Encontre o evento Enter em Quando acontecer. A condição dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está. Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no + que fica antes de senão se.
+[engaging, energetic, conversational voice] Encontre o evento Enter em Quando acontecer. A pergunta dentro dele já começa a partida quando o estado é inicio, e esse pedaço fica como está.
 
-[engaging, energetic, conversational voice] O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim.
+[engaging, energetic, conversational voice] Na linha de baixo do Se que está dentro do evento Enter, clique uma vez no sinal de mais que fica antes de senão se.
+
+[engaging, energetic, conversational voice] O ramo novo chega com a pergunta x maior que 0: arraste essa pergunta para a lixeira.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado de senão se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha fim.
 
 [confident, clear, unhurried voice] Deixe à vista o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.
 
+[engaging, energetic, conversational voice] É este bloco que começa tudo de novo: o jogo volta ao começo, faz outra vez a preparação de Ao iniciar e mostra a abertura.
+
 [engaging, energetic, conversational voice] E quando eu ganhar? Também quero jogar de novo!
 
-[engaging, energetic, conversational voice] Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do ramo novo para a lixeira e deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria. Depois, deixe à vista o então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço.
+[engaging, energetic, conversational voice] Por isso, a vitória ganha um ramo igual. Agora a vitória, do mesmo jeito. Clique de novo no sinal de mais que fica antes de senão se e arraste a pergunta x maior que 0 do ramo novo para a lixeira.
 
-[upbeat, encouraging voice] Agora teste: perca uma partida e toque em Enter. [interested, animated voice] Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova. [confident, clear, unhurried voice] Repare que o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio. Na mesma categoria, pegue o estado do jogo é, solte nesse lugar e escolha vitoria.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[confident, clear, unhurried voice] Deixe à vista o espaço do então do ramo vitoria, pegue outro Reiniciar o jogo e solte nesse espaço.
+
+[upbeat, encouraging voice] Agora teste: perca uma partida e toque em Enter. [interested, animated voice] Olha só: a abertura volta! Toque em Enter outra vez, porque é esse segundo Enter que começa a partida nova.
+
+[confident, clear, unhurried voice] Repare: o placar está em zero e os três corações voltaram, porque Reiniciar o jogo fez a preparação de novo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro do evento Enter, o Se tem três ramos. Em inicio, o Enter muda o estado para jogando. Em fim e em vitoria, o Enter reinicia o jogo. E Dar ao sprite nave 3 de vida continua em Ao iniciar. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -197,24 +286,24 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-enter-K1 | Debinha | 1 | o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço. | E quando eu ganhar? Também quero jogar de novo! | Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do | [thoughtful] |
+| video-enter-K1 | Debinha | 1 | bloco que começa tudo de novo: o jogo volta ao começo, faz outra vez a preparação de Ao iniciar e mostra a abertura. | E quando eu ganhar? Também quero jogar de novo! | Por isso, a vitória ganha um ramo igual. Agora a vitória, do mesmo jeito. Clique de novo no sinal de mais que fica | [thoughtful] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-enter-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-enter-K1`: entrada — Manter à vista Reiniciar o jogo no ramo fim do evento Enter. Saída — Depois da saída, apontar a linha dos sinais de mais do Se do Enter.
 
 
 **Recado na página (não gravar):** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 5. Confira o que você construiu
+## Seção 6. Confira o que você construiu
 
 **Recado na página (não gravar):** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
 Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. Leia a explicação após enviar; tentativas ilimitadas, sem espera.
 
-## Seção 6. Teste o jogo completo e compartilhe
+## Seção 7. Teste o jogo completo e compartilhe
 
 ### Clipe `video-ciclo-completo` · Teste o jogo completo e compartilhe
 
@@ -222,20 +311,32 @@ Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. 
 
 **Clipe:** `video-ciclo-completo`
 
-**Na tela:** Gravar os testes completos, encurtando só o tempo repetido de partida. Não reduzir alvo, retirar dano ou alterar o jogo para forjar vitória. Mostrar verificação, envio, confirmação e publicação opcional, com o resumo já preenchido, Seu jogo está no Mural!, Copiar link de jogar e Fechar. A comemoração nomeia o que a pessoa programou e o resultado no jogo; o preparo dos desenhos fica nas notas da equipe, sem ressalva na fala. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "Na abertura, clique na área do jogo e toque na barra de espaço", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space], deixando ouvir o silêncio. No "Toque em Enter, mova a nave e atire", tocar em Enter [tecla Enter], segurar uma seta e atirar [tecla Space]. No "deixe as três vidas acabarem", esperar a tela Você perdeu. No "Toque em Enter para voltar à abertura", tocar em Enter duas vezes [tecla Enter] [tecla Enter] e apontar o placar e os corações [apontar prévia 60 40]. No "tente chegar a 26 pontos", jogar até a vitória; se a gravação ficar longa, cortar na edição e manter só a chegada à tela Você ganhou!. No "Na vitória, toque na barra de espaço", tocar na barra de espaço [tecla Space] e depois em Enter duas vezes [tecla Enter] [tecla Enter]. No "Olha só o que você programou", mostrar o jogo rodando. No "Clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", enviar e confirmar [enviar projeto]. No "clique em Compartilhar depois do envio", abrir o Compartilhar [compartilhar]. No "O resumo do projeto já vem preenchido", mostrar o resumo [apontar "Resumo do projeto"]. No "clique em Gerar capa", gerar a capa [clicar "Gerar capa"]. No "clique em Publicar", publicar [clicar "Publicar"]. No "Clique em Copiar link de jogar", copiar o link [clicar "Copiar link de jogar"]. No "clique em Fechar", fechar [clicar "Fechar"]. No "Por último, clique em Concluir aula", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, encouraging voice] Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. [confident, clear, unhurried voice] Repare: não sai som de tiro, porque criar tiros e criar asteroides ficam dentro de Se jogando. [confident, clear, unhurried voice] Confira também nos blocos se os dois estão lá.
+[upbeat, encouraging voice] Agora teste o ciclo completo do seu jogo. Na abertura, clique na área do jogo e toque na barra de espaço. [confident, clear, unhurried voice] Repare: não sai som de tiro, porque os tiros só nascem dentro de Se jogando.
 
-[engaging, energetic, conversational voice] Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu. Toque em Enter para voltar à abertura e mais uma vez para começar, e confira se a partida nova começa com zero pontos e três corações.
+[engaging, energetic, conversational voice] Toque em Enter, mova a nave e atire. Depois, deixe as três vidas acabarem e confira a tela Você perdeu.
 
-[engaging, energetic, conversational voice] Nessa nova partida, tente chegar a 26 pontos para ver a tela Você ganhou!. Se perder antes, recomece e tente de novo. Na vitória, toque na barra de espaço: não pode sair nenhum tiro. Toque em Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas. Se algum final não funcionar, reveja a pergunta que muda o estado e o ramo que mostra aquela tela.
+[engaging, energetic, conversational voice] Toque em Enter para voltar à abertura e mais uma vez para começar. [confident, clear, unhurried voice] Confira se a partida nova começa com zero pontos e três corações.
 
-[pleased, lively voice] Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas! É com essas regras que a sua nave enfrenta os asteroides do começo ao fim da partida.
+[engaging, energetic, conversational voice] Nessa partida, tente chegar a 26 pontos para ver a tela da vitória. Se perder antes, recomece e tente de novo.
 
-[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora. Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação. [pleased, lively voice] Seu jogo está no Mural! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.
+[engaging, energetic, conversational voice] Na vitória, toque na barra de espaço: nenhum tiro pode sair. Toque em Enter para voltar à abertura e outra vez para jogar, e confira de novo os pontos e as vidas.
+
+[engaging, energetic, conversational voice] Se algum final não funcionou no seu jogo, volte aos blocos e confira a pergunta que muda o estado e o ramo que mostra aquela tela. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[pleased, lively voice] Olha só o que você programou: os controles, os tiros, os acertos, os pontos, as vidas e as telas! É assim que a sua nave enfrenta os asteroides, do começo ao fim da partida.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar.
+
+[engaging, energetic, conversational voice] Agora, se quiser, você pode mostrar o seu jogo no Mural, ou deixar para outra hora.
+
+[engaging, energetic, conversational voice] Para publicar, clique em Compartilhar depois do envio. O resumo do projeto já vem preenchido. Deixe como está. Depois, clique em Gerar capa e confira a imagem. Com a capa pronta, clique em Publicar e espere a confirmação.
+
+[pleased, lively voice] Seu jogo está no Mural! Agora a sua família e os seus amigos podem jogar o jogo que você criou. Clique em Copiar link de jogar e mande o link para eles, porque quem receber pode jogar direto, até no celular. Depois de copiar o link, clique em Fechar. Por último, clique em Concluir aula.
 ```
 
 

@@ -10,8 +10,9 @@
   "clipes": [
     "video-vidas-no-comeco",
     "video-vidas",
-    "video-protecao",
     "video-batida-e-coracoes",
+    "video-protecao",
+    "video-dano",
     "video-fecho"
   ],
   "intervencoes": [
@@ -20,10 +21,10 @@
       "clipe": "video-vidas-no-comeco",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "a tela mostra Vidas: 0 e Batidas: 3, porque as vidas foram dadas uma vez, no começo, e cada batida tirou uma vida.",
-      "ancoraDepois": "Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo. Repare: a batida apaga um coração,",
-      "falaPrincipal": "E se eu der as vidas o tempo todo?",
-      "falaPersonagem": "E se eu der as vidas o tempo todo?",
+      "ancoraAntes": "vai tirar uma. E você já conhece dois jeitos de o jogo fazer as coisas: uma vez, no começo, ou sempre, em todo quadro.",
+      "ancoraDepois": "O que você acha que acontece depois das batidas? Isso você vai testar na experiência. Olha aqui: nesta experiência,",
+      "falaPrincipal": "E se a nave ganhar as três vidas sempre, em todo quadro?",
+      "falaPersonagem": "E se a nave ganhar as três vidas sempre, em todo quadro?",
       "tags": ["[curious]"]
     },
     {
@@ -31,21 +32,10 @@
       "clipe": "video-vidas",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "e solte no fim de Ao iniciar. Escolha nave. O número já vem em 3: mantenha, porque a nave começa com três vidas.",
-      "ancoraDepois": "Agora os corações, que precisam ser desenhados em todo quadro. Deixe à vista o fim de A cada quadro do jogo, logo",
-      "falaPrincipal": "E como eu vejo quantas vidas tenho?",
-      "falaPersonagem": "E como eu vejo quantas vidas tenho?",
-      "tags": ["[curious]"]
-    },
-    {
-      "id": "video-protecao-K1",
-      "clipe": "video-protecao",
-      "personagem": "Debinha",
-      "ocorrencia": 1,
-      "ancoraAntes": "36 quadros de proteção, e a vida não cai. Na do quadro 30, ainda restam 16. Ou seja, só a primeira batida tirou vida.",
-      "ancoraDepois": "Por último, eu volto ao começo e escolho 15 quadros. A primeira batida tira uma vida, e, na batida do quadro 10, restam",
-      "falaPrincipal": "E quando esse tempinho de proteção acabar?",
-      "falaPersonagem": "E quando esse tempinho de proteção acabar?",
+      "ancoraAntes": "em 3: deixe assim, porque a nave começa com três vidas. É este bloco que dá as três vidas à nave, uma vez, no começo.",
+      "ancoraDepois": "Com os corações na tela. Agora os corações. Eles mostram as vidas e precisam ser desenhados em todo quadro, no fim de A",
+      "falaPrincipal": "E como eu vejo quantas vidas eu tenho?",
+      "falaPersonagem": "E como eu vejo quantas vidas eu tenho?",
       "tags": ["[curious]"]
     },
     {
@@ -53,21 +43,32 @@
       "clipe": "video-batida-e-coracoes",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "o bloco Para cada sprite do grupo que colidir com o sprite. Arraste e solte entre o placar e o desenho dos corações.",
-      "ancoraDepois": "Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de baixo, chamar o sprite de inimigo.",
+      "ancoraAntes": "e solte logo abaixo de Mostrar placar. É este bloco que confere, em todo quadro, se alguma pedra encostou na nave.",
+      "ancoraDepois": "Só a que bateu. Repare no apelido dela. Repare: o bloco já chega com o grupo asteroides, o sprite nave e, na linha de",
       "falaPrincipal": "Qual pedra o jogo vai tirar?",
       "falaPersonagem": "Qual pedra o jogo vai tirar?",
       "tags": ["[curious]"]
     },
     {
-      "id": "video-batida-e-coracoes-K2",
-      "clipe": "video-batida-e-coracoes",
+      "id": "video-protecao-K1",
+      "clipe": "video-protecao",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "o bloco Soltar explosão no sprite, solte nesse encaixe e escolha inimigo. Depois, escolha uma cor para a explosão.",
-      "ancoraDepois": "Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Vida e placar e depois Vida, pegue o bloco",
-      "falaPrincipal": "Falta tirar a vida da nave, né?",
-      "falaPersonagem": "Falta tirar a vida da nave, né?",
+      "ancoraAntes": "jogo, a nave também pode ganhar um tempinho depois de bater. E esse tempinho conta para trás, um quadro de cada vez.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, você escolhe quanto tempo dura a",
+      "falaPrincipal": "E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?",
+      "falaPersonagem": "E se esse tempinho for curto, ou longo? Quantas vidas sobram depois de três pedras?",
+      "tags": ["[curious]"]
+    },
+    {
+      "id": "video-dano-K1",
+      "clipe": "video-dano",
+      "personagem": "Debinha",
+      "ocorrencia": 1,
+      "ancoraAntes": "batida tira uma vida e depois dá esse respiro. É este bloco que tira uma vida da nave e liga o tempinho de proteção.",
+      "ancoraDepois": "Pode, e é o próximo bloco. Deixe à vista o encaixe logo abaixo do dano. Abra Jogo 2D, depois Desenho e efeitos e depois",
+      "falaPrincipal": "E a tela pode tremer na batida?",
+      "falaPersonagem": "E a tela pode tremer na batida?",
       "tags": ["[curious]"]
     }
   ]

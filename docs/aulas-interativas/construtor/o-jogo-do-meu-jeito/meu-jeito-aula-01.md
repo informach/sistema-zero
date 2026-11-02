@@ -12,14 +12,16 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 ## Diagnóstico e decisão
 
-A antiga abertura exigia um projeto vazio e a falta artificial de extensão antes de copiar o jogo. A nova sequência mostra o resultado, separa aparência de regras e experimenta cópia antes da transferência real. A extensão já acompanha o projeto importado.
+A antiga abertura exigia um projeto vazio e a falta artificial de extensão antes de copiar o jogo. A sequência mostra o resultado, separa a aparência do que o jogo faz e experimenta a cópia antes da transferência real. A extensão já acompanha o projeto importado.
+
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). A experiência da aparência passou a tratar só a ideia (aparência × o que o jogo faz, sem "regra"); a da cópia usa os botões reais (Baixar o projeto, Importar no Estúdio). As duas viraram exploração livre com o Zappy, e o vídeo convida a investigar sem contar o resultado. A parte Importar ganhou a retomada da experiência da cópia. Revisão independente de 02/11/2026: o uniforme e o gibi param na situação, sem dizer se o jogo ou o gibi mudam; o vídeo da cópia não adianta o Importar e convida a comparar em vez de ditar os cliques; na parte de baixar, o botão é dito como aparece na tela ("Nesta parte, clique em Abrir meu Estúdio"), o projeto vazio vem antes da partida e Mais opções já é localizado na primeira menção.**
 
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
 | --- | --- | --- |
-| Aparência e regras | Experiência same-rules-new-skin antes da cópia. | Define o que será transformado sem prometer um jogo de regras novas. |
-| Exportar, importar e cópia | Experiência copy-vs-original antes dos comandos reais. | A criança vê a independência dos arquivos. |
+| Aparência e o que o jogo faz | Experiência same-rules-new-skin antes da cópia, em exploração livre. | Separa o que a criança vê do que acontece quando joga, sem prometer um jogo novo. |
+| Baixar o projeto, importar e cópia | Experiência copy-vs-original antes das ações reais, em exploração livre. | A criança vê que a cópia segue o seu próprio caminho. |
 | Projeto e salvamento | Aplicação direta com o próprio jogo. | Retomada de Nave; não precisa criar um projeto vazio para aprender um caminho. |
 
 ## Proposta final
@@ -40,29 +42,29 @@ Jogo derivado do marco original 8, com artes ilustrativas de dois quadros. Concl
 
 Anexar `docs/aulas-interativas/construtor/o-jogo-do-meu-jeito/passo-a-passo-do-projeto.pdf`, que a criança conhece como Passo a passo do projeto, a `materiais-caderno`. Ler, baixar e imprimir são opcionais e não entram na conclusão; a fala oferece ler aqui ou baixar como convite.
 
-### Seção 3. Troque a história, observe as regras
+### Seção 3. Troque a história do jogo
 
-**Tarefa / Zappy na página:** Sua vez! Troque os temas, desligue a regra de atirar e compare o que muda. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que muda quando você troca a história e quando desliga o tiro. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-aparencia-e-regras → fala-aparencia-e-regras → experimento-tema-e-regra.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-aparencia-e-regras-K1: Debinha substitui “E se eu mudar uma dessas regras?”. Antes: “iguais. Na experiência, Tema do mesmo jogo troca a aparência, e a lista Regras do jogo mostra o que continua igual.”. Depois: “Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada.”.
+video-aparencia-e-regras-K1: Debinha substitui “E se eu trocar a nave por um carrinho, o jogo muda?”. Antes: “Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência, estes três botões trocam a história”.
 
-**Experiência existente:** `same-rules-new-skin`. Na bancada, use Mover e Atirar. Em Tema do mesmo jogo, passe por Nave no espaço, Carrinho na estrada e Submarino no mar. Observe a lista de regras em cada troca. Desligue Regra: a tecla atira, tente Atirar e observe por um instante. Ligue a regra de novo. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `same-rules-new-skin`, com `setup.freeExploration`. Troque a história do jogo e desligue o tiro, jogando um pouco em cada caso. Compare a tela e a lista O que o jogo faz. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Veja o que uma cópia guarda
 
-**Tarefa / Zappy na página:** Sua vez! Faça a cópia e mude a cor só de um lado. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que uma cópia guarda e o que acontece quando você muda um lado só. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copias → fala-copias → experiencia-copia.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-copias-K1: Debinha substitui “Se eu mudar essa cópia, o outro jogo muda também?”. Antes: “e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.”. Depois: “Agora, em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da aula”.
+video-copias-K1: Debinha substitui “Se eu pintar a cópia, o desenho do gibi muda também?”. Antes: “Baixar o projeto. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.”. Depois: “O que você acha? Isso você vai testar na experiência. Olha aqui: nesta experiência aparecem o jogo da aula e o seu”.
 
-**Experiência existente:** `copy-vs-original`. Clique em Exportar e observe o arquivo e o jogo da aula. Clique em Importar. Em Cor da nave no Estúdio, escolha uma cor diferente e compare os dois lados. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `copy-vs-original`, com `setup.freeExploration`. Baixe o projeto, importe a cópia no Estúdio e pinte a nave de um lado só. Depois de cada teste, compare o jogo da aula com o Estúdio. Você escolhe a ordem dos testes e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 5. Baixe o seu jogo concluído
 
@@ -78,7 +80,7 @@ video-copias-K1: Debinha substitui “Se eu mudar essa cópia, o outro jogo muda
 
 **Blocos na página:** video-importar → fala-importar.
 
-**Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
+**Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
 ### Seção 7. Envie a cópia do jogo
 

@@ -98,6 +98,7 @@ import { botoesDoMundo, SceneReadoutBand } from './scene-frame'
 import { LearningRecap } from './scene-garden-learning'
 import { IslandDiscovery } from './scene-island-discovery'
 import { LessonSceneControls } from './scene-lesson-controls'
+import { TELAS_LIVRES } from './scene-livre'
 import { LugarReservado } from './scene-lugar-reservado'
 import { CabanaLivre } from './scene-poder-cabana'
 import { MoedasLivre } from './scene-poder-moedas'
@@ -1391,8 +1392,14 @@ export function SceneActivityView({
                       <SimbolosLivre />
                     ) : m === 'two-pieces' ? (
                       <CabanaLivre />
-                    ) : (
+                    ) : m === 'lighthouse-position' ? (
                       <Position />
+                    ) : (
+                      (() => {
+                        // As cenas do Construtor (02/11/2026): cada uma tem a sua tela em `scene-livre/`.
+                        const Tela = TELAS_LIVRES[m]
+                        return Tela ? <Tela /> : null
+                      })()
                     )}
                   </DiscoveryContext.Provider>
                 ) : (

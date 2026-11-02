@@ -221,6 +221,14 @@ export type SceneAction =
   | { type: 'name-field'; name: '' | 'nave' | 'folha-nave' | 'nave2' }
   | { type: 'nudge'; piece: 'crater' | 'body'; amount: number }
   | { type: 'birth-every'; frames: 20 | 40 | 80 }
+  /**
+   * "Voltar ao começo" no MEIO dos controles da exploração livre (02/11/2026): recomeça o caso como o
+   * `reset` do motor (o mundo volta, as escolhas que o motor guarda ficam: os dois relógios, os alvos
+   * da trombada, a proteção) e GUARDA as descobertas. O `reset` da exploração livre é o "Recomeçar
+   * experiência" do rodapé, que apaga tudo; com ele aqui, a criança perdia o que já tinha descoberto.
+   * Só nas cenas que têm o botão (`RESTART_CASE_SCENES`).
+   */
+  | { type: 'restart-case' }
   | { type: 'export-file' | 'import-file' | 'publish' | 'open-mural' }
   | { type: 'recolor'; side: 'lesson' | 'studio' | 'project'; color: SceneCopyColor }
   | { type: 'skin'; theme: 'space' | 'road' | 'sea' }
@@ -784,6 +792,14 @@ const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
  * Uma ação só é legal na cena que a oferece. O motor trata ação ilegal como no-op em vez de
  * erro: um roteiro escrito para outra cena, ou um pacote adulterado, não derruba a aula da criança.
  */
+/** As cenas livres com "Voltar ao começo" no meio dos controles (a ação `restart-case`). */
+export const RESTART_CASE_SCENES: readonly SceneId[] = [
+  'two-clocks',
+  'velocity',
+  'collision-pair',
+  'invincibility',
+]
+
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
   if (!isRecord(value)) return false
   if (typeof value.type === 'string' && value.type.startsWith('island-'))
@@ -928,6 +944,8 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       )
     case 'birth-every':
       return scene === 'two-clocks' && [20, 40, 80].includes(value.frames as number)
+    case 'restart-case':
+      return RESTART_CASE_SCENES.includes(scene)
     case 'export-file':
     case 'import-file':
       return scene === 'copy-vs-original'

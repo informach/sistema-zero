@@ -1,4 +1,5 @@
 import type { SceneId } from './actions'
+import { GUIAS_LIVRES } from './guia-livre'
 import { CABANA_SPEECH, cabanaGuidance } from './guidance-cabana'
 import { MOEDAS_SPEECH, moedasGuidance } from './guidance-moedas'
 import { PONTE_SPEECH, ponteGuidance } from './guidance-ponte'
@@ -48,6 +49,30 @@ const speech = {
     'Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Quer comparar? Desligue o limite e deixe ele ir até a beirada.',
   'border-complete':
     'Você viu ele sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
+  // A Nave contra Asteroides (02/11/2026) usa as mesmas telas do andar com a nave: as falas sem
+  // "personagem", "ele" nem a chave do Farol. A escolha acrescenta `-nave` à chave quando existe.
+  'slow-released-nave':
+    'Sem a seta, os quadros continuam passando, mas a nave fica no lugar. E na velocidade de verdade, como fica? Clique em Velocidade de verdade e segure a seta.',
+  'slow-complete-nave':
+    'Você viu os passinhos, a parada e o voo. Pode continuar comparando a câmera lenta com a velocidade de verdade.',
+  'border-start-nave':
+    'O limite está desligado. Clique em Velocidade de verdade e leve a nave até a beirada. Continue segurando a seta e observe a faixa fora da tela. Se preferir, ligue o limite primeiro e compare depois.',
+  'border-off-nave':
+    'O limite está desligado. Clique em Velocidade de verdade e leve a nave até a beirada. Continue segurando a seta e observe a faixa fora da tela.',
+  'border-out-nave':
+    'A nave saiu da janela do jogo. E se você ligar o limite agora, com a nave fora? Clique em Ligar o limite da tela e observe o próximo quadro.',
+  'border-on-out-nave':
+    'O limite está ligado e a nave ainda está fora. Deixe passar um quadro e observe.',
+  'border-back-nave':
+    'A nave voltou para dentro: em todo quadro, o jogo confere a beirada. E se você segurar a seta junto à beirada? Clique em Câmera lenta e olhe cada quadro.',
+  'border-edge-nave':
+    'O limite está ligado. Leve a nave até a beirada e continue segurando a seta. Lá, clique em Câmera lenta e observe a tira e a frase de cada quadro.',
+  'border-edge-off-nave':
+    'Ligue o limite da tela e leve a nave até a beirada. Lá, clique em Câmera lenta, segure a seta e observe a tira e a frase de cada quadro.',
+  'border-hold-nave':
+    'Em cada quadro, o passinho ia levar a nave para fora, e depois o jogo confere a beirada e segura a nave dentro. Quer comparar? Desligue o limite e deixe a nave ir até a beirada.',
+  'border-complete-nave':
+    'Você viu a nave sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
   // ⚠️ As falas da bancada antiga do quadro: valem só para o bloco que ainda não foi reimportado.
   'walk-empty':
     'A regra está vazia. Você pode apertar a tecla no teclado de teste e avançar um quadro, ou começar adicionando o bloco.',
@@ -131,6 +156,8 @@ const speech = {
     'Você comparou novos achados, vazio, repetição e reinício. Continue explorando na ordem que quiser.',
 } as const
 export function discoverySpeechSteps(scene?: SceneId) {
+  const livre = scene ? GUIAS_LIVRES[scene] : undefined
+  if (livre) return Object.entries(livre.speech).map(([id, text]) => ({ id, text }))
   const prefixes =
     scene === 'island-3d'
       ? ['island']
@@ -163,6 +190,11 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
   if (activity.scene === 'island-3d' && state.island3d)
     return islandGuidance(state, activity.setup?.goals)
   const has = (id: string) => state.evidence.discoveries.includes(id)
+  const livre = GUIAS_LIVRES[activity.scene]
+  if (livre) {
+    const id = livre.guidance(state, has, activity)
+    return { id, text: livre.speech[id] ?? '' }
+  }
   let id: keyof typeof speech = 'count-start'
   switch (activity.scene) {
     case 'lighthouse-walk':
@@ -305,6 +337,11 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
                 ? 'count-restart'
                 : 'count-start'
       break
+  }
+  // A Nave usa as telas do andar com a nave (02/11/2026): a variante `-nave` da fala, quando existe.
+  if (activity.scene === 'lighthouse-walk' && activity.cenario === 'nave') {
+    const daNave = `${id}-nave` as keyof typeof speech
+    if (daNave in speech) return { id: daNave, text: speech[daNave] }
   }
   return { id, text: speech[id] }
 }

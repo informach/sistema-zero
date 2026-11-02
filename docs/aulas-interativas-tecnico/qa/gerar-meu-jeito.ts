@@ -47,6 +47,8 @@ export interface AulaMeuJeito {
   gallery: Extract<Content, { kind: 'pinta' | 'studio' }>
   legacyKeys: string[]
   previousRetireKeys: string[]
+  /** A nota datada da última revisão, que a proposta da aula registra. */
+  revisao?: string
 }
 export const aulasMeuJeito = JSON.parse(
   readFileSync(resolve(import.meta.dir, 'meu-jeito.conteudo.json'), 'utf8'),
@@ -114,28 +116,38 @@ const comecaPelaRetomada = (s: SecaoMeuJeito) =>
   // Primeiro o problema, depois a lembrança (06/10/2026, à noite): o teste pode vir antes do "Lembra".
   Boolean(s.speech?.[0]?.includes('Lembra da experiência'))
 /**
- * A nota "Na tela". Nas experiências o vídeo é uma DEMONSTRAÇÃO (Diretrizes, decisão de
- * 06/10/2026): o narrador faz os testes na primeira pessoa e só no fim passa a vez. O jogo pronto e
- * o Mapa usam a nota da própria seção; as aplicações no Pinta e no Estúdio ganham a retomada (quando
- * vêm logo depois de uma experiência) e o apontamento de cada chamado de atenção.
+ * As experiências em que o conceito é o próprio bloco (decisão da responsável, 02/11/2026): na Aula 6
+ * os nomes e o recorte da folha, e na Aula 7 os dois relógios. Nelas o nome do bloco pode aparecer;
+ * o convite à investigação vale igual.
+ */
+export const EXPERIENCIAS_DO_BLOCO = new Set(['nomes', 'recorte', 'dois-relogios'])
+/**
+ * A nota "Na tela" (ESPEC-ROTEIRO, seção 9.8). Desde 02/11/2026 a experiência é EXPLORAÇÃO LIVRE com
+ * o Zappy: o vídeo explica a ideia, aponta os controles e convida a investigar, sem fazer os testes
+ * pela criança nem contar o resultado (DESCOBERTA-GUIADA, revisão de 01/11 e 02/11/2026). A nota de
+ * cada seção cita a fala (`No "..."`) e traz os gestos entre colchetes; as aplicações no Pinta e no
+ * Estúdio ganham a retomada (quando vêm logo depois de uma experiência) e a saída da parte.
  */
 export function telaSecao(s: SecaoMeuJeito): string {
-  // Cada chamado da fala ("Olha aqui", "Olha só", "Repare", "Tá vendo?") precisa de um
-  // apontamento visível no vídeo (Diretrizes, seção 6).
-  const chamados =
-    ' Em cada chamado da fala (Olha aqui, Olha só, Repare, Tá vendo?), apontar na tela o que ela mostra.'
   if (!s.activity) {
     if (!s.externalTool) return s.screen ?? ''
     const testaNaRetomada = s.speech?.[0]?.includes('Tá vendo?')
     const retomada = comecaPelaRetomada(s)
       ? `Começar pela retomada, antes de qualquer gesto novo, com o trabalho da criança à vista${testaNaRetomada ? ': primeiro o teste, com o resultado que o Tá vendo? cita à vista, e depois a lembrança da experiência' : ''}. `
       : ''
-    return `${retomada}${s.screen ?? ''}${chamados}`
+    // A saída da parte cai na frase que a pede (o fecho comum ou o envio da galeria).
+    const saida = s.final
+      ? ' No "Por último, clique em Concluir aula", clicar em **Concluir aula**.'
+      : ' No "volte a esta aba e clique em Próxima parte", voltar à aba da aula e clicar em **Próxima parte** [próxima parte].'
+    return `${retomada}${s.screen ?? ''} O trabalho acontece na outra aba: mostrar cada gesto narrado, sem acelerar.${saida}`
   }
   const meme = s.meme
-    ? ` Meme na comparação: ${s.meme} Desenho nosso no formato de meme, com o Zappy ou os personagens do jogo; sem foto de pessoa real nem meme da internet. Fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele.`
+    ? ' O meme é desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet; fica 2 a 3 segundos na tela, sem cobrir a experiência, e a narração explica sem depender dele.'
     : ''
-  return `Demonstração na primeira pessoa: o narrador faz cada teste no ritmo da fala e deixa ver o resultado real antes de explicar; o vídeo não dá ordens antes de passar a vez. ${s.screen}${meme}${chamados} No fim, apontar a experiência para a pessoa repetir os mesmos testes e apontar Próxima parte.`
+  const ideia = EXPERIENCIAS_DO_BLOCO.has(s.key)
+    ? ''
+    : ' Não falar de blocos, áreas do Estúdio, regra nem código: a experiência trabalha só a ideia (01/11/2026).'
+  return `${s.screen}${meme} Não fazer os testes pela criança nem dizer o resultado antes do teste: a criança descobre na experiência, com o Zappy (convite à investigação, 02/11/2026).${ideia}`
 }
 export function gerarManifestoMeuJeito(lesson: AulaMeuJeito): LearningManifest {
   const index = ORDEM_MEU_JEITO.indexOf(lesson.slug)
@@ -225,15 +237,15 @@ function roteiro(lesson: AulaMeuJeito, index: number) {
         '',
         `**Estimativa de gravação:** aproximadamente ${Math.ceil(palavrasDoVideo(s, speech) / 130)} minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio.`,
         '',
-        roteiroComAvatar(
-          s,
-          speech,
-          `${telaSecao(s)} ${s.externalTool ? 'Mostrar a passagem entre a aba da aula e a ferramenta, o trabalho salvo e o resultado de referência para a autoconferência narrada.' : ''}`.trimEnd(),
-          index,
-        ),
+        roteiroComAvatar(s, speech, telaSecao(s), index),
         '',
       )
     }
+    if (s.activity?.activity.type === 'experimentation')
+      lines.push(
+        `**Falas dentro da experiência:** \`packages/core/src/learning/scene/guia-livre/${s.activity.activity.scene}.ts\`, com a tela em \`packages/member-shell/src/components/scene-livre/${s.activity.activity.scene}.tsx\`. O Zappy acompanha o estado real e sugere o próximo teste; os controles ficam livres e as descobertas contam em qualquer ordem.`,
+        '',
+      )
     lines.push(`**Recado na página (não gravar):** ${s.bridge}`, '')
     if (s.questions)
       lines.push(
@@ -261,6 +273,7 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
     '',
     lesson.reason,
     '',
+    ...(lesson.revisao ? [`**Revisão de ${lesson.revisao}**`, ''] : []),
     '## Triagem dos conceitos',
     '',
     '| Conceito | Como e quando trabalhar | Razão |',
@@ -283,7 +296,7 @@ function proposta(lesson: AulaMeuJeito, index: number, m: LearningManifest) {
       lines.push(`**Participação no vídeo:** ${planoAvatar(s, falasSecao(s), index)}`, '')
     if (s.activity)
       lines.push(
-        `**Experiência existente:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`. ${s.activity.instructions} Sem palpite, pistas ou pergunta final.`,
+        `**Experiência em exploração livre:** \`${s.activity.activity.type === 'experimentation' ? s.activity.activity.scene : s.activity.activity.type}\`, com \`setup.freeExploration\`. ${s.activity.instructions} Três pistas, do que observar até a sequência; sem palpite nem pergunta final.`,
         '',
       )
     if (s.externalTool)
