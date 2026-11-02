@@ -26,6 +26,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
     de: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
     para: { seletor: '[data-palco-alvo="a3"]', u: 0.4, v: 0.2 },
   }),
+  rolagemDoCampo: () => 'visivel',
   temBotao: () => false,
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
@@ -223,6 +224,25 @@ describe('verbos do palco', () => {
     expect(agir('escolher "escolhido" em "Deixar o sprite"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
       { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+    ])
+    // Fora da vista ou coberto, o campo vem para o centro antes do clique.
+    const longe = pagina({
+      rolagemDoCampo: () => ({
+        de: { seletor: '[data-palco-alvo="a3"]', u: 0.2, v: 0.8 },
+        para: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
+      }),
+    })
+    expect(agir('abrir campo "coelho" em "Criar sprite"', jogos, longe)).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="a3"]', u: 0.2, v: 0.8 },
+        para: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.5 },
+      },
+      { fazer: 'continuar', acao: 'abrir campo "coelho" em "Criar sprite"' },
+    ])
+    expect(agir('trocar "50" por "0"', jogos, longe).map((p) => p.fazer)).toEqual([
+      'arrastar',
+      'continuar',
     ])
     expect(() => agir('abrir campo "x"', jogos, pagina({ campo: () => null }))).toThrow(
       /Não achei o campo/,
