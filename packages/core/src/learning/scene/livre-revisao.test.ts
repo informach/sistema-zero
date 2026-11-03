@@ -18,7 +18,7 @@ import {
 import { SPAWN_PRESETS } from './presets'
 import { initialExperiment, stepExperiment } from './session'
 import type { SceneStart } from './state'
-import { falasDaCena, SCENE_SPEECH_SLOTS } from './voz'
+import { falasDaCena, SCENE_SPEECH_SLOTS, VOZ_LIMITS } from './voz'
 
 /**
  * Full review do Construtor (02/11/2026): os consertos que a revisão independente pediu.
@@ -175,6 +175,39 @@ describe('a voz do Zappy só lista as falas que o bloco pode tocar', () => {
       setup: { freeExploration: true },
     })
     expect(farol.some((s) => s.endsWith('-nave') || s.includes(':stride-'))).toBe(false)
+  })
+  test.each([
+    { goals: ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'], prefix: 'slow' },
+    { goals: ['left-the-screen', 'came-back-inside', 'stayed-inside'], prefix: 'border' },
+    { goals: ['left-the-screen', 'stayed-inside', 'compared-command-order'], prefix: 'edge' },
+    { goals: ['step-speed-1', 'step-speed-3'], prefix: 'stride' },
+    { goals: ['moves-each-frame', 'still-without-arrow'], prefix: 'walk' },
+  ])('caminhada grava apenas o caso $prefix', ({ goals, prefix }) => {
+    const slots = ids({
+      type: 'experimentation',
+      scene: 'lighthouse-walk',
+      cenario: 'farol',
+      setup: { freeExploration: true, goals },
+    })
+    expect(slots.length).toBeGreaterThan(0)
+    expect(slots.every((slot) => slot.startsWith(`discovery:${prefix}-`))).toBe(true)
+    // Incluindo a instrução, o dicionário deve caber no contrato de publicação.
+    expect(slots.length + 1).toBeLessThanOrEqual(VOZ_LIMITS.entradas)
+  })
+  test('a beirada da Nave grava a variante que o player usa, sem duplicar a fala do Farol', () => {
+    const slots = ids({
+      type: 'experimentation',
+      scene: 'lighthouse-walk',
+      cenario: 'nave',
+      setup: {
+        freeExploration: true,
+        goals: ['left-the-screen', 'came-back-inside', 'stayed-inside'],
+      },
+    })
+    expect(slots).toHaveLength(9)
+    expect(
+      slots.every((slot) => slot.startsWith('discovery:border-') && slot.endsWith('-nave')),
+    ).toBe(true)
   })
   test('variante do Dino × da Nave na mesma cena', () => {
     const dino = ids({
