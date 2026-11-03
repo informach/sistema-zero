@@ -187,7 +187,7 @@ describe('a voz do Zappy só lista as falas que o bloco pode tocar', () => {
       type: 'experimentation',
       scene: 'lighthouse-walk',
       cenario: 'farol',
-      setup: { freeExploration: true, goals },
+      setup: { freeExploration: true, goals: [...goals] },
     })
     expect(slots.length).toBeGreaterThan(0)
     expect(slots.every((slot) => slot.startsWith(`discovery:${prefix}-`))).toBe(true)
