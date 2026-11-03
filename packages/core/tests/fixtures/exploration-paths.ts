@@ -583,4 +583,19 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'shade', on: true },
     { type: 'light', side: 'right' },
   ],
+  // A meta do jogo (Nave, Dia 5, 02/11/2026): os dois sinais até a vitória e a placa no meio.
+  'score-goal': [
+    { type: 'goal-op', op: '>=' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-op', op: '>' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-restart' },
+    { type: 'goal-hit' },
+    { type: 'goal-edit' },
+  ],
 }

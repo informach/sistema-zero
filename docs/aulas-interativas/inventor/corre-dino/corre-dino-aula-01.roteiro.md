@@ -38,7 +38,7 @@
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar e testar o seu jogo, com os encaixes e os valores de cada bloco. Por isso, quando precisar conferir um passo, é só voltar aqui e abrir o material.
+[interested, animated voice] Olha aqui: este é o seu Passo a passo do projeto! Nele estão os passos para montar e testar o seu jogo, com os encaixes e os valores de cada bloco, e o que investigar em cada experiência. Por isso, quando precisar conferir um passo, é só voltar aqui e abrir o material.
 
 [upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
 
@@ -48,59 +48,91 @@
 
 **Recado na página (não gravar):** Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
-## Seção 3. Compare uma vez e sempre
+## Seção 3. Uma vez ou sempre?
 
-### Clipe `video-uma-vez-e-sempre` · Compare uma vez e sempre
+### Clipe `video-uma-vez-e-sempre` · Uma vez ou sempre?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-uma-vez-e-sempre`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Mover o Dino um pouquinho em Ações disponíveis. Colocar a peça em Ao iniciar, clicar em Começar o jogo e manter à vista o passo curto do Dino, o contador da peça em 1 vez e Teste encerrado. Levar a mesma peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar o Dino até sair da cena, com o contador subindo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy calçando um tênis, com a legenda Ao iniciar: uma vez, e o Dino correndo com marcas de passos, com a legenda Enquanto estiver rodando: sempre. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "como os desenhos de um desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, com o Dino um pouco mais à frente em cada folha [na edição: meme dos quadros do desenho animado]. No "É como sair para correr", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy amarrando o tênis na porta de casa, com o Dino esperando para correr [na edição: meme do tênis antes da corrida]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a diferença entre fazer uma coisa uma vez e fazer sempre.
+[engaging, energetic, conversational voice] Um jogo mostra um quadro atrás do outro, bem rápido. Cada quadro é uma imagem parada, como os desenhos de um desenho animado. E o jogo precisa saber quando fazer cada coisa: uma vez só, no começo, ou sempre, em todo quadro.
 
-[interested, animated voice] Olha aqui: quando eu coloco Mover o Dino um pouquinho em Ao iniciar e clico em Começar o jogo, o Dino anda um pouquinho e para. O contador da peça mostra 1 vez, e o teste termina. Ao iniciar faz cada peça uma vez só, no começo do jogo.
+[engaging, energetic, conversational voice] É como sair para correr: tem coisa que você faz uma vez, antes de sair, como amarrar o tênis, e tem coisa que você faz o caminho inteiro.
 
-[engaging, energetic, conversational voice] Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. O Dino anda, anda e anda, até sair da cena. O contador sobe a cada passo e chega a 24 quando o teste termina. Enquanto estiver rodando repete a peça o tempo todo, enquanto o jogo está ligado.
+[engaging, energetic, conversational voice] No seu jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece.
 
-[engaging, energetic, conversational voice] É como sair para correr: o tênis você calça uma vez, antes de sair, e os passos você repete o caminho inteiro. No seu jogo, a preparação da tela vai em Ao iniciar, porque basta fazer uma vez.
+[curious] E se o Dino der um passinho uma vez só, no começo? Ele continua andando?
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar o que muda no Dino quando o passinho acontece uma vez só e quando acontece em todo quadro. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Coloque a mesma peça em Ao iniciar e depois em Enquanto estiver rodando, começando um teste em cada uma. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-uma-vez-e-sempre-K1 | Debinha | 1 | jogo, o Dino vai dar um passinho, e você escolhe quando: só no começo, ou o tempo todo, enquanto a corrida acontece. | E se o Dino der um passinho uma vez só, no começo? Ele continua andando? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no Dino quando o passinho | [curious] |
 
-## Seção 4. Escolha o tamanho da tela
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
-### Clipe `video-limite-da-tela` · Escolha o tamanho da tela
+**Imagem nas substituições kids (não gravar):**
+
+- `video-uma-vez-e-sempre-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando o Dino dá um passinho uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Seção 4. Qual é o tamanho da tela?
+
+### Clipe `video-limite-da-tela` · Qual é o tamanho da tela?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-limite-da-tela`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de 800 por 480, com a borda escondida. Clicar em Ligue a borda e mostrar o contorno. Mudar a largura para 600 e a altura para 300, com o contorno acompanhando os números. Terminar em 480 por 270, com os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy segurando uma folha grande e outra menor, com o Dino desenhado dentro da menor e a legenda 480 por 270. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você escolhe o tamanho da folha", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com o lápis na mão, escolhendo entre uma folha grande e uma folha pequena [na edição: meme das folhas de desenho]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a borda desligada. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o tamanho da tela do jogo: a largura e a altura.
+[engaging, energetic, conversational voice] Todo jogo acontece dentro de uma tela, e essa tela tem um tamanho. É o tamanho que diz até onde as coisas do jogo podem ir.
 
-[interested, animated voice] Olha aqui: a tela começa em 800 por 480, com a borda escondida. Quando eu clico em Ligue a borda, aparece um contorno em volta da tela. A borda mostra onde a tela acaba.
+[engaging, energetic, conversational voice] Sabe quando você escolhe o tamanho da folha antes de desenhar? Tudo o que você desenhar vai ter que caber nela.
 
-[engaging, energetic, conversational voice] Agora eu mudo a largura para 600 e a altura para 300. O contorno fica mais estreito e mais baixo: a largura mede de um lado ao outro, e a altura, de cima a baixo.
+[engaging, energetic, conversational voice] No seu jogo, a borda é o contorno que mostra onde a tela acaba. O tamanho da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura.
 
-[engaging, energetic, conversational voice] Por último, eu coloco largura 480 e altura 270. Essa é a tela do seu jogo. É como escolher o tamanho da folha antes de desenhar: tudo o que o jogo mostrar vai caber dentro dela. Na montagem, você vai escrever 480 e 270 no bloco que prepara a tela e depois mostrar a borda para ver esse limite.
+[curious] E se a largura diminuir, a tela fica mais baixa ou mais estreita?
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar o que muda na borda quando muda a largura e quando muda a altura. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Ligue a borda, mude a largura e a altura e termine com a tela em 480 por 270. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-limite-da-tela-K1 | Debinha | 1 | da tela é feito de dois números, a largura e a altura, e a tela do Corre, Dino tem 480 de largura e 270 de altura. | E se a largura diminuir, a tela fica mais baixa ou mais estreita? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na borda quando muda a | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-limite-da-tela-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/stage-size.ts`, na tela `packages/member-shell/src/components/scene-livre/stage-size.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que a largura e a altura mudam na tela do jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Prepare a tela do jogo
 
@@ -110,22 +142,38 @@
 
 **Clipe:** `video-area-e-tela`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. No “Olha aqui: neste menu”, apontar a paleta de comandos, sem pegar nenhum bloco. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? Ela ainda não tem tamanho nem cor, porque o seu projeto está vazio.
+[engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? Ela está sem cor nenhuma, porque o projeto ainda não prepara a tela.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A tela mudou de tamanho com a largura e a altura. Agora a gente vai preparar a sua tela!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A tela mudava de tamanho com a largura e a altura. Agora a gente vai preparar a tela do seu jogo!
 
-[engaging, energetic, conversational voice] Antes de pegar cada peça, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.
+[engaging, energetic, conversational voice] Para dizer ao jogo o que ele deve fazer, a gente usa blocos. Cada bloco é uma ordem para o jogo.
 
-[engaging, energetic, conversational voice] A tela só precisa ser preparada uma vez, por isso ela vai em Ao iniciar, que faz cada peça uma vez só, no começo do jogo. Deixe à vista um espaço vazio do projeto, abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.
+[interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, ficam todos os blocos que você pode usar.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe.
+[engaging, energetic, conversational voice] Antes de pegar cada bloco, deixe à vista o lugar do encaixe. Se ele estiver fora da tela, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 
-[confident, clear, unhurried voice] Repare nos números do bloco: ele chega com 800 e 480. O primeiro número é a largura, e o segundo, a altura. Troque 800 por 480 e 480 por 270. Depois, no campo fundo, escolha um azul claro, que vai pintar o fundo do seu jogo.
+[engaging, energetic, conversational voice] Para começar, deixe à vista um espaço vazio do projeto. Abra Áreas do projeto, pegue Ao iniciar e solte nesse espaço.
+
+[engaging, energetic, conversational voice] É esta área que faz o que está dentro dela uma vez, no começo, quando o jogo abre.
+
+[engaging, energetic, conversational voice] A tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, o bloco da tela vai dentro de Ao iniciar.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de Ao iniciar.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste até dentro de Ao iniciar e solte quando aparecer o encaixe.
+
+[engaging, energetic, conversational voice] É este bloco que prepara a tela do jogo, com o tamanho e a cor do fundo.
+
+[confident, clear, unhurried voice] Repare nos dois números do bloco: o primeiro é a largura, e o segundo, a altura. Clique no 800, da largura, e troque por 480.
+
+[confident, clear, unhurried voice] Agora clique no 480, da altura, e troque por 270.
+
+[confident, clear, unhurried voice] No campo fundo, escolha um azul claro. É ele que vai pintar o fundo do seu jogo.
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: a cor aparece! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Preparar o jogo em tela cheia está dentro de Ao iniciar, com largura 480 e altura 270. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -141,7 +189,7 @@
 
 ### Clipe `video-borda` · Mostre o limite da tela
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-borda`
 
@@ -154,11 +202,19 @@
 
 [engaging, energetic, conversational voice] Lembra da experiência do tamanho da tela, na quarta parte desta aula? Com a borda ligada, aparecia um contorno. Agora a gente vai colocar a borda no seu jogo!
 
-[engaging, energetic, conversational voice] A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.
+[engaging, energetic, conversational voice] A borda aparece junto com a tela, logo depois de ela ser preparada. Por isso, ela vai logo abaixo de Preparar o jogo em tela cheia, dentro de Ao iniciar.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar logo abaixo de Preparar o jogo em tela cheia.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação.
+
+[engaging, energetic, conversational voice] É este bloco que mostra o contorno de onde a tela acaba.
 
 [curious] Qual cor vai aparecer melhor?
 
-[engaging, energetic, conversational voice] Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a borda some no fundo.
+[engaging, energetic, conversational voice] Uma cor bem diferente do fundo, como branco: com duas cores parecidas, a borda some no azul. Escolha essa cor no bloco.
+
+[engaging, energetic, conversational voice] A espessura já vem em 4: deixe assim.
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: aparece um retângulo em volta dela! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar, primeiro vem Preparar o jogo em tela cheia e, logo abaixo, Mostrar a borda da tela, com espessura 4. Se a borda estiver lá e mesmo assim não aparecer, escolha para ela uma cor diferente da cor do fundo. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -169,7 +225,7 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-borda-K1 | Debinha | 1 | Jogo e telas e depois Preparar a área do jogo, pegue o bloco Mostrar a borda da tela e solte logo abaixo da preparação. | Qual cor vai aparecer melhor? | Deixe a espessura em 4 e escolha uma cor que apareça sobre o azul, como branco, porque, com duas cores parecidas, a | [curious] |
+| video-borda-K1 | Debinha | 1 | Mostrar a borda da tela e solte logo abaixo da preparação. É este bloco que mostra o contorno de onde a tela acaba. | Qual cor vai aparecer melhor? | Uma cor bem diferente do fundo, como branco: com duas cores parecidas, a borda some no azul. Escolha essa cor no bloco. | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -180,93 +236,97 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora mostre onde a tela do seu jogo acaba! Coloque Mostrar a borda da tela logo abaixo da preparação, com espessura 4. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 7. Escolha onde o Dino fica
+## Seção 7. Onde fica o Dino?
 
-### Clipe `video-coordenadas` · Escolha onde o Dino fica
+### Clipe `video-coordenadas` · Onde fica o Dino?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-coordenadas`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com o Dino em x 110, y 150. Pelo deslizante (os botões − e + andam de 20 em 20), aumentar só o x até 300, depois só o y até 200, e mostrar o Dino mudando de lugar a cada número. Terminar em x 0, y 0, com o Dino no canto de cima, à esquerda, e os números à vista na faixa. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino com um mapa do tesouro, com uma seta x para a direita e uma seta y para baixo. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você combina", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para o Dino que chega [na edição: meme do encontro na praça]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o Dino no lugar do começo, sem dizer para que lado cada número leva o Dino nem onde fica o zero. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como dois números, o x e o y, dizem onde o Dino fica na tela.
+[engaging, energetic, conversational voice] Para o jogo saber onde desenhar cada coisa, cada uma tem um lugar na tela, dito com números.
 
-[interested, animated voice] Olha aqui: o Dino está em x 110 e y 150. Quando eu aumento só o x, para 300, o Dino vai para a direita, e o y continua igual. O x conta de um lado para o outro.
+[engaging, energetic, conversational voice] Sabe quando você combina com alguém de se encontrar na praça e diz: fico no banco perto da fonte? Com esse endereço, a pessoa acha você.
 
-[curious] E para fazer ele descer?
+[engaging, energetic, conversational voice] No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y.
 
-[engaging, energetic, conversational voice] Quando eu aumento só o y, para 200, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y conta a partir do alto da tela.
+[curious] E para que lado cada número leva o Dino?
 
-[engaging, energetic, conversational voice] Por último, eu coloco x em 0 e y em 0. O Dino vai para o canto de cima, à esquerda. É dali que o jogo começa a contar. É como explicar onde está um tesouro: tantos passos para o lado e tantos passos para baixo. Quando você criar o Dino, vai escrever x 110 e y 150 para escolher o lugar dele.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para onde o Dino vai quando o x muda, quando o y muda e quando os dois ficam em zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-coordenadas-K1 | Debinha | 1 | Quando eu aumento só o x, para 300, o Dino vai para a direita, e o y continua igual. O x conta de um lado para o outro. | E para fazer ele descer? | Quando eu aumento só o y, para 200, o Dino desce. Isso pode surpreender: no jogo, y maior leva para baixo, porque o y | [curious] |
+| video-coordenadas-K1 | Debinha | 1 | a pessoa acha você. No seu jogo, o endereço do Dino é feito de dois números. Um se chama x, e o outro se chama y. | E para que lado cada número leva o Dino? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar para onde o Dino vai quando o x muda, | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-coordenadas-K1`: entrada — Mostrar o Dino indo para a direita ao aumentar somente x, com y ainda em 150. Saída — Aumentar somente y para 200 e acompanhar a descida; continuar os testes com os dois números.
+- `video-coordenadas-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Mude só o x, depois só o y, e termine com o Dino em x 0 e y 0. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/coordinates.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-## Seção 8. Compare criar e mostrar
+**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar do Dino na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-### Clipe `video-criar-e-mostrar` · Compare criar e mostrar
+## Seção 8. Existir e aparecer
+
+### Clipe `video-criar-e-mostrar` · Existir e aparecer
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-criar-e-mostrar`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com os bastidores e a tela do jogo vazios, lado a lado. Clicar em Criar o Dino e mostrar o Dino nos bastidores, com a tela ainda vazia. Clicar em Mostrar o Dino na tela e mostrar o mesmo Dino nos dois lugares. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Dino no camarim, arrumando o chapéu, e depois entrando no palco sob a luz. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe o teatro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Dino no camarim, arrumando o chapéu, com a cortina do palco fechada ao lado [na edição: meme do camarim e do palco]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, vazia. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender que criar o Dino e mostrar o Dino na tela são duas coisas diferentes.
+[engaging, energetic, conversational voice] Num jogo, uma coisa pode existir e pode aparecer. Existir é o jogo guardar essa coisa, com nome e lugar. Aparecer é ela estar na tela, onde quem joga consegue ver.
 
-[interested, animated voice] Olha aqui: quando eu clico em Criar o Dino, ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado.
+[engaging, energetic, conversational voice] Sabe o teatro? Tem o camarim, nos bastidores, onde o ator se arruma, e tem o palco, que a plateia vê.
 
-[curious] Como eu faço ele aparecer?
+[engaging, energetic, conversational voice] No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco.
 
-[engaging, energetic, conversational voice] Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha aquele que já estava nos bastidores.
+[curious] E quando o Dino passa a existir, ele já aparece na tela?
 
-[engaging, energetic, conversational voice] É como um ator no camarim: ele já chegou ao teatro, mas a plateia só vê quando ele entra no palco. Agora, na montagem, você vai criar o Dino. Ele ainda não vai aparecer, porque o desenho fica para a próxima aula.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda nos bastidores e na tela do jogo quando o Dino passa a existir e quando ele aparece. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-criar-e-mostrar-K1 | Debinha | 1 | ele aparece nos bastidores, mas a tela do jogo continua vazia. O Dino já existe no jogo. Ele só não foi desenhado. | Como eu faço ele aparecer? | Quando eu clico em Mostrar o Dino na tela, o mesmo Dino aparece na tela do jogo. Mostrar não cria outro Dino: desenha | [curious] |
+| video-criar-e-mostrar-K1 | Debinha | 1 | o palco, que a plateia vê. No seu jogo também tem esses dois lugares: os bastidores e a tela do jogo, que é o palco. | E quando o Dino passa a existir, ele já aparece na tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda nos bastidores e na tela do | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-criar-e-mostrar-K1`: entrada — Clicar em Criar o Dino e deixar os bastidores ocupados e a tela vazia à vista. Saída — Clicar em Mostrar o Dino na tela só depois da pergunta e comparar os dois lugares.
+- `video-criar-e-mostrar-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Clique em Criar o Dino, depois em Mostrar o Dino na tela, e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/world.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue se o Dino que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 9. Crie o Dino nos bastidores
 
 ### Clipe `video-criar-dino` · Crie o Dino nos bastidores
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-criar-dino`
 
@@ -275,17 +335,27 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Criar o Dino deixava ele nos bastidores, fora da tela. Agora você vai criar o Dino do seu jogo!
+[engaging, energetic, conversational voice] Lembra das duas experiências antes desta parte? O Dino existia nos bastidores sem aparecer, e o x e o y diziam onde ele fica. Agora você vai criar o Dino do seu jogo!
 
-[engaging, energetic, conversational voice] O Dino nasce quando o jogo começa, logo depois da borda. Por isso, deixe à vista o lugar logo abaixo de Mostrar a borda da tela, dentro de Ao iniciar. Depois, abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Criar dinossauro e solte logo abaixo da borda.
+[engaging, energetic, conversational voice] O Dino nasce quando o jogo começa, logo depois da borda. Por isso, ele vai no fim de Ao iniciar, logo abaixo de Mostrar a borda da tela.
 
-[interested, animated voice] Olha aqui: o bloco já vem com o nome dino. Mantenha esse nome, porque é ele que identifica o seu Dino no jogo. No jogo, o Dino é um sprite, que é um objeto do jogo que você pode programar.
+[confident, clear, unhurried voice] Deixe à vista o lugar logo abaixo de Mostrar a borda da tela.
 
-[engaging, energetic, conversational voice] O bloco chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Dino, pegue o bloco Criar dinossauro e solte logo abaixo da borda.
+
+[engaging, energetic, conversational voice] É este bloco que faz o Dino existir no jogo, nos bastidores.
+
+[interested, animated voice] Olha aqui: o bloco já vem com o nome dino. Mantenha esse nome, porque é ele que identifica o seu Dino no jogo.
+
+[engaging, energetic, conversational voice] O x e o y são o endereço do Dino na tela, como na experiência. Clique no 120 do x e troque por 110.
+
+[engaging, energetic, conversational voice] O y já vem 150, e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino.
 
 [curious] Escolhi a cor, mas cadê o Dino?
 
-[engaging, energetic, conversational voice] Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. [confident, clear, unhurried voice] Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64. A tela continua sem Dino, e está certo: ele já existe nos bastidores, mas ainda não tem uma ordem de desenho. Por isso, não duplique o bloco para tentar fazer o Dino aparecer.
+[engaging, energetic, conversational voice] O Dino já existe, nos bastidores, mas ainda não foi desenhado na tela, e é isso mesmo: o desenho vem na próxima aula. Por isso, não coloque outro Criar dinossauro.
+
+[confident, clear, unhurried voice] Confira se ficou assim: dentro de Ao iniciar, primeiro vem a preparação da tela, depois a borda e, por último, Criar dinossauro, com x 110, y 150 e tamanho 64.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -294,7 +364,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-criar-dino-K1 | Debinha | 1 | chega com x 120: troque por 110. O y já vem 150 e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino. | Escolhi a cor, mas cadê o Dino? | Vamos conferir. Ele foi criado, mas ainda falta mandar desenhar. Confira se ficou assim: dentro de Ao iniciar, primeiro | [curious] |
+| video-criar-dino-K1 | Debinha | 1 | no 120 do x e troque por 110. O y já vem 150, e o tamanho, 64: mantenha os dois. Depois, escolha a cor do seu Dino. | Escolhi a cor, mas cadê o Dino? | O Dino já existe, nos bastidores, mas ainda não foi desenhado na tela, e é isso mesmo: o desenho vem na próxima aula. | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -318,7 +388,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O seu projeto agora prepara a tela e cria o Dino! Antes de enviar, vamos conferir tudo. Olhe a área do jogo: a cor e a borda aparecem numa tela de 480 por 270, e o Dino ainda não aparece, porque ele está criado nos bastidores, sem desenho.
+[pleased, lively voice] Pronto, você já preparou a tela e criou o seu Dino! Antes de enviar, vamos conferir tudo. Olhe a área do jogo: a cor e a borda aparecem numa tela de 480 por 270, e o Dino ainda não aparece, porque ele está criado nos bastidores, sem desenho.
 
 [engaging, energetic, conversational voice] Agora confira o bloco Criar dinossauro dentro de Ao iniciar, com o nome dino, x 110, y 150 e tamanho 64. Se algum campo estiver diferente, corrija antes de enviar.
 

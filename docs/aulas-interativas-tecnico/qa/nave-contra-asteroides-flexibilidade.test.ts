@@ -67,10 +67,11 @@ test.each([
   [1, 'criar-nave', 'nave', 'sz_g2d_create_ship', 'W', 0],
   [2, 'setas', 'setas', 'sz_g2d_arrows_x', 'SPEED', 0],
   [2, 'setas', 'setas', 'sz_g2d_arrows_x', 'SPEED', -3],
-  [3, 'criar-tiro', 'disparo', 'sz_g2d_spawn_bullet', 'VY', 3],
+  // 02/11/2026: o disparo e o dano passaram às partes novas tiro-da-nave e dano.
+  [3, 'tiro-da-nave', 'disparo', 'sz_g2d_spawn_bullet', 'VY', 3],
   [4, 'asteroide', 'asteroide', 'sz_g2d_spawn_asteroid', 'VY', -1],
   [4, 'relogio', 'relogio', 'sz_g2d_every_frames', 'N', 0],
-  [7, 'batida', 'dano-protegido', 'sz_g2d_damage_sprite', 'AMOUNT', 2],
+  [7, 'dano', 'dano-protegido', 'sz_g2d_damage_sprite', 'AMOUNT', 2],
   [9, 'finais', 'alvo', 'sz_js_const_create', 'VALUE', 0],
 ] as const)('etapa %s/%s mantém a intenção de %s (%s/%s=%s)', (stage, section, id, type, name, value) => {
   const project = structuredClone(stages[stage]!)

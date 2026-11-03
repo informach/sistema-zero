@@ -1,6 +1,20 @@
 # Passo a passo do projeto — O segredo da cabana
 
-Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
+Poder do Faísca. Aqui está o que investigar na experiência e cada montagem das duas aulas: o que a regra faz, o caminho na paleta, o bloco, onde encaixar, como testar e o que conferir. Você pode consultar quantas vezes quiser.
+
+## A experiência: a porta com duas peças
+
+**A ideia:** O jogo guarda em temChave e em temEmblema se o personagem já pegou cada peça, e a cabana faz uma pergunta quando ele encosta nela. Na experiência, você descobre quando a cabana abre e quando continua fechada.
+
+**O que investigar:**
+
+- Encoste na cabana sem nenhuma peça e observe.
+- Encoste na cabana com uma peça só e observe.
+- Encoste na cabana com as duas peças e observe.
+- Compare começando pela chave e começando pelo emblema.
+- Faça a cabana pedir uma das peças e teste com uma peça só.
+
+Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe temChave, temEmblema, a porta e o aviso. O Zappy sugere o que observar.
 
 ## Aula 1 · Jogo 2D: Duas peças para abrir
 
@@ -16,7 +30,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 6. Logo abaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha temEmblema e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.
 7. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva Você pegou o emblema!
 
-**Teste:** Leve o personagem até o emblema. Ele some só no encontro, e o aviso conta que você pegou o emblema. Pressione R: o emblema volta.
+**Teste:** Leve o personagem até o emblema. Ele some só no encontro, e o aviso conta que você pegou o emblema. Toque na tecla R: o emblema volta.
 
 **Se não funcionar:** Se o emblema não sumir, confira se o encontro usa personagem e emblema. Não crie temEmblema dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.
 
@@ -33,7 +47,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 7. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1 e escreva A cabana abriu! Você tinha as duas peças.
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A cabana pede a chave e o emblema.
 
-**Teste:** Pressione R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, depois de R, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Pressione R: a cabana volta fechada e as peças voltam.
+**Teste:** Toque na tecla R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, numa partida nova, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Toque na tecla R de novo: a cabana volta fechada e as peças voltam.
 
 **Se não funcionar:** Se a cabana abrir com uma peça só, a pergunta usa ou no lugar de e, ou falta uma das variáveis. Se ela não abrir com as duas, confira se temEmblema muda para verdadeiro no encontro com o emblema e se a abertura está dentro do então.
 
@@ -51,7 +65,7 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 6. Logo abaixo, encaixe Alterar variável, de Programação → Variáveis. Escolha temEmblema e solte verdadeiro, de Programação → Lógica e Se, em cima do 1. Deixe em verdadeiro.
 7. Ainda no fazer, encaixe outro Alterar variável e escolha aviso. Solte um texto, de Programação → Valores, em cima do 1, apague Olá e escreva Você pegou o emblema!
 
-**Teste:** Leve o personagem até o emblema. Ele some só no encontro, e o aviso conta que você pegou o emblema. Pressione R: o emblema volta.
+**Teste:** Leve o personagem até o emblema. Ele some só no encontro, e o aviso conta que você pegou o emblema. Toque na tecla R: o emblema volta.
 
 **Se não funcionar:** Se o emblema não sumir, confira se o encontro usa personagem e emblema. Não crie temEmblema dentro do encontro: ela nasce em Ao iniciar, com falso, e o encontro só muda para verdadeiro.
 
@@ -68,10 +82,14 @@ Poder do Faísca. Aqui está cada montagem das duas aulas: o que a regra faz, o 
 7. Embaixo dele, ainda no então, encaixe Alterar variável, de Programação → Variáveis. Escolha aviso. Solte um texto, de Programação → Valores, em cima do 1 e escreva A cabana abriu! Você tinha as duas peças.
 8. Dentro do senão, encaixe outro Alterar variável, escolha aviso, solte um texto em cima do 1 e escreva A cabana pede a chave e o emblema.
 
-**Teste:** Pressione R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, depois de R, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Pressione R: a cabana volta fechada e as peças voltam.
+**Teste:** Toque na tecla R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e, numa partida nova, só com o emblema: continua fechada. Pegue as duas, em qualquer ordem, e encoste: ela abre. Toque na tecla R de novo: a cabana volta fechada e as peças voltam.
 
 **Se não funcionar:** Se a cabana abrir com uma peça só, a pergunta usa ou no lugar de e, ou falta uma das variáveis. Se ela não abrir com as duas, confira se temEmblema muda para verdadeiro no encontro com o emblema e se a abertura está dentro do então.
 
 ## Entrega
 
-Em cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas, pressione R e confira que as peças voltam e a cabana volta fechada. Clique em Verificar projeto, corrija o que faltar, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.
+Em cada aula, jogue uma partida inteira, tente a cabana com uma peça só e com as duas. Toque na tecla R e confira que as peças voltam e a cabana volta fechada.
+
+Depois clique em Verificar projeto e corrija o que faltar.
+
+Por fim, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula. O Poder conta quando as duas aulas estão concluídas.

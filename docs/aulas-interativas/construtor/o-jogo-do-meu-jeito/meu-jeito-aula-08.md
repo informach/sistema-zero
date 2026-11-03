@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 A revisão de aparência e regras já foi feita antes das alterações, na aula 1. O encerramento testa o percurso inteiro, explica a cópia publicada e permite entregar sem obrigar publicação ou recado. Saem o passeio pelo site e a tarefa de criar outro projeto.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). A cópia publicada virou exploração livre com a analogia da foto. A retomada do teste completo liga o que o Mural guarda ao motivo de testar antes de publicar. Revisão independente de 02/11/2026: a foto do desenho para na situação, sem dizer o que a pessoa recebe; o botão é "Abrir meu Estúdio".**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -26,11 +28,15 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 ### Seção 1. Compare projeto e versão publicada
 
-**Tarefa / Zappy na página:** Sua vez! Publique, mude a cor do projeto e publique de novo. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que o Mural guarda quando você publica e quando muda o projeto depois. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-copia-publicada → fala-copia-publicada → experimento-copia-publicada.
 
-**Experiência existente:** `published-copy`. Na bancada, clique em Publicar. Troque Cor da nave no seu projeto e compare com a versão do Mural. Clique em Publicar de novo e observe o cartão novo ao lado do antigo. Sem palpite, pistas ou pergunta final.
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-copia-publicada-K1: Dedé substitui “E se eu mudar o projeto depois de publicar, o Mural muda junto?”. Antes: “nada dela vai para o Mural de verdade. Sabe quando você tira uma foto de um desenho e manda para alguém da família?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Mural guarda quando você”.
+
+**Experiência em exploração livre:** `published-copy`, com `setup.freeExploration`. Compare o seu projeto com o Mural quando você publica, quando muda a cor da nave e quando publica de novo. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Jogue do começo ao reinício
 
@@ -40,7 +46,7 @@ A revisão de aparência e regras já foi feita antes das alterações, na aula 
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-teste-completo-K1: Dedé substitui “E se alguma coisa não funcionar?”. Antes: “Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobraram pedras da partida anterior.”. Depois: “Se alguma regra falhar, volte à aula em que ela funcionava e compare os blocos, sem trocar o projeto inteiro por outro.”.
+video-teste-completo-K1: Dedé substitui “E se alguma coisa não funcionar?”. Antes: “outro Enter para começar de novo. Confira se os pontos e as vidas recomeçam e se não sobrou pedra da partida anterior.”. Depois: “Volte à aula em que aquela parte funcionava e compare os blocos, sem trocar o projeto inteiro por outro. Se precisar de”.
 
 **Aplicação no Estúdio:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 
@@ -52,7 +58,7 @@ video-teste-completo-K1: Dedé substitui “E se alguma coisa não funcionar?”
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-compartilhar-K1: Dedé substitui “E para mandar o jogo para alguém?”. Antes: “você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.”. Depois: “Depois clique em Copiar link de jogar. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os”.
+video-compartilhar-K1: Dedé substitui “E para mandar o jogo para alguém?”. Antes: “você criou. Clique em Abrir o jogo, e a versão publicada abre em outra aba. Teste uma partida e volte à aba do Estúdio.”. Depois: “Clique em Copiar link de jogar. Olha só: o botão muda para Link copiado! Mande o link para a sua família e os seus”.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

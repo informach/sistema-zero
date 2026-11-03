@@ -7,14 +7,14 @@
   "blocks": [
     {
       "key": "video-intervalo-das-pedras",
-      "plannedVideo": "Título: Compare o intervalo entre as pedras\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Criar asteroide em A cada quadro, clicar em Tempo, deixar passar cerca de um segundo e mostrar umas 30 pedras amontoadas. Levar a peça para a caixa A cada 40 quadros, deixar passar cerca de quatro segundos e mostrar as pedras nascendo separadas e a marca relógio 40: 180 em 60 quadros. Escolher 20 quadros, deixar passar mais três segundos e mostrar relógio 20: 180 em 60 quadros abaixo da primeira marca. A faixa mostra o intervalo em segundos (1,33 s); a fala usa quadros, como o bloco. Meme na comparação: na frase da fila de pessoas passando por uma porta, mostrar por 2 a 3 segundos o meme ilustrado nosso, asteroides amontoados numa porta e depois passando um de cada vez, com o Zappy organizando a fila, com a legenda \"um de cada vez\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-intervalo-das-pedras-K1: Dedé substitui “Se eu diminuir a espera, a pedra cai mais rápido?”. Antes: “pedra, depois outra, depois outra, com espaço entre elas, porque o relógio espera 40 quadros antes de criar a próxima.”. Depois: “Vamos comparar. Por último, eu escolho 20 quadros e deixo passar mais três segundos. As pedras nascem mais perto umas”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quando nasce uma pedra nova?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe uma torneira pingando\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy olhando uma torneira pingando [na edição: meme da torneira]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-intervalo-das-pedras-K1: Dedé substitui “E se nascer uma pedra em todo quadro?”. Antes: “em cima e cair. E o jogo pode criar uma pedra nova em todo quadro, ou esperar alguns quadros entre uma pedra e outra.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na chuva de pedras quando”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-intervalo-das-pedras",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -22,9 +22,13 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare o intervalo entre as pedras",
-        "instructions": "Na experiência, deixe Criar asteroide em A cada quadro. Clique em Tempo para deixar passar cerca de um segundo e observe quantas pedras nasceram. Leve Criar asteroide para a caixa A cada 40 quadros. Deixe passar cerca de quatro segundos. Observe o nascimento e a queda das pedras. Escolha 20 quadros no intervalo e deixe passar mais três segundos. Compare quantas pedras nasceram e quanto cada uma desceu em 60 quadros.",
-        "hints": [],
+        "title": "Quando nasce uma pedra nova?",
+        "instructions": "Compare as pedras quando nasce uma pedra nova em todo quadro e quando cada pedra espera alguns quadros para nascer. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Observe quantas pedras nascem e o espaço entre elas.",
+          "Compare as pedras que nascem em todo quadro com as que esperam alguns quadros.",
+          "Escolha Em todo quadro e clique em Passar 1 segundo. Depois escolha De 40 em 40 quadros e clique em Passar 1 segundo até nascerem duas pedras."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "spawn",
@@ -40,11 +44,23 @@
           },
           "cenario": "nave",
           "setup": {
+            "freeExploration": true,
             "preset": {
               "id": "pedra-quadros",
               "unit": "frames",
               "intervals": [20, 40, 80],
               "falling": true
+            },
+            "goals": ["every-frame", "with-timer"],
+            "goalCopy": {
+              "every-frame": {
+                "label": "Em todo quadro, as pedras nasceram coladas",
+                "pedido": "Escolha Em todo quadro, clique em Passar 1 segundo e observe as pedras e quantas nasceram."
+              },
+              "with-timer": {
+                "label": "Com uma espera, sobrou espaço entre as pedras",
+                "pedido": "Escolha De 40 em 40 quadros e deixe o tempo passar até nascerem duas pedras. Observe onde cada uma aparece."
+              }
             }
           }
         },
@@ -53,26 +69,26 @@
     },
     {
       "key": "video-grupo-e-relogio",
-      "plannedVideo": "Título: Prepare a criação dos asteroides\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: clicar na área do jogo, esperar alguns segundos e, no \"Tá vendo?\", mostrar que nenhuma pedra aparece. Mostrar a diferença entre encaixar depois do bloco inteiro e dentro dele. O intervalo começa vazio.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”. Antes: “e solte no fim de Ao iniciar. Repare: o nome já vem asteroides, que é o nome certo para este grupo, por isso mantenha.”. Depois: “Agora o relógio. Ele fica fora de A cada quadro do jogo, porque não é para criar uma pedra em todo quadro, e sim de”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare a criação dos asteroides\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"clique na área do jogo e espere um pouco\", clicar no jogo [tocar prévia 400 240] e esperar uns segundos. No \"Deixe à vista o fim de Ao iniciar\", apontar o lugar [apontar abaixo de \"Criar grupo de sprites\"]. No \"Agora abra Jogo 2D, depois Grupos\", abrir as categorias [categoria Jogo 2D > Grupos > Criar e percorrer]. No \"Arraste e solte logo abaixo de Criar grupo de sprites tiros\", encaixar o bloco [encaixar \"Criar grupo de sprites\" abaixo de \"Criar grupo de sprites\"]. No \"É este bloco que cria a lista das pedras\", apontar o bloco novo. No \"Deixe à vista o espaço logo abaixo do bloco inteiro\", arrastar até o fim do bloco aparecer [arrastar até \"A cada quadro do jogo\"]. No \"Abra Jogo 2D, depois Tempo\", abrir as categorias [categoria Jogo 2D > Tempo > Quadros e intervalos], levar **A cada quadros** com a mão até logo abaixo do bloco inteiro **A cada quadro do jogo**, fora dele, e soltar. No \"Clique no 30, troque por 40\", trocar o número [trocar \"30\" por \"40\" em \"A cada\"]. No \"É este bloco que, de 40 em 40 quadros\", apontar o bloco [apontar bloco \"A cada 40 quadros\"]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-grupo-e-relogio-K1: Dedé substitui “E quando vai nascer cada pedra?”. Antes: “vem asteroides, que é o nome certo para este grupo. Deixe assim. É este bloco que cria a lista das pedras, ainda vazia.”. Depois: “De 40 em 40 quadros, como na experiência. A pedra não nasce em todo quadro, e sim de tempos em tempos. Por isso, ela”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-relogio",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte."
+        "text": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque a espera de 40 quadros logo abaixo de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-posicao-sorteada",
-      "plannedVideo": "Título: Sorteie onde a pedra nasce\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Sortear lugar na régua de cima até sair pelo menos um segundo lugar diferente, apontando as marcas na régua entre x 90 e x 390. Mostrar a pedra acima da borda de cima, clicar em Tempo e acompanhar a pedra entrando na tela. Meme na comparação: na frase do dado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando um dado gigante com asteroides nas faces, com a legenda \"Sortear lugar\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-posicao-sorteada-K1: Dedé substitui “Mas por que criar a pedra fora da tela?”. Antes: “entre x 90 e x 390. É como jogar um dado: você não sabe qual número vai sair, e o mesmo número pode sair de novo.”. Depois: “A pedra fica acima da borda de cima, do lado de fora da tela. Eu clico em Tempo, e olha só: ela desce e entra caindo”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Onde nasce cada pedra?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você joga um dado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy jogando um dado enorme, que rola na frente da nave [na edição: meme do dado]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-posicao-sorteada-K1: Dedé substitui “E a pedra aparece de repente, no meio da tela?”. Antes: “lugar, ficaria fácil demais acertar. Por isso, o jogo pode sortear o x de cada pedra nova, de um lado ao outro da tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde cada pedra nova nasce quando o”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-posicao-sorteada",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -80,9 +96,13 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Sorteie onde a pedra nasce",
-        "instructions": "Na experiência, clique em Sortear lugar na régua de cima até observar pelo menos duas posições diferentes. As marcas mostram os lugares sorteados. Depois, deixe o tempo passar até uma pedra entrar pela parte de cima da tela.",
-        "hints": [],
+        "title": "Onde nasce cada pedra?",
+        "instructions": "Compare os lugares que o sorteio escolhe para a pedra e observe de onde ela entra na tela. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Compare as marquinhas na régua depois de cada sorteio.",
+          "Depois de sortear, deixe o tempo passar e observe a borda de cima da tela.",
+          "Clique em Sortear um lugar três vezes. Depois clique em Passar 1 segundo e observe a pedra."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "random",
@@ -94,10 +114,22 @@
           },
           "cenario": "nave",
           "setup": {
+            "freeExploration": true,
             "preset": {
               "id": "pedra-acima",
               "axis": "above",
               "speedModule": false
+            },
+            "goals": ["positions", "above"],
+            "goalCopy": {
+              "positions": {
+                "label": "Cada sorteio pode dar um lugar diferente",
+                "pedido": "Clique em Sortear um lugar algumas vezes e compare as marquinhas na régua."
+              },
+              "above": {
+                "label": "A pedra nasce acima da tela e entra caindo",
+                "pedido": "Clique em Passar 1 segundo e observe de onde a pedra entra na tela."
+              }
             }
           }
         },
@@ -106,19 +138,19 @@
     },
     {
       "key": "video-asteroide",
-      "plannedVideo": "Título: Crie e mostre as pedras caindo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: esperar alguns segundos e, no \"Tá vendo?\", mostrar que ainda não cai nenhuma pedra. Mostrar a criação no intervalo e o movimento, a limpeza e o desenho no bloco de cada quadro, sempre com o destino à vista antes de abrir a paleta. Não montar colisão. Registrar que a travessia é o estado esperado desta etapa.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-asteroide-K1: Dedé substitui “E como tira as pedras que saem da tela?”. Antes: “usando suas velocidades e solte nesse lugar. O grupo já vem asteroides, e nos dois próximos blocos também: é só manter.”. Depois: “Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois Grupos e depois Participação e”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Crie e mostre as pedras caindo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"clique na área do jogo e espere um pouco\", clicar no jogo [tocar prévia 400 240] e esperar uns segundos. No \"Deixe à vista o espaço vazio dentro de A cada 40 quadros\", arrastar até o bloco aparecer [arrastar até \"A cada 40 quadros\"]. No \"Agora abra Jogo 2D, depois Kits prontos\", abrir as categorias [categoria Jogo 2D > Kits prontos > Espaço]. No \"Arraste para dentro de A cada 40 quadros\", encaixar o bloco [encaixar \"No grupo criar um asteroide\" em \"A cada 40 quadros\"]. No \"É este bloco que cria uma pedra nova\", apontar o bloco [apontar bloco \"No grupo criar um asteroide\"]. No \"Deixe à vista o 100 do campo x do asteroide\", abrir as categorias [categoria Jogo 2D > Sorteios > Números e posições], levar **um x aleatório na tela** com a mão e soltar em cima do 100 do x. No \"Agora clique no 100 do y\", trocar o número [trocar \"100\" por \"-30\" em \"No grupo criar um asteroide\"]. No \"Clique no 2 do vy\", trocar o número [trocar \"2\" por \"3\" em \"No grupo criar um asteroide\"]. No \"Deixe à vista o fim de A cada quadro do jogo\", apontar o lugar [apontar abaixo de \"Desenhar o grupo\"], abrir as categorias [categoria Jogo 2D > Grupos > Movimento] e encaixar o bloco no fim da sequência. No \"pegue o bloco Tirar do grupo quem sair da tela\", abrir a categoria [categoria Jogo 2D > Grupos > Participação e limpeza] e encaixar logo abaixo do movimento dos asteroides. No \"pegue o bloco Desenhar o grupo e solte\", abrir a categoria [categoria Jogo 2D > Grupos > Desenho e ordem] e encaixar logo abaixo da limpeza dos asteroides. No \"Agora teste: clique na área do jogo e espere\", clicar no jogo [tocar prévia 400 240] e esperar as pedras caírem. No \"Atire numa delas\", tocar na barra de espaço [tecla Space] e mostrar o tiro atravessando a pedra. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-asteroide-K1: Dedé substitui “E como tira as pedras que saem da tela?”. Antes: “velocidades e solte nesse lugar. Repare: o grupo já vem asteroides, e nos dois próximos blocos também. Deixe assim.”. Depois: “Do mesmo jeito que os tiros. Deixe à vista o encaixe logo abaixo do movimento dos asteroides. Abra Jogo 2D, depois”.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-asteroide",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte."
+        "text": "Agora faça as pedras caírem! Crie o asteroide dentro da espera, com o x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
       "key": "video-entrega",
-      "plannedVideo": "Título: Teste e envie a sua chuva de pedras\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Clicar na área do jogo e dar tempo para observar algumas pedras nascendo e caindo. Depois mover a nave e atirar, mostrando o tiro atravessando as pedras. Não trocar valores nesta parte. Não confundir quadros com segundos.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Teste e envie a sua chuva de pedras\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Clique na área do jogo e olhe as pedras\", clicar no jogo [tocar prévia 400 240] e esperar as pedras caírem. No \"Depois mova a nave e atire\", segurar uma seta por um instante e tocar na barra de espaço [tecla Space]. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"clique em Enviar meu projeto\", enviar e confirmar [enviar projeto]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-chuva-de-asteroides.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -637,9 +669,9 @@
   "sections": [
     {
       "key": "intervalo-das-pedras",
-      "title": "Compare o intervalo entre as pedras",
+      "title": "Quando nasce uma pedra nova?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare criar pedras em cada quadro, a cada 40 e a cada 20 quadros, olhando o nascimento e a queda. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na chuva de pedras com e sem uma espera entre elas. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": [
         "video-intervalo-das-pedras",
         "fala-intervalo-das-pedras",
@@ -657,7 +689,7 @@
       "key": "relogio",
       "title": "Prepare a criação dos asteroides",
       "intent": "application",
-      "objective": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque o relógio de 40 quadros ao lado de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "objective": "Agora prepare a chuva de pedras! Crie o grupo asteroides, coloque a espera de 40 quadros logo abaixo de A cada quadro do jogo e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-grupo-e-relogio", "fala-relogio"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -714,9 +746,9 @@
     },
     {
       "key": "posicao-sorteada",
-      "title": "Sorteie onde a pedra nasce",
+      "title": "Onde nasce cada pedra?",
       "intent": "exploration",
-      "objective": "Sua vez! Sorteie até ver lugares diferentes e depois acompanhe uma pedra entrando na tela. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue onde as pedras nascem quando o jogo sorteia o lugar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-posicao-sorteada", "fala-posicao-sorteada", "experiencia-sorteio"],
       "workspaceKey": null,
       "externalTool": null,
@@ -730,7 +762,7 @@
       "key": "asteroide",
       "title": "Crie e mostre as pedras caindo",
       "intent": "application",
-      "objective": "Agora faça as pedras caírem! Crie o asteroide dentro do relógio, com x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "objective": "Agora faça as pedras caírem! Crie o asteroide dentro da espera, com o x sorteado, monte o movimento, a limpeza e o desenho do grupo e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-asteroide", "fala-asteroide"],
       "workspaceKey": "projeto",
       "externalTool": null,

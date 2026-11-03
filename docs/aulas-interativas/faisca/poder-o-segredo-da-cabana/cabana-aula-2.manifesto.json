@@ -2114,7 +2114,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. A montagem completa está no Passo a passo do projeto. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte."
       }
     },
     {
@@ -2126,7 +2126,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto e em Próxima parte."
       }
     },
     {

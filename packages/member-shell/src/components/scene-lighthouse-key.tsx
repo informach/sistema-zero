@@ -17,7 +17,17 @@ function avisoDaPorta({ hasKey, door, checkedKey }: SceneState['lighthouse']) {
 }
 
 /** Duas tentativas na mesma porta: a troca de chave não é a tentativa. */
-export function LighthouseKeyStage({ state }: { state: SceneState }) {
+export function LighthouseKeyStage({
+  state,
+  tranca = false,
+}: {
+  state: SceneState
+  /**
+   * A pergunta com o não (Ilha do Farol, aula 3, 02/11/2026): o cadeado na porta diz se ela está
+   * trancada (sem a chave) ou destrancada, e o aviso do jogo sai (a resposta mora na figura da tela).
+   */
+  tranca?: boolean
+}) {
   const { hasKey, door } = state.lighthouse
   const aberta = door === 'open'
   return (
@@ -25,7 +35,7 @@ export function LighthouseKeyStage({ state }: { state: SceneState }) {
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A porta do farol"
-      descricao={`O personagem está ${hasKey ? 'com' : 'sem'} a chave. A porta está ${aberta ? 'aberta e a luz está acesa' : 'fechada e a luz está apagada'}.`}
+      descricao={`O personagem está ${hasKey ? 'com' : 'sem'} a chave.${tranca ? ` A porta está ${hasKey ? 'destrancada' : 'trancada'}.` : ''} A porta está ${aberta ? 'aberta e a luz está acesa' : 'fechada e a luz está apagada'}.`}
     >
       <image
         data-fundo="farol"
@@ -71,7 +81,19 @@ export function LighthouseKeyStage({ state }: { state: SceneState }) {
           height={FAROL_LAYOUT.barco.h}
         />
       </g>
-      <AvisoDoFarol texto={avisoDaPorta(state.lighthouse)} />
+      {tranca ? (
+        <text
+          data-tranca={hasKey ? 'destrancada' : 'trancada'}
+          x={FAROL_LAYOUT.farol.x + FAROL_LAYOUT.farol.w / 2}
+          y={FAROL_LAYOUT.farol.y + FAROL_LAYOUT.farol.h - 6}
+          textAnchor="middle"
+          fontSize="26"
+        >
+          {hasKey ? '🔓' : '🔒'}
+        </text>
+      ) : (
+        <AvisoDoFarol texto={avisoDaPorta(state.lighthouse)} />
+      )}
     </SceneCanvas>
   )
 }

@@ -97,6 +97,8 @@ export const SCENE_IDS = [
   'pick-ray',
   'fill-stroke',
   'shading',
+  // Nave contra Asteroides, Dia 5 (02/11/2026): a placa da meta (uma constante) e o sinal > ou ≥.
+  'score-goal',
 ] as const
 export type SceneId = (typeof SCENE_IDS)[number]
 
@@ -221,6 +223,14 @@ export type SceneAction =
   | { type: 'name-field'; name: '' | 'nave' | 'folha-nave' | 'nave2' }
   | { type: 'nudge'; piece: 'crater' | 'body'; amount: number }
   | { type: 'birth-every'; frames: 20 | 40 | 80 }
+  /**
+   * "Voltar ao começo" no MEIO dos controles da exploração livre (02/11/2026): recomeça o caso como o
+   * `reset` do motor (o mundo volta, as escolhas que o motor guarda ficam: os dois relógios, os alvos
+   * da trombada, a proteção) e GUARDA as descobertas. O `reset` da exploração livre é o "Recomeçar
+   * experiência" do rodapé, que apaga tudo; com ele aqui, a criança perdia o que já tinha descoberto.
+   * Só nas cenas que têm o botão (`RESTART_CASE_SCENES`).
+   */
+  | { type: 'restart-case' }
   | { type: 'export-file' | 'import-file' | 'publish' | 'open-mural' }
   | { type: 'recolor'; side: 'lesson' | 'studio' | 'project'; color: SceneCopyColor }
   | { type: 'skin'; theme: 'space' | 'road' | 'sea' }
@@ -351,12 +361,30 @@ export type SceneAction =
   /** De que lado vem a luz, e se a sombra está pintada. */
   | { type: 'light'; side: 'left' | 'right' }
   | { type: 'shade'; on: boolean }
+  /**
+   * `lighthouse-key`, a pergunta com o "não" (Ilha do Farol, aula 3, 02/11/2026): a porta pergunta
+   * "a porta está trancada?" (`not: false`) ou "a porta não está trancada?" (`not: true`). Só muda
+   * alguma coisa no caso do não (`lighthouseKeyNotCase`); no Farol a porta segue perguntando temChave.
+   */
+  | { type: 'door-question'; not: boolean }
+  /** `score-goal`: um acerto soma 1 ao placar (a partida para quando o jogo dá a vitória). */
+  | { type: 'goal-hit' }
+  /** `score-goal`: o sinal da vitória, `>` (maior que) ou `>=` (maior ou igual); recomeça a partida. */
+  | { type: 'goal-op'; op: ScoreGoalOp }
+  /** `score-goal`: Jogar de novo, com o mesmo sinal (as descobertas ficam). */
+  | { type: 'goal-restart' }
+  /** `score-goal`: tentar mudar a placa da meta. Ela é uma constante: não muda. */
+  | { type: 'goal-edit' }
 
 /**
  * As duas velocidades da `lighthouse-walk`: a do projeto do Desafio (3, a do bloco "Mover sprite
  * personagem em 4 direções com setas, velocidade 3") e a de comparação (1). O DTO do servidor e o
  * editor do admin leem daqui.
  */
+/** Os dois sinais da vitória da `score-goal` (Nave, Dia 5): maior que e maior ou igual. */
+export const SCORE_GOAL_OPS = ['>', '>='] as const
+export type ScoreGoalOp = (typeof SCORE_GOAL_OPS)[number]
+
 export const LIGHTHOUSE_WALK_SPEEDS = [1, 3] as const
 export type LighthouseWalkSpeed = (typeof LIGHTHOUSE_WALK_SPEEDS)[number]
 
@@ -496,6 +524,7 @@ const PORTS: Record<SceneId, readonly ScenePort[]> = {
   'pick-ray': [],
   'fill-stroke': [],
   shading: [],
+  'score-goal': [],
 }
 
 /**
@@ -784,6 +813,18 @@ const ANIMATIONS: readonly SceneId[] = ['frames', 'onion-skin']
  * Uma ação só é legal na cena que a oferece. O motor trata ação ilegal como no-op em vez de
  * erro: um roteiro escrito para outra cena, ou um pacote adulterado, não derruba a aula da criança.
  */
+/** As cenas livres com "Voltar ao começo" no meio dos controles (a ação `restart-case`). */
+export const RESTART_CASE_SCENES: readonly SceneId[] = [
+  'two-clocks',
+  'velocity',
+  'collision-pair',
+  'invincibility',
+  // Corre Dino (frente C, 02/11/2026): a reta volta ao −5 com o sinal escolhido; a base volta ao −5
+  // com a pergunta como a criança deixou, e a fileira de cactos esvazia.
+  'number-line',
+  'acceleration',
+]
+
 export function isSceneAction(value: unknown, scene: SceneId): value is SceneAction {
   if (!isRecord(value)) return false
   if (typeof value.type === 'string' && value.type.startsWith('island-'))
@@ -804,6 +845,14 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       return scene === 'lighthouse-key' && typeof value.hasKey === 'boolean'
     case 'try-lighthouse-door':
       return scene === 'lighthouse-key'
+    case 'door-question':
+      return scene === 'lighthouse-key' && typeof value.not === 'boolean'
+    case 'goal-hit':
+    case 'goal-restart':
+    case 'goal-edit':
+      return scene === 'score-goal'
+    case 'goal-op':
+      return scene === 'score-goal' && SCORE_GOAL_OPS.some((op) => op === value.op)
     case 'remember-collection':
       return scene === 'collect-and-remember' && typeof value.enabled === 'boolean'
     case 'collect-key':
@@ -928,6 +977,8 @@ export function isSceneAction(value: unknown, scene: SceneId): value is SceneAct
       )
     case 'birth-every':
       return scene === 'two-clocks' && [20, 40, 80].includes(value.frames as number)
+    case 'restart-case':
+      return RESTART_CASE_SCENES.includes(scene)
     case 'export-file':
     case 'import-file':
       return scene === 'copy-vs-original'
@@ -1273,7 +1324,7 @@ export function scenePorts(scene: SceneId): readonly ScenePort[] {
 export interface SceneSetup {
   /** Exploração livre com orientação por objetivos nos cursos introdutórios. */
   freeExploration?: boolean
-  /** O que já aconteceu quando a criança chega. `reset` não entra: ele volta para cá. */
+  /** O que já aconteceu na chegada. Reinícios não entram: eles voltariam para este caso. */
   actions?: SceneAction[]
   /** Quais metas do modelo esta atividade cobra. Sem lista, são todas as do modelo. */
   goals?: string[]
@@ -1283,3 +1334,27 @@ export interface SceneSetup {
   goalCopy?: Record<string, { label?: string; pedido?: string }>
 }
 export const SETUP_LIMITS = { actions: 8, goals: 8 } as const
+
+/**
+ * Esta ação pode entrar num CASO (`setup.actions`) desta cena? É a régua do `isSceneSetup` e a
+ * mesma que o editor do Admin usa para oferecer as escolhas: um caso com uma ação que a cena
+ * recusa nem chega a ser salvo.
+ */
+export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is SceneAction {
+  if (!isSceneAction(acao, scene)) return false
+  // Reinícios voltam para o próprio caso: dentro dele seriam um laço.
+  // `hint` é gesto de quem está travado, não estado de partida.
+  if (acao.type === 'reset' || acao.type === 'restart-case' || acao.type === 'hint') return false
+  // ⚠️ No andar do Farol o caso escolhe a velocidade e o limite, nunca ONDE o personagem está: o
+  // "Recomeçar" da bancada volta ao começo de fábrica, e um caso que abrisse fora da tela
+  // poria a criança num lugar ao qual ela não consegue voltar. Sem tempo e sem seta, o x não
+  // sai do começo.
+  if (
+    scene === 'lighthouse-walk' &&
+    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order', 'walk-pace'].includes(acao.type)
+  )
+    return false
+  // A meta do jogo (02/11/2026): o caso escolhe só o sinal. Acertos e tentativas são da criança.
+  if (scene === 'score-goal' && acao.type !== 'goal-op') return false
+  return true
+}

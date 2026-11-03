@@ -70,6 +70,7 @@ import {
 import { NumberLineStage } from './scene-number-line'
 import { OnceVsAlwaysStage } from './scene-once-vs-always'
 import { SameRulesStage } from './scene-same-rules'
+import { ScoreGoalStage } from './scene-score-goal'
 import { CoordinatesStage, DrawLoopStage, ScreenReaderStage, StageSizeStage } from './scene-stages'
 import { SymbolSequenceStage } from './scene-symbol-sequence'
 import { TimedBridgeStage } from './scene-timed-bridge'
@@ -398,6 +399,8 @@ function ExplorationStageContent({ activity, state, dispatch, preview }: Explora
     return <RandomStage state={state} cast={cast} preset={activity.setup?.preset} />
   if (m === 'acceleration') return <AccelerationStage state={state} cast={cast} />
   if (m === 'island-3d') return <IslandWorld state={state.island3d!} />
+  // A meta do jogo (Nave, Dia 5, 02/11/2026).
+  if (m === 'score-goal') return <ScoreGoalStage state={state} />
   return semPalco(m)
 }
 

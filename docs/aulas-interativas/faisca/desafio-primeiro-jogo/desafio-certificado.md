@@ -41,6 +41,8 @@ A parte obrigatória de apresentação comercial já foi retirada. A celebraçã
 
 Revisão de 13/10/2026, antes da gravação: a fala comemora também o jogo do jeito que a criança escolheu; a saída passou a "Quando o certificado baixar, clique em Concluir aula"; a ponte e o texto do PDF trocaram "decisão" por "o farol que confere se você tem a chave" e "o farol que acende com a chave" (o PDF já emitido fica na versão antiga; o texto novo vale para as próximas emissões). No quiz, a pergunta 1 ganhou alternativas simétricas e o porquê das erradas; a 2 trocou a alternativa da velocidade, que saiu do curso, por "Se o bloco Destruir o sprite tira a chave do chão" e passou a dizer "a pergunta do farol"; a 3 ganhou uma alternativa plausível ("Não fazer nada"); a 4 explica por que a mesma partida não testa o senão. Os ids e as respostas certas não mudaram. O alvo do vídeo passou de 25 a 35 para 35 a 45 segundos.
 
+Revisão da didática, 02/11/2026: a fala do vídeo foi dividida em uma ideia por parágrafo; as regras comemoradas passaram a ser ditas pelo que a criança vê ("o personagem que anda, a memória da chave e o farol que só acende com a chave"; full review do mesmo dia: "o jogo que guarda quando a chave é pega" soava como vigia); a palavra certificado ganhou uma explicação curta ("um documento com o seu nome que mostra que você criou este jogo") antes do clique. A ponte acompanha. A fala do Zappy antes do quiz (em `qa/quizzes-cursos-curtos.ts`) passou a dizer o que será retomado, que a cena mostra o resultado, que a explicação conta o porquê e que dá para tentar de novo, no lugar de "Compare com a cena e a explicação". O Na tela deixou de citar uma comemoração do Dedé, que não existe mais no roteiro (a tabela de substituições está vazia desde a mudança anterior; a tabela "Vozes e produção" abaixo é registro histórico). A explicação da pergunta `q-memoria-coleta` trocou o vocabulário revogado ("ação de guardar", "coleta") por "Fazer a chave sair do chão e mudar o aviso não faz o jogo lembrar. A memória da chave é o bloco Alterar temChave para verdadeiro, dentro do encontro com a chave. É essa informação que a porta confere." (id e resposta certa iguais). O Na tela segue a receita da ESPEC-ROTEIRO §9.8: o jogo da demonstração entra pela edição, e o clique em **Baixar meu certificado** e a saída em **Concluir aula** têm os gestos do palco. O texto do PDF do certificado não mudou.
+
 A gravação precisa usar uma conta sem emissão anterior para mostrar **Baixar meu certificado**. Quem já emitiu encontra **Baixar certificado (PDF)**; conferir o caso de retorno sem simular nova emissão.
 
 ## Proposta final
@@ -53,7 +55,7 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Baixar 
 - **Blocos, nesta ordem:** `fala-revisao-final` (Zappy), `quiz-revisao-final` (quiz). Sem vídeo, ferramenta ou texto adicional.
 - **Conteúdo:** [perguntas, alternativas e explicações](../../../aulas-interativas-tecnico/proposta-quizzes-cursos-curtos-2026-10-03.md).
 
-**Zappy na página (não gravar):** Você fez o personagem andar, pegar a chave e acender o farol. Escolha uma resposta em cada pergunta e clique em Ver o que acontece. Compare com a cena e a explicação. Você pode tentar de novo.
+**Zappy na página (não gravar):** Agora você vai lembrar as regras do seu jogo: o personagem que anda, a memória da chave e o farol que só acende com ela. Em cada pergunta, escolha uma resposta e clique em Ver o que acontece. A cena mostra o resultado, e a explicação conta o porquê. Se errar, você pode tentar de novo.
 
 ### Seção 2. Comemore sua criação
 
@@ -62,7 +64,7 @@ A gravação precisa usar uma conta sem emissão anterior para mostrar **Baixar 
 - **Conclui quando:** vídeo e certificado emitido.
 - **Blocos:** `video-certificado-farol`, `fala-certificado`, bloco existente `certificado`.
 
-**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o personagem que anda, a coleta da chave e o farol que confere se você tem a chave. Agora clique em Baixar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir aula.
+**Ponte do Zappy na página (não gravar):** Parabéns! Você programou o personagem que anda, a memória da chave e o farol que só acende com a chave. Agora clique em Baixar meu certificado para guardar essa conquista. Quando ele baixar, clique em Concluir aula.
 
 Nomear o jogo do jeito que a criança escolheu e o que ela programou; orientar **Baixar meu certificado** e, quando o certificado baixar, **Concluir aula** (antes da emissão, a tela recusa com "Pegue o seu certificado para concluir a aula."). Não exigir chamar um responsável, visitar oferta ou comprar para concluir.
 

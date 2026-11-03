@@ -37,7 +37,7 @@ import {
   ordemDeGravacao,
 } from '../domain/manifestos'
 import { MembrosIndisponiveisError, type PortaDosMembros } from '../domain/membros.port'
-import { analisarRepertorio } from '../domain/repertorio-do-desafio'
+import { analisarRepertorio, type FontePlanejadaDeBlocos } from '../domain/repertorio-do-desafio'
 import {
   ConflitoDoCadastroError,
   DesafioComProblemasError,
@@ -64,6 +64,7 @@ export class ServicoDaEquipe {
     private readonly mapa: ConferenciaDoMapa,
     private readonly agora: () => Date = () => new Date(),
     private readonly novoId: () => string = randomUUID,
+    private readonly fontesPlanejadas: readonly FontePlanejadaDeBlocos[] = [],
   ) {}
 
   async listar(
@@ -391,6 +392,7 @@ export class ServicoDaEquipe {
           publicacao.blocosExigidos,
           curriculo,
           metadados.data,
+          this.fontesPlanejadas,
         )
         if (problemas.length > 0) throw new DesafioComProblemasError(problemas)
         const { analise } = await this.analiseDe(metadados.data, conteudo)
@@ -453,7 +455,7 @@ export class ServicoDaEquipe {
         ...blocosExigidos(membros.blocosDoGabarito, conteudo.blocosManuais),
       ]),
     ].sort()
-    const repertorio = analisarRepertorio(exigidos, curriculo, metadados)
+    const repertorio = analisarRepertorio(exigidos, curriculo, metadados, this.fontesPlanejadas)
     const problemas: ProblemaDoDesafio[] = [
       ...membros.problemas,
       ...[...derivados]

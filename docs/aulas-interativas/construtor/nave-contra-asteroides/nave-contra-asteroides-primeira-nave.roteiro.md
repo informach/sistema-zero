@@ -10,16 +10,16 @@
 
 **Clipe:** `video-abertura`
 
-**Na tela:** Mostrar somente a versão pronta. Na primeira fala, apresentar o jogo, o acerto, a vitória e a derrota. O narrador faz um gesto de exemplo e para: clicar na área do jogo, tocar em Enter para começar e tocar na barra de espaço uma vez, mostrando o tiro subir. Não mover a nave, não jogar uma partida inteira e não mostrar vitória, derrota ou volta à abertura. A atividade comprova participação, não vitória. Terminar em Agora é a sua vez e Próxima parte.
+**Na tela:** Do "Oi" até o "nesta versão pronta", a tela fica parada, e a edição troca esse trecho por outro fundo [na edição: outro fundo na abertura]. No "Olha aqui: eu clico na área do jogo e toco em Enter", ampliar o jogo pronto [ampliar jogo], clicar no meio do jogo e tocar em Enter [tecla Enter]. No "Quando eu toco na barra de espaço", tocar uma vez na barra de espaço [tecla Space] e mostrar o tiro subir, sem mover a nave. No "O resto você descobre jogando", deixar a partida correr sem jogar uma partida inteira e sem mostrar vitória, derrota ou volta à abertura. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. A atividade comprova participação, não vitória.
 
 **Fala para ElevenLabs:**
 
 ```text
 [upbeat, welcoming voice] Oi! Você vai construir um jogo chamado Nave Contra Asteroides. Nesse jogo, a nave atira nas pedras que caem do espaço, e cada acerto vale um ponto. Você ganha ao chegar a 26 pontos e perde se as três vidas acabarem. Antes de montar o seu, vamos ver como ele funciona nesta versão pronta.
 
-[interested, animated voice] Olha aqui: eu clico na área do jogo e toco em Enter, e a partida começa: as pedras começam a cair. Quando eu toco na barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.
+[interested, animated voice] Olha aqui: eu clico na área do jogo e toco em Enter, e a partida começa. Quando eu toco na barra de espaço, a nave atira para cima, na direção das pedras. O resto você descobre jogando.
 
-[upbeat, encouraging voice] Agora é a sua vez: jogue até conhecer os controles. As setas para a esquerda e para a direita movem a nave, e a barra de espaço atira. Você pode continuar mesmo sem ganhar. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez: jogue até conhecer os controles. Este jogo usa o teclado: as setas para a esquerda e para a direita movem a nave, e a barra de espaço atira. Você pode continuar mesmo sem ganhar. Quando terminar, clique em Próxima parte.
 ```
 
 
@@ -33,12 +33,12 @@
 
 **Clipe:** `video-seu-caderno-do-aluno`
 
-**Na tela:** Mostrar a capa e uma página de montagem do Passo a passo do projeto real deste curso (o PDF do caderno). No "Olha aqui", apontar o material. Ao falar em baixar, apontar o botão Baixar, ao lado do nome do arquivo, sem clicar. Não demonstrar o download, a impressão nem os controles do leitor. Anexar o arquivo antes de publicar. No fim, apontar Próxima parte.
+**Na tela:** No "Olha, aqui está o Passo a passo do projeto", colocar o livro em tela cheia [livro tela cheia] e passar as páginas até uma página de montagem [livro próxima] [livro próxima]. No "Se quiser, você pode ler aqui mesmo", sair da tela cheia [livro sair da tela cheia] e mostrar o livro [apontar livro]. No "também pode clicar em Baixar", apontar o botão **Baixar**, sem clicar [apontar baixar]. No "Agora clique em Próxima parte", clicar em **Próxima parte** [próxima parte]. Anexar o PDF do Passo a passo do projeto antes de publicar.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar e testar o seu jogo, com os blocos que você vai usar e o lugar de cada um. Por isso, se você esquecer um encaixe ou um valor, é só voltar aqui e abrir o material.
+[engaging, energetic, conversational voice] Olha, aqui está o Passo a passo do projeto. Nele estão os passos para montar e testar o seu jogo, com os blocos que você vai usar e o lugar de cada um, e o que investigar em cada experiência. Por isso, se você esquecer um encaixe ou um valor, é só voltar aqui e abrir o material.
 
 [upbeat, encouraging voice] Se quiser, você pode ler aqui mesmo. E, se preferir, também pode clicar em Baixar para guardar o material e consultar onde quiser.
 
@@ -48,77 +48,89 @@
 
 **Recado na página (não gravar):** Este é o seu Passo a passo do projeto! Quando precisar de um passo, você pode ler aqui mesmo ou baixar para guardar. Para continuar, clique em Próxima parte.
 
-## Seção 3. Compare uma vez e sempre
+## Seção 3. Uma vez ou sempre?
 
-### Clipe `video-uma-vez-e-sempre` · Compare uma vez e sempre
+### Clipe `video-uma-vez-e-sempre` · Uma vez ou sempre?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-uma-vez-e-sempre`
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Colocar Mover a nave um pouquinho em Ao iniciar, clicar em Começar o jogo e mostrar a nave andar um pouquinho e parar, com Ações feitas em 1 e o botão em Teste encerrado. Levar a peça para Enquanto estiver rodando, clicar em Começar o jogo e acompanhar a nave até sair da cena, com Ações feitas em 24. Meme na comparação: na frase da mochila e da bicicleta, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy fechando a mochila uma vez e depois pedalando sem parar, com a legenda "Ao iniciar: uma vez · Enquanto estiver rodando: sempre"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Na tela:** No "Você já reparou", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos em que a nave muda um pouco de lugar em cada folha [na edição: meme dos quadros do desenho animado]. No "É como sair para andar de bicicleta", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy arrumando a mochila ao lado da bicicleta, antes de sair [na edição: meme da mochila e da bicicleta]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a diferença entre uma ação que acontece uma vez e uma ação que se repete. Aqui tem uma peça só: Mover a nave um pouquinho.
+[engaging, energetic, conversational voice] Você já reparou como um desenho animado parece se mexer? Na verdade, são vários desenhos parados, passando bem rápido, um depois do outro. Cada desenho desses se chama quadro.
 
-[interested, animated voice] Olha aqui: eu coloco a peça em Ao iniciar e clico em Começar o jogo. Tá vendo? A nave anda um pouquinho e para, e o contador Ações feitas mostra 1. É que Ao iniciar faz o que está dentro dele uma vez só, quando o jogo começa.
+[engaging, energetic, conversational voice] O seu jogo também é feito de quadros: enquanto a partida acontece, ele mostra um quadro atrás do outro. E tem coisa que o jogo faz uma vez só, no começo, e coisa que ele faz sempre, em todo quadro.
 
-[curious] E para ela continuar andando?
+[engaging, energetic, conversational voice] É como sair para andar de bicicleta: tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro.
 
-[engaging, energetic, conversational voice] Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. [interested, animated voice] Olha só: a nave anda, anda, anda e sai da tela, e o contador chega a 24. Isso acontece porque Enquanto estiver rodando repete a ação o tempo todo, enquanto o jogo roda.
+[curious] E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando?
 
-[engaging, energetic, conversational voice] Na vida também é assim: você arruma a mochila uma vez, antes de sair, mas, para andar de bicicleta, precisa pedalar o tempo todo. No seu jogo, Ao iniciar vai preparar a tela uma vez, e o que precisa continuar vai em Enquanto estiver rodando.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na nave quando ela anda uma vez só e quando ela anda o tempo todo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-uma-vez-e-sempre-K1 | Debinha | 1 | para, e o contador Ações feitas mostra 1. É que Ao iniciar faz o que está dentro dele uma vez só, quando o jogo começa. | E para ela continuar andando? | Agora eu levo a mesma peça para Enquanto estiver rodando e clico em Começar o jogo de novo. Olha só: a nave anda, anda, | [curious] |
+| video-uma-vez-e-sempre-K1 | Debinha | 1 | tem coisa que você faz uma vez, antes de sair, como arrumar a mochila, e tem coisa que você faz o caminho inteiro. | E se a nave andar um pouquinho uma vez só, no começo? Ela continua andando? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na nave quando ela anda uma | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-uma-vez-e-sempre-K1`: entrada — Concluir o teste em Ao iniciar com Ações feitas em 1 e a nave parada. Saída — Mover a peça para Enquanto estiver rodando, soltar e começar o novo teste.
+- `video-uma-vez-e-sempre-K1`: entrada — Manter o meme da mochila e da bicicleta até a professora terminar a frase. Saída — Depois da saída, voltar à experiência parada, sem escolher nenhum jeito.
 
 
-**Recado na página (não gravar):** Sua vez! Faça os dois testes e fique de olho no contador Ações feitas. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que muda quando a nave anda uma vez só ou o tempo todo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 4. Prepare a tela do jogo
 
 ### Clipe `video-montar-areas-tela` · Prepare a tela do jogo
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-montar-areas-tela`
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar o espaço dos blocos vazio e a prévia sem nada. Montar as duas áreas do zero, com um lugar vazio à vista antes de cada uma. Mostrar o bloco da tela dentro de Ao iniciar e a prévia automática; não acrescentar estrelas. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto vazio [expandir estúdio]. No "Olhe a prévia do seu jogo", apontar a prévia vazia [apontar prévia 400 240]. No "Olha aqui: neste menu", apontar a paleta de comandos, sem pegar nenhum bloco [apontar paleta]. No "Abra Áreas do projeto, pegue Ao iniciar", abrir a categoria [categoria Áreas do projeto], levar **Ao iniciar** até o lugar vazio e soltar. No "É esta área que faz", apontar a área [apontar bloco "Ao iniciar"]. No "Ainda em Áreas do projeto, pegue Enquanto estiver rodando", levar **Enquanto estiver rodando** até o lugar vazio ao lado e soltar. No "E é esta área que cuida", apontar a área [apontar bloco "Enquanto estiver rodando"]. No "Abra Jogo 2D, depois Jogo e telas", abrir as categorias [categoria Jogo 2D > Jogo e telas > Preparar a área do jogo]. No "Arraste para dentro de Ao iniciar", encaixar o bloco [encaixar "Preparar o jogo em tela cheia" em "Ao iniciar"]. No "Repare nos dois números do bloco", apontar o bloco [apontar bloco "Preparar o jogo em tela cheia"]. No "Agora olhe a prévia", apontar a tela lisa [apontar prévia 400 240]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Olhe a prévia do seu jogo. Tá vendo? Não aparece nada, porque ainda não tem nenhum bloco.
+[engaging, energetic, conversational voice] Olhe a prévia do seu jogo. Tá vendo? Não aparece nada, porque ele ainda não tem nenhum bloco.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A peça em Ao iniciar agiu uma vez, e em Enquanto estiver rodando, o tempo todo. Agora a gente vai montar essas duas áreas no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A nave andava uma vez, no começo, ou sempre, em todo quadro. Agora a gente vai preparar esses dois momentos no seu jogo!
+
+[engaging, energetic, conversational voice] Para dizer ao jogo o que ele deve fazer, a gente usa blocos. Cada bloco é uma ordem para o jogo.
+
+[interested, animated voice] Olha aqui: neste menu, chamado paleta de comandos, ficam todos os blocos que você pode usar.
 
 [engaging, energetic, conversational voice] Para começar, deixe à vista um lugar vazio do espaço dos blocos. Abra Áreas do projeto, pegue Ao iniciar e solte nesse lugar.
 
+[engaging, energetic, conversational voice] É esta área que faz o que está dentro dela uma vez, no começo, quando o jogo abre.
+
 [confident, clear, unhurried voice] Agora deixe à vista outro lugar vazio, ao lado de Ao iniciar. Ainda em Áreas do projeto, pegue Enquanto estiver rodando e solte nesse lugar, com um pouco de distância entre as duas áreas.
 
-[engaging, energetic, conversational voice] A tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, ela vai dentro de Ao iniciar: deixe à vista o espaço de dentro dessa área. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe.
+[engaging, energetic, conversational voice] E é esta área que cuida do que continua acontecendo, sempre, enquanto o jogo roda.
 
-[confident, clear, unhurried voice] Repare nos dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: é só manter.
+[engaging, energetic, conversational voice] A tela do jogo só precisa ser preparada uma vez, quando o jogo começa. Por isso, o bloco da tela vai dentro de Ao iniciar.
 
-[engaging, energetic, conversational voice] O fundo também já vem escuro, no quadradinho de cor do bloco. Se quiser, escolha outra cor escura.
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Ao iniciar. Abra Jogo 2D, depois Jogo e telas e depois Preparar a área do jogo, e pegue o bloco Preparar o jogo em tela cheia. Arraste para dentro de Ao iniciar e solte quando aparecer o encaixe.
 
-[engaging, energetic, conversational voice] Agora olhe a prévia: a tela do jogo aparece lisa, porque ainda não tem nada desenhado nela.
+[confident, clear, unhurried voice] Repare nos dois números do bloco: a largura mede a tela de um lado ao outro, e a altura, de cima até embaixo. Eles já vêm em 800 e 480, o tamanho certo para o seu jogo: deixe assim.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[engaging, energetic, conversational voice] O fundo já vem escuro, no quadradinho de cor do bloco. Se quiser, escolha outra cor escura.
+
+[engaging, energetic, conversational voice] Agora olhe a prévia. [interested, animated voice] Olha só: a tela do jogo aparece lisa, na cor do fundo, porque ainda não tem nada desenhado nela.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: Ao iniciar e Enquanto estiver rodando estão no espaço dos blocos, e dentro de Ao iniciar está Preparar o jogo em tela cheia, com largura 800 e altura 480. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] O Estúdio guarda seu jogo automaticamente enquanto você monta. Você vai enviar para a equipe só no fim desta aula.
 
@@ -126,61 +138,75 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```
 
 
-**Recado na página (não gravar):** Agora prepare a tela do seu jogo! Monte Ao iniciar e Enquanto estiver rodando, coloque a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora prepare a tela do seu jogo! Coloque Ao iniciar e Enquanto estiver rodando, prepare a tela de 800 por 480 e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 5. Escolha onde a nave aparece
+## Seção 5. Onde fica a nave?
 
-### Clipe `video-coordenadas` · Escolha onde a nave aparece
+### Clipe `video-coordenadas` · Onde fica a nave?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-coordenadas`
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os controles x e y. Aumentar só o x de 400 para 480 e mostrar a nave ir para a direita com o y igual. Aumentar só o y de 40 para 120 e mostrar a nave descer. Colocar x em 0 e y em 0 e mostrar a nave no canto de cima, à esquerda. Não chamar x 400 de centro da nave; a referência é o canto superior esquerdo de sua caixa. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Na tela:** No "Sabe quando você combina", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy sentado no banco perto da fonte, acenando para a nave que chega [na edição: meme do encontro na praça]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não dizer para que lado cada número leva a nave nem onde fica o zero. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como dois números, x e y, dizem onde a nave fica na tela. A nave começa em x 400 e y 40.
+[engaging, energetic, conversational voice] Sabe quando você combina com alguém de se encontrar na praça e diz: fico no banco perto da fonte? Com esse endereço, a pessoa acha você.
 
-[interested, animated voice] Olha aqui: eu aumento só o x, de 400 para 480, e a nave vai para a direita, mas o y continua igual. É que o x conta a partir da borda da esquerda: quanto maior o x, mais para a direita.
+[engaging, energetic, conversational voice] No seu jogo, cada coisa também tem um endereço na tela, feito de dois números. Um se chama x, e o outro se chama y.
 
-[engaging, energetic, conversational voice] Agora eu aumento só o y, de 40 para 120, e a nave desce. Isso acontece porque o y conta a partir da borda de cima: quanto maior o y, mais para baixo.
+[engaging, energetic, conversational voice] E para que lado cada número leva a nave? O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Por último, eu coloco x em 0 e y em 0. [interested, animated voice] Olha só: a nave vai para o canto de cima, à esquerda, porque é desse canto que a tela começa a contar. Quando você criar a sua nave, vai usar esses dois números para escolher onde ela aparece.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar para que lado a nave vai quando cada número muda, e onde ela fica quando os dois são zero. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 
-**Recado na página (não gravar):** Sua vez! Mude x e y, um de cada vez, e depois coloque os dois em zero. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/coordinates.ts`, na tela `packages/member-shell/src/components/scene-livre/coordinates.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
 
-## Seção 6. Compare criar e mostrar
+**Recado na página (não gravar):** Sua vez! Investigue como dois números dizem o lugar da nave na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-### Clipe `video-criar-e-mostrar` · Compare criar e mostrar
+## Seção 6. Existir e aparecer
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+### Clipe `video-criar-e-mostrar` · Existir e aparecer
+
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-criar-e-mostrar`
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Clicar em Criar a nave e mostrar a nave nos bastidores, com a tela do jogo ainda vazia. Clicar em Mostrar a nave na tela e mostrar a mesma nave na tela do jogo. Meme na comparação: na frase da apresentação de teatro para a família, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy se arrumando atrás de uma cortina e depois entrando no palco, com a legenda "bastidores · palco"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Na tela:** No "Sabe o teatro", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: um teatro com os bastidores atrás da cortina e o palco de frente para a plateia, com o Zappy sentado na plateia [na edição: meme dos bastidores e do palco]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a diferença entre criar a nave e mostrar a nave na tela do jogo.
+[engaging, energetic, conversational voice] Sabe o teatro? Tem os bastidores, atrás da cortina, e tem o palco, que a plateia vê.
 
-[interested, animated voice] Olha aqui: eu clico em Criar a nave. Tá vendo? A nave aparece em Nos bastidores, mas a tela do jogo continua vazia. É que criar só prepara a nave: agora ela existe no jogo, mas ainda não foi desenhada.
+[engaging, energetic, conversational voice] No seu jogo também existem esses dois lugares. Existir no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver.
 
-[engaging, energetic, conversational voice] É como numa apresentação de teatro: você se arruma atrás da cortina, e ninguém te vê ainda. Quando você entra no palco, todo mundo vê. Aqui, os bastidores ficam atrás da cortina, e a tela do jogo é o palco.
+[curious] E quando a nave passa a existir, ela já aparece na tela?
 
-[engaging, energetic, conversational voice] Agora eu clico em Mostrar a nave na tela. [interested, animated voice] Olha só: a mesma nave aparece na tela do jogo. Mostrar não cria outra nave: desenha a nave que já existia. No seu projeto, um bloco vai criar a nave, e outro vai desenhar a nave na tela.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar a diferença entre a nave existir nos bastidores e aparecer na tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Crie a nave, mostre a nave na tela e compare os bastidores com a tela do jogo. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-criar-e-mostrar-K1 | Debinha | 1 | no jogo é estar nos bastidores, com nome e lugar. Aparecer na tela é estar no palco, onde quem joga consegue ver. | E quando a nave passa a existir, ela já aparece na tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar a diferença entre a nave existir nos | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-criar-e-mostrar-K1`: entrada — Manter o meme do teatro até o fim da frase da professora. Saída — Depois da saída, voltar à experiência vazia, sem clicar em nada.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/world.ts`, na tela `packages/member-shell/src/components/scene-livre/world.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue se a nave que existe no jogo já aparece na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 7. Crie a nave nos bastidores
 
@@ -190,26 +216,36 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-criar-nave`
 
-**Na tela:** Começar pela retomada, sem teste no jogo: a criação não aparece na tela. Mostrar a criação em Ao iniciar, com nome, posição, tamanho e cores, deixando à vista Preparar o jogo em tela cheia antes de abrir a paleta. Conferir os blocos e manter a prévia ainda vazia: o desenho será montado depois. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "Deixe à vista o bloco Preparar o jogo em tela cheia", arrastar até o bloco aparecer [arrastar até "Preparar o jogo em tela cheia"]. No "Agora abra Jogo 2D, depois Kits prontos", abrir as categorias [categoria Jogo 2D > Kits prontos > Espaço]. No "Arraste e solte logo abaixo de Preparar o jogo em tela cheia", encaixar o bloco [encaixar "Criar nave" abaixo de "Preparar o jogo em tela cheia"]. No "É este bloco que faz a nave existir", apontar o bloco [apontar bloco "Criar nave"]. No "Clique no 180 do x", trocar o campo [trocar "180" por "400" em "Criar nave"]. No "Agora clique no 250 do y", trocar o campo [trocar "250" por "410" em "Criar nave"]. No "Olhe a tela do jogo", apontar a prévia vazia [apontar prévia 400 240]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? A nave criada ficou nos bastidores e só apareceu na tela depois de desenhada. No seu jogo, o desenho vem depois da próxima experiência, por isso a nave ainda não vai aparecer. Agora a gente vai criar a nave do seu jogo!
+[engaging, energetic, conversational voice] Lembra das duas experiências antes desta parte? A nave passava a existir nos bastidores sem aparecer na tela, e o x e o y diziam onde ela fica. Agora a gente vai criar a nave do seu jogo!
 
-[engaging, energetic, conversational voice] A nave é criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar, logo abaixo do bloco que prepara a tela: deixe à vista o bloco Preparar o jogo em tela cheia, dentro de Ao iniciar. Se esse lugar não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
+[engaging, energetic, conversational voice] A nave é criada uma vez, quando o jogo começa. Por isso, ela vai em Ao iniciar, logo abaixo do bloco que prepara a tela.
+
+[confident, clear, unhurried voice] Deixe à vista o bloco Preparar o jogo em tela cheia, dentro de Ao iniciar. Se ele não estiver aparecendo, é só arrastar um espaço vazio entre os blocos até ele aparecer.
 
 [confident, clear, unhurried voice] Agora abra Jogo 2D, depois Kits prontos e depois Espaço, e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe.
 
+[engaging, energetic, conversational voice] É este bloco que faz a nave existir no jogo, nos bastidores.
+
 [curious] Para que servem todos esses campos?
 
-[engaging, energetic, conversational voice] Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho. [confident, clear, unhurried voice] Repare: o bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso mantenha. Para a nave ficar perto da parte de baixo da tela, troque o x para 400 e o y para 410, e clique fora de cada campo para confirmar.
+[engaging, energetic, conversational voice] Cada campo diz uma coisa da nave: o nome, o endereço na tela e o tamanho. [confident, clear, unhurried voice] Repare: o bloco já chega com o nome nave. É por esse nome que os outros blocos vão encontrar a sua nave, por isso deixe assim.
 
-[engaging, energetic, conversational voice] A largura 54 e a altura 62 definem o tamanho da nave e já vêm certas: é só manter. E, se quiser, escolha as cores do corpo e das asas nos quadradinhos do bloco.
+[engaging, energetic, conversational voice] O x e o y são o endereço da nave, como na experiência. A nave vai ficar no meio, de um lado ao outro, e perto da parte de baixo da tela.
+
+[confident, clear, unhurried voice] Clique no 180 do x, troque por 400 e clique fora do campo.
+
+[confident, clear, unhurried voice] Agora clique no 250 do y, troque por 410 e clique fora do campo.
+
+[engaging, energetic, conversational voice] A largura 54 e a altura 62 são o tamanho da nave e já vêm certas: deixe assim. Se quiser, escolha as cores do corpo e das asas nos quadradinhos do bloco.
 
 [confident, clear, unhurried voice] Confira se ficou assim: dentro de Ao iniciar, logo abaixo de Preparar o jogo em tela cheia, está Criar nave, com o nome nave, x 400, y 410, largura 54 e altura 62.
 
-[engaging, energetic, conversational voice] Olhe a tela do jogo: ela continua vazia, e é isso mesmo que tem que acontecer agora, porque a nave foi criada, mas ainda não foi desenhada.
+[engaging, energetic, conversational voice] Olhe a tela do jogo: ela continua vazia, e é isso mesmo, porque a nave já existe nos bastidores, mas ainda não foi desenhada. Ela aparece no fim desta aula.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -218,61 +254,55 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-criar-nave-K1 | Debinha | 1 | e pegue o bloco Criar nave. Arraste e solte logo abaixo de Preparar o jogo em tela cheia, quando aparecer o encaixe. | Para que servem todos esses campos? | Cada campo diz uma coisa da nave: o nome, o lugar na tela e o tamanho. Repare: o bloco já chega com o nome nave. É por | [curious] |
+| video-criar-nave-K1 | Debinha | 1 | Preparar o jogo em tela cheia, quando aparecer o encaixe. É este bloco que faz a nave existir no jogo, nos bastidores. | Para que servem todos esses campos? | Cada campo diz uma coisa da nave: o nome, o endereço na tela e o tamanho. Repare: o bloco já chega com o nome nave. É | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-criar-nave-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Depois da saída, apontar os campos do bloco Criar nave junto da resposta: nome, x e y, largura e altura. Manter os valores de fábrica até a professora pedir a troca de x e y.
+- `video-criar-nave-K1`: entrada — Manter à vista o bloco Criar nave recém-encaixado, sem mexer nos campos. Saída — Depois da saída, apontar o nome, o x e o y, a largura e a altura do bloco junto da resposta, sem trocar nada antes da fala do x.
 
 
 **Recado na página (não gravar):** Agora crie a sua nave! Coloque Criar nave em Ao iniciar, com x 400 e y 410, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
-## Seção 8. Compare o desenho no começo e em cada quadro
+## Seção 8. O desenho de cada quadro
 
-### Clipe `video-desenho-por-quadro` · Compare o desenho no começo e em cada quadro
+### Clipe `video-desenho-por-quadro` · O desenho de cada quadro
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-desenho-por-quadro`
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Com Desenhar a nave em Só no começo, clicar em Avançar 1 quadro e mostrar o x da faixa mudar de 10 para 54 com a imagem igual. Trocar para A cada quadro, avançar alguns quadros e mostrar o rastro de naves. Ligar Limpar a tela antes, avançar mais quadros e mostrar uma nave só, no lugar novo. Meme na comparação: na frase do desenho animado, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy folheando um caderno com a nave desenhada um pouco mais à frente em cada folha, com a legenda "1 quadro, 2 quadros, 3 quadros"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Na tela:** No "Lembra do desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um bloquinho de desenhos, um quadro em cada folha [na edição: meme do bloquinho de folhear]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o quadro. Cada quadro é uma imagem do jogo, e o jogo mostra uma imagem depois da outra, bem rápido. É como um desenho animado: cada imagem é um pouco diferente da anterior e, passando rápido, parece que o personagem se mexe.
+[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Desenhar a nave é pintar a nave na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes.
 
-[interested, animated voice] Olha aqui: Desenhar a nave está em Só no começo. Eu clico em Avançar 1 quadro, e, na faixa, o x da nave muda de 10 para 54. Mas tá vendo? A imagem continua igual. É que o jogo desenhou a nave só no começo, por isso a imagem não acompanhou o x.
+[curious] E se a nave for desenhada em todo quadro, sem apagar a tela?
 
-[curious] A nave mudou de lugar e o desenho ficou parado?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu troco para A cada quadro e avanço alguns quadros. [interested, animated voice] Olha só: a nave aparece no lugar novo, mas as naves velhas continuam na tela e formam um rastro. Isso acontece porque o jogo desenha de novo, mas não apaga o que já estava lá.
-
-[curious] E como apaga esse rastro?
-
-[engaging, energetic, conversational voice] Por último, eu ligo Limpar a tela antes e avanço mais quadros. Agora aparece uma nave só, sempre no lugar novo, porque, em cada quadro, o jogo limpa a tela e desenha a nave onde ela está. No seu projeto, o desenho da nave vai ficar dentro de A cada quadro do jogo.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra quando a nave é desenhada em momentos diferentes, com e sem apagar a tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-desenho-por-quadro-K1 | Debinha | 1 | Mas tá vendo? A imagem continua igual. É que o jogo desenhou a nave só no começo, por isso a imagem não acompanhou o x. | A nave mudou de lugar e o desenho ficou parado? | Agora eu troco para A cada quadro e avanço alguns quadros. Olha só: a nave aparece no lugar novo, mas as naves velhas | [curious] |
-| video-desenho-por-quadro-K2 | Debinha | 1 | continuam na tela e formam um rastro. Isso acontece porque o jogo desenha de novo, mas não apaga o que já estava lá. | E como apaga esse rastro? | Por último, eu ligo Limpar a tela antes e avanço mais quadros. Agora aparece uma nave só, sempre no lugar novo, porque, | [curious] |
+| video-desenho-por-quadro-K1 | Debinha | 1 | na tela. No seu jogo, a nave tem um lugar, e dá para escolher quando o jogo pinta a nave e se ele apaga a tela antes. | E se a nave for desenhada em todo quadro, sem apagar a tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra quando a nave é | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-desenho-por-quadro-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
-- `video-desenho-por-quadro-K2`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-desenho-por-quadro-K1`: entrada — Manter o meme do bloquinho de folhear até o fim da frase. Saída — Depois da saída, voltar à experiência parada, sem passar quadros.
 
 
-**Recado na página (não gravar):** Sua vez! Compare desenhar só no começo, a cada quadro e com a limpeza ligada, avançando os quadros em cada teste. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/draw-loop.ts`, na tela `packages/member-shell/src/components/scene-livre/draw-loop.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar a nave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 9. Mostre a nave a cada quadro
 
@@ -282,26 +312,32 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-motor-e-nave`
 
-**Na tela:** Começar pela retomada, antes de qualquer bloco: no "Tá vendo?", mostrar a tela ainda lisa, sem a nave. Montar A cada quadro do jogo e Desenhar o sprite, escolhendo nave, com o destino à vista antes de abrir a paleta. Mostrar a nave aparecer e permanecer parada. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "Olhe a tela do seu jogo", apontar a prévia sem a nave [apontar prévia 400 410]. No "Deixe à vista o espaço de dentro de Enquanto estiver rodando", arrastar até a área aparecer [arrastar até "Enquanto estiver rodando"]. No "Agora abra Jogo 2D, depois Tempo", abrir as categorias [categoria Jogo 2D > Tempo > Quadros e intervalos]. No "Arraste para dentro de Enquanto estiver rodando", encaixar o bloco [encaixar "A cada quadro do jogo" em "Enquanto estiver rodando"]. No "É este bloco que faz tudo", apontar o bloco [apontar bloco "A cada quadro do jogo"]. No "Abra Jogo 2D, depois Sprites", abrir as categorias [categoria Jogo 2D > Sprites > Criar e trocar aparência]. No "pegue o bloco Desenhar o sprite e solte", encaixar o bloco [encaixar "Desenhar o sprite" em "A cada quadro do jogo"]. No "No nome do sprite, escolha nave", escolher o nome [abrir campo "jogador" em "Desenhar o sprite"] [escolher "nave" em "Desenhar o sprite"]. No "Agora olhe a prévia", apontar a nave [apontar prévia 400 410]. No "Clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", enviar e confirmar [enviar projeto]. No "Quando aparecer Projeto enviado!, clique em Concluir aula", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Olhe a tela do seu jogo. Tá vendo? A nave não aparece, porque ela foi criada, mas ainda não foi desenhada.
+[engaging, energetic, conversational voice] Olhe a tela do seu jogo. Tá vendo? A nave não aparece, porque ela existe nos bastidores, mas ainda não é desenhada.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Quando o jogo desenhava a nave em cada quadro, o desenho acompanhava o movimento dela. Agora a gente vai desenhar a nave do seu jogo!
+[engaging, energetic, conversational voice] Lembra do que você viu na experiência da parte anterior? Desenhada em todo quadro, a nave aparecia no lugar de agora. Agora a gente vai desenhar a nave do seu jogo!
 
-[engaging, energetic, conversational voice] O desenho vai dentro de uma repetição, que fica em Enquanto estiver rodando, a área das ações que continuam durante o jogo. Deixe à vista o espaço de dentro dessa área.
+[engaging, energetic, conversational voice] O desenho precisa acontecer de novo em todo quadro, enquanto o jogo roda. Por isso, ele vai num bloco que repete, dentro de Enquanto estiver rodando.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe. Esse bloco repete o que está dentro dele em cada quadro, enquanto o jogo continua.
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Enquanto estiver rodando.
 
-[engaging, energetic, conversational voice] O desenho da nave vai dentro dessa repetição: deixe à vista o espaço de dentro de A cada quadro do jogo. No jogo, a nave é um sprite, que é um objeto do jogo que você pode programar. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Tempo e depois Quadros e intervalos, e pegue o bloco A cada quadro do jogo. Arraste para dentro de Enquanto estiver rodando e solte quando aparecer o encaixe.
 
-[confident, clear, unhurried voice] No nome do sprite, escolha nave.
+[engaging, energetic, conversational voice] É este bloco que faz tudo o que fica dentro dele acontecer de novo, em todo quadro.
 
-[interested, animated voice] Olha só: a nave aparece perto da parte de baixo da tela! Ela fica parada, porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.
+[engaging, energetic, conversational voice] No jogo, a nave é um sprite, que é um objeto do jogo que você pode programar.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] No nome do sprite, escolha nave. É este bloco que desenha a nave na tela.
+
+[engaging, energetic, conversational voice] Agora olhe a prévia. [interested, animated voice] Olha só: a nave aparece perto da parte de baixo da tela! Ela fica parada, porque o seu jogo só desenha a nave e ainda não tem nada que a faça andar.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de Ao iniciar está Criar nave, e dentro de Enquanto estiver rodando está A cada quadro do jogo, com Desenhar o sprite nave dentro dele. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```

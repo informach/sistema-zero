@@ -1,66 +1,116 @@
-[engaging, energetic, conversational voice] Esta é a mesma experiência da primeira aula, agora para a gente entender o evento: uma ação que espera uma tecla. Ela ganhou uma área nova, Quando acontecer.
+[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo no botão.
 
-[interested, animated voice] Olha aqui: eu coloco Criar um tiro em Quando acontecer e clico em Começar o jogo. O jogo roda e o teste para, mas tá vendo? Nenhum tiro nasce, e a peça mostra 0 vezes. É que Quando acontecer espera um acontecimento, e ninguém clicou em Apertar a tecla.
+[engaging, energetic, conversational voice] No seu jogo, você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Agora tem um terceiro jeito: na hora em que algo acontece, como alguém tocar numa tecla.
 
-[engaging, energetic, conversational voice] Agora eu clico em Apertar a tecla. [interested, animated voice] Olha só: na mesma hora, nasce um tiro, e a peça mostra 1 vez, porque a tecla foi o acontecimento que a ação esperava. É como a campainha de casa: ela não toca sozinha, espera alguém chegar e tocar.
+[curious] E se o tiro sair sempre, em todo quadro?
 
-[engaging, energetic, conversational voice] Por último, eu levo Criar um tiro para Enquanto estiver rodando e clico em Começar o jogo. Nascem tiros sem parar, um em cada quadro, e o teste termina com 5 tiros, mesmo sem ninguém clicar em Apertar a tecla. Por isso, no seu jogo, Criar tiro vai ficar dentro de Quando acontecer, esperando a barra de espaço.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
-
-[long pause]
-
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender a diferença entre um número escrito e um número lido na hora. É isso que faz o tiro nascer na nave, mesmo quando ela muda de lugar.
-
-[interested, animated voice] Olha aqui: em De onde vem o x do tiro, está escolhido O número 400, e a nave está em x 400. Eu clico em Atirar, e o tiro nasce em 400, bem na nave. Agora eu mudo x da nave para 640 e atiro de novo. Tá vendo? O tiro nasce em 400 outra vez, longe da nave, porque o número escrito não muda quando a nave anda.
-
-[engaging, energetic, conversational voice] É como responder que horas são sempre com o mesmo horário, sem olhar o relógio: às vezes você acerta, mas quase sempre erra. Para acertar, é preciso olhar o relógio na hora.
-
-[curious] Como o tiro descobre onde a nave está agora?
-
-[engaging, energetic, conversational voice] Agora eu troco para O centro x da nave e clico em Atirar. [interested, animated voice] Olha só: o tiro nasce em 640, onde a nave está. Mudo a nave para 200 e atiro, e o tiro nasce em 200. É que agora o jogo lê a posição da nave na hora do disparo.
-
-[engaging, energetic, conversational voice] Por último, eu ligo Marcas da caixa e atiro mais uma vez. [confident, clear, unhurried voice] Repare nas marcas: elas mostram a caixa da nave e a linha do centro x, e o tiro sai do meio da caixa, na borda de cima. No seu jogo, o campo x do tiro vai ler o centro x da nave.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar em que momento o tiro sai em cada um dos três jeitos. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como a velocidade decide para onde o tiro vai depois de nascer. Aqui, a velocidade para o lado fica em 0, e o tiro não anda para os lados.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não espera essa tecla.
 
-[interested, animated voice] Olha aqui: eu coloco velocidade para baixo em -9 e clico em Avançar 1 quadro algumas vezes. Tá vendo? O y vai de 135 para 126, depois 117, depois 108, e o tiro sobe. É que, em cada quadro, o jogo soma a velocidade ao y. Somar um número negativo diminui o y, e, na tela, y menor fica mais para cima.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a tecla tocada, saía um tiro na hora. Agora a gente vai fazer o seu jogo esperar a barra de espaço!
 
-[curious] E se eu tirar o sinal de menos?
+[engaging, energetic, conversational voice] Tocar numa tecla é um evento, que é algo que acontece no jogo. O que fica dentro de um evento só funciona na hora em que ele acontece.
 
-[engaging, energetic, conversational voice] Agora eu troco velocidade para baixo para 9 e avanço outros quadros, e o y aumenta 9 em cada quadro: o tiro desce. O tamanho do número é o mesmo, mas o sinal de menos mudou a direção. No seu jogo, o tiro vai usar vy -9 para subir na direção das pedras.
+[engaging, energetic, conversational voice] Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um.
+
+[confident, clear, unhurried voice] Agora abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
+
+[engaging, energetic, conversational voice] É esta área que espera as coisas acontecerem, como uma tecla tocada.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe.
+
+[confident, clear, unhurried voice] No menu da tecla, escolha barra de espaço.
+
+[engaging, energetic, conversational voice] É este bloco que espera a barra de espaço: o que ficar dentro dele acontece na hora em que alguém toca nessa tecla.
+
+[engaging, energetic, conversational voice] Por enquanto, a tecla vai fazer só o som do tiro.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro de Quando apertar a tecla.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro de Quando apertar a tecla.
+
+[confident, clear, unhurried voice] No menu, escolha tiro grande.
+
+[upbeat, encouraging voice] Agora teste: clique na área do jogo e toque na barra de espaço. Escute: o som do tiro toca na hora em que você toca na tecla!
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Quando acontecer está Quando apertar a tecla barra de espaço, e dentro dele está Tocar efeito tiro grande. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] O tiro que sai da nave vem daqui a três partes, depois de mais duas experiências.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[confident, clear, unhurried voice] Clique no seu jogo e toque na barra de espaço. Tá vendo? Nada acontece, porque o jogo ainda não tem nada ligado a essa tecla.
+[engaging, energetic, conversational voice] Tem dois jeitos de dizer onde você está: escrever num papelzinho ou responder na hora em que alguém pergunta.
 
-[engaging, energetic, conversational voice] Lembra das três experiências desta aula? O tiro esperava a tecla, nascia na nave e subia. Agora a gente vai montar esse disparo no seu jogo!
+[engaging, energetic, conversational voice] O tiro do seu jogo precisa de um número que diga onde ele nasce. Ele também pode ter um número escrito uma vez ou um número lido da nave na hora do tiro.
 
-[engaging, energetic, conversational voice] Como vão ser muitos tiros, eles ficam juntos num grupo, que é um conjunto de objetos que o jogo move e desenha de uma vez. O grupo é criado uma vez só, quando o jogo começa, no fim de Ao iniciar: deixe esse lugar à vista, logo depois de Criar nave.
+[curious] E se a nave mudar de lugar, o tiro vai junto?
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte no fim de Ao iniciar. [confident, clear, unhurried voice] Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Troque asteroides por tiros e clique fora do campo.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora o disparo. Tocar numa tecla é um evento, que é algo que acontece no jogo, e os blocos que ficam dentro de um evento só funcionam quando ele acontece. Os eventos ficam numa área própria, Quando acontecer, que o seu projeto ainda não tem. Para criar essa área, deixe à vista um lugar vazio do espaço dos blocos. Se não tiver nenhum à vista, é só arrastar um espaço vazio entre os blocos até aparecer um. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse lugar.
+[upbeat, encouraging voice] Agora você vai investigar onde o tiro nasce quando a nave muda de lugar, com o número escrito e com o número lido da nave. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte quando aparecer o encaixe. No menu da tecla, escolha barra de espaço.
+[long pause]
 
-[engaging, energetic, conversational voice] O tiro nasce dentro desse evento: deixe à vista o espaço vazio dentro de Quando apertar a tecla. Abra Jogo 2D, depois Grupos e depois Criar e percorrer, pegue o bloco Criar tiro no grupo e solte nesse espaço. O grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro: mantenha os dois. E escolha uma cor que apareça bem no fundo escuro.
+[engaging, energetic, conversational voice] Sabe quando você atravessa a sala contando passos? Cada passo tem um tamanho e vai para um lado.
 
-[engaging, energetic, conversational voice] Agora o lugar de onde o tiro sai: o x vai ler a posição da nave. Deixe à vista o número do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima desse número. Ele toma o lugar do número. Escolha nave.
+[engaging, energetic, conversational voice] No seu jogo, a velocidade do tiro é assim: ela diz quanto o tiro anda em cada quadro, e para que lado. E a velocidade pode ser um número positivo ou um número negativo, com o sinal de menos.
+
+[curious] E com um número negativo, o tiro vai para onde?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar para que lado o tiro anda, e o que acontece com o y, com um número positivo e com um número negativo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Lembra das duas experiências antes desta parte? Com o número lido da nave, o tiro nascia onde ela estava, e com a velocidade negativa ele subia. Agora a gente vai criar o tiro do seu jogo!
+
+[engaging, energetic, conversational voice] Como vão ser muitos tiros, eles ficam juntos num grupo, que é a lista de tiros que o jogo guarda e move de uma vez. O grupo é criado uma vez só, quando o jogo começa. Por isso, ele vai no fim de Ao iniciar.
+
+[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Criar nave.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar grupo de sprites. Arraste e solte logo abaixo de Criar nave.
+
+[confident, clear, unhurried voice] Repare: o nome chega como asteroides, mas este grupo é o dos tiros. Clique em asteroides, troque por tiros e clique fora do campo.
+
+[engaging, energetic, conversational voice] É este bloco que cria a lista dos tiros, ainda vazia.
+
+[engaging, energetic, conversational voice] O tiro nasce na hora em que alguém toca na barra de espaço. Por isso, ele vai dentro do evento da tecla, logo acima de Tocar efeito.
+
+[confident, clear, unhurried voice] Deixe à vista o bloco Quando apertar a tecla barra de espaço, em Quando acontecer.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Grupos e depois Criar e percorrer, e pegue o bloco Criar tiro no grupo. Arraste e solte no começo de Quando apertar a tecla, logo acima de Tocar efeito, quando aparecer o encaixe.
+
+[engaging, energetic, conversational voice] É este bloco que cria um tiro novo no grupo, cada vez que a tecla é tocada.
+
+[confident, clear, unhurried voice] Repare: o grupo já vem tiros, e o raio já vem em 5, que é o tamanho do tiro. Deixe os dois assim e, se quiser, escolha uma cor que apareça bem no fundo escuro.
+
+[engaging, energetic, conversational voice] Agora o lugar onde o tiro nasce. Na experiência, o número escrito deixava o tiro sempre no mesmo lugar, e o número lido da nave fazia o tiro nascer onde ela estava. Por isso, o x e o y do tiro vão ler o lugar da nave.
+
+[confident, clear, unhurried voice] Deixe à vista o 100 do campo x do tiro. Abra Jogo 2D, depois Movimento e depois Posição e tamanho, pegue o bloco o centro x do sprite e solte em cima do 100. Ele toma o lugar do número.
+
+[engaging, energetic, conversational voice] Nesse bloco, escolha nave. É este bloco que lê, na hora do tiro, o meio da nave, de um lado ao outro.
 
 [curious] E a altura de onde sai o tiro?
 
-[engaging, energetic, conversational voice] Faça o mesmo com o y: deixe à vista o número do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima desse número e escolha nave também.
+[engaging, energetic, conversational voice] O y também vai ler a nave. Deixe à vista o 100 do campo y do tiro. Na mesma categoria Posição e tamanho, pegue o bloco a posição y do sprite, solte em cima do 100 e escolha nave também.
 
-[engaging, energetic, conversational voice] Falta a direção. No bloco do tiro, vx é a velocidade para os lados e já vem em 0: mantenha. Já vy é a velocidade para baixo: troque para -9, com o sinal de menos, para o tiro subir.
+[engaging, energetic, conversational voice] É este bloco que lê a altura da nave na hora do tiro.
 
-[engaging, energetic, conversational voice] Por último, o som. Deixe à vista o encaixe logo abaixo de Criar tiro, ainda dentro da tecla. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte logo abaixo de Criar tiro. No menu, escolha tiro grande.
+[engaging, energetic, conversational voice] Falta a direção. O vx é a velocidade para os lados, e o vy, a velocidade para baixo, como na experiência.
+
+[engaging, energetic, conversational voice] O vx já vem em 0: deixe assim, para o tiro não ir para os lados.
+
+[confident, clear, unhurried voice] Agora clique no -4 do vy, troque por -9, com o sinal de menos, e clique fora do campo. Com o número negativo, o tiro sobe.
 
 [confident, clear, unhurried voice] Confira se ficou assim: no fim de Ao iniciar está Criar grupo de sprites tiros. Em Quando acontecer, dentro de Quando apertar a tecla barra de espaço, vem primeiro Criar tiro no grupo tiros, com o centro x e a posição y da nave, raio 5, vx 0 e vy -9, e logo abaixo vem Tocar efeito tiro grande.
 
@@ -70,50 +120,62 @@
 
 [long pause]
 
-[confident, clear, unhurried voice] Clique na área do seu jogo e toque na barra de espaço. Dá para ouvir o disparo, mas nenhum tiro aparece, porque o jogo já cria o tiro e ainda não manda mover nem desenhar o grupo. Agora vamos fazer esses tiros aparecerem e subirem.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e toque na barra de espaço. Tá vendo? O som toca, mas nenhum tiro aparece, porque o jogo ainda não move nem desenha o grupo tiros. Agora a gente vai fazer esses tiros aparecerem e subirem!
 
-[engaging, energetic, conversational voice] Os tiros andam e aparecem em todo quadro, por isso os dois blocos vão no fim de A cada quadro do jogo, depois do desenho da nave. Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
+[engaging, energetic, conversational voice] Os tiros andam e aparecem em todo quadro. Por isso, os dois blocos que cuidam deles, Mover os sprites do grupo e Desenhar o grupo, vão no fim de A cada quadro do jogo, depois do desenho da nave.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave e escolha tiros. Esse bloco faz cada tiro andar com a velocidade que ele recebeu ao nascer, ou seja, vy -9, para cima.
+[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o sprite nave.
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe. Escolha tiros nesse bloco também.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Movimento, e pegue o bloco Mover os sprites do grupo usando suas velocidades. Arraste e solte logo depois de Desenhar o sprite nave.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo, toque na barra de espaço e solte. [interested, animated voice] Olha só: o tiro sai da nave e sobe! Depois, mova a nave para outro lugar e atire de novo. O tiro nasce na nave outra vez, porque o jogo lê a posição dela a cada disparo.
+[engaging, energetic, conversational voice] Nesse bloco, escolha tiros.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[engaging, energetic, conversational voice] É este bloco que faz cada tiro andar, em todo quadro, com a velocidade que ele recebeu ao nascer.
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo do movimento dos tiros. Abra Jogo 2D, depois Grupos e depois Desenho e ordem, pegue o bloco Desenhar o grupo e solte nesse encaixe.
+
+[engaging, energetic, conversational voice] Escolha tiros nesse bloco também.
+
+[engaging, energetic, conversational voice] É este bloco que desenha todos os tiros do grupo na tela.
+
+[upbeat, encouraging voice] Agora teste: clique na área do jogo e toque na barra de espaço. [interested, animated voice] Olha só: o tiro sai da nave e sobe!
+
+[engaging, energetic, conversational voice] Agora mova a nave para outro lugar e atire de novo. [confident, clear, unhurried voice] Repare: o tiro nasce na nave outra vez, porque o jogo lê o lugar dela a cada disparo.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo, depois de Desenhar o sprite nave, estão Mover os sprites do grupo tiros e, logo abaixo, Desenhar o grupo tiros. E, no disparo da barra de espaço, o tiro nasce no grupo tiros, com vy -9. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o que acontece com um tiro que sai da tela. Aqui dá para ver a tela do jogo e, ao lado, os bastidores do grupo tiros.
+[engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[interested, animated voice] Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os tiros sobem e saem pela borda de cima, e, na tela, eles somem. Mas tá vendo? Nos bastidores, cada tiro que saiu vai para a prateleira Fora da tela, no grupo, e o número no grupo só cresce, enquanto na tela continuam poucos tiros. Ou seja, sair da tela não tira o tiro do grupo.
+[engaging, energetic, conversational voice] No seu jogo, os tiros ficam num grupo, que é a lista de tiros que o jogo guarda e move em todo quadro. Quando um tiro passa da borda de cima, ele some da tela.
 
-[engaging, energetic, conversational voice] É como a lista de convidados de uma festa: se um convidado vai embora, o nome dele continua na lista. Só sai da lista se alguém riscar.
+[curious] E quando o tiro some da tela, ele sai do grupo também?
 
-[curious] Como eu tiro os que já foram embora?
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu ligo Tirar do grupo quem sair da tela. [interested, animated voice] Olha só: a prateleira fica vazia, aparece Removidos do grupo, e o número no grupo fica igual ao número na tela. É que a regra risca da lista quem saiu da tela. No seu jogo, esse mesmo bloco vai limpar o grupo dos tiros.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o grupo de tiros quando o jogo tira do grupo quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[confident, clear, unhurried voice] Clique no seu jogo e atire. Tá vendo? Os tiros somem porque saíram da tela, mas isso não mostra se saíram do grupo.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O tiro sumia da tela, mas continuava no grupo, e o grupo só crescia. No seu jogo isso não aparece na tela, mas está acontecendo. Agora a gente vai fazer o seu jogo tirar esses tiros do grupo!
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a regra ligada, quem saía da tela também saía do grupo. Agora a gente vai pôr essa regra no seu jogo!
+[engaging, energetic, conversational voice] A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, ela vai entre Mover os sprites do grupo tiros e Desenhar o grupo tiros.
 
-[engaging, energetic, conversational voice] A limpeza acontece em todo quadro, depois que os tiros andam e antes de eles serem desenhados. Por isso, deixe à vista o espaço entre Mover os sprites do grupo tiros e Desenhar o grupo tiros, dentro de A cada quadro do jogo.
+[confident, clear, unhurried voice] Deixe à vista o espaço entre esses dois blocos, dentro de A cada quadro do jogo.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte entre Mover os sprites do grupo e Desenhar o grupo dos tiros, quando aparecer o encaixe.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, e pegue o bloco Tirar do grupo quem sair da tela. Arraste e solte logo abaixo de Mover os sprites do grupo tiros, quando aparecer o encaixe.
 
 [curious] Qual grupo eu escolho aqui?
 
-[engaging, energetic, conversational voice] No grupo, escolha tiros. O bloco também tem o campo chamado, que já vem com sprite: não mexa nele e deixe vazio o espaço de dentro do bloco, porque aqui ele só precisa tirar os tiros do grupo.
+[engaging, energetic, conversational voice] O grupo de quem sai da tela: os tiros. No grupo, escolha tiros. [confident, clear, unhurried voice] Repare que o bloco também tem a palavra chamado, seguida de sprite: deixe assim. E deixe vazio o encaixe de fazer, na linha de baixo do bloco.
+
+[engaging, energetic, conversational voice] É este bloco que tira do grupo cada tiro que passa da borda da tela.
 
 [confident, clear, unhurried voice] Confira se ficou assim: dentro de A cada quadro do jogo, a sequência dos tiros é Mover os sprites do grupo tiros, Tirar do grupo tiros quem sair da tela e Desenhar o grupo tiros, nessa ordem.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo, dispare algumas vezes, mude a nave de lugar e dispare de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
+[upbeat, encouraging voice] Agora teste: clique na área do jogo, atire algumas vezes, mude a nave de lugar e atire de novo. Os tiros têm que nascer na nave e subir, como antes. A limpeza não aparece na tela: quem mostra que ela está lá é a ordem dos blocos que você acabou de conferir.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

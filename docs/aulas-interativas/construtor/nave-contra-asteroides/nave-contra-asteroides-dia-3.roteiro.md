@@ -2,83 +2,97 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Escolha quem sai no acerto
+## Seção 1. Quem sai do jogo na trombada?
 
-### Clipe `video-apelidos` · Escolha quem sai no acerto
+### Clipe `video-apelidos` · Quem sai do jogo na trombada?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-apelidos`
 
-**Na tela:** Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da queimada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando queimada com os asteroides: a bola acerta um asteroide só, que sai da quadra, e os outros continuam, com a legenda "só quem foi acertado sai"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.
+**Na tela:** No "Sabe o jogo de queimada", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com a bola no ar, antes de acertar alguém [na edição: meme da queimada]. No "Agora você vai investigar", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender os apelidos: como escolher quem sai do jogo quando um tiro acerta uma pedra. Aqui há três tiros e três pedras, e só o tiro do meio vai encontrar uma pedra.
+[engaging, energetic, conversational voice] Sabe o jogo de queimada? Quando a bola acerta alguém, o combinado do jogo diz quem sai da quadra.
 
-[interested, animated voice] Olha aqui: em O tiro que sai, eu escolho tiros, o grupo inteiro, e, em A pedra que sai, escolho asteroides, o grupo inteiro. Clico em Deixar a trombada acontecer. Tá vendo? Só um tiro encontrou uma pedra, mas sumiram todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.
+[engaging, energetic, conversational voice] No seu jogo, quando um tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.
 
-[curious] Eu só acertei uma. Por que sumiram todas?
+[curious] E se o jogo tirar o grupo inteiro?
 
-[engaging, energetic, conversational voice] Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[engaging, energetic, conversational voice] Agora eu clico em Voltar ao começo e escolho tiro, o apelido, e asteroide, o apelido. Clico em Deixar a trombada acontecer. [interested, animated voice] Olha só: saem só o tiro e a pedra que se encontraram, e ficam 2 pedras e 2 tiros, porque o apelido aponta só para quem participou do encontro. Depois, eu clico em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo da tela: elas continuaram o caminho. No seu jogo, o acerto vai usar os apelidos tiro e asteroide.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quem sai do jogo na trombada quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-apelidos-K1 | Debinha | 1 | todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo. | Eu só acertei uma. Por que sumiram todas? | Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando. Agora eu clico em | [curious] |
+| video-apelidos-K1 | Debinha | 1 | tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram. | E se o jogo tirar o grupo inteiro? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-apelidos-K1`: entrada — Concluir a colisão com os grupos inteiros e deixar os dois contadores em zero. Saída — Explicar a comparação com a queimada, voltar ao começo e escolher os apelidos antes de testar novamente.
+- `video-apelidos-K1`: entrada — Manter o meme da queimada até o fim da frase da professora. Saída — Depois da saída, ampliar a experiência com o tempo parado.
 
 
-**Recado na página (não gravar):** Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/collision-pair.ts`, na tela `packages/member-shell/src/components/scene-livre/collision-pair.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Programe o acerto
 
 ### Clipe `video-colisao` · Programe o acerto
 
-**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 5 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-colisao`
 
-**Na tela:** Começar pela retomada: atirar numa pedra e, no "Tá vendo?", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No "clique na área do jogo e atire numa pedra", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space] quando uma pedra passar acima da nave. No "Deixe à vista o fim de A cada quadro do jogo", apontar o lugar [apontar abaixo de "Desenhar o grupo"]. No "Agora abra Jogo 2D, depois Colisões", abrir as categorias [categoria Jogo 2D > Colisões > Encostar e bloquear]. No "Arraste e solte logo depois de Desenhar o grupo asteroides", encaixar o bloco [encaixar "Para cada colisão entre os grupos" abaixo de "Desenhar o grupo"]. No "É este bloco que confere", apontar o bloco [apontar bloco "Para cada colisão entre os grupos"]. No "Repare na linha de baixo do bloco", apontar os apelidos. No "Abra Jogo 2D, depois Grupos e depois Participação e limpeza", abrir as categorias [categoria Jogo 2D > Grupos > Participação e limpeza] e encaixar o bloco [encaixar "Tirar o sprite do grupo" em "Para cada colisão entre os grupos"]. No "Escolha tiro como sprite", escolher tiro e tiros nos campos. No "Na mesma categoria, pegue outro Tirar o sprite do grupo", encaixar o segundo bloco logo abaixo do primeiro [encaixar "Tirar o sprite do grupo" abaixo de "Tirar o sprite do grupo"]. No "Abra Jogo 2D, depois Desenho e efeitos", abrir as categorias [categoria Jogo 2D > Desenho e efeitos > Partículas] e encaixar o bloco logo abaixo das retiradas. No "Abra Jogo 2D, depois Som", abrir as categorias [categoria Jogo 2D > Som > Efeitos prontos], encaixar o bloco logo abaixo da explosão e escolher explosão no menu. No "Agora teste: clique na área do jogo", clicar no jogo [tocar prévia 400 240] e atirar [tecla Space] até acertar uma pedra. No "Clique em Verificar projeto", verificar [verificar projeto]. No "Quando aparecer Objetivo cumprido!, clique em Próxima parte", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
-[confident, clear, unhurried voice] Clique no seu jogo e atire numa pedra. Tá vendo? O tiro atravessa a pedra, porque o acerto ainda não existe no jogo.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e atire numa pedra. Tá vendo? O tiro atravessa, porque o jogo ainda não confere a trombada.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com os apelidos, saíam só o tiro e a pedra do encontro. Agora a gente vai programar esse acerto no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Na trombada, saíam só o tiro e a pedra que encostaram. Agora a gente vai programar esse acerto no seu jogo!
 
-[engaging, energetic, conversational voice] O jogo confere os encontros em todo quadro, depois que tudo já andou e foi desenhado. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.
+[engaging, energetic, conversational voice] O jogo confere as trombadas em todo quadro, depois que tudo já andou e foi desenhado. Por isso, a colisão vai no fim de A cada quadro do jogo.
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.
+[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Colisões e depois Encostar e bloquear, e pegue o bloco Para cada colisão entre os grupos. Arraste e solte logo depois de Desenhar o grupo asteroides.
+
+[engaging, energetic, conversational voice] É este bloco que confere, em todo quadro, se algum tiro encostou em alguma pedra. O que fica dentro dele acontece a cada trombada.
 
 [curious] Como ele sabe qual tiro acertou qual pedra?
 
-[confident, clear, unhurried voice] Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e asteroide, que são os apelidos do tiro e da pedra daquele acerto. [confident, clear, unhurried voice] Confira se ficou tiros e asteroides nos grupos e tiro e asteroide nos apelidos, nessa ordem. Esses apelidos valem só dentro da colisão.
+[engaging, energetic, conversational voice] Pelos apelidos que o bloco dá aos dois. [confident, clear, unhurried voice] Repare na linha de baixo do bloco: chamar os sprites de tiro e asteroide. Esses são os apelidos do tiro e da pedra de cada trombada, e eles valem só dentro da colisão.
 
-[engaging, energetic, conversational voice] Agora as ações do acerto, que vão dentro da colisão. Deixe à vista o espaço de dentro da colisão entre tiros e asteroides. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha tiro como sprite e tiros como grupo.
+[confident, clear, unhurried voice] Confira se os grupos ficaram tiros e asteroides, e os apelidos, tiro e asteroide, nessa ordem.
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo desse bloco. Na mesma categoria Participação e limpeza, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide e o grupo já vem asteroides, que é o certo: mantenha os dois.
+[engaging, energetic, conversational voice] Na experiência, tirando só quem encostou, os outros continuavam no jogo. Por isso, dentro da colisão, os blocos usam os apelidos.
 
-[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo das duas retiradas, ainda dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte nesse encaixe. O sprite já vem asteroide, para a explosão sair no lugar da pedra: mantenha e escolha uma cor para a explosão.
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro da colisão. Abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar o sprite do grupo e solte nesse espaço. Escolha tiro como sprite e tiros como grupo.
+
+[engaging, energetic, conversational voice] É este bloco que tira do jogo o tiro daquela trombada.
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo dele. Na mesma categoria, pegue outro Tirar o sprite do grupo e solte nesse encaixe. Nesse segundo, o sprite já vem asteroide, e o grupo, asteroides: deixe os dois assim.
+
+[engaging, energetic, conversational voice] É este bloco que tira do jogo a pedra daquela trombada.
+
+[confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo das duas retiradas, ainda dentro da colisão. Abra Jogo 2D, depois Desenho e efeitos e depois Partículas, pegue o bloco Soltar explosão no sprite e solte nesse encaixe.
+
+[engaging, energetic, conversational voice] O sprite já vem asteroide, para a explosão sair no lugar da pedra: deixe assim e escolha uma cor para a explosão.
 
 [confident, clear, unhurried voice] Deixe à vista o encaixe logo abaixo da explosão. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito, solte nesse encaixe e escolha explosão no menu.
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e atire até acertar uma pedra. [interested, animated voice] Olha só: o tiro e a pedra atingidos saem, aparece a explosão e os outros continuam!
+[upbeat, encouraging voice] Agora teste: clique na área do jogo e atire até acertar uma pedra. [interested, animated voice] Olha só: o tiro e a pedra da trombada saem, aparece a explosão, e os outros continuam!
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo está a colisão entre tiros e asteroides, e dentro dela estão Tirar o sprite tiro do grupo tiros, Tirar o sprite asteroide do grupo asteroides, Soltar explosão no sprite asteroide e Tocar efeito explosão, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de A cada quadro do jogo está a colisão entre tiros e asteroides, e dentro dela estão Tirar o sprite tiro do grupo tiros, Tirar o sprite asteroide do grupo asteroides, Soltar explosão no sprite asteroide e Tocar efeito explosão, nessa ordem. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -87,16 +101,16 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-colisao-K1 | Debinha | 1 | colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides. | Como ele sabe qual tiro acertou qual pedra? | Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e | [curious] |
+| video-colisao-K1 | Debinha | 1 | que confere, em todo quadro, se algum tiro encostou em alguma pedra. O que fica dentro dele acontece a cada trombada. | Como ele sabe qual tiro acertou qual pedra? | Pelos apelidos que o bloco dá aos dois. Repare na linha de baixo do bloco: chamar os sprites de tiro e asteroide. Esses | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-colisao-K1`: entrada — Concluir o gesto descrito pela professora e manter à vista o bloco ou o resultado que ela acabou de mostrar. Não iniciar o próximo passo antes da reação. Saída — Retomar a demonstração somente depois da saída do avatar, no ritmo da próxima fala. Manter livres os campos, os encaixes e o resultado do teste.
+- `video-colisao-K1`: entrada — Manter à vista o bloco da colisão recém-encaixado. Saída — Depois da saída, apontar a linha dos apelidos do bloco.
 
 
-**Recado na página (não gravar):** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o tiro e a pedra da trombada, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.
 
 ## Seção 3. Confira o que você construiu
 
@@ -112,14 +126,16 @@ Sem vídeo ou ferramenta nesta parte. O quiz vem imediatamente depois do Zappy. 
 
 **Clipe:** `video-fecho`
 
-**Na tela:** Usar o projeto completo desta etapa. Testar sem pontos ou vidas, que ainda não foram construídos. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
+**Na tela:** A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No "Mova a nave, atire", clicar no jogo [tocar prévia 400 240], segurar uma seta e tocar na barra de espaço [tecla Space]. No "Depois, acerte pedras em lugares diferentes", atirar [tecla Space] até acertar duas pedras em lugares diferentes. No "Clique em Verificar projeto", verificar [verificar projeto]. No "clique em Enviar meu projeto", enviar e confirmar [enviar projeto]. No "Quando aparecer Projeto enviado!, clique em Concluir aula", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula]. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado.
 
 **Fala para ElevenLabs:**
 
 ```text
 [upbeat, encouraging voice] Agora teste os acertos do seu jogo. Mova a nave, atire e confira se cada tiro nasce nela. Depois, acerte pedras em lugares diferentes da tela.
 
-[confident, clear, unhurried voice] Repare no que acontece em cada encontro: saem o tiro e a pedra envolvidos, aparece a explosão e o resto do jogo continua, porque os apelidos apontam só para quem se encontrou. Se alguma coisa falhar, confira os apelidos dentro da colisão antes de enviar.
+[confident, clear, unhurried voice] Repare: em cada trombada, saem o tiro e a pedra que se encostaram, aparece a explosão, e o resto do jogo continua, porque os apelidos apontam só para eles.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro da colisão entre tiros e asteroides, as duas retiradas usam os apelidos tiro e asteroide. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```

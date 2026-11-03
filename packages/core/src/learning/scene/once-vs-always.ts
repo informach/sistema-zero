@@ -82,15 +82,57 @@ export function placeOnce(
   if (area !== 'outside' && !preset.areas.includes(area)) return false
   if (state.placement[card] === area) return false
   // Uma nova montagem é uma nova partida. O resultado anterior continua na evidência da atividade.
-  if (state.frames > 0) {
-    const placement = { ...state.placement }
-    Object.assign(state, initialOnce(preset))
-    state.placement = placement
-  }
+  if (state.frames > 0) recomecarPartidaOnce(state, preset)
   state.placement[card] = area
   state.placedAtFrame[card] = state.frames
   state.firedAtPlacement[card] = state.fires[card]
   return true
+}
+
+/**
+ * Qual dos três casos da Nave a exploração livre abre: a nave que anda, as vidas ou o tiro (o caso
+ * de evento). A tela livre e as falas do Zappy (`guia-livre/once-vs-always.ts`) leem esta régua.
+ */
+export type CasoDoOnceVsAlways = 'nave' | 'vidas' | 'tiro'
+export function casoDoOnceVsAlways(preset: OnceVsAlwaysPreset): CasoDoOnceVsAlways {
+  if (onceGoalCards(preset).event) return 'tiro'
+  return preset.id === 'uma-ficha-vidas' ? 'vidas' : 'nave'
+}
+
+/** A ficha que a criança escolhe na tela livre: a do evento, a das vidas ou a do movimento. */
+export function fichaDoOnceVsAlways(preset: OnceVsAlwaysPreset): OnceCardId {
+  const cards = onceGoalCards(preset)
+  return cards.event ?? cards.once ?? cards.always ?? preset.cards[0]?.id ?? 'move'
+}
+
+/**
+ * ⭐ Exploração livre (Construtor, 02/11/2026): no caso que ensina o momento do EVENTO (o tiro da Nave),
+ * a criança decide só quando a ação do evento acontece. As outras fichas já abrem no lugar em que o
+ * jogo as usa (pintar o fundo e criar no começo, mover em todo quadro): sem isso o palco abria sem
+ * fundo e sem nave, e a tela livre teria quatro escolhas para uma descoberta só. Nenhuma meta olha
+ * essas fichas nos casos de evento.
+ */
+export function prepararOnceLivre(state: SceneOnce, preset: OnceVsAlwaysPreset): void {
+  if (!onceGoalCards(preset).event) return
+  const lugar: Partial<Record<OnceCard['kind'], OnceArea>> = {
+    paint: 'start',
+    create: 'start',
+    move: 'loop',
+  }
+  for (const card of preset.cards) {
+    const area = lugar[card.kind]
+    if (area && preset.areas.includes(area)) state.placement[card.id] = area
+  }
+}
+
+/**
+ * ⭐ "Jogar de novo" da exploração livre: uma partida nova com a montagem de agora. É o mesmo
+ * recomeço de `placeOnce` quando uma ficha muda de área, sem mudar nenhuma.
+ */
+export function recomecarPartidaOnce(state: SceneOnce, preset: OnceVsAlwaysPreset): void {
+  const placement = { ...state.placement }
+  Object.assign(state, initialOnce(preset))
+  state.placement = placement
 }
 
 function fire(state: SceneOnce, card: OnceCard): void {

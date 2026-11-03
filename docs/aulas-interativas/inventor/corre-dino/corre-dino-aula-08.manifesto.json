@@ -34,40 +34,62 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
+        "text": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se de A cada quadro do jogo, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-convite",
-      "plannedVideo": "Título: Compare tecla e toque para começar\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-convite-K1: Dedé substitui “E quem quiser começar pelo toque?”. Antes: “de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.”. Depois: “Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco”.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O que começa a partida?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando chega visita\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-convite-K1: Dedé substitui “E se o jogo só escutar o teclado, quem joga no celular consegue começar?”. Antes: “o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo”.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-convite",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-convite",
       "content": {
         "kind": "interactive",
-        "title": "Compare tecla e toque para começar",
-        "instructions": "Na experiência, com Começar em Quando apertar a tecla, toque na tela de início e observe. Depois clique em Apertar Enter e, em seguida, em Voltar ao início. Leve Começar para Quando apertar qualquer tecla ou tocar na tela. Teste o toque, volte ao início e teste Enter outra vez. Compare os dois jeitos.",
-        "hints": [],
+        "title": "O que começa a partida?",
+        "instructions": "Compare o que começa a partida, o toque ou o Enter, quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Toque na tela de início e observe se a partida começa.",
+          "Compare os dois jeitos de escutar: só o Enter, ou qualquer tecla ou toque.",
+          "Clique em Só o Enter e em Tocar na tela; depois clique em Voltar à tela de início, em Qualquer tecla ou toque e em Tocar na tela de novo."
+        ],
         "required": true,
         "activity": {
           "type": "experimentation",
           "scene": "controls",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["missing-touch", "start-key", "start-tap"],
+            "goalCopy": {
+              "missing-touch": {
+                "label": "Escutando só o Enter, o toque não começou a partida",
+                "pedido": "Com Só o Enter escolhido, clique em Tocar na tela."
+              },
+              "start-key": {
+                "label": "Com o Enter, a partida começou",
+                "pedido": "Na tela de início, clique em Apertar Enter."
+              },
+              "start-tap": {
+                "label": "Escutando qualquer tecla ou toque, o toque começou a partida",
+                "pedido": "Clique em Qualquer tecla ou toque e, na tela de início, em Tocar na tela."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-entrada-ampla",
-      "plannedVideo": "Título: Ligue a entrada ao início da partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-entrada-ampla-K1: Dedé substitui “E a tecla do pulo, vai começar a partida de novo?”. Antes: “e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.”. Depois: “Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de”.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Ligue a entrada ao início da partida\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. No teste por tecla, clicar em Atualizar e usar a tecla sem clicar no jogo. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-entrada-ampla-K1: Dedé substitui “E a tecla do pulo, vai começar a partida de novo?”. Antes: “qualquer tecla ou tocar na tela e solte nesse espaço. É este bloco que escuta qualquer tecla e também o toque na tela.”. Depois: “Não, se o evento perguntar antes. É que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele”.\n\nFala completa em corre-dino-aula-08.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrada-ampla",
@@ -673,7 +695,7 @@
       "key": "menu",
       "title": "Desenhe a tela de início",
       "intent": "application",
-      "objective": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
+      "objective": "Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se de A cada quadro do jogo, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-menu", "fala-menu"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -724,9 +746,9 @@
     },
     {
       "key": "convite",
-      "title": "Compare tecla e toque para começar",
+      "title": "O que começa a partida?",
       "intent": "exploration",
-      "objective": "Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-convite", "fala-convite", "experiencia-convite"],
       "workspaceKey": null,
       "externalTool": null,

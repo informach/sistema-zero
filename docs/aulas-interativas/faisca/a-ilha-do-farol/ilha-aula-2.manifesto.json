@@ -6,24 +6,28 @@
   "blocks": [
     {
       "key": "video-posicao-3d",
-      "plannedVideo": "Título: Duas direções no chão e uma na altura\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-posicao-3d. Gravação pendente."
+      "plannedVideo": "Título: Para onde vai a chave?\n\nMaster integral da professora. Roteiro: ilha-aula-2.roteiro.md, clipe video-posicao-3d. Gravação pendente."
     },
     {
       "key": "ponte-posicao-3d",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte."
+        "text": "Sua vez! Investigue para onde a chave vai quando o x, o y e o z aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
       "key": "experiencia-posicao-3d",
       "content": {
         "kind": "interactive",
-        "title": "Duas direções no chão e uma na altura",
+        "title": "Para onde vai a chave?",
         "required": true,
-        "instructions": "Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.",
-        "hints": [],
+        "instructions": "Compare para onde a chave vai quando o x, o y e o z aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Escolha um dos três números da chave e observe para onde ela vai.",
+          "Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.",
+          "Na linha do X, clique no + e depois no −, observando a chave. Faça o mesmo nas linhas do Z e do Y. Para ver melhor, clique em Ver de lado ou em Ver de cima."
+        ],
         "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
@@ -44,7 +48,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -56,7 +60,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte."
+        "text": "Sua vez! Investigue quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -65,8 +69,12 @@
         "kind": "interactive",
         "title": "Parece junto, mas está encostando?",
         "required": true,
-        "instructions": "Experimente, compare e repita. As descobertas podem ser feitas em qualquer ordem.",
-        "hints": [],
+        "instructions": "Compare quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Antes de testar, pense: a chave e o personagem estão encostando?",
+          "Teste o encontro e compare a vista de cima com a vista de lado.",
+          "Clique em Testar o encontro e depois em Ver de lado. Na linha do Y, clique no − até a chave chegar perto do personagem e clique em Testar o encontro de novo. Se quiser, clique em Mostrar onde encosta."
+        ],
         "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
@@ -87,7 +95,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -99,7 +107,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
+        "text": "Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte."
       }
     },
     {
@@ -8544,9 +8552,9 @@
   "sections": [
     {
       "key": "posicao-3d",
-      "title": "Duas direções no chão e uma na altura",
+      "title": "Para onde vai a chave?",
       "intent": "exploration",
-      "objective": "Duas direções no chão e uma na altura.",
+      "objective": "Para onde vai a chave?",
       "blockKeys": ["video-posicao-3d", "ponte-posicao-3d", "experiencia-posicao-3d"],
       "workspaceKey": null,
       "externalTool": null,
@@ -8789,7 +8797,7 @@
       "key": "contato-3d",
       "title": "Parece junto, mas está encostando?",
       "intent": "exploration",
-      "objective": "Parece junto, mas está encostando?.",
+      "objective": "Parece junto, mas está encostando?",
       "blockKeys": ["video-contato-3d", "ponte-contato-3d", "experiencia-contato-3d"],
       "workspaceKey": null,
       "externalTool": null,

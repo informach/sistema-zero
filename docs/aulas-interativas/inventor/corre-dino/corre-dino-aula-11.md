@@ -14,6 +14,8 @@ Fonte editorial: `qa/corre-dino.conteudo.json`. Este arquivo, o roteiro e o mani
 
 Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das experiências pertinentes. A frase final reaplica a leitura da variável já observada no mostrador; juntar textos organiza os três trechos da mensagem. O quiz retoma as causas da contagem.
 
+**Revisão de 02/11/2026.** P10 (decisão da coordenação, 02/11/2026): o relógio dos pontos fica em 1 segundo, sem "se quiser, escolha de 0.5 a 3", como diz o próprio jogo ("cada segundo de corrida vale um ponto"); os rótulos dos critérios também dizem 1 segundo. A variável (os gols contados de cabeça e o placar, no lugar do caderno) e o placar que cresce (o cronômetro da corrida) passaram à exploração livre. A variável é definida na experiência e na montagem ("Uma caixa que guarda um número se chama variável"); a montagem dos pontos só lembra a experiência, porque o número guardado ainda não aparece. Placar, valor da variável, relógio e soma têm cada um o seu "É este bloco que…", com os nomes de fábrica (contador, x). O relógio diz por que fica separado do dos cactos, o juntar texto ganhou a imagem das três partes da frase, e o fim da frase é ditado de um jeito que se entende ouvindo.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -24,15 +26,25 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 ## Proposta final
 
-### Seção 1. Compare guardar, mudar e mostrar
+### Seção 1. Guardar ou mostrar?
 
-**Tarefa:** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-guardar-mudar-mostrar → fala-guardar-mudar-mostrar → experiencia-variavel.
 
-**Recado na página (não gravar):** Sua vez! Mude o número guardado com o placar desligado e, depois, ligue o placar e acompanhe os dois juntos. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue a diferença entre guardar um número e mostrar esse número na tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-**Experiência existente:** `variable`. Na experiência, coloque o número guardado em 1 e depois em 0. Deixe Mostrar placar desligado. Clique em Somar 1 em pontos duas vezes e observe o número guardado. Ligue Mostrar placar. Compare o que aparece na tela com o número guardado. Clique em Somar 1 em pontos mais uma vez e acompanhe os dois. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-guardar-mudar-mostrar-K1: Debinha substitui “E se o número não estiver na tela, ele continua mudando?”. Antes: “para todo mundo. No seu jogo, essa variável vai se chamar pontos, e o número dos pontos também pode aparecer na tela.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na caixa pontos e na tela do”.
+
+**Experiência em exploração livre:** `variable` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/dino/variable.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare a caixa pontos com a tela do jogo quando o número é guardado, quando muda e quando aparece na tela. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Guardar o número 0 e compare a caixa pontos com a tela do jogo. Com o número fora da tela, clique em Ganhar 1 ponto e compare a caixa pontos com a tela. Clique em Mostrar o número na tela e compare com a caixa pontos.
+
+**Pistas, do aberto ao direto:** 1) Depois de cada botão, compare a caixa pontos com a tela do jogo. 2) O número muda mesmo sem aparecer? Ganhe um ponto com o número fora da tela. 3) Clique em Guardar o número 0. Depois clique em Ganhar 1 ponto duas vezes. Por último, clique em Mostrar o número na tela. Sem palpite e sem pergunta final.
 
 ### Seção 2. Prepare os pontos em zero
 
@@ -58,19 +70,25 @@ Guardar, mostrar e mudar o número têm montagens próprias, sempre depois das e
 
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.
 
-### Seção 4. Compare quando somar os pontos
+### Seção 4. Quando o placar cresce?
 
-**Tarefa:** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quando-o-placar-cresce → fala-quando-o-placar-cresce → experiencia-score.
 
-**Recado na página (não gravar):** Sua vez! Compare a soma a cada quadro, solta e no relógio dentro de jogando, passando pelas três telas. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue quando o placar deve crescer. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-quando-o-placar-cresce-K1: Debinha substitui “Como faz para contar só durante a corrida?”. Antes: “Com Somar ponto em Solto, na tela de início, eu deixo passar um segundo, e o placar já sobe, antes de alguém jogar.”. Depois: “Agora eu levo Somar ponto para o relógio de um segundo, dentro do Se que pergunta se o estado do jogo é jogando. Na”.
+video-quando-o-placar-cresce-K1: Debinha substitui “E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?”. Antes: “ponto pode ser somado em todo quadro ou a cada segundo, e o jogo pode perguntar antes de somar: estamos jogando agora?”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o placar cresce em cada jeito de”.
 
-**Experiência existente:** `score`. Na experiência, coloque Somar ponto em A cada quadro do jogo e deixe Tempo passar um segundo. Observe o placar. Deixe Somar ponto solto, fora do relógio e da condição. Na tela de início, deixe passar mais um segundo e observe. Leve Somar ponto para dentro de o estado do jogo é jogando ?, no relógio de um segundo. Ainda no início, deixe Tempo passar. Clique em Próxima tela até Jogando e observe os pontos crescerem. Depois clique em Próxima tela até Fim e deixe passar mais tempo. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena. O vídeo é uma demonstração: o narrador faz esses testes na primeira pessoa, explica cada resultado e só no fim passa a vez.
+**Experiência em exploração livre:** `score` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/score.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/score.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
+
+**Instrução:** Compare o placar em cada jeito de somar, com e sem a pergunta. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Com a pergunta desligada, clique em A cada quadro e depois em Passar 1 segundo. Clique em A cada segundo e, com a pergunta desligada e na tela de início, clique em Passar 1 segundo. Depois do teste sem a pergunta na tela de início, clique em Ligar a pergunta e, ainda na tela de início, em Passar 1 segundo. Com a pergunta ligada, clique em Começar a partida e depois em Passar 1 segundo. Depois do teste jogando, com a pergunta ligada, clique em Terminar a partida e depois em Passar 1 segundo.
+
+**Pistas, do aberto ao direto:** 1) Olhe o placar a cada segundo que passa, em cada tela. 2) Compare o ponto a cada quadro e a cada segundo; depois ligue a pergunta e passe pelas três telas. 3) Clique em A cada quadro e em Passar 1 segundo; depois em A cada segundo e em Passar 1 segundo; depois em Ligar a pergunta, Passar 1 segundo, Começar a partida, Passar 1 segundo, Terminar a partida e Passar 1 segundo. Sem palpite e sem pergunta final.
 
 ### Seção 5. Some um ponto por segundo de partida
 
@@ -82,11 +100,11 @@ video-quando-o-placar-cresce-K1: Debinha substitui “Como faz para contar só d
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-relogio-dos-pontos-K1: Debinha substitui “Mas só vale somar durante a partida, né?”. Antes: “Tempo e depois Quadros e intervalos, pegue o bloco A cada 2 segundos, solte nesse espaço e troque o intervalo para 1.”. Depois: “Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra”.
+video-relogio-dos-pontos-K1: Debinha substitui “Mas só vale somar durante a partida, né?”. Antes: “bloco A cada 2 segundos e solte nesse espaço. Clique no 2 e troque por 1. É este relógio que toca uma vez por segundo.”. Depois: “Isso. Vamos colocar essa pergunta no relógio. Agora deixe à vista o espaço vazio dentro do novo relógio. Abra”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
-- Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.
+- Num relógio próprio de 1 segundo, some 1 em pontos somente quando o estado do jogo é jogando.
 - Use um único Somar em variável pontos no projeto inteiro.
 
 ### Seção 6. Mostre os pontos na tela de fim
@@ -99,7 +117,7 @@ video-relogio-dos-pontos-K1: Debinha substitui “Mas só vale somar durante a p
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-frase-da-tela-de-fim-K1: Debinha substitui “Esse número vai mudar a cada partida?”. Antes: “isso, vamos usar a mesma leitura do placar na frase da tela de fim, para mostrar quantos pontos você fez na partida.”. Depois: “Vai mostrar os pontos daquela partida. Deixe à vista o subtítulo da tela de fim, no ramo fim, dentro do Se do quadro.”.
+video-frase-da-tela-de-fim-K1: Debinha substitui “Esse número vai mudar a cada partida?”. Antes: “partida. Por isso, vamos usar a mesma leitura na frase da tela de fim, para mostrar quantos pontos você fez na partida.”. Depois: “Vai mostrar os pontos daquela partida. É como montar uma frase com três partes: um pedaço escrito, o número dos pontos”.
 
 video-frase-da-tela-de-fim-K2: Debinha substitui “E o número dos pontos vai no meio?”. Antes: “de texto que mostra Olá e solte em cima do primeiro número. Apague Olá e escreva Você fez, com um espaço depois de fez.”. Depois: “Vai, sim. Agora deixe à vista a entrada do meio. Em Programação e Valores, pegue o bloco valor da variável, solte em”.
 
@@ -129,7 +147,7 @@ video-frase-da-tela-de-fim-K2: Debinha substitui “E o número dos pontos vai n
 
 - No Ao iniciar, crie a variável pontos com valor 0.
 - Dentro do Se o estado do jogo é jogando, mostre o placar lendo a variável pontos. A cor é sua.
-- Num relógio próprio, some 1 em pontos somente quando o estado do jogo é jogando. O intervalo é seu: o vídeo usa 1 segundo, e vale de 0,5 a 3.
+- Num relógio próprio de 1 segundo, some 1 em pontos somente quando o estado do jogo é jogando.
 - No subtítulo da tela de fim, junte texto, o valor de pontos e texto, nessa ordem.
 - Use um único Somar em variável pontos no projeto inteiro.
 

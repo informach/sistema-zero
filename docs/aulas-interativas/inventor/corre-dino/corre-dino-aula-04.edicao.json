@@ -10,14 +10,25 @@
   "clipes": ["video-area-que-espera", "video-dedo-e-pulo", "video-som-no-pulo", "video-entrega"],
   "intervencoes": [
     {
+      "id": "video-area-que-espera-K1",
+      "clipe": "video-area-que-espera",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o som do pulo aparece em cada",
+      "falaPrincipal": "E se o som ficar esperando a tecla, ele aparece quando o jogo começa?",
+      "falaPersonagem": "E se o som ficar esperando a tecla, ele aparece quando o jogo começa?",
+      "tags": ["[curious]"]
+    },
+    {
       "id": "video-dedo-e-pulo-K1",
       "clipe": "video-dedo-e-pulo",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço.",
-      "ancoraDepois": "Vamos ligar o som ao pulo. Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes. Duas vezes",
-      "falaPrincipal": "Como faz para o som tocar em todo pulo?",
-      "falaPersonagem": "Como faz para o som tocar em todo pulo?",
+      "ancoraAntes": "No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos sons e quantos pulos acontecem",
+      "falaPrincipal": "E se o som estiver ligado à tecla, o pulo do toque também tem som?",
+      "falaPersonagem": "E se o som estiver ligado à tecla, o pulo do toque também tem som?",
       "tags": ["[curious]"]
     },
     {

@@ -321,34 +321,36 @@ const dia1 = {
     video('video-d1-quadro', 'Como o personagem anda', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-quadro',
-      'Sua vez! Clique em Câmera lenta, segure a seta e veja o personagem andar quadro a quadro. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que acontece em cada quadro, com a seta apertada e com a seta solta. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     // ⭐ "O jogo em câmera lenta" (01/11/2026, decisão dela): a experiência trabalha só a IDEIA
     // (quadro, passinho, seta), sem bloco, regra nem código. Os blocos ficam para a parte `andar`.
+    // Convite à investigação, como no Cadê (02/11/2026): a instrução e a ponte dizem o que comparar,
+    // nunca o resultado; as pistas vão do aberto (o que observar) ao direto (a sequência).
     experienciaAndar(
       'experiencia-quadro',
       'O jogo em câmera lenta',
-      'Clique em Câmera lenta e segure a seta: veja um passinho em cada quadro. Depois solte a seta e experimente a velocidade de verdade.',
+      'Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.',
       ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       {
         'moves-each-frame': {
           label: 'Um passinho a cada quadro',
-          pedido: 'Clique em Câmera lenta e segure a seta. Olhe o personagem a cada quadro.',
+          pedido: 'Clique em Câmera lenta, segure a seta e observe a tira de quadros.',
         },
         'stopped-after-release': {
           label: 'Seta solta, personagem parado',
-          pedido: 'Depois de andar, solte a seta e deixe passar alguns quadros.',
+          pedido: 'Em câmera lenta, solte a seta e observe os próximos quadros.',
         },
         'walked-real-speed': {
           label: 'Os passinhos viraram uma caminhada',
           pedido:
-            'Depois de ver os passinhos em câmera lenta, clique em Velocidade de verdade e segure a seta por alguns segundos.',
+            'Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare.',
         },
       },
       [
-        'Clique em Câmera lenta e segure a seta. A cada quadro, olhe a pegada nova e o quadro novo na tira.',
-        'Depois de andar, solte a seta e deixe passar alguns quadros. Repare se aparece pegada nova.',
-        'Clique em Velocidade de verdade e segure a seta por alguns segundos.',
+        'Repare nas pegadas e na tira de quadros enquanto a seta está apertada.',
+        'Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.',
+        'Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos.',
       ],
     ),
     video('video-d1-andar', 'Faça o personagem andar', 'desafio-dia-1.roteiro.md'),
@@ -359,34 +361,36 @@ const dia1 = {
     video('video-d1-limite', 'Até onde ele pode ir?', 'desafio-dia-1.roteiro.md'),
     fala(
       'ponte-d1-limite',
-      'Sua vez! Leve o personagem até a beirada sem o limite e depois com ele. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que o jogo faz na beirada da tela, com o limite desligado e ligado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     // ⭐ "A beirada da tela" (01/11/2026, decisão dela): só a IDEIA, sem blocos nem a comparação
     // das ordens dos blocos. A ordem aparece dentro de cada quadro (passinho, depois a conferência).
     experienciaAndar(
       'experiencia-limite',
       'A beirada da tela',
-      'Sem o limite, leve o personagem até a beirada e veja ele sair da tela. Depois ligue o limite da tela e olhe, em câmera lenta, cada quadro na beirada.',
+      'Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.',
       ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       {
         'left-the-screen': {
           label: 'Sem o limite, ele saiu da tela',
           pedido:
-            'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada.',
+            'Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela.',
         },
         'came-back-inside': {
           label: 'Com o limite ligado, ele voltou para dentro',
-          pedido: 'Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.',
+          pedido:
+            'Com ele fora da tela, clique em Ligar o limite da tela e observe o próximo quadro.',
         },
         'stayed-inside': {
           label: 'Com o limite, ele ficou na beirada',
-          pedido: 'Com o limite ligado, clique em Câmera lenta e segure a seta junto à beirada.',
+          pedido:
+            'Com o limite ligado, leve o personagem até a beirada, clique em Câmera lenta e observe a tira.',
         },
       },
       [
-        'Com o limite desligado, clique em Velocidade de verdade e segure a seta até a beirada. Continue segurando.',
-        'Com ele fora da tela, clique em Ligar o limite da tela e veja o próximo quadro.',
-        'Com o limite ligado, clique em Câmera lenta e segure a seta na beirada. Olhe a tira e a frase de cada quadro.',
+        'Olhe a faixa fora da tela quando o personagem chega na beirada.',
+        'E se o limite for ligado com ele já fora da tela? Observe o próximo quadro.',
+        'Com o limite desligado, clique em Velocidade de verdade e segure a seta até ele sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada.',
       ],
     ),
     video('video-d1-borda', 'Mantenha o personagem na tela', 'desafio-dia-1.roteiro.md'),
@@ -447,7 +451,7 @@ const dia2 = {
     video('video-d2-contexto', 'O jogo guardou a chave?', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-contexto',
-      'Sua vez! Faça os testes e fique de olho em temChave: compare o que some da tela com o que fica guardado. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-memoria',
@@ -456,21 +460,49 @@ const dia2 = {
         required: true,
         title: 'O jogo guardou a chave?',
         semPerguntaFinal: true,
+        // Dias 2 e 3 (02/11/2026): só a ideia (a memória da chave) e o convite à investigação. As
+        // pistas do modelo citam "Guardar a coleta", que esta tela não tem: do aberto ao direto.
+        // Molde do Cadê (02/11/2026): a instrução diz o que comparar, sem sequência de testes.
         instructions:
-          'Compare uma coleta com e sem a ação de guardar. Observe também o valor ao afastar e recomeçar a partida. Você escolhe a ordem dos testes.',
-        hints: [],
+          'Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.',
+        hints: [
+          'Olhe a chave, o aviso e temChave: são três coisas diferentes.',
+          'Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.',
+          'Se a chave não estiver no chão, clique em Recomeçar a partida. Com a memória desligada, clique em Encostar na chave. Depois clique em Ligar a memória da chave, em Recomeçar a partida e em Encostar na chave. Por último, clique em Afastar e em Recomeçar a partida, observando temChave.',
+        ],
         activity: {
           type: 'experimentation',
           scene: 'collect-and-remember',
           cenario: 'farol',
-          setup: { freeExploration: true },
+          setup: {
+            freeExploration: true,
+            // O "Ainda falta" e o relatório da equipe com os botões desta tela (o catálogo cita
+            // "Guardar a coleta", da bancada antiga).
+            goalCopy: {
+              'collected-without-memory': {
+                pedido:
+                  'Com a memória da chave desligada, clique em Encostar na chave e observe temChave.',
+              },
+              'collected-with-memory': {
+                pedido:
+                  'Clique em Ligar a memória da chave, recomece a partida e clique em Encostar na chave.',
+              },
+              'remembered-after-leaving': {
+                pedido: 'Depois de o jogo guardar a chave, clique em Afastar e observe temChave.',
+              },
+              'reset-after-remembering': {
+                pedido:
+                  'Depois de o jogo guardar a chave, clique em Recomeçar a partida e observe temChave.',
+              },
+            },
+          },
         },
       },
     },
     video('video-d2-recolher', 'Recolha a chave', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-recolher',
-      'Agora faça o seu personagem pegar a chave! Programe o encontro e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora faça o seu personagem pegar a chave! Crie a área Quando acontecer, coloque nela o encontro do personagem com a chave e faça a chave sair do chão. Depois teste e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d2-guardar', 'Guarde que a chave foi encontrada', 'desafio-dia-2.roteiro.md'),
     fala(
@@ -480,7 +512,7 @@ const dia2 = {
     video('video-d2-programar', 'Avise quem está jogando', 'desafio-dia-2.roteiro.md'),
     fala(
       'ponte-d2-programar',
-      'Agora avise quem está jogando! Mostre uma mensagem quando a chave for encontrada. Teste a coleta e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
+      'Agora avise quem está jogando! Faça o aviso mudar quando o personagem pegar a chave. Teste no jogo e clique em Verificar projeto. Depois clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.',
     ),
     projeto('dia-2'),
   ],
@@ -532,25 +564,39 @@ const dia3 = {
   lessonSlug: 'dia-3',
   title: 'A luz do farol',
   blocks: [
-    video('video-d3-condicao', 'Quando a porta pode abrir?', 'desafio-dia-3.roteiro.md'),
+    video('video-d3-condicao', 'O que a porta precisa?', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-condicao',
-      'Sua vez! Teste a mesma porta sem a chave e com a chave e repare em qual resposta a porta escolhe. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue o que a porta faz quando o personagem chega sem a chave e com a chave. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-porta',
       content: {
         kind: 'interactive',
         required: true,
-        title: 'A porta precisa da chave',
+        title: 'O que a porta precisa?',
         semPerguntaFinal: true,
+        // A pergunta da porta com "sim" e "não" (então/senão ficam para a montagem). A pista do
+        // modelo cita "Levar a chave", que esta tela não tem.
         instructions:
-          'Prepare o personagem com ou sem a chave e teste a porta. Compare a resposta nas duas situações; você pode repetir quantas vezes quiser.',
-        hints: [],
+          'Compare a resposta da porta e temChave com o personagem sem a chave e com a chave. Você escolhe a ordem e pode repetir quando quiser.',
+        hints: [
+          'Olhe temChave antes de testar a porta.',
+          'Compare a resposta da porta com temChave falso e com temChave verdadeiro.',
+          'Se o personagem estiver com a chave, clique em Tirar a chave do personagem. Clique em Testar a porta. Depois clique em Dar a chave ao personagem e em Testar a porta de novo.',
+        ],
         activity: {
           type: 'experimentation',
           scene: 'lighthouse-key',
-          setup: { freeExploration: true },
+          setup: {
+            freeExploration: true,
+            goalCopy: {
+              'locked-without-key': { pedido: 'Sem a chave, clique em Testar a porta.' },
+              'opened-with-key': {
+                pedido: 'Clique em Dar a chave ao personagem e em Testar a porta.',
+              },
+            },
+          },
           cenario: 'farol',
         },
       },
@@ -558,12 +604,12 @@ const dia3 = {
     video('video-d3-sem-chave', 'Avise quando faltar a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-sem-chave',
-      'Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o Se e o aviso no senão. Depois vá até a porta do farol sem pegar a chave e clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora ensine o farol a avisar quando falta a chave! Monte o encontro com o farol, o bloco Se e o aviso no espaço do senão. Depois teste: vá até a porta do farol sem pegar a chave. Funcionou? Clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-decisao', 'Acenda o farol com a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-decisao',
-      'Agora acenda o farol! Complete o espaço do então e teste sem a chave, com a chave e numa nova partida. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
+      'Agora acenda o farol! Complete o espaço do então, onde vai a resposta do sim. Teste sem a chave, com a chave e numa partida nova. Depois clique em Verificar projeto. Quando aparecer Objetivo cumprido!, clique em Próxima parte.',
     ),
     video('video-d3-personalizar', 'Deixe o jogo com a sua cara', 'desafio-dia-3.roteiro.md'),
     fala(
@@ -578,7 +624,7 @@ const dia3 = {
     video('video-d3-posicao', 'Como escolher um lugar para a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-posicao',
-      'Sua vez! Mude um número de cada vez e repare para onde a chave vai. Quando terminar, clique em Próxima parte.',
+      'Sua vez! Investigue para onde a chave vai quando o x e o y aumentam e diminuem. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
     ),
     {
       key: 'experiencia-posicao',
@@ -587,8 +633,11 @@ const dia3 = {
         required: true,
         title: 'Como escolher um lugar para a chave',
         semPerguntaFinal: true,
+        // Sem pistas escritas de propósito: a missão restrita pede a meta que falta ("Tente: mude o
+        // x para menos…"), sem contar para que lado o número leva a chave. O alvo opcional fica na
+        // própria cena (molde do Cadê, 02/11/2026: a instrução diz só o que comparar).
         instructions:
-          'Explore os dois eixos em qualquer ordem. Mude um número por vez e observe para onde a chave vai. Se quiser um desafio, mostre um alvo e leve a chave até ele.',
+          'Compare para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',
@@ -601,12 +650,12 @@ const dia3 = {
     video('video-d3-posicionar-chave', 'Escolha onde fica a chave', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-posicionar-chave',
-      'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste o caminho até a chave e até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
+      'Agora escolha onde fica a chave! Mude o x e o y no bloco Criar sprite chave, como x 160 e y 250 para a parte de baixo. Teste: busque a chave no lugar novo e leve até a porta do farol. Depois clique em Enviar meu projeto e confirme em Enviar. Se mudar alguma coisa depois de enviar, clique em Enviar de novo e confirme em Reenviar. Quando aparecer Projeto enviado!, clique em Próxima parte.',
     ),
     video('video-d3-fecho', 'Seu jogo está pronto', 'desafio-dia-3.roteiro.md'),
     fala(
       'ponte-d3-publicar',
-      'Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e compartilhe com a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você pode concluir a aula e continuar a jornada sem publicar.',
+      'Seu jogo está pronto! Se quiser, publique no Mural, copie o link de jogar e mande para a sua família e os seus amigos. Se precisar, peça ajuda a um adulto. Você também pode clicar em Concluir aula e continuar a jornada sem publicar.',
     ),
     projeto('dia-3'),
     ajudaComoFazer('ajuda-publicar', 'Para consultar ao publicar', [
@@ -730,7 +779,7 @@ const certificado = {
     video('video-certificado-farol', 'Comemore sua criação', 'desafio-certificado.roteiro.md'),
     fala(
       'fala-certificado',
-      'Parabéns! Você programou o personagem que anda, a coleta da chave e o farol que confere se você tem a chave. Agora clique em Baixar meu certificado para guardar essa conquista e, quando ele baixar, clique em Concluir aula.',
+      'Parabéns! Você programou o personagem que anda, a memória da chave e o farol que só acende com a chave. Agora clique em Baixar meu certificado para guardar essa conquista. Quando ele baixar, clique em Concluir aula.',
     ),
     {
       key: 'certificado',
@@ -810,7 +859,14 @@ gravarArquivo(
           'experiencia-posicao': 'position',
         }).map(([key, prefix]) => [
           key,
-          discoverySpeechSteps().filter((s) => s.id.startsWith(`${prefix}-`)),
+          // ⚠️ `door-not-*` é da porta com o "não" da Ilha e `*-nave` é da caminhada da Nave
+          // (02/11/2026): falas da mesma cena, de outros cursos.
+          discoverySpeechSteps().filter(
+            (s) =>
+              s.id.startsWith(`${prefix}-`) &&
+              !s.id.startsWith('door-not-') &&
+              !s.id.endsWith('-nave'),
+          ),
         ]),
       ),
     },

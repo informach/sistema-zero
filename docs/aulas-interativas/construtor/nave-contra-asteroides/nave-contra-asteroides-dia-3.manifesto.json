@@ -60,14 +60,14 @@
   "blocks": [
     {
       "key": "video-apelidos",
-      "plannedVideo": "Título: Escolha quem sai no acerto\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: o narrador faz cada teste no ritmo da fala, na primeira pessoa, e mostra o resultado real. Usar os seletores reais e o botão de tempo da cena collision-pair. Com tiros (o grupo inteiro) e asteroides (o grupo inteiro), clicar em Deixar a trombada acontecer e mostrar pedras no grupo e tiros no grupo em 0. Clicar em Voltar ao começo, escolher tiro (o apelido) e asteroide (o apelido), deixar a trombada acontecer e mostrar 2 pedras e 2 tiros. Clicar em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo. Meme na comparação: na frase da queimada, mostrar por 2 a 3 segundos o meme ilustrado nosso, o Zappy jogando queimada com os asteroides: a bola acerta um asteroide só, que sai da quadra, e os outros continuam, com a legenda \"só quem foi acertado sai\"; desenho nosso, com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet, sem cobrir a experiência, e a narração explica sozinha. Terminar em Agora é a sua vez e Próxima parte, sem palpite nem pergunta final.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-apelidos-K1: Debinha substitui “Eu só acertei uma. Por que sumiram todas?”. Antes: “todos: pedras no grupo e tiros no grupo foram para 0. É que o grupo inteiro quer dizer todos os objetos do grupo.”. Depois: “Na queimada, quando a bola acerta alguém, só essa pessoa sai, e o resto do time continua jogando. Agora eu clico em”.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quem sai do jogo na trombada?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe o jogo de queimada\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a nave e o Zappy jogando queimada, com a bola no ar, antes de acertar alguém [na edição: meme da queimada]. No \"Agora você vai investigar\", ampliar a experiência e mostrar a cena parada, sem tocar nos controles [ampliar experiência]. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não apontar os controles da experiência, não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-apelidos-K1: Debinha substitui “E se o jogo tirar o grupo inteiro?”. Antes: “tiro encosta numa pedra, o jogo precisa decidir quem sai: os grupos inteiros, ou só o tiro e a pedra que se encostaram.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quem sai do jogo na trombada quando o”.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-trombada",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -75,9 +75,13 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Escolha quem sai no acerto",
-        "instructions": "Teste a colisão com tiros e asteroides, os grupos inteiros. Volte ao começo e repita com tiro e asteroide, os apelidos. Clique em Deixar o tempo passar até as outras duas pedras saírem pela parte de baixo.",
-        "hints": [],
+        "title": "Quem sai do jogo na trombada?",
+        "instructions": "Compare quem sai do jogo, e o que acontece com as outras pedras, quando o jogo tira os grupos inteiros e quando tira só o tiro e a pedra que encostaram. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Observe os dois contadores e as pedras que não encostaram em nada.",
+          "Compare tirar os grupos inteiros com tirar só o tiro e a pedra que encostaram.",
+          "Escolha O grupo dos tiros e O grupo das pedras e clique em Passar 1 segundo. Depois clique em Voltar ao começo, escolha O tiro que encostou e A pedra que encostou e passe o tempo até as outras pedras saírem por baixo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "collision-pair",
@@ -93,7 +97,22 @@
           },
           "cenario": "nave",
           "setup": {
-            "goals": ["whole-group", "just-the-pair", "others-stay"]
+            "freeExploration": true,
+            "goals": ["whole-group", "just-the-pair", "others-stay"],
+            "goalCopy": {
+              "whole-group": {
+                "label": "Tirando os grupos, saíram todos os tiros e todas as pedras",
+                "pedido": "Escolha O grupo dos tiros e O grupo das pedras, clique em Passar 1 segundo e observe os contadores."
+              },
+              "just-the-pair": {
+                "label": "Tirando só quem encostou, saíram só o tiro e a pedra da trombada",
+                "pedido": "Escolha O tiro que encostou e A pedra que encostou, clique em Passar 1 segundo e observe os contadores."
+              },
+              "others-stay": {
+                "label": "As outras pedras continuaram o caminho delas",
+                "pedido": "Depois da trombada que tira só quem encostou, continue clicando em Passar 1 segundo e observe as outras pedras."
+              }
+            }
           }
         },
         "semPerguntaFinal": true
@@ -101,14 +120,14 @@
     },
     {
       "key": "video-colisao",
-      "plannedVideo": "Título: Programe o acerto\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Começar pela retomada: atirar numa pedra e, no \"Tá vendo?\", mostrar o tiro atravessando. Mostrar os nomes dos dois grupos e os dois apelidos sem inverter. Seletores de objetos locais devem ser preenchidos dentro da colisão.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-colisao-K1: Debinha substitui “Como ele sabe qual tiro acertou qual pedra?”. Antes: “colisão entre os grupos. Arraste e solte no fim de A cada quadro do jogo, logo depois de Desenhar o grupo asteroides.”. Depois: “Repare no que o bloco já traz: os grupos tiros e asteroides e, na linha de baixo, chamar os sprites de tiro e”.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Programe o acerto\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da aula anterior [expandir estúdio]. No \"clique na área do jogo e atire numa pedra\", clicar no jogo [tocar prévia 400 240] e tocar na barra de espaço [tecla Space] quando uma pedra passar acima da nave. No \"Deixe à vista o fim de A cada quadro do jogo\", apontar o lugar [apontar abaixo de \"Desenhar o grupo\"]. No \"Agora abra Jogo 2D, depois Colisões\", abrir as categorias [categoria Jogo 2D > Colisões > Encostar e bloquear]. No \"Arraste e solte logo depois de Desenhar o grupo asteroides\", encaixar o bloco [encaixar \"Para cada colisão entre os grupos\" abaixo de \"Desenhar o grupo\"]. No \"É este bloco que confere\", apontar o bloco [apontar bloco \"Para cada colisão entre os grupos\"]. No \"Repare na linha de baixo do bloco\", apontar os apelidos. No \"Abra Jogo 2D, depois Grupos e depois Participação e limpeza\", abrir as categorias [categoria Jogo 2D > Grupos > Participação e limpeza] e encaixar o bloco [encaixar \"Tirar o sprite do grupo\" em \"Para cada colisão entre os grupos\"]. No \"Escolha tiro como sprite\", escolher tiro e tiros nos campos. No \"Na mesma categoria, pegue outro Tirar o sprite do grupo\", encaixar o segundo bloco logo abaixo do primeiro [encaixar \"Tirar o sprite do grupo\" abaixo de \"Tirar o sprite do grupo\"]. No \"Abra Jogo 2D, depois Desenho e efeitos\", abrir as categorias [categoria Jogo 2D > Desenho e efeitos > Partículas] e encaixar o bloco logo abaixo das retiradas. No \"Abra Jogo 2D, depois Som\", abrir as categorias [categoria Jogo 2D > Som > Efeitos prontos], encaixar o bloco logo abaixo da explosão e escolher explosão no menu. No \"Agora teste: clique na área do jogo\", clicar no jogo [tocar prévia 400 240] e atirar [tecla Space] até acertar uma pedra. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"Quando aparecer Objetivo cumprido!, clique em Próxima parte\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Próxima parte** [próxima parte].\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-colisao-K1: Debinha substitui “Como ele sabe qual tiro acertou qual pedra?”. Antes: “que confere, em todo quadro, se algum tiro encostou em alguma pedra. O que fica dentro dele acontece a cada trombada.”. Depois: “Pelos apelidos que o bloco dá aos dois. Repare na linha de baixo do bloco: chamar os sprites de tiro e asteroide. Esses”.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-colisao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte."
+        "text": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o tiro e a pedra da trombada, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte."
       }
     },
     {
@@ -170,7 +189,7 @@
     },
     {
       "key": "video-fecho",
-      "plannedVideo": "Título: Confira os acertos e envie\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Usar o projeto completo desta etapa. Testar sem pontos ou vidas, que ainda não foram construídos.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Confira os acertos e envie\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. A parte começa com o Estúdio expandido e o projeto da parte anterior [expandir estúdio]. No \"Mova a nave, atire\", clicar no jogo [tocar prévia 400 240], segurar uma seta e tocar na barra de espaço [tecla Space]. No \"Depois, acerte pedras em lugares diferentes\", atirar [tecla Space] até acertar duas pedras em lugares diferentes. No \"Clique em Verificar projeto\", verificar [verificar projeto]. No \"clique em Enviar meu projeto\", enviar e confirmar [enviar projeto]. No \"Quando aparecer Projeto enviado!, clique em Concluir aula\", voltar ao tamanho da aula [reduzir estúdio] e clicar em **Concluir aula** [concluir aula].\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em nave-contra-asteroides-dia-3.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-entrega",
@@ -860,9 +879,9 @@
   "sections": [
     {
       "key": "trombada",
-      "title": "Escolha quem sai no acerto",
+      "title": "Quem sai do jogo na trombada?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare os grupos inteiros com os apelidos e, no teste dos apelidos, deixe o tempo passar até as outras duas pedras saírem. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue quem sai do jogo quando um tiro encosta numa pedra. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-apelidos", "fala-trombada", "experiencia-trombada"],
       "workspaceKey": null,
       "externalTool": null,
@@ -876,7 +895,7 @@
       "key": "colisao",
       "title": "Programe o acerto",
       "intent": "application",
-      "objective": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o par atingido, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.",
+      "objective": "Agora faça o tiro acertar a pedra! Monte a colisão com os apelidos, tire o tiro e a pedra da trombada, coloque a explosão e o som e clique em Verificar projeto. Depois, clique em Próxima parte.",
       "blockKeys": ["video-colisao", "fala-colisao"],
       "workspaceKey": "projeto",
       "externalTool": null,

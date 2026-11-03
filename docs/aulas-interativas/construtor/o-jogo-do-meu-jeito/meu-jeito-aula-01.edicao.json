@@ -22,10 +22,10 @@
       "clipe": "video-aparencia-e-regras",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "iguais. Na experiência, Tema do mesmo jogo troca a aparência, e a lista Regras do jogo mostra o que continua igual.",
-      "ancoraDepois": "Agora eu mudo uma regra. Eu clico em Regra: a tecla atira, e ela fica desligada. Na lista, essa regra fica apagada.",
-      "falaPrincipal": "E se eu mudar uma dessas regras?",
-      "falaPersonagem": "E se eu mudar uma dessas regras?",
+      "ancoraAntes": "Sabe o uniforme de um time de futebol? Ele é a aparência do time: é o que todo mundo vê quando o time entra em campo.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda no jogo quando você troca a",
+      "falaPrincipal": "E se eu trocar a nave por um carrinho, o jogo muda?",
+      "falaPersonagem": "E se eu trocar a nave por um carrinho, o jogo muda?",
       "tags": ["[curious]"]
     },
     {
@@ -33,10 +33,10 @@
       "clipe": "video-copias",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "e o mesmo jogo aparece no lado do Estúdio, também com a nave azul. Ou seja, o arquivo virou um projeto no Estúdio.",
-      "ancoraDepois": "Agora, em Cor da nave no Estúdio, eu escolho rosa. Olha só: a nave do Estúdio fica rosa, e a nave do jogo da aula",
-      "falaPrincipal": "Se eu mudar essa cópia, o outro jogo muda também?",
-      "falaPersonagem": "Se eu mudar essa cópia, o outro jogo muda também?",
+      "ancoraAntes": "o seu Estúdio. Sabe quando você copia o desenho de um gibi numa folha sua? A folha é a cópia, e o gibi é o original.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a cópia guarda do jogo da aula e",
+      "falaPrincipal": "Se eu mudar a nave da cópia, a nave do jogo da aula muda também?",
+      "falaPersonagem": "Se eu mudar a nave da cópia, a nave do jogo da aula muda também?",
       "tags": ["[curious]"]
     }
   ]

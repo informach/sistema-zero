@@ -518,7 +518,19 @@ const VARIAVEL_ESTREITA = { x: 0, y: 44, w: 560, h: 196 } as const
  * - a ligação caixa → tela fica SÓLIDA quando o placar é mostrado ("Pontos: 3", como no Estúdio).
  * ⚠️ Antes de criar, a caixa é um contorno tracejado: "ainda não existe" é diferente de "guarda 0".
  */
-export function VariableStage({ state, cast }: { state: SceneState; cast?: SceneCast }) {
+export function VariableStage({
+  state,
+  cast,
+  semBlocos = false,
+}: {
+  state: SceneState
+  cast?: SceneCast
+  /**
+   * A exploração livre da Nave (02/11/2026) trabalha só a IDEIA: sem a fileira dos três blocos do
+   * Estúdio, que só aparecem na montagem.
+   */
+  semBlocos?: boolean
+}) {
   const { value, shown, changes, created } = state.box
   const mundo = useSceneCenario(cast, 'variable')
   const rotuloDoPlacar = mundo === 'nave' ? 'Pontos:' : 'placar'
@@ -529,7 +541,9 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
     <SceneCanvas
       cast={cast}
       mundo={mundo}
-      titulo="Os blocos, a caixa pontos e a tela do jogo"
+      titulo={
+        semBlocos ? 'A caixa pontos e a tela do jogo' : 'Os blocos, a caixa pontos e a tela do jogo'
+      }
       descricao={`${created ? `A caixa pontos guarda ${value}.` : 'A caixa pontos ainda não existe.'} A tela ${shown ? `mostra ${rotuloDoPlacar} ${value}` : 'não mostra placar'}.`}
       // ⚠️ SEM rodapé (lote 2 do Raio-X): "A caixa é o que o jogo GUARDA. A tela é o que ele
       // MOSTRA." era a conclusão da cena desde a abertura, com um pronome que o elenco não veste.
@@ -538,7 +552,7 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
       // 12px passava das bordas e cobria o bloco do lado. O desenho perde a fileira de cima.
       viewEstreito={VARIAVEL_ESTREITA}
       legenda={(palco) =>
-        palco.estreito ? (
+        palco.estreito && !semBlocos ? (
           <ul aria-hidden data-blocos-da-caixa="" className="flex flex-wrap gap-2 px-3 pb-3">
             {BLOCOS_DA_CAIXA.map((bloco, i) => (
               <li
@@ -561,6 +575,7 @@ export function VariableStage({ state, cast }: { state: SceneState; cast?: Scene
         <>
           {/* ⚠️ No estreito a fileira dos blocos mora embaixo do desenho (a legenda). */}
           {!palco.estreito &&
+            !semBlocos &&
             BLOCOS_DA_CAIXA.map((bloco, i) => (
               <g key={bloco} transform={`translate(${20 + i * 178} 14)`}>
                 <rect

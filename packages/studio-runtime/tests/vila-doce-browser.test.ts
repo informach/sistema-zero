@@ -67,7 +67,13 @@ nativeTest(
           !d.slug.endsWith(process.env.SZ_VILA_DOCE_SCENARIO)
         )
           continue
-        const scenarios: { name: string; project: Project; ids?: string[]; passes: boolean }[] = [
+        const scenarios: {
+          name: string
+          project: Project
+          ids?: string[]
+          passes: boolean
+          slowFrames?: boolean
+        }[] = [
           { name: 'gabarito', project: d.conteudo.gabarito as Project, passes: true },
           { name: 'projetoInicial', project: d.conteudo.projetoInicial as Project, passes: false },
         ]
@@ -77,6 +83,43 @@ nativeTest(
           const behavior = (project.ir as SZIRV2).behavior
           for (const area of [behavior.start, behavior.events, behavior.loops]) visit(area, change)
           scenarios.push({ name, project, ids, passes: false })
+        }
+        if (d.slug.endsWith('-pulo-alto')) {
+          scenarios.push({
+            name: 'quadros-de-50ms',
+            project: d.conteudo.gabarito as Project,
+            passes: true,
+            slowFrames: true,
+          })
+          scenarios.push({
+            name: 'pulo-fraco-quadros-de-50ms',
+            project: d.conteudo.projetoInicial as Project,
+            passes: false,
+            slowFrames: true,
+          })
+          // O enunciado aceita forças de 12 a 16: o executor deve aceitar as duas pontas.
+          for (const force of [12, 16]) {
+            const project = structuredClone(d.conteudo.gabarito) as Project
+            const behavior = (project.ir as SZIRV2).behavior
+            for (const area of [behavior.start, behavior.events, behavior.loops])
+              visit(area, (statement) => {
+                if (statement.type === 'g2d:controlDino')
+                  statement.jump = { type: 'num', value: force }
+              })
+            scenarios.push({
+              name: `forca-valida-${force}`,
+              project,
+              ids: ['pulo-alto'],
+              passes: true,
+            })
+            scenarios.push({
+              name: `forca-valida-${force}-quadros-de-50ms`,
+              project,
+              ids: ['pulo-alto'],
+              passes: true,
+              slowFrames: true,
+            })
+          }
         }
         if (d.slug.endsWith('-pulo'))
           mutar('sem-controle', ['pular'], (s) => {
@@ -95,6 +138,38 @@ nativeTest(
             if (s.type === 'g2d:spawnObstacle') s.vx = { type: 'num', value: 0 }
           })
         for (const scenario of scenarios) {
+          {
+            let source = await readFile(join(runtime, 'check-objectives.mjs'), 'utf8')
+            source = source.replace(
+              "from 'playwright-core'",
+              `from ${JSON.stringify(pathToFileURL(driver).href)}`,
+            )
+            // QA de cadência: o browser ainda desenha e executa o programa real, a 20 fps.
+            // Nada muda no runtime distribuído, nas teclas ou na física do jogo.
+            if (scenario.slowFrames) {
+              expect(source).toContain('const page = await context.newPage()')
+              expect(source).toContain('await page.keyboard.down(step.key)')
+              source = source
+                .replace(
+                  'const page = await context.newPage()',
+                  `await context.addInitScript(() => {
+                const raf = requestAnimationFrame.bind(globalThis)
+                globalThis.requestAnimationFrame = (callback) => raf(function next(now) {
+                  if (now % 50 < 16.7) callback(now)
+                  else raf(next)
+                })
+              })
+              const page = await context.newPage()`,
+                )
+                .replace(
+                  'await page.keyboard.down(step.key)',
+                  `
+              await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => resolve())))
+              await page.keyboard.down(step.key)`,
+                )
+            }
+            await writeFile(join(dir, 'check-objectives.mjs'), source)
+          }
           const project = scenario.project
           const objectives = d.conteudo.objetivos
             .filter((o) => isSectionExecutionRule(o.rule))

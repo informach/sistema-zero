@@ -1,4 +1,8 @@
-[curious] Como faz para o som tocar em todo pulo?
+[curious] E se o som ficar esperando a tecla, ele aparece quando o jogo começa?
+
+[long pause]
+
+[curious] E se o som estiver ligado à tecla, o pulo do toque também tem som?
 
 [long pause]
 

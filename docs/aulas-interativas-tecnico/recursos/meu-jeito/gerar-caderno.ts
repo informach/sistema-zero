@@ -10,7 +10,7 @@ import { FONTE as baloo } from '../../../../packages/studio/src/official-extensi
 import { FONTE as nunito } from '../../../../packages/studio/src/official-extensions/gameUiFonts/nunito'
 import { renderProjectToPreviewDocAsync } from '../../../../packages/studio/src/preview/renderProject'
 import type { Block } from '../../qa/corre-dino-projetos-qa'
-import { aulasMeuJeito, falasSecao } from '../../qa/gerar-meu-jeito'
+import { aulasMeuJeito, falasSecao, type SecaoMeuJeito } from '../../qa/gerar-meu-jeito'
 import { etapasMeuJeito, projetoMeuJeito } from '../../qa/meu-jeito-etapas'
 import { naveQuadro, pedraQuadro, svgSheet } from './artes-referencia'
 
@@ -208,6 +208,17 @@ const diagrams: string[][] = [
     ]),
   ],
 ]
+/**
+ * A página de uma experiência (02/11/2026, molde do Cadê): o que investigar e a liberdade de ordem,
+ * sem a sequência de testes nem o resultado. Os pedidos de cada descoberta ficam na experiência,
+ * com o Zappy; no papel, uma lista numerada deles virava o roteiro dos testes.
+ */
+function objetivosDaInvestigacao(section: SecaoMeuJeito): string[] {
+  return [
+    section.activity!.instructions,
+    'O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
+  ]
+}
 const chapters = aulasMeuJeito.map((lesson, i) => {
   const chunks: string[] = []
   for (const section of lesson.sections) {
@@ -218,16 +229,12 @@ const chapters = aulasMeuJeito.map((lesson, i) => {
       )
       continue
     }
-    // O caderno é da criança. Desde 06/10/2026 o vídeo da experiência e o do jogo pronto são
-    // demonstrações na primeira pessoa: na experiência entram as instruções dela, no imperativo. O
-    // resto usa a fala do Mapa (`falasSecao(…, 'mapa')`): sem os parágrafos do narrador no jogo
-    // pronto, sem os chamados de atenção, que apontam para o vídeo, e com um fecho que não manda
-    // pausar nem voltar a "esta aba", que o PDF não tem.
-    const speech = (
-      section.activity
-        ? [section.activity.instructions, 'Quando terminar os testes, clique em Próxima parte.']
-        : falasSecao(section, 'mapa')
-    ).map((paragraph) => paragraph)
+    // O caderno é da criança. Desde 02/11/2026 a experiência é exploração livre com o Zappy: a
+    // página dela traz o que investigar (a instrução da experiência), sem sequência de testes e
+    // nunca o resultado. O resto usa a fala do Mapa (`falasSecao(…, 'mapa')`):
+    // sem os parágrafos do narrador no jogo pronto, sem os chamados de atenção, que apontam para o
+    // vídeo, e com um fecho que não manda pausar nem voltar a "esta aba", que o PDF não tem.
+    const speech = section.activity ? objetivosDaInvestigacao(section) : falasSecao(section, 'mapa')
     // Mantenha a abertura junto da primeira ação e a saída junto do último teste.
     // Cada passo conserva seu parágrafo e número, mesmo quando ocupa a mesma página.
     for (let p = 0; p < speech.length; ) {

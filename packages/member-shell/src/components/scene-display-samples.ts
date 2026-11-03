@@ -1420,6 +1420,17 @@ const DEFAULT_DISPLAY_SAMPLES: Record<
       'Sol na direita, sombra na esquerda.',
     ],
   },
+  'score-goal': {
+    readouts: [
+      { label: 'placar', value: '23', tone: 'a' },
+      { label: 'meta', value: '26', tone: 'b' },
+      { label: 'sinal', value: 'maior ou igual', tone: 'plain' },
+    ],
+    situations: [
+      'O placar está em 23 e a placa da meta diz 26. A vitória vem com o placar maior que a meta.',
+      'O placar está em 27 e a placa da meta diz 26. A vitória vem com o placar maior ou igual à meta. A partida acabou.',
+    ],
+  },
 }
 
 export function sceneDisplaySamples(scene: SceneId, cast?: SceneCast) {

@@ -6,7 +6,7 @@
 
 ### Clipe `video-menu` · Desenhe a tela de início
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-menu`
 
@@ -15,15 +15,35 @@
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] O seu jogo já espera no estado inicio, mas quem abre o jogo ainda não sabe o que fazer. Primeiro, olhe a área do jogo. Tá vendo? Só a floresta aparece, porque o Se do quadro só tem uma resposta, para jogando. Por isso, vamos acrescentar outra resposta, para o estado inicio, que desenha a tela de abertura.
+[engaging, energetic, conversational voice] Olhe a área do seu jogo. Tá vendo? Só a floresta aparece, porque nada desenha a tela de início.
 
-[confident, clear, unhurried voice] Deixe à vista o Se jogando, dentro de A cada quadro do jogo. Olha aqui, na linha de baixo do bloco: aparecem duas opções com um sinal de mais, senão se e senão. Clique uma vez no + ao lado de senão se, e o Se ganha um ramo novo, chamado senão se.
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte da aula anterior? Na tela de início, a pergunta respondia não, e nada acontecia. Agora a gente vai desenhar a tela de início!
 
-[engaging, energetic, conversational voice] O ramo novo chega com a pergunta x > 0: arraste essa pergunta para a lixeira. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ? e solte no lugar vazio da pergunta. Ele já chega com inicio: mantenha.
+[curious] Quando a resposta da primeira pergunta é não, o Se pode fazer uma segunda pergunta: é a tela de início?
+
+[engaging, energetic, conversational voice] Essa segunda pergunta fica num pedaço novo do Se, que se chama senão se.
+
+[engaging, energetic, conversational voice] Cada pedaço com a sua pergunta se chama ramo. O Se faz as perguntas de cima para baixo e para na primeira que responder sim. É como procurar o controle remoto: está no sofá? Não. Está na mesa? Sim! Aí você para de procurar. Como o jogo só está num estado de cada vez, só uma pergunta responde sim.
+
+[confident, clear, unhurried voice] Deixe à vista o Se jogando, dentro de A cada quadro do jogo.
+
+[interested, animated voice] Olha aqui: na linha de baixo do bloco Se, tem dois sinais de mais, um antes de senão se e outro antes de senão. Clique uma vez no primeiro, o que fica antes de senão se.
+
+[engaging, energetic, conversational voice] O Se ganha um ramo novo, o senão se. [confident, clear, unhurried voice] Repare: ele chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte nesse lugar. Ele já chega com inicio: mantenha.
 
 [confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro do ramo inicio. Na mesma categoria, Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse ramo.
 
-[engaging, energetic, conversational voice] No título, escreva Corre, Dino! No subtítulo, escreva Pule os cactos! E, na dica, escreva Aperte qualquer tecla ou toque na tela para começar. O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.
+[engaging, energetic, conversational voice] É este bloco que desenha a tela de abertura.
+
+[engaging, energetic, conversational voice] No título, escreva Corre, Dino!
+
+[engaging, energetic, conversational voice] No subtítulo, escreva Pule os cactos!
+
+[engaging, energetic, conversational voice] Na dica, escreva Aperte qualquer tecla ou toque na tela para começar.
+
+[engaging, energetic, conversational voice] O fundo já chega escuro, para o texto aparecer bem: mantenha ou escolha outra cor escura.
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: a abertura aparece, porque o estado está em inicio! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: no ramo senão se o estado do jogo é inicio, está Mostrar tela, com o título, o subtítulo e a dica. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -33,48 +53,50 @@
 ```
 
 
-**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se do quadro, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora desenhe a tela de início do seu jogo! Acrescente um senão se inicio ao Se de A cada quadro do jogo, com o título e o convite para começar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 2. Compare tecla e toque para começar
+## Seção 2. O que começa a partida?
 
-### Clipe `video-convite` · Compare tecla e toque para começar
+### Clipe `video-convite` · O que começa a partida?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-convite`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar na tela de início, com Começar em Quando apertar a tecla. Tocar na tela e mostrar que nada muda. Clicar em Apertar Enter e mostrar a partida. Clicar em Voltar ao início, levar Começar para Quando apertar qualquer tecla ou tocar na tela e repetir o toque e o Enter, voltando ao início entre eles. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando chega visita", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy abrindo a porta de casa, com uma visita tocando a campainha e outra batendo na porta [na edição: meme da visita]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, na tela de início. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender os eventos que começam a partida, com tecla e também com toque.
+[engaging, energetic, conversational voice] Para a partida começar, o jogo precisa escutar quem joga: pode ser uma tecla, um toque ou os dois.
 
-[interested, animated voice] Olha aqui: com Começar em Quando apertar a tecla, eu toco na tela de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa.
+[engaging, energetic, conversational voice] Sabe quando chega visita? Tem gente que toca a campainha e tem gente que bate na porta.
 
-[curious] E quem quiser começar pelo toque?
+[engaging, energetic, conversational voice] No seu jogo, quem joga pode usar o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque.
 
-[engaging, energetic, conversational voice] Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco na tela de início, a partida começa. Volto ao início, clico em Apertar Enter, e ela começa também. Esse evento escuta os dois jeitos.
+[curious] E se o jogo só escutar o teclado, quem joga no celular consegue começar?
 
-[engaging, energetic, conversational voice] Quem joga no celular não tem teclado, por isso precisa do toque. No seu jogo, você vai usar Quando apertar qualquer tecla ou tocar na tela para começar a partida.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que começa a partida quando o jogo escuta só o Enter e quando escuta qualquer tecla ou toque. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-convite-K1 | Dedé | 1 | de início. Nada acontece, porque esse evento só escuta a tecla. Quando eu clico em Apertar Enter, a partida começa. | E quem quiser começar pelo toque? | Eu clico em Voltar ao início e levo Começar para Quando apertar qualquer tecla ou tocar na tela. Agora, quando eu toco | [curious] |
+| video-convite-K1 | Dedé | 1 | o teclado, ou só o dedo, no celular. E a tela de início pode escutar só o Enter, ou qualquer tecla e também um toque. | E se o jogo só escutar o teclado, quem joga no celular consegue começar? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que começa a partida quando o jogo | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-convite-K1`: entrada — Terminar o teste com Enter; não trocar o evento antes da pergunta. Saída — Voltar ao início, trocar o evento e testar toque e Enter, voltando ao início entre os testes.
+- `video-convite-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Teste o toque e o Enter antes e depois de mudar o lugar da peça Começar. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/controls.ts`, na tela `packages/member-shell/src/components/scene-livre/controls.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que pode começar a partida em cada jeito de escutar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 3. Ligue a entrada ao início da partida
 
@@ -91,19 +113,35 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [engaging, energetic, conversational voice] Aqui no seu jogo, toque na abertura. Tá vendo? Nada acontece, porque nenhum evento muda o estado.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Quando apertar qualquer tecla ou tocar na tela começou a partida dos dois jeitos. Agora a gente vai usar esse evento no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Escutando qualquer tecla ou toque, a partida começava dos dois jeitos. Agora a gente vai fazer o seu jogo escutar os dois!
 
-[engaging, energetic, conversational voice] Esse evento fica em Quando acontecer, junto do evento do pulo, mas separado dele. Deixe à vista um espaço vazio dentro de Quando acontecer. Depois, abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.
+[engaging, energetic, conversational voice] Esse evento fica em Quando acontecer, junto do evento do pulo, mas separado dele.
+
+[confident, clear, unhurried voice] Deixe à vista um espaço vazio dentro de Quando acontecer.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço.
+
+[engaging, energetic, conversational voice] É este bloco que escuta qualquer tecla e também o toque na tela.
 
 [curious] E a tecla do pulo, vai começar a partida de novo?
 
-[engaging, energetic, conversational voice] Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de agir. Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali. Depois, arraste para a lixeira a pergunta x > 0 que veio nele.
+[engaging, energetic, conversational voice] Não, se o evento perguntar antes. É que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele pergunta o estado antes de agir.
 
-[confident, clear, unhurried voice] Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é ?, solte nesse lugar e mantenha inicio, que já vem escolhido.
+[confident, clear, unhurried voice] Deixe à vista o espaço vazio dentro do novo evento. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte ali.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então. Ele chega com inicio: troque por jogando.
+[confident, clear, unhurried voice] Repare: ele chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira.
 
-[confident, clear, unhurried voice] Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. [interested, animated voice] Olha só: a abertura some, e o Dino aparece! Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.
+[confident, clear, unhurried voice] Agora deixe à vista o lugar vazio da pergunta. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte nesse lugar. Ele já vem com inicio: mantenha.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio do então desse Se. Na mesma categoria, Telas e partida, pegue o bloco Mudar o estado do jogo para e solte no então.
+
+[engaging, energetic, conversational voice] Ele chega com inicio: clique em inicio e troque por jogando.
+
+[engaging, energetic, conversational voice] É este bloco que começa a partida: ele muda o estado para jogando.
+
+[confident, clear, unhurried voice] Agora clique em Atualizar, a seta circular no alto da prévia do jogo, e, sem clicar no jogo, toque na barra de espaço. [interested, animated voice] Olha só: a abertura some, e o Dino aparece!
+
+[engaging, energetic, conversational voice] Depois, use a barra de espaço, a seta para cima e um toque na parte de cima da tela para conferir os pulos. Durante a partida, o evento não muda o estado de novo, porque a pergunta só responde sim quando o estado é inicio.
 
 [engaging, energetic, conversational voice] Para testar o toque desde a abertura, clique em Atualizar de novo e, desta vez, toque na abertura para começar.
 
@@ -116,7 +154,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-entrada-ampla-K1 | Dedé | 1 | e depois Teclado, ações e toque, pegue o bloco Quando apertar qualquer tecla ou tocar na tela e solte nesse espaço. | E a tecla do pulo, vai começar a partida de novo? | Só que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele precisa perguntar o estado antes de | [curious] |
+| video-entrada-ampla-K1 | Dedé | 1 | qualquer tecla ou tocar na tela e solte nesse espaço. É este bloco que escuta qualquer tecla e também o toque na tela. | E a tecla do pulo, vai começar a partida de novo? | Não, se o evento perguntar antes. É que esse evento também acontece no meio da partida, a cada pulo. Por isso, ele | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

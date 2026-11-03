@@ -1,9 +1,8 @@
 import {
   isRecord,
-  isSceneAction,
+  isSceneSetupAction,
   SCENE_IDS,
   SCENE_LIMITS,
-  type SceneAction,
   type SceneId,
   type SceneSetup,
   SETUP_LIMITS,
@@ -137,28 +136,6 @@ export function isExperimentationActivity(value: unknown): value is Experimentat
 }
 
 /**
- * Esta ação pode entrar num CASO (`setup.actions`) desta cena? É a régua do `isSceneSetup` e a
- * mesma que o editor do Admin usa para oferecer as escolhas: um caso com uma ação que a cena
- * recusa nem chega a ser salvo.
- */
-export function isSceneSetupAction(acao: unknown, scene: SceneId): acao is SceneAction {
-  if (!isSceneAction(acao, scene)) return false
-  // ⚠️ `reset` volta para o próprio caso: dentro dele seria um laço. `hint` é gesto de quem
-  // está travado, não estado de partida.
-  if (acao.type === 'reset' || acao.type === 'hint') return false
-  // ⚠️ No andar do Farol o caso escolhe a velocidade e o limite, nunca ONDE o personagem está: o
-  // "Recomeçar" da bancada volta ao começo de fábrica, e um caso que abrisse fora da tela
-  // poria a criança num lugar ao qual ela não consegue voltar. Sem tempo e sem seta, o x não
-  // sai do começo.
-  if (
-    scene === 'lighthouse-walk' &&
-    ['advance', 'hold-arrow', 'walk-frames', 'test-walk-order', 'walk-pace'].includes(acao.type)
-  )
-    return false
-  return true
-}
-
-/**
  * O caso é legal nesta cena?
  *
  * As ações passam pela régua única (`isSceneAction`) e as metas precisam existir no modelo —
@@ -179,6 +156,55 @@ export function isSceneSetup(value: unknown, scene: SceneId): value is SceneSetu
         'lighthouse-position',
         'collect-and-remember',
         'lighthouse-key',
+        // Os quatro Poderes da Faísca (02/11/2026): só a ideia, com o Zappy acompanhando.
+        'timed-bridge',
+        'coin-counter',
+        'symbol-sequence',
+        'two-pieces',
+        // As cenas do Construtor (02/11/2026): Nave contra Asteroides e O Jogo do Meu Jeito.
+        'cleanup',
+        'collision-pair',
+        'coordinates',
+        'draw-loop',
+        'fixed-vs-read',
+        'game-state',
+        'invincibility',
+        'layers',
+        'once-vs-always',
+        'random',
+        'restart',
+        'spawn',
+        'variable',
+        'velocity',
+        'world',
+        'copy-vs-original',
+        'fill-stroke',
+        'frames',
+        'motion-amount',
+        'onion-skin',
+        'pixel-vector',
+        'published-copy',
+        'same-rules-new-skin',
+        'shading',
+        'sheet-vs-sprite',
+        'symmetry',
+        'two-clocks',
+        'unique-names',
+        // O Corre Dino, frente B (02/11/2026): tela, leitor de tela, gravidade, impulso e som do pulo.
+        'stage-size',
+        'screen-reader',
+        'gravity',
+        'impulse',
+        'jump-sound',
+        // O Corre Dino, frente C (02/11/2026): começar a partida, área de contato, placar, a reta
+        // dos números negativos e a base que acelera.
+        'controls',
+        'hitbox',
+        'score',
+        'number-line',
+        'acceleration',
+        // A meta do jogo (Nave, Dia 5, frente D, 02/11/2026).
+        'score-goal',
       ].includes(scene))
   )
     return false
@@ -383,4 +409,8 @@ export function sceneHintsFor(activity: SceneActivity): readonly string[] {
   return sceneModel(activity.scene).hints
 }
 
-export { discoveryGuidance, discoverySpeechSteps } from './discovery-guidance'
+export {
+  discoveryGuidance,
+  discoverySpeechSteps,
+  lighthouseWalkStrideCase,
+} from './discovery-guidance'

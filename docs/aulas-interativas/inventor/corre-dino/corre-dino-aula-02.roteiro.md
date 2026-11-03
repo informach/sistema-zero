@@ -2,32 +2,48 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare o desenho no começo e a cada quadro
+## Seção 1. Desenhar uma vez ou em todo quadro?
 
-### Clipe `video-quadros` · Compare o desenho no começo e a cada quadro
+### Clipe `video-quadros` · Desenhar uma vez ou em todo quadro?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-quadros`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com o desenho do Dino no mesmo lugar (o contorno tracejado dos bastidores mostra o x novo). Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy folheando um caderno em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Lembra do desenho animado", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, um quadro em cada folha [na edição: meme das folhas de desenho]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar quadros. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o que é um quadro e por que o jogo desenha o Dino de novo em cada um. Um quadro é uma imagem do jogo, e muitas imagens seguidas fazem o movimento.
+[engaging, energetic, conversational voice] Num jogo, desenhar o Dino é pintar o Dino na tela.
 
-[interested, animated voice] Olha aqui: com Desenhar o Dino em Só no começo, eu clico em Avançar 1 quadro. O x do Dino muda, mas o desenho dele continua no mesmo lugar. O Dino andou por dentro do jogo, e ninguém desenhou o Dino de novo.
+[engaging, energetic, conversational voice] Lembra do desenho animado, um quadro atrás do outro? Cada quadro é um desenho que aparece na tela.
 
-[engaging, energetic, conversational voice] Quando eu troco para A cada quadro e avanço, aparece um Dino novo no lugar novo, e o desenho velho continua lá. Agora são dois Dinos na tela.
+[engaging, energetic, conversational voice] No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.
 
-[engaging, energetic, conversational voice] Por último, eu ligo Limpar a tela antes e avanço de novo. Fica um Dino só, no lugar novo: o jogo apaga a imagem velha e desenha a nova. É como um desenho animado, feito com um desenho novo em cada folha. No seu jogo, você vai colocar Desenhar o sprite dentro de A cada quadro do jogo e, depois, Limpar a tela antes dele.
+[curious] E se o Dino for desenhado em todo quadro, sem apagar a tela?
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar o que a tela mostra em cada jeito de desenhar o Dino, com e sem apagar a tela antes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
+**Substituições na edição kids:**
 
-**Recado na página (não gravar):** Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte.
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-quadros-K1 | Dedé | 1 | aparece na tela. No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes. | E se o Dino for desenhado em todo quadro, sem apagar a tela? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra em cada jeito de | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-quadros-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/draw-loop.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Mostre o Dino a cada quadro
 
@@ -46,11 +62,25 @@
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O Dino só acompanhou o movimento quando foi desenhado de novo em cada quadro. Agora a gente vai fazer o seu Dino aparecer!
 
-[engaging, energetic, conversational voice] A repetição fica numa área própria, chamada Enquanto estiver rodando. Deixe à vista um espaço vazio ao lado de Ao iniciar. Depois, abra Áreas do projeto, pegue Enquanto estiver rodando e solte nesse espaço, separada de Ao iniciar.
+[engaging, energetic, conversational voice] O que acontece sempre, enquanto o jogo roda, fica numa área própria, chamada Enquanto estiver rodando.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando. Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área. Tudo o que ficar dentro dele vai acontecer de novo em cada quadro.
+[confident, clear, unhurried voice] Deixe à vista um espaço vazio ao lado de Ao iniciar. Depois, abra Áreas do projeto, pegue Enquanto estiver rodando e solte nesse espaço, separada de Ao iniciar.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo. Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro do quadro. No nome, escolha dino.
+[engaging, energetic, conversational voice] É esta área que cuida do que continua acontecendo, sempre, enquanto o jogo roda.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Enquanto estiver rodando.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Tempo e depois Quadros e intervalos, pegue o bloco A cada quadro do jogo e solte dentro dessa área.
+
+[engaging, energetic, conversational voice] É este bloco que faz o que está dentro dele acontecer de novo em cada quadro.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Sprites e depois Criar e trocar aparência, pegue o bloco Desenhar o sprite e solte dentro de A cada quadro do jogo.
+
+[engaging, energetic, conversational voice] No jogo, o Dino é um sprite, que é um personagem do jogo que você pode programar. É este bloco que desenha um sprite na tela.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com o nome jogador. Clique em jogador e escolha dino.
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: o Dino aparece, parado no lugar em que foi criado! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Criar dinossauro continua em Ao iniciar, e Desenhar o sprite dino está dentro de A cada quadro do jogo, em Enquanto estiver rodando, com o nome dino nos dois blocos. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -64,7 +94,7 @@
 
 ### Clipe `video-limpeza` · Prepare uma imagem nova em cada quadro
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-limpeza`
 
@@ -77,9 +107,15 @@
 
 [curious] E como tira essa sombra escura?
 
-[engaging, energetic, conversational voice] É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Com Limpar a tela antes, ficava um Dino só. Agora a gente vai colocar essa limpeza!
+[engaging, energetic, conversational voice] É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Apagando a tela antes de cada desenho, ficava um Dino só. Agora a gente vai colocar essa limpeza!
 
-[engaging, energetic, conversational voice] A limpeza tem que vir antes do desenho, em todo quadro: primeiro o jogo apaga a imagem velha e, depois, desenha a nova. Por isso, deixe à vista o lugar logo antes de Desenhar o sprite, no começo de A cada quadro do jogo. Depois, abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Limpar a tela e solte nesse primeiro lugar.
+[engaging, energetic, conversational voice] A limpeza tem que vir antes do desenho, em todo quadro: primeiro o jogo apaga a imagem velha e, depois, desenha a nova. Por isso, ela vai no começo de A cada quadro do jogo, logo antes de Desenhar o sprite.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar logo antes de Desenhar o sprite, no começo de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Desenho e efeitos e depois Efeitos, pegue o bloco Limpar a tela e solte nesse primeiro lugar.
+
+[engaging, energetic, conversational voice] É este bloco que apaga a imagem velha, no começo de cada quadro.
 
 [engaging, energetic, conversational voice] Agora olhe o Dino: ele continua aparecendo, e a sombra embaixo dele volta a ficar clarinha, porque agora cada quadro começa com a tela limpa! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela e, logo abaixo, Desenhar o sprite dino. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -92,7 +128,7 @@
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-limpeza-K1 | Dedé | 1 | no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho. | E como tira essa sombra escura? | É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Com Limpar a tela antes, ficava um | [curious] |
+| video-limpeza-K1 | Dedé | 1 | no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho. | E como tira essa sombra escura? | É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Apagando a tela antes de cada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -103,52 +139,54 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora prepare uma imagem nova em cada quadro! Coloque Limpar a tela antes de Desenhar o sprite dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 4. Compare a ordem dos desenhos
+## Seção 4. Quem fica na frente?
 
-### Clipe `video-camadas` · Compare a ordem dos desenhos
+### Clipe `video-camadas` · Quem fica na frente?
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 1 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-camadas`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você cola figurinhas", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas do Dino e da floresta na mão, escolhendo qual colar primeiro no álbum [na edição: meme das figurinhas]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem trocar a ordem. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender como a ordem dos desenhos decide quem fica na frente.
+[engaging, energetic, conversational voice] Em cada quadro, o jogo monta a tela desenhando uma coisa depois da outra, na mesma tela.
 
-[interested, animated voice] Olha aqui: no começo, a lista desenha o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.
+[engaging, energetic, conversational voice] Sabe quando você cola figurinhas num álbum, umas por cima das outras? A ordem em que você cola faz diferença.
 
-[curious] Como eu trago o Dino para a frente?
+[engaging, energetic, conversational voice] No seu jogo, vão ser desenhados o Dino e a floresta.
 
-[engaging, energetic, conversational voice] Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem mudou.
+[curious] E se a floresta for desenhada depois do Dino, quem fica na frente?
 
-[engaging, energetic, conversational voice] Se eu volto o Dino para antes da Floresta, ele se esconde de novo. Quando eu coloco o Dino depois da Floresta outra vez, ele volta para a frente. Quem é desenhado por último fica por cima. É como colar figurinhas no álbum: a última cobre a que já estava ali. No seu jogo, você vai encaixar Desenhar fundo de floresta antes de Desenhar o sprite.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que muda na tela quando muda a ordem em que o Dino e a floresta são desenhados. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-camadas-K1 | Dedé | 1 | o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele. | Como eu trago o Dino para a frente? | Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem | [curious] |
+| video-camadas-K1 | Dedé | 1 | umas por cima das outras? A ordem em que você cola faz diferença. No seu jogo, vão ser desenhados o Dino e a floresta. | E se a floresta for desenhada depois do Dino, quem fica na frente? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando muda a ordem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-camadas-K1`: entrada — Mostrar a floresta cobrindo quase todo o Dino; manter a ordem inicial. Saída — Trocar o Dino para depois da Floresta e deixar o resultado aparecer antes da explicação.
+- `video-camadas-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/layers.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 5. Coloque a floresta atrás do Dino
 
 ### Clipe `video-ordem-certa` · Coloque a floresta atrás do Dino
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-ordem-certa`
 
@@ -161,11 +199,17 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 [engaging, energetic, conversational voice] Lembra da experiência da parte anterior? O Dino só apareceu inteiro quando foi desenhado depois da floresta. Agora a gente vai colocar a floresta atrás dele!
 
-[engaging, energetic, conversational voice] O lugar da floresta é entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo. Deixe esse espaço à vista. Depois, abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.
+[engaging, energetic, conversational voice] A floresta tem que ficar atrás do Dino, e quem é desenhado por último fica na frente. Por isso, ela vai entre Limpar a tela e Desenhar o sprite, dentro de A cada quadro do jogo.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço entre Limpar a tela e Desenhar o sprite.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.
+
+[engaging, energetic, conversational voice] É este bloco que desenha a floresta, atrás do que vem depois dele.
 
 [curious] A floresta já está andando! Dá para ela andar mais rápido?
 
-[engaging, energetic, conversational voice] Dá, sim. [confident, clear, unhurried voice] Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada quadro, e é ele que faz o Dino parecer correr pela floresta.
+[engaging, energetic, conversational voice] Dá, sim. [confident, clear, unhurried voice] Repare: o bloco chega com velocidade 4. Clique no 4 e troque por 5, porque um número maior deixa o fundo mais rápido, e é o fundo andando que faz o Dino parecer correr pela floresta.
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: a floresta passa atrás do Dino! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo, primeiro vem Limpar a tela, depois Desenhar fundo de floresta, com velocidade 5, e, por último, Desenhar o sprite dino, com uma floresta só. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -176,7 +220,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-ordem-certa-K1 | Dedé | 1 | depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino. | A floresta já está andando! Dá para ela andar mais rápido? | Dá, sim. Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada | [curious] |
+| video-ordem-certa-K1 | Dedé | 1 | e solte entre a limpeza e o desenho do Dino. É este bloco que desenha a floresta, atrás do que vem depois dele. | A floresta já está andando! Dá para ela andar mais rápido? | Dá, sim. Repare: o bloco chega com velocidade 4. Clique no 4 e troque por 5, porque um número maior deixa o fundo mais | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
@@ -187,9 +231,9 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Recado na página (não gravar):** Agora deixe a floresta atrás do seu Dino! Coloque Desenhar fundo de floresta, com velocidade 5, entre a limpeza e o desenho do Dino. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 6. Retire a borda provisória
+## Seção 6. Retire a borda de teste
 
-### Clipe `video-retirar-borda` · Retire a borda provisória
+### Clipe `video-retirar-borda` · Retire a borda de teste
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
@@ -202,7 +246,13 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [confident, clear, unhurried voice] Repare: agora que a floresta mostra onde fica a área do jogo, a borda não faz mais falta. Ela serviu para você enxergar o tamanho da tela. Por isso, retire só a borda e deixe o resto como está.
 
-[interested, animated voice] Olha aqui: dentro de Ao iniciar, a borda está entre a preparação da tela e Criar dinossauro. Se você puxar a borda, Criar dinossauro sai junto, porque está encaixado embaixo dela. Por isso, primeiro arraste Criar dinossauro para um espaço vazio. Depois, arraste Mostrar a borda da tela para a lixeira e, por último, encaixe Criar dinossauro de novo, logo abaixo de Preparar o jogo em tela cheia.
+[interested, animated voice] Olha aqui: dentro de Ao iniciar, a borda está entre a preparação da tela e Criar dinossauro. Se você puxar a borda, Criar dinossauro sai junto, porque está encaixado embaixo dela.
+
+[engaging, energetic, conversational voice] Por isso, primeiro arraste Criar dinossauro para um espaço vazio.
+
+[engaging, energetic, conversational voice] Agora arraste Mostrar a borda da tela para a lixeira.
+
+[engaging, energetic, conversational voice] Por último, encaixe Criar dinossauro logo abaixo de Preparar o jogo em tela cheia.
 
 [engaging, energetic, conversational voice] Agora olhe a área do jogo: a floresta continua passando, e o Dino continua aparecendo, agora sem a borda! [reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: Ao iniciar tem Preparar o jogo em tela cheia e, logo abaixo, Criar dinossauro, sem a borda. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
@@ -210,48 +260,50 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```
 
 
-**Recado na página (não gravar):** Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
+**Recado na página (não gravar):** Agora retire a borda de teste! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.
 
-## Seção 7. Ouça a descrição do jogo
+## Seção 7. O que o leitor de tela conta?
 
-### Clipe `video-descricao` · Ouça a descrição do jogo
+### Clipe `video-descricao` · O que o leitor de tela conta?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-descricao`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Gravar com voz disponível no navegador. No "Escute", deixar ouvir a leitura inteira, sem falar nem tocar música por cima, mantendo também a leitura escrita à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando você explica um jogo", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao telefone, falando com um amigo do outro lado da linha [na edição: meme do telefone]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem ouvir a tela: a primeira escuta fica para a criança. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o que ouve uma pessoa que usa leitor de tela. O leitor de tela é um programa que lê a tela em voz alta para quem não consegue ver bem.
+[engaging, energetic, conversational voice] Tem gente que joga sem enxergar bem a tela. Essa pessoa usa um leitor de tela, um programa que lê a tela em voz alta.
 
-[engaging, energetic, conversational voice] Escute o que acontece quando eu clico em Ouvir a tela com o campo vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.
+[engaging, energetic, conversational voice] Sabe quando você explica um jogo para alguém pelo telefone? A pessoa do outro lado não vê nada, só ouve o que você conta.
 
-[curious] E se a gente escrever como se joga?
+[engaging, energetic, conversational voice] No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.
 
-[engaging, energetic, conversational voice] Pode. Vamos colocar a descrição para o leitor de tela. Agora eu escrevo Corra com o dino e pule os cactos apertando espaço e clico em Ouvir a tela de novo. Ele lê a frase inteira, e as marcas mostram que ela diz o que fazer e como jogar.
+[curious] E o leitor de tela consegue contar como se joga o Corre, Dino?
 
-[engaging, energetic, conversational voice] É como explicar um jogo por telefone: quem está do outro lado não vê nada, por isso você conta o que fazer e como. No seu jogo, essa frase vai no bloco Descrever o jogo para leitor de tela.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-descricao-K1 | Dedé | 1 | vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece. | E se a gente escrever como se joga? | Pode. Vamos colocar a descrição para o leitor de tela. Agora eu escrevo Corra com o dino e pule os cactos apertando | [curious] |
+| video-descricao-K1 | Dedé | 1 | só ouve o que você conta. No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo. | E o leitor de tela consegue contar como se joga o Corre, Dino? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o leitor de tela diz sem | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-descricao-K1`: entrada — Deixar a leitura do campo vazio terminar antes da entrada; não sobrepor as vozes. Saída — Escrever a descrição e ouvir a leitura inteira sem voz do avatar nem da professora por cima.
+- `video-descricao-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/screen-reader.ts`, na tela `packages/member-shell/src/components/scene-livre/screen-reader.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 8. Escreva a descrição do jogo
 
@@ -261,20 +313,26 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 **Clipe:** `video-descrever-jogo`
 
-**Na tela:** Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco de descrição. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
+**Na tela:** Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte não aparece na tela: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes. Ao terminar, clicar em Verificar projeto, mostrar Objetivo cumprido! e seguir o encaminhamento narrado (Próxima parte).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] No seu jogo, olhe Ao iniciar. Tá vendo? Não tem nenhum bloco de descrição, por isso o leitor de tela não teria nada para contar.
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a frase, o leitor de tela contava o que fazer e como jogar. Agora você vai escrever a descrição do seu jogo!
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a frase, o leitor de tela contava como jogar. Agora você vai escrever a sua descrição!
+[engaging, energetic, conversational voice] A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia.
 
-[engaging, energetic, conversational voice] A descrição vale para o jogo inteiro, desde o começo. Por isso, ela vai em Ao iniciar, logo abaixo de Preparar o jogo em tela cheia. Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro. Depois, abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.
+[confident, clear, unhurried voice] Deixe à vista o espaço entre Preparar o jogo em tela cheia e Criar dinossauro.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.
 
 [curious] Essa frase vai ficar escrita no jogo?
 
-[engaging, energetic, conversational voice] Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço. O pulo ainda vai ser montado, mas tudo bem: a frase descreve o jogo completo.
+[engaging, energetic, conversational voice] Não, ela não aparece na tela. É este bloco que guarda a frase que o leitor de tela lê em voz alta.
+
+[engaging, energetic, conversational voice] No texto, apague a frase que veio no bloco e escreva esta, exatamente assim, sem ponto no fim: Corra com o dino e pule os cactos apertando espaço.
+
+[engaging, energetic, conversational voice] O pulo ainda vai ser montado, mas tudo bem: a frase descreve o jogo completo.
 
 [confident, clear, unhurried voice] Confira se ficou assim: em Ao iniciar, logo abaixo da preparação da tela, está Descrever o jogo para leitor de tela, com a frase inteira. O Dino e a floresta continuam aparecendo como antes.
 
@@ -285,7 +343,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-descrever-jogo-K1 | Dedé | 1 | depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço. | Essa frase vai ficar escrita no jogo? | Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta, | [curious] |
+| video-descrever-jogo-K1 | Dedé | 1 | depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço. | Essa frase vai ficar escrita no jogo? | Não, ela não aparece na tela. É este bloco que guarda a frase que o leitor de tela lê em voz alta. No texto, apague a | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

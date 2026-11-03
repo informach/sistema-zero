@@ -272,11 +272,13 @@
 }
 .sz-discovery-simple-hud {
   display: grid;
+  min-width: 0;
   gap: 12px;
   margin-bottom: 10px;
 }
 .sz-discovery-simple-hud-top {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
   gap: 8px;
@@ -652,6 +654,18 @@
 .door-forks strong {
   font-size: 12px;
 }
+/* O que a resposta faz, antes de a criança testar aquele caso (Farol, Dia 3, 02/11/2026). */
+.door-forks .door-fork-unknown {
+  display: grid;
+  place-items: center;
+  width: 54px;
+  height: 54px;
+  border: 2px dashed var(--color-border);
+  border-radius: 50%;
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--color-muted-foreground);
+}
 .door-forks small {
   font-size: 10px;
   color: var(--color-muted-foreground);
@@ -667,14 +681,18 @@
 }
 .position-hud {
   display: flex;
+  flex-wrap: wrap;
+  min-width: 0;
   gap: 10px;
 }
 .position-hud > span {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   align-items: center;
-  gap: 18px;
-  flex: 1;
+  gap: 4px 18px;
+  flex: 1 1 150px;
+  min-width: 0;
   padding: 12px;
   border-radius: 12px;
   background: var(--color-secondary);

@@ -28,3 +28,5 @@
 - [Coloque sua nave animada no jogo](meu-jeito-aula-06.md)
 - [Faça suas pedras nascerem animadas](meu-jeito-aula-07.md)
 - [Teste e compartilhe sua versão](meu-jeito-aula-08.md)
+
+_Revisão de 02/11/2026: as 14 experiências passaram à exploração livre com o Zappy e as falas das oito aulas foram revistas. Títulos, descrições e resumos dos módulos continuam os mesmos. Registro em [modulos-o-jogo-do-meu-jeito.md](../../../aulas-interativas-tecnico/modulos-o-jogo-do-meu-jeito.md)._

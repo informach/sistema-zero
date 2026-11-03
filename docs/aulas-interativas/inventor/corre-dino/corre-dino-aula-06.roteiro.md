@@ -2,52 +2,54 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare a tela com o grupo
+## Seção 1. Para onde vai o cacto que sai da tela?
 
-### Clipe `video-visivel-guardado` · Compare a tela com o grupo
+### Clipe `video-visivel-guardado` · Para onde vai o cacto que sai da tela?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-visivel-guardado`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a regra desligada, a tela do jogo e os bastidores lado a lado. Clicar em Tempo e deixar dois cactos saírem pela esquerda, mostrando a prateleira dos bastidores enchendo e os números da tela e do grupo na faixa. Ligar a chave e deixar o tempo passar até os dois números ficarem iguais. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy com uma mochila cheia de cactos pesando nas costas. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe quando uma bola cai no quintal", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: a bola passando por cima do muro do vizinho, com o Dino olhando [na edição: meme da bola no quintal]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com o tempo parado. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o que acontece com um cacto que sai da tela.
+[engaging, energetic, conversational voice] Um jogo pode guardar várias coisas parecidas juntas, numa lista que ele move em todo quadro. Essa lista se chama grupo.
 
-[interested, animated voice] Olha aqui: com Tirar do grupo quem sair da tela desligado, eu clico em Tempo. Os cactos passam e saem pela esquerda. Na tela do jogo eles somem, mas nos bastidores continuam na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela.
+[engaging, energetic, conversational voice] Sabe quando uma bola cai no quintal do vizinho? Você não vê mais a bola.
 
-[curious] Sair da tela não tira o cacto do grupo?
+[engaging, energetic, conversational voice] No seu jogo, os cactos ficam num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela.
 
-[engaging, energetic, conversational voice] Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que dois cactos saem, dá para ligar a regra. Eu ligo Tirar do grupo quem sair da tela e deixo o tempo passar. Agora quem sai da tela é tirado do grupo, e o número do grupo fica igual ao da tela. Sair da tela não apaga um cacto. Quem tira do grupo é essa regra.
+[curious] E quando o cacto some da tela, ele sai do grupo também?
 
-[engaging, energetic, conversational voice] É como uma mochila: o que você não vai usar continua lá dentro, ocupando espaço, até você tirar. No seu jogo, você vai encaixar Tirar do grupo quem sair da tela depois do desenho dos cactos.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar o que acontece com o grupo de cactos quando o jogo tira quem sai da tela e quando não tira. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-visivel-guardado-K1 | Dedé | 1 | mas nos bastidores continuam na prateleira Fora da tela, no grupo. Por isso o grupo tem mais cactos do que a tela. | Sair da tela não tira o cacto do grupo? | Não tira, não. Fora da tela, o cacto continua guardado no grupo. Para tirar, o jogo precisa de uma regra. Depois que | [curious] |
+| video-visivel-guardado-K1 | Dedé | 1 | num grupo, e nos bastidores dá para ver quem está nele. Quando um cacto passa da borda da esquerda, ele some da tela. | E quando o cacto some da tela, ele sai do grupo também? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que acontece com o grupo de cactos | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-visivel-guardado-K1`: entrada — Deixar dois cactos saírem; mostrar a prateleira Fora da tela, no grupo, antes de ligar a chave. Saída — Manter a prateleira Fora da tela, no grupo, à vista durante a resposta; depois, ligar a regra e acompanhar os números até ficarem iguais.
+- `video-visivel-guardado-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Compare a tela com o grupo antes e depois de ligar Tirar do grupo quem sair da tela. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/espelhos.ts`, na tela `packages/member-shell/src/components/scene-livre/dino/cleanup.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue o que acontece com o cacto que passa da borda da tela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 2. Retire do grupo quem já saiu
 
 ### Clipe `video-faxina` · Retire do grupo quem já saiu
 
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-faxina`
 
@@ -56,17 +58,27 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai tirar esses cactos de lá!
 
-[curious] Onde essa regra entra?
+[curious] E onde isso entra no jogo?
 
-[engaging, energetic, conversational voice] A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos. Depois, abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos. Escolha cactos.
+[engaging, energetic, conversational voice] O jogo confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, o bloco vai no fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos.
 
-[confident, clear, unhurried voice] Repare: no fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que a regra dá a cada cacto que ela confere. E não coloque outros blocos no espaço fazer dessa peça.
+[confident, clear, unhurried voice] Deixe à vista o fim de A cada quadro do jogo, logo depois de Desenhar o grupo cactos.
 
-[confident, clear, unhurried voice] Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e esta regra cuida dos cactos guardados no grupo.
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Grupos e depois Participação e limpeza, pegue o bloco Tirar do grupo quem sair da tela e solte depois do desenho dos cactos.
 
-[engaging, energetic, conversational voice] Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere essa regra é a verificação.
+[engaging, energetic, conversational voice] É este bloco que tira do grupo cada cacto que passa da borda.
+
+[confident, clear, unhurried voice] Repare: o grupo chega como asteroides. Clique em asteroides e escolha cactos.
+
+[engaging, energetic, conversational voice] No fim do bloco, em chamado, vem escrito sprite. Clique em sprite e escreva cacto: é o nome que o bloco dá a cada cacto que ele confere.
+
+[engaging, energetic, conversational voice] E deixe vazio o espaço fazer, na linha de baixo do bloco.
+
+[confident, clear, unhurried voice] Confira se ficou assim: o relógio continua em 1.4 segundo, e Tirar do grupo quem sair da tela está no fim de A cada quadro do jogo, depois do desenho dos cactos. Limpar a tela continua no começo do quadro, porque ela cuida da imagem, e este bloco cuida dos cactos guardados no grupo.
+
+[engaging, energetic, conversational voice] Agora espere alguns cactos atravessarem a tela. Os que chegam pela direita têm que continuar entrando normalmente. A diferença no grupo não aparece no seu jogo, porque ela acontece por dentro, e quem confere esse bloco é a verificação.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 ```
@@ -75,7 +87,7 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-faxina-K1 | Dedé | 1 | cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai colocar a regra que tira esses cactos de lá! | Onde essa regra entra? | A regra confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, deixe à vista o fim de | [curious] |
+| video-faxina-K1 | Dedé | 1 | parte anterior? Os cactos que saíam da tela continuavam guardados no grupo. Agora a gente vai tirar esses cactos de lá! | E onde isso entra no jogo? | O jogo confere os cactos em todo quadro, depois que eles andaram e foram desenhados. Por isso, o bloco vai no fim de A | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 

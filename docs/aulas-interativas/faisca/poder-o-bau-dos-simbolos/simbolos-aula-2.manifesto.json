@@ -2689,7 +2689,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora o sol e a lua da ilha: crie passo começando em 0; no sol, guarde 1, toque acender e mude o aviso; na lua, se passo = 1, guarde 2 e acenda; senão, volte a 0 e apague o sol e a lua. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora o sol e a lua da ilha: crie passo começando em 0; no sol, guarde 1, toque acender e mude o aviso; na lua, se passo = 1, guarde 2 e acenda; senão, volte a 0 e apague o sol e a lua. A montagem completa está no Passo a passo do projeto. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte."
       }
     },
     {
@@ -2701,7 +2701,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora de abrir o baú da ilha! Se passo = 2, a estrela acende, o baú toca abrir e o aviso muda; senão, recomece como na lua. Teste a ordem certa, uma ordem errada e recomeçar depois de errar, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora de abrir o baú da ilha! Se passo = 2, a estrela acende, o baú toca abrir e o aviso muda; senão, recomece como na lua. Teste a ordem certa, uma ordem errada e recomeçar depois de errar. Depois clique em Verificar projeto e em Próxima parte."
       }
     },
     {

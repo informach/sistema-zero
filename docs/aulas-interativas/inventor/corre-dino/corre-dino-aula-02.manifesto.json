@@ -45,14 +45,14 @@
   "blocks": [
     {
       "key": "video-quadros",
-      "plannedVideo": "Título: Compare o desenho no começo e a cada quadro\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Desenhar o Dino em Só no começo e Limpar a tela antes desligado. Clicar em Avançar 1 quadro e mostrar o x mudando na faixa, com o desenho do Dino no mesmo lugar (o contorno tracejado dos bastidores mostra o x novo). Trocar para A cada quadro, avançar e mostrar os dois Dinos. Ligar Limpar a tela antes, avançar e mostrar um Dino só, no lugar novo. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy folheando um caderno em que cada folha tem o Dino um pouco mais à frente. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Desenhar uma vez ou em todo quadro?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Lembra do desenho animado\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy folheando um monte de folhas de desenho, um quadro em cada folha [na edição: meme das folhas de desenho]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem passar quadros. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-quadros-K1: Dedé substitui “E se o Dino for desenhado em todo quadro, sem apagar a tela?”. Antes: “aparece na tela. No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra em cada jeito de”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-quadros",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -60,13 +60,35 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare o desenho no começo e a cada quadro",
-        "instructions": "Nesta experiência, deixe Desenhar o Dino em Só no começo. Clique em Avançar 1 quadro algumas vezes e compare o desenho com o x mostrado. Troque para A cada quadro e avance mais alguns quadros. Por último, ligue Limpar a tela antes e avance de novo. Compare os três jeitos.",
-        "hints": [],
+        "title": "Desenhar uma vez ou em todo quadro?",
+        "instructions": "Compare o que a tela mostra quando o Dino é desenhado só no começo e em todo quadro, com e sem apagar a tela antes. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Depois de cada quadro, compare a tela com o x do Dino.",
+          "Conte quantos Dinos ficam na tela em cada jeito.",
+          "Escolha Desenhar só no começo e clique em Avançar 1 quadro. Depois escolha Desenhar em todo quadro e avance alguns quadros. Por último, escolha Apagar a tela antes de desenhar e avance mais quadros."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "draw-loop",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["frozen", "trail", "moving"],
+            "goalCopy": {
+              "frozen": {
+                "label": "Desenhando só no começo, a tela não mudou",
+                "pedido": "Escolha Desenhar só no começo e Não apagar a tela, clique em Avançar 1 quadro e compare a tela com o x do Dino."
+              },
+              "trail": {
+                "label": "Sem apagar a tela, os desenhos velhos ficaram",
+                "pedido": "Escolha Desenhar em todo quadro e Não apagar a tela, clique em Avançar 1 quadro algumas vezes e conte os Dinos na tela."
+              },
+              "moving": {
+                "label": "Apagando e desenhando em todo quadro, o Dino andou",
+                "pedido": "Escolha Desenhar em todo quadro e Apagar a tela antes de desenhar, clique em Avançar 1 quadro algumas vezes e conte os Dinos na tela."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
@@ -85,7 +107,7 @@
     },
     {
       "key": "video-limpeza",
-      "plannedVideo": "Título: Prepare uma imagem nova em cada quadro\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. No “olhe a sombra do Dino”, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limpeza-K1: Dedé substitui “E como tira essa sombra escura?”. Antes: “no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho.”. Depois: “É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Com Limpar a tela antes, ficava um”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Prepare uma imagem nova em cada quadro\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. No “olhe a sombra do Dino”, aproximar a sombra embaixo do Dino e deixar ver que ela escurece a cada quadro (conferir na gravação); depois da limpeza, mostrar a sombra clara de novo. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-limpeza-K1: Dedé substitui “E como tira essa sombra escura?”. Antes: “no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho.”. Depois: “É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Apagando a tela antes de cada”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-limpeza",
@@ -97,14 +119,14 @@
     },
     {
       "key": "video-camadas",
-      "plannedVideo": "Título: Compare a ordem dos desenhos\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a lista A ordem de desenhar com o Dino em 1º e a Floresta em 2º, e o Dino quase escondido. Trocar a ordem três vezes, no ritmo da fala, e manter o palco à vista a cada troca. Terminar com o Dino depois da Floresta. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy colando a figurinha do Dino por cima da figurinha da floresta. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-camadas-K1: Dedé substitui “Como eu trago o Dino para a frente?”. Antes: “o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.”. Depois: “Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Quem fica na frente?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você cola figurinhas\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy com as figurinhas do Dino e da floresta na mão, escolhendo qual colar primeiro no álbum [na edição: meme das figurinhas]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem trocar a ordem. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-camadas-K1: Dedé substitui “E se a floresta for desenhada depois do Dino, quem fica na frente?”. Antes: “umas por cima das outras? A ordem em que você cola faz diferença. No seu jogo, vão ser desenhados o Dino e a floresta.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando muda a ordem”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-camadas",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -112,20 +134,42 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Compare a ordem dos desenhos",
-        "instructions": "Na lista de desenhos desta experiência, coloque Dino depois de Floresta. Observe a tela. Troque a ordem para desenhar Dino antes de Floresta. Observe de novo e termine com Dino depois de Floresta.",
-        "hints": [],
+        "title": "Quem fica na frente?",
+        "instructions": "Compare a tela quando o Dino é desenhado por último e quando a floresta é desenhada por último. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Observe quem fica na frente depois de cada troca.",
+          "Compare o Dino quando ele é desenhado por último e quando a floresta é desenhada por último.",
+          "Clique em Desenhar o Dino por último. Depois clique em Desenhar a floresta por último. Por último, clique em Desenhar o Dino por último de novo."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "layers",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["front", "covered", "back-in-front"],
+            "goalCopy": {
+              "front": {
+                "label": "Com o Dino desenhado por último, o Dino apareceu inteiro",
+                "pedido": "Clique em Desenhar o Dino por último e observe a tela."
+              },
+              "covered": {
+                "label": "Com a floresta desenhada por último, o Dino ficou escondido",
+                "pedido": "Depois, clique em Desenhar a floresta por último e observe o Dino."
+              },
+              "back-in-front": {
+                "label": "Quem é desenhado por último fica na frente",
+                "pedido": "Clique em Desenhar o Dino por último outra vez, como no jogo, e compare."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-ordem-certa",
-      "plannedVideo": "Título: Coloque a floresta atrás do Dino\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-ordem-certa-K1: Dedé substitui “A floresta já está andando! Dá para ela andar mais rápido?”. Antes: “depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.”. Depois: “Dá, sim. Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Coloque a floresta atrás do Dino\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: fazer no jogo o teste que ela pede e, no “Tá vendo?”, manter o resultado à vista. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-ordem-certa-K1: Dedé substitui “A floresta já está andando! Dá para ela andar mais rápido?”. Antes: “e solte entre a limpeza e o desenho do Dino. É este bloco que desenha a floresta, atrás do que vem depois dele.”. Depois: “Dá, sim. Repare: o bloco chega com velocidade 4. Clique no 4 e troque por 5, porque um número maior deixa o fundo mais”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-ordem-certa",
@@ -137,26 +181,26 @@
     },
     {
       "key": "video-retirar-borda",
-      "plannedVideo": "Título: Retire a borda provisória\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. No “Repare” da abertura, apontar no jogo ou no projeto o que ainda falta. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Retire a borda de teste\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. No “Repare” da abertura, apontar no jogo ou no projeto o que ainda falta. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nMaster integral da professora; sem substituição kids neste clipe.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-retirar-borda",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
+        "text": "Agora retire a borda de teste! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte."
       }
     },
     {
       "key": "video-descricao",
-      "plannedVideo": "Título: Ouça a descrição do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com a descrição vazia. Clicar em Ouvir a tela e deixar ouvir Tela do jogo. Imagem. Escrever a frase no campo Descrição do jogo, clicar em Ouvir a tela e mostrar as marcas o que fazer: sim e como jogar: sim. Gravar com voz disponível no navegador. No \"Escute\", deixar ouvir a leitura inteira, sem falar nem tocar música por cima, mantendo também a leitura escrita à vista. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy ao telefone, explicando o jogo do Dino para um amigo do outro lado da linha. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-descricao-K1: Dedé substitui “E se a gente escrever como se joga?”. Antes: “vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.”. Depois: “Pode. Vamos colocar a descrição para o leitor de tela. Agora eu escrevo Corra com o dino e pule os cactos apertando”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: O que o leitor de tela conta?\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. No \"Sabe quando você explica um jogo\", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy ao telefone, falando com um amigo do outro lado da linha [na edição: meme do telefone]. No \"No seu jogo\", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem ouvir a tela: a primeira escuta fica para a criança. Não apontar nem clicar nos controles da experiência. No \"O Zappy ajuda\", mostrar o Zappy [apontar zappy]. No \"Quando terminar, clique em Próxima parte\", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-descricao-K1: Dedé substitui “E o leitor de tela consegue contar como se joga o Corre, Dino?”. Antes: “só ouve o que você conta. No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o leitor de tela diz sem”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-descricao",
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte."
+        "text": "Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte."
       }
     },
     {
@@ -164,20 +208,42 @@
       "content": {
         "kind": "interactive",
         "required": true,
-        "title": "Ouça a descrição do jogo",
-        "instructions": "Clique em Ouvir a tela com o campo vazio. Depois escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela novamente. Compare o que foi lido antes e depois da frase.",
-        "hints": [],
+        "title": "O que o leitor de tela conta?",
+        "instructions": "Compare o que o leitor de tela diz sem descrição e com uma frase que conta o que fazer e como jogar. Você escolhe a ordem e pode repetir quando quiser.",
+        "hints": [
+          "Antes de escrever, clique em Ouvir a tela. O que a pessoa ficou sabendo do jogo?",
+          "Escreva o que se faz no jogo, como correr e pular os cactos, e ouça de novo.",
+          "Escreva Corra com o dino e pule os cactos apertando espaço e clique em Ouvir a tela."
+        ],
         "activity": {
           "type": "experimentation",
           "scene": "screen-reader",
-          "cenario": "corre-dino"
+          "cenario": "corre-dino",
+          "setup": {
+            "freeExploration": true,
+            "goals": ["heard-empty", "says-goal", "says-control"],
+            "goalCopy": {
+              "heard-empty": {
+                "label": "Sem frase, a pessoa ouve só Imagem",
+                "pedido": "Com o campo vazio, clique em Ouvir a tela."
+              },
+              "says-goal": {
+                "label": "A frase diz o que fazer",
+                "pedido": "Escreva no campo Descrição do jogo o que se faz no jogo e clique em Ouvir a tela."
+              },
+              "says-control": {
+                "label": "A frase diz como jogar",
+                "pedido": "Escreva também a tecla que se usa no jogo e clique em Ouvir a tela."
+              }
+            }
+          }
         },
         "semPerguntaFinal": true
       }
     },
     {
       "key": "video-descrever-jogo",
-      "plannedVideo": "Título: Escreva a descrição do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Começar pela fala de abertura, antes de qualquer bloco: mostrar Ao iniciar e, no “Tá vendo?”, apontar que ainda não há bloco de descrição. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-descrever-jogo-K1: Dedé substitui “Essa frase vai ficar escrita no jogo?”. Antes: “depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.”. Depois: “Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta,”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
+      "plannedVideo": "Título: Escreva a descrição do jogo\n\nProduzir no Estúdio atual. Se houver vídeo já gravado, usar as âncoras para inserir o avatar e conferir a retomada antes de pedir gravação complementar. Mostrar o projeto no estado de entrada. Na abertura não há teste no jogo, porque o efeito desta parte não aparece na tela: a fala só lembra a experiência e anuncia a montagem. Em cada “Olha aqui”, “Olha só” ou “Repare”, apontar na tela o lugar, o bloco ou o resultado citado. Localizar cada destino antes de buscar a peça. Mostrar campos, encaixes e testes sem cortes.\n\nA professora grava toda a fala. Substituições kids, sem sobrepor vozes:\n\nvideo-descrever-jogo-K1: Dedé substitui “Essa frase vai ficar escrita no jogo?”. Antes: “depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.”. Depois: “Não, ela não aparece na tela. É este bloco que guarda a frase que o leitor de tela lê em voz alta. No texto, apague a”.\n\nFala completa em corre-dino-aula-02.roteiro.md. Preservar a mídia existente até a troca revisada; este campo não publica nem substitui a gravação. Duração: estimar pela fala e pelos gestos do roteiro, sem acelerar encaixes."
     },
     {
       "key": "fala-descrever-jogo",
@@ -409,9 +475,9 @@
   "sections": [
     {
       "key": "quadros",
-      "title": "Compare o desenho no começo e a cada quadro",
+      "title": "Desenhar uma vez ou em todo quadro?",
       "intent": "exploration",
-      "objective": "Sua vez! Compare o desenho só no começo, o desenho a cada quadro e o desenho com a tela limpa antes. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que a tela mostra em cada jeito de desenhar o Dino. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-quadros", "fala-quadros", "experiencia-laco"],
       "workspaceKey": null,
       "externalTool": null,
@@ -488,9 +554,9 @@
     },
     {
       "key": "camadas",
-      "title": "Compare a ordem dos desenhos",
+      "title": "Quem fica na frente?",
       "intent": "exploration",
-      "objective": "Sua vez! Troque a ordem dos dois desenhos, repare em quem fica na frente e termine com o Dino depois da Floresta. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que muda na tela quando a ordem dos desenhos muda. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-camadas", "fala-camadas", "experiencia-camadas"],
       "workspaceKey": null,
       "externalTool": null,
@@ -573,9 +639,9 @@
     },
     {
       "key": "retirar-borda",
-      "title": "Retire a borda provisória",
+      "title": "Retire a borda de teste",
       "intent": "application",
-      "objective": "Agora retire a borda provisória! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
+      "objective": "Agora retire a borda de teste! Tire só Mostrar a borda da tela e deixe Criar dinossauro em Ao iniciar. Depois, clique em Verificar projeto e, em seguida, em Próxima parte.",
       "blockKeys": ["video-retirar-borda", "fala-retirar-borda"],
       "workspaceKey": "projeto",
       "externalTool": null,
@@ -610,9 +676,9 @@
     },
     {
       "key": "descricao",
-      "title": "Ouça a descrição do jogo",
+      "title": "O que o leitor de tela conta?",
       "intent": "exploration",
-      "objective": "Sua vez! Ouça a tela sem descrição e depois com a frase que diz o que fazer e como jogar. Quando terminar, clique em Próxima parte.",
+      "objective": "Sua vez! Investigue o que uma pessoa que usa leitor de tela ouve do seu jogo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.",
       "blockKeys": ["video-descricao", "fala-descricao", "experiencia-descricao"],
       "workspaceKey": null,
       "externalTool": null,

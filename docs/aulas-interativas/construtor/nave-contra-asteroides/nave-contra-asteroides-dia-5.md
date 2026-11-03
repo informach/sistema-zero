@@ -6,7 +6,7 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 - Estado de entrada: Abertura aguarda Enter; nave, tiros e asteroides só agem em jogando. Ainda sem vitória, derrota ou reinício.
 - Resultado da aula: Jogo completo original: alvo 26, vitória, derrota, retorno à abertura e nova partida.
-- Seções: 6. Vídeos: 5.
+- Seções: 8. Vídeos: 7.
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Debinha substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
@@ -14,41 +14,74 @@ Fonte editorial: `qa/nave-contra-asteroides.conteudo.json`. Este arquivo, o rote
 
 Amplia a abertura já testada. As regras de final e o reinício são construídos em etapas distintas; a publicação tem instruções completas.
 
+**Revisão de 02/11/2026.** As experiências passaram à exploração livre com o Zappy (`setup.freeExploration`): trabalham só a ideia, sem blocos, áreas do Estúdio nem código; o vídeo explica a ideia com uma analogia curta e convida a investigar, sem sequência de cliques e sem contar o resultado; a pergunta do avatar que anteciparia a descoberta vira "O que você acha? Isso você vai testar na experiência."; instrução, ponte, metas (`goalCopy`) e três pistas usam os botões reais da tela livre. Toda fala foi revista: uma ideia por fala, explicação separada do gesto, montagens que começam pelo "Tá vendo?" no jogo, retomam a experiência e ligam cada bloco à ideia ("É este bloco que…"). O Na tela segue a receita da ESPEC-ROTEIRO §9.8. A montagem dos finais (661 palavras) virou duas: finais (a constante alvo e a pergunta da vitória) e derrota (id novo: a pergunta das vidas e a ordem dos finais). Constante e maior ou igual ganharam uma experiência própria (02/11/2026, proposta aprovada pela responsável): "A meta do jogo" (cena `score-goal`), com o placar que sobe a cada acerto, a placa fixa em 26 e o sinal > ou ≥; a placa do brinquedo do parque virou a analogia do vídeo de convite, e a montagem dos finais abre com a retomada dessa experiência, sem refazê-la. O vídeo de cada experiência segue o molde do Cadê (02/11/2026, decisão da responsável): o conceito, uma analogia curta, o nome no jogo dela, a pergunta do avatar devolvida à criança e um convite de uma frase; sem tour pelos controles nem roteiro de testes, que ficam com o Zappy dentro da experiência.
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
 | --- | --- | --- |
-| Constante e comparação | Meta de 26 pontos no projeto | A constante guarda uma meta que não muda durante a partida; comparar o valor atual com ela. |
+| Constante e comparação | score-goal (a meta do jogo) antes da montagem de finais; meta de 26 pontos no projeto | Na experiência, a placa (constante) não muda durante a partida e o sinal decide se chegar a 26 já vale; a montagem liga a ideia à constante alvo e ao maior ou igual. |
 | Finais | Duas condições dentro da partida e dois ramos de tela | Conservar a ordem original: verificar vitória e depois derrota. |
 | Reinício | restart antes de ampliar Enter | Trocar só o estado não refaz pontos, vidas e grupos. |
 | Conclusão | Quiz formativo e teste do ciclo | Ganhar, perder, recomeçar e enviar; publicação opcional no Mural. |
 
 ## Proposta final
 
-### Seção 1. Defina quando ganhar e perder
+### Seção 1. A meta do jogo
 
-**Tarefa:** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
-**Blocos na página:** video-finais → fala-finais.
+**Blocos na página:** video-meta-do-jogo → fala-meta-do-jogo → experiencia-meta-do-jogo.
 
-**Recado na página (não gravar):** Agora defina quando a partida termina! Crie a meta alvo, monte as perguntas de vitória e de derrota dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue em que acerto o jogo dá a vitória com cada sinal, e se a placa da meta muda no meio da partida. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-finais-K1: Debinha substitui “E do outro lado vai a meta?”. Antes: “No lado esquerdo, clique em x e escolha pontos. No sinal, clique em > e escolha ≥, que quer dizer maior ou igual.”. Depois: “Agora o lado direito. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco”.
+video-meta-do-jogo-K1: Debinha substitui “Com maior que, chegar a 26 já dá a vitória?”. Antes: “pontos. A cada acerto o placar sobe, e o jogo compara o placar com a meta, com um sinal: maior que, ou maior ou igual.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar em que acerto vem a vitória com cada”.
 
-video-finais-K2: Debinha substitui “Chegou na meta, ganhou! E se acabarem as vidas?”. Antes: “telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro desse então e escolha vitoria.”. Depois: “Agora a derrota. Deixe à vista o encaixe logo abaixo do Se da vitória, ainda dentro de jogando. Abra Programação e”.
+**Experiência em exploração livre:** `score-goal` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/score-goal.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/score-goal.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-video-finais-K3: Debinha substitui “E se as duas coisas acontecerem juntas?”. Antes: “Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.”. Depois: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da”.
+**Instrução:** Compare em que acerto vem a vitória com Maior que (>) e com Maior ou igual (≥), e veja se a placa muda no meio de uma partida. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Clique em Maior ou igual (≥) e em Acertar uma pedra até o jogo dar a vitória. Clique em Maior que (>) e em Acertar uma pedra até o jogo dar a vitória. Clique em Jogar de novo e em Acertar uma pedra. Depois, no meio da partida, clique em Tentar mudar a placa.
+
+**Pistas, do aberto ao direto:** 1) Olhe o placar e a placa da meta a cada acerto. Em que número o jogo dá a vitória? 2) Jogue uma partida com cada sinal e compare o acerto da vitória. No meio de uma partida, tente mudar a placa. 3) Clique em Maior ou igual (≥) e em Acertar uma pedra até a vitória. Depois clique em Maior que (>) e faça o mesmo. Por fim, clique em Jogar de novo, em Acertar uma pedra e em Tentar mudar a placa. Sem palpite e sem pergunta final.
+
+### Seção 2. Defina quando você ganha
+
+**Tarefa:** Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Blocos na página:** video-finais → fala-finais.
+
+**Recado na página (não gravar):** Agora defina quando você ganha! Crie a meta alvo com 26, monte a pergunta da vitória dentro de jogando e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-finais-K1: Debinha substitui “E do outro lado vai a meta?”. Antes: “de maior ou igual, o que tem um tracinho embaixo. Esse sinal quer dizer chegou ou passou, como você viu na experiência.”. Depois: “Isso: a constante alvo. Deixe à vista o 0, à direita da comparação. Abra Programação e depois Valores, pegue o bloco”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - No final da partida, se pontos ≥ alvo, vá para vitoria.
-- Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
-- Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.
 - Crie uma meta positiva na constante alvo, em Ao iniciar.
 
-### Seção 2. Mostre a vitória e a derrota
+### Seção 3. Defina quando você perde
+
+**Tarefa:** Agora defina quando você perde! Monte a pergunta da derrota logo abaixo da vitória e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Blocos na página:** video-derrota → fala-derrota.
+
+**Recado na página (não gravar):** Agora defina quando você perde! Monte a pergunta da derrota logo abaixo da vitória e clique em Verificar projeto. Depois, clique em Próxima parte.
+
+**Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
+
+video-derrota-K1: Debinha substitui “E se as duas coisas acontecerem juntas?”. Antes: “Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha fim.”. Depois: “Olha aqui: a ordem no fim de jogando é primeiro o desenho das vidas, depois a pergunta da vitória e por último a da”.
+
+**Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
+
+- Na partida, coloque a pergunta de vitória antes da pergunta de derrota.
+- Se acabaram as vidas da nave, vá para fim, após a pergunta de vitória.
+
+### Seção 4. Mostre a vitória e a derrota
 
 **Tarefa:** Agora mostre a vitória e a derrota! Crie os ramos vitoria e fim depois do ramo inicio, com os textos de cada tela, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
@@ -58,7 +91,7 @@ video-finais-K3: Debinha substitui “E se as duas coisas acontecerem juntas?”
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. Antes: “subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Depois: “Agora a derrota, do mesmo jeito. Clique de novo no + que fica antes de senão se. O ramo novo também chega com a”.
+video-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. Antes: “subtítulo e, na dica, escreva Aperte Enter para voltar ao início. Depois, escolha um fundo escuro com letras legíveis.”. Depois: “Ela vem do mesmo jeito. Agora a derrota, do mesmo jeito. Clique de novo no sinal de mais que fica antes de senão se e”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
@@ -66,21 +99,27 @@ video-mostrar-telas-K1: Debinha substitui “E a tela de quando eu perder?”. A
 - No senão se vitoria, encaixe Mostrar tela com a dica de Enter.
 - No senão se fim, encaixe Mostrar tela com a dica de Enter.
 
-### Seção 3. Compare voltar à abertura e reiniciar
+### Seção 5. Jogar outra vez
 
-**Tarefa:** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
+**Tarefa:** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-reiniciar → fala-reiniciar → experiencia-reiniciar.
 
-**Recado na página (não gravar):** Sua vez! Depois de perder, compare Mudar o estado do jogo para inicio com Reiniciar o jogo e repare nas pedras quando a partida nova começa. Quando terminar, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na partida nova em cada jeito de o Enter recomeçar. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-reiniciar-K1: Debinha substitui “Como faz para começar outra partida com tudo no lugar?”. Antes: “jogar de novo, você volta todas as peças para a saída. Se ninguém arruma as peças, a partida nova já começa bagunçada.”. Depois: “Agora, no fim, eu troco para Reiniciar o jogo e clico em Apertar Enter. Olha só: a abertura volta, e a pista fica”.
+video-reiniciar-K1: Debinha substitui “E a partida nova começa igual nos dois jeitos?”. Antes: “jogo, quando a partida acaba, o Enter pode fazer duas coisas: só voltar para a tela de início, ou começar tudo de novo.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na partida nova quando o”.
 
-**Experiência existente:** `restart`. Escolha Mudar o estado do jogo para inicio. Comece, espere perder, volte à abertura e tente jogar de novo. No final, escolha Reiniciar o jogo, volte à abertura e comece outra partida para comparar. Sem palpite e sem pergunta final. Os controles e metas foram conferidos no código da cena.
+**Experiência em exploração livre:** `restart` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-livre/restart.tsx` e falas do Zappy em `packages/core/src/learning/scene/guia-livre/restart.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-### Seção 4. Faça Enter preparar outra partida
+**Instrução:** Compare os asteroides que ficam na tela e a tela de início quando o Enter do fim da partida só volta para a tela de início e quando ele começa tudo de novo. Você escolhe a ordem e pode repetir quando quiser.
+
+**O que investigar (metas, em qualquer ordem):** Escolha Só voltar para a tela de início. Clique em Apertar Enter, deixe o tempo passar até a nave bater e comece outra partida. Observe os asteroides na tela. Escolha Começar tudo de novo. Clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter no fim. Observe os asteroides e a tela de início.
+
+**Pistas, do aberto ao direto:** 1) Observe os asteroides que ficam na tela quando uma partida nova começa. 2) Compare os dois jeitos do Enter no fim da partida: só voltar para a tela de início e começar tudo de novo. 3) Escolha Só voltar para a tela de início, clique em Apertar Enter, deixe o tempo passar até a nave bater e clique em Apertar Enter de novo. Depois faça o mesmo com Começar tudo de novo. Sem palpite e sem pergunta final.
+
+### Seção 6. Faça Enter preparar outra partida
 
 **Tarefa:** Agora faça o Enter preparar outra partida! Acrescente ao evento Enter os ramos fim e vitoria, com Reiniciar o jogo, e clique em Verificar projeto. Depois, clique em Próxima parte.
 
@@ -90,13 +129,13 @@ video-reiniciar-K1: Debinha substitui “Como faz para começar outra partida co
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de novo!”. Antes: “o espaço do então do ramo fim. Na mesma categoria Telas e partida, pegue o bloco Reiniciar o jogo e solte nesse espaço.”. Depois: “Agora a vitória, do mesmo jeito. Clique de novo no + que fica antes de senão se. Arraste a pergunta x maior que 0 do”.
+video-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de novo!”. Antes: “bloco que começa tudo de novo: o jogo volta ao começo, faz outra vez a preparação de Ao iniciar e mostra a abertura.”. Depois: “Por isso, a vitória ganha um ramo igual. Agora a vitória, do mesmo jeito. Clique de novo no sinal de mais que fica”.
 
 **Conclui quando:** vídeo assistido e critérios conferidos em Verificar projeto.
 
 - Enter: inicio vai para jogando; fim e vitoria reiniciam e voltam ao início.
 
-### Seção 5. Confira o que você construiu
+### Seção 7. Confira o que você construiu
 
 **Tarefa:** Hora de conferir o que você construiu! Responda sobre o Enter, a partida e a vitória, pensando nos testes do seu jogo. Depois de enviar, leia as explicações e, se errar alguma, corrija e tente de novo. Quando acertar todas, clique em Próxima parte.
 
@@ -106,7 +145,7 @@ video-enter-K1: Debinha substitui “E quando eu ganhar? Também quero jogar de 
 
 **Revisão formativa:** Zappy → quiz. Todas corretas, com explicação e novas tentativas sem limite nem espera. Perguntas do manifesto; nenhum conteúdo novo nesta parte.
 
-### Seção 6. Teste o jogo completo e compartilhe
+### Seção 8. Teste o jogo completo e compartilhe
 
 **Tarefa:** Hora do teste final! Confira a derrota, a vitória e o recomeço, clique em Verificar projeto e envie o seu projeto. Se quiser, publique o seu jogo no Mural. Depois, clique em Concluir aula.
 

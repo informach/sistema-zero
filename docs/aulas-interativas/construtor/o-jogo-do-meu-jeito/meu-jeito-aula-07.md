@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 O relógio de nascimento e a velocidade da animação são comparados antes dos encaixes. A troca do criador conserva o sorteio, o grupo e a velocidade. Animar fica logo depois de criar cada pedra, dentro da condição jogando.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). Os dois relógios ganharam a analogia da máquina de piões; "quadro" é só o do jogo na experiência e o desenho da folha é explicado na montagem. A experiência virou exploração livre. Revisão independente de 02/11/2026: os piões não dizem mais que cada um gira no seu ritmo; as montagens abrem o Estúdio antes da partida; os campos do criador das pedras saem em frases curtas, com o que já vem no bloco.**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -26,15 +28,15 @@ O relógio de nascimento e a velocidade da animação são comparados antes dos 
 
 ### Seção 1. Compare nascer e animar
 
-**Tarefa / Zappy na página:** Sua vez! Mude os dois relógios e compare as pedras que nascem. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que cada relógio muda nas pedras. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-dois-relogios → fala-dois-relogios → experimento-dois-relogios.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-dois-relogios-K1: Debinha substitui “Dá para nascer menos pedra e o desenho trocar mais rápido?”. Antes: “1. Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.”. Depois: “Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais”.
+video-dois-relogios-K1: Debinha substitui “Se a máquina soltar mais rápido, os piões giram mais rápido também?”. Antes: “desenhos por segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que cada relógio muda nas pedras, e”.
 
-**Experiência existente:** `two-clocks`. Deixe Desenhos por segundo de cada pedra em 8 e A cada quantos quadros nasce uma pedra em 20. Clique em Voltar ao começo e no Tempo, o botão com o triângulo. Deixe nascerem três pedras e veja o número em cada uma ao entrar. Clique em Tempo para parar. Mude o nascimento para 40 e os desenhos por segundo para 16. Clique em Voltar ao começo, ligue Tempo e observe por três segundos. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `two-clocks`, com `setup.freeExploration`. Mude um relógio de cada vez e compare quantas pedras nascem, o giro de cada uma e o desenho que cada pedra mostra quando entra. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Prepare a folha do asteroide
 
@@ -52,7 +54,7 @@ video-dois-relogios-K1: Debinha substitui “Dá para nascer menos pedra e o des
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-trocar-pedra-K1: Debinha substitui “Por que a pedra ficou espremida?”. Antes: “relógio. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.”. Depois: “Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra. Se no seu jogo não”.
+video-trocar-pedra-K1: Debinha substitui “Por que a pedra ficou espremida?”. Antes: “imagem. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.”. Depois: “É que cada pedra ainda mostra a folha inteira, com os dois desenhos. Falta ligar a animação de cada pedra, e isso fica”.
 
 **Aplicação no Estúdio:** o roteiro inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

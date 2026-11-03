@@ -91,12 +91,13 @@ describe('a câmera lenta do Farol', () => {
     expect(html).toContain('Seta apertada ▶')
   })
 
-  test('as três descobertas aparecem com os nomes da ideia', () => {
+  test('as três descobertas dizem o que comparar, sem contar o resultado', () => {
     const html = texto(tela(openScene(start)))
-    expect(html).toContain('Segure a seta e veja um passinho em cada quadro.')
-    expect(html).toContain('Solte a seta e veja os quadros passarem sem ele sair do lugar.')
-    expect(html).toContain('Veja os passinhos na velocidade de verdade.')
+    expect(html).toContain('Compare os quadros com a seta apertada.')
+    expect(html).toContain('Compare os quadros com a seta solta.')
+    expect(html).toContain('Compare a câmera lenta com a velocidade de verdade.')
     expect(html).toContain('0 de 3 descobertas')
+    expect(html).not.toMatch(/sair do lugar|parado|caminhada|um passinho em cada quadro/i)
   })
 
   test('fora da tela, o recado diz como voltar', () => {

@@ -150,6 +150,11 @@ export const PISTA_DA_META: Record<SceneId, readonly [PistaMeta, PistaMeta, Pist
     ['only-fill', 'only-stroke', 'both'],
   ],
   shading: [['volume'], ['side'], ['side']],
+  'score-goal': [
+    ['igual-conta', 'maior-pula'],
+    ['igual-conta', 'maior-pula', 'placa-fixa'],
+    ['igual-conta', 'maior-pula', 'placa-fixa'],
+  ],
 }
 
 /** As metas que um degrau cita, na ordem em que foram escritas. */

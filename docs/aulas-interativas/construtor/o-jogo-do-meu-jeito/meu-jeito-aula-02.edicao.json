@@ -24,7 +24,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "Em Qual o tamanho?, escolha Médio, 32 por 32. Em Qual o nome?, escreva nave. Depois clique em Começar a desenhar.",
-      "ancoraDepois": "Confira o nome nave e a grade quadrada. O nome precisa ser nave, porque é por esse nome que você vai encontrar o",
+      "ancoraDepois": "O nome precisa ser nave, porque é por esse nome que você vai encontrar o desenho quando ele for para o jogo. Se você já",
       "falaPrincipal": "E por que o nome tem que ser nave?",
       "falaPersonagem": "E por que o nome tem que ser nave?",
       "tags": ["[curious]"]
@@ -34,10 +34,10 @@
       "clipe": "video-espelho",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "A mancha aparece dos dois lados da dobra. O Espelho lado a lado faz isso com cada traço, e a dobra é a linha do meio.",
-      "ancoraDepois": "Depois eu desligo esse espelho, ligo só o Espelho de cima e de baixo e clico em Pintar a ponta. Tá vendo? Agora a cópia",
-      "falaPrincipal": "E esse espelho de cima e de baixo?",
-      "falaPersonagem": "E esse espelho de cima e de baixo?",
+      "ancoraAntes": "folha, dobra a folha no meio e abre? A mancha aparece dos dois lados da dobra. No espelho, a dobra é a linha do meio.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar onde a tinta aparece com os espelhos",
+      "falaPrincipal": "E o Balde de tinta, o espelho copia também?",
+      "falaPersonagem": "E o Balde de tinta, o espelho copia também?",
       "tags": ["[curious]"]
     },
     {
@@ -46,7 +46,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "Agora pinte o corpo da sua nave.",
-      "ancoraDepois": "Pode ser roxa, sim. Escolha uma cor, pegue Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo até",
+      "ancoraDepois": "Pode ser roxa, sim. Escolha uma cor, pegue o Balde de tinta e clique dentro do contorno. Olha só: a cor enche o corpo",
       "falaPrincipal": "Posso escolher outra cor, como roxo?",
       "falaPersonagem": "Posso escolher outra cor, como roxo?",
       "tags": ["[curious]"]
@@ -56,10 +56,10 @@
       "clipe": "video-luz",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "para ela, vai ver um lado mais claro, virado para o sol, e outro mais escuro. É isso que A sombra e a luz desenha.",
-      "ancoraDepois": "Agora eu ligo de novo e mudo O sol para a direita. Repare: o azul mais claro passa para a direita, e o mais escuro vai",
-      "falaPrincipal": "E se a luz vier do outro lado?",
-      "falaPersonagem": "E se a luz vier do outro lado?",
+      "ancoraAntes": "uma bola deixada no quintal num dia de sol. Um lado dela fica virado para o sol, e o outro fica do lado contrário.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a sombra, a luz e o lado do sol",
+      "falaPrincipal": "E se o sol mudar de lado?",
+      "falaPersonagem": "E se o sol mudar de lado?",
       "tags": ["[curious]"]
     }
   ]

@@ -20,10 +20,10 @@
       "clipe": "video-dois-relogios",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "1. Eu clico em Tempo para parar. Nasceu uma pedra a cada 20 quadros, e cada uma trocou de desenho 8 vezes por segundo.",
-      "ancoraDepois": "Agora eu mudo os dois relógios, cada um para um lado. Coloco A cada quantos quadros nasce uma pedra em 40, que é mais",
-      "falaPrincipal": "Dá para nascer menos pedra e o desenho trocar mais rápido?",
-      "falaPersonagem": "Dá para nascer menos pedra e o desenho trocar mais rápido?",
+      "ancoraAntes": "desenhos por segundo. Pense numa máquina que solta piões: ela solta um pião novo de tempos em tempos, e cada pião gira.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que cada relógio muda nas pedras, e",
+      "falaPrincipal": "Se a máquina soltar mais rápido, os piões giram mais rápido também?",
+      "falaPersonagem": "Se a máquina soltar mais rápido, os piões giram mais rápido também?",
       "tags": ["[curious]"]
     },
     {
@@ -31,8 +31,8 @@
       "clipe": "video-trocar-pedra",
       "personagem": "Debinha",
       "ocorrencia": 1,
-      "ancoraAntes": "relógio. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.",
-      "ancoraDepois": "Elas ainda aparecem com a folha inteira espremida, porque falta ligar a animação de cada pedra. Se no seu jogo não",
+      "ancoraAntes": "imagem. Agora comece a partida. Olha só: as suas imagens caem em lugares diferentes, porque o sorteio continua no x.",
+      "ancoraDepois": "É que cada pedra ainda mostra a folha inteira, com os dois desenhos. Falta ligar a animação de cada pedra, e isso fica",
       "falaPrincipal": "Por que a pedra ficou espremida?",
       "falaPersonagem": "Por que a pedra ficou espremida?",
       "tags": ["[curious]"]

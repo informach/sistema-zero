@@ -71,6 +71,62 @@ test('uma base alternativa válida basta; base futura não legitima Poder obriga
     analisar(curriculo([curso('power'), curso('base3d', 'hacker')])).problemas.map((p) => p.codigo),
   ).toEqual(['QUADRO_DEPENDE_DE_OPCIONAL'])
 })
+
+test('o planejamento obrigatório comprova uma base ainda não publicada nos dois públicos', () => {
+  const c = curriculo([curso('extra', 'noob')])
+  const fontes = [{ posto: 'noob', papel: 'base2d', blocos: ['sz_js_if_else'] }]
+  const r = analisarRepertorio(
+    ['sz_js_if_else'],
+    c,
+    { ilha: 'bosque', tipo: 'quadro-das-cores' },
+    fontes,
+  )
+  expect(r.problemas).toEqual([])
+  // Cursos reais para o aluno continuam exatamente os mesmos.
+  expect(r.cobertura[0]?.cursos).toEqual(analisar(c).cobertura[0]?.cursos)
+  expect(c.cursos).toEqual([curso('extra', 'noob')])
+})
+
+test('planejamento não autoriza desconhecidos, fontes opcionais nem postos futuros', () => {
+  for (const fonte of [
+    { posto: 'hacker', papel: 'base2d', blocos: ['sz_js_if_else'] },
+    { posto: 'noob', papel: 'power', blocos: ['sz_js_if_else'] },
+    { posto: 'noob', papel: 'extra', blocos: ['sz_js_if_else'] },
+    { posto: 'inventado', papel: 'base2d', blocos: ['sz_js_if_else'] },
+  ])
+    expect(
+      analisarRepertorio(
+        ['sz_js_if_else'],
+        curriculo([curso('extra')]),
+        { ilha: 'bosque', tipo: 'quadro-das-cores' },
+        [fonte],
+      ).problemas.map((p) => p.codigo),
+    ).toEqual(['QUADRO_DEPENDE_DE_OPCIONAL'])
+  expect(
+    analisarRepertorio(
+      ['sz_js_if_else'],
+      { ...curriculo([]), catalogo: [] },
+      { ilha: 'bosque', tipo: 'quadro-das-cores' },
+      [{ posto: 'noob', papel: 'base2d', blocos: ['sz_js_if_else'] }],
+    ).problemas.map((p) => p.codigo),
+  ).toEqual(['BLOCO_DESCONHECIDO'])
+})
+
+test('uma missão planejada anterior resolve a indicação incompleta de posto futuro sem mudar cursos', () => {
+  const c = curriculo([curso('base2d', 'hacker')])
+  const fontes = [{ posto: 'noob', papel: 'mission', blocos: ['sz_js_if_else'] }]
+  const result = analisarRepertorio(
+    ['sz_js_if_else'],
+    c,
+    { ilha: 'bosque', tipo: 'pedido-de-morador' },
+    fontes,
+  )
+  expect(result.problemas).toEqual([])
+  expect(result.cobertura[0]?.avisos).toContain('curso-depois-da-ilha')
+  expect(analisar(c, 'pedido-de-morador').problemas.map((p) => p.codigo)).toEqual([
+    'CURSO_DEPOIS_DA_ILHA',
+  ])
+})
 test('desafio do dia e pedido podem ser preparados sem curso, mas recusam fonte de posto futuro', () => {
   for (const tipo of ['desafio-do-dia', 'pedido-de-morador'] as const) {
     expect(analisar(curriculo([curso('power')]), tipo).problemas).toEqual([])

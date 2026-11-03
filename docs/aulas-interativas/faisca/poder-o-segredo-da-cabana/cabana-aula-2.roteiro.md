@@ -13,11 +13,13 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 **Fala para ElevenLabs:**
 
 ```text
-[upbeat, welcoming voice] A cabana do faroleiro chegou à Ilha do Farol, em três dimensões! A regra é a mesma do seu jogo 2D: a cabana só abre com a chave e o emblema, em qualquer ordem.
+[upbeat, welcoming voice] A cabana do faroleiro chegou à Ilha do Farol, em três dimensões! Ela funciona como no seu jogo 2D: pede a chave e o emblema.
 
 [engaging, energetic, conversational voice] Olha aqui: o emblema fica no gramado da frente, e a chave, atrás das pedras. E a cabana tem uma animação de abrir que já vem pronta: a porta gira e as janelas acendem. Você vai escolher quando ela toca.
 
-[upbeat, encouraging voice] Agora clique no jogo aqui na página e use as setas ou W, A, S e D. Tente a cabana sem nada, com uma peça e com as duas. A tecla R começa uma nova partida. Depois clique em Próxima parte.
+[upbeat, encouraging voice] Agora clique no jogo aqui na página e use as setas ou W, A, S e D. Tente a cabana sem nada, com uma peça e com as duas.
+
+[reassuring, encouraging voice] A tecla R começa uma nova partida. Depois clique em Próxima parte.
 ```
 
 **Recado na página (não gravar):** Sua vez! Clique no jogo e use as setas ou W, A, S e D. Tente a cabana sem nada, com uma peça e com as duas. R começa outra partida. Depois clique em Próxima parte.
@@ -31,16 +33,22 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Na ilha, o emblema também precisa ficar guardado. Por isso a regra é a mesma do seu jogo 2D. Crie a variável temEmblema começando em falso, no fim de Ao iniciar. Depois, no encontro do personagem com o emblema, o emblema some, temEmblema vira verdadeiro e o aviso conta que você pegou.
+[engaging, energetic, conversational voice] Na ilha, o emblema também precisa ficar guardado, como no seu jogo 2D.
 
-[interested, animated voice] No 3D, o encontro fica em Jogo 3D, na gaveta Encostar. E, para o emblema sumir, você usa o bloco Esconder o objeto, como fez com a chave da ilha.
+[engaging, energetic, conversational voice] Lembra? temEmblema nasce em falso, no fim de Ao iniciar. No encontro com o emblema, ele some, temEmblema vira verdadeiro e o aviso conta que você pegou.
 
-[upbeat, encouraging voice] Agora teste. Leve o personagem até o emblema: ele deve sumir e o aviso deve mudar. Se precisar, o Passo a passo do projeto, que está na primeira aula, tem a montagem completa da ilha.
+[interested, animated voice] O que muda no 3D é onde ficam alguns blocos. O encontro fica em Jogo 3D, na gaveta Encostar.
+
+[interested, animated voice] E, para o emblema sumir, você usa o bloco Esconder o objeto, como fez com a chave da ilha. É este bloco que tira o emblema do chão.
+
+[reassuring, encouraging voice] A montagem completa, bloco por bloco, está no Passo a passo do projeto, que fica na primeira aula.
+
+[upbeat, encouraging voice] Agora teste. Leve o personagem até o emblema: ele deve sumir e o aviso deve mudar.
 
 [confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte.
+**Recado na página (não gravar):** Agora guarde o emblema na ilha: crie temEmblema começando em falso e, no encontro, esconda o emblema, guarde verdadeiro e mude o aviso. A montagem completa está no Passo a passo do projeto. Teste no jogo. Depois clique em Verificar projeto e em Próxima parte.
 
 ## Parte 3. A cabana da ilha abre
 
@@ -51,16 +59,24 @@ Master integral da professora. Transferência: o vídeo relembra a regra e a mon
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Agora a cabana da ilha. Monte o encontro do personagem com a cabana e, dentro dele, um Se com senão. A pergunta é a mesma do 2D: temChave e temEmblema, com o bloco que tem a palavra e no meio. No então, a cabana toca a animação abrir uma vez, e o aviso conta que ela abriu. No senão, o aviso diz que a cabana pede a chave e o emblema.
+[engaging, energetic, conversational voice] Agora a cabana da ilha. Ela faz a mesma pergunta do 2D: temChave e temEmblema, com o bloco que tem a palavra e no meio.
+
+[interested, animated voice] Com o sim, a cabana toca a animação abrir uma vez, e o aviso conta que ela abriu. Com o não, o aviso diz que a cabana pede a chave e o emblema.
+
+[engaging, energetic, conversational voice] Os blocos você já conhece: o encontro com a cabana fica em Jogo 3D, na gaveta Encostar, e a animação abrir toca com Tocar a animação, em Objetos, na Animação do modelo.
 
 [interested, animated voice] A animação abrir já vem no modelo da cabana: a porta gira e as janelas acendem. Você só escolhe quando ela toca.
 
-[upbeat, encouraging voice] Teste todos os casos. Pressione R e vá direto à cabana: ela fica fechada e avisa. Tente só com a chave e só com o emblema. Depois pegue as duas e volte: ela abre.
+[reassuring, encouraging voice] A montagem completa está no Passo a passo do projeto.
+
+[upbeat, encouraging voice] Teste todos os casos. Toque na tecla R e vá direto à cabana: ela fica fechada e avisa.
+
+[upbeat, encouraging voice] Tente só com a chave e só com o emblema. Depois pegue as duas e volte: ela abre.
 
 [confident, clear, unhurried voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, leia a dica, corrija os blocos e clique novamente. Depois clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas, clique em Verificar projeto e depois em Próxima parte.
+**Recado na página (não gravar):** Hora da cabana da ilha! Se temChave e temEmblema, ela toca a animação abrir; senão, ela avisa. Teste sem peças, com uma de cada vez e com as duas. Depois clique em Verificar projeto e em Próxima parte.
 
 ## Parte 4. Pense na cabana da ilha
 
@@ -79,7 +95,11 @@ Sem vídeo: diálogo do Zappy e quiz. Alternativas equivalentes antes da escolha
 ```text
 [pleased, lively voice] Pronto, você levou a mesma pergunta para outro mundo: na ilha, a cabana também só abre com a chave e o emblema.
 
-[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: tente a cabana com uma peça só e depois com as duas. Depois pressione R e confira que as peças voltam e a cabana volta fechada. Clique em Verificar projeto e corrija o que faltar. Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
+[confident, clear, unhurried voice] Antes de enviar, jogue uma partida inteira: tente a cabana com uma peça só e depois com as duas. Depois toque na tecla R e confira que as peças voltam e a cabana volta fechada.
+
+[confident, clear, unhurried voice] Agora clique em Verificar projeto e corrija o que faltar.
+
+[confident, clear, unhurried voice] Quando os objetivos estiverem cumpridos, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
 ```
 
 **Recado na página (não gravar):** Confira os objetivos e clique em Enviar meu projeto. Confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.

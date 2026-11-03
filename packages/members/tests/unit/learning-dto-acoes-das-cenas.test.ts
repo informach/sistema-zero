@@ -81,6 +81,15 @@ function acoesConhecidas(): Map<SceneId, SceneAction[]> {
     // A câmera lenta do Farol (01/11/2026).
     { type: 'walk-pace', pace: 'lenta' },
     { type: 'walk-pace', pace: 'real' },
+    // A pergunta com o não da porta (Ilha do Farol, 02/11/2026).
+    { type: 'door-question', not: true },
+    { type: 'door-question', not: false },
+    // A meta do jogo (Nave, Dia 5, 02/11/2026).
+    { type: 'goal-op', op: '>' },
+    { type: 'goal-op', op: '>=' },
+    { type: 'goal-hit' },
+    { type: 'goal-restart' },
+    { type: 'goal-edit' },
   ]
   for (const scene of SCENE_IDS) {
     for (const acao of acoesDosControles) somar(scene, acao)

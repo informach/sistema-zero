@@ -1,4 +1,4 @@
-[curious] E se a gente testar um passo menor?
+[curious] E o que a nave faz num quadro em que a seta está solta?
 
 [long pause]
 
@@ -10,11 +10,15 @@
 
 [long pause]
 
-[curious] E se a nave sair da tela?
+[curious] E se o limite for ligado com a nave já fora da tela?
 
 [long pause]
 
 [curious] Esse nome heroi é o da minha nave?
+
+[long pause]
+
+[curious] E se o fundo de estrelas for desenhado depois da nave?
 
 [long pause]
 

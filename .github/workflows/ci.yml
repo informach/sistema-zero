@@ -36,10 +36,10 @@ concurrency:
 jobs:
   ci:
     name: ci
-    # Baseline CI 40129239034: 41m14s; as provas novas Python/3D acrescentam ~4m19s.
-    # Dê margem ao job completo sem ampliar os deadlines individuais ou do produto.
+    # CI 41497950279 atingiu 60 min no typecheck global, após as provas passarem.
+    # Dê margem ao monorepo sem ampliar os deadlines individuais ou do produto.
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 90
     services:
       marketing-postgres:
         image: postgres:16

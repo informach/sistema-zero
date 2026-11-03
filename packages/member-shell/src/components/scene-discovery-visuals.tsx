@@ -305,52 +305,79 @@ export function OrderRule({ correct }: { correct: boolean }) {
   )
 }
 
+/**
+ * O encontro com a chave em palavras da IDEIA (Farol, Dia 2, 02/11/2026): três coisas diferentes, e
+ * a memória da chave é a que liga e desliga. Nada de regra, ação nem bloco.
+ */
 export function MemoryRule({
   remember,
   collected,
   saved,
+  revealed = { any: true, on: true },
 }: {
   remember: boolean
   collected: boolean
   saved: boolean
+  /** O que o encontro faz com o aviso e com temChave só aparece depois de a criança testar. */
+  revealed?: { any: boolean; on: boolean }
 }) {
   const touched = collected
   return (
     <figure className="sz-scene-regra memory-rule">
-      <figcaption className="sz-scene-regra-titulo">O que o encontro faz</figcaption>
+      <figcaption className="sz-scene-regra-titulo">O que acontece no encontro</figcaption>
       <div className="movement-event">
         <KeyRound size={17} /> Encostar na chave
       </div>
       <div className="memory-actions">
         <div data-lit={touched}>
           <KeyRound size={20} />
-          <span>Retirar a chave</span>
+          <span>A chave sai do chão</span>
         </div>
         {remember ? (
           <div data-lit={saved}>
             <NotebookPen size={20} />
             <span>
-              Guardar a coleta<small>Ação na regra</small>
+              {revealed.on ? 'O jogo guarda em temChave' : 'temChave'}
+              <small>memória ligada</small>
             </span>
           </div>
         ) : (
           <div data-off="true">
             <NotebookPen size={20} />
-            <span>Sem ação de guardar</span>
+            <span>
+              Memória da chave<small>desligada</small>
+            </span>
           </div>
         )}
         <div data-lit={touched}>
           <MessageCircle size={20} />
-          <span>Mostrar o aviso</span>
+          <span>{revealed.any ? 'O aviso muda' : 'O aviso'}</span>
         </div>
       </div>
     </figure>
   )
 }
-export function DoorRule({ checked }: { checked: boolean | null }) {
+/**
+ * A pergunta da porta (Farol, Dia 3, 02/11/2026): "sim" e "não", sem então/senão (os nomes do bloco
+ * ficam para a montagem). O que cada resposta faz só aparece depois de a criança testar aquele caso:
+ * é a descoberta dela.
+ */
+export function DoorRule({
+  checked,
+  revealed,
+}: {
+  checked: boolean | null
+  revealed: { yes: boolean; no: boolean }
+}) {
+  const estado = (escolhido: boolean) =>
+    checked === escolhido
+      ? '✓ escolhido'
+      : checked === !escolhido
+        ? 'Não foi usado'
+        : 'Aguardando teste'
   return (
     <figure className="sz-scene-regra door-rule">
-      <figcaption className="sz-scene-regra-titulo">A regra da porta</figcaption>
+      <figcaption className="sz-scene-regra-titulo">A pergunta da porta</figcaption>
       <div className="movement-event">
         <Hand size={17} /> Testar a porta
       </div>
@@ -360,28 +387,28 @@ export function DoorRule({ checked }: { checked: boolean | null }) {
       </div>
       <div className="door-forks">
         <div data-selected={checked === true} data-muted={checked === false}>
-          <span>Sim · então</span>
-          <img src={farolSvgUrl('farol-listrado-aceso')} alt="" />
-          <strong>Acender o farol</strong>
-          <small>
-            {checked === true
-              ? '✓ escolhido'
-              : checked === false
-                ? 'Não foi usado'
-                : 'Aguardando teste'}
-          </small>
+          <span>Sim</span>
+          {revealed.yes ? (
+            <img src={farolSvgUrl('farol-listrado-aceso')} alt="" />
+          ) : (
+            <b className="door-fork-unknown" aria-hidden="true">
+              ?
+            </b>
+          )}
+          <strong>{revealed.yes ? 'Acender o farol' : 'Teste para descobrir'}</strong>
+          <small>{estado(true)}</small>
         </div>
         <div data-selected={checked === false} data-muted={checked === true}>
-          <span>Não · senão</span>
-          <MessageCircle size={34} />
-          <strong>Avisar: falta a chave</strong>
-          <small>
-            {checked === false
-              ? '✓ escolhido'
-              : checked === true
-                ? 'Não foi usado'
-                : 'Aguardando teste'}
-          </small>
+          <span>Não</span>
+          {revealed.no ? (
+            <MessageCircle size={34} />
+          ) : (
+            <b className="door-fork-unknown" aria-hidden="true">
+              ?
+            </b>
+          )}
+          <strong>{revealed.no ? 'Avisar: falta a chave' : 'Teste para descobrir'}</strong>
+          <small>{estado(false)}</small>
         </div>
       </div>
     </figure>

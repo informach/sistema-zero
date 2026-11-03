@@ -128,13 +128,26 @@ test('a etapa da abertura espera Enter e preserva movimento, tiros e asteroides 
   expect(g.api.sceneIs('jogando')).toBe(true)
 })
 
+// O molde do Cadê (decisão da responsável, 02/11/2026): o vídeo explica o conceito, dá uma analogia,
+// diz o nome no jogo dela e termina num convite de UMA frase, com o fecho combinado. A investigação é
+// da criança e quem acompanha cada teste é o Zappy, dentro da experiência.
 const FIM_DA_EXPERIENCIA =
-  'Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.'
-// Uma ordem dirigida a quem assiste, no começo de uma frase. Antes da vez dela, o vídeo só mostra.
-const ORDEM =
-  /(?:^|[.:!?;]\s+)(Clique|Coloque|Observe|Mude|Deixe|Leve|Escolha|Ligue|Troque|Aumente|Atire|Compare|Avance|Use|Volte|Espere|Acompanhe|Arraste|Toque|Aperte|Olhe|Repita|Teste|Sorteie|Experimente|Jogue)\b/
+  /^Agora você vai investigar [^.!?]+\. Você escolhe por onde começar e pode repetir os testes\. O Zappy ajuda a observar as diferenças\. Quando terminar, clique em Próxima parte\.$/
+// Nada de tour pelos controles: "Olha aqui: nesta experiência", "este botão", "esta régua"...
+const TOUR =
+  /Olha aqui|nesta experiência|\baqui você vê\b|\b(?:este|estes|esta|estas) (?:botão|botões|campo|campos|lista|régua|caixa|faixa|tira|contador|controles?|números?)\b/i
+// Nada de roteiro de testes: "primeiro… depois…", "faça… e depois…", "Nas duas vezes"...
+const ROTEIRO_DE_TESTES =
+  /\bPrimeiro,|\bnas duas vezes\b|\bteste mais (?:uma|duas|três)\b|\bfaça [^.]* e depois\b|\bdepois,? (?:teste|faça|clique|compare)\b|\bRepare em (?:duas|três) coisas\b/i
+const PERGUNTA_DEVOLVIDA = 'O que você acha? Isso você vai testar na experiência.'
+const ESCOLHA_DA_ORDEM = 'Você escolhe a ordem e pode repetir quando quiser.'
+// A experiência trabalha só a IDEIA (01/11/2026): nada de bloco, área do Estúdio, regra nem código.
+const ESTUDIO_NA_EXPERIENCIA =
+  /\b(?:blocos?|Ao iniciar|Enquanto estiver rodando|Quando acontecer|A cada quadro do jogo|regras?|comandos?|código|Se o estado|então|senão|Estúdio)\b/i
+// O vídeo não narra uma sequência de cliques: só aponta os controles e convida.
+const SEQUENCIA = /\b(?:depois clique|clique em [^.]*\. Depois|e clique em [^.]* de novo)\b/i
 
-test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez (06/10/2026)', () => {
+test('experiências: ideia, convite e controles reais, sem blocos nem resultado antes do teste (02/11/2026)', () => {
   let experiencias = 0
   for (const aula of aulasNave)
     for (const s of aula.sections) {
@@ -142,11 +155,58 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
       if (!experiencia && !s.play) continue
       const id = `${aula.slug}/${s.key}`
       const fala = s.speech ?? []
-      const demonstracao = fala.slice(0, -1).join(' ')
+      const video = fala.slice(0, -1).join(' ')
       if (experiencia) {
         experiencias++
-        expect(fala[0], id).toMatch(/^Esta é (uma|a mesma) experiência\b.* para a gente entender /)
-        expect(fala.at(-1), id).toBe(FIM_DA_EXPERIENCIA)
+        const a = s.activity!
+        if (a.activity.type !== 'experimentation') throw new Error(id)
+        expect(a.activity.setup?.freeExploration, id).toBe(true)
+        expect(fala.at(-1), id).toMatch(FIM_DA_EXPERIENCIA)
+        expect(fala.join(' '), id).not.toMatch(TOUR)
+        expect(fala.join(' '), id).not.toMatch(ROTEIRO_DE_TESTES)
+        expect(video, id).not.toMatch(SEQUENCIA)
+        // A pergunta do avatar fica (uma) e volta para a criança, igual ao molde.
+        if (s.avatar) {
+          expect(participacoes(s), id).toHaveLength(1)
+          expect(fala, id).toContain(PERGUNTA_DEVOLVIDA)
+        }
+        // Na tela: só ampliar a experiência e mostrar a cena parada, sem apontar os controles dela.
+        expect(s.screen, id).toContain('[ampliar experiência]')
+        expect(s.screen, id).not.toMatch(/\[apontar "/)
+        expect(s.screen, id).not.toMatch(TOUR)
+        expect(video, id).not.toMatch(
+          /Esta é (?:uma|a mesma) experiência|faça esses mesmos testes|Vou te mostrar/,
+        )
+        // A pergunta que anteciparia a descoberta é devolvida à criança.
+        expect(fala.join(' '), id).toContain('Isso você vai testar na experiência.')
+        // Ponte, instrução, metas e pistas: só a ideia, com os botões da tela livre.
+        const goals = a.activity.setup?.goals ?? []
+        const copy = a.activity.setup?.goalCopy ?? {}
+        expect(Object.keys(copy).sort(), id).toEqual([...goals].sort())
+        expect(a.hints, id).toHaveLength(3)
+        const textos = [
+          s.bridge,
+          a.instructions,
+          ...a.hints,
+          ...Object.values(copy).flatMap((c) => [c.label ?? '', c.pedido ?? '']),
+          ...fala,
+          ...participacoes(s).flatMap((p) => [p.speech, p.reply ?? '']),
+        ]
+        for (const t of textos) expect(t, id).not.toMatch(ESTUDIO_NA_EXPERIENCIA)
+        // A ponte convida à investigação e não repete a instrução.
+        expect(s.bridge, id).not.toContain(a.instructions)
+        expect(s.bridge, id).toMatch(
+          /^Sua vez! Investigue [^.!?]+\. Você escolhe a ordem dos testes, e o Zappy sugere o que observar\. Quando terminar, clique em Próxima parte\.$/,
+        )
+        // A instrução diz o que comparar, numa frase, e devolve a ordem à criança: sem sequência.
+        expect(a.instructions, id).toMatch(/^Compare [^.!?]+\. /)
+        expect(a.instructions, id).toEndWith(ESCOLHA_DA_ORDEM)
+        expect(
+          a.instructions.split(/[.!?](?:\s|$)/).filter((f) => f.trim()),
+          id,
+        ).toHaveLength(2)
+        expect(a.instructions, id).not.toMatch(ROTEIRO_DE_TESTES)
+        expect(a.instructions, id).not.toMatch(/\bDepois\b|\bClique em\b/)
       } else {
         // Três vozes (06/10/2026): a autoria é dela e o convite é junto.
         expect(fala[0], id).toStartWith(
@@ -161,12 +221,10 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
         expect(fala.at(-1), id).toMatch(
           /^Agora é a sua vez: jogue .*Quando terminar, clique em Próxima parte\.$/,
         )
+        expect(video.match(/Olha aqui: /g), id).toHaveLength(1)
+        expect(video, id).not.toContain('Agora é a sua vez')
       }
-      expect(demonstracao.match(/Olha aqui: /g), id).toHaveLength(1)
-      expect(demonstracao, id).not.toMatch(ORDEM)
-      expect(demonstracao, id).not.toContain('Agora é a sua vez')
-      expect(demonstracao, id).not.toContain('Vou te mostrar')
-      // A nota de tela acompanha: o vídeo faz os gestos e mostra o resultado real.
+      // A nota de tela segue a receita da ESPEC-ROTEIRO §9.8: os gestos são da gravação.
       expect(s.screen, id).not.toMatch(/sem antecipar|sem realizar|Não executar|pela pessoa/)
       if (/meme/i.test(s.screen ?? ''))
         for (const regra of [
@@ -177,7 +235,8 @@ test('experiências e jogo pronto: o narrador demonstra e só no fim passa a vez
         ])
           expect(s.screen, id).toContain(regra)
     }
-  expect(experiencias).toBe(19)
+  // 21 desde 02/11/2026: o tamanho do passinho (Dia 1) e a meta do jogo (Dia 5) viraram experiências.
+  expect(experiencias).toBe(21)
 })
 
 /**
@@ -210,7 +269,12 @@ test('falas para a criança: botões da aula pelo nome novo e o Mapa como convit
     for (const s of aula.sections) {
       if (!s.checks?.length) continue
       const id = `${aula.slug}/${s.key}`
-      const fim = falasSecao(s).at(-1) ?? ''
+      // Com a publicação, o fecho ganha um parágrafo por momento (02/11/2026): verificar e enviar,
+      // convite, Compartilhar e link e saída. O fecho é lido do parágrafo da verificação em diante.
+      const falas = falasSecao(s)
+      const inicio = falas.findIndex((p) => p.startsWith(verificacao))
+      expect(inicio, id).toBe(falas.length - (s.publish ? 4 : 1))
+      const fim = falas.slice(inicio).join(' ')
       expect(fim, id).toStartWith(verificacao)
       expect(fim, id).not.toContain('espere aparecer Salvo')
       if (!s.final)
@@ -241,7 +305,13 @@ test('falas para a criança: botões da aula pelo nome novo e o Mapa como convit
 const SAIDA = /(?:clique em Próxima parte|clique em Concluir aula)\.$/
 const CONVITE = /^(?:Sua vez!|Agora\b[^.!?]*!|Hora d[eo]\b[^.!?]*!)/
 // Efeito invisível no jogo: a retomada só lembra a experiência, sem inventar teste.
-const RETOMADA_SEM_TESTE = new Set(['primeira-nave/criar-nave'])
+// Na faxina (02/11/2026), o tiro que sai da tela continua no grupo sem nada mudar na tela: atirar no
+// jogo "mostrava" os tiros sumindo e sugeria o contrário da experiência.
+const RETOMADA_SEM_TESTE = new Set([
+  'primeira-nave/criar-nave',
+  'dia-2/tiro-da-nave',
+  'dia-2/faxina',
+])
 
 test('pontes do Zappy: convidam e terminam na ação de saída (06/10/2026)', () => {
   for (const aula of aulasNave)
@@ -295,7 +365,9 @@ test('retomadas: primeiro o problema no seu jogo, depois a lembrança e um anún
       expect(i, id).toBe(1)
       expect(fala[0], id).toMatch(/\bseu jogo\b[^?]*\. Tá vendo\? [^.!?]*\bporque\b[^.!?]*\.$/)
     }
-  expect(retomadas).toBe(17)
+  // 21 desde 02/11/2026: as quatro montagens divididas ganharam retomadas próprias; 22 com a dos
+  // finais, que retoma a meta do jogo (Dia 5).
+  expect(retomadas).toBe(22)
 })
 
 test('conferência: uma lista só por montagem e, com teste, depois dele (06/10/2026)', () => {
@@ -380,6 +452,8 @@ test('conversa: sem "então" de ligação, sem "aperte" e sem troque e volte na 
 
 const seconds = (n: number): SceneAction[] =>
   Array.from({ length: n }, () => ({ type: 'advance', seconds: 1 }))
+const quadros = (n: number): SceneAction[] =>
+  Array.from({ length: n }, () => ({ type: 'advance', seconds: 1 / 30 }))
 // Caminhos reproduzem os controles pedidos nas falas, sem usar as rotas genéricas de QA.
 const spokenRoutes: Record<string, SceneAction[]> = {
   'primeira-nave/experiencia-areas': [
@@ -401,23 +475,35 @@ const spokenRoutes: Record<string, SceneAction[]> = {
     { type: 'place-in-area', card: 'lives', area: 'loop' },
     ...seconds(3),
   ],
+  // A câmera lenta do Farol, com a nave (02/11/2026): passinhos, parada e velocidade de verdade.
   'dia-1/experiencia-seta-e-velocidade': [
-    { type: 'advance', seconds: 1 / 30 },
+    { type: 'walk-pace', pace: 'lenta' },
     { type: 'hold-arrow', held: true },
-    { type: 'walk-speed', speed: 3 },
-    // "avance alguns quadros": a cena pede dois quadros seguidos com o x subindo.
-    { type: 'advance', seconds: 1 / 30 },
-    { type: 'advance', seconds: 1 / 30 },
-    { type: 'restart-walk' },
-    { type: 'walk-speed', speed: 1 },
-    { type: 'advance', seconds: 1 / 30 },
+    ...quadros(2),
+    { type: 'hold-arrow', held: false },
+    ...quadros(1),
+    { type: 'walk-pace', pace: 'real' },
+    { type: 'hold-arrow', held: true },
+    ...quadros(45),
   ],
+  // O tamanho do passinho (02/11/2026): os dois passinhos, dois quadros seguidos em câmera lenta.
+  'dia-1/experiencia-tamanho-do-passinho': [
+    { type: 'walk-pace', pace: 'lenta' },
+    { type: 'walk-speed', speed: 1 },
+    { type: 'hold-arrow', held: true },
+    ...quadros(2),
+    { type: 'walk-speed', speed: 3 },
+    ...quadros(2),
+  ],
+  // A beirada do Farol, com a nave: sai sem o limite, volta com o limite ligado e fica na beirada.
   'dia-1/experiencia-limite-da-tela': [
     { type: 'hold-arrow', held: true },
-    ...seconds(4),
-    { type: 'restart-walk' },
+    ...quadros(80),
     { type: 'keep-on-screen', enabled: true },
-    ...seconds(4),
+    ...quadros(2),
+    { type: 'keep-on-screen', enabled: false },
+    { type: 'keep-on-screen', enabled: true },
+    ...quadros(1),
   ],
   world: [{ type: 'create' }, { type: 'connect', port: 'draw', enabled: true }],
   'draw-loop': [
@@ -467,16 +553,14 @@ const spokenRoutes: Record<string, SceneAction[]> = {
     { type: 'shoot' },
   ],
   cleanup: [...seconds(6), { type: 'connect', port: 'cleanup', enabled: true }, ...seconds(2)],
+  // Na tela livre, trocar a escolha depois de o tempo andar recomeça a trombada (sem `reset`).
   'collision-pair': [
     { type: 'command-target', subject: 'shot', target: 'group' },
     { type: 'command-target', subject: 'rock', target: 'group' },
-    { type: 'advance', seconds: 1 },
-    { type: 'reset' },
+    ...seconds(1),
     { type: 'command-target', subject: 'shot', target: 'alias' },
     { type: 'command-target', subject: 'rock', target: 'alias' },
-    { type: 'advance', seconds: 1 },
-    { type: 'advance', seconds: 1 },
-    { type: 'advance', seconds: 1 },
+    ...seconds(3),
   ],
   variable: [
     { type: 'store', value: 1 },
@@ -486,10 +570,10 @@ const spokenRoutes: Record<string, SceneAction[]> = {
     { type: 'show', on: true },
     { type: 'change', by: 1 },
   ],
+  // Trocar a proteção recomeça as batidas (tela livre): sem `reset` entre os testes.
   invincibility: [0, 45, 15].flatMap(
     (frames) =>
       [
-        { type: 'reset' },
         { type: 'shield', frames },
         { type: 'advance-to' },
         { type: 'advance-to' },
@@ -503,6 +587,21 @@ const spokenRoutes: Record<string, SceneAction[]> = {
     ...seconds(4),
     { type: 'start', input: 'tap' },
     ...seconds(3),
+  ],
+  // A meta do jogo (Dia 5, 02/11/2026): os dois sinais até a vitória e a placa no meio da partida.
+  'score-goal': [
+    { type: 'goal-op', op: '>=' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-op', op: '>' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-hit' },
+    { type: 'goal-restart' },
+    { type: 'goal-hit' },
+    { type: 'goal-edit' },
   ],
   restart: [
     { type: 'start', input: 'key' },

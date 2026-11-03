@@ -1,4 +1,8 @@
-[curious] Como faz para contar só durante a corrida?
+[curious] E se o número não estiver na tela, ele continua mudando?
+
+[long pause]
+
+[curious] E se o ponto for somado em todo quadro, quantos pontos aparecem num segundo?
 
 [long pause]
 

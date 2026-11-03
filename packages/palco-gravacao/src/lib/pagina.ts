@@ -83,6 +83,38 @@ const fold = (s: string): string =>
 const areaDeTrabalho = (doc: Document): SVGSVGElement | null => doc.querySelector('svg.blocklySvg')
 
 /**
+ * O menu do Blockly chama a ação num frame seguido de uma tarefa. A primeira passagem espera
+ * essa fila; a segunda deixa terminar a renderização que a organização enfileirou. Esperar só o
+ * SVG existir libera a gravação antes de os blocos mudarem de lugar. O teto também libera a
+ * tentativa se a aba ficar oculta ou a área de trabalho sair da página.
+ */
+function esperarOrganizacao(doc: Document, area: SVGSVGElement): Promise<boolean> {
+  const view = doc.defaultView
+  if (!view) return Promise.resolve(false)
+  return new Promise((resolve) => {
+    let frame = 0
+    let tarefa = 0
+    let passagens = 2
+    const terminar = (concluida: boolean) => {
+      view.clearTimeout(limite)
+      view.clearTimeout(tarefa)
+      view.cancelAnimationFrame(frame)
+      resolve(concluida && area.isConnected && areaDeTrabalho(doc) === area)
+    }
+    const limite = view.setTimeout(() => terminar(false), 2_000)
+    const passar = () => {
+      frame = view.requestAnimationFrame(() => {
+        tarefa = view.setTimeout(() => {
+          if (--passagens === 0) terminar(true)
+          else passar()
+        }, 0)
+      })
+    }
+    passar()
+  })
+}
+
+/**
  * A parte da área de trabalho que aparece: o SVG passa por baixo da caixa de categorias (e da
  * paleta aberta), à esquerda, então o que fica à vista começa à direita delas.
  */
@@ -378,7 +410,7 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       item.dispatchEvent(new PointerEvent('pointerdown', { ...no, buttons: 1 }))
       item.dispatchEvent(new PointerEvent('pointerup', { ...no, buttons: 0 }))
       item.dispatchEvent(new MouseEvent('click', no))
-      return true
+      return esperarOrganizacao(doc, area)
     },
 
     perto(texto) {

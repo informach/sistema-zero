@@ -14,6 +14,8 @@ Fonte editorial: `qa/meu-jeito.conteudo.json`. Gerador: `qa/gerar-meu-jeito.ts`.
 
 A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O segundo quadro muda só o motor. A revisão formativa fica separada da galeria.
 
+**Revisão de 02/11/2026 (decisões da responsável: experiência só com a ideia, convite à investigação e didática da aula inteira). "Quadro" é sempre o desenho da animação; a faixa Spritesheet é apresentada antes do uso. Quadros e Fantasma viraram exploração livre, e a conclusão do Fantasma saiu do vídeo para a investigação. Revisão independente de 02/11/2026: o vídeo dos quadros não responde à pergunta das páginas rápidas e o convite diz o que comparar, sem sequência de botões; o Fantasma e a folha fina param na situação.**
+
 ## Triagem dos conceitos
 
 | Conceito | Como e quando trabalhar | Razão |
@@ -26,15 +28,15 @@ A comparação entre desenhos parados, ritmo e fantasma vem antes da edição. O
 
 ### Seção 1. Compare dois desenhos e uma animação
 
-**Tarefa / Zappy na página:** Sua vez! Mude a Velocidade da Prévia e veja quando o fogo pulsa. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue quando o fogo da nave parece se mexer e quando ele fica parado. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-quadros → fala-quadros → experiencia-quadros.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-quadros-K1: Debinha substitui “E se os dois desenhos forem iguais?”. Antes: “vai ver o desenho se mexer. Na Prévia, cada quadro é uma página, e a Velocidade diz quantas páginas passam por segundo.”. Depois: “Agora eu ligo a Prévia de novo e ligo Quadro 2 igual ao quadro 1. Repare: a Prévia continua trocando 8 quadros por”.
+video-quadros-K1: Debinha substitui “E se as páginas passarem bem rápido?”. Antes: “em cada página? Quando você passa as páginas, o desenho muda de uma página para a outra. Cada página é um quadro.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o fogo da nave parece se mexer e”.
 
-**Experiência existente:** `frames`. Com a Prévia parada, escolha o quadro 1 e o 2. Coloque a velocidade em 2 quadros por segundo, ligue a Prévia e observe duas trocas. Mude para 8, observe por um segundo e pare a Prévia. Ligue de novo, ligue Quadro 2 igual ao quadro 1 e observe por um segundo. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `frames`, com `setup.freeExploration`. Compare o fogo da nave com a animação parada e tocando, em velocidades diferentes. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 2. Desenhe o primeiro fogo
 
@@ -46,15 +48,15 @@ video-quadros-K1: Debinha substitui “E se os dois desenhos forem iguais?”. A
 
 ### Seção 3. Desenhe olhando o quadro anterior
 
-**Tarefa / Zappy na página:** Sua vez! Use o Fantasma para deixar o fogo 2 um pouco maior que o fogo 1. Quando terminar, clique em Próxima parte.
+**Tarefa / Zappy na página:** Sua vez! Investigue o que o Fantasma mostra e use ele para acertar o tamanho do fogo 2. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 **Blocos na página:** video-fantasma → fala-fantasma → experiencia-fantasma.
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-fantasma-K1: Debinha substitui “E se o fogo 2 ficar maior que o tracejado?”. Antes: “baixo? Dá para desenhar comparando com elas. O Fantasma faz isso: deixa o quadro anterior à vista, para você comparar.”. Depois: “Vamos ver. Com o Fantasma ligado, eu aumento o fogo 2 para 10 quadradinhos. Olha só: agora ele está um pouco maior que”.
+video-fantasma-K1: Debinha substitui “Dá para acertar o tamanho do fogo sem o Fantasma?”. Antes: “que outra? Fica mais fácil quando as duas estão à vista. O Pinta tem uma ferramenta para ajudar nisso: o Fantasma.”. Depois: “O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o Fantasma mostra e como ele”.
 
-**Experiência existente:** `onion-skin`. Escolha o quadro 2, deixe Fantasma desligado e mude o tamanho do fogo 2. Ligue Fantasma. Ajuste o tamanho até o fogo 2 ficar um pouco maior que o fogo tracejado, inteiro dentro do quadro. Sem palpite, pistas ou pergunta final.
+**Experiência em exploração livre:** `onion-skin`, com `setup.freeExploration`. Tente deixar o fogo 2 um pouco maior que o fogo 1, sem passar da borda, com o Fantasma desligado e com ele ligado. Você escolhe a ordem e pode repetir quando quiser. Três pistas, do que observar até a sequência; sem palpite nem pergunta final.
 
 ### Seção 4. Mude só o fogo no segundo quadro
 
@@ -64,7 +66,7 @@ video-fantasma-K1: Debinha substitui “E se o fogo 2 ficar maior que o tracejad
 
 **Participação no vídeo:** A professora grava toda a fala. Substituições kids, sem sobrepor vozes:
 
-video-segundo-fogo-K1: Debinha substitui “Ainda está igual. Qual pedaço eu mudo?”. Antes: “atrás do desenho. Como o quadro 2 ainda é uma cópia igual, ele cobre o fantasma, e por enquanto você não vê diferença.”. Depois: “Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para baixo. Olha só: no espaço”.
+video-segundo-fogo-K1: Debinha substitui “Ainda está igual. Qual pedaço eu mudo?”. Antes: “quadro anterior. Repare: por enquanto, você não vê diferença, porque o quadro 2 é uma cópia igual e cobre o fantasma.”. Depois: “Só a ponta do fogo muda. Com Selecionar e mover, cerque somente a ponta do fogo e mova essa ponta um quadradinho para”.
 
 **Aplicação no Pinta:** o roteiro começa pela retomada de uma experiência desta aula e inclui o caminho, a ação, o porquê dos resultados e a autoconferência visual. Esta parte registra o vídeo; o recebimento do trabalho é exigido na entrega final desta aula. Assistir não comprova a qualidade do desenho.
 

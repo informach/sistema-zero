@@ -2,79 +2,97 @@
 
 **Produção:** a professora grava toda a fala principal. Na montagem kids, Dedé substitui somente os trechos da tabela, com a mesma frase e sem voz sobreposta. O master funciona sozinho no adulto. Notas e recados da página não são gravados. [Direção de voz e edição](../../../aulas-interativas-tecnico/DIRETRIZES-VOZ-ELEVENLABS.md).
 
-## Seção 1. Compare esperar e repetir
+## Seção 1. Uma vez, sempre ou na hora certa?
 
-### Clipe `video-area-que-espera` · Compare esperar e repetir
+### Clipe `video-area-que-espera` · Uma vez, sempre ou na hora certa?
 
 **Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-area-que-espera`
 
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com as peças em Ações disponíveis. Colocar Tocar efeito · pulo em Quando acontecer, clicar em Começar o jogo e esperar Teste encerrado, com o contador da peça em 0 vezes. Clicar em Apertar a tecla e mostrar a nota ♪ no palco e o contador em 1 vez. Meme ilustrado na frase da comparação, por 2 a 3 segundos: o Zappy tocando a campainha de uma casa, com uma nota musical saindo dela. Desenho nosso, sem foto de pessoa real nem meme da internet, sem cobrir a experiência. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
+**Na tela:** No "Sabe a campainha de casa", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy tocando a campainha de uma casa, e o Dino vindo abrir a porta [na edição: meme da campainha]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, sem escolher nenhum jeito. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Esta é a mesma experiência da primeira aula, agora com mais peças e uma área nova, Quando acontecer, para a gente entender uma área que espera um acontecimento para agir.
+[engaging, energetic, conversational voice] Você já viu dois jeitos de o jogo fazer as coisas: uma vez, no começo, e sempre, em todo quadro. Existe um terceiro jeito: na hora em que algo acontece.
 
-[interested, animated voice] Olha aqui: eu coloco Tocar efeito · pulo em Quando acontecer e clico em Começar o jogo. O jogo roda até o teste terminar, e o contador continua em 0 vezes. A peça ficou esperando, porque eu não cliquei em Apertar a tecla.
+[engaging, energetic, conversational voice] Sabe a campainha de casa? Ela não toca sem parar, nem toca uma vez só por dia. Ela toca na hora em que alguém chega e encosta o dedo nela.
 
-[engaging, energetic, conversational voice] Agora eu clico em Apertar a tecla. Na mesma hora, aparece a notinha ♪ no jogo, e o contador vai para 1 vez. Quando acontecer não age no começo nem repete sozinho: age quando o acontecimento chega.
+[engaging, energetic, conversational voice] No seu jogo, você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla.
 
-[engaging, energetic, conversational voice] É como a campainha de casa: ela fica quieta o dia inteiro e só faz barulho quando alguém toca nela. No seu jogo, o som vai em Quando acontecer, esperando o pulo do Dino.
+[curious] E se o som ficar esperando a tecla, ele aparece quando o jogo começa?
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
-```
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-
-**Recado na página (não gravar):** Sua vez! Comece o teste sem clicar em Apertar a tecla e só depois clique nesse botão, de olho no contador. Quando terminar, clique em Próxima parte.
-
-## Seção 2. Compare a tecla com o pulo
-
-### Clipe `video-dedo-e-pulo` · Compare a tecla com o pulo
-
-**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
-
-**Clipe:** `video-dedo-e-pulo`
-
-**Na tela:** Demonstração: quem faz os testes é o narrador, na primeira pessoa. Fazer cada gesto no ritmo da fala e deixar o resultado real à vista (palco, faixa e contadores) enquanto a fala explica por que ele aconteceu, sem cortar entre o gesto e o resultado. Começar com Tocar efeito em Quando apertar Espaço e os contadores de pulos e sons em 0. Fazer os gestos no ritmo da fala, esperando o pouso entre os testes, e manter os contadores à vista depois de cada clique. Levar Tocar efeito para Quando o Dino pular e repetir os testes. Em Agora é a sua vez, parar os gestos e mostrar a experiência e o botão Próxima parte.
-
-**Fala para ElevenLabs:**
-
-```text
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender em que momento o som deve tocar: na tecla ou no pulo.
-
-[interested, animated voice] Olha aqui: com Tocar efeito em Quando apertar Espaço, eu clico em Apertar Espaço. O Dino pula, e o som toca. Com ele ainda no ar, eu clico de novo: o som toca outra vez, mas o Dino não pula de novo. Agora são 2 sons para 1 pulo.
-
-[engaging, energetic, conversational voice] Depois que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço.
-
-[curious] Como faz para o som tocar em todo pulo?
-
-[engaging, energetic, conversational voice] Vamos ligar o som ao pulo. Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes. Duas vezes Apertar Espaço no mesmo salto: um pulo e um som só. Tocar para pular: o pulo vem com som. Cada pulo tem o seu som, venha da tecla ou do toque, porque agora o som está ligado ao pulo. No seu jogo, você vai pôr Tocar efeito dentro de Quando o sprite pular.
-
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quando o som do pulo aparece em cada jeito, com a tecla e sem a tecla. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
 **Substituições na edição kids:**
 
 | ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
 | --- | --- | --- | --- | --- | --- | --- |
-| video-dedo-e-pulo-K1 | Dedé | 1 | que ele pousa, eu clico em Tocar para pular. O Dino pula, e nenhum som toca, porque esse pulo não veio da tecla Espaço. | Como faz para o som tocar em todo pulo? | Vamos ligar o som ao pulo. Agora eu levo Tocar efeito para Quando o Dino pular e faço os mesmos testes. Duas vezes | [curious] |
+| video-area-que-espera-K1 | Dedé | 1 | você escolhe em qual desses jeitos o som do pulo aparece. No terceiro jeito, o que acontece é alguém tocar numa tecla. | E se o som ficar esperando a tecla, ele aparece quando o jogo começa? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quando o som do pulo aparece em cada | [curious] |
 
 No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
 
 **Imagem nas substituições kids (não gravar):**
 
-- `video-dedo-e-pulo-K1`: entrada — Concluir o teste por tecla e o teste por toque; deixar os contadores à vista e o Dino pousado. Saída — Levar Tocar efeito para Quando o Dino pular, soltar a peça e repetir os testes.
+- `video-area-que-espera-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
 
 
-**Recado na página (não gravar):** Sua vez! Teste a tecla repetida e o toque com o som nos dois lugares e compare os contadores. Quando terminar, clique em Próxima parte.
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/dino/once-vs-always.ts`, na tela `packages/member-shell/src/components/scene-livre/once-vs-always.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue em que momento o som do pulo aparece em cada jeito. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
+
+## Seção 2. Som na tecla ou no pulo?
+
+### Clipe `video-dedo-e-pulo` · Som na tecla ou no pulo?
+
+**Estimativa de gravação:** aproximadamente 2 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+
+**Clipe:** `video-dedo-e-pulo`
+
+**Na tela:** No "Sabe o sininho da porta", mostrar por 2 a 3 segundos o meme ilustrado, desenho nosso com o Zappy ou os personagens do jogo, sem foto de pessoa real nem meme da internet e sem cobrir a experiência: o Zappy entrando numa loja, com o sininho preso no alto da porta [na edição: meme do sininho da porta]. No "No seu jogo", ampliar a experiência [ampliar experiência] e mostrar a cena parada, com a linha do tempo vazia. Não apontar nem clicar nos controles da experiência. No "O Zappy ajuda", mostrar o Zappy [apontar zappy]. No "Quando terminar, clique em Próxima parte", voltar ao tamanho da aula [voltar à aula] e clicar em **Próxima parte** [próxima parte]. Não fazer os testes pela criança nem mostrar o resultado de nenhuma comparação: a criança descobre na experiência. Não falar de blocos, áreas do Estúdio, regra nem código (decisões de 01/11 e 02/11/2026).
+
+**Fala para ElevenLabs:**
+
+```text
+[engaging, energetic, conversational voice] Num jogo, um som pode ficar ligado a um momento: ele aparece toda vez que aquele momento acontece.
+
+[engaging, energetic, conversational voice] Sabe o sininho da porta de uma loja? Ele fica preso na porta e toca quando ela abre.
+
+[engaging, energetic, conversational voice] No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo.
+
+[curious] E se o som estiver ligado à tecla, o pulo do toque também tem som?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar quantos sons e quantos pulos acontecem com o som ligado à tecla e com o som ligado ao pulo. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+```
+
+**Substituições na edição kids:**
+
+| ID | Personagem | Ocorrência | Âncora anterior | Fala exata substituída | Âncora posterior | Tags |
+| --- | --- | --- | --- | --- | --- | --- |
+| video-dedo-e-pulo-K1 | Dedé | 1 | No seu jogo, o Dino pode pular com a tecla e com o toque. E o som do pulo pode ficar ligado à tecla ou ao próprio pulo. | E se o som estiver ligado à tecla, o pulo do toque também tem som? | O que você acha? Isso você vai testar na experiência. Agora você vai investigar quantos sons e quantos pulos acontecem | [curious] |
+
+No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho marcado e substituir pelo áudio do personagem, sem sobrepor vozes.
+
+**Imagem nas substituições kids (não gravar):**
+
+- `video-dedo-e-pulo-K1`: entrada — Manter a experiência ampliada e parada até a professora terminar a frase. Saída — Depois da saída, seguir com a experiência parada, sem clicar em nada.
+
+
+**Falas dentro da experiência:** `packages/core/src/learning/scene/guia-livre/jump-sound.ts`, na tela `packages/member-shell/src/components/scene-livre/jump-sound.tsx`. A orientação do Zappy sugere comparações pelo estado observado; os controles ficam livres e as descobertas contam em qualquer ordem.
+
+**Recado na página (não gravar):** Sua vez! Investigue se o som do pulo deve ficar ligado à tecla ou ao pulo. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Seção 3. Ligue o som ao pulo do Dino
 
 ### Clipe `video-som-no-pulo` · Ligue o som ao pulo do Dino
 
-**Estimativa de gravação:** aproximadamente 3 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
+**Estimativa de gravação:** aproximadamente 4 minuto(s) de fala, mais o tempo dos gestos e testes. Recalibrar no ensaio; não acelerar a montagem para caber.
 
 **Clipe:** `video-som-no-pulo`
 
@@ -85,13 +103,29 @@ No adulto, manter toda a fala da professora. No kids, silenciar apenas o trecho 
 ```text
 [confident, clear, unhurried voice] Clique em Atualizar e pule com a barra de espaço. Percebeu? O pulo não tem som, porque nada liga som a ele.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o som em Quando o Dino pular, cada pulo teve som. Agora a gente vai fazer isso no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com o som ligado ao pulo, cada pulo teve o seu som. Agora a gente vai fazer isso no seu jogo!
 
-[engaging, energetic, conversational voice] O som vai esperar um acontecimento, e os acontecimentos ficam numa área própria, chamada Quando acontecer. O seu projeto ainda não tem essa área, por isso a gente vai criar uma. Deixe à vista um espaço vazio do projeto, separado de Ao iniciar e de Enquanto estiver rodando. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse espaço.
+[engaging, energetic, conversational voice] Um pulo é um evento, que é algo que acontece no jogo. O que fica dentro de um evento só acontece na hora em que ele acontece.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Quando acontecer. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área. No nome, escolha dino. É esse bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.
+[engaging, energetic, conversational voice] Os eventos ficam numa área própria, chamada Quando acontecer. O seu projeto ainda não tem essa área, por isso você vai criar uma.
 
-[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Quando o sprite pular. Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo.
+[confident, clear, unhurried voice] Deixe à vista um espaço vazio do projeto, separado de Ao iniciar e de Enquanto estiver rodando. Depois, abra Áreas do projeto, pegue Quando acontecer e solte nesse espaço.
+
+[engaging, energetic, conversational voice] É esta área que guarda os eventos do jogo.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Quando acontecer.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, pegue o bloco Quando o sprite pular e solte nessa área.
+
+[engaging, energetic, conversational voice] É este bloco que percebe o pulo do Dino, venha ele da tecla ou do toque.
+
+[confident, clear, unhurried voice] Repare: o bloco chega com o nome jogador. Clique em jogador e escolha dino.
+
+[confident, clear, unhurried voice] Agora deixe à vista o espaço vazio dentro de Quando o sprite pular.
+
+[confident, clear, unhurried voice] Abra Jogo 2D, depois Som e depois Efeitos prontos, pegue o bloco Tocar efeito e solte dentro do evento do pulo. No efeito, escolha pulo.
+
+[engaging, energetic, conversational voice] É este bloco que toca o som do pulo.
 
 [upbeat, encouraging voice] Agora teste! Clique em Atualizar e pule com a barra de espaço. Escute: agora o pulo vem com som! Depois que o Dino pousar, teste a seta para cima e um toque na parte de cima da tela, e cada salto tem que tocar um som.
 

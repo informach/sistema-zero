@@ -15,12 +15,14 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 ```text
 [upbeat, welcoming voice] Você já criou A Chave do Farol. Agora vamos levar essa ideia para uma ilha em três dimensões: A Ilha do Farol! O desafio continua: encontrar a chave e acender o farol para o barco chegar.
 
-[interested, animated voice] Olha aqui: eu caminho pelo chão e posso passar na frente ou atrás dos objetos. A pedra pode esconder a chave dependendo de onde a gente olha.
+[interested, animated voice] Olha aqui: eu caminho pelo chão e posso passar na frente ou atrás dos objetos. Repare nas pedras: atrás delas pode ter alguma coisa escondida.
 
-[upbeat, encouraging voice] Sua vez! Clique no jogo e use as setas do teclado ou as letras W, A, S e D para andar. Para começar outra partida, pressione R. Explore a ilha; você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
+[upbeat, encouraging voice] Sua vez! Clique dentro do jogo e segure uma seta do teclado, ou uma das letras W, A, S e D, para andar. Para começar outra partida, toque na tecla R.
+
+[upbeat, encouraging voice] Explore a ilha. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Clique no jogo e use as setas do teclado ou WASD. Aperte R para recomeçar. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
+**Recado na página (não gravar):** Clique dentro do jogo e segure as setas do teclado ou as letras WASD. Para recomeçar, toque na tecla R. Você pode seguir mesmo sem terminar a partida. Depois clique em Próxima parte.
 
 ## Parte 2. Seu passo a passo do projeto
 
@@ -42,58 +44,88 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-ponto-de-vista`
 
-**Na tela:** Ilustrar olhar uma chave atrás de uma pedra de dois lugares. Não demonstrar todas as respostas. Atividade view, controles livres.
+**Na tela:** Vídeo conceitual. Ilustrar a comparação: uma pessoa na frente tapa a vista de alguém, que pensa em mudar de lugar para olhar, sem mostrar o que está atrás. Depois ampliar a experiência e mostrar a cena parada, na vista de frente, com a pedra escondendo a chave, sem apontar controles nem trocar a vista: o que muda e o que fica igual é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos nem de código. O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).
 
 **Fala para ElevenLabs:**
 
 ```text
-[curious] Sabe quando uma pessoa fica na sua frente e você dá um passo para o lado para enxergar? O que estava escondido aparece, mesmo sem sair do lugar.
+[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha a ilha. Ela funciona como os seus olhos dentro do jogo.
 
-[engaging, energetic, conversational voice] No jogo 3D, a câmera é o lugar de onde a gente olha. Mudar a câmera pode revelar um objeto que já estava ali. Isso é diferente de mover o próprio objeto.
+[curious] Sabe quando uma pessoa fica na sua frente e tapa o que você quer ver? Você pode mudar de lugar para olhar.
 
-[upbeat, encouraging voice] Na experiência, procure a chave olhando de lugares diferentes. Compare o que aparece e o que continua no mesmo lugar. Você pode voltar às vistas quantas vezes quiser. Quando fizer as descobertas, clique em Próxima parte.
+[engaging, energetic, conversational voice] Na Ilha do Farol, a câmera pode olhar a ilha de lugares diferentes. E, perto de uma pedra, tem uma chave escondida.
+
+[curious] Se a câmera mudar de lugar, a chave também muda de lugar?
+
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
+
+[upbeat, encouraging voice] Agora você vai investigar o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Compare as situações na experiência, na ordem que quiser. Quando fizer as descobertas, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Investigue o que muda na imagem e o que continua no mesmo lugar quando você olha a ilha de lugares diferentes. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.
 
 ## Parte 4. Faça o personagem andar
 
 **Clipe:** `video-movimento`
 
-**Na tela:** Projeto inicio. Mostrar Enquanto estiver rodando, A cada quadro da cena cena. Encaixar Fazer personagem andar com as setas antes do aviso. As áreas permitidas e as animações já vêm configuradas em Ao iniciar.
+**Na tela:** Projeto inicio. Começar pela retomada: clicar em Atualizar e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.
 
 **Fala para ElevenLabs:**
 
 ```text
-[engaging, energetic, conversational voice] Na experiência, mudar a vista não moveu a chave. Agora vamos mover o personagem. Clique no seu jogo e pressione uma seta. Ele ainda fica parado, porque falta o comando de movimento.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique em Atualizar, logo acima do jogo. Depois clique dentro do jogo e segure uma seta do teclado. Tá vendo? O personagem fica parado, porque o jogo ainda não sabe que a seta faz ele andar.
 
-[confident, clear, unhurried voice] Volte aos blocos. Encontre a área Enquanto estiver rodando e deixe à vista A cada quadro da cena cena. Dentro dele, encontre Escrever na tela. O novo bloco vai antes desse aviso. As áreas por onde o personagem pode andar já estão preparadas em Ao iniciar.
+[engaging, energetic, conversational voice] Na experiência da parte anterior, quem mudava de lugar era a câmera. Agora quem vai sair do lugar é o personagem!
 
-[confident, clear, unhurried voice] Abra Jogo 3D, Movimento, Andar com o teclado. Pegue Fazer personagem andar com as setas, ou WASD, velocidade 3. Arraste até o lugar que deixamos à vista e solte quando aparecer o encaixe. No nome, escolha personagem. No número que vem em 3, coloque 4.
+[engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? O jogo desenha a cena muitas vezes por segundo, e cada desenho é um quadro. Para o personagem andar, o jogo precisa olhar as setas em todo quadro.
 
-[engaging, energetic, conversational voice] Lembra dos quadros do jogo 2D? A cada quadro, esse comando confere as teclas pressionadas e move o personagem no chão. O número é a velocidade por segundo.
+[confident, clear, unhurried voice] Por isso, o novo bloco vai dentro do bloco A cada quadro da cena. Nos blocos, encontre a área Enquanto estiver rodando e deixe à vista o bloco A cada quadro da cena.
 
-[upbeat, encouraging voice] Execute o jogo. Clique nele, pressione a seta da direita por um tempo e solte. Faça o mesmo com as outras três. Repare: ele anda enquanto você pressiona e para quando solta. Ele também mexe as pernas e os braços enquanto anda, e respira quando para: essas animações já vieram prontas no seu projeto. Experimente também chegar à ponte e à beirada.
+[confident, clear, unhurried voice] Dentro dele, encontre o bloco Escrever na tela. O novo bloco vai logo antes dele.
 
-[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos, confira os nomes e os encaixes que acabamos de montar e teste de novo.
+[confident, clear, unhurried voice] Agora abra Jogo 3D, depois Movimento e depois Andar com o teclado. Pegue o bloco Fazer personagem andar com as setas, ou WASD.
 
-[confident, clear, unhurried voice] Depois clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e verifique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
+[confident, clear, unhurried voice] Arraste até o lugar antes de Escrever na tela e solte quando aparecer o encaixe.
+
+[engaging, energetic, conversational voice] É este bloco que faz o personagem andar: em todo quadro, ele olha qual seta você está segurando e leva o personagem para aquele lado.
+
+[confident, clear, unhurried voice] Repare que o nome do bloco já é personagem. Se aparecer outro nome, clique nele e escolha personagem.
+
+[engaging, energetic, conversational voice] O número do bloco é a velocidade: quanto maior, mais rápido o personagem anda. Clique no 3 e troque por 4.
+
+[upbeat, encouraging voice] Agora vamos testar! Clique em Atualizar. Depois clique dentro do jogo, segure a seta da direita por um tempo e solte.
+
+[interested, animated voice] Olha só: ele anda enquanto você segura a seta e para quando você solta.
+
+[upbeat, encouraging voice] Faça o mesmo com as outras três setas. Leve o personagem até a ponte e até a beirada da ilha.
+
+[interested, animated voice] E repare: enquanto anda, ele mexe as pernas e os braços. Parado, ele respira.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: dentro de A cada quadro da cena está o bloco Fazer personagem andar com as setas, antes de Escrever na tela, com o nome personagem e a velocidade 4. Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Próxima parte.
 ```
 
-**Recado na página (não gravar):** Sua vez! Monte a regra, teste no seu jogo e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
+**Recado na página (não gravar):** Sua vez! Faça as mudanças desta parte no seu jogo, teste e clique em Verificar projeto. Depois de conferir os objetivos e aparecer Salvo, clique em Próxima parte.
 
 ## Parte 5. Confira seu primeiro percurso
 
 **Clipe:** `video-entrega`
 
-**Na tela:** Percurso com as quatro setas, parada e R. Sem exigir coleta ainda. Mostrar objetivos, Salvo, envio e confirmação.
+**Na tela:** Percurso com as quatro setas, parada e a tecla R. Sem exigir coleta ainda. Mostrar objetivos, Salvo, envio e confirmação.
 
 **Fala para ElevenLabs:**
 
 ```text
-[pleased, lively voice] Você programou o movimento do personagem na ilha! Agora faça um percurso: ande nas quatro direções, solte as teclas para parar e atravesse a ponte. Depois pressione R para voltar ao começo. A chave ainda não é recolhida; essa regra vem na próxima aula.
+[pleased, lively voice] Você programou o movimento do personagem na ilha!
 
-[confident, clear, unhurried voice] Clique em Verificar projeto. Se algum objetivo faltar, leia a indicação, ajuste e teste novamente. Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
+[upbeat, encouraging voice] Agora faça um percurso: segure as setas para andar nas quatro direções, solte para parar e atravesse a ponte. Depois toque na tecla R para voltar ao começo.
+
+[engaging, energetic, conversational voice] A chave ainda não é recolhida. Essa reação vem na próxima aula.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente.
+
+[confident, clear, unhurried voice] Quando aparecer Objetivo cumprido! e depois Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.
 ```
 
 **Recado na página (não gravar):** Confira o jogo e os objetivos. Aguarde Salvo, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Próxima parte.

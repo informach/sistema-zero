@@ -1,8 +1,12 @@
-[curious] Como o tiro descobre onde a nave está agora?
+[curious] E se o tiro sair sempre, em todo quadro?
 
 [long pause]
 
-[curious] E se eu tirar o sinal de menos?
+[curious] E se a nave mudar de lugar, o tiro vai junto?
+
+[long pause]
+
+[curious] E com um número negativo, o tiro vai para onde?
 
 [long pause]
 
@@ -10,7 +14,7 @@
 
 [long pause]
 
-[curious] Como eu tiro os que já foram embora?
+[curious] E quando o tiro some da tela, ele sai do grupo também?
 
 [long pause]
 

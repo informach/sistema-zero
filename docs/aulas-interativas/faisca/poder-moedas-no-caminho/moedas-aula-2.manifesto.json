@@ -2440,7 +2440,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Agora monte o contador e a coleta na ilha. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Agora monte o contador e a coleta na ilha: a mesma ideia do 2D. Se precisar, a montagem completa está no Passo a passo do projeto. Teste, clique em Verificar projeto e depois em Próxima parte."
       }
     },
     {
@@ -2464,7 +2464,7 @@
       "content": {
         "kind": "dialogue",
         "pose": "speaking",
-        "text": "Hora do baú da ilha! Com pelo menos 5 moedas ele toca a animação abrir; com menos, ele avisa. Teste os dois casos, clique em Verificar projeto e depois em Próxima parte."
+        "text": "Hora do baú da ilha! A pergunta é a mesma do 2D: pelo menos 5 moedas. Teste os dois casos, clique em Verificar projeto e depois em Próxima parte."
       }
     },
     {

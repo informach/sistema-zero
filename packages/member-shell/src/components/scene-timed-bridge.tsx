@@ -67,7 +67,7 @@ export function TimedBridgeStage({ state }: { state: SceneState }) {
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A ponte apressada"
-      descricao={`ponteAberta é ${sim(b.ponteAberta)}: a ponte está ${b.ponteAberta ? 'baixada' : 'levantada'}. O relógio do "depois de" ${b.timers.length ? `contou ${contados} de ${TIMED_BRIDGE.seconds} segundos` : 'está parado'}. O aviso do jogo diz: ${aviso}`}
+      descricao={`ponteAberta é ${sim(b.ponteAberta)}: a ponte está ${b.ponteAberta ? 'baixada' : 'levantada'}. O relógio ${b.timers.length ? `contou ${contados} de ${TIMED_BRIDGE.seconds} segundos` : 'está parado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"

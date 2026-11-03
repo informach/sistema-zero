@@ -20,12 +20,23 @@
   ],
   "intervencoes": [
     {
+      "id": "video-quadros-K1",
+      "clipe": "video-quadros",
+      "personagem": "Dedé",
+      "ocorrencia": 1,
+      "ancoraAntes": "aparece na tela. No seu jogo, o Dino tem um lugar, o x, e o jogo escolhe quando pintar o Dino e se apaga a tela antes.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que a tela mostra em cada jeito de",
+      "falaPrincipal": "E se o Dino for desenhado em todo quadro, sem apagar a tela?",
+      "falaPersonagem": "E se o Dino for desenhado em todo quadro, sem apagar a tela?",
+      "tags": ["[curious]"]
+    },
+    {
       "id": "video-limpeza-K1",
       "clipe": "video-limpeza",
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "no seu jogo, olhe a sombra do Dino. Tá vendo? Ela vai ficando escura, porque cada desenho novo cai em cima do velho.",
-      "ancoraDepois": "É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Com Limpar a tela antes, ficava um",
+      "ancoraDepois": "É isso que a gente vai resolver. Lembra da experiência da primeira parte desta aula? Apagando a tela antes de cada",
       "falaPrincipal": "E como tira essa sombra escura?",
       "falaPersonagem": "E como tira essa sombra escura?",
       "tags": ["[curious]"]
@@ -35,10 +46,10 @@
       "clipe": "video-camadas",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "o Dino primeiro e a floresta depois. Só um pedacinho do Dino aparece, porque a floresta foi desenhada por cima dele.",
-      "ancoraDepois": "Quando eu coloco o Dino depois da Floresta, ele aparece inteiro, sem nada na frente. Ninguém foi apagado: só a ordem",
-      "falaPrincipal": "Como eu trago o Dino para a frente?",
-      "falaPersonagem": "Como eu trago o Dino para a frente?",
+      "ancoraAntes": "umas por cima das outras? A ordem em que você cola faz diferença. No seu jogo, vão ser desenhados o Dino e a floresta.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que muda na tela quando muda a ordem",
+      "falaPrincipal": "E se a floresta for desenhada depois do Dino, quem fica na frente?",
+      "falaPersonagem": "E se a floresta for desenhada depois do Dino, quem fica na frente?",
       "tags": ["[curious]"]
     },
     {
@@ -46,8 +57,8 @@
       "clipe": "video-ordem-certa",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "depois Cenários e depois Fundos, pegue o bloco Desenhar fundo de floresta e solte entre a limpeza e o desenho do Dino.",
-      "ancoraDepois": "Dá, sim. Repare: o bloco chega com velocidade 4. Troque por 5, porque esse número diz quanto o fundo anda em cada",
+      "ancoraAntes": "e solte entre a limpeza e o desenho do Dino. É este bloco que desenha a floresta, atrás do que vem depois dele.",
+      "ancoraDepois": "Dá, sim. Repare: o bloco chega com velocidade 4. Clique no 4 e troque por 5, porque um número maior deixa o fundo mais",
       "falaPrincipal": "A floresta já está andando! Dá para ela andar mais rápido?",
       "falaPersonagem": "A floresta já está andando! Dá para ela andar mais rápido?",
       "tags": ["[curious]"]
@@ -57,10 +68,10 @@
       "clipe": "video-descricao",
       "personagem": "Dedé",
       "ocorrencia": 1,
-      "ancoraAntes": "vazio. O leitor diz só: Tela do jogo. Imagem. O programa não vê o desenho, por isso não tem como contar o que acontece.",
-      "ancoraDepois": "Pode. Vamos colocar a descrição para o leitor de tela. Agora eu escrevo Corra com o dino e pule os cactos apertando",
-      "falaPrincipal": "E se a gente escrever como se joga?",
-      "falaPersonagem": "E se a gente escrever como se joga?",
+      "ancoraAntes": "só ouve o que você conta. No seu jogo, você pode escrever uma frase para o leitor de tela ler: a descrição do jogo.",
+      "ancoraDepois": "O que você acha? Isso você vai testar na experiência. Agora você vai investigar o que o leitor de tela diz sem",
+      "falaPrincipal": "E o leitor de tela consegue contar como se joga o Corre, Dino?",
+      "falaPersonagem": "E o leitor de tela consegue contar como se joga o Corre, Dino?",
       "tags": ["[curious]"]
     },
     {
@@ -69,7 +80,7 @@
       "personagem": "Dedé",
       "ocorrencia": 1,
       "ancoraAntes": "depois Jogo e telas e depois Telas e partida, pegue o bloco Descrever o jogo para leitor de tela e solte nesse espaço.",
-      "ancoraDepois": "Ela fica guardada para o leitor de tela ler em voz alta. No texto, apague a frase que veio no bloco e escreva esta,",
+      "ancoraDepois": "Não, ela não aparece na tela. É este bloco que guarda a frase que o leitor de tela lê em voz alta. No texto, apague a",
       "falaPrincipal": "Essa frase vai ficar escrita no jogo?",
       "falaPersonagem": "Essa frase vai ficar escrita no jogo?",
       "tags": ["[curious]"]

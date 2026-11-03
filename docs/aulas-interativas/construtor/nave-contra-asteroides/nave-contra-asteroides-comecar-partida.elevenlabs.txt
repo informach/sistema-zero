@@ -1,95 +1,161 @@
-[engaging, energetic, conversational voice] Esta é uma experiência para a gente entender o estado do jogo: ele guarda em que momento o jogo está. Aqui a gente vai usar inicio, para a abertura, e jogando, para a partida.
+[engaging, energetic, conversational voice] Sabe a porta de casa, que só abre com a chave? Antes de abrir, é como se ela fizesse uma pergunta: a chave está aqui? E a resposta decide o que acontece.
 
-[interested, animated voice] Olha aqui: a peça Criar asteroide está em No relógio, a cada 40 quadros, fora de Se o estado do jogo é jogando. Eu clico em Tempo, ainda na abertura. Tá vendo? O relógio toca e as pedras nascem, e o contador de asteroides criados sobe, mesmo sem ninguém jogando.
+[curious] O seu jogo vai ganhar uma tela de início, antes de a partida começar. E, cada vez que chega a hora de nascer uma pedra nova, o jogo pode fazer uma pergunta antes de criar a pedra: a partida já começou?
 
-[engaging, energetic, conversational voice] Agora eu levo a peça para dentro de Se o estado do jogo é jogando, e tudo recomeça do zero. Deixo o tempo passar uns quatro segundos na abertura. [confident, clear, unhurried voice] Repare: o relógio continua tocando, mas o contador mostra esperando, e nenhuma pedra nasce. É que o Se pergunta se o estado é jogando, e, na abertura, a resposta é não, por isso Criar asteroide espera. É como uma corrida: todo mundo espera o sinal de largada, e ninguém sai correndo antes.
+[curious] E na tela de início, as pedras nascem?
 
-[engaging, energetic, conversational voice] Por último, eu clico em Toque para começar, na tela da experiência. [interested, animated voice] Olha só: o estado vira jogando, e as pedras voltam a nascer. Aqui, a partida começa com um toque, mas, no seu jogo, você vai programar o Enter para começar a partida.
+[engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência.
 
-[upbeat, encouraging voice] Agora é a sua vez: faça esses mesmos testes na experiência. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora você vai investigar quantos asteroides o jogo cria, com a pergunta ligada e desligada, na tela de início e com a partida já começada. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Olhe o seu jogo logo que ele abre. Tá vendo? As pedras já caem, porque o jogo ainda não tem abertura.
+[engaging, energetic, conversational voice] Olhe o seu jogo logo que ele abre. Tá vendo? As pedras já caem, porque o jogo ainda não pergunta se a partida começou.
 
-[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Dentro do Se jogando, as pedras esperavam a partida começar. Agora a gente vai criar a abertura no seu jogo!
+[engaging, energetic, conversational voice] Lembra da experiência da parte anterior? Com a pergunta ligada, a tela de início esperava, e nada nascia. Agora a gente vai pôr essa pergunta no seu jogo!
 
-[engaging, energetic, conversational voice] Para começar, você vai tirar a sequência de dentro de A cada quadro do jogo, sem apagar nada. Deixe à vista um lugar livre do espaço dos blocos, perto de A cada quadro do jogo. Depois, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte nesse lugar. Os blocos encaixados abaixo dele vão juntos. Não apague nem crie cópias, porque daqui a pouco essa sequência volta inteira para dentro do Se.
+[engaging, energetic, conversational voice] O jogo vai ter dois momentos, cada um com um nome: inicio, a tela de abertura, e jogando, a partida. Esse momento se chama estado do jogo.
+
+[curious] E como o jogo sabe que deve começar na tela de início?
+
+[engaging, energetic, conversational voice] O jogo começa no estado inicio, e isso acontece uma vez, quando ele abre. Por isso, o bloco do estado vai no fim de Ao iniciar.
+
+[confident, clear, unhurried voice] Deixe à vista o fim de Ao iniciar, logo depois de Dar ao sprite nave 3 de vida.
+
+[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco Mudar o estado do jogo para e solte logo abaixo de Dar ao sprite nave 3 de vida. Deixe inicio no menu.
+
+[engaging, energetic, conversational voice] É este bloco que diz em que estado o jogo começa: na tela de início.
+
+[engaging, energetic, conversational voice] Agora a pergunta. Tudo o que acontece em cada quadro da partida só pode acontecer quando o estado for jogando. Por isso, a sequência inteira de A cada quadro do jogo vai para dentro de uma pergunta.
+
+[engaging, energetic, conversational voice] Primeiro, tire a sequência de dentro de A cada quadro do jogo, sem apagar nada. Deixe à vista um lugar livre do espaço dos blocos, perto de A cada quadro do jogo.
+
+[engaging, energetic, conversational voice] Pegue a sequência pelo primeiro bloco, Limpar a tela, e solte nesse lugar. Os blocos encaixados abaixo dele vão juntos. Não apague nem crie cópias, porque essa sequência volta inteira para dentro da pergunta.
 
 [confident, clear, unhurried voice] Agora deixe à vista o espaço de dentro de A cada quadro do jogo, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro de A cada quadro do jogo.
 
-[confident, clear, unhurried voice] Repare que o Se vem com uma pergunta pronta: x maior que 0. Mas não é isso que o seu jogo precisa perguntar, por isso arraste essa pergunta para a lixeira do espaço dos blocos. O lugar ao lado de Se fica vazio, e é ali que vai a pergunta certa. Deixe esse lugar à vista.
+[engaging, energetic, conversational voice] É este bloco que faz uma pergunta. Quando a resposta é sim, ele faz o que está dentro do então.
 
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte no lugar vazio ao lado de Se. No menu desse bloco, escolha jogando. Assim, o Se pergunta se a partida já começou.
+[confident, clear, unhurried voice] Repare: o Se vem com uma pergunta pronta, x maior que 0. Não é isso que o seu jogo precisa perguntar. Por isso, arraste essa pergunta para a lixeira do espaço dos blocos.
 
-[engaging, energetic, conversational voice] Agora devolva a sequência para dentro do Se: deixe à vista o espaço do então, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte dentro do então. [confident, clear, unhurried voice] Confira se ela termina no desenho das vidas e se todos os blocos do meio continuam lá.
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é e solte nesse lugar. No menu desse bloco, escolha jogando.
 
-[engaging, energetic, conversational voice] Agora a abertura, que precisa de um ramo próprio no Se. [interested, animated voice] Olha aqui: na linha de baixo do bloco Se, tem dois sinais de mais, um antes de senão se e outro antes de senão. Clique uma vez no primeiro +, o que fica antes de senão se.
+[engaging, energetic, conversational voice] É este bloco que faz a pergunta: a partida já começou? A resposta é sim quando o estado do jogo é jogando.
 
-[engaging, energetic, conversational voice] O ramo novo também chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de senão se. Abra de novo Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue outro o estado do jogo é, solte nesse lugar e deixe inicio no menu.
+[engaging, energetic, conversational voice] Agora devolva a sequência para dentro do Se. Deixe à vista o espaço do então, pegue a sequência pelo primeiro bloco, Limpar a tela, e solte dentro do então.
+
+[confident, clear, unhurried voice] Confira se ela termina no desenho das vidas e se todos os blocos do meio continuam lá.
+
+[engaging, energetic, conversational voice] Agora olhe a prévia. [confident, clear, unhurried voice] Repare: a nave e as pedras não aparecem mais, porque o jogo está no estado inicio, e a resposta da pergunta é não.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no fim de Ao iniciar está Mudar o estado do jogo para inicio. Dentro de A cada quadro do jogo está o Se com o estado do jogo é jogando, e dentro do então dele está a sequência inteira, de Limpar a tela até o desenho das vidas. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+
+[engaging, energetic, conversational voice] A tela de início ainda está vazia. O que ela mostra vem na próxima parte.
+
+[engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
+
+[long pause]
+
+[engaging, energetic, conversational voice] Olhe o seu jogo logo que ele abre. Tá vendo? A tela fica sem nada, porque o jogo está no estado inicio e ainda não mostra nenhuma abertura. Agora a gente vai criar a tela de abertura!
+
+[engaging, energetic, conversational voice] O Se pode fazer outra pergunta quando a resposta da primeira é não: o estado é inicio? Essa segunda pergunta fica num pedaço novo do bloco, o senão se.
+
+[interested, animated voice] Olha aqui: na linha de baixo do bloco Se, tem dois sinais de mais, um antes de senão se e outro antes de senão. Clique uma vez no primeiro, o que fica antes de senão se.
+
+[engaging, energetic, conversational voice] O ramo novo também chega com a pergunta x maior que 0. Arraste essa pergunta para a lixeira.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado de senão se. Abra de novo Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue outro o estado do jogo é, solte nesse lugar e deixe inicio no menu.
+
+[engaging, energetic, conversational voice] É este ramo que responde quando o jogo está na tela de início.
 
 [confident, clear, unhurried voice] Deixe à vista o espaço do então desse senão se. Na mesma categoria Telas e partida, pegue o bloco Mostrar tela com título subtítulo dica fundo e solte nesse espaço.
 
-[engaging, energetic, conversational voice] O bloco já vem com o título Nave contra Asteroides e o subtítulo Destrua os asteroides! Mantenha os dois. A dica já vem Aperte Enter para começar: mantenha também, porque é ela que avisa quem joga como começar a partida. O fundo já vem escuro, e o texto aparece bem nele: é só manter.
+[engaging, energetic, conversational voice] O bloco já vem com o título Nave contra Asteroides e com o subtítulo Destrua os asteroides! Deixe os dois assim.
 
-[curious] E como o jogo sabe que deve começar na abertura?
+[engaging, energetic, conversational voice] A dica já vem Aperte Enter para começar. Deixe assim também, porque é ela que avisa quem joga como começar a partida. E o fundo já vem escuro, com o texto bem visível.
 
-[engaging, energetic, conversational voice] Falta dizer em que estado o jogo começa, e isso acontece uma vez, no fim de Ao iniciar: deixe esse lugar à vista. Ainda em Jogo 2D, Jogo e telas e Telas e partida, pegue o bloco Mudar o estado do jogo para, solte no fim de Ao iniciar e deixe inicio no menu.
+[engaging, energetic, conversational voice] É este bloco que desenha a tela de abertura.
 
-[interested, animated voice] Olha só: a abertura aparece! Isso acontece porque o jogo começa em inicio, e o ramo de inicio mostra a tela. O Enter ainda não começa a partida, porque essa resposta vem em outra parte.
+[engaging, energetic, conversational voice] Agora olhe a prévia. [interested, animated voice] Olha só: a abertura aparece! É que o jogo começa em inicio, e o ramo de inicio mostra a tela. O Enter ainda não começa a partida: isso vem mais adiante, nesta aula.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: dentro de A cada quadro do jogo está o Se com o estado do jogo é jogando, e dentro do então dele está a sequência inteira, de Limpar a tela até o desenho das vidas. No senão se, com o estado do jogo é inicio, está Mostrar tela. E, no fim de Ao iniciar, está Mudar o estado do jogo para inicio. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: no senão se do Se grande, com o estado do jogo é inicio, está Mostrar tela, com a dica Aperte Enter para começar. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Com a abertura na tela, clique na área do jogo e toque na barra de espaço. Percebeu? O som do tiro toca antes de a partida começar. É que o relógio das pedras e o evento da barra de espaço ficam fora do Se que você montou. Agora vamos fazer essas duas ações esperarem a partida também.
+[engaging, energetic, conversational voice] Com a abertura no seu jogo, toque na barra de espaço. Tá vendo? Nenhum tiro aparece, mas o som toca, porque a tecla não espera a partida.
 
-[engaging, energetic, conversational voice] Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele. Pegue o bloco que cria asteroides, de dentro do relógio, e solte nesse espaço livre por enquanto.
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a pergunta ligada, nada nascia antes da partida. Agora a gente vai pôr a pergunta no seu jogo também!
 
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de A cada 40 quadros, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro do relógio. Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira e deixe à vista o lugar vazio ao lado de Se.
+[engaging, energetic, conversational voice] No seu jogo, ela vai em dois lugares: no bloco A cada 40 quadros, que cria as pedras, e na barra de espaço, que cria os tiros.
 
-[curious] Qual pergunta vai dentro desse relógio?
+[engaging, energetic, conversational voice] Comece pelas pedras. Deixe à vista o bloco A cada 40 quadros e um espaço livre perto dele.
 
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve o criador de asteroides para dentro do então desse Se. O intervalo continua 40, mas agora a pedra só é criada quando o estado é jogando.
+[engaging, energetic, conversational voice] Pegue o bloco que cria asteroides, de dentro de A cada 40 quadros, e solte nesse espaço livre por enquanto.
 
-[engaging, energetic, conversational voice] Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele. Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo.
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro de A cada 40 quadros, que ficou vazio. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte dentro dele.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço de dentro do evento da barra de espaço, que ficou vazio. Abra Programação e depois Lógica e Se, pegue outro Se e solte dentro do evento. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se.
+[engaging, energetic, conversational voice] Ele chega de novo com a pergunta x maior que 0: arraste essa pergunta para a lixeira.
 
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando. Depois, leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem.
+[curious] Qual pergunta vai aqui?
 
-[upbeat, encouraging voice] Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Dessa vez não sai mais som de tiro, porque o Se responde não enquanto o jogo está em inicio.
+[engaging, energetic, conversational voice] A mesma da partida. Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando.
+
+[engaging, energetic, conversational voice] Agora leve o bloco que cria asteroides para dentro do então desse Se.
+
+[engaging, energetic, conversational voice] É esta pergunta que deixa a pedra nascer só durante a partida. Os 40 quadros continuam contando, mas a pedra só é criada quando o estado é jogando.
+
+[engaging, energetic, conversational voice] Agora os tiros. Encontre o evento da barra de espaço, em Quando acontecer, e deixe à vista um espaço livre perto dele.
+
+[engaging, energetic, conversational voice] Pegue a sequência pelo primeiro bloco, Criar tiro, e solte nesse espaço por enquanto. Tocar efeito vai junto, porque está encaixado logo abaixo.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro do evento da barra de espaço, que ficou vazio. Abra Programação e depois Lógica e Se, pegue outro Se e solte dentro do evento. Arraste a pergunta x maior que 0 para a lixeira.
+
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e escolha jogando.
+
+[engaging, energetic, conversational voice] Agora leve Criar tiro e Tocar efeito, juntos, para dentro do então, nessa ordem.
+
+[upbeat, encouraging voice] Agora teste: clique na área do jogo e toque na barra de espaço com a abertura na tela. Escute: não sai mais som de tiro, porque a resposta da pergunta é não enquanto o jogo está em inicio.
 
 [curious] E como eu confiro se as pedras também esperam?
 
-[engaging, energetic, conversational voice] Para isso, a gente precisa olhar os blocos. Já as pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o criador de asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então.
+[engaging, energetic, conversational voice] Para isso, a gente precisa olhar os blocos. As pedras ficam escondidas atrás da tela de abertura, e olhar a imagem não prova nada sobre elas. Por isso, volte aos blocos e confira se ficou assim: dentro de A cada 40 quadros está o Se jogando, com o bloco que cria asteroides no então. E, dentro do evento da barra de espaço, está outro Se jogando, com Criar tiro e Tocar efeito no então.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Próxima parte.
 
 [long pause]
 
-[engaging, energetic, conversational voice] Primeiro, clique na área do jogo e toque em Enter. Tá vendo? A abertura continua na tela, porque o seu jogo ainda não sabe o que fazer quando alguém toca nessa tecla. Agora programe o Enter para começar a partida.
+[engaging, energetic, conversational voice] Aqui no seu jogo, clique na área do jogo e toque em Enter. Tá vendo? A abertura continua, porque o jogo ainda não espera essa tecla.
 
-[engaging, energetic, conversational voice] Tocar na tecla Enter é um evento, assim como tocar na barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço: deixe esse lugar à vista.
+[engaging, energetic, conversational voice] Lembra da experiência da primeira parte desta aula? Com a partida começada, a resposta virava sim. Agora a gente vai fazer o Enter do seu jogo começar a partida!
 
-[confident, clear, unhurried voice] Agora abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele. No menu da tecla, escolha Enter.
+[engaging, energetic, conversational voice] Tocar na tecla Enter é um evento, como tocar na barra de espaço. Por isso, ele vai em Quando acontecer, abaixo do evento inteiro da barra de espaço.
+
+[engaging, energetic, conversational voice] Deixe esse lugar à vista. Abra Jogo 2D, depois Controles e depois Teclado, ações e toque, e pegue o bloco Quando apertar a tecla. Arraste para dentro de Quando acontecer e solte abaixo do evento inteiro da barra de espaço, sem encaixar dentro dele.
+
+[confident, clear, unhurried voice] No menu da tecla, escolha Enter.
 
 [curious] Mas só pode começar se estiver na abertura, né?
 
-[engaging, energetic, conversational voice] O Enter só pode começar a partida quando o jogo está na abertura, por isso dentro desse evento vai um Se. Deixe à vista o espaço de dentro do evento Enter. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço. Arraste a pergunta x maior que 0 para a lixeira e deixe à vista o lugar vazio ao lado de Se.
+[engaging, energetic, conversational voice] Isso! O Enter só pode começar a partida na tela de início. Por isso, dentro desse evento vai um Se.
 
-[confident, clear, unhurried voice] Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e deixe inicio no menu.
+[confident, clear, unhurried voice] Deixe à vista o espaço de dentro do evento Enter. Abra Programação e depois Lógica e Se, pegue o bloco Se e solte nesse espaço. Arraste a pergunta x maior que 0 para a lixeira.
 
-[confident, clear, unhurried voice] Deixe à vista o espaço do então desse Se. Na mesma categoria Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha jogando. Assim, o Enter começa a partida só quando o jogo está na abertura.
+[confident, clear, unhurried voice] Deixe à vista o lugar vazio ao lado de Se. Abra Jogo 2D, depois Jogo e telas e depois Telas e partida, pegue o bloco o estado do jogo é, solte nesse lugar e deixe inicio no menu.
+
+[confident, clear, unhurried voice] Deixe à vista o espaço do então desse Se. Na mesma categoria Telas e partida, pegue o bloco Mudar o estado do jogo para, solte dentro do então e escolha jogando.
+
+[engaging, energetic, conversational voice] É este bloco que começa a partida: ele muda o estado do jogo para jogando, e a pergunta de cada quadro passa a responder sim.
 
 [upbeat, encouraging voice] Agora teste: clique na área do jogo e toque em Enter. [interested, animated voice] Olha só: a abertura some e a partida começa! Mova a nave, atire e confira se as pedras caem, se os pontos contam e se as batidas tiram vidas.
 
 [curious] E se eu tocar em Enter no meio da partida?
 
-[engaging, energetic, conversational voice] Agora toque em Enter durante a partida. [confident, clear, unhurried voice] Repare: ela continua, sem recomeçar, porque o Se só muda o estado quando ele é inicio. Por enquanto, ficar sem vidas ainda não muda de tela, porque você ainda não montou o encerramento.
+[engaging, energetic, conversational voice] Agora toque em Enter durante a partida. [confident, clear, unhurried voice] Repare: ela continua, sem recomeçar, porque o Se do Enter só muda o estado quando ele é inicio.
 
-[reassuring, encouraging voice] Se no seu jogo não aconteceu isso, volte aos blocos e confira se ficou assim: em Quando acontecer, abaixo do evento da barra de espaço, está Quando apertar a tecla Enter. Dentro dele, o Se pergunta se o estado do jogo é inicio e, no então, está Mudar o estado do jogo para jogando. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
+[engaging, energetic, conversational voice] Por enquanto, ficar sem vidas ainda não muda de tela, porque o fim da partida vem na próxima aula.
+
+[reassuring, encouraging voice] Se algo não funcionou no seu jogo, volte aos blocos e confira se ficou assim: em Quando acontecer, abaixo do evento da barra de espaço, está Quando apertar a tecla Enter. Dentro dele, o Se pergunta se o estado do jogo é inicio e, no então, está Mudar o estado do jogo para jogando. [reassuring, encouraging voice] Depois de corrigir, teste de novo.
 
 [engaging, energetic, conversational voice] Funcionou? Clique em Verificar projeto. Se faltar alguma coisa, corrija os blocos e clique novamente. Quando aparecer Objetivo cumprido!, clique em Enviar meu projeto e confirme em Enviar. Quando aparecer Projeto enviado!, clique em Concluir aula.
