@@ -13,6 +13,7 @@ TAGS = set(json.loads((Path(__file__).resolve().parent / 'qa/direcoes-voz.json')
 NA_TELA = re.compile(r'^\*\*Na tela:\*\*\s*(.+)$', re.M)
 # Como o EdiAula separa as frases do Na tela e acha a fala que cada uma espera (ESPEC-ROTEIRO, seção 9).
 FRASE = re.compile(r'(?<=[.!?])\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÀÇ"“*])')
+FIM_DE_FRASE = re.compile(r'\s+(?=[A-ZÁÉÍÓÚÂÊÔÃÕÀÇ"“*])')
 CITACAO = re.compile(r'^(No|Do)\s+["“]([^"”]+)["”]')
 ATE = re.compile(r'\baté o\s+["“]([^"”]+)["”]')
 COLCHETE = re.compile(r'\[[^\]\n]*\]')
@@ -24,11 +25,37 @@ def dobrar(texto):
     return ' ' + ' '.join(palavras) + ' '
 
 
+def frases_do_na_tela(na_tela):
+    """As frases do Na tela, como o EdiAula as separa: o ponto (ou ? e !) seguido de maiúscula fecha
+    a frase, nunca dentro das aspas, onde fica a pontuação da fala citada. Aspas abertas até o fim:
+    toda pontuação separa, como antes."""
+    frases, inicio, aberta, i = [], 0, False, 0
+    while i < len(na_tela):
+        c = na_tela[i]
+        if c == '“':
+            aberta = True
+        elif c == '”':
+            aberta = False
+        elif c == '"':
+            aberta = not aberta
+        elif not aberta and c in '.!?':
+            fim = FIM_DE_FRASE.match(na_tela, i + 1)
+            if fim:
+                frases.append(na_tela[inicio:i + 1])
+                inicio = i = fim.end()
+                continue
+        i += 1
+    if aberta:
+        return [f.strip() for f in FRASE.split(na_tela) if f.strip()]
+    frases.append(na_tela[inicio:])
+    return [f.strip() for f in frases if f.strip()]
+
+
 def citacoes_fora_da_fala(na_tela, fala):
     """As citações do Na tela que a fala da parte não diz: o robô não acharia o tempo delas."""
     dita = dobrar(COLCHETE.sub(' ', fala))
     faltam = []
-    for frase in FRASE.split(na_tela.strip()):
+    for frase in frases_do_na_tela(na_tela.strip()):
         m = CITACAO.match(COLCHETE.sub(' ', frase).strip())
         if not m:
             continue
