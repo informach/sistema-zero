@@ -302,8 +302,20 @@ function falasLivresDoBloco(activity: {
     if (scene === 'lighthouse-key')
       return id.startsWith('door-not-') === lighthouseKeyNotCase(setup)
     if (scene === 'lighthouse-walk') {
-      if (id.startsWith('stride-') !== lighthouseWalkStrideCase({ scene, setup })) return false
-      return activity.cenario === 'nave' || !id.endsWith('-nave')
+      // A mesma prioridade de discoveryGuidance: cada bloco toca um único caso da caminhada.
+      const goals = setup?.goals ?? []
+      const prefix = goals.includes('came-back-inside')
+        ? 'border'
+        : goals.includes('left-the-screen')
+          ? 'edge'
+          : lighthouseWalkStrideCase({ scene, setup })
+            ? 'stride'
+            : goals.includes('walked-real-speed')
+              ? 'slow'
+              : 'walk'
+      if (!id.startsWith(`${prefix}-`)) return false
+      if (id.endsWith('-nave')) return activity.cenario === 'nave'
+      return activity.cenario !== 'nave' || !passos.some((p) => p.id === `${id}-nave`)
     }
     return !temDino || id.includes('-dino-') === doDino
   })
