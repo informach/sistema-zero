@@ -84,6 +84,13 @@ export const LARGURA_NOMINAL_DA_CENA = 524
 export const LarguraConhecidaDaCena = createContext<number | null>(null)
 
 /**
+ * A largura disponível no mundo do console, ANTES de encaixar o desenho pela altura.
+ * O recorte responsivo depende dela: medir só a moldura já encolhida deixava o palco preso no
+ * recorte de celular ao ampliar. A escala da letra continua usando a largura real da moldura.
+ */
+export const LarguraDisponivelDaCena = createContext<number | null>(null)
+
+/**
  * O enquadramento de um desenho: o `viewBox`. ⚠️ `x` e `y` só nos RECORTES (o `viewEstreito` e o
  * `viewEmpilhado`): as coordenadas do desenho continuam as de fábrica, e o recorte só escolhe a janela.
  */
@@ -110,6 +117,7 @@ export interface Palco {
    * `escala < ESCALA_ESTREITA` no enquadramento de FÁBRICA: desenhe menos rótulos, ou leve o número
    * para fora do desenho. ⚠️ Com `viewEstreito` ele continua verdadeiro: é o enquadramento de fábrica
    * que decide, senão uma largura intermediária desenharia o layout largo no recorte estreito.
+   * No console com recorte, a largura disponível escolhe o layout; o encaixe pela altura só escala.
    */
   estreito: boolean
   /** Quantas unidades do desenho um texto ocupa na letra que ele vai ter (uma estimativa para caber). */
@@ -296,8 +304,8 @@ function SceneFrame({
    * A maior largura de CONTEÚDO que o palco aceita no encaixe (px). O palco com recorte ESTREITO
    * declara, enquanto está estreito, a largura logo abaixo do limiar: o recorte é mais largo que o
    * desenho inteiro, então o encaixe pela altura o deixaria crescer, ele sairia do estreito, ficaria
-   * mais alto, encolheria e voltaria ao estreito, sem fim (medido na `variable` a 1280×600). O estado
-   * em que o palco está é o que fica.
+   * mais alto, encolheria e voltaria ao estreito, sem fim (medido na `variable` a 1280×600).
+   * No console, quem escolhe o recorte é a largura disponível, independente deste encaixe.
    */
   larguraMaxima?: number
 }) {
@@ -485,6 +493,7 @@ export function SceneCanvas({
   const id = useId()
   const moldura = useRef<HTMLDivElement>(null)
   const largura = useLarguraMedida(moldura)
+  const larguraDisponivel = useContext(LarguraDisponivelDaCena)
   const textoDoRodape = rodape ? (
     /* ⚠️ 14px (lote 2 do Raio-X): o rodapé é texto que a criança LÊ; 12px fica para rótulo de eixo. */
     <p className="px-3 pb-2 text-center text-sm text-scene-ink-soft">{castText(rodape, cast)}</p>
@@ -567,7 +576,13 @@ export function SceneCanvas({
   }
   // ⭐ O recorte do estreito: quem leva rótulos para fora do desenho pode mostrar só o que sobrou, e o
   // desenho cresce na tela (e a letra precisa crescer menos). Quem decide que está estreito é o de fábrica.
-  const deFabrica = palcoDe(largura, view)
+  const deFabrica = palcoDe(
+    largura,
+    view,
+    viewEstreito && larguraDisponivel !== null
+      ? palcoDe(larguraDisponivel, view).estreito
+      : undefined,
+  )
   const palco =
     deFabrica.estreito && viewEstreito ? palcoDe(largura, viewEstreito, true) : deFabrica
   // A largura de conteúdo em que o palco vira estreito: abaixo dela o recorte muda e, com ele, a
