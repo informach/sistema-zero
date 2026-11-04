@@ -102,6 +102,9 @@ está sendo conferido.
 - **Mudou um campo, clica fora** (04/11/2026, pedido da Helena): `trocar` e `escolher` terminam com
   um clique na área de código fora do bloco (ao lado dele, ou num fundo livre, `fundoLivre`), para a
   mudança valer e o bloco sair da seleção; `clicar fora dos blocos` faz só isso.
+- **Conferir com todos os blocos à vista:** `mostrar blocos "A", "B"` mede a caixa que os blocos
+  ocupam juntos e arrasta a área de código até ela ficar à vista com 24 px de folga, perto do meio
+  (`rolagemDeVarios`); já assim, só aponta o primeiro.
 - **O jogo da prévia é o do projeto:** o tamanho do palco do jogo vem do bloco **Preparar o
   jogo ... tela 480 × 360** da área de trabalho (`palcoDoJogo`), e só sem ele do jogo pronto da
   aula. A Aula 2 do Farol não tem jogo pronto.

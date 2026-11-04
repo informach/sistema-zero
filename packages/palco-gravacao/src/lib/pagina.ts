@@ -90,6 +90,12 @@ export interface PaginaDoPalco {
    * depois de o bloco cair).
    */
   posicoes(): string
+  /**
+   * Um arrasto do fundo que deixa bem à vista, juntos, todos os blocos que começam com estes
+   * textos (os que a criança confere): o conjunto vem para perto do meio da área de código, com
+   * folga das bordas. `'visivel'` se já está assim; nulo se algum bloco não existe.
+   */
+  rolagemDeVarios(blocos: readonly string[]): { de: Alvo; para: Alvo } | 'visivel' | null
   /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
   fundoLivre(): Alvo | null
 }
@@ -383,6 +389,8 @@ function lugarSemBlocos(doc: Document): DOMRect | null {
   return null
 }
 
+/** A folga das bordas que os blocos conferidos precisam ter para contarem como bem à vista. */
+const MARGEM_A_VISTA = 24
 /** Quanto da altura da área à vista um bloco pode estar fora do meio e ainda contar como centrado. */
 const CENTRADA = 0.15
 
@@ -393,16 +401,18 @@ const CENTRADA = 0.15
  */
 function rolagemDe(
   doc: Document,
-  el: Element,
+  el: Element | DOMRect,
   descoberto = false,
   centrar = false,
+  margem = 0,
 ): { de: Alvo; para: Alvo } | 'visivel' | null {
   const area = areaDeTrabalho(doc)
   if (!area) return null
   const view = areaVisivel(doc, area)
-  const b = el.getBoundingClientRect()
-  const dentroX = b.left >= view.left && b.right <= view.right
-  const inside = b.top >= view.top && b.bottom <= view.bottom && dentroX
+  const b = el instanceof DOMRect ? el : el.getBoundingClientRect()
+  // "Bem à vista": com `margem`, o que está a menos disso da borda ainda não conta como visível.
+  const dentroX = b.left >= view.left + margem && b.right <= view.right - margem
+  const inside = b.top >= view.top + margem && b.bottom <= view.bottom - margem && dentroX
   // Leva o bloco para o centro da área de código, onde a criança o vê melhor, até onde o
   // arrasto alcança (um bloco maior que a área fica com o topo perto do alto). A paleta que
   // abrir por cima dele fecha quando o próximo bloco sai dela.
@@ -415,7 +425,7 @@ function rolagemDe(
   // Um campo também precisa estar descoberto: com outra coisa por cima (a paleta aberta, um
   // painel), vai para o centro. Um bloco tem os de dentro por cima, e isso não conta.
   const topo = descoberto ? doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null
-  const livre = !topo || el.contains(topo) || topo.contains(el)
+  const livre = !topo || el instanceof DOMRect || el.contains(topo) || topo.contains(el)
   if (centrar ? inside && Math.abs(dy) <= view.height * CENTRADA : inside && livre) return 'visivel'
   // Um ponto do fundo, sem bloco em cima, de onde arrastar.
   const fundo = (x: number, y: number) =>
@@ -689,6 +699,22 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       if (!dele) return null
       const r = caixaPropria(dele)
       return pontoEm(area, r.left + pega.x, r.top + pega.y)
+    },
+
+    rolagemDeVarios(textos) {
+      const caixas: DOMRect[] = []
+      for (const t of textos) {
+        const bloco = blocosCom(doc, t)[0]
+        if (!bloco) return null
+        caixas.push(bloco.getBoundingClientRect())
+      }
+      if (!caixas.length) return null
+      const left = Math.min(...caixas.map((c) => c.left))
+      const top = Math.min(...caixas.map((c) => c.top))
+      const right = Math.max(...caixas.map((c) => c.right))
+      const bottom = Math.max(...caixas.map((c) => c.bottom))
+      const juntos = new DOMRect(left, top, right - left, bottom - top)
+      return rolagemDe(doc, juntos, false, true, MARGEM_A_VISTA)
     },
 
     fundoLivre() {

@@ -41,6 +41,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   desembolar: () => null,
   posicoes: () => 'parado',
   fundoLivre: () => ({ seletor: '[data-palco-alvo="a13"]', u: 0.6, v: 0.5 }),
+  rolagemDeVarios: () => 'visivel',
   ...patch,
 })
 
@@ -447,6 +448,34 @@ describe('verbos do palco', () => {
         exato: true,
       },
     ])
+  })
+
+  test('conferir: todos os blocos ditos ficam bem à vista juntos', () => {
+    const pedidos: string[][] = []
+    const longe = pagina({
+      rolagemDeVarios: (blocos) => {
+        pedidos.push([...blocos])
+        return {
+          de: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.8 },
+          para: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.4 },
+        }
+      },
+    })
+    expect(agir('mostrar blocos "Quando o sprite", "Destruir o sprite"', jogos, longe)).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.8 },
+        para: { seletor: '[data-palco-alvo="a3"]', u: 0.5, v: 0.4 },
+      },
+    ])
+    expect(pedidos).toEqual([['Quando o sprite', 'Destruir o sprite']])
+    // Já bem à vista: a mão aponta o primeiro, sem mexer na área.
+    expect(agir('mostrar blocos "Quando o sprite"', jogos, pagina())[0]).toMatchObject({
+      fazer: 'apontar',
+    })
+    expect(() =>
+      agir('mostrar blocos "Sumiu"', jogos, pagina({ rolagemDeVarios: () => null })),
+    ).toThrow(/Não achei todos/)
   })
 
   test('a prévia mede o jogo do projeto aberto, não o jogo pronto da aula', () => {

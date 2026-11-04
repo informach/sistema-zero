@@ -367,6 +367,7 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[categoria Jogo 2D > Sprites > Aparência]` | abre as categorias da paleta, uma depois da outra |
 | `[categoria Jogo 2D]` com a categoria aberta | recolhe a categoria (clicar de novo numa subcategoria aberta também a recolhe) |
 | `[abrir categoria Jogo 2D > Movimento > Movimentos prontos]` | abre sem nunca recolher: a categoria que já está aberta só é apontada. Use na segunda montagem de uma parte, quando Jogo 2D ficou aberta do encaixe anterior |
+| `[mostrar blocos "Quando o sprite", "Destruir o sprite"]` | arrasta a área de código até todos esses blocos ficarem bem à vista juntos, perto do meio e longe das bordas: para conferir os blocos que a fala nomeia |
 | `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área ficar perto do meio da altura (não precisa ser o centro exato): a área em que a criança vai trabalhar fica em destaque. Use sempre que a montagem passa para outra área |
 | `[apontar bloco "Quando clicar ou tocar"]` | aponta um bloco da área de trabalho pelo texto dele |
 | `[apontar encaixe em "Quando clicar ou tocar"]` | aponta o espaço ao lado de **fazer** do bloco |
@@ -448,13 +449,13 @@ Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e 
 
 **Conferir os blocos ("Se algo não funcionou, volte aos blocos e confira")**
 
-A criança precisa ver na tela os blocos que confere. No "volte aos blocos", a tela volta para a
-área de código e a área conferida vem para perto do meio; cada bloco que a fala nomeia é
-apontado na palavra dele; no "teste de novo", a mão volta para o jogo, que é onde a criança está
-testando (pedido da Helena, 04/11/2026).
+A criança precisa ver na tela os blocos que confere. No "volte aos blocos", a área de código é
+arrastada até todos os blocos que a fala vai nomear ficarem bem à vista juntos, perto do meio
+(`[mostrar blocos "A", "B"]`); cada bloco nomeado é apontado na palavra dele; no "teste de novo",
+a mão volta para o jogo, que é onde a criança está testando (pedido da Helena, 04/11/2026).
 
 ```
-No "volte aos blocos e confira se ficou assim", voltar a tela para os blocos [arrastar até "Quando acontecer"]. No "está o encontro entre personagem e chave", apontar o encontro [apontar bloco "Quando o sprite"]. No "e dentro dele está Destruir o sprite chave", apontar o bloco de dentro [apontar bloco "Destruir o sprite"]. No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia].
+No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos "Quando o sprite", "Destruir o sprite"]. No "está o encontro entre personagem e chave", apontar o encontro [apontar bloco "Quando o sprite"]. No "e dentro dele está Destruir o sprite chave", apontar o bloco de dentro [apontar bloco "Destruir o sprite"]. No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia].
 ```
 
 **Abertura com jogo pronto**

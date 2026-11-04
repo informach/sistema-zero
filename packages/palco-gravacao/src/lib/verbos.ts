@@ -247,6 +247,12 @@ export const VERBOS: Verbo[] = [
       'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho); com "em", a mão sai de cima do bloco depois.',
   },
   {
+    verbo: 'mostrar blocos',
+    exemplo: 'mostrar blocos "Quando o sprite", "Destruir o sprite"',
+    descricao:
+      'Arrasta a área de código até todos estes blocos ficarem bem à vista juntos, perto do meio: para conferir os blocos que a fala nomeia.',
+  },
+  {
     verbo: 'clicar fora dos blocos',
     exemplo: 'clicar fora dos blocos',
     descricao:
@@ -430,7 +436,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // blocos aparecerem e pergunta de novo.
   if (
     pagina &&
-    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
+    /^(arrastar at[eé] |mostrar blocos |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
       texto,
     ) &&
     !pagina.areaPronta()
@@ -762,6 +768,20 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'clicar', alvo: campo.alvo }]
   }
 
+  // Conferir: todos os blocos que a fala nomeia ficam bem à vista juntos (pedido da Helena,
+  // 04/11/2026); já à vista, a mão só aponta o primeiro.
+  const mostrar = /^mostrar blocos (.+)$/i.exec(texto)
+  if (mostrar?.[1]) {
+    const blocos = [...mostrar[1].matchAll(/["“]([^"”]+)["”]/g)]
+      .map((m) => m[1] ?? '')
+      .filter(Boolean)
+    if (!blocos.length) throw new Error('Diga quais blocos mostrar: mostrar blocos "A", "B".')
+    const rolagem = precisaDaPagina(pagina).rolagemDeVarios(blocos)
+    if (!rolagem)
+      throw new Error(`Não achei todos estes blocos na área de trabalho: ${blocos.join(', ')}.`)
+    if (rolagem === 'visivel') return agir(`apontar bloco "${blocos[0]}"`, jogos, pagina)
+    return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
+  }
   if (f === 'clicar fora dos blocos') {
     const fundo = precisaDaPagina(pagina).fundoLivre()
     if (!fundo) throw new Error('Não achei um lugar da área de código sem blocos para clicar.')
