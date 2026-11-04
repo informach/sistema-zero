@@ -217,7 +217,10 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     const conversionId = pending.items[0]!.id
     expect(await repo.markConversionPaid(conversionId, 'Operador', null)).toBe(false)
     await repo.setConversionMaturesNow(conversionId)
-    expect(await repo.matureConversions(new Date(), 25)).toBe(1)
+    const [stored] = await repo.listConversionsByRedemptions([first.redemption.id])
+    // O Postgres guarda microssegundos; Date trunca para milissegundos. Avançar 1 ms
+    // a partir do valor persistido evita depender da precisão ou do relógio do runner.
+    expect(await repo.matureConversions(new Date(stored!.maturesAt.getTime() + 1), 25)).toBe(1)
     const payable = await repo.listConversions({
       audience: 'kids',
       status: 'eligible',
