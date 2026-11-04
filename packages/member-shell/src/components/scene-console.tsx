@@ -3,6 +3,7 @@
 import { type ReactNode, type RefObject, useLayoutEffect, useRef } from 'react'
 import { cn } from '../lib/cn'
 import { encaixeDoMundo } from '../lib/scene-encaixe'
+import { LarguraDisponivelDaCena, useLarguraMedida } from './scene-canvas'
 
 /**
  * O CONSOLE: a experiência inteira numa peça só.
@@ -81,10 +82,13 @@ export function ConsoleFala({ children }: { children: ReactNode }) {
  */
 export function ConsoleMundo({ children }: { children: ReactNode }) {
   const mundo = useRef<HTMLDivElement>(null)
+  const larguraDisponivel = useLarguraMedida(mundo)
   useEncaixeDoMundo(mundo)
   return (
     <div ref={mundo} className="sz-scene-console-mundo">
-      {children}
+      <LarguraDisponivelDaCena.Provider value={larguraDisponivel}>
+        {children}
+      </LarguraDisponivelDaCena.Provider>
     </div>
   )
 }
