@@ -40,6 +40,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   palcoDoJogo: () => null,
   desembolar: () => null,
   posicoes: () => 'parado',
+  fundoLivre: () => ({ seletor: '[data-palco-alvo="a13"]', u: 0.6, v: 0.5 }),
   ...patch,
 })
 
@@ -204,8 +205,8 @@ describe('verbos do palco', () => {
       { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
       { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
-      // Trocado, a mão sai de cima do bloco do campo.
-      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+      // Trocado, a mão clica fora do bloco, ao lado dele: a mudança vale.
+      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite" clicando' },
     ])
     const numero = agir(
       'trocar "50" por "0"',
@@ -230,16 +231,23 @@ describe('verbos do palco', () => {
     })
     expect(agir('trocar "jogador" por "escolhido"', jogos, outro)).toEqual([
       { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a6"]' } },
-      { fazer: 'continuar', acao: 'escolher "escolhido"' },
-      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+      { fazer: 'continuar', acao: 'escolher "escolhido" em "Deixar o sprite"' },
     ])
     expect(agir('escolher "escolhido"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
       { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
+      { fazer: 'continuar', acao: 'clicar fora dos blocos' },
+    ])
+    expect(agir('clicar fora dos blocos', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a13"]', u: 0.6, v: 0.5 } },
+    ])
+    // Depois de mudar um campo, a mão clica ao lado do bloco, fora dele.
+    expect(agir('afastar de "Deixar o sprite" clicando', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a7"]', u: 0.9, v: 0.1 } },
     ])
     expect(
       agir('escolher "Achei!"', jogos, pagina({ aberto: () => 'caixa' })).map((p) => p.fazer),
-    ).toEqual(['digitar', 'tecla'])
+    ).toEqual(['digitar', 'tecla', 'continuar'])
     expect(() => agir('escolher "x"', jogos, pagina({ aberto: () => null }))).toThrow(/não abriu/)
     // Em duas falas: o clique no campo numa, a escolha na outra, e a mão sai do bloco no fim.
     expect(agir('abrir campo "jogador" em "Deixar o sprite"', jogos, pagina())).toEqual([
@@ -248,7 +256,7 @@ describe('verbos do palco', () => {
     expect(agir('escolher "escolhido" em "Deixar o sprite"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
       { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
-      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
+      { fazer: 'continuar', acao: 'afastar de "Deixar o sprite" clicando' },
     ])
     // Organizar blocos: a página faz pelo menu, e a mão só espera.
     let organizou = 0

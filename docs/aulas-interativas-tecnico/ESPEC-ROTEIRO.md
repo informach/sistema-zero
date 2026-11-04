@@ -377,7 +377,7 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[apontar lugar sem blocos abaixo de "Ao iniciar"]` | aponta o lugar logo abaixo dessa pilha, alinhado com a borda esquerda dela e com um espaço; sem o `abaixo de`, um lugar sem blocos ao lado das pilhas, fora de onde a paleta abre. Uma área nova vai alinhada embaixo de Ao iniciar, nunca jogada de qualquer jeito |
 | `[soltar "Quando acontecer" no lugar sem blocos abaixo de "Ao iniciar"]` | leva um bloco da paleta (uma área nova) para esse mesmo lugar: o que o apontar mostrou é onde o bloco cai |
 | `[soltar "verdadeiro" em cima do "0" em "Criar variável temChave"]` | leva um bloco de valor da paleta para o lugar de um valor do bloco (o 0, o 1), que ele substitui |
-| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um, pelo começo do texto dele com os valores (`"Alterar variável temChave"` separa dois Alterar variável), e vale também para o campo de um bloco de valor encaixado nele (o **verdadeiro** de Criar variável) |
+| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco e, no fim, clica na área de código fora do bloco, para a mudança valer (o `escolher` também): escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um, pelo começo do texto dele com os valores (`"Alterar variável temChave"` separa dois Alterar variável), e vale também para o campo de um bloco de valor encaixado nele (o **verdadeiro** de Criar variável) |
 | `[tocar prévia arbusto]`, `[tocar prévia 137 209]` | toca no jogo da pré-visualização, por um alvo do jogo pronto ou por um ponto em pixels do jogo |
 | `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização; o ponto é do jogo do projeto aberto, pelo tamanho que o bloco **Preparar o jogo** dá à tela (vale também numa aula sem jogo pronto) |
 | `[segurar seta de baixo na prévia por 1 s]`, `[apontar setas na prévia]` | as setas da tela no jogo da pré-visualização (só aparecem com o bloco Ativar controles clássicos) |
@@ -445,6 +445,17 @@ Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e 
   a tela real volta.
 
 ### 9.8 Receitas
+
+**Conferir os blocos ("Se algo não funcionou, volte aos blocos e confira")**
+
+A criança precisa ver na tela os blocos que confere. No "volte aos blocos", a tela volta para a
+área de código e a área conferida vem para perto do meio; cada bloco que a fala nomeia é
+apontado na palavra dele; no "teste de novo", a mão volta para o jogo, que é onde a criança está
+testando (pedido da Helena, 04/11/2026).
+
+```
+No "volte aos blocos e confira se ficou assim", voltar a tela para os blocos [arrastar até "Quando acontecer"]. No "está o encontro entre personagem e chave", apontar o encontro [apontar bloco "Quando o sprite"]. No "e dentro dele está Destruir o sprite chave", apontar o bloco de dentro [apontar bloco "Destruir o sprite"]. No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia].
+```
 
 **Abertura com jogo pronto**
 
@@ -515,6 +526,8 @@ No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado*
 - Deixar uma área por cima da outra. O palco desce sozinho a área de baixo quando a de cima cresce
   (Ao iniciar ganhou um bloco e encostou em Quando acontecer), mas a área nova precisa nascer
   alinhada e com espaço (`[soltar ... no lugar sem blocos abaixo de "Ao iniciar"]`).
+- Falar "volte aos blocos e confira" com a tela parada no jogo: a criança não vê o que conferir.
+  Use a receita **Conferir os blocos** (9.8).
 - Contar com o personagem onde o teste anterior o deixou: a pré-visualização recomeça a partida a
   cada bloco mudado, e o segundo teste da parte sai do começo de novo.
 - Citar uma palavra que o transcritor escreve de outro jeito (temChave sai "tem chave", Lógica e

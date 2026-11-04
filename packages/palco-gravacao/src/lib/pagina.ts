@@ -90,6 +90,8 @@ export interface PaginaDoPalco {
    * depois de o bloco cair).
    */
   posicoes(): string
+  /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
+  fundoLivre(): Alvo | null
 }
 
 let marks = 0
@@ -687,6 +689,20 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       if (!dele) return null
       const r = caixaPropria(dele)
       return pontoEm(area, r.left + pega.x, r.top + pega.y)
+    },
+
+    fundoLivre() {
+      const area = areaDeTrabalho(doc)
+      if (!area || !visivel(area)) return null
+      const view = areaVisivel(doc, area)
+      for (const fy of [0.5, 0.7, 0.3, 0.85, 0.15])
+        for (const fx of [0.6, 0.8, 0.4, 0.9, 0.2]) {
+          const x = view.left + view.width * fx
+          const y = view.top + view.height * fy
+          if (doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground'))
+            return pontoEm(area, x, y)
+        }
+      return null
     },
 
     posicoes() {

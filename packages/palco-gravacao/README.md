@@ -99,6 +99,9 @@ está sendo conferido.
   baixo (`desembolar`) e, se sim, a mão pega a de baixo pelo nome e a desce até ficar 32 px abaixo,
   uma vez por gesto. `arrastar até` traz o bloco para perto do meio da altura (15% de folga) mesmo
   quando ele já está à vista, para a área em que a criança trabalha ficar em destaque.
+- **Mudou um campo, clica fora** (04/11/2026, pedido da Helena): `trocar` e `escolher` terminam com
+  um clique na área de código fora do bloco (ao lado dele, ou num fundo livre, `fundoLivre`), para a
+  mudança valer e o bloco sair da seleção; `clicar fora dos blocos` faz só isso.
 - **O jogo da prévia é o do projeto:** o tamanho do palco do jogo vem do bloco **Preparar o
   jogo ... tela 480 × 360** da área de trabalho (`palcoDoJogo`), e só sem ele do jogo pronto da
   aula. A Aula 2 do Farol não tem jogo pronto.

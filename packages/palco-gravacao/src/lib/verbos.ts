@@ -247,6 +247,12 @@ export const VERBOS: Verbo[] = [
       'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho); com "em", a mão sai de cima do bloco depois.',
   },
   {
+    verbo: 'clicar fora dos blocos',
+    exemplo: 'clicar fora dos blocos',
+    descricao:
+      'Clica num lugar da área de código sem blocos (o trocar e o escolher já fazem isso sozinhos, para a mudança do campo valer).',
+  },
+  {
     verbo: 'compartilhar',
     exemplo: 'compartilhar',
     descricao: 'Abre o Compartilhar do Estúdio: no palco nada vai para o Mural.',
@@ -277,7 +283,17 @@ const trocarEstudio = (de: string, para: string): Passo[] => [
 ]
 
 /** Depois de agir num bloco, a mão vai para o fundo da área ao lado dele (o ponto é visto na hora). */
-const afastar = (bloco: string): Passo => ({ fazer: 'continuar', acao: `afastar de "${bloco}"` })
+const afastar = (bloco: string, clicando = false): Passo => ({
+  fazer: 'continuar',
+  acao: `afastar de "${bloco}"${clicando ? ' clicando' : ''}`,
+})
+
+/**
+ * Depois de mudar um campo, a mão clica na área de código, fora do bloco, para a mudança valer
+ * (pedido da Helena, 04/11/2026): ao lado do bloco do campo, ou num fundo livre qualquer.
+ */
+const clicarFora = (bloco: string | undefined): Passo =>
+  bloco ? afastar(bloco, true) : { fazer: 'continuar', acao: 'clicar fora dos blocos' }
 
 /** Escolhe `valor` na lista que um campo abriu (um menu do Blockly ou um seletor do Estúdio). */
 const naLista = (valor: string): Passo[] => [
@@ -719,7 +735,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     // Depois de trocar, a mão sai de cima do bloco (parada em cima, aparece a dica dele).
     // Blocos de valor podem ter só o campo editável, sem nome fixo para reencontrar depois.
     // Nesse caso a edição termina sem agendar um gesto que não tem alvo.
-    const depois = campo.bloco ? [afastar(campo.bloco)] : []
+    const depois = [clicarFora(campo.bloco || undefined)]
     if (campo.tipo === 'menu')
       return [{ fazer: 'clicar', alvo: campo.alvo }, ...naLista(trocar[2]), ...depois]
     if (campo.tipo === 'numero')
@@ -727,8 +743,11 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     // Um texto ou um seletor do Estúdio: o que abrir com o clique diz como escolher.
     return [
       { fazer: 'clicar', alvo: campo.alvo },
-      { fazer: 'continuar', acao: `escolher "${trocar[2]}"` },
-      ...depois,
+      // O escolher clica fora do bloco no fim (uma vez só).
+      {
+        fazer: 'continuar',
+        acao: `escolher "${trocar[2]}"${campo.bloco ? ` em "${campo.bloco}"` : ''}`,
+      },
     ]
   }
 
@@ -743,17 +762,32 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'clicar', alvo: campo.alvo }]
   }
 
-  const afastarDe = /^afastar de ["“]([^"”]+)["”]( depois de desembolar)?$/i.exec(texto)
+  if (f === 'clicar fora dos blocos') {
+    const fundo = precisaDaPagina(pagina).fundoLivre()
+    if (!fundo) throw new Error('Não achei um lugar da área de código sem blocos para clicar.')
+    return [{ fazer: 'clicar', alvo: fundo }]
+  }
+  const afastarDe = /^afastar de ["“]([^"”]+)["”]( clicando)?( depois de desembolar)?$/i.exec(texto)
   if (afastarDe?.[1]) {
+    const clicando = !!afastarDe[2]
     // Bloco nunca em cima de bloco: se a pilha cresceu por cima da de baixo, a mão desce a de
     // baixo antes de se afastar (pedido da Helena, 04/11/2026). Uma vez só por gesto.
-    const desembolo = afastarDe[2] ? null : precisaDaPagina(pagina).desembolar()
+    const desembolo = afastarDe[3] ? null : precisaDaPagina(pagina).desembolar()
     if (desembolo)
       return [
         { fazer: 'arrastar', alvo: desembolo.de, para: desembolo.para },
-        { fazer: 'continuar', acao: `afastar de "${afastarDe[1]}" depois de desembolar` },
+        {
+          fazer: 'continuar',
+          acao: `afastar de "${afastarDe[1]}"${clicando ? ' clicando' : ''} depois de desembolar`,
+        },
       ]
     const perto = precisaDaPagina(pagina).perto(afastarDe[1])
+    // Depois de mudar um campo, a mão clica fora do bloco: a mudança vale e o bloco sai da
+    // seleção. Sem fundo livre ao lado, num fundo livre qualquer.
+    if (clicando) {
+      const fundo = perto ?? precisaDaPagina(pagina).fundoLivre()
+      if (fundo) return [{ fazer: 'clicar', alvo: fundo }]
+    }
     // Sem fundo livre ao lado, a mão fica onde está.
     if (!perto) return [{ fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' } }]
     return [{ fazer: 'apontar', alvo: perto, exato: true }]
@@ -763,7 +797,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (escolher?.[1] !== undefined) {
     const aberto = precisaDaPagina(pagina).aberto()
     // Escolhido, a mão sai de cima do bloco do campo, quando o roteiro diz qual é.
-    const depois = escolher[2] ? [afastar(escolher[2])] : []
+    const depois = [clicarFora(escolher[2])]
     if (aberto === 'lista') return [...naLista(escolher[1]), ...depois]
     if (aberto === 'caixa') return [...naCaixa(escolher[1]), ...depois]
     throw new Error('O campo clicado não abriu uma lista nem uma caixa de texto.')
