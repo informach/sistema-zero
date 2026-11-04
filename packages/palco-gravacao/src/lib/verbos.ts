@@ -803,6 +803,10 @@ export async function agirNaPagina(
   const f = fold(acao.replace(/\s+/g, ' ').trim())
   if (f === 'organizar blocos' && pagina.areaPronta() && !(await pagina.organizar()))
     throw new Error('O menu da área de trabalho não abriu para organizar os blocos.')
+  // Logo depois de um bloco cair, o Blockly ainda redesenha a pilha que cresceu (no quadro
+  // seguinte): antes de medir se uma área ficou por cima da outra, a página assenta. Sem isso,
+  // o ponto que parecia ser da área de baixo era, um instante depois, o bloco recém-encaixado.
+  if (f.startsWith('afastar de ')) await new Promise((r) => setTimeout(r, ASSENTAR))
   // O Estúdio aplica uma escolha (o nome novo de Alterar variável) um pouco depois de a lista
   // fechar: o bloco ou o campo que ainda não aparece com o texto novo é procurado de novo por
   // um instante, com o vídeo parado na procura, antes de virar erro.
@@ -820,6 +824,8 @@ export async function agirNaPagina(
 /** Quantas vezes, e a quantos milissegundos, um bloco ou campo ainda não achado é procurado. */
 const PROCURAS = 10
 const ENTRE_PROCURAS = 250
+/** Milissegundos que a página leva para redesenhar a área depois de um bloco cair nela. */
+const ASSENTAR = 300
 
 /**
  * A página está trabalhando: carregando o Estúdio ou o livro, conferindo o projeto, preparando

@@ -696,17 +696,28 @@ export function paginaDe(doc: Document): PaginaDoPalco {
           // Lado a lado de verdade (encostar de leve na lateral não conta) e sem o espaço entre elas.
           const lado = Math.min(de.r.right, baixo.r.right) - Math.max(de.r.left, baixo.r.left)
           if (lado < LADO_A_LADO || baixo.r.top >= de.r.bottom + FOLGA) continue
+          // A pilha de cima fica na frente (foi a última mexida) e cobre o nome da de baixo: a mão
+          // pega a de baixo num ponto que é dela mesma e está descoberto, o nome primeiro, depois
+          // o braço da esquerda, de cima para baixo. Nunca um bloco de dentro (ele sairia da área).
           const nome = rotuloDe(baixo.el)?.getBoundingClientRect()
-          const pega = nome
-            ? { x: nome.left + Math.min(nome.width / 2, 40), y: nome.top + nome.height / 2 }
-            : { x: baixo.r.left + 12, y: baixo.r.top + 12 }
-          if (
-            pega.y < view.top ||
-            pega.y > view.bottom ||
-            pega.x < view.left ||
-            pega.x > view.right
+          const candidatos = [
+            ...(nome
+              ? [{ x: nome.left + Math.min(nome.width / 2, 40), y: nome.top + nome.height / 2 }]
+              : []),
+            ...Array.from({ length: Math.floor(baixo.r.height / 6) }, (_, i) => ({
+              x: baixo.r.left + 6,
+              y: baixo.r.top + 4 + i * 6,
+            })),
+          ]
+          const pega = candidatos.find(
+            (p) =>
+              p.y > view.top + 4 &&
+              p.y < view.bottom - 4 &&
+              p.x > view.left &&
+              p.x < view.right &&
+              donoDe(doc.elementFromPoint(p.x, p.y) ?? doc.body) === baixo.el,
           )
-            continue
+          if (!pega) continue
           const desce = de.r.bottom + ESPACO_ABAIXO - baixo.r.top
           const para = { x: pega.x, y: Math.min(view.bottom - 12, pega.y + desce) }
           return { de: pontoEm(area, pega.x, pega.y), para: pontoEm(area, para.x, para.y) }
