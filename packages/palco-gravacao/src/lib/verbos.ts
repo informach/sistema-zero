@@ -199,6 +199,30 @@ export const VERBOS: Verbo[] = [
       'Leva um bloco da paleta para o espaço ao lado de "fazer" de outro bloco, o único lugar onde ele encaixa.',
   },
   {
+    verbo: 'encaixar dentro',
+    exemplo: 'encaixar "Quando o sprite" dentro de "Quando acontecer"',
+    descricao:
+      'Leva um bloco da paleta para o espaço vazio de dentro de uma área ou de um bloco sem rótulo nesse espaço (a área Quando acontecer recém-criada).',
+  },
+  {
+    verbo: 'apontar lugar sem blocos',
+    exemplo: 'apontar lugar sem blocos',
+    descricao:
+      'Aponta um lugar sem blocos ao lado das pilhas da área de trabalho, fora de onde a paleta abre.',
+  },
+  {
+    verbo: 'soltar no lugar sem blocos',
+    exemplo: 'soltar "Quando acontecer" no lugar sem blocos',
+    descricao:
+      'Leva um bloco da paleta (uma área nova) para o lugar sem blocos, o mesmo que o apontar mostra.',
+  },
+  {
+    verbo: 'soltar em cima',
+    exemplo: 'soltar "verdadeiro" em cima do "0" em "Criar variável temChave"',
+    descricao:
+      'Leva um bloco de valor da paleta para o lugar de um valor de bloco (o 0, o 1), que ele substitui.',
+  },
+  {
     verbo: 'trocar',
     exemplo: 'trocar "jogador" por "escolhido"',
     descricao:
@@ -334,7 +358,8 @@ function naPrevia(
   const previa = pagina?.previa()
   if (!previa)
     throw new Error('A pré-visualização do Estúdio não está na tela. Expanda o Estúdio antes.')
-  const stage = jogos[0]?.stage ?? { width: 640, height: 360 }
+  // O jogo da prévia é o do projeto aberto; sem o bloco que prepara a tela, o jogo pronto da aula.
+  const stage = pagina?.palcoDoJogo() ?? jogos[0]?.stage ?? { width: 640, height: 360 }
   const numeros = /^(-?\d+(?:[.,]\d+)?) (-?\d+(?:[.,]\d+)?)$/.exec(resto)
   let x: number
   let y: number
@@ -387,7 +412,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // blocos aparecerem e pergunta de novo.
   if (
     pagina &&
-    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |encaixar |abrir campo |trocar |organizar blocos$)/i.test(
+    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos$|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
       texto,
     ) &&
     !pagina.areaPronta()
@@ -621,6 +646,46 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     // Já à vista: a mão só aponta para ele.
     if (rolagem === 'visivel') return agir(`apontar bloco "${rolar[1]}"`, jogos, pagina)
     return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
+  }
+  const encaixarDentro = /^encaixar ["“]([^"”]+)["”] dentro de ["“]([^"”]+)["”]$/i.exec(texto)
+  if (encaixarDentro?.[1] && encaixarDentro[2]) {
+    const origem = precisaDaPagina(pagina).bloco(encaixarDentro[1], 'paleta')
+    if (!origem)
+      throw new Error(`Não achei o bloco "${encaixarDentro[1]}" na paleta. Abra a categoria antes.`)
+    const destino = precisaDaPagina(pagina).dentro(encaixarDentro[2], encaixarDentro[1])
+    if (!destino)
+      throw new Error(`Não achei o espaço vazio de dentro de "${encaixarDentro[2]}" à vista.`)
+    return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(encaixarDentro[1])]
+  }
+  if (f === 'apontar lugar sem blocos') {
+    const lugar = precisaDaPagina(pagina).lugarLivre()
+    if (!lugar)
+      throw new Error(
+        'Não há lugar sem blocos à vista. Antes, arraste um espaço vazio [arrastar até "<bloco>"].',
+      )
+    return [{ fazer: 'apontar', alvo: lugar, exato: true }]
+  }
+  const soltarLivre = /^soltar ["“]([^"”]+)["”] no lugar sem blocos$/i.exec(texto)
+  if (soltarLivre?.[1]) {
+    const origem = precisaDaPagina(pagina).bloco(soltarLivre[1], 'paleta')
+    if (!origem)
+      throw new Error(`Não achei o bloco "${soltarLivre[1]}" na paleta. Abra a categoria antes.`)
+    const destino = precisaDaPagina(pagina).lugarLivre(soltarLivre[1])
+    if (!destino) throw new Error('Não há lugar sem blocos à vista para soltar o bloco.')
+    return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(soltarLivre[1])]
+  }
+  const soltarSobre =
+    /^soltar ["“]([^"”]+)["”] em cima d[oae] ["“]([^"”]+)["”] em ["“]([^"”]+)["”]$/i.exec(texto)
+  if (soltarSobre?.[1] && soltarSobre[2] && soltarSobre[3]) {
+    const [, valorNovo, valor, bloco] = soltarSobre
+    // Sem trazer o valor para a vista: arrastar o fundo fecharia a paleta aberta, e o bloco
+    // novo sairia dela. O roteiro traz o bloco antes de abrir a paleta (Encontre o fim da área).
+    const origem = precisaDaPagina(pagina).bloco(valorNovo, 'paleta')
+    if (!origem)
+      throw new Error(`Não achei o bloco "${valorNovo}" na paleta. Abra a categoria antes.`)
+    const destino = precisaDaPagina(pagina).sobre(valor, bloco, valorNovo)
+    if (!destino) throw new Error(`Não achei o valor "${valor}" no bloco "${bloco}".`)
+    return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(bloco)]
   }
   const encaixar = /^encaixar ["“]([^"”]+)["”] em ["“]([^"”]+)["”](?: no ["“]([^"”]+)["”])?$/i.exec(
     texto,

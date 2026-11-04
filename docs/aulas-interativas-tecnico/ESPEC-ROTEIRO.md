@@ -373,9 +373,13 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[apontar abaixo de "Deixar o sprite"]` | aponta o lugar logo abaixo de um bloco, onde o próximo vai entrar |
 | `[encaixar "Deixar o sprite" em "Quando clicar ou tocar"]` | leva um bloco da paleta para o espaço ao lado de **fazer**, o único lugar onde ele encaixa |
 | `[encaixar "Somar 1" abaixo de "Deixar o sprite"]` | leva um bloco da paleta para logo abaixo de um bloco da área de trabalho |
-| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um |
+| `[encaixar "Quando o sprite" dentro de "Quando acontecer"]` | leva um bloco da paleta para o espaço vazio de dentro de uma área recém-criada (ou de outro bloco cujo espaço não tem rótulo) |
+| `[apontar lugar sem blocos]` | aponta um lugar sem blocos ao lado das pilhas da área de trabalho, fora de onde a paleta abre |
+| `[soltar "Quando acontecer" no lugar sem blocos]` | leva um bloco da paleta (uma área nova) para esse mesmo lugar: o que o apontar mostrou é onde o bloco cai |
+| `[soltar "verdadeiro" em cima do "0" em "Criar variável temChave"]` | leva um bloco de valor da paleta para o lugar de um valor do bloco (o 0, o 1), que ele substitui |
+| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um, pelo começo do texto dele com os valores (`"Alterar variável temChave"` separa dois Alterar variável), e vale também para o campo de um bloco de valor encaixado nele (o **verdadeiro** de Criar variável) |
 | `[tocar prévia arbusto]`, `[tocar prévia 137 209]` | toca no jogo da pré-visualização, por um alvo do jogo pronto ou por um ponto em pixels do jogo |
-| `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização |
+| `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização; o ponto é do jogo do projeto aberto, pelo tamanho que o bloco **Preparar o jogo** dá à tela (vale também numa aula sem jogo pronto) |
 | `[segurar seta de baixo na prévia por 1 s]`, `[apontar setas na prévia]` | as setas da tela no jogo da pré-visualização (só aparecem com o bloco Ativar controles clássicos) |
 | `[verificar projeto]` | clica em **Verificar projeto** e espera a resposta, acelerada |
 | `[enviar projeto]` | clica em **Enviar meu projeto** (ou **Enviar de novo**) e confirma em **Enviar**; no palco nada é enviado |
@@ -508,6 +512,12 @@ No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado*
   canto do quadro, não do palco do jogo, e o ponto muda com o tamanho. Use `[apontar setas]`.
 - Segurar uma seta mais do que a cena aguenta: o personagem chega ao farol, à chave ou some atrás
   das setas. Conte o caminho (no Farol, 3 pixels por quadro, 180 por segundo).
+- Contar com o personagem onde o teste anterior o deixou: a pré-visualização recomeça a partida a
+  cada bloco mudado, e o segundo teste da parte sai do começo de novo.
+- Citar uma palavra que o transcritor escreve de outro jeito (temChave sai "tem chave", Lógica e
+  Se sai "lógica e C"): cite as palavras de antes ou de depois.
+- Trazer o valor para a vista com a paleta aberta: arrastar o fundo fecha a paleta. Traga o bloco
+  à vista antes de abrir a categoria (`[arrastar até ...]`).
 
 ### 9.10 Conferência
 

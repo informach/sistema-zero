@@ -34,6 +34,10 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   categoria: () => 'fechada',
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
+  lugarLivre: (pegar) => ({ seletor: '[data-palco-alvo="a8"]', u: pegar ? 0.6 : 0.65, v: 0.7 }),
+  dentro: () => ({ seletor: '[data-palco-alvo="a9"]', u: 0.62, v: 0.74 }),
+  sobre: () => ({ seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 }),
+  palcoDoJogo: () => null,
   ...patch,
 })
 
@@ -304,6 +308,71 @@ describe('verbos do palco', () => {
       { texto: 'Enviar de novo' },
       { papel: 'button', nome: 'Reenviar', dentro: '[role="dialog"]' },
     ])
+  })
+
+  test('área nova num lugar sem blocos, bloco dentro dela e valor solto em cima de outro', () => {
+    const p = pagina()
+    // O mesmo lugar para apontar e para soltar: a mão mostra onde a área vai cair.
+    expect(agir('apontar lugar sem blocos', jogos, p)).toEqual([
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '[data-palco-alvo="a8"]', u: 0.65, v: 0.7 },
+        exato: true,
+      },
+    ])
+    expect(agir('soltar "Quando acontecer" no lugar sem blocos', jogos, p)).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="paleta:Quando acontecer"]', u: 0.1, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a8"]', u: 0.6, v: 0.7 },
+      },
+      { fazer: 'continuar', acao: 'afastar de "Quando acontecer"' },
+    ])
+    expect(agir('encaixar "Quando o sprite" dentro de "Quando acontecer"', jogos, p)[0]).toEqual({
+      fazer: 'arrastar',
+      alvo: { seletor: '[data-palco-alvo="paleta:Quando o sprite"]', u: 0.1, v: 0.5 },
+      para: { seletor: '[data-palco-alvo="a9"]', u: 0.62, v: 0.74 },
+    })
+    expect(
+      agir('soltar "verdadeiro" em cima do "0" em "Criar variável temChave"', jogos, p),
+    ).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="paleta:verdadeiro"]', u: 0.1, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 },
+      },
+      { fazer: 'continuar', acao: 'afastar de "Criar variável temChave"' },
+    ])
+    // Sem lugar à vista, o roteiro precisa arrastar a área antes.
+    expect(() =>
+      agir('apontar lugar sem blocos', jogos, pagina({ lugarLivre: () => null })),
+    ).toThrow(/arraste um espaço vazio/)
+    expect(() =>
+      agir(
+        'soltar "texto" em cima do "1" em "Alterar variável aviso"',
+        jogos,
+        pagina({ sobre: () => null }),
+      ),
+    ).toThrow(/Não achei o valor "1"/)
+  })
+
+  test('a prévia mede o jogo do projeto aberto, não o jogo pronto da aula', () => {
+    // Aula 2 do Farol: sem jogo pronto, o jogo de 480 × 360 vem do bloco que prepara a tela.
+    const p = pagina({
+      previa: () => ({ width: 660, height: 640 }),
+      palcoDoJogo: () => ({ width: 480, height: 360 }),
+    })
+    const [passo] = agir('apontar prévia 120 24', [], p)
+    const scale = 660 / 480
+    const top = (640 - 360 * scale) / 2
+    expect(passo).toMatchObject({
+      fazer: 'apontar',
+      alvo: {
+        seletor: 'iframe[title="Pré-visualização"]',
+        u: (120 * scale) / 660,
+        v: (top + 24 * scale) / 640,
+      },
+    })
   })
 
   test('abrir categoria nunca recolhe: a que já está aberta só é apontada', () => {
@@ -618,23 +687,34 @@ describe('roteiros gravados pelo robô', () => {
   const doEdiAula =
     /^(na edi[cç][aã]o:|(apontar|clicar|passar o mouse|clique duplo|clique direito|esperar|segurar|rolar até|arrastar) ["“]|segurar tecla |tecla |digitar |rolar para )/i
 
-  test('todo colchete do Na tela da Aula 1 do Desafio do Primeiro Jogo é um verbo do palco', () => {
-    const pasta = '../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/'
-    const roteiro = readFileSync(
-      new URL(`${pasta}desafio-dia-1.roteiro.md`, import.meta.url),
-      'utf8',
-    )
+  const pasta = '../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/'
+  /** Os colchetes do Na tela de um roteiro e os jogos prontos do manifesto da aula. */
+  const doRoteiro = (aula: string) => {
+    const roteiro = readFileSync(new URL(`${pasta}${aula}.roteiro.md`, import.meta.url), 'utf8')
     const farol = JSON.parse(
-      readFileSync(new URL(`${pasta}desafio-dia-1.manifesto.json`, import.meta.url), 'utf8'),
+      readFileSync(new URL(`${pasta}${aula}.manifesto.json`, import.meta.url), 'utf8'),
     ) as typeof manifesto
-    const jogoDoFarol = farol.blocks.find((b) => b.key === 'jogo-pronto')?.content
-      .activity as JogoDaAula
+    const jogosDoFarol = farol.blocks
+      .map((b) => b.content?.activity)
+      .filter((a): a is JogoDaAula => !!a?.stage && Array.isArray(a.targets))
     const colchetes = [...roteiro.matchAll(/^\*\*Na tela:\*\*(.+)$/gm)].flatMap((linha) =>
       [...(linha[1] ?? '').matchAll(/\[([^\]\n]+)\]/g)].map((m) => (m[1] ?? '').trim()),
     )
+    return { colchetes, jogosDoFarol }
+  }
+
+  test('todo colchete do Na tela da Aula 1 do Desafio do Primeiro Jogo é um verbo do palco', () => {
+    const { colchetes, jogosDoFarol } = doRoteiro('desafio-dia-1')
     expect(colchetes.length).toBeGreaterThan(90)
-    const doPalco = colchetes.filter((c) => !doEdiAula.test(c))
-    for (const colchete of doPalco)
-      expect(() => agir(colchete, [jogoDoFarol], pagina()), colchete).not.toThrow()
+    for (const colchete of colchetes.filter((c) => !doEdiAula.test(c)))
+      expect(() => agir(colchete, jogosDoFarol, pagina()), colchete).not.toThrow()
+  })
+
+  test('todo colchete do Na tela da Aula 2 do Desafio do Primeiro Jogo é um verbo do palco', () => {
+    const { colchetes, jogosDoFarol } = doRoteiro('desafio-dia-2')
+    expect(jogosDoFarol).toEqual([])
+    expect(colchetes.length).toBeGreaterThan(100)
+    for (const colchete of colchetes.filter((c) => !doEdiAula.test(c)))
+      expect(() => agir(colchete, jogosDoFarol, pagina()), colchete).not.toThrow()
   })
 })

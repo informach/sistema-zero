@@ -85,8 +85,20 @@ está sendo conferido.
   (abrir e recolher para mostrar a paleta).
 - **Experiências do andar e do limite:** `apontar selo` (o "Seta apertada?", cujo texto muda com a
   seta) e `apontar faixa fora da tela` (um desenho sem nome, `data-fora-da-tela`).
-- **O roteiro do Farol é conferido nos testes:** todo colchete do Na tela da Aula 1 do Desafio do
-  Primeiro Jogo que não é verbo do EdiAula precisa ser entendido pelo `agir`.
+- **Área nova, bloco dentro e valor por cima** (04/11/2026, Farol Aula 2): `apontar lugar sem
+  blocos` e `soltar "Quando acontecer" no lugar sem blocos` usam o mesmo lugar (`lugarLivre`), um
+  retângulo só de fundo ao lado das pilhas e fora de onde a paleta abre, achado numa grade de
+  `elementFromPoint`; `encaixar "Quando o sprite" dentro de "Quando acontecer"` acha a boca vazia
+  da área descendo do rótulo; `soltar "verdadeiro" em cima do "0" em "Criar variável temChave"`
+  põe o canto do bloco novo no canto do valor. O campo de um bloco encaixado conta como campo do
+  bloco de fora quando ele não tem um com esse valor (o **verdadeiro** de Criar variável).
+- **O jogo da prévia é o do projeto:** o tamanho do palco do jogo vem do bloco **Preparar o
+  jogo ... tela 480 × 360** da área de trabalho (`palcoDoJogo`), e só sem ele do jogo pronto da
+  aula. A Aula 2 do Farol não tem jogo pronto.
+- **Expandir e reduzir esperam o outro estado:** o gesto seguinte mede a prévia já no lugar novo
+  (na Parte 6 do Farol, a seta segurada logo depois de expandir caiu na seta da esquerda).
+- **Os roteiros do Farol são conferidos nos testes:** todo colchete do Na tela das Aulas 1 e 2 do
+  Desafio do Primeiro Jogo que não é verbo do EdiAula precisa ser entendido pelo `agir`.
 
 ## Rodar
 

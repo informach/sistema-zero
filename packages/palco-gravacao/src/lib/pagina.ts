@@ -54,6 +54,28 @@ export interface PaginaDoPalco {
    * parada em cima de um bloco faz o Blockly mostrar a dica dele.
    */
   perto(bloco: string): Alvo | null
+  /**
+   * Um lugar sem blocos na área de trabalho, ao lado das pilhas que já existem e fora de onde a
+   * paleta abre: o meio dele, para apontar, ou, com `pegar` (o começo do texto de um bloco da
+   * paleta aberta), o ponto aonde a mão leva esse bloco para ele cair com o canto nesse lugar.
+   * Sempre o mesmo lugar enquanto a área não muda, com a paleta aberta ou fechada.
+   */
+  lugarLivre(pegar?: string): Alvo | null
+  /**
+   * Aonde a mão leva o bloco `pegar` da paleta para ele encaixar no espaço vazio de dentro de
+   * `bloco`, uma área (Quando acontecer) ou outro bloco com um espaço sem rótulo.
+   */
+  dentro(bloco: string, pegar: string): Alvo | null
+  /**
+   * Aonde a mão leva o bloco de valor `pegar` da paleta para ele entrar no lugar do valor `valor`
+   * de `bloco` (o 0 de Criar variável, o 1 de Alterar variável).
+   */
+  sobre(valor: string, bloco: string, pegar: string): Alvo | null
+  /**
+   * O tamanho do jogo do projeto aberto no Estúdio, pelo bloco que prepara a tela ("Preparar o
+   * jogo em tela cheia, tela 480 × 360"): é esse jogo que a pré-visualização mostra.
+   */
+  palcoDoJogo(): { width: number; height: number } | null
 }
 
 let marks = 0
@@ -208,13 +230,103 @@ function campoDe(doc: Document, valor: string, bloco?: string): Element | null {
   const blocos = bloco ? blocosCom(doc, bloco) : null
   const area = areaDeTrabalho(doc)
   if (!area) return null
-  const found = [...area.querySelectorAll('.blocklyEditableField text.blocklyText')].find(
-    (t) =>
-      visivel(t) &&
-      fold(texto(t).replace(/▾/g, '')) === wanted &&
-      (!blocos || blocos.some((b) => donoDe(t) === b)),
+  const campos = [...area.querySelectorAll('.blocklyEditableField text.blocklyText')].filter(
+    (t) => visivel(t) && fold(texto(t).replace(/▾/g, '')) === wanted,
   )
+  // Primeiro os campos do próprio bloco; sem eles, os de um bloco encaixado nele (o verdadeiro
+  // solto no valor de Criar variável, o texto no de Alterar variável).
+  const found = !blocos
+    ? campos[0]
+    : (campos.find((t) => blocos.some((b) => donoDe(t) === b)) ??
+      campos.find((t) => blocos.some((b) => b.contains(t))))
   return found ? (found.closest('.blocklyEditableField') ?? found) : null
+}
+
+/** O caminho do próprio bloco, sem os de dentro. */
+const caixaPropria = (block: Element): DOMRect =>
+  (
+    [...block.querySelectorAll('path.blocklyPath')].find(
+      (p) => p.closest('.blocklyDraggable') === block,
+    ) ?? block
+  ).getBoundingClientRect()
+
+/** Onde a mão pega um bloco da paleta, a partir do canto dele (o mesmo ponto de `bloco`). */
+function pegaDaPaleta(doc: Document, texto: string): { x: number; y: number } | null {
+  const block = blocosCom(doc, texto, 'paleta')[0]
+  if (!block) return null
+  const r = block.getBoundingClientRect()
+  return { x: Math.min(12, r.width / 4), y: Math.min(r.height / 2, 18) }
+}
+
+const fundoEm = (doc: Document, x: number, y: number): boolean =>
+  doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+
+/** A largura que a paleta ocupa quando abre, guardada fora do lugar livre. */
+const PALETA_RESERVA = 340
+/** Os tamanhos procurados, do que cabe a área com o bloco de dentro ao menor. */
+const LUGARES: [number, number][] = [
+  [460, 170],
+  [360, 150],
+  [280, 130],
+]
+const CELULA = 12
+
+/**
+ * O lugar sem blocos da área de trabalho: um retângulo só de fundo, à direita da caixa de
+ * categorias e da paleta (aberta ou não), o mais perto das pilhas que já existem.
+ */
+function lugarSemBlocos(doc: Document): DOMRect | null {
+  const area = areaDeTrabalho(doc)
+  if (!area || !visivel(area)) return null
+  const view = area.getBoundingClientRect()
+  const caixa = toolbox(doc)?.getBoundingClientRect()
+  const base = caixa && caixa.width > 0 ? Math.max(view.left, caixa.right) : view.left
+  const aberta = paleta(doc)?.getBoundingClientRect()
+  const reserva = Math.max(PALETA_RESERVA, aberta ? aberta.right - base : 0)
+  const left = base + reserva
+  const top = view.top + CELULA
+  const colunas = Math.floor((view.right - CELULA - left) / CELULA)
+  const linhas = Math.floor((view.bottom - CELULA - top) / CELULA)
+  if (colunas <= 0 || linhas <= 0) return null
+  // Uma grade do que é fundo, somada para saber num passo se um retângulo é só fundo.
+  const soma: number[][] = Array.from({ length: linhas + 1 }, () =>
+    Array<number>(colunas + 1).fill(0),
+  )
+  const em = (j: number, i: number): number => soma[j]?.[i] ?? 0
+  for (let j = 0; j < linhas; j++)
+    for (let i = 0; i < colunas; i++) {
+      const livre = fundoEm(doc, left + i * CELULA + CELULA / 2, top + j * CELULA + CELULA / 2)
+      const linha = soma[j + 1]
+      if (linha) linha[i + 1] = (livre ? 0 : 1) + em(j, i + 1) + em(j + 1, i) - em(j, i)
+    }
+  const ocupadas = (i: number, j: number, w: number, h: number): number =>
+    em(j + h, i + w) - em(j, i + w) - em(j + h, i) + em(j, i)
+  const pilhas = pilhasDaArea(doc).caixas
+  const distancia = (r: DOMRect): number =>
+    pilhas.length
+      ? Math.min(
+          ...pilhas.map((p) =>
+            Math.hypot(
+              Math.max(0, p.left - r.right, r.left - p.right),
+              Math.max(0, p.top - r.bottom, r.top - p.bottom),
+            ),
+          ),
+        )
+      : 0
+  for (const [largura, altura] of LUGARES) {
+    const w = Math.ceil(largura / CELULA)
+    const h = Math.ceil(altura / CELULA)
+    let melhor: { r: DOMRect; d: number } | null = null
+    for (let j = 0; j + h <= linhas; j++)
+      for (let i = 0; i + w <= colunas; i++) {
+        if (ocupadas(i, j, w, h)) continue
+        const r = new DOMRect(left + i * CELULA, top + j * CELULA, w * CELULA, h * CELULA)
+        const d = distancia(r)
+        if (!melhor || d < melhor.d) melhor = { r, d }
+      }
+    if (melhor) return melhor.r
+  }
+  return null
 }
 
 /**
@@ -460,6 +572,65 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         [direita + 44, meio + topo.height + 12],
       ] as const)
         if (fundo(x, y)) return pontoEm(area, x, y)
+      return null
+    },
+
+    lugarLivre(pegar) {
+      const area = areaDeTrabalho(doc)
+      const lugar = lugarSemBlocos(doc)
+      if (!area || !lugar) return null
+      if (!pegar) return pontoEm(area, lugar.left + lugar.width / 2, lugar.top + lugar.height / 2)
+      const pega = pegaDaPaleta(doc, pegar)
+      if (!pega) return null
+      // Uma célula para dentro: o bloco cai inteiro no lugar, sem encostar no que está em volta.
+      return pontoEm(area, lugar.left + CELULA + pega.x, lugar.top + CELULA + pega.y)
+    },
+
+    dentro(bloco, pegar) {
+      const area = areaDeTrabalho(doc)
+      const block = blocosCom(doc, bloco)[0]
+      const pega = pegaDaPaleta(doc, pegar)
+      if (!area || !block || !pega) return null
+      const r = caixaPropria(block)
+      const rotulo = rotuloDe(block)?.getBoundingClientRect()
+      // A boca do bloco: o primeiro fundo descendo do rótulo, por dentro do braço da esquerda,
+      // e a borda de dentro do braço, nessa altura. É ali que o bloco de dentro encaixa.
+      const desde = rotulo ? rotulo.bottom : r.top + 8
+      let boca: number | null = null
+      for (let y = desde; y < r.bottom - 2 && boca === null; y += 2)
+        if (fundoEm(doc, r.left + 40, y)) boca = y
+      if (boca === null) return null
+      let braco: number | null = null
+      for (let x = r.left; x < r.left + 80 && braco === null; x += 2)
+        if (fundoEm(doc, x, boca + 6)) braco = x
+      if (braco === null) return null
+      return pontoEm(area, braco + pega.x, boca + pega.y)
+    },
+
+    sobre(valor, bloco, pegar) {
+      const area = areaDeTrabalho(doc)
+      const campo = campoDe(doc, valor, bloco)
+      const pega = pegaDaPaleta(doc, pegar)
+      if (!area || !campo || !pega) return null
+      // O valor é um bloco (de sombra ou não) encaixado no bloco: o de fora entra no lugar dele,
+      // com o canto no canto dele.
+      const dele = campo.closest('.blocklyDraggable')
+      if (!dele) return null
+      const r = caixaPropria(dele)
+      return pontoEm(area, r.left + pega.x, r.top + pega.y)
+    },
+
+    palcoDoJogo() {
+      for (const block of blocosCom(doc, 'Preparar o jogo')) {
+        // Na ordem em que aparecem: no DOM, o número de uma sombra pode vir antes do rótulo.
+        const linha = textosDe(block)
+          .map((t) => ({ t: texto(t), r: t.getBoundingClientRect() }))
+          .sort((a, b) => Math.round(a.r.top / 8) - Math.round(b.r.top / 8) || a.r.left - b.r.left)
+          .map((x) => x.t)
+          .join(' ')
+        const m = /tela (\d+) [x×] (\d+)/.exec(linha)
+        if (m?.[1] && m[2]) return { width: Number(m[1]), height: Number(m[2]) }
+      }
       return null
     },
 
