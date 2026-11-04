@@ -206,13 +206,13 @@ export const VERBOS: Verbo[] = [
   },
   {
     verbo: 'apontar lugar sem blocos',
-    exemplo: 'apontar lugar sem blocos',
+    exemplo: 'apontar lugar sem blocos abaixo de "Ao iniciar"',
     descricao:
-      'Aponta um lugar sem blocos ao lado das pilhas da área de trabalho, fora de onde a paleta abre.',
+      'Aponta um lugar sem blocos: com "abaixo de", logo abaixo dessa pilha, alinhado com ela e com um espaço; sem, ao lado das pilhas e fora de onde a paleta abre.',
   },
   {
     verbo: 'soltar no lugar sem blocos',
-    exemplo: 'soltar "Quando acontecer" no lugar sem blocos',
+    exemplo: 'soltar "Quando acontecer" no lugar sem blocos abaixo de "Ao iniciar"',
     descricao:
       'Leva um bloco da paleta (uma área nova) para o lugar sem blocos, o mesmo que o apontar mostra.',
   },
@@ -412,7 +412,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // blocos aparecerem e pergunta de novo.
   if (
     pagina &&
-    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos$|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
+    /^(arrastar at[eé] |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
       texto,
     ) &&
     !pagina.areaPronta()
@@ -657,20 +657,27 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       throw new Error(`Não achei o espaço vazio de dentro de "${encaixarDentro[2]}" à vista.`)
     return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(encaixarDentro[1])]
   }
-  if (f === 'apontar lugar sem blocos') {
-    const lugar = precisaDaPagina(pagina).lugarLivre()
+  // "abaixo de" põe o lugar logo abaixo de uma pilha, alinhado com ela (a área nova embaixo de Ao
+  // iniciar); sem ele, o lugar livre mais perto das pilhas.
+  const apontarLivre = /^apontar lugar sem blocos(?: abaixo de ["“]([^"”]+)["”])?$/i.exec(texto)
+  if (apontarLivre) {
+    const pilha = apontarLivre[1]
+    const lugar = precisaDaPagina(pagina).lugarLivre(undefined, pilha)
     if (!lugar)
       throw new Error(
-        'Não há lugar sem blocos à vista. Antes, arraste um espaço vazio [arrastar até "<bloco>"].',
+        pilha
+          ? `Não há lugar livre logo abaixo de "${pilha}" à vista. Antes, arraste a área [arrastar até "${pilha}"].`
+          : 'Não há lugar sem blocos à vista. Antes, arraste um espaço vazio [arrastar até "<bloco>"].',
       )
     return [{ fazer: 'apontar', alvo: lugar, exato: true }]
   }
-  const soltarLivre = /^soltar ["“]([^"”]+)["”] no lugar sem blocos$/i.exec(texto)
+  const soltarLivre =
+    /^soltar ["“]([^"”]+)["”] no lugar sem blocos(?: abaixo de ["“]([^"”]+)["”])?$/i.exec(texto)
   if (soltarLivre?.[1]) {
     const origem = precisaDaPagina(pagina).bloco(soltarLivre[1], 'paleta')
     if (!origem)
       throw new Error(`Não achei o bloco "${soltarLivre[1]}" na paleta. Abra a categoria antes.`)
-    const destino = precisaDaPagina(pagina).lugarLivre(soltarLivre[1])
+    const destino = precisaDaPagina(pagina).lugarLivre(soltarLivre[1], soltarLivre[2])
     if (!destino) throw new Error('Não há lugar sem blocos à vista para soltar o bloco.')
     return [{ fazer: 'arrastar', alvo: origem, para: destino }, afastar(soltarLivre[1])]
   }

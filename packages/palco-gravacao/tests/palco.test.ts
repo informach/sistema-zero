@@ -343,6 +343,27 @@ describe('verbos do palco', () => {
       },
       { fazer: 'continuar', acao: 'afastar de "Criar variável temChave"' },
     ])
+    // Abaixo de Ao iniciar: a página recebe a pilha, para alinhar a área nova com ela.
+    const pedidos: (string | undefined)[][] = []
+    const alinhada = pagina({
+      lugarLivre: (pegar, abaixoDe) => {
+        pedidos.push([pegar, abaixoDe])
+        return { seletor: '[data-palco-alvo="a11"]', u: 0.2, v: 0.8 }
+      },
+    })
+    agir('apontar lugar sem blocos abaixo de "Ao iniciar"', jogos, alinhada)
+    agir('soltar "Quando acontecer" no lugar sem blocos abaixo de "Ao iniciar"', jogos, alinhada)
+    expect(pedidos).toEqual([
+      [undefined, 'Ao iniciar'],
+      ['Quando acontecer', 'Ao iniciar'],
+    ])
+    expect(() =>
+      agir(
+        'apontar lugar sem blocos abaixo de "Ao iniciar"',
+        jogos,
+        pagina({ lugarLivre: () => null }),
+      ),
+    ).toThrow(/logo abaixo de "Ao iniciar"/)
     // Sem lugar à vista, o roteiro precisa arrastar a área antes.
     expect(() =>
       agir('apontar lugar sem blocos', jogos, pagina({ lugarLivre: () => null })),

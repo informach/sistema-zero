@@ -58,9 +58,11 @@ export interface PaginaDoPalco {
    * Um lugar sem blocos na área de trabalho, ao lado das pilhas que já existem e fora de onde a
    * paleta abre: o meio dele, para apontar, ou, com `pegar` (o começo do texto de um bloco da
    * paleta aberta), o ponto aonde a mão leva esse bloco para ele cair com o canto nesse lugar.
-   * Sempre o mesmo lugar enquanto a área não muda, com a paleta aberta ou fechada.
+   * Sempre o mesmo lugar enquanto a área não muda, com a paleta aberta ou fechada. Com
+   * `abaixoDe` (o começo do texto de uma pilha, como "Ao iniciar"), o lugar é logo abaixo dela,
+   * alinhado com a borda esquerda dela e com uma folga, ou nenhum se ali não estiver livre.
    */
-  lugarLivre(pegar?: string): Alvo | null
+  lugarLivre(pegar?: string, abaixoDe?: string): Alvo | null
   /**
    * Aonde a mão leva o bloco `pegar` da paleta para ele encaixar no espaço vazio de dentro de
    * `bloco`, uma área (Quando acontecer) ou outro bloco com um espaço sem rótulo.
@@ -258,8 +260,42 @@ function pegaDaPaleta(doc: Document, texto: string): { x: number; y: number } | 
   return { x: Math.min(12, r.width / 4), y: Math.min(r.height / 2, 18) }
 }
 
-const fundoEm = (doc: Document, x: number, y: number): boolean =>
-  doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+/**
+ * O ponto é fundo da área de trabalho: o primeiro elemento dela ali, mesmo com a paleta aberta
+ * por cima (a do Encostar e bloquear cobre uma área recém-criada perto das categorias).
+ */
+function fundoEm(doc: Document, x: number, y: number): boolean {
+  const area = areaDeTrabalho(doc)
+  if (!area) return false
+  const dela = doc.elementsFromPoint(x, y).find((e) => area.contains(e))
+  return dela?.classList.contains('blocklyMainBackground') === true
+}
+
+/** A folga que o lugar livre deixa das pilhas que já existem. */
+const FOLGA = 24
+/** O espaço entre uma pilha e a área nova posta logo abaixo dela. */
+const ESPACO_ABAIXO = 32
+/** O tamanho que a área nova precisa livre abaixo da pilha (com o primeiro bloco de dentro). */
+const ABAIXO: [number, number] = [300, 110]
+
+/**
+ * O lugar logo abaixo da pilha que começa com `texto`: a borda esquerda dela e um espaço abaixo
+ * do fim dela, à vista e só de fundo (a paleta aberta por cima não conta). Nulo se não couber.
+ */
+function abaixoDaPilha(doc: Document, texto: string): DOMRect | null {
+  const area = areaDeTrabalho(doc)
+  const pilha = blocosCom(doc, texto).find((b) =>
+    b.parentElement?.classList.contains('blocklyBlockCanvas'),
+  )
+  if (!area || !pilha) return null
+  const p = pilha.getBoundingClientRect()
+  const view = area.getBoundingClientRect()
+  const lugar = new DOMRect(p.left, p.bottom + ESPACO_ABAIXO, ABAIXO[0], ABAIXO[1])
+  if (lugar.left < view.left || lugar.right > view.right || lugar.bottom > view.bottom) return null
+  for (let y = lugar.top; y <= lugar.bottom; y += CELULA)
+    for (let x = lugar.left; x <= lugar.right; x += CELULA) if (!fundoEm(doc, x, y)) return null
+  return lugar
+}
 
 /** A largura que a paleta ocupa quando abre, guardada fora do lugar livre. */
 const PALETA_RESERVA = 340
@@ -321,7 +357,9 @@ function lugarSemBlocos(doc: Document): DOMRect | null {
       for (let i = 0; i + w <= colunas; i++) {
         if (ocupadas(i, j, w, h)) continue
         const r = new DOMRect(left + i * CELULA, top + j * CELULA, w * CELULA, h * CELULA)
-        const d = distancia(r)
+        // O mais perto das pilhas, mas sem colar nelas: abaixo da folga, quanto mais colado, pior.
+        const perto = distancia(r)
+        const d = perto < FOLGA ? 10_000 + FOLGA - perto : perto
         if (!melhor || d < melhor.d) melhor = { r, d }
       }
     if (melhor) return melhor.r
@@ -575,10 +613,19 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return null
     },
 
-    lugarLivre(pegar) {
+    lugarLivre(pegar, abaixoDe) {
       const area = areaDeTrabalho(doc)
+      if (!area) return null
+      if (abaixoDe) {
+        const lugar = abaixoDaPilha(doc, abaixoDe)
+        if (!lugar) return null
+        if (!pegar) return pontoEm(area, lugar.left + lugar.width / 2, lugar.top + lugar.height / 2)
+        const pega = pegaDaPaleta(doc, pegar)
+        // O canto do bloco no canto do lugar: alinhado com a pilha de cima.
+        return pega ? pontoEm(area, lugar.left + pega.x, lugar.top + pega.y) : null
+      }
       const lugar = lugarSemBlocos(doc)
-      if (!area || !lugar) return null
+      if (!lugar) return null
       if (!pegar) return pontoEm(area, lugar.left + lugar.width / 2, lugar.top + lugar.height / 2)
       const pega = pegaDaPaleta(doc, pegar)
       if (!pega) return null

@@ -374,8 +374,8 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[encaixar "Deixar o sprite" em "Quando clicar ou tocar"]` | leva um bloco da paleta para o espaço ao lado de **fazer**, o único lugar onde ele encaixa |
 | `[encaixar "Somar 1" abaixo de "Deixar o sprite"]` | leva um bloco da paleta para logo abaixo de um bloco da área de trabalho |
 | `[encaixar "Quando o sprite" dentro de "Quando acontecer"]` | leva um bloco da paleta para o espaço vazio de dentro de uma área recém-criada (ou de outro bloco cujo espaço não tem rótulo) |
-| `[apontar lugar sem blocos]` | aponta um lugar sem blocos ao lado das pilhas da área de trabalho, fora de onde a paleta abre |
-| `[soltar "Quando acontecer" no lugar sem blocos]` | leva um bloco da paleta (uma área nova) para esse mesmo lugar: o que o apontar mostrou é onde o bloco cai |
+| `[apontar lugar sem blocos abaixo de "Ao iniciar"]` | aponta o lugar logo abaixo dessa pilha, alinhado com a borda esquerda dela e com um espaço; sem o `abaixo de`, um lugar sem blocos ao lado das pilhas, fora de onde a paleta abre. Uma área nova vai alinhada embaixo de Ao iniciar, nunca jogada de qualquer jeito |
+| `[soltar "Quando acontecer" no lugar sem blocos abaixo de "Ao iniciar"]` | leva um bloco da paleta (uma área nova) para esse mesmo lugar: o que o apontar mostrou é onde o bloco cai |
 | `[soltar "verdadeiro" em cima do "0" em "Criar variável temChave"]` | leva um bloco de valor da paleta para o lugar de um valor do bloco (o 0, o 1), que ele substitui |
 | `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um, pelo começo do texto dele com os valores (`"Alterar variável temChave"` separa dois Alterar variável), e vale também para o campo de um bloco de valor encaixado nele (o **verdadeiro** de Criar variável) |
 | `[tocar prévia arbusto]`, `[tocar prévia 137 209]` | toca no jogo da pré-visualização, por um alvo do jogo pronto ou por um ponto em pixels do jogo |

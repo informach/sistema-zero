@@ -88,7 +88,9 @@ está sendo conferido.
 - **Área nova, bloco dentro e valor por cima** (04/11/2026, Farol Aula 2): `apontar lugar sem
   blocos` e `soltar "Quando acontecer" no lugar sem blocos` usam o mesmo lugar (`lugarLivre`), um
   retângulo só de fundo ao lado das pilhas e fora de onde a paleta abre, achado numa grade de
-  `elementFromPoint`; `encaixar "Quando o sprite" dentro de "Quando acontecer"` acha a boca vazia
+  `elementsFromPoint` (só o que é da área conta, mesmo com a paleta aberta por cima); com `abaixo de
+  "Ao iniciar"`, o lugar é logo abaixo dessa pilha, alinhado com ela e 32 px abaixo (pedido da
+  Helena: a área nova alinhada, nunca jogada de qualquer jeito); `encaixar "Quando o sprite" dentro de "Quando acontecer"` acha a boca vazia
   da área descendo do rótulo; `soltar "verdadeiro" em cima do "0" em "Criar variável temChave"`
   põe o canto do bloco novo no canto do valor. O campo de um bloco encaixado conta como campo do
   bloco de fora quando ele não tem um com esse valor (o **verdadeiro** de Criar variável).
