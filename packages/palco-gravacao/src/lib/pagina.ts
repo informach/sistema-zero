@@ -78,6 +78,12 @@ export interface PaginaDoPalco {
    * jogo em tela cheia, tela 480 × 360"): é esse jogo que a pré-visualização mostra.
    */
   palcoDoJogo(): { width: number; height: number } | null
+  /**
+   * Um arrasto que desembola duas áreas: quando uma pilha cresceu por cima da de baixo (Ao
+   * iniciar ganhou um bloco e encostou em Quando acontecer), a de baixo é pega pelo nome e
+   * descida até ficar um espaço abaixo da de cima. Nulo quando nenhuma está por cima da outra.
+   */
+  desembolar(): { de: Alvo; para: Alvo } | null
 }
 
 let marks = 0
@@ -271,6 +277,8 @@ function fundoEm(doc: Document, x: number, y: number): boolean {
   return dela?.classList.contains('blocklyMainBackground') === true
 }
 
+/** Quanto duas pilhas precisam estar lado a lado para uma contar como em cima da outra. */
+const LADO_A_LADO = 40
 /** A folga que o lugar livre deixa das pilhas que já existem. */
 const FOLGA = 24
 /** O espaço entre uma pilha e a área nova posta logo abaixo dela. */
@@ -367,36 +375,43 @@ function lugarSemBlocos(doc: Document): DOMRect | null {
   return null
 }
 
+/** Quanto da altura da área à vista um bloco pode estar fora do meio e ainda contar como centrado. */
+const CENTRADA = 0.15
+
 /**
  * Um arrasto do fundo da área de trabalho que leva `el` (um bloco, um campo) para o centro da
- * área à vista; `'visivel'` se ele já está inteiro à vista e sem nada por cima.
+ * área à vista; `'visivel'` se ele já está inteiro à vista e sem nada por cima (com `centrar`,
+ * também perto do meio da altura: a área em que se trabalha fica no centro).
  */
 function rolagemDe(
   doc: Document,
   el: Element,
   descoberto = false,
+  centrar = false,
 ): { de: Alvo; para: Alvo } | 'visivel' | null {
   const area = areaDeTrabalho(doc)
   if (!area) return null
   const view = areaVisivel(doc, area)
   const b = el.getBoundingClientRect()
-  const inside =
-    b.top >= view.top && b.bottom <= view.bottom && b.left >= view.left && b.right <= view.right
-  // Um campo também precisa estar descoberto: com outra coisa por cima (a paleta aberta, um
-  // painel), vai para o centro. Um bloco tem os de dentro por cima, e isso não conta.
-  const topo = descoberto ? doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null
-  const livre = !topo || el.contains(topo) || topo.contains(el)
-  if (inside && livre) return 'visivel'
-  // Um ponto do fundo, sem bloco em cima, de onde arrastar.
-  const fundo = (x: number, y: number) =>
-    doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
+  const dentroX = b.left >= view.left && b.right <= view.right
+  const inside = b.top >= view.top && b.bottom <= view.bottom && dentroX
   // Leva o bloco para o centro da área de código, onde a criança o vê melhor, até onde o
   // arrasto alcança (um bloco maior que a área fica com o topo perto do alto). A paleta que
   // abrir por cima dele fecha quando o próximo bloco sai dela.
   const centro = (inicio: number, tamanho: number, area: number) =>
     tamanho >= area * 0.8 ? area * 0.1 - inicio : area / 2 - (inicio + tamanho / 2)
-  const dx = centro(b.left - view.left, b.width, view.width)
+  // Para trabalhar numa área (centrar), ela vem para o meio da altura mesmo já à vista; de lado,
+  // só anda se não couber inteira, para as outras áreas não saírem do lugar à toa.
+  const dx = centrar && dentroX ? 0 : centro(b.left - view.left, b.width, view.width)
   const dy = centro(b.top - view.top, b.height, view.height)
+  // Um campo também precisa estar descoberto: com outra coisa por cima (a paleta aberta, um
+  // painel), vai para o centro. Um bloco tem os de dentro por cima, e isso não conta.
+  const topo = descoberto ? doc.elementFromPoint(b.left + b.width / 2, b.top + b.height / 2) : null
+  const livre = !topo || el.contains(topo) || topo.contains(el)
+  if (centrar ? inside && Math.abs(dy) <= view.height * CENTRADA : inside && livre) return 'visivel'
+  // Um ponto do fundo, sem bloco em cima, de onde arrastar.
+  const fundo = (x: number, y: number) =>
+    doc.elementFromPoint(x, y)?.classList.contains('blocklyMainBackground') === true
   // Começa do lado de onde o bloco vem: o arrasto inteiro cabe na área à vista.
   const xs = dx < 0 ? [0.9, 0.75, 0.5, 0.25, 0.1] : [0.1, 0.25, 0.5, 0.75, 0.9]
   const ys = dy < 0 ? [0.85, 0.7, 0.5, 0.3, 0.15] : [0.15, 0.3, 0.5, 0.7, 0.85]
@@ -497,7 +512,8 @@ export function paginaDe(doc: Document): PaginaDoPalco {
 
     rolagem(bloco) {
       const block = blocosCom(doc, bloco)[0]
-      return block ? rolagemDe(doc, block) : null
+      // Para trabalhar nele: o bloco vem para o meio da área, mesmo já à vista.
+      return block ? rolagemDe(doc, block, false, true) : null
     },
 
     rolagemDoCampo(valor, bloco) {
@@ -665,6 +681,37 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       if (!dele) return null
       const r = caixaPropria(dele)
       return pontoEm(area, r.left + pega.x, r.top + pega.y)
+    },
+
+    desembolar() {
+      const area = areaDeTrabalho(doc)
+      if (!area || !visivel(area)) return null
+      const view = areaVisivel(doc, area)
+      const pilhas = [...area.querySelectorAll('.blocklyBlockCanvas > .blocklyDraggable')]
+        .filter(visivel)
+        .map((el) => ({ el, r: el.getBoundingClientRect() }))
+      for (const de of pilhas)
+        for (const baixo of pilhas) {
+          if (baixo === de || baixo.r.top <= de.r.top) continue
+          // Lado a lado de verdade (encostar de leve na lateral não conta) e sem o espaço entre elas.
+          const lado = Math.min(de.r.right, baixo.r.right) - Math.max(de.r.left, baixo.r.left)
+          if (lado < LADO_A_LADO || baixo.r.top >= de.r.bottom + FOLGA) continue
+          const nome = rotuloDe(baixo.el)?.getBoundingClientRect()
+          const pega = nome
+            ? { x: nome.left + Math.min(nome.width / 2, 40), y: nome.top + nome.height / 2 }
+            : { x: baixo.r.left + 12, y: baixo.r.top + 12 }
+          if (
+            pega.y < view.top ||
+            pega.y > view.bottom ||
+            pega.x < view.left ||
+            pega.x > view.right
+          )
+            continue
+          const desce = de.r.bottom + ESPACO_ABAIXO - baixo.r.top
+          const para = { x: pega.x, y: Math.min(view.bottom - 12, pega.y + desce) }
+          return { de: pontoEm(area, pega.x, pega.y), para: pontoEm(area, para.x, para.y) }
+        }
+      return null
     },
 
     palcoDoJogo() {

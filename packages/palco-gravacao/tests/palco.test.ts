@@ -38,6 +38,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   dentro: () => ({ seletor: '[data-palco-alvo="a9"]', u: 0.62, v: 0.74 }),
   sobre: () => ({ seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 }),
   palcoDoJogo: () => null,
+  desembolar: () => null,
   ...patch,
 })
 
@@ -395,6 +396,41 @@ describe('verbos do palco', () => {
         pagina({ sobre: () => null }),
       ),
     ).toThrow(/Não achei o valor "1"/)
+  })
+
+  test('bloco nunca em cima de bloco: a área de baixo desce antes de a mão se afastar', () => {
+    const desembolo = {
+      de: { seletor: '[data-palco-alvo="a12"]', u: 0.1, v: 0.6 },
+      para: { seletor: '[data-palco-alvo="a12"]', u: 0.1, v: 0.7 },
+    }
+    expect(
+      agir('afastar de "Criar variável"', jogos, pagina({ desembolar: () => desembolo })),
+    ).toEqual([
+      { fazer: 'arrastar', alvo: desembolo.de, para: desembolo.para },
+      { fazer: 'continuar', acao: 'afastar de "Criar variável" depois de desembolar' },
+    ])
+    // Depois de desembolar, a mão só se afasta: nunca desembola duas vezes no mesmo gesto.
+    expect(
+      agir(
+        'afastar de "Criar variável" depois de desembolar',
+        jogos,
+        pagina({ desembolar: () => desembolo }),
+      ),
+    ).toEqual([
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '[data-palco-alvo="a7"]', u: 0.9, v: 0.1 },
+        exato: true,
+      },
+    ])
+    // Sem nada embolado, o afastar é o de sempre.
+    expect(agir('afastar de "Criar variável"', jogos, pagina())).toEqual([
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '[data-palco-alvo="a7"]', u: 0.9, v: 0.1 },
+        exato: true,
+      },
+    ])
   })
 
   test('a prévia mede o jogo do projeto aberto, não o jogo pronto da aula', () => {

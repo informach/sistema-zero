@@ -367,7 +367,7 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[categoria Jogo 2D > Sprites > Aparência]` | abre as categorias da paleta, uma depois da outra |
 | `[categoria Jogo 2D]` com a categoria aberta | recolhe a categoria (clicar de novo numa subcategoria aberta também a recolhe) |
 | `[abrir categoria Jogo 2D > Movimento > Movimentos prontos]` | abre sem nunca recolher: a categoria que já está aberta só é apontada. Use na segunda montagem de uma parte, quando Jogo 2D ficou aberta do encaixe anterior |
-| `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área aparecer |
+| `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área ficar perto do meio da altura (não precisa ser o centro exato): a área em que a criança vai trabalhar fica em destaque. Use sempre que a montagem passa para outra área |
 | `[apontar bloco "Quando clicar ou tocar"]` | aponta um bloco da área de trabalho pelo texto dele |
 | `[apontar encaixe em "Quando clicar ou tocar"]` | aponta o espaço ao lado de **fazer** do bloco |
 | `[apontar abaixo de "Deixar o sprite"]` | aponta o lugar logo abaixo de um bloco, onde o próximo vai entrar |
@@ -512,6 +512,9 @@ No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado*
   canto do quadro, não do palco do jogo, e o ponto muda com o tamanho. Use `[apontar setas]`.
 - Segurar uma seta mais do que a cena aguenta: o personagem chega ao farol, à chave ou some atrás
   das setas. Conte o caminho (no Farol, 3 pixels por quadro, 180 por segundo).
+- Deixar uma área por cima da outra. O palco desce sozinho a área de baixo quando a de cima cresce
+  (Ao iniciar ganhou um bloco e encostou em Quando acontecer), mas a área nova precisa nascer
+  alinhada e com espaço (`[soltar ... no lugar sem blocos abaixo de "Ao iniciar"]`).
 - Contar com o personagem onde o teste anterior o deixou: a pré-visualização recomeça a partida a
   cada bloco mudado, e o segundo teste da parte sai do começo de novo.
 - Citar uma palavra que o transcritor escreve de outro jeito (temChave sai "tem chave", Lógica e

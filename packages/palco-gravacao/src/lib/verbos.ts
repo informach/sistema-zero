@@ -743,8 +743,16 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     return [{ fazer: 'clicar', alvo: campo.alvo }]
   }
 
-  const afastarDe = /^afastar de ["“]([^"”]+)["”]$/i.exec(texto)
+  const afastarDe = /^afastar de ["“]([^"”]+)["”]( depois de desembolar)?$/i.exec(texto)
   if (afastarDe?.[1]) {
+    // Bloco nunca em cima de bloco: se a pilha cresceu por cima da de baixo, a mão desce a de
+    // baixo antes de se afastar (pedido da Helena, 04/11/2026). Uma vez só por gesto.
+    const desembolo = afastarDe[2] ? null : precisaDaPagina(pagina).desembolar()
+    if (desembolo)
+      return [
+        { fazer: 'arrastar', alvo: desembolo.de, para: desembolo.para },
+        { fazer: 'continuar', acao: `afastar de "${afastarDe[1]}" depois de desembolar` },
+      ]
     const perto = precisaDaPagina(pagina).perto(afastarDe[1])
     // Sem fundo livre ao lado, a mão fica onde está.
     if (!perto) return [{ fazer: 'esperar', alvo: { seletor: 'svg.blocklySvg' } }]

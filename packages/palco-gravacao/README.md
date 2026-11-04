@@ -94,6 +94,11 @@ está sendo conferido.
   da área descendo do rótulo; `soltar "verdadeiro" em cima do "0" em "Criar variável temChave"`
   põe o canto do bloco novo no canto do valor. O campo de um bloco encaixado conta como campo do
   bloco de fora quando ele não tem um com esse valor (o **verdadeiro** de Criar variável).
+- **Bloco nunca em cima de bloco, e a área do trabalho no meio** (04/11/2026, pedidos da Helena):
+  depois de todo gesto que solta um bloco, o `afastar` confere se uma pilha cresceu por cima da de
+  baixo (`desembolar`) e, se sim, a mão pega a de baixo pelo nome e a desce até ficar 32 px abaixo,
+  uma vez por gesto. `arrastar até` traz o bloco para perto do meio da altura (15% de folga) mesmo
+  quando ele já está à vista, para a área em que a criança trabalha ficar em destaque.
 - **O jogo da prévia é o do projeto:** o tamanho do palco do jogo vem do bloco **Preparar o
   jogo ... tela 480 × 360** da área de trabalho (`palcoDoJogo`), e só sem ele do jogo pronto da
   aula. A Aula 2 do Farol não tem jogo pronto.
