@@ -246,6 +246,12 @@ const unquote = (s: string): string =>
 
 const botao = (nome: string): Alvo => ({ texto: nome })
 
+/** Clica em Expandir ou Reduzir e espera o Estúdio chegar ao outro estado. */
+const trocarEstudio = (de: string, para: string): Passo[] => [
+  { fazer: 'clicar', alvo: botao(de) },
+  { fazer: 'esperar', alvo: botao(para), estado: 'aparecer', maximo: 10 },
+]
+
 /** Depois de agir num bloco, a mão vai para o fundo da área ao lado dele (o ponto é visto na hora). */
 const afastar = (bloco: string): Passo => ({ fazer: 'continuar', acao: `afastar de "${bloco}"` })
 
@@ -370,8 +376,10 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   if (f === 'concluir aula') return [{ fazer: 'clicar', alvo: botao('Concluir aula') }]
   if (f === 'voltar a aula') return [{ fazer: 'clicar', alvo: botao('Voltar à aula') }]
   if (f === 'jogar de novo') return [{ fazer: 'clicar', alvo: botao('Jogar de novo') }]
-  if (f === 'expandir estudio') return [{ fazer: 'clicar', alvo: botao('Expandir') }]
-  if (f === 'reduzir estudio') return [{ fazer: 'clicar', alvo: botao('Reduzir') }]
+  // O Estúdio troca de lugar e de tamanho logo depois do clique: o gesto só termina com o botão
+  // do outro estado na tela, e o seguinte mede a prévia e as setas já no lugar novo.
+  if (f === 'expandir estudio') return trocarEstudio('Expandir', 'Reduzir')
+  if (f === 'reduzir estudio') return trocarEstudio('Reduzir', 'Expandir')
   const ampliar = /^ampliar (.+)$/i.exec(texto)
   if (ampliar?.[1]) return [{ fazer: 'clicar', alvo: botao(`Ampliar ${ampliar[1]}`) }]
 

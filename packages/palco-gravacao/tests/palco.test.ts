@@ -88,6 +88,18 @@ describe('verbos do palco', () => {
     })
   })
 
+  test('expandir e reduzir o Estúdio só terminam com ele no outro estado', () => {
+    // Farol, Parte 6: a seta segurada logo depois de expandir mediu a prévia ainda no lugar antigo.
+    expect(agir('expandir estúdio', jogos)).toEqual([
+      { fazer: 'clicar', alvo: { texto: 'Expandir' } },
+      { fazer: 'esperar', alvo: { texto: 'Reduzir' }, estado: 'aparecer', maximo: 10 },
+    ])
+    expect(agir('reduzir estúdio', jogos)).toEqual([
+      { fazer: 'clicar', alvo: { texto: 'Reduzir' } },
+      { fazer: 'esperar', alvo: { texto: 'Expandir' }, estado: 'aparecer', maximo: 10 },
+    ])
+  })
+
   test('Estúdio: categorias em sequência, arrastar para baixo de um bloco, verificar e esperar', () => {
     expect(agir('categoria Jogo 2D > Sprites', jogos)).toEqual([
       { fazer: 'clicar', alvo: { bloco: { texto: 'Jogo 2D', area: 'toolbox' } } },
