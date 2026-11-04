@@ -42,6 +42,8 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   posicoes: () => 'parado',
   fundoLivre: () => ({ seletor: '[data-palco-alvo="a13"]', u: 0.6, v: 0.5 }),
   rolagemDeVarios: () => 'visivel',
+  mais: () => ({ seletor: '[data-palco-alvo="a14"]', u: 0.5, v: 0.5 }),
+  lixeira: () => ({ seletor: '[data-palco-alvo="a15"]', u: 0.5, v: 0.65 }),
   ...patch,
 })
 
@@ -478,6 +480,29 @@ describe('verbos do palco', () => {
     ).toThrow(/Não achei todos/)
   })
 
+  test('Se: a pergunta pronta vai para a lixeira e o mais abre o senão', () => {
+    expect(agir('jogar na lixeira ">" em "Se"', jogos, pagina())).toEqual([
+      {
+        fazer: 'arrastar',
+        alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a15"]', u: 0.5, v: 0.65 },
+      },
+    ])
+    expect(agir('abrir "senão" em "Se"', jogos, pagina())).toEqual([
+      { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a14"]', u: 0.5, v: 0.5 } },
+      { fazer: 'continuar', acao: 'afastar de "Se"' },
+    ])
+    expect(agir('apontar mais de "senão se" em "Se"', jogos, pagina())).toEqual([
+      { fazer: 'apontar', alvo: { seletor: '[data-palco-alvo="a14"]', u: 0.5, v: 0.5 } },
+    ])
+    expect(() => agir('abrir "senão" em "Se"', jogos, pagina({ mais: () => null }))).toThrow(
+      /botão de mais/,
+    )
+    expect(() =>
+      agir('jogar na lixeira ">" em "Se"', jogos, pagina({ lixeira: () => null })),
+    ).toThrow(/lixeira/)
+  })
+
   test('a prévia mede o jogo do projeto aberto, não o jogo pronto da aula', () => {
     // Aula 2 do Farol: sem jogo pronto, o jogo de 480 × 360 vem do bloco que prepara a tela.
     const p = pagina({
@@ -828,6 +853,13 @@ describe('roteiros gravados pelo robô', () => {
   test('todo colchete do Na tela da Aula 1 do Desafio do Primeiro Jogo é um verbo do palco', () => {
     const { colchetes, jogosDoFarol } = doRoteiro('desafio-dia-1')
     expect(colchetes.length).toBeGreaterThan(90)
+    for (const colchete of colchetes.filter((c) => !doEdiAula.test(c)))
+      expect(() => agir(colchete, jogosDoFarol, pagina()), colchete).not.toThrow()
+  })
+
+  test('todo colchete do Na tela da Aula 3 do Desafio do Primeiro Jogo é um verbo do palco', () => {
+    const { colchetes, jogosDoFarol } = doRoteiro('desafio-dia-3')
+    expect(colchetes.length).toBeGreaterThan(150)
     for (const colchete of colchetes.filter((c) => !doEdiAula.test(c)))
       expect(() => agir(colchete, jogosDoFarol, pagina()), colchete).not.toThrow()
   })

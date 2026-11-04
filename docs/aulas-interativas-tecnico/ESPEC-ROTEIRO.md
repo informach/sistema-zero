@@ -367,6 +367,9 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[categoria Jogo 2D > Sprites > Aparência]` | abre as categorias da paleta, uma depois da outra |
 | `[categoria Jogo 2D]` com a categoria aberta | recolhe a categoria (clicar de novo numa subcategoria aberta também a recolhe) |
 | `[abrir categoria Jogo 2D > Movimento > Movimentos prontos]` | abre sem nunca recolher: a categoria que já está aberta só é apontada. Use na segunda montagem de uma parte, quando Jogo 2D ficou aberta do encaixe anterior |
+| `[jogar na lixeira ">" em "Se"]` | pega o bloco pelo campo dito (o sinal de maior da pergunta **x > 0** que o Se traz) e o solta na lixeira da área de código |
+| `[abrir "senão" em "Se"]`, `[apontar mais de "senão se" em "Se"]` | clica (ou só aponta) o botão de mais que fica logo antes do rótulo dito: abre o espaço do **senão** |
+| `"Se dentro de Quando o sprite personagem começar a encostar no sprite farol"` | em qualquer tag de bloco, `dentro de` diz qual bloco quando há vários com o mesmo começo: o Se que está dentro daquele encontro, e não o de Enquanto estiver rodando |
 | `[mostrar blocos "Quando o sprite", "Destruir o sprite"]` | arrasta a área de código até todos esses blocos ficarem bem à vista juntos, perto do meio e longe das bordas: para conferir os blocos que a fala nomeia |
 | `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área ficar perto do meio da altura (não precisa ser o centro exato): a área em que a criança vai trabalhar fica em destaque. Use sempre que a montagem passa para outra área |
 | `[apontar bloco "Quando clicar ou tocar"]` | aponta um bloco da área de trabalho pelo texto dele |
@@ -532,7 +535,12 @@ No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado*
 - Contar com o personagem onde o teste anterior o deixou: a pré-visualização recomeça a partida a
   cada bloco mudado, e o segundo teste da parte sai do começo de novo.
 - Citar uma palavra que o transcritor escreve de outro jeito (temChave sai "tem chave", Lógica e
-  Se sai "lógica e C"): cite as palavras de antes ou de depois.
+  Se sai "lógica e C", senão sai "sinão" ou "se não", sprite chave sai "Sprite-Chave"): cite as
+  palavras de antes ou de depois. Transcrita sozinha, uma parte às vezes perde uma frase inteira da
+  voz: cite o que aparece também na transcrição da parte cortada.
+- Dividir um caminho do personagem em duas citações com as setas da tela: cada seta custa a viagem
+  da mão, e o segundo trecho sai antes do primeiro acabar. Depois da primeira seta da tela, o resto
+  do caminho vai pelas setas do teclado (`[segurar tecla ArrowUp por 0,5 s]`), que acompanham a fala.
 - Trazer o valor para a vista com a paleta aberta: arrastar o fundo fecha a paleta. Traga o bloco
   à vista antes de abrir a categoria (`[arrastar até ...]`).
 

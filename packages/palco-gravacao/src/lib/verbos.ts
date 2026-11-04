@@ -247,6 +247,23 @@ export const VERBOS: Verbo[] = [
       'Depois de clicar num campo: escolhe na lista que abriu, ou digita na caixa (o trocar pede sozinho); com "em", a mão sai de cima do bloco depois.',
   },
   {
+    verbo: 'jogar na lixeira',
+    exemplo: 'jogar na lixeira ">" em "Se"',
+    descricao:
+      'Pega o bloco pelo campo dito (o sinal de maior da pergunta x > 0 do Se) e o solta na lixeira da área de código.',
+  },
+  {
+    verbo: 'abrir espaço',
+    exemplo: 'abrir "senão" em "Se"',
+    descricao:
+      'Clica no botão de mais que fica logo antes do rótulo dito, para abrir aquele espaço do bloco (o senão do Se).',
+  },
+  {
+    verbo: 'apontar mais',
+    exemplo: 'apontar mais de "senão se" em "Se"',
+    descricao: 'Aponta, sem clicar, o botão de mais que fica logo antes do rótulo dito.',
+  },
+  {
     verbo: 'mostrar blocos',
     exemplo: 'mostrar blocos "Quando o sprite", "Destruir o sprite"',
     descricao:
@@ -436,7 +453,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   // blocos aparecerem e pergunta de novo.
   if (
     pagina &&
-    /^(arrastar at[eé] |mostrar blocos |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
+    /^(arrastar at[eé] |mostrar blocos |jogar na lixeira |abrir ["“]|apontar mais de |apontar (bloco|encaixe|abaixo de) |apontar lugar sem blocos|encaixar |soltar |abrir campo |trocar |organizar blocos$)/i.test(
       texto,
     ) &&
     !pagina.areaPronta()
@@ -781,6 +798,36 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
       throw new Error(`Não achei todos estes blocos na área de trabalho: ${blocos.join(', ')}.`)
     if (rolagem === 'visivel') return agir(`apontar bloco "${blocos[0]}"`, jogos, pagina)
     return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
+  }
+  // "Segure essa pergunta pelo sinal de maior e arraste até a lixeira": a mão pega o bloco pelo
+  // campo dito (ele é de um bloco encaixado em `bloco`) e o solta na lixeira.
+  const lixeira = /^jogar na lixeira ["“]([^"”]+)["”] em ["“]([^"”]+)["”]$/i.exec(texto)
+  if (lixeira?.[1] && lixeira[2]) {
+    const campo = precisaDaPagina(pagina).campo(lixeira[1], lixeira[2])
+    if (!campo) throw new Error(`Não achei "${lixeira[1]}" no bloco "${lixeira[2]}".`)
+    const lixo = precisaDaPagina(pagina).lixeira()
+    if (!lixo) throw new Error('Não achei a lixeira da área de código à vista.')
+    return [{ fazer: 'arrastar', alvo: campo.alvo, para: lixo }]
+  }
+  // "O primeiro fica antes de senão se": a mão aponta o mais, sem clicar.
+  const apontarMais = /^apontar mais de ["“]([^"”]+)["”] em ["“]([^"”]+)["”]$/i.exec(texto)
+  if (apontarMais?.[1] && apontarMais[2]) {
+    const mais = precisaDaPagina(pagina).mais(apontarMais[2], apontarMais[1])
+    if (!mais)
+      throw new Error(
+        `Não achei o botão de mais antes de "${apontarMais[1]}" em "${apontarMais[2]}".`,
+      )
+    return [{ fazer: 'apontar', alvo: mais }]
+  }
+  // "Clique no segundo sinal de mais": o mais que fica antes do rótulo abre aquele espaço.
+  const abrirEspaco = /^abrir ["“]([^"”]+)["”] em ["“]([^"”]+)["”]$/i.exec(texto)
+  if (abrirEspaco?.[1] && abrirEspaco[2]) {
+    const mais = precisaDaPagina(pagina).mais(abrirEspaco[2], abrirEspaco[1])
+    if (!mais)
+      throw new Error(
+        `Não achei o botão de mais antes de "${abrirEspaco[1]}" em "${abrirEspaco[2]}".`,
+      )
+    return [{ fazer: 'clicar', alvo: mais }, afastar(abrirEspaco[2])]
   }
   if (f === 'clicar fora dos blocos') {
     const fundo = precisaDaPagina(pagina).fundoLivre()

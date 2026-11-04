@@ -105,6 +105,12 @@ está sendo conferido.
 - **Conferir com todos os blocos à vista:** `mostrar blocos "A", "B"` mede a caixa que os blocos
   ocupam juntos e arrasta a área de código até ela ficar à vista com 24 px de folga, perto do meio
   (`rolagemDeVarios`); já assim, só aponta o primeiro.
+- **Farol Aula 3** (04/11/2026): `jogar na lixeira ">" em "Se"` leva a pergunta pronta do Se para a
+  lixeira pelo sinal de maior; `abrir "senão" em "Se"` clica no botão de mais (um `blocklyImageField`)
+  que fica logo antes do rótulo, e `apontar mais de` só aponta; um nome de bloco aceita `dentro de`
+  ("Se dentro de Quando o sprite personagem começar a encostar no sprite farol") para escolher entre
+  blocos de mesmo começo. A porta do farol é a caixa de encostar dele, na base da torre (x 383 a 425,
+  y 165 a 192 no palco do jogo): da largada, 1,95 s de seta para a direita chegam lá sem a chave.
 - **O jogo da prévia é o do projeto:** o tamanho do palco do jogo vem do bloco **Preparar o
   jogo ... tela 480 × 360** da área de trabalho (`palcoDoJogo`), e só sem ele do jogo pronto da
   aula. A Aula 2 do Farol não tem jogo pronto.

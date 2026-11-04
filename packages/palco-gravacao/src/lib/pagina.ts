@@ -96,6 +96,13 @@ export interface PaginaDoPalco {
    * folga das bordas. `'visivel'` se já está assim; nulo se algum bloco não existe.
    */
   rolagemDeVarios(blocos: readonly string[]): { de: Alvo; para: Alvo } | 'visivel' | null
+  /**
+   * O botão de mais que fica logo antes do rótulo `rotulo` ("senão", "senão se") de `bloco`: é ele
+   * que abre aquele espaço do bloco (o Se chega sem o senão).
+   */
+  mais(bloco: string, rotulo: string): Alvo | null
+  /** A lixeira da área de código, onde um bloco solto some. */
+  lixeira(): Alvo | null
   /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
   fundoLivre(): Alvo | null
 }
@@ -219,8 +226,15 @@ const textoProprio = (block: Element): string =>
 function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'): Element[] {
   const raiz = onde === 'area' ? areaDeTrabalho(doc) : paleta(doc)
   if (!raiz) return []
-  const wanted = fold(alvo)
-  const blocos = [...raiz.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(visivel)
+  // "Se dentro de Quando o sprite personagem começar a encostar no sprite farol": o Se que está
+  // dentro daquele encontro, e não os outros Se do projeto (o de Enquanto estiver rodando).
+  const [proprio, ...fora] = alvo.split(/ dentro de /i)
+  const donos = fora.length ? blocosCom(doc, fora.join(' dentro de '), onde) : null
+  if (donos && !donos.length) return []
+  const wanted = fold(proprio ?? '')
+  const blocos = [...raiz.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(
+    (b) => visivel(b) && (!donos || donos.some((d) => d !== b && d.contains(b))),
+  )
   const comecam = blocos.filter((b) => textoProprio(b).startsWith(wanted))
   return comecam.length ? comecam : blocos.filter((b) => textoProprio(b).includes(wanted))
 }
@@ -715,6 +729,32 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const bottom = Math.max(...caixas.map((c) => c.bottom))
       const juntos = new DOMRect(left, top, right - left, bottom - top)
       return rolagemDe(doc, juntos, false, true, MARGEM_A_VISTA)
+    },
+
+    mais(bloco, rotulo) {
+      const wanted = fold(rotulo)
+      for (const block of blocosCom(doc, bloco)) {
+        // Os rótulos e os botões do próprio bloco, na ordem em que aparecem na linha.
+        const pecas = [...block.querySelectorAll('.blocklyLabelField, .blocklyImageField')].filter(
+          (el) => donoDe(el) === block && visivel(el),
+        )
+        const i = pecas.findIndex(
+          (el) => el.classList.contains('blocklyLabelField') && fold(texto(el)) === wanted,
+        )
+        const botao = i > 0 ? pecas[i - 1] : undefined
+        if (!botao?.classList.contains('blocklyImageField')) continue
+        const r = botao.getBoundingClientRect()
+        return pontoEm(botao, r.left + r.width / 2, r.top + r.height / 2)
+      }
+      return null
+    },
+
+    lixeira() {
+      const lixo = doc.querySelector('.blocklyTrash')
+      if (!lixo || !visivel(lixo)) return null
+      const r = lixo.getBoundingClientRect()
+      // O corpo da lixeira, abaixo da tampa: é ali que o bloco solto cai dentro.
+      return pontoEm(lixo, r.left + r.width / 2, r.top + r.height * 0.65)
     },
 
     fundoLivre() {
