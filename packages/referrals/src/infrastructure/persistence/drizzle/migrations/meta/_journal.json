@@ -43,6 +43,13 @@
       "when": 1792505368217,
       "tag": "0005_gift_audience",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793821662415,
+      "tag": "0006_easy_longshot",
+      "breakpoints": true
     }
   ]
 }

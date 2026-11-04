@@ -118,7 +118,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
               this.codes.some(
                 (c) =>
                   c.id === r.codeId &&
-                  c.ambassadorId === a.id &&
+                  (r.campaignReferral?.ambassadorId === a.id || c.ambassadorId === a.id) &&
                   (!opts.audience || c.audience === opts.audience),
               ),
           ).length,
@@ -222,7 +222,29 @@ export class InMemoryReferralRepository implements ReferralRepository {
     const codeIds = new Set(
       this.codes.filter((c) => c.ambassadorId === ambassadorId).map((c) => c.id),
     )
-    return this.redemptions.filter((r) => codeIds.has(r.codeId) && r.status === 'completed').length
+    return this.redemptions.filter(
+      (r) =>
+        (r.campaignReferral?.ambassadorId === ambassadorId || codeIds.has(r.codeId)) &&
+        r.status === 'completed',
+    ).length
+  }
+
+  async listRedemptionsByAmbassador(ambassadorId: string, audience?: GiftAudience) {
+    return this.redemptions
+      .filter(
+        (r) =>
+          (!audience || r.audience === audience) &&
+          (r.campaignReferral?.ambassadorId === ambassadorId ||
+            this.codes.some((c) => c.id === r.codeId && c.ambassadorId === ambassadorId)),
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+      .slice(0, 200)
+  }
+
+  async listConversionsByRedemptions(redemptionIds: string[]) {
+    return this.conversions
+      .filter((c) => redemptionIds.includes(c.redemptionId))
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
   }
 
   async listCodesByAmbassador(ambassadorId: string): Promise<CodeRecord[]> {
@@ -619,7 +641,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }): Promise<{ items: ConversionListItem[]; total: number }> {
     const filtered = this.conversions.filter(
       (c) =>
-        this.codes.find((code) => code.id === c.codeId)?.ownerKind !== 'campaign' &&
+        (this.codes.find((code) => code.id === c.codeId)?.ownerKind !== 'campaign' ||
+          c.bonusCents > 0) &&
         (!opts.audience ||
           this.codes.find((code) => code.id === c.codeId)?.audience === opts.audience) &&
         (!opts.status || c.status === opts.status),

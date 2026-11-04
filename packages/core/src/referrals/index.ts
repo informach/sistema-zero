@@ -56,9 +56,16 @@ export interface CampaignInput {
   channel: string
   /** Ausente = `kids`. Só muda enquanto a campanha está em rascunho. */
   audience?: GiftAudience
+  /** Vínculo de atribuição; não habilita comissão por si só. */
+  ambassadorId?: string | null
+  commissionEnabled?: boolean
+  commissionAmountCents?: number | null
+  /** Primeira cobrança paga antes deste prazo após o resgate; independente dos sete dias. */
+  commissionWindowDays?: number | null
 }
 export interface CampaignView extends CampaignInput {
   audience: GiftAudience
+  ambassadorName?: string | null
   id: string
   state: CampaignState
   shareUrl: string
@@ -90,6 +97,13 @@ export interface CampaignDetailView {
     expiresAt: string | null
     lastError: string | null
     attribution: GiftAttribution | null
+    ambassadorName?: string | null
+    conversion?: {
+      paidAt: string
+      status: string
+      bonusCents: number
+      amountCents: string
+    } | null
   }[]
 }
 

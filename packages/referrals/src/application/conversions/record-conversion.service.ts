@@ -124,19 +124,30 @@ export class RecordConversionService {
 
     // Anti-autoindicação: o dono do código assinando com o MESMO e-mail do
     // resgate não premia a si mesmo — registra a etapa, sem bônus.
-    const selfBlocked =
-      match.code.ownerEmail !== null && normalizeEmail(match.code.ownerEmail) === email
-    const unrewarded = match.code.ownerKind === 'campaign'
+    const campaign = match.code.ownerKind === 'campaign'
+    const terms = campaign ? match.redemption.campaignReferral : null
+    const beneficiaryEmail = campaign ? terms?.ambassadorEmail : match.code.ownerEmail
+    const selfBlocked = !!beneficiaryEmail && normalizeEmail(beneficiaryEmail) === email
+    const withinWindow =
+      !!terms?.commissionWindowDays &&
+      paidAt.getTime() <
+        match.redemption.createdAt.getTime() + terms.commissionWindowDays * 86_400_000
+    const unrewarded = campaign && (!terms?.commissionEnabled || !withinWindow)
 
     const { created } = await this.repo.insertConversion({
       redemptionId: match.redemption.id,
       codeId: match.code.id,
-      ambassadorId: match.code.ambassadorId,
+      ambassadorId: campaign ? (terms?.ambassadorId ?? null) : match.code.ambassadorId,
       paymentId,
       subscriptionId: snapshot.subscriptionId,
       offerSlug: offer.slug,
       amountCents: snapshot.amountInCents,
-      bonusCents: selfBlocked || unrewarded ? 0 : this.config.bonusAmountCents,
+      bonusCents:
+        selfBlocked || unrewarded
+          ? 0
+          : campaign
+            ? (terms?.commissionAmountCents ?? 0)
+            : this.config.bonusAmountCents,
       status: unrewarded ? 'unrewarded' : selfBlocked ? 'self_blocked' : 'pending',
       paidAt: snapshot.paidAt,
       maturesAt: new Date(snapshot.paidAt.getTime() + this.config.matureHours * 3600_000),

@@ -12,6 +12,7 @@ import {
   CampaignValidationError,
   campaignState,
 } from '../../domain/campaign'
+import { requiresActiveCampaignAmbassador } from '../../domain/campaign-referral'
 import { isValidCode } from '../../domain/codes'
 import { scholarshipExpiresAt } from '../../domain/gift-policy'
 import { scholarshipShareUrl } from '../../domain/links'
@@ -35,7 +36,29 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     status: input.status,
     context: input.context,
     audience: input.audience ?? 'kids',
+    ambassadorId: input.ambassadorId ?? null,
+    commissionEnabled: input.commissionEnabled ?? false,
+    commissionAmountCents: input.commissionEnabled ? (input.commissionAmountCents ?? null) : null,
+    commissionWindowDays: input.commissionEnabled ? (input.commissionWindowDays ?? null) : null,
   }
+  if (
+    result.ambassadorId !== null &&
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.ambassadorId!)
+  )
+    throw new CampaignValidationError('Escolha um embaixador válido.')
+  if (
+    result.commissionEnabled &&
+    (!result.ambassadorId ||
+      !Number.isSafeInteger(result.commissionAmountCents) ||
+      (result.commissionAmountCents ?? 0) < 1 ||
+      (result.commissionAmountCents ?? 0) > 100_000_000 ||
+      !Number.isSafeInteger(result.commissionWindowDays) ||
+      (result.commissionWindowDays ?? 0) < 1 ||
+      (result.commissionWindowDays ?? 0) > 3650)
+  )
+    throw new CampaignValidationError(
+      'Para habilitar comissão, escolha o embaixador, o valor fixo em centavos e o prazo de 1 a 3650 dias após o cadastro.',
+    )
   const start = new Date(input.startsAt)
   const end = new Date(input.endsAt)
   if (
@@ -76,8 +99,12 @@ export class CampaignAdminService {
   ) {}
 
   async view(campaign: CampaignRecord): Promise<CampaignView> {
+    const ambassador = campaign.ambassadorId
+      ? await this.referrals.findAmbassadorById(campaign.ambassadorId)
+      : null
     return {
       ...campaign,
+      ambassadorName: ambassador?.name ?? null,
       state: campaignState(campaign, this.now()),
       startsAt: campaign.startsAt.toISOString(),
       endsAt: campaign.endsAt.toISOString(),
@@ -102,6 +129,7 @@ export class CampaignAdminService {
     duplicatedFrom?: string,
   ): Promise<CampaignView | null> {
     let validated = validateCampaignInput(input)
+    await this.validateAmbassador(validated)
     if (duplicatedFrom) {
       const previous = await this.repo.findById(duplicatedFrom)
       if (!previous) throw new CampaignValidationError('A campanha original não foi encontrada.')
@@ -121,15 +149,34 @@ export class CampaignAdminService {
   ): Promise<CampaignView | null> {
     const previous = await this.repo.findById(id)
     if (!previous) return null
+    const sameBeneficiary =
+      input.ambassadorId === undefined || input.ambassadorId === previous.ambassadorId
     // Cliente que não manda o público (anterior a 20/10/2026) mantém o que está gravado.
     const validated = validateCampaignInput({
       ...input,
       audience: input.audience ?? previous.audience,
+      ambassadorId: input.ambassadorId === undefined ? previous.ambassadorId : input.ambassadorId,
+      commissionEnabled:
+        input.commissionEnabled ?? (sameBeneficiary ? previous.commissionEnabled : false),
+      commissionAmountCents:
+        input.commissionAmountCents === undefined
+          ? sameBeneficiary
+            ? previous.commissionAmountCents
+            : null
+          : input.commissionAmountCents,
+      commissionWindowDays:
+        input.commissionWindowDays === undefined
+          ? sameBeneficiary
+            ? previous.commissionWindowDays
+            : null
+          : input.commissionWindowDays,
     })
     if (previous.code !== validated.code)
       throw new CampaignValidationError(
         'O código de uma campanha existente não muda. Duplique para criar outra edição.',
       )
+    if (requiresActiveCampaignAmbassador(validated, previous))
+      await this.validateAmbassador(validated)
     if (validated.audience !== previous.audience) {
       if (previous.status !== 'draft') throw new CampaignAudienceLockedError()
       // Rascunho que já foi publicado pode ter resgates (o repo confere de novo sob o lock).
@@ -150,6 +197,9 @@ export class CampaignAdminService {
       this.repo.history(id),
       code ? this.referrals.listRedemptionsByCode(code.id, 200) : Promise.resolve([]),
     ])
+    const conversions = await this.referrals.listConversionsByRedemptions(
+      redemptions.map((r) => r.id),
+    )
     return {
       campaign: view,
       history,
@@ -163,7 +213,27 @@ export class CampaignAdminService {
         expiresAt: scholarshipExpiresAt(r.createdAt, r.accessDurationDays)?.toISOString() ?? null,
         lastError: r.lastError ?? r.failedReason,
         attribution: r.attribution ?? null,
+        ambassadorName: r.campaignReferral?.ambassadorName ?? null,
+        conversion: (() => {
+          const rows = conversions.filter((c) => c.redemptionId === r.id)
+          const conversion = rows.find((c) => c.status !== 'canceled') ?? rows[0]
+          return conversion
+            ? {
+                paidAt: conversion.paidAt.toISOString(),
+                status: conversion.status,
+                bonusCents: conversion.bonusCents,
+                amountCents: conversion.amountCents.toString(),
+              }
+            : null
+        })(),
       })),
     }
+  }
+
+  private async validateAmbassador(input: CampaignInput) {
+    if (!input.ambassadorId) return
+    const ambassador = await this.referrals.findAmbassadorById(input.ambassadorId)
+    if (ambassador?.status !== 'active')
+      throw new CampaignValidationError('Escolha um embaixador ativo para a campanha.')
   }
 }

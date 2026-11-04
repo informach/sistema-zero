@@ -1,4 +1,5 @@
 import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
+import type { CampaignReferralSnapshot } from '../campaign-referral'
 
 export type AmbassadorStatus = 'active' | 'disabled'
 export type CodeOwnerKind = 'ambassador' | 'account' | 'campaign'
@@ -43,6 +44,7 @@ export interface RedemptionRecord {
   name: string
   phone: string | null
   sourceSnapshot?: GiftSource | null
+  campaignReferral?: CampaignReferralSnapshot | null
   courseSlug?: string | null
   attribution?: GiftAttribution | null
   welcomeAcceptedAt?: Date | null
@@ -158,6 +160,11 @@ export interface ConversionToNotify {
 }
 
 export interface ReferralRepository {
+  listRedemptionsByAmbassador(
+    ambassadorId: string,
+    audience?: GiftAudience,
+  ): Promise<RedemptionRecord[]>
+  listConversionsByRedemptions(redemptionIds: string[]): Promise<ConversionRecord[]>
   // ── Embaixadores ──────────────────────────────────────────────────────────
   /** Cria embaixador + código na MESMA transação. `email_exists` = UNIQUE do e-mail. */
   createAmbassadorWithCode(input: {

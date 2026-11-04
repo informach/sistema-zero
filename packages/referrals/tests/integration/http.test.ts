@@ -104,6 +104,61 @@ describe('campanhas no HTTP', () => {
     status: 'draft',
     channel: 'palestra',
   }
+  test('HTTP aceita comissão explícita, rejeita valor fracionado e mantém termos privados', async () => {
+    const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const person = await repo.createAmbassadorWithCode({
+      name: 'Viviane',
+      email: 'viviane@example.com',
+      code: 'viviane-teste',
+      pageToken: 'v'.repeat(43),
+    })
+    if (person.kind !== 'created') throw new Error('seed')
+    const body = {
+      ...input,
+      status: 'active',
+      ambassadorId: person.ambassador.id,
+      commissionEnabled: true,
+      commissionAmountCents: 4500,
+      commissionWindowDays: 30,
+    }
+    const invalid = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify({ ...body, commissionAmountCents: 45.5 }),
+      }),
+    )
+    expect(invalid.status).toBe(400)
+    expect(await invalid.json()).toMatchObject({ error: { code: 'VALIDATION_ERROR' } })
+    const response = await app.handle(
+      req('/referrals/admin/campaigns', {
+        method: 'POST',
+        headers: ADMIN_HEADERS,
+        body: JSON.stringify(body),
+      }),
+    )
+    expect(response.status).toBe(201)
+    expect(await response.json()).toMatchObject({
+      campaign: {
+        ambassadorId: person.ambassador.id,
+        ambassadorName: 'Viviane',
+        commissionEnabled: true,
+        commissionAmountCents: 4500,
+        commissionWindowDays: 30,
+      },
+    })
+    const lookup = await app.handle(
+      req(`/referrals/internal/codes/${input.code}`, {
+        headers: { 'x-internal-token': INTERNAL_TOKEN },
+      }),
+    )
+    expect(lookup.status).toBe(200)
+    const publicGift = await lookup.text()
+    expect(publicGift).not.toContain('commission')
+    expect(publicGift).not.toContain(person.ambassador.id)
+    expect(publicGift).not.toContain('viviane@example.com')
+  })
+
   test('admin cria sem e-mail; staff lê, mas não escreve; rascunho é privado', async () => {
     const { app, repo } = buildApp({ internalToken: INTERNAL_TOKEN })
     const denied = await app.handle(

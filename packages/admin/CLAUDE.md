@@ -1,5 +1,16 @@
 # CLAUDE.md — @sistemazero/admin
 
+## Campanhas ligadas a embaixadores (04/11/2026)
+
+`ConvitesClient` permite buscar um embaixador por nome/e-mail com paginação e vinculá-lo à
+campanha sem comissão. Habilitar comissão exige valor fixo e prazo após cadastro; padrão desligado.
+Remover/trocar a pessoa desliga a comissão. Duplicar conserva o vínculo, mas exige habilitar o
+acordo da nova edição. PATCH antigo omisso preserva a configuração no serviço.
+Detalhe mostra beneficiário atual e assinaturas/comissões por participante, com o beneficiário
+histórico. Não prometer que editar a campanha altere condições já aceitas. Instruções:
+`docs/operations/campanha-com-embaixador.md` na raiz. Cadastros reais da palestra La Opa foram
+adiados pela operadora; a entrega é do recurso, sem criar Viviane ou campanha.
+
 ## Publicar cursos entre públicos e ambientes (01/11/2026)
 
 A listagem Kids oferece copiar para adulto; staging também oferece promover para produção.

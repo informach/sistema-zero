@@ -3,6 +3,7 @@ import path from 'node:path'
 import type { CampaignInput } from '@sistemazero/core/referrals'
 import { migrate } from 'drizzle-orm/postgres-js/migrator'
 import postgres from 'postgres'
+import { CampaignAdminService } from '../../src/application/campaigns/campaign-admin.service'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
@@ -109,6 +110,136 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
     if (created.kind !== 'created') throw new Error('seed falhou')
     return created
   }
+
+  test('campanha congela beneficiário e acordo; edição e novo link não reatribuem cadastro', async () => {
+    const { ambassador } = await seedCode()
+    const campaigns = new DrizzleCampaignRepository(connection.db)
+    const admin = new CampaignAdminService(campaigns, repo, 'https://funil.test')
+    const input: CampaignInput = {
+      name: 'Palestra La Opa',
+      publicTitle: 'Presente da palestra',
+      description: '',
+      context: 'event',
+      code: 'laopa-novembro',
+      startsAt: new Date(Date.now() - 60_000).toISOString(),
+      endsAt: new Date(Date.now() + 3_600_000).toISOString(),
+      status: 'active',
+      channel: 'palestra',
+      audience: 'kids',
+      ambassadorId: ambassador.id,
+      commissionEnabled: true,
+      commissionAmountCents: 4500,
+      commissionWindowDays: 30,
+    }
+    const campaign = await admin.create(input, 'Teste')
+    const code = await repo.findCodeByCode(input.code)
+    const claim = {
+      codeId: code!.id,
+      audience: 'kids' as const,
+      email: 'family@example.com',
+      name: 'Família',
+      phone: null,
+    }
+    const first = await repo.insertRedemption(claim)
+    expect(first.redemption.campaignReferral).toMatchObject({
+      ambassadorId: ambassador.id,
+      commissionEnabled: true,
+      commissionAmountCents: 4500,
+      commissionWindowDays: 30,
+    })
+    expect(first.redemption.sourceSnapshot).not.toHaveProperty('ambassadorEmail')
+    expect(first.redemption.sourceSnapshot).not.toHaveProperty('commissionAmountCents')
+    await repo.markRedemptionGranted(first.redemption.id, new Date())
+    const disabled = await admin.update(
+      campaign!.id,
+      { ...input, commissionEnabled: false, expectedUpdatedAt: campaign!.updatedAt },
+      'Teste',
+    )
+    const next = await repo.insertRedemption({ ...claim, email: 'next@example.com' })
+    expect(next.redemption.campaignReferral).toMatchObject({
+      ambassadorId: ambassador.id,
+      commissionEnabled: false,
+      commissionAmountCents: null,
+    })
+    await admin.update(
+      campaign!.id,
+      {
+        ...input,
+        ambassadorId: null,
+        commissionEnabled: false,
+        status: 'ended',
+        expectedUpdatedAt: disabled!.updatedAt,
+      },
+      'Teste',
+    )
+    const retried = await repo.insertRedemption(claim)
+    expect(retried.created).toBe(false)
+    expect(retried.redemption.campaignReferral).toEqual(first.redemption.campaignReferral)
+    expect((await repo.getAmbassadorStats(ambassador.id)).redemptionsCompleted).toBe(1)
+    expect(
+      (await repo.listAmbassadors({ audience: 'kids', limit: 25, offset: 0 })).items[0]
+        ?.redemptionsCompleted,
+    ).toBe(1)
+    expect((await repo.listRedemptionsByAmbassador(ambassador.id, 'adult')).length).toBe(0)
+    expect((await repo.listRedemptionsByAmbassador(ambassador.id, 'kids')).length).toBe(2)
+    await repo.insertConversion({
+      redemptionId: first.redemption.id,
+      codeId: code!.id,
+      ambassadorId: ambassador.id,
+      paymentId: 'campaign-pay',
+      subscriptionId: null,
+      offerSlug: 'comunidade-dos-criadores-mensal',
+      amountCents: 9700n,
+      bonusCents: 4500,
+      status: 'pending',
+      paidAt: new Date(),
+      maturesAt: new Date(Date.now() + 3600_000),
+    })
+    const detail = await admin.detail(campaign!.id)
+    expect(detail?.campaign.stats.conversions).toBe(1)
+    expect(detail?.redemptions.find((r) => r.id === first.redemption.id)).toMatchObject({
+      ambassadorName: ambassador.name,
+      conversion: { bonusCents: 4500, status: 'pending', amountCents: '9700' },
+    })
+    const pending = await repo.listConversions({
+      audience: 'kids',
+      status: 'pending',
+      limit: 25,
+      offset: 0,
+    })
+    expect(pending.total).toBe(1)
+    expect(pending.items[0]).toMatchObject({
+      ambassadorName: ambassador.name,
+      ambassadorEmail: ambassador.email,
+      bonusCents: 4500,
+    })
+    expect((await repo.listConversions({ audience: 'adult', limit: 25, offset: 0 })).total).toBe(0)
+    const conversionId = pending.items[0]!.id
+    expect(await repo.markConversionPaid(conversionId, 'Operador', null)).toBe(false)
+    await repo.setConversionMaturesNow(conversionId)
+    const [stored] = await repo.listConversionsByRedemptions([first.redemption.id])
+    // O Postgres guarda microssegundos; Date trunca para milissegundos. Avançar 1 ms
+    // a partir do valor persistido evita depender da precisão ou do relógio do runner.
+    expect(await repo.matureConversions(new Date(stored!.maturesAt.getTime() + 1), 25)).toBe(1)
+    const payable = await repo.listConversions({
+      audience: 'kids',
+      status: 'eligible',
+      limit: 25,
+      offset: 0,
+    })
+    expect(payable.total).toBe(1)
+    expect(payable.items[0]?.id).toBe(conversionId)
+    expect(await repo.markConversionPaid(conversionId, 'Operador', 'Pix confirmado')).toBe(true)
+    expect(await repo.markConversionPaid(conversionId, 'Operador', null)).toBe(false)
+    const paid = await repo.listConversions({
+      audience: 'kids',
+      status: 'paid',
+      limit: 25,
+      offset: 0,
+    })
+    expect(paid.total).toBe(1)
+    expect(paid.items[0]).toMatchObject({ paidMarkedBy: 'Operador', note: 'Pix confirmado' })
+  })
 
   test('atualização de convites antigos: simula, exige concessão confirmada e preserva prazo e e-mail', async () => {
     const { code } = await seedCode()
