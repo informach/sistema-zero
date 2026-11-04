@@ -641,7 +641,8 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }): Promise<{ items: ConversionListItem[]; total: number }> {
     const filtered = this.conversions.filter(
       (c) =>
-        this.codes.find((code) => code.id === c.codeId)?.ownerKind !== 'campaign' &&
+        (this.codes.find((code) => code.id === c.codeId)?.ownerKind !== 'campaign' ||
+          c.bonusCents > 0) &&
         (!opts.audience ||
           this.codes.find((code) => code.id === c.codeId)?.audience === opts.audience) &&
         (!opts.status || c.status === opts.status),

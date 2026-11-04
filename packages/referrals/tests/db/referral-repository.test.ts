@@ -201,6 +201,41 @@ describe.skipIf(!testDatabaseUrl)('DrizzleReferralRepository — Postgres real',
       ambassadorName: ambassador.name,
       conversion: { bonusCents: 4500, status: 'pending', amountCents: '9700' },
     })
+    const pending = await repo.listConversions({
+      audience: 'kids',
+      status: 'pending',
+      limit: 25,
+      offset: 0,
+    })
+    expect(pending.total).toBe(1)
+    expect(pending.items[0]).toMatchObject({
+      ambassadorName: ambassador.name,
+      ambassadorEmail: ambassador.email,
+      bonusCents: 4500,
+    })
+    expect((await repo.listConversions({ audience: 'adult', limit: 25, offset: 0 })).total).toBe(0)
+    const conversionId = pending.items[0]!.id
+    expect(await repo.markConversionPaid(conversionId, 'Operador', null)).toBe(false)
+    await repo.setConversionMaturesNow(conversionId)
+    expect(await repo.matureConversions(new Date(), 25)).toBe(1)
+    const payable = await repo.listConversions({
+      audience: 'kids',
+      status: 'eligible',
+      limit: 25,
+      offset: 0,
+    })
+    expect(payable.total).toBe(1)
+    expect(payable.items[0]?.id).toBe(conversionId)
+    expect(await repo.markConversionPaid(conversionId, 'Operador', 'Pix confirmado')).toBe(true)
+    expect(await repo.markConversionPaid(conversionId, 'Operador', null)).toBe(false)
+    const paid = await repo.listConversions({
+      audience: 'kids',
+      status: 'paid',
+      limit: 25,
+      offset: 0,
+    })
+    expect(paid.total).toBe(1)
+    expect(paid.items[0]).toMatchObject({ paidMarkedBy: 'Operador', note: 'Pix confirmado' })
   })
 
   test('atualização de convites antigos: simula, exige concessão confirmada e preserva prazo e e-mail', async () => {

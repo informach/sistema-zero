@@ -127,6 +127,9 @@ describe('RecordConversionService', () => {
       bonusCents: enabled ? 4500 : 0,
       status: enabled ? 'pending' : 'unrewarded',
     })
+    expect((await repo.listConversions({ audience: 'kids', limit: 25, offset: 0 })).total).toBe(
+      enabled ? 1 : 0,
+    )
   })
 
   test.each([

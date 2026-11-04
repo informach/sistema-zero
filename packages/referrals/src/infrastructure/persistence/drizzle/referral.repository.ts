@@ -1039,7 +1039,8 @@ export class DrizzleReferralRepository implements ReferralRepository {
     offset: number
   }): Promise<{ items: ConversionListItem[]; total: number }> {
     const where = and(
-      sql`${codes.ownerKind} <> 'campaign'`,
+      // Campanhas sem comissão ficam no relatório da ação; com valor, entram no controle Pix.
+      sql`(${codes.ownerKind} <> 'campaign' or ${conversions.bonusCents} > 0)`,
       opts.audience ? eq(codes.audience, opts.audience) : undefined,
       opts.status ? eq(conversions.status, opts.status) : undefined,
     )
