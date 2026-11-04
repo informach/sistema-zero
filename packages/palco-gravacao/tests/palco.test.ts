@@ -44,6 +44,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   rolagemDeVarios: () => 'visivel',
   mais: () => ({ seletor: '[data-palco-alvo="a14"]', u: 0.5, v: 0.5 }),
   lixeira: () => ({ seletor: '[data-palco-alvo="a15"]', u: 0.5, v: 0.65 }),
+  opcaoNaLista: () => ({ dy: 0, lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 } }),
   ...patch,
 })
 
@@ -478,6 +479,23 @@ describe('verbos do palco', () => {
     expect(() =>
       agir('mostrar blocos "Sumiu"', jogos, pagina({ rolagemDeVarios: () => null })),
     ).toThrow(/Não achei todos/)
+  })
+
+  test('a imagem fora da parte que a galeria mostra vem à vista com a roda antes do clique', () => {
+    const longe = pagina({
+      opcaoNaLista: () => ({
+        dy: 180,
+        lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 },
+      }),
+    })
+    expect(agir('escolher "pirata" em "Criar sprite personagem"', jogos, longe)).toEqual([
+      { fazer: 'rolar', alvo: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 }, dy: 180 },
+      { fazer: 'continuar', acao: 'escolher "pirata" em "Criar sprite personagem"' },
+    ])
+    // À vista: clica, espera a lista fechar e clica fora do bloco.
+    expect(
+      agir('escolher "pirata" em "Criar sprite personagem"', jogos, pagina()).map((p) => p.fazer),
+    ).toEqual(['clicar', 'esperar', 'continuar'])
   })
 
   test('Se: a pergunta pronta vai para a lixeira e o mais abre o senão', () => {

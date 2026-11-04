@@ -36,7 +36,7 @@ export type Passo =
       estado?: 'aparecer' | 'sumir' | 'ficar disponível'
       maximo?: number
     }
-  | { fazer: 'rolar'; dy: number }
+  | { fazer: 'rolar'; dy: number; alvo?: Alvo }
   | { fazer: 'digitar'; alvo: Alvo; texto: string; substituir?: boolean }
   | { fazer: 'tecla'; tecla: string }
   /** Segura o botão do mouse no alvo (uma seta da tela do jogo), ou uma tecla, por `segundos`. */
@@ -865,7 +865,17 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const aberto = precisaDaPagina(pagina).aberto()
     // Escolhido, a mão sai de cima do bloco do campo, quando o roteiro diz qual é.
     const depois = [clicarFora(escolher[2])]
-    if (aberto === 'lista') return [...naLista(escolher[1]), ...depois]
+    if (aberto === 'lista') {
+      // "Se não achar, role a lista": a opção fora da parte que a lista mostra (a galeria de
+      // imagens rola por dentro) vem à vista com a roda, e a página é perguntada de novo.
+      const opcao = precisaDaPagina(pagina).opcaoNaLista(escolher[1])
+      if (opcao && opcao.dy !== 0)
+        return [
+          { fazer: 'rolar', alvo: opcao.lista, dy: opcao.dy },
+          { fazer: 'continuar', acao: texto },
+        ]
+      return [...naLista(escolher[1]), ...depois]
+    }
     if (aberto === 'caixa') return [...naCaixa(escolher[1]), ...depois]
     throw new Error('O campo clicado não abriu uma lista nem uma caixa de texto.')
   }

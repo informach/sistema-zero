@@ -103,6 +103,12 @@ export interface PaginaDoPalco {
   mais(bloco: string, rotulo: string): Alvo | null
   /** A lixeira da área de código, onde um bloco solto some. */
   lixeira(): Alvo | null
+  /**
+   * Onde está, na lista que um campo abriu, a opção `valor` (uma imagem da galeria do Estúdio,
+   * uma variável): `dy` é quanto rolar a lista, com a roda, para ela aparecer inteira (0 quando já
+   * aparece), e `lista` o ponto da lista onde rolar. Nulo sem a opção.
+   */
+  opcaoNaLista(valor: string): { dy: number; lista: Alvo } | null
   /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
   fundoLivre(): Alvo | null
 }
@@ -307,6 +313,9 @@ function fundoEm(doc: Document, x: number, y: number): boolean {
 
 /** Quanto duas pilhas precisam estar lado a lado para uma contar como em cima da outra. */
 const LADO_A_LADO = 40
+/** Uma área do projeto (as caixas de Ao iniciar, Quando acontecer, Enquanto estiver rodando). */
+const ehArea = (el: Element): boolean => [...el.classList].some((c) => c.startsWith('sz_frame_'))
+
 /** A folga que o lugar livre deixa das pilhas que já existem. */
 const FOLGA = 24
 /** O espaço entre uma pilha e a área nova posta logo abaixo dela. */
@@ -757,6 +766,26 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return pontoEm(lixo, r.left + r.width / 2, r.top + r.height * 0.65)
     },
 
+    opcaoNaLista(valor) {
+      const aberta = doc.querySelector('.blocklyDropDownDiv')
+      if (!aberta || !visivel(aberta)) return null
+      const wanted = fold(valor)
+      const opcao = [...aberta.querySelectorAll('*')].find(
+        (el) => el.children.length === 0 && fold(texto(el)) === wanted,
+      )
+      if (!opcao) return null
+      // A caixa que rola: a primeira acima da opção com mais conteúdo do que mostra.
+      let caixa: Element | null = opcao.parentElement
+      while (caixa && caixa !== aberta && caixa.scrollHeight <= caixa.clientHeight + 1)
+        caixa = caixa.parentElement
+      const rolante = caixa && caixa.scrollHeight > caixa.clientHeight + 1 ? caixa : aberta
+      const c = rolante.getBoundingClientRect()
+      const r = opcao.getBoundingClientRect()
+      const dentro = r.top >= c.top - 1 && r.bottom <= c.bottom + 1
+      const dy = dentro ? 0 : Math.round(r.top + r.height / 2 - (c.top + c.height / 2))
+      return { dy, lista: pontoEm(rolante, c.left + c.width / 2, c.top + c.height / 2) }
+    },
+
     fundoLivre() {
       const area = areaDeTrabalho(doc)
       if (!area || !visivel(area)) return null
@@ -786,7 +815,9 @@ export function paginaDe(doc: Document): PaginaDoPalco {
         .map((el) => ({ el, r: el.getBoundingClientRect() }))
       for (const de of pilhas)
         for (const baixo of pilhas) {
-          if (baixo === de || baixo.r.top <= de.r.top) continue
+          // Só uma área do projeto desce (Quando acontecer, Ao iniciar...): um bloco que caiu solto
+          // fica onde está, para o Verificar plano mostrar que o encaixe falhou.
+          if (baixo === de || baixo.r.top <= de.r.top || !ehArea(baixo.el)) continue
           // Lado a lado de verdade (encostar de leve na lateral não conta) e sem o espaço entre elas.
           const lado = Math.min(de.r.right, baixo.r.right) - Math.max(de.r.left, baixo.r.left)
           if (lado < LADO_A_LADO || baixo.r.top >= de.r.bottom + FOLGA) continue
