@@ -280,10 +280,12 @@ const trocarEstudio = (de: string, para: string): Passo[] => [
 const afastar = (bloco: string): Passo => ({ fazer: 'continuar', acao: `afastar de "${bloco}"` })
 
 /** Escolhe `valor` na lista que um campo abriu (um menu do Blockly ou um seletor do Estúdio). */
-const naLista = (valor: string): Passo => ({
-  fazer: 'clicar',
-  alvo: { texto: valor, dentro: '.blocklyDropDownDiv' },
-})
+const naLista = (valor: string): Passo[] => [
+  { fazer: 'clicar', alvo: { texto: valor, dentro: '.blocklyDropDownDiv' } },
+  // O bloco só mostra o valor novo quando a lista fecha: o gesto seguinte, que acha o bloco pelo
+  // texto dele ("Alterar variável temChave"), espera por isso.
+  { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
+]
 
 /** Reescreve o campo na caixa de digitar que ele abriu, e confirma. */
 const naCaixa = (valor: string): Passo[] => [
@@ -719,7 +721,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     // Nesse caso a edição termina sem agendar um gesto que não tem alvo.
     const depois = campo.bloco ? [afastar(campo.bloco)] : []
     if (campo.tipo === 'menu')
-      return [{ fazer: 'clicar', alvo: campo.alvo }, naLista(trocar[2]), ...depois]
+      return [{ fazer: 'clicar', alvo: campo.alvo }, ...naLista(trocar[2]), ...depois]
     if (campo.tipo === 'numero')
       return [{ fazer: 'clicar', alvo: campo.alvo }, ...naCaixa(trocar[2]), ...depois]
     // Um texto ou um seletor do Estúdio: o que abrir com o clique diz como escolher.
@@ -754,7 +756,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     const aberto = precisaDaPagina(pagina).aberto()
     // Escolhido, a mão sai de cima do bloco do campo, quando o roteiro diz qual é.
     const depois = escolher[2] ? [afastar(escolher[2])] : []
-    if (aberto === 'lista') return [naLista(escolher[1]), ...depois]
+    if (aberto === 'lista') return [...naLista(escolher[1]), ...depois]
     if (aberto === 'caixa') return [...naCaixa(escolher[1]), ...depois]
     throw new Error('O campo clicado não abriu uma lista nem uma caixa de texto.')
   }

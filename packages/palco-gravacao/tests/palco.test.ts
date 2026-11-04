@@ -201,6 +201,7 @@ describe('verbos do palco', () => {
     expect(agir('trocar "jogador" por "escolhido"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 } },
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+      { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
       // Trocado, a mão sai de cima do bloco do campo.
       { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
     ])
@@ -232,6 +233,7 @@ describe('verbos do palco', () => {
     ])
     expect(agir('escolher "escolhido"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+      { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
     ])
     expect(
       agir('escolher "Achei!"', jogos, pagina({ aberto: () => 'caixa' })).map((p) => p.fazer),
@@ -243,6 +245,7 @@ describe('verbos do palco', () => {
     ])
     expect(agir('escolher "escolhido" em "Deixar o sprite"', jogos, pagina())).toEqual([
       { fazer: 'clicar', alvo: { texto: 'escolhido', dentro: '.blocklyDropDownDiv' } },
+      { fazer: 'esperar', alvo: { seletor: '.blocklyDropDownDiv' }, estado: 'sumir', maximo: 5 },
       { fazer: 'continuar', acao: 'afastar de "Deixar o sprite"' },
     ])
     // Organizar blocos: a página faz pelo menu, e a mão só espera.
