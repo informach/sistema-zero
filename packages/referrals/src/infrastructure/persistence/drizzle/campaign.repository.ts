@@ -9,11 +9,20 @@ import {
   CampaignAudienceLockedError,
   CampaignConflictError,
   type CampaignRecord,
+  CampaignValidationError,
 } from '../../../domain/campaign'
+import { requiresActiveCampaignAmbassador } from '../../../domain/campaign-referral'
 import type { CampaignRepository } from '../../../domain/ports/campaign-repository.port'
 import type { Database } from './db'
 import { escapeLike, isUniqueViolation } from './pg-errors'
-import { campaignHistory, campaigns, codes, conversions, scholarshipRedemptions } from './schema'
+import {
+  ambassadors,
+  campaignHistory,
+  campaigns,
+  codes,
+  conversions,
+  scholarshipRedemptions,
+} from './schema'
 
 function record(row: typeof campaigns.$inferSelect, code: string): CampaignRecord {
   return {
@@ -35,6 +44,10 @@ function values(input: CampaignInput) {
     endsAt: new Date(input.endsAt),
     channel: input.channel,
     audience: input.audience ?? 'kids',
+    ambassadorId: input.ambassadorId ?? null,
+    commissionEnabled: input.commissionEnabled ?? false,
+    commissionAmountCents: input.commissionEnabled ? input.commissionAmountCents : null,
+    commissionWindowDays: input.commissionEnabled ? input.commissionWindowDays : null,
   }
 }
 
@@ -48,6 +61,15 @@ export class DrizzleCampaignRepository implements CampaignRepository {
   ): Promise<CampaignRecord | null> {
     try {
       return await this.db.transaction(async (tx) => {
+        if (input.ambassadorId) {
+          const [beneficiary] = await tx
+            .select()
+            .from(ambassadors)
+            .where(eq(ambassadors.id, input.ambassadorId))
+            .for('share')
+          if (beneficiary?.status !== 'active')
+            throw new CampaignValidationError('Escolha um embaixador ativo para a campanha.')
+        }
         const [campaign] = await tx.insert(campaigns).values(values(input)).returning()
         if (!campaign) throw new Error('Campanha não criada')
         await tx.insert(codes).values({
@@ -82,6 +104,15 @@ export class DrizzleCampaignRepository implements CampaignRepository {
       const [previous] = await tx.select().from(campaigns).where(eq(campaigns.id, id)).for('update')
       if (!previous) return null
       if (previous.updatedAt.toISOString() !== expectedUpdatedAt) throw new CampaignConflictError()
+      if (input.ambassadorId && requiresActiveCampaignAmbassador(input, previous)) {
+        const [beneficiary] = await tx
+          .select()
+          .from(ambassadors)
+          .where(eq(ambassadors.id, input.ambassadorId))
+          .for('share')
+        if (beneficiary?.status !== 'active')
+          throw new CampaignValidationError('Escolha um embaixador ativo para a campanha.')
+      }
       // Conferido de novo sob o lock: o serviço já recusou, mas a publicação pode ter
       // acontecido entre a leitura dele e esta transação.
       const audience = input.audience ?? previous.audience
@@ -173,7 +204,7 @@ export class DrizzleCampaignRepository implements CampaignRepository {
         redemptions: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'completed')`,
         pending: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'pending')`,
         failed: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'failed')`,
-        conversions: sql<number>`count(distinct ${conversions.redemptionId}) filter (where ${conversions.status} = 'unrewarded')`,
+        conversions: sql<number>`count(distinct ${conversions.redemptionId}) filter (where ${conversions.status} <> 'canceled')`,
       })
       .from(codes)
       .leftJoin(scholarshipRedemptions, eq(scholarshipRedemptions.codeId, codes.id))

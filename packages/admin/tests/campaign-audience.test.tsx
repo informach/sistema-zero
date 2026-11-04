@@ -56,6 +56,18 @@ async function mount(
     calls.push(call)
     if (call.method === 'GET' && call.url.includes('/campaigns?'))
       return Response.json({ items, total: items.length })
+    if (call.method === 'GET' && call.url.includes('/ambassadors?'))
+      return Response.json({
+        items: [
+          {
+            id: '11111111-1111-4111-8111-111111111111',
+            name: 'Viviane',
+            email: 'viviane@example.com',
+            status: 'active',
+          },
+        ],
+        total: 1,
+      })
     if (call.method === 'GET' && courses && call.url.startsWith('/api/members/courses?'))
       return courses(call)
     if (call.method === 'GET') return Response.json({ error: { message: 'x' } }, { status: 503 })
@@ -81,6 +93,90 @@ const submit = () =>
       .querySelector('[role="dialog"] form')!
       .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })),
   )
+
+test('campanha vincula embaixador com comissão explícita e remove vínculo sem deixar comissão ativa', async () => {
+  const { calls, root } = await mount([campaign({ audience: 'kids' })], () =>
+    Response.json({ error: { message: 'Manter editor aberto para conferir' } }, { status: 409 }),
+  )
+  try {
+    await act(async () => button('Editar').click())
+    let toggle = document.querySelector<HTMLInputElement>('[role="dialog"] input[type="checkbox"]')!
+    expect(toggle.checked).toBe(false)
+    expect(toggle.disabled).toBe(true)
+    await act(async () => button('Buscar embaixador').click())
+    await act(async () => button('Viviane · viviane@example.com').click())
+    expect(toggle.disabled).toBe(false)
+    await submit()
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({
+      ambassadorId: '11111111-1111-4111-8111-111111111111',
+      commissionEnabled: false,
+      commissionAmountCents: null,
+      commissionWindowDays: null,
+    })
+    await act(async () => toggle.click())
+    const amounts = document.querySelectorAll<HTMLInputElement>(
+      '[role="dialog"] input[type="number"]',
+    )
+    await act(async () => {
+      for (const [index, text] of ['45.50', '30'].entries()) {
+        Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+          amounts[index],
+          text,
+        )
+        amounts[index]!.dispatchEvent(new Event('input', { bubbles: true }))
+      }
+    })
+    await submit()
+    expect(calls.filter((c) => c.method === 'PATCH').at(-1)?.body).toMatchObject({
+      commissionEnabled: true,
+      commissionAmountCents: 4550,
+      commissionWindowDays: 30,
+    })
+    await act(async () => button('Remover vínculo').click())
+    toggle = document.querySelector<HTMLInputElement>('[role="dialog"] input[type="checkbox"]')!
+    expect(toggle.checked).toBe(false)
+    expect(toggle.disabled).toBe(true)
+    await submit()
+    expect(calls.filter((c) => c.method === 'PATCH').at(-1)?.body).toMatchObject({
+      ambassadorId: null,
+      commissionEnabled: false,
+      commissionAmountCents: null,
+      commissionWindowDays: null,
+    })
+  } finally {
+    await act(async () => root.unmount())
+  }
+})
+
+test('editor preserva beneficiário e comissão habilitada ao editar outros campos', async () => {
+  const { calls, root } = await mount(
+    [
+      campaign({
+        audience: 'kids',
+        ambassadorId: '11111111-1111-4111-8111-111111111111',
+        ambassadorName: 'Viviane',
+        commissionEnabled: true,
+        commissionAmountCents: 4500,
+        commissionWindowDays: 30,
+      }),
+    ],
+    () => Response.json({ campaign: campaign() }),
+  )
+  try {
+    await act(async () => button('Editar').click())
+    expect(document.body.textContent).toContain('Vinculado: Viviane')
+    expect(document.querySelector<HTMLInputElement>('input[type="checkbox"]')?.checked).toBe(true)
+    await submit()
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({
+      ambassadorId: '11111111-1111-4111-8111-111111111111',
+      commissionEnabled: true,
+      commissionAmountCents: 4500,
+      commissionWindowDays: 30,
+    })
+  } finally {
+    await act(async () => root.unmount())
+  }
+})
 
 test('a lista mostra o público, e campanha antiga sem o campo é Kids', async () => {
   const { container, root } = await mount(

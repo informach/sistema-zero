@@ -1,6 +1,7 @@
 import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { CampaignUnavailableError, campaignSource, campaignState } from '../../../domain/campaign'
+import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
 import { SCHOLARSHIP_ACCESS_DURATION_DAYS } from '../../../domain/gift-policy'
 import type {
   AmbassadorListItem,
@@ -49,6 +50,11 @@ type ConversionRow = typeof conversions.$inferSelect
  */
 function kidsCodeOf() {
   return and(eq(codes.ambassadorId, ambassadors.id), eq(codes.audience, 'kids'))
+}
+
+/** Campanhas preservam o beneficiário aceito, mesmo depois de uma edição. */
+function redemptionAmbassadorId() {
+  return sql<string>`coalesce(${scholarshipRedemptions.campaignReferral}->>'ambassadorId', ${codes.ambassadorId}::text)`
 }
 
 function toAmbassador(row: AmbassadorRow): AmbassadorRecord {
@@ -113,6 +119,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     name: row.name,
     phone: row.phone,
     sourceSnapshot: row.sourceSnapshot,
+    campaignReferral: row.campaignReferral,
     courseSlug: row.courseSlug,
     attribution: row.attribution,
     welcomeAcceptedAt: row.welcomeAcceptedAt,
@@ -148,6 +155,32 @@ function toInvite(row: InviteRow): InviteRecord {
 
 export class DrizzleReferralRepository implements ReferralRepository {
   constructor(private readonly db: Database) {}
+
+  async listRedemptionsByAmbassador(ambassadorId: string, audience?: GiftAudience) {
+    const rows = await this.db
+      .select({ redemption: scholarshipRedemptions })
+      .from(scholarshipRedemptions)
+      .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
+      .where(
+        and(
+          eq(redemptionAmbassadorId(), ambassadorId),
+          audience ? eq(scholarshipRedemptions.audience, audience) : undefined,
+        ),
+      )
+      .orderBy(desc(scholarshipRedemptions.createdAt))
+      .limit(200)
+    return rows.map((row) => toRedemption(row.redemption))
+  }
+
+  async listConversionsByRedemptions(redemptionIds: string[]) {
+    if (!redemptionIds.length) return []
+    const rows = await this.db
+      .select()
+      .from(conversions)
+      .where(inArray(conversions.redemptionId, redemptionIds))
+      .orderBy(desc(conversions.createdAt))
+    return rows.map(toConversion)
+  }
 
   // ── Embaixadores ──────────────────────────────────────────────────────────
 
@@ -249,17 +282,17 @@ export class DrizzleReferralRepository implements ReferralRepository {
     const [redemptionGroups, inviteGroups] = await Promise.all([
       ambassadorIds.length > 0
         ? this.db
-            .select({ ambassadorId: codes.ambassadorId, value: count() })
+            .select({ ambassadorId: redemptionAmbassadorId(), value: count() })
             .from(scholarshipRedemptions)
             .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
             .where(
               and(
-                inArray(codes.ambassadorId, ambassadorIds),
+                inArray(redemptionAmbassadorId(), ambassadorIds),
                 eq(scholarshipRedemptions.status, 'completed'),
                 opts.audience ? eq(codes.audience, opts.audience) : undefined,
               ),
             )
-            .groupBy(codes.ambassadorId)
+            .groupBy(redemptionAmbassadorId())
         : Promise.resolve([]),
       ambassadorIds.length > 0
         ? this.db
@@ -326,7 +359,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         .innerJoin(codes, eq(codes.id, scholarshipRedemptions.codeId))
         .where(
           and(
-            eq(codes.ambassadorId, row.ambassador.id),
+            eq(redemptionAmbassadorId(), row.ambassador.id),
             eq(scholarshipRedemptions.status, 'completed'),
           ),
         ),
@@ -457,7 +490,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
         redemptionsCompleted: sql<number>`(
           select count(*)::int from ${scholarshipRedemptions} r
           join ${codes} c on c.id = r.code_id
-          where c.ambassador_id = ${ambassadorId} and r.status = 'completed'
+          where coalesce(r.campaign_referral->>'ambassadorId', c.ambassador_id::text) = ${ambassadorId} and r.status = 'completed'
         )`,
         invitesSent: sql<number>`(
           select count(*)::int from ${invites} i
@@ -616,6 +649,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
       const [code] = await tx.select().from(codes).where(eq(codes.id, input.codeId))
       if (!code) throw new Error('Código de resgate inexistente')
       let sourceSnapshot = input.sourceSnapshot
+      let campaignReferral: CampaignReferralSnapshot | null = null
       let acceptedAt = new Date()
       if (code.ownerKind === 'campaign') {
         if (!code.campaignId) throw new CampaignUnavailableError('draft')
@@ -635,6 +669,22 @@ export class DrizzleReferralRepository implements ReferralRepository {
         // O público trava fora do rascunho; divergência aqui seria um bug de quem chamou.
         if (campaign.audience !== input.audience)
           throw new Error('público do resgate diverge do público da campanha')
+        if (campaign.ambassadorId) {
+          const [beneficiary] = await tx
+            .select()
+            .from(ambassadors)
+            .where(eq(ambassadors.id, campaign.ambassadorId))
+            .for('share')
+          if (!beneficiary) throw new Error('Beneficiário da campanha inexistente')
+          campaignReferral = {
+            ambassadorId: beneficiary.id,
+            ambassadorName: beneficiary.name,
+            ambassadorEmail: beneficiary.email,
+            commissionEnabled: campaign.commissionEnabled,
+            commissionAmountCents: campaign.commissionAmountCents,
+            commissionWindowDays: campaign.commissionWindowDays,
+          }
+        }
         sourceSnapshot = campaignSource({
           ...campaign,
           code: code.code,
@@ -651,6 +701,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
           name: input.name,
           phone: input.phone,
           sourceSnapshot,
+          campaignReferral,
           courseSlug: input.courseSlug,
           attribution: input.attribution,
           createdAt: acceptedAt,

@@ -353,7 +353,8 @@ const CONVERSION_STATUS_BADGE: Record<
   self_blocked: { variant: 'muted', title: () => SELF_BLOCKED_HINT },
   unrewarded: {
     variant: 'muted',
-    title: () => 'Conversão de campanha institucional, sem bônus Pix',
+    title: () =>
+      'Assinatura atribuída à campanha, sem comissão habilitada ou fora do prazo combinado',
   },
 }
 

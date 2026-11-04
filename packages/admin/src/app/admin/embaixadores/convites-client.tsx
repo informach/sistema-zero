@@ -110,6 +110,16 @@ function AudienceBadge({ audience }: { audience: GiftAudience }) {
 }
 const dateLabel = (value: string) =>
   new Date(value).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+const moneyLabel = (cents: number) =>
+  (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+const conversionLabels: Record<string, string> = {
+  pending: 'Aguardando garantia',
+  eligible: 'Comissão disponível',
+  paid: 'Comissão paga',
+  canceled: 'Pagamento estornado',
+  self_blocked: 'Autoindicação sem comissão',
+  unrewarded: 'Sem comissão',
+}
 const message = (err: unknown) =>
   err && typeof err === 'object' && 'code' in err && err.code === 'CAMPAIGN_AUDIENCE_LOCKED'
     ? AUDIENCE_LOCKED_MESSAGE
@@ -386,8 +396,9 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
       <Pagination total={total} limit={PAGE_SIZE} offset={offset} onChange={setOffset} />
       <p className="text-xs text-muted-foreground">
         Resgates são cadastros com os acessos concedidos. Conversões são as primeiras compras
-        elegíveis da Comunidade após o presente, excluindo estornos. Campanhas não geram bônus Pix.
-        Nas campanhas Kids, esses números contam contas de responsáveis, não crianças.
+        elegíveis da Comunidade após o presente, excluindo estornos. Comissão só é gerada quando
+        habilitada na campanha, conforme as condições do cadastro. Nas campanhas Kids, esses números
+        contam contas de responsáveis, não crianças.
       </p>
       {editing && (
         <CampaignEditor
@@ -446,6 +457,9 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                           name: `${detail.campaign.name} · nova edição`.slice(0, 120),
                           code: '',
                           status: 'draft',
+                          commissionEnabled: false,
+                          commissionAmountCents: null,
+                          commissionWindowDays: null,
                           startsAt: empty(audience).startsAt,
                           endsAt: empty(audience).endsAt,
                         },
@@ -462,6 +476,13 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
               Início: {dateLabel(detail.campaign.startsAt)} · Encerramento:{' '}
               {dateLabel(detail.campaign.endsAt)} (Brasília). Pausar ou encerrar impede novos
               cadastros; os acessos já aceitos mantêm seu vencimento.
+            </p>
+            <p className="text-sm">
+              Embaixador: {detail.campaign.ambassadorName ?? 'Sem vínculo'}.{' '}
+              {detail.campaign.commissionEnabled
+                ? `Comissão habilitada: ${moneyLabel(detail.campaign.commissionAmountCents ?? 0)} pela primeira assinatura paga em até ${detail.campaign.commissionWindowDays} dias após o cadastro.`
+                : 'Comissão desativada.'}{' '}
+              Edições valem para novos cadastros; os anteriores mantêm as condições aceitas.
             </p>
             <div className="space-y-3">
               <label className="block text-sm font-semibold" htmlFor="campaign-link">
@@ -536,6 +557,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                       <th className="p-2">Situação</th>
                       <th className="p-2">Curso até</th>
                       <th className="p-2">Origem de mídia</th>
+                      <th className="p-2">Assinatura e comissão</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -574,6 +596,22 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                           {row.attribution
                             ? Object.values(row.attribution).filter(Boolean).join(' / ')
                             : 'Não informada'}
+                        </td>
+                        <td className="p-2 text-xs">
+                          {row.ambassadorName && <p>{row.ambassadorName}</p>}
+                          {row.conversion ? (
+                            <>
+                              <p>Pagamento: {dateLabel(row.conversion.paidAt)}</p>
+                              <p>
+                                {conversionLabels[row.conversion.status] ?? row.conversion.status}
+                              </p>
+                              {row.conversion.bonusCents > 0 && (
+                                <p>{moneyLabel(row.conversion.bonusCents)}</p>
+                              )}
+                            </>
+                          ) : (
+                            'Ainda não assinou'
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -647,7 +685,52 @@ function CampaignEditor({
   onSaved: (value: CampaignView) => void
 }) {
   const [value, setValue] = useState(editing.value)
-  const { send: apiSend } = useCommunityRequests(audience)
+  const [commissionAmount, setCommissionAmount] = useState(
+    editing.value.commissionAmountCents == null
+      ? ''
+      : String(editing.value.commissionAmountCents / 100),
+  )
+  const { send: apiSend, get: apiGet } = useCommunityRequests(audience)
+  const [partnerQuery, setPartnerQuery] = useState('')
+  const [partners, setPartners] = useState<
+    { id: string; name: string; email: string; status: string }[]
+  >([])
+  const [partnerTotal, setPartnerTotal] = useState(0)
+  const [partnerOffset, setPartnerOffset] = useState(0)
+  const [partnerName, setPartnerName] = useState(
+    (editing.value as CampaignView).ambassadorName ?? '',
+  )
+  const [partnerLoading, setPartnerLoading] = useState(false)
+  const [partnerSearched, setPartnerSearched] = useState(false)
+  const [partnerError, setPartnerError] = useState('')
+  const partnerRequest = useRef(0)
+  async function searchPartners(offset = 0) {
+    const request = ++partnerRequest.current
+    setPartnerLoading(true)
+    setPartnerError('')
+    try {
+      const params = new URLSearchParams({
+        q: partnerQuery.trim(),
+        limit: '25',
+        offset: String(offset),
+      })
+      const result = await apiGet<{ items: typeof partners; total: number }>(
+        `/api/admin/referrals/ambassadors?${params}`,
+      )
+      if (request !== partnerRequest.current) return
+      setPartners(result.items)
+      setPartnerSearched(true)
+      setPartnerTotal(result.total)
+      setPartnerOffset(offset)
+    } catch (err) {
+      if (request !== partnerRequest.current || isCanceledCommunityRequest(err)) return
+      setPartners([])
+      setPartnerTotal(0)
+      setPartnerError(message(err))
+    } finally {
+      if (request === partnerRequest.current) setPartnerLoading(false)
+    }
+  }
   const adultCourse = useAdultGiftCourse(audience === 'adult')
   const [start, setStart] = useState(campaignLocalDate(value.startsAt))
   const [end, setEnd] = useState(campaignLocalDate(value.endsAt))
@@ -672,6 +755,12 @@ function CampaignEditor({
         audience,
         startsAt: campaignIsoDate(start),
         endsAt: campaignIsoDate(end),
+        ambassadorId: value.ambassadorId ?? null,
+        commissionEnabled: value.commissionEnabled ?? false,
+        commissionAmountCents: value.commissionEnabled
+          ? (value.commissionAmountCents ?? null)
+          : null,
+        commissionWindowDays: value.commissionEnabled ? (value.commissionWindowDays ?? null) : null,
       }
       if (body.endsAt <= body.startsAt)
         throw new Error('O encerramento precisa vir depois do início.')
@@ -771,6 +860,179 @@ function CampaignEditor({
               onChange={(event) => change('description', event.target.value)}
             />
           </label>
+          <fieldset className="min-w-0 space-y-3 rounded-lg border p-4">
+            <legend className="px-1 text-sm font-semibold">Embaixador e comissão</legend>
+            <p className="text-sm text-muted-foreground">
+              Vincule um embaixador para acompanhar os resultados desta ação, mesmo sem comissão.
+              Cadastre a pessoa na aba Embaixadores antes de selecioná-la aqui.
+            </p>
+            <p className="text-sm" role="status">
+              {value.ambassadorId
+                ? `Vinculado: ${partnerName || value.ambassadorId}`
+                : 'Sem embaixador vinculado'}
+            </p>
+            <label className="block space-y-1 text-sm font-semibold">
+              <span>Buscar embaixador por nome ou e-mail</span>
+              <Input
+                value={partnerQuery}
+                onChange={(event) => setPartnerQuery(event.target.value)}
+                maxLength={120}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    void searchPartners()
+                  }
+                }}
+              />
+            </label>
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={partnerLoading}
+                onClick={() => void searchPartners()}
+              >
+                Buscar embaixador
+              </Button>
+              {value.ambassadorId && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => {
+                    setValue((current) => ({
+                      ...current,
+                      ambassadorId: null,
+                      commissionEnabled: false,
+                      commissionAmountCents: null,
+                      commissionWindowDays: null,
+                    }))
+                    setPartnerName('')
+                    setCommissionAmount('')
+                  }}
+                >
+                  Remover vínculo
+                </Button>
+              )}
+            </div>
+            {partnerError && (
+              <p role="alert" className="text-sm text-destructive">
+                {partnerError}
+              </p>
+            )}
+            {partners.length > 0 && (
+              <ul className="max-h-48 space-y-2 overflow-auto">
+                {partners.map((partner) => (
+                  <li key={partner.id}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={partner.status !== 'active'}
+                      onClick={() => {
+                        if (partner.id === value.ambassadorId) return
+                        setValue((current) => ({
+                          ...current,
+                          ambassadorId: partner.id,
+                          commissionEnabled: false,
+                          commissionAmountCents: null,
+                          commissionWindowDays: null,
+                        }))
+                        setPartnerName(partner.name)
+                        setCommissionAmount('')
+                      }}
+                    >
+                      {partner.name} · {partner.email}
+                      {partner.status !== 'active' ? ' (desativado)' : ''}
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {partnerSearched && !partnerLoading && !partnerError && partners.length === 0 && (
+              <p className="text-sm text-muted-foreground">
+                Nenhum embaixador encontrado. Cadastre a pessoa na aba Embaixadores.
+              </p>
+            )}
+            {partnerTotal > 25 && (
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={partnerLoading || partnerOffset === 0}
+                  onClick={() => void searchPartners(partnerOffset - 25)}
+                >
+                  Anteriores
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={partnerLoading || partnerOffset + 25 >= partnerTotal}
+                  onClick={() => void searchPartners(partnerOffset + 25)}
+                >
+                  Próximos
+                </Button>
+              </div>
+            )}
+            <label className="flex items-center gap-2 text-sm font-semibold">
+              <input
+                type="checkbox"
+                checked={value.commissionEnabled ?? false}
+                disabled={!value.ambassadorId}
+                onChange={(event) => change('commissionEnabled', event.target.checked)}
+              />
+              Habilitar comissão para novos cadastros
+            </label>
+            <p className="text-sm text-muted-foreground">
+              {value.commissionEnabled
+                ? 'Habilite somente conforme o acordo com o embaixador. O pagamento é manual, após a garantia.'
+                : 'Comissão desativada. O vínculo acompanha resultados sem gerar valor a pagar.'}
+            </p>
+            {value.commissionEnabled && (
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="space-y-1 text-sm font-semibold">
+                  <span>Valor por primeira assinatura (R$)</span>
+                  <Input
+                    type="number"
+                    required
+                    min="0.01"
+                    max="1000000"
+                    step="0.01"
+                    value={commissionAmount}
+                    onChange={(event) => {
+                      setCommissionAmount(event.target.value)
+                      change(
+                        'commissionAmountCents',
+                        event.target.value === ''
+                          ? null
+                          : Math.round(Number(event.target.value) * 100),
+                      )
+                    }}
+                  />
+                </label>
+                <label className="space-y-1 text-sm font-semibold">
+                  <span>Prazo para comissão após cadastro (dias)</span>
+                  <Input
+                    type="number"
+                    required
+                    min="1"
+                    max="3650"
+                    step="1"
+                    value={value.commissionWindowDays ?? ''}
+                    onChange={(event) =>
+                      change(
+                        'commissionWindowDays',
+                        event.target.value === '' ? null : Number(event.target.value),
+                      )
+                    }
+                  />
+                </label>
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground">
+              A primeira cobrança precisa ser paga antes de completar o prazo informado. Mudanças
+              afetam apenas novos cadastros. Quem já recebeu o presente mantém a atribuição
+              original.
+            </p>
+          </fieldset>
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="space-y-1 text-sm font-semibold">
               <span>Tipo</span>
@@ -830,7 +1092,7 @@ function CampaignEditor({
           <p className="text-sm text-muted-foreground">
             O prazo acima controla novos cadastros. Cada cadastro aceito mantém os 7 dias de curso e
             de Mural, mesmo se a campanha for encerrada depois. O link pode ser encaminhado e não
-            confere presença no evento. Campanhas não geram bônus Pix.
+            confere presença no evento. A comissão tem seu próprio prazo, definido acima.
           </p>
           {error && (
             <p role="alert" className="text-sm text-destructive">

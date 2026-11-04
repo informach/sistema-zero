@@ -254,20 +254,13 @@ export class AmbassadorAdminService {
     const codes = (await this.repo.listCodesByAmbassador(ambassador.id)).filter(
       (code) => !audience || code.audience === audience,
     )
-    const perCode = await Promise.all(
-      codes.map((code) =>
-        Promise.all([
-          this.repo.listRedemptionsByCode(code.id, 200),
-          this.repo.listConversionsByCode(code.id, 200),
-        ]),
-      ),
-    )
-    const redemptions: RedemptionRecord[] = perCode
-      .flatMap(([reds]) => reds)
-      .sort((x, y) => y.createdAt.getTime() - x.createdAt.getTime())
-      .slice(0, 200)
-    for (const [, convs] of perCode)
-      for (const c of convs) conversionByRedemption.set(c.redemptionId, c)
+    const redemptions = await this.repo.listRedemptionsByAmbassador(id, audience)
+    const conversions = await this.repo.listConversionsByRedemptions(redemptions.map((r) => r.id))
+    for (const c of conversions) {
+      const previous = conversionByRedemption.get(c.redemptionId)
+      if (!previous || (previous.status === 'canceled' && c.status !== 'canceled'))
+        conversionByRedemption.set(c.redemptionId, c)
+    }
     return {
       ambassador: this.toView({
         ...ambassador,

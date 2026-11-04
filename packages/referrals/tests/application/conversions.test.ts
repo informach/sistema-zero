@@ -103,6 +103,56 @@ describe('RecordConversionService', () => {
     payload: { paymentId },
   })
 
+  test.each([
+    true,
+    false,
+  ])('campanha mantém beneficiário e comissão explícita %s', async (enabled) => {
+    const { code, ambassador, redemption } = await seedRedeemedScholarship()
+    code.ownerKind = 'campaign'
+    code.ambassadorId = null
+    code.ownerEmail = null
+    redemption.campaignReferral = {
+      ambassadorId: ambassador.id,
+      ambassadorName: ambassador.name,
+      ambassadorEmail: ambassador.email,
+      commissionEnabled: enabled,
+      commissionAmountCents: enabled ? 4500 : null,
+      commissionWindowDays: enabled ? 30 : null,
+    }
+    await service.execute(paidDelivery())
+    await service.execute(paidDelivery())
+    expect(repo.conversions).toHaveLength(1)
+    expect(repo.conversions[0]).toMatchObject({
+      ambassadorId: ambassador.id,
+      bonusCents: enabled ? 4500 : 0,
+      status: enabled ? 'pending' : 'unrewarded',
+    })
+  })
+
+  test.each([
+    'expired',
+    'self',
+  ] as const)('campanha registra assinatura sem premiar %s', async (reason) => {
+    const { code, ambassador, redemption } = await seedRedeemedScholarship()
+    code.ownerKind = 'campaign'
+    code.ambassadorId = null
+    code.ownerEmail = null
+    redemption.campaignReferral = {
+      ambassadorId: ambassador.id,
+      ambassadorName: ambassador.name,
+      ambassadorEmail: reason === 'self' ? 'PAULA@example.com' : ambassador.email,
+      commissionEnabled: true,
+      commissionAmountCents: 4500,
+      commissionWindowDays: reason === 'expired' ? 1 : 30,
+    }
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]).toMatchObject({
+      ambassadorId: ambassador.id,
+      bonusCents: 0,
+      status: reason === 'self' ? 'self_blocked' : 'unrewarded',
+    })
+  })
+
   test('renovação de assinatura anterior ao presente não atribui conversão nem bônus', async () => {
     const { redemption, code } = await seedRedeemedScholarship()
     payments.subscriptionCreatedAt = new Date(redemption.createdAt.getTime() - 1)

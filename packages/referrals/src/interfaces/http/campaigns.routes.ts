@@ -20,6 +20,10 @@ const campaignBody = t.Object({
   channel: t.String({ maxLength: 100 }),
   /** Ausente = `kids` na criação; na edição e na duplicata mantém o público gravado. */
   audience: t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')])),
+  ambassadorId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
+  commissionEnabled: t.Optional(t.Boolean()),
+  commissionAmountCents: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 100_000_000 }))),
+  commissionWindowDays: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 3650 }))),
 })
 const audienceQuery = t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')]))
 const idParams = t.Object({ id: t.String({ format: 'uuid' }) })

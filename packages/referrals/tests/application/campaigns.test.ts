@@ -46,6 +46,119 @@ async function setup() {
 const family = { code: input.code, email: 'responsavel@example.com', name: 'Responsável' }
 
 describe('campanhas institucionais', () => {
+  test('comissão exige beneficiário, valor positivo inteiro e prazo independente', () => {
+    for (const change of [
+      { commissionEnabled: true },
+      { ambassadorId: 'not-an-id' },
+      {
+        ambassadorId: '11111111-1111-4111-8111-111111111111',
+        commissionEnabled: true,
+        commissionAmountCents: 0,
+        commissionWindowDays: 30,
+      },
+      {
+        ambassadorId: '11111111-1111-4111-8111-111111111111',
+        commissionEnabled: true,
+        commissionAmountCents: 3000,
+        commissionWindowDays: 0,
+      },
+    ])
+      expect(() => validateCampaignInput({ ...input, ...change })).toThrow()
+  })
+
+  test('vínculo sem comissão e edição de cliente antigo preservam o acordo', async () => {
+    const { admin, referrals } = await setup()
+    const created = await referrals.createAmbassadorWithCode({
+      name: 'Viviane',
+      email: 'viviane@example.com',
+      pageToken: 'v'.repeat(43),
+      code: 'viviane-laopa',
+    })
+    if (created.kind !== 'created') throw new Error('seed')
+    const linked = await admin.create(
+      {
+        ...input,
+        code: 'laopa-palestra',
+        ambassadorId: created.ambassador.id,
+        commissionEnabled: true,
+        commissionAmountCents: 4500,
+        commissionWindowDays: 30,
+      },
+      'Operador',
+    )
+    expect(linked?.commissionEnabled).toBe(true)
+    const updated = await admin.update(
+      linked!.id,
+      { ...input, code: linked!.code, expectedUpdatedAt: linked!.updatedAt },
+      'Operador',
+    )
+    expect(updated).toMatchObject({
+      ambassadorId: created.ambassador.id,
+      commissionEnabled: true,
+      commissionAmountCents: 4500,
+      commissionWindowDays: 30,
+    })
+    const unlinked = await admin.update(
+      linked!.id,
+      { ...input, code: linked!.code, ambassadorId: null, expectedUpdatedAt: updated!.updatedAt },
+      'Operador',
+    )
+    expect(unlinked).toMatchObject({
+      ambassadorId: null,
+      commissionEnabled: false,
+      commissionAmountCents: null,
+      commissionWindowDays: null,
+    })
+    const disabled = await admin.update(
+      linked!.id,
+      { ...updated!, commissionEnabled: false, expectedUpdatedAt: unlinked!.updatedAt },
+      'Operador',
+    )
+    expect(disabled).toMatchObject({
+      ambassadorId: created.ambassador.id,
+      commissionEnabled: false,
+      commissionAmountCents: null,
+      commissionWindowDays: null,
+    })
+    created.ambassador.status = 'disabled'
+    const paused = await admin.update(
+      linked!.id,
+      { ...disabled!, status: 'paused', expectedUpdatedAt: disabled!.updatedAt },
+      'Operador',
+    )
+    expect(paused?.status).toBe('paused')
+    await expect(
+      admin.update(
+        linked!.id,
+        { ...paused!, status: 'active', expectedUpdatedAt: paused!.updatedAt },
+        'Operador',
+      ),
+    ).rejects.toThrow()
+  })
+
+  test('não aceita beneficiário inexistente ou desativado', async () => {
+    const { admin, referrals } = await setup()
+    await expect(
+      admin.create(
+        { ...input, code: 'laopa-palestra', ambassadorId: '11111111-1111-4111-8111-111111111111' },
+        'Operador',
+      ),
+    ).rejects.toThrow()
+    const created = await referrals.createAmbassadorWithCode({
+      name: 'Viviane',
+      email: 'viviane@example.com',
+      pageToken: 'v'.repeat(43),
+      code: 'viviane-laopa',
+    })
+    if (created.kind !== 'created') throw new Error('seed')
+    created.ambassador.status = 'disabled'
+    await expect(
+      admin.create(
+        { ...input, code: 'laopa-palestra', ambassadorId: created.ambassador.id },
+        'Operador',
+      ),
+    ).rejects.toThrow()
+  })
   test('limites exatos: início inclusivo, fim exclusivo; pausa e rascunho fecham', () => {
     const base = {
       status: 'active' as const,

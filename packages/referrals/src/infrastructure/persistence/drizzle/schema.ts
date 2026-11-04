@@ -19,6 +19,7 @@ import {
   uuid,
   varchar,
 } from 'drizzle-orm/pg-core'
+import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
 
 /**
  * Schema `referrals` (Postgres compartilhado, 1 schema por bounded context).
@@ -40,12 +41,27 @@ export const campaigns = referralsSchema.table(
     startsAt: timestamp({ withTimezone: true }).notNull(),
     endsAt: timestamp({ withTimezone: true }).notNull(),
     channel: varchar({ length: 100 }).notNull().default(''),
+    ambassadorId: uuid().references(() => ambassadors.id),
+    commissionEnabled: boolean().notNull().default(false),
+    commissionAmountCents: integer(),
+    commissionWindowDays: integer(),
     /** Público do presente (0005). Só muda em rascunho; depois, só duplicando. */
     audience: varchar({ length: 16 }).$type<GiftAudience>().notNull().default('kids'),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
+    index('campaigns_ambassador_idx').on(t.ambassadorId),
+    check(
+      'campaigns_commission_check',
+      sql`(
+      ${t.commissionEnabled} = false and ${t.commissionAmountCents} is null and ${t.commissionWindowDays} is null
+    ) or (
+      ${t.commissionEnabled} = true and ${t.ambassadorId} is not null
+      and ${t.commissionAmountCents} is not null and ${t.commissionAmountCents} between 1 and 100000000
+      and ${t.commissionWindowDays} is not null and ${t.commissionWindowDays} between 1 and 3650
+    )`,
+    ),
     check('campaigns_period_check', sql`${t.endsAt} > ${t.startsAt}`),
     check('campaigns_audience_check', sql`${t.audience} in ('kids','adult')`),
     check('campaigns_status_check', sql`${t.status} in ('draft','active','paused','ended')`),
@@ -160,6 +176,7 @@ export const scholarshipRedemptions = referralsSchema.table(
     phone: varchar({ length: 20 }),
     /** Termos da origem no instante da aceitação; não mudam ao editar a campanha. */
     sourceSnapshot: jsonb().$type<GiftSource>(),
+    campaignReferral: jsonb().$type<CampaignReferralSnapshot>(),
     courseSlug: varchar({ length: 100 }),
     attribution: jsonb().$type<GiftAttribution>(),
     /** Aceitação pelo messaging; welcome_sent_at continua sendo o claim de emissão. */

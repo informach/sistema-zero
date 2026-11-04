@@ -1,5 +1,19 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Campanhas com embaixador e comissão explícita (04/11/2026)
+
+Campanha tem `ambassadorId` opcional, independente de `commissionEnabled` (default false).
+Comissão habilitada exige valor fixo em centavos e janela em dias após o resgate. A migração
+aditiva 0006 preserva campanhas antigas sem vínculo e sem comissão. `codes` mantém um único
+proprietário; não preencher `codes.ambassadorId` em códigos de campanha.
+
+`insertRedemption` captura `campaignReferral` sob o lock da campanha: beneficiário, nome/e-mail
+e condições aceitas. Esse JSON é privado e não entra em `GiftSource`. A conversão consulta o
+snapshot, nunca a configuração atual; janela de comissão e período da campanha são independentes.
+Comissão desligada/fora do prazo ainda atribui a conversão ao embaixador, com bônus zero.
+Relatórios de embaixadores incluem campanhas pelo snapshot. Termos históricos não são reescritos.
+Runbook e rollout: `docs/operations/campanha-com-embaixador.md` na raiz.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, Bun
 > etc.) — não confie só na memória; APIs mudam. Para **pesquisa/exploração**, use o **MCP do
@@ -35,7 +49,7 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
    Kids e adulto).
 2. **Embaixador não precisa de conta** — a página dele é uma capability-URL
    (`/embaixador/<page_token>`, 32 bytes base64url). Bônus Pix segue a extensão abaixo;
-   campanhas institucionais não geram bônus.
+   campanhas institucionais só geram comissão quando explicitamente habilitada (ver extensão de 04/11/2026).
 3. **`codes` é GENÉRICA desde a F1**: `owner_kind ∈ {ambassador, account, campaign}` com UNIQUEs parciais e
    CHECK de exatamente-um-owner. Na F2 o MESMO código do membro serve à landing `/bolsa/<code>` e à
    atribuição `?ref` — é "a liga" (bolsista que assinar depois credita 20% ao membro na F3).
@@ -291,7 +305,7 @@ promise do drizzle (thenable preguiçoso) — try/catch; Date em SQL cru do post
 - Tabelas `campaigns`/`campaign_history`; `codes.campaign_id` exclusivo e CHECK de exatamente uma origem. `previa` é reservado à prévia do funil. Não editar código existente: duplicar cria nova edição.
 - Datas de campanha regulam NOVOS cadastros. Aceitação válida: início inclusivo, encerramento exclusivo. O repositório revalida sob lock da campanha, na mesma ordem do editor. Grants e S2S ficam fora da transação.
 - Resgate novo guarda snapshot público, curso e UTM sanitizada. Retomada conserva origem, duração e curso; histórico não recebe direitos por backfill. `welcome_accepted_at` significa aceitação pelo messaging, não entrega na caixa postal.
-- Campanha converte como `unrewarded` (bônus zero), fora da fila Pix. Estorno cancela essa conversão. Pagamento anterior ao cadastro não é atribuído ao presente.
+- Por padrão, campanha converte como `unrewarded` (bônus zero), fora da fila Pix. Desde 04/11/2026, o acordo explícito capturado no resgate pode habilitar comissão fixa com prazo próprio. Estorno cancela conversões pendentes ou sem comissão. Pagamento anterior ao cadastro não é atribuído ao presente.
 - Migration `0004_material_hellion` gerada pelo script Drizzle, revisada e validada em PostgreSQL local. Aplicar pelo deploy antes das consultas às novas colunas. Ver `docs/marketing/kids/cade-todo-mundo/implementacao.md` e `revisao-implementacao.md` na mesma pasta.
 - PATCH de campanha exige `expectedUpdatedAt`; conferência sob lock recusa edição antiga com 409 `CAMPAIGN_CHANGED`. O admin deve reler antes de tentar novamente. O identificador do operador é preservado mesmo com nome longo.
 - Conversões de assinatura consultam `GET /payments/internal/subscriptions/:id` com token interno; assinatura criada antes do resgate não é atribuída por uma renovação posterior. Falha/404 na consulta pede reentrega. A conferência de estorno após INSERT também pede retry quando indisponível e funciona quando o INSERT já existe.
@@ -356,7 +370,7 @@ Contrato client-safe em `@sistemazero/core/referrals` (`GiftAudience`, `Ambassad
   `comunidade-dos-criadores-adulto-{mensal,anual}`. ⚠️ A env é preservada no Railway: se estiver
   definida lá, o valor precisa ganhar os dois slugs. O consumer escolhe, entre os resgates do
   e-mail, o do público da oferta (`offerGiftAudience`: slug com `adulto`); sem ele, o do outro
-  público. Campanha segue sem bônus.
+  público. Campanha sem acordo explícito segue sem bônus.
 - **Deploy:** `COMMUNITY_URL` (e `SCHOLARSHIP_ADULT_COURSE_SLUG`, se sair do default) precisam ser
   criadas no painel do Railway do referrals (staging e produção) e declaradas em
   `.railway/variables.ts` (`common.referrals`), senão o gate lê exclusão.

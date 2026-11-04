@@ -105,7 +105,7 @@ export class InMemoryCampaignRepository implements CampaignRepository {
       pending: rows.filter((r) => r.status === 'pending').length,
       failed: rows.filter((r) => r.status === 'failed').length,
       conversions: this.referrals.conversions.filter(
-        (c) => c.codeId === code?.id && c.status === 'unrewarded',
+        (c) => c.codeId === code?.id && c.status !== 'canceled',
       ).length,
     }
   }

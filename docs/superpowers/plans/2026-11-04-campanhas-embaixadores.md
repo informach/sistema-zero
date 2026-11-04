@@ -10,10 +10,11 @@
 
 **Constraints:** preservar históricos, códigos de proprietário único, privacidade pública, isolamento Kids/adulto, primeira atribuição e arquivos exclusivos de Palco em staging. Não enviar mensagens nem ativar comissão sem autorização.
 
-- [ ] 1. Testes de regressão em `packages/referrals/tests/application/campaigns.test.ts` e `conversions.test.ts`: configuração válida, preservação em atualização, comissão desligada, prazo, autoindicação e snapshot histórico.
-- [ ] 2. Contratos em `packages/core/src/referrals/index.ts`, domínio, serviço e rotas: vínculo opcional, comissão explícita, valor e prazo validados, dados individuais de conversão.
-- [ ] 3. Persistência: schema, migração `bun run db:generate`, validação do beneficiário, snapshot transacional em `insertRedemption`, relatório de campanhas e embaixadores. Testar com PostgreSQL descartável.
-- [ ] 4. Conversão: escolher beneficiário e termos do snapshot; manter deduplicação, maturação e estorno. Testes significativos de regras.
-- [ ] 5. Interface `packages/admin/src/app/admin/embaixadores/convites-client.tsx`: seleção pesquisável de embaixador, controle explícito de comissão e resultados por participante. Cobrir envio/edição/duplicação com testes de UI.
-- [ ] 6. Verificar testes, lint e tipos dos pacotes afetados; revisar diff e migração. Registrar evidências e limites.
-- [ ] 7. Com parâmetros confirmados, preparar campanha La Opa e vínculo com Viviane no ambiente solicitado; conferir leitura de volta, sem envio de e-mail.
+- [x] 1. Testes de regressão em `packages/referrals/tests/application/campaigns.test.ts` e `conversions.test.ts`: configuração válida, preservação em atualização, comissão desligada, prazo, autoindicação e snapshot histórico.
+- [x] 2. Contratos em `packages/core/src/referrals/index.ts`, domínio, serviço e rotas: vínculo opcional, comissão explícita, valor e prazo validados, dados individuais de conversão.
+- [x] 3. Persistência: schema, migração `bun run db:generate`, validação do beneficiário, snapshot transacional em `insertRedemption`, relatório de campanhas e embaixadores. Testado com PostgreSQL 17 descartável.
+- [x] 4. Conversão: escolher beneficiário e termos do snapshot; manter deduplicação, maturação e estorno. Testes significativos de regras.
+- [x] 5. Interface `packages/admin/src/app/admin/embaixadores/convites-client.tsx`: seleção pesquisável de embaixador, controle explícito de comissão e resultados por participante. Testes de envio, preservação e remoção do vínculo; duplicação revisada para reiniciar comissão desligada.
+- [x] 6. Verificação local: 984 testes do Admin e 200 de Referrals, incluindo migração sobre dados existentes e PostgreSQL real; typecheck dos dois pacotes; lint Referrals. Diff e migração revisados; gerar novamente confirma ausência de drift.
+- [x] 7. Cadastro real adiado por instrução posterior da operadora. Não criar Viviane nem campanha. Guia de configuração em `docs/operations/campanha-com-embaixador.md`.
+- [ ] 8. Publicar o recurso após CI e verificar saúde dos serviços. Destino solicitado: produção; sem cadastros reais.

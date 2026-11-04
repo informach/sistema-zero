@@ -63,7 +63,7 @@ describe.skipIf(!url)('migração 0005 (presente Kids e adulto) sobre dados exis
     const journal = JSON.parse(readFileSync(journalPath, 'utf8')) as {
       entries: { tag: string }[]
     }
-    journal.entries = journal.entries.filter((e) => e.tag !== '0005_gift_audience')
+    journal.entries = journal.entries.filter((e) => Number.parseInt(e.tag, 10) < 5)
     writeFileSync(journalPath, JSON.stringify(journal))
     await migrate(db, { migrationsFolder: before, migrationsTable: 'referrals_migrations' })
 
@@ -90,6 +90,27 @@ describe.skipIf(!url)('migração 0005 (presente Kids e adulto) sobre dados exis
     expect([...(await sql`select audience from referrals.campaigns`)]).toEqual([
       { audience: 'kids' },
     ])
+    // A migração aditiva 0006 não atribui retroativamente campanhas ou bônus.
+    expect([
+      ...(await sql`select ambassador_id, commission_enabled, commission_amount_cents, commission_window_days from referrals.campaigns`),
+    ]).toEqual([
+      {
+        ambassador_id: null,
+        commission_enabled: false,
+        commission_amount_cents: null,
+        commission_window_days: null,
+      },
+    ])
+    expect([
+      ...(await sql`select campaign_referral from referrals.scholarship_redemptions`),
+    ]).toEqual([{ campaign_referral: null }])
+    let invalidCommission = false
+    try {
+      await sql`update referrals.campaigns set commission_enabled = true`
+    } catch (error) {
+      invalidCommission = (error as { code?: string }).code === '23514'
+    }
+    expect(invalidCommission).toBe(true)
 
     const indexes = (
       await sql<{ indexname: string }[]>`
