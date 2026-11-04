@@ -258,6 +258,23 @@ describe('verbos do palco', () => {
     await expect(
       agirNaPagina('organizar blocos', jogos, pagina({ organizar: async () => false })),
     ).rejects.toThrow(/não abriu/)
+    // Um bloco que ainda não mostra o nome escolhido é procurado de novo por um instante.
+    let procuras = 0
+    const atrasada = pagina({
+      perto: () => (++procuras < 3 ? null : { seletor: '[data-palco-alvo="a7"]' }),
+      bloco: () => null,
+    })
+    expect(await agirNaPagina('apontar bloco "Alterar variável aviso"', jogos, atrasada)).toEqual([
+      { fazer: 'apontar', alvo: { seletor: '[data-palco-alvo="a7"]' }, exato: true },
+    ])
+    expect(procuras).toBe(3)
+    await expect(
+      agirNaPagina(
+        'apontar bloco "Sumiu"',
+        jogos,
+        pagina({ perto: () => null, bloco: () => null }),
+      ),
+    ).rejects.toThrow(/Não achei o bloco "Sumiu"/)
     // Os outros verbos são os mesmos do agir.
     expect(await agirNaPagina('próxima parte', jogos, arrumavel)).toEqual(
       agir('próxima parte', jogos, arrumavel),

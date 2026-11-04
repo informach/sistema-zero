@@ -795,8 +795,23 @@ export async function agirNaPagina(
   const f = fold(acao.replace(/\s+/g, ' ').trim())
   if (f === 'organizar blocos' && pagina.areaPronta() && !(await pagina.organizar()))
     throw new Error('O menu da área de trabalho não abriu para organizar os blocos.')
-  return agir(acao, jogos, pagina)
+  // O Estúdio aplica uma escolha (o nome novo de Alterar variável) um pouco depois de a lista
+  // fechar: o bloco ou o campo que ainda não aparece com o texto novo é procurado de novo por
+  // um instante, com o vídeo parado na procura, antes de virar erro.
+  for (let tentativa = 1; ; tentativa++) {
+    try {
+      return agir(acao, jogos, pagina)
+    } catch (error) {
+      const ainda = error instanceof Error && error.message.startsWith('Não achei')
+      if (!ainda || tentativa >= PROCURAS) throw error
+      await new Promise((r) => setTimeout(r, ENTRE_PROCURAS))
+    }
+  }
 }
+
+/** Quantas vezes, e a quantos milissegundos, um bloco ou campo ainda não achado é procurado. */
+const PROCURAS = 10
+const ENTRE_PROCURAS = 250
 
 /**
  * A página está trabalhando: carregando o Estúdio ou o livro, conferindo o projeto, preparando
