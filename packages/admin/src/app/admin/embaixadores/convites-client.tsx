@@ -885,7 +885,7 @@ function CampaignEditor({
                 }}
               />
             </label>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 type="button"
                 variant="outline"
@@ -926,6 +926,7 @@ function CampaignEditor({
                     <Button
                       type="button"
                       variant="outline"
+                      className="h-auto w-full justify-start whitespace-normal break-all text-left"
                       disabled={partner.status !== 'active'}
                       onClick={() => {
                         if (partner.id === value.ambassadorId) return
