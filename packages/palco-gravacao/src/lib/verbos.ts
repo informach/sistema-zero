@@ -803,10 +803,12 @@ export async function agirNaPagina(
   const f = fold(acao.replace(/\s+/g, ' ').trim())
   if (f === 'organizar blocos' && pagina.areaPronta() && !(await pagina.organizar()))
     throw new Error('O menu da área de trabalho não abriu para organizar os blocos.')
-  // Logo depois de um bloco cair, o Blockly ainda redesenha a pilha que cresceu (no quadro
-  // seguinte): antes de medir se uma área ficou por cima da outra, a página assenta. Sem isso,
-  // o ponto que parecia ser da área de baixo era, um instante depois, o bloco recém-encaixado.
-  if (f.startsWith('afastar de ')) await new Promise((r) => setTimeout(r, ASSENTAR))
+  // Logo depois de um bloco cair, o Blockly redesenha a pilha que cresceu e, 250 ms depois,
+  // empurra para longe os blocos soltos perto do encaixe novo (a área Quando acontecer logo
+  // abaixo de Ao iniciar). Antes de medir se uma área ficou por cima da outra, a página assenta:
+  // passa do empurrão e espera as pilhas pararem. No ritmo sem pausa do Verificar plano, medir
+  // antes disso fazia a mão pegar o bloco recém-encaixado em vez da área.
+  if (f.startsWith('afastar de ')) await assentar(pagina)
   // O Estúdio aplica uma escolha (o nome novo de Alterar variável) um pouco depois de a lista
   // fechar: o bloco ou o campo que ainda não aparece com o texto novo é procurado de novo por
   // um instante, com o vídeo parado na procura, antes de virar erro.
@@ -824,8 +826,24 @@ export async function agirNaPagina(
 /** Quantas vezes, e a quantos milissegundos, um bloco ou campo ainda não achado é procurado. */
 const PROCURAS = 10
 const ENTRE_PROCURAS = 250
-/** Milissegundos que a página leva para redesenhar a área depois de um bloco cair nela. */
-const ASSENTAR = 300
+/** O mínimo de espera depois de um bloco cair: passa do empurrão do Blockly (250 ms). */
+const ASSENTAR = 350
+/** De quanto em quanto tempo as pilhas são medidas, e o teto da espera. */
+const ENTRE_MEDIDAS = 100
+const ASSENTAR_NO_MAXIMO = 2000
+
+/** Espera as pilhas da área de trabalho pararem de andar (no mínimo ASSENTAR). */
+async function assentar(pagina: PaginaDoPalco): Promise<void> {
+  const pausa = (ms: number) => new Promise((r) => setTimeout(r, ms))
+  await pausa(ASSENTAR)
+  let antes = pagina.posicoes()
+  for (let passou = ASSENTAR; passou < ASSENTAR_NO_MAXIMO; passou += ENTRE_MEDIDAS) {
+    await pausa(ENTRE_MEDIDAS)
+    const agora = pagina.posicoes()
+    if (agora === antes) return
+    antes = agora
+  }
+}
 
 /**
  * A página está trabalhando: carregando o Estúdio ou o livro, conferindo o projeto, preparando

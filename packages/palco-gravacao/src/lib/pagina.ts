@@ -84,6 +84,12 @@ export interface PaginaDoPalco {
    * descida até ficar um espaço abaixo da de cima. Nulo quando nenhuma está por cima da outra.
    */
   desembolar(): { de: Alvo; para: Alvo } | null
+  /**
+   * Onde está cada pilha da área de trabalho agora, numa linha: duas iguais em seguida querem
+   * dizer que nada mais anda (o Blockly empurra os blocos soltos perto de um encaixe novo 250 ms
+   * depois de o bloco cair).
+   */
+  posicoes(): string
 }
 
 let marks = 0
@@ -681,6 +687,12 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       if (!dele) return null
       const r = caixaPropria(dele)
       return pontoEm(area, r.left + pega.x, r.top + pega.y)
+    },
+
+    posicoes() {
+      return pilhasDaArea(doc)
+        .caixas.map((r) => [r.left, r.top, r.width, r.height].map(Math.round).join(','))
+        .join(';')
     },
 
     desembolar() {

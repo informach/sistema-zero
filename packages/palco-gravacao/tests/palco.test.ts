@@ -39,6 +39,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   sobre: () => ({ seletor: '[data-palco-alvo="a10"]', u: 0.4, v: 0.3 }),
   palcoDoJogo: () => null,
   desembolar: () => null,
+  posicoes: () => 'parado',
   ...patch,
 })
 
@@ -259,6 +260,13 @@ describe('verbos do palco', () => {
     await expect(
       agirNaPagina('organizar blocos', jogos, pagina({ organizar: async () => false })),
     ).rejects.toThrow(/não abriu/)
+    // Depois de um bloco cair, o afastar só mede quando as pilhas param (o empurrão do Blockly).
+    let medidas = 0
+    const andando = pagina({ posicoes: () => (++medidas < 4 ? `andando ${medidas}` : 'parou') })
+    const inicio = Date.now()
+    await agirNaPagina('afastar de "Criar variável"', jogos, andando)
+    expect(medidas).toBeGreaterThanOrEqual(5)
+    expect(Date.now() - inicio).toBeGreaterThanOrEqual(340)
     // Um bloco que ainda não mostra o nome escolhido é procurado de novo por um instante.
     let procuras = 0
     const atrasada = pagina({
