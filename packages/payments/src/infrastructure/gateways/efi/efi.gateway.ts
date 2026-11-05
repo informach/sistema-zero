@@ -19,6 +19,7 @@ import type {
   RefundResult,
   RetrySubscriptionChargeInput,
 } from '../../../domain/ports/payment-gateway.port'
+import { SubscriptionActivationRejectedError } from '../../../domain/subscription/activation-rejected.error'
 import type { Money } from '../../../domain/value-objects/money'
 import type { EfiClient } from './efi.client'
 import { EfiGatewayError, toEfiGatewayError } from './efi.errors'
@@ -374,12 +375,18 @@ export class EfiPaymentGateway implements PaymentGateway {
     id: string,
     input: CreateCardSubscriptionInput,
   ): Promise<CreateCardSubscriptionOutput> {
-    const parsed = parseCreateSubscriptionResponse(
-      await this.requireCobrancas().activateSubscription(
+    let raw: unknown
+    try {
+      raw = await this.requireCobrancas().activateSubscription(
         id,
         this.buildSubscriptionOneStepBody(input).payment,
-      ),
-    )
+      )
+    } catch (error) {
+      if (error instanceof EfiGatewayError && (error.status === 400 || error.status === 422))
+        throw new SubscriptionActivationRejectedError()
+      throw error
+    }
+    const parsed = parseCreateSubscriptionResponse(raw)
     return {
       providerSubscriptionId: parsed.subscriptionId,
       status: parsed.status,

@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { SubscriptionActivationRejectedError } from '../../src/domain/subscription/activation-rejected.error'
 import { Money } from '../../src/domain/value-objects/money'
 import type { EfiClient } from '../../src/infrastructure/gateways/efi/efi.client'
 import { EfiGatewayError } from '../../src/infrastructure/gateways/efi/efi.errors'
@@ -36,6 +37,83 @@ const input = {
   pixKey: 'chave@loja.com',
   idempotencyKey: 'idem-12345678',
 }
+
+const subscriptionInput = {
+  subscriptionId: PAYMENT_ID,
+  planId: '42',
+  amount: Money.fromCents(4850),
+  itemName: 'Assinatura',
+  paymentToken: 'qa-token',
+  customer: {
+    name: 'Pessoa de Teste',
+    cpf: '52998224725',
+    email: 'qa@example.test',
+    phone: '11999999999',
+    birth: '1990-05-10',
+  },
+  billingAddress: {
+    street: 'Rua A',
+    number: '100',
+    neighborhood: 'Centro',
+    zipcode: '01001000',
+    city: 'São Paulo',
+    state: 'SP',
+  },
+}
+
+test.each([
+  400, 422, 429, 500,
+])('ativação distingue recusa definitiva de resposta ambígua: HTTP %s', async (status) => {
+  const gateway = new EfiPaymentGateway(
+    mockClient({}),
+    mockCobrancas({
+      activateSubscription: async () => {
+        throw new EfiGatewayError('provider', 'error', undefined, status)
+      },
+    }),
+  )
+  await expect(gateway.activateCardSubscription('42', subscriptionInput)).rejects.toBeInstanceOf(
+    status === 400 || status === 422 ? SubscriptionActivationRejectedError : EfiGatewayError,
+  )
+})
+
+test('primeira cobrança prepara sem token e atualização afeta itens, sem desconto recorrente', async () => {
+  let prepared: unknown, activated: unknown, updated: unknown
+  const gateway = new EfiPaymentGateway(
+    mockClient({}),
+    mockCobrancas({
+      prepareSubscription: async (_id, body) => {
+        prepared = body
+        return { data: { subscription_id: 42, charges: [{ charge_id: 43 }] } }
+      },
+      activateSubscription: async (_id, payment) => {
+        activated = payment
+        return {
+          data: {
+            subscription_id: 42,
+            status: 'active',
+            charge: { charge_id: 43, status: 'paid' },
+          },
+        }
+      },
+      updateSubscriptionItems: async (_id, items) => {
+        updated = items
+        return {}
+      },
+    }),
+  )
+  expect(await gateway.prepareCardSubscription(subscriptionInput)).toEqual({
+    providerSubscriptionId: '42',
+    firstChargeId: '43',
+  })
+  expect(prepared).toMatchObject({ items: [{ value: 4850, amount: 1 }] })
+  expect(JSON.stringify(prepared)).not.toContain('qa-token')
+  await gateway.activateCardSubscription('42', subscriptionInput)
+  expect(activated).toMatchObject({ credit_card: { payment_token: 'qa-token' } })
+  expect(JSON.stringify(activated)).not.toContain('discount')
+  await gateway.updateSubscriptionAmount('42', Money.fromCents(9700), 'Assinatura')
+  expect(updated).toEqual([{ name: 'Assinatura', value: 9700, amount: 1 }])
+})
 
 describe('EfiPaymentGateway.createPixCharge', () => {
   test('cria a cobrança com txid determinístico e retorna copia-e-cola/QR', async () => {

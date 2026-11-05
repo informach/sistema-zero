@@ -5,6 +5,7 @@ import type {
 import type { PaymentRepository } from '../../domain/ports/payment-repository.port'
 import type { SubscriptionRepository } from '../../domain/ports/subscription-repository.port'
 import { ValidationError } from '../../domain/shared/errors'
+import { SubscriptionActivationRejectedError } from '../../domain/subscription/activation-rejected.error'
 import type { SubscriptionAggregate } from '../../domain/subscription/subscription.aggregate'
 import type { Logger } from '../../infrastructure/logging/logger'
 import type { HandleSubscriptionNotificationService } from '../handle-subscription-notification/handle-subscription-notification.service'
@@ -47,7 +48,17 @@ export class FirstChargeSetupService {
         (activated.firstChargeId && activated.firstChargeId !== prepared.firstChargeId)
       )
         throw new ValidationError('Provedor retornou outra assinatura/cobrança')
-    } catch {
+    } catch (error) {
+      if (error instanceof SubscriptionActivationRejectedError) {
+        stored = await this.required(stored.id)
+        if (
+          stored.requestCancellation(
+            { origin: 'CONSUMER', actorId: 'system:first-charge-rejected' },
+            this.clock(),
+          )
+        )
+          await this.subscriptions.save(stored)
+      }
       this.logger.warn('subscription.first_charge.activation_requires_reconciliation', {
         subscriptionId: stored.id,
       })

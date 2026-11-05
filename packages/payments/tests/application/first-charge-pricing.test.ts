@@ -2,6 +2,7 @@ import { expect, test } from 'bun:test'
 import { CreateSubscriptionService } from '../../src/application/create-subscription/create-subscription.service'
 import { FirstChargeSetupService } from '../../src/application/create-subscription/first-charge-setup.service'
 import { HandleSubscriptionNotificationService } from '../../src/application/handle-subscription-notification/handle-subscription-notification.service'
+import { SubscriptionActivationRejectedError } from '../../src/domain/subscription/activation-rejected.error'
 import { FirstChargeSetupWorker } from '../../src/infrastructure/workers/first-charge-setup-worker'
 import {
   FakePixGateway,
@@ -81,6 +82,23 @@ function fixture(intervalMonths = 1) {
     },
   }
 }
+
+test('recusa definitiva da ativação cancela a assinatura preparada sem aguardar 24 horas', async () => {
+  const f = fixture()
+  f.gateway.subscriptionStatus = 'PENDING'
+  f.gateway.firstChargeStatus = 'PENDING'
+  f.gateway.activateCardSubscription = async () => {
+    throw new SubscriptionActivationRejectedError()
+  }
+  const view = await f.service.execute(f.command)
+  expect(view.status).toBe('CANCELED')
+  expect(f.gateway.canceledSubscriptionIds).toEqual([view.providerSubscriptionId!])
+  expect((await f.subscriptions.findById(view.id))?.firstChargePricing?.renewalPriceConfirmed).toBe(
+    false,
+  )
+  expect((await f.service.execute(f.command)).id).toBe(view.id)
+  expect(f.gateway.preparationCount).toBe(1)
+})
 
 for (const interval of [1, 12])
   test(`${interval} meses: desconto só na cobrança identificada, renovação integral sem resgatar cupom novamente`, async () => {

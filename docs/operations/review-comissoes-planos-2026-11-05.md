@@ -92,6 +92,10 @@ Achados corrigidos nesta rodada:
   na memória, repete o mesmo identificador e bloqueia troca de plano/método durante confirmação.
   O servidor recupera a assinatura persistida. Tokens não são gravados. Recusa inicial encerra
   a recorrência; pendência conserva consulta e reconciliação até obter resultado definitivo.
+- **P2 — recusa de dados tratada como espera de 24 horas:** o adapter distingue respostas
+  definitivas 400/422 de falhas ambíguas. A recusa inicia cancelamento imediato da assinatura
+  preparada; o resultado é confirmado antes de liberar outra tentativa. Falhas 429/500 continuam
+  na reconciliação, sem repetir a ativação.
 - **P2 — prévia de cupom de outro plano:** cotação e SSR passam o plano validado pelo alternador;
   mudar o plano invalida a prévia anterior e exige nova conferência. Links anuais cotam o anual.
 - **P2 — conferência de período rejeitava primeira cobrança promocional:** agora verifica o
@@ -109,7 +113,7 @@ Achados corrigidos nesta rodada:
   status vazio continua na árvore acessível. `qrcode` entra no prebundle explícito do funil.
   Documentação operacional usa papel da pessoa, mantendo identificação real nos recibos privados.
 
-Verificação local: Payments 611 testes, Referrals 228, Funnel 601, Catalog 162 mais a prova
+Verificação local: Payments 617 testes, Referrals 228, Funnel 601, Catalog 162 mais a prova
 adicional da migração de cupons; suites financeiras com PostgreSQL descartável. Typechecks dos
 cinco serviços sem erros. Browser real verificou Kids/Adultos, larguras 320/390/1440, primeira
 cobrança versus renovação, troca de plano, replay do mesmo pedido e bloqueios durante pendência.
