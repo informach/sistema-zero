@@ -184,11 +184,15 @@ test('ligar uma permissão grava as três de uma vez e mostra o que o servidor c
   fireEvent.click(fotos)
   await screen.findByText('Fotos no Clube: liberado.')
   expect(fotos.checked).toBe(true)
-  expect(calls.at(-1)).toEqual({
-    url: '/api/parents/arquipelago/permissoes',
-    method: 'PUT',
-    body: JSON.stringify({ ...PADRAO, fotosNoClube: true }),
-  })
+  // A leitura independente dos minijogos pode chegar depois da gravação da permissão.
+  // O contrato é uma única mutação com as três escolhas, qualquer que seja a ordem dos GETs.
+  expect(calls.filter((call) => call.method !== 'GET')).toEqual([
+    {
+      url: '/api/parents/arquipelago/permissoes',
+      method: 'PUT',
+      body: JSON.stringify({ ...PADRAO, fotosNoClube: true }),
+    },
+  ])
 })
 
 test('permissão que não gravou volta ao que estava e avisa', async () => {
