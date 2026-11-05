@@ -146,6 +146,12 @@ Prova local: 602 testes do funil, testes de entrada Kids e Adultos, build e nave
 dez estados em duas larguras, resgate dos dois presentes, convites, Pix e cartões. Capturas
 de celular e desktop conferidas. A confirmação dos links publicados fica para o pós-deploy.
 
+O CI também revelou overflow do preço no alternador adulto a 320 px. A reprodução isolada
+com Chromium Linux 148 e fonte ampliada localizou o texto nos dois cartões lado a lado;
+apenas o Kids já empilhava os planos. O breakpoint agora atende ambos. Teste cobre 320,
+390 e 1440 px com fontes de 16 e 18 px, espera o layout após resize e registra elementos
+com conteúdo excedente se houver falha. A reprodução passou após o ajuste de CSS.
+
 ## Publicação final
 
 O usuário pediu o mesmo código nas duas branches e autorizou incluir o palco em produção.

@@ -145,15 +145,49 @@ try {
       ['UF', 'SP'],
     ])
       await page.getByLabel(label, { exact: true }).fill(value)
-    for (const width of [320, 390, 1440]) {
+    for (const { width, fontSize } of [16, 18].flatMap((fontSize) =>
+      [320, 390, 1440].map((width) => ({ width, fontSize })),
+    )) {
+      await page.evaluate((size) => {
+        document.documentElement.style.fontSize = `${size}px`
+      }, fontSize)
       await page.setViewportSize({ width, height: 900 })
+      // A resposta do resize pode chegar antes do recálculo de layout no Chromium Linux.
+      // Espere a condição visual; overflow persistente continua falhando com diagnóstico.
+      await page
+        .waitForFunction(() => document.documentElement.scrollWidth <= innerWidth, null, {
+          timeout: 3000,
+        })
+        .catch(async (error) => {
+          const layout = await page.evaluate(() => ({
+            viewport: innerWidth,
+            document: document.documentElement.scrollWidth,
+            overflow: [...document.querySelectorAll('*')]
+              .map((el) => ({
+                tag: el.tagName,
+                class: el.className,
+                right: el.getBoundingClientRect().right,
+                client: el.clientWidth,
+                scroll: el.scrollWidth,
+              }))
+              .filter((el) => el.right > innerWidth || el.scroll > el.client + 1),
+          }))
+          await page.screenshot({
+            path: join(output, `${audience}-${width}-overflow.png`),
+            fullPage: true,
+          })
+          throw new Error(`${audience} ${width}: ${JSON.stringify(layout)}`, { cause: error })
+        })
       assert.equal(
         await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
         false,
         `${audience} ${width}`,
       )
       if (width !== 320)
-        await page.screenshot({ path: join(output, `${audience}-${width}.png`), fullPage: true })
+        await page.screenshot({
+          path: join(output, `${audience}-${width}-${fontSize}.png`),
+          fullPage: true,
+        })
     }
     await page.getByRole('button', { name: /Assinar.*485,00/ }).click()
     await page.getByRole('button', { name: 'Conferir pagamento', exact: true }).waitFor()
