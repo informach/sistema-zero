@@ -23,7 +23,7 @@ export const COMUNIDADE_ADULTO_LANDING: FunnelLanding = {
 // Preços de FALLBACK da página de vendas quando o catálogo está fora do ar. Exibição apenas: a
 // cobrança sempre cota ao vivo no catálogo, e a economia do anual só aparece com os dois preços
 // ao vivo (`calcularEconomiaAnual`).
-export const COMUNIDADE_ADULTO_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 79_700 } as const
+export const COMUNIDADE_ADULTO_PRECO_FALLBACK = { mensalCents: 9_700, anualCents: 97_000 } as const
 
 // Abertura do checkout (acima do card do produto). Fala com a própria pessoa: ela é quem estuda.
 export const COMUNIDADE_ADULTO_CHECKOUT: FunnelCheckoutIntro = {

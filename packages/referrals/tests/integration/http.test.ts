@@ -51,6 +51,7 @@ function buildApp(
     campaigns,
     funnelPublicUrl: FUNNEL_URL,
     bonusAmountCents: 3000,
+    bonusAnnualAmountCents: 8000,
     requireAdminEnabled: true,
     internalToken: opts.internalToken,
     metricsToken: opts.metricsToken,
@@ -301,12 +302,13 @@ describe('borda HTTP do referrals', () => {
       const body = (await ok.json()) as {
         enrolled: boolean
         created: boolean
-        bonus: { amountCents: number }
+        bonus: { amountCents: number; annualAmountCents: number }
         ambassador: { pageUrl: string }
       }
       expect(body.enrolled).toBe(true)
       expect(body.created).toBe(true)
       expect(body.bonus.amountCents).toBe(3000)
+      expect(body.bonus.annualAmountCents).toBe(8000)
       expect(body.ambassador.pageUrl.startsWith(`${FUNNEL_URL}/embaixador/`)).toBe(true)
       expect(repo.ambassadors[0]!.accountUserId).toBe('22222222-2222-4222-8222-222222222222')
     })
@@ -676,7 +678,9 @@ describe('presente Kids e adulto no HTTP (20/10/2026)', () => {
     const view = (await first.json()) as {
       shareUrl: string
       shareUrls: { kids: string; adult: string }
+      bonus: { amountCents: number; annualAmountCents: number }
     }
+    expect(view.bonus).toMatchObject({ amountCents: 3000, annualAmountCents: 8000 })
     const adultCode = repo.codes.find((c) => c.audience === 'adult')!
     expect(view.shareUrl).toBe(`${FUNNEL_URL}/bolsa/${ambassador.code}`)
     expect(view.shareUrls).toEqual({

@@ -3,6 +3,7 @@ import type {
   GiftAttribution,
   GiftAudience,
   GiftSource,
+  ReferralBonusAmounts,
 } from '@sistemazero/core/referrals'
 import { sql } from 'drizzle-orm'
 import {
@@ -44,6 +45,7 @@ export const campaigns = referralsSchema.table(
     ambassadorId: uuid().references(() => ambassadors.id),
     commissionEnabled: boolean().notNull().default(false),
     commissionAmountCents: integer(),
+    commissionAnnualAmountCents: integer(),
     commissionWindowDays: integer(),
     /** Público do presente (0005). Só muda em rascunho; depois, só duplicando. */
     audience: varchar({ length: 16 }).$type<GiftAudience>().notNull().default('kids'),
@@ -52,6 +54,10 @@ export const campaigns = referralsSchema.table(
   },
   (t) => [
     index('campaigns_ambassador_idx').on(t.ambassadorId),
+    check(
+      'campaigns_annual_commission_check',
+      sql`${t.commissionAnnualAmountCents} is null or (${t.commissionEnabled} = true and ${t.commissionAnnualAmountCents} between 1 and 100000000)`,
+    ),
     check(
       'campaigns_commission_check',
       sql`(
@@ -177,6 +183,8 @@ export const scholarshipRedemptions = referralsSchema.table(
     /** Termos da origem no instante da aceitação; não mudam ao editar a campanha. */
     sourceSnapshot: jsonb().$type<GiftSource>(),
     campaignReferral: jsonb().$type<CampaignReferralSnapshot>(),
+    /** Acordo privado de indicações diretas; null preserva a política legada. */
+    bonusAmounts: jsonb().$type<ReferralBonusAmounts>(),
     courseSlug: varchar({ length: 100 }),
     attribution: jsonb().$type<GiftAttribution>(),
     /** Aceitação pelo messaging; welcome_sent_at continua sendo o claim de emissão. */

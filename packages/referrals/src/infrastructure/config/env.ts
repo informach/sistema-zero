@@ -1,3 +1,4 @@
+import { DEFAULT_REFERRAL_BONUS } from '@sistemazero/core/referrals'
 import { z } from 'zod'
 
 /** URL aponta p/ loopback? (localhost/127.0.0.1/::1) — inválida entre serviços em deploy. */
@@ -105,8 +106,13 @@ const EnvSchema = z
           .map((s) => s.trim())
           .filter((s) => s.length > 0),
       ),
-    /** Bônus FIXO por assinatura convertida (decisão: R$30, qualquer plano). */
-    BONUS_AMOUNT_CENTS: z.coerce.number().int().positive().default(3000),
+    /** Bônus único mensal e valor legado de aceites anteriores à política por plano. */
+    BONUS_AMOUNT_CENTS: z.coerce.number().int().positive().default(DEFAULT_REFERRAL_BONUS.monthly),
+    BONUS_ANNUAL_AMOUNT_CENTS: z.coerce
+      .number()
+      .int()
+      .positive()
+      .default(DEFAULT_REFERRAL_BONUS.annual),
     /** Garantia + buffer até o bônus liberar (7d + 12h — régua da NFS-e). */
     BONUS_MATURE_HOURS: z.coerce.number().int().positive().default(180),
     CONVERSION_SWEEP_INTERVAL_MS: z.coerce

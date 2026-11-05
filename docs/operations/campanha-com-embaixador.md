@@ -5,7 +5,7 @@ No Admin, selecione a comunidade (Kids ou adulto) e abra **Embaixadores**.
 1. Na aba **Embaixadores**, cadastre ou localize a pessoa responsável pela parceria. O cadastro normal de embaixador envia o link pessoal por e-mail; faça isso quando os dados e a parceria estiverem definidos.
 2. Na aba **Campanhas de presente**, crie uma campanha para cada palestra/data. Informe o título público, código exclusivo, canal e período em Brasília. Comece como rascunho.
 3. Em **Embaixador e comissão**, busque a pessoa pelo nome ou e-mail e selecione-a. O vínculo passa a atribuir resultados mesmo com a comissão desligada.
-4. Só marque **Habilitar comissão para novos cadastros** se houver acordo. Informe o valor fixo em reais pela primeira assinatura e o prazo em dias desde o cadastro. A cobrança precisa ser paga antes de completar esse prazo. Não há comissão percentual ou recorrente nesta modalidade.
+4. Só marque **Habilitar comissão para novos cadastros** se houver acordo. Informe os valores em reais pela primeira assinatura mensal e anual e o prazo em dias desde o cadastro. Os padrões são **R$ 30 no mensal e R$ 80 no anual**, editáveis conforme a parceria. A cobrança precisa ser paga antes de completar esse prazo. O bônus é único; não há comissão nas renovações.
 5. Confira a prévia. Quando estiver pronta, altere a situação para **Ativa**; o período determina quando o link aceita novos cadastros. O detalhe permite copiar o link e baixar o QR Code.
 
 O período da campanha controla novos cadastros. Cada cadastro recebe sete dias de acesso, e a janela de comissão é independente. O link pode ser encaminhado; não comprova presença física. Quem já resgatou um presente no mesmo público mantém a atribuição original.

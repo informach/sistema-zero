@@ -1,5 +1,17 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Comissão por plano (05/11/2026)
+
+Padrão compartilhado em `@sistemazero/core/referrals`: R$ 30 pela contratação mensal e R$ 80
+pela anual, bônus único de aquisição, sem recorrência. `BONUS_AMOUNT_CENTS` e
+`BONUS_ANNUAL_AMOUNT_CENTS` são capturados em `bonusAmounts` nos novos resgates diretos.
+Campanhas mantêm o mensal em `commissionAmountCents` e o anual em
+`commissionAnnualAmountCents`; anual nulo conserva o acordo fixo legado. PATCH omisso preserva
+os termos, e comissão desligada limpa ambos. Migração aditiva 0008, sem backfill financeiro.
+O ciclo vem de `catalog.billingIntervalMonths` (1/12), nunca do valor pago. Ciclo desconhecido
+com bônus por plano gera retry, sem gravar conversão. Snapshots antigos mantêm o acordo anterior.
+Rollout e preço anual: `docs/operations/comissoes-planos-anual-970.md`.
+
 ## Campanhas com embaixador e comissão explícita (04/11/2026)
 
 Campanha tem `ambassadorId` opcional, independente de `commissionEnabled` (default false).
@@ -108,8 +120,9 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 ## Conversões + bônus Pix manual (extensão 09/2026)
 
-Rastreia **bolsista que assinou a Comunidade dos Criadores** e controla o bônus **FIXO de R$30**
-(`BONUS_AMOUNT_CENTS`, qualquer plano — decisão dela) pago **manualmente via Pix** pela empresa.
+Rastreia **bolsista que assinou a Comunidade dos Criadores** e controla o bônus único por plano
+(R$ 30 mensal / R$ 80 anual desde 05/11/2026; acordos anteriores preservados), pago
+**manualmente via Pix** pela empresa.
 O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-pago.
 
 - **Consumer do payments** (`interfaces/http/webhooks.routes.ts`, porte fiel do fiscal): `POST

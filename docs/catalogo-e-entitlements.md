@@ -11,6 +11,11 @@
 
 ## Os 3 conceitos
 
+Preço vigente desde 05/11/2026 para a Comunidade Kids e Adulto: R$ 97/mês ou R$ 970/ano.
+As ofertas anuais do Catálogo são a fonte desse preço no funil e checkout; a economia anual
+é R$ 194, equivalente a duas mensalidades. Compras e assinaturas já existentes conservam seus
+valores. Ver [procedimento e comissão por plano](operations/comissoes-planos-anual-970.md).
+
 | Conceito | O que é | O que carrega |
 |---|---|---|
 | **Produto** | O *entregável* — o curso, o e-book, o combo. **Não tem preço.** | O conteúdo e **a entrega** (o que a compra libera) |

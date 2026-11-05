@@ -413,7 +413,7 @@ quadros em `docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/`; regis
   na nuvem).
 
 **Funil kids "Comunidade dos Criadores" (`kids/comunidade-dos-criadores`, ASSINATURA mensal R$ 97 /
-anual R$ 797, 07/2026):** a assinatura da plataforma kids inteira; **quiz opcional de orientação**
+anual R$ 970, 07/2026):** a assinatura da plataforma kids inteira; **quiz opcional de orientação**
 em `/kids/comunidade-dos-criadores/quiz` (implementado em 01/10/2026). Oferta → checkout → obrigado
 continua acessível diretamente. Módulo em `src/funnels/comunidade-dos-criadores/`, com motor e
 copy do quiz em `quiz/`; `lifetimeAccess: false`

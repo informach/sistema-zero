@@ -2,6 +2,15 @@
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'ended'
 export type CampaignState = CampaignStatus | 'scheduled'
 export type CampaignContext = 'ad' | 'event' | 'other'
+/** Bônus único de aquisição; nunca mensalidade de comissão ou renovação. */
+export interface ReferralBonusAmounts {
+  monthly: number
+  annual: number
+}
+export const DEFAULT_REFERRAL_BONUS: Readonly<ReferralBonusAmounts> = {
+  monthly: 3000,
+  annual: 8000,
+}
 /**
  * Público do presente (20/10/2026): `kids` leva ao Cadê Todo Mundo e ao Mural Kids, com o
  * cadastro feito pelo responsável; `adult` leva à versão adulta do curso e ao Mural adulto, com
@@ -60,6 +69,8 @@ export interface CampaignInput {
   ambassadorId?: string | null
   commissionEnabled?: boolean
   commissionAmountCents?: number | null
+  /** Bônus único anual; ausente/null conserva o acordo legado de valor único. */
+  commissionAnnualAmountCents?: number | null
   /** Primeira cobrança paga antes deste prazo após o resgate; independente dos sete dias. */
   commissionWindowDays?: number | null
 }

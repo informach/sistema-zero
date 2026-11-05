@@ -1341,6 +1341,7 @@ export interface AmbassadorEnrollmentView {
     paidCount?: number
     /** Valor VIGENTE do bônus (env do referrals) — a copy do app NUNCA o hardcoda. */
     amountCents?: number
+    annualAmountCents?: number
   }
   /** SÓ no POST: true = cadastro novo (o e-mail do link SAIU); false = retomada. */
   created?: boolean

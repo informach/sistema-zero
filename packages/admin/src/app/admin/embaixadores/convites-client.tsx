@@ -5,6 +5,7 @@ import {
   type CampaignInput,
   type CampaignState,
   type CampaignView,
+  DEFAULT_REFERRAL_BONUS,
   type GiftAudience,
   isGiftAudience,
 } from '@sistemazero/core/referrals'
@@ -460,6 +461,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                           status: 'draft',
                           commissionEnabled: false,
                           commissionAmountCents: null,
+                          commissionAnnualAmountCents: null,
                           commissionWindowDays: null,
                           startsAt: empty(audience).startsAt,
                           endsAt: empty(audience).endsAt,
@@ -481,7 +483,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
             <p className="text-sm">
               Embaixador: {detail.campaign.ambassadorName ?? 'Sem vínculo'}.{' '}
               {detail.campaign.commissionEnabled
-                ? `Comissão habilitada: ${moneyLabel(detail.campaign.commissionAmountCents ?? 0)} pela primeira assinatura paga em até ${detail.campaign.commissionWindowDays} dias após o cadastro.`
+                ? `Bônus único: ${moneyLabel(detail.campaign.commissionAmountCents ?? 0)} no mensal e ${moneyLabel(detail.campaign.commissionAnnualAmountCents ?? detail.campaign.commissionAmountCents ?? 0)} no anual. Primeira assinatura paga em até ${detail.campaign.commissionWindowDays} dias após o cadastro.`
                 : 'Comissão desativada.'}{' '}
               Edições valem para novos cadastros; os anteriores mantêm as condições aceitas.
             </p>
@@ -685,11 +687,24 @@ function CampaignEditor({
   onClose: () => void
   onSaved: (value: CampaignView) => void
 }) {
-  const [value, setValue] = useState(editing.value)
+  const [value, setValue] = useState<CampaignInput>({
+    ...editing.value,
+    commissionAmountCents: editing.value.commissionAmountCents ?? DEFAULT_REFERRAL_BONUS.monthly,
+    commissionAnnualAmountCents:
+      editing.value.commissionAnnualAmountCents ??
+      (editing.value.commissionAmountCents != null ? null : DEFAULT_REFERRAL_BONUS.annual),
+  })
   const [commissionAmount, setCommissionAmount] = useState(
     editing.value.commissionAmountCents == null
-      ? ''
+      ? String(DEFAULT_REFERRAL_BONUS.monthly / 100)
       : String(editing.value.commissionAmountCents / 100),
+  )
+  const [commissionAnnualAmount, setCommissionAnnualAmount] = useState(
+    String(
+      (editing.value.commissionAnnualAmountCents ??
+        editing.value.commissionAmountCents ??
+        DEFAULT_REFERRAL_BONUS.annual) / 100,
+    ),
   )
   const { send: apiSend, get: apiGet } = useCommunityRequests(audience)
   const [partnerQuery, setPartnerQuery] = useState('')
@@ -744,6 +759,8 @@ function CampaignEditor({
     setSaving(true)
     setError('')
     try {
+      if (value.commissionEnabled && (commissionAmount === '' || commissionAnnualAmount === ''))
+        throw new Error('Informe a comissão dos planos mensal e anual.')
       const body: CampaignInput = {
         name: value.name,
         publicTitle: value.publicTitle,
@@ -762,6 +779,9 @@ function CampaignEditor({
           ? (value.commissionAmountCents ?? null)
           : null,
         commissionWindowDays: value.commissionEnabled ? (value.commissionWindowDays ?? null) : null,
+        commissionAnnualAmountCents: value.commissionEnabled
+          ? (value.commissionAnnualAmountCents ?? null)
+          : null,
       }
       if (body.endsAt <= body.startsAt)
         throw new Error('O encerramento precisa vir depois do início.')
@@ -906,10 +926,12 @@ function CampaignEditor({
                       ambassadorId: null,
                       commissionEnabled: false,
                       commissionAmountCents: null,
+                      commissionAnnualAmountCents: null,
                       commissionWindowDays: null,
                     }))
                     setPartnerName('')
-                    setCommissionAmount('')
+                    setCommissionAmount(String(DEFAULT_REFERRAL_BONUS.monthly / 100))
+                    setCommissionAnnualAmount(String(DEFAULT_REFERRAL_BONUS.annual / 100))
                   }}
                 >
                   Remover vínculo
@@ -937,10 +959,12 @@ function CampaignEditor({
                           ambassadorId: partner.id,
                           commissionEnabled: false,
                           commissionAmountCents: null,
+                          commissionAnnualAmountCents: null,
                           commissionWindowDays: null,
                         }))
                         setPartnerName(partner.name)
-                        setCommissionAmount('')
+                        setCommissionAmount(String(DEFAULT_REFERRAL_BONUS.monthly / 100))
+                        setCommissionAnnualAmount(String(DEFAULT_REFERRAL_BONUS.annual / 100))
                       }}
                     >
                       {partner.name} · {partner.email}
@@ -980,19 +1004,30 @@ function CampaignEditor({
                 type="checkbox"
                 checked={value.commissionEnabled ?? false}
                 disabled={!value.ambassadorId}
-                onChange={(event) => change('commissionEnabled', event.target.checked)}
+                onChange={(event) => {
+                  const enabled = event.target.checked
+                  setValue((current) => ({
+                    ...current,
+                    commissionEnabled: enabled,
+                    commissionAmountCents:
+                      current.commissionAmountCents ?? DEFAULT_REFERRAL_BONUS.monthly,
+                    commissionAnnualAmountCents:
+                      current.commissionAnnualAmountCents ??
+                      Math.round(Number(commissionAnnualAmount) * 100),
+                  }))
+                }}
               />
               Habilitar comissão para novos cadastros
             </label>
             <p className="text-sm text-muted-foreground">
               {value.commissionEnabled
-                ? 'Habilite somente conforme o acordo com o embaixador. O pagamento é manual, após a garantia.'
+                ? `Bônus único pela primeira contratação, sem comissão nas renovações. Padrão: ${moneyLabel(DEFAULT_REFERRAL_BONUS.monthly)} no mensal e ${moneyLabel(DEFAULT_REFERRAL_BONUS.annual)} no anual. Ajuste conforme o acordo. Pagamento manual após a garantia.`
                 : 'Comissão desativada. O vínculo acompanha resultados sem gerar valor a pagar.'}
             </p>
             {value.commissionEnabled && (
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <label className="space-y-1 text-sm font-semibold">
-                  <span>Valor por primeira assinatura (R$)</span>
+                  <span>Bônus único no plano mensal (R$)</span>
                   <Input
                     type="number"
                     required
@@ -1002,8 +1037,32 @@ function CampaignEditor({
                     value={commissionAmount}
                     onChange={(event) => {
                       setCommissionAmount(event.target.value)
+                      const amount = event.target.value
+                      setValue((current) => ({
+                        ...current,
+                        commissionAmountCents:
+                          amount === '' ? null : Math.round(Number(amount) * 100),
+                        // Ao separar um acordo legado, preserve o anual que o editor mostra.
+                        commissionAnnualAmountCents:
+                          current.commissionAnnualAmountCents ??
+                          Math.round(Number(commissionAnnualAmount) * 100),
+                      }))
+                    }}
+                  />
+                </label>
+                <label className="space-y-1 text-sm font-semibold">
+                  <span>Bônus único no plano anual (R$)</span>
+                  <Input
+                    type="number"
+                    required
+                    min="0.01"
+                    max="1000000"
+                    step="0.01"
+                    value={commissionAnnualAmount}
+                    onChange={(event) => {
+                      setCommissionAnnualAmount(event.target.value)
                       change(
-                        'commissionAmountCents',
+                        'commissionAnnualAmountCents',
                         event.target.value === ''
                           ? null
                           : Math.round(Number(event.target.value) * 100),

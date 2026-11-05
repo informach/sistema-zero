@@ -34,6 +34,35 @@ describe('RedeemScholarshipService', () => {
 
   const input = { code: 'cida-x7k2', name: 'Paula Prado', email: 'Paula@Example.com ' }
 
+  test('resgate captura comissão por plano e retomada preserva o acordo anterior', async () => {
+    const original = new RedeemScholarshipService(
+      repo,
+      gateway,
+      {
+        ...OPTS,
+        bonusAmounts: { monthly: 3000, annual: 8000 },
+      },
+      silentLogger,
+    )
+    gateway.grantResult = { status: 502, body: {} }
+    await original.execute(input)
+    expect(repo.redemptions[0]?.bonusAmounts).toEqual({ monthly: 3000, annual: 8000 })
+    gateway.grantResult = { status: 200, body: {} }
+    const changed = new RedeemScholarshipService(
+      repo,
+      gateway,
+      {
+        ...OPTS,
+        bonusAmounts: { monthly: 4000, annual: 9000 },
+      },
+      silentLogger,
+    )
+    expect((await changed.execute(input)).kind).toBe('completed')
+    expect(repo.redemptions[0]?.bonusAmounts).toEqual({ monthly: 3000, annual: 8000 })
+    expect((await changed.execute({ ...input, email: 'nova@example.com' })).kind).toBe('completed')
+    expect(repo.redemptions[1]?.bonusAmounts).toEqual({ monthly: 4000, annual: 9000 })
+  })
+
   test('fluxo feliz (conta NOVA): conta → grant → welcome com token', async () => {
     const result = await service.execute(input)
     expect(result.kind).toBe('completed')

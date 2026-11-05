@@ -29,6 +29,7 @@ export interface HttpDeps {
   funnelPublicUrl: string
   /** Snapshot da env BONUS_AMOUNT_CENTS — exposto na view "me" (copy nunca hardcoda). */
   bonusAmountCents: number
+  bonusAnnualAmountCents?: number
   /** Consumer do payments (ausente em teste/dev sem banco = rota fora). */
   webhooks?: Omit<WebhooksRoutesDeps, 'logger'>
   requireAdminEnabled?: boolean
@@ -111,6 +112,7 @@ export function createServer(deps: HttpDeps) {
           campaigns: deps.campaigns,
           ambassadors: deps.ambassadors,
           bonusAmountCents: deps.bonusAmountCents,
+          bonusAnnualAmountCents: deps.bonusAnnualAmountCents,
           internalToken: deps.internalToken,
         }),
       )
@@ -119,6 +121,7 @@ export function createServer(deps: HttpDeps) {
           ambassadors: deps.ambassadors,
           repo: deps.repo,
           bonusAmountCents: deps.bonusAmountCents,
+          bonusAnnualAmountCents: deps.bonusAnnualAmountCents,
           internalToken: deps.internalToken,
         }),
       )

@@ -39,6 +39,9 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     ambassadorId: input.ambassadorId ?? null,
     commissionEnabled: input.commissionEnabled ?? false,
     commissionAmountCents: input.commissionEnabled ? (input.commissionAmountCents ?? null) : null,
+    commissionAnnualAmountCents: input.commissionEnabled
+      ? (input.commissionAnnualAmountCents ?? null)
+      : null,
     commissionWindowDays: input.commissionEnabled ? (input.commissionWindowDays ?? null) : null,
   }
   if (
@@ -52,6 +55,10 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
       !Number.isSafeInteger(result.commissionAmountCents) ||
       (result.commissionAmountCents ?? 0) < 1 ||
       (result.commissionAmountCents ?? 0) > 100_000_000 ||
+      (result.commissionAnnualAmountCents != null &&
+        (!Number.isSafeInteger(result.commissionAnnualAmountCents) ||
+          result.commissionAnnualAmountCents < 1 ||
+          result.commissionAnnualAmountCents > 100_000_000)) ||
       !Number.isSafeInteger(result.commissionWindowDays) ||
       (result.commissionWindowDays ?? 0) < 1 ||
       (result.commissionWindowDays ?? 0) > 3650)
@@ -170,6 +177,12 @@ export class CampaignAdminService {
             ? previous.commissionWindowDays
             : null
           : input.commissionWindowDays,
+      commissionAnnualAmountCents:
+        input.commissionAnnualAmountCents === undefined
+          ? sameBeneficiary
+            ? previous.commissionAnnualAmountCents
+            : null
+          : input.commissionAnnualAmountCents,
     })
     if (previous.code !== validated.code)
       throw new CampaignValidationError(

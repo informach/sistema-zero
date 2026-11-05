@@ -425,7 +425,7 @@ describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irm�
       altOffer: { slug: CDC_ANUAL, label: 'Economize no anual' },
     })
     gw.setOfferConfig(CDC_ANUAL, {
-      priceCents: 79700,
+      priceCents: 97000,
       pricingMode: 'subscription',
       billingIntervalMonths: 12,
       altOffer: { slug: CDC_MENSAL },
@@ -473,7 +473,7 @@ describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irm�
     expect(leads.get(id)?.subscriptionIntervalMonths).toBe(1)
   })
 
-  test('CTA do plano ANUAL (offerSlug da irmã) cobra 79700 no intervalo 12', async () => {
+  test('CTA do plano ANUAL (offerSlug da irmã) cobra 97000 no intervalo 12', async () => {
     const { repo, leads } = createFakeRepo()
     const gw = cdcGateway()
     const id = await cdcLead(repo)
@@ -487,7 +487,7 @@ describe('fiação do funil kids/comunidade-dos-criadores (env → mensal + irm�
       amountInCents: number
       intervalMonths: number
     }
-    expect(input.amountInCents).toBe(79700)
+    expect(input.amountInCents).toBe(97000)
     expect(input.intervalMonths).toBe(12)
     expect(leads.get(id)?.offerRef).toBe(CDC_ANUAL)
   })

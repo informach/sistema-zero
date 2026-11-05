@@ -91,6 +91,12 @@ describe.skipIf(!url)('migração 0005 (presente Kids e adulto) sobre dados exis
 
     // A 0007 altera apenas a vaga ativa: nenhum campo do Pix histórico muda.
     expect([...(await sql`select * from referrals.conversions`)]).toEqual([...historical])
+    expect([...(await sql`select bonus_amounts from referrals.scholarship_redemptions`)]).toEqual([
+      { bonus_amounts: null },
+    ])
+    expect([
+      ...(await sql`select commission_annual_amount_cents from referrals.campaigns`),
+    ]).toEqual([{ commission_annual_amount_cents: null }])
     const insertConversion = async (paymentId: string, status: string) => sql`
       insert into referrals.conversions
       (redemption_id, code_id, payment_id, offer_slug, amount_cents, bonus_cents, status, paid_at, matures_at)

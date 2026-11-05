@@ -59,7 +59,7 @@ describe('explicit, non-destructive Catalog seed', () => {
     expect(
       CATALOG_SEED_OFFERS.find((o) => o.slug === 'comunidade-dos-criadores-adulto-anual'),
     ).toMatchObject({
-      priceCents: 79700,
+      priceCents: 97000,
       compareAtPriceCents: 116400,
       status: 'active',
       billingIntervalMonths: 12,

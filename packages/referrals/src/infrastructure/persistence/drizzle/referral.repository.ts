@@ -1,4 +1,9 @@
-import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
+import type {
+  GiftAttribution,
+  GiftAudience,
+  GiftSource,
+  ReferralBonusAmounts,
+} from '@sistemazero/core/referrals'
 import { and, count, desc, eq, gte, ilike, inArray, isNull, lt, lte, or, sql } from 'drizzle-orm'
 import { CampaignUnavailableError, campaignSource, campaignState } from '../../../domain/campaign'
 import type { CampaignReferralSnapshot } from '../../../domain/campaign-referral'
@@ -120,6 +125,7 @@ function toRedemption(row: RedemptionRow): RedemptionRecord {
     phone: row.phone,
     sourceSnapshot: row.sourceSnapshot,
     campaignReferral: row.campaignReferral,
+    bonusAmounts: row.bonusAmounts,
     courseSlug: row.courseSlug,
     attribution: row.attribution,
     welcomeAcceptedAt: row.welcomeAcceptedAt,
@@ -630,6 +636,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
   }
 
   async insertRedemption(input: {
+    bonusAmounts?: ReferralBonusAmounts
     codeId: string
     email: string
     audience: GiftAudience
@@ -683,6 +690,9 @@ export class DrizzleReferralRepository implements ReferralRepository {
             ambassadorEmail: beneficiary.email,
             commissionEnabled,
             commissionAmountCents: commissionEnabled ? campaign.commissionAmountCents : null,
+            commissionAnnualAmountCents: commissionEnabled
+              ? campaign.commissionAnnualAmountCents
+              : null,
             commissionWindowDays: commissionEnabled ? campaign.commissionWindowDays : null,
           }
         }
@@ -703,6 +713,7 @@ export class DrizzleReferralRepository implements ReferralRepository {
           phone: input.phone,
           sourceSnapshot,
           campaignReferral,
+          bonusAmounts: input.bonusAmounts,
           courseSlug: input.courseSlug,
           attribution: input.attribution,
           createdAt: acceptedAt,

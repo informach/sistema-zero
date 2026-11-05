@@ -85,6 +85,11 @@ export function AmbassadorCard() {
   // Um default cravado aqui volta a prometer R$ 30 depois de a env mudar.
   const bonusCents = view.bonus?.amountCents
   const bonusValue = typeof bonusCents === 'number' ? formatBrlCents(bonusCents) : null
+  const annualBonus = view.bonus?.annualAmountCents
+  const bonusDescription =
+    bonusValue && typeof annualBonus === 'number'
+      ? `${bonusValue} no plano mensal ou ${formatBrlCents(annualBonus)} no anual`
+      : bonusValue
   const redeemed = view.stats?.redemptionsCompleted ?? 0
   const eligible = view.bonus?.eligibleCount ?? 0
   const bonusTotal = eligible + (view.bonus?.paidCount ?? 0)
@@ -184,16 +189,18 @@ export function AmbassadorCard() {
                   Como embaixador(a), você pode dar 7 dias no Sistema Zero, sem custo, a outra
                   família com criança de 9 a 14 anos ou a um adulto que quer criar o próprio jogo.
                   Se alguém que recebeu o seu presente assinar a Comunidade dos Criadores, Kids ou
-                  adulta, você recebe um agradecimento{bonusValue ? ` de ${bonusValue}` : ''} por
-                  Pix, depois da garantia de 7 dias.
+                  adulta, você recebe um agradecimento
+                  {bonusDescription ? ` de ${bonusDescription}` : ''} por Pix, depois da garantia de
+                  7 dias.
                 </p>
                 {/* Os TERMOS moram aqui, no ponto em que a pessoa se
                     compromete: no funil eles só aparecem depois do primeiro
                     bônus, ou seja, justamente quem ainda não converteu nunca
                     os leria. (Texto a validar com o contador antes de divulgar.) */}
                 <p className="mt-2 text-xs text-muted-foreground">
-                  É um agradecimento único por indicação que virar assinatura. Não é salário nem
-                  renda garantida e não cria vínculo com a plataforma.
+                  É um agradecimento único por indicação que virar assinatura, sem comissão nas
+                  renovações. Indicações anteriores mantêm o acordo aceito no resgate. Não é salário
+                  nem renda garantida e não cria vínculo com a plataforma.
                 </p>
                 <div className="mt-3">
                   <button

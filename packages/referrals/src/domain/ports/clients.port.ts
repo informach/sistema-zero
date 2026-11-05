@@ -25,6 +25,7 @@ export interface OfferSnapshot {
   id: string
   slug: string
   name: string
+  billingIntervalMonths?: number | null
 }
 
 export interface CatalogClient {

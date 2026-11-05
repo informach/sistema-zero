@@ -22,6 +22,7 @@ export interface InternalRoutesDeps {
   /** Cria o código adulto do embaixador sob demanda (`shareUrls`). */
   ambassadors?: AmbassadorAdminService
   bonusAmountCents?: number
+  bonusAnnualAmountCents?: number
   internalToken?: string
 }
 
@@ -114,6 +115,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           stats: ambassador.stats,
           bonus: {
             amountCents: deps.bonusAmountCents,
+            annualAmountCents: deps.bonusAnnualAmountCents,
             pixKey: ambassador.pixKey,
             items: visible.map((c) => ({
               id: c.id,

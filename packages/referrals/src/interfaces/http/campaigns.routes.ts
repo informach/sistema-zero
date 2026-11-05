@@ -23,6 +23,9 @@ const campaignBody = t.Object({
   ambassadorId: t.Optional(t.Nullable(t.String({ format: 'uuid' }))),
   commissionEnabled: t.Optional(t.Boolean()),
   commissionAmountCents: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 100_000_000 }))),
+  commissionAnnualAmountCents: t.Optional(
+    t.Nullable(t.Integer({ minimum: 1, maximum: 100_000_000 })),
+  ),
   commissionWindowDays: t.Optional(t.Nullable(t.Integer({ minimum: 1, maximum: 3650 }))),
 })
 const audienceQuery = t.Optional(t.Union([t.Literal('kids'), t.Literal('adult')]))

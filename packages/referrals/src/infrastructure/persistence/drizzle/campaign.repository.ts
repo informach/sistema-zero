@@ -47,6 +47,7 @@ function values(input: CampaignInput) {
     ambassadorId: input.ambassadorId ?? null,
     commissionEnabled: input.commissionEnabled ?? false,
     commissionAmountCents: input.commissionEnabled ? input.commissionAmountCents : null,
+    commissionAnnualAmountCents: input.commissionEnabled ? input.commissionAnnualAmountCents : null,
     commissionWindowDays: input.commissionEnabled ? input.commissionWindowDays : null,
   }
 }

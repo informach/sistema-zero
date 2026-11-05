@@ -59,6 +59,7 @@ export function createApplication(env: Env): Application {
       communityUrl: env.COMMUNITY_URL ?? null,
       leaseMs: env.REDEMPTION_LEASE_MS,
       campaigns: campaignRepo,
+      bonusAmounts: { monthly: env.BONUS_AMOUNT_CENTS, annual: env.BONUS_ANNUAL_AMOUNT_CENTS },
     },
     logger,
   )
@@ -115,6 +116,7 @@ export function createApplication(env: Env): Application {
     campaigns,
     funnelPublicUrl: env.FUNNEL_PUBLIC_URL,
     bonusAmountCents: env.BONUS_AMOUNT_CENTS,
+    bonusAnnualAmountCents: env.BONUS_ANNUAL_AMOUNT_CENTS,
     webhooks: {
       handle: recordConversion,
       processedWebhooks,

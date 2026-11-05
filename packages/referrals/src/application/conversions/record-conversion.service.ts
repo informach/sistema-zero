@@ -135,6 +135,30 @@ export class RecordConversionService {
         match.redemption.createdAt.getTime() + terms.commissionWindowDays * 86_400_000
     const unrewarded = campaign && (!terms?.commissionEnabled || !withinWindow)
 
+    const amounts = campaign
+      ? terms?.commissionAnnualAmountCents != null
+        ? { monthly: terms.commissionAmountCents ?? 0, annual: terms.commissionAnnualAmountCents }
+        : null
+      : match.redemption.bonusAmounts
+    if (
+      !selfBlocked &&
+      !unrewarded &&
+      amounts &&
+      offer.billingIntervalMonths !== 1 &&
+      offer.billingIntervalMonths !== 12
+    )
+      return {
+        kind: 'retryable',
+        reason: 'Ciclo da oferta não comprovado para a comissão por plano.',
+      }
+    const agreedBonus = amounts
+      ? offer.billingIntervalMonths === 12
+        ? amounts.annual
+        : amounts.monthly
+      : campaign
+        ? (terms?.commissionAmountCents ?? 0)
+        : this.config.bonusAmountCents
+
     const { created } = await this.repo.insertConversion({
       redemptionId: match.redemption.id,
       codeId: match.code.id,
@@ -143,12 +167,7 @@ export class RecordConversionService {
       subscriptionId: snapshot.subscriptionId,
       offerSlug: offer.slug,
       amountCents: snapshot.amountInCents,
-      bonusCents:
-        selfBlocked || unrewarded
-          ? 0
-          : campaign
-            ? (terms?.commissionAmountCents ?? 0)
-            : this.config.bonusAmountCents,
+      bonusCents: selfBlocked || unrewarded ? 0 : agreedBonus,
       status: unrewarded ? 'unrewarded' : selfBlocked ? 'self_blocked' : 'pending',
       paidAt: snapshot.paidAt,
       maturesAt: new Date(snapshot.paidAt.getTime() + this.config.matureHours * 3600_000),

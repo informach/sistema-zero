@@ -91,7 +91,7 @@ describe('registro do funil adulto', () => {
     )
   })
 
-  test('o preço de reserva é o mesmo da Comunidade Kids (R$ 97 e R$ 797)', () => {
+  test('o preço de reserva é o mesmo da Comunidade Kids (R$ 97 e R$ 970)', () => {
     expect(COMUNIDADE_ADULTO_PRECO_FALLBACK).toEqual(COMUNIDADE_PRECO_FALLBACK)
   })
 })

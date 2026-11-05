@@ -56,7 +56,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > Pensa + Pinta + Molda → a compra espalha os 7 entitlements; o Desafio do Mês destrava sozinho
 > [clube+estúdio] e Quarto/Jornada/Recados são núcleo grátis do kids) **+ 2 ofertas IRMÃS de
 > ASSINATURA ativas**: `comunidade-dos-criadores-mensal` (R$ 97, `billingIntervalMonths: 1`) e
-> `comunidade-dos-criadores-anual` (R$ 797, intervalo 12, compareAt R$ 1.164 = 12× o mensal),
+> `comunidade-dos-criadores-anual` (R$ 970, intervalo 12, compareAt R$ 1.164 = 12× o mensal),
 > ligadas por `content.altOffer` nos DOIS sentidos, ambas com `maxProfiles: 2` + `guaranteeDays: 7`
 > e SEM cupom/parcelas — a MENSAL é a oferta do funil `/kids/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`); o `maxProfiles` é injetado no fulfillment do
@@ -67,7 +67,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > `adult-estudio-completo`, `adult-pinta`, `adult-molda`, `adult-pensa` (`kind:'tool'`, entrega
 > `community`, as chaves de `creativeToolAccessRef` do core; sem oferta própria) + espaços
 > `adult-clube-dos-criadores` e `adult-mural-dos-criadores` **+ 2 ofertas irmãs ativas**
-> `comunidade-dos-criadores-adulto-mensal` (R$ 97, intervalo 1) e `-anual` (R$ 797, intervalo 12,
+> `comunidade-dos-criadores-adulto-mensal` (R$ 97, intervalo 1) e `-anual` (R$ 970, intervalo 12,
 > compareAt R$ 1.164), `altOffer` nos dois sentidos, garantia 7 dias, SEM `maxProfiles`/cupom/parcelas
 > — a MENSAL é a oferta do funil `/pro/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`). Preço inicial igual ao Kids (decisão da dona).

@@ -3,7 +3,10 @@
 ## Campanhas ligadas a embaixadores (04/11/2026)
 
 `ConvitesClient` permite buscar um embaixador por nome/e-mail com paginação e vinculá-lo à
-campanha sem comissão. Habilitar comissão exige valor fixo e prazo após cadastro; padrão desligado.
+campanha sem comissão. Habilitar comissão exige valores por plano e prazo após cadastro; padrão desligado.
+Desde 05/11/2026, novos acordos sugerem R$ 30 no mensal e R$ 80 no anual, bônus único sem renovação.
+Editar outro campo de acordo legado conserva o anual nulo (valor fixo); separar o mensal preserva
+o anual exibido. Ver `docs/operations/comissoes-planos-anual-970.md`.
 Remover/trocar a pessoa desliga a comissão. Duplicar conserva o vínculo, mas exige habilitar o
 acordo da nova edição. PATCH antigo omisso preserva a configuração no serviço.
 Detalhe mostra beneficiário atual e assinaturas/comissões por participante, com o beneficiário

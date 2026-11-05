@@ -104,6 +104,55 @@ describe('RecordConversionService', () => {
   })
 
   test.each([
+    1, 12,
+  ])('bônus direto por ciclo %s usa o acordo aceito, mesmo com desconto', async (cycle) => {
+    const { redemption } = await seedRedeemedScholarship()
+    redemption.bonusAmounts = { monthly: 3000, annual: 8000 }
+    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = cycle
+    payments.byId.get('pay-1')!.amountInCents = 1000n
+    await service.execute(paidDelivery())
+    await service.execute(paidDelivery())
+    expect(repo.conversions).toHaveLength(1)
+    expect(repo.conversions[0]!.bonusCents).toBe(cycle === 12 ? 8000 : 3000)
+  })
+
+  test.each([
+    1, 12,
+  ])('campanha por ciclo %s conserva os dois valores do snapshot', async (cycle) => {
+    const { redemption, code, ambassador } = await seedRedeemedScholarship()
+    code.ownerKind = 'campaign'
+    redemption.campaignReferral = {
+      ambassadorId: ambassador.id,
+      ambassadorName: ambassador.name,
+      ambassadorEmail: ambassador.email,
+      commissionEnabled: true,
+      commissionAmountCents: 3500,
+      commissionAnnualAmountCents: 8500,
+      commissionWindowDays: 30,
+    }
+    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = cycle
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]!.bonusCents).toBe(cycle === 12 ? 8500 : 3500)
+  })
+
+  test('ciclo desconhecido em acordo por plano retoma sem presumir um bônus', async () => {
+    const { redemption } = await seedRedeemedScholarship()
+    redemption.bonusAmounts = { monthly: 3000, annual: 8000 }
+    expect((await service.execute(paidDelivery())).kind).toBe('retryable')
+    expect(repo.conversions).toHaveLength(0)
+    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = 12
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]!.bonusCents).toBe(8000)
+  })
+
+  test('aceite direto legado mantém o bônus único no anual', async () => {
+    await seedRedeemedScholarship()
+    catalog.byId.get('offer-uuid-1')!.billingIntervalMonths = 12
+    await service.execute(paidDelivery())
+    expect(repo.conversions[0]!.bonusCents).toBe(3000)
+  })
+
+  test.each([
     true,
     false,
   ])('campanha mantém beneficiário e comissão explícita %s', async (enabled) => {

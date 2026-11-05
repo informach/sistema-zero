@@ -46,6 +46,28 @@ async function setup() {
 const family = { code: input.code, email: 'responsavel@example.com', name: 'Responsável' }
 
 describe('campanhas institucionais', () => {
+  test('comissão anual valida centavos inteiros positivos e desabilitar limpa os valores', () => {
+    const agreement = {
+      ...input,
+      ambassadorId: '11111111-1111-4111-8111-111111111111',
+      commissionEnabled: true,
+      commissionAmountCents: 3000,
+      commissionWindowDays: 30,
+    }
+    for (const commissionAnnualAmountCents of [0, -1, 1.5, 100_000_001])
+      expect(() => validateCampaignInput({ ...agreement, commissionAnnualAmountCents })).toThrow()
+    expect(
+      validateCampaignInput({ ...agreement, commissionAnnualAmountCents: 8000 }),
+    ).toMatchObject({ commissionAnnualAmountCents: 8000 })
+    expect(
+      validateCampaignInput({
+        ...agreement,
+        commissionAnnualAmountCents: 8000,
+        commissionEnabled: false,
+      }),
+    ).toMatchObject({ commissionAmountCents: null, commissionAnnualAmountCents: null })
+    expect(validateCampaignInput(agreement).commissionAnnualAmountCents).toBeNull()
+  })
   test('comissão exige beneficiário, valor positivo inteiro e prazo independente', () => {
     for (const change of [
       { commissionEnabled: true },
@@ -82,6 +104,7 @@ describe('campanhas institucionais', () => {
         ambassadorId: created.ambassador.id,
         commissionEnabled: true,
         commissionAmountCents: 4500,
+        commissionAnnualAmountCents: 8500,
         commissionWindowDays: 30,
       },
       'Operador',
@@ -96,6 +119,7 @@ describe('campanhas institucionais', () => {
       ambassadorId: created.ambassador.id,
       commissionEnabled: true,
       commissionAmountCents: 4500,
+      commissionAnnualAmountCents: 8500,
       commissionWindowDays: 30,
     })
     const unlinked = await admin.update(
@@ -107,6 +131,7 @@ describe('campanhas institucionais', () => {
       ambassadorId: null,
       commissionEnabled: false,
       commissionAmountCents: null,
+      commissionAnnualAmountCents: null,
       commissionWindowDays: null,
     })
     const disabled = await admin.update(

@@ -279,6 +279,14 @@ describe('painel do embaixador', () => {
     expect(com).toMatch(/R\$\s?45,00/)
     expect(com).toContain('Kids ou adulta')
     expect(com).toContain('Cadastre a sua chave para o dinheiro sair')
+    const plans = renderToStaticMarkup(
+      <EmbaixadorBonus
+        token={'t'.repeat(20)}
+        bonus={{ pixKey: null, items: [], amountCents: 3000, annualAmountCents: 8000 }}
+      />,
+    )
+    expect(plans).toMatch(/R\$\s?30,00 no plano mensal ou R\$\s?80,00 no anual/)
+    expect(plans).toContain('sem comissão nas renovações')
     const sem = renderToStaticMarkup(
       <EmbaixadorBonus token={'t'.repeat(20)} bonus={{ pixKey: 'a@b.com', items: [] }} />,
     )
