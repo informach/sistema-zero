@@ -157,11 +157,29 @@ try {
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
     const fieldOutsideRejected = pagina.campo('1', 'Criar variável') === null
     const fieldInsideAccepted = pagina.campo('2', 'Criar variável') !== null
+    // O Blockly pode montar a sombra antes do texto do bloco no grupo SVG.
+    // O nome visível do pai continua sendo o alvo, mesmo com o número primeiro no DOM.
+    const laterVariable = create('qa_variable'),
+      laterValue = create('math_number')
+    laterValue.setFieldValue(3, 'NUM')
+    laterVariable.getInput('VALUE').connection.connect(laterValue.outputConnection)
+    laterVariable.moveBy(400, 220)
+    value.setShadow(true)
+    variable.getSvgRoot().prepend(value.getSvgRoot())
+    const shadowTarget = pagina.bloco('Criar variável', 'area')
+    const shadowBeforeNameAccepted = Boolean(
+      shadowTarget &&
+        document.querySelector(shadowTarget.seletor)?.closest('.blocklyDraggable') ===
+          variable.getSvgRoot(),
+    )
+    const shadowFieldAccepted = pagina.campo('2', 'Criar variável') !== null
     const containment = {
       outsideRejected,
       insideAccepted,
       fieldOutsideRejected,
       fieldInsideAccepted,
+      shadowBeforeNameAccepted,
+      shadowFieldAccepted,
     }
     // Uma aba sem frames novos não pode ficar pendurada nem declarar sucesso.
     const original = window.requestAnimationFrame
@@ -189,6 +207,8 @@ try {
     insideAccepted: true,
     fieldOutsideRejected: true,
     fieldInsideAccepted: true,
+    shadowBeforeNameAccepted: true,
+    shadowFieldAccepted: true,
   })
   console.log(JSON.stringify({ resultado: 'PASS', navegador: browser.version(), casos: resultado }))
 } finally {

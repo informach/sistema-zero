@@ -192,7 +192,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
     </div>
     <div class="pk-form">
       {ready ? (
-        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" />
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} />
       ) : preview ? (
         <div class="pk-estado c9-cor--verde"><p class="c9-p">{P.resgatar.previa}</p></div>
       ) : (
@@ -208,7 +208,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
             <details id="retomar" class="pk-retomar">
               <summary>{P.estados.retomar.botao}</summary>
               <p>{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" retryOnly />
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} retryOnly />
             </details>
           )}
         </div>

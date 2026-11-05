@@ -131,6 +131,24 @@ describe('página adulta', () => {
 })
 
 describe('BolsaResgate por público', () => {
+  test('o título público da campanha não recebe uma segunda introdução de presente', () => {
+    const title = 'Um presente da palestra na clínica Laopa'
+    expect(PRESENTE_KIDS.origem.evento.replace('{{nome}}', title)).toBe(title)
+    for (const audience of ['kids', 'adult'] as const) {
+      const html = renderToStaticMarkup(
+        <BolsaResgate
+          code="laopa-20261106"
+          referrerName={title}
+          communityUrl="https://community.example.com"
+          audience={audience}
+          campaign
+        />,
+      )
+      expect(html).toContain(`${title}: o curso Cadê Todo Mundo`)
+      expect(html).not.toContain(`Presente de ${title}`)
+    }
+  })
+
   test('Kids: dados do responsável, Termo Kids e o Mural Kids', () => {
     const html = renderToStaticMarkup(
       <BolsaResgate

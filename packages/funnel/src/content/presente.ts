@@ -58,7 +58,7 @@ export const PRESENTE_KIDS = {
   },
   origem: {
     pessoal: 'Um presente de {{nome}} para a sua família',
-    evento: 'Um presente de {{nome}} para continuar em casa',
+    evento: '{{nome}}',
     campanha: '{{nome}}',
   },
   previa:

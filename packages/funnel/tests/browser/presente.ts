@@ -52,6 +52,24 @@ const campanha = (code: string, audience: 'kids' | 'adult', state: string, extra
   ...extra,
 })
 const CODES: Record<string, unknown> = {
+  'encontro-kids': campanha('encontro-kids', 'kids', 'active', {
+    displayName: 'Um presente do encontro de criadores',
+    source: {
+      kind: 'campaign',
+      name: 'Um presente do encontro de criadores',
+      context: 'event',
+      description: '',
+    },
+  }),
+  'encontro-adult': campanha('encontro-adult', 'adult', 'active', {
+    displayName: 'Um presente do encontro de criadores',
+    source: {
+      kind: 'campaign',
+      name: 'Um presente do encontro de criadores',
+      context: 'event',
+      description: '',
+    },
+  }),
   'marta-k7q2': pessoal('marta-k7q2', 'kids'),
   'marta-a9x4': pessoal('marta-a9x4', 'adult'),
   'marta-prep': pessoal('marta-prep', 'adult', { giftAvailable: false }),
@@ -251,6 +269,22 @@ interface Caso {
 }
 const CASOS: Caso[] = [
   {
+    nome: 'campanha-kids',
+    path: '/bolsa/encontro-kids',
+    status: 200,
+    marca: /Um presente do encontro de criadores/,
+    tema: 'theme-kids',
+    formulario: true,
+  },
+  {
+    nome: 'campanha-adulto',
+    path: '/bolsa/encontro-adult',
+    status: 200,
+    marca: /Um presente do encontro de criadores/,
+    tema: 'theme-arcade',
+    formulario: true,
+  },
+  {
     nome: 'kids',
     path: '/bolsa/marta-k7q2',
     status: 200,
@@ -384,6 +418,13 @@ try {
         caso.marca,
         `${caso.nome}: corpo do público`,
       )
+      if (caso.nome.startsWith('campanha-')) {
+        assert.doesNotMatch(await page.locator('body').innerText(), /presente de um presente/i)
+        assert.match(
+          await page.locator('#resgatar .bz-nota').innerText(),
+          /^Um presente do encontro de criadores: o curso Cadê Todo Mundo/,
+        )
+      }
       assert.ok(
         await page.evaluate((tema) => document.documentElement.classList.contains(tema), caso.tema),
         `${caso.nome}: ${caso.tema}`,

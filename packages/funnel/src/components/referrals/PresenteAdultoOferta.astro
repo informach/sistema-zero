@@ -208,7 +208,7 @@ const tela = P.hero.tela
     </div>
     <div class="pa-form">
       {ready ? (
-        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" />
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} />
       ) : preview ? (
         <div class="pa-estado cor-verde"><p class="cda-suave">{P.resgatar.previa}</p></div>
       ) : (
@@ -224,7 +224,7 @@ const tela = P.hero.tela
             <details id="retomar" class="pa-retomar">
               <summary>{P.estados.retomar.botao}</summary>
               <p class="cda-suave">{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" retryOnly />
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="adult" campaign={campaign} retryOnly />
             </details>
           )}
         </div>

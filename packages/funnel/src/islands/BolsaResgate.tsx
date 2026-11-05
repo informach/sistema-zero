@@ -27,6 +27,7 @@ export interface BolsaResgateProps {
   communityUrl: string
   /** Ausente = `kids` (o formulário anterior ao presente adulto). */
   audience?: GiftAudience
+  campaign?: boolean
   retryOnly?: boolean
 }
 
@@ -41,6 +42,7 @@ export default function BolsaResgate({
   referrerName,
   communityUrl,
   audience = 'kids',
+  campaign = false,
   retryOnly = false,
 }: BolsaResgateProps) {
   const t = RESGATE_COPY[audience]
@@ -328,7 +330,8 @@ export default function BolsaResgate({
         {submitting ? t.enviando : retryOnly ? t.botaoRetomar : t.botao}
       </button>
       <p className="bz-nota">
-        {t.rodape.replace('{{nome}}', referrerName)} {t.aceite.antes}
+        {(campaign ? t.rodapeCampanha : t.rodape).replace('{{nome}}', referrerName)}{' '}
+        {t.aceite.antes}
         <a href={t.termosHref}>{t.aceite.termos}</a>
         {t.aceite.meio}
         <a href="/privacidade">{t.aceite.privacidade}</a>
