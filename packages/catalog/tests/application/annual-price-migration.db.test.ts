@@ -45,7 +45,21 @@ describe.skipIf(!base)('annual price migration — real PostgreSQL', () => {
         values (${crypto.randomUUID()}, ${product}, ${slug}, ${slug}, 'Test',
           ${slug === monthly ? 9700 : 79700}, 'subscription', 'billing_cycle',
           ${slug === monthly ? 1 : 12}, '2026-01-01', '2026-01-01')`
+    await sql`update catalog.offers set compare_at_price_cents = 90000 where slug = ${kids}`
+    await sql`update catalog.offers set compare_at_price_cents = 116400 where slug = ${adult}`
     await sql.unsafe(migration)
+    expect(
+      (await sql`select compare_at_price_cents from catalog.offers where slug = ${kids}`)[0]!
+        .compare_at_price_cents,
+    ).toBeNull()
+    expect(
+      (await sql`select compare_at_price_cents from catalog.offers where slug = ${adult}`)[0]!
+        .compare_at_price_cents,
+    ).toBe(116400)
+    expect(
+      (await sql`select compare_at_price_cents from catalog.offers where slug = ${monthly}`)[0]!
+        .compare_at_price_cents,
+    ).toBeNull()
     const rows =
       await sql`select slug, price_cents, version, updated_at from catalog.offers order by slug`
     for (const slug of [kids, adult]) {

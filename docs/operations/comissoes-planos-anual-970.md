@@ -32,7 +32,8 @@ A unicidade por resgate/pagamento, estornos e liberação após garantia continu
    tamanho das tabelas e transações longas antes. Não há backfill nem índice a reconstruir.
 3. Catálogo: aplicar `0011_community-annual-970.sql` pelo migrador. UPDATE idempotente limitado
    aos dois slugs, BRL, ciclo 12 e preço 79700; preço 97000, versão +1 e `updated_at` atualizado.
-   Apenas duas linhas esperadas. Compras e assinaturas existentes não são recalculadas.
+   Apenas duas linhas esperadas. Um preço de comparação inferior ao novo preço é limpo; valores
+   de comparação válidos são preservados. Compras e assinaturas existentes não são recalculadas.
 4. Publicar backends antes de Admin, Funil e Kids pela onda canônica de produção, após PR/CI
    e plano da mesma versão. Conferir ofertas, páginas públicas, saúde e SHA dos serviços.
 

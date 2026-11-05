@@ -6,6 +6,10 @@ migrações, Catálogo/checkout, copy dos dois públicos e mudanças do palco j�
 
 ## Achados corrigidos
 
+- **P2 — preço de comparação menor que o novo anual:** um valor válido de R$ 900 ficaria abaixo
+  do novo preço de R$ 970. O UPDATE custom agora limpa somente comparações inferiores ao novo
+  preço, preservando comparações válidas e nulas. A prova PostgreSQL falhou antes da correção
+  com R$ 900 e passa depois, verificando também a preservação de R$ 1.164.
 - **P2 — edição do acordo fixo legado:** preencher o anual ao abrir o editor mudava o contrato
   em uma edição sem relação com comissão. Além disso, alterar somente o mensal poderia alterar
   o anual implicitamente, embora a tela continuasse mostrando o valor antigo. O editor conserva
