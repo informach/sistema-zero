@@ -44,7 +44,11 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   rolagemDeVarios: () => 'visivel',
   mais: () => ({ seletor: '[data-palco-alvo="a14"]', u: 0.5, v: 0.5 }),
   lixeira: () => ({ seletor: '[data-palco-alvo="a15"]', u: 0.5, v: 0.65 }),
-  opcaoNaLista: () => ({ dy: 0, lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 } }),
+  opcaoNaLista: () => ({
+    dy: 0,
+    lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 },
+    posicao: { x: 100, y: 100, scroll: 0 },
+  }),
   ...patch,
 })
 
@@ -284,7 +288,11 @@ describe('verbos do palco', () => {
     const lista = { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 }
     const rolando = pagina({
       aberto: () => 'lista',
-      opcaoNaLista: () => ({ dy: ++olhadas < 4 ? 120 - olhadas * 40 : 0, lista }),
+      opcaoNaLista: () => ({
+        dy: 0,
+        lista,
+        posicao: { x: 100, y: ++olhadas < 4 ? 120 - olhadas * 10 : 80, scroll: 0 },
+      }),
     })
     const comeco = Date.now()
     const passos = await agirNaPagina(
@@ -514,6 +522,7 @@ describe('verbos do palco', () => {
       opcaoNaLista: () => ({
         dy: 180,
         lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 },
+        posicao: { x: 100, y: 300, scroll: 0 },
       }),
     })
     expect(agir('escolher "pirata" em "Criar sprite personagem"', jogos, longe)).toEqual([

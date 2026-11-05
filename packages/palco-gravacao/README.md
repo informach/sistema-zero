@@ -111,7 +111,9 @@ está sendo conferido.
   começa um pouco depois do gesto; `escolher` espera a opção ficar 300 ms no mesmo lugar
   (`listaParada`), senão pedia outra rolagem e passava da imagem.
 - **Nome do bloco com valor de sombra:** o "1" de Alterar variável pode vir antes dos rótulos no
-  DOM; `textoProprio` põe os valores de sombra no fim, para o bloco começar pelo nome.
+  DOM; `textoProprio` põe somente esse prefixo no fim, para o bloco começar pelo nome,
+  preservando valores entre rótulos. A espera da galeria mede a posição da opção e a rolagem,
+  inclusive quando a opção já está totalmente visível.
 - **Farol Aula 3** (04/11/2026): `jogar na lixeira ">" em "Se"` leva a pergunta pronta do Se para a
   lixeira pelo sinal de maior; `abrir "senão" em "Se"` clica no botão de mais (um `blocklyImageField`)
   que fica logo antes do rótulo, e `apontar mais de` só aponta; um nome de bloco aceita `dentro de`

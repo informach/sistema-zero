@@ -125,6 +125,14 @@ try {
         previousStatement: null,
         nextStatement: null,
       },
+      {
+        type: 'qa_visibility',
+        message0: 'Deixar o sprite com %1 de visibilidade',
+        args0: [{ type: 'input_value', name: 'VALUE' }],
+        inputsInline: true,
+        previousStatement: null,
+        nextStatement: null,
+      },
     ])
     const create = (type) => {
       const block = workspace.newBlock(type)
@@ -173,6 +181,36 @@ try {
           variable.getSvgRoot(),
     )
     const shadowFieldAccepted = pagina.campo('2', 'Criar variável') !== null
+    const visibility = create('qa_visibility'),
+      percentage = create('math_number')
+    percentage.setFieldValue(50, 'NUM')
+    percentage.setShadow(true)
+    visibility.getInput('VALUE').connection.connect(percentage.outputConnection)
+    visibility.moveBy(60, 400)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    // A ordem SVG entre rótulos também é válida e deve permanecer intacta.
+    const labels = [...visibility.getSvgRoot().querySelectorAll('text.blocklyText')].filter(
+      (el) => el.closest('.blocklyDraggable') === visibility.getSvgRoot(),
+    )
+    labels[1].before(percentage.getSvgRoot())
+    const inlineShadowAccepted =
+      pagina.bloco('Deixar o sprite com 50 de visibilidade', 'area') !== null
+    // A opção ainda está totalmente visível nas duas posições, mas a galeria está andando.
+    const gallery = document.querySelector('.blocklyDropDownDiv') ?? document.createElement('div')
+    gallery.className = 'blocklyDropDownDiv'
+    gallery.style.cssText =
+      'display:block;position:fixed;left:100px;top:100px;width:200px;height:200px;overflow:auto'
+    gallery.innerHTML =
+      '<div style="height:80px"></div><span>pirata</span><div style="height:400px"></div>'
+    document.body.append(gallery)
+    const beforeScroll = pagina.opcaoNaLista('pirata')
+    gallery.scrollTop = 20
+    const afterScroll = pagina.opcaoNaLista('pirata')
+    const visibleMovementMeasured =
+      beforeScroll?.dy === 0 &&
+      afterScroll?.dy === 0 &&
+      beforeScroll.posicao?.y !== afterScroll.posicao?.y
+    gallery.remove()
     const containment = {
       outsideRejected,
       insideAccepted,
@@ -180,6 +218,8 @@ try {
       fieldInsideAccepted,
       shadowBeforeNameAccepted,
       shadowFieldAccepted,
+      inlineShadowAccepted,
+      visibleMovementMeasured,
     }
     // Uma aba sem frames novos não pode ficar pendurada nem declarar sucesso.
     const original = window.requestAnimationFrame
@@ -209,6 +249,8 @@ try {
     fieldInsideAccepted: true,
     shadowBeforeNameAccepted: true,
     shadowFieldAccepted: true,
+    inlineShadowAccepted: true,
+    visibleMovementMeasured: true,
   })
   console.log(JSON.stringify({ resultado: 'PASS', navegador: browser.version(), casos: resultado }))
 } finally {

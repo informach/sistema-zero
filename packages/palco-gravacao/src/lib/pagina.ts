@@ -118,7 +118,11 @@ export interface PaginaDoPalco {
    * uma variável): `dy` é quanto rolar a lista, com a roda, para ela aparecer inteira (0 quando já
    * aparece), e `lista` o ponto da lista onde rolar. Nulo sem a opção.
    */
-  opcaoNaLista(valor: string): { dy: number; lista: Alvo } | null
+  opcaoNaLista(valor: string): {
+    dy: number
+    lista: Alvo
+    posicao: { x: number; y: number; scroll: number }
+  } | null
   /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
   fundoLivre(): Alvo | null
 }
@@ -229,14 +233,12 @@ function donoDe(el: Element): Element | null {
 const textoProprio = (block: Element): string => {
   const meus = [...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block)
   // O valor de sombra encaixado (o "1" de Alterar variável) às vezes vem antes dos rótulos no DOM:
-  // vai para o fim, para o bloco começar pelo nome dele ("Alterar variável aviso para 1").
+  // Só esse prefixo vai para o fim. Sombras entre rótulos mantêm sua posição no nome.
   const daSombra = (t: Element) => t.closest('.blocklyDraggable') !== block
-  return fold(
-    [...meus.filter((t) => !daSombra(t)), ...meus.filter(daSombra)]
-      .map(texto)
-      .join(' ')
-      .replace(/▾/g, ''),
-  )
+  const primeiroRotulo = meus.findIndex((t) => !daSombra(t))
+  const ordenados =
+    primeiroRotulo > 0 ? [...meus.slice(primeiroRotulo), ...meus.slice(0, primeiroRotulo)] : meus
+  return fold(ordenados.map(texto).join(' ').replace(/▾/g, ''))
 }
 
 /**
@@ -815,7 +817,11 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const r = opcao.getBoundingClientRect()
       const dentro = r.top >= c.top - 1 && r.bottom <= c.bottom + 1
       const dy = dentro ? 0 : Math.round(r.top + r.height / 2 - (c.top + c.height / 2))
-      return { dy, lista: pontoEm(rolante, c.left + c.width / 2, c.top + c.height / 2) }
+      return {
+        dy,
+        lista: pontoEm(rolante, c.left + c.width / 2, c.top + c.height / 2),
+        posicao: { x: r.left, y: r.top, scroll: rolante.scrollTop },
+      }
     },
 
     fundoLivre() {
