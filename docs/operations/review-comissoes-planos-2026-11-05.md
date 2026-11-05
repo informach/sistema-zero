@@ -130,6 +130,8 @@ O CI do HEAD final e os recibos de deploy ainda são necessários antes da concl
   do próximo deploy, sem alterar o curso nem os resgates existentes.
 - **P2 — faixa etária divergente:** presente, painel, mensagens de WhatsApp, cartões, Admin e
   entrada nas duas comunidades passam a informar Kids de 9 a 17 anos. Adultos: 18 anos ou mais.
+  A busca final também corrigiu o e-mail de convite Kids; o deploy normal de Messaging publica
+  esse template antes do envio do acesso. O teste do template falhou antes e passou após o ajuste.
 - **P2 — fim de resgate apresentado como dia seguinte:** painel, cartão e páginas Kids/Adultos
   mostram o último minuto válido em Brasília, preservando o limite exclusivo usado no servidor.
 - **P2 — confirmação de formulário obsoleta:** durante o envio, nome, e-mail e público ficam
