@@ -15,6 +15,7 @@ import { Card } from '@sistemazero/ui/card'
 import { Dialog } from '@sistemazero/ui/dialog'
 import { Input } from '@sistemazero/ui/input'
 import { Pagination } from '@sistemazero/ui/pagination'
+import { ShareCard } from '@sistemazero/ui/share-card'
 import {
   Table,
   TableBody,
@@ -527,6 +528,17 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                 >
                   Baixar QR Code
                 </a>
+                <ShareCard
+                  url={detail.campaign.shareUrl}
+                  title={detail.campaign.publicTitle}
+                  subtitle={
+                    detail.campaign.audience === 'adult'
+                      ? 'Um presente para adultos'
+                      : 'Um presente para famílias · Kids'
+                  }
+                  description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                  notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${dateLabel(detail.campaign.startsAt)} até ${dateLabel(detail.campaign.endsAt)} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para maiores de 18 anos.' : 'Para crianças de 9 a 14 anos. Cadastro pelo responsável.'}`}
+                />
               </div>
               {detail.campaign.state === 'draft' && (
                 <p className="text-sm text-muted-foreground">

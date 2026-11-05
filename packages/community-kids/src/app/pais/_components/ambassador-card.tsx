@@ -1,5 +1,6 @@
 'use client'
 
+import { ShareCard } from '@sistemazero/ui/share-card'
 import { Gift } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -164,6 +165,28 @@ export function AmbassadorCard() {
                   >
                     Abrir minha página
                   </a>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {familyUrl && (
+                    <ShareCard
+                      url={familyUrl}
+                      label="Cartão para uma família"
+                      title="Um presente para criar em família"
+                      subtitle="Kids · 9 a 14 anos"
+                      description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                      notice="Acesse o link e faça o cadastro como responsável pela criança."
+                    />
+                  )}
+                  {adultUrl && (
+                    <ShareCard
+                      url={adultUrl}
+                      label="Cartão para um adulto"
+                      title="Seu primeiro jogo começa aqui"
+                      subtitle="Adultos · 18 anos ou mais"
+                      description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                      notice="Acesse o link e faça seu cadastro. Para maiores de 18 anos."
+                    />
+                  )}
                 </div>
                 {manualCopy ? (
                   // O sucesso é anunciado por toast; a falha precisa do mesmo

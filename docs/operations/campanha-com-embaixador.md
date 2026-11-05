@@ -6,7 +6,14 @@ No Admin, selecione a comunidade (Kids ou adulto) e abra **Embaixadores**.
 2. Na aba **Campanhas de presente**, crie uma campanha para cada palestra/data. Informe o título público, código exclusivo, canal e período em Brasília. Comece como rascunho.
 3. Em **Embaixador e comissão**, busque a pessoa pelo nome ou e-mail e selecione-a. O vínculo passa a atribuir resultados mesmo com a comissão desligada.
 4. Só marque **Habilitar comissão para novos cadastros** se houver acordo. Informe os valores em reais pela primeira assinatura mensal e anual e o prazo em dias desde o cadastro. Os padrões são **R$ 30 no mensal e R$ 80 no anual**, editáveis conforme a parceria. A cobrança precisa ser paga antes de completar esse prazo. O bônus é único; não há comissão nas renovações.
-5. Confira a prévia. Quando estiver pronta, altere a situação para **Ativa**; o período determina quando o link aceita novos cadastros. O detalhe permite copiar o link e baixar o QR Code.
+5. Confira a prévia. Quando estiver pronta, altere a situação para **Ativa**; o período determina quando o link aceita novos cadastros. O detalhe permite copiar o link, baixar o QR Code e abrir o cartão de divulgação com download em PNG.
+
+O painel privado do embaixador inclui **Minhas campanhas**, somente leitura. Mostra as campanhas
+vinculadas à própria pessoa, exceto rascunhos, com datas, situação e condições atuais de comissão.
+Agendadas/ativas permitem copiar o link e baixar o cartão. Pausadas/encerradas conservam a consulta,
+sem ações de divulgação. Só o Admin cria ou altera campanhas. Participantes e auditoria não
+aparecem no painel do parceiro. As condições exibidas valem para novos resgates; o histórico
+financeiro continua seguindo o acordo capturado no momento do aceite.
 
 O período da campanha controla novos cadastros. Cada cadastro recebe sete dias de acesso, e a janela de comissão é independente. O link pode ser encaminhado; não comprova presença física. Quem já resgatou um presente no mesmo público mantém a atribuição original.
 
@@ -36,6 +43,8 @@ Não recriar o índice antigo nem voltar para um binário que desconheça `super
 
 Em 05/11/2026, o operador autorizou cadastrar Vivianne Lima e a campanha da palestra na
 clínica Laopa em produção, com vínculo e comissões padrão: R$ 30 no mensal e R$ 80 no anual.
-Público Kids, resgates de 06/11 a 08/11, horário de Brasília. O cadastro real deve ser feito
+Público Kids, resgates de 06/11 00:00 até 09/11 00:00 (fim de 08/11), horário de Brasília;
+janela de comissão de 45 dias após o resgate. Envio do acesso por e-mail explicitamente autorizado.
+O cadastro real deve ser feito
 após a publicação da comissão por plano e registrado na evidência operacional privada;
 não gravar e-mail ou links privados de acesso em documentação versionada.

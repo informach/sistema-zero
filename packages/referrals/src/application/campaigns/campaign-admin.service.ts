@@ -1,4 +1,5 @@
 import {
+  type AmbassadorCampaignPage,
   type CampaignDetailView,
   type CampaignInput,
   type CampaignUpdateInput,
@@ -127,6 +128,41 @@ export class CampaignAdminService {
     return {
       items: await Promise.all(result.items.map((campaign) => this.view(campaign))),
       total: result.total,
+    }
+  }
+
+  async forAmbassador(ambassadorId: string, offset = 0): Promise<AmbassadorCampaignPage> {
+    const limit = 20
+    const result = await this.repo.list({ ambassadorId, publishedOnly: true, limit, offset })
+    return {
+      total: result.total,
+      limit,
+      offset,
+      items: result.items.flatMap((campaign) => {
+        const state = campaignState(campaign, this.now())
+        if (state === 'draft' || campaign.ambassadorId !== ambassadorId) return []
+        return [
+          {
+            id: campaign.id,
+            publicTitle: campaign.publicTitle,
+            audience: campaign.audience,
+            state,
+            startsAt: campaign.startsAt.toISOString(),
+            endsAt: campaign.endsAt.toISOString(),
+            shareUrl: scholarshipShareUrl(this.funnelUrl, campaign.code),
+            commissionEnabled: campaign.commissionEnabled ?? false,
+            commissionAmountCents: campaign.commissionEnabled
+              ? (campaign.commissionAmountCents ?? null)
+              : null,
+            commissionAnnualAmountCents: campaign.commissionEnabled
+              ? (campaign.commissionAnnualAmountCents ?? null)
+              : null,
+            commissionWindowDays: campaign.commissionEnabled
+              ? (campaign.commissionWindowDays ?? null)
+              : null,
+          },
+        ]
+      }),
     }
   }
 

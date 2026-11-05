@@ -37,6 +37,34 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
   })
   afterAll(async () => connection?.close())
 
+  test('consulta do parceiro filtra no SQL antes do limite e da contagem', async () => {
+    const mine = await fixture(8000)
+    const other = await fixture(8000)
+    await admin.create(
+      { ...mine.campaign, code: `draft-${crypto.randomUUID().slice(0, 8)}`, status: 'draft' },
+      'Teste',
+    )
+    const result = await campaigns.list({
+      ambassadorId: mine.person.ambassador.id,
+      publishedOnly: true,
+      limit: 1,
+      offset: 0,
+    })
+    expect(result.total).toBe(1)
+    expect(result.items.map((item) => item.id)).toEqual([mine.campaign.id])
+    expect(result.items.some((item) => item.id === other.campaign.id)).toBe(false)
+    expect(
+      (
+        await campaigns.list({
+          ambassadorId: mine.person.ambassador.id,
+          publishedOnly: true,
+          limit: 1,
+          offset: 1,
+        })
+      ).items,
+    ).toEqual([])
+  })
+
   async function fixture(commissionAnnualAmountCents?: number) {
     const suffix = crypto.randomUUID().slice(0, 8)
     const person = await repo.createAmbassadorWithCode({

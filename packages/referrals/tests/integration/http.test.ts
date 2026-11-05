@@ -57,7 +57,7 @@ function buildApp(
     metricsToken: opts.metricsToken,
     readiness: async () => {},
   })
-  return { app, repo, gateway }
+  return { app, repo, gateway, campaigns }
 }
 
 const ADMIN_HEADERS = {
@@ -68,6 +68,77 @@ const ADMIN_HEADERS = {
 }
 
 describe('campanhas no HTTP', () => {
+  test('painel privado lista só campanhas próprias publicadas, com paginação e sem dados internos', async () => {
+    const { app, repo, campaigns } = buildApp({ internalToken: INTERNAL_TOKEN })
+    const person = await repo.createAmbassadorWithCode({
+      name: 'Parceira',
+      email: 'parceira@example.test',
+      code: 'parceira-painel',
+      pageToken: 'c'.repeat(43),
+    })
+    const other = await repo.createAmbassadorWithCode({
+      name: 'Outra',
+      email: 'outra@example.test',
+      code: 'outra-painel',
+      pageToken: 'd'.repeat(43),
+    })
+    if (person.kind !== 'created' || other.kind !== 'created') throw new Error('seed')
+    const input = {
+      name: 'Nota interna que não pode sair',
+      publicTitle: 'Palestra pública',
+      description: 'Planejamento interno',
+      code: 'campanha-base',
+      context: 'event' as const,
+      channel: 'canal-interno',
+      audience: 'kids' as const,
+      startsAt: new Date(Date.now() - 60_000).toISOString(),
+      endsAt: new Date(Date.now() + 3_600_000).toISOString(),
+      status: 'active' as const,
+      ambassadorId: person.ambassador.id,
+      commissionEnabled: true,
+      commissionAmountCents: 3000,
+      commissionAnnualAmountCents: 8000,
+      commissionWindowDays: 45,
+    }
+    await campaigns.create(
+      { ...input, code: 'outro-parceiro', ambassadorId: other.ambassador.id },
+      'Admin',
+    )
+    await campaigns.create({ ...input, code: 'rascunho-parceira', status: 'draft' }, 'Admin')
+    for (let index = 0; index < 21; index++)
+      await campaigns.create({ ...input, code: `propria-${index}` }, 'Admin')
+    const url = `http://local/referrals/internal/ambassadors/by-token/${'c'.repeat(43)}`
+    const headers = { 'x-internal-token': INTERNAL_TOKEN }
+    const response = await app.handle(new Request(url, { headers }))
+    expect(response.status).toBe(200)
+    const body = await response.json()
+    expect(body.campaigns.total).toBe(21)
+    expect(body.campaigns.items).toHaveLength(20)
+    expect(body.campaigns.items[0]).toMatchObject({
+      commissionAmountCents: 3000,
+      commissionAnnualAmountCents: 8000,
+      commissionWindowDays: 45,
+    })
+    expect(JSON.stringify(body.campaigns)).not.toMatch(
+      /Nota interna|Planejamento interno|canal-interno|example.test|outro-parceiro|rascunho-parceira/,
+    )
+    const next = await (
+      await app.handle(new Request(`${url}?campaignOffset=20`, { headers }))
+    ).json()
+    expect(next.campaigns.items).toHaveLength(1)
+    expect(next.campaigns.offset).toBe(20)
+    expect(body.campaigns.items.map((item: { id: string }) => item.id)).not.toContain(
+      next.campaigns.items[0].id,
+    )
+    expect((await app.handle(new Request(`${url}?campaignOffset=-1`, { headers }))).status).toBe(
+      400,
+    )
+    expect((await app.handle(new Request(url))).status).toBe(401)
+    expect(
+      (await app.handle(new Request(`${url}/campaigns`, { method: 'POST', headers, body: '{}' })))
+        .status,
+    ).toBe(404)
+  })
   test('retomada fora dos sete dias informa vencimento, sem nova concessão', async () => {
     const { app, repo, gateway } = buildApp({ internalToken: INTERNAL_TOKEN })
     await repo.createAmbassadorWithCode({

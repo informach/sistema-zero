@@ -5,6 +5,40 @@ import { createGatewayClient } from '../../src/lib/gateway-client'
 const SECRET = 'segredo-de-borda-do-funil'
 
 describe('createGatewayClient (assinatura HMAC de borda)', () => {
+  test('paginação de campanhas preserva a assinatura do pathname e envia offset na query', async () => {
+    let captured: Request | undefined
+    const fetchImpl: typeof fetch = Object.assign(
+      async (input: string | URL | Request, init?: RequestInit) => {
+        captured = new Request(input, init)
+        return Response.json({ campaigns: { items: [], total: 0, limit: 20, offset: 20 } })
+      },
+      { preconnect: () => {} },
+    )
+    const gateway = createGatewayClient({
+      baseUrl: 'https://gateway.example',
+      consumerId: 'funnel',
+      hmacSecret: SECRET,
+      fetchImpl,
+    })
+    await gateway.getAmbassadorByToken('token-teste', 20)
+    if (!captured) throw new Error('Faltou a requisição')
+    expect(captured.url).toBe(
+      'https://gateway.example/referrals/internal/ambassadors/by-token/token-teste?campaignOffset=20',
+    )
+    expect(
+      verifyHmacSignature({
+        secret: SECRET,
+        body: canonicalHmacMessage({
+          method: 'GET',
+          path: new URL(captured.url).pathname,
+          body: '',
+        }),
+        signatureHeader: captured.headers.get('x-signature') ?? '',
+        nowSeconds: Math.floor(Date.now() / 1000),
+        toleranceSeconds: 300,
+      }).valid,
+    ).toBe(true)
+  })
   test('POST assina o canônico "<ts>.POST.<path>.<idempotencyKey>.<corpo>" que o gateway verifica', async () => {
     let captured: { url: string; init: RequestInit } | undefined
     const fetchImpl = (async (url: string, init: RequestInit) => {

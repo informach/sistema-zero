@@ -46,7 +46,36 @@ A edição não commitada da aula 3 no worktree do palco conserva o SHA256 origi
 Typechecks/checks e CI do commit final são a barreira
 de entrega. A revisão não identificou outros problemas bloqueadores no escopo.
 
-## Alinhamento autorizado
+## Complemento: cartões e campanhas no painel privado
+
+O usuário aprovou cartões com prévia/PNG e “Minhas campanhas”, exclusivamente para consulta.
+Revisão concluída sobre o complemento: o beneficiário é derivado do token ativo no servidor;
+o SQL filtra pessoa e rascunhos antes de paginar/contar; a resposta projeta apenas campos próprios,
+sem participantes, e-mail, auditoria ou notas internas. Nenhuma rota de escrita foi acrescentada.
+Paginação mantém a assinatura HMAC do pathname, no-store, no-referrer e noindex.
+
+Achados corrigidos:
+- **P2 — rota inexistente virava 500:** a prova de ausência de escrita pelo token reproduziu
+  um erro interno para caminho sem rota. O tratamento explícito de NOT_FOUND agora retorna 404.
+- **P3 — página fora do intervalo sem retorno:** um endereço manual de paginação podia deixar
+  a lista vazia sem navegação quando havia apenas uma página. O retorno agora existe também
+  nesse caso e aponta para uma página válida; a legenda informa “Página indisponível”.
+- **P3 — acabamento de botões e marca:** ações novas adotam o tamanho e a receita do host,
+  com alvo mínimo de 44 px. A arte usa os caminhos oficiais da marca, paleta canônica e fontes
+  carregadas antes de medir/desenhar, incluindo o peso usado nos rótulos.
+
+O QR codifica exatamente o link público, incluindo query, e nunca recebe o token privado.
+Prévia/download invalidam imagens anteriores na troca de dados e permitem recuperar falha.
+Campanhas pausadas/encerradas não oferecem divulgação no painel. O cartão administrativo
+identifica situações sem resgate. Bônus/participantes não entram na arte pública.
+
+Evidências: Referrals 225 testes com PostgreSQL; UI 135 testes; 27 testes direcionados de funil;
+typechecks Admin/Kids/UI/Referrals e Astro sem erros. Chrome decodificou o QR do PNG, comparou
+o arquivo baixado e verificou troca de público, diálogo aninhado, erro/retry, URL inválida e título
+longo. O build real do funil passou dez casos em duas larguras, mais resgate, painel, campanhas,
+cartão e retorno da paginação. Revisão visual das capturas de desktop, celular e PNG realizada.
+
+## Publicação final
 
 O usuário pediu o mesmo código nas duas branches e autorizou incluir o palco em produção.
 Confirmou manter uma única instância de gravação, hospedada em staging. Após merge da PR,

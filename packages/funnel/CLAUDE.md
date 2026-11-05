@@ -1,5 +1,13 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Minhas campanhas e cartões (05/11/2026)
+
+O painel privado mostra `EmbaixadorCampanhas`, somente leitura, com datas em Brasília,
+situação e termos próprios da campanha. Rascunhos são excluídos pelo Referrals. Pausadas e
+encerradas não oferecem divulgação. A paginação SSR usa `?campanhas=N` e consulta a própria
+capability; preserva no-store/no-referrer/noindex. O HMAC continua assinando o pathname.
+`ShareCard` do UI oferece prévia e PNG dos links públicos, sem incluir o token do painel.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Astro, React, Tailwind,
 > Drizzle, Zod, Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e

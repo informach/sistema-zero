@@ -4,7 +4,7 @@ import type {
   CampaignView,
   GiftAudience,
 } from '@sistemazero/core/referrals'
-import { and, count, desc, eq, ilike, or, sql } from 'drizzle-orm'
+import { and, count, desc, eq, ilike, ne, or, sql } from 'drizzle-orm'
 import {
   CampaignAudienceLockedError,
   CampaignConflictError,
@@ -168,7 +168,14 @@ export class DrizzleCampaignRepository implements CampaignRepository {
     return row ? record(row.campaign, row.code) : null
   }
 
-  async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
+  async list(opts: {
+    q?: string
+    audience?: GiftAudience
+    ambassadorId?: string
+    publishedOnly?: boolean
+    limit: number
+    offset: number
+  }) {
     const pattern = opts.q?.trim() ? `%${escapeLike(opts.q.trim())}%` : null
     const search = pattern
       ? or(
@@ -177,14 +184,19 @@ export class DrizzleCampaignRepository implements CampaignRepository {
           ilike(codes.code, pattern),
         )
       : undefined
-    const filter = and(search, opts.audience ? eq(campaigns.audience, opts.audience) : undefined)
+    const filter = and(
+      search,
+      opts.audience ? eq(campaigns.audience, opts.audience) : undefined,
+      opts.ambassadorId ? eq(campaigns.ambassadorId, opts.ambassadorId) : undefined,
+      opts.publishedOnly ? ne(campaigns.status, 'draft') : undefined,
+    )
     const [rows, totals] = await Promise.all([
       this.db
         .select({ campaign: campaigns, code: codes.code })
         .from(campaigns)
         .innerJoin(codes, eq(codes.campaignId, campaigns.id))
         .where(filter)
-        .orderBy(desc(campaigns.createdAt))
+        .orderBy(desc(campaigns.createdAt), desc(campaigns.id))
         .limit(opts.limit)
         .offset(opts.offset),
       this.db

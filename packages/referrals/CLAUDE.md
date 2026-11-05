@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Campanhas no painel do parceiro (05/11/2026)
+
+A leitura pelo token do embaixador ativo inclui `campaigns`, paginada por `campaignOffset`
+(20 itens). O SQL filtra `ambassadorId` e exclui rascunhos antes de limitar e contar.
+A projeção é explícita: título público, público, datas, situação, link e termos atuais de comissão.
+Não incluir participantes, histórico, canal ou notas internas. A capability não permite escrever
+campanhas; criação/edição continuam exclusivamente nas rotas Admin. Rota ausente responde 404.
+
 ## Comissão por plano (05/11/2026)
 
 Padrão compartilhado em `@sistemazero/core/referrals`: R$ 30 pela contratação mensal e R$ 80

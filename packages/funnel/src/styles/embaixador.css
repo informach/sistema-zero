@@ -469,6 +469,75 @@
 .emb .emb-cartao--suave {
   background: var(--kof-sup2);
 }
+
+.emb .emb-campanhas__grade {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: 24px;
+}
+.emb .emb-campanha h3 {
+  overflow-wrap: anywhere;
+}
+.emb .emb-campanha__periodo,
+.emb .emb-campanha__acordo {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.emb .emb-campanha__periodo svg,
+.emb .emb-campanha__acordo svg {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.emb .emb-campanha__acordo {
+  padding: 18px;
+  border-radius: 14px;
+  background: var(--kof-sup2);
+}
+.emb .emb-campanha__acordo p,
+.emb .emb-campanhas__nota,
+.emb .emb-campanha__orientacao {
+  font-size: 1rem;
+  color: var(--kof-tinta-suave);
+}
+.emb .emb-campanha__acordo p {
+  margin-top: 6px;
+}
+.emb .emb-campanha__estado {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+.emb .emb-campanha__estado--active {
+  color: var(--kof-acao);
+}
+.emb .emb-campanha--inativa {
+  background: var(--kof-sup2);
+}
+.emb .emb-campanha__acoes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: auto;
+}
+.emb .emb-campanha__retorno {
+  font-size: 0.9375rem;
+}
+.emb .emb-campanha__acoes .emb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.emb .emb-campanha__retorno:empty {
+  display: none;
+}
+.emb .emb-campanhas__paginacao {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+}
 .emb .emb-coluna {
   display: flex;
   flex: 1 1 380px;

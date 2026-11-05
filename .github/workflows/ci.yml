@@ -622,6 +622,9 @@ jobs:
         working-directory: packages/community-kids
         run: bun run e2e:scenes
 
+      - name: Cartões de divulgação com QR legível no PNG
+        run: node packages/ui/tests/share-card-browser.mjs
+
       - name: Aula responsiva e objetivos do Estúdio
         working-directory: packages/community-kids
         run: bun run e2e:lesson-layout

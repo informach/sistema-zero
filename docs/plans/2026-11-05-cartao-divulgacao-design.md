@@ -12,6 +12,13 @@ quebram em linhas; geração inválida exibe erro e permite nova tentativa, sem 
 A prévia respeita foco, Escape e rolagem pelo Dialog compartilhado. Mudança de público ou
 campanha invalida imediatamente uma imagem anterior, inclusive se a geração estiver pendente.
 
+Ampliação aprovada: “Minhas campanhas” no painel privado, somente leitura. A consulta pelo
+token filtra o beneficiário no servidor antes da paginação (20 por página), exclui rascunhos e
+projeta apenas título, público, datas, situação, link e termos de comissão da própria campanha.
+Não expõe participantes, auditoria ou notas internas. Paginação pela página SSR existente;
+nenhuma rota de escrita nova. Apenas o Admin cria ou altera campanhas. Pausadas/encerradas
+ficam identificadas, sem ação de divulgar; agendadas permitem preparar o cartão.
+
 Entradas: detalhe da campanha e do embaixador no Admin, painel do embaixador no funil e
 links Kids/Adultos na área dos pais. O QR usa exatamente o link público fornecido pelo serviço.
 Copy descreve curso Cadê Todo Mundo e Mural, sem prometer acesso a todo o catálogo.

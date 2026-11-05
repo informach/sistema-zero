@@ -54,6 +54,10 @@ export function createServer(deps: HttpDeps) {
       serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 64 * 1024 },
     })
       .onError(({ error, set, code }) => {
+        if (code === 'NOT_FOUND') {
+          set.status = 404
+          return envelope('NOT_FOUND', 'Página não encontrada')
+        }
         if (error instanceof CampaignConflictError) {
           set.status = 409
           return envelope('CAMPAIGN_CHANGED', error.message)

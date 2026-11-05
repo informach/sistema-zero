@@ -8,6 +8,7 @@ import { Input } from '@sistemazero/ui/input'
 import { Field } from '@sistemazero/ui/label'
 import { Pagination } from '@sistemazero/ui/pagination'
 import { Select } from '@sistemazero/ui/select'
+import { ShareCard } from '@sistemazero/ui/share-card'
 import {
   Table,
   TableBody,
@@ -738,7 +739,16 @@ function AmbassadorDetailDialog({
               : 'O e-mail do link ainda não foi enviado. Copie a página abaixo e mande por fora.'}
           </p>
           {a.shareUrl && (
-            <LinkRow label="Link de bolsa (compartilhável)" value={a.shareUrl} onCopy={onCopy} />
+            <>
+              <LinkRow label="Link de bolsa (compartilhável)" value={a.shareUrl} onCopy={onCopy} />
+              <ShareCard
+                url={a.shareUrl}
+                title="Um presente para criar em família"
+                subtitle="Kids · 9 a 14 anos"
+                description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                notice="Acesse o link e faça o cadastro como responsável pela criança."
+              />
+            </>
           )}
           {a.pageUrl && (
             <LinkRow

@@ -88,6 +88,26 @@ export interface CampaignUpdateInput extends CampaignInput {
   /** Versão lida pelo operador; impede sobrescrever uma edição mais recente. */
   expectedUpdatedAt: string
 }
+/** Visão privada do parceiro: somente leitura, sem participantes nem campos internos. */
+export interface AmbassadorCampaignView {
+  id: string
+  publicTitle: string
+  audience: GiftAudience
+  state: Exclude<CampaignState, 'draft'>
+  startsAt: string
+  endsAt: string
+  shareUrl: string
+  commissionEnabled: boolean
+  commissionAmountCents: number | null
+  commissionAnnualAmountCents: number | null
+  commissionWindowDays: number | null
+}
+export interface AmbassadorCampaignPage {
+  items: AmbassadorCampaignView[]
+  total: number
+  limit: number
+  offset: number
+}
 export interface CampaignAuditView {
   id: string
   action: 'created' | 'updated' | 'duplicated'

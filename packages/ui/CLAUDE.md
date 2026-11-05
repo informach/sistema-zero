@@ -145,8 +145,19 @@ tema). O design espelha o projeto de referência `C:\Users\tocha\projects\comuni
    `.scrollbar-subtle`: misturar propriedades padrão com pseudoelementos desativa o desenho
    no Chromium. Firefox recebe as propriedades padrão via `@supports`; alto contraste
    conserva as cores nativas. O CSS gerado dos tokens continua intocado.
-4. **Sem deps de framework**: react/react-dom são peer; só cva + clsx + tailwind-merge +
-   lucide-react. Nada de Next/`server-only` aqui.
+4. **Sem deps de framework**: react/react-dom são peer; cva + clsx + tailwind-merge +
+   lucide-react e integrações isoladas (Efí; `qrcode`, carregado sob demanda pelo cartão).
+   Nada de Next/`server-only` aqui.
+
+## Cartão de divulgação (05/11/2026)
+
+`ShareCard` recebe somente o link público e textos de apresentação. O gerador Canvas usa
+os caminhos oficiais do `BrandLogo`, a paleta canônica e as fontes declaradas pelo host.
+Não trocar por wordmark desenhada em fonte comum ou cores duplicadas. O QR mantém exatamente
+o endereço recebido, incluindo query; margem branca de quatro módulos. Sem gerador externo.
+O download só fica disponível quando a imagem corresponde aos dados atuais; falha permite retry.
+Prova real: `node packages/ui/tests/share-card-browser.mjs`, decodifica o PNG e confere foco,
+troca de público, erro/recuperação e download. Fontes são servidas localmente na prova.
 
 ## Consumo (já configurado nos dois apps)
 

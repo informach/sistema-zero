@@ -88,7 +88,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     )
     .get(
       '/ambassadors/by-token/:token',
-      async ({ params, headers, set }) => {
+      async ({ params, query, headers, set }) => {
         guard(headers)
         const ambassador = await deps.repo.findAmbassadorByToken(params.token)
         if (ambassador?.status !== 'active' || !ambassador.code) {
@@ -99,12 +99,13 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         // nunca quem assinou. A régua do que é visível vive no repo/domínio
         // (filtro no SQL, ANTES do limit — canceladas não empurram bônus reais
         // para fora da página).
-        const [visible, shareUrls] = await Promise.all([
+        const [visible, shareUrls, campaigns] = await Promise.all([
           deps.repo.listAmbassadorVisibleConversions(ambassador.id, 50),
           // O código adulto nasce aqui quando falta (idempotente e seguro em corrida).
           deps.ambassadors
             ? deps.ambassadors.shareUrls(ambassador)
             : Promise.resolve({ kids: `${base}/bolsa/${ambassador.code}`, adult: null }),
+          deps.campaigns?.forAmbassador(ambassador.id, query.campaignOffset ?? 0),
         ])
         return {
           name: ambassador.name,
@@ -112,6 +113,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           // `shareUrl` continua sendo o link Kids (compatível com o funil anterior).
           shareUrl: `${base}/bolsa/${ambassador.code}`,
           shareUrls,
+          campaigns,
           stats: ambassador.stats,
           bonus: {
             amountCents: deps.bonusAmountCents,
@@ -127,7 +129,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           },
         }
       },
-      { params: t.Object({ token: t.String({ pattern: TOKEN_PATTERN }) }) },
+      {
+        params: t.Object({ token: t.String({ pattern: TOKEN_PATTERN }) }),
+        query: t.Object({
+          campaignOffset: t.Optional(t.Integer({ minimum: 0, maximum: 200_000 })),
+        }),
+      },
     )
     .patch(
       // Chave Pix do bônus — cadastrada pelo PRÓPRIO embaixador (a capability
