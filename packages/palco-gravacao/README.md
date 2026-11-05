@@ -85,8 +85,39 @@ está sendo conferido.
   (abrir e recolher para mostrar a paleta).
 - **Experiências do andar e do limite:** `apontar selo` (o "Seta apertada?", cujo texto muda com a
   seta) e `apontar faixa fora da tela` (um desenho sem nome, `data-fora-da-tela`).
-- **O roteiro do Farol é conferido nos testes:** todo colchete do Na tela da Aula 1 do Desafio do
-  Primeiro Jogo que não é verbo do EdiAula precisa ser entendido pelo `agir`.
+- **Área nova, bloco dentro e valor por cima** (04/11/2026, Farol Aula 2): `apontar lugar sem
+  blocos` e `soltar "Quando acontecer" no lugar sem blocos` usam o mesmo lugar (`lugarLivre`), um
+  retângulo só de fundo ao lado das pilhas e fora de onde a paleta abre, achado numa grade de
+  `elementsFromPoint` (só o que é da área conta, mesmo com a paleta aberta por cima); com `abaixo de
+  "Ao iniciar"`, o lugar é logo abaixo dessa pilha, alinhado com ela e 32 px abaixo (pedido da
+  Helena: a área nova alinhada, nunca jogada de qualquer jeito); `encaixar "Quando o sprite" dentro de "Quando acontecer"` acha a boca vazia
+  da área descendo do rótulo; `soltar "verdadeiro" em cima do "0" em "Criar variável temChave"`
+  põe o canto do bloco novo no canto do valor. O campo de um bloco encaixado conta como campo do
+  bloco de fora quando ele não tem um com esse valor (o **verdadeiro** de Criar variável).
+- **Bloco nunca em cima de bloco, e a área do trabalho no meio** (04/11/2026, pedidos da Helena):
+  depois de todo gesto que solta um bloco, o `afastar` confere se uma pilha cresceu por cima da de
+  baixo (`desembolar`) e, se sim, a mão pega a de baixo pelo nome e a desce até ficar 32 px abaixo,
+  uma vez por gesto. `arrastar até` traz o bloco para perto do meio da altura (15% de folga) mesmo
+  quando ele já está à vista, para a área em que a criança trabalha ficar em destaque.
+- **Mudou um campo, clica fora** (04/11/2026, pedido da Helena): `trocar` e `escolher` terminam com
+  um clique na área de código fora do bloco (ao lado dele, ou num fundo livre, `fundoLivre`), para a
+  mudança valer e o bloco sair da seleção; `clicar fora dos blocos` faz só isso.
+- **Conferir com todos os blocos à vista:** `mostrar blocos "A", "B"` mede a caixa que os blocos
+  ocupam juntos e arrasta a área de código até ela ficar à vista com 24 px de folga, perto do meio
+  (`rolagemDeVarios`); já assim, só aponta o primeiro.
+- **Farol Aula 3** (04/11/2026): `jogar na lixeira ">" em "Se"` leva a pergunta pronta do Se para a
+  lixeira pelo sinal de maior; `abrir "senão" em "Se"` clica no botão de mais (um `blocklyImageField`)
+  que fica logo antes do rótulo, e `apontar mais de` só aponta; um nome de bloco aceita `dentro de`
+  ("Se dentro de Quando o sprite personagem começar a encostar no sprite farol") para escolher entre
+  blocos de mesmo começo. A porta do farol é a caixa de encostar dele, na base da torre (x 383 a 425,
+  y 165 a 192 no palco do jogo): da largada, 1,95 s de seta para a direita chegam lá sem a chave.
+- **O jogo da prévia é o do projeto:** o tamanho do palco do jogo vem do bloco **Preparar o
+  jogo ... tela 480 × 360** da área de trabalho (`palcoDoJogo`), e só sem ele do jogo pronto da
+  aula. A Aula 2 do Farol não tem jogo pronto.
+- **Expandir e reduzir esperam o outro estado:** o gesto seguinte mede a prévia já no lugar novo
+  (na Parte 6 do Farol, a seta segurada logo depois de expandir caiu na seta da esquerda).
+- **Os roteiros do Farol são conferidos nos testes:** todo colchete do Na tela das Aulas 1 e 2 do
+  Desafio do Primeiro Jogo que não é verbo do EdiAula precisa ser entendido pelo `agir`.
 
 ## Rodar
 
