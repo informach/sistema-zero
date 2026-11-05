@@ -13,7 +13,8 @@ import { extrairPartesElevenLabs, semTags } from './roteiro-elevenlabs'
  * Reprovado no vídeo: o tour pelos controles ("Olha aqui: nesta experiência", "este botão", "aqui
  * você vê"), nomes de botão, a sequência dos testes ("primeiro… depois", "Nas duas vezes", "teste
  * mais duas coisas") e a lista do que vai acontecer ("Repare em três coisas"). O "Na tela" só
- * amplia a experiência e mostra a cena parada, sem apontar nem tocar. A instrução e o recado da
+ * amplia a experiência e mostra a cena parada, sem apontar controles nem tocar. Apresentar o
+ * Zappy ao dizer que ele ajuda a observar é permitido. A instrução e o recado da
  * página dizem o que comparar, sem sequência.
  */
 const AULAS = [
@@ -35,7 +36,8 @@ const TOUR =
   /Olha aqui|\bnesta (?:experiência|atividade)\b|\b(?:este|esta|estes|estas|esse|essa) (?:botão|botões|campo|campos|lista|régua|controle|controles|marca|tabela|deslizante)\b|\baqui (?:você (?:vê|escolhe|muda)|fica)\b|Repare em (?:duas|três|quatro) coisas/i
 const SEQUENCIA =
   /\bprimeiro\b|\bdepois (?:clique|teste|faça|compare|mude|pegue|toque|tente|encoste|ligue|desligue)\b|Nas duas vezes|\bteste mais\b|\bPor (?:último|fim)\b|\bFaça [^.]* e depois\b/i
-const GESTO_NA_TELA = /\[(?:apontar|tocar|clicar|arrastar|encaixar|escolher|trocar)\b/
+// Só a indicação exata do mascote é apresentação; outros alvos continuam sendo controles.
+const GESTO_NA_TELA = /\[(?:apontar(?! zappy\])|tocar|clicar|arrastar|encaixar|escolher|trocar)\b/
 
 interface Convite {
   fala: string
@@ -106,6 +108,22 @@ function experiencias(aula: string) {
 }
 
 describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
+  test('apresentar o Zappy não é demonstrar um controle da experiência', () => {
+    const convite = experiencias('desafio-dia-2')[0]
+    expect(convite).toBeDefined()
+    expect(problemasDoConvite({ ...convite!, naTela: '[apontar zappy]' })).toEqual([])
+    for (const gesto of [
+      '[apontar "Ligar a memória da chave"]',
+      '[apontar zappy e tocar a chave]',
+      '[clicar "Ligar a memória da chave"]',
+      '[apontar zappy] [apontar "Ligar a memória da chave"]',
+    ]) {
+      expect(problemasDoConvite({ ...convite!, naTela: gesto }).join('; ')).toContain(
+        'gesto dentro da experiência',
+      )
+    }
+  })
+
   test('Desafio (aulas 2 e 3), Ilha e os quatro Poderes: conceito, analogia e um convite', () => {
     const todas = AULAS.flatMap(experiencias)
     // Desafio 3 (memória, porta, posição), Ilha 4, um por Poder.
