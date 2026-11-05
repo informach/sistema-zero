@@ -44,7 +44,11 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   rolagemDeVarios: () => 'visivel',
   mais: () => ({ seletor: '[data-palco-alvo="a14"]', u: 0.5, v: 0.5 }),
   lixeira: () => ({ seletor: '[data-palco-alvo="a15"]', u: 0.5, v: 0.65 }),
-  opcaoNaLista: () => ({ dy: 0, lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 } }),
+  opcaoNaLista: () => ({
+    dy: 0,
+    lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 },
+    posicao: { x: 100, y: 100, scroll: 0 },
+  }),
   ...patch,
 })
 
@@ -279,6 +283,26 @@ describe('verbos do palco', () => {
     await agirNaPagina('afastar de "Criar variável"', jogos, andando)
     expect(medidas).toBeGreaterThanOrEqual(5)
     expect(Date.now() - inicio).toBeGreaterThanOrEqual(340)
+    // A galeria que a roda rolou ainda anda: a escolha espera a imagem ficar parada.
+    let olhadas = 0
+    const lista = { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 }
+    const rolando = pagina({
+      aberto: () => 'lista',
+      opcaoNaLista: () => ({
+        dy: 0,
+        lista,
+        posicao: { x: 100, y: ++olhadas < 4 ? 120 - olhadas * 10 : 80, scroll: 0 },
+      }),
+    })
+    const comeco = Date.now()
+    const passos = await agirNaPagina(
+      'escolher "pirata" em "Criar sprite personagem"',
+      jogos,
+      rolando,
+    )
+    expect(passos[0]?.fazer).toBe('clicar')
+    expect(olhadas).toBeGreaterThanOrEqual(6)
+    expect(Date.now() - comeco).toBeGreaterThanOrEqual(450)
     // Um bloco que ainda não mostra o nome escolhido é procurado de novo por um instante.
     let procuras = 0
     const atrasada = pagina({
@@ -479,6 +503,18 @@ describe('verbos do palco', () => {
     expect(() =>
       agir('mostrar blocos "Sumiu"', jogos, pagina({ rolagemDeVarios: () => null })),
     ).toThrow(/Não achei todos/)
+    // Mais longe do que um arrasto alcança (Ao iniciar a uma tela de distância): a mão arrasta
+    // até onde dá e a página é perguntada de novo.
+    const muitoLonge = pagina({
+      rolagemDeVarios: () => ({
+        de: { seletor: '[data-palco-alvo="a3"]', u: 0.1, v: 0.5 },
+        para: { seletor: '[data-palco-alvo="a3"]', u: 0.99, v: 0.5 },
+        falta: true,
+      }),
+    })
+    const acao = 'mostrar blocos "Criar sprite personagem", "Criar sprite farol"'
+    expect(agir(acao, jogos, muitoLonge).map((p) => p.fazer)).toEqual(['arrastar', 'continuar'])
+    expect(agir(acao, jogos, muitoLonge)[1]).toEqual({ fazer: 'continuar', acao })
   })
 
   test('a imagem fora da parte que a galeria mostra vem à vista com a roda antes do clique', () => {
@@ -486,6 +522,7 @@ describe('verbos do palco', () => {
       opcaoNaLista: () => ({
         dy: 180,
         lista: { seletor: '[data-palco-alvo="a16"]', u: 0.5, v: 0.5 },
+        posicao: { x: 100, y: 300, scroll: 0 },
       }),
     })
     expect(agir('escolher "pirata" em "Criar sprite personagem"', jogos, longe)).toEqual([

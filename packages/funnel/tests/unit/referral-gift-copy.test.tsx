@@ -75,12 +75,14 @@ describe('copy do presente: as regras de voz valem nos dois públicos', () => {
 describe('página Kids', () => {
   test('conversa com o responsável sobre o filho e diz o que o presente inclui', () => {
     const texto = JSON.stringify(PRESENTE_KIDS)
-    expect(texto).toContain('Em 7 dias, seu filho faz um jogo de procurar personagens ')
+    expect(texto).toContain('Seu filho cria um jogo e pratica como ')
     expect(texto).toContain('O primeiro passo é do responsável')
-    expect(texto).toContain('O Mural por 7 dias')
+    expect(texto).toContain('Mural por 7 dias')
     expect(texto).toContain('link do jogo publicado')
-    expect(texto).toContain('Comunidade dos Criadores, uma assinatura à parte')
-    expect(texto).toContain('Cada e-mail resgata um presente Kids')
+    expect(texto).toContain('com assinatura à parte')
+    expect(texto).toContain('Cada e-mail pode resgatar um presente Kids')
+    expect(texto).toContain('Crianças menores de 9 anos também podem participar')
+    expect(texto).toContain('acompanhadas por um responsável durante as atividades')
     expect(texto).not.toContain('Desafio do Primeiro Jogo')
   })
 
@@ -131,6 +133,24 @@ describe('página adulta', () => {
 })
 
 describe('BolsaResgate por público', () => {
+  test('o título público da campanha não recebe uma segunda introdução de presente', () => {
+    const title = 'Um presente da palestra na clínica Laopa'
+    expect(PRESENTE_KIDS.origem.evento.replace('{{nome}}', title)).toBe(title)
+    for (const audience of ['kids', 'adult'] as const) {
+      const html = renderToStaticMarkup(
+        <BolsaResgate
+          code="laopa-20261106"
+          referrerName={title}
+          communityUrl="https://community.example.com"
+          audience={audience}
+          campaign
+        />,
+      )
+      expect(html).toContain(`${title}: o curso Cadê Todo Mundo`)
+      expect(html).not.toContain(`Presente de ${title}`)
+    }
+  })
+
   test('Kids: dados do responsável, Termo Kids e o Mural Kids', () => {
     const html = renderToStaticMarkup(
       <BolsaResgate
@@ -142,7 +162,7 @@ describe('BolsaResgate por público', () => {
     expect(html).toContain('Estes dados são do responsável')
     expect(html).toContain('Nome do responsável')
     expect(html).toContain('E-mail do responsável')
-    expect(html).toContain('Liberar o curso para minha família')
+    expect(html).toContain('Liberar o presente para minha família')
     expect(html).toContain('Presente de Vó Cida: o curso Cadê Todo Mundo e o Mural Kids por 7 dias')
     expect(html).toContain('você confirma que é o responsável pela criança')
     expect(html).toContain('href="/kids/comunidade-dos-criadores/termos"')

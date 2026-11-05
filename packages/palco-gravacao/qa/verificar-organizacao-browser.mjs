@@ -125,6 +125,14 @@ try {
         previousStatement: null,
         nextStatement: null,
       },
+      {
+        type: 'qa_visibility',
+        message0: 'Deixar o sprite com %1 de visibilidade',
+        args0: [{ type: 'input_value', name: 'VALUE' }],
+        inputsInline: true,
+        previousStatement: null,
+        nextStatement: null,
+      },
     ])
     const create = (type) => {
       const block = workspace.newBlock(type)
@@ -157,11 +165,80 @@ try {
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
     const fieldOutsideRejected = pagina.campo('1', 'Criar variável') === null
     const fieldInsideAccepted = pagina.campo('2', 'Criar variável') !== null
+    // O Blockly pode montar a sombra antes do texto do bloco no grupo SVG.
+    // O nome visível do pai continua sendo o alvo, mesmo com o número primeiro no DOM.
+    const laterVariable = create('qa_variable'),
+      laterValue = create('math_number')
+    laterValue.setFieldValue(3, 'NUM')
+    laterVariable.getInput('VALUE').connection.connect(laterValue.outputConnection)
+    laterVariable.moveBy(400, 220)
+    value.setShadow(true)
+    variable.getSvgRoot().prepend(value.getSvgRoot())
+    const shadowTarget = pagina.bloco('Criar variável', 'area')
+    const shadowBeforeNameAccepted = Boolean(
+      shadowTarget &&
+        document.querySelector(shadowTarget.seletor)?.closest('.blocklyDraggable') ===
+          variable.getSvgRoot(),
+    )
+    const shadowFieldAccepted = pagina.campo('2', 'Criar variável') !== null
+    const visibility = create('qa_visibility'),
+      percentage = create('math_number')
+    percentage.setFieldValue(50, 'NUM')
+    percentage.setShadow(true)
+    visibility.getInput('VALUE').connection.connect(percentage.outputConnection)
+    visibility.moveBy(60, 400)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    // O campo aparece entre rótulos na tela, mesmo se seu SVG vier depois deles no DOM.
+    const inlineShadowAccepted =
+      pagina.bloco('Deixar o sprite com 50 de visibilidade', 'area') !== null
+    const arithmetic = create('math_arithmetic'),
+      left = create('math_number'),
+      right = create('math_number')
+    left.setFieldValue(1, 'NUM')
+    right.setFieldValue(2, 'NUM')
+    left.setShadow(true)
+    right.setShadow(true)
+    arithmetic.getInput('A').connection.connect(left.outputConnection)
+    arithmetic.getInput('B').connection.connect(right.outputConnection)
+    arithmetic.moveBy(500, 400)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    // Aqui a sombra é visivelmente o primeiro campo: a ordem correta já é 1 + 2.
+    arithmetic.getSvgRoot().prepend(left.getSvgRoot())
+    arithmetic.getSvgRoot().append(right.getSvgRoot())
+    const leadingShadowAccepted = pagina.bloco('1 + 2', 'area') !== null
+    workspace.setScale(0.65)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    const scaledLabelsAccepted =
+      pagina.bloco('1 + 2', 'area') !== null &&
+      pagina.bloco('Deixar o sprite com 50 de visibilidade', 'area') !== null &&
+      pagina.bloco('Criar variável 2', 'area') !== null
+    // A opção ainda está totalmente visível nas duas posições, mas a galeria está andando.
+    const gallery = document.querySelector('.blocklyDropDownDiv') ?? document.createElement('div')
+    gallery.className = 'blocklyDropDownDiv'
+    gallery.style.cssText =
+      'display:block;position:fixed;left:100px;top:100px;width:200px;height:200px;overflow:auto'
+    gallery.innerHTML =
+      '<div style="height:80px"></div><span>pirata</span><div style="height:400px"></div>'
+    document.body.append(gallery)
+    const beforeScroll = pagina.opcaoNaLista('pirata')
+    gallery.scrollTop = 20
+    const afterScroll = pagina.opcaoNaLista('pirata')
+    const visibleMovementMeasured =
+      beforeScroll?.dy === 0 &&
+      afterScroll?.dy === 0 &&
+      beforeScroll.posicao?.y !== afterScroll.posicao?.y
+    gallery.remove()
     const containment = {
       outsideRejected,
       insideAccepted,
       fieldOutsideRejected,
       fieldInsideAccepted,
+      shadowBeforeNameAccepted,
+      shadowFieldAccepted,
+      inlineShadowAccepted,
+      leadingShadowAccepted,
+      scaledLabelsAccepted,
+      visibleMovementMeasured,
     }
     // Uma aba sem frames novos não pode ficar pendurada nem declarar sucesso.
     const original = window.requestAnimationFrame
@@ -189,6 +266,12 @@ try {
     insideAccepted: true,
     fieldOutsideRejected: true,
     fieldInsideAccepted: true,
+    shadowBeforeNameAccepted: true,
+    shadowFieldAccepted: true,
+    inlineShadowAccepted: true,
+    leadingShadowAccepted: true,
+    scaledLabelsAccepted: true,
+    visibleMovementMeasured: true,
   })
   console.log(JSON.stringify({ resultado: 'PASS', navegador: browser.version(), casos: resultado }))
 } finally {

@@ -86,7 +86,7 @@ describe('presente adulto: resgate', () => {
     })
     const email = gateway.callsOf('sendEmail')[0]!.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-welcome-adult')
-    expect(email.variables).toMatchObject({ nome: 'Ana', indicador: 'Marta Lima' })
+    expect(email.variables).toMatchObject({ nome: 'Ana', indicador: 'Marta' })
     expect(email.variables.validade).toContain('2026')
     expect(email.variables.link).toBe(`${COMMUNITY}/redefinir-senha?token=tok-abc`)
   })
@@ -313,7 +313,7 @@ describe('presente adulto: convite por e-mail', () => {
     expect(email.templateKey).toBe('referrals-scholarship-invite-adult')
     expect(email.variables).toEqual({
       nome: 'Ana',
-      indicador: 'Marta Lima',
+      indicador: 'Marta',
       link: `${FUNNEL}/bolsa/${adultCode.code}`,
     })
   })

@@ -3,6 +3,48 @@ import { resolveReferralGiftPage } from '../../src/server/referral-gift-page'
 import { createFakeGateway } from '../fakes/fake-gateway'
 
 describe('resolveReferralGiftPage', () => {
+  test('a projeção pública remove sobrenomes em ambos os públicos, inclusive de respostas antigas', async () => {
+    const fake = createFakeGateway()
+    for (const audience of ['kids', 'adult'] as const) {
+      for (const ownerKind of ['ambassador', 'account'] as const) {
+        for (const state of ['active', 'scheduled', 'paused', 'ended'] as const) {
+          const original = {
+            code: 'nome-1234',
+            ownerKind,
+            audience,
+            displayName: '  Érica  Lima Santos ',
+            source: { kind: ownerKind, name: '  Érica  Lima Santos ' },
+            state,
+            startsAt: null,
+            endsAt: null,
+            giftAvailable: true,
+          }
+          fake.setReferralCodeResult(200, original)
+          const page = await resolveReferralGiftPage(fake.gateway, original.code)
+          expect(page).toMatchObject({
+            referrerName: 'Érica',
+            gift: { displayName: 'Érica', source: { name: 'Érica' } },
+          })
+          expect(JSON.stringify(page)).not.toContain('Lima')
+          expect(original.source.name).toBe('  Érica  Lima Santos ')
+        }
+      }
+    }
+    fake.setReferralCodeResult(200, {
+      code: 'laopa-1234',
+      ownerKind: 'campaign',
+      audience: 'kids',
+      displayName: 'Um presente da palestra na clínica Laopa',
+      source: { kind: 'campaign', name: 'Um presente da palestra na clínica Laopa' },
+      state: 'active',
+      startsAt: '2026-11-06T03:00:00Z',
+      endsAt: '2026-11-09T03:00:00Z',
+      giftAvailable: true,
+    })
+    expect(await resolveReferralGiftPage(fake.gateway, 'laopa-1234')).toMatchObject({
+      referrerName: 'Um presente da palestra na clínica Laopa',
+    })
+  })
   test('link antigo ativo mostra o presente quando o curso está publicado', async () => {
     const fake = createFakeGateway()
     fake.setReferralCodeResult(200, {
@@ -17,7 +59,7 @@ describe('resolveReferralGiftPage', () => {
     })
     expect(await resolveReferralGiftPage(fake.gateway, 'vo-x7k2')).toMatchObject({
       kind: 'ready',
-      referrerName: 'Vó Cida',
+      referrerName: 'Vó',
     })
   })
 
@@ -35,7 +77,7 @@ describe('resolveReferralGiftPage', () => {
     })
     expect(await resolveReferralGiftPage(fake.gateway, 'vo-x7k2')).toMatchObject({
       kind: 'preparing',
-      referrerName: 'Vó Cida',
+      referrerName: 'Vó',
     })
   })
 
@@ -50,8 +92,8 @@ describe('resolveReferralGiftPage', () => {
     })
     expect(await resolveReferralGiftPage(fake.gateway, 'vo-x7k2')).toMatchObject({
       kind: 'ready',
-      referrerName: 'Vó Cida',
-      gift: { source: { kind: 'ambassador', name: 'Vó Cida' }, state: 'active' },
+      referrerName: 'Vó',
+      gift: { displayName: 'Vó', source: { kind: 'ambassador', name: 'Vó' }, state: 'active' },
     })
     fake.setReferralCodeResult(200, {
       code: 'evento-10',

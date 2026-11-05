@@ -35,6 +35,8 @@
 }
 .c917 .pk-figura {
   position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   margin: 0;
   padding: 18px;
   border: var(--c9-borda);
@@ -44,12 +46,13 @@
   transform: rotate(0.8deg);
 }
 .c917 .pk-figura__rotulo {
-  position: absolute;
-  top: -20px;
-  left: 22px;
+  position: relative;
   display: inline-flex;
+  justify-self: start;
   align-items: center;
+  max-width: calc(100% - 8px);
   min-height: 38px;
+  margin: -38px 0 0 4px;
   padding: 0 14px;
   border-radius: 12px;
   background: var(--kof-navy);

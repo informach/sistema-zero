@@ -1,8 +1,8 @@
 import type { ComunidadeSection } from '../funnels/comunidade-dos-criadores/oferta/types'
 
 /**
- * Copy da página de recebimento do presente Kids (`/bolsa/<codigo>` com o público `kids`), revista
- * no Canvas "Presente Kids e adulto · proposta" (quadro RecebimentoKids, aprovado em 20/10/2026).
+ * Copy da página de recebimento do presente Kids (`/bolsa/<codigo>` com o público `kids`), com a
+ * proposta de copy aprovada em 05/11/2026, preservando a identidade visual existente.
  * `PresenteOferta.astro` renderiza todo texto visível a partir daqui. `{{nome}}` é quem deu o
  * presente (o embaixador ou o nome da campanha) e `{{data}}` uma data de Brasília.
  */
@@ -38,7 +38,7 @@ const IMG_KIDS = '/img/comunidade-dos-criadores'
 export const PRESENTE_KIDS = {
   seoTitle: 'Presente Cadê Todo Mundo | Sistema Zero',
   description:
-    'Em 7 dias, seu filho faz um jogo de procurar personagens funcionar, com a explicação ao lado. Presente gratuito para crianças de 9 a 17 anos, sem cartão.',
+    'Um presente gratuito para seu filho criar um jogo, praticar como enfrentar desafios e conhecer o Sistema Zero Kids. Sete dias de acesso, sem cartão.',
   previaTitle: 'Prévia da campanha | Sistema Zero',
   pular: 'Ir para o conteúdo',
   topo: {
@@ -51,38 +51,44 @@ export const PRESENTE_KIDS = {
     marcaAria: 'Sistema Zero Kids, voltar ao topo',
     navAria: 'Atalhos da página',
     links: [
-      { href: '#jogo', label: 'O que ele faz' },
-      { href: '#duvidas', label: 'Antes de começar' },
+      {
+        href: '#jogo',
+        label: 'O que ele faz',
+      },
+      {
+        href: '#duvidas',
+        label: 'Antes de começar',
+      },
     ],
     cta: 'Quero o presente',
   },
   origem: {
     pessoal: 'Um presente de {{nome}} para a sua família',
-    evento: 'Um presente de {{nome}} para continuar em casa',
+    evento: '{{nome}}',
     campanha: '{{nome}}',
   },
   previa:
     'Prévia da campanha. Esta página demonstra a apresentação e não aceita cadastros. O link público da campanha respeita o estado e as datas configurados no Admin.',
   hero: {
     titulo: {
-      antes: 'Em 7 dias, seu filho faz um jogo de procurar personagens ',
-      destaque: 'funcionar.',
+      antes: 'Seu filho cria um jogo e pratica como ',
+      destaque: 'enfrentar desafios.',
     },
     texto:
-      'No Cadê Todo Mundo, o jardim e os personagens já estão prontos. Seu filho acompanha a orientação, monta as regras que fazem os esconderijos sumirem e cada achado entrar na contagem. Depois, testa e vê o resultado no próprio jogo.',
+      'Ele monta uma regra, testa e vê o resultado. Quando algo sai diferente, pode conferir o que fez, voltar à orientação e tentar de novo. No Cadê Todo Mundo, a criação de um jogo de procurar personagens dá espaço para praticar esse caminho.',
     beneficios: [
-      'Um jogo completo, com o vídeo da aula ao lado de onde ele monta',
-      '7 dias de curso e de Mural, contados do cadastro',
-      'Gratuito, sem cartão e sem assinatura automática',
+      'Pensado para 9 a 17 anos; crianças menores também podem fazer, com um responsável',
+      '7 dias de acesso ao curso e ao Mural, contados do cadastro',
+      'Presente gratuito, sem cartão e sem assinatura automática',
     ],
     cta: 'Quero o presente para meu filho',
-    link: 'Ver o que ele vai fazer',
+    link: 'Entender a experiência',
     requisitos:
-      'Para crianças de 9 a 17 anos · Computador com mouse e teclado · O cadastro pode ser feito pelo celular',
+      'Computador com internet, mouse e teclado para fazer o curso · O cadastro pode ser feito pelo celular',
     prazoCampanha:
       'Novos cadastros até {{data}} (Brasília). Esse prazo é da campanha; cada família aceita tem os próprios 7 dias de curso.',
     figura: {
-      rotulo: 'O jogo do presente',
+      rotulo: 'Cadê Todo Mundo: o jogo do presente',
       imagem: {
         src: `${IMG_KIDS}/jogo-cade.webp`,
         alt: 'Cadê Todo Mundo: o jardim com o arbusto, a pedra, as flores e o contador de achados',
@@ -95,18 +101,19 @@ export const PRESENTE_KIDS = {
         width: 360,
         height: 458,
       } satisfies ImagemPresente,
-      destaque: 'O Zappy acompanha as fases.',
-      legenda: ' Ele fala o que fazer em cada passo, e seu filho confere se a regra funcionou.',
+      destaque: 'O Zappy orienta cada fase.',
+      legenda: ' Seu filho acompanha a explicação, faz uma parte e confere o resultado.',
     },
   },
   jogo: {
-    etiqueta: 'O que ele faz',
-    titulo: 'O personagem aparece quando a regra que ele montou funciona',
+    etiqueta: 'O que acontece na prática',
+    titulo: 'Uma ideia, uma tentativa e um resultado que ele consegue ver',
     paragrafos: [
-      'Primeiro, ele explora a brincadeira de procurar quem está escondido no jardim. Depois, conhece a regra por trás dela: quando alguém toca no esconderijo, ele precisa sumir para revelar quem estava ali.',
-      'Ele monta o comando, testa e observa. Se o esconderijo continua no lugar, há algo para conferir. Quando a regra funciona, o personagem aparece. Mais adiante, ele faz o jogo contar cada achado.',
+      'O jardim e os personagens já estão prontos. Seu filho explora a brincadeira de procurar quem está escondido e, com a orientação da aula, monta as regras que fazem o jogo funcionar.',
+      'Quando alguém toca no arbusto, o esconderijo deve sumir e revelar o coelho. A criança monta esse comando e testa: o personagem apareceu? O esconderijo continuou no lugar? O resultado mostra se a regra fez o que ela esperava.',
+      'Depois, ele faz o jogo contar cada personagem encontrado. Uma ação passa a ter uma consequência que ele consegue ver, conferir e explicar.',
     ],
-    nota: 'Em casa, peça para ele mostrar o que mudou e qual comando fez isso acontecer. Os dois conseguem ver a resposta no jogo.',
+    nota: 'A proposta é abrir espaço para atitudes que você quer ver crescer no seu filho: iniciativa para tentar, disposição para rever uma ideia e confiança para pedir ajuda.',
     imagem: {
       src: `${IMG_KIDS}/tela-regra-ligada.webp`,
       alt: 'Fase do Cadê Todo Mundo: o toque no arbusto revela o coelho, com o Zappy explicando ao lado',
@@ -115,8 +122,8 @@ export const PRESENTE_KIDS = {
     } satisfies ImagemPresente,
   },
   aula: {
-    etiqueta: 'Como é uma aula',
-    titulo: 'A explicação fica ao lado do que ele está construindo',
+    etiqueta: 'Desafio com orientação',
+    titulo: 'Há orientação para começar e apoio para continuar',
     imagem: {
       src: `${IMG_KIDS}/tela-aula-estudio.webp`,
       alt: 'Aula com o vídeo da orientação ao lado do Estúdio',
@@ -124,36 +131,45 @@ export const PRESENTE_KIDS = {
       height: 800,
     } satisfies ImagemPresente,
     passos: [
-      { titulo: 'Ver', texto: 'Ele assiste a um passo da orientação e pausa quando quiser.' },
-      { titulo: 'Fazer', texto: 'Faz a mesma ação no projeto, com os blocos ao lado do vídeo.' },
       {
-        titulo: 'Conferir',
-        texto: 'Testa no jogo. Se algo não saiu, volta à explicação antes de seguir.',
+        titulo: 'Ver e entender',
+        texto:
+          'O vídeo fica ao lado do projeto. Ele acompanha um passo e pode pausar ou assistir de novo.',
+      },
+      {
+        titulo: 'Fazer e conferir',
+        texto:
+          'No Estúdio, monta a regra com blocos e testa no próprio jogo. O resultado mostra o efeito do que fez.',
+      },
+      {
+        titulo: 'Pedir ajuda',
+        texto:
+          'Pode voltar à explicação ou usar o botão Preciso de ajuda, que leva a dúvida para a equipe nos Recados.',
       },
     ],
-    nota: 'As aulas são gravadas, sem horário de turma. Use um momento do tempo de computador que vocês já permitem e acompanhe o primeiro acesso para ver de que ajuda ele precisa.',
+    nota: 'Acompanhe o primeiro acesso para perceber de que apoio ele precisa. Se uma parte estiver difícil, vocês podem olhar juntos: “O que você queria que acontecesse?” e “O que aconteceu?”. O ritmo e a ajuda necessária variam de uma criança para outra.',
   },
   mural: {
-    etiqueta: 'O Mural dos Criadores',
-    titulo: 'Ele publica o jogo e manda o link para a família jogar',
+    etiqueta: 'Uma conquista para compartilhar',
+    titulo: 'Peça para ele mostrar o jogo e contar como chegou até ali',
     paragrafos: [
-      'Nos 7 dias, ele publica no Mural o jogo que fez no curso. A aula 2 ensina o caminho. O link abre o jogo sem conta, para você, os avós e os amigos.',
-      'Ele também joga os jogos de outras crianças, comenta e reage. Ao cumprir as atividades de conclusão, recebe o certificado do curso.',
+      'A aula 2 ensina a publicar o Cadê Todo Mundo no Mural. Seu filho ganha um link para mostrar à família, e quem recebe consegue abrir e jogar sem criar conta.',
+      'Um “me mostra como você fez” pode abrir a conversa. Peça que ele conte uma parte que deu trabalho e o que ajudou a continuar. Além do jogo pronto, vocês têm uma tentativa, uma descoberta ou um pedido de ajuda para reconhecer.',
+      'Durante os sete dias, ele pode jogar as criações de outras crianças, comentar e reagir. Ao cumprir as atividades de conclusão, recebe o certificado do curso.',
     ],
     imagem: {
-      src: `${IMG_KIDS}/tela-jogo-publicado.webp`,
-      alt: 'Página de um jogo publicado no Mural, aberta sem conta',
+      src: `${IMG_KIDS}/tela-cade-publicado.png`,
+      alt: 'Cadê Todo Mundo publicado no Sistema Zero Kids: o jardim com esconderijos e o contador de personagens encontrados.',
       width: 1280,
       height: 800,
     } satisfies ImagemPresente,
   },
   plataforma: {
-    etiqueta: 'A plataforma por trás do presente',
-    titulo:
-      'O Cadê Todo Mundo é um jogo completo. Na Comunidade, ele segue criando outros, cada vez maiores',
+    etiqueta: 'A proposta do Sistema Zero Kids',
+    titulo: 'A criação de jogos é uma ferramenta para colocar ideias em prática',
     paragrafos: [
-      'No Sistema Zero Kids, os cursos seguem em sequência, cada um com um jogo. O Estúdio é onde as crianças montam os próprios jogos, o Mural mostra o que elas publicam, o Clube junta quem está criando e a equipe responde as dúvidas nos Recados. Cada curso concluído e publicado leva a um posto novo da Jornada do Criador.',
-      'O presente inclui o curso e o Mural por 7 dias. O resto faz parte da Comunidade dos Criadores, uma assinatura à parte, que vocês decidem depois, se quiserem.',
+      'No Sistema Zero Kids, o interesse por criar encontra projetos, orientação e desafios. O Cadê Todo Mundo é um primeiro contato: uma experiência para seu filho fazer e para vocês conhecerem juntos.',
+      'Use os sete dias para observar o que desperta a curiosidade dele, de que apoio precisa e como a atividade cabe na rotina. Se quiserem continuar, a Comunidade dos Criadores oferece outros cursos e espaços, com assinatura à parte. A decisão fica com a família.',
     ],
     imagem: {
       src: `${IMG_KIDS}/familia-helena-julio-kids.webp`,
@@ -163,67 +179,90 @@ export const PRESENTE_KIDS = {
     } satisfies ImagemPresente,
   },
   condicoes: {
-    etiqueta: 'O presente da sua família',
-    titulo: 'O que o presente inclui',
+    etiqueta: 'Sete dias para conhecer a experiência',
+    titulo: 'O presente inclui o curso completo e o Mural',
     cartoes: [
       {
-        titulo: 'O curso por 7 dias',
-        texto: 'O Cadê Todo Mundo inteiro, contado a partir do cadastro.',
-      },
-      {
-        titulo: 'O Mural por 7 dias',
+        titulo: 'Cadê Todo Mundo por 7 dias',
         texto:
-          'Publicar, comentar e reagir. Depois, a conta continua vendo e jogando, e o link do jogo publicado segue no ar.',
+          'Acesso ao curso inteiro, com as aulas gravadas e o projeto para acompanhar. O prazo começa no cadastro aceito.',
       },
       {
-        titulo: 'Nenhum pagamento',
-        texto: 'Sem cartão. Quando os 7 dias terminam, nenhuma cobrança começa.',
+        titulo: 'Mural por 7 dias',
+        texto:
+          'Publicar, comentar e reagir. Depois desse período, a conta continua vendo e jogando, e o link do jogo publicado segue no ar.',
+      },
+      {
+        titulo: 'Gratuito, sem cartão',
+        texto:
+          'Nenhum pagamento para começar. Ao fim dos sete dias, o acesso gratuito ao curso termina e nenhuma cobrança é iniciada.',
       },
     ],
-    cta: 'Liberar o presente para minha família',
+    cta: 'Quero o presente para meu filho',
   },
   duvidas: {
     titulo: 'Antes de começar com seu filho',
     itens: [
       {
-        pergunta: 'Ele precisa saber programar?',
-        resposta: 'Não. O curso começa com blocos, e cada parte é conferida antes da próxima.',
+        pergunta: 'Para qual idade é o presente?',
+        resposta:
+          'O Cadê Todo Mundo foi pensado para que crianças e adolescentes de 9 a 17 anos consigam fazer as atividades com mais autonomia, seguindo a orientação das aulas. Crianças menores de 9 anos também podem participar, desde que acompanhadas por um responsável durante as atividades.',
       },
       {
-        pergunta: 'Para qual idade é o presente?',
-        resposta: 'Para crianças e adolescentes de 9 a 17 anos que estão começando.',
+        pergunta: 'Ele precisa saber programar ou gostar de videogame?',
+        resposta:
+          'Não precisa saber programar: o curso começa com blocos e orientação. Gostar de videogame também não é requisito. A curiosidade por criar, pelos personagens ou por descobrir como algo funciona pode ser um ponto de partida.',
+      },
+      {
+        pergunta: 'Meu filho vai conseguir fazer sozinho?',
+        resposta:
+          'O apoio necessário varia conforme a familiaridade com o computador e o ritmo de cada criança. Dos 9 aos 17 anos, a proposta favorece mais autonomia, mas ele ainda pode precisar de ajuda. Acompanhe o começo e combine como ajudá-lo. Para menores de 9 anos, um responsável deve acompanhar as atividades.',
       },
       {
         pergunta: 'Funciona no celular ou no tablet?',
         resposta:
-          'As atividades pedem um computador com internet, mouse e teclado. O cadastro pode ser feito pelo celular.',
+          'O cadastro pode ser feito pelo celular. Para acompanhar as atividades e montar o jogo, ele precisa de um computador com internet, mouse e teclado.',
       },
       {
-        pergunta: 'Quando os 7 dias começam?',
+        pergunta: 'Como encaixar na rotina da família?',
         resposta:
-          'No cadastro. Escolha um momento em que ele possa usar o computador nos dias seguintes.',
+          'As aulas são gravadas e não têm horário de turma. Combinem um momento dentro do tempo de computador que vocês já permitem. O curso fica disponível durante os sete dias de acesso.',
       },
       {
-        pergunta: 'E se ele travar numa parte?',
+        pergunta: 'Quando começam os sete dias?',
         resposta:
-          'Cada fase tem a explicação ao lado e o botão Preciso de ajuda, que leva a dúvida para a equipe nos Recados.',
+          'No cadastro aceito. Escolha um momento em que seu filho possa usar o computador nos dias seguintes. São sete dias de acesso ao curso e ao Mural.',
+      },
+      {
+        pergunta: 'O que acontece quando o prazo termina?',
+        resposta:
+          'O acesso gratuito ao curso termina. A conta continua vendo e jogando no Mural, e o jogo que foi publicado continua acessível pelo link. Nenhuma assinatura ou cobrança começa automaticamente.',
+      },
+      {
+        pergunta: 'O presente inclui os outros cursos da plataforma?',
+        resposta:
+          'Ele inclui o Cadê Todo Mundo e o Mural. Os demais cursos e espaços da Comunidade dos Criadores fazem parte de uma assinatura à parte, que vocês podem escolher depois.',
       },
       {
         pergunta: 'Posso resgatar mais de um presente?',
         resposta:
-          'Cada e-mail resgata um presente Kids. Se você também receber um presente adulto, para criar o seu próprio jogo, pode usar o mesmo e-mail nele.',
+          'Cada e-mail pode resgatar um presente Kids. Se você também receber um presente adulto, para criar o seu próprio jogo, pode usar o mesmo e-mail nele.',
       },
     ],
   },
   resgatar: {
     etiqueta: 'O primeiro passo é do responsável',
-    titulo: 'Libere o presente e combine o primeiro momento com ele',
+    titulo: 'Libere o presente e combine o primeiro momento juntos',
     texto:
-      'Você cadastra a sua conta com os seus dados. Depois, já na plataforma, cria o perfil do seu filho e abre o curso no computador.',
+      'Cadastre a sua conta com os seus dados. Depois, já na plataforma, crie o perfil do seu filho e abra o Cadê Todo Mundo no computador. O presente é gratuito e não pede cartão.',
     previa:
       'O formulário aparece no link público quando a campanha estiver aberta e o curso disponível. Nesta prévia, nenhum acesso é criado.',
   },
-  barra: { titulo: 'Presente de 7 dias', texto: 'Sem cartão', cta: 'Quero o presente' },
+  barra: {
+    titulo: 'Presente de 7 dias',
+    texto: 'Sem cartão',
+    cta: 'Quero o presente',
+  },
   estados: {
     preparing: {
       etiqueta: 'Cadastro ainda fechado',
@@ -269,6 +308,30 @@ export const PRESENTE_KIDS = {
     },
     contato: 'Falar com a equipe',
   } satisfies EstadosPresente,
+  habilidades: {
+    etiqueta: 'O que ele pode praticar',
+    titulo: 'Planejar, rever uma ideia e pedir ajuda são habilidades para a vida',
+    texto:
+      'No curso, essas atitudes aparecem em situações pequenas, com um objetivo que a criança entende e um resultado que pode observar:',
+    cartoes: [
+      {
+        titulo: 'Organizar os passos',
+        texto:
+          'Para revelar e contar um personagem, ele acompanha o que precisa acontecer primeiro e o que vem depois. A ideia ganha uma sequência que pode executar.',
+      },
+      {
+        titulo: 'Rever uma tentativa',
+        texto:
+          'Se o personagem continua escondido, há um comando para conferir. Ele pode voltar à explicação, ajustar aquela parte e testar de novo.',
+      },
+      {
+        titulo: 'Explicar e pedir ajuda',
+        texto:
+          'Ao mostrar onde parou e contar o que tentou, ele pratica colocar uma dúvida em palavras. Assim, quem ajuda tem um ponto de partida.',
+      },
+    ],
+    nota: 'Na conversa em casa, essas tentativas podem virar exemplos: como começar uma tarefa por partes, conferir uma resposta ou explicar uma dúvida. Você tem algo que aconteceu de verdade para retomar com ele: “Lembra do que fez quando aquela regra não funcionou?”.',
+  },
 }
 
 const section = (
@@ -291,12 +354,13 @@ const section = (
 export const GIFT_SECTIONS = [
   section(
     'experiencia',
-    'Um jogo que ele ajuda a fazer funcionar',
-    'O personagem aparece quando a regra que seu filho montou funciona.',
+    'Criar um jogo, praticar como enfrentar desafios',
+    'Uma regra para montar. Uma tentativa para observar. Uma ideia para rever.',
     [
       'No Cadê Todo Mundo, seu filho começa explorando uma brincadeira de procurar personagens escondidos em um jardim. Depois, conhece uma das regras por trás dela: quando alguém toca no esconderijo, ele precisa desaparecer para revelar quem estava ali.',
       'A criança monta o comando, testa e observa. Se o esconderijo continua no lugar, há algo para conferir. Quando a regra funciona, o personagem aparece. Mais adiante, ela trabalha a contagem para o jogo registrar cada achado.',
-      'Em casa, você pode pedir: “Me mostra o que mudou? Qual comando fez isso acontecer?”. A aprendizagem ganha um exemplo que os dois conseguem ver no jogo.',
+      'Organizar os passos, conferir uma tentativa e explicar uma dúvida são habilidades para a vida. Aqui, elas aparecem em uma tarefa que a criança consegue observar: mudar uma regra e ver o que acontece no jogo.',
+      'Em casa, você pode pedir: “Me mostra o que mudou? O que você tentou quando não funcionou?”. Essa conversa ajuda a reconhecer o processo, além do resultado, e oferece exemplos para retomar quando aparecer outro desafio.',
     ],
     ['regra', 'contador'],
   ),
@@ -327,7 +391,7 @@ export const GIFT_SECTIONS = [
     [
       'Não é preciso aumentar o tempo de tela para experimentar. Vocês podem combinar que uma parte do período já permitido será usada para construir o jogo e conversar sobre o que aconteceu.',
       'As aulas são gravadas: não há horário de turma para encaixar na agenda. Durante os sete dias de acesso, vocês escolhem quando entrar e podem pausar e rever as explicações. Vale acompanhar o primeiro acesso, ajudar a encontrar os controles e observar de que companhia seu filho precisa.',
-      'Algumas crianças seguem com a orientação da tela; outras pedem ajuda para ler uma instrução ou retomar uma etapa. O curso oferece um caminho para começar. A autonomia é construída nesse uso, respeitando o momento de cada criança.',
+      'O curso foi pensado para que crianças e adolescentes de 9 a 17 anos consigam fazer as atividades com mais autonomia. Crianças menores também podem participar, acompanhadas por um responsável durante as atividades. A companhia necessária varia: observe quando seu filho precisa de ajuda para ler, usar os controles ou retomar uma etapa.',
     ],
     ['pausa'],
   ),
@@ -387,11 +451,11 @@ export const GIFT_FAQ = [
   },
   {
     id: 'idade',
-    question: 'Como saber se meu filho está pronto para experimentar?',
+    question: 'Para qual idade é o presente?',
     visual: 'aula',
     paragraphs: [
-      'O Cadê Todo Mundo é apresentado para crianças e adolescentes de 9 a 17 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
-      'Se ele ainda precisa de companhia para ler ou encontrar os controles, reserve esse primeiro momento para fazerem juntos. Não é preciso chegar com experiência em criação de jogos.',
+      'O Cadê Todo Mundo foi pensado para que crianças e adolescentes de 9 a 17 anos consigam realizar as atividades com mais autonomia. Crianças menores também podem fazer o curso, desde que acompanhadas por um responsável durante as atividades.',
+      'Além da idade, observe de que companhia seu filho precisa para acompanhar as instruções, usar mouse e teclado e lidar com uma dúvida. Vale estar junto no primeiro acesso e ajustar essa ajuda ao longo do curso. Não é preciso chegar sabendo programar.',
     ],
   },
   {
@@ -481,7 +545,7 @@ export const AMBASSADOR_SECTIONS = [
     'Uma indicação que você consegue explicar',
     'Um presente para uma família ou para um adulto que quer criar o próprio jogo.',
     [
-      'Talvez seja o responsável por uma criança de 9 a 17 anos que adora jogos e pergunta como eles são feitos. Ou um adulto que cresceu jogando e sempre quis saber como um jogo funciona por dentro. Seu convite oferece um primeiro passo com uma tarefa concreta.',
+      'Talvez seja uma família que queira oferecer à criança uma experiência de criar, testar ideias e conversar sobre as tentativas. O Kids foi pensado para 9 a 17 anos com mais autonomia; crianças menores podem participar com um responsável durante as atividades. Para um adulto que quer criar o próprio jogo, há um convite separado, com a versão adulta do curso.',
       'Pelo seu link, a pessoa recebe 7 dias do Cadê Todo Mundo e do Mural, sem custo e sem cartão: a família recebe a versão Kids, e o adulto, a versão adulta. Cada link leva a uma página feita para quem recebe, que explica o presente e orienta o cadastro. Você não cadastra ninguém nem precisa explicar sozinho todos os detalhes.',
     ],
     ['aula-estudio'],

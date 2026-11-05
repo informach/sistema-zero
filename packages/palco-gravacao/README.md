@@ -58,6 +58,8 @@ está sendo conferido.
   O gesto aguarda a ação do menu e a renderização dos blocos antes de responder. A prova com
   Blockly real roda com `node packages/palco-gravacao/qa/verificar-organizacao-browser.mjs`,
   na raiz, usando Chromium instalado pelo Playwright ou `SZ_CHECK_CHROMIUM`.
+  Ela confere também a leitura dos nomes pela posição dos campos, incluindo números no
+  começo e no meio do bloco, com e sem zoom, independentemente da ordem de montagem do SVG.
 
 - **A mão procura descansar fora dos blocos:** parada em cima, o Blockly mostra a dica do bloco
   por cima da aula. Apontar um bloco, o encaixe ou o lugar abaixo dele deixa a mão no fundo da
@@ -105,6 +107,15 @@ está sendo conferido.
 - **Conferir com todos os blocos à vista:** `mostrar blocos "A", "B"` mede a caixa que os blocos
   ocupam juntos e arrasta a área de código até ela ficar à vista com 24 px de folga, perto do meio
   (`rolagemDeVarios`); já assim, só aponta o primeiro.
+  Blocos a mais de uma tela de distância (Ao iniciar visto da área Quando acontecer) levam mais de
+  um arrasto: o que não alcança volta com `falta` e a página é perguntada de novo.
+- **Galeria parada antes da escolha** (05/11/2026): a roda anima a lista por um instante e às vezes
+  começa um pouco depois do gesto; `escolher` espera a opção ficar 300 ms no mesmo lugar
+  (`listaParada`), senão pedia outra rolagem e passava da imagem.
+- **Nome do bloco com valor de sombra:** o "1" de Alterar variável pode vir antes dos rótulos no
+  DOM; `textoProprio` põe somente esse prefixo no fim, para o bloco começar pelo nome,
+  preservando valores entre rótulos. A espera da galeria mede a posição da opção e a rolagem,
+  inclusive quando a opção já está totalmente visível.
 - **Farol Aula 3** (04/11/2026): `jogar na lixeira ">" em "Se"` leva a pergunta pronta do Se para a
   lixeira pelo sinal de maior; `abrir "senão" em "Se"` clica no botão de mais (um `blocklyImageField`)
   que fica logo antes do rótulo, e `apontar mais de` só aponta; um nome de bloco aceita `dentro de`

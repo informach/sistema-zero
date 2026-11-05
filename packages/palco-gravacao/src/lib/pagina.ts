@@ -5,6 +5,16 @@ import type { Alvo } from './verbos'
  * blocos, os campos e a pré-visualização do Estúdio. Cada elemento achado ganha uma marca própria
  * (`data-palco-alvo`), e o robô o procura por ela logo em seguida: a marca não muda nada na aula.
  */
+/**
+ * Um arrasto do fundo da área de código, de `de` até `para`. `falta`: o bloco estava mais longe
+ * do que um arrasto alcança dentro da área à vista, e depois deste vem outro.
+ */
+export interface Rolagem {
+  de: Alvo
+  para: Alvo
+  falta?: true
+}
+
 export interface PaginaDoPalco {
   /** O tamanho da pré-visualização do jogo no Estúdio, ou nulo quando ela não está na tela. */
   previa(): { width: number; height: number } | null
@@ -26,14 +36,14 @@ export interface PaginaDoPalco {
   /** O espaço ao lado do rótulo de um bloco (o "fazer" de um Quando clicar ou tocar). */
   encaixe(bloco: string, rotulo: string): Alvo | null
   /** Um arrasto do fundo da área de trabalho que traz o bloco à vista (nulo se já está). */
-  rolagem(bloco: string): { de: Alvo; para: Alvo } | 'visivel' | null
+  rolagem(bloco: string): Rolagem | 'visivel' | null
   /**
    * Arruma os blocos um por cima do outro pelo menu da área de trabalho (botão direito e
    * Organizar blocos), por eventos dentro da página. Falso se o menu não abriu.
    */
   organizar(): Promise<boolean>
   /** O mesmo para um campo de bloco, que também precisa estar descoberto para o clique. */
-  rolagemDoCampo(valor: string, bloco?: string): { de: Alvo; para: Alvo } | 'visivel' | null
+  rolagemDoCampo(valor: string, bloco?: string): Rolagem | 'visivel' | null
   /** Algum botão visível com este texto. */
   temBotao(texto: string): boolean
   /**
@@ -95,7 +105,7 @@ export interface PaginaDoPalco {
    * textos (os que a criança confere): o conjunto vem para perto do meio da área de código, com
    * folga das bordas. `'visivel'` se já está assim; nulo se algum bloco não existe.
    */
-  rolagemDeVarios(blocos: readonly string[]): { de: Alvo; para: Alvo } | 'visivel' | null
+  rolagemDeVarios(blocos: readonly string[]): Rolagem | 'visivel' | null
   /**
    * O botão de mais que fica logo antes do rótulo `rotulo` ("senão", "senão se") de `bloco`: é ele
    * que abre aquele espaço do bloco (o Se chega sem o senão).
@@ -108,7 +118,11 @@ export interface PaginaDoPalco {
    * uma variável): `dy` é quanto rolar a lista, com a roda, para ela aparecer inteira (0 quando já
    * aparece), e `lista` o ponto da lista onde rolar. Nulo sem a opção.
    */
-  opcaoNaLista(valor: string): { dy: number; lista: Alvo } | null
+  opcaoNaLista(valor: string): {
+    dy: number
+    lista: Alvo
+    posicao: { x: number; y: number; scroll: number }
+  } | null
   /** Um ponto da área de código à vista sem bloco nenhum, para clicar fora dos blocos. */
   fundoLivre(): Alvo | null
 }
@@ -216,14 +230,33 @@ function donoDe(el: Element): Element | null {
 }
 
 /** O texto que é do próprio bloco, sem o dos blocos encaixados nele. */
-const textoProprio = (block: Element): string =>
-  fold(
-    [...block.querySelectorAll('text.blocklyText')]
-      .filter((t) => donoDe(t) === block)
-      .map(texto)
-      .join(' ')
-      .replace(/▾/g, ''),
+const textoProprio = (block: Element): string => {
+  const meus = [...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block)
+  // A montagem do SVG pode pôr sombras antes dos rótulos no DOM, independentemente de onde
+  // aparecem. Lemos as linhas desenhadas, da esquerda para a direita: isso também conserva o
+  // primeiro número de "1 + 2" e valores entre rótulos. A interseção vertical comum impede
+  // que campos altos juntem duas linhas diferentes numa única linha.
+  const medidos = meus
+    .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+    .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left)
+  const linhas: { top: number; bottom: number; campos: typeof medidos }[] = []
+  for (const campo of medidos) {
+    const linha = linhas.find(
+      (l) => Math.max(l.top, campo.rect.top) < Math.min(l.bottom, campo.rect.bottom),
+    )
+    if (linha) {
+      linha.top = Math.max(linha.top, campo.rect.top)
+      linha.bottom = Math.min(linha.bottom, campo.rect.bottom)
+      linha.campos.push(campo)
+    } else {
+      linhas.push({ top: campo.rect.top, bottom: campo.rect.bottom, campos: [campo] })
+    }
+  }
+  const ordenados = linhas.flatMap((l) =>
+    l.campos.sort((a, b) => a.rect.left - b.rect.left).map((campo) => campo.el),
   )
+  return fold(ordenados.map(texto).join(' ').replace(/▾/g, ''))
+}
 
 /**
  * Os blocos visíveis da área de trabalho ou da paleta cujo texto começa com `alvo` (ou o contém,
@@ -430,13 +463,16 @@ const CENTRADA = 0.15
  * área à vista; `'visivel'` se ele já está inteiro à vista e sem nada por cima (com `centrar`,
  * também perto do meio da altura: a área em que se trabalha fica no centro).
  */
+/** Quanto do arrasto pedido pode ficar de fora sem outro arrasto depois. */
+const FALTA = 24
+
 function rolagemDe(
   doc: Document,
   el: Element | DOMRect,
   descoberto = false,
   centrar = false,
   margem = 0,
-): { de: Alvo; para: Alvo } | 'visivel' | null {
+): Rolagem | 'visivel' | null {
   const area = areaDeTrabalho(doc)
   if (!area) return null
   const view = areaVisivel(doc, area)
@@ -476,7 +512,14 @@ function rolagemDe(
     x: Math.min(view.right - 4, Math.max(view.left + 4, start.x + dx)),
     y: Math.min(view.bottom - 4, Math.max(view.top + 4, start.y + dy)),
   }
-  return { de: pontoEm(area, start.x, start.y), para: pontoEm(area, end.x, end.y) }
+  // Mais longe do que o arrasto alcança (as áreas de Ao iniciar a uma tela inteira de distância):
+  // este arrasto leva até onde dá, e a página é perguntada de novo.
+  const falta = Math.abs(start.x + dx - end.x) > FALTA || Math.abs(start.y + dy - end.y) > FALTA
+  return {
+    de: pontoEm(area, start.x, start.y),
+    para: pontoEm(area, end.x, end.y),
+    ...(falta ? { falta: true as const } : {}),
+  }
 }
 
 /**
@@ -791,7 +834,11 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       const r = opcao.getBoundingClientRect()
       const dentro = r.top >= c.top - 1 && r.bottom <= c.bottom + 1
       const dy = dentro ? 0 : Math.round(r.top + r.height / 2 - (c.top + c.height / 2))
-      return { dy, lista: pontoEm(rolante, c.left + c.width / 2, c.top + c.height / 2) }
+      return {
+        dy,
+        lista: pontoEm(rolante, c.left + c.width / 2, c.top + c.height / 2),
+        posicao: { x: r.left, y: r.top, scroll: rolante.scrollTop },
+      }
     },
 
     fundoLivre() {

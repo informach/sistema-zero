@@ -1,8 +1,6 @@
 ---
-// Corpo da página de recebimento do presente KIDS (Canvas "Presente Kids e adulto · proposta",
-// RecebimentoKids, 20/10/2026). Toda a copy vem de `PRESENTE_KIDS` (content/presente.ts); o layout
-// é o da página de 9 a 17 (`.c917`) com as peças de presente-kids.css. Quem lê é o responsável;
-// quem usa é a criança de 9 a 17 anos.
+// Corpo do presente Kids, com copy aprovada em 05/11/2026. O layout `.c917` e as peças de
+// presente-kids.css preservam a identidade existente. Quem lê e cadastra é o responsável.
 import type { ReferralGiftView } from '@sistemazero/core/referrals'
 import { type EstadoPresente, PRESENTE_KIDS as P } from '../../content/presente'
 import { dataBrasilia } from '../../content/presente-resgate'
@@ -108,6 +106,25 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
   </div>
 </section>
 
+<section id="habilidades" class="c9-sec c9-sec--creme" aria-labelledby="pk-habilidades">
+  <div class="c9-wrap c9-pilha c9-gap-26">
+    <div class="c9-cabeca">
+      <span class="c9-tag c9-cor--branco">{P.habilidades.etiqueta}</span>
+      <h2 id="pk-habilidades" class="c9-h2">{P.habilidades.titulo}</h2>
+      <p class="c9-p pk-texto-largo">{P.habilidades.texto}</p>
+    </div>
+    <div class="c9-grade c9-min-300 c9-grade--20">
+      {P.habilidades.cartoes.map((cartao, index) => (
+        <article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}>
+          <h3 class="c9-cartao__titulo">{cartao.titulo}</h3>
+          <p class="c9-cartao__texto">{cartao.texto}</p>
+        </article>
+      ))}
+    </div>
+    <p class="c9-p pk-texto-largo">{P.habilidades.nota}</p>
+  </div>
+</section>
+
 <section class="c9-sec c9-sec--chao" aria-labelledby="pk-aula">
   <div class="c9-wrap c9-pilha c9-gap-26">
     <div class="c9-cabeca">
@@ -192,7 +209,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
     </div>
     <div class="pk-form">
       {ready ? (
-        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" />
+        <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} />
       ) : preview ? (
         <div class="pk-estado c9-cor--verde"><p class="c9-p">{P.resgatar.previa}</p></div>
       ) : (
@@ -208,7 +225,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
             <details id="retomar" class="pk-retomar">
               <summary>{P.estados.retomar.botao}</summary>
               <p>{P.estados.retomar.texto}</p>
-              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" retryOnly />
+              <BolsaResgate client:load code={gift.code} referrerName={nome} communityUrl={communityUrl} audience="kids" campaign={campaign} retryOnly />
             </details>
           )}
         </div>

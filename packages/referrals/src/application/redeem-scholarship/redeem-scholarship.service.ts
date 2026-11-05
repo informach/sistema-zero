@@ -5,6 +5,7 @@ import {
   type GiftAudience,
   type GiftMuralAccess,
   type GiftSource,
+  publicGiftSourceName,
   type ReferralBonusAmounts,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
@@ -476,8 +477,8 @@ export class RedeemScholarshipService {
               ...(source.kind === 'campaign'
                 ? { campanha: source.name, validade }
                 : adult
-                  ? { indicador: source.name, validade }
-                  : { indicador: source.name }),
+                  ? { indicador: publicGiftSourceName(source), validade }
+                  : { indicador: publicGiftSourceName(source) }),
               link: giftWelcomeLink(redemption.audience, appUrl, token),
             },
           },
@@ -508,9 +509,9 @@ export class RedeemScholarshipService {
               ...(source.kind === 'campaign'
                 ? { campanha: source.name, validade }
                 : adult
-                  ? { indicador: source.name, validade }
+                  ? { indicador: publicGiftSourceName(source), validade }
                   : expiresAt
-                    ? { indicador: source.name }
+                    ? { indicador: publicGiftSourceName(source) }
                     : {}),
               link: giftWelcomeLink(redemption.audience, appUrl, null),
             },

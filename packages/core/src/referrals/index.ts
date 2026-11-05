@@ -40,6 +40,11 @@ export interface GiftSource {
   context?: CampaignContext
   description?: string
 }
+/** Nome para o convite público: pessoas usam só o primeiro nome; campanhas mantêm o título. */
+export function publicGiftSourceName(source: Pick<GiftSource, 'kind' | 'name'>): string {
+  const name = source.name.trim()
+  return source.kind === 'campaign' ? name : (name.split(/\s+/u)[0] ?? '')
+}
 export interface ReferralGiftView {
   code: string
   displayName: string

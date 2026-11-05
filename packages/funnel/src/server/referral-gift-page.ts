@@ -1,6 +1,7 @@
 import {
   type GiftAudience,
   isGiftAudience,
+  publicGiftSourceName,
   type ReferralGiftView,
 } from '@sistemazero/core/referrals'
 import type { GatewayClient } from '../lib/gateway-client'
@@ -58,11 +59,17 @@ export async function resolveReferralGiftPage(
   ) {
     return { kind: 'unavailable' }
   }
+  const publicName = publicGiftSourceName(body.source)
   return {
     kind: body.state === 'active' ? (body.giftAvailable ? 'ready' : 'preparing') : body.state,
-    referrerName: body.displayName.trim(),
+    referrerName: publicName,
     audience,
-    gift: { ...(body as ReferralGiftView), audience },
+    gift: {
+      ...(body as ReferralGiftView),
+      displayName: publicName,
+      source: { ...body.source, name: publicName },
+      audience,
+    },
   }
 }
 

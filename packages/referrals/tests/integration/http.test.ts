@@ -594,9 +594,9 @@ describe('borda HTTP do referrals', () => {
       expect(await ok.json()).toEqual({
         code: ambassador.code,
         ownerKind: 'ambassador',
-        displayName: 'Vó Cida',
+        displayName: 'Vó',
         giftAvailable: true,
-        source: { kind: 'ambassador', name: 'Vó Cida' },
+        source: { kind: 'ambassador', name: 'Vó' },
         state: 'active',
         startsAt: null,
         endsAt: null,
@@ -748,12 +748,15 @@ describe('presente Kids e adulto no HTTP (20/10/2026)', () => {
     )
     expect(first.status).toBe(200)
     const view = (await first.json()) as {
+      name: string
       shareUrl: string
       shareUrls: { kids: string; adult: string }
       bonus: { amountCents: number; annualAmountCents: number }
     }
     expect(view.bonus).toMatchObject({ amountCents: 3000, annualAmountCents: 8000 })
+    expect(view.name).toBe('Marta Lima')
     const adultCode = repo.codes.find((c) => c.audience === 'adult')!
+    expect(adultCode.displayName).toBe('Marta Lima')
     expect(view.shareUrl).toBe(`${FUNNEL_URL}/bolsa/${ambassador.code}`)
     expect(view.shareUrls).toEqual({
       kids: `${FUNNEL_URL}/bolsa/${ambassador.code}`,
@@ -770,7 +773,7 @@ describe('presente Kids e adulto no HTTP (20/10/2026)', () => {
       code: adultCode.code,
       audience: 'adult',
       giftAvailable: true,
-      source: { kind: 'ambassador', name: 'Marta Lima' },
+      source: { kind: 'ambassador', name: 'Marta' },
     })
   })
 

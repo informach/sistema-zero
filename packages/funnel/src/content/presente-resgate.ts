@@ -22,6 +22,7 @@ export interface ResgateCopy {
   botaoRetomar: string
   enviando: string
   rodape: string
+  rodapeCampanha: string
   aceite: { antes: string; termos: string; meio: string; privacidade: string; depois: string }
   termosHref: string
   concluido: {
@@ -94,11 +95,13 @@ export const RESGATE_COPY: Record<GiftAudience, ResgateCopy> = {
       },
       telefone: { rotulo: 'Telefone', opcional: '(opcional)', placeholder: '(11) 99999-9999' },
     },
-    botao: 'Liberar o curso para minha família',
+    botao: 'Liberar o presente para minha família',
     botaoRetomar: 'Retomar meu cadastro',
     enviando: 'Conferindo seu acesso…',
     rodape:
       'Presente de {{nome}}: o curso Cadê Todo Mundo e o Mural Kids por 7 dias, sem custo e sem cartão.',
+    rodapeCampanha:
+      '{{nome}}: o curso Cadê Todo Mundo e o Mural Kids por 7 dias, sem custo e sem cartão.',
     aceite: {
       antes: 'Ao continuar, você confirma que é o responsável pela criança e aceita os ',
       ...ACEITE,
@@ -168,6 +171,8 @@ export const RESGATE_COPY: Record<GiftAudience, ResgateCopy> = {
     enviando: 'Conferindo seu acesso…',
     rodape:
       'Presente de {{nome}}: o curso Cadê Todo Mundo, na versão adulta, e o Mural adulto por 7 dias, sem custo e sem cartão.',
+    rodapeCampanha:
+      '{{nome}}: o curso Cadê Todo Mundo, na versão adulta, e o Mural adulto por 7 dias, sem custo e sem cartão.',
     aceite: {
       antes: 'Ao continuar, você confirma que tem 18 anos ou mais e aceita os ',
       ...ACEITE,

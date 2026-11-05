@@ -1,5 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
-import type { GiftAudience } from '@sistemazero/core/referrals'
+import { type GiftAudience, publicGiftSourceName } from '@sistemazero/core/referrals'
 import { normalizeEmail } from '../../domain/codes'
 import { scholarshipShareUrl } from '../../domain/links'
 import { splitName } from '../../domain/names'
@@ -101,7 +101,7 @@ export class CreateInviteService {
         recipient: { name: splitName(name).firstName, email },
         variables: {
           nome: splitName(name).firstName,
-          indicador: ambassador.name,
+          indicador: publicGiftSourceName({ kind: 'ambassador', name: ambassador.name }),
           link: scholarshipShareUrl(this.opts.funnelPublicUrl, codeRecord.code),
         },
       },
