@@ -101,6 +101,7 @@ export interface AmbassadorPageView {
   shareUrl: string
   /** Um link por público (20/10/2026); `null` enquanto aquele link não existe. */
   shareUrls?: import('@sistemazero/core/referrals').AmbassadorShareUrls
+  campaigns?: import('@sistemazero/core/referrals').AmbassadorCampaignPage
   stats: { redemptionsCompleted: number; invitesSent: number }
 }
 
@@ -138,6 +139,7 @@ export interface GrantMembersInput {
 /** Corpo de `POST /subscriptions` (gateway → payments): assinatura de cartão. */
 export interface CreateSubscriptionInput {
   amountInCents: number
+  firstChargeAmountInCents?: number
   /** Mensal = 1, anual = 12 (da oferta do catálogo). */
   intervalMonths: number
   description: string
@@ -462,10 +464,10 @@ export function createGatewayClient(opts: GatewayClientOptions) {
     },
 
     /** GET /referrals/internal/ambassadors/by-token/:token — página do embaixador (capability URL). */
-    async getAmbassadorByToken(token: string): Promise<GatewayResult> {
+    async getAmbassadorByToken(token: string, campaignOffset = 0): Promise<GatewayResult> {
       const path = `/referrals/internal/ambassadors/by-token/${encodeURIComponent(token)}`
       return requestJson(
-        `${opts.baseUrl}${path}`,
+        `${opts.baseUrl}${path}${campaignOffset > 0 ? `?campaignOffset=${campaignOffset}` : ''}`,
         { method: 'GET', headers: buildHeaders('GET', path, '') },
         timeoutMs,
       )

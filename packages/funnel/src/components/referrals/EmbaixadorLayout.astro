@@ -16,8 +16,16 @@ interface Props {
   /** Com o painel aberto: os atalhos do topo. */
   painel?: boolean
   bonus?: boolean
+  campanhas?: boolean
 }
-const { title, description, canonical, painel = false, bonus = false } = Astro.props
+const {
+  title,
+  description,
+  canonical,
+  painel = false,
+  bonus = false,
+  campanhas = false,
+} = Astro.props
 ---
 <BaseLayout title={title} description={description} canonical={canonical} noindex htmlClass="theme-kids">
   <div class="emb">
@@ -30,6 +38,7 @@ const { title, description, canonical, painel = false, bonus = false } = Astro.p
         </a>
         {painel && (
           <nav class="emb-nav" aria-label={P.topo.navAria}>
+            {campanhas && <a class="emb-nav__link" href="#minhas-campanhas">Minhas campanhas</a>}
             {bonus && <a class="emb-nav__link" href="#bonus">{P.topo.bonus}</a>}
             <a class="emb-nav__link" href="#inclui">{P.topo.inclui}</a>
             <a class="emb-btn emb-topo-cta" href="#painel">{P.topo.cta}</a>

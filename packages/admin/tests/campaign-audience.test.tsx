@@ -117,8 +117,10 @@ test('campanha vincula embaixador com comissão explícita e remove vínculo sem
     const amounts = document.querySelectorAll<HTMLInputElement>(
       '[role="dialog"] input[type="number"]',
     )
+    expect(amounts[0]!.value).toBe('30')
+    expect(amounts[1]!.value).toBe('80')
     await act(async () => {
-      for (const [index, text] of ['45.50', '30'].entries()) {
+      for (const [index, text] of ['45.50', '90.25', '30'].entries()) {
         Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
           amounts[index],
           text,
@@ -130,6 +132,7 @@ test('campanha vincula embaixador com comissão explícita e remove vínculo sem
     expect(calls.filter((c) => c.method === 'PATCH').at(-1)?.body).toMatchObject({
       commissionEnabled: true,
       commissionAmountCents: 4550,
+      commissionAnnualAmountCents: 9025,
       commissionWindowDays: 30,
     })
     await act(async () => button('Remover vínculo').click())
@@ -171,6 +174,7 @@ test('editor preserva beneficiário e comissão habilitada ao editar outros camp
       ambassadorId: '11111111-1111-4111-8111-111111111111',
       commissionEnabled: true,
       commissionAmountCents: 4500,
+      commissionAnnualAmountCents: null,
       commissionWindowDays: 30,
     })
   } finally {
@@ -190,6 +194,42 @@ test('a lista mostra o público, e campanha antiga sem o campo é Kids', async (
   expect(rows[1]!.children[1]!.textContent).toBe('Kids')
   expect(container.textContent).toContain('seu público e seu prazo para novos cadastros')
   await act(async () => root.unmount())
+})
+
+test('separar o mensal de um acordo legado conserva o anual exibido', async () => {
+  const { calls, root } = await mount(
+    [
+      campaign({
+        audience: 'kids',
+        ambassadorId: '11111111-1111-4111-8111-111111111111',
+        commissionEnabled: true,
+        commissionAmountCents: 4500,
+        commissionWindowDays: 30,
+      }),
+    ],
+    () => Response.json({ campaign: campaign() }),
+  )
+  try {
+    await act(async () => button('Editar').click())
+    const amounts = document.querySelectorAll<HTMLInputElement>(
+      '[role="dialog"] input[type="number"]',
+    )
+    expect(amounts[1]!.value).toBe('45')
+    await act(async () => {
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(
+        amounts[0],
+        '30',
+      )
+      amounts[0]!.dispatchEvent(new Event('input', { bubbles: true }))
+    })
+    await submit()
+    expect(calls.find((c) => c.method === 'PATCH')?.body).toMatchObject({
+      commissionAmountCents: 3000,
+      commissionAnnualAmountCents: 4500,
+    })
+  } finally {
+    await act(async () => root.unmount())
+  }
 })
 
 test('nova campanha nasce na comunidade selecionada e envia o público explícito', async () => {

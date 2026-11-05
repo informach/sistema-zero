@@ -23,6 +23,7 @@ import type { PaymentStatus } from '../../../domain/payment/payment.status'
 import type { PeriodConfirmationAudit } from '../../../domain/payment/period-confirmation'
 import type { CancellationOrigin } from '../../../domain/subscription/cancellation-record'
 import type { CycleHistoryReview } from '../../../domain/subscription/cycle-history-review'
+import type { FirstChargePricing } from '../../../domain/subscription/first-charge-pricing'
 import type { SubscriptionScheduleObservation } from '../../../domain/subscription/subscription-billing'
 import type { RecoveryAdmissionReason } from '../../../domain/subscription-recovery/recovery-admission.port'
 import type { RecoveryReason } from '../../../domain/subscription-recovery/recovery-case'
@@ -232,6 +233,8 @@ export const subscriptions = paymentsSchema.table(
   'subscriptions',
   {
     id: uuid('id').primaryKey(),
+    firstChargePricing: jsonb('first_charge_pricing').$type<FirstChargePricing>(),
+    firstChargeNextAttemptAt: timestamp('first_charge_next_attempt_at', { withTimezone: true }),
     version: integer('version').notNull().default(0),
     consumerId: text('consumer_id').notNull(),
     status: subscriptionStatusEnum('status').notNull(),
@@ -279,6 +282,11 @@ export const subscriptions = paymentsSchema.table(
     uniqueIndex('subscriptions_consumer_idem_uq').on(t.consumerId, t.idempotencyKey),
     index('subscriptions_provider_sub_idx').on(t.provider, t.providerSubscriptionId),
     index('subscriptions_status_idx').on(t.status),
+    index('subscriptions_first_charge_setup_idx')
+      .on(t.firstChargeNextAttemptAt, t.createdAt)
+      .where(
+        sql`${t.firstChargePricing}->>'renewalPriceConfirmed' = 'false' and ${t.status} in ('ACTIVE', 'PENDING')`,
+      ),
     index('subscriptions_cancellation_requests_idx')
       .on(t.cancellationNextAttemptAt, t.cancelRequestedAt)
       .where(sql`${t.cancelRequestedAt} is not null and ${t.status} in ('ACTIVE', 'PENDING')`),

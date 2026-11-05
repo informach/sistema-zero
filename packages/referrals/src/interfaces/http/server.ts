@@ -29,6 +29,7 @@ export interface HttpDeps {
   funnelPublicUrl: string
   /** Snapshot da env BONUS_AMOUNT_CENTS — exposto na view "me" (copy nunca hardcoda). */
   bonusAmountCents: number
+  bonusAnnualAmountCents?: number
   /** Consumer do payments (ausente em teste/dev sem banco = rota fora). */
   webhooks?: Omit<WebhooksRoutesDeps, 'logger'>
   requireAdminEnabled?: boolean
@@ -53,6 +54,10 @@ export function createServer(deps: HttpDeps) {
       serve: { maxRequestBodySize: deps.maxRequestBodyBytes ?? 64 * 1024 },
     })
       .onError(({ error, set, code }) => {
+        if (code === 'NOT_FOUND') {
+          set.status = 404
+          return envelope('NOT_FOUND', 'Página não encontrada')
+        }
         if (error instanceof CampaignConflictError) {
           set.status = 409
           return envelope('CAMPAIGN_CHANGED', error.message)
@@ -111,6 +116,7 @@ export function createServer(deps: HttpDeps) {
           campaigns: deps.campaigns,
           ambassadors: deps.ambassadors,
           bonusAmountCents: deps.bonusAmountCents,
+          bonusAnnualAmountCents: deps.bonusAnnualAmountCents,
           internalToken: deps.internalToken,
         }),
       )
@@ -119,6 +125,7 @@ export function createServer(deps: HttpDeps) {
           ambassadors: deps.ambassadors,
           repo: deps.repo,
           bonusAmountCents: deps.bonusAmountCents,
+          bonusAnnualAmountCents: deps.bonusAnnualAmountCents,
           internalToken: deps.internalToken,
         }),
       )

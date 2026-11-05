@@ -13,7 +13,7 @@
  * script a partir dos arquivos; não edite os caminhos à mão.
  */
 
-const DESENHOS = {
+export const BRAND_LOGO_ART = {
   escuro: {
     letras: [
       'M43.3496 10.4854H36.8423V7.95632C36.8423 7.23178 36.2408 6.63027 35.5163 6.63027H7.8196C7.09506 6.63027 6.49355 7.23178 6.49355 7.95632V17.225C6.49355 17.9495 7.09506 18.5511 7.8196 18.5511H35.5163C39.8499 18.5511 43.3359 22.0371 43.3359 26.3707V35.6393C43.3359 39.9729 39.8499 43.4589 35.5163 43.4589H7.8196C3.48601 43.4589 0 39.9729 0 35.6393V33.1103H6.50722V35.6393C6.50722 36.3639 7.10873 36.9654 7.83327 36.9654H35.53C36.2545 36.9654 36.856 36.3639 36.856 35.6393V26.3707C36.856 25.6461 36.2545 25.0446 35.53 25.0446H7.83327C3.49968 25.0446 0.0136709 21.5586 0.0136709 17.225V7.95632C0.0136709 3.62273 3.49968 0.136719 7.83327 0.136719H35.53C39.8636 0.136719 43.3496 3.62273 43.3496 7.95632V10.4854Z',
@@ -66,7 +66,7 @@ export function BrandLogo({
    *  degradês da primeira, e se a primeira estiver escondida (`display: none`) o ZERO some. */
   instancia?: string
 }) {
-  const d = DESENHOS[fundo]
+  const d = BRAND_LOGO_ART[fundo]
   // Ids fixos por fundo (e por instância, quando a página tem mais de uma do mesmo fundo).
   const id = instancia ? `sz-logo-${fundo}-${instancia}` : `sz-logo-${fundo}`
   const [z1, z2, z3, z4] = d.degradeZero

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test'
 import { CouponAggregate } from '../../src/domain/coupon/coupon.aggregate'
 import {
   CouponExhaustedError,
+  CouponExpiredError,
   CouponNotApplicableError,
 } from '../../src/domain/coupon/coupon.errors'
 import { ValidationError } from '../../src/domain/shared/errors'
@@ -59,7 +60,7 @@ describe('CouponAggregate', () => {
 
   it('assertApplicable: expirado → não aplicável', () => {
     const coupon = percentCoupon(10, { validUntil: new Date(Date.now() - 1000) })
-    expect(() => coupon.assertApplicable('offer-1', 3700)).toThrow(CouponNotApplicableError)
+    expect(() => coupon.assertApplicable('offer-1', 3700)).toThrow(CouponExpiredError)
   })
 
   it('assertApplicable: fora do escopo (não appliesToAll, oferta não listada)', () => {

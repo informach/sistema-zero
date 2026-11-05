@@ -22,6 +22,7 @@ export interface InternalRoutesDeps {
   /** Cria o código adulto do embaixador sob demanda (`shareUrls`). */
   ambassadors?: AmbassadorAdminService
   bonusAmountCents?: number
+  bonusAnnualAmountCents?: number
   internalToken?: string
 }
 
@@ -37,6 +38,18 @@ export function internalRoutes(deps: InternalRoutesDeps) {
 
   return new Elysia({ prefix: '/referrals/internal' })
     .onTransform(({ headers }) => guard(headers))
+    .get(
+      '/campaigns/:id/coupon-policy',
+      async ({ params, set }) => {
+        const policy = await deps.campaigns?.couponPolicy(params.id)
+        if (!policy) {
+          set.status = 404
+          return envelope('CAMPAIGN_NOT_FOUND', 'Campanha não encontrada')
+        }
+        return policy
+      },
+      { params: t.Object({ id: t.String({ format: 'uuid' }) }) },
+    )
     .get(
       '/codes/:code',
       async ({ params, headers, set }) => {
@@ -87,7 +100,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
     )
     .get(
       '/ambassadors/by-token/:token',
-      async ({ params, headers, set }) => {
+      async ({ params, query, headers, set }) => {
         guard(headers)
         const ambassador = await deps.repo.findAmbassadorByToken(params.token)
         if (ambassador?.status !== 'active' || !ambassador.code) {
@@ -98,12 +111,13 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         // nunca quem assinou. A régua do que é visível vive no repo/domínio
         // (filtro no SQL, ANTES do limit — canceladas não empurram bônus reais
         // para fora da página).
-        const [visible, shareUrls] = await Promise.all([
+        const [visible, shareUrls, campaigns] = await Promise.all([
           deps.repo.listAmbassadorVisibleConversions(ambassador.id, 50),
           // O código adulto nasce aqui quando falta (idempotente e seguro em corrida).
           deps.ambassadors
             ? deps.ambassadors.shareUrls(ambassador)
             : Promise.resolve({ kids: `${base}/bolsa/${ambassador.code}`, adult: null }),
+          deps.campaigns?.forAmbassador(ambassador.id, query.campaignOffset ?? 0),
         ])
         return {
           name: ambassador.name,
@@ -111,9 +125,11 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           // `shareUrl` continua sendo o link Kids (compatível com o funil anterior).
           shareUrl: `${base}/bolsa/${ambassador.code}`,
           shareUrls,
+          campaigns,
           stats: ambassador.stats,
           bonus: {
             amountCents: deps.bonusAmountCents,
+            annualAmountCents: deps.bonusAnnualAmountCents,
             pixKey: ambassador.pixKey,
             items: visible.map((c) => ({
               id: c.id,
@@ -125,7 +141,12 @@ export function internalRoutes(deps: InternalRoutesDeps) {
           },
         }
       },
-      { params: t.Object({ token: t.String({ pattern: TOKEN_PATTERN }) }) },
+      {
+        params: t.Object({ token: t.String({ pattern: TOKEN_PATTERN }) }),
+        query: t.Object({
+          campaignOffset: t.Optional(t.Integer({ minimum: 0, maximum: 200_000 })),
+        }),
+      },
     )
     .patch(
       // Chave Pix do bônus — cadastrada pelo PRÓPRIO embaixador (a capability

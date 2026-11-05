@@ -12,6 +12,7 @@ export interface MeRoutesDeps {
   repo: ReferralRepository
   /** Snapshot da env BONUS_AMOUNT_CENTS — o app NUNCA hardcoda o valor na copy. */
   bonusAmountCents: number
+  bonusAnnualAmountCents?: number
   internalToken?: string
 }
 
@@ -71,6 +72,7 @@ export function meRoutes(deps: MeRoutesDeps) {
         eligibleCount: bonusCounts.eligible ?? 0,
         paidCount: bonusCounts.paid ?? 0,
         amountCents: deps.bonusAmountCents,
+        annualAmountCents: deps.bonusAnnualAmountCents,
       },
     }
   }
@@ -78,7 +80,13 @@ export function meRoutes(deps: MeRoutesDeps) {
   async function enrolledView(accountUserId: string, redactLinks = false) {
     const ambassador = await deps.repo.findAmbassadorByAccount(accountUserId)
     if (!ambassador) {
-      return { enrolled: false as const, bonus: { amountCents: deps.bonusAmountCents } }
+      return {
+        enrolled: false as const,
+        bonus: {
+          amountCents: deps.bonusAmountCents,
+          annualAmountCents: deps.bonusAnnualAmountCents,
+        },
+      }
     }
     const body = await bodyFor(deps.ambassadors.viewOf(ambassador), ambassador, redactLinks)
     body.ambassador.pixKeySet = Boolean(ambassador.pixKey)
@@ -109,7 +117,10 @@ export function meRoutes(deps: MeRoutesDeps) {
           enrolled: false as const,
           emailPending: true as const,
           linkEmailSent: result.emailSent,
-          bonus: { amountCents: deps.bonusAmountCents },
+          bonus: {
+            amountCents: deps.bonusAmountCents,
+            annualAmountCents: deps.bonusAnnualAmountCents,
+          },
         }
       }
       if (result.created) set.status = 201

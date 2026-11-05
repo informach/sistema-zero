@@ -1,8 +1,12 @@
 import {
+  type AmbassadorCampaignPage,
+  type CampaignCouponPolicy,
+  type CampaignCouponView,
   type CampaignDetailView,
   type CampaignInput,
   type CampaignUpdateInput,
   type CampaignView,
+  campaignScheduleWindows,
   type GiftAudience,
   isGiftAudience,
 } from '@sistemazero/core/referrals'
@@ -16,6 +20,7 @@ import { requiresActiveCampaignAmbassador } from '../../domain/campaign-referral
 import { isValidCode } from '../../domain/codes'
 import { scholarshipExpiresAt } from '../../domain/gift-policy'
 import { scholarshipShareUrl } from '../../domain/links'
+import type { CampaignCouponCatalog } from '../../domain/ports/campaign-coupon-catalog.port'
 import type { CampaignRepository } from '../../domain/ports/campaign-repository.port'
 import type { ReferralRepository } from '../../domain/ports/referral-repository.port'
 
@@ -23,6 +28,16 @@ import type { ReferralRepository } from '../../domain/ports/referral-repository.
 export type ValidatedCampaignInput = CampaignInput & { audience: GiftAudience }
 
 export function validateCampaignInput(input: CampaignInput): ValidatedCampaignInput {
+  let windows: ReturnType<typeof campaignScheduleWindows> | null = null
+  if (input.schedule) {
+    try {
+      windows = campaignScheduleWindows(input.schedule)
+    } catch (error) {
+      throw new CampaignValidationError(
+        error instanceof Error ? error.message : 'Calendário inválido.',
+      )
+    }
+  }
   if (input.audience !== undefined && !isGiftAudience(input.audience))
     throw new CampaignValidationError('Escolha o público do presente: Kids ou adulto.')
   const result: ValidatedCampaignInput = {
@@ -31,16 +46,32 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     description: input.description.trim(),
     code: input.code.trim().toLowerCase(),
     channel: input.channel.trim(),
-    startsAt: input.startsAt,
-    endsAt: input.endsAt,
+    schedule: input.schedule ?? null,
+    coupon: input.coupon ?? null,
+    startsAt: windows?.startsAt ?? input.startsAt,
+    endsAt: windows?.giftEndsAt ?? input.endsAt,
     status: input.status,
     context: input.context,
     audience: input.audience ?? 'kids',
     ambassadorId: input.ambassadorId ?? null,
     commissionEnabled: input.commissionEnabled ?? false,
     commissionAmountCents: input.commissionEnabled ? (input.commissionAmountCents ?? null) : null,
+    commissionAnnualAmountCents: input.commissionEnabled
+      ? (input.commissionAnnualAmountCents ?? null)
+      : null,
     commissionWindowDays: input.commissionEnabled ? (input.commissionWindowDays ?? null) : null,
   }
+  if (
+    result.coupon &&
+    (!result.schedule ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        result.coupon.couponId,
+      ) ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        result.coupon.offerId,
+      ))
+  )
+    throw new CampaignValidationError('Cupom vinculado exige calendário e oferta válidos.')
   if (
     result.ambassadorId !== null &&
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(result.ambassadorId!)
@@ -52,6 +83,10 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
       !Number.isSafeInteger(result.commissionAmountCents) ||
       (result.commissionAmountCents ?? 0) < 1 ||
       (result.commissionAmountCents ?? 0) > 100_000_000 ||
+      (result.commissionAnnualAmountCents != null &&
+        (!Number.isSafeInteger(result.commissionAnnualAmountCents) ||
+          result.commissionAnnualAmountCents < 1 ||
+          result.commissionAnnualAmountCents > 100_000_000)) ||
       !Number.isSafeInteger(result.commissionWindowDays) ||
       (result.commissionWindowDays ?? 0) < 1 ||
       (result.commissionWindowDays ?? 0) > 3650)
@@ -59,8 +94,8 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     throw new CampaignValidationError(
       'Para habilitar comissão, escolha o embaixador, o valor fixo em centavos e o prazo de 1 a 3650 dias após o cadastro.',
     )
-  const start = new Date(input.startsAt)
-  const end = new Date(input.endsAt)
+  const start = new Date(result.startsAt)
+  const end = new Date(result.endsAt)
   if (
     result.name.length < 2 ||
     result.name.length > 120 ||
@@ -81,8 +116,8 @@ export function validateCampaignInput(input: CampaignInput): ValidatedCampaignIn
     !Number.isFinite(start.getTime()) ||
     !Number.isFinite(end.getTime()) ||
     end <= start ||
-    !/(Z|[+-]\d\d:\d\d)$/.test(input.startsAt) ||
-    !/(Z|[+-]\d\d:\d\d)$/.test(input.endsAt)
+    !/(Z|[+-]\d\d:\d\d)$/.test(result.startsAt) ||
+    !/(Z|[+-]\d\d:\d\d)$/.test(result.endsAt)
   )
     throw new CampaignValidationError(
       'Informe início e encerramento com fuso. O encerramento deve ser posterior ao início.',
@@ -96,6 +131,7 @@ export class CampaignAdminService {
     private readonly referrals: ReferralRepository,
     private readonly funnelUrl: string,
     private readonly now: () => Date = () => new Date(),
+    private readonly couponCatalog?: CampaignCouponCatalog,
   ) {}
 
   async view(campaign: CampaignRecord): Promise<CampaignView> {
@@ -104,6 +140,7 @@ export class CampaignAdminService {
       : null
     return {
       ...campaign,
+      couponView: await this.couponView(campaign),
       ambassadorName: ambassador?.name ?? null,
       state: campaignState(campaign, this.now()),
       startsAt: campaign.startsAt.toISOString(),
@@ -123,12 +160,54 @@ export class CampaignAdminService {
     }
   }
 
+  async forAmbassador(ambassadorId: string, offset = 0): Promise<AmbassadorCampaignPage> {
+    const limit = 20
+    const result = await this.repo.list({ ambassadorId, publishedOnly: true, limit, offset })
+    return {
+      total: result.total,
+      limit,
+      offset,
+      items: (
+        await Promise.all(
+          result.items.map(async (campaign) => {
+            const state = campaignState(campaign, this.now())
+            if (state === 'draft' || campaign.ambassadorId !== ambassadorId) return []
+            return [
+              {
+                id: campaign.id,
+                couponView: await this.couponView(campaign),
+                publicTitle: campaign.publicTitle,
+                audience: campaign.audience,
+                state,
+                startsAt: campaign.startsAt.toISOString(),
+                endsAt: campaign.endsAt.toISOString(),
+                shareUrl: scholarshipShareUrl(this.funnelUrl, campaign.code),
+                commissionEnabled: campaign.commissionEnabled ?? false,
+                commissionAmountCents: campaign.commissionEnabled
+                  ? (campaign.commissionAmountCents ?? null)
+                  : null,
+                commissionAnnualAmountCents: campaign.commissionEnabled
+                  ? (campaign.commissionAnnualAmountCents ?? null)
+                  : null,
+                commissionWindowDays: campaign.commissionEnabled
+                  ? (campaign.commissionWindowDays ?? null)
+                  : null,
+              },
+            ]
+          }),
+        )
+      ).flat(),
+    }
+  }
+
   async create(
     input: CampaignInput,
     actor: string,
     duplicatedFrom?: string,
   ): Promise<CampaignView | null> {
     let validated = validateCampaignInput(input)
+    if (validated.coupon)
+      throw new CampaignValidationError('Salve a campanha antes de vincular seu cupom.')
     await this.validateAmbassador(validated)
     if (duplicatedFrom) {
       const previous = await this.repo.findById(duplicatedFrom)
@@ -154,6 +233,8 @@ export class CampaignAdminService {
     // Cliente que não manda o público (anterior a 20/10/2026) mantém o que está gravado.
     const validated = validateCampaignInput({
       ...input,
+      schedule: input.schedule === undefined ? previous.schedule : input.schedule,
+      coupon: input.coupon === undefined ? previous.coupon : input.coupon,
       audience: input.audience ?? previous.audience,
       ambassadorId: input.ambassadorId === undefined ? previous.ambassadorId : input.ambassadorId,
       commissionEnabled:
@@ -170,7 +251,25 @@ export class CampaignAdminService {
             ? previous.commissionWindowDays
             : null
           : input.commissionWindowDays,
+      commissionAnnualAmountCents:
+        input.commissionAnnualAmountCents === undefined
+          ? sameBeneficiary
+            ? previous.commissionAnnualAmountCents
+            : null
+          : input.commissionAnnualAmountCents,
     })
+    if (
+      validated.coupon &&
+      (validated.coupon.couponId !== previous.coupon?.couponId ||
+        validated.coupon.offerId !== previous.coupon?.offerId ||
+        validated.audience !== previous.audience)
+    ) {
+      const coupon = await this.couponCatalog?.get(validated.coupon, id, validated.audience)
+      if (!coupon)
+        throw new CampaignValidationError(
+          'Cupom e oferta precisam pertencer à campanha e ao mesmo público.',
+        )
+    }
     if (previous.code !== validated.code)
       throw new CampaignValidationError(
         'O código de uma campanha existente não muda. Duplique para criar outra edição.',
@@ -186,6 +285,48 @@ export class CampaignAdminService {
     }
     const updated = await this.repo.update(id, validated, actor, input.expectedUpdatedAt)
     return updated ? this.view(updated) : null
+  }
+
+  async couponPolicy(id: string): Promise<CampaignCouponPolicy | null> {
+    const campaign = await this.repo.findById(id)
+    if (!campaign?.coupon || !campaign.schedule) return null
+    const windows = campaignScheduleWindows(campaign.schedule)
+    return {
+      ...campaign.coupon,
+      audience: campaign.audience,
+      status: campaign.status,
+      startsAt: windows.startsAt,
+      endsAt: windows.couponEndsAt,
+    }
+  }
+
+  private async couponView(campaign: CampaignRecord): Promise<CampaignCouponView | null> {
+    if (!campaign.coupon || !campaign.schedule || !this.couponCatalog) return null
+    // Uma indisponibilidade do Catálogo não deve esconder o presente nem inventar termos.
+    const details = await this.couponCatalog
+      .get(campaign.coupon, campaign.id, campaign.audience)
+      .catch(() => null)
+    if (!details) return null
+    const windows = campaignScheduleWindows(campaign.schedule)
+    const state = campaignState(
+      {
+        status: campaign.status,
+        startsAt: new Date(windows.startsAt),
+        endsAt: new Date(windows.couponEndsAt),
+      },
+      this.now(),
+    )
+    const url = new URL(`/cupom/${encodeURIComponent(details.code)}`, this.funnelUrl)
+    url.searchParams.set('oferta', details.offerSlug)
+    url.searchParams.set('publico', campaign.audience)
+    url.searchParams.set('event_code', campaign.code)
+    return {
+      ...details,
+      state: !details.available || state === 'draft' ? 'unavailable' : state,
+      startsAt: windows.startsAt,
+      endsAt: windows.couponEndsAt,
+      shareUrl: url.toString(),
+    }
   }
 
   async detail(id: string, audience?: GiftAudience): Promise<CampaignDetailView | null> {

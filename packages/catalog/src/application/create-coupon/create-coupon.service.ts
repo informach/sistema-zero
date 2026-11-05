@@ -1,4 +1,5 @@
 import type { Logger } from '@sistemazero/core/logging'
+import { couponCampaignId } from '../../domain/coupon/campaign-coupon'
 import { CouponAggregate } from '../../domain/coupon/coupon.aggregate'
 import type { CouponStatus } from '../../domain/coupon/coupon.status'
 import type { CouponType } from '../../domain/coupon/coupon.type'
@@ -38,6 +39,18 @@ export class CreateCouponService {
   ) {}
 
   async execute(command: CreateCouponCommand): Promise<CouponView> {
+    if (
+      couponCampaignId(command.metadata) &&
+      (command.validFrom ||
+        command.validUntil ||
+        command.appliesToAll ||
+        command.offerIds?.length !== 1 ||
+        command.minPurchaseCents ||
+        command.maxRedemptions)
+    )
+      throw new ValidationError(
+        'Cupom de campanha exige uma oferta e validade gerenciada pela campanha, sem limites adicionais.',
+      )
     const code = CouponCode.create(command.code)
     const offerIds = command.offerIds ?? []
     await assertOffersExist(this.offers, this.products, offerIds, command.audience)

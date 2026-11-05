@@ -38,6 +38,7 @@ import { formatCents, reaisToCents } from '@/lib/format'
 import { loadAllPages } from '@/lib/load-all-pages'
 import type { Platform } from '@/lib/platform'
 import type { CouponView, OfferListItem, Paginated } from '@/lib/types'
+import { CouponShare } from './coupon-share'
 
 const LIMIT = 20
 const COUPON_STATUSES = ['active', 'inactive', 'archived']
@@ -87,6 +88,7 @@ function CouponsForCommunity({ audience }: { audience: Platform }) {
 
   const [open, setOpen] = useState(false)
   const [editing, setEditing] = useState<CouponView | null>(null)
+  const [sharing, setSharing] = useState<CouponView | null>(null)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
 
@@ -168,6 +170,20 @@ function CouponsForCommunity({ audience }: { audience: Platform }) {
   }
 
   async function save() {
+    if (editing?.metadata?.campaignId) {
+      setSaving(true)
+      try {
+        await apiSend(`/api/catalog/coupons/${editing.id}`, 'PATCH', { status: form.status })
+        toast.success('Cupom atualizado.')
+        setOpen(false)
+        await load()
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : 'Não foi possível salvar o cupom.')
+      } finally {
+        setSaving(false)
+      }
+      return
+    }
     if (!form.appliesToAll && form.offerIds.length === 0) {
       toast.error('Escolha pelo menos uma oferta, ou marque "Vale para todas as ofertas".')
       return
@@ -341,6 +357,20 @@ function CouponsForCommunity({ audience }: { audience: Platform }) {
                     <StatusBadge status={c.status} kind="catalog" />
                   </TableCell>
                   <TableCell className="text-right">
+                    {!c.metadata?.campaignId && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setSharing(c)}
+                        disabled={
+                          c.status !== 'active' ||
+                          Boolean(c.validUntil && Date.parse(c.validUntil) <= Date.now()) ||
+                          (c.maxRedemptions !== null && c.timesRedeemed >= c.maxRedemptions)
+                        }
+                      >
+                        Divulgar
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -359,6 +389,8 @@ function CouponsForCommunity({ audience }: { audience: Platform }) {
 
       <Pagination total={total} limit={LIMIT} offset={offset} onChange={setOffset} />
 
+      {sharing && <CouponShare coupon={sharing} onClose={() => setSharing(null)} />}
+
       <Dialog
         open={open}
         onClose={() => setOpen(false)}
@@ -376,81 +408,21 @@ function CouponsForCommunity({ audience }: { audience: Platform }) {
           </>
         }
       >
-        <div className="flex flex-col gap-4">
-          {editing ? (
-            <p className="text-xs text-muted-foreground">
-              Código <span className="font-mono">{editing.code}</span>, desconto de{' '}
-              {discountLabel(editing)}. O tipo e o valor não mudam depois de criado.
-            </p>
-          ) : (
-            <>
-              <Field
-                label="Código"
-                htmlFor="code"
-                tooltip="O que a pessoa digita na página de pagamento para ganhar o desconto (ex.: PROMO10). Não muda depois de criado."
-              >
-                <Input
-                  id="code"
-                  value={form.code}
-                  onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
-                  placeholder="PROMO10"
-                />
-              </Field>
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Field
-                  label="Tipo"
-                  htmlFor="type"
-                  tooltip="Porcentagem tira uma parte do preço. Valor fixo tira uma quantia em reais. Não muda depois de criado."
-                >
-                  <Select
-                    id="type"
-                    value={form.type}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, type: e.target.value as 'percent' | 'fixed' }))
-                    }
-                  >
-                    <option value="percent">Porcentagem (%)</option>
-                    <option value="fixed">Valor fixo (R$)</option>
-                  </Select>
-                </Field>
-                {form.type === 'percent' ? (
-                  <Field label="Porcentagem (de 1 a 100)" htmlFor="percentOff">
-                    <Input
-                      id="percentOff"
-                      inputMode="numeric"
-                      value={form.percentOff}
-                      onChange={(e) => setForm((f) => ({ ...f, percentOff: e.target.value }))}
-                    />
-                  </Field>
-                ) : (
-                  <Field label="Desconto (R$)" htmlFor="amount">
-                    <Input
-                      id="amount"
-                      inputMode="decimal"
-                      value={form.amount}
-                      onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-                    />
-                  </Field>
-                )}
-              </div>
-            </>
-          )}
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Pode ser usado quantas vezes (opcional)"
-              htmlFor="maxRedemptions"
-              tooltip="Quantas vezes o cupom pode ser usado no total. Vazio: sem limite."
-            >
-              <Input
-                id="maxRedemptions"
-                inputMode="numeric"
-                value={form.maxRedemptions}
-                onChange={(e) => setForm((f) => ({ ...f, maxRedemptions: e.target.value }))}
-              />
-            </Field>
-            <Field label="Situação" htmlFor="cstatus">
+        {editing?.metadata?.campaignId ? (
+          <div className="space-y-4">
+            <div className="rounded-xl border border-primary/25 bg-primary/5 p-4 text-sm">
+              <p className="font-bold">Cupom vinculado a uma campanha</p>
+              <p className="mt-2">
+                {editing.code} · {discountLabel(editing)}. A validade acompanha automaticamente a
+                data da campanha. Para trocar oferta ou desconto, crie um novo código dentro dela.
+              </p>
+              <a className="mt-3 inline-block underline" href="/admin/embaixadores">
+                Abrir campanhas
+              </a>
+            </div>
+            <Field label="Situação" htmlFor="managed-cstatus">
               <Select
-                id="cstatus"
+                id="managed-cstatus"
                 value={form.status}
                 onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
               >
@@ -462,57 +434,145 @@ function CouponsForCommunity({ audience }: { audience: Platform }) {
               </Select>
             </Field>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Field
-              label="Vale a partir de (opcional)"
-              htmlFor="validFrom"
-              tooltip="O cupom passa a valer no início deste dia, no horário de São Paulo."
-            >
-              <Input
-                id="validFrom"
-                type="date"
-                value={form.validFrom}
-                onChange={(e) => setForm((f) => ({ ...f, validFrom: e.target.value }))}
+        ) : (
+          <div className="flex flex-col gap-4">
+            {editing ? (
+              <p className="text-xs text-muted-foreground">
+                Código <span className="font-mono">{editing.code}</span>, desconto de{' '}
+                {discountLabel(editing)}. O tipo e o valor não mudam depois de criado.
+              </p>
+            ) : (
+              <>
+                <Field
+                  label="Código"
+                  htmlFor="code"
+                  tooltip="O que a pessoa digita na página de pagamento para ganhar o desconto (ex.: PROMO10). Não muda depois de criado."
+                >
+                  <Input
+                    id="code"
+                    value={form.code}
+                    onChange={(e) => setForm((f) => ({ ...f, code: e.target.value.toUpperCase() }))}
+                    placeholder="PROMO10"
+                  />
+                </Field>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <Field
+                    label="Tipo"
+                    htmlFor="type"
+                    tooltip="Porcentagem tira uma parte do preço. Valor fixo tira uma quantia em reais. Não muda depois de criado."
+                  >
+                    <Select
+                      id="type"
+                      value={form.type}
+                      onChange={(e) =>
+                        setForm((f) => ({ ...f, type: e.target.value as 'percent' | 'fixed' }))
+                      }
+                    >
+                      <option value="percent">Porcentagem (%)</option>
+                      <option value="fixed">Valor fixo (R$)</option>
+                    </Select>
+                  </Field>
+                  {form.type === 'percent' ? (
+                    <Field label="Porcentagem (de 1 a 100)" htmlFor="percentOff">
+                      <Input
+                        id="percentOff"
+                        inputMode="numeric"
+                        value={form.percentOff}
+                        onChange={(e) => setForm((f) => ({ ...f, percentOff: e.target.value }))}
+                      />
+                    </Field>
+                  ) : (
+                    <Field label="Desconto (R$)" htmlFor="amount">
+                      <Input
+                        id="amount"
+                        inputMode="decimal"
+                        value={form.amount}
+                        onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
+                      />
+                    </Field>
+                  )}
+                </div>
+              </>
+            )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Pode ser usado quantas vezes (opcional)"
+                htmlFor="maxRedemptions"
+                tooltip="Quantas vezes o cupom pode ser usado no total. Vazio: sem limite."
+              >
+                <Input
+                  id="maxRedemptions"
+                  inputMode="numeric"
+                  value={form.maxRedemptions}
+                  onChange={(e) => setForm((f) => ({ ...f, maxRedemptions: e.target.value }))}
+                />
+              </Field>
+              <Field label="Situação" htmlFor="cstatus">
+                <Select
+                  id="cstatus"
+                  value={form.status}
+                  onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
+                >
+                  {COUPON_STATUSES.map((s) => (
+                    <option key={s} value={s}>
+                      {statusLabel(s, 'catalog')}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Field
+                label="Vale a partir de (opcional)"
+                htmlFor="validFrom"
+                tooltip="O cupom passa a valer no início deste dia, no horário de São Paulo."
+              >
+                <Input
+                  id="validFrom"
+                  type="date"
+                  value={form.validFrom}
+                  onChange={(e) => setForm((f) => ({ ...f, validFrom: e.target.value }))}
+                />
+              </Field>
+              <Field
+                label="Vale até (opcional)"
+                htmlFor="validUntil"
+                tooltip="O cupom vale até o fim deste dia, no horário de São Paulo."
+              >
+                <Input
+                  id="validUntil"
+                  type="date"
+                  min={form.validFrom || undefined}
+                  value={form.validUntil}
+                  onChange={(e) => setForm((f) => ({ ...f, validUntil: e.target.value }))}
+                />
+              </Field>
+            </div>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                checked={form.appliesToAll}
+                onChange={(e) => setForm((f) => ({ ...f, appliesToAll: e.target.checked }))}
+                className="size-4 accent-[color:var(--primary)]"
               />
-            </Field>
-            <Field
-              label="Vale até (opcional)"
-              htmlFor="validUntil"
-              tooltip="O cupom vale até o fim deste dia, no horário de São Paulo."
-            >
-              <Input
-                id="validUntil"
-                type="date"
-                min={form.validFrom || undefined}
-                value={form.validUntil}
-                onChange={(e) => setForm((f) => ({ ...f, validUntil: e.target.value }))}
-              />
-            </Field>
+              Vale para todas as ofertas à venda
+              <InfoTooltip text="Marcado, o cupom funciona em qualquer oferta à venda. Desmarcado, escolha abaixo em quais ofertas ele vale." />
+            </label>
+            {!form.appliesToAll ? (
+              <Field
+                label="Ofertas em que o cupom vale"
+                tooltip="O cupom só funciona na página de pagamento destas ofertas."
+              >
+                <OffersMultiSelect
+                  options={offerOptions ?? []}
+                  value={form.offerIds}
+                  onChange={(offerIds) => setForm((f) => ({ ...f, offerIds }))}
+                  loading={offersLoading}
+                />
+              </Field>
+            ) : null}
           </div>
-          <label className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.appliesToAll}
-              onChange={(e) => setForm((f) => ({ ...f, appliesToAll: e.target.checked }))}
-              className="size-4 accent-[color:var(--primary)]"
-            />
-            Vale para todas as ofertas à venda
-            <InfoTooltip text="Marcado, o cupom funciona em qualquer oferta à venda. Desmarcado, escolha abaixo em quais ofertas ele vale." />
-          </label>
-          {!form.appliesToAll ? (
-            <Field
-              label="Ofertas em que o cupom vale"
-              tooltip="O cupom só funciona na página de pagamento destas ofertas."
-            >
-              <OffersMultiSelect
-                options={offerOptions ?? []}
-                value={form.offerIds}
-                onChange={(offerIds) => setForm((f) => ({ ...f, offerIds }))}
-                loading={offersLoading}
-              />
-            </Field>
-          ) : null}
-        </div>
+        )}
       </Dialog>
     </div>
   )

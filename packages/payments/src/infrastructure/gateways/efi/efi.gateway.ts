@@ -19,6 +19,7 @@ import type {
   RefundResult,
   RetrySubscriptionChargeInput,
 } from '../../../domain/ports/payment-gateway.port'
+import { SubscriptionActivationRejectedError } from '../../../domain/subscription/activation-rejected.error'
 import type { Money } from '../../../domain/value-objects/money'
 import type { EfiClient } from './efi.client'
 import { EfiGatewayError, toEfiGatewayError } from './efi.errors'
@@ -344,6 +345,60 @@ export class EfiPaymentGateway implements PaymentGateway {
     } catch (error) {
       throw toEfiGatewayError(error)
     }
+  }
+
+  async prepareCardSubscription(
+    input: Pick<CreateCardSubscriptionInput, 'subscriptionId' | 'planId' | 'amount' | 'itemName'>,
+  ): Promise<{ providerSubscriptionId: string; firstChargeId: string }> {
+    const raw = await this.requireCobrancas().prepareSubscription(input.planId, {
+      items: [
+        {
+          name: input.itemName ?? 'Assinatura',
+          value: Number(input.amount.amountInCents),
+          amount: 1,
+        },
+      ],
+      metadata: {
+        custom_id: input.subscriptionId,
+        ...(this.boletoDefaults.notificationUrl
+          ? { notification_url: this.boletoDefaults.notificationUrl }
+          : {}),
+      },
+    })
+    const parsed = parseCreateSubscriptionResponse(raw)
+    if (!parsed.firstChargeId)
+      throw new EfiGatewayError('Efí não retornou a primeira cobrança preparada')
+    return { providerSubscriptionId: parsed.subscriptionId, firstChargeId: parsed.firstChargeId }
+  }
+
+  async activateCardSubscription(
+    id: string,
+    input: CreateCardSubscriptionInput,
+  ): Promise<CreateCardSubscriptionOutput> {
+    let raw: unknown
+    try {
+      raw = await this.requireCobrancas().activateSubscription(
+        id,
+        this.buildSubscriptionOneStepBody(input).payment,
+      )
+    } catch (error) {
+      if (error instanceof EfiGatewayError && (error.status === 400 || error.status === 422))
+        throw new SubscriptionActivationRejectedError()
+      throw error
+    }
+    const parsed = parseCreateSubscriptionResponse(raw)
+    return {
+      providerSubscriptionId: parsed.subscriptionId,
+      status: parsed.status,
+      firstChargeId: parsed.firstChargeId,
+      firstChargeStatus: parsed.firstChargeStatus,
+    }
+  }
+
+  async updateSubscriptionAmount(id: string, amount: Money, itemName: string): Promise<void> {
+    await this.requireCobrancas().updateSubscriptionItems(id, [
+      { name: itemName, value: Number(amount.amountInCents), amount: 1 },
+    ])
   }
 
   async listSubscriptionCharges(

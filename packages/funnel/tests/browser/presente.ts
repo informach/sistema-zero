@@ -82,6 +82,72 @@ const gateway = createServer((req, res) => {
         shareUrl: `${origin}/bolsa/marta-k7q2`,
         shareUrls: { kids: `${origin}/bolsa/marta-k7q2`, adult: `${origin}/bolsa/marta-a9x4` },
         stats: { redemptionsCompleted: 4, invitesSent: 2 },
+        campaigns: {
+          total: 3,
+          limit: 20,
+          offset: Number(url.searchParams.get('campaignOffset') ?? 0),
+          items: url.searchParams.get('campaignOffset')
+            ? []
+            : [
+                {
+                  id: 'laopa',
+                  publicTitle: 'Palestra na clínica Laopa',
+                  audience: 'kids',
+                  state: 'scheduled',
+                  startsAt: '2026-11-06T03:00:00Z',
+                  endsAt: '2026-11-09T03:00:00Z',
+                  shareUrl: `${origin}/bolsa/laopa-20261106`,
+                  commissionEnabled: true,
+                  commissionAmountCents: 3000,
+                  commissionAnnualAmountCents: 8000,
+                  commissionWindowDays: 45,
+                },
+                {
+                  id: 'pausada',
+                  publicTitle: 'Encontro de criadores',
+                  audience: 'adult',
+                  state: 'paused',
+                  startsAt: '2026-11-01T03:00:00Z',
+                  endsAt: '2026-11-30T03:00:00Z',
+                  shareUrl: `${origin}/bolsa/encontro`,
+                  commissionEnabled: false,
+                  commissionAmountCents: null,
+                  commissionAnnualAmountCents: null,
+                  commissionWindowDays: null,
+                },
+                {
+                  id: 'encerrada',
+                  publicTitle: 'Uma ação anterior',
+                  audience: 'kids',
+                  state: 'ended',
+                  startsAt: '2026-10-01T03:00:00Z',
+                  endsAt: '2026-10-02T03:00:00Z',
+                  shareUrl: `${origin}/bolsa/anterior`,
+                  commissionEnabled: true,
+                  commissionAmountCents: 4500,
+                  commissionAnnualAmountCents: null,
+                  commissionWindowDays: 30,
+                  couponView: {
+                    couponId: 'coupon',
+                    offerId: 'offer',
+                    code: 'EVENTO50',
+                    offerSlug: 'desafio-primeiro-jogo-30-dias',
+                    offerName: 'Desafio do Primeiro Jogo',
+                    percentOff: 50,
+                    amountOffCents: null,
+                    currency: 'BRL',
+                    accessMode: 'fixed',
+                    accessDurationValue: 30,
+                    accessDurationUnit: 'days',
+                    available: true,
+                    state: 'active',
+                    startsAt: '2026-11-06T03:00:00Z',
+                    endsAt: '2026-11-13T03:00:00Z',
+                    shareUrl: `${origin}/cupom/EVENTO50?oferta=desafio-primeiro-jogo-30-dias&publico=kids&event_code=anterior`,
+                  },
+                },
+              ],
+        },
         bonus: {
           pixKey: null,
           amountCents: 3000,
@@ -397,6 +463,60 @@ try {
 
   // Painel: o seletor troca o link e o convite leva o público escolhido.
   await page.goto(`${origin}/embaixador/${TOKEN}`)
+  // Respostas lentas não podem confirmar dados diferentes dos que continuam no formulário.
+  const pendingFields: Record<string, boolean> = {}
+  for (const kind of ['convites', 'pix']) {
+    let release!: () => void
+    let received!: () => void
+    const started = new Promise<void>((done) => {
+      received = done
+    })
+    const pending = new Promise<void>((done) => {
+      release = done
+    })
+    const path = `**/api/embaixador/${kind}`
+    await page.route(path, async (route) => {
+      received()
+      await pending
+      await route.fulfill({ status: 200, contentType: 'application/json', body: '{"ok":true}' })
+    })
+    if (kind === 'convites') {
+      await page.getByRole('textbox', { name: 'Nome de quem vai receber' }).fill('Ana')
+      await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill('ana@example.com')
+      await page.getByRole('button', { name: 'Enviar convite' }).click()
+      await started
+      pendingFields.nome = await page
+        .getByRole('textbox', { name: 'Nome de quem vai receber' })
+        .isDisabled()
+      pendingFields.email = await page
+        .getByRole('textbox', { name: 'E-mail', exact: true })
+        .isDisabled()
+      pendingFields.publico = await page.getByRole('radio').first().isDisabled()
+    } else {
+      await page
+        .getByRole('textbox', { name: 'Sua chave Pix para receber' })
+        .fill('pix@example.com')
+      await page.getByRole('button', { name: 'Salvar chave', exact: true }).click()
+      await started
+      pendingFields.pix = await page
+        .getByRole('textbox', { name: 'Sua chave Pix para receber' })
+        .isDisabled()
+    }
+    release()
+    await page
+      .getByText(
+        kind === 'convites' ? 'Convite enviado para ana@example.com.' : 'Chave Pix salva.',
+        { exact: true },
+      )
+      .waitFor()
+    await page.unroute(path)
+  }
+  assert.deepEqual(
+    pendingFields,
+    { nome: true, email: true, publico: true, pix: true },
+    'dados preservados durante envio',
+  )
+  await page.goto(`${origin}/embaixador/${TOKEN}`)
   const link = page.getByRole('textbox', { name: 'Seu link público do presente' })
   assert.equal(await link.inputValue(), `${origin}/bolsa/marta-k7q2`)
   await page.getByRole('radio', { name: /Alguém de 18 anos ou mais/ }).check()
@@ -407,7 +527,7 @@ try {
   await page.getByRole('button', { name: 'Enviar convite' }).click()
   await page.getByText('Convite enviado para ana@example.com.').waitFor()
   assert.deepEqual(invites, [{ name: 'Ana', email: 'ana@example.com', audience: 'adult' }])
-  await page.getByRole('radio', { name: /Uma criança de 9 a 14 anos/ }).check()
+  await page.getByRole('radio', { name: /Uma criança de 9 a 17 anos/ }).check()
   await page.getByRole('textbox', { name: 'Nome de quem vai receber' }).fill('Bia')
   await page.getByRole('textbox', { name: 'E-mail', exact: true }).fill('bia@example.com')
   await page.getByRole('button', { name: 'Enviar convite' }).click()
@@ -416,6 +536,48 @@ try {
   assert.match(await page.locator('#bonus').innerText(), /R\$\s?30,00/)
   await page.getByRole('radio', { name: /Alguém de 18 anos ou mais/ }).check()
   await page.locator('#painel').screenshot({ path: resolve(output, 'embaixador-adulto-1440.png') })
+
+  const campaignSection = page.locator('#minhas-campanhas')
+  assert.match(await campaignSection.innerText(), /08\/11\/2026,? 23:59/)
+  assert.doesNotMatch(await campaignSection.innerText(), /09\/11\/2026,? 00:00/)
+  assert.match(await campaignSection.innerText(), /45 dias/)
+  assert.match(await campaignSection.innerText(), /R\$\s?80,00/)
+  assert.equal(
+    await campaignSection.getByRole('button', { name: 'Copiar link da campanha' }).count(),
+    1,
+  )
+  assert.equal(
+    await campaignSection.getByRole('button', { name: /Editar|Criar|Excluir|Salvar/ }).count(),
+    0,
+  )
+  await campaignSection.screenshot({ path: resolve(output, 'campanhas-1440.png') })
+  await page.setViewportSize({ width: 390, height: 844 })
+  await campaignSection.screenshot({ path: resolve(output, 'campanhas-390.png') })
+  await campaignSection.getByRole('button', { name: 'Cartão do cupom', exact: true }).click()
+  await page.getByRole('link', { name: 'Baixar PNG' }).waitFor()
+  await page
+    .getByRole('dialog', { name: 'Cartão de divulgação' })
+    .screenshot({ path: resolve(output, 'cupom-campanha-390.png') })
+  await page.keyboard.press('Escape')
+  assert.match(await campaignSection.innerText(), /Cupom disponível/)
+  assert.match(await campaignSection.innerText(), /12\/11\/2026/)
+  assert.match(await campaignSection.innerText(), /30 dias/)
+  await campaignSection.getByRole('button', { name: 'Cartão de divulgação' }).click()
+  await page.getByRole('link', { name: 'Baixar PNG' }).waitFor()
+  await page
+    .getByRole('dialog', { name: 'Cartão de divulgação' })
+    .screenshot({ path: resolve(output, 'cartao-campanha-390.png') })
+  await page.keyboard.press('Escape')
+  await page.goto(`${origin}/embaixador/${TOKEN}?campanhas=2`)
+  await page.getByRole('link', { name: 'Anteriores', exact: true }).click()
+  assert.match(page.url(), /campanhas=1/)
+
+  for (const audience of ['kids', 'adult']) {
+    await page.goto(
+      `${origin}/bolsa/previa?audience=${audience}&startsAt=2026-11-06T03:00:00Z&endsAt=2026-11-09T03:00:00Z`,
+    )
+    assert.match(await page.locator('body').innerText(), /08\/11\/2026, às 23h59/)
+  }
 
   // A página pública do programa é indexada e leva o adulto à seção Embaixador de Meu perfil.
   const programa = await page.goto(`${origin}/kids/embaixadores`)

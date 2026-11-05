@@ -24,6 +24,21 @@ function prodEnv(overrides: Record<string, string | undefined> = {}) {
 }
 
 describe('env do referrals', () => {
+  test('padrões e configuração da comissão mensal/anual', () => {
+    const defaults = loadEnv(
+      prodEnv({ BONUS_AMOUNT_CENTS: undefined, BONUS_ANNUAL_AMOUNT_CENTS: undefined }),
+    )
+    expect(defaults.BONUS_AMOUNT_CENTS).toBe(3000)
+    expect(defaults.BONUS_ANNUAL_AMOUNT_CENTS).toBe(8000)
+    expect(loadEnv(prodEnv({ BONUS_ANNUAL_AMOUNT_CENTS: '9000' })).BONUS_ANNUAL_AMOUNT_CENTS).toBe(
+      9000,
+    )
+    expect(() => loadEnv(prodEnv({ BONUS_ANNUAL_AMOUNT_CENTS: '0' }))).toThrow()
+    for (const key of ['BONUS_AMOUNT_CENTS', 'BONUS_ANNUAL_AMOUNT_CENTS']) {
+      for (const value of ['100000001', '2147483648', 'Infinity', '1.5'])
+        expect(() => loadEnv(prodEnv({ [key]: value }))).toThrow()
+    }
+  })
   test('produção válida passa', () => {
     const env = loadEnv(prodEnv())
     expect(env.PORT).toBe(3012)

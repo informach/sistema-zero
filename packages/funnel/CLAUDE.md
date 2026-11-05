@@ -1,5 +1,13 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Minhas campanhas e cartões (05/11/2026)
+
+O painel privado mostra `EmbaixadorCampanhas`, somente leitura, com datas em Brasília,
+situação e termos próprios da campanha. Rascunhos são excluídos pelo Referrals. Pausadas e
+encerradas não oferecem divulgação. A paginação SSR usa `?campanhas=N` e consulta a própria
+capability; preserva no-store/no-referrer/noindex. O HMAC continua assinando o pathname.
+`ShareCard` do UI oferece prévia e PNG dos links públicos, sem incluir o token do painel.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Astro, React, Tailwind,
 > Drizzle, Zod, Bun, etc.) — não confie só na memória; APIs mudam. Para **pesquisa, exploração e
@@ -413,7 +421,7 @@ quadros em `docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/`; regis
   na nuvem).
 
 **Funil kids "Comunidade dos Criadores" (`kids/comunidade-dos-criadores`, ASSINATURA mensal R$ 97 /
-anual R$ 797, 07/2026):** a assinatura da plataforma kids inteira; **quiz opcional de orientação**
+anual R$ 970, 07/2026):** a assinatura da plataforma kids inteira; **quiz opcional de orientação**
 em `/kids/comunidade-dos-criadores/quiz` (implementado em 01/10/2026). Oferta → checkout → obrigado
 continua acessível diretamente. Módulo em `src/funnels/comunidade-dos-criadores/`, com motor e
 copy do quiz em `quiz/`; `lifetimeAccess: false`
@@ -737,7 +745,7 @@ via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferral
 que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
 na resposta do referrals: `false` mantém o link, mas mostra "ainda não abriu" sem formulário;
 resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
-**Cadê Todo Mundo** (Kids 9 a 14 anos ou a versão adulta), não o Desafio ou a assinatura. Quando disponível, passa
+**Cadê Todo Mundo** (Kids 9 a 17 anos ou a versão adulta), não o Desafio ou a assinatura. Quando disponível, passa
 os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
@@ -1330,7 +1338,7 @@ passos, a tabela "O que o presente inclui", as dúvidas e o fechamento.
 `/kids/embaixadores` (público, indexado) usa o `ProgramaLayout` (o antigo `PresenteLayout`, layout `.cdc`)
 e fala dos dois presentes: hero, `AMBASSADOR_SECTIONS`, entrada pelo app adulto (`/perfil`) ou pela Área
 dos pais, e as dúvidas de `EMBAIXADOR_DUVIDAS`; a experiência detalhada (`GIFT_SECTIONS`/`GIFT_FAQ`) é a
-do presente Kids. A faixa Kids comunicada é **9 a 14 anos**; o adulto, 18 anos ou mais. O nome do curso
+do presente Kids. A faixa Kids comunicada é **9 a 17 anos**; o adulto, 18 anos ou mais. O nome do curso
 vai sem a interrogação ("Cadê Todo Mundo").
 
 `/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro; aceita `?audience=kids|adult` (padrão `kids`) para a prévia do Admin. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.

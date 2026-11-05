@@ -480,7 +480,7 @@ export function parseCreateSubscriptionResponse(raw: any): ParsedSubscription {
     throw new EfiGatewayError('Efí Cobranças não retornou subscription_id na criação da assinatura')
   }
   // A 1ª cobrança pode vir aninhada em `charge`/`first_execution`, ou no topo.
-  const charge = data?.charge ?? data?.first_execution ?? {}
+  const charge = data?.charge ?? data?.charges?.[0] ?? data?.first_execution ?? {}
   const firstChargeRaw = charge?.charge_id ?? charge?.id ?? data?.charge_id
   const firstChargeStatusRaw = charge?.status ?? (firstChargeRaw != null ? data?.status : undefined)
   return {
@@ -503,6 +503,10 @@ export function parseSubscriptionDetail(raw: any, fallbackId: string): ProviderS
     /^\d{4}-\d{2}-\d{2}$/.test(next) &&
     parseProviderDate(`${next} 00:00:00`) !== undefined
   return {
+    amountInCents:
+      typeof data?.value === 'number' && Number.isSafeInteger(data.value) && data.value > 0
+        ? BigInt(data.value)
+        : undefined,
     providerSubscriptionId: String(data?.subscription_id ?? data?.id ?? fallbackId),
     status: mapSubscriptionStatus(data?.status),
     charges: parseSubscriptionCharges(raw),

@@ -3,7 +3,7 @@ import { type CatalogAudience, catalogAudience } from '../shared/audience'
 import { ValidationError } from '../shared/errors'
 import type { CouponCode } from '../value-objects/coupon-code'
 import type { Currency } from '../value-objects/money'
-import { CouponExhaustedError, CouponNotApplicableError } from './coupon.errors'
+import { CouponExhaustedError, CouponExpiredError, CouponNotApplicableError } from './coupon.errors'
 import { CouponCreatedEvent, CouponUpdatedEvent } from './coupon.events'
 import { type CouponStatus, DEFAULT_COUPON_STATUS } from './coupon.status'
 import type { CouponType } from './coupon.type'
@@ -171,8 +171,7 @@ export class CouponAggregate extends AggregateRoot<string> {
     if (this.props.status !== 'active') throw new CouponNotApplicableError('Cupom inativo')
     if (this.props.validFrom && now < this.props.validFrom)
       throw new CouponNotApplicableError('Cupom ainda não está válido')
-    if (this.props.validUntil && now > this.props.validUntil)
-      throw new CouponNotApplicableError('Cupom expirado')
+    if (this.props.validUntil && now >= this.props.validUntil) throw new CouponExpiredError()
     if (this.props.maxRedemptions !== null && this.props.timesRedeemed >= this.props.maxRedemptions)
       throw new CouponExhaustedError()
     if (!this.props.appliesToAll && !this.props.offerIds.includes(offerId))

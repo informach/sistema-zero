@@ -1,5 +1,6 @@
 'use client'
 
+import { ShareCard } from '@sistemazero/ui/share-card'
 import { Gift } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
@@ -11,7 +12,7 @@ import { PRIMARY_ACTION, SECONDARY_ACTION } from './parent-ui'
 /**
  * Card de embaixador da área dos pais: o responsável vira embaixador do presente com um clique
  * (os dados já são os da conta) e recebe o link da própria página por e-mail. Desde 20/10/2026 o
- * presente tem dois públicos: uma família com criança de 9 a 14 anos (Kids) ou um adulto que quer
+ * presente tem dois públicos: uma família com criança de 9 a 17 anos (Kids) ou um adulto que quer
  * criar o próprio jogo. O cadastrado copia o link certo para cada um (`shareUrls`); sem
  * `shareUrls` (referrals antigo), o `shareUrl` é o link Kids.
  * ⚠️ Regra da dona (20/10/2026): o desenho é o da área dos pais de hoje (faixa lilás, ícone em
@@ -85,6 +86,11 @@ export function AmbassadorCard() {
   // Um default cravado aqui volta a prometer R$ 30 depois de a env mudar.
   const bonusCents = view.bonus?.amountCents
   const bonusValue = typeof bonusCents === 'number' ? formatBrlCents(bonusCents) : null
+  const annualBonus = view.bonus?.annualAmountCents
+  const bonusDescription =
+    bonusValue && typeof annualBonus === 'number'
+      ? `${bonusValue} no plano mensal ou ${formatBrlCents(annualBonus)} no anual`
+      : bonusValue
   const redeemed = view.stats?.redemptionsCompleted ?? 0
   const eligible = view.bonus?.eligibleCount ?? 0
   const bonusTotal = eligible + (view.bonus?.paidCount ?? 0)
@@ -160,6 +166,28 @@ export function AmbassadorCard() {
                     Abrir minha página
                   </a>
                 </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {familyUrl && (
+                    <ShareCard
+                      url={familyUrl}
+                      label="Cartão para uma família"
+                      title="Um presente para criar em família"
+                      subtitle="Kids · 9 a 17 anos"
+                      description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                      notice="Acesse o link e faça o cadastro como responsável pela criança."
+                    />
+                  )}
+                  {adultUrl && (
+                    <ShareCard
+                      url={adultUrl}
+                      label="Cartão para um adulto"
+                      title="Seu primeiro jogo começa aqui"
+                      subtitle="Adultos · 18 anos ou mais"
+                      description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                      notice="Acesse o link e faça seu cadastro. Para pessoas de 18 anos ou mais."
+                    />
+                  )}
+                </div>
                 {manualCopy ? (
                   // O sucesso é anunciado por toast; a falha precisa do mesmo
                   // tratamento p/ quem usa leitor de tela.
@@ -182,18 +210,20 @@ export function AmbassadorCard() {
               <>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Como embaixador(a), você pode dar 7 dias no Sistema Zero, sem custo, a outra
-                  família com criança de 9 a 14 anos ou a um adulto que quer criar o próprio jogo.
+                  família com criança de 9 a 17 anos ou a um adulto que quer criar o próprio jogo.
                   Se alguém que recebeu o seu presente assinar a Comunidade dos Criadores, Kids ou
-                  adulta, você recebe um agradecimento{bonusValue ? ` de ${bonusValue}` : ''} por
-                  Pix, depois da garantia de 7 dias.
+                  adulta, você recebe um agradecimento
+                  {bonusDescription ? ` de ${bonusDescription}` : ''} por Pix, depois da garantia de
+                  7 dias.
                 </p>
                 {/* Os TERMOS moram aqui, no ponto em que a pessoa se
                     compromete: no funil eles só aparecem depois do primeiro
                     bônus, ou seja, justamente quem ainda não converteu nunca
                     os leria. (Texto a validar com o contador antes de divulgar.) */}
                 <p className="mt-2 text-xs text-muted-foreground">
-                  É um agradecimento único por indicação que virar assinatura. Não é salário nem
-                  renda garantida e não cria vínculo com a plataforma.
+                  É um agradecimento único por indicação que virar assinatura, sem comissão nas
+                  renovações. Indicações anteriores mantêm o acordo aceito no resgate. Não é salário
+                  nem renda garantida e não cria vínculo com a plataforma.
                 </p>
                 <div className="mt-3">
                   <button

@@ -246,7 +246,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
   })
 
   test('economia do anual: só com os dois preços ao vivo, arredondada para baixo', () => {
-    expect(calcularEconomiaAnual(9_700, 79_700)).toBe(36_700)
+    expect(calcularEconomiaAnual(9_700, 97_000)).toBe(19_400)
     expect(calcularEconomiaAnual(10_900, 89_900)).toBe(40_900)
     // 12 × 97,55 − 1.070 = 100,60: anuncia R$ 100, nunca R$ 101.
     expect(calcularEconomiaAnual(9_755, 107_000)).toBe(10_000)
@@ -255,7 +255,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(calcularEconomiaAnual(9_700, 115_950)).toBe(400)
     expect(calcularEconomiaAnual(9_700, 120_000)).toBe(0)
     // Sem um dos preços ao vivo, não compara com o fallback.
-    expect(calcularEconomiaAnual(undefined, 79_700)).toBe(0)
+    expect(calcularEconomiaAnual(undefined, 97_000)).toBe(0)
     expect(calcularEconomiaAnual(9_700, null)).toBe(0)
   })
 

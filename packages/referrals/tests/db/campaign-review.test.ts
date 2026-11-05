@@ -37,7 +37,67 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
   })
   afterAll(async () => connection?.close())
 
-  async function fixture() {
+  test('calendário persiste e atualização concorrente não sobrescreve a nova data', async () => {
+    const f = await fixture(8000)
+    const schedule = { eventDate: '2026-11-06', giftClaimDays: 3, couponClaimDays: 7 }
+    const saved = await admin.update(
+      f.campaign.id,
+      { ...f.campaign, schedule, expectedUpdatedAt: f.campaign.updatedAt },
+      'Teste',
+    )
+    const stored = await campaigns.findById(f.campaign.id)
+    expect(stored?.schedule).toEqual(schedule)
+    expect(stored?.endsAt.toISOString()).toBe('2026-11-09T03:00:00.000Z')
+    const moved = await admin.update(
+      f.campaign.id,
+      {
+        ...saved!,
+        schedule: { ...schedule, eventDate: '2026-12-30' },
+        expectedUpdatedAt: saved!.updatedAt,
+      },
+      'Teste',
+    )
+    expect(moved?.endsAt).toBe('2027-01-02T03:00:00.000Z')
+    let conflict: unknown
+    try {
+      await admin.update(f.campaign.id, { ...saved!, expectedUpdatedAt: saved!.updatedAt }, 'Outro')
+    } catch (error) {
+      conflict = error
+    }
+    expect(conflict).toBeInstanceOf(Error)
+    expect(String(conflict)).toContain('alterada')
+    expect((await campaigns.findById(f.campaign.id))?.schedule?.eventDate).toBe('2026-12-30')
+  })
+
+  test('consulta do parceiro filtra no SQL antes do limite e da contagem', async () => {
+    const mine = await fixture(8000)
+    const other = await fixture(8000)
+    await admin.create(
+      { ...mine.campaign, code: `draft-${crypto.randomUUID().slice(0, 8)}`, status: 'draft' },
+      'Teste',
+    )
+    const result = await campaigns.list({
+      ambassadorId: mine.person.ambassador.id,
+      publishedOnly: true,
+      limit: 1,
+      offset: 0,
+    })
+    expect(result.total).toBe(1)
+    expect(result.items.map((item) => item.id)).toEqual([mine.campaign.id])
+    expect(result.items.some((item) => item.id === other.campaign.id)).toBe(false)
+    expect(
+      (
+        await campaigns.list({
+          ambassadorId: mine.person.ambassador.id,
+          publishedOnly: true,
+          limit: 1,
+          offset: 1,
+        })
+      ).items,
+    ).toEqual([])
+  })
+
+  async function fixture(commissionAnnualAmountCents?: number) {
     const suffix = crypto.randomUUID().slice(0, 8)
     const person = await repo.createAmbassadorWithCode({
       name: 'Parceira',
@@ -61,6 +121,7 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
         ambassadorId: person.ambassador.id,
         commissionEnabled: true,
         commissionAmountCents: 4500,
+        commissionAnnualAmountCents,
         commissionWindowDays: 30,
       },
       'Teste',
@@ -78,6 +139,7 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
           id: 'offer',
           slug: 'comunidade-dos-criadores-anual',
           name: 'Anual',
+          billingIntervalMonths: 12,
         }),
       },
       {
@@ -128,6 +190,51 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
     }
     return { person, campaign: campaign!, code, claim, payment, paid, refund, payments }
   }
+
+  test('snapshot SQL preserva mensal/anual após edição e novos resgates usam o novo acordo', async () => {
+    const f = await fixture(8000)
+    const first = await f.claim()
+    expect(first.campaignReferral).toMatchObject({
+      commissionAmountCents: 4500,
+      commissionAnnualAmountCents: 8000,
+    })
+    await admin.update(
+      f.campaign.id,
+      { ...f.campaign, commissionAnnualAmountCents: 9000, expectedUpdatedAt: f.campaign.updatedAt },
+      'Teste',
+    )
+    const second = await f.claim()
+    const firstReloaded = (await repo.listRedemptionsWithCodeByEmail(first.email))[0]!.redemption
+    expect(firstReloaded.campaignReferral?.commissionAnnualAmountCents).toBe(8000)
+    expect(second.campaignReferral?.commissionAnnualAmountCents).toBe(9000)
+    for (const r of [first, second])
+      await f.paid(f.payment(r.email, new Date(r.createdAt.getTime() + 1000)))
+    expect((await repo.listConversionsByRedemptions([first.id]))[0]?.bonusCents).toBe(8000)
+    expect((await repo.listConversionsByRedemptions([second.id]))[0]?.bonusCents).toBe(9000)
+    const disabled = await admin.detail(f.campaign.id)
+    await admin.update(
+      f.campaign.id,
+      {
+        ...disabled!.campaign,
+        commissionEnabled: false,
+        expectedUpdatedAt: disabled!.campaign.updatedAt,
+      },
+      'Teste',
+    )
+    expect((await f.claim()).campaignReferral?.commissionAnnualAmountCents).toBeNull()
+    const direct = await repo.insertRedemption({
+      codeId: f.person.code.id,
+      email: `${crypto.randomUUID()}@example.test`,
+      name: 'Direto',
+      phone: null,
+      audience: 'kids',
+      bonusAmounts: { monthly: 3000, annual: 8000 },
+    })
+    expect(
+      (await repo.listRedemptionsWithCodeByEmail(direct.redemption.email))[0]?.redemption
+        .bonusAmounts,
+    ).toEqual({ monthly: 3000, annual: 8000 })
+  })
 
   test.each([
     'early-first',

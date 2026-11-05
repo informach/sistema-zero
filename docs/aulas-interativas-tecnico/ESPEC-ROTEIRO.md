@@ -256,7 +256,9 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
   dúvida.
 - **Cada frase do Na tela termina com ponto** e a seguinte começa com maiúscula: é assim que o
   EdiAula separa as frases. Um ponto no meio da frase seguido de maiúscula (uma abreviação)
-  também corta a frase; evite.
+  também corta a frase; evite. Dentro das aspas a pontuação da fala fica, sem cortar:
+  `No "Funcionou? Clique em Verificar projeto"` é uma frase só (desde 03/11/2026; antes disso o
+  "?" seguido de maiúscula cortava a citação e o gesto caía antes da palavra).
 - **Os colchetes** são os gestos, na ordem em que acontecem. O texto fora deles continua sendo a
   orientação de quem grava à mão.
 - **Aspas dentro de colchetes** nomeiam um botão, um bloco ou um campo, nunca uma frase a
@@ -267,8 +269,9 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
 
 ### 9.4 O tempo dos gestos
 
-- A mão chega ao alvo quando a voz começa a frase citada, e o primeiro colchete acontece quando
-  a voz termina de dizê-la. O tamanho da citação decide o momento: em
+- A mão sai na primeira palavra da citação, chega ao alvo enquanto a voz diz a citação, e o
+  primeiro colchete acontece quando a voz termina de dizê-la. Ela nunca sai antes da frase
+  citada (regra de 02/11/2026: gesto e fala juntos, o vídeo começa e termina com a voz). O tamanho da citação decide o momento: em
   `No "Agora clique em Próxima parte"`, o clique vem depois de "parte"; em `No "Agora"`, logo
   depois de "Agora". Cite até a palavra depois da qual a ação deve aparecer.
 - **O clique só depois da palavra do clique.** A mão pode ir até o alvo antes, mas clicar, tocar
@@ -286,6 +289,10 @@ No "Olha aqui", tocar num esconderijo [achar arbusto]: ele some e aparece quem e
   numa só citação deixa o clique 2 segundos depois da fala. O voltar vai numa frase anterior
   (`No "Agora é a sua vez"`, `No "Quando terminar"`) e o clique na sua:
   `No "Quando terminar, clique em Próxima"`.
+- **Segurar conta o tempo dele.** `[segurar seta da direita por 1,5 s]` aperta na palavra da ação
+  e solta 1,5 segundo depois; o gesto seguinte da mesma citação espera soltar. Escolha o tempo
+  pelo que a tela precisa mostrar (o personagem andar sem chegar ao farol, passar da beirada) e
+  pela fala que acompanha: segure durante a frase que descreve o que acontece.
 - **A citação é procurada no que a voz disse.** A transcrição às vezes ouve diferente: um nome
   ("Zappy" vira "Zap"), "num" vira "no", "zero" vira "0". Números escritos de um jeito ou de outro
   valem igual, e numa citação de quatro palavras ou mais uma em cada quatro pode ter sido ouvida
@@ -329,6 +336,8 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[achar arbusto]` | toca num alvo do jogo pronto, pelo nome ou pelo id do alvo no manifesto |
 | `[apontar jogo]`, `[apontar jogo 75 26]` | aponta o meio do jogo ou um ponto, em pixels do palco do jogo (o placar, uma mensagem) |
 | `[jogar de novo]` | recomeça o jogo pronto |
+| `[segurar seta da direita por 1,5 s]` | segura uma seta da tela do jogo (direita, esquerda, cima ou baixo) pelo tempo dito; sem tempo, 1 segundo |
+| `[apontar setas]` | aponta as quatro setas da tela, no canto de baixo do jogo |
 
 **Material da aula (Passo a passo do projeto)**
 
@@ -346,6 +355,8 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | --- | --- |
 | `[tocar "Tocar no arbusto"]` | toca num controle da experiência pelo nome dele |
 | `[apontar zappy]` | aponta o Zappy, ao lado da fala dele |
+| `[apontar selo]` | aponta o selo **Seta apertada?** da experiência do andar (o texto dele muda com a seta) |
+| `[apontar faixa fora da tela]` | aponta a faixa **fora da tela** da experiência do limite |
 | `[apontar "Valor atual de achados"]` | aponta qualquer coisa da página pelo nome (verbo do EdiAula, abaixo) |
 
 **Estúdio**
@@ -355,15 +366,25 @@ Todos os gestos que o EdiAula entende no palco do Sistema Zero. A lista viva fic
 | `[apontar paleta]` | aponta a paleta de comandos |
 | `[categoria Jogo 2D > Sprites > Aparência]` | abre as categorias da paleta, uma depois da outra |
 | `[categoria Jogo 2D]` com a categoria aberta | recolhe a categoria (clicar de novo numa subcategoria aberta também a recolhe) |
-| `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área aparecer |
+| `[abrir categoria Jogo 2D > Movimento > Movimentos prontos]` | abre sem nunca recolher: a categoria que já está aberta só é apontada. Use na segunda montagem de uma parte, quando Jogo 2D ficou aberta do encaixe anterior |
+| `[jogar na lixeira ">" em "Se"]` | pega o bloco pelo campo dito (o sinal de maior da pergunta **x > 0** que o Se traz) e o solta na lixeira da área de código |
+| `[abrir "senão" em "Se"]`, `[apontar mais de "senão se" em "Se"]` | clica (ou só aponta) o botão de mais que fica logo antes do rótulo dito: abre o espaço do **senão** |
+| `"Se dentro de Quando o sprite personagem começar a encostar no sprite farol"` | em qualquer tag de bloco, `dentro de` diz qual bloco quando há vários com o mesmo começo: o Se que está dentro daquele encontro, e não o de Enquanto estiver rodando |
+| `[mostrar blocos "Quando o sprite", "Destruir o sprite"]` | arrasta a área de código até todos esses blocos ficarem bem à vista juntos, perto do meio e longe das bordas: para conferir os blocos que a fala nomeia |
+| `[arrastar até "Quando acontecer"]` | arrasta um espaço vazio da área de trabalho até o bloco ou a área ficar perto do meio da altura (não precisa ser o centro exato): a área em que a criança vai trabalhar fica em destaque. Use sempre que a montagem passa para outra área |
 | `[apontar bloco "Quando clicar ou tocar"]` | aponta um bloco da área de trabalho pelo texto dele |
 | `[apontar encaixe em "Quando clicar ou tocar"]` | aponta o espaço ao lado de **fazer** do bloco |
 | `[apontar abaixo de "Deixar o sprite"]` | aponta o lugar logo abaixo de um bloco, onde o próximo vai entrar |
 | `[encaixar "Deixar o sprite" em "Quando clicar ou tocar"]` | leva um bloco da paleta para o espaço ao lado de **fazer**, o único lugar onde ele encaixa |
 | `[encaixar "Somar 1" abaixo de "Deixar o sprite"]` | leva um bloco da paleta para logo abaixo de um bloco da área de trabalho |
-| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco: escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um |
+| `[encaixar "Quando o sprite" dentro de "Quando acontecer"]` | leva um bloco da paleta para o espaço vazio de dentro de uma área recém-criada (ou de outro bloco cujo espaço não tem rótulo) |
+| `[apontar lugar sem blocos abaixo de "Ao iniciar"]` | aponta o lugar logo abaixo dessa pilha, alinhado com a borda esquerda dela e com um espaço; sem o `abaixo de`, um lugar sem blocos ao lado das pilhas, fora de onde a paleta abre. Uma área nova vai alinhada embaixo de Ao iniciar, nunca jogada de qualquer jeito |
+| `[soltar "Quando acontecer" no lugar sem blocos abaixo de "Ao iniciar"]` | leva um bloco da paleta (uma área nova) para esse mesmo lugar: o que o apontar mostrou é onde o bloco cai |
+| `[soltar "verdadeiro" em cima do "0" em "Criar variável temChave"]` | leva um bloco de valor da paleta para o lugar de um valor do bloco (o 0, o 1), que ele substitui |
+| `[trocar "jogador" por "escolhido" em "Deixar o sprite"]` | troca um campo de bloco e, no fim, clica na área de código fora do bloco, para a mudança valer (o `escolher` também): escolhe no menu ou reescreve o número ou o texto; `em "<bloco>"` diz qual bloco quando há mais de um, pelo começo do texto dele com os valores (`"Alterar variável temChave"` separa dois Alterar variável), e vale também para o campo de um bloco de valor encaixado nele (o **verdadeiro** de Criar variável) |
 | `[tocar prévia arbusto]`, `[tocar prévia 137 209]` | toca no jogo da pré-visualização, por um alvo do jogo pronto ou por um ponto em pixels do jogo |
-| `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização |
+| `[apontar prévia 75 26]` | aponta um ponto do jogo da pré-visualização; o ponto é do jogo do projeto aberto, pelo tamanho que o bloco **Preparar o jogo** dá à tela (vale também numa aula sem jogo pronto) |
+| `[segurar seta de baixo na prévia por 1 s]`, `[apontar setas na prévia]` | as setas da tela no jogo da pré-visualização (só aparecem com o bloco Ativar controles clássicos) |
 | `[verificar projeto]` | clica em **Verificar projeto** e espera a resposta, acelerada |
 | `[enviar projeto]` | clica em **Enviar meu projeto** (ou **Enviar de novo**) e confirma em **Enviar**; no palco nada é enviado |
 | `[compartilhar]` | abre o **Compartilhar** do Estúdio; no palco nada vai para o Mural |
@@ -379,6 +400,8 @@ própria; o nome é o que a pessoa lê na tela ou o nome acessível do botão:
 | `[clique duplo "Texto"]`, `[clique direito "Texto"]` | os outros cliques |
 | `[digitar "Achei!" em "Recado"]` | escreve num campo |
 | `[tecla Escape]`, `[tecla Ctrl+Z]` | aperta uma tecla ou atalho |
+| `[segurar tecla ArrowRight por 1,5 s]` | segura uma tecla (as setas do teclado: ArrowRight, ArrowLeft, ArrowUp, ArrowDown); num jogo, toque nele antes (`[tocar prévia 240 300]`) para o teclado ir para ele |
+| `[segurar "Texto" por 2 s]` | segura o botão do mouse num botão pelo nome |
 | `[esperar "Objetivo cumprido"]`, `[esperar "Carregando" sumir]` | espera um texto aparecer ou sumir |
 | `[rolar até "Texto"]`, `[rolar para baixo]` | rola a **página** (não a área de blocos do Estúdio) |
 | `[arrastar "A" para "B"]` | arrasta numa página comum (no Estúdio, usar `encaixar`) |
@@ -426,6 +449,17 @@ Do "Nesta parte" até o "ligada ao toque para acontecer", a tela fica parada, e 
   a tela real volta.
 
 ### 9.8 Receitas
+
+**Conferir os blocos ("Se algo não funcionou, volte aos blocos e confira")**
+
+A criança precisa ver na tela os blocos que confere. No "volte aos blocos", a área de código é
+arrastada até todos os blocos que a fala vai nomear ficarem bem à vista juntos, perto do meio
+(`[mostrar blocos "A", "B"]`); cada bloco nomeado é apontado na palavra dele; no "teste de novo",
+a mão volta para o jogo, que é onde a criança está testando (pedido da Helena, 04/11/2026).
+
+```
+No "volte aos blocos e confira se ficou assim", deixar bem à vista os blocos conferidos [mostrar blocos "Quando o sprite", "Destruir o sprite"]. No "está o encontro entre personagem e chave", apontar o encontro [apontar bloco "Quando o sprite"]. No "e dentro dele está Destruir o sprite chave", apontar o bloco de dentro [apontar bloco "Destruir o sprite"]. No "Depois de corrigir, teste de novo", voltar a mão para o jogo [apontar prévia].
+```
 
 **Abertura com jogo pronto**
 
@@ -487,6 +521,28 @@ No "Agora clique em Baixar meu certificado", clicar em **Baixar meu certificado*
   aponta.
 - Juntar gestos demais numa frase curta. Se não cabem, escolha os que a fala nomeia.
 - Inventar uma tag. Verbo que o palco não conhece aparece como erro no **Verificar plano**.
+- Abrir de novo com `[categoria Jogo 2D]` uma categoria que ficou aberta de um encaixe anterior:
+  o clique a recolhe e a de dentro some. Na segunda montagem, `[abrir categoria ...]`.
+- Apontar as setas da tela por um ponto do jogo (`[apontar jogo 60 330]`): elas ficam presas ao
+  canto do quadro, não do palco do jogo, e o ponto muda com o tamanho. Use `[apontar setas]`.
+- Segurar uma seta mais do que a cena aguenta: o personagem chega ao farol, à chave ou some atrás
+  das setas. Conte o caminho (no Farol, 3 pixels por quadro, 180 por segundo).
+- Deixar uma área por cima da outra. O palco desce sozinho a área de baixo quando a de cima cresce
+  (Ao iniciar ganhou um bloco e encostou em Quando acontecer), mas a área nova precisa nascer
+  alinhada e com espaço (`[soltar ... no lugar sem blocos abaixo de "Ao iniciar"]`).
+- Falar "volte aos blocos e confira" com a tela parada no jogo: a criança não vê o que conferir.
+  Use a receita **Conferir os blocos** (9.8).
+- Contar com o personagem onde o teste anterior o deixou: a pré-visualização recomeça a partida a
+  cada bloco mudado, e o segundo teste da parte sai do começo de novo.
+- Citar uma palavra que o transcritor escreve de outro jeito (temChave sai "tem chave", Lógica e
+  Se sai "lógica e C", senão sai "sinão" ou "se não", sprite chave sai "Sprite-Chave"): cite as
+  palavras de antes ou de depois. Transcrita sozinha, uma parte às vezes perde uma frase inteira da
+  voz: cite o que aparece também na transcrição da parte cortada.
+- Dividir um caminho do personagem em duas citações com as setas da tela: cada seta custa a viagem
+  da mão, e o segundo trecho sai antes do primeiro acabar. Depois da primeira seta da tela, o resto
+  do caminho vai pelas setas do teclado (`[segurar tecla ArrowUp por 0,5 s]`), que acompanham a fala.
+- Trazer o valor para a vista com a paleta aberta: arrastar o fundo fecha a paleta. Traga o bloco
+  à vista antes de abrir a categoria (`[arrastar até ...]`).
 
 ### 9.10 Conferência
 

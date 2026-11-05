@@ -6,6 +6,7 @@
 import EmbaixadorLayout from '../../components/referrals/EmbaixadorLayout.astro'
 import { EMBAIXADOR_DUVIDAS, PAINEL_EMBAIXADOR as P } from '../../content/embaixador'
 import EmbaixadorBonus, { type EmbaixadorBonusProps } from '../../islands/EmbaixadorBonus'
+import EmbaixadorCampanhas from '../../islands/EmbaixadorCampanhas'
 import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
 import type { AmbassadorPageView } from '../../lib/gateway-client'
 import { getDeps } from '../../server/deps'
@@ -14,10 +15,15 @@ Astro.response.headers.set('cache-control', 'private, no-store')
 Astro.response.headers.set('referrer-policy', 'no-referrer')
 type AmbassadorView = AmbassadorPageView & { bonus?: EmbaixadorBonusProps['bonus'] }
 const token = (Astro.params.token ?? '').trim()
+const requestedPage = Number(Astro.url.searchParams.get('campanhas') ?? 1)
+const campaignPage =
+  Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 10_001
+    ? requestedPage
+    : 1
 let view: AmbassadorView | null = null
 let gatewayDown = false
 if (/^[A-Za-z0-9_-]{16,64}$/.test(token)) {
-  const result = await getDeps().gateway.getAmbassadorByToken(token)
+  const result = await getDeps().gateway.getAmbassadorByToken(token, (campaignPage - 1) * 20)
   if (result.status === 200) view = result.body as AmbassadorView
   else if (result.status !== 404) gatewayDown = true
 }
@@ -27,7 +33,7 @@ const canonical = new URL('/kids/embaixadores', Astro.site ?? Astro.url).href
 const primeiroNome = (view?.name ?? '').trim().split(/\s+/)[0] ?? ''
 const indisponivel = gatewayDown ? P.indisponivel.foraDoAr : P.indisponivel.naoEncontrado
 ---
-<EmbaixadorLayout title={P.seoTitle} description={P.description} canonical={canonical} painel={Boolean(view)} bonus={Boolean(view?.bonus)}>
+<EmbaixadorLayout title={P.seoTitle} description={P.description} canonical={canonical} painel={Boolean(view)} bonus={Boolean(view?.bonus)} campanhas={Boolean(view?.campaigns)}>
   {view ? <>
     <div class="emb-aviso"><p><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="11" rx="2"></rect><path d="M8 10V7a4 4 0 0 1 8 0v3"></path></svg><span><strong>{P.aviso.destaque}</strong>{P.aviso.texto}</span></p></div>
     <section id="painel" class="emb-sec" aria-labelledby="emb-titulo">
@@ -40,6 +46,11 @@ const indisponivel = gatewayDown ? P.indisponivel.foraDoAr : P.indisponivel.naoE
         <EmbaixadorPainel client:load token={token} shareUrl={view.shareUrl} shareUrls={view.shareUrls} stats={view.stats} />
       </div>
     </section>
+    {view.campaigns && (
+      <section id="minhas-campanhas" class="emb-sec emb-sec--branca" aria-labelledby="emb-campanhas-titulo">
+        <div class="emb-wrap"><EmbaixadorCampanhas client:load campaigns={view.campaigns} /></div>
+      </section>
+    )}
     {view.bonus && (
       <section id="bonus" class="emb-sec emb-sec--branca">
         <div class="emb-wrap"><EmbaixadorBonus client:load token={token} bonus={view.bonus} /></div>

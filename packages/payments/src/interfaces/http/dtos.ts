@@ -68,6 +68,7 @@ export const ProcessPaymentBody = t.Object({
  * aplicação (→ 422). `card` (sem parcelas — cada ciclo é uma cobrança) é obrigatório.
  */
 export const CreateSubscriptionBody = t.Object({
+  firstChargeAmountInCents: t.Optional(t.Integer({ minimum: 300, maximum: 1_000_000_000 })),
   amountInCents: t.Integer({
     minimum: 1,
     maximum: 1_000_000_000,

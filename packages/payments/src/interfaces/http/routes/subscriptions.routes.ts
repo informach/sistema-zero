@@ -45,6 +45,7 @@ export function subscriptionsRoutes(deps: SubscriptionsRoutesDeps) {
           idempotencyKey,
           requestHash: sha256Hex(getRawBody(request)),
           amountInCents: body.amountInCents,
+          firstChargeAmountInCents: body.firstChargeAmountInCents,
           intervalMonths: body.intervalMonths,
           repeats: body.repeats ?? null,
           description: body.description,

@@ -34,6 +34,7 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.546.0",
     "payment-token-efi": "3.3.0",
+    "qrcode": "^1.5.4",
     "tailwind-merge": "^3.4.0"
   },
   "peerDependencies": {
@@ -41,6 +42,8 @@
     "react-dom": "^19"
   },
   "devDependencies": {
+    "jsqr": "^1.4.0",
+    "@types/qrcode": "^1.5.5",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^5.7.0",

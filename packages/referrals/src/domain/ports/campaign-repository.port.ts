@@ -22,6 +22,8 @@ export interface CampaignRepository {
   list(opts: {
     q?: string
     audience?: GiftAudience
+    ambassadorId?: string
+    publishedOnly?: boolean
     limit: number
     offset: number
   }): Promise<{ items: CampaignRecord[]; total: number }>

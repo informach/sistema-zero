@@ -182,7 +182,7 @@ export async function resolveCharge(
       message: 'Esta oferta não está disponível no momento.',
     }
   }
-  if (code && errorCode !== 'OFFER_NOT_FOUND') {
+  if (code && status < 500 && status !== 401 && status !== 403 && errorCode !== 'OFFER_NOT_FOUND') {
     return { ok: false, status: 422, code: 'INVALID_COUPON', message: couponMessage(errorCode) }
   }
   return {
@@ -249,6 +249,9 @@ export async function quotePreview(
   }
   const errorCode = readErrorCode(body)
   const errorMessage = readErrorMessage(body)
+  if (status >= 500 || status === 401 || status === 403) {
+    return { status: 502, error: 'Não foi possível validar o cupom agora.' }
+  }
   if (errorCode === 'OFFER_NOT_AVAILABLE') {
     return { status: 409, error: 'Esta oferta não está disponível no momento.' }
   }
@@ -412,13 +415,15 @@ function parseAccessPolicy(
 }
 
 function couponMessage(code: string | null, detail?: string | null): string {
+  if (code === 'COUPON_EXPIRED')
+    return 'Este cupom expirou. Você ainda pode comprar pelo preço normal.'
   switch (code) {
     case 'COUPON_EXHAUSTED':
       return 'Os resgates disponíveis para este evento terminaram.'
     case 'COUPON_NOT_APPLICABLE':
       return detail?.toLowerCase().includes('expir')
         ? 'A validade deste cupom terminou.'
-        : 'Não encontramos esse cupom para esta oferta. Confira o código.'
+        : 'Este cupom não está disponível para esta compra agora. Você pode continuar pelo preço normal.'
     default:
       return 'Não encontramos esse cupom para esta oferta. Confira o código.'
   }

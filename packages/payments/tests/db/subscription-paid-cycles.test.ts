@@ -76,6 +76,49 @@ describe.skipIf(!url)('Identidade permanente de ciclos — PostgreSQL real', () 
     })
     return { subscription, providerId, input }
   }
+  test('primeiro preço persiste antes do débito e duas réplicas não reivindicam a mesma preparação', async () => {
+    const subscription = SubscriptionAggregate.create({
+      consumerId,
+      amount: Money.fromCents(97000),
+      firstChargeAmountInCents: 48500,
+      intervalMonths: 12,
+      card: { brand: 'visa', last4: '4242' },
+      providerPlanId: 'qa-plan',
+      idempotencyKey: IdempotencyKey.create(crypto.randomUUID()),
+      metadata: { couponCode: 'FIRST50' },
+    })
+    subscription.registerProviderSubscription(`qa-first-${crypto.randomUUID()}`)
+    subscription.registerFirstCharge(`qa-charge-${crypto.randomUUID()}`)
+    await subscriptions.save(subscription)
+    await connection.sql`update payments.subscriptions set created_at=now()-interval '2 minutes' where id=${subscription.id}`
+    const restored = await subscriptions.findById(subscription.id)
+    expect(restored?.firstChargePricing).toEqual(subscription.firstChargePricing)
+    expect(restored?.amount.amountInCents).toBe(97000n)
+    const claimed = (
+      await Promise.all([
+        subscriptions.claimFirstChargeSetups(100),
+        subscriptions.claimFirstChargeSetups(100),
+      ])
+    )
+      .flat()
+      .filter((s) => s.id === subscription.id)
+    expect(claimed).toHaveLength(1)
+    expect(
+      (await subscriptions.claimFirstChargeSetups(100)).some((s) => s.id === subscription.id),
+    ).toBe(false)
+    if (!restored) throw new Error('Missing persisted subscription')
+    restored.confirmRenewalPrice()
+    await subscriptions.save(restored)
+    await connection.sql`update payments.subscriptions set first_charge_next_attempt_at=null where id=${subscription.id}`
+    expect(
+      (await subscriptions.claimFirstChargeSetups(100)).some((s) => s.id === subscription.id),
+    ).toBe(false)
+    const completed = await subscriptions.findById(subscription.id)
+    expect(completed?.firstChargePricing).toMatchObject({
+      amountInCents: 48500,
+      renewalPriceConfirmed: true,
+    })
+  })
   test('reentrega após retenção de inbox e outbox não conta ciclo nem expira plano antes da hora', async () => {
     const { subscription, providerId } = await fixture()
     const a = `qa-a-${crypto.randomUUID()}`,

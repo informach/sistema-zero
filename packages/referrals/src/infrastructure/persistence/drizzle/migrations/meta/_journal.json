@@ -57,6 +57,20 @@
       "when": 1793838184691,
       "tag": "0007_dapper_quentin_quire",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793869664490,
+      "tag": "0008_commission-by-plan",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793875516295,
+      "tag": "0009_campaign-calendar-coupon",
+      "breakpoints": true
     }
   ]
 }

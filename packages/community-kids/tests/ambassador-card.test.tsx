@@ -40,12 +40,19 @@ const active = (over: Partial<NonNullable<AmbassadorEnrollmentView['ambassador']
   }) satisfies AmbassadorEnrollmentView
 
 describe('cartão de embaixador da área dos pais', () => {
+  test('comissão por plano usa os dois valores do serviço e explica pagamento único', async () => {
+    serve({ enrolled: false, bonus: { amountCents: 3000, annualAmountCents: 8000 } })
+    render(<AmbassadorCard />)
+    await screen.findByText('Seja um embaixador do Sistema Zero')
+    expect(document.body.textContent).toMatch(/R\$\s30,00 no plano mensal ou R\$\s80,00 no anual/)
+    expect(document.body.textContent).toContain('sem comissão nas renovações')
+  })
   test('sem cadastro: os dois presentes, o valor do serviço e os termos', async () => {
     serve({ enrolled: false, bonus: { amountCents: 4500 } })
     render(<AmbassadorCard />)
     await screen.findByText('Seja um embaixador do Sistema Zero')
     const text = document.body.textContent ?? ''
-    expect(text).toContain('família com criança de 9 a 14 anos')
+    expect(text).toContain('família com criança de 9 a 17 anos')
     expect(text).toContain('adulto que quer criar o próprio jogo')
     expect(text).toMatch(/R\$\s45,00/)
     expect(text).toContain('Não é salário nem renda garantida')

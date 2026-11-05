@@ -20,7 +20,12 @@ export interface BonusItem {
 
 export interface EmbaixadorBonusProps {
   token: string
-  bonus: { pixKey: string | null; items: BonusItem[]; amountCents?: number }
+  bonus: {
+    pixKey: string | null
+    items: BonusItem[]
+    amountCents?: number
+    annualAmountCents?: number
+  }
 }
 
 const T = PAINEL_EMBAIXADOR.bonus
@@ -78,9 +83,15 @@ export default function EmbaixadorBonus({ token, bonus }: EmbaixadorBonusProps) 
         <p className="emb-p">
           {T.antes}
           {typeof bonus.amountCents === 'number'
-            ? formatBRLFromCents2(bonus.amountCents)
+            ? typeof bonus.annualAmountCents === 'number'
+              ? `${formatBRLFromCents2(bonus.amountCents)} no plano mensal ou ${formatBRLFromCents2(bonus.annualAmountCents)} no anual`
+              : formatBRLFromCents2(bonus.amountCents)
             : T.semValor}
           {T.depois}
+        </p>
+        <p className="emb-ajuda">
+          Bônus único pela primeira contratação, sem comissão nas renovações. Indicações anteriores
+          mantêm o acordo aceito no resgate; campanhas seguem suas condições específicas.
         </p>
         {bonus.items.length > 0 ? (
           <ul className="emb-bonus__lista">
@@ -119,6 +130,8 @@ export default function EmbaixadorBonus({ token, bonus }: EmbaixadorBonusProps) 
           type="text"
           placeholder={T.pixPlaceholder}
           value={pixKey}
+          disabled={savingPix}
+          maxLength={140}
           onChange={(e) => {
             setPixKey(e.target.value)
             // A mensagem antiga ("Chave Pix salva.") não pode sobreviver à edição: quem corrigiu a

@@ -1,4 +1,5 @@
 import type { AmbassadorShareUrls, GiftAudience } from '@sistemazero/core/referrals'
+import { ShareCard } from '@sistemazero/ui/share-card'
 import { useId, useState } from 'react'
 import { PAINEL_EMBAIXADOR } from '../content/embaixador'
 import { ApiError, apiPost } from '../lib/api-fetch'
@@ -128,6 +129,7 @@ export default function EmbaixadorPainel({
                 name={`${uid}-publico`}
                 value={alvo}
                 checked={marcado}
+                disabled={sending}
                 onChange={() => {
                   setPublico(alvo)
                   setInviteMsg(null)
@@ -203,6 +205,24 @@ export default function EmbaixadorPainel({
               <a className="emb-link" href={link} target="_blank" rel="noreferrer">
                 {T.link.ver}
               </a>
+              <div className="mt-3">
+                <ShareCard
+                  buttonClassName="emb-btn emb-btn--contorno"
+                  url={link}
+                  title={
+                    publico === 'kids'
+                      ? 'Um presente para criar em família'
+                      : 'Seu primeiro jogo começa aqui'
+                  }
+                  subtitle={T.link.chip[publico]}
+                  description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
+                  notice={
+                    publico === 'kids'
+                      ? 'Acesse o link e faça o cadastro como responsável pela criança.'
+                      : 'Acesse o link e faça seu cadastro. Para pessoas de 18 anos ou mais.'
+                  }
+                />
+              </div>
               <label className="emb-rotulo" htmlFor={`${uid}-mensagem`}>
                 {T.link.mensagemRotulo}
               </label>
@@ -282,7 +302,12 @@ export default function EmbaixadorPainel({
               autoComplete="off"
               placeholder={T.convite.nomePlaceholder}
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              disabled={sending}
+              maxLength={120}
+              onChange={(e) => {
+                setNome(e.target.value)
+                setInviteMsg(null)
+              }}
               className="emb-input"
             />
             <label className="emb-rotulo" htmlFor={`${uid}-email`}>
@@ -295,7 +320,12 @@ export default function EmbaixadorPainel({
               autoComplete="off"
               placeholder={T.convite.emailPlaceholder}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              disabled={sending}
+              maxLength={254}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setInviteMsg(null)
+              }}
               className="emb-input"
             />
             {!link && <p className="emb-ajuda">{T.convite.semLink}</p>}

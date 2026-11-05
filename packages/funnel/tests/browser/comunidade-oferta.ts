@@ -22,7 +22,7 @@ const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = resolve(cwd, '../../tmp/comunidade-oferta-review')
 const kidsBase = '/kids/comunidade-dos-criadores'
 const adultBase = '/pro/comunidade-dos-criadores'
-// Preços propositalmente diferentes da reserva (97 e 797): provam que a página leu o catálogo.
+// Preços propositalmente diferentes da reserva (97 e 970): provam que a página leu o catálogo.
 const OFFERS = {
   'comunidade-dos-criadores-mensal': {
     priceCents: 10900,

@@ -16,6 +16,7 @@ import {
 } from '../../src/content/presente-resgate'
 import BolsaResgate from '../../src/islands/BolsaResgate'
 import EmbaixadorBonus, { bonusLabel } from '../../src/islands/EmbaixadorBonus'
+import EmbaixadorCampanhas from '../../src/islands/EmbaixadorCampanhas'
 import EmbaixadorPainel, { linksDoEmbaixador } from '../../src/islands/EmbaixadorPainel'
 
 const src = (path: string) => Bun.file(new URL(`../../src/${path}`, import.meta.url)).text()
@@ -49,13 +50,13 @@ describe('copy do presente: as regras de voz valem nos dois públicos', () => {
     }
   })
 
-  test('a faixa Kids é 9 a 14 e o adulto é 18 ou mais, sem números inventados', () => {
+  test('a faixa Kids é 9 a 17 e o adulto é 18 ou mais, sem números inventados', () => {
     const kids = JSON.stringify([PRESENTE_KIDS, RESGATE_COPY.kids])
-    expect(kids).toContain('9 a 14 anos')
-    expect(kids).not.toMatch(/9 a 17|a partir de 9 anos/)
+    expect(kids).toContain('9 a 17 anos')
+    expect(kids).not.toMatch(/9 a 14|a partir de 9 anos/)
     const adulto = JSON.stringify([PRESENTE_ADULTO, RESGATE_COPY.adult])
     expect(adulto).toContain('18 anos ou mais')
-    expect(adulto).not.toMatch(/9 a 14|seu filho|responsável/i)
+    expect(adulto).not.toMatch(/9 a 17|seu filho|responsável/i)
     // Nenhum valor de bônus escrito à mão: ele vem de `bonus.amountCents`.
     expect(JSON.stringify(PAINEL_EMBAIXADOR)).not.toMatch(/R\$\s*\d/)
   })
@@ -209,6 +210,34 @@ describe('BolsaResgate por público', () => {
 })
 
 describe('painel do embaixador', () => {
+  test('o prazo do presente termina no último minuto válido em Brasília', () => {
+    const html = renderToStaticMarkup(
+      <EmbaixadorCampanhas
+        campaigns={{
+          total: 1,
+          limit: 20,
+          offset: 0,
+          items: [
+            {
+              id: 'campaign',
+              publicTitle: 'Encontro',
+              audience: 'kids',
+              state: 'scheduled',
+              startsAt: '2026-11-06T03:00:00Z',
+              endsAt: '2026-11-09T03:00:00Z',
+              shareUrl: 'https://example.com/bolsa/encontro',
+              commissionEnabled: false,
+              commissionAmountCents: null,
+              commissionAnnualAmountCents: null,
+              commissionWindowDays: null,
+            },
+          ],
+        }}
+      />,
+    )
+    expect(html).toContain('08/11/2026, 23:59')
+    expect(html).not.toContain('09/11/2026')
+  })
   test('o seletor oferece os dois públicos e abre no link Kids', () => {
     const html = renderToStaticMarkup(
       <EmbaixadorPainel
@@ -222,7 +251,7 @@ describe('painel do embaixador', () => {
       />,
     )
     expect(html.match(/type="radio"/g)).toHaveLength(2)
-    expect(html).toContain('Uma criança de 9 a 14 anos')
+    expect(html).toContain('Uma criança de 9 a 17 anos')
     expect(html).toContain('Alguém de 18 anos ou mais')
     expect(html).toContain('Link do presente para uma família')
     expect(html).toContain('value="https://example.com/bolsa/vo-x7k2"')
@@ -279,6 +308,14 @@ describe('painel do embaixador', () => {
     expect(com).toMatch(/R\$\s?45,00/)
     expect(com).toContain('Kids ou adulta')
     expect(com).toContain('Cadastre a sua chave para o dinheiro sair')
+    const plans = renderToStaticMarkup(
+      <EmbaixadorBonus
+        token={'t'.repeat(20)}
+        bonus={{ pixKey: null, items: [], amountCents: 3000, annualAmountCents: 8000 }}
+      />,
+    )
+    expect(plans).toMatch(/R\$\s?30,00 no plano mensal ou R\$\s?80,00 no anual/)
+    expect(plans).toContain('sem comissão nas renovações')
     const sem = renderToStaticMarkup(
       <EmbaixadorBonus token={'t'.repeat(20)} bonus={{ pixKey: 'a@b.com', items: [] }} />,
     )

@@ -89,9 +89,18 @@ export class InMemoryCampaignRepository implements CampaignRepository {
   async findById(id: string) {
     return this.items.find((item) => item.id === id) ?? null
   }
-  async list(opts: { q?: string; audience?: GiftAudience; limit: number; offset: number }) {
+  async list(opts: {
+    q?: string
+    audience?: GiftAudience
+    ambassadorId?: string
+    publishedOnly?: boolean
+    limit: number
+    offset: number
+  }) {
     const items = this.items.filter(
       (item) =>
+        (!opts.ambassadorId || item.ambassadorId === opts.ambassadorId) &&
+        (!opts.publishedOnly || item.status !== 'draft') &&
         (!opts.audience || item.audience === opts.audience) &&
         (!opts.q || `${item.name} ${item.publicTitle} ${item.code}`.includes(opts.q)),
     )

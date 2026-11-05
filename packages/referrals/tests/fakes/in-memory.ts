@@ -1,5 +1,10 @@
 import { randomUUID } from 'node:crypto'
-import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
+import type {
+  GiftAttribution,
+  GiftAudience,
+  GiftSource,
+  ReferralBonusAmounts,
+} from '@sistemazero/core/referrals'
 import type {
   EnsureBuyerInput,
   GatewayResult,
@@ -344,6 +349,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   }
 
   async insertRedemption(input: {
+    bonusAmounts?: ReferralBonusAmounts
     codeId: string
     email: string
     audience: GiftAudience
@@ -366,6 +372,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
       name: input.name,
       phone: input.phone,
       sourceSnapshot: input.sourceSnapshot,
+      bonusAmounts: input.bonusAmounts ? { ...input.bonusAmounts } : undefined,
       courseSlug: input.courseSlug,
       attribution: input.attribution,
       userId: null,

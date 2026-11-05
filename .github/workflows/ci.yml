@@ -374,6 +374,12 @@ jobs:
         env:
           TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
 
+      - name: Migração do preço anual (Postgres isolado)
+        working-directory: packages/catalog
+        run: bun test tests/application/annual-price-migration.db.test.ts
+        env:
+          TEST_DATABASE_URL: postgres://postgres:postgres@localhost:55432/sistemazero
+
       - name: Separação comercial Kids e Adultos (Postgres isolado)
         run: |
           PGPASSWORD=postgres psql -h localhost -p 55432 -U postgres -d postgres -v ON_ERROR_STOP=1 -c "CREATE DATABASE catalog_audience_test"
@@ -615,6 +621,15 @@ jobs:
       - name: Experiências ampliadas e responsivas
         working-directory: packages/community-kids
         run: bun run e2e:scenes
+
+      - name: Cartões de divulgação com QR legível no PNG
+        run: node packages/ui/tests/share-card-browser.mjs
+
+      - name: Calendário, cupom e cartões no Admin Kids e Adultos
+        run: node packages/admin/tests/campaign-browser.mjs
+
+      - name: Cupom de assinatura e recuperação da mesma tentativa no checkout
+        run: node packages/funnel/tests/browser/subscription-checkout.mjs
 
       - name: Aula responsiva e objetivos do Estúdio
         working-directory: packages/community-kids

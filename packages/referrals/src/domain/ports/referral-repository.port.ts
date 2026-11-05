@@ -1,4 +1,9 @@
-import type { GiftAttribution, GiftAudience, GiftSource } from '@sistemazero/core/referrals'
+import type {
+  GiftAttribution,
+  GiftAudience,
+  GiftSource,
+  ReferralBonusAmounts,
+} from '@sistemazero/core/referrals'
 import type { CampaignReferralSnapshot } from '../campaign-referral'
 
 export type AmbassadorStatus = 'active' | 'disabled'
@@ -45,6 +50,7 @@ export interface RedemptionRecord {
   phone: string | null
   sourceSnapshot?: GiftSource | null
   campaignReferral?: CampaignReferralSnapshot | null
+  bonusAmounts?: ReferralBonusAmounts | null
   courseSlug?: string | null
   attribution?: GiftAttribution | null
   welcomeAcceptedAt?: Date | null
@@ -248,6 +254,7 @@ export interface ReferralRepository {
    * devolve a linha EXISTENTE daquele público (retomada ou 409 — decisão do serviço).
    */
   insertRedemption(input: {
+    bonusAmounts?: ReferralBonusAmounts
     codeId: string
     email: string
     audience: GiftAudience

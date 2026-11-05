@@ -78,6 +78,20 @@
       "when": 1793015082897,
       "tag": "0010_catalog_audience_required",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1793869666823,
+      "tag": "0011_community-annual-970",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793879797043,
+      "tag": "0012_subscription-coupons",
+      "breakpoints": true
     }
   ]
 }

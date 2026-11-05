@@ -26,16 +26,23 @@ export function buildCyclePayment(input: {
   // compartilhar a instância é seguro e não revalida (um documento legado não
   // pode impedir a contabilização de um ciclo).
   const customer = subscription.customer ?? undefined
+  const amount = subscription.chargeAmount(chargeId)
+  const metadata = subscription.metadata
+  if (
+    subscription.firstChargePricing &&
+    subscription.firstChargePricing.providerChargeId !== chargeId
+  )
+    delete metadata.couponCode
 
   const payment = PaymentAggregate.create({
     consumerId: subscription.consumerId,
-    amount: subscription.amount,
+    amount,
     method: PaymentMethod.recurringCard(subscription.card),
     idempotencyKey: IdempotencyKey.create(`sub:${subscription.id}:charge:${chargeId}`),
     customer,
     // Propaga a metadata da ASSINATURA (leadId/offerId do funil) p/ o pagamento do
     // ciclo — stats por oferta e NFS-e enxergam a recorrência como qualquer venda.
-    metadata: { ...subscription.metadata, subscriptionId: subscription.id },
+    metadata: { ...metadata, subscriptionId: subscription.id },
     subscriptionId: subscription.id,
   })
 
@@ -46,7 +53,7 @@ export function buildCyclePayment(input: {
       subscriptionId: subscription.id,
       provider: subscription.provider,
       providerPaymentId: chargeId,
-      amount: subscription.amount,
+      amount,
       paidAt,
       access: input.cycleAccess,
     })

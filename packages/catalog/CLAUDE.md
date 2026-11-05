@@ -56,7 +56,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > Pensa + Pinta + Molda → a compra espalha os 7 entitlements; o Desafio do Mês destrava sozinho
 > [clube+estúdio] e Quarto/Jornada/Recados são núcleo grátis do kids) **+ 2 ofertas IRMÃS de
 > ASSINATURA ativas**: `comunidade-dos-criadores-mensal` (R$ 97, `billingIntervalMonths: 1`) e
-> `comunidade-dos-criadores-anual` (R$ 797, intervalo 12, compareAt R$ 1.164 = 12× o mensal),
+> `comunidade-dos-criadores-anual` (R$ 970, intervalo 12, compareAt R$ 1.164 = 12× o mensal),
 > ligadas por `content.altOffer` nos DOIS sentidos, ambas com `maxProfiles: 2` + `guaranteeDays: 7`
 > e SEM cupom/parcelas — a MENSAL é a oferta do funil `/kids/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_KIDS_COMUNIDADE_DOS_CRIADORES`); o `maxProfiles` é injetado no fulfillment do
@@ -67,7 +67,7 @@ produtos entregáveis). É consumido pelo **funil** (preço + "o que está inclu
 > `adult-estudio-completo`, `adult-pinta`, `adult-molda`, `adult-pensa` (`kind:'tool'`, entrega
 > `community`, as chaves de `creativeToolAccessRef` do core; sem oferta própria) + espaços
 > `adult-clube-dos-criadores` e `adult-mural-dos-criadores` **+ 2 ofertas irmãs ativas**
-> `comunidade-dos-criadores-adulto-mensal` (R$ 97, intervalo 1) e `-anual` (R$ 797, intervalo 12,
+> `comunidade-dos-criadores-adulto-mensal` (R$ 97, intervalo 1) e `-anual` (R$ 970, intervalo 12,
 > compareAt R$ 1.164), `altOffer` nos dois sentidos, garantia 7 dias, SEM `maxProfiles`/cupom/parcelas
 > — a MENSAL é a oferta do funil `/pro/comunidade-dos-criadores`
 > (env `FUNNEL_OFFER_PRO_COMUNIDADE_DOS_CRIADORES`). Preço inicial igual ao Kids (decisão da dona).
@@ -368,3 +368,11 @@ houver dashboard; o gateway já loga/metrifica o tráfego roteado).
 - [ ] Sem `any` novo; entradas validadas (Zod/TypeBox).
 - [ ] Mudou schema? Gerou a migration (`db:generate`) e commitou.
 - [ ] Mudou contrato de rota/config/modelo? Atualizou este `CLAUDE.md`.
+
+## Cupons vinculados e primeira cobrança (05/11/2026)
+
+`metadata.campaignId` é imutável e exige uma oferta do mesmo público. Datas vêm da política
+interna do Referrals (`REFERRALS_BASE_URL`/`REFERRALS_INTERNAL_TOKEN`); falha recusa o cupom
+vinculado, sem afetar preços normais ou cupons avulsos. Expiração retorna COUPON_EXPIRED.
+Assinaturas aceitam desconto apenas na primeira cobrança, mínimo R$3. Migração 0012 habilita
+cupons nas quatro ofertas canônicas quando não há escolha explícita do Admin; preserva false.

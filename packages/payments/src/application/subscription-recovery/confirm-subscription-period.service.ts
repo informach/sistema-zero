@@ -46,7 +46,8 @@ export class ConfirmSubscriptionPeriodService {
       subscription.provider !== payment.provider ||
       subscription.consumerId !== payment.consumerId ||
       subscription.amount.currency !== payment.amount.currency ||
-      subscription.amount.amountInCents !== payment.amount.amountInCents
+      subscription.chargeAmount(payment.providerPaymentId).amountInCents !==
+        payment.amount.amountInCents
     )
       throw new ValidationError('A origem do período não corresponde à assinatura')
     const started = new Date(this.clock())

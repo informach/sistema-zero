@@ -87,7 +87,7 @@ describe('registro do funil Comunidade dos Criadores', () => {
 
   test('fallback de preço próprio da página (independente do fallback global)', () => {
     expect(COMUNIDADE_PRECO_FALLBACK.mensalCents).toBe(9_700)
-    expect(COMUNIDADE_PRECO_FALLBACK.anualCents).toBe(79_700)
+    expect(COMUNIDADE_PRECO_FALLBACK.anualCents).toBe(97_000)
   })
 
   test('ordem de registro: o 1º funil kids do map segue sendo o Desafio (/kids redireciona pra ele)', () => {

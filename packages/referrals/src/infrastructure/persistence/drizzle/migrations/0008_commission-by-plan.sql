@@ -1,0 +1,3 @@
+ALTER TABLE "referrals"."campaigns" ADD COLUMN "commission_annual_amount_cents" integer;--> statement-breakpoint
+ALTER TABLE "referrals"."scholarship_redemptions" ADD COLUMN "bonus_amounts" jsonb;--> statement-breakpoint
+ALTER TABLE "referrals"."campaigns" ADD CONSTRAINT "campaigns_annual_commission_check" CHECK ("referrals"."campaigns"."commission_annual_amount_cents" is null or ("referrals"."campaigns"."commission_enabled" = true and "referrals"."campaigns"."commission_annual_amount_cents" between 1 and 100000000));

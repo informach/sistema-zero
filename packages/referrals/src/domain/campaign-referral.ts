@@ -7,6 +7,7 @@ export interface CampaignReferralSnapshot {
   ambassadorEmail: string
   commissionEnabled: boolean
   commissionAmountCents: number | null
+  commissionAnnualAmountCents?: number | null
   commissionWindowDays: number | null
 }
 
@@ -15,7 +16,11 @@ export function requiresActiveCampaignAmbassador(
   input: CampaignInput,
   previous?: Pick<
     CampaignInput,
-    'ambassadorId' | 'commissionEnabled' | 'commissionAmountCents' | 'commissionWindowDays'
+    | 'ambassadorId'
+    | 'commissionEnabled'
+    | 'commissionAmountCents'
+    | 'commissionAnnualAmountCents'
+    | 'commissionWindowDays'
   > & { status: string },
 ) {
   return (
@@ -26,6 +31,7 @@ export function requiresActiveCampaignAmbassador(
       (input.commissionEnabled &&
         (!previous.commissionEnabled ||
           input.commissionAmountCents !== previous.commissionAmountCents ||
+          input.commissionAnnualAmountCents !== previous.commissionAnnualAmountCents ||
           input.commissionWindowDays !== previous.commissionWindowDays)))
   )
 }

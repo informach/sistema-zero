@@ -554,3 +554,13 @@ ator vem da sessão administrativa própria, nunca staff/impersonação/perfil i
 A migration0019 guarda period_confirmation permanentemente no pagamento, na mesma
 transação do ciclo/outbox; retenção de outbox não apaga a autoria. Só emite evento de
 confirmação de período, sem segundo payment.paid. Não usar essa operação para débito.
+
+## Cupom apenas na primeira cobrança (05/11/2026)
+
+`firstChargeAmountInCents` preserva o valor recorrente em `amountInCents`. O fluxo cria a
+assinatura sem pagamento, persiste as identidades e só então ativa o cartão uma vez.
+Não usar `credit_card.discount` da Efí: ele desconta todas as recorrências. Confirmar por
+GET o preço integral após atualizar os itens. `FirstChargeSetupWorker` retoma a configuração
+com lease PostgreSQL e cancela a recorrência após 24 horas sem confirmação. A primeira
+cobrança é validada por identidade e valor próprio; demais ciclos exigem o preço integral.
+Nenhum token é persistido. A migração 0028 é aditiva e não reescreve assinaturas existentes.

@@ -77,6 +77,7 @@ export class HandleSubscriptionNotificationService {
       throw new ValidationError('A conferência pertence a outra assinatura')
 
     const observedAt = new Date(this.clock())
+    const chargeAmount = subscription.chargeAmount(chargeId)
     const charge = await this.gateway.getCardCharge(chargeId)
     if (charge.providerPaymentId !== chargeId) {
       throw new ValidationError('Provedor retornou outra cobrança na confirmação do ciclo')
@@ -156,7 +157,7 @@ export class HandleSubscriptionNotificationService {
       }
       // Ciclo já registrado (ex.: criado na assinatura ou em análise): transiciona.
       if (charge.status === 'PAID') {
-        if (charge.amountInCents !== subscription.amount.amountInCents) {
+        if (charge.amountInCents !== chargeAmount.amountInCents) {
           this.logAmountMismatch(subscription.id, chargeId, subscription, charge)
           await this.inbox.markProcessed(this.gateway.provider, eventId)
           return observation
@@ -187,7 +188,7 @@ export class HandleSubscriptionNotificationService {
       await this.payments.save(existing)
     } else {
       // 1ª vez que vemos esta cobrança: cria o pagamento-ciclo.
-      if (charge.status === 'PAID' && charge.amountInCents !== subscription.amount.amountInCents) {
+      if (charge.status === 'PAID' && charge.amountInCents !== chargeAmount.amountInCents) {
         // Mismatch determinístico → consome o dedupe e NÃO cria a linha (revisão manual).
         this.logAmountMismatch(subscription.id, chargeId, subscription, charge)
         await this.inbox.markProcessed(this.gateway.provider, eventId)

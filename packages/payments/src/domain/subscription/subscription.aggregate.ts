@@ -8,6 +8,7 @@ import {
   CancellationRecord,
   type CancellationRecordSnapshot,
 } from './cancellation-record'
+import type { FirstChargePricing } from './first-charge-pricing'
 import {
   SubscriptionActivatedEvent,
   SubscriptionCanceledEvent,
@@ -36,6 +37,7 @@ interface CustomerSnapshot {
 
 /** Representação serializável do agregado, usada pela camada de persistência. */
 export interface SubscriptionSnapshot {
+  firstChargePricing?: FirstChargePricing | null
   id: string
   version: number
   consumerId: string
@@ -65,6 +67,7 @@ export interface SubscriptionSnapshot {
 }
 
 interface SubscriptionState {
+  firstChargePricing: FirstChargePricing | null
   version: number
   consumerId: string
   status: SubscriptionStatus
@@ -119,7 +122,17 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
     customer?: Customer
     description?: string
     metadata?: Record<string, unknown>
+    firstChargeAmountInCents?: number
   }): SubscriptionAggregate {
+    if (
+      input.firstChargeAmountInCents !== undefined &&
+      (!Number.isSafeInteger(input.firstChargeAmountInCents) ||
+        input.firstChargeAmountInCents < 300 ||
+        BigInt(input.firstChargeAmountInCents) >= input.amount.amountInCents)
+    )
+      throw new ValidationError(
+        'A primeira cobrança deve ser de pelo menos R$ 3,00 e menor que a renovação',
+      )
     if (!input.amount.isPositive()) {
       throw new ValidationError('Valor da assinatura deve ser positivo')
     }
@@ -141,6 +154,14 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
       id,
       {
         version: 0,
+        firstChargePricing:
+          input.firstChargeAmountInCents === undefined
+            ? null
+            : {
+                amountInCents: input.firstChargeAmountInCents,
+                providerChargeId: null,
+                renewalPriceConfirmed: false,
+              },
         consumerId: input.consumerId,
         status: SubscriptionStatus.PENDING,
         provider: 'EFI',
@@ -196,6 +217,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
       snapshot.id,
       {
         version: snapshot.version,
+        firstChargePricing: snapshot.firstChargePricing ? { ...snapshot.firstChargePricing } : null,
         consumerId: snapshot.consumerId,
         status: snapshot.status,
         provider: snapshot.provider,
@@ -225,6 +247,36 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
   }
 
   // ── Comandos (transições de estado) ──────────────────────────────────────
+
+  get firstChargePricing(): FirstChargePricing | null {
+    return this.state.firstChargePricing ? { ...this.state.firstChargePricing } : null
+  }
+
+  registerFirstCharge(chargeId: string): void {
+    const pricing = this.state.firstChargePricing
+    if (
+      !pricing ||
+      !chargeId ||
+      (pricing.providerChargeId && pricing.providerChargeId !== chargeId)
+    )
+      throw new ValidationError('Identidade da primeira cobrança inválida')
+    pricing.providerChargeId = chargeId
+    this.touch()
+  }
+
+  confirmRenewalPrice(): void {
+    if (!this.state.firstChargePricing?.providerChargeId)
+      throw new ValidationError('Primeira cobrança ainda não identificada')
+    this.state.firstChargePricing.renewalPriceConfirmed = true
+    this.touch()
+  }
+
+  chargeAmount(chargeId: string): Money {
+    const first = this.state.firstChargePricing
+    return first?.providerChargeId === chargeId
+      ? Money.fromCents(first.amountInCents, this.amount.currency)
+      : this.amount
+  }
 
   /** Enriquecimento após a Efí criar a assinatura (id externo). Não muda o status. */
   registerProviderSubscription(providerSubscriptionId: string): void {
@@ -493,6 +545,7 @@ export class SubscriptionAggregate extends AggregateRoot<string> {
 
     return {
       id: this.id,
+      firstChargePricing: this.firstChargePricing,
       version: this.state.version,
       consumerId: this.state.consumerId,
       status: this.state.status,

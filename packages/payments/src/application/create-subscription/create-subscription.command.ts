@@ -10,6 +10,8 @@ export interface CreateSubscriptionCommand {
   idempotencyKey: string
   requestHash: string
   amountInCents: number
+  /** First charge only; amountInCents remains the full recurring price. */
+  firstChargeAmountInCents?: number
   /** Intervalo entre cobranças, em meses (≥ 1). */
   intervalMonths: number
   /** Total de cobranças; ausente/null = ilimitado. */

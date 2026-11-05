@@ -1,5 +1,25 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Campanhas no painel do parceiro (05/11/2026)
+
+A leitura pelo token do embaixador ativo inclui `campaigns`, paginada por `campaignOffset`
+(20 itens). O SQL filtra `ambassadorId` e exclui rascunhos antes de limitar e contar.
+A projeção é explícita: título público, público, datas, situação, link e termos atuais de comissão.
+Não incluir participantes, histórico, canal ou notas internas. A capability não permite escrever
+campanhas; criação/edição continuam exclusivamente nas rotas Admin. Rota ausente responde 404.
+
+## Comissão por plano (05/11/2026)
+
+Padrão compartilhado em `@sistemazero/core/referrals`: R$ 30 pela contratação mensal e R$ 80
+pela anual, bônus único de aquisição, sem recorrência. `BONUS_AMOUNT_CENTS` e
+`BONUS_ANNUAL_AMOUNT_CENTS` são capturados em `bonusAmounts` nos novos resgates diretos.
+Campanhas mantêm o mensal em `commissionAmountCents` e o anual em
+`commissionAnnualAmountCents`; anual nulo conserva o acordo fixo legado. PATCH omisso preserva
+os termos, e comissão desligada limpa ambos. Migração aditiva 0008, sem backfill financeiro.
+O ciclo vem de `catalog.billingIntervalMonths` (1/12), nunca do valor pago. Ciclo desconhecido
+com bônus por plano gera retry, sem gravar conversão. Snapshots antigos mantêm o acordo anterior.
+Rollout e preço anual: `docs/operations/comissoes-planos-anual-970.md`.
+
 ## Campanhas com embaixador e comissão explícita (04/11/2026)
 
 Campanha tem `ambassadorId` opcional, independente de `commissionEnabled` (default false).
@@ -108,8 +128,9 @@ https://claude.ai/code/artifact/a77ac5ad-56c9-47f3-9a83-83f36611cd43.
 
 ## Conversões + bônus Pix manual (extensão 09/2026)
 
-Rastreia **bolsista que assinou a Comunidade dos Criadores** e controla o bônus **FIXO de R$30**
-(`BONUS_AMOUNT_CENTS`, qualquer plano — decisão dela) pago **manualmente via Pix** pela empresa.
+Rastreia **bolsista que assinou a Comunidade dos Criadores** e controla o bônus único por plano
+(R$ 30 mensal / R$ 80 anual desde 05/11/2026; acordos anteriores preservados), pago
+**manualmente via Pix** pela empresa.
 O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-pago.
 
 - **Consumer do payments** (`interfaces/http/webhooks.routes.ts`, porte fiel do fiscal): `POST
@@ -382,3 +403,12 @@ Contrato client-safe em `@sistemazero/core/referrals` (`GiftAudience`, `Ambassad
 - **Deploy:** `COMMUNITY_URL` (e `SCHOLARSHIP_ADULT_COURSE_SLUG`, se sair do default) precisam ser
   criadas no painel do Railway do referrals (staging e produção) e declaradas em
   `.railway/variables.ts` (`common.referrals`), senão o gate lê exclusão.
+
+## Calendário e cupom de campanha (05/11/2026)
+
+`schedule` deriva início e fins exclusivos em America/Sao_Paulo. Alterar a data recalcula
+novos resgates e uso do cupom, preservando direitos/termos já capturados. `coupon` guarda
+somente IDs; o Catálogo valida desconto, oferta e público. O endpoint interno de política
+exige token e usa o estado persistido da campanha, sem encerrar o cupom junto com o presente.
+`CATALOG_INTERNAL_TOKEN` permite consultar os termos para cartões e painel somente leitura.
+A migração 0009 acrescenta JSONB nullable; campanhas legadas mantêm datas manuais.

@@ -184,6 +184,30 @@ export class EfiCobrancasClient {
     return this.request('GET', `/subscription/${subscriptionId}`)
   }
 
+  prepareSubscription(planId: string, body: Record<string, unknown>): Promise<unknown> {
+    return this.request('POST', `/plan/${encodeURIComponent(planId)}/subscription`, {
+      body,
+      idempotent: false,
+    })
+  }
+
+  activateSubscription(id: string, payment: unknown): Promise<unknown> {
+    return this.request('POST', `/subscription/${encodeURIComponent(id)}/pay`, {
+      body: { payment },
+      idempotent: false,
+    })
+  }
+
+  updateSubscriptionItems(
+    id: string,
+    items: { name: string; value: number; amount: number }[],
+  ): Promise<unknown> {
+    return this.request('PUT', `/subscription/${encodeURIComponent(id)}`, {
+      body: { items },
+      idempotent: true,
+    })
+  }
+
   cancelSubscription(subscriptionId: number | string): Promise<any> {
     return this.request('PUT', `/subscription/${subscriptionId}/cancel`, { idempotent: true })
   }

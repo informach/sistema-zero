@@ -1,0 +1,3 @@
+ALTER TABLE "payments"."subscriptions" ADD COLUMN "first_charge_pricing" jsonb;--> statement-breakpoint
+ALTER TABLE "payments"."subscriptions" ADD COLUMN "first_charge_next_attempt_at" timestamp with time zone;--> statement-breakpoint
+CREATE INDEX "subscriptions_first_charge_setup_idx" ON "payments"."subscriptions" USING btree ("first_charge_next_attempt_at","created_at") WHERE "payments"."subscriptions"."first_charge_pricing"->>'renewalPriceConfirmed' = 'false' and "payments"."subscriptions"."status" in ('ACTIVE', 'PENDING');

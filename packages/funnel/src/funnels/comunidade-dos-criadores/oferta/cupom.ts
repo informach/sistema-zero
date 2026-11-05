@@ -18,7 +18,7 @@ export function cupomDaOferta(coupon: CouponPresentation): CupomDaOferta {
     return {
       codigo: coupon.code,
       aviso: {
-        texto: `Cupom ${coupon.code} recebido. Na próxima tela, você confere se ele vale para o plano escolhido e o valor final antes de pagar.`,
+        texto: `Cupom ${coupon.code} recebido. O desconto vale só na primeira cobrança; as renovações têm o valor normal. Na próxima tela, você confere se ele vale para o plano escolhido e o valor final antes de pagar.`,
         alerta: false,
       },
     }

@@ -1057,7 +1057,7 @@ ambassadorMe.GET/POST)` — mesma régua estrita do children-stats (sessão de p
 Tipos no member-shell (`AmbassadorEnrollmentView`); gestão completa (bônus, Pix, jornada) vive no
 ADMIN e na página do embaixador no funil.
 **Presente Kids e adulto (20/10/2026):** o cartão (hoje em `app/pais/_components/ambassador-card.tsx`)
-conta os DOIS presentes (uma família com criança de 9 a 14 anos ou um adulto que quer criar o
+conta os DOIS presentes (uma família com criança de 9 a 17 anos ou um adulto que quer criar o
 próprio jogo) e, cadastrado, oferece "Copiar link para uma família" (`shareUrls.kids`, com o
 `shareUrl` antigo como reserva) e "Copiar link para um adulto" (`shareUrls.adult`; some sem ele),
 mais "Abrir minha página". ⚠️ Regra da dona: o DESENHO não muda (faixa `--band-lilas`, ícone em

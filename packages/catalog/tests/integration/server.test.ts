@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'bun:test'
 import { createLogger } from '@sistemazero/core/logging'
+import { CampaignCouponService } from '../../src/application/campaign-coupon/campaign-coupon.service'
 import { CreateCouponService } from '../../src/application/create-coupon/create-coupon.service'
 import { CreateOfferService } from '../../src/application/create-offer/create-offer.service'
 import { CreateProductService } from '../../src/application/create-product/create-product.service'
@@ -69,6 +70,7 @@ function build(opts: { env?: typeof env; readinessOk?: boolean } = {}) {
     updateOffer,
     createCoupon,
     updateCoupon,
+    campaignCoupon: new CampaignCouponService(coupons, offers, products),
   })
   return { app, createProduct, createOffer, createCoupon }
 }
@@ -90,6 +92,31 @@ function req(
 const ADMIN = { 'x-auth-user-role': 'admin', 'x-auth-user-status': 'active' }
 
 describe('catalog HTTP', () => {
+  it('termos do cupom vinculado exigem token interno e não admitem acesso com papel admin apenas', async () => {
+    const tokenEnv = loadEnv({
+      DATABASE_URL: 'postgres://localhost/test',
+      NODE_ENV: 'test',
+      REQUIRE_ADMIN: 'true',
+      INTERNAL_API_TOKEN: 'qa-campaign-coupon-internal-token',
+    })
+    const { app } = build({ env: tokenEnv })
+    const id = '11111111-1111-4111-8111-111111111111'
+    const path = `/catalog/internal/coupons/${id}/campaign?campaignId=${id}&offerId=${id}&audience=kids`
+    const unauthorizedHeaders: Record<string, string>[] = [
+      {},
+      ADMIN,
+      { 'x-internal-token': 'incorrect-token-123456789' },
+    ]
+    for (const headers of unauthorizedHeaders)
+      expect((await app.handle(req('GET', path, { headers }))).status).toBe(401)
+    expect(
+      (
+        await app.handle(
+          req('GET', path, { headers: { 'x-internal-token': tokenEnv.INTERNAL_API_TOKEN! } }),
+        )
+      ).status,
+    ).toBe(404)
+  })
   it('GET /health → ok', async () => {
     const { app } = build()
     const res = await app.handle(req('GET', '/health'))

@@ -116,12 +116,7 @@ if (!contractCheck.ok) {
   })
   return new Response('Esta oferta está temporariamente indisponível.', { status: 503 })
 }
-const initialCoupon = await resolveCouponPresentation(gateway, offerSlug, sp)
-// Uma cotação válida é mais nova e mais autoritativa que o cache curto da view.
-const priceCents =
-  initialCoupon.status === 'valid'
-    ? initialCoupon.listPriceCents
-    : (offer?.priceCents ?? env.PRODUCT_PRICE_CENTS)
+let priceCents = offer?.priceCents ?? env.PRODUCT_PRICE_CENTS
 const productName = offer?.productName || f.productName
 // Abertura do checkout por funil (o título dela é o h1; sem ela, o nome do produto é o h1).
 const intro = f.content.checkout
@@ -139,7 +134,6 @@ const guaranteeDays = offer?.guaranteeDays ?? 7
 const isSubscription = offer?.pricingMode === 'subscription'
 const interval = isSubscription ? (offer?.billingIntervalMonths ?? null) : null
 const priceSuffix = interval === 1 ? '/mês' : interval === 12 ? '/ano' : ''
-const priceLabel = `${formatBRLFromCents2(priceCents)}${priceSuffix}`
 const priceNote = isSubscription
   ? interval === 12
     ? 'Assinatura anual · acesso imediato'
@@ -155,6 +149,7 @@ let altOffer: {
   label: string | null
   priceCents: number
   billingIntervalMonths: number | null
+  allowsCoupon: boolean
 } | null = null
 if (isSubscription && offer?.altOffer) {
   const alt = await getActiveOffer(gateway, offer.altOffer.slug, { log })
@@ -164,6 +159,7 @@ if (isSubscription && offer?.altOffer) {
       label: offer.altOffer.label,
       priceCents: alt.priceCents,
       billingIntervalMonths: alt.billingIntervalMonths,
+      allowsCoupon: alt.allowsCoupon,
     }
   }
 }
@@ -172,6 +168,17 @@ if (isSubscription && offer?.altOffer) {
 // o plano no alternador — o servidor segue validando a escolha na cobrança.
 const requestedOffer = (sp.get('oferta') ?? '').trim().toLowerCase()
 const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.slug ? 'alt' : 'main'
+const initialCoupon = await resolveCouponPresentation(
+  gateway,
+  initialChoice === 'alt' && altOffer ? altOffer.slug : offerSlug,
+  sp,
+)
+// A cotação corresponde ao plano escolhido, inclusive ao abrir o cartão de um cupom anual.
+if (initialCoupon.status === 'valid') {
+  if (initialChoice === 'alt' && altOffer) altOffer.priceCents = initialCoupon.listPriceCents
+  else priceCents = initialCoupon.listPriceCents
+}
+const priceLabel = `${formatBRLFromCents2(priceCents)}${priceSuffix}`
 ---
 
 <BaseLayout

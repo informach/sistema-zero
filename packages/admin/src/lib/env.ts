@@ -22,6 +22,7 @@ export const optionalAppUrl = z.preprocess(
 const EnvSchema = z
   .object({
     GATEWAY_URL: z.string().url().default('http://localhost:3000'),
+    FUNNEL_PUBLIC_URL: optionalAppUrl,
     MEMBER_SHELL_HMAC_SECRET: z.string().min(24).optional(),
     COURSE_PUBLICATION_MEDIA_TOKEN: z.string().min(32).optional(),
     COURSE_PUBLICATION_ENVIRONMENT: z.enum(['local', 'staging', 'production']).optional(),

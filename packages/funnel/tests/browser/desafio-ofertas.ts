@@ -26,8 +26,40 @@ const adultBase = '/pro/desafio-primeiro-jogo'
 const OFFERS: Record<string, number> = {
   'desafio-primeiro-jogo-30-dias': 7300,
   'desafio-primeiro-jogo-adulto-30-dias': 7900,
+  'comunidade-dos-criadores-mensal': 9700,
+  'comunidade-dos-criadores-anual': 97000,
+  'comunidade-dos-criadores-adulto-mensal': 9700,
+  'comunidade-dos-criadores-adulto-anual': 97000,
 }
 const catalog = createServer((req, res) => {
+  if (req.method === 'POST' && /^\/catalog\/offers\/[^/]+\/quote$/.test(req.url ?? '')) {
+    const slug = req.url?.split('/')[3] ?? ''
+    if (slug.startsWith('comunidade-')) {
+      const price = OFFERS[slug]!
+      res.writeHead(200, { 'content-type': 'application/json' })
+      res.end(
+        JSON.stringify({
+          offerId: `qa-${slug}`,
+          offerSlug: slug,
+          priceCents: price,
+          discountCents: price / 2,
+          finalPriceCents: price / 2,
+          currency: 'BRL',
+          pricingMode: 'subscription',
+          billingIntervalMonths: slug.endsWith('anual') ? 12 : 1,
+          guaranteeDays: 7,
+          accessMode: 'billing_cycle',
+          accessDurationValue: null,
+          accessDurationUnit: null,
+          coupon: { code: 'PRIMEIRA50' },
+        }),
+      )
+      return
+    }
+    res.writeHead(422, { 'content-type': 'application/json' })
+    res.end(JSON.stringify({ error: { code: 'COUPON_EXPIRED', message: 'Cupom expirado' } }))
+    return
+  }
   const slug = req.url?.match(/^\/catalog\/offers\/([^/]+)$/)?.[1]
   const priceCents = slug ? OFFERS[slug] : undefined
   if (req.method !== 'GET' || !slug || !priceCents) {
@@ -44,13 +76,22 @@ const catalog = createServer((req, res) => {
       priceCents,
       currency: 'BRL',
       guaranteeDays: 7,
-      pricingMode: 'one_time',
-      billingIntervalMonths: null,
-      accessMode: 'fixed',
-      accessDurationValue: 30,
-      accessDurationUnit: 'days',
+      pricingMode: slug.startsWith('comunidade-') ? 'subscription' : 'one_time',
+      billingIntervalMonths: slug.startsWith('comunidade-')
+        ? slug.endsWith('anual')
+          ? 12
+          : 1
+        : null,
+      accessMode: slug.startsWith('comunidade-') ? 'billing_cycle' : 'fixed',
+      accessDurationValue: slug.startsWith('comunidade-') ? null : 30,
+      accessDurationUnit: slug.startsWith('comunidade-') ? null : 'days',
       product: { name: 'Desafio do Primeiro Jogo' },
-      content: {},
+      content: {
+        allowsCoupon: true,
+        ...(slug.endsWith('mensal')
+          ? { altOffer: { slug: slug.replace(/mensal$/, 'anual') } }
+          : {}),
+      },
     }),
   )
 })
@@ -163,7 +204,11 @@ try {
   })
   console.log(`QA server: ${origin}`)
   browser = await chromium.launch(
-    process.env.QA_CHROMIUM_PATH ? { executablePath: process.env.QA_CHROMIUM_PATH } : {},
+    process.env.QA_CHROMIUM_PATH
+      ? { executablePath: process.env.QA_CHROMIUM_PATH }
+      : process.platform === 'win32'
+        ? { channel: 'chrome' }
+        : {},
   )
   const context = await browser.newContext({
     viewport: { width: 1440, height: 1000 },
@@ -197,6 +242,10 @@ try {
 
   for (const p of paginas) {
     console.log(`Checking offer: ${p.nome}`)
+    await page.goto(`${origin}${p.path}?cupom=EXPIRADO50`)
+    const expiredText = await page.locator('body').innerText()
+    assert.match(expiredText, /cupom.*expirou/i, `${p.nome}: explains expired coupon`)
+    assert.match(expiredText, p.preco, `${p.nome}: shows normal price after expiry`)
     await page.setViewportSize({ width: 1440, height: 1000 })
     const response = await page.goto(`${origin}${p.path}`)
     assert.equal(response?.status(), 200, p.path)
@@ -257,6 +306,23 @@ try {
     }
   }
   assert.equal(contacts.length, paginas.length * 2)
+
+  for (const audience of ['kids', 'pro']) {
+    const slug = `comunidade-dos-criadores-${audience === 'pro' ? 'adulto-' : ''}anual`
+    const response = await page.goto(
+      `${origin}/cupom/PRIMEIRA50?oferta=${slug}&publico=${audience === 'pro' ? 'adult' : 'kids'}`,
+    )
+    assert.equal(response?.status(), 200)
+    assert.match(page.url(), /checkout/)
+    const summary = page.getByRole('region', { name: 'Resumo da assinatura' })
+    await summary.waitFor()
+    assert.match(
+      await summary.innerText(),
+      /485,00[\s\S]*970,00/,
+      'annual coupon SSR uses annual quote',
+    )
+    assert.equal(await page.locator('#plano-alternativo').isChecked(), true)
+  }
 
   // As variantes por motivo (até 21/10/2026) levam à página de 9 a 17, com a mesma query.
   for (const antiga of ['primeiro-jogo', 'tempo-de-tela', 'iniciacao-tecnologica']) {

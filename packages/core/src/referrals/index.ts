@@ -1,7 +1,20 @@
 /** Contratos de transporte de convites e campanhas; sem dependência de serviço. */
+import type { CampaignSchedule } from './campaign-schedule'
+
+export { type CampaignSchedule, campaignScheduleWindows } from './campaign-schedule'
+export { campaignCouponPromotion } from './coupon-promotion'
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'ended'
 export type CampaignState = CampaignStatus | 'scheduled'
 export type CampaignContext = 'ad' | 'event' | 'other'
+/** Bônus único de aquisição; nunca mensalidade de comissão ou renovação. */
+export interface ReferralBonusAmounts {
+  monthly: number
+  annual: number
+}
+export const DEFAULT_REFERRAL_BONUS: Readonly<ReferralBonusAmounts> = {
+  monthly: 3000,
+  annual: 8000,
+}
 /**
  * Público do presente (20/10/2026): `kids` leva ao Cadê Todo Mundo e ao Mural Kids, com o
  * cadastro feito pelo responsável; `adult` leva à versão adulta do curso e ao Mural adulto, com
@@ -45,6 +58,9 @@ export interface AmbassadorShareUrls {
   adult: string | null
 }
 export interface CampaignInput {
+  /** Ausente/null conserva o calendário manual legado. */
+  schedule?: CampaignSchedule | null
+  coupon?: CampaignCouponLink | null
   name: string
   publicTitle: string
   description: string
@@ -60,10 +76,13 @@ export interface CampaignInput {
   ambassadorId?: string | null
   commissionEnabled?: boolean
   commissionAmountCents?: number | null
+  /** Bônus único anual; ausente/null conserva o acordo legado de valor único. */
+  commissionAnnualAmountCents?: number | null
   /** Primeira cobrança paga antes deste prazo após o resgate; independente dos sete dias. */
   commissionWindowDays?: number | null
 }
 export interface CampaignView extends CampaignInput {
+  couponView?: CampaignCouponView | null
   audience: GiftAudience
   ambassadorName?: string | null
   id: string
@@ -76,6 +95,58 @@ export interface CampaignView extends CampaignInput {
 export interface CampaignUpdateInput extends CampaignInput {
   /** Versão lida pelo operador; impede sobrescrever uma edição mais recente. */
   expectedUpdatedAt: string
+}
+/** Visão privada do parceiro: somente leitura, sem participantes nem campos internos. */
+export interface AmbassadorCampaignView {
+  couponView?: CampaignCouponView | null
+  id: string
+  publicTitle: string
+  audience: GiftAudience
+  state: Exclude<CampaignState, 'draft'>
+  startsAt: string
+  endsAt: string
+  shareUrl: string
+  commissionEnabled: boolean
+  commissionAmountCents: number | null
+  commissionAnnualAmountCents: number | null
+  commissionWindowDays: number | null
+}
+/** O Catálogo é a autoridade de desconto e oferta; a campanha guarda apenas o vínculo. */
+export interface CampaignCouponLink {
+  couponId: string
+  offerId: string
+}
+export interface CampaignCouponDetails extends CampaignCouponLink {
+  code: string
+  offerSlug: string
+  offerName: string
+  percentOff: number | null
+  amountOffCents: number | null
+  currency: string
+  accessMode: string
+  accessDurationValue: number | null
+  accessDurationUnit: string | null
+  available: boolean
+}
+export interface CampaignCouponView extends CampaignCouponDetails {
+  state: Exclude<CampaignState, 'draft'> | 'unavailable'
+  startsAt: string
+  endsAt: string
+  shareUrl: string
+}
+export interface CampaignCouponPolicy {
+  audience: GiftAudience
+  couponId: string
+  offerId: string
+  status: CampaignStatus
+  startsAt: string
+  endsAt: string
+}
+export interface AmbassadorCampaignPage {
+  items: AmbassadorCampaignView[]
+  total: number
+  limit: number
+  offset: number
 }
 export interface CampaignAuditView {
   id: string

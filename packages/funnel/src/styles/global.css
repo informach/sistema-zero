@@ -482,7 +482,7 @@ body {
 }
 
 @media (max-width: 420px) {
-  .theme-kids .kids-checkout-form .checkout-plan-grid {
+  .checkout-plan-grid {
     grid-template-columns: 1fr;
   }
 }

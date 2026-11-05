@@ -5,6 +5,7 @@ import {
   type GiftAudience,
   type GiftMuralAccess,
   type GiftSource,
+  type ReferralBonusAmounts,
   sanitizeGiftAttribution,
 } from '@sistemazero/core/referrals'
 import { CampaignUnavailableError, campaignSource, campaignState } from '../../domain/campaign'
@@ -74,6 +75,7 @@ export interface RedeemOptions {
   communityUrl?: string | null
   leaseMs: number
   campaigns?: CampaignRepository
+  bonusAmounts?: ReferralBonusAmounts
 }
 
 /** E-mails de boas-vindas do presente adulto (sempre com o Mural adulto por sete dias). */
@@ -198,6 +200,7 @@ export class RedeemScholarshipService {
         name,
         phone,
         sourceSnapshot: source,
+        bonusAmounts: codeRecord.ownerKind === 'campaign' ? undefined : this.opts.bonusAmounts,
         courseSlug: this.target(audience).courseSlug,
         attribution: sanitizeGiftAttribution(input.attribution),
       })
