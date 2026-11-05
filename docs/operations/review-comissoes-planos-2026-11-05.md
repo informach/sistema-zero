@@ -75,6 +75,49 @@ o arquivo baixado e verificou troca de público, diálogo aninhado, erro/retry, 
 longo. O build real do funil passou dez casos em duas larguras, mais resgate, painel, campanhas,
 cartão e retorno da paginação. Revisão visual das capturas de desktop, celular e PNG realizada.
 
+## Complemento: calendário, cupons e primeira cobrança
+
+Revisão do escopo ampliado: calendário canônico de Brasília; isolamento de público e parceiro;
+vínculo imutável do cupom; consulta interna autenticada; expiração separada do presente;
+recuperação de cadastro parcial; preços autoritativos; validade individual já adquirida;
+primeira cobrança com desconto e renovações integrais.
+
+Achados corrigidos nesta rodada:
+
+- **P1 — desconto permanente na assinatura:** o desconto nativo da Efí vale para todos os
+  ciclos. A integração usa criação em duas etapas, persiste as identidades antes de ativar,
+  confirma o preço recorrente integral e retoma falhas por worker com lease. Prova em sandbox
+  confirmou que atualizar itens preserva o valor da primeira cobrança já criada.
+- **P1 — segunda tentativa após resposta perdida:** o checkout conserva o pedido autorizado
+  na memória, repete o mesmo identificador e bloqueia troca de plano/método durante confirmação.
+  O servidor recupera a assinatura persistida. Tokens não são gravados. Recusa inicial encerra
+  a recorrência; pendência conserva consulta e reconciliação até obter resultado definitivo.
+- **P2 — prévia de cupom de outro plano:** cotação e SSR passam o plano validado pelo alternador;
+  mudar o plano invalida a prévia anterior e exige nova conferência. Links anuais cotam o anual.
+- **P2 — conferência de período rejeitava primeira cobrança promocional:** agora verifica o
+  valor pela identidade da cobrança. Prova PostgreSQL cobre preço normal e primeira promocional.
+- **P2 — cupom encerrado junto com presente:** validade própria deriva do calendário e do estado
+  explícito da campanha; painel e cartão continuam disponíveis após o fim do resgate gratuito.
+- **P2 — habilitação de cupons nas assinaturas existentes:** migração limitada às quatro ofertas
+  canônicas preenche apenas configuração ausente, preservando desabilitação explícita e conteúdo.
+- **P3 — criação após falha e divulgação avulsa:** retry recupera cupom pelo código sem outro POST;
+  cupom inativo não pode ser vinculado. Divulgação avulsa tem retry e invalida seleção obsoleta.
+- **P2 — Palco confundia próximo bloco com conteúdo encaixado:** a busca usa o caminho próprio
+  do pai e do filho para excluir o restante da pilha. Blockly real reproduziu ambos os erros
+  (bloco e campo) antes da correção e confirmou os quatro casos depois, sem alterar o roteiro WIP.
+- **P3 — acabamento e acessibilidade:** cartões usam datas sem segundos e fim inclusivo;
+  status vazio continua na árvore acessível. `qrcode` entra no prebundle explícito do funil.
+  Documentação operacional usa papel da pessoa, mantendo identificação real nos recibos privados.
+
+Verificação local: Payments 611 testes, Referrals 228, Funnel 601, Catalog 162 mais a prova
+adicional da migração de cupons; suites financeiras com PostgreSQL descartável. Typechecks dos
+cinco serviços sem erros. Browser real verificou Kids/Adultos, larguras 320/390/1440, primeira
+cobrança versus renovação, troca de plano, replay do mesmo pedido e bloqueios durante pendência.
+O build do funil verificou cupom expirado com preço normal nas três páginas do Desafio. Cartões
+de campanha e cupons avulsos tiveram PNG baixado e QR decodificado; painel é somente leitura.
+
+O CI do HEAD final e os recibos de deploy ainda são necessários antes da conclusão operacional.
+
 ## Publicação final
 
 O usuário pediu o mesmo código nas duas branches e autorizou incluir o palco em produção.

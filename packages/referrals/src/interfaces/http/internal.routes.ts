@@ -39,6 +39,18 @@ export function internalRoutes(deps: InternalRoutesDeps) {
   return new Elysia({ prefix: '/referrals/internal' })
     .onTransform(({ headers }) => guard(headers))
     .get(
+      '/campaigns/:id/coupon-policy',
+      async ({ params, set }) => {
+        const policy = await deps.campaigns?.couponPolicy(params.id)
+        if (!policy) {
+          set.status = 404
+          return envelope('CAMPAIGN_NOT_FOUND', 'Campanha não encontrada')
+        }
+        return policy
+      },
+      { params: t.Object({ id: t.String({ format: 'uuid' }) }) },
+    )
+    .get(
       '/codes/:code',
       async ({ params, headers, set }) => {
         guard(headers)

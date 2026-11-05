@@ -2,6 +2,7 @@ import { swagger } from '@elysiajs/swagger'
 import { PayloadTooLargeError } from '@sistemazero/core/http'
 import type { Logger } from '@sistemazero/core/logging'
 import { Elysia } from 'elysia'
+import type { CampaignCouponService } from '../../application/campaign-coupon/campaign-coupon.service'
 import type { CreateCouponService } from '../../application/create-coupon/create-coupon.service'
 import type { CreateOfferService } from '../../application/create-offer/create-offer.service'
 import type { CreateProductService } from '../../application/create-product/create-product.service'
@@ -23,6 +24,7 @@ import { buildErrorResponse } from './error-handler'
 import { isOversizeBody, markOversizeBody } from './raw-body'
 import { adminRoutes } from './routes/admin.routes'
 import { adminReadRoutes } from './routes/admin-read.routes'
+import { campaignCouponRoutes } from './routes/campaign-coupon.routes'
 import { catalogRoutes } from './routes/catalog.routes'
 import { healthRoutes, type ReadinessProbe } from './routes/health.routes'
 
@@ -37,6 +39,7 @@ export interface HttpDeps {
   listOffers: ListOffersService
   listCoupons: ListCouponsService
   quoteOffer: QuoteOfferService
+  campaignCoupon?: CampaignCouponService
   redeemCoupon: RedeemCouponService
   createProduct: CreateProductService
   updateProduct: UpdateProductService
@@ -110,6 +113,11 @@ export function createServer(deps: HttpDeps) {
   const productCache = new MicroCache<PublicProductView | null>(publicCacheTtlMs)
 
   return app
+    .use(
+      deps.campaignCoupon
+        ? campaignCouponRoutes(deps.campaignCoupon, deps.env.INTERNAL_API_TOKEN)
+        : new Elysia(),
+    )
     .use(healthRoutes(deps.readiness))
     .use(
       catalogRoutes({

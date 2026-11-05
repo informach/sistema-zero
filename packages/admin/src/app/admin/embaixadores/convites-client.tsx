@@ -5,6 +5,8 @@ import {
   type CampaignInput,
   type CampaignState,
   type CampaignView,
+  campaignCouponPromotion,
+  campaignScheduleWindows,
   DEFAULT_REFERRAL_BONUS,
   type GiftAudience,
   isGiftAudience,
@@ -33,6 +35,9 @@ import { campaignIsoDate, campaignLocalDate } from '@/lib/campaign-dates'
 import { cn } from '@/lib/cn'
 import { isCanceledCommunityRequest } from '@/lib/community-query'
 import type { Platform } from '@/lib/platform'
+import { type CampaignCouponDraft, CampaignCouponDraftSchema } from '@/lib/prepare-campaign-coupon'
+import { CampaignCouponFields } from './campaign-coupon-fields'
+import { CampaignScheduleFields } from './campaign-schedule-fields'
 import { EmbaixadoresClient } from './embaixadores-client'
 
 const PAGE_SIZE = 25
@@ -112,6 +117,14 @@ function AudienceBadge({ audience }: { audience: GiftAudience }) {
 }
 const dateLabel = (value: string) =>
   new Date(value).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })
+const cardDateLabel = (value: string) =>
+  new Date(value)
+    .toLocaleString('pt-BR', {
+      timeZone: 'America/Sao_Paulo',
+      dateStyle: 'short',
+      timeStyle: 'short',
+    })
+    .replace(',', '')
 const moneyLabel = (cents: number) =>
   (cents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
 const conversionLabels: Record<string, string> = {
@@ -136,6 +149,11 @@ type Editing = {
   expectedUpdatedAt?: string
 }
 const empty = (audience: Platform): CampaignInput => ({
+  schedule: {
+    eventDate: campaignLocalDate(new Date().toISOString()).slice(0, 10),
+    giftClaimDays: 3,
+    couponClaimDays: 7,
+  },
   name: '',
   publicTitle: '',
   description: '',
@@ -460,6 +478,13 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                           name: `${detail.campaign.name} · nova edição`.slice(0, 120),
                           code: '',
                           status: 'draft',
+                          schedule: detail.campaign.schedule
+                            ? {
+                                ...detail.campaign.schedule,
+                                eventDate: campaignLocalDate(new Date().toISOString()).slice(0, 10),
+                              }
+                            : null,
+                          coupon: null,
                           commissionEnabled: false,
                           commissionAmountCents: null,
                           commissionAnnualAmountCents: null,
@@ -537,7 +562,7 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                       : 'Um presente para famílias · Kids'
                   }
                   description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
-                  notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${dateLabel(detail.campaign.startsAt)} até ${dateLabel(detail.campaign.endsAt)} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para maiores de 18 anos.' : 'Para crianças de 9 a 14 anos. Cadastro pelo responsável.'}`}
+                  notice={`${['draft', 'paused', 'ended'].includes(detail.campaign.state) ? `${labels[detail.campaign.state]}: sem novos resgates. ` : ''}Resgate de ${cardDateLabel(detail.campaign.startsAt)} até ${cardDateLabel(new Date(Date.parse(detail.campaign.endsAt) - 1).toISOString())} (Brasília). ${detail.campaign.audience === 'adult' ? 'Cadastro para maiores de 18 anos.' : 'Para crianças de 9 a 14 anos. Cadastro pelo responsável.'}`}
                 />
               </div>
               {detail.campaign.state === 'draft' && (
@@ -547,6 +572,79 @@ function Campaigns({ canWrite, audience }: { canWrite: boolean; audience: Platfo
                 </p>
               )}
             </div>
+            {detail.campaign.couponView && (
+              <section
+                className="space-y-3 rounded-xl border border-primary/25 bg-primary/5 p-4"
+                aria-label="Cupom da campanha"
+              >
+                <p className="text-xs font-bold uppercase tracking-wide text-muted-foreground">
+                  Benefício separado · desconto
+                </p>
+                <h2 className="text-xl font-bold">
+                  {
+                    campaignCouponPromotion(detail.campaign.couponView, detail.campaign.audience)
+                      .title
+                  }
+                </h2>
+                <p className="text-sm">
+                  {
+                    campaignCouponPromotion(detail.campaign.couponView, detail.campaign.audience)
+                      .description
+                  }
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {
+                    campaignCouponPromotion(detail.campaign.couponView, detail.campaign.audience)
+                      .notice
+                  }
+                </p>
+                <Badge variant="outline">
+                  {detail.campaign.couponView.state === 'unavailable'
+                    ? 'Indisponível'
+                    : labels[detail.campaign.couponView.state]}
+                </Badge>
+                <Input
+                  readOnly
+                  aria-label="Link do cupom"
+                  value={detail.campaign.couponView.shareUrl}
+                  onFocus={(event) => event.target.select()}
+                />
+                <div className="flex flex-wrap items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      void copyToClipboard(detail.campaign.couponView!.shareUrl, 'Link do cupom')
+                    }
+                  >
+                    Copiar link do cupom
+                  </Button>
+                  {['active', 'scheduled'].includes(detail.campaign.couponView.state) && (
+                    <ShareCard
+                      {...campaignCouponPromotion(
+                        detail.campaign.couponView,
+                        detail.campaign.audience,
+                      )}
+                      label="Cartão do cupom"
+                    />
+                  )}
+                  <a
+                    className="text-sm underline"
+                    href={detail.campaign.couponView.shareUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Abrir oferta
+                  </a>
+                </div>
+              </section>
+            )}
+            {detail.campaign.coupon && !detail.campaign.couponView && (
+              <p role="status" className="rounded-lg bg-warning-tint p-3 text-sm">
+                Há um cupom vinculado, mas seus termos não puderam ser conferidos agora. Atualize
+                para tentar novamente antes de divulgar.
+              </p>
+            )}
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               {Object.entries({
                 'Resgates concluídos': detail.campaign.stats.redemptions,
@@ -763,6 +861,8 @@ function CampaignEditor({
   const [start, setStart] = useState(campaignLocalDate(value.startsAt))
   const [end, setEnd] = useState(campaignLocalDate(value.endsAt))
   const [saving, setSaving] = useState(false)
+  const [savedCampaign, setSavedCampaign] = useState<CampaignView | null>(null)
+  const [couponDraft, setCouponDraft] = useState<CampaignCouponDraft | null>(null)
   const [error, setError] = useState('')
   const change = <K extends keyof CampaignInput>(key: K, next: CampaignInput[K]) =>
     setValue((current) => ({ ...current, [key]: next }))
@@ -773,7 +873,20 @@ function CampaignEditor({
     try {
       if (value.commissionEnabled && (commissionAmount === '' || commissionAnnualAmount === ''))
         throw new Error('Informe a comissão dos planos mensal e anual.')
+      if (couponDraft) {
+        if (!value.schedule)
+          throw new Error('Ative o calendário da campanha para cadastrar seu cupom.')
+        const valid = CampaignCouponDraftSchema.safeParse({
+          ...couponDraft,
+          audience,
+          expectedUpdatedAt: new Date().toISOString(),
+        })
+        if (!valid.success) throw new Error('Confira o código, o desconto e a oferta do cupom.')
+      }
+      const windows = value.schedule ? campaignScheduleWindows(value.schedule) : null
       const body: CampaignInput = {
+        schedule: value.schedule ?? null,
+        coupon: editing.duplicate ? null : (value.coupon ?? null),
         name: value.name,
         publicTitle: value.publicTitle,
         description: value.description,
@@ -783,8 +896,8 @@ function CampaignEditor({
         status: value.status,
         // Sempre explícito: um PATCH sem o campo não pode virar Kids por omissão.
         audience,
-        startsAt: campaignIsoDate(start),
-        endsAt: campaignIsoDate(end),
+        startsAt: windows?.startsAt ?? campaignIsoDate(start),
+        endsAt: windows?.giftEndsAt ?? campaignIsoDate(end),
         ambassadorId: value.ambassadorId ?? null,
         commissionEnabled: value.commissionEnabled ?? false,
         commissionAmountCents: value.commissionEnabled
@@ -797,14 +910,28 @@ function CampaignEditor({
       }
       if (body.endsAt <= body.startsAt)
         throw new Error('O encerramento precisa vir depois do início.')
-      const suffix = editing.id ? `/${editing.id}${editing.duplicate ? '/duplicate' : ''}` : ''
-      const result = await apiSend<{ campaign: CampaignView }>(
+      const effectiveId = savedCampaign?.id ?? editing.id
+      const duplicate = editing.duplicate && !savedCampaign
+      const suffix = effectiveId ? `/${effectiveId}${duplicate ? '/duplicate' : ''}` : ''
+      let result = await apiSend<{ campaign: CampaignView }>(
         `/api/admin/referrals/campaigns${suffix}`,
-        editing.id && !editing.duplicate ? 'PATCH' : 'POST',
-        editing.id && !editing.duplicate
-          ? { ...body, expectedUpdatedAt: editing.expectedUpdatedAt }
+        effectiveId && !duplicate ? 'PATCH' : 'POST',
+        effectiveId && !duplicate
+          ? { ...body, expectedUpdatedAt: savedCampaign?.updatedAt ?? editing.expectedUpdatedAt }
           : body,
       )
+      setSavedCampaign(result.campaign)
+      if (couponDraft) {
+        result = await apiSend<{ campaign: CampaignView }>(
+          `/api/admin/referrals/campaigns/${result.campaign.id}/coupon`,
+          'POST',
+          {
+            ...couponDraft,
+            audience,
+            expectedUpdatedAt: result.campaign.updatedAt,
+          },
+        )
+      }
       toast.success('Campanha salva.')
       onSaved(result.campaign)
     } catch (err) {
@@ -1143,26 +1270,67 @@ function CampaignEditor({
               ) : null}
             </label>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="space-y-1 text-sm font-semibold">
-              <span>Início (Brasília)</span>
-              <Input
-                type="datetime-local"
-                value={start}
-                required
-                onChange={(event) => setStart(event.target.value)}
-              />
-            </label>
-            <label className="space-y-1 text-sm font-semibold">
-              <span>Encerramento (Brasília)</span>
-              <Input
-                type="datetime-local"
-                value={end}
-                required
-                onChange={(event) => setEnd(event.target.value)}
-              />
-            </label>
-          </div>
+          {!value.schedule && (
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() =>
+                change('schedule', {
+                  eventDate: start.slice(0, 10),
+                  giftClaimDays: 3,
+                  couponClaimDays: 7,
+                })
+              }
+            >
+              Calcular prazos a partir da data da campanha
+            </Button>
+          )}
+          {value.schedule ? (
+            <CampaignScheduleFields
+              value={value.schedule}
+              onChange={(next) => change('schedule', next)}
+            />
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2">
+              <label className="space-y-1 text-sm font-semibold">
+                <span>Início (Brasília)</span>
+                <Input
+                  type="datetime-local"
+                  value={start}
+                  required
+                  onChange={(event) => setStart(event.target.value)}
+                />
+              </label>
+              <label className="space-y-1 text-sm font-semibold">
+                <span>Encerramento (Brasília)</span>
+                <Input
+                  type="datetime-local"
+                  value={end}
+                  required
+                  onChange={(event) => setEnd(event.target.value)}
+                />
+              </label>
+            </div>
+          )}
+          {value.coupon && !editing.duplicate && (
+            <div className="rounded-lg border p-3 text-sm">
+              <p>
+                Esta campanha já tem um cupom vinculado. O calendário acima controla sua validade.
+                Marque abaixo para cadastrar outro código, se quiser substituir a oferta ou o
+                desconto.
+              </p>
+              <Button type="button" variant="ghost" onClick={() => change('coupon', null)}>
+                Desvincular cupom para novos usos
+              </Button>
+            </div>
+          )}
+          <CampaignCouponFields audience={audience} value={couponDraft} onChange={setCouponDraft} />
+          {savedCampaign && error && (
+            <p role="status" className="rounded-lg bg-warning-tint p-3 text-sm">
+              A campanha foi salva, mas o cupom ainda precisa ser concluído. Corrija o problema e
+              salve novamente; o mesmo cadastro será retomado.
+            </p>
+          )}
           <p className="text-sm text-muted-foreground">
             O prazo acima controla novos cadastros. Cada cadastro aceito mantém os 7 dias de curso e
             de Mural, mesmo se a campanha for encerrada depois. O link pode ser encaminhado e não

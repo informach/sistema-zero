@@ -127,6 +127,24 @@ const gateway = createServer((req, res) => {
                   commissionAmountCents: 4500,
                   commissionAnnualAmountCents: null,
                   commissionWindowDays: 30,
+                  couponView: {
+                    couponId: 'coupon',
+                    offerId: 'offer',
+                    code: 'EVENTO50',
+                    offerSlug: 'desafio-primeiro-jogo-30-dias',
+                    offerName: 'Desafio do Primeiro Jogo',
+                    percentOff: 50,
+                    amountOffCents: null,
+                    currency: 'BRL',
+                    accessMode: 'fixed',
+                    accessDurationValue: 30,
+                    accessDurationUnit: 'days',
+                    available: true,
+                    state: 'active',
+                    startsAt: '2026-11-06T03:00:00Z',
+                    endsAt: '2026-11-13T03:00:00Z',
+                    shareUrl: `${origin}/cupom/EVENTO50?oferta=desafio-primeiro-jogo-30-dias&publico=kids&event_code=anterior`,
+                  },
                 },
               ],
         },
@@ -479,6 +497,15 @@ try {
   await campaignSection.screenshot({ path: resolve(output, 'campanhas-1440.png') })
   await page.setViewportSize({ width: 390, height: 844 })
   await campaignSection.screenshot({ path: resolve(output, 'campanhas-390.png') })
+  await campaignSection.getByRole('button', { name: 'Cartão do cupom', exact: true }).click()
+  await page.getByRole('link', { name: 'Baixar PNG' }).waitFor()
+  await page
+    .getByRole('dialog', { name: 'Cartão de divulgação' })
+    .screenshot({ path: resolve(output, 'cupom-campanha-390.png') })
+  await page.keyboard.press('Escape')
+  assert.match(await campaignSection.innerText(), /Cupom disponível/)
+  assert.match(await campaignSection.innerText(), /12\/11\/2026/)
+  assert.match(await campaignSection.innerText(), /30 dias/)
   await campaignSection.getByRole('button', { name: 'Cartão de divulgação' }).click()
   await page.getByRole('link', { name: 'Baixar PNG' }).waitFor()
   await page

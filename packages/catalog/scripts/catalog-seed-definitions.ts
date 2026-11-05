@@ -503,6 +503,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     status: 'active',
     content: {
       badge: 'A plataforma inteira numa assinatura',
+      allowsCoupon: true,
       ctaLabel: 'Quero que meu filho comece a criar',
       maxProfiles: 2,
       altOffer: {
@@ -525,6 +526,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     status: 'active',
     content: {
       badge: 'A plataforma inteira numa assinatura',
+      allowsCoupon: true,
       ctaLabel: 'Garantir 1 ano de criação',
       maxProfiles: 2,
       altOffer: {
@@ -546,6 +548,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     status: 'active',
     content: {
       badge: 'Todos os cursos e ferramentas numa assinatura',
+      allowsCoupon: true,
       ctaLabel: 'Quero fazer o meu primeiro jogo',
       altOffer: {
         slug: 'comunidade-dos-criadores-adulto-anual',
@@ -567,6 +570,7 @@ export const CATALOG_SEED_OFFERS: readonly CatalogSeedOffer[] = [
     status: 'active',
     content: {
       badge: 'Todos os cursos e ferramentas numa assinatura',
+      allowsCoupon: true,
       ctaLabel: 'Garantir 1 ano de criação',
       altOffer: {
         slug: 'comunidade-dos-criadores-adulto-mensal',

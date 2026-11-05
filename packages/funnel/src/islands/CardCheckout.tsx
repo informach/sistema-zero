@@ -11,7 +11,7 @@ import {
 } from '@sistemazero/ui/credit-card'
 import { loadEfi, tokenizeEfiCard } from '@sistemazero/ui/efi-card-token'
 import { useEffect, useRef, useState } from 'react'
-import { apiGet, apiPost } from '../lib/api-fetch'
+import { ApiError, apiGet, apiPost } from '../lib/api-fetch'
 import {
   type AddressFormInput,
   AddressSchema,
@@ -19,6 +19,7 @@ import {
   CardFormSchema,
   type CheckoutContactInput,
   pathErrors,
+  type SubscriptionChargeInput,
 } from '../lib/checkout-schema'
 import { Field, inputClass } from './checkout-fields'
 
@@ -69,9 +70,13 @@ export default function CardCheckout({
   mode = 'payment',
   offerSlug,
   intervalMonths = null,
+  renewalPriceCents,
+  onPendingChange,
 }: {
   contact: CheckoutContactInput | null
   priceCents: number
+  renewalPriceCents?: number
+  onPendingChange?: (pending: boolean) => void
   couponCode?: string
   /** Para onde ir quando o pagamento confirmar (próximo passo do funil; obrigatório). */
   successPath: string
@@ -79,7 +84,7 @@ export default function CardCheckout({
   installmentsMax?: number | null
   /**
    * `payment` = cobrança avulsa (como sempre). `subscription` = ASSINATURA
-   * recorrente: sem parcelas/cupom, pagador completo (nascimento + endereço) e
+   * recorrente: sem parcelas, cupom só na primeira cobrança, pagador completo e
    * `POST /api/checkout/subscription` (a Efí cobra o cartão a cada ciclo).
    */
   mode?: 'payment' | 'subscription'
@@ -116,6 +121,13 @@ export default function CardCheckout({
   const [erro, setErro] = useState<string | null>(null)
   const [info, setInfo] = useState<string | null>(null)
   const [paymentId, setPaymentId] = useState<string | null>(null)
+  // Memory only, including the short-lived token: retry the SAME authorized request after
+  // a lost response. A new click must not generate a second subscription/first charge.
+  const subscriptionAttempt = useRef<SubscriptionChargeInput | null>(null)
+  const pending = processing || Boolean(paymentId) || Boolean(subscriptionAttempt.current)
+  useEffect(() => {
+    onPendingChange?.(pending)
+  }, [pending, onPendingChange])
 
   // Corrida: só a consulta mais recente pode aplicar estado (o SDK da Efí não
   // expõe AbortController, então o controle é por id monotônico + cleanup do Effect).
@@ -277,8 +289,9 @@ export default function CardCheckout({
         if (r.status === 'PAID') {
           clearInterval(timer)
           window.location.href = successPath
-        } else if (r.status === 'FAILED') {
+        } else if (['FAILED', 'CANCELED', 'EXPIRED'].includes(r.status)) {
           clearInterval(timer)
+          setPaymentId(null)
           setErro('Pagamento recusado. Verifique os dados ou use outro cartão.')
         }
       } catch {
@@ -290,6 +303,10 @@ export default function CardCheckout({
 
   async function submit() {
     setErro(null)
+    if (subscriptionAttempt.current) {
+      await sendSubscriptionAttempt()
+      return
+    }
     // Os dados pessoais (e-mail/nome/CPF) são o gate do pagamento — sem eles o
     // botão fica desabilitado; o guard cobre estados intermediários.
     if (!contact) {
@@ -386,7 +403,7 @@ export default function CardCheckout({
       )
 
       if (isSubscription && subExtras) {
-        const r = await apiPost<SubscriptionResp>('/api/checkout/subscription', {
+        subscriptionAttempt.current = {
           token: tok.payment_token,
           brand: cardBrand,
           last4: digits.slice(-4),
@@ -394,22 +411,10 @@ export default function CardCheckout({
           contact,
           birth: subExtras.birth,
           address: subExtras.address,
+          couponCode,
           ...(offerSlug ? { offerSlug } : {}),
-        })
-        if (r.status === 'ACTIVE' && r.paymentStatus === 'PAID') {
-          window.location.href = successPath
-          return
         }
-        if (r.paymentStatus === 'FAILED') {
-          setErro('Pagamento recusado. Verifique os dados ou use outro cartão.')
-          return
-        }
-        if (r.paymentId) {
-          setPaymentId(r.paymentId) // 1ª cobrança em análise → poll curto
-          return
-        }
-        setErro(null)
-        setInfo('Assinatura em processamento. Você receberá a confirmação por e-mail.')
+        await sendSubscriptionAttempt()
         return
       }
 
@@ -433,14 +438,91 @@ export default function CardCheckout({
         return
       }
       setPaymentId(r.paymentId) // PENDING → poll curto
-    } catch {
+    } catch (error) {
       // Não logar o erro cru do SDK: ele pode repetir dados digitados no cartão.
       console.error('[checkout/cartão] pagamento falhou; consulte o status da solicitação.')
-      setErro('Não foi possível processar o cartão. Confira os dados e tente novamente.')
+      setErro(
+        error instanceof ApiError && error.code === 'INVALID_COUPON'
+          ? 'O cupom não está mais disponível. Confira o preço normal e remova o cupom para continuar. Nenhuma cobrança foi criada.'
+          : 'Não foi possível processar o cartão. Confira os dados e tente novamente.',
+      )
     } finally {
       setProcessing(false)
     }
   }
+
+  async function sendSubscriptionAttempt() {
+    const attempt = subscriptionAttempt.current
+    if (!attempt) return
+    setProcessing(true)
+    setErro(null)
+    try {
+      const response = await apiPost<SubscriptionResp>('/api/checkout/subscription', attempt)
+      if (response.paymentStatus === 'PAID') {
+        subscriptionAttempt.current = null
+        window.location.href = successPath
+      } else if (response.paymentStatus === 'FAILED' || response.status === 'CANCELED') {
+        subscriptionAttempt.current = null
+        setErro('Pagamento não aprovado. Confira os dados ou tente outro cartão.')
+      } else if (response.paymentId) {
+        subscriptionAttempt.current = null
+        setPaymentId(response.paymentId)
+      } else {
+        setInfo('Assinatura em processamento. Confira o resultado antes de tentar uma nova compra.')
+      }
+    } catch (error) {
+      if (error instanceof ApiError && [400, 422].includes(error.status)) {
+        subscriptionAttempt.current = null
+        setErro(
+          error.code === 'INVALID_COUPON'
+            ? 'O cupom não está mais disponível. Remova o cupom para conferir e aceitar o preço normal. Nenhuma cobrança foi criada.'
+            : 'Confira os dados da assinatura antes de tentar novamente.',
+        )
+      } else {
+        setErro(
+          'Ainda não recebemos a confirmação. Confira a mesma tentativa para evitar uma cobrança duplicada.',
+        )
+      }
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  async function checkPayment() {
+    if (!paymentId) return
+    setProcessing(true)
+    try {
+      const result = await apiGet<StatusResp>(`/api/checkout/${paymentId}`)
+      if (result.status === 'PAID') window.location.href = successPath
+      else if (['FAILED', 'CANCELED', 'EXPIRED'].includes(result.status)) {
+        setPaymentId(null)
+        setErro('Pagamento não aprovado. Confira os dados ou tente outro cartão.')
+      } else
+        setInfo('O pagamento continua em análise. Aguarde a confirmação antes de tentar novamente.')
+    } catch {
+      setErro('Não foi possível conferir agora. Tente consultar novamente em instantes.')
+    } finally {
+      setProcessing(false)
+    }
+  }
+
+  if (subscriptionAttempt.current || paymentId)
+    return (
+      <div className="space-y-3 rounded-xl border border-line bg-card/40 p-4" role="status">
+        <p className="font-semibold text-ink">Conferindo seu pagamento</p>
+        <p className="text-sm text-muted">
+          {erro ?? info ?? 'Aguarde a confirmação do pagamento.'}
+        </p>
+        <button
+          type="button"
+          disabled={processing}
+          onClick={() => void (paymentId ? checkPayment() : sendSubscriptionAttempt())}
+          className="min-h-11 rounded-lg bg-lime px-4 py-2 font-bold text-bg disabled:opacity-60"
+        >
+          {processing ? 'Conferindo…' : 'Conferir pagamento'}
+        </button>
+      </div>
+    )
 
   return (
     <form
@@ -625,7 +707,9 @@ export default function CardCheckout({
         {processing
           ? 'Processando…'
           : isSubscription
-            ? `Assinar ${brl(priceCents)}${intervalMonths === 12 ? '/ano' : '/mês'}`
+            ? renewalPriceCents && renewalPriceCents > priceCents
+              ? `Assinar · ${brl(priceCents)} na primeira cobrança`
+              : `Assinar ${brl(priceCents)}${intervalMonths === 12 ? '/ano' : '/mês'}`
             : `Pagar ${brl(priceCents)}`}
       </button>
       {isSubscription && (

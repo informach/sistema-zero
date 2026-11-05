@@ -1,4 +1,5 @@
 import { createLogger, type Logger } from '@sistemazero/core/logging'
+import { CampaignCouponService } from './application/campaign-coupon/campaign-coupon.service'
 import { CreateCouponService } from './application/create-coupon/create-coupon.service'
 import { CreateOfferService } from './application/create-offer/create-offer.service'
 import { CreateProductService } from './application/create-product/create-product.service'
@@ -14,6 +15,7 @@ import { UpdateCouponService } from './application/update-coupon/update-coupon.s
 import { UpdateOfferService } from './application/update-offer/update-offer.service'
 import { UpdateProductService } from './application/update-product/update-product.service'
 import type { Env } from './infrastructure/config/env'
+import { CampaignPolicyHttpClient } from './infrastructure/gateways/campaign-policy.client'
 import { withSentryMirror } from './infrastructure/observability/sentry'
 import { DrizzleCouponRepository } from './infrastructure/persistence/drizzle/coupon.repository'
 import { createDbConnection, type DbConnection } from './infrastructure/persistence/drizzle/db'
@@ -58,7 +60,16 @@ export function createApplication(env: Env): Application {
   const listProducts = new ListProductsService(products)
   const listOffers = new ListOffersService(offers, products)
   const listCoupons = new ListCouponsService(coupons)
-  const quoteOffer = new QuoteOfferService(offers, coupons, products, resolver)
+  const quoteOffer = new QuoteOfferService(
+    offers,
+    coupons,
+    products,
+    resolver,
+    new CampaignPolicyHttpClient({
+      baseUrl: env.REFERRALS_BASE_URL,
+      internalToken: env.REFERRALS_INTERNAL_TOKEN,
+    }),
+  )
   const redeemCoupon = new RedeemCouponService(coupons, logger)
   const createProduct = new CreateProductService(products, logger)
   const updateProduct = new UpdateProductService(products, logger)
@@ -81,6 +92,7 @@ export function createApplication(env: Env): Application {
   }
 
   const server = createServer({
+    campaignCoupon: new CampaignCouponService(coupons, offers, products),
     env,
     logger,
     readiness,

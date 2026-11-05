@@ -23,6 +23,6 @@ Entradas: detalhe da campanha e do embaixador no Admin, painel do embaixador no 
 links Kids/Adultos na área dos pais. O QR usa exatamente o link público fornecido pelo serviço.
 Copy descreve curso Cadê Todo Mundo e Mural, sem prometer acesso a todo o catálogo.
 
-Laopa: cadastro real somente em produção, Vivianne Lima, comissão habilitada R$30/R$80,
+Laopa: cadastro real somente em produção, a embaixadora da campanha, comissão habilitada R$30/R$80,
 janela de 45 dias, resgate Kids de 06/11/2026 00:00 até 09/11/2026 00:00 (fim de 08/11),
 Brasília. Envio do acesso por e-mail autorizado. Dados pessoais e link privado ficam fora do Git.

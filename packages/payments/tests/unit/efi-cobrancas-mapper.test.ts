@@ -13,6 +13,23 @@ import {
 } from '../../src/infrastructure/gateways/efi/efi-cobrancas.mapper'
 
 describe('efi-cobrancas.mapper', () => {
+  test('criação em duas etapas expõe a cobrança preparada e detalhe confirma valor recorrente', () => {
+    expect(
+      parseCreateSubscriptionResponse({
+        data: { subscription_id: 42, status: 'new', charges: [{ charge_id: 43, status: 'new' }] },
+      }),
+    ).toMatchObject({ subscriptionId: '42', firstChargeId: '43', status: 'PENDING' })
+    expect(
+      parseSubscriptionDetail(
+        { data: { subscription_id: 42, status: 'active', value: 9700 } },
+        '42',
+      ).amountInCents,
+    ).toBe(9700n)
+    expect(
+      parseSubscriptionDetail({ data: { subscription_id: 42, status: 'active', value: 0 } }, '42')
+        .amountInCents,
+    ).toBeUndefined()
+  })
   test('snapshot único traz estado, ciclos e data civil de próxima execução', () => {
     const snapshot = parseSubscriptionDetail(
       {

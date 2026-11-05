@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import type { AmbassadorCampaignPage } from '@sistemazero/core/referrals'
 import { AmbassadorAdminService } from '../../src/application/ambassadors/ambassador-admin.service'
 import { CampaignAdminService } from '../../src/application/campaigns/campaign-admin.service'
 import { CreateInviteService } from '../../src/application/invites/create-invite.service'
@@ -111,7 +112,7 @@ describe('campanhas no HTTP', () => {
     const headers = { 'x-internal-token': INTERNAL_TOKEN }
     const response = await app.handle(new Request(url, { headers }))
     expect(response.status).toBe(200)
-    const body = await response.json()
+    const body = (await response.json()) as { campaigns: AmbassadorCampaignPage }
     expect(body.campaigns.total).toBe(21)
     expect(body.campaigns.items).toHaveLength(20)
     expect(body.campaigns.items[0]).toMatchObject({
@@ -122,13 +123,13 @@ describe('campanhas no HTTP', () => {
     expect(JSON.stringify(body.campaigns)).not.toMatch(
       /Nota interna|Planejamento interno|canal-interno|example.test|outro-parceiro|rascunho-parceira/,
     )
-    const next = await (
+    const next = (await (
       await app.handle(new Request(`${url}?campaignOffset=20`, { headers }))
-    ).json()
+    ).json()) as { campaigns: AmbassadorCampaignPage }
     expect(next.campaigns.items).toHaveLength(1)
     expect(next.campaigns.offset).toBe(20)
     expect(body.campaigns.items.map((item: { id: string }) => item.id)).not.toContain(
-      next.campaigns.items[0].id,
+      next.campaigns.items[0]!.id,
     )
     expect((await app.handle(new Request(`${url}?campaignOffset=-1`, { headers }))).status).toBe(
       400,

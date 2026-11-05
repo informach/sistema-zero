@@ -1,5 +1,12 @@
 import { DomainError } from '../shared/errors'
 
+export class CouponExpiredError extends DomainError {
+  readonly code = 'COUPON_EXPIRED'
+  constructor() {
+    super('Este cupom expirou. Você ainda pode comprar pelo preço normal.')
+  }
+}
+
 /** Cupom não encontrado (código inexistente). → 404 */
 export class CouponNotFoundError extends DomainError {
   readonly code = 'COUPON_NOT_FOUND'

@@ -239,7 +239,7 @@ function blocosCom(doc: Document, alvo: string, onde: 'area' | 'paleta' = 'area'
   if (donos && !donos.length) return []
   const wanted = fold(proprio ?? '')
   const blocos = [...raiz.querySelectorAll('.blocklyBlockCanvas .blocklyDraggable')].filter(
-    (b) => visivel(b) && (!donos || donos.some((d) => d !== b && d.contains(b))),
+    (b) => visivel(b) && (!donos || donos.some((d) => dentroDoProprio(d, b))),
   )
   const comecam = blocos.filter((b) => textoProprio(b).startsWith(wanted))
   return comecam.length ? comecam : blocos.filter((b) => textoProprio(b).includes(wanted))
@@ -280,7 +280,7 @@ function campoDe(doc: Document, valor: string, bloco?: string): Element | null {
   const found = !blocos
     ? campos[0]
     : (campos.find((t) => blocos.some((b) => donoDe(t) === b)) ??
-      campos.find((t) => blocos.some((b) => b.contains(t))))
+      campos.find((t) => blocos.some((b) => dentroDoProprio(b, donoDe(t) ?? t))))
   return found ? (found.closest('.blocklyEditableField') ?? found) : null
 }
 
@@ -291,6 +291,14 @@ const caixaPropria = (block: Element): DOMRect =>
       (p) => p.closest('.blocklyDraggable') === block,
     ) ?? block
   ).getBoundingClientRect()
+
+/** O SVG inclui os próximos blocos da pilha. Só os inputs ficam dentro do caminho próprio. */
+const dentroDoProprio = (pai: Element, filho: Element): boolean => {
+  if (pai === filho || !pai.contains(filho)) return false
+  const p = caixaPropria(pai)
+  const f = caixaPropria(filho)
+  return f.top >= p.top - 1 && f.bottom <= p.bottom + 1
+}
 
 /** Onde a mão pega um bloco da paleta, a partir do canto dele (o mesmo ponto de `bloco`). */
 function pegaDaPaleta(doc: Document, texto: string): { x: number; y: number } | null {

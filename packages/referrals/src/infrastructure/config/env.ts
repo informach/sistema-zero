@@ -94,6 +94,7 @@ const EnvSchema = z
     PAYMENTS_INTERNAL_TOKEN: z.string().min(16).optional(),
     /** Leitura pública do catalog (classifica a oferta da conversão). */
     CATALOG_BASE_URL: z.string().url().default('http://localhost:3003'),
+    CATALOG_INTERNAL_TOKEN: z.string().min(16).optional(),
     /** Ofertas que contam como "assinou a Comunidade" (csv de slugs). */
     CONVERSION_OFFER_SLUGS: z
       .string()

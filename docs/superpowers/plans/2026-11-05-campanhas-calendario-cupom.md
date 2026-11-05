@@ -1,7 +1,7 @@
 # Campanhas com calendário e cupom opcional
 
-**Goal:** permitir campanhas reutilizáveis para Kids/Adultos com calendário relativo, presente,
-cupom e embaixador opcionais entre si, mantendo cupons avulsos no Catálogo.
+**Goal:** permitir campanhas reutilizáveis para Kids/Adultos com calendário relativo do presente,
+cupom e embaixador opcionais, mantendo cupons avulsos no Catálogo.
 
 **Architecture:** Referrals mantém o calendário da campanha. Catalog autoriza desconto e escopo;
 cupons gerenciados consultam a política atual da campanha antes de cotar. Admin orquestra o cadastro
@@ -21,21 +21,23 @@ sem transação distribuída e sem liberar cupom incompleto. O painel do parceir
 
 ## Tarefas
 
-- [ ] Core: contrato `CampaignSchedule`, cálculo puro em Brasília com validação de data real,
+- [x] Core: contrato `CampaignSchedule`, cálculo puro em Brasília com validação de data real,
   início inclusivo/fim exclusivo e dias configuráveis. Testar viradas de mês/ano e limites.
-- [ ] Referrals: persistir calendário aditivo via `bun run db:generate`; derivar janelas no serviço,
+- [x] Referrals: persistir calendário aditivo via `bun run db:generate`; derivar janelas no serviço,
   preservar PATCH legado, auditar alterações, testar conflito e PostgreSQL real.
-- [ ] Catalog/Referrals: contrato de cupom vinculado e política autenticada; validar público,
+- [x] Catalog/Referrals: contrato de cupom vinculado e política autenticada; validar público,
   desconto, oferta e estado independentemente do presente. Falhar fechado e testar fronteiras.
-- [ ] Admin: calendário com prévia das datas; cadastro opcional do cupom na campanha com
+- [x] Admin: calendário com prévia das datas; cadastro opcional do cupom na campanha com
   criação idempotente e recuperação após falhas; preservar editor de cupons avulsos.
-- [ ] Divulgação: link autoritativo da oferta com cupom e atribuição, cartão PNG/QR separado
+- [x] Divulgação: link autoritativo da oferta com cupom e atribuição, cartão PNG/QR separado
   do presente, no Admin e no painel de campanhas do embaixador, Kids/Adultos.
-- [ ] Testes: checkout autoritativo, isolamento de público/embaixador, mudança de data,
+- [x] Testes: checkout autoritativo, isolamento de público/embaixador, mudança de data,
   resgates existentes, prazos diferentes, pausar/encerrar, falha parcial e retry.
-- [ ] QA visual nos dois públicos, desktop/mobile; QR decodificado e PNG baixado.
+- [x] QA visual nos dois públicos, desktop/mobile; QR decodificado e PNG baixado.
+- [x] Assinaturas: desconto só na primeira cobrança, identidade persistida antes de ativar,
+  preço recorrente confirmado, retomada durável, cancelamento preventivo e cupons por plano.
 - [ ] Full review, corrigir achados, CI no mesmo HEAD e deploy staging/produção alinhados.
-- [ ] Cadastrar Vivianne com envio autorizado; campanha/cupom Laopa; verificar vínculos,
+- [ ] Cadastrar a embaixadora da campanha com envio autorizado; campanha/cupom Laopa; verificar vínculos,
   datas, preço R$33,50, acesso 30 dias e recibo do envio. Não reenviar em caso ambíguo.
 
 ## Comandos de validação

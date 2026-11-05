@@ -4,6 +4,25 @@ import { resolveCouponPresentation } from '../../src/server/coupon-presentation'
 import { gatewayWithQuote, validQuote } from './catalog-charge.test-helpers'
 
 describe('cupom vindo de link ou QR Code', () => {
+  test('expiração informa preço normal e falha de infraestrutura não vira cupom inválido', async () => {
+    const params = new URLSearchParams('cupom=EVENTO50')
+    const expired = await resolveCouponPresentation(
+      gatewayWithQuote({ error: { code: 'COUPON_EXPIRED' } }, 422),
+      'desafio-primeiro-jogo-30-dias',
+      params,
+    )
+    expect(expired).toMatchObject({
+      status: 'invalid',
+      message: 'Este cupom expirou. Você ainda pode comprar pelo preço normal.',
+    })
+    const unavailable = await resolveCouponPresentation(
+      gatewayWithQuote({ error: { code: 'INTERNAL_ERROR' } }, 500),
+      'desafio-primeiro-jogo-30-dias',
+      params,
+    )
+    expect(unavailable).toMatchObject({ status: 'error' })
+    expect(JSON.stringify(unavailable)).not.toContain('expirou')
+  })
   test('normaliza ?cupom= e aceita ?coupon= como alias', () => {
     expect(couponRequestFromSearchParams(new URLSearchParams('cupom= evento-abc '))).toEqual({
       requested: true,

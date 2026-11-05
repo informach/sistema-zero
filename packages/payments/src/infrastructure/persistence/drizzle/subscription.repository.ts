@@ -113,6 +113,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
           lastChargeId: values.lastChargeId,
           lastChargeAt: values.lastChargeAt,
           metadata: values.metadata,
+          firstChargePricing: values.firstChargePricing,
           canceledAt: values.canceledAt,
           cancelRequestedAt: values.cancelRequestedAt,
           cancellationRecord: values.cancellationRecord,
@@ -224,6 +225,41 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
     })
   }
 
+  async claimFirstChargeSetups(limit: number): Promise<SubscriptionAggregate[]> {
+    return this.db.transaction(async (tx) => {
+      const rows = await tx
+        .select()
+        .from(subscriptions)
+        .where(
+          and(
+            sql`${subscriptions.firstChargePricing}->>'renewalPriceConfirmed' = 'false'`,
+            inArray(subscriptions.status, ['ACTIVE', 'PENDING']),
+            isNotNull(subscriptions.providerSubscriptionId),
+            // Creation owns the first minute. Worker never races the activation POST.
+            sql`${subscriptions.createdAt} < now() - interval '1 minute'`,
+            or(
+              isNull(subscriptions.firstChargeNextAttemptAt),
+              lte(subscriptions.firstChargeNextAttemptAt, sql`now()`),
+            ),
+          ),
+        )
+        .orderBy(sql`${subscriptions.firstChargeNextAttemptAt} asc nulls first`, subscriptions.id)
+        .limit(limit)
+        .for('update', { skipLocked: true })
+      if (!rows.length) return []
+      await tx
+        .update(subscriptions)
+        .set({ firstChargeNextAttemptAt: sql`now() + interval '2 minutes'` })
+        .where(
+          inArray(
+            subscriptions.id,
+            rows.map((row) => row.id),
+          ),
+        )
+      return rows.map((row) => SubscriptionAggregate.restore(rowToSnapshot(row)))
+    })
+  }
+
   async claimCancellationRequests(
     limit: number,
     leaseMs: number,
@@ -267,6 +303,7 @@ export class DrizzleSubscriptionRepository implements SubscriptionRepository {
 
 function snapshotToRow(snap: SubscriptionSnapshot): typeof subscriptions.$inferInsert {
   return {
+    firstChargePricing: snap.firstChargePricing ?? null,
     id: snap.id,
     version: snap.version,
     consumerId: snap.consumerId,
@@ -297,6 +334,7 @@ function snapshotToRow(snap: SubscriptionSnapshot): typeof subscriptions.$inferI
 
 export function rowToSnapshot(row: SubscriptionRow): SubscriptionSnapshot {
   return {
+    firstChargePricing: row.firstChargePricing,
     id: row.id,
     version: row.version,
     consumerId: row.consumerId,

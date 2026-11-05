@@ -174,6 +174,7 @@ export const BirthSchema = z
  * perpétuo silencioso). A Efí exige o pagador completo: nascimento + endereço.
  */
 export const SubscriptionChargeSchema = z.object({
+  couponCode: CouponCodeSchema,
   token: z.string().trim().min(1).max(255),
   brand: z.enum(CARD_BRANDS, { error: 'Bandeira do cartão inválida.' }),
   last4: z

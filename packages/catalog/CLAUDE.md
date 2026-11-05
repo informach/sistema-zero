@@ -368,3 +368,11 @@ houver dashboard; o gateway já loga/metrifica o tráfego roteado).
 - [ ] Sem `any` novo; entradas validadas (Zod/TypeBox).
 - [ ] Mudou schema? Gerou a migration (`db:generate`) e commitou.
 - [ ] Mudou contrato de rota/config/modelo? Atualizou este `CLAUDE.md`.
+
+## Cupons vinculados e primeira cobrança (05/11/2026)
+
+`metadata.campaignId` é imutável e exige uma oferta do mesmo público. Datas vêm da política
+interna do Referrals (`REFERRALS_BASE_URL`/`REFERRALS_INTERNAL_TOKEN`); falha recusa o cupom
+vinculado, sem afetar preços normais ou cupons avulsos. Expiração retorna COUPON_EXPIRED.
+Assinaturas aceitam desconto apenas na primeira cobrança, mínimo R$3. Migração 0012 habilita
+cupons nas quatro ofertas canônicas quando não há escolha explícita do Admin; preserva false.

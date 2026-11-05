@@ -47,6 +47,8 @@ export const campaigns = referralsSchema.table(
     commissionAmountCents: integer(),
     commissionAnnualAmountCents: integer(),
     commissionWindowDays: integer(),
+    schedule: jsonb().$type<CampaignInput['schedule']>(),
+    coupon: jsonb().$type<CampaignInput['coupon']>(),
     /** Público do presente (0005). Só muda em rascunho; depois, só duplicando. */
     audience: varchar({ length: 16 }).$type<GiftAudience>().notNull().default('kids'),
     createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),

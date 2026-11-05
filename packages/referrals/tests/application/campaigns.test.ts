@@ -46,6 +46,114 @@ async function setup() {
 const family = { code: input.code, email: 'responsavel@example.com', name: 'Responsável' }
 
 describe('campanhas institucionais', () => {
+  test('data de referência deriva os prazos e PATCH legado mantém calendário', async () => {
+    const { admin, campaign } = await setup()
+    const schedule = { eventDate: '2026-11-06', giftClaimDays: 3, couponClaimDays: 7 }
+    const first = await admin.update(
+      campaign.id,
+      { ...input, schedule, expectedUpdatedAt: campaign.updatedAt },
+      'Admin',
+    )
+    expect(first).toMatchObject({
+      startsAt: '2026-11-06T03:00:00.000Z',
+      endsAt: '2026-11-09T03:00:00.000Z',
+      schedule,
+    })
+    const legacy = await admin.update(
+      campaign.id,
+      { ...input, name: 'Nome alterado', expectedUpdatedAt: first!.updatedAt },
+      'Admin',
+    )
+    expect(legacy?.schedule).toEqual(schedule)
+    expect(legacy?.endsAt).toBe(first!.endsAt)
+    const moved = await admin.update(
+      campaign.id,
+      {
+        ...input,
+        schedule: { ...schedule, eventDate: '2026-11-20' },
+        expectedUpdatedAt: legacy!.updatedAt,
+      },
+      'Admin',
+    )
+    expect(moved?.endsAt).toBe('2026-11-23T03:00:00.000Z')
+  })
+
+  test('presente encerrado não encerra cupom; datas e vínculo do parceiro são independentes', async () => {
+    const referrals = new InMemoryReferralRepository()
+    const campaigns = new InMemoryCampaignRepository(referrals)
+    const ambassador = await new (
+      await import('../../src/application/ambassadors/ambassador-admin.service')
+    ).AmbassadorAdminService(
+      referrals,
+      new FakeReferralsGateway(),
+      { funnelPublicUrl: 'https://example.test', adultGiftEnabled: true },
+      silentLogger,
+    ).create({ name: 'Pessoa', email: 'pessoa@example.test' })
+    if (ambassador.kind !== 'created') throw new Error('Expected a new ambassador')
+    const link = {
+      couponId: '22222222-2222-4222-8222-222222222222',
+      offerId: '33333333-3333-4333-8333-333333333333',
+    }
+    const catalog = {
+      async get() {
+        return {
+          ...link,
+          code: 'EVENTO50',
+          offerSlug: 'desafio',
+          offerName: 'Desafio',
+          percentOff: 50,
+          amountOffCents: null,
+          currency: 'BRL',
+          accessMode: 'fixed',
+          accessDurationValue: 30,
+          accessDurationUnit: 'days',
+          available: true,
+        }
+      },
+    }
+    const admin = new CampaignAdminService(
+      campaigns,
+      referrals,
+      'https://example.test',
+      () => new Date('2026-11-10T12:00:00Z'),
+      catalog,
+    )
+    const created = await admin.create(
+      {
+        ...input,
+        ambassadorId: ambassador.ambassador.id,
+        schedule: { eventDate: '2026-11-06', giftClaimDays: 3, couponClaimDays: 7 },
+      },
+      'Admin',
+    )
+    const linked = await admin.update(
+      created!.id,
+      { ...created!, coupon: link, expectedUpdatedAt: created!.updatedAt },
+      'Admin',
+    )
+    expect(linked).toMatchObject({
+      state: 'ended',
+      couponView: { state: 'active', endsAt: '2026-11-13T03:00:00.000Z' },
+    })
+    const panel = await admin.forAmbassador(ambassador.ambassador.id)
+    expect(panel.items[0]?.couponView?.shareUrl).toContain('event_code=encontro-outubro')
+    const moved = await admin.update(
+      created!.id,
+      {
+        ...linked!,
+        schedule: { ...created!.schedule!, eventDate: '2026-11-20' },
+        expectedUpdatedAt: linked!.updatedAt,
+      },
+      'Admin',
+    )
+    expect(moved?.couponView?.state).toBe('scheduled')
+    expect(await admin.couponPolicy(created!.id)).toMatchObject({
+      startsAt: '2026-11-20T03:00:00.000Z',
+      endsAt: '2026-11-27T03:00:00.000Z',
+      ...link,
+    })
+    expect((await admin.forAmbassador('another-person')).items).toHaveLength(0)
+  })
   test('comissão anual valida centavos inteiros positivos e desabilitar limpa os valores', () => {
     const agreement = {
       ...input,

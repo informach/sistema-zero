@@ -529,7 +529,11 @@
   gap: 8px;
 }
 .emb .emb-campanha__retorno:empty {
-  display: none;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
 }
 .emb .emb-campanhas__paginacao {
   display: flex;
@@ -763,6 +767,18 @@
   border: 1px solid var(--kof-linha);
   border-radius: 14px;
   background: var(--kof-carta);
+}
+.emb .emb-campanha__cupom {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  margin-top: 8px;
+  padding-top: 24px;
+  border-top: 2px dashed var(--kof-linha);
+}
+.emb .emb-campanha__cupom .emb-input {
+  width: 100%;
 }
 .emb .emb-duvida summary {
   font-size: 1.125rem;

@@ -1,5 +1,6 @@
 import { CancelSubscriptionService } from './application/cancel-subscription/cancel-subscription.service'
 import { CreateSubscriptionService } from './application/create-subscription/create-subscription.service'
+import { FirstChargeSetupService } from './application/create-subscription/first-charge-setup.service'
 import { registerPaymentEventHandlers } from './application/event-handlers/payment-event-handlers'
 import { GetAdminPaymentService } from './application/get-admin-payment/get-admin-payment.service'
 import { GetAdminSubscriptionService } from './application/get-admin-subscription/get-admin-subscription.service'
@@ -70,6 +71,7 @@ import { DrizzleWebhookInbox } from './infrastructure/persistence/drizzle/webhoo
 import { InMemoryRateLimiter } from './infrastructure/security/rate-limiter'
 import { WebhookRateLimiter } from './infrastructure/security/webhook-rate-limiter'
 import { ChargeCreationWorker } from './infrastructure/workers/charge-creation-worker'
+import { FirstChargeSetupWorker } from './infrastructure/workers/first-charge-setup-worker'
 import { ReconciliationWorker } from './infrastructure/workers/reconciliation-worker'
 import { RecoveryAdmissionWorker } from './infrastructure/workers/recovery-admission-worker'
 import { RecoveryCaseWorker } from './infrastructure/workers/recovery-case-worker'
@@ -238,6 +240,21 @@ export function createApplication(env: Env): Application {
     logger,
   )
   const getPayment = new GetPaymentService(payments)
+  const handleSubscriptionNotification = new HandleSubscriptionNotificationService(
+    subscriptions,
+    payments,
+    gateway,
+    webhookInbox,
+    logger,
+  )
+  const firstChargeSetup = new FirstChargeSetupService(
+    subscriptions,
+    payments,
+    gateway,
+    handleSubscriptionNotification,
+    logger,
+  )
+  const firstChargeSetupWorker = new FirstChargeSetupWorker(subscriptions, firstChargeSetup, logger)
   const createSubscription = new CreateSubscriptionService(
     subscriptions,
     payments,
@@ -249,6 +266,7 @@ export function createApplication(env: Env): Application {
       idempotencyInFlightTtlSeconds: env.IDEMPOTENCY_IN_FLIGHT_TTL_SECONDS,
     },
     logger,
+    firstChargeSetup,
   )
   const getSubscription = new GetSubscriptionService(subscriptions)
   // A leitura por e-mail habilita o cancelamento SELF-SERVICE do
@@ -328,13 +346,6 @@ export function createApplication(env: Env): Application {
     },
   )
   const handleWebhook = new HandleProviderWebhookService(payments, gateway, webhookInbox, logger)
-  const handleSubscriptionNotification = new HandleSubscriptionNotificationService(
-    subscriptions,
-    payments,
-    gateway,
-    webhookInbox,
-    logger,
-  )
   const retrySubscriptionCharge = new RetrySubscriptionChargeService(
     subscriptionsMyRead,
     subscriptions,
@@ -506,6 +517,7 @@ export function createApplication(env: Env): Application {
       outboxPoller.start()
       reconciliationWorker.start()
       subscriptionReconciliationWorker.start()
+      firstChargeSetupWorker.start()
       subscriptionCancellationWorker.start()
       recoveryAdmissionWorker.start()
       recoveryCaseWorker?.start()
@@ -608,6 +620,7 @@ export function createApplication(env: Env): Application {
         chargeWorker.stop(),
         reconciliationWorker.stop(),
         subscriptionReconciliationWorker.stop(),
+        firstChargeSetupWorker.stop(),
         subscriptionCancellationWorker.stop(),
         recoveryAdmissionWorker.stop(),
         recoveryCaseWorker?.stop(),

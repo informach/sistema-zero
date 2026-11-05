@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import type { Env } from '../../src/lib/env'
 import { LEAD_COOKIE } from '../../src/lib/lead-session'
 import { clearOfferCache } from '../../src/server/catalog'
-import { startCard, startPix, startSubscription } from '../../src/server/checkout'
+import { quoteCheckout, startCard, startPix, startSubscription } from '../../src/server/checkout'
 import { makeFulfill } from '../../src/server/fulfillment'
 import { makeExtendMembersForCycle, makeGrantMembers } from '../../src/server/members-grant'
 import { makeResolveOffer } from '../../src/server/offer'
@@ -108,6 +108,49 @@ beforeEach(() => {
 })
 
 describe('POST /api/checkout/subscription', () => {
+  test('prévia do cupom usa o plano escolhido e recusa oferta fora do alternador', async () => {
+    const { repo } = createFakeRepo()
+    const gw = subscriptionGateway()
+    gw.addCoupon('FIRST10', 1000)
+    const id = await readyLead(repo)
+    const response = await quoteCheckout(
+      req(cookieFor(id), { offerSlug: ANNUAL, couponCode: 'FIRST10' }),
+      deps(repo, gw),
+    )
+    expect(response.status).toBe(200)
+    expect(await response.json()).toMatchObject({ ok: true, finalPriceCents: 46000 })
+    const forged = await quoteCheckout(
+      req(cookieFor(id), { offerSlug: 'outro-curso', couponCode: 'FIRST10' }),
+      deps(repo, gw),
+    )
+    expect(forged.status).toBe(400)
+    expect(gw.calls.createSubscription).toHaveLength(0)
+  })
+  test.each([
+    MONTHLY,
+    ANNUAL,
+  ])('cupom em %s reduz a primeira cobrança e preserva o preço das renovações', async (offerSlug) => {
+    const { repo, payments } = createFakeRepo()
+    const gw = subscriptionGateway()
+    gw.addCoupon('FIRST10', 1000)
+    const id = await readyLead(repo)
+    const response = await startSubscription(
+      req(cookieFor(id), { ...SUB_CARD, offerSlug, couponCode: 'FIRST10' }),
+      deps(repo, gw),
+    )
+    expect(response.status).toBe(200)
+    const full = offerSlug === MONTHLY ? 4700 : 47000
+    expect(gw.calls.createSubscription[0]?.input).toMatchObject({
+      amountInCents: full,
+      firstChargeAmountInCents: full - 1000,
+      metadata: { couponCode: 'FIRST10' },
+    })
+    const body = (await response.json()) as { paymentId: string }
+    expect(payments.get(body.paymentId)?.couponCode).toBe('FIRST10')
+    expect(payments.get(body.paymentId)?.offerSnapshot).toMatchObject({
+      pricingMode: 'subscription',
+    })
+  })
   test.each([
     ['kids/comunidade-dos-criadores', 'kids'],
     ['pro/comunidade-dos-criadores', 'adult'],
@@ -359,7 +402,7 @@ describe('métodos por modo de oferta', () => {
     } satisfies Partial<PurchasedOfferSnapshotV1>)
   })
 
-  test('cupom em assinatura anual à vista → 422 COUPON_NOT_ALLOWED', async () => {
+  test('cupom no anual Pix reduz somente esta compra de 12 meses', async () => {
     const { repo } = createFakeRepo()
     const gw = subscriptionGateway()
     gw.addCoupon('PROMO10', 1000)
@@ -369,11 +412,12 @@ describe('métodos por modo de oferta', () => {
       req(cookieFor(id), { contact: CONTACT, offerSlug: ANNUAL, couponCode: 'PROMO10' }),
       deps(repo, gw),
     )
-    expect(res.status).toBe(422)
-    expect(((await res.json()) as { error: { code: string } }).error.code).toBe(
-      'COUPON_NOT_ALLOWED',
-    )
-    expect(gw.calls.create).toHaveLength(0)
+    expect(res.status).toBe(200)
+    expect(gw.calls.create[0]?.input).toMatchObject({
+      amountInCents: 46000,
+      method: 'PIX',
+      metadata: { couponCode: 'PROMO10' },
+    })
   })
 })
 

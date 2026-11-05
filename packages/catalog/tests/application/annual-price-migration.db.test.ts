@@ -92,4 +92,25 @@ describe.skipIf(!base)('annual price migration — real PostgreSQL', () => {
       (await sql`select price_cents from catalog.offers where slug = ${adult}`)[0]!.price_cents,
     ).toBe(79700)
   })
+
+  test('cupom de assinatura habilita somente ofertas canônicas sem decisão explícita do Admin', async () => {
+    const couponMigration = readFileSync(path.join(folder, '0012_subscription-coupons.sql'), 'utf8')
+    await sql`update catalog.offers set currency='BRL', content='{"badge":"preservado"}'::jsonb where slug='comunidade-dos-criadores-mensal'`
+    await sql`update catalog.offers set content='{"allowsCoupon":false}'::jsonb where slug='comunidade-dos-criadores-anual'`
+    await sql.unsafe(couponMigration)
+    const rows =
+      await sql`select slug, content, version, price_cents from catalog.offers order by slug`
+    expect(rows.find((r) => r.slug === 'comunidade-dos-criadores-mensal')?.content).toEqual({
+      badge: 'preservado',
+      allowsCoupon: true,
+    })
+    expect(rows.find((r) => r.slug === 'comunidade-dos-criadores-anual')?.content).toEqual({
+      allowsCoupon: false,
+    })
+    expect(rows.find((r) => r.slug === 'other-annual')?.content?.allowsCoupon).toBeUndefined()
+    await sql.unsafe(couponMigration)
+    expect([
+      ...(await sql`select slug, content, version, price_cents from catalog.offers order by slug`),
+    ]).toEqual([...rows])
+  })
 })

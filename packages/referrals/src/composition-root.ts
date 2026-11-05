@@ -6,6 +6,7 @@ import { SweepConversionsService } from './application/conversions/sweep-convers
 import { CreateInviteService } from './application/invites/create-invite.service'
 import { RedeemScholarshipService } from './application/redeem-scholarship/redeem-scholarship.service'
 import type { Env } from './infrastructure/config/env'
+import { CampaignCouponCatalogHttpClient } from './infrastructure/gateways/campaign-coupon-catalog.client'
 import { CatalogHttpClient } from './infrastructure/gateways/catalog-http.client'
 import {
   createNullReferralsGateway,
@@ -33,7 +34,17 @@ export function createApplication(env: Env): Application {
   const connection = createDbConnection(env.DATABASE_URL, { max: env.DATABASE_POOL_MAX })
   const repo = new DrizzleReferralRepository(connection.db)
   const campaignRepo = new DrizzleCampaignRepository(connection.db)
-  const campaigns = new CampaignAdminService(campaignRepo, repo, env.FUNNEL_PUBLIC_URL)
+  const campaigns = new CampaignAdminService(
+    campaignRepo,
+    repo,
+    env.FUNNEL_PUBLIC_URL,
+    undefined,
+    new CampaignCouponCatalogHttpClient({
+      baseUrl: env.CATALOG_BASE_URL,
+      internalToken: env.CATALOG_INTERNAL_TOKEN,
+      timeoutMs: env.S2S_TIMEOUT_MS,
+    }),
+  )
 
   // Todas as integrações via gateway (consumer HMAC `referrals`). Sem
   // credenciais (dev local) → no-op: leituras 502, envios "não saíram".

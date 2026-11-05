@@ -43,6 +43,8 @@ function values(input: CampaignInput) {
     startsAt: new Date(input.startsAt),
     endsAt: new Date(input.endsAt),
     channel: input.channel,
+    schedule: input.schedule ?? null,
+    coupon: input.coupon ?? null,
     audience: input.audience ?? 'kids',
     ambassadorId: input.ambassadorId ?? null,
     commissionEnabled: input.commissionEnabled ?? false,

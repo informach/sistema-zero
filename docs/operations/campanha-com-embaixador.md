@@ -41,7 +41,7 @@ Não recriar o índice antigo nem voltar para um binário que desconheça `super
 
 ## Laopa
 
-Em 05/11/2026, o operador autorizou cadastrar Vivianne Lima e a campanha da palestra na
+Em 05/11/2026, o operador autorizou cadastrar a embaixadora da campanha e a campanha da palestra na
 clínica Laopa em produção, com vínculo e comissões padrão: R$ 30 no mensal e R$ 80 no anual.
 Público Kids, resgates de 06/11 00:00 até 09/11 00:00 (fim de 08/11), horário de Brasília;
 janela de comissão de 45 dias após o resgate. Envio do acesso por e-mail explicitamente autorizado.

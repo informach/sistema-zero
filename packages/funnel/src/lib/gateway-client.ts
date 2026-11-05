@@ -139,6 +139,7 @@ export interface GrantMembersInput {
 /** Corpo de `POST /subscriptions` (gateway → payments): assinatura de cartão. */
 export interface CreateSubscriptionInput {
   amountInCents: number
+  firstChargeAmountInCents?: number
   /** Mensal = 1, anual = 12 (da oferta do catálogo). */
   intervalMonths: number
   description: string

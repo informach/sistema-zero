@@ -4,6 +4,23 @@ import type { CampaignAdminService } from '../../application/campaigns/campaign-
 import { assertInternalCaller, decodeIdentityHeader, requireAdmin } from './auth'
 
 const campaignBody = t.Object({
+  coupon: t.Optional(
+    t.Nullable(
+      t.Object({
+        couponId: t.String({ format: 'uuid' }),
+        offerId: t.String({ format: 'uuid' }),
+      }),
+    ),
+  ),
+  schedule: t.Optional(
+    t.Nullable(
+      t.Object({
+        eventDate: t.String({ pattern: '^20[0-9]{2}-[0-9]{2}-[0-9]{2}$' }),
+        giftClaimDays: t.Integer({ minimum: 1, maximum: 365 }),
+        couponClaimDays: t.Integer({ minimum: 1, maximum: 365 }),
+      }),
+    ),
+  ),
   name: t.String({ minLength: 2, maxLength: 120 }),
   publicTitle: t.String({ minLength: 2, maxLength: 160 }),
   description: t.String({ maxLength: 600 }),

@@ -456,6 +456,7 @@ export class FakePixGateway implements PaymentGateway {
 
   async getSubscription(providerSubscriptionId: string): Promise<ProviderSubscription> {
     return {
+      amountInCents: this.recurringAmounts.get(providerSubscriptionId),
       providerSubscriptionId,
       status: this.subscriptionStatus,
       charges: await this.listSubscriptionCharges(providerSubscriptionId),
@@ -464,6 +465,37 @@ export class FakePixGateway implements PaymentGateway {
   }
 
   subscriptionNextExecution?: string
+  readonly recurringAmounts = new Map<string, bigint>()
+  preparationCount = 0
+  activationCount = 0
+  failUpdateSubscriptionAmount = false
+  async prepareCardSubscription(
+    input: Pick<CreateCardSubscriptionInput, 'subscriptionId' | 'planId' | 'amount' | 'itemName'>,
+  ) {
+    this.preparationCount++
+    const providerSubscriptionId = `sub-${input.subscriptionId.slice(0, 8)}`
+    const firstChargeId = `subcharge-${input.subscriptionId.slice(0, 8)}`
+    this.amountByCardChargeId.set(firstChargeId, input.amount.amountInCents)
+    this.recurringAmounts.set(providerSubscriptionId, input.amount.amountInCents)
+    return { providerSubscriptionId, firstChargeId }
+  }
+  async activateCardSubscription(
+    id: string,
+    input: CreateCardSubscriptionInput,
+  ): Promise<CreateCardSubscriptionOutput> {
+    this.activationCount++
+    if (this.failSubscriptionCreate) throw new Error('Ambiguous activation')
+    return {
+      providerSubscriptionId: id,
+      firstChargeId: `subcharge-${input.subscriptionId.slice(0, 8)}`,
+      status: this.subscriptionStatus,
+      firstChargeStatus: this.firstChargeStatus,
+    }
+  }
+  async updateSubscriptionAmount(id: string, amount: Money): Promise<void> {
+    if (this.failUpdateSubscriptionAmount) throw new Error('Price update unavailable')
+    this.recurringAmounts.set(id, amount.amountInCents)
+  }
 
   /**
    * Histórico de ciclos por assinatura no provedor (o que a reconciliação varre).
@@ -689,6 +721,19 @@ export class InMemorySubscriptionRepository implements SubscriptionRepository {
     const claimedAt = new Date()
     for (const subscription of claimed) this.lastReconciledAt.set(subscription.id, claimedAt)
     return claimed.map((s) => SubscriptionAggregate.restore(s.toSnapshot()))
+  }
+
+  async claimFirstChargeSetups(limit: number): Promise<SubscriptionAggregate[]> {
+    return [...this.byId.values()]
+      .filter(
+        (s) =>
+          s.firstChargePricing &&
+          !s.firstChargePricing.renewalPriceConfirmed &&
+          s.providerSubscriptionId &&
+          ['ACTIVE', 'PENDING'].includes(s.status),
+      )
+      .slice(0, limit)
+      .map((s) => SubscriptionAggregate.restore(s.toSnapshot()))
   }
 
   async claimCancellationRequests(

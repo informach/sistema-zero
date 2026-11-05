@@ -85,6 +85,13 @@
       "when": 1793869666823,
       "tag": "0011_community-annual-970",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1793879797043,
+      "tag": "0012_subscription-coupons",
+      "breakpoints": true
     }
   ]
 }

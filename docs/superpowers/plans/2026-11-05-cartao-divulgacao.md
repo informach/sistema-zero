@@ -20,5 +20,5 @@ hosts fornecem copy e URL do serviço. Sem nova API, tabela ou serviço.
   título longo, falha/retry, telas estreitas e diálogo aninhado. Executar typechecks/checks
   dos pacotes alterados e testes existentes relacionados; revisar diff e correções.
 - [ ] Atualizar PR 244, CI/plano da versão final, deploy staging/produção e verificação.
-- [ ] Cadastrar Vivianne e campanha Laopa pela aplicação publicada, sem duplicação; guardar
+- [ ] Cadastrar a embaixadora da campanha e campanha Laopa pela aplicação publicada, sem duplicação; guardar
   recibo privado e conferir link, estado agendado, público, prazo e comissões.

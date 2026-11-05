@@ -211,6 +211,8 @@ export interface CreateCardSubscriptionOutput {
 }
 
 export interface ProviderSubscription {
+  /** Current recurring item total, when supplied by the provider. */
+  amountInCents?: bigint
   providerSubscriptionId: string
   status: ProviderSubscriptionStatus
   charges: ProviderSubscriptionCharge[]
@@ -290,6 +292,18 @@ export interface PaymentGateway {
    * não há cobrança recorrente disparada por nós. PAN nunca trafega aqui.
    */
   createCardSubscription(input: CreateCardSubscriptionInput): Promise<CreateCardSubscriptionOutput>
+  prepareCardSubscription(
+    input: Pick<CreateCardSubscriptionInput, 'subscriptionId' | 'planId' | 'amount' | 'itemName'>,
+  ): Promise<{ providerSubscriptionId: string; firstChargeId: string }>
+  activateCardSubscription(
+    providerSubscriptionId: string,
+    input: CreateCardSubscriptionInput,
+  ): Promise<CreateCardSubscriptionOutput>
+  updateSubscriptionAmount(
+    providerSubscriptionId: string,
+    amount: Money,
+    itemName: string,
+  ): Promise<void>
 
   /** Re-consulta o estado da assinatura no provedor (reconciliação/cancelamento). */
   getSubscription(providerSubscriptionId: string): Promise<ProviderSubscription>

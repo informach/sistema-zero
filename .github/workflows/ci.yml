@@ -625,6 +625,12 @@ jobs:
       - name: Cartões de divulgação com QR legível no PNG
         run: node packages/ui/tests/share-card-browser.mjs
 
+      - name: Calendário, cupom e cartões no Admin Kids e Adultos
+        run: node packages/admin/tests/campaign-browser.mjs
+
+      - name: Cupom de assinatura e recuperação da mesma tentativa no checkout
+        run: node packages/funnel/tests/browser/subscription-checkout.mjs
+
       - name: Aula responsiva e objetivos do Estúdio
         working-directory: packages/community-kids
         run: bun run e2e:lesson-layout

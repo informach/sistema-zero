@@ -1101,6 +1101,7 @@ export interface OfferListItem {
 }
 
 export interface CouponView {
+  metadata?: Record<string, unknown> | null
   audience: 'kids' | 'adult'
   id: string
   version: number

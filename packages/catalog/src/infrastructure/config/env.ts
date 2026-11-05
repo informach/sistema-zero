@@ -31,6 +31,8 @@ const EnvSchema = z
 
     DATABASE_URL: z.string().min(1, 'DATABASE_URL é obrigatória'),
     DATABASE_POOL_MAX: z.coerce.number().int().positive().default(10),
+    REFERRALS_BASE_URL: z.string().url().optional(),
+    REFERRALS_INTERNAL_TOKEN: z.string().min(16).optional(),
 
     // TTL (ms) do micro-cache das leituras PÚBLICAS por slug (oferta/produto —
     // hot path da página de vendas do funil). Ausente → 30s em produção, 0

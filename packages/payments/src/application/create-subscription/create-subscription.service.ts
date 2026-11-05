@@ -17,6 +17,7 @@ import type { Logger } from '../../infrastructure/logging/logger'
 import { type SubscriptionView, toSubscriptionView } from '../mappers/subscription-view'
 import { buildCyclePayment } from '../subscription/cycle-payment'
 import type { CreateSubscriptionCommand } from './create-subscription.command'
+import type { FirstChargeSetupService } from './first-charge-setup.service'
 
 export interface CreateSubscriptionConfig {
   idempotencyTtlSeconds: number
@@ -39,6 +40,7 @@ export class CreateSubscriptionService {
     private readonly idempotency: IdempotencyStore,
     private readonly config: CreateSubscriptionConfig,
     private readonly logger: Logger,
+    private readonly firstChargeSetup?: FirstChargeSetupService,
   ) {}
 
   async execute(command: CreateSubscriptionCommand): Promise<SubscriptionView> {
@@ -85,7 +87,10 @@ export class CreateSubscriptionService {
         )
 
         if (recovered) {
-          const view = toSubscriptionView(recovered)
+          const view =
+            recovered.firstChargePricing && this.firstChargeSetup
+              ? await this.firstChargeSetup.view(recovered)
+              : toSubscriptionView(recovered)
           await this.idempotency.complete({
             consumerId: command.consumerId,
             key: command.idempotencyKey,
@@ -121,6 +126,21 @@ export class CreateSubscriptionService {
     sideEffects: { committed: boolean },
   ): Promise<SubscriptionView> {
     const amount = Money.fromCents(command.amountInCents)
+    if (command.firstChargeAmountInCents !== undefined) {
+      if (!this.firstChargeSetup)
+        throw new ValidationError('Primeira cobrança promocional indisponível')
+      if (
+        !Number.isSafeInteger(command.firstChargeAmountInCents) ||
+        command.firstChargeAmountInCents < 300 ||
+        command.firstChargeAmountInCents >= command.amountInCents
+      )
+        throw new ValidationError('Valor da primeira cobrança inválido')
+      const existing = await this.subscriptions.findByIdempotencyKey(
+        command.consumerId,
+        command.idempotencyKey,
+      )
+      if (existing) return this.firstChargeSetup.view(existing)
+    }
     const idempotencyKey = IdempotencyKey.create(command.idempotencyKey)
 
     // Assinatura de cartão exige pagador completo + nascimento + endereço de cobrança.
@@ -164,9 +184,28 @@ export class CreateSubscriptionService {
       customer,
       description: command.description,
       metadata: command.metadata,
+      firstChargeAmountInCents: command.firstChargeAmountInCents,
     })
 
     sideEffects.committed = true
+    if (command.firstChargeAmountInCents !== undefined && this.firstChargeSetup) {
+      return this.firstChargeSetup.create(subscription, {
+        subscriptionId: subscription.id,
+        planId,
+        amount: Money.fromCents(command.firstChargeAmountInCents),
+        itemName: command.description,
+        paymentToken: command.card.token,
+        customer: {
+          name: customer.name,
+          cpf: customer.document.value,
+          email: customer.email,
+          phone: customer.phone,
+          birth,
+        },
+        billingAddress: customer.address,
+        description: command.description,
+      })
+    }
     const created = await this.gateway.createCardSubscription({
       subscriptionId: subscription.id,
       planId,

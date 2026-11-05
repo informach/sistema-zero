@@ -403,3 +403,12 @@ Contrato client-safe em `@sistemazero/core/referrals` (`GiftAudience`, `Ambassad
 - **Deploy:** `COMMUNITY_URL` (e `SCHOLARSHIP_ADULT_COURSE_SLUG`, se sair do default) precisam ser
   criadas no painel do Railway do referrals (staging e produção) e declaradas em
   `.railway/variables.ts` (`common.referrals`), senão o gate lê exclusão.
+
+## Calendário e cupom de campanha (05/11/2026)
+
+`schedule` deriva início e fins exclusivos em America/Sao_Paulo. Alterar a data recalcula
+novos resgates e uso do cupom, preservando direitos/termos já capturados. `coupon` guarda
+somente IDs; o Catálogo valida desconto, oferta e público. O endpoint interno de política
+exige token e usa o estado persistido da campanha, sem encerrar o cupom junto com o presente.
+`CATALOG_INTERNAL_TOKEN` permite consultar os termos para cartões e painel somente leitura.
+A migração 0009 acrescenta JSONB nullable; campanhas legadas mantêm datas manuais.

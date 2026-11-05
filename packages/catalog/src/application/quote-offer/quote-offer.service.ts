@@ -1,6 +1,12 @@
-import { CouponNotApplicableError, CouponNotFoundError } from '../../domain/coupon/coupon.errors'
+import { couponCampaignId } from '../../domain/coupon/campaign-coupon'
+import {
+  CouponExpiredError,
+  CouponNotApplicableError,
+  CouponNotFoundError,
+} from '../../domain/coupon/coupon.errors'
 import type { OfferAggregate } from '../../domain/offer/offer.aggregate'
 import { OfferNotAvailableError, OfferNotFoundError } from '../../domain/offer/offer.errors'
+import type { CampaignPolicyClient } from '../../domain/ports/campaign-policy.port'
 import type { CouponRepository } from '../../domain/ports/coupon-repository.port'
 import type { OfferRepository } from '../../domain/ports/offer-repository.port'
 import type { ProductRepository } from '../../domain/ports/product-repository.port'
@@ -27,6 +33,8 @@ export class QuoteOfferService {
     private readonly coupons: CouponRepository,
     private readonly products: ProductRepository,
     private readonly resolver: ResolveOfferEntitlementsService,
+    private readonly campaignPolicy?: CampaignPolicyClient,
+    private readonly now: () => number = Date.now,
   ) {}
 
   async execute(command: QuoteOfferCommand): Promise<OfferQuoteView> {
@@ -64,6 +72,28 @@ export class QuoteOfferService {
       throw new CouponNotApplicableError('Cupom desabilitado para esta oferta')
     }
     coupon.assertApplicable(offer.id, priceCents)
+    const campaignId = couponCampaignId(coupon.metadata)
+    if (campaignId) {
+      const policy = await this.campaignPolicy?.get(campaignId)
+      const now = this.now()
+      if (
+        policy &&
+        policy.couponId === coupon.id &&
+        policy.offerId === offer.id &&
+        policy.audience === audience &&
+        policy.status !== 'draft' &&
+        now >= Date.parse(policy.endsAt)
+      )
+        throw new CouponExpiredError()
+      if (
+        policy?.status !== 'active' ||
+        policy.couponId !== coupon.id ||
+        policy.offerId !== offer.id ||
+        policy.audience !== audience ||
+        !(Date.parse(policy.startsAt) <= now && now < Date.parse(policy.endsAt))
+      )
+        throw new CouponNotApplicableError('O cupom não está disponível no período desta campanha.')
+    }
 
     const discountCents = coupon.computeDiscountCents(priceCents)
     const finalPriceCents = priceCents - discountCents
@@ -73,6 +103,10 @@ export class QuoteOfferService {
     if (finalPriceCents <= 0) {
       throw new CouponNotApplicableError('Cupom não pode zerar o valor da compra')
     }
+    if (offer.pricingMode === 'subscription' && finalPriceCents < 300)
+      throw new CouponNotApplicableError(
+        'A primeira cobrança da assinatura deve ser de pelo menos R$ 3,00.',
+      )
     return {
       ...base,
       discountCents,

@@ -28,6 +28,7 @@ export interface AltOfferInfo {
   label: string | null
   priceCents: number
   billingIntervalMonths: number | null
+  allowsCoupon?: boolean
 }
 
 /** Sufixo de preço por periodicidade ("/mês", "/ano"; vazio = pagamento único). */
@@ -150,7 +151,8 @@ export default function CheckoutForm({
   // Métodos por modo: avulso = Pix + cartão; assinatura mensal = SÓ cartão
   // recorrente; assinatura ANUAL = cartão recorrente E Pix à vista (12 meses).
   const pixAvailable = !chosen.isSubscription || chosen.interval === 12
-  const couponAllowed = allowCoupon && !chosen.isSubscription
+  const couponAllowed =
+    choice === 'alt' && altOffer ? (altOffer.allowsCoupon ?? allowCoupon) : allowCoupon
 
   const [method, setMethod] = useState<Method>(pixAvailable ? 'pix' : 'cartao')
   // Trocar p/ uma escolha sem Pix (mensal) precisa mover a seleção p/ o cartão.
@@ -175,6 +177,7 @@ export default function CheckoutForm({
   )
   const [applying, setApplying] = useState(false)
   const [termsAccepted, setTermsAccepted] = useState(false)
+  const [cardPending, setCardPending] = useState(false)
 
   const finalCents = Math.max(0, chosen.priceCents - (couponAllowed ? discountCents : 0))
   const couponCode = couponAllowed ? (appliedCode ?? undefined) : undefined
@@ -208,7 +211,10 @@ export default function CheckoutForm({
     setApplying(true)
     setCouponMsg(null)
     try {
-      const r = await apiPost<QuoteResp>('/api/checkout/quote', { couponCode: code })
+      const r = await apiPost<QuoteResp>('/api/checkout/quote', {
+        couponCode: code,
+        offerSlug: chosen.slug,
+      })
       if (r.ok && r.couponCode) {
         setAppliedCode(r.couponCode)
         setDiscountCents(r.discountCents)
@@ -246,6 +252,23 @@ export default function CheckoutForm({
     removeCoupon()
   }
 
+  function selectPlan(next: 'main' | 'alt') {
+    if (next === choice || applying || cardPending) return
+    setChoice(next)
+    setAppliedCode(null)
+    setDiscountCents(0)
+    setCouponDecisionRequired(Boolean(couponInput.trim()))
+    setCouponMsg(
+      couponInput.trim() ? 'Confira o cupom para o novo plano antes de continuar.' : null,
+    )
+    setTermsAccepted(false)
+    const url = new URL(window.location.href)
+    const slug = next === 'alt' ? altOffer?.slug : offerSlug
+    if (slug) url.searchParams.set('oferta', slug)
+    else url.searchParams.delete('oferta')
+    window.history.replaceState({}, '', url)
+  }
+
   function syncCouponInUrl(code: string | null) {
     const url = new URL(window.location.href)
     url.searchParams.delete('coupon')
@@ -267,20 +290,20 @@ export default function CheckoutForm({
     >
       {/* Alternador mensal ↔ anual (ofertas irmãs do catálogo). */}
       {altOffer && (
-        <fieldset>
+        <fieldset disabled={applying || cardPending}>
           <legend className="text-lg font-bold text-ink">Escolha o seu plano</legend>
           <div className="checkout-plan-grid mt-3 grid grid-cols-2 gap-3">
             <PlanCard
               id="plano-principal"
               checked={choice === 'main'}
-              onSelect={() => setChoice('main')}
+              onSelect={() => selectPlan('main')}
               title={billingIntervalMonths === 12 ? 'Anual' : 'Mensal'}
               price={`${formatBRLFromCents2(priceCents)}${intervalSuffix(billingIntervalMonths)}`}
             />
             <PlanCard
               id="plano-alternativo"
               checked={choice === 'alt'}
-              onSelect={() => setChoice('alt')}
+              onSelect={() => selectPlan('alt')}
               title={altOffer.billingIntervalMonths === 12 ? 'Anual' : 'Mensal'}
               price={`${formatBRLFromCents2(altOffer.priceCents)}${intervalSuffix(altOffer.billingIntervalMonths)}`}
               badge={altOffer.label ?? undefined}
@@ -289,9 +312,9 @@ export default function CheckoutForm({
         </fieldset>
       )}
 
-      {/* Cupom de desconto — só nas ofertas que o habilitam (catálogo); nunca em assinatura. */}
+      {/* Cupom de desconto nas ofertas habilitadas pelo catálogo. */}
       {couponAllowed && (
-        <div>
+        <fieldset disabled={cardPending}>
           <label htmlFor="coupon" className="mb-1 block text-sm font-semibold text-ink">
             {isChallenge
               ? 'Recebeu um código em uma escola, clínica ou palestra?'
@@ -350,9 +373,28 @@ export default function CheckoutForm({
               <span className="text-xs line-through">{formatBRLFromCents2(chosen.priceCents)}</span>
             </p>
           )}
-        </div>
+        </fieldset>
       )}
 
+      {chosen.isSubscription && couponCode && discountCents > 0 && (
+        <section
+          aria-label="Resumo da assinatura"
+          className="checkout-summary rounded-2xl border border-line/70 bg-card/40 p-4 sm:p-5"
+        >
+          <h2 className="text-lg font-bold text-ink">Seu desconto de boas-vindas</h2>
+          <dl className="mt-3 space-y-2 text-sm">
+            <SummaryRow label="Primeira cobrança" value={formatBRLFromCents2(finalCents)} strong />
+            <SummaryRow
+              label="Próximas cobranças"
+              value={`${formatBRLFromCents2(chosen.priceCents)}${chosen.interval === 12 ? '/ano' : '/mês'}`}
+            />
+          </dl>
+          <p className="mt-3 text-sm text-muted">
+            O cupom vale apenas na primeira cobrança. No cartão, a renovação é automática pelo valor
+            integral. No Pix anual, você paga uma vez e renova manualmente ao fim dos 12 meses.
+          </p>
+        </section>
+      )}
       {!chosen.isSubscription && (
         <section
           aria-label="Resumo da compra"
@@ -463,6 +505,7 @@ export default function CheckoutForm({
         <input
           type="checkbox"
           name="termsAccepted"
+          disabled={cardPending}
           checked={termsAccepted}
           onChange={(event) => setTermsAccepted(event.target.checked)}
           className="mt-0.5 h-4 w-4 shrink-0 accent-lime"
@@ -502,6 +545,7 @@ export default function CheckoutForm({
           {pixAvailable && (
             <MethodCard
               id="metodo-pix"
+              disabled={cardPending}
               checked={effectiveMethod === 'pix'}
               onSelect={() => setMethod('pix')}
               label={chosen.isSubscription ? 'Pix (1 ano à vista)' : 'Pix'}
@@ -519,8 +563,8 @@ export default function CheckoutForm({
             >
               {chosen.isSubscription && (
                 <p className="mb-3 text-sm text-muted">
-                  Você paga {formatBRLFromCents2(chosen.priceCents)} uma vez e garante 12 meses de
-                  acesso. Perto do fim, a gente te avisa por e-mail para renovar.
+                  Você paga {formatBRLFromCents2(finalCents)} uma vez e garante 12 meses de acesso.
+                  Perto do fim, a gente te avisa por e-mail para renovar.
                 </p>
               )}
               {purchaseGate ? (
@@ -538,6 +582,7 @@ export default function CheckoutForm({
 
           <MethodCard
             id="metodo-cartao"
+            disabled={cardPending}
             checked={effectiveMethod === 'cartao'}
             onSelect={() => setMethod('cartao')}
             label={
@@ -570,8 +615,10 @@ export default function CheckoutForm({
               <PaymentGate message={purchaseGate} />
             ) : (
               <CardCheckout
+                onPendingChange={setCardPending}
                 contact={contact}
-                priceCents={chosen.isSubscription ? chosen.priceCents : finalCents}
+                priceCents={finalCents}
+                renewalPriceCents={chosen.isSubscription ? chosen.priceCents : undefined}
                 couponCode={couponCode}
                 successPath={successPath}
                 installmentsMax={installmentsMax}
@@ -670,6 +717,7 @@ function PlanCard({
 
 /** Radio-card de forma de pagamento (estilo Hotmart): painel expande no selecionado. */
 function MethodCard({
+  disabled = false,
   id,
   checked,
   onSelect,
@@ -677,6 +725,7 @@ function MethodCard({
   icon,
   children,
 }: {
+  disabled?: boolean
   id: string
   checked: boolean
   onSelect: () => void
@@ -699,6 +748,7 @@ function MethodCard({
           id={id}
           type="radio"
           name="forma-de-pagamento"
+          disabled={disabled}
           checked={checked}
           onChange={onSelect}
           className="h-4 w-4 accent-lime"

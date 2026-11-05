@@ -355,23 +355,14 @@ export async function startPix(request: Request, deps: CheckoutDeps): Promise<Re
   if (offer.pricingMode === 'subscription' && interval !== 12) {
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
   }
-  // Cupom NÃO se aplica a oferta de assinatura (o valor vira o preço de TODOS os
-  // ciclos/renovações — desconto perpétuo silencioso). A UI nem exibe o campo.
-  if (interval && c.couponCode?.trim()) {
-    return jsonError('Cupom não se aplica a assinaturas.', 422, 'COUPON_NOT_ALLOWED')
-  }
-
   // Preço AUTORITATIVO (catálogo) + cupom opcional do corpo.
-  const charge = await resolveCharge(deps.gateway, offerSlug, interval ? undefined : c.couponCode)
+  const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
   const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
   if (charge.pricingMode === 'subscription' && !annualUpfront) {
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
-  }
-  if (charge.pricingMode === 'subscription' && c.couponCode?.trim()) {
-    return jsonError('Cupom não se aplica a assinaturas.', 422, 'COUPON_NOT_ALLOWED')
   }
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
     termsVersion: termsVersionForFunnel(lead.funnel),
@@ -468,24 +459,14 @@ export async function startBoleto(request: Request, deps: CheckoutDeps): Promise
   if (offer.pricingMode === 'subscription' && interval !== 12) {
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
   }
-  if (interval && form.couponCode?.trim()) {
-    return jsonError('Cupom não se aplica a assinaturas.', 422, 'COUPON_NOT_ALLOWED')
-  }
 
-  const charge = await resolveCharge(
-    deps.gateway,
-    offerSlug,
-    interval ? undefined : form.couponCode,
-  )
+  const charge = await resolveCharge(deps.gateway, offerSlug, form.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
   const annualUpfront = charge.pricingMode === 'subscription' && charge.billingIntervalMonths === 12
   if (charge.pricingMode === 'subscription' && !annualUpfront) {
     return jsonError('Assinatura mensal é só no cartão.', 409, 'SUBSCRIPTION_CARD_ONLY')
-  }
-  if (charge.pricingMode === 'subscription' && form.couponCode?.trim()) {
-    return jsonError('Cupom não se aplica a assinaturas.', 422, 'COUPON_NOT_ALLOWED')
   }
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
     termsVersion: termsVersionForFunnel(lead.funnel),
@@ -680,8 +661,8 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
     return jsonError('Esta oferta não é uma assinatura.', 409, 'NOT_SUBSCRIPTION')
   }
 
-  // Preço AUTORITATIVO da oferta (SEM cupom — vira o plano de TODOS os ciclos).
-  const charge = await resolveCharge(deps.gateway, offerSlug)
+  // Quote authorizes the first charge. Recurrence always receives the undiscounted price.
+  const charge = await resolveCharge(deps.gateway, offerSlug, c.couponCode)
   if (!charge.ok) return jsonError(charge.message, charge.status, charge.code)
   const contractError = checkoutContractError(offerContract, charge, deps.log)
   if (contractError) return contractError
@@ -692,12 +673,13 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   const offerSnapshot = createPurchasedOfferSnapshot(charge, {
     termsVersion: termsVersionForFunnel(lead.funnel),
   })
-  await persistCheckoutContext(deps, lead.id, offerSlug, null)
+  await persistCheckoutContext(deps, lead.id, offerSlug, charge.couponCode)
 
   // Nonce por tentativa (como o cartão avulso): recusa pode re-tentar sem replay.
   const idempotencyKey = `funil-${lead.id}-sub-${c.attemptId}`
   const input = {
-    amountInCents: charge.amountInCents,
+    amountInCents: charge.listPriceCents,
+    ...(charge.discountCents > 0 ? { firstChargeAmountInCents: charge.amountInCents } : {}),
     intervalMonths: authoritativeInterval,
     description: productName,
     customer: {
@@ -732,7 +714,7 @@ export async function startSubscription(request: Request, deps: CheckoutDeps): P
   // dela resolve o lead; o grant referencia a cobrança certa).
   const firstPayment = view.firstPayment ?? null
   if (firstPayment) {
-    await deps.repo.setPayment(lead.id, firstPayment.id, null, {
+    await deps.repo.setPayment(lead.id, firstPayment.id, charge.couponCode, {
       offerRef: offerSlug,
       nome: lead.nome,
       email: lead.email,
@@ -862,11 +844,21 @@ export async function quoteCheckout(
   request: Request,
   deps: Pick<CheckoutDeps, 'gateway' | 'repo' | 'resolveOffer'>,
 ): Promise<Response> {
-  const couponCode = readCouponCode(await safeJson(request))
+  const body = await safeJson(request)
+  const couponCode = readCouponCode(body)
+  const requestedSlug =
+    body && typeof body === 'object' && 'offerSlug' in body ? body.offerSlug : undefined
+  if (
+    requestedSlug !== undefined &&
+    (typeof requestedSlug !== 'string' || !requestedSlug || requestedSlug.length > 200)
+  )
+    return jsonError('Oferta inválida para este checkout.', 400, 'INVALID_OFFER')
   // A oferta a cotar vem do FUNIL do lead (cookie); sem lead → funil default.
   const leadId = getLeadId(request)
   const lead = leadId ? await deps.repo.getLead(leadId) : null
-  const { offerSlug } = deps.resolveOffer(lead?.funnel ?? null)
+  const chosen = await resolveChosenOffer(deps, lead?.funnel ?? null, requestedSlug)
+  if (!chosen.ok) return chosen.response
+  const { offerSlug } = chosen
   const result = await quotePreview(deps.gateway, offerSlug, couponCode)
   if ('error' in result) {
     const code = result.status === 409 ? 'OFFER_UNAVAILABLE' : 'CATALOG_ERROR'

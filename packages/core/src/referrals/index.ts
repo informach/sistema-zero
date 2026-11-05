@@ -1,4 +1,8 @@
 /** Contratos de transporte de convites e campanhas; sem dependência de serviço. */
+import type { CampaignSchedule } from './campaign-schedule'
+
+export { type CampaignSchedule, campaignScheduleWindows } from './campaign-schedule'
+export { campaignCouponPromotion } from './coupon-promotion'
 export type CampaignStatus = 'draft' | 'active' | 'paused' | 'ended'
 export type CampaignState = CampaignStatus | 'scheduled'
 export type CampaignContext = 'ad' | 'event' | 'other'
@@ -54,6 +58,9 @@ export interface AmbassadorShareUrls {
   adult: string | null
 }
 export interface CampaignInput {
+  /** Ausente/null conserva o calendário manual legado. */
+  schedule?: CampaignSchedule | null
+  coupon?: CampaignCouponLink | null
   name: string
   publicTitle: string
   description: string
@@ -75,6 +82,7 @@ export interface CampaignInput {
   commissionWindowDays?: number | null
 }
 export interface CampaignView extends CampaignInput {
+  couponView?: CampaignCouponView | null
   audience: GiftAudience
   ambassadorName?: string | null
   id: string
@@ -90,6 +98,7 @@ export interface CampaignUpdateInput extends CampaignInput {
 }
 /** Visão privada do parceiro: somente leitura, sem participantes nem campos internos. */
 export interface AmbassadorCampaignView {
+  couponView?: CampaignCouponView | null
   id: string
   publicTitle: string
   audience: GiftAudience
@@ -101,6 +110,37 @@ export interface AmbassadorCampaignView {
   commissionAmountCents: number | null
   commissionAnnualAmountCents: number | null
   commissionWindowDays: number | null
+}
+/** O Catálogo é a autoridade de desconto e oferta; a campanha guarda apenas o vínculo. */
+export interface CampaignCouponLink {
+  couponId: string
+  offerId: string
+}
+export interface CampaignCouponDetails extends CampaignCouponLink {
+  code: string
+  offerSlug: string
+  offerName: string
+  percentOff: number | null
+  amountOffCents: number | null
+  currency: string
+  accessMode: string
+  accessDurationValue: number | null
+  accessDurationUnit: string | null
+  available: boolean
+}
+export interface CampaignCouponView extends CampaignCouponDetails {
+  state: Exclude<CampaignState, 'draft'> | 'unavailable'
+  startsAt: string
+  endsAt: string
+  shareUrl: string
+}
+export interface CampaignCouponPolicy {
+  audience: GiftAudience
+  couponId: string
+  offerId: string
+  status: CampaignStatus
+  startsAt: string
+  endsAt: string
 }
 export interface AmbassadorCampaignPage {
   items: AmbassadorCampaignView[]

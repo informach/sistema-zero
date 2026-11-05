@@ -1,4 +1,5 @@
 import type { AmbassadorCampaignPage, AmbassadorCampaignView } from '@sistemazero/core/referrals'
+import { campaignCouponPromotion } from '@sistemazero/core/referrals'
 import { ShareCard } from '@sistemazero/ui/share-card'
 import { CalendarDays, Gift, Link as LinkIcon } from 'lucide-react'
 import { useState } from 'react'
@@ -20,11 +21,16 @@ const money = (value: number) =>
 
 function Campaign({ campaign }: { campaign: AmbassadorCampaignView }) {
   const [copy, setCopy] = useState<'idle' | 'done' | 'manual'>('idle')
+  const [couponCopy, setCouponCopy] = useState('')
   const shareable = campaign.state === 'active' || campaign.state === 'scheduled'
+  const coupon = campaign.couponView
+  const couponShareable = coupon?.state === 'active' || coupon?.state === 'scheduled'
   const period = `De ${date(campaign.startsAt)} até ${date(campaign.endsAt)} (Brasília).`
   const audience = campaign.audience === 'kids' ? 'Kids · 9 a 14 anos' : 'Adultos · 18 anos ou mais'
   return (
-    <article className={`emb-cartao emb-campanha ${!shareable ? 'emb-campanha--inativa' : ''}`}>
+    <article
+      className={`emb-cartao emb-campanha ${!shareable && !couponShareable ? 'emb-campanha--inativa' : ''}`}
+    >
       <div className="emb-cartao__topo">
         <span
           className={`emb-chip emb-chip--${campaign.audience}${campaign.audience === 'adult' ? ' theme-arcade' : ''}`}
@@ -32,7 +38,7 @@ function Campaign({ campaign }: { campaign: AmbassadorCampaignView }) {
           {audience}
         </span>
         <span className={`emb-campanha__estado emb-campanha__estado--${campaign.state}`}>
-          {states[campaign.state]}
+          {couponShareable && !shareable ? 'Cupom disponível' : states[campaign.state]}
         </span>
       </div>
       <h3 className="emb-h3">{campaign.publicTitle}</h3>
@@ -108,6 +114,55 @@ function Campaign({ campaign }: { campaign: AmbassadorCampaignView }) {
         <p className="emb-campanha__orientacao">
           Esta campanha não aceita novos resgates. Os acessos e acordos já aceitos são preservados.
         </p>
+      )}
+      {coupon && (
+        <section className="emb-campanha__cupom" aria-label="Cupom de desconto da campanha">
+          <span className="emb-etiqueta">Benefício separado · desconto</span>
+          <h4 className="emb-h3">{campaignCouponPromotion(coupon, campaign.audience).title}</h4>
+          <p>{campaignCouponPromotion(coupon, campaign.audience).description}</p>
+          <p className="emb-campanha__periodo">
+            {campaignCouponPromotion(coupon, campaign.audience).notice}
+          </p>
+          <p className="emb-campanha__orientacao">
+            {coupon.state === 'unavailable'
+              ? 'Cupom indisponível no momento.'
+              : couponShareable
+                ? 'Este cupom tem seu próprio prazo, independente do presente gratuito.'
+                : 'O desconto está encerrado ou pausado. O link permite consultar a oferta pelo preço normal.'}
+          </p>
+          {couponShareable && (
+            <ShareCard
+              {...campaignCouponPromotion(coupon, campaign.audience)}
+              label="Cartão do cupom"
+              buttonClassName="emb-btn emb-btn--contorno"
+            />
+          )}
+          <button
+            type="button"
+            className="emb-btn emb-btn--contorno"
+            onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(coupon.shareUrl)
+                setCouponCopy('Link do cupom copiado.')
+              } catch {
+                setCouponCopy('Selecione e copie o endereço abaixo.')
+              }
+            }}
+          >
+            Copiar link do cupom
+          </button>
+          <p role="status">{couponCopy}</p>
+          <a className="emb-link" href={coupon.shareUrl} target="_blank" rel="noreferrer">
+            Abrir oferta com cupom
+          </a>
+          <input
+            className="emb-input"
+            aria-label={`Link do cupom ${coupon.code}`}
+            readOnly
+            value={coupon.shareUrl}
+            onFocus={(event) => event.target.select()}
+          />
+        </section>
       )}
     </article>
   )

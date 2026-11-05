@@ -346,6 +346,54 @@ export class EfiPaymentGateway implements PaymentGateway {
     }
   }
 
+  async prepareCardSubscription(
+    input: Pick<CreateCardSubscriptionInput, 'subscriptionId' | 'planId' | 'amount' | 'itemName'>,
+  ): Promise<{ providerSubscriptionId: string; firstChargeId: string }> {
+    const raw = await this.requireCobrancas().prepareSubscription(input.planId, {
+      items: [
+        {
+          name: input.itemName ?? 'Assinatura',
+          value: Number(input.amount.amountInCents),
+          amount: 1,
+        },
+      ],
+      metadata: {
+        custom_id: input.subscriptionId,
+        ...(this.boletoDefaults.notificationUrl
+          ? { notification_url: this.boletoDefaults.notificationUrl }
+          : {}),
+      },
+    })
+    const parsed = parseCreateSubscriptionResponse(raw)
+    if (!parsed.firstChargeId)
+      throw new EfiGatewayError('Efí não retornou a primeira cobrança preparada')
+    return { providerSubscriptionId: parsed.subscriptionId, firstChargeId: parsed.firstChargeId }
+  }
+
+  async activateCardSubscription(
+    id: string,
+    input: CreateCardSubscriptionInput,
+  ): Promise<CreateCardSubscriptionOutput> {
+    const parsed = parseCreateSubscriptionResponse(
+      await this.requireCobrancas().activateSubscription(
+        id,
+        this.buildSubscriptionOneStepBody(input).payment,
+      ),
+    )
+    return {
+      providerSubscriptionId: parsed.subscriptionId,
+      status: parsed.status,
+      firstChargeId: parsed.firstChargeId,
+      firstChargeStatus: parsed.firstChargeStatus,
+    }
+  }
+
+  async updateSubscriptionAmount(id: string, amount: Money, itemName: string): Promise<void> {
+    await this.requireCobrancas().updateSubscriptionItems(id, [
+      { name: itemName, value: Number(amount.amountInCents), amount: 1 },
+    ])
+  }
+
   async listSubscriptionCharges(
     providerSubscriptionId: string,
   ): Promise<ProviderSubscriptionCharge[]> {

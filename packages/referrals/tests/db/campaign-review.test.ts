@@ -37,6 +37,38 @@ describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL re
   })
   afterAll(async () => connection?.close())
 
+  test('calendário persiste e atualização concorrente não sobrescreve a nova data', async () => {
+    const f = await fixture(8000)
+    const schedule = { eventDate: '2026-11-06', giftClaimDays: 3, couponClaimDays: 7 }
+    const saved = await admin.update(
+      f.campaign.id,
+      { ...f.campaign, schedule, expectedUpdatedAt: f.campaign.updatedAt },
+      'Teste',
+    )
+    const stored = await campaigns.findById(f.campaign.id)
+    expect(stored?.schedule).toEqual(schedule)
+    expect(stored?.endsAt.toISOString()).toBe('2026-11-09T03:00:00.000Z')
+    const moved = await admin.update(
+      f.campaign.id,
+      {
+        ...saved!,
+        schedule: { ...schedule, eventDate: '2026-12-30' },
+        expectedUpdatedAt: saved!.updatedAt,
+      },
+      'Teste',
+    )
+    expect(moved?.endsAt).toBe('2027-01-02T03:00:00.000Z')
+    let conflict: unknown
+    try {
+      await admin.update(f.campaign.id, { ...saved!, expectedUpdatedAt: saved!.updatedAt }, 'Outro')
+    } catch (error) {
+      conflict = error
+    }
+    expect(conflict).toBeInstanceOf(Error)
+    expect(String(conflict)).toContain('alterada')
+    expect((await campaigns.findById(f.campaign.id))?.schedule?.eventDate).toBe('2026-12-30')
+  })
+
   test('consulta do parceiro filtra no SQL antes do limite e da contagem', async () => {
     const mine = await fixture(8000)
     const other = await fixture(8000)

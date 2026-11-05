@@ -53,7 +53,11 @@ try {
   browser = await chromium.launch({
     headless: true,
     timeout: 20_000,
-    ...(process.env.SZ_CHECK_CHROMIUM ? { executablePath: process.env.SZ_CHECK_CHROMIUM } : {}),
+    ...(process.env.SZ_CHECK_CHROMIUM
+      ? { executablePath: process.env.SZ_CHECK_CHROMIUM }
+      : process.platform === 'win32'
+        ? { channel: 'chrome' }
+        : {}),
   })
   const page = await browser.newPage({ viewport: { width: 1200, height: 800 } })
   page.setDefaultTimeout(10_000)
@@ -94,6 +98,71 @@ try {
         .map((bloco) => ({ ...bloco.getRelativeToSurfaceXY() })),
     }
     const segunda = { ok: await pagina.organizar(), organizacoes }
+    workspace.clear()
+    Blockly.defineBlocksWithJsonArray([
+      {
+        type: 'qa_parent',
+        message0: 'Evento %1 %2',
+        args0: [
+          { type: 'field_input', name: 'NAME', text: 'A' },
+          { type: 'input_statement', name: 'DO' },
+        ],
+        previousStatement: null,
+        nextStatement: null,
+      },
+      { type: 'qa_if', message0: 'Se', previousStatement: null, nextStatement: null },
+      {
+        type: 'qa_variable',
+        message0: 'Criar variável %1',
+        args0: [{ type: 'input_value', name: 'VALUE' }],
+        previousStatement: null,
+        nextStatement: null,
+      },
+      {
+        type: 'qa_number',
+        message0: 'Somar %1',
+        args0: [{ type: 'field_number', name: 'NUM', value: 1 }],
+        previousStatement: null,
+        nextStatement: null,
+      },
+    ])
+    const create = (type) => {
+      const block = workspace.newBlock(type)
+      block.initSvg()
+      block.render()
+      return block
+    }
+    const first = create('qa_parent'),
+      next = create('qa_parent'),
+      insideNext = create('qa_if')
+    next.setFieldValue('B', 'NAME')
+    first.nextConnection.connect(next.previousConnection)
+    next.getInput('DO').connection.connect(insideNext.previousConnection)
+    first.moveBy(60, 60)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    const outsideRejected = pagina.bloco('Se dentro de Evento A', 'area') === null
+    const nextTarget = pagina.bloco('Se dentro de Evento B', 'area')
+    const insideAccepted = Boolean(
+      nextTarget &&
+        document.querySelector(nextTarget.seletor)?.closest('.blocklyDraggable') ===
+          insideNext.getSvgRoot(),
+    )
+    const variable = create('qa_variable'),
+      value = create('math_number'),
+      nextNumber = create('qa_number')
+    value.setFieldValue(2, 'NUM')
+    variable.getInput('VALUE').connection.connect(value.outputConnection)
+    variable.nextConnection.connect(nextNumber.previousConnection)
+    variable.moveBy(400, 60)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    const fieldOutsideRejected = pagina.campo('1', 'Criar variável') === null
+    const fieldInsideAccepted = pagina.campo('2', 'Criar variável') !== null
+    const containment = {
+      outsideRejected,
+      insideAccepted,
+      fieldOutsideRejected,
+      fieldInsideAccepted,
+    }
     // Uma aba sem frames novos não pode ficar pendurada nem declarar sucesso.
     const original = window.requestAnimationFrame
     window.requestAnimationFrame = () => 0
@@ -104,7 +173,7 @@ try {
       window.requestAnimationFrame = original
       workspace.dispose()
     }
-    return { primeira, segunda, semFrames }
+    return { primeira, segunda, semFrames, containment }
   })
   assert.deepEqual(erros, [])
   assert.equal(resultado.primeira.ok, true)
@@ -115,6 +184,12 @@ try {
   ])
   assert.deepEqual(resultado.segunda, { ok: true, organizacoes: 2 })
   assert.deepEqual(resultado.semFrames, { ok: false, organizacoes: 2 })
+  assert.deepEqual(resultado.containment, {
+    outsideRejected: true,
+    insideAccepted: true,
+    fieldOutsideRejected: true,
+    fieldInsideAccepted: true,
+  })
   console.log(JSON.stringify({ resultado: 'PASS', navegador: browser.version(), casos: resultado }))
 } finally {
   await browser?.close()
