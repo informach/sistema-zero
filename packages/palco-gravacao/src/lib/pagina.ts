@@ -8,6 +8,8 @@ import type { Alvo } from './verbos'
 export interface PaginaDoPalco {
   /** O tamanho da pré-visualização do jogo no Estúdio, ou nulo quando ela não está na tela. */
   previa(): { width: number; height: number } | null
+  /** O tamanho do quadro do jogo pronto na aula, ou nulo quando ele não está na tela. */
+  jogo(): { width: number; height: number } | null
   /** A área de trabalho do Estúdio já mostra os blocos (logo depois de expandir, ainda não). */
   areaPronta(): boolean
   /**
@@ -34,6 +36,11 @@ export interface PaginaDoPalco {
   rolagemDoCampo(valor: string, bloco?: string): { de: Alvo; para: Alvo } | 'visivel' | null
   /** Algum botão visível com este texto. */
   temBotao(texto: string): boolean
+  /**
+   * Uma categoria da caixa de categorias pelo nome (sem o emoji): aberta (a de dentro à mostra,
+   * ou a folha escolhida, com a paleta dela aberta), fechada, ou nula quando não está à vista.
+   */
+  categoria(nome: string): 'aberta' | 'fechada' | null
   /**
    * Um bloco pelo começo do texto dele, como aparece na tela ("Deixar o sprite" acha "Deixar o
    * sprite jogador com 50% de visibilidade"): na paleta, pego pela borda esquerda, ou na área de
@@ -280,6 +287,13 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return { width: r.width, height: r.height }
     },
 
+    jogo() {
+      const stage = doc.querySelector('.sz-project-play-stage')
+      if (!stage || !visivel(stage)) return null
+      const r = stage.getBoundingClientRect()
+      return { width: r.width, height: r.height }
+    },
+
     areaPronta() {
       const area = areaDeTrabalho(doc)
       return (
@@ -454,6 +468,25 @@ export function paginaDe(doc: Document): PaginaDoPalco {
       return [...doc.querySelectorAll('button')].some(
         (b) => visivel(b) && fold(texto(b)) === wanted,
       )
+    },
+
+    categoria(nome) {
+      const caixa = toolbox(doc)
+      if (!caixa) return null
+      const wanted = fold(nome)
+      for (const rotulo of caixa.querySelectorAll(
+        '.blocklyToolboxCategoryLabel,.blocklyTreeLabel',
+      )) {
+        if (fold(texto(rotulo)) !== wanted || !visivel(rotulo)) continue
+        const linha = rotulo.closest('.blocklyToolboxCategory,.blocklyTreeRow')
+        if (!linha) continue
+        // Uma categoria com outras dentro mostra o ícone aberto ou fechado (Blockly 12).
+        const icone = linha.querySelector('.blocklyToolboxCategoryIcon')
+        if (icone?.classList.contains('blocklyToolboxCategoryIconOpen')) return 'aberta'
+        if (icone?.classList.contains('blocklyToolboxCategoryIconClosed')) return 'fechada'
+        return linha.classList.contains('blocklyToolboxSelected') ? 'aberta' : 'fechada'
+      }
+      return null
     },
   }
 }

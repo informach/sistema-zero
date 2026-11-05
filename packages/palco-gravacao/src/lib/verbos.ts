@@ -39,6 +39,8 @@ export type Passo =
   | { fazer: 'rolar'; dy: number }
   | { fazer: 'digitar'; alvo: Alvo; texto: string; substituir?: boolean }
   | { fazer: 'tecla'; tecla: string }
+  /** Segura o botão do mouse no alvo (uma seta da tela do jogo), ou uma tecla, por `segundos`. */
+  | { fazer: 'segurar'; alvo?: Alvo; tecla?: string; segundos?: number }
   /** O robô pergunta `acao` de novo depois dos gestos anteriores (a página decide no que abriu). */
   | { fazer: 'continuar'; acao: string }
 
@@ -134,6 +136,34 @@ export const VERBOS: Verbo[] = [
     verbo: 'apontar zappy',
     exemplo: 'apontar zappy',
     descricao: 'Aponta o Zappy ao lado da fala dele na experiência.',
+  },
+  {
+    verbo: 'abrir categoria',
+    exemplo: 'abrir categoria Jogo 2D > Movimento > Movimentos prontos',
+    descricao:
+      'Abre as categorias da paleta, uma depois da outra, sem fechar nenhuma: a que já está aberta só é apontada. Para abrir de novo uma categoria que ficou aberta de um encaixe anterior.',
+  },
+  {
+    verbo: 'segurar seta',
+    exemplo: 'segurar seta da direita por 1 s',
+    descricao:
+      'Segura uma seta da tela (direita, esquerda, cima ou baixo) do jogo pronto pelo tempo dito; com "na prévia", a da pré-visualização do Estúdio. Sem tempo, 1 segundo.',
+  },
+  {
+    verbo: 'apontar setas',
+    exemplo: 'apontar setas',
+    descricao:
+      'Aponta as quatro setas da tela do jogo pronto; com "na prévia", as da pré-visualização.',
+  },
+  {
+    verbo: 'apontar selo',
+    exemplo: 'apontar selo',
+    descricao: 'Aponta o selo "Seta apertada?" da experiência do andar.',
+  },
+  {
+    verbo: 'apontar faixa fora da tela',
+    exemplo: 'apontar faixa fora da tela',
+    descricao: 'Aponta a faixa "fora da tela" da experiência do limite, à direita da borda.',
   },
   {
     verbo: 'apontar paleta',
@@ -245,6 +275,37 @@ function acharAlvo(jogos: readonly JogoDaAula[], nome: string) {
         return { jogo, target }
     }
   return null
+}
+
+/**
+ * As setas da tela do jogo (`enableClassicControls`, `studio/.../game-2d/runtime/classicPlatformer.ts`):
+ * botões de 44 px com 6 px entre eles, a 8 px do canto de baixo à esquerda do iframe do jogo, do
+ * mesmo tamanho em qualquer tamanho de jogo. O centro de cada uma, em px da esquerda e de baixo.
+ */
+const SETAS: Record<string, [number, number]> = {
+  esquerda: [30, 30],
+  baixo: [80, 30],
+  direita: [130, 30],
+  cima: [80, 80],
+}
+const MEIO_DAS_SETAS: [number, number] = [80, 55]
+const SEGURAR_SETA =
+  /^segurar seta (?:d[aeo] |para (?:a |o )?)?(direita|esquerda|cima|baixo)( na pr[eé]via)?(?: por (\d+(?:[.,]\d+)?) ?(?:s|seg|segundos?))?$/i
+const APONTAR_SETAS = /^apontar (?:as )?setas( na pr[eé]via)?$/i
+
+/** Um ponto das setas da tela no jogo pronto ou na prévia; nulo enquanto ele não está na tela. */
+function nasSetas(
+  pagina: PaginaDoPalco,
+  previa: boolean,
+  [x, deBaixo]: [number, number],
+): Alvo | null {
+  const quadro = previa ? pagina.previa() : pagina.jogo()
+  if (!quadro) return null
+  return {
+    seletor: previa ? 'iframe[title="Pré-visualização"]' : '.sz-project-play-stage',
+    u: Math.min(1, Math.max(0, x / quadro.width)),
+    v: Math.min(1, Math.max(0, (quadro.height - deBaixo) / quadro.height)),
+  }
 }
 
 /** Um ponto do palco do jogo, como o lugar dentro do quadro do jogo na página. */
@@ -393,6 +454,24 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   const tocar = /^tocar (?!pr[eé]via\b)(.+)$/i.exec(texto)
   if (tocar?.[1]) return [{ fazer: 'clicar', alvo: { rotulo: unquote(tocar[1]) } }]
 
+  // Abrir sem fechar: "categoria" clica sempre, e clicar numa categoria aberta a recolhe.
+  const abrirCategoria = /^abrir categoria (.+)$/i.exec(texto)
+  if (abrirCategoria?.[1]) {
+    const [primeira, ...resto] = abrirCategoria[1]
+      .split('>')
+      .map((c) => unquote(c))
+      .filter(Boolean)
+    if (!primeira) throw new Error('Diga qual categoria abrir.')
+    const alvo: Alvo = { bloco: { texto: primeira, area: 'toolbox' } }
+    // Cada categoria é vista depois que a de antes abriu: a de dentro só aparece então.
+    const depois = resto.length
+      ? [{ fazer: 'continuar' as const, acao: `abrir categoria ${resto.join(' > ')}` }]
+      : []
+    if (pagina?.categoria(primeira) === 'aberta')
+      return [{ fazer: 'apontar', alvo, exato: true }, ...depois]
+    return [{ fazer: 'clicar', alvo }, ...depois]
+  }
+
   const categoria = /^categoria (.+)$/i.exec(texto)
   if (categoria?.[1])
     return categoria[1]
@@ -478,6 +557,37 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
   }
   if (f === 'apontar zappy')
     return [{ fazer: 'apontar', alvo: { seletor: '.sz-scene-console-fala > div > :first-child' } }]
+  if (f === 'apontar selo') return [{ fazer: 'apontar', alvo: { seletor: '.slow-seta' } }]
+  // A faixa vai de cima a baixo do palco: a mão descansa dentro dela, não embaixo.
+  if (f === 'apontar faixa fora da tela')
+    return [
+      { fazer: 'apontar', alvo: { seletor: '[data-fora-da-tela]', u: 0.5, v: 0.62 }, exato: true },
+    ]
+
+  const segurarSeta = SEGURAR_SETA.exec(texto)
+  const apontarSetas = APONTAR_SETAS.exec(texto)
+  if (segurarSeta || apontarSetas) {
+    const naPrevia = !!(segurarSeta ? segurarSeta[2] : apontarSetas?.[1])
+    const ponto = segurarSeta ? SETAS[fold(segurarSeta[1] ?? '')] : MEIO_DAS_SETAS
+    if (!ponto) throw new Error('Segure a seta da direita, da esquerda, de cima ou de baixo.')
+    const alvo = nasSetas(precisaDaPagina(pagina), naPrevia, ponto)
+    // O jogo ainda abrindo (ou a prévia, logo depois de expandir): espera e pergunta de novo.
+    if (!alvo)
+      return [
+        {
+          fazer: 'esperar',
+          alvo: {
+            seletor: naPrevia ? 'iframe[title="Pré-visualização"]' : '.sz-project-play-stage',
+          },
+          estado: 'aparecer',
+          maximo: 30,
+        },
+        { fazer: 'continuar', acao: texto },
+      ]
+    if (apontarSetas) return [{ fazer: 'apontar', alvo, exato: true }]
+    const segundos = segurarSeta?.[3] ? Number(segurarSeta[3].replace(',', '.')) : 1
+    return [{ fazer: 'segurar', alvo, segundos }]
+  }
   const previa = /^(tocar|apontar) pr[eé]via ?(.*)$/i.exec(texto)
   if (previa?.[1]) {
     // Logo depois de expandir, o Estúdio ainda monta a pré-visualização: o robô espera ela

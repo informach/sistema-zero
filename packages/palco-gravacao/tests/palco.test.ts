@@ -14,6 +14,7 @@ import { agir, agirNaPagina, type JogoDaAula, ocupado, VERBOS } from '../src/lib
 /** Uma página do palco com o Estúdio aberto: pré-visualização de 800 × 600 e blocos achados. */
 const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   previa: () => ({ width: 800, height: 600 }),
+  jogo: () => ({ width: 960, height: 720 }),
   areaPronta: () => true,
   campo: () => ({
     alvo: { seletor: '[data-palco-alvo="a1"]', u: 0.5, v: 0.5 },
@@ -30,6 +31,7 @@ const pagina = (patch: Partial<PaginaDoPalco> = {}): PaginaDoPalco => ({
   rolagemDoCampo: () => 'visivel',
   organizar: async () => true,
   temBotao: () => false,
+  categoria: () => 'fechada',
   bloco: (texto, onde) => ({ seletor: `[data-palco-alvo="${onde}:${texto}"]`, u: 0.1, v: 0.5 }),
   abaixo: () => ({ seletor: '[data-palco-alvo="a5"]', u: 0.3, v: 0.6 }),
   ...patch,
@@ -292,6 +294,67 @@ describe('verbos do palco', () => {
     ])
   })
 
+  test('abrir categoria nunca recolhe: a que já está aberta só é apontada', () => {
+    const toolbox = (texto: string) => ({ bloco: { texto, area: 'toolbox' as const } })
+    // Fechada: clica, e a de dentro é perguntada depois, quando já aparece.
+    expect(
+      agir('abrir categoria Jogo 2D > Movimento > Movimentos prontos', jogos, pagina()),
+    ).toEqual([
+      { fazer: 'clicar', alvo: toolbox('Jogo 2D') },
+      { fazer: 'continuar', acao: 'abrir categoria Movimento > Movimentos prontos' },
+    ])
+    // Aberta de um encaixe anterior: a mão passa por ela sem clicar.
+    const aberta = pagina({ categoria: (nome) => (nome === 'Jogo 2D' ? 'aberta' : 'fechada') })
+    expect(agir('abrir categoria Jogo 2D', jogos, aberta)).toEqual([
+      { fazer: 'apontar', alvo: toolbox('Jogo 2D'), exato: true },
+    ])
+    expect(agir('abrir categoria Movimentos prontos', jogos, aberta)).toEqual([
+      { fazer: 'clicar', alvo: toolbox('Movimentos prontos') },
+    ])
+  })
+
+  test('setas da tela: segurar e apontar no canto de baixo do jogo pronto e da prévia', () => {
+    // Jogo pronto de 960 × 720: a seta da direita tem o centro a 130 px da esquerda e 30 de baixo.
+    expect(agir('segurar seta da direita por 1,5 s', jogos, pagina())).toEqual([
+      {
+        fazer: 'segurar',
+        alvo: { seletor: '.sz-project-play-stage', u: 130 / 960, v: (720 - 30) / 720 },
+        segundos: 1.5,
+      },
+    ])
+    // Na prévia de 800 × 600, sem tempo: 1 segundo.
+    expect(agir('segurar seta de cima na prévia', jogos, pagina())).toEqual([
+      {
+        fazer: 'segurar',
+        alvo: { seletor: 'iframe[title="Pré-visualização"]', u: 80 / 800, v: (600 - 80) / 600 },
+        segundos: 1,
+      },
+    ])
+    expect(
+      agir('segurar seta para baixo na previa por 2 segundos', jogos, pagina())[0],
+    ).toMatchObject({ segundos: 2, alvo: { u: 80 / 800, v: (600 - 30) / 600 } })
+    expect(agir('apontar as setas', jogos, pagina())).toEqual([
+      {
+        fazer: 'apontar',
+        alvo: { seletor: '.sz-project-play-stage', u: 80 / 960, v: (720 - 55) / 720 },
+        exato: true,
+      },
+    ])
+    // A prévia ainda não está na tela: espera ela e pergunta de novo.
+    expect(
+      agir('segurar seta da esquerda na prévia', jogos, pagina({ previa: () => null })).map(
+        (p) => p.fazer,
+      ),
+    ).toEqual(['esperar', 'continuar'])
+    expect(agir('apontar selo', jogos, pagina())[0]).toMatchObject({
+      alvo: { seletor: '.slow-seta' },
+    })
+    expect(agir('apontar faixa fora da tela', jogos, pagina())[0]).toMatchObject({
+      alvo: { seletor: '[data-fora-da-tela]' },
+      exato: true,
+    })
+  })
+
   test('ocupado: Estúdio carregando, conferência em curso, livro preparando', () => {
     const doc = (hit: string | null, text = '') => ({
       body: { textContent: text } as HTMLElement,
@@ -535,5 +598,31 @@ describe('arrumação de quando o Estúdio abre', () => {
     for (let i = 0; i < 8; i++) await arrumar.passo(area, juntas, organizar)
     expect(vezes).toBe(3)
     expect(arrumar.pendente(area, juntas)).toBe(false)
+  })
+})
+
+describe('roteiros gravados pelo robô', () => {
+  /** Os verbos do EdiAula (qualquer página) e os trechos da edição não passam pela ponte. */
+  const doEdiAula =
+    /^(na edi[cç][aã]o:|(apontar|clicar|passar o mouse|clique duplo|clique direito|esperar|segurar|rolar até|arrastar) ["“]|segurar tecla |tecla |digitar |rolar para )/i
+
+  test('todo colchete do Na tela da Aula 1 do Desafio do Primeiro Jogo é um verbo do palco', () => {
+    const pasta = '../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/'
+    const roteiro = readFileSync(
+      new URL(`${pasta}desafio-dia-1.roteiro.md`, import.meta.url),
+      'utf8',
+    )
+    const farol = JSON.parse(
+      readFileSync(new URL(`${pasta}desafio-dia-1.manifesto.json`, import.meta.url), 'utf8'),
+    ) as typeof manifesto
+    const jogoDoFarol = farol.blocks.find((b) => b.key === 'jogo-pronto')?.content
+      .activity as JogoDaAula
+    const colchetes = [...roteiro.matchAll(/^\*\*Na tela:\*\*(.+)$/gm)].flatMap((linha) =>
+      [...(linha[1] ?? '').matchAll(/\[([^\]\n]+)\]/g)].map((m) => (m[1] ?? '').trim()),
+    )
+    expect(colchetes.length).toBeGreaterThan(90)
+    const doPalco = colchetes.filter((c) => !doEdiAula.test(c))
+    for (const colchete of doPalco)
+      expect(() => agir(colchete, [jogoDoFarol], pagina()), colchete).not.toThrow()
   })
 })

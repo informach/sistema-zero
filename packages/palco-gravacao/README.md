@@ -72,6 +72,21 @@ está sendo conferido.
   esperada do mesmo jeito.
 - **Blocos-sombra:** o número de um bloco ("50", o "1" de "Somar 1") fica num bloco-sombra
   encaixado nele, que conta como parte dele.
+- **Setas da tela do jogo** (03/11/2026, Farol): `segurar seta da direita por 1,5 s` segura a seta
+  da tela do jogo pronto, e com `na prévia`, a da pré-visualização do Estúdio; `apontar setas`
+  aponta as quatro. As setas são botões de 44 px dentro do iframe do jogo, presos a 8 px do canto
+  de baixo à esquerda (`enableClassicControls`, no runtime do Jogo 2D do `studio`), do mesmo
+  tamanho em qualquer tamanho de jogo: o ponto sai do tamanho do quadro na hora (`jogo()`,
+  `previa()`), nunca dos pixels do palco do jogo. O gesto `segurar` é do contrato do EdiAula
+  (botão do mouse preso pelo tempo dito), e o robô espera soltar antes do gesto seguinte.
+- **Abrir sem fechar:** clicar numa categoria aberta a recolhe. `abrir categoria Jogo 2D >
+  Movimento` só clica nas fechadas e aponta as abertas (`categoria()`), para a segunda montagem de
+  uma parte, quando Jogo 2D ficou aberta do encaixe anterior. `categoria` continua clicando sempre
+  (abrir e recolher para mostrar a paleta).
+- **Experiências do andar e do limite:** `apontar selo` (o "Seta apertada?", cujo texto muda com a
+  seta) e `apontar faixa fora da tela` (um desenho sem nome, `data-fora-da-tela`).
+- **O roteiro do Farol é conferido nos testes:** todo colchete do Na tela da Aula 1 do Desafio do
+  Primeiro Jogo que não é verbo do EdiAula precisa ser entendido pelo `agir`.
 
 ## Rodar
 
