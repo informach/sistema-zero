@@ -354,12 +354,13 @@ const section = (
 export const GIFT_SECTIONS = [
   section(
     'experiencia',
-    'Um jogo que ele ajuda a fazer funcionar',
-    'O personagem aparece quando a regra que seu filho montou funciona.',
+    'Criar um jogo, praticar como enfrentar desafios',
+    'Uma regra para montar. Uma tentativa para observar. Uma ideia para rever.',
     [
       'No Cadê Todo Mundo, seu filho começa explorando uma brincadeira de procurar personagens escondidos em um jardim. Depois, conhece uma das regras por trás dela: quando alguém toca no esconderijo, ele precisa desaparecer para revelar quem estava ali.',
       'A criança monta o comando, testa e observa. Se o esconderijo continua no lugar, há algo para conferir. Quando a regra funciona, o personagem aparece. Mais adiante, ela trabalha a contagem para o jogo registrar cada achado.',
-      'Em casa, você pode pedir: “Me mostra o que mudou? Qual comando fez isso acontecer?”. A aprendizagem ganha um exemplo que os dois conseguem ver no jogo.',
+      'Organizar os passos, conferir uma tentativa e explicar uma dúvida são habilidades para a vida. Aqui, elas aparecem em uma tarefa que a criança consegue observar: mudar uma regra e ver o que acontece no jogo.',
+      'Em casa, você pode pedir: “Me mostra o que mudou? O que você tentou quando não funcionou?”. Essa conversa ajuda a reconhecer o processo, além do resultado, e oferece exemplos para retomar quando aparecer outro desafio.',
     ],
     ['regra', 'contador'],
   ),
@@ -390,7 +391,7 @@ export const GIFT_SECTIONS = [
     [
       'Não é preciso aumentar o tempo de tela para experimentar. Vocês podem combinar que uma parte do período já permitido será usada para construir o jogo e conversar sobre o que aconteceu.',
       'As aulas são gravadas: não há horário de turma para encaixar na agenda. Durante os sete dias de acesso, vocês escolhem quando entrar e podem pausar e rever as explicações. Vale acompanhar o primeiro acesso, ajudar a encontrar os controles e observar de que companhia seu filho precisa.',
-      'Algumas crianças seguem com a orientação da tela; outras pedem ajuda para ler uma instrução ou retomar uma etapa. O curso oferece um caminho para começar. A autonomia é construída nesse uso, respeitando o momento de cada criança.',
+      'O curso foi pensado para que crianças e adolescentes de 9 a 17 anos consigam fazer as atividades com mais autonomia. Crianças menores também podem participar, acompanhadas por um responsável durante as atividades. A companhia necessária varia: observe quando seu filho precisa de ajuda para ler, usar os controles ou retomar uma etapa.',
     ],
     ['pausa'],
   ),
@@ -450,11 +451,11 @@ export const GIFT_FAQ = [
   },
   {
     id: 'idade',
-    question: 'Como saber se meu filho está pronto para experimentar?',
+    question: 'Para qual idade é o presente?',
     visual: 'aula',
     paragraphs: [
-      'O Cadê Todo Mundo é apresentado para crianças e adolescentes de 9 a 17 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
-      'Se ele ainda precisa de companhia para ler ou encontrar os controles, reserve esse primeiro momento para fazerem juntos. Não é preciso chegar com experiência em criação de jogos.',
+      'O Cadê Todo Mundo foi pensado para que crianças e adolescentes de 9 a 17 anos consigam realizar as atividades com mais autonomia. Crianças menores também podem fazer o curso, desde que acompanhadas por um responsável durante as atividades.',
+      'Além da idade, observe de que companhia seu filho precisa para acompanhar as instruções, usar mouse e teclado e lidar com uma dúvida. Vale estar junto no primeiro acesso e ajustar essa ajuda ao longo do curso. Não é preciso chegar sabendo programar.',
     ],
   },
   {
@@ -544,7 +545,7 @@ export const AMBASSADOR_SECTIONS = [
     'Uma indicação que você consegue explicar',
     'Um presente para uma família ou para um adulto que quer criar o próprio jogo.',
     [
-      'Talvez seja o responsável por uma criança de 9 a 17 anos que adora jogos e pergunta como eles são feitos. Ou um adulto que cresceu jogando e sempre quis saber como um jogo funciona por dentro. Seu convite oferece um primeiro passo com uma tarefa concreta.',
+      'Talvez seja uma família que queira oferecer à criança uma experiência de criar, testar ideias e conversar sobre as tentativas. O Kids foi pensado para 9 a 17 anos com mais autonomia; crianças menores podem participar com um responsável durante as atividades. Para um adulto que quer criar o próprio jogo, há um convite separado, com a versão adulta do curso.',
       'Pelo seu link, a pessoa recebe 7 dias do Cadê Todo Mundo e do Mural, sem custo e sem cartão: a família recebe a versão Kids, e o adulto, a versão adulta. Cada link leva a uma página feita para quem recebe, que explica o presente e orienta o cadastro. Você não cadastra ninguém nem precisa explicar sozinho todos os detalhes.',
     ],
     ['aula-estudio'],
