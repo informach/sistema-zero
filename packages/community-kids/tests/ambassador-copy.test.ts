@@ -12,7 +12,7 @@ test('área dos pais conta os dois presentes sem prometer o Desafio', () => {
   expect(source).toContain('Pix')
   expect(source).toContain('sem custo')
   // Os dois públicos do presente (20/10/2026).
-  expect(source).toContain('família com criança de 9 a 14 anos')
+  expect(source).toContain('família com criança de 9 a 17 anos')
   expect(source).toContain('adulto que quer criar o próprio jogo')
   expect(source).toContain('Copiar link para uma família')
   expect(source).toContain('Copiar link para um adulto')

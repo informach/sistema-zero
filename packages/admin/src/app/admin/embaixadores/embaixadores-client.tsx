@@ -744,7 +744,7 @@ function AmbassadorDetailDialog({
               <ShareCard
                 url={a.shareUrl}
                 title="Um presente para criar em família"
-                subtitle="Kids · 9 a 14 anos"
+                subtitle="Kids · 9 a 17 anos"
                 description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
                 notice="Acesse o link e faça o cadastro como responsável pela criança."
               />

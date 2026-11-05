@@ -122,6 +122,30 @@ de campanha e cupons avulsos tiveram PNG baixado e QR decodificado; painel é so
 
 O CI do HEAD final e os recibos de deploy ainda são necessários antes da conclusão operacional.
 
+## Revisão completa do programa de embaixadores
+
+- **P2 — presente adulto oculto apesar do curso publicado:** consultas de leitura confirmaram
+  `cade-todo-mundo-adulto` publicado e disponível no Gateway dos dois ambientes. Faltava
+  `COMMUNITY_URL` no Referrals; configurada por ambiente e preservada no IaC. A ativação depende
+  do próximo deploy, sem alterar o curso nem os resgates existentes.
+- **P2 — faixa etária divergente:** presente, painel, mensagens de WhatsApp, cartões, Admin e
+  entrada nas duas comunidades passam a informar Kids de 9 a 17 anos. Adultos: 18 anos ou mais.
+- **P2 — fim de resgate apresentado como dia seguinte:** painel, cartão e páginas Kids/Adultos
+  mostram o último minuto válido em Brasília, preservando o limite exclusivo usado no servidor.
+- **P2 — confirmação de formulário obsoleta:** durante o envio, nome, e-mail e público ficam
+  bloqueados; o mesmo vale para a chave Pix durante o salvamento. Editar o próximo convite
+  remove a confirmação anterior. Browser reproduziu todos os quatro controles liberados antes
+  do ajuste e confirmou o bloqueio depois, com respostas atrasadas controladas.
+- **P3 — orientação incompleta:** dúvidas explicam links pessoais versus campanhas, cartões,
+  cupons como benefício separado e administração exclusiva da equipe. Comissões não são
+  prometidas por resgate gratuito nem por compra avulsa.
+
+Revisados isolamento do parceiro, ausência de dados dos convidados no painel, privacidade da
+capability, estados de campanha, vínculo de cupom, valores por plano e termos históricos.
+Prova local: 602 testes do funil, testes de entrada Kids e Adultos, build e navegador real com
+dez estados em duas larguras, resgate dos dois presentes, convites, Pix e cartões. Capturas
+de celular e desktop conferidas. A confirmação dos links publicados fica para o pós-deploy.
+
 ## Publicação final
 
 O usuário pediu o mesmo código nas duas branches e autorizou incluir o palco em produção.

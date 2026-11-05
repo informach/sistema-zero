@@ -130,6 +130,8 @@ export default function EmbaixadorBonus({ token, bonus }: EmbaixadorBonusProps) 
           type="text"
           placeholder={T.pixPlaceholder}
           value={pixKey}
+          disabled={savingPix}
+          maxLength={140}
           onChange={(e) => {
             setPixKey(e.target.value)
             // A mensagem antiga ("Chave Pix salva.") não pode sobreviver à edição: quem corrigiu a

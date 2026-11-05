@@ -30,6 +30,7 @@ const common: Record<string, string[]> = {
     'BONUS_MATURE_HOURS',
     'CATALOG_BASE_URL',
     'CATALOG_INTERNAL_TOKEN',
+    'COMMUNITY_URL',
     'CONVERSION_OFFER_SLUGS',
     'DATABASE_URL',
     'FUNNEL_PUBLIC_URL',

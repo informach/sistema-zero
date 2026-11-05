@@ -168,7 +168,11 @@ if (isSubscription && offer?.altOffer) {
 // o plano no alternador — o servidor segue validando a escolha na cobrança.
 const requestedOffer = (sp.get('oferta') ?? '').trim().toLowerCase()
 const initialChoice: 'main' | 'alt' = altOffer && requestedOffer === altOffer.slug ? 'alt' : 'main'
-const initialCoupon = await resolveCouponPresentation(gateway, initialChoice === 'alt' && altOffer ? altOffer.slug : offerSlug, sp)
+const initialCoupon = await resolveCouponPresentation(
+  gateway,
+  initialChoice === 'alt' && altOffer ? altOffer.slug : offerSlug,
+  sp,
+)
 // A cotação corresponde ao plano escolhido, inclusive ao abrir o cartão de um cupom anual.
 if (initialCoupon.status === 'valid') {
   if (initialChoice === 'alt' && altOffer) altOffer.priceCents = initialCoupon.listPriceCents

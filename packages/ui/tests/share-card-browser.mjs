@@ -97,7 +97,7 @@ try {
     subtitle: 'Um presente para famílias · Kids',
     description: '7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações.',
     notice:
-      'Resgate de 06/11/2026 00:00 até 09/11/2026 00:00 (Brasília). Para crianças de 9 a 14 anos. Cadastro pelo responsável.',
+      'Resgate de 06/11/2026 00:00 até 09/11/2026 00:00 (Brasília). Para crianças de 9 a 17 anos. Cadastro pelo responsável.',
   }
   await page.evaluate((data) => window.fixture.show(data), content)
   await page.getByRole('button', { name: 'Cartão de divulgação' }).click()

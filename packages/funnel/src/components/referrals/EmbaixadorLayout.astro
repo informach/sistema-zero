@@ -18,7 +18,14 @@ interface Props {
   bonus?: boolean
   campanhas?: boolean
 }
-const { title, description, canonical, painel = false, bonus = false, campanhas = false } = Astro.props
+const {
+  title,
+  description,
+  canonical,
+  painel = false,
+  bonus = false,
+  campanhas = false,
+} = Astro.props
 ---
 <BaseLayout title={title} description={description} canonical={canonical} noindex htmlClass="theme-kids">
   <div class="emb">

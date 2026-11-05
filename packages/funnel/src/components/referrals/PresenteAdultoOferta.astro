@@ -20,6 +20,7 @@ interface Props {
 const { gift, kind, communityUrl, preview = false } = Astro.props
 const ready = kind === 'ready' && !preview
 const campaign = gift.source.kind === 'campaign'
+const lastClaimAt = gift.endsAt ? new Date(Date.parse(gift.endsAt) - 1).toISOString() : null
 const nome = gift.source.name
 const origem = (
   !campaign
@@ -39,7 +40,7 @@ const estado: EstadoPresente | null =
             ? P.estados.endedSemData
             : P.estados[kind].titulo.replace(
                 '{{data}}',
-                dia(kind === 'scheduled' ? gift.startsAt : gift.endsAt),
+                dia(kind === 'scheduled' ? gift.startsAt : lastClaimAt),
               ),
       }
 const corDoEstado = kind === 'paused' || kind === 'ended' ? 'rosa' : 'azul'
@@ -79,7 +80,7 @@ const tela = P.hero.tela
       <ul class="cda-requisitos">
         {P.hero.requisitos.map((item) => <li class={`cor-${item.cor}`}><span class="cda-quadradinho" aria-hidden="true"></span>{item.texto}</li>)}
       </ul>
-      {campaign && gift.endsAt && kind !== 'ended' && <p class="pa-prazo">{P.hero.prazoCampanha.replace('{{data}}', dataBrasilia(gift.endsAt))}</p>}
+      {campaign && lastClaimAt && kind !== 'ended' && <p class="pa-prazo">{P.hero.prazoCampanha.replace('{{data}}', dataBrasilia(lastClaimAt))}</p>}
     </div>
     <figure class="pa-monitor">
       <div class="cda-monitor__moldura">

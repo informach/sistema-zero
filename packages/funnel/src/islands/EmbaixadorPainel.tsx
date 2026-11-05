@@ -129,6 +129,7 @@ export default function EmbaixadorPainel({
                 name={`${uid}-publico`}
                 value={alvo}
                 checked={marcado}
+                disabled={sending}
                 onChange={() => {
                   setPublico(alvo)
                   setInviteMsg(null)
@@ -218,7 +219,7 @@ export default function EmbaixadorPainel({
                   notice={
                     publico === 'kids'
                       ? 'Acesse o link e faça o cadastro como responsável pela criança.'
-                      : 'Acesse o link e faça seu cadastro. Para maiores de 18 anos.'
+                      : 'Acesse o link e faça seu cadastro. Para pessoas de 18 anos ou mais.'
                   }
                 />
               </div>
@@ -301,7 +302,12 @@ export default function EmbaixadorPainel({
               autoComplete="off"
               placeholder={T.convite.nomePlaceholder}
               value={nome}
-              onChange={(e) => setNome(e.target.value)}
+              disabled={sending}
+              maxLength={120}
+              onChange={(e) => {
+                setNome(e.target.value)
+                setInviteMsg(null)
+              }}
               className="emb-input"
             />
             <label className="emb-rotulo" htmlFor={`${uid}-email`}>
@@ -314,7 +320,12 @@ export default function EmbaixadorPainel({
               autoComplete="off"
               placeholder={T.convite.emailPlaceholder}
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              disabled={sending}
+              maxLength={254}
+              onChange={(e) => {
+                setEmail(e.target.value)
+                setInviteMsg(null)
+              }}
               className="emb-input"
             />
             {!link && <p className="emb-ajuda">{T.convite.semLink}</p>}

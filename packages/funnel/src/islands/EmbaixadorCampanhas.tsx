@@ -25,8 +25,8 @@ function Campaign({ campaign }: { campaign: AmbassadorCampaignView }) {
   const shareable = campaign.state === 'active' || campaign.state === 'scheduled'
   const coupon = campaign.couponView
   const couponShareable = coupon?.state === 'active' || coupon?.state === 'scheduled'
-  const period = `De ${date(campaign.startsAt)} até ${date(campaign.endsAt)} (Brasília).`
-  const audience = campaign.audience === 'kids' ? 'Kids · 9 a 14 anos' : 'Adultos · 18 anos ou mais'
+  const period = `De ${date(campaign.startsAt)} até ${date(new Date(Date.parse(campaign.endsAt) - 1).toISOString())} (Brasília).`
+  const audience = campaign.audience === 'kids' ? 'Kids · 9 a 17 anos' : 'Adultos · 18 anos ou mais'
   return (
     <article
       className={`emb-cartao emb-campanha ${!shareable && !couponShareable ? 'emb-campanha--inativa' : ''}`}
@@ -92,7 +92,7 @@ function Campaign({ campaign }: { campaign: AmbassadorCampaignView }) {
               title={campaign.publicTitle}
               subtitle={audience}
               description="7 dias gratuitos no curso Cadê Todo Mundo e no Mural de criações."
-              notice={`Resgate: ${period} ${campaign.audience === 'kids' ? 'Cadastro pelo responsável pela criança.' : 'Cadastro para maiores de 18 anos.'}`}
+              notice={`Resgate: ${period} ${campaign.audience === 'kids' ? 'Cadastro pelo responsável pela criança.' : 'Cadastro para pessoas de 18 anos ou mais.'}`}
             />
           </div>
           <p className="emb-campanha__retorno" role="status">

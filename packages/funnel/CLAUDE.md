@@ -745,7 +745,7 @@ via gateway com o HMAC de borda de sempre (`gateway-client.ts`: `resolveReferral
 que o código não existe). Em `/bolsa`, `resolveReferralGiftPage` exige `giftAvailable:boolean`
 na resposta do referrals: `false` mantém o link, mas mostra "ainda não abriu" sem formulário;
 resposta incompleta/erro do gateway falha fechada. A página apresenta somente o curso
-**Cadê Todo Mundo** (Kids 9 a 14 anos ou a versão adulta), não o Desafio ou a assinatura. Quando disponível, passa
+**Cadê Todo Mundo** (Kids 9 a 17 anos ou a versão adulta), não o Desafio ou a assinatura. Quando disponível, passa
 os dados por prop às ilhas `BolsaResgate` (form do RESPONSÁVEL —
 mesmo aviso kids do pré-checkout; telefone OPCIONAL, não reusar `ContactSchema`; estados
 completed/processing/409s por `ApiError.code`; o resgate é RETOMÁVEL no servidor — re-enviar após
@@ -1338,7 +1338,7 @@ passos, a tabela "O que o presente inclui", as dúvidas e o fechamento.
 `/kids/embaixadores` (público, indexado) usa o `ProgramaLayout` (o antigo `PresenteLayout`, layout `.cdc`)
 e fala dos dois presentes: hero, `AMBASSADOR_SECTIONS`, entrada pelo app adulto (`/perfil`) ou pela Área
 dos pais, e as dúvidas de `EMBAIXADOR_DUVIDAS`; a experiência detalhada (`GIFT_SECTIONS`/`GIFT_FAQ`) é a
-do presente Kids. A faixa Kids comunicada é **9 a 14 anos**; o adulto, 18 anos ou mais. O nome do curso
+do presente Kids. A faixa Kids comunicada é **9 a 17 anos**; o adulto, 18 anos ou mais. O nome do curso
 vai sem a interrogação ("Cadê Todo Mundo").
 
 `/bolsa/previa` é pública, noindex e sem formulário: somente apresentação escapada e datas, sem buscar campanha ou aceitar cadastro; aceita `?audience=kids|adult` (padrão `kids`) para a prévia do Admin. O código `previa` é reservado no serviço. A resolução pública distingue scheduled/paused/ended/preparing; o backend revalida a janela no envio. Encerrada/pausada oferece retomada de cadastro previamente aceito, sem novos direitos.

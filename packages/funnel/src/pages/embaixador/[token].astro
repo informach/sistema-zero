@@ -6,8 +6,8 @@
 import EmbaixadorLayout from '../../components/referrals/EmbaixadorLayout.astro'
 import { EMBAIXADOR_DUVIDAS, PAINEL_EMBAIXADOR as P } from '../../content/embaixador'
 import EmbaixadorBonus, { type EmbaixadorBonusProps } from '../../islands/EmbaixadorBonus'
-import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
 import EmbaixadorCampanhas from '../../islands/EmbaixadorCampanhas'
+import EmbaixadorPainel from '../../islands/EmbaixadorPainel'
 import type { AmbassadorPageView } from '../../lib/gateway-client'
 import { getDeps } from '../../server/deps'
 export const prerender = false
@@ -16,7 +16,10 @@ Astro.response.headers.set('referrer-policy', 'no-referrer')
 type AmbassadorView = AmbassadorPageView & { bonus?: EmbaixadorBonusProps['bonus'] }
 const token = (Astro.params.token ?? '').trim()
 const requestedPage = Number(Astro.url.searchParams.get('campanhas') ?? 1)
-const campaignPage = Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 10_001 ? requestedPage : 1
+const campaignPage =
+  Number.isInteger(requestedPage) && requestedPage >= 1 && requestedPage <= 10_001
+    ? requestedPage
+    : 1
 let view: AmbassadorView | null = null
 let gatewayDown = false
 if (/^[A-Za-z0-9_-]{16,64}$/.test(token)) {

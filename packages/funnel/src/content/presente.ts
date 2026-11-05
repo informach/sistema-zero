@@ -38,7 +38,7 @@ const IMG_KIDS = '/img/comunidade-dos-criadores'
 export const PRESENTE_KIDS = {
   seoTitle: 'Presente Cadê Todo Mundo | Sistema Zero',
   description:
-    'Em 7 dias, seu filho faz um jogo de procurar personagens funcionar, com a explicação ao lado. Presente gratuito para crianças de 9 a 14 anos, sem cartão.',
+    'Em 7 dias, seu filho faz um jogo de procurar personagens funcionar, com a explicação ao lado. Presente gratuito para crianças de 9 a 17 anos, sem cartão.',
   previaTitle: 'Prévia da campanha | Sistema Zero',
   pular: 'Ir para o conteúdo',
   topo: {
@@ -78,7 +78,7 @@ export const PRESENTE_KIDS = {
     cta: 'Quero o presente para meu filho',
     link: 'Ver o que ele vai fazer',
     requisitos:
-      'Para crianças de 9 a 14 anos · Computador com mouse e teclado · O cadastro pode ser feito pelo celular',
+      'Para crianças de 9 a 17 anos · Computador com mouse e teclado · O cadastro pode ser feito pelo celular',
     prazoCampanha:
       'Novos cadastros até {{data}} (Brasília). Esse prazo é da campanha; cada família aceita tem os próprios 7 dias de curso.',
     figura: {
@@ -191,7 +191,7 @@ export const PRESENTE_KIDS = {
       },
       {
         pergunta: 'Para qual idade é o presente?',
-        resposta: 'Para crianças e adolescentes de 9 a 14 anos que estão começando.',
+        resposta: 'Para crianças e adolescentes de 9 a 17 anos que estão começando.',
       },
       {
         pergunta: 'Funciona no celular ou no tablet?',
@@ -390,7 +390,7 @@ export const GIFT_FAQ = [
     question: 'Como saber se meu filho está pronto para experimentar?',
     visual: 'aula',
     paragraphs: [
-      'O Cadê Todo Mundo é apresentado para crianças e adolescentes de 9 a 14 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
+      'O Cadê Todo Mundo é apresentado para crianças e adolescentes de 9 a 17 anos que estão começando. Além da idade, observe se seu filho consegue acompanhar uma instrução curta e usar mouse e teclado, sozinho ou com sua ajuda.',
       'Se ele ainda precisa de companhia para ler ou encontrar os controles, reserve esse primeiro momento para fazerem juntos. Não é preciso chegar com experiência em criação de jogos.',
     ],
   },
@@ -481,7 +481,7 @@ export const AMBASSADOR_SECTIONS = [
     'Uma indicação que você consegue explicar',
     'Um presente para uma família ou para um adulto que quer criar o próprio jogo.',
     [
-      'Talvez seja o responsável por uma criança de 9 a 14 anos que adora jogos e pergunta como eles são feitos. Ou um adulto que cresceu jogando e sempre quis saber como um jogo funciona por dentro. Seu convite oferece um primeiro passo com uma tarefa concreta.',
+      'Talvez seja o responsável por uma criança de 9 a 17 anos que adora jogos e pergunta como eles são feitos. Ou um adulto que cresceu jogando e sempre quis saber como um jogo funciona por dentro. Seu convite oferece um primeiro passo com uma tarefa concreta.',
       'Pelo seu link, a pessoa recebe 7 dias do Cadê Todo Mundo e do Mural, sem custo e sem cartão: a família recebe a versão Kids, e o adulto, a versão adulta. Cada link leva a uma página feita para quem recebe, que explica o presente e orienta o cadastro. Você não cadastra ninguém nem precisa explicar sozinho todos os detalhes.',
     ],
     ['aula-estudio'],
