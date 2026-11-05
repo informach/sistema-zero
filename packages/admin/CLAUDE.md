@@ -11,8 +11,8 @@ Remover/trocar a pessoa desliga a comissão. Duplicar conserva o vínculo, mas e
 acordo da nova edição. PATCH antigo omisso preserva a configuração no serviço.
 Detalhe mostra beneficiário atual e assinaturas/comissões por participante, com o beneficiário
 histórico. Não prometer que editar a campanha altere condições já aceitas. Instruções:
-`docs/operations/campanha-com-embaixador.md` na raiz. Cadastros reais da palestra La Opa foram
-adiados pela operadora; a entrega é do recurso, sem criar Viviane ou campanha.
+`docs/operations/campanha-com-embaixador.md` na raiz. Em 05/11, o operador autorizou cadastrar
+Vivianne Lima e a campanha da palestra na clínica Laopa em produção, com comissões padrão.
 
 Desativar uma pessoa mantém presentes de campanhas, mas impede comissão nos novos aceites;
 reativar só afeta aceites futuros. A confirmação da ação explica a preservação dos acordos

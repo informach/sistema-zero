@@ -2,7 +2,8 @@
 
 Revisão sobre a PR 244, incluindo a incorporação do histórico de staging. Escopo: contratos,
 formulário Admin, validação HTTP/configuração, snapshots e locks, conversão e estorno,
-migrações, Catálogo/checkout, copy dos dois públicos e mudanças do palco já homologadas em staging.
+migrações, Catálogo/checkout, copy dos dois públicos e mudanças do palco, incluindo os commits
+de `gravacao/palco` até `f1249594046b85e715f875dbd2eb8d55f9e1cb1e`, autorizados pelo usuário.
 
 ## Achados corrigidos
 
@@ -37,8 +38,12 @@ Os dois ambientes foram conferidos em leitura: preços esperados, tabelas pequen
 transação longa. As páginas derivam preço, economia e equivalente mensal do Catálogo.
 
 Evidências locais: Referrals 223 testes com PostgreSQL, Catalog 156, Funil 596, Admin 11,
-Kids 8; cinco páginas de oferta em cinco larguras e 72 imagens sem erros. Palco: 32 testes;
-roteiro do Farol: seis clipes, zero erros. Typechecks/checks e CI do commit final são a barreira
+Kids 8; cinco páginas de oferta em cinco larguras e 72 imagens sem erros. Palco: 41 testes,
+619 asserções, check e typecheck; prova de organização com Blockly real no Chrome 156 passou.
+Roteiros do Farol: 18 clipes nas aulas 1, 2 e 3, zero erros. Os gestos novos foram revisados
+quanto ao bloco arrastado, limites da área visível, espera de estabilização e falhas retomáveis.
+A edição não commitada da aula 3 no worktree do palco conserva o SHA256 original.
+Typechecks/checks e CI do commit final são a barreira
 de entrega. A revisão não identificou outros problemas bloqueadores no escopo.
 
 ## Alinhamento autorizado

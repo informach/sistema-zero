@@ -9,8 +9,8 @@ No Admin → Embaixadores → Campanhas de presente, uma nova comissão sugere *
 assinatura mensal e R$ 80 pela anual**. O operador pode ajustar ambos conforme o acordo.
 O vínculo não habilita comissão automaticamente. O bônus é pago uma única vez pela aquisição,
 após a garantia e buffer existentes (180 horas), por Pix manual; renovações não geram outro bônus.
-Duplicar mantém a comissão desligada e sugere novamente os padrões. Nenhuma campanha ou pessoa
-real é cadastrada por esta entrega.
+Duplicar mantém a comissão desligada e sugere novamente os padrões. Após a implementação,
+o operador autorizou cadastrar Vivianne Lima e a campanha da clínica Laopa em produção.
 
 Indicações diretas usam `DEFAULT_REFERRAL_BONUS` do Core como padrão dos ambientes:
 `BONUS_AMOUNT_CENTS=3000` e `BONUS_ANNUAL_AMOUNT_CENTS=8000`. O Referrals captura esses

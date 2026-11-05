@@ -32,6 +32,10 @@ A migração `0007_dapper_quentin_quire.sql` recria o índice único por resgate
 
 Não recriar o índice antigo nem voltar para um binário que desconheça `superseded` depois de haver substituições: o índice antigo pode conflitar com o histórico e os relatórios antigos podem contá-lo. Preferir correção em uma nova versão; uma reversão exige suspender processamento e reconciliar os registros antes. Os testes de upgrade preservam integralmente um Pix pago e verificam unicidade por resgate e pagamento.
 
-## La Opa
+## Laopa
 
-Em 04/11/2026, o operador pediu somente a disponibilização do recurso. Não cadastrar Viviane nem a campanha ainda. Referência para o cadastro futuro: público Kids, resgates de 06/11 a 08/11 em produção; horários e acordo de comissão ainda precisam ser definidos.
+Em 05/11/2026, o operador autorizou cadastrar Vivianne Lima e a campanha da palestra na
+clínica Laopa em produção, com vínculo e comissões padrão: R$ 30 no mensal e R$ 80 no anual.
+Público Kids, resgates de 06/11 a 08/11, horário de Brasília. O cadastro real deve ser feito
+após a publicação da comissão por plano e registrado na evidência operacional privada;
+não gravar e-mail ou links privados de acesso em documentação versionada.
