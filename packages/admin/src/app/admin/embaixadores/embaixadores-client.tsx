@@ -121,8 +121,8 @@ function EmbaixadoresForCommunity({
     confirm({
       title: disabling ? 'Desativar embaixador?' : 'Reativar embaixador?',
       message: disabling
-        ? `A página e o link de bolsa de ${row.name} param de funcionar. A alteração vale para Kids e Adultos. As bolsas já resgatadas continuam valendo.`
-        : `A página e o link de bolsa de ${row.name} voltam a funcionar nas duas comunidades.`,
+        ? `A página e o link de bolsa de ${row.name} param de funcionar. Nas campanhas vinculadas, novos cadastros continuam recebendo o presente, mas sem comissão. A alteração vale para Kids e Adultos. As bolsas e os acordos já aceitos continuam valendo.`
+        : `A página e o link de bolsa de ${row.name} voltam a funcionar nas duas comunidades. Campanhas com comissão habilitada voltam a gerar comissão para novos cadastros.`,
       confirmText: disabling ? 'Desativar' : 'Reativar',
       confirmVariant: disabling ? 'destructive' : 'default',
       onConfirm: async () => {
@@ -323,6 +323,7 @@ export const CONVERSION_STATUS_LABEL: Record<ConversionStatus, string> = {
   canceled: 'Assinatura estornada',
   self_blocked: 'Autoindicação',
   unrewarded: 'Campanha (sem bônus)',
+  superseded: 'Compra substituída',
 }
 
 const SELF_BLOCKED_HINT = 'Sem bônus: quem assinou é o próprio embaixador'
@@ -350,6 +351,11 @@ const CONVERSION_STATUS_BADGE: Record<
         .join(' · '),
   },
   canceled: { variant: 'muted' },
+  superseded: {
+    variant: 'muted',
+    title: () =>
+      'Uma compra anterior elegível assumiu a atribuição. Este registro não representa estorno.',
+  },
   self_blocked: { variant: 'muted', title: () => SELF_BLOCKED_HINT },
   unrewarded: {
     variant: 'muted',
@@ -821,6 +827,7 @@ const STAGE_LABEL: Record<ConversionStatus, string> = {
   canceled: CONVERSION_STATUS_LABEL.canceled,
   self_blocked: CONVERSION_STATUS_LABEL.self_blocked,
   unrewarded: CONVERSION_STATUS_LABEL.unrewarded,
+  superseded: CONVERSION_STATUS_LABEL.superseded,
 }
 
 /**

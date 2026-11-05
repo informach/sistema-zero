@@ -26,8 +26,9 @@ export interface RecordConversionConfig {
 /**
  * Consome as entregas do payments (consumer `referrals`, fan-out) e registra a
  * CONVERSÃO: bolsista (resgate `completed`) que assinou a Comunidade. A regra
- * "só a primeira cobrança paga bônus" é estrutural (UNIQUE em redemption_id) —
- * ciclos de renovação conflitam e viram no-op. O bônus nunca é saldo: nasce
+ * "só uma cobrança paga bônus" é estrutural (UNIQUE parcial em redemption_id).
+ * Compra anterior elegível substitui uma tardia sem bônus; as demais cobranças
+ * conflitam e viram no-op. O bônus nunca é saldo: nasce
  * `pending`, o sweep o promove a `eligible` após a garantia e o Pix é manual.
  */
 export class RecordConversionService {

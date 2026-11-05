@@ -567,14 +567,25 @@ export class InMemoryReferralRepository implements ReferralRepository {
     paidAt: Date
     maturesAt: Date
   }): Promise<{ created: boolean }> {
-    // Espelha as uniques do Drizzle: redemption é PARCIAL (canceled não ocupa a
-    // vaga — bolsista que estornou e assinou de novo volta a gerar bônus).
-    const conflict = this.conversions.some(
+    if (this.conversions.some((c) => c.paymentId === input.paymentId)) return { created: false }
+    const current = this.conversions.find(
       (c) =>
-        (c.redemptionId === input.redemptionId && c.status !== 'canceled') ||
-        c.paymentId === input.paymentId,
+        c.redemptionId === input.redemptionId &&
+        c.status !== 'canceled' &&
+        c.status !== 'superseded',
     )
-    if (conflict) return { created: false }
+    if (current) {
+      if (
+        !(
+          current.status === 'unrewarded' &&
+          input.status === 'pending' &&
+          input.bonusCents > 0 &&
+          input.paidAt < current.paidAt
+        )
+      )
+        return { created: false }
+      current.status = 'superseded'
+    }
     this.conversions.push({
       id: randomUUID(),
       ...input,
@@ -595,7 +606,7 @@ export class InMemoryReferralRepository implements ReferralRepository {
   > {
     const c = this.conversions.find((x) => x.paymentId === paymentId)
     if (!c) return { kind: 'not_found' }
-    if (c.status !== 'pending' && c.status !== 'unrewarded')
+    if (!['pending', 'unrewarded', 'self_blocked', 'superseded'].includes(c.status))
       return { kind: 'not_pending', status: c.status }
     c.status = 'canceled'
     return { kind: 'canceled' }

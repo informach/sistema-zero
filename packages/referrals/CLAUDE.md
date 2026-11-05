@@ -14,6 +14,14 @@ Comissão desligada/fora do prazo ainda atribui a conversão ao embaixador, com 
 Relatórios de embaixadores incluem campanhas pelo snapshot. Termos históricos não são reescritos.
 Runbook e rollout: `docs/operations/campanha-com-embaixador.md` na raiz.
 
+Correções do review: o lock do beneficiário também protege a leitura de `status`; pessoa
+desativada mantém atribuição, mas novos snapshots têm comissão desligada e valor/prazo nulos.
+`insertConversion` serializa por resgate e substitui somente `unrewarded` por um pagamento
+anterior `pending` com bônus positivo. A linha anterior vira `superseded`, preservando paymentId;
+conflito único desfaz toda a transação. Migração 0007 exclui `canceled` e `superseded` da vaga
+única. Relatórios ignoram substituídas. Estornos cancelam também `self_blocked` e `superseded`;
+comissões elegíveis/pagas continuam protegidas e exigem resolução financeira manual.
+
 > **⚠️ Antes de QUALQUER mudança, consulte a doc ATUALIZADA via MCP do Context7**
 > (`resolve-library-id` → `query-docs`) para toda lib/framework/API/CLI (Elysia, Drizzle, Zod, Bun
 > etc.) — não confie só na memória; APIs mudam. Para **pesquisa/exploração**, use o **MCP do
@@ -119,14 +127,14 @@ O serviço NUNCA guarda saldo: só sinaliza elegibilidade e controla pago/não-p
   então resolve a OFERTA pelo `metadata.offerId` (client cópia do fiscal; ⚠️ **anual à vista NÃO
   tem subscriptionId** — o critério é o slug ∈ `CONVERSION_OFFER_SLUGS`) → **anti-autoindicação**:
   e-mail do bolsista == `codes.owner_email` → conversão `self_blocked` com `bonus_cents 0` →
-  senão INSERT `pending` com `matures_at = paidAt + BONUS_MATURE_HOURS` (`onConflictDoNothing`).
-  ⚠️ **UNIQUE(redemption_id) é PARCIAL (`WHERE status <> 'canceled'`)**: "só a primeira cobrança"
+  senão INSERT transacional `pending` com `matures_at = paidAt + BONUS_MATURE_HOURS`.
+  ⚠️ **UNIQUE(redemption_id) é PARCIAL (`WHERE status not in ('canceled', 'superseded')`)**: "só a primeira cobrança"
   vale p/ pending/eligible/paid/self_blocked, mas quem ESTORNOU na garantia e assinou de novo
   meses depois volta a converter (achado do full review — sem o parcial o bônus legítimo se
   perdia em silêncio p/ sempre); UNIQUE(payment_id) segue o dedupe de re-entrega.
-  `payment.refunded`: `pending` → `canceled`; o repo devolve o STATUS no `not_pending` e o alerta
-  ERROR `referrals.refund_after_bonus_eligible` sai SÓ p/ `eligible|paid` — `self_blocked` (bônus
-  nunca existiu) e `canceled` (re-entrega) são mudos, senão o Sentry acusaria "devolver Pix" falso.
+  `payment.refunded`: `pending|unrewarded|self_blocked|superseded` → `canceled`; o repo devolve
+  o STATUS no `not_pending` e o alerta ERROR `referrals.refund_after_bonus_eligible` sai SÓ
+  p/ `eligible|paid`; re-entrega de `canceled` é muda.
   ⚠️⚠️ **Corrida paid × refunded**: entre o `getPayment` e o INSERT passam 2 S2S, e um estorno que
   chegue nessa janela não acha conversão para cancelar (é consumido) — a conversão nasceria DEPOIS
   do estorno e viraria Pix sobre venda devolvida. Por isso, logo após um INSERT que criou linha, o

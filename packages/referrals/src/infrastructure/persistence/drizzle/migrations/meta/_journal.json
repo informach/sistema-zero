@@ -50,6 +50,13 @@
       "when": 1793821662415,
       "tag": "0006_easy_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1793838184691,
+      "tag": "0007_dapper_quentin_quire",
+      "breakpoints": true
     }
   ]
 }

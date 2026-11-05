@@ -204,7 +204,7 @@ export class DrizzleCampaignRepository implements CampaignRepository {
         redemptions: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'completed')`,
         pending: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'pending')`,
         failed: sql<number>`count(distinct ${scholarshipRedemptions.id}) filter (where ${scholarshipRedemptions.status} = 'failed')`,
-        conversions: sql<number>`count(distinct ${conversions.redemptionId}) filter (where ${conversions.status} <> 'canceled')`,
+        conversions: sql<number>`count(distinct ${conversions.redemptionId}) filter (where ${conversions.status} not in ('canceled', 'superseded'))`,
       })
       .from(codes)
       .leftJoin(scholarshipRedemptions, eq(scholarshipRedemptions.codeId, codes.id))

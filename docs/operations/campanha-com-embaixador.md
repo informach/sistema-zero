@@ -14,6 +14,10 @@ No detalhe da campanha, cada participante mostra assinatura e comissão. O paine
 
 Editar vínculo, valor ou prazo só afeta novos cadastros. O histórico anterior é preservado. Duplicar pelo Admin mantém a pessoa vinculada, mas começa a nova edição com comissão desligada, para conferir o acordo antes de habilitá-la.
 
+Desativar o embaixador mantém os presentes das campanhas disponíveis e a atribuição dos resultados, mas desliga a comissão nos novos cadastros. Acordos aceitos antes da desativação continuam válidos. Reativar a pessoa só permite comissão para cadastros futuros, conforme a configuração da campanha; não altera os aceites feitos enquanto estava desativada.
+
+Se o aviso de uma compra fora do prazo chegar antes do aviso de uma compra anterior elegível, o sistema substitui a atribuição sem comissão pela compra elegível. A linha anterior permanece como `superseded` para auditoria e deduplicação, fora das métricas. Bônus pendentes, liberados ou pagos não são substituídos. Estornar uma autoindicação também retira a compra das conversões, sem gerar bônus.
+
 ## Publicação técnica
 
 Aplicar a migração aditiva `0006_easy_longshot.sql` pelo migrador do Referrals e publicar o Referrals antes do Admin. Não editar o SQL gerado. A migração deixa campanhas existentes sem vínculo e sem comissão; não há backfill de atribuição. A tabela de códigos mantém um único proprietário por código.
@@ -21,6 +25,12 @@ Aplicar a migração aditiva `0006_easy_longshot.sql` pelo migrador do Referrals
 O resgate captura beneficiário e acordo sob o mesmo bloqueio de linha da campanha usado na edição. O snapshot financeiro fica privado, separado da origem pública do presente. Retomadas mantêm o registro aceito. Clientes antigos que omitem os novos campos preservam a configuração existente ao editar.
 
 Um rollback do aplicativo preserva os dados, mas a versão antiga não processa as comissões das campanhas. Não reverter o serviço durante campanha com comissão habilitada sem suspender novos cadastros e reconciliar pagamentos ocorridos no intervalo.
+
+### Correções do review
+
+A migração `0007_dapper_quentin_quire.sql` recria o índice único por resgate para excluir `canceled` e `superseded`. Não modifica linhas históricas nem o índice único de pagamento. É executada pelo migrador antes do novo Referrals, seguido do Admin. A reconstrução do índice pode bloquear escritas na tabela de conversões durante a migração; acompanhar duração e prontidão do serviço.
+
+Não recriar o índice antigo nem voltar para um binário que desconheça `superseded` depois de haver substituições: o índice antigo pode conflitar com o histórico e os relatórios antigos podem contá-lo. Preferir correção em uma nova versão; uma reversão exige suspender processamento e reconciliar os registros antes. Os testes de upgrade preservam integralmente um Pix pago e verificam unicidade por resgate e pagamento.
 
 ## La Opa
 

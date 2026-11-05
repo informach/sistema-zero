@@ -74,12 +74,42 @@ describe.skipIf(!url)('migração 0005 (presente Kids e adulto) sobre dados exis
       insert into referrals.codes (code, owner_kind, ambassador_id, display_name)
       values ('cida-x7k2', 'ambassador', ${ambassador!.id}, 'Cida') returning id, panel_audience`
     expect(code?.panel_audience).toBeNull()
-    await sql`insert into referrals.scholarship_redemptions (code_id, email, name, status)
-      values (${code!.id}, 'paula@example.com', 'Paula', 'completed')`
+    const [redemption] = await sql<{ id: string }[]>`
+      insert into referrals.scholarship_redemptions (code_id, email, name, status)
+      values (${code!.id}, 'paula@example.com', 'Paula', 'completed') returning id`
+    await sql`insert into referrals.conversions
+      (redemption_id, code_id, ambassador_id, payment_id, offer_slug, amount_cents,
+       bonus_cents, status, paid_at, matures_at, eligible_at, paid_marked_at, paid_marked_by, note)
+      values (${redemption!.id}, ${code!.id}, ${ambassador!.id}, 'historical-paid',
+       'comunidade', 9700, 3000, 'paid', '2026-10-01', '2026-10-09',
+       '2026-10-09', '2026-10-10', 'operator:123', 'Pix confirmado')`
+    const historical = await sql`select * from referrals.conversions`
     await sql`insert into referrals.campaigns (name, public_title, context, starts_at, ends_at)
       values ('Antiga', 'Antiga', 'event', now(), now() + interval '1 day')`
 
     await migrate(db, { migrationsFolder: MIGRATIONS, migrationsTable: 'referrals_migrations' })
+
+    // A 0007 altera apenas a vaga ativa: nenhum campo do Pix histórico muda.
+    expect([...(await sql`select * from referrals.conversions`)]).toEqual([...historical])
+    const insertConversion = async (paymentId: string, status: string) => sql`
+      insert into referrals.conversions
+      (redemption_id, code_id, payment_id, offer_slug, amount_cents, bonus_cents, status, paid_at, matures_at)
+      values (${redemption!.id}, ${code!.id}, ${paymentId}, 'comunidade', 9700, 0, ${status}, now(), now())`
+    let activeDuplicate = false
+    try {
+      await insertConversion('second-active', 'pending')
+    } catch (error) {
+      activeDuplicate = (error as { code?: string }).code === '23505'
+    }
+    expect(activeDuplicate).toBe(true)
+    await insertConversion('old-unrewarded', 'superseded')
+    let paymentDuplicate = false
+    try {
+      await insertConversion('old-unrewarded', 'superseded')
+    } catch (error) {
+      paymentDuplicate = (error as { code?: string }).code === '23505'
+    }
+    expect(paymentDuplicate).toBe(true)
 
     expect([...(await sql`select panel_audience from referrals.codes`)]).toEqual([
       { panel_audience: 'kids' },

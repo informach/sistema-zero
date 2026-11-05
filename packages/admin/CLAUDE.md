@@ -11,6 +11,11 @@ histórico. Não prometer que editar a campanha altere condições já aceitas. 
 `docs/operations/campanha-com-embaixador.md` na raiz. Cadastros reais da palestra La Opa foram
 adiados pela operadora; a entrega é do recurso, sem criar Viviane ou campanha.
 
+Desativar uma pessoa mantém presentes de campanhas, mas impede comissão nos novos aceites;
+reativar só afeta aceites futuros. A confirmação da ação explica a preservação dos acordos
+anteriores. `superseded` rotula a compra sem bônus substituída por outra anterior elegível;
+não conta nas métricas nem ocupa o resultado corrente do participante.
+
 ## Publicar cursos entre públicos e ambientes (01/11/2026)
 
 A listagem Kids oferece copiar para adulto; staging também oferece promover para produção.
