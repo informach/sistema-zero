@@ -1,9 +1,36 @@
 import { describe, expect, test } from 'bun:test'
 import { couponRequestFromSearchParams } from '../../src/lib/coupon-query'
+import { resolveCharge } from '../../src/server/catalog'
 import { resolveCouponPresentation } from '../../src/server/coupon-presentation'
 import { gatewayWithQuote, validQuote } from './catalog-charge.test-helpers'
 
 describe('cupom vindo de link ou QR Code', () => {
+  test('cupom existente fora do período não aparece como código inexistente na página ou checkout', async () => {
+    const gateway = gatewayWithQuote(
+      {
+        error: {
+          code: 'COUPON_NOT_APPLICABLE',
+          message: 'O cupom não está disponível no período desta campanha.',
+        },
+      },
+      422,
+    )
+    const message =
+      'Este cupom não está disponível para esta compra agora. Você pode continuar pelo preço normal.'
+    expect(
+      await resolveCouponPresentation(
+        gateway,
+        'desafio-primeiro-jogo-30-dias',
+        new URLSearchParams('cupom=LAOPA50'),
+      ),
+    ).toMatchObject({ status: 'invalid', message })
+    expect(await resolveCharge(gateway, 'desafio-primeiro-jogo-30-dias', 'LAOPA50')).toMatchObject({
+      ok: false,
+      code: 'INVALID_COUPON',
+      message,
+    })
+  })
+
   test('expiração informa preço normal e falha de infraestrutura não vira cupom inválido', async () => {
     const params = new URLSearchParams('cupom=EVENTO50')
     const expired = await resolveCouponPresentation(

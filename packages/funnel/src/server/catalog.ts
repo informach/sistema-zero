@@ -423,7 +423,7 @@ function couponMessage(code: string | null, detail?: string | null): string {
     case 'COUPON_NOT_APPLICABLE':
       return detail?.toLowerCase().includes('expir')
         ? 'A validade deste cupom terminou.'
-        : 'Não encontramos esse cupom para esta oferta. Confira o código.'
+        : 'Este cupom não está disponível para esta compra agora. Você pode continuar pelo preço normal.'
     default:
       return 'Não encontramos esse cupom para esta oferta. Confira o código.'
   }
