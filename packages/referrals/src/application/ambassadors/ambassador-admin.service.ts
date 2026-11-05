@@ -257,6 +257,7 @@ export class AmbassadorAdminService {
     const redemptions = await this.repo.listRedemptionsByAmbassador(id, audience)
     const conversions = await this.repo.listConversionsByRedemptions(redemptions.map((r) => r.id))
     for (const c of conversions) {
+      if (c.status === 'superseded') continue
       const previous = conversionByRedemption.get(c.redemptionId)
       if (!previous || (previous.status === 'canceled' && c.status !== 'canceled'))
         conversionByRedemption.set(c.redemptionId, c)

@@ -103,6 +103,7 @@ export const CONVERSION_STATUSES = [
   'canceled',
   'self_blocked',
   'unrewarded',
+  'superseded',
 ] as const
 export type ConversionStatus = (typeof CONVERSION_STATUSES)[number]
 
@@ -302,8 +303,9 @@ export interface ReferralRepository {
     email: string,
   ): Promise<{ redemption: RedemptionRecord; code: CodeRecord }[]>
   /**
-   * `ON CONFLICT DO NOTHING` nas DUAS uniques (redemption_id = "só a primeira
-   * cobrança"; payment_id = re-entrega) — conflito devolve `created: false`.
+   * Uma vaga por resgate e dedupe por paymentId. Compra anterior elegível pode
+   * substituir atomicamente uma `unrewarded`, preservada como `superseded`.
+   * Demais conflitos devolvem `created: false`; elegíveis/pagas não mudam.
    */
   insertConversion(input: {
     redemptionId: string
@@ -319,8 +321,8 @@ export interface ReferralRepository {
     maturesAt: Date
   }): Promise<{ created: boolean }>
   /**
-   * Estorno na garantia: só `pending` cancela. `not_pending` devolve o STATUS
-   * corrente — self_blocked/canceled são benignos; eligible/paid afloram ao
+   * Estorno cancela pending e estados sem bônus, inclusive autoindicação.
+   * `not_pending` devolve o STATUS corrente; eligible/paid afloram ao
    * humano (bônus já prometido/pago de assinatura estornada).
    */
   cancelPendingConversionByPayment(

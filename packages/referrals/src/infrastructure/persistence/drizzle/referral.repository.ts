@@ -676,13 +676,14 @@ export class DrizzleReferralRepository implements ReferralRepository {
             .where(eq(ambassadors.id, campaign.ambassadorId))
             .for('share')
           if (!beneficiary) throw new Error('Beneficiário da campanha inexistente')
+          const commissionEnabled = campaign.commissionEnabled && beneficiary.status === 'active'
           campaignReferral = {
             ambassadorId: beneficiary.id,
             ambassadorName: beneficiary.name,
             ambassadorEmail: beneficiary.email,
-            commissionEnabled: campaign.commissionEnabled,
-            commissionAmountCents: campaign.commissionAmountCents,
-            commissionWindowDays: campaign.commissionWindowDays,
+            commissionEnabled,
+            commissionAmountCents: commissionEnabled ? campaign.commissionAmountCents : null,
+            commissionWindowDays: commissionEnabled ? campaign.commissionWindowDays : null,
           }
         }
         sourceSnapshot = campaignSource({
@@ -931,14 +932,55 @@ export class DrizzleReferralRepository implements ReferralRepository {
     paidAt: Date
     maturesAt: Date
   }): Promise<{ created: boolean }> {
-    // As DUAS uniques (redemption_id e payment_id) protegem: `onConflictDoNothing`
-    // SEM target cobre qualquer uma (ciclo de renovação OU re-entrega → no-op).
-    const rows = await this.db
-      .insert(conversions)
-      .values(input)
-      .onConflictDoNothing()
-      .returning({ id: conversions.id })
-    return { created: rows.length > 0 }
+    try {
+      return await this.db.transaction(async (tx) => {
+        // Serializa a escolha por resgate, inclusive quando ainda não existe conversão.
+        await tx
+          .select({ id: scholarshipRedemptions.id })
+          .from(scholarshipRedemptions)
+          .where(eq(scholarshipRedemptions.id, input.redemptionId))
+          .for('update')
+        const [seen] = await tx
+          .select({ id: conversions.id })
+          .from(conversions)
+          .where(eq(conversions.paymentId, input.paymentId))
+        if (seen) return { created: false }
+        const [current] = await tx
+          .select()
+          .from(conversions)
+          .where(
+            and(
+              eq(conversions.redemptionId, input.redemptionId),
+              sql`${conversions.status} not in ('canceled', 'superseded')`,
+            ),
+          )
+          .for('update')
+        if (current) {
+          // Um webhook tardio sem comissão não pode ocupar a vaga de uma compra
+          // anterior elegível. Bônus já prometidos/pagos nunca são substituídos.
+          if (
+            !(
+              current.status === 'unrewarded' &&
+              input.status === 'pending' &&
+              input.bonusCents > 0 &&
+              input.paidAt < current.paidAt
+            )
+          )
+            return { created: false }
+          await tx
+            .update(conversions)
+            .set({ status: 'superseded', updatedAt: sql`now()` })
+            .where(eq(conversions.id, current.id))
+        }
+        // Qualquer conflito aborta também a substituição acima: nunca liberar a
+        // vaga se o paymentId já foi atribuído por outra transação.
+        await tx.insert(conversions).values(input)
+        return { created: true }
+      })
+    } catch (error) {
+      if (isUniqueViolation(error)) return { created: false }
+      throw error
+    }
   }
 
   async cancelPendingConversionByPayment(
@@ -952,13 +994,13 @@ export class DrizzleReferralRepository implements ReferralRepository {
       .where(
         and(
           eq(conversions.paymentId, paymentId),
-          inArray(conversions.status, ['pending', 'unrewarded']),
+          inArray(conversions.status, ['pending', 'unrewarded', 'self_blocked', 'superseded']),
         ),
       )
       .returning({ id: conversions.id })
     if (rows.length > 0) return { kind: 'canceled' }
-    // O STATUS decide o desfecho no serviço: self_blocked/canceled são
-    // benignos; eligible/paid viram alerta de "estorno após bônus".
+    // O STATUS decide o desfecho: canceled é idempotente;
+    // eligible/paid viram alerta de "estorno após bônus".
     const [existing] = await this.db
       .select({ status: conversions.status })
       .from(conversions)

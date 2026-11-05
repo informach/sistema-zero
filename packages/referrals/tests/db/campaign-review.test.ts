@@ -1,0 +1,357 @@
+import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+import path from 'node:path'
+import { migrate } from 'drizzle-orm/postgres-js/migrator'
+import { AmbassadorAdminService } from '../../src/application/ambassadors/ambassador-admin.service'
+import { CampaignAdminService } from '../../src/application/campaigns/campaign-admin.service'
+import { RecordConversionService } from '../../src/application/conversions/record-conversion.service'
+import type { PaymentSnapshot } from '../../src/domain/ports/clients.port'
+import { DrizzleCampaignRepository } from '../../src/infrastructure/persistence/drizzle/campaign.repository'
+import {
+  createDbConnection,
+  type DbConnection,
+} from '../../src/infrastructure/persistence/drizzle/db'
+import { DrizzleReferralRepository } from '../../src/infrastructure/persistence/drizzle/referral.repository'
+import { conversions } from '../../src/infrastructure/persistence/drizzle/schema'
+import { FakeReferralsGateway, silentLogger } from '../fakes/in-memory'
+
+// Exige banco explicitamente descartável; nunca usa DATABASE_URL da aplicação.
+const url = process.env.TEST_DATABASE_URL
+describe.skipIf(!url)('regressões do full review de campanhas — PostgreSQL real', () => {
+  let connection: DbConnection
+  let repo: DrizzleReferralRepository
+  let campaigns: DrizzleCampaignRepository
+  let admin: CampaignAdminService
+
+  beforeAll(async () => {
+    connection = createDbConnection(url!, { max: 5 })
+    await migrate(connection.db, {
+      migrationsFolder: path.join(
+        import.meta.dir,
+        '../../src/infrastructure/persistence/drizzle/migrations',
+      ),
+      migrationsTable: 'referrals_migrations',
+    })
+    repo = new DrizzleReferralRepository(connection.db)
+    campaigns = new DrizzleCampaignRepository(connection.db)
+    admin = new CampaignAdminService(campaigns, repo, 'https://example.test')
+  })
+  afterAll(async () => connection?.close())
+
+  async function fixture() {
+    const suffix = crypto.randomUUID().slice(0, 8)
+    const person = await repo.createAmbassadorWithCode({
+      name: 'Parceira',
+      email: `partner-${suffix}@example.test`,
+      code: `partner-${suffix}`,
+      pageToken: crypto.randomUUID().repeat(2),
+    })
+    if (person.kind !== 'created') throw Error('seed')
+    const campaign = await admin.create(
+      {
+        name: 'Palestra',
+        publicTitle: 'Presente',
+        description: '',
+        context: 'event',
+        code: `review-${suffix}`,
+        channel: 'palestra',
+        audience: 'kids',
+        status: 'active',
+        startsAt: new Date(Date.now() - 60_000).toISOString(),
+        endsAt: new Date(Date.now() + 3_600_000).toISOString(),
+        ambassadorId: person.ambassador.id,
+        commissionEnabled: true,
+        commissionAmountCents: 4500,
+        commissionWindowDays: 30,
+      },
+      'Teste',
+    )
+    const code = (await repo.findCodeByCode(campaign!.code))!
+    const payments = new Map<string, PaymentSnapshot>()
+    const service = new RecordConversionService(
+      repo,
+      {
+        getPayment: async (id) => payments.get(id) ?? null,
+        getSubscriptionCreatedAt: async () => null,
+      },
+      {
+        getOfferById: async () => ({
+          id: 'offer',
+          slug: 'comunidade-dos-criadores-anual',
+          name: 'Anual',
+        }),
+      },
+      {
+        conversionOfferSlugs: ['comunidade-dos-criadores-anual'],
+        bonusAmountCents: 3000,
+        matureHours: 180,
+      },
+      silentLogger,
+    )
+    async function claim(email = `${crypto.randomUUID()}@example.test`) {
+      const input = {
+        codeId: code.id,
+        audience: 'kids' as const,
+        email,
+        name: 'Pessoa',
+        phone: null,
+      }
+      const { redemption } = await repo.insertRedemption(input)
+      await repo.markRedemptionGranted(redemption.id, new Date())
+      return redemption
+    }
+    function payment(email: string, paidAt: Date) {
+      const id = crypto.randomUUID()
+      payments.set(id, {
+        id,
+        status: 'PAID',
+        paidAt,
+        customer: { email, name: 'Pessoa' },
+        amountInCents: 9700n,
+        subscriptionId: null,
+        metadata: { offerId: 'offer' },
+      })
+      return id
+    }
+    const paid = (id: string) =>
+      service.execute({
+        deliveryId: crypto.randomUUID(),
+        eventName: 'payment.paid',
+        payload: { paymentId: id },
+      })
+    async function refund(id: string) {
+      payments.get(id)!.status = 'REFUNDED'
+      return service.execute({
+        deliveryId: crypto.randomUUID(),
+        eventName: 'payment.refunded',
+        payload: { paymentId: id },
+      })
+    }
+    return { person, campaign: campaign!, code, claim, payment, paid, refund, payments }
+  }
+
+  test.each([
+    'early-first',
+    'late-first',
+    'concurrent',
+  ])('pagamentos %s preservam uma comissão, os relatórios e o Pix idempotente', async (order) => {
+    const f = await fixture()
+    const r = await f.claim()
+    const early = f.payment(r.email, new Date(r.createdAt.getTime() + 86_400_000))
+    const late = f.payment(r.email, new Date(r.createdAt.getTime() + 31 * 86_400_000))
+    if (order === 'concurrent') await Promise.all([f.paid(late), f.paid(early)])
+    else for (const id of order === 'late-first' ? [late, early] : [early, late]) await f.paid(id)
+    await Promise.all([f.paid(early), f.paid(late), f.paid(early)])
+    const rows = await repo.listConversionsByRedemptions([r.id])
+    expect(rows.filter((c) => c.status === 'pending')).toHaveLength(1)
+    const selected = rows.find((c) => c.status === 'pending')!
+    expect(selected).toMatchObject({ paymentId: early, bonusCents: 4500 })
+    if (order === 'late-first')
+      expect(rows.find((c) => c.paymentId === late)?.status).toBe('superseded')
+    expect((await admin.detail(f.campaign.id))?.redemptions[0]?.conversion).toMatchObject({
+      status: 'pending',
+      bonusCents: 4500,
+    })
+    const ambassadors = new AmbassadorAdminService(
+      repo,
+      new FakeReferralsGateway(),
+      { funnelPublicUrl: 'https://example.test', adultGiftEnabled: true },
+      silentLogger,
+    )
+    expect(
+      (await ambassadors.detail(f.person.ambassador.id))?.conversionByRedemption.get(r.id)
+        ?.paymentId,
+    ).toBe(early)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(1)
+    expect(await repo.markConversionPaid(selected.id, 'Teste', null)).toBe(false)
+    await repo.matureConversions(new Date(selected.maturesAt.getTime() + 1), 1000)
+    expect(await repo.markConversionPaid(selected.id, 'Teste', null)).toBe(true)
+    expect(await repo.markConversionPaid(selected.id, 'Teste', null)).toBe(false)
+    await f.paid(early)
+    expect(
+      (await repo.listConversionsByRedemptions([r.id])).filter((c) => c.status === 'paid'),
+    ).toHaveLength(1)
+  })
+
+  test('estornos e duplicatas não revivem a compra substituída nem escondem o estorno corrente', async () => {
+    const f = await fixture()
+    const r = await f.claim()
+    const early = f.payment(r.email, new Date(r.createdAt.getTime() + 86_400_000))
+    const late = f.payment(r.email, new Date(r.createdAt.getTime() + 31 * 86_400_000))
+    await f.paid(late)
+    await f.paid(early)
+    await f.refund(early)
+    await f.paid(late)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(0)
+    expect((await admin.detail(f.campaign.id))?.redemptions[0]?.conversion?.status).toBe('canceled')
+    await f.refund(late)
+    await f.refund(late)
+    expect(
+      (await repo.listConversionsByRedemptions([r.id])).every((c) => c.status === 'canceled'),
+    ).toBe(true)
+    const next = f.payment(r.email, new Date(r.createdAt.getTime() + 2 * 86_400_000))
+    await f.paid(next)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(1)
+  })
+
+  test('estorno da compra tardia concorrente à correção não cancela a comissão anterior', async () => {
+    const f = await fixture()
+    const r = await f.claim()
+    const early = f.payment(r.email, new Date(r.createdAt.getTime() + 86_400_000))
+    const late = f.payment(r.email, new Date(r.createdAt.getTime() + 31 * 86_400_000))
+    await f.paid(late)
+    await Promise.all([f.paid(early), f.refund(late)])
+    expect(
+      (await repo.listConversionsByRedemptions([r.id])).filter((c) => c.status === 'pending'),
+    ).toMatchObject([{ paymentId: early, bonusCents: 4500 }])
+  })
+
+  test('conflito de paymentId reverte a substituição inteira', async () => {
+    const f = await fixture()
+    const r = await f.claim()
+    const other = await f.claim()
+    const late = f.payment(r.email, new Date(r.createdAt.getTime() + 31 * 86_400_000))
+    await f.paid(late)
+    const candidate = {
+      redemptionId: r.id,
+      codeId: f.code.id,
+      ambassadorId: f.person.ambassador.id,
+      paymentId: crypto.randomUUID(),
+      subscriptionId: null,
+      offerSlug: 'comunidade-dos-criadores-anual',
+      amountCents: 9700n,
+      bonusCents: 4500,
+      status: 'pending' as const,
+      paidAt: new Date(r.createdAt.getTime() + 1000),
+      maturesAt: new Date(Date.now() + 3600_000),
+    }
+    let unlock!: () => void
+    let locked!: () => void
+    const ready = new Promise<void>((resolve) => {
+      locked = resolve
+    })
+    const release = new Promise<void>((resolve) => {
+      unlock = resolve
+    })
+    const competing = connection.db.transaction(async (tx) => {
+      await tx.insert(conversions).values({ ...candidate, redemptionId: other.id })
+      locked()
+      await release
+    })
+    await ready
+    const inserting = repo.insertConversion(candidate)
+    try {
+      let blocked = false
+      for (let attempt = 0; attempt < 100 && !blocked; attempt++) {
+        const [row] =
+          await connection.sql`select exists (select 1 from pg_stat_activity where datname = current_database() and cardinality(pg_blocking_pids(pid)) > 0) as blocked`
+        blocked = row!.blocked
+        if (!blocked) await Bun.sleep(10)
+      }
+      expect(blocked).toBe(true)
+    } finally {
+      unlock()
+      await competing
+    }
+    expect(await inserting).toEqual({ created: false })
+    expect(await repo.listConversionsByRedemptions([r.id])).toMatchObject([
+      { paymentId: late, status: 'unrewarded' },
+    ])
+  })
+
+  test('compra anterior não troca uma comissão elegível ou já paga', async () => {
+    const f = await fixture()
+    const r = await f.claim()
+    const selectedId = f.payment(r.email, new Date(r.createdAt.getTime() + 2 * 86_400_000))
+    await f.paid(selectedId)
+    const [selected] = await repo.listConversionsByRedemptions([r.id])
+    await repo.matureConversions(new Date(selected!.maturesAt.getTime() + 1), 1000)
+    const earlier = f.payment(r.email, new Date(r.createdAt.getTime() + 86_400_000))
+    await f.paid(earlier)
+    expect(await repo.listConversionsByRedemptions([r.id])).toMatchObject([
+      { paymentId: selectedId, status: 'eligible' },
+    ])
+    await repo.markConversionPaid(selected!.id, 'Operador', 'Pix confirmado')
+    await f.paid(earlier)
+    expect(await repo.listConversionsByRedemptions([r.id])).toMatchObject([
+      { paymentId: selectedId, status: 'paid', paidMarkedBy: 'Operador', note: 'Pix confirmado' },
+    ])
+  })
+
+  test('desativar preserva o acordo anterior e não cria novo acordo remunerado; reativar só vale para novos resgates', async () => {
+    const f = await fixture()
+    const old = await f.claim()
+    await repo.updateAmbassador(f.person.ambassador.id, { status: 'disabled' })
+    const current = await f.claim()
+    expect(current.campaignReferral).toMatchObject({
+      ambassadorId: f.person.ambassador.id,
+      commissionEnabled: false,
+      commissionAmountCents: null,
+      commissionWindowDays: null,
+    })
+    expect(
+      (await repo.findRedemptionByEmail(old.email, 'kids'))?.campaignReferral?.commissionEnabled,
+    ).toBe(true)
+    for (const r of [old, current])
+      await f.paid(f.payment(r.email, new Date(r.createdAt.getTime() + 1000)))
+    expect((await repo.listConversionsByRedemptions([old.id]))[0]).toMatchObject({
+      status: 'pending',
+      bonusCents: 4500,
+    })
+    expect((await repo.listConversionsByRedemptions([current.id]))[0]).toMatchObject({
+      status: 'unrewarded',
+      bonusCents: 0,
+    })
+    await repo.updateAmbassador(f.person.ambassador.id, { status: 'active' })
+    expect((await f.claim()).campaignReferral?.commissionEnabled).toBe(true)
+    expect((await f.claim(current.email)).campaignReferral?.commissionEnabled).toBe(false)
+  })
+
+  test('resgate aguardando a desativação sob lock lê o status confirmado', async () => {
+    const f = await fixture()
+    let unlock!: () => void
+    let locked!: () => void
+    const ready = new Promise<void>((resolve) => {
+      locked = resolve
+    })
+    const release = new Promise<void>((resolve) => {
+      unlock = resolve
+    })
+    const disabling = connection.sql.begin(async (tx) => {
+      await tx`update referrals.ambassadors set status = 'disabled' where id = ${f.person.ambassador.id}`
+      locked()
+      await release
+    })
+    await ready
+    const claim = f.claim()
+    try {
+      let blocked = false
+      for (let attempt = 0; attempt < 100 && !blocked; attempt++) {
+        const [row] =
+          await connection.sql`select exists (select 1 from pg_stat_activity where datname = current_database() and cardinality(pg_blocking_pids(pid)) > 0) as blocked`
+        blocked = row!.blocked
+        if (!blocked) await Bun.sleep(10)
+      }
+      expect(blocked).toBe(true)
+    } finally {
+      unlock()
+      await disabling
+    }
+    expect((await claim).campaignReferral?.commissionEnabled).toBe(false)
+  })
+
+  test('autoindicação estornada sai da métrica; refund repetido e nova compra permanecem sem bônus', async () => {
+    const f = await fixture()
+    const r = await f.claim(f.person.ambassador.email)
+    const id = f.payment(r.email, new Date(r.createdAt.getTime() + 1000))
+    await f.paid(id)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(1)
+    await f.refund(id)
+    await f.refund(id)
+    expect((await campaigns.stats(f.campaign.id)).conversions).toBe(0)
+    expect((await admin.detail(f.campaign.id))?.redemptions[0]?.conversion?.status).toBe('canceled')
+    await f.paid(f.payment(r.email, new Date(r.createdAt.getTime() + 2000)))
+    const rows = await repo.listConversionsByRedemptions([r.id])
+    expect(rows.filter((c) => c.status === 'self_blocked')).toHaveLength(1)
+    expect(rows.every((c) => c.bonusCents === 0)).toBe(true)
+  })
+})

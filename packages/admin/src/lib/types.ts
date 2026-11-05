@@ -1439,6 +1439,7 @@ export type ConversionStatus =
   | 'canceled'
   | 'self_blocked'
   | 'unrewarded'
+  | 'superseded'
 
 export interface AmbassadorRedemptionView {
   id: string

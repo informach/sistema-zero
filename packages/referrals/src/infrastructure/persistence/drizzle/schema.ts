@@ -262,7 +262,7 @@ export const conversions = referralsSchema.table(
     amountCents: bigint({ mode: 'bigint' }).notNull(),
     /** Snapshot do bônus no momento (env BONUS_AMOUNT_CENTS; 0 em self_blocked). */
     bonusCents: integer().notNull(),
-    /** pending | eligible | paid | canceled | self_blocked | unrewarded (campanha) */
+    /** pending | eligible | paid | canceled | self_blocked | unrewarded | superseded */
     status: varchar({ length: 16 }).notNull().default('pending'),
     /** paid_at do PAGAMENTO (âncora da maturação). */
     paidAt: timestamp({ withTimezone: true }).notNull(),
@@ -279,10 +279,10 @@ export const conversions = referralsSchema.table(
     updatedAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    // PARCIAL: `canceled` NÃO ocupa a vaga — bolsista que estornou na garantia
-    // e assinou DE NOVO meses depois volta a gerar bônus (achado do full review;
-    // pending/eligible/paid/self_blocked seguem travando "só a primeira").
-    uniqueIndex('conversions_redemption_uq').on(t.redemptionId).where(sql`status <> 'canceled'`),
+    // Estornos e compras substituídas ficam no histórico, sem ocupar a vaga.
+    uniqueIndex('conversions_redemption_uq')
+      .on(t.redemptionId)
+      .where(sql`status not in ('canceled', 'superseded')`),
     uniqueIndex('conversions_payment_uq').on(t.paymentId),
     index('conversions_status_matures_idx').on(t.status, t.maturesAt),
     index('conversions_ambassador_status_idx').on(t.ambassadorId, t.status),

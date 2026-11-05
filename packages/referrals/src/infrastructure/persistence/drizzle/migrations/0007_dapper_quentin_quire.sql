@@ -1,0 +1,2 @@
+DROP INDEX "referrals"."conversions_redemption_uq";--> statement-breakpoint
+CREATE UNIQUE INDEX "conversions_redemption_uq" ON "referrals"."conversions" USING btree ("redemption_id") WHERE status not in ('canceled', 'superseded');

@@ -215,7 +215,9 @@ export class CampaignAdminService {
         attribution: r.attribution ?? null,
         ambassadorName: r.campaignReferral?.ambassadorName ?? null,
         conversion: (() => {
-          const rows = conversions.filter((c) => c.redemptionId === r.id)
+          const rows = conversions.filter(
+            (c) => c.redemptionId === r.id && c.status !== 'superseded',
+          )
           const conversion = rows.find((c) => c.status !== 'canceled') ?? rows[0]
           return conversion
             ? {

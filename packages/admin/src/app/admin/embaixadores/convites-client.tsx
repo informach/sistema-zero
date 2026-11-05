@@ -119,6 +119,7 @@ const conversionLabels: Record<string, string> = {
   canceled: 'Pagamento estornado',
   self_blocked: 'Autoindicação sem comissão',
   unrewarded: 'Sem comissão',
+  superseded: 'Compra substituída por uma anterior elegível',
 }
 const message = (err: unknown) =>
   err && typeof err === 'object' && 'code' in err && err.code === 'CAMPAIGN_AUDIENCE_LOCKED'
@@ -864,7 +865,8 @@ function CampaignEditor({
             <legend className="px-1 text-sm font-semibold">Embaixador e comissão</legend>
             <p className="text-sm text-muted-foreground">
               Vincule um embaixador para acompanhar os resultados desta ação, mesmo sem comissão.
-              Cadastre a pessoa na aba Embaixadores antes de selecioná-la aqui.
+              Cadastre a pessoa na aba Embaixadores antes de selecioná-la aqui. Se ela for
+              desativada, novos cadastros ficam sem comissão; os acordos anteriores são preservados.
             </p>
             <p className="text-sm" role="status">
               {value.ambassadorId
