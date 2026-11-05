@@ -1,4 +1,4 @@
-import type { PaginaDoPalco } from './pagina'
+import type { PaginaDoPalco, Rolagem } from './pagina'
 
 /**
  * Os verbos da gravação das aulas do Sistema Zero: o texto entre colchetes do "Na tela" do
@@ -686,7 +686,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     if (!rolagem) throw new Error(`Não achei o bloco "${rolar[1]}" na área de trabalho.`)
     // Já à vista: a mão só aponta para ele.
     if (rolagem === 'visivel') return agir(`apontar bloco "${rolar[1]}"`, jogos, pagina)
-    return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
+    return arrastarFundo(rolagem, texto)
   }
   const encaixarDentro = /^encaixar ["“]([^"”]+)["”] dentro de ["“]([^"”]+)["”]$/i.exec(texto)
   if (encaixarDentro?.[1] && encaixarDentro[2]) {
@@ -797,7 +797,7 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
     if (!rolagem)
       throw new Error(`Não achei todos estes blocos na área de trabalho: ${blocos.join(', ')}.`)
     if (rolagem === 'visivel') return agir(`apontar bloco "${blocos[0]}"`, jogos, pagina)
-    return [{ fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }]
+    return arrastarFundo(rolagem, texto)
   }
   // "Segure essa pergunta pelo sinal de maior e arraste até a lixeira": a mão pega o bloco pelo
   // campo dito (ele é de um bloco encaixado em `bloco`) e o solta na lixeira.
@@ -887,6 +887,12 @@ export function agir(acao: string, jogos: readonly JogoDaAula[], pagina?: Pagina
  * Um campo fora da vista ou coberto (pela paleta aberta, por um painel) vem para o centro da área
  * de trabalho, num arrasto do fundo, antes do clique; depois a página é perguntada de novo.
  */
+/** O arrasto do fundo e, quando um só não alcança, outro depois dele. */
+function arrastarFundo(rolagem: Rolagem, texto: string): Passo[] {
+  const arrasto: Passo = { fazer: 'arrastar', alvo: rolagem.de, para: rolagem.para }
+  return rolagem.falta ? [arrasto, { fazer: 'continuar', acao: texto }] : [arrasto]
+}
+
 function trazerCampo(
   texto: string,
   valor: string,
@@ -920,6 +926,11 @@ export async function agirNaPagina(
   // passa do empurrão e espera as pilhas pararem. No ritmo sem pausa do Verificar plano, medir
   // antes disso fazia a mão pegar o bloco recém-encaixado em vez da área.
   if (f.startsWith('afastar de ')) await assentar(pagina)
+  // A roda que rolou a galeria aberta anima a lista por um instante, e às vezes só começa um
+  // pouco depois do gesto. Medir no meio disso pedia outra rolagem, e as duas juntas passavam da
+  // imagem, que sumia acima da lista. A escolha espera a lista parar.
+  const escolher = /^escolher ["“]([^"”]+)["”]/i.exec(acao.trim())
+  if (escolher?.[1] && pagina.aberto() === 'lista') await listaParada(pagina, escolher[1])
   // O Estúdio aplica uma escolha (o nome novo de Alterar variável) um pouco depois de a lista
   // fechar: o bloco ou o campo que ainda não aparece com o texto novo é procurado de novo por
   // um instante, com o vídeo parado na procura, antes de virar erro.
@@ -942,6 +953,23 @@ const ASSENTAR = 350
 /** De quanto em quanto tempo as pilhas são medidas, e o teto da espera. */
 const ENTRE_MEDIDAS = 100
 const ASSENTAR_NO_MAXIMO = 2000
+
+/** Por quanto tempo a lista aberta precisa ficar parada antes da escolha, e o teto da espera. */
+const LISTA_PARADA = 300
+const LISTA_NO_MAXIMO = 2000
+
+/** Espera a opção `valor` da lista aberta ficar no mesmo lugar por LISTA_PARADA. */
+async function listaParada(pagina: PaginaDoPalco, valor: string): Promise<void> {
+  const onde = () => JSON.stringify(pagina.opcaoNaLista(valor))
+  let antes = onde()
+  let parada = 0
+  for (let passou = 0; passou < LISTA_NO_MAXIMO && parada < LISTA_PARADA; passou += ENTRE_MEDIDAS) {
+    await new Promise((r) => setTimeout(r, ENTRE_MEDIDAS))
+    const agora = onde()
+    parada = agora === antes ? parada + ENTRE_MEDIDAS : 0
+    antes = agora
+  }
+}
 
 /** Espera as pilhas da área de trabalho pararem de andar (no mínimo ASSENTAR). */
 async function assentar(pagina: PaginaDoPalco): Promise<void> {
