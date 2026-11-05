@@ -17,6 +17,7 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Browser, chromium, type Page } from 'playwright'
+import { checkOfferImageZoom } from './helpers/offer-image-zoom'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = resolve(cwd, '../../tmp/desafio-ofertas-review')
@@ -284,6 +285,34 @@ try {
     await page.setViewportSize({ width: 390, height: 844 })
     await carregarTudo(page)
     await page.screenshot({ path: resolve(output, `${p.nome}-390.png`), fullPage: true })
+    if (p.basePath === kidsBase) {
+      // Capturas por seção evitam limites de textura em páginas mobile muito longas.
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 844 })
+        const family = p.nome === 'kids-9a17' ? 'fundadores' : 'prova'
+        for (const section of ['hero', 'treina', family]) {
+          const region = page.locator(`section[data-analytics-id$="-${section}"]`)
+          await region.screenshot({ path: resolve(output, `${p.nome}-${width}-${section}.png`) })
+        }
+      }
+      await page.setViewportSize({ width: 390, height: 844 })
+      assert.equal(await page.locator('footer').count(), 1)
+      assert.equal(await page.locator('.c9-rodape,.cm9-faixa').count(), 0)
+      assert.equal(await page.locator('.dc-family [data-relato="AV04"]').count(), 1)
+      assert.equal(await page.locator('.dc-family [data-relato="AV03"]').count(), 1)
+      assert.equal(await page.locator('.dc-sharing [data-relato="AV02"]').count(), 1)
+      const lessonImages = page.locator(
+        'section[data-analytics-id$="-aula"] img,section[data-analytics-id$="-sessao"] .dm9-sessao img',
+      )
+      const alts = await lessonImages.evaluateAll((images) =>
+        images.map((image) => (image as HTMLImageElement).alt).filter(Boolean),
+      )
+      assert.equal(alts.length, 4)
+      assert(alts.every((alt) => alt.includes('Chave do Farol')))
+      await checkOfferImageZoom(page)
+      await page.setViewportSize({ width: 844, height: 390 })
+      await checkOfferImageZoom(page)
+    }
 
     // Os dois CTAs abrem o pré-checkout, que chega ao checkout com a atribuição da URL.
     assert.equal(await page.locator('[data-checkout-cta]').count(), 2, `${p.nome}: two CTAs`)

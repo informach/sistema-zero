@@ -75,11 +75,11 @@ describe('copy do presente: as regras de voz valem nos dois públicos', () => {
 describe('página Kids', () => {
   test('conversa com o responsável sobre o filho e diz o que o presente inclui', () => {
     const texto = JSON.stringify(PRESENTE_KIDS)
-    expect(texto).toContain('Seu filho cria um jogo e pratica como ')
+    expect(texto).toContain('treinar habilidades para a vida')
     expect(texto).toContain('O primeiro passo é do responsável')
-    expect(texto).toContain('Mural por 7 dias')
-    expect(texto).toContain('link do jogo publicado')
-    expect(texto).toContain('com assinatura à parte')
+    expect(texto).toContain('7 dias de acesso ao curso e ao Mural')
+    expect(texto).toContain('link de um jogo publicado permanece acessível')
+    expect(texto).toContain('assinatura à parte')
     expect(texto).toContain('Cada e-mail pode resgatar um presente Kids')
     expect(texto).toContain('Crianças menores de 9 anos também podem participar')
     expect(texto).toContain('acompanhadas por um responsável durante as atividades')
@@ -94,6 +94,9 @@ describe('página Kids', () => {
       PRESENTE_KIDS.aula.imagem,
       PRESENTE_KIDS.mural.imagem,
       PRESENTE_KIDS.plataforma.imagem,
+      PRESENTE_KIDS.porQue.imagem,
+      PRESENTE_KIDS.familia.imagem,
+      ...PRESENTE_KIDS.habilidades.comparacao.map((figura) => figura.imagem),
     ]
     for (const imagem of imagens)
       expect([

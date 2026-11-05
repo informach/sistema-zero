@@ -62,12 +62,12 @@
   font-weight: 800;
   transform: rotate(-2deg);
 }
-.c917 .pk-figura > img {
+.c917 .pk-figura :where(.kof-image-link) img {
   display: block;
   width: 100%;
   height: auto;
   margin-top: 12px;
-  aspect-ratio: 1264 / 723;
+  aspect-ratio: auto;
   border: var(--c9-borda);
   border-radius: 12px;
   object-fit: cover;
@@ -408,4 +408,101 @@
   .c917 .pk-figura {
     transform: none;
   }
+}
+
+/* Copy e exemplos visuais aprovados em 05/11/2026. */
+
+.c917 .pk-visual {
+  flex: 1 1 470px;
+  min-width: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.c917 .pk-visual .pk-tela {
+  flex: initial;
+  width: 100%;
+  height: auto;
+  aspect-ratio: auto;
+  object-fit: contain;
+  display: block;
+}
+.c917 .pk-visual figcaption {
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--c9-suave);
+  max-width: 70ch;
+}
+.c917 .pk-ampliar {
+  display: block;
+  margin-top: 5px;
+  font-size: 13px;
+  color: var(--c9-suave);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.c917 .pk-comparacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 26px;
+  width: 100%;
+}
+.c917 .pk-comparacao .pk-visual {
+  width: 100%;
+}
+.c917 .pk-comparacao strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--c9-tinta);
+}
+.c917 .c9-cartao__texto p + p {
+  margin-top: 14px;
+}
+.c917 .pk-rotina {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+}
+.c917 .pk-conversa {
+  max-width: 860px;
+  width: 100%;
+  align-self: center;
+  flex: initial;
+}
+.c917 .pk-conversa img {
+  box-shadow: none;
+  border: 0;
+  border-radius: 18px;
+}
+.c917 .pk-conversa figcaption {
+  max-width: none;
+}
+
+.c917 .pk-blocos .pk-tela {
+  background: var(--kof-chao);
+}
+.c917 .pk-blocos figcaption {
+  font-size: 16px;
+}
+.c917 .pk-blocos strong {
+  color: var(--c9-tinta);
+}
+@media (max-width: 767px) {
+  .c917 .pk-comparacao,
+  .c917 .pk-rotina {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .c917 .pk-visual {
+    flex-basis: 100%;
+  }
+  .c917 .pk-conversa {
+    flex-basis: auto;
+  }
+}
+
+.c917 .pk-foto img {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
 }

@@ -1,13 +1,23 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
-## Copy do presente aprovada e primeiro nome público (05/11/2026)
+## Ofertas Kids aprovadas e primeiro nome público (05/11/2026)
 
-`PRESENTE_KIDS` apresenta criação de jogos como ferramenta para praticar organização,
-revisão de tentativas e pedido de ajuda. A seção de habilidades reutiliza os cartões `.c917`;
-cores, fontes e componentes permanecem os mesmos. O FAQ distingue a proposta de autonomia
-para 9 a 17 anos da participação de menores acompanhados por um responsável.
-`tela-cade-publicado.png` é uma captura real do Cadê Todo Mundo publicado em staging,
-aprovada na proposta HTML. Substitui a nave apenas na seção do Mural do presente Kids.
+`PRESENTE_KIDS`, `PAGINA_DESAFIO_9A17` e `PAGINA_DESAFIO_MENOR9` implementam as propostas
+aprovadas: habilidades para a vida, situações de prática no jogo, conexões com escola e
+rotina, papel do responsável e condições de acesso. A programação é a ferramenta; a copy
+não promete mudança clínica ou transferência automática para a vida. As duas origens do
+presente compartilham o corpo, com estado, nome e prazo reais da campanha. O FAQ distingue
+9 a 17 anos de menores acompanhados por um responsável.
+
+As capturas em `public/img/cade-todo-mundo/` mostram o Cadê; as `farol-*.webp` do Desafio
+mostram A Chave do Farol, incluindo blocos reais. Os visuais de situações ficam em
+`kids-aprender-criando/`. Capturas foram convertidas para WebP sem perdas; ilustrações usam
+WebP otimizado. `OfferImage`/`OfferImageZoom` ampliam em diálogo centralizado, com teclado,
+retorno de foco e fallback para a imagem sem JavaScript. Cada página tem apenas o rodapé
+compartilhado. No Desafio, André e Débora ficam na história da família; Rafael, no compartilhar.
+
+Preços continuam no catálogo e os links mantêm atribuição e cupom. Os testes de navegador
+`presente.ts` e `desafio-ofertas.ts` cobrem estados, resgate, checkout, imagens e responsividade.
 
 `resolveReferralGiftPage` aplica `publicGiftSourceName` antes de passar props ao corpo e à ilha:
 convites pessoais mostram só o primeiro nome, inclusive com respostas antigas do Referrals.

@@ -36,6 +36,9 @@ export const CABECALHO_DESAFIO =
 
 export function espelhoDesafio(modulo: object): string {
   return espelhoDoModulo(modulo, CABECALHO_DESAFIO)
+    .split('\n')
+    .map((linha) => linha.trimEnd())
+    .join('\n')
 }
 
 if (import.meta.main) {

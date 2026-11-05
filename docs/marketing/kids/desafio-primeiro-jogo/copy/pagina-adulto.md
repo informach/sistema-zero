@@ -26,7 +26,7 @@
 
 **hero.rotulo**: PLAYER 1 · PRESS START
 
-**hero.titulo.antes**: Você faz o 
+**hero.titulo.antes**: Você faz o
 
 **hero.titulo.destaque**: seu primeiro jogo
 

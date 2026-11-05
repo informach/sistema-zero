@@ -1,0 +1,18 @@
+---
+import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+import { LEGENDAS_DESAFIO_KIDS } from '../../../funnels/desafio-primeiro-jogo/oferta/relatos-kids'
+
+interface Props {
+  id: keyof typeof LEGENDAS_DESAFIO_KIDS
+}
+const { id } = Astro.props
+const relato = RELATOS[id]
+const legenda = LEGENDAS_DESAFIO_KIDS[id]
+---
+<figure class="dc-family-quote" data-relato={id}>
+  <blockquote><p>{id === 'AV02' ? relato.fala : `"${relato.fala}"`}</p></blockquote>
+  <figcaption>
+    <img src={`/img/comunidade-dos-criadores/${relato.retrato}`} alt="" width="80" height="80" loading="lazy" decoding="async" />
+    <span><strong>{relato.nome}</strong><span>{legenda}</span></span>
+  </figcaption>
+</figure>

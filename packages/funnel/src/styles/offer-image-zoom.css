@@ -1,0 +1,65 @@
+.theme-kids .kof-image-link {
+  display: block;
+  min-width: 0;
+  cursor: zoom-in;
+}
+.theme-kids .kof-image-link:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 6px;
+  border-radius: 12px;
+}
+.theme-kids .kof-image-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  padding: 14px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  width: max-content;
+  height: max-content;
+  background: var(--kof-carta);
+  border: 3px solid var(--kof-tinta);
+  border-radius: 20px;
+  box-shadow: 8px 8px 0 var(--kof-amarelo);
+  color: var(--kof-tinta);
+  overflow: auto;
+}
+.theme-kids .kof-image-dialog:not([open]) {
+  display: none;
+}
+.theme-kids .kof-image-dialog::backdrop {
+  background: color-mix(in oklab, var(--kof-navy) 84%, transparent);
+}
+.theme-kids .kof-image-dialog__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+  font-size: 15px;
+  font-weight: 700;
+}
+.theme-kids .kof-image-dialog__top button {
+  background: var(--kof-tinta);
+  color: var(--kof-carta);
+  border: 0;
+  border-radius: 9px;
+  padding: 10px 14px;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.theme-kids .kof-image-dialog__top button:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 3px;
+}
+.theme-kids .kof-image-dialog img {
+  display: block;
+  max-width: calc(100vw - 66px);
+  max-height: calc(100dvh - 132px);
+  width: auto;
+  height: auto;
+  margin: auto;
+  object-fit: contain;
+  border-radius: 8px;
+}

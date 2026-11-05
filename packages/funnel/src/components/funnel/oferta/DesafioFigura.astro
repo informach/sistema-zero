@@ -1,0 +1,16 @@
+---
+import type { ImagemDesafio } from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
+import OfferImage from './OfferImage.astro'
+
+interface Props {
+  image: ImagemDesafio
+  legenda: string
+  ampliar?: boolean
+  class?: string
+}
+const { image, legenda, ampliar = true, class: className } = Astro.props
+---
+<figure class:list={['dc-figure', className]}>
+  <OfferImage {image} zoom={ampliar} />
+  <figcaption>{legenda}</figcaption>
+</figure>
