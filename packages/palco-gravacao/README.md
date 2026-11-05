@@ -105,6 +105,13 @@ está sendo conferido.
 - **Conferir com todos os blocos à vista:** `mostrar blocos "A", "B"` mede a caixa que os blocos
   ocupam juntos e arrasta a área de código até ela ficar à vista com 24 px de folga, perto do meio
   (`rolagemDeVarios`); já assim, só aponta o primeiro.
+  Blocos a mais de uma tela de distância (Ao iniciar visto da área Quando acontecer) levam mais de
+  um arrasto: o que não alcança volta com `falta` e a página é perguntada de novo.
+- **Galeria parada antes da escolha** (05/11/2026): a roda anima a lista por um instante e às vezes
+  começa um pouco depois do gesto; `escolher` espera a opção ficar 300 ms no mesmo lugar
+  (`listaParada`), senão pedia outra rolagem e passava da imagem.
+- **Nome do bloco com valor de sombra:** o "1" de Alterar variável pode vir antes dos rótulos no
+  DOM; `textoProprio` põe os valores de sombra no fim, para o bloco começar pelo nome.
 - **Farol Aula 3** (04/11/2026): `jogar na lixeira ">" em "Se"` leva a pergunta pronta do Se para a
   lixeira pelo sinal de maior; `abrir "senão" em "Se"` clica no botão de mais (um `blocklyImageField`)
   que fica logo antes do rótulo, e `apontar mais de` só aponta; um nome de bloco aceita `dentro de`
