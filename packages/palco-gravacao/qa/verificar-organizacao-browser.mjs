@@ -188,13 +188,30 @@ try {
     visibility.getInput('VALUE').connection.connect(percentage.outputConnection)
     visibility.moveBy(60, 400)
     await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
-    // A ordem SVG entre rótulos também é válida e deve permanecer intacta.
-    const labels = [...visibility.getSvgRoot().querySelectorAll('text.blocklyText')].filter(
-      (el) => el.closest('.blocklyDraggable') === visibility.getSvgRoot(),
-    )
-    labels[1].before(percentage.getSvgRoot())
+    // O campo aparece entre rótulos na tela, mesmo se seu SVG vier depois deles no DOM.
     const inlineShadowAccepted =
       pagina.bloco('Deixar o sprite com 50 de visibilidade', 'area') !== null
+    const arithmetic = create('math_arithmetic'),
+      left = create('math_number'),
+      right = create('math_number')
+    left.setFieldValue(1, 'NUM')
+    right.setFieldValue(2, 'NUM')
+    left.setShadow(true)
+    right.setShadow(true)
+    arithmetic.getInput('A').connection.connect(left.outputConnection)
+    arithmetic.getInput('B').connection.connect(right.outputConnection)
+    arithmetic.moveBy(500, 400)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    // Aqui a sombra é visivelmente o primeiro campo: a ordem correta já é 1 + 2.
+    arithmetic.getSvgRoot().prepend(left.getSvgRoot())
+    arithmetic.getSvgRoot().append(right.getSvgRoot())
+    const leadingShadowAccepted = pagina.bloco('1 + 2', 'area') !== null
+    workspace.setScale(0.65)
+    await new Promise((done) => requestAnimationFrame(() => requestAnimationFrame(done)))
+    const scaledLabelsAccepted =
+      pagina.bloco('1 + 2', 'area') !== null &&
+      pagina.bloco('Deixar o sprite com 50 de visibilidade', 'area') !== null &&
+      pagina.bloco('Criar variável 2', 'area') !== null
     // A opção ainda está totalmente visível nas duas posições, mas a galeria está andando.
     const gallery = document.querySelector('.blocklyDropDownDiv') ?? document.createElement('div')
     gallery.className = 'blocklyDropDownDiv'
@@ -219,6 +236,8 @@ try {
       shadowBeforeNameAccepted,
       shadowFieldAccepted,
       inlineShadowAccepted,
+      leadingShadowAccepted,
+      scaledLabelsAccepted,
       visibleMovementMeasured,
     }
     // Uma aba sem frames novos não pode ficar pendurada nem declarar sucesso.
@@ -250,6 +269,8 @@ try {
     shadowBeforeNameAccepted: true,
     shadowFieldAccepted: true,
     inlineShadowAccepted: true,
+    leadingShadowAccepted: true,
+    scaledLabelsAccepted: true,
     visibleMovementMeasured: true,
   })
   console.log(JSON.stringify({ resultado: 'PASS', navegador: browser.version(), casos: resultado }))

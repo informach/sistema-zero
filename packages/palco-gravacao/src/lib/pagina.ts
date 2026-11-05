@@ -232,12 +232,29 @@ function donoDe(el: Element): Element | null {
 /** O texto que é do próprio bloco, sem o dos blocos encaixados nele. */
 const textoProprio = (block: Element): string => {
   const meus = [...block.querySelectorAll('text.blocklyText')].filter((t) => donoDe(t) === block)
-  // O valor de sombra encaixado (o "1" de Alterar variável) às vezes vem antes dos rótulos no DOM:
-  // Só esse prefixo vai para o fim. Sombras entre rótulos mantêm sua posição no nome.
-  const daSombra = (t: Element) => t.closest('.blocklyDraggable') !== block
-  const primeiroRotulo = meus.findIndex((t) => !daSombra(t))
-  const ordenados =
-    primeiroRotulo > 0 ? [...meus.slice(primeiroRotulo), ...meus.slice(0, primeiroRotulo)] : meus
+  // A montagem do SVG pode pôr sombras antes dos rótulos no DOM, independentemente de onde
+  // aparecem. Lemos as linhas desenhadas, da esquerda para a direita: isso também conserva o
+  // primeiro número de "1 + 2" e valores entre rótulos. A interseção vertical comum impede
+  // que campos altos juntem duas linhas diferentes numa única linha.
+  const medidos = meus
+    .map((el) => ({ el, rect: el.getBoundingClientRect() }))
+    .sort((a, b) => a.rect.top - b.rect.top || a.rect.left - b.rect.left)
+  const linhas: { top: number; bottom: number; campos: typeof medidos }[] = []
+  for (const campo of medidos) {
+    const linha = linhas.find(
+      (l) => Math.max(l.top, campo.rect.top) < Math.min(l.bottom, campo.rect.bottom),
+    )
+    if (linha) {
+      linha.top = Math.max(linha.top, campo.rect.top)
+      linha.bottom = Math.min(linha.bottom, campo.rect.bottom)
+      linha.campos.push(campo)
+    } else {
+      linhas.push({ top: campo.rect.top, bottom: campo.rect.bottom, campos: [campo] })
+    }
+  }
+  const ordenados = linhas.flatMap((l) =>
+    l.campos.sort((a, b) => a.rect.left - b.rect.left).map((campo) => campo.el),
+  )
   return fold(ordenados.map(texto).join(' ').replace(/▾/g, ''))
 }
 

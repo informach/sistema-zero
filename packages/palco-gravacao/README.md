@@ -58,6 +58,8 @@ está sendo conferido.
   O gesto aguarda a ação do menu e a renderização dos blocos antes de responder. A prova com
   Blockly real roda com `node packages/palco-gravacao/qa/verificar-organizacao-browser.mjs`,
   na raiz, usando Chromium instalado pelo Playwright ou `SZ_CHECK_CHROMIUM`.
+  Ela confere também a leitura dos nomes pela posição dos campos, incluindo números no
+  começo e no meio do bloco, com e sem zoom, independentemente da ordem de montagem do SVG.
 
 - **A mão procura descansar fora dos blocos:** parada em cima, o Blockly mostra a dica do bloco
   por cima da aula. Apontar um bloco, o encaixe ou o lugar abaixo dele deixa a mão no fundo da
