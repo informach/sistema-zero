@@ -10,12 +10,10 @@ test.each([
   12,
   null,
 ])('catalog preserva ciclo %s para selecionar comissão', async (billingIntervalMonths) => {
-  globalThis.fetch = (async () =>
-    Response.json({
-      id: 'offer',
-      slug: 'comunidade',
-      billingIntervalMonths,
-    })) as unknown as typeof fetch
+  globalThis.fetch = Object.assign(
+    async () => Response.json({ id: 'offer', slug: 'comunidade', billingIntervalMonths }),
+    { preconnect: original.preconnect },
+  )
   const client = new CatalogHttpClient({ baseUrl: 'https://catalog.test', timeoutMs: 1000 })
   expect((await client.getOfferById('offer'))?.billingIntervalMonths).toBe(billingIntervalMonths)
 })

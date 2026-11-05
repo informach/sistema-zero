@@ -31,7 +31,7 @@
 
 - [x] Atualizar CLAUDE/runbook com defaults, significado único, snapshots e rollout/rollback.
 - [x] Rodar testes, lint/typechecks pertinentes e build do funil; revisar diff, gerar schema sem drift.
-- [ ] PR, review, CI completo/plano da versão exata; produção por onda canônica com backends antes de interfaces. Recibo e verificação de preços públicos/saúde/SHA, sem cadastros reais.
+- [ ] PR, full review, CI completo/plano da versão exata; staging e produção com o mesmo código, por ondas canônicas com backends antes de interfaces. Recibo e verificação de preços públicos/saúde/SHA, sem cadastros reais.
 
 ## Evidências locais
 
@@ -40,3 +40,7 @@
 - Navegador: cinco páginas de oferta × cinco larguras, 72 imagens, sem erros; preço dinâmico e escolha mensal/anual preservados.
 - Drizzle: sem drift após gerar ambas as migrações. Preflight de produção: dois anuais BRL/12 a 79700, mensais a 9700, nenhuma campanha, dois resgates; nenhuma transação longa.
 - Publicação/CI: pendentes no momento deste registro.
+
+## Ampliação autorizada durante a execução
+
+O usuário pediu full review, correção dos achados e deploy em staging e produção, com todo o código alinhado. Autorizou levar as mudanças do palco a main, mantendo uma única instância do palco em staging. O histórico de staging foi incorporado sem conflitos. Revisão: `docs/operations/review-comissoes-planos-2026-11-05.md`.

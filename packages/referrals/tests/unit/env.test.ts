@@ -34,6 +34,10 @@ describe('env do referrals', () => {
       9000,
     )
     expect(() => loadEnv(prodEnv({ BONUS_ANNUAL_AMOUNT_CENTS: '0' }))).toThrow()
+    for (const key of ['BONUS_AMOUNT_CENTS', 'BONUS_ANNUAL_AMOUNT_CENTS']) {
+      for (const value of ['100000001', '2147483648', 'Infinity', '1.5'])
+        expect(() => loadEnv(prodEnv({ [key]: value }))).toThrow()
+    }
   })
   test('produção válida passa', () => {
     const env = loadEnv(prodEnv())
