@@ -1,5 +1,9 @@
 import { envelope } from '@sistemazero/core/http'
-import { type GiftSource, sanitizeGiftAttribution } from '@sistemazero/core/referrals'
+import {
+  type GiftSource,
+  publicGiftSourceName,
+  sanitizeGiftAttribution,
+} from '@sistemazero/core/referrals'
 import { Elysia, t } from 'elysia'
 import type { AmbassadorAdminService } from '../../application/ambassadors/ambassador-admin.service'
 import type { CampaignAdminService } from '../../application/campaigns/campaign-admin.service'
@@ -76,6 +80,7 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         const source: GiftSource = campaign
           ? campaignSource(campaign)
           : { kind: record.ownerKind, name: record.displayName }
+        const publicName = publicGiftSourceName(source)
         // O público vem do código (campanha → público da campanha) e decide qual curso consultar.
         const audience = campaign?.audience ?? record.audience
         const availability =
@@ -87,8 +92,8 @@ export function internalRoutes(deps: InternalRoutesDeps) {
         return {
           code: record.code,
           ownerKind: record.ownerKind,
-          displayName: record.displayName,
-          source,
+          displayName: publicName,
+          source: { ...source, name: publicName },
           state,
           startsAt: campaign?.startsAt.toISOString() ?? null,
           endsAt: campaign?.endsAt.toISOString() ?? null,

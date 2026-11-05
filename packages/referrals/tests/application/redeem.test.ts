@@ -98,7 +98,7 @@ describe('RedeemScholarshipService', () => {
     const send = gateway.callsOf('sendEmail')[0]!
     const email = send.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-welcome-mural-trial')
-    expect(email.variables.indicador).toBe('Vó Cida')
+    expect(email.variables.indicador).toBe('Vó')
     expect(email.variables.link).toContain('/redefinir-senha?token=tok-abc')
     expect(send.idempotencyKey).toBe(`scholarship-welcome:${r.id}`)
   })

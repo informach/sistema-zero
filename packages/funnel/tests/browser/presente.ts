@@ -75,6 +75,8 @@ const CODES: Record<string, unknown> = {
   'marta-prep': pessoal('marta-prep', 'adult', { giftAvailable: false }),
   'feira-fim': campanha('feira-fim', 'adult', 'ended'),
   'feira-breve': campanha('feira-breve', 'kids', 'scheduled'),
+  'feira-pausa-kids': campanha('feira-pausa-kids', 'kids', 'paused'),
+  'feira-fim-kids': campanha('feira-fim-kids', 'kids', 'ended'),
   // Resposta do referrals anterior a 20/10/2026: sem `audience`, vale Kids.
   'antigo-01': { ...pessoal('antigo-01', 'kids'), audience: undefined },
 }
@@ -269,6 +271,22 @@ interface Caso {
 }
 const CASOS: Caso[] = [
   {
+    nome: 'kids-pausada',
+    path: '/bolsa/feira-pausa-kids',
+    status: 200,
+    marca: /cadastros por este link estão pausados/,
+    tema: 'theme-kids',
+    formulario: false,
+  },
+  {
+    nome: 'kids-encerrada',
+    path: '/bolsa/feira-fim-kids',
+    status: 200,
+    marca: /terminaram em 30\/11\/2026/,
+    tema: 'theme-kids',
+    formulario: false,
+  },
+  {
     nome: 'campanha-kids',
     path: '/bolsa/encontro-kids',
     status: 200,
@@ -288,7 +306,7 @@ const CASOS: Caso[] = [
     nome: 'kids',
     path: '/bolsa/marta-k7q2',
     status: 200,
-    marca: /seu filho faz um jogo/,
+    marca: /Seu filho cria um jogo e pratica como/,
     tema: 'theme-kids',
     formulario: true,
   },
@@ -296,7 +314,7 @@ const CASOS: Caso[] = [
     nome: 'kids-legado',
     path: '/bolsa/antigo-01',
     status: 200,
-    marca: /seu filho faz um jogo/,
+    marca: /Seu filho cria um jogo e pratica como/,
     tema: 'theme-kids',
     formulario: true,
   },
@@ -406,8 +424,11 @@ try {
   page.on('pageerror', (error) => errors.push(error.message))
   await mkdir(output, { recursive: true })
 
+  let responsiveCases = 0
   for (const caso of CASOS) {
-    for (const largura of [390, 1440]) {
+    const larguras =
+      caso.tema === 'theme-kids' && caso.nome !== 'embaixador' ? [320, 390, 768, 1440] : [390, 1440]
+    for (const largura of larguras) {
       await page.setViewportSize({ width: largura, height: largura === 390 ? 844 : 1000 })
       const response = await page.goto(`${origin}${caso.path}`)
       assert.equal(response?.status(), caso.status, `${caso.nome}: status`)
@@ -424,6 +445,38 @@ try {
           await page.locator('#resgatar .bz-nota').innerText(),
           /^Um presente do encontro de criadores: o curso Cadê Todo Mundo/,
         )
+      }
+      if (caso.nome !== 'embaixador') {
+        assert.doesNotMatch(
+          await page.content(),
+          /Marta(?: |%20)Lima/,
+          `${caso.nome}: nome completo não entra no HTML público`,
+        )
+      }
+      if (await page.locator('#habilidades').count()) {
+        const badgeClear = await page.locator('.pk-figura').evaluate((figure) => {
+          const badge = figure.querySelector('.pk-figura__rotulo')?.getBoundingClientRect()
+          const image = figure.querySelector(':scope > img')?.getBoundingClientRect()
+          return Boolean(badge && image && badge.bottom <= image.top)
+        })
+        assert(badgeClear, `${caso.nome} @${largura}: o rótulo não cobre o jogo`)
+        const idade = page
+          .locator('.pk-duvidas details')
+          .filter({ hasText: 'Para qual idade é o presente?' })
+        assert.match(await idade.locator('p').innerText(), /9 a 17 anos.*mais autonomia/)
+        assert.match(
+          await idade.locator('p').innerText(),
+          /menores de 9 anos.*acompanhadas por um responsável/,
+        )
+        assert.match(
+          (await page.locator('[aria-labelledby=pk-mural] img').getAttribute('src')) ?? '',
+          /tela-cade-publicado\.png$/,
+        )
+        assert.equal(await page.locator('.pk-duvidas details').count(), 9)
+        assert.equal(await idade.getAttribute('open'), '')
+        await idade.locator('summary').click()
+        assert.equal(await idade.getAttribute('open'), null)
+        await idade.locator('summary').click()
       }
       assert.ok(
         await page.evaluate((tema) => document.documentElement.classList.contains(tema), caso.tema),
@@ -466,6 +519,20 @@ try {
         path: resolve(output, `${caso.nome}-${largura}.png`),
         fullPage: true,
       })
+      if (['kids', 'campanha-kids'].includes(caso.nome)) {
+        for (const [nome, selector] of Object.entries({
+          abertura: '.c9-heroi',
+          habilidades: '#habilidades',
+          mural: '[aria-labelledby=pk-mural]',
+          duvidas: '#duvidas',
+          cadastro: '#resgatar',
+        })) {
+          await page
+            .locator(selector)
+            .screenshot({ path: resolve(output, `${caso.nome}-${largura}-${nome}.png`) })
+        }
+      }
+      responsiveCases++
     }
   }
 
@@ -634,7 +701,9 @@ try {
   )
 
   assert.deepEqual(errors, [], 'page errors')
-  console.log(`OK: ${CASOS.length} casos x 2 larguras, resgates e painel. Capturas em ${output}`)
+  console.log(
+    `OK: ${CASOS.length} cenários, ${responsiveCases} combinações de página e largura, resgates e painel. Capturas em ${output}`,
+  )
 } finally {
   await browser?.close()
   app.kill()

@@ -95,7 +95,7 @@ export const RESGATE_COPY: Record<GiftAudience, ResgateCopy> = {
       },
       telefone: { rotulo: 'Telefone', opcional: '(opcional)', placeholder: '(11) 99999-9999' },
     },
-    botao: 'Liberar o curso para minha família',
+    botao: 'Liberar o presente para minha família',
     botaoRetomar: 'Retomar meu cadastro',
     enviando: 'Conferindo seu acesso…',
     rodape:

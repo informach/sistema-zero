@@ -1,5 +1,19 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Copy do presente aprovada e primeiro nome público (05/11/2026)
+
+`PRESENTE_KIDS` apresenta criação de jogos como ferramenta para praticar organização,
+revisão de tentativas e pedido de ajuda. A seção de habilidades reutiliza os cartões `.c917`;
+cores, fontes e componentes permanecem os mesmos. O FAQ distingue a proposta de autonomia
+para 9 a 17 anos da participação de menores acompanhados por um responsável.
+`tela-cade-publicado.png` é uma captura real do Cadê Todo Mundo publicado em staging,
+aprovada na proposta HTML. Substitui a nave apenas na seção do Mural do presente Kids.
+
+`resolveReferralGiftPage` aplica `publicGiftSourceName` antes de passar props ao corpo e à ilha:
+convites pessoais mostram só o primeiro nome, inclusive com respostas antigas do Referrals.
+Campanhas preservam o título público completo. Nenhuma alteração do nome administrativo.
+O navegador confere os estados Kids também a 320 e 768 px e a ausência do sobrenome no HTML.
+
 ## Minhas campanhas e cartões (05/11/2026)
 
 O painel privado mostra `EmbaixadorCampanhas`, somente leitura, com datas em Brasília,

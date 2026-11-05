@@ -37,7 +37,7 @@ describe('CreateInviteService', () => {
     const send = gateway.callsOf('sendEmail')[0]!
     const email = send.input as SendEmailInput
     expect(email.templateKey).toBe('referrals-scholarship-invite')
-    expect(email.variables.indicador).toBe('Vó Cida')
+    expect(email.variables.indicador).toBe('Vó')
     expect(email.variables.link).toBe('https://sistemazero.com.br/bolsa/cida-x7k2')
     expect(send.idempotencyKey).toBe(`ambassador-invite:${invite.id}:1`)
   })

@@ -1,5 +1,13 @@
 # CLAUDE.md — @sistemazero/referrals
 
+## Nome público de quem oferece o presente (05/11/2026)
+
+`publicGiftSourceName` do Core usa apenas o primeiro nome para origens de pessoa e mantém
+o título completo das campanhas. A projeção de `GET internal/codes/:code` e os textos dos
+e-mails de convite e liberação usam essa regra. Ela também se aplica a retomadas com snapshots
+antigos. Nomes completos continuam no cadastro, no painel privado, nos códigos persistidos e
+no histórico financeiro; não há migração nem reescrita desses registros.
+
 ## Campanhas no painel do parceiro (05/11/2026)
 
 A leitura pelo token do embaixador ativo inclui `campaigns`, paginada por `campaignOffset`
