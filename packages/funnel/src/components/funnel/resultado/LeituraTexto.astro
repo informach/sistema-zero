@@ -1,0 +1,23 @@
+---
+interface Props {
+  text: string
+  emphasis?: string[]
+}
+const { text, emphasis = [] } = Astro.props
+const spans = emphasis
+  .map((phrase) => ({ start: text.indexOf(phrase), end: text.indexOf(phrase) + phrase.length }))
+  .filter((s) => s.start >= 0)
+  .sort((a, b) => a.start - b.start)
+const parts: { text: string; strong: boolean }[] = []
+let cursor = 0
+for (const span of spans) {
+  if (span.start < cursor) continue
+  parts.push(
+    { text: text.slice(cursor, span.start), strong: false },
+    { text: text.slice(span.start, span.end), strong: true },
+  )
+  cursor = span.end
+}
+parts.push({ text: text.slice(cursor), strong: false })
+---
+{parts.map((part) => part.strong ? <strong>{part.text}</strong> : part.text)}

@@ -1,0 +1,1046 @@
+[
+  {
+    "mode": "desafio",
+    "key": "m9-planejar",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "junto",
+      "condicao": "conduzir"
+    },
+    "sha256": "38484ebf5913b3175fa46ff9968eb28ac8a9fda75723e50e12102b28486a36e2"
+  },
+  {
+    "mode": "desafio",
+    "key": "m9-persistir",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "junto",
+      "condicao": "ritmo"
+    },
+    "sha256": "b9bd7f909791f35b2b6ae2696b3cecaa0db134ca52b0520d3fc5b934ccb52e81"
+  },
+  {
+    "mode": "desafio",
+    "key": "m9-raciocinar",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "junto",
+      "condicao": "preco"
+    },
+    "sha256": "094c3b6c80a30b66e04ceb9e353556ec10dcf1c0f275677931b67dd678bb2287"
+  },
+  {
+    "mode": "desafio",
+    "key": "m9-expressar",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "desenhos",
+      "cena": "explicar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "junto",
+      "condicao": "geral"
+    },
+    "sha256": "d7a0e8df6e8135ec1390f8b8e5c8b526684b2999bb0ff78c022959ba2043e318"
+  },
+  {
+    "mode": "desafio",
+    "key": "m9-rotina",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "junto",
+      "cena": "rotina",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "junto",
+      "condicao": "conduzir"
+    },
+    "sha256": "88ced9c917edda306ed16ffa455752e40af0f1ae0b1ad3e2b01eba7cf0766569"
+  },
+  {
+    "mode": "desafio",
+    "key": "m9-explorar",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "descobrir",
+      "cena": "nao_sei",
+      "tentativas": "observar",
+      "impacto": "projetos",
+      "alcance": "observar",
+      "prioridade": "explorar",
+      "beneficio": "observar",
+      "apoio": "junto",
+      "condicao": "interesse"
+    },
+    "sha256": "53420d853a020f4a76bc856f693e5a03e5b5b460b6bff356c731a8374f76d908"
+  },
+  {
+    "mode": "desafio",
+    "key": "9a12-planejar",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "92a6693c306d43c138386c8062e5ab2c34e4321f8dcb805ca4f2127a4416b22a"
+  },
+  {
+    "mode": "desafio",
+    "key": "9a12-persistir",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "dc47b2b77022ca1fa701782bf3cf31989f5c93fbdec0983babb3c74c6f35a87c"
+  },
+  {
+    "mode": "desafio",
+    "key": "9a12-raciocinar",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "preco"
+    },
+    "sha256": "bf98eb957682a4d21b19b9ce3d18ce982c521905a94041f1e00fd08ca31c715a"
+  },
+  {
+    "mode": "desafio",
+    "key": "9a12-expressar",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "desenhos",
+      "cena": "explicar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "c35277ed919e0799597211870ec761bbf6f0b0e18077565cab1db80f0f4e9085"
+  },
+  {
+    "mode": "desafio",
+    "key": "9a12-rotina",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "junto",
+      "cena": "rotina",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "6b97c7cbe11ae4e4e701fa826f489b444cfce200fcced8d824d07af75615e850"
+  },
+  {
+    "mode": "desafio",
+    "key": "9a12-explorar",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "descobrir",
+      "cena": "nao_sei",
+      "tentativas": "observar",
+      "impacto": "projetos",
+      "alcance": "observar",
+      "prioridade": "explorar",
+      "beneficio": "observar",
+      "apoio": "perto",
+      "condicao": "interesse"
+    },
+    "sha256": "658465f36cbf9021f90b88c073c704bfa8806dabae3c9b0e009553ab017cf50b"
+  },
+  {
+    "mode": "desafio",
+    "key": "13a17-planejar",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "dbd217acf2b08f732d7c1d2e7f98d17db115f2c0529aaeaf130634df7081223d"
+  },
+  {
+    "mode": "desafio",
+    "key": "13a17-persistir",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "5638eabf434b0d5aaaf09d430ca92a493a3920299bc01cc5e36663f29d601b93"
+  },
+  {
+    "mode": "desafio",
+    "key": "13a17-raciocinar",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "preco"
+    },
+    "sha256": "de87db1adf1d2504af9c4b14286b20dfaf81eb091d7d04af027a1b7ac91ae065"
+  },
+  {
+    "mode": "desafio",
+    "key": "13a17-expressar",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "desenhos",
+      "cena": "explicar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "61fecae1373878cded2ee20d3feef09b123c3790344f9a5b0e806f1111b27cf5"
+  },
+  {
+    "mode": "desafio",
+    "key": "13a17-rotina",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "junto",
+      "cena": "rotina",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "91935fba032841e56d75ca33d1c844302aacd0370c0e23022dc9f8878afc9d7c"
+  },
+  {
+    "mode": "desafio",
+    "key": "13a17-explorar",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "descobrir",
+      "cena": "nao_sei",
+      "tentativas": "observar",
+      "impacto": "projetos",
+      "alcance": "observar",
+      "prioridade": "explorar",
+      "beneficio": "observar",
+      "apoio": "perto",
+      "condicao": "interesse"
+    },
+    "sha256": "6877453925f03bce3876b1af335ffe6aa867671ebbdb9e67266559c1a524c2d1"
+  },
+  {
+    "mode": "desafio",
+    "key": "ampliar",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "desenhos",
+      "cena": "vai_bem",
+      "tentativas": "interesse",
+      "impacto": "projetos",
+      "alcance": "ideias",
+      "prioridade": "expressar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "237b95c33ad6993bb217b40130302e2179876cf987ca74e1e5d1bdb970f3dda0"
+  },
+  {
+    "mode": "desafio",
+    "key": "sem-impacto",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "parte",
+      "impacto": "nenhum",
+      "alcance": "local",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "dbc3059e6ec1bbc945a297440cdac01b221430ddf5c3ce9165df5e5e4031dfbc"
+  },
+  {
+    "mode": "desafio",
+    "key": "sem-observacao",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "observar",
+      "impacto": "nao_sei",
+      "alcance": "observar",
+      "prioridade": "planejar",
+      "beneficio": "observar",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "6e6ba8236513c517ee768091c2746a4a7017b2bb55233a6a70ef1cb4f82d9275"
+  },
+  {
+    "mode": "desafio",
+    "key": "prioridade-diferente",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "desenhos",
+      "cena": "modelo",
+      "tentativas": "repetir",
+      "impacto": "demora",
+      "alcance": "local",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "36fc99836f2677aaf28386149492e86141e783df61f85a1e90d5db0aec37ce98"
+  },
+  {
+    "mode": "desafio",
+    "key": "ajuda-assumida",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "assumir",
+      "impacto": "adulto",
+      "alcance": "apoio",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "junto",
+      "condicao": "conduzir"
+    },
+    "sha256": "58dbe055279013590cea28b48f313122ee6ec079ce4b4269bf772a0cba22d4c1"
+  },
+  {
+    "mode": "desafio",
+    "key": "apoio-pendente",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "parte",
+      "impacto": "adulto",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "sozinho",
+      "condicao": "conduzir"
+    },
+    "sha256": "5dc3ebdd42e429c2b7ced1da9f48a6a521b331f59ec7b476880bdebf56abbcc7"
+  },
+  {
+    "mode": "desafio",
+    "key": "ajuda-inicial",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "5e37cbeacb59d129e49592ab5393df6c7ab2ede522ca6186ea39a8cbdec8aa1e"
+  },
+  {
+    "mode": "desafio",
+    "key": "professor",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "ao_vivo"
+    },
+    "sha256": "b906d776fd71c10bd98bec63beab775fa5b994135fac204e81ecfa06ca8ee59d"
+  },
+  {
+    "mode": "desafio",
+    "key": "reforco",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "parte",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "escola"
+    },
+    "sha256": "a6f75c85d84300ca1d6dfc00fd607bd7b7c58d371c77ad6b2fa2861694e9011a"
+  },
+  {
+    "mode": "desafio",
+    "key": "continuidade",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "descobrir",
+      "cena": "rotina",
+      "tentativas": "variar",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "organizar",
+      "condicao": "conduzir"
+    },
+    "sha256": "cb4d199542e41727751db0f1749807fb9f2c5c391a40c0ef0674e40edeee370e"
+  },
+  {
+    "mode": "desafio",
+    "key": "desanimo",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "variar",
+      "impacto": "parar",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "0d65b011c87551c7a3ae331e106d9955e217de04cf29436ff924ebd5b0f069a4"
+  },
+  {
+    "mode": "comunidade",
+    "key": "m9-planejar",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "junto",
+      "condicao": "conduzir"
+    },
+    "sha256": "6f95de6f47f77399c3d9cc3706f82d1d43292ea96fc0f7ad9f49394cbe702cd9"
+  },
+  {
+    "mode": "comunidade",
+    "key": "m9-persistir",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "junto",
+      "condicao": "ritmo"
+    },
+    "sha256": "3ddf90d956d8672aff1850b0c328824185bd5dfb12982dd90aeacf43b9deb65a"
+  },
+  {
+    "mode": "comunidade",
+    "key": "m9-raciocinar",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "junto",
+      "condicao": "preco"
+    },
+    "sha256": "c06128462418dc6e6fa6ad85a8bb8641dd88c0feddbb2cf9ccd74258bd9f0914"
+  },
+  {
+    "mode": "comunidade",
+    "key": "m9-expressar",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "desenhos",
+      "cena": "explicar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "junto",
+      "condicao": "geral"
+    },
+    "sha256": "c8862138a6fc70ff076d67585bcba4b9f90a9f28e15e3afbc6b57db9fdb538d4"
+  },
+  {
+    "mode": "comunidade",
+    "key": "m9-rotina",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "junto",
+      "cena": "rotina",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "junto",
+      "condicao": "conduzir"
+    },
+    "sha256": "6cc595b79847d4b5dc18d5d4372f9f08b800499ac1d959a633538b20e64b87c5"
+  },
+  {
+    "mode": "comunidade",
+    "key": "m9-explorar",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "descobrir",
+      "cena": "nao_sei",
+      "tentativas": "observar",
+      "impacto": "projetos",
+      "alcance": "observar",
+      "prioridade": "explorar",
+      "beneficio": "observar",
+      "apoio": "junto",
+      "condicao": "interesse"
+    },
+    "sha256": "cf5e5116bdc61b85b2fb7a1976905f27b3c2ae5e07e6b946d7b45f6f6eb43862"
+  },
+  {
+    "mode": "comunidade",
+    "key": "9a12-planejar",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "93adb831e8f89bed83f777afccba07538eb9eb24a089a86f632135a5359b3e30"
+  },
+  {
+    "mode": "comunidade",
+    "key": "9a12-persistir",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "dc6c028e1b54abff95b200207218eb8b1451748042d9afb367ecd0bdbea4ac08"
+  },
+  {
+    "mode": "comunidade",
+    "key": "9a12-raciocinar",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "preco"
+    },
+    "sha256": "7bb64786210eddec31d0a6fe4f13bb36c4472fa3ea4b8d7741b209e886948004"
+  },
+  {
+    "mode": "comunidade",
+    "key": "9a12-expressar",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "desenhos",
+      "cena": "explicar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "b25063ced7de1967ca00ff272df9e83b946cab1883a0ca1d00ab0d98edd846c7"
+  },
+  {
+    "mode": "comunidade",
+    "key": "9a12-rotina",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "junto",
+      "cena": "rotina",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "26e716767106acddc41f234dd0bdf14acd721639b9783f3c5197f6a4d91f1452"
+  },
+  {
+    "mode": "comunidade",
+    "key": "9a12-explorar",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "descobrir",
+      "cena": "nao_sei",
+      "tentativas": "observar",
+      "impacto": "projetos",
+      "alcance": "observar",
+      "prioridade": "explorar",
+      "beneficio": "observar",
+      "apoio": "perto",
+      "condicao": "interesse"
+    },
+    "sha256": "4de6c3cf36e155576808e7e165f894a42121b9c026fabfb20898b621fb0a2857"
+  },
+  {
+    "mode": "comunidade",
+    "key": "13a17-planejar",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "dca1461bc31b9da0d7d3b6c38ae21e17100d57400cf5b0370fa253f18a9555ac"
+  },
+  {
+    "mode": "comunidade",
+    "key": "13a17-persistir",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "bc69766ef978efa0e0d49f5c6fa97003f636f19fb1552c36c2c0a56fbdd946b0"
+  },
+  {
+    "mode": "comunidade",
+    "key": "13a17-raciocinar",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "preco"
+    },
+    "sha256": "7e54cfdd339e85deb1a0d2db03e06c438908bb6a8d6cb48004eb7705d4189a55"
+  },
+  {
+    "mode": "comunidade",
+    "key": "13a17-expressar",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "desenhos",
+      "cena": "explicar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "84b2bab4c753236cd3f29921ef85b25cd2bb6e5b8263ee1882fcf7dd9156d072"
+  },
+  {
+    "mode": "comunidade",
+    "key": "13a17-rotina",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "junto",
+      "cena": "rotina",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "94f605fec4a40e6fbf17cfa9b9e8a06aecbe8f3d9787d025714f41a7f629e9f7"
+  },
+  {
+    "mode": "comunidade",
+    "key": "13a17-explorar",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "descobrir",
+      "cena": "nao_sei",
+      "tentativas": "observar",
+      "impacto": "projetos",
+      "alcance": "observar",
+      "prioridade": "explorar",
+      "beneficio": "observar",
+      "apoio": "perto",
+      "condicao": "interesse"
+    },
+    "sha256": "6e6e3593105e2922da8209318db85b12aab02ae069986cf5a66c16803d630876"
+  },
+  {
+    "mode": "comunidade",
+    "key": "ampliar",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "desenhos",
+      "cena": "vai_bem",
+      "tentativas": "novidade",
+      "impacto": "projetos",
+      "alcance": "ideias",
+      "prioridade": "expressar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "a76be2600ce51d477fded687949a306effd100a95984e43b25c0e910c92132c5"
+  },
+  {
+    "mode": "comunidade",
+    "key": "sem-impacto",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "retoma",
+      "impacto": "nenhum",
+      "alcance": "local",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "f01d121182c3d49083ce21a0c2ac299a6dfeda13efdc136261e83cdcad80ee81"
+  },
+  {
+    "mode": "comunidade",
+    "key": "sem-observacao",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "observar",
+      "impacto": "nao_sei",
+      "alcance": "observar",
+      "prioridade": "planejar",
+      "beneficio": "observar",
+      "apoio": "perto",
+      "condicao": "conduzir"
+    },
+    "sha256": "93297ce0f73e211b5c4f4d1b2bfb708db9d3da3e8527f22de625327bda69231a"
+  },
+  {
+    "mode": "comunidade",
+    "key": "prioridade-diferente",
+    "answers": {
+      "genero": "filha",
+      "idade": "9a12",
+      "interesse": "desenhos",
+      "cena": "modelo",
+      "tentativas": "repetir",
+      "impacto": "demora",
+      "alcance": "local",
+      "prioridade": "expressar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "geral"
+    },
+    "sha256": "220ca3b006b56479ea9ea40311992cb5f391a116c4a7da5f302a097862368ced"
+  },
+  {
+    "mode": "comunidade",
+    "key": "ajuda-assumida",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "repetir",
+      "impacto": "adulto",
+      "alcance": "apoio",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "junto",
+      "condicao": "conduzir"
+    },
+    "sha256": "174fdd42a370f90e4dd853038d339b06fab635fc605613c958463a75e7d59711"
+  },
+  {
+    "mode": "comunidade",
+    "key": "apoio-pendente",
+    "answers": {
+      "genero": "filho",
+      "idade": "m9",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "retoma",
+      "impacto": "adulto",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "sozinho",
+      "condicao": "conduzir"
+    },
+    "sha256": "c1fe1b2ffb7811fca5057bf0798806c016489f4e8bbaa96efe9664bd2db61f75"
+  },
+  {
+    "mode": "comunidade",
+    "key": "ajuda-inicial",
+    "answers": {
+      "genero": "filha",
+      "idade": "m9",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "relacao",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "f3d07ae7e7c34492b0255a5f6ecfc208589e9d6e4e1df4aa4a50b6c2c38fb292"
+  },
+  {
+    "mode": "comunidade",
+    "key": "professor",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "descobertas",
+      "cena": "modelo",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "raciocinar",
+      "beneficio": "vida",
+      "apoio": "perto",
+      "condicao": "ao_vivo"
+    },
+    "sha256": "e0fea6b9733f36add300052c6b34579479b8733a7885366e203a042c2460268c"
+  },
+  {
+    "mode": "comunidade",
+    "key": "reforco",
+    "answers": {
+      "genero": "filho",
+      "idade": "9a12",
+      "interesse": "jogos",
+      "cena": "comecar",
+      "tentativas": "retoma",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "planejar",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "escola"
+    },
+    "sha256": "569b7b7f57c2cee6db3ebba1591ab25cc028cc4188f08c4426acd7ae80e06401"
+  },
+  {
+    "mode": "comunidade",
+    "key": "continuidade",
+    "answers": {
+      "genero": "filho",
+      "idade": "13a17",
+      "interesse": "descobrir",
+      "cena": "rotina",
+      "tentativas": "rotina",
+      "impacto": "apoio",
+      "alcance": "outros",
+      "prioridade": "rotina",
+      "beneficio": "relacao",
+      "apoio": "organizar",
+      "condicao": "conduzir"
+    },
+    "sha256": "d847188d345ababbb6d1f222f0bb1e717e9d3665f8eee97934da4f59c5a4faf6"
+  },
+  {
+    "mode": "comunidade",
+    "key": "desanimo",
+    "answers": {
+      "genero": "filha",
+      "idade": "13a17",
+      "interesse": "historias",
+      "cena": "erro",
+      "tentativas": "novidade",
+      "impacto": "parar",
+      "alcance": "outros",
+      "prioridade": "persistir",
+      "beneficio": "filho",
+      "apoio": "perto",
+      "condicao": "ritmo"
+    },
+    "sha256": "0eab9fd9b4b3ae2a72e9b7417b683d38133bf618ac261a48731e350dee1fbbe6"
+  }
+]

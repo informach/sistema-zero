@@ -43,8 +43,11 @@ export function quizDefinition(funnel: FunnelDef): QuizDefinition | null {
       title: step.titulo,
       // Num quiz com ramos, cada ramo continua a contagem das perguntas comuns.
       position:
-        quiz.steps.slice(0, index).filter((s) => !s.ramo || s.ramo === step.ramo).length + 1,
+        step.quizPosition !== undefined
+          ? step.quizPosition + 1
+          : quiz.steps.slice(0, index).filter((s) => !s.ramo || s.ramo === step.ramo).length + 1,
       type: step.tipo,
+      ...(step.quizPosition !== undefined ? { displayPosition: step.quizPosition } : {}),
       revision: hash(step),
       ...(step.ramo ? { branch: quiz.branches?.[step.ramo] ?? step.ramo } : {}),
       ...(step.condicional ? { conditional: true } : {}),

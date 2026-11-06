@@ -2,9 +2,12 @@
 import { quizDefinition } from '../../../analytics/quiz-definition'
 import QuizConversaLayout from '../../../components/funnel/QuizConversaLayout.astro'
 import { QUIZ_ENTRY as ADULT_QUIZ_ENTRY } from '../../../funnels/comunidade-adulto/quiz/entry-copy'
-import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
 import { QUIZ_ENTRY as DESAFIO_ADULTO_QUIZ_ENTRY } from '../../../funnels/desafio-adulto/quiz/entry-copy'
-import { QUIZ_ENTRY as DESAFIO_QUIZ_ENTRY } from '../../../funnels/desafio-primeiro-jogo/quiz/entry-copy'
+import { quizEntry } from '../../../funnels/kids-vida/entry'
+
+const QUIZ_ENTRY = quizEntry('comunidade')
+const DESAFIO_QUIZ_ENTRY = quizEntry('desafio')
+
 import { getFunnel, getFunnelByKey, quizHeadlineId } from '../../../funnels/registry'
 import ComunidadeAdultoQuiz from '../../../islands/ComunidadeAdultoQuiz'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'

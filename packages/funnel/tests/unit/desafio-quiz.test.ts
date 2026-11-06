@@ -13,8 +13,11 @@ import {
 } from '../../src/content/resultado-conversa'
 import { RELATOS } from '../../src/funnels/comunidade-dos-criadores/oferta/relatos'
 import { paraFeminino } from '../../src/funnels/comunidade-dos-criadores/quiz/genero'
-import { DESAFIO_PRIMEIRO_JOGO as funnel } from '../../src/funnels/desafio-primeiro-jogo'
-import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from '../../src/funnels/desafio-primeiro-jogo/quiz'
+import { DESAFIO_PRIMEIRO_JOGO as currentFunnel } from '../../src/funnels/desafio-primeiro-jogo'
+import {
+  DESAFIO_LEGACY_PERFIL_LABELS as DESAFIO_PERFIL_LABELS,
+  DESAFIO_QUIZ_ANTERIOR as DESAFIO_QUIZ,
+} from '../../src/funnels/desafio-primeiro-jogo/quiz'
 import {
   activeDesafioSteps,
   applyDesafioAnswer,
@@ -55,6 +58,16 @@ import * as COPY from '../../src/funnels/desafio-primeiro-jogo/quiz/result-copy'
 import { isQuizComplete } from '../../src/funnels/registry'
 import { orderedOptions } from '../../src/islands/spin-quiz/useSpinQuiz'
 import type { QuizAnswers } from '../../src/lib/quiz-types'
+
+// Regressão da versão histórica v5, preservada para o acervo editorial. A versão ativa tem a suíte kids-vida.
+const funnel = {
+  ...currentFunnel,
+  content: {
+    ...currentFunnel.content,
+    quiz: DESAFIO_QUIZ,
+    result: { profiles: {}, fecho: '', perfilLabels: DESAFIO_PERFIL_LABELS },
+  },
+}
 
 /** Um lead completo do ramo de 9 a 17 (perfil B, filho de 13 a 17). */
 export const answers917 = (patch: QuizAnswers = {}): QuizAnswers => ({

@@ -1,7 +1,7 @@
 import { TERMOS_DESAFIO } from '../../content/legal/termos-desafio'
 import type { FunnelDef } from '../registry'
 import { DESAFIO_CHECKOUT, DESAFIO_LANDING, DESAFIO_OBRIGADO, DESAFIO_PRODUTO } from './content'
-import { DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz'
+import { DESAFIO_LEGACY_PERFIL_LABELS, DESAFIO_PERFIL_LABELS, DESAFIO_QUIZ } from './quiz'
 
 export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
   audience: 'kids',
@@ -33,6 +33,11 @@ export const DESAFIO_PRIMEIRO_JOGO: FunnelDef = {
     obrigado: DESAFIO_OBRIGADO,
     checkout: DESAFIO_CHECKOUT,
     quiz: DESAFIO_QUIZ,
-    result: { profiles: {}, fecho: '', perfilLabels: DESAFIO_PERFIL_LABELS },
+    result: {
+      profiles: {},
+      fecho: '',
+      perfilLabels: DESAFIO_PERFIL_LABELS,
+      legacyPerfilLabels: DESAFIO_LEGACY_PERFIL_LABELS,
+    },
   },
 }

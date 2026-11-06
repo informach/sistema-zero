@@ -9,6 +9,28 @@
  * Nenhuma cor própria: as peles só apontam os aliases `--qz-*` para os tokens do tema.
  */
 
+.qz .qz-intro-visual {
+  display: block;
+  width: 100%;
+  max-height: 235px;
+  object-fit: cover;
+  object-position: center 55%;
+  margin: 24px 0;
+  border: 2px solid var(--qz-tinta);
+  border-radius: 20px;
+}
+.qz .qz-opcao-texto {
+  min-width: 0;
+}
+.qz .qz-opcao-texto strong {
+  display: block;
+  margin-bottom: 7px;
+}
+.qz .qz-opcao-texto > span {
+  display: block;
+  font-weight: 400;
+  line-height: 1.45;
+}
 .qz {
   --qz-margem: 18px;
   min-height: 100vh;

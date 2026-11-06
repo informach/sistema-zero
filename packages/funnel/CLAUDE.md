@@ -1,5 +1,31 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Quizzes Kids: habilidades para a vida (06/11/2026)
+
+Desafio usa `desafio-vida-v6`; Comunidade, `comunidade-vida-v7`. O módulo `kids-vida`
+compartilha o motor, dez perguntas SPIN e resultados personalizados. Filho/filha é uma
+entrada fora da contagem. Há exemplos próprios para menores de 9, 9–12 e 13–17 anos;
+18+ encaminha ao adulto. O produto aparece apenas no resultado. O corpo `leitura` usa
+destaques, listas e captura real do Farol, preservando as condições de participação.
+
+Cada variante contextual tem chave e snapshot próprios; variantes da mesma pergunta e
+idade compartilham o evento de Performance. `quizPosition` preserva a contagem de 1 a 10;
+`displayPosition` no snapshot identifica também a entrada (0). Mudanças de idade, situação
+ou prioridade eliminam respostas que perderam contexto. O servidor valida percurso,
+versão, revisão, token e snapshot. Leads antigos não são migrados nem sobrescritos.
+
+Admin: Respostas usa o snapshot arquivado, Performance agrupa variantes, Perfis distingue
+os perfis atuais dos históricos e Métricas mede visualização e resposta por variante.
+O filtro de versão atual começa ligado para todo quiz versionado; desligá-lo inclui o
+histórico. As definições e rótulos anteriores ficam disponíveis para leitura histórica.
+Não alterar os quizzes adultos ao revisar esse módulo.
+
+`tests/unit/kids-vida.test.ts` confere os 58 resultados aprovados e os percursos possíveis;
+o contrato de API cobre os dois produtos. `tests/browser/kids-vida.ts` testa o build com
+PostgreSQL local isolado, seis jornadas, 58 resultados e as quatro abas administrativas.
+Os scripts `espelho-quiz-desafio.ts` e `espelho-quiz-comunidade.ts` geram os espelhos atuais;
+a copy anterior está arquivada em `copy/historico/`.
+
 ## Comunidade Kids: prática e continuidade (06/11/2026)
 
 As três ofertas Kids implementam as propostas aprovadas a partir da revisão de Vivianne:

@@ -1,6 +1,8 @@
+import type { AnalyticsRepo } from '../analytics/repository'
 import type { QuizStep } from '../content/quiz-config'
 import type { FunnelRepo, QuizScope } from '../db/repo'
 import {
+  adminFunnelList,
   branchEventName,
   DEFAULT_FUNNEL,
   type FunnelDef,
@@ -16,6 +18,7 @@ import {
   readCookie,
   resolveAdmin,
 } from '../lib/admin-auth'
+import { adminQuizAnswers } from '../lib/admin-quiz-answers'
 import { AdminLoginSchema } from '../lib/admin-schema'
 import type { AuthTokens, AuthUser, GatewayClient } from '../lib/gateway-client'
 import { json, jsonError, safeJson } from '../lib/http'
@@ -59,12 +62,16 @@ export interface AdminStep {
  */
 export function buildFunnelSteps(f: FunnelDef | null): AdminStep[] {
   const quiz = (f ?? DEFAULT_FUNNEL).content.quiz
-  const quizSteps = quiz?.steps ?? []
+  // As variantes têm perguntas e alternativas próprias no histórico, mas o mesmo marco de
+  // Performance. Contá-las em sequência fabricaria abandonos entre caminhos exclusivos.
+  const quizSteps = (quiz?.steps ?? []).filter(
+    (s, i, all) => all.findIndex((other) => other.eventName === s.eventName) === i,
+  )
   const question = (s: QuizStep, n: number): AdminStep => ({
     name: s.eventName,
     // `rotuloCurto` nomeia a pergunta; a condicional (só alguns percursos) é marcada e não
     // entra na cadeia "da etapa", senão pareceria uma queda.
-    label: `${s.condicional ? 'Extra' : `Pergunta ${n}`}${s.rotuloCurto ? ` · ${s.rotuloCurto}` : ''}`,
+    label: `${s.quizPosition === 0 ? 'Entrada' : s.condicional ? 'Extra' : `Pergunta ${s.quizPosition ?? n}`}${s.rotuloCurto ? ` · ${s.rotuloCurto}` : ''}`,
     ...(s.condicional ? { condicional: true } : {}),
   })
   const common = quizSteps.filter((s) => !s.ramo)
@@ -220,7 +227,10 @@ function intParam(value: string | null, fallback: number): number {
  * Query: `limit` (1..100, default 25), `offset`, `q` (nome/e-mail), `sort` (asc|desc).
  * Resposta: `{ leads, total, limit, offset }` — `total` alimenta a paginação da UI.
  */
-export async function adminLeads(request: Request, deps: AdminDeps): Promise<Response> {
+export async function adminLeads(
+  request: Request,
+  deps: AdminDeps & { quizDefinitions: Pick<AnalyticsRepo, 'quiz'> },
+): Promise<Response> {
   const auth = await resolveAdmin(request, deps.gateway, deps.secureCookie)
   if (!auth) return jsonError('Não autorizado.', 401, 'UNAUTHORIZED')
 
@@ -244,6 +254,26 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
     eventCode ? deps.repo.attributedPriceCounts(eventCode, funnel) : Promise.resolve([]),
   ])
   const byName = new Map(eventCounts.map((row) => [row.eventName, row.leads]))
+  const definitions = new Map(
+    await Promise.all(
+      [...new Set(leads.map((l) => l.quizDefinitionId).filter((id): id is string => !!id))].map(
+        async (id) => [id, await deps.quizDefinitions.quiz(id)] as const,
+      ),
+    ),
+  )
+  const metadata = new Map(adminFunnelList().map((f) => [f.key, f]))
+  const listedLeads = leads.map((lead) => {
+    const snapshot = definitions.get(lead.quizDefinitionId ?? '')
+    const definition = snapshot?.funnel === lead.funnel ? snapshot : null
+    return {
+      ...lead,
+      answerDetails: adminQuizAnswers(
+        lead.quizAnswers ?? {},
+        definition,
+        metadata.get(lead.funnel ?? DEFAULT_FUNNEL.key),
+      ),
+    }
+  })
   const eventReport = eventCode
     ? {
         eventCode,
@@ -256,7 +286,7 @@ export async function adminLeads(request: Request, deps: AdminDeps): Promise<Res
       }
     : null
   return json(
-    { leads, total, limit, offset, eventReport },
+    { leads: listedLeads, total, limit, offset, eventReport },
     200,
     withSession({ 'cache-control': 'no-store' }, auth.setCookies),
   )

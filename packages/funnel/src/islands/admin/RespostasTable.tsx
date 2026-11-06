@@ -14,6 +14,7 @@ import {
 } from '@sistemazero/ui/table'
 import { type ReactNode, useEffect, useMemo, useState } from 'react'
 import type { AdminFunnelInfo } from '../../funnels/registry'
+import type { AdminQuizAnswer } from '../../lib/admin-quiz-answers'
 import { apiGet } from '../../lib/api-fetch'
 import { formatBRLFromCents } from '../../lib/money'
 import type { QuizAnswers, QuizAnswerValue } from '../../lib/quiz-types'
@@ -25,6 +26,7 @@ interface LeadRow {
   telefone: string | null
   // Respostas do quiz em JSON (chave → valor) — genérico por funil; + perfil do diagnóstico.
   quizAnswers: QuizAnswers | null
+  answerDetails: AdminQuizAnswer[]
   perfilResultado: string | null
   funnel: string | null
   lastStep: string
@@ -224,12 +226,6 @@ export default function RespostasTable({
   const { leads, total, eventReport } = data
   const searching = debouncedQuery.length > 0
   const selectedAnswers = selected?.quizAnswers ?? {}
-  const selectedAnswerLabels = selected
-    ? (funnelMap.get(selected.funnel ?? '')?.answerLabels ?? {})
-    : {}
-  const selectedAnswerOptions = selected
-    ? funnelMap.get(selected.funnel ?? '')?.answerOptions
-    : undefined
 
   return (
     <div>
@@ -430,13 +426,11 @@ export default function RespostasTable({
                 <PerfilBadge label={perfilLabel(selected)} />
               </DetailItem>
               {/* `_quiz_version` e `_quiz_revision` são controle interno, não respostas. */}
-              {Object.entries(selectedAnswers)
-                .filter(([key]) => !key.startsWith('_quiz_'))
-                .map(([key, value]) => (
-                  <DetailItem key={key} label={selectedAnswerLabels[key] ?? key} wide>
-                    {answerDisplay(key, value, selectedAnswerOptions?.[key])}
-                  </DetailItem>
-                ))}
+              {selected.answerDetails.map(({ key, label, options }) => (
+                <DetailItem key={key} label={label} wide>
+                  {answerDisplay(key, selectedAnswers[key]!, options)}
+                </DetailItem>
+              ))}
             </DetailSection>
 
             <DetailSection title="Sessão">

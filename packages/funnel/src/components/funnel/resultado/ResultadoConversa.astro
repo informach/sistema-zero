@@ -10,6 +10,9 @@ import '../../../styles/kids-oferta.css'
 import '../../../styles/resultado-conversa.css'
 import { type ResultadoConversa, trechosConversa } from '../../../content/resultado-conversa'
 import QuizResultadoFeedback from '../../../islands/QuizResultadoFeedback'
+import OfferImageZoom from '../oferta/OfferImageZoom.astro'
+import LeituraTexto from './LeituraTexto.astro'
+import ResultadoLeitura from './ResultadoLeitura.astro'
 
 interface Props {
   resultado: ResultadoConversa
@@ -21,6 +24,7 @@ interface Props {
   restartLabel?: string
 }
 const { resultado: r, quizPath, revision, sessionToken, restartLabel } = Astro.props
+const leitura = r.blocos.some((b) => b.tipo === 'leitura')
 /** A linha abaixo do botão nas ofertas de assinatura (a Comunidade); o Desafio traz a sua. */
 const NOTA_PADRAO = 'O preço e os planos aparecem na próxima página.'
 const logo =
@@ -34,7 +38,7 @@ const logo =
       }
 ---
 
-<div class={`rc rc--${r.tema}`} data-quiz-profile={r.perfil}>
+<div class:list={['rc', `rc--${r.tema}`, { 'rc--vida': leitura }]} data-quiz-profile={r.perfil}>
   <a href="#resultado" class="rc-pular">Pular para o resultado</a>
   <header class="rc-topo">
     <div class="rc-topo-in">
@@ -43,12 +47,14 @@ const logo =
     </div>
   </header>
   <main id="resultado" class="rc-carta">
-    <span class="rc-selo">Seu resultado</span>
+    <span class="rc-selo">{leitura ? 'Um caminho para sua família' : 'Seu resultado'}</span>
     {r.aviso && <p class="rc-aviso">{r.aviso}</p>}
     <h1 class="rc-titulo">{r.titulo}</h1>
     {
       r.blocos.map((b) =>
-        b.tipo === 'h' ? (
+        b.tipo === 'leitura' ? (
+          <ResultadoLeitura leitura={b.leitura} atencao={b.atencao} />
+        ) : b.tipo === 'h' ? (
           <h2 class="rc-h">{b.texto}</h2>
         ) : b.tipo === 'p' ? (
           <p class="rc-p">
@@ -69,6 +75,14 @@ const logo =
           </figure>
         ) : (
           <div class="rc-cta">
+            {b.termos && (
+              <p class="rc-termos">
+                <LeituraTexto text={b.termos} emphasis={[
+                  '30 dias de acesso', '7 dias de garantia', 'planos mensal e anual',
+                  'até dois perfis Kids', '7 dias para pedir reembolso integral',
+                ]} />
+              </p>
+            )}
             <p>{b.texto}</p>
             <div>
               <a class="rc-botao" href={b.href} data-quiz-offer data-analytics-id="resultado-oferta">
@@ -80,7 +94,7 @@ const logo =
         ),
       )
     }
-    <p class="rc-assinatura">{r.assinatura}</p>
+    {r.assinatura && <p class="rc-assinatura">{r.assinatura}</p>}
     <QuizResultadoFeedback
       client:visible
       revision={revision}
@@ -90,3 +104,4 @@ const logo =
     />
   </main>
 </div>
+{leitura && <OfferImageZoom />}

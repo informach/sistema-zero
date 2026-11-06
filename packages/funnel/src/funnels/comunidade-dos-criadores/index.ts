@@ -11,6 +11,7 @@
 // (JSON-LD/og) passa a ser o anual — preferir a mensal como principal.
 
 import { TERMOS_COMUNIDADE_KIDS } from '../../content/legal/termos-comunidade-kids'
+import { profileLabels } from '../kids-vida/engine'
 import type { FunnelDef } from '../registry'
 import {
   COMUNIDADE_CHECKOUT,
@@ -62,7 +63,9 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
     result: {
       profiles: {},
       fecho: '',
-      perfilLabels: {
+      perfilLabels: profileLabels,
+      legacyPerfilLabels: {
+        ...PERFIS_V5,
         ...Object.fromEntries(
           Object.entries(PROFILE_IDS).map(([id, slug]) => [
             slug,
@@ -76,7 +79,6 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
           ]),
         ),
       },
-      legacyPerfilLabels: PERFIS_V5,
     },
   },
 }

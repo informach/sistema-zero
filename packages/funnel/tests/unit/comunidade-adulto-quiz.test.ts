@@ -90,7 +90,9 @@ const rawTexts = (r: ResultadoConversa): string[] => [
         ? [b.texto, b.autor]
         : b.tipo === 'cta'
           ? [b.texto, b.rotulo]
-          : [b.texto],
+          : b.tipo === 'leitura'
+            ? Object.values(b.leitura)
+            : [b.texto],
   ),
   r.assinatura,
 ]

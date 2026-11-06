@@ -1,262 +1,1206 @@
-<!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/quiz/. Edite o código e rode `bun scripts/espelho-quiz-comunidade.ts` (em packages/funnel). -->
+# Quiz Kids · Comunidade dos Criadores
 
-# Quiz da Comunidade Kids: entrada, ramos e perguntas
+Gerado da implementação comunidade-vida-v7. Proposta V5 aprovada em 06/11/2026. Dez perguntas; filho/filha é a entrada. As marcações abaixo servem à revisão editorial.
 
-_Versão `comunidade-orientacao-v6`. As perguntas falam só da criança e da casa; nenhuma tela antes do resultado cita a Comunidade nem apresenta a criação de jogos como solução. O texto é escrito no masculino e vira "ela" quando a entrada é "Na minha filha"._
+Ajude seu filho a desenvolver autonomia, resolver problemas e expressar suas ideias.
 
-## Entrada
+Você quer ver seu filho participando mais das decisões de hoje e das responsabilidades que vêm pela frente. Entenda o que já ajuda, o que ainda precisa de atenção e como dar espaço para essas habilidades crescerem na rotina.
 
-_Para mães, pais e responsáveis_
+São 10 perguntas. Seu resultado aparece aqui, sem pedir cadastro.
 
-**Manchete padrão** (Padrão: ele vive no jogo):
+## Entrada · Filho ou filha
 
-# Seu filho vive no jogo. Em 3 minutos, veja como usar isso para ele aprender de verdade.
+Chave: genero
 
-**Manchete com `?manchete=tela`** (Tela: a dor do tempo de tela):
-
-# Seu filho passa horas na tela. Em 3 minutos, veja o que faria esse tempo render alguma coisa.
-
-Responda sobre a rotina dele. O resultado aparece na hora, sem cadastro.
-
-Uma orientação do Sistema Zero Kids. Dá para responder pelo celular.
-
-## Ramos
-
-- `9a17`: 9 a 17 anos
-- `m9`: Menor de 9
-- `adulto`: 18 ou mais
-
-### Saída de 18 ou mais
-
-**A partir de 18 anos, é a área adulta**
-
-O Sistema Zero tem uma área para quem tem 18 anos ou mais, com conta própria. Quem responde é a própria pessoa, no quiz adulto.
-
-[Abrir o quiz adulto]
-
-## Perguntas
-
-### Entrada. Em quem você está pensando?
-
-_Etapa: Entrada. Chave `genero`. No /admin: Filho ou filha._
+Em quem você está pensando?
 
 Uma criança de cada vez.
 
-- `filho`: No meu filho
-- `filha`: Na minha filha
+- Responder sobre meu filho
+- Responder sobre minha filha
 
-### Entrada. Quantos anos ele tem?
+## Pergunta 1 · Idade
 
-_Etapa: Entrada. Chave `idade`. No /admin: Idade._
+Chave: idade
 
-- `menos_9`: Menos de 9
-- `9_12`: De 9 a 12
-- `13_17`: De 13 a 17
-- `18_mais`: Ele tem 18 anos ou mais
+Qual é a idade do seu filho?
 
-### 9 a 17 anos. Num dia comum, quanto tempo ele passa em jogos e vídeos?
+Escolha a faixa etária dele.
 
-_Etapa: A rotina dele. Chave `tempo_tela`. No /admin: Tempo de tela._
+- Menos de 9 anos
+- De 9 a 12 anos
+- De 13 a 17 anos
+- 18 anos ou mais
 
-Some celular, computador, tablet e videogame. Vale uma estimativa.
+## Pergunta 2 · Interesses · Menores de 9 anos
 
-- `menos_1h`: Menos de 1 hora
-- `1_2h`: De 1 a 2 horas
-- `2_4h`: De 2 a 4 horas
-- `mais_4h`: Mais de 4 horas
+Chave: vida_m9_interesse
 
-### 9 a 17 anos. Em casa, ele pode usar um computador?
+Quando tem um tempo livre, o que seu filho costuma escolher?
 
-_Etapa: A rotina dele. Chave `computador`. No /admin: Computador._
+Marque o que você mais vê acontecer. Não precisa ser a única coisa de que ele gosta.
 
-Pode ser o da família.
+- Brincar com jogos no celular, no tablet ou no videogame.
+- Inventar histórias e brincadeiras com personagens ou brinquedos.
+- Desenhar ou montar coisas com peças.
+- Descobrir como um brinquedo ou um objeto da casa funciona.
+- Me chamar para brincar ou montar alguma coisa junto.
+- Ainda estou descobrindo quais brincadeiras mais interessam a ele.
 
-- `sim`: Sim, ele pode usar
-- `organizar`: Temos, mas preciso organizar os horários
-- `celular_tablet`: Por enquanto, só celular ou tablet
-- `verificar`: Ainda preciso ver
+## Pergunta 3 · Situação do cotidiano · Menores de 9 anos
 
-### 9 a 17 anos. Qual destas frases parece mais com a sua casa?
+Chave: vida_m9_cena
 
-_Etapa: A cena de casa. Chave `cena`. No /admin: Cena de casa._
+Como essas habilidades aparecem no dia a dia do seu filho?
 
-- `A`: Ele vive no jogo e no vídeo, e não faz nada com isso
-- `B`: Ele inventa jogo o tempo todo, mas fica só na conversa
-- `C`: Ele desenha personagem o tempo todo, e fica no caderno
-- `D`: Ele quer saber como os jogos são feitos, e eu não sei ensinar
-- `F`: Na lição, ele copia o exemplo e trava quando a pergunta muda
-- `nenhum`: Nenhuma dessas
+Escolha a situação que mais chama sua atenção hoje. Se nenhuma cena combinar, pode dizer.
 
-### 9 a 17 anos. Quando alguma coisa não dá certo num jogo ou num aplicativo, o que ele faz primeiro?
+- Autonomia: Na hora de guardar os brinquedos, ele espera eu dizer o que guardar primeiro.
+- Persistência: Quando uma torre de peças cai, ele quer parar a brincadeira.
+- Resolução de problemas: Ele monta igual ao modelo, mas fica sem saber o que fazer quando falta uma peça.
+- Comunicação: Quando quer ajuda para montar algo, pede que eu faça, mas não mostra onde travou.
+- Organização: Para sair de casa, precisa que eu lembre cada passo: pegar o sapato, calçar, buscar a mochila.
+- Ele já participa dessas pequenas atividades; quero oferecer outras oportunidades.
+- Nenhuma dessas cenas descreve bem o que vejo.
 
-_Etapa: A cena de casa. Chave `quando_trava`. No /admin: Quando trava._
+## Pergunta 4 · Ajuda e tentativas · Menores de 9 anos
 
-- `larga`: Larga e vai fazer outra coisa
-- `chama`: Chama alguém para resolver
-- `tenta`: Tenta de outro jeito até dar certo
-- `procura`: Procura um vídeo ou um exemplo
-- `nao_reparou`: Ainda não reparei
+Chave: vida_m9_tentativas_comecar
 
-### 9 a 17 anos. Quanto do tempo em jogos e vídeos vira alguma coisa que ele mesmo fez?
+Quando vocês tentam ajudar nessa situação, o que costuma acontecer nos dias seguintes?
 
-_Etapa: A cena de casa. Chave `tempo_criacao`. No /admin: Calculadora do tempo de tela._
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
 
-Na tela, o título repete o tempo por dia: "Menos de 1 hora por dia dá até 365 horas"; "De 1 a 2 horas por dia dão entre 365 e 730 horas"; "De 2 a 4 horas por dia dão entre 730 e 1.460 horas"; "Mais de 4 horas por dia dão mais de 1.460 horas".
+- Ele retoma parte do que combinamos e já participa um pouco mais.
+- Na vez seguinte, precisamos começar a orientação de novo.
+- Ele participa no começo, mas perde o interesse depois de alguns dias.
+- Percebemos uma ajuda possível, mas falta um momento para retomá-la.
+- Ainda não acompanhamos isso por tempo suficiente para saber.
 
-- `quase_nada`: Quase nada
-- `um_pouco`: Um pouco
-- `boa_parte`: Boa parte
-- `nao_sei`: Não sei dizer
+## Pergunta 4 · Ajuda e tentativas · Menores de 9 anos
 
-### 9 a 17 anos. Se nada mudar no próximo ano, o que mais preocupa?
+Chave: vida_m9_tentativas_vai_bem
 
-_Etapa: A cena de casa. Chave `preocupacao`. No /admin: Preocupação._
+Depois de uma conquista dele, como vocês dão espaço para continuar?
 
-- `A`: A tela continuar só para assistir e jogar
-- `B`: A vontade de criar passar antes de ele fazer um jogo
-- `C`: Os desenhos ficarem na gaveta
-- `D`: A curiosidade dele passar em branco
-- `F`: A dificuldade na escola virar desânimo
-- `nenhum`: Nada, quero aproveitar o interesse dele
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
 
-### 9 a 17 anos. Daqui a três meses, qual cena você gostaria de ver?
+- Ele volta por conta própria e procura fazer mais uma parte.
+- Precisa de um convite meu para retomar e ampliar o que já faz.
+- Gosta de mudar de assunto e conhecer outras possibilidades.
+- Queremos continuar, mas falta combinar momentos na semana.
+- Ainda não acompanhei uma sequência de experiências dele.
 
-_Etapa: O que você quer. Chave `cena_desejada`. No /admin: Cena desejada._
+## Pergunta 4 · Ajuda e tentativas · Menores de 9 anos
 
-- `A`: Ele me chamando: olha o que eu fiz
-- `B`: Um amigo jogando um jogo que ele inventou
-- `C`: O personagem que ele desenhou se mexendo na tela
-- `D`: Ele me explicando como um jogo funciona por dentro
-- `F`: Ele explicando uma conta com as palavras dele
+Chave: vida_m9_tentativas_nao_sei
 
-### 9 a 17 anos. Para dar certo aí em casa, o que precisa estar garantido?
+Quando vocês combinam uma pequena responsabilidade em casa, o que acontece nos dias seguintes?
 
-_Etapa: O que você quer. Chave `garantia`. No /admin: O que precisa estar garantido._
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
 
-- `sozinho`: Ele conseguir sozinho, porque eu não entendo disso
-- `recorrer`: Ter a quem recorrer quando travar
-- `acompanhar`: Eu conseguir acompanhar
-- `tempo_tela`: Caber no tempo de tela combinado
-- `orcamento`: Caber no orçamento
-- `ao_vivo`: Ter professor ao vivo
+- Ele retoma parte do combinado, como guardar um material ou preparar o que vai usar.
+- Precisamos explicar o combinado de novo a cada vez.
+- Participa nos primeiros dias e depois deixa de retomar.
+- Ainda falta um momento para acompanhar o combinado juntos.
+- Ainda não observei uma situação assim ao longo dos dias.
 
-### 9 a 17 anos. Juntando tudo, o que você quer para ele?
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-_Etapa: O que você quer. Chave `sintese`. No /admin: Frase-síntese._
+Chave: vida_m9_impacto_comecar
 
-- `A`: Que o tempo de tela sirva para alguma coisa
-- `B`: Que as ideias de jogo dele saiam do papel
-- `C`: Que os desenhos dele ganhem vida
-- `D`: Que ele aprenda a programar de verdade
-- `F`: Que ele entenda o que estuda e use na prática
-- `conhecer`: Ainda estou conhecendo
+Quando ele espera você indicar o primeiro brinquedo para guardar, o que acontece?
 
-### 9 a 17 anos · extra (perfil B). Ele precisa criar jogos numa ferramenta específica?
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
 
-_Etapa: O que você quer. Chave `ferramenta`. No /admin: Ferramenta (perfil B)._
+- Eu acabo guardando boa parte dos brinquedos por ele.
+- Os brinquedos ficam espalhados, e adiamos a arrumação.
+- Preciso repetir várias vezes “vamos guardar”.
+- Se escolhemos uma caixa ou um tipo de brinquedo, ele começa comigo.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
 
-- `roblox`: Precisa ser no Roblox
-- `minecraft`: Precisa ser no Minecraft
-- `outra`: Precisa ser em outra ferramenta específica
-- `pode_outra`: Qualquer ferramenta serve, se ele gostar
-- `conversar`: Ainda vou conversar com ele
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-### 9 a 17 anos · extra (perfil C). Para os desenhos dele, o que faz mais sentido?
+Chave: vida_m9_impacto_erro
 
-_Etapa: O que você quer. Chave `desenho`. No /admin: Desenhos (perfil C)._
+Quando a torre cai e ele quer parar, o que costuma acontecer?
 
-- `movimento`: Que os personagens façam coisas: andem, pulem, reajam
-- `so_desenho`: Que ele desenhe melhor, com traço e técnica
-- `nao_sei`: Ainda não sei
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
 
-### 9 a 17 anos · extra (perfil F). Em que parte da escola ele mais trava?
+- Eu reconstruo para ele conseguir voltar a brincar.
+- Ele deixa as peças e não quer tentar outra torre.
+- Fica difícil continuar a brincadeira depois que a torre cai.
+- Com uma pausa e minha ajuda na base, ele aceita tentar de novo.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
 
-_Etapa: O que você quer. Chave `escola`. No /admin: Escola (perfil F)._
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-- `leitura`: Entender o que o enunciado pede
-- `matematica`: Entender as contas, e não só repetir o exemplo
-- `problemas`: Começar e organizar uma tarefa de várias etapas
-- `ciencias`: Entender por que as coisas acontecem, em ciências
-- `vai_bem`: Ele vai bem; quero que use na prática o que aprende
-- `reforco`: Ele precisa recuperar matéria atrasada da série
+Chave: vida_m9_impacto_modelo
 
-### Menor de 9. Ele já lê?
+Quando falta uma peça do modelo, como a montagem continua?
 
-_Etapa: A rotina de vocês. Chave `m9_leitura`. No /admin: Leitura._
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
 
-- `nao_le`: Ainda não
-- `comecando`: Está começando
-- `prefere`: Lê, mas prefere que eu leia
-- `le_sozinho`: Lê sozinho
+- Eu escolho outra peça e resolvo essa parte por ele.
+- Ele deixa a montagem porque não está igual ao desenho.
+- Ficamos procurando a peça exata, e a brincadeira para.
+- Quando mostro duas peças diferentes, ele experimenta uma delas.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
 
-### Menor de 9. Vocês têm computador em casa?
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-_Etapa: A rotina de vocês. Chave `m9_computador`. No /admin: Computador._
+Chave: vida_m9_impacto_explicar
 
-- `sim`: Sim, podemos usar
-- `organizar`: Sim, mas preciso organizar horário
-- `celular_tablet`: Só celular ou tablet
-- `verificar`: Ainda vou ver
+Quando ele pede ajuda para montar, como você descobre em qual parte ajudar?
 
-### Menor de 9. Por semana, quanto tempo vocês conseguem sentar juntos no computador?
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
 
-_Etapa: A rotina de vocês. Chave `m9_tempo_juntos`. No /admin: Tempo juntos._
+- Acabo pegando as peças e fazendo a montagem por ele.
+- Ele larga as peças quando não consigo entender o pedido.
+- Preciso fazer várias perguntas até descobrir onde ficou difícil.
+- Quando ele aponta uma peça ou mostra o que tentou, consigo ajudar.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
 
-Chute.
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-- `uma_vez`: Uns 20 minutos, uma vez
-- `duas_tres`: Duas ou três vezes, de 20 a 30 minutos
-- `mais`: Mais do que isso
-- `nao_sei`: Ainda não sei
+Chave: vida_m9_impacto_rotina
 
-### Menor de 9. Qual destas frases parece mais com ele?
+Na hora de sair de casa, como vocês passam por esses preparativos?
 
-_Etapa: A cena de casa. Chave `m9_cena`. No /admin: Frase que parece com ele._
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
 
-- `A`: Só fica no joguinho pronto do tablet
-- `B`: Inventa brincadeira e personagem o tempo todo
-- `D`: Quer saber como tudo funciona e apertar tudo
-- `irmao`: Quer fazer o que o irmão mais velho faz
-- `nenhum`: Nenhuma dessas
+- Eu faço quase tudo por ele para conseguirmos sair.
+- Alguma coisa fica para trás, e precisamos voltar para buscar.
+- Preciso repetir o mesmo passo várias vezes, e saímos com pressa.
+- Quando mostro uma sequência curta, ele faz uma parte comigo.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
 
-### Menor de 9. Se nada mudar, o que mais preocupa?
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-_Etapa: A cena de casa. Chave `m9_preocupacao`. No /admin: Preocupação._
+Chave: vida_m9_impacto_vai_bem
 
-- `A`: A tela continuar só para assistir e jogar
-- `B`: As ideias dele ficarem só na brincadeira
-- `D`: A curiosidade dele passar em branco
-- `nenhum`: Nada, quero aproveitar a fase
+Em que situação você gostaria de ampliar essa participação que já existe?
 
-### Menor de 9. Daqui a três meses, qual cena você gostaria de ver?
+Escolha o que costuma acontecer. Se não atrapalha ou você ainda não sabe, pode dizer.
 
-_Etapa: O que você quer. Chave `m9_cena_desejada`. No /admin: Cena desejada._
+- Nas escolhas de casa, como decidir o que preparar ou levar para sair.
+- Em ideias que ele queira criar, como um desenho, uma história ou um projeto.
+- Ao combinar uma brincadeira ou um programa com outras pessoas.
+- Ao mostrar um trabalho ou explicar uma dúvida da escola.
+- Ainda quero olhar as possibilidades com ele antes de escolher.
 
-- `A`: Ele me chamando para ver o que a gente fez
-- `B`: O personagem dele aparecendo na tela
-- `D`: Ele me explicando o que cada botão faz
-- `A2`: Os avós jogando um jogo nosso
+## Pergunta 5 · Efeito na rotina · Menores de 9 anos
 
-### Menor de 9. Para dar certo aí em casa, o que precisa estar garantido?
+Chave: vida_m9_impacto_nao_sei
 
-_Etapa: O que você quer. Chave `m9_garantia`. No /admin: O que precisa estar garantido._
+Em qual momento seria mais fácil observar como ele pensa, escolhe e pede ajuda?
 
-- `conduzir`: Eu conseguir conduzir sem saber programar
-- `curto`: Caber em sessões curtas
-- `seguro`: Ser um lugar seguro
-- `orcamento`: Caber no orçamento
-- `sozinho`: Ele conseguir sozinho, não tenho tempo
-- `ao_vivo`: Ter professor ao vivo
+Escolha o que costuma acontecer. Se não atrapalha ou você ainda não sabe, pode dizer.
 
-### Menor de 9. Juntando tudo, o que você quer?
+- Num combinado de casa, como preparar o que vamos levar para sair.
+- Quando ele desenha, monta, escreve ou cria alguma coisa de que gosta.
+- Ao combinar uma brincadeira ou um programa com outras pessoas.
+- Ao olhar com ele uma produção que veio da escola.
+- Ainda não sei; preciso encontrar um momento para acompanhar.
 
-_Etapa: O que você quer. Chave `m9_sintese`. No /admin: Frase-síntese._
+## Pergunta 6 · Outras situações · Menores de 9 anos
 
-- `A`: Um tempo de tela nosso, com alguma coisa feita no fim
-- `B`: As ideias dele virando um jogo
-- `D`: Ele entender, brincando, como as coisas funcionam
-- `conhecer`: Ainda estou conhecendo
+Chave: vida_m9_alcance_comecar
 
-## Regra do perfil
+Além de guardar os brinquedos, como ele participa de outras pequenas escolhas?
 
-Nos dois ramos, a cena de casa e a frase-síntese valem 3; a preocupação e a cena desejada valem 2. Com 4 pontos ou mais, o diagnóstico é claro; abaixo, a carta avisa que as respostas apontaram para mais de um lado. No menor de 9, a cena dos avós soma para o tempo a dois, e o irmão mais velho não soma.
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Também espera que eu escolha por ele qual material usar para desenhar.
+- Nas escolhas de uma brincadeira, costuma decidir; a espera aparece mais na arrumação.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · Menores de 9 anos
+
+Chave: vida_m9_alcance_erro
+
+Se algo não sai como ele queria em outra brincadeira, o que você percebe?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Também quer parar quando uma peça de encaixe não entra na primeira tentativa.
+- Em outras brincadeiras consegue retomar; isso aparece mais quando a torre cai.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · Menores de 9 anos
+
+Chave: vida_m9_alcance_modelo
+
+Quando precisa mudar uma escolha fora dessa montagem, como ele reage?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Se falta a cor que queria usar no desenho, espera que eu resolva o que fazer.
+- No desenho consegue escolher outra cor; a dificuldade fica mais nessa montagem.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · Menores de 9 anos
+
+Chave: vida_m9_alcance_explicar
+
+Fora da montagem, como ele mostra o que precisa ou o que escolheu?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ao mostrar um desenho, também precisa de ajuda para indicar o que quer contar.
+- No desenho consegue mostrar suas escolhas; isso aparece mais na montagem.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · Menores de 9 anos
+
+Chave: vida_m9_alcance_rotina
+
+Em outros preparativos, como ele participa?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Para começar a desenhar, também precisa de lembretes para pegar papel e lápis.
+- Para desenhar ele separa o material; os lembretes aparecem mais na hora de sair.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · Menores de 9 anos
+
+Chave: vida_m9_alcance_vai_bem
+
+O que mais ajudaria a abrir essas novas oportunidades para ele?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ter outras ideias que despertem a vontade dele de participar.
+- Combinar um momento para retomar o que já começou.
+- Saber quando ajudar e quando deixar uma decisão com ele.
+- Já encontramos oportunidades; quero conhecer outras possibilidades.
+- Ainda quero conversar com ele sobre o que gostaria de experimentar.
+
+## Pergunta 6 · Outras situações · Menores de 9 anos
+
+Chave: vida_m9_alcance_nao_sei
+
+O que hoje dificulta acompanhar melhor esses momentos?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- A rotina é corrida e quase sempre só vejo a tarefa pronta.
+- Acabo ajudando bastante e fico sem saber qual parte ele faria.
+- Ele participa de jeitos diferentes com pessoas ou em lugares diferentes.
+- Não há uma dificuldade específica; quero prestar mais atenção daqui para a frente.
+- Ainda não sei explicar; prefiro observar antes de tirar conclusões.
+
+## Pergunta 7 · Habilidade desejada · Menores de 9 anos
+
+Chave: vida_m9_prioridade
+
+Qual habilidade você mais gostaria de ajudar seu filho a desenvolver?
+
+Escolha a que mais faria diferença na rotina de vocês agora.
+
+- Autonomia: Por exemplo: ele começar a guardar os brinquedos, escolhendo uma parte para fazer comigo.
+- Persistência: Por exemplo: se a torre cair, ele topar reconstruir uma parte comigo.
+- Resolução de problemas: Por exemplo: ele testar outra peça quando a primeira não couber e perceber o que mudou.
+- Comunicação: Por exemplo: ele mostrar como foi uma brincadeira e contar, apontar ou demonstrar o que escolheu.
+- Organização: Por exemplo: ele participar da preparação para sair, lembrando um passo que já combinamos.
+- Ainda quero entender melhor o que ele precisa, antes de escolher uma habilidade.
+
+## Pergunta 8 · Conquista desejada · Menores de 9 anos
+
+Chave: vida_m9_beneficio_planejar
+
+Se ele participasse mais das escolhas ao longo da semana, o que isso mudaria para vocês?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele sentir que uma escolha dele ajudou a fazer algo acontecer.
+- Eu conseguir fazer junto deixando uma parte nas mãos dele.
+- Ele participar mais dos pequenos combinados de casa.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · Menores de 9 anos
+
+Chave: vida_m9_beneficio_persistir
+
+Se ele encontrasse formas de retomar depois das dificuldades, o que você gostaria de ver mudar com o tempo?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele conseguir voltar a uma brincadeira de que gosta depois de uma tentativa difícil.
+- Nós termos espaço para uma pausa e outra tentativa, sem eu assumir toda a brincadeira.
+- Ele aceitar minha ajuda para experimentar de outro jeito.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · Menores de 9 anos
+
+Chave: vida_m9_beneficio_raciocinar
+
+Se ele usasse o que aprendeu para pensar em outras saídas, qual mudança teria mais valor na rotina?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele descobrir que pode haver outra peça ou outro jeito de continuar.
+- Eu conseguir conversar com ele sobre o que mudou, usando o que estamos vendo.
+- Ele participar da solução quando falta alguma coisa na brincadeira.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · Menores de 9 anos
+
+Chave: vida_m9_beneficio_expressar
+
+Se ele conseguisse expressar ideias e pedir ajuda em mais momentos, o que mudaria na convivência?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele conseguir mostrar uma ideia dele para alguém da família.
+- Eu entender melhor o que ele quer contar ou em que parte precisa de ajuda.
+- Ele participar mais das escolhas numa brincadeira com outra pessoa.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · Menores de 9 anos
+
+Chave: vida_m9_beneficio_rotina
+
+Se ele cuidasse de uma parte dos combinados com mais frequência, qual seria o ganho para vocês?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele reconhecer uma parte do combinado e querer participar dela.
+- Nós prepararmos a saída com uma sequência mais clara e menos lembretes repetidos.
+- Ele perceber o que já fez e o que ainda falta preparar.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · Menores de 9 anos
+
+Chave: vida_m9_beneficio_explorar
+
+O que você gostaria de compreender melhor antes de pensar num caminho para continuar?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- O que desperta a vontade dele de participar e mostrar o que fez.
+- Qual ajuda faz diferença sem tirar dele a oportunidade de tentar.
+- Em quais situações da rotina ele já participa e onde ainda precisa de apoio.
+- Ainda preciso acompanhar alguns momentos com ele antes de definir isso.
+
+## Pergunta 9 · Apoio disponível · Menores de 9 anos
+
+Chave: vida_m9_apoio
+
+No dia a dia, um responsável consegue ficar ao lado dele quando precisa fazer algo junto?
+
+Considere o apoio que está disponível hoje.
+
+- Sim, consigo participar ao lado dele.
+- Consigo ajudar no começo, mas depois preciso me afastar.
+- Precisamos combinar quem poderá estar junto e em quais momentos.
+- Hoje não temos alguém disponível para acompanhar de perto.
+
+## Pergunta 10 · O que precisa conferir · Menores de 9 anos
+
+Chave: vida_m9_condicao
+
+Ao pensar em desenvolver essas habilidades, qual é sua principal preocupação hoje?
+
+Escolha o ponto que mais pesa para sua família.
+
+- Saber como ajudar, sem acabar fazendo tudo por ele.
+- Respeitar o ritmo dele, inclusive quando precisa parar e retomar depois.
+- Encontrar algo de que ele queira participar, além da minha insistência.
+- Conseguir conciliar esse cuidado com o orçamento da família.
+- Ter um professor acompanhando individualmente, ao vivo.
+- Receber ajuda principalmente para as lições e matérias da escola.
+- Entender melhor o que faz sentido antes de escolher um caminho.
+
+## Pergunta 2 · Interesses · De 9 a 12 anos
+
+Chave: vida_9a12_interesse
+
+Quando tem um tempo livre, o que seu filho costuma escolher?
+
+Marque o que você mais vê acontecer. Não precisa ser a única coisa de que ele gosta.
+
+- Jogar no celular, no videogame ou no computador.
+- Inventar personagens, histórias ou brincadeiras.
+- Desenhar, construir com peças ou fazer coisas à mão.
+- Descobrir como um brinquedo, uma máquina ou um jogo funciona.
+- Me chamar para jogar, montar ou brincar junto.
+- Muda bastante; ainda não sei o que mais chama a atenção dele.
+
+## Pergunta 3 · Situação do cotidiano · De 9 a 12 anos
+
+Chave: vida_9a12_cena
+
+Como essas habilidades aparecem no dia a dia do seu filho?
+
+Escolha a situação que mais chama sua atenção hoje. Se nenhuma cena combinar, pode dizer.
+
+- Autonomia: Na hora do dever, ele espera eu dizer por qual questão começar.
+- Persistência: Quando uma montagem com peças não fica de pé, ele larga as peças e não quer continuar.
+- Resolução de problemas: Ele acompanha a conta do exemplo, mas trava quando os números ou a pergunta mudam.
+- Comunicação: Ao ensinar uma brincadeira a alguém, ele se perde na explicação e pede que eu explique por ele.
+- Organização: Para preparar a mochila, precisa que eu lembre cada material que vai usar.
+- Ele já cuida dessas coisas com pouca ajuda; quero oferecer novos desafios.
+- Nenhuma dessas cenas descreve bem o que vejo.
+
+## Pergunta 4 · Ajuda e tentativas · De 9 a 12 anos
+
+Chave: vida_9a12_tentativas_comecar
+
+Quando vocês tentam ajudar nessa situação, o que costuma acontecer nos dias seguintes?
+
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
+
+- Ele retoma parte do que combinamos e já participa um pouco mais.
+- Na vez seguinte, precisamos começar a orientação de novo.
+- Ele participa no começo, mas perde o interesse depois de alguns dias.
+- Percebemos uma ajuda possível, mas falta um momento para retomá-la.
+- Ainda não acompanhamos isso por tempo suficiente para saber.
+
+## Pergunta 4 · Ajuda e tentativas · De 9 a 12 anos
+
+Chave: vida_9a12_tentativas_vai_bem
+
+Depois de uma conquista dele, como vocês dão espaço para continuar?
+
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
+
+- Ele volta por conta própria e procura fazer mais uma parte.
+- Precisa de um convite meu para retomar e ampliar o que já faz.
+- Gosta de mudar de assunto e conhecer outras possibilidades.
+- Queremos continuar, mas falta combinar momentos na semana.
+- Ainda não acompanhei uma sequência de experiências dele.
+
+## Pergunta 4 · Ajuda e tentativas · De 9 a 12 anos
+
+Chave: vida_9a12_tentativas_nao_sei
+
+Quando vocês combinam uma pequena responsabilidade em casa, o que acontece nos dias seguintes?
+
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
+
+- Ele retoma parte do combinado, como guardar um material ou preparar o que vai usar.
+- Precisamos explicar o combinado de novo a cada vez.
+- Participa nos primeiros dias e depois deixa de retomar.
+- Ainda falta um momento para acompanhar o combinado juntos.
+- Ainda não observei uma situação assim ao longo dos dias.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_comecar
+
+Quando ele espera sua orientação para começar o dever, o que acontece?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Preciso interromper o que estou fazendo para sentar com ele.
+- O dever fica para depois e se acumula perto da hora de dormir.
+- Ficamos repetindo “começa o dever”, e a conversa acaba virando cobrança.
+- Quando ajudo a escolher a primeira questão, ele segue por um tempo.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_erro
+
+Quando a montagem cai e ele quer parar, o que costuma acontecer?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Eu monto aquela parte para ele conseguir continuar.
+- Ele guarda as peças e não quer voltar à montagem.
+- Ficamos discutindo se ele vai continuar, e a brincadeira para.
+- Uma pausa e uma ajuda para olhar a base permitem tentar outra vez.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_modelo
+
+Quando a questão muda e o exemplo já não basta, como ele continua?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Preciso explicar novamente como fazer cada questão diferente.
+- Ele pula as questões que não se parecem com o exemplo.
+- Ele repete a conta do exemplo, mas não consegue dizer por que a usou.
+- Comparar o que mudou entre as duas questões ajuda a continuar.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_explicar
+
+Quando ele tenta explicar a brincadeira, como vocês conseguem começar?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Eu acabo explicando todas as regras por ele.
+- A outra pessoa não entende, e eles deixam a brincadeira de lado.
+- Precisamos recomeçar a explicação várias vezes para combinar as regras.
+- Quando ele demonstra uma jogada, a outra pessoa entende melhor.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_rotina
+
+Quando ele precisa preparar a mochila para o dia seguinte, como termina essa organização?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Eu acabo conferindo e colocando os materiais por ele.
+- Às vezes saímos com pressa e algum material fica para trás.
+- Preciso repetir várias vezes o que deve entrar na mochila.
+- Com uma lista curta ou uma conferência comigo, ele participa.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_vai_bem
+
+Em que situação você gostaria de ampliar essa participação que já existe?
+
+Escolha o que costuma acontecer. Se não atrapalha ou você ainda não sabe, pode dizer.
+
+- Nas escolhas de casa, como decidir o que preparar ou levar para sair.
+- Em ideias que ele queira criar, como um desenho, uma história ou um projeto.
+- Ao combinar uma brincadeira ou um programa com outras pessoas.
+- Ao mostrar um trabalho ou explicar uma dúvida da escola.
+- Ainda quero olhar as possibilidades com ele antes de escolher.
+
+## Pergunta 5 · Efeito na rotina · De 9 a 12 anos
+
+Chave: vida_9a12_impacto_nao_sei
+
+Em qual momento seria mais fácil observar como ele pensa, escolhe e pede ajuda?
+
+Escolha o que costuma acontecer. Se não atrapalha ou você ainda não sabe, pode dizer.
+
+- Num combinado de casa, como preparar o que vamos levar para sair.
+- Quando ele desenha, monta, escreve ou cria alguma coisa de que gosta.
+- Ao combinar uma brincadeira ou um programa com outras pessoas.
+- Ao olhar com ele uma produção que veio da escola.
+- Ainda não sei; preciso encontrar um momento para acompanhar.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_comecar
+
+Além do dever, como ele começa um combinado de casa?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Para arrumar uma parte do quarto, também espera que eu diga por onde começar.
+- Na arrumação ele decide uma parte; essa espera aparece mais no dever.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_erro
+
+Quando precisa rever uma tentativa fora da montagem, o que acontece?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Também evita voltar a uma questão da escola depois de errar.
+- No dever consegue rever uma questão; isso aparece mais quando a montagem cai.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_modelo
+
+Fora do exercício da escola, como ele lida com a falta de uma opção conhecida?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Numa receita simples, se falta um ingrediente, espera que eu encontre outra saída.
+- Na receita ajuda a pensar numa alternativa; isso aparece mais nos exercícios.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_explicar
+
+Fora da brincadeira, como ele explica uma ideia ou uma dúvida?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ao pedir ajuda no dever, também tem dificuldade de mostrar qual parte não entendeu.
+- No dever consegue localizar a dúvida; isso aparece mais ao explicar a brincadeira.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_rotina
+
+Fora da mochila da escola, como ele confere o que precisa levar?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Para um passeio ou uma atividade de que gosta, também preciso lembrar os materiais.
+- Para um passeio ele separa o que precisa; os lembretes aparecem mais na mochila.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_vai_bem
+
+O que mais ajudaria a abrir essas novas oportunidades para ele?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ter outras ideias que despertem a vontade dele de participar.
+- Combinar um momento para retomar o que já começou.
+- Saber quando ajudar e quando deixar uma decisão com ele.
+- Já encontramos oportunidades; quero conhecer outras possibilidades.
+- Ainda quero conversar com ele sobre o que gostaria de experimentar.
+
+## Pergunta 6 · Outras situações · De 9 a 12 anos
+
+Chave: vida_9a12_alcance_nao_sei
+
+O que hoje dificulta acompanhar melhor esses momentos?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- A rotina é corrida e quase sempre só vejo a tarefa pronta.
+- Acabo ajudando bastante e fico sem saber qual parte ele faria.
+- Ele participa de jeitos diferentes com pessoas ou em lugares diferentes.
+- Não há uma dificuldade específica; quero prestar mais atenção daqui para a frente.
+- Ainda não sei explicar; prefiro observar antes de tirar conclusões.
+
+## Pergunta 7 · Habilidade desejada · De 9 a 12 anos
+
+Chave: vida_9a12_prioridade
+
+Qual habilidade você mais gostaria de ajudar seu filho a desenvolver?
+
+Escolha a que mais faria diferença na rotina de vocês agora.
+
+- Autonomia: Por exemplo: ele sentar para o dever, escolher por onde começar e me chamar para uma dúvida específica.
+- Persistência: Por exemplo: se uma montagem não ficar de pé, ele rever o apoio e tentar de novo, com ajuda se precisar.
+- Resolução de problemas: Por exemplo: ele entender uma conta na aula e usar essa ideia num exercício diferente.
+- Comunicação: Por exemplo: ao ensinar uma brincadeira, ele explicar uma regra e mostrar como se joga.
+- Organização: Por exemplo: ele separar o material de amanhã e conferir o que falta, com menos lembretes meus.
+- Ainda quero entender melhor o que ele precisa, antes de escolher uma habilidade.
+
+## Pergunta 8 · Conquista desejada · De 9 a 12 anos
+
+Chave: vida_9a12_beneficio_planejar
+
+Se ele participasse mais das escolhas ao longo da semana, o que isso mudaria para vocês?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele começar uma parte do que precisa fazer antes de esperar uma ordem minha.
+- Nós conversarmos sobre a dúvida dele, em vez de eu decidir cada passo.
+- Ele participar mais das escolhas e responsabilidades de casa.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 9 a 12 anos
+
+Chave: vida_9a12_beneficio_persistir
+
+Se ele encontrasse formas de retomar depois das dificuldades, o que você gostaria de ver mudar com o tempo?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele continuar fazendo algo de que gosta depois de encontrar uma dificuldade.
+- Nós conseguirmos rever uma parte sem a conversa virar uma disputa sobre continuar.
+- Ele pedir uma ajuda específica e tentar outra vez, inclusive no dever.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 9 a 12 anos
+
+Chave: vida_9a12_beneficio_raciocinar
+
+Se ele usasse o que aprendeu para pensar em outras saídas, qual mudança teria mais valor na rotina?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele explicar por que escolheu uma solução, além de chegar à resposta.
+- Eu conseguir deixar que ele experimente uma saída antes de dar a resposta.
+- Ele usar uma ideia que entendeu numa situação diferente da primeira.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 9 a 12 anos
+
+Chave: vida_9a12_beneficio_expressar
+
+Se ele conseguisse expressar ideias e pedir ajuda em mais momentos, o que mudaria na convivência?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele conseguir compartilhar uma ideia com colegas ou familiares.
+- Nós entendermos melhor em qual parte ele precisa de ajuda.
+- Ele participar de uma brincadeira ou de um trabalho em grupo explicando suas escolhas.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 9 a 12 anos
+
+Chave: vida_9a12_beneficio_rotina
+
+Se ele cuidasse de uma parte dos combinados com mais frequência, qual seria o ganho para vocês?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele assumir uma parte da preparação para a escola ou para um passeio.
+- Nós reduzirmos os lembretes repetidos ao conferir o material.
+- Ele reconhecer o que falta e me chamar para uma ajuda específica.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 9 a 12 anos
+
+Chave: vida_9a12_beneficio_explorar
+
+O que você gostaria de compreender melhor antes de pensar num caminho para continuar?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- O que desperta a vontade dele de participar e mostrar o que fez.
+- Qual ajuda faz diferença sem tirar dele a oportunidade de tentar.
+- Em quais situações da rotina ele já participa e onde ainda precisa de apoio.
+- Ainda preciso acompanhar alguns momentos com ele antes de definir isso.
+
+## Pergunta 9 · Apoio disponível · De 9 a 12 anos
+
+Chave: vida_9a12_apoio
+
+Na rotina de vocês, como um adulto consegue acompanhar quando ele precisa de ajuda?
+
+Considere o apoio que está disponível hoje.
+
+- Consigo ficar ao lado e fazer junto quando precisa.
+- Consigo estar por perto e ajudar quando ele chama.
+- Precisamos combinar quem poderá acompanhar e em quais momentos.
+- Hoje ele precisaria seguir sozinho; não temos um adulto disponível.
+
+## Pergunta 10 · O que precisa conferir · De 9 a 12 anos
+
+Chave: vida_9a12_condicao
+
+Ao pensar em desenvolver essas habilidades, qual é sua principal preocupação hoje?
+
+Escolha o ponto que mais pesa para sua família.
+
+- Saber como ajudar, sem acabar fazendo tudo por ele.
+- Respeitar o ritmo dele, inclusive quando precisa parar e retomar depois.
+- Encontrar algo de que ele queira participar, além da minha insistência.
+- Conseguir conciliar esse cuidado com o orçamento da família.
+- Ter um professor acompanhando individualmente, ao vivo.
+- Receber ajuda principalmente para as lições e matérias da escola.
+- Entender melhor o que faz sentido antes de escolher um caminho.
+
+## Pergunta 2 · Interesses · De 13 a 17 anos
+
+Chave: vida_13a17_interesse
+
+Quando tem um tempo livre, o que seu filho costuma escolher?
+
+Marque o que você mais vê acontecer. Não precisa ser a única coisa de que ele gosta.
+
+- Jogar e entender as estratégias de um jogo.
+- Criar histórias, personagens ou roteiros.
+- Desenhar, editar imagens ou construir projetos.
+- Entender como um aplicativo, um jogo ou um equipamento funciona.
+- Jogar, criar ou fazer um projeto comigo.
+- Os interesses mudam; ainda estou conversando com ele sobre isso.
+
+## Pergunta 3 · Situação do cotidiano · De 13 a 17 anos
+
+Chave: vida_13a17_cena
+
+Como essas habilidades aparecem no dia a dia do seu filho?
+
+Escolha a situação que mais chama sua atenção hoje. Se nenhuma cena combinar, pode dizer.
+
+- Autonomia: Quando tem um trabalho da escola, espera minha ajuda para decidir por onde começar.
+- Persistência: Quando um vídeo que está editando fica diferente do que queria, ele desanima e deixa o projeto de lado.
+- Resolução de problemas: Acompanha a resolução na aula, mas trava num problema parecido, com outros dados.
+- Comunicação: Ao combinar um programa com a família, ele diz que não gostou, mas tem dificuldade de explicar o que prefere.
+- Organização: Para ir a uma atividade que escolheu, precisa que eu lembre o horário e o que deve levar.
+- Ele já organiza as tarefas e pede ajuda com clareza; quero ampliar as oportunidades.
+- Nenhuma dessas cenas descreve bem o que vejo.
+
+## Pergunta 4 · Ajuda e tentativas · De 13 a 17 anos
+
+Chave: vida_13a17_tentativas_comecar
+
+Quando vocês tentam ajudar nessa situação, o que costuma acontecer nos dias seguintes?
+
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
+
+- Ele retoma parte do que combinamos e já participa um pouco mais.
+- Na vez seguinte, precisamos começar a orientação de novo.
+- Ele participa no começo, mas perde o interesse depois de alguns dias.
+- Percebemos uma ajuda possível, mas falta um momento para retomá-la.
+- Ainda não acompanhamos isso por tempo suficiente para saber.
+
+## Pergunta 4 · Ajuda e tentativas · De 13 a 17 anos
+
+Chave: vida_13a17_tentativas_vai_bem
+
+Depois de uma conquista dele, como vocês dão espaço para continuar?
+
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
+
+- Ele volta por conta própria e procura fazer mais uma parte.
+- Precisa de um convite meu para retomar e ampliar o que já faz.
+- Gosta de mudar de assunto e conhecer outras possibilidades.
+- Queremos continuar, mas falta combinar momentos na semana.
+- Ainda não acompanhei uma sequência de experiências dele.
+
+## Pergunta 4 · Ajuda e tentativas · De 13 a 17 anos
+
+Chave: vida_13a17_tentativas_nao_sei
+
+Quando vocês combinam uma pequena responsabilidade em casa, o que acontece nos dias seguintes?
+
+Pode escolher a experiência que mais se repete, mesmo que a ajuda funcione em alguns dias.
+
+- Ele retoma parte do combinado, como guardar um material ou preparar o que vai usar.
+- Precisamos explicar o combinado de novo a cada vez.
+- Participa nos primeiros dias e depois deixa de retomar.
+- Ainda falta um momento para acompanhar o combinado juntos.
+- Ainda não observei uma situação assim ao longo dos dias.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_comecar
+
+Quando ele espera sua ajuda para começar o trabalho da escola, o que costuma acontecer?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Preciso sentar com ele e organizar as etapas para o trabalho começar.
+- O começo fica para o fim do prazo, e ele tenta fazer tudo de uma vez.
+- Preciso perguntar várias vezes se já começou, e isso vira um desgaste.
+- Quando combinamos uma primeira etapa, ele consegue seguir por um tempo.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_erro
+
+Quando o vídeo fica diferente do que ele imaginou, o que acontece depois?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Ele pede que eu ou outra pessoa faça a edição por ele.
+- Ele deixa o vídeo sem terminar e não quer voltar à edição.
+- Apaga várias partes e recomeça, sem conferir o que precisava mudar.
+- Rever um trecho curto e testar um ajuste ajuda a continuar.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_modelo
+
+Quando o problema traz dados diferentes do exemplo da aula, como ele segue?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Preciso mostrar outra vez o caminho completo da resolução.
+- Ele deixa o problema em branco e procura outro mais parecido com o exemplo.
+- Repete a fórmula, mas não consegue explicar por que ela serve ali.
+- Comparar o que o problema pede com o exemplo ajuda a encontrar um caminho.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_explicar
+
+Quando ele diz que não gostou do programa, como vocês chegam a uma combinação?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Preciso tentar adivinhar o que ele prefere e decidir por ele.
+- Ele encerra a conversa e fica de fora da combinação.
+- Repetimos a conversa, mas continua difícil entender o que cada um quer.
+- Quando ele mostra uma opção e explica o motivo, conseguimos conversar melhor.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_rotina
+
+Quando chega a hora dessa atividade, como ele confere os preparativos?
+
+Marque o que você percebe de verdade. A ajuda que já funciona também conta.
+
+- Eu confiro o horário e separo o que ele precisa levar.
+- Percebe que falta alguma coisa quando já está na hora de sair.
+- Preciso repetir o horário e os materiais várias vezes.
+- Com um horário anotado e uma lista curta, ele participa da conferência.
+- Isso não costuma atrapalhar nossa rotina.
+- Ainda não reparei no que acontece depois.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_vai_bem
+
+Em que situação você gostaria de ampliar essa participação que já existe?
+
+Escolha o que costuma acontecer. Se não atrapalha ou você ainda não sabe, pode dizer.
+
+- Nas escolhas de casa, como decidir o que preparar ou levar para sair.
+- Em ideias que ele queira criar, como um desenho, uma história ou um projeto.
+- Ao combinar uma brincadeira ou um programa com outras pessoas.
+- Ao mostrar um trabalho ou explicar uma dúvida da escola.
+- Ainda quero olhar as possibilidades com ele antes de escolher.
+
+## Pergunta 5 · Efeito na rotina · De 13 a 17 anos
+
+Chave: vida_13a17_impacto_nao_sei
+
+Em qual momento seria mais fácil observar como ele pensa, escolhe e pede ajuda?
+
+Escolha o que costuma acontecer. Se não atrapalha ou você ainda não sabe, pode dizer.
+
+- Num combinado de casa, como preparar o que vamos levar para sair.
+- Quando ele desenha, monta, escreve ou cria alguma coisa de que gosta.
+- Ao combinar uma brincadeira ou um programa com outras pessoas.
+- Ao olhar com ele uma produção que veio da escola.
+- Ainda não sei; preciso encontrar um momento para acompanhar.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_comecar
+
+Fora do trabalho da escola, como ele começa algo que precisa organizar?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ao combinar um programa com amigos, também espera alguém definir o primeiro passo.
+- Nos programas com amigos ele participa das decisões; isso aparece mais no trabalho escolar.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_erro
+
+Quando recebe uma correção fora da edição do vídeo, como ele costuma seguir?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Também evita revisar um trabalho da escola depois de uma correção.
+- No trabalho da escola consegue revisar; isso aparece mais na edição do vídeo.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_modelo
+
+Fora do exercício, como ele compara informações para decidir?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ao comparar preço e quantidade de dois produtos, também precisa de ajuda para explicar a escolha.
+- Na comparação de compras consegue explicar a escolha; isso aparece mais nos exercícios.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_explicar
+
+Fora dos programas da família, como ele coloca suas ideias numa conversa?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Num trabalho em grupo, também tem dificuldade para explicar a proposta dele aos colegas.
+- Nos trabalhos em grupo ele explica suas ideias; isso aparece mais nas combinações em família.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_rotina
+
+Fora dessa atividade, como ele acompanha datas e preparativos?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Nos trabalhos da escola, também preciso lembrar o prazo e conferir o que falta.
+- Nos trabalhos da escola acompanha o prazo; os lembretes aparecem mais nessa atividade.
+- Em outros momentos, participa quando combinamos uma ajuda e deixamos que tente.
+- Ainda não observei essas outras situações o suficiente.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_vai_bem
+
+O que mais ajudaria a abrir essas novas oportunidades para ele?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- Ter outras ideias que despertem a vontade dele de participar.
+- Combinar um momento para retomar o que já começou.
+- Saber quando ajudar e quando deixar uma decisão com ele.
+- Já encontramos oportunidades; quero conhecer outras possibilidades.
+- Ainda quero conversar com ele sobre o que gostaria de experimentar.
+
+## Pergunta 6 · Outras situações · De 13 a 17 anos
+
+Chave: vida_13a17_alcance_nao_sei
+
+O que hoje dificulta acompanhar melhor esses momentos?
+
+Pense no que você já observou. Não precisa acontecer em todos os lugares.
+
+- A rotina é corrida e quase sempre só vejo a tarefa pronta.
+- Acabo ajudando bastante e fico sem saber qual parte ele faria.
+- Ele participa de jeitos diferentes com pessoas ou em lugares diferentes.
+- Não há uma dificuldade específica; quero prestar mais atenção daqui para a frente.
+- Ainda não sei explicar; prefiro observar antes de tirar conclusões.
+
+## Pergunta 7 · Habilidade desejada · De 13 a 17 anos
+
+Chave: vida_13a17_prioridade
+
+Qual habilidade você mais gostaria de ajudar seu filho a desenvolver?
+
+Escolha a que mais faria diferença na rotina de vocês agora.
+
+- Autonomia: Por exemplo: ele dividir um trabalho da escola em etapas e começar uma delas antes de eu cobrar.
+- Persistência: Por exemplo: se um vídeo não ficar como imaginou, ele rever um trecho e experimentar um ajuste antes de abandonar o projeto.
+- Resolução de problemas: Por exemplo: ele usar o que entendeu na aula para resolver um exercício que não é igual ao exemplo.
+- Comunicação: Por exemplo: ao combinar um programa com a família, ele explicar o que prefere e ouvir o que precisa ser combinado.
+- Organização: Por exemplo: ele se preparar para uma atividade combinada, conferindo horário e material com menos lembretes meus.
+- Ainda quero entender melhor o que ele precisa, antes de escolher uma habilidade.
+
+## Pergunta 8 · Conquista desejada · De 13 a 17 anos
+
+Chave: vida_13a17_beneficio_planejar
+
+Se ele participasse mais das escolhas ao longo da semana, o que isso mudaria para vocês?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele começar a organizar os próprios compromissos, com apoio quando precisar.
+- Nós conversarmos sobre as escolhas dele, sem eu decidir cada etapa.
+- Ele assumir uma parte de um projeto da escola ou de um combinado com amigos.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 13 a 17 anos
+
+Chave: vida_13a17_beneficio_persistir
+
+Se ele encontrasse formas de retomar depois das dificuldades, o que você gostaria de ver mudar com o tempo?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele manter espaço para projetos de que gosta mesmo quando uma tentativa dá errado.
+- Nós conseguirmos conversar sobre um ajuste sem assumir o projeto por ele.
+- Ele levar essa disposição de rever para trabalhos escolares e outros compromissos.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 13 a 17 anos
+
+Chave: vida_13a17_beneficio_raciocinar
+
+Se ele usasse o que aprendeu para pensar em outras saídas, qual mudança teria mais valor na rotina?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele comparar informações e justificar decisões em situações do dia a dia.
+- Eu conseguir ouvir a hipótese dele antes de oferecer uma resposta pronta.
+- Ele resolver uma situação diferente do exemplo conhecido, com apoio se precisar.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 13 a 17 anos
+
+Chave: vida_13a17_beneficio_expressar
+
+Se ele conseguisse expressar ideias e pedir ajuda em mais momentos, o que mudaria na convivência?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele apresentar uma ideia e participar mais das decisões com outras pessoas.
+- Nós conseguirmos entender preferências e combinar ajuda com mais clareza.
+- Ele mostrar seu raciocínio num trabalho em grupo e ouvir outras possibilidades.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 13 a 17 anos
+
+Chave: vida_13a17_beneficio_rotina
+
+Se ele cuidasse de uma parte dos combinados com mais frequência, qual seria o ganho para vocês?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- Ele cuidar de uma parte dos compromissos que escolheu assumir.
+- Nós reduzirmos a sequência de lembretes sobre horário, prazo e material.
+- Ele perceber o que falta preparar e combinar ajuda antes de o prazo apertar.
+- Ainda preciso observar e conversar com ele para entender o que faria mais diferença.
+
+## Pergunta 8 · Conquista desejada · De 13 a 17 anos
+
+Chave: vida_13a17_beneficio_explorar
+
+O que você gostaria de compreender melhor antes de pensar num caminho para continuar?
+
+Escolha a mudança que teria mais valor para vocês.
+
+- O que desperta a vontade dele de participar e mostrar o que fez.
+- Qual ajuda faz diferença sem tirar dele a oportunidade de tentar.
+- Em quais situações da rotina ele já participa e onde ainda precisa de apoio.
+- Ainda preciso acompanhar alguns momentos com ele antes de definir isso.
+
+## Pergunta 9 · Apoio disponível · De 13 a 17 anos
+
+Chave: vida_13a17_apoio
+
+Na rotina de vocês, como um adulto consegue acompanhar quando ele precisa de ajuda?
+
+Considere o apoio que está disponível hoje.
+
+- Consigo ficar ao lado e fazer junto quando precisa.
+- Consigo estar por perto e ajudar quando ele chama.
+- Precisamos combinar quem poderá acompanhar e em quais momentos.
+- Hoje ele precisaria seguir sozinho; não temos um adulto disponível.
+
+## Pergunta 10 · O que precisa conferir · De 13 a 17 anos
+
+Chave: vida_13a17_condicao
+
+Ao pensar em desenvolver essas habilidades, qual é sua principal preocupação hoje?
+
+Escolha o ponto que mais pesa para sua família.
+
+- Saber como ajudar, sem acabar fazendo tudo por ele.
+- Respeitar o ritmo dele, inclusive quando precisa parar e retomar depois.
+- Encontrar algo de que ele queira participar, além da minha insistência.
+- Conseguir conciliar esse cuidado com o orçamento da família.
+- Ter um professor acompanhando individualmente, ao vivo.
+- Receber ajuda principalmente para as lições e matérias da escola.
+- Entender melhor o que faz sentido antes de escolher um caminho.

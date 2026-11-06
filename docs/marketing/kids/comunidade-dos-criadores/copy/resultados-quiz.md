@@ -1,293 +1,1420 @@
-<!-- Espelho gerado da copy tipada em packages/funnel/src/funnels/comunidade-dos-criadores/quiz/. Edite o código e rode `bun scripts/espelho-quiz-comunidade.ts` (em packages/funnel). -->
+# Quiz Kids · Comunidade dos Criadores · resultados
 
-# Quiz da Comunidade Kids: o resultado em conversa
+Gerado da implementação comunidade-vida-v7. Proposta V5 aprovada em 06/11/2026. Dez perguntas; filho/filha é a entrada. As marcações abaixo servem à revisão editorial.
 
-_Uma carta de cada perfil, com as respostas que levam a ele nas quatro perguntas de perfil. Em **negrito**, as respostas da família devolvidas no texto. As outras respostas mudam frases da carta; todas estão em `result-copy-9a17.ts` e `result-copy-m9.ts`._
+O perfil registra a habilidade indicada como prioridade e a idade; não é diagnóstico nem classificação psicológica. Contexto, ajuda anterior, efeitos, alcance, interesses, benefício e condições modificam o texto.
 
-## 9 a 17 · Tempo de tela
+## m9-planejar
 
-_Perfil `9a17-tela`, destino /kids/comunidade-dos-criadores/oferta._
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
 
-### No tempo de tela do seu filho, quem decide quase tudo é quem fez o jogo ou o vídeo
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
 
-Você contou que ele tem **entre 9 e 12 anos**, que **vive no jogo e no vídeo, e não faz nada com isso** e que, quando algo não dá certo num jogo, **ele tenta de outro jeito até dar certo**. Isso tem uma explicação simples.
+**Perceber que uma escolha dele fez diferença pode dar sentido a essa participação.**
 
-#### Por que o tempo de tela não deixa nada feito
+Na hora de guardar os brinquedos, o começo ainda depende de você indicar a primeira parte. Escolher uma caixa ou um tipo de brinquedo já ajuda vocês a começar juntos. Escolher um material de desenho também costuma pedir sua decisão.
 
-De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, e você disse que **só um pouco disso vira alguma coisa que ele mesmo fez**. Nos jogos e nos vídeos prontos, alguém já tomou todas as decisões. As regras, os personagens e o que acontece em cada toque vieram prontos, e ele só escolhe o que vem em seguida. O interesse está lá. O que falta é um tempo de tela que peça alguma coisa dele além de escolher. E é por isso que preocupa ver **a tela continuar só para assistir e jogar**.
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
 
-#### O que muda quando ele cria o próprio jogo
+### Um treinamento com escolhas, tentativas e orientação
 
-Quando ele cria o próprio jogo, as decisões passam a ser dele. Decide quanto o personagem pula, o que acontece quando o personagem encosta numa moeda e quanto vale cada ponto. Aperta para testar e vê na hora se ficou como queria. Se não deu certo, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **ele chamando você: olha o que eu fiz**, é como termina um jogo criado: com alguém da família jogando.
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
 
-#### Onde isso acontece
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Os cursos são projetos de jogo, e a aula mostra cada passo ao lado do Estúdio, onde ele monta o jogo. Depois de cada jogo vem o próximo, cada vez maior. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para os jogos que ele inventar. O jogo publicado vai para o Mural dos Criadores, com um link para a família jogar.
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
 
-_[Tela: A aula com o vídeo e a fala do Zappy de um lado e a atividade no Estúdio do outro]_
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ele.
 
-A Flávia, mãe do Fernando, viu isso acontecer em casa:
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
 
-> “O Fernando passava muito tempo nas telas, mas ele mais assistia, não desenvolvia nada. O curso incentivou ele a desenvolver, a programar, não a jogar.” Flávia, mãe do Fernando
+### A prática continua fora da tela
 
-#### O que você disse que precisa
+- **Na escola:** Em uma atividade da escola, vocês podem olhar os materiais e escolher por qual parte começar, como separar as peças antes de uma montagem.
+- **Em casa e no dia a dia:** Na hora de guardar os brinquedos, deixe uma escolha pequena com ele: começar pelos carrinhos ou pelos blocos. Vocês fazem essa primeira parte juntos.
 
-Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
 
-Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
 
-[Ver como o tempo de tela vira criação](/kids/comunidade-dos-criadores/oferta)
+### Para participar em casa
 
-_Helena e Júlio, Sistema Zero Kids_
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ele participe das decisões.
 
-## 9 a 17 · Criação de jogos
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-_Perfil `9a17-jogos`, destino /kids/comunidade-dos-criadores/oferta._
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
 
-### As ideias de jogo do seu filho já existem. O que falta é vê-las funcionando
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
 
-Você contou que ele tem **entre 9 e 12 anos**, que **inventa jogo o tempo todo, mas fica só na conversa** e que, quando algo não dá certo num jogo, **ele tenta de outro jeito até dar certo**. A gente conhece bem esse menino, porque é assim que começa quem gosta de criar.
+Botão: Conhecer o treinamento
 
-#### Por que as ideias ficam na conversa
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
 
-De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, e você disse que **só um pouco disso vira alguma coisa que ele mesmo fez**. A vontade já está aí. O que falta é transformar a ideia em regras que o computador entende: quando tocar aqui, acontece isso. Enquanto esse passo não chega, cada ideia nova volta para a conversa, como a anterior. E é por isso que preocupa ver **essa vontade passar antes de ele fazer um jogo**.
+## m9-persistir
 
-#### O que muda quando ele monta a regra
+### Mais persistência para rever uma tentativa e continuar com apoio.
 
-Criar um jogo é montar as regras da ideia: quando o jogador tocar no esconderijo, o personagem aparece e o contador soma um. Ele monta essas regras, aperta para testar e descobre na hora se o jogo faz o que imaginou. Se não fez, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **um amigo jogando um jogo que ele inventou**, é onde isso termina: um jogo que funciona na mão de outra pessoa.
+Você quer que uma tentativa difícil deixe espaço para sua filha continuar aprendendo, com uma pausa, outra estratégia ou ajuda quando precisa.
 
-#### Onde isso acontece
+**A pausa e a sua ajuda podem abrir espaço para outra tentativa dela, sem que você precise assumir toda a brincadeira.**
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Cada curso é um jogo completo, e ele começa jogando a versão pronta para saber aonde vai chegar: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Estúdio livre e o Pinta abrem para as ideias dele, com as peças dos cursos que ele terminou. A cada curso, ele ganha peças novas e consegue fazer jogos maiores, até os que ele inventa.
+A queda de uma torre pode interromper uma brincadeira que ela estava fazendo. Uma pausa e ajuda para montar a base já abrem espaço para outra tentativa. A vontade de parar também aparece quando uma peça não encaixa de primeira.
 
-_[Tela: O Estúdio com os blocos do jardim e o jogo rodando ao lado]_
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
 
-O Daniel, pai do Rafael, viu isso acontecer em casa:
+### Um treinamento com escolhas, tentativas e orientação
 
-> “Vai criando, vai sendo mais criativo. ‘Eu quero mudar isso aqui no jogo.’” Daniel, pai do Rafael
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
 
-#### O que você disse que precisa
+As histórias e personagens que interessam a ela oferecem um ponto de partida: imaginar o que deve acontecer e organizar as ações para dar forma à ideia.
 
-Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou. Você disse também que **qualquer ferramenta serve, se ele gostar**; aqui a ferramenta é o Estúdio, da própria plataforma.
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
 
-Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Na Chave do Farol, o personagem pode pegar a chave e o farol ainda não acender. A orientação ajuda sua filha a conferir a regra: o jogo guardou que a chave foi pega? Ela muda uma parte e executa novamente para observar o efeito. A próxima tentativa tem uma coisa específica para investigar. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ela.
 
-[Ver como ele tira os jogos do papel](/kids/comunidade-dos-criadores/oferta)
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
 
-_Helena e Júlio, Sistema Zero Kids_
+### A prática continua fora da tela
 
-## 9 a 17 · Desenho e personagens
+- **Na escola:** Se uma montagem da escola não ficar como ela esperava, ajude a escolher uma parte pequena para refazer, com tempo para uma pausa.
+- **Em casa e no dia a dia:** Quando a torre cair, vocês podem olhar a base e escolher uma peça para apoiar melhor antes de tentar de novo.
 
-_Perfil `9a17-desenho`, destino /kids/comunidade-dos-criadores/oferta._
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
 
-### Os personagens que seu filho desenha já têm aparência e jeito. O que falta é o que eles fazem
+Num projeto, a dificuldade está no movimento; em outro, numa regra que não disparou. Voltar a investigar situações diferentes oferece novas oportunidades de rever uma parte e pedir ajuda, em vez de depender de um único acerto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
 
-Você contou que ele tem **entre 9 e 12 anos**, que **desenha personagem o tempo todo, e fica no caderno** e que, quando algo não dá certo num jogo, **ele tenta de outro jeito até dar certo**. Quem desenha personagem o tempo todo já começou a pensar num jogo.
+### Para participar em casa
 
-#### Por que os desenhos ficam no caderno
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ela participe das decisões.
 
-De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, e você disse que **só um pouco disso vira alguma coisa que ele mesmo fez**. O desenho já tem muito do que um personagem precisa: aparência e jeito. O que ainda falta é ação: o que o personagem faz quando alguém aperta uma tecla, o que acontece quando encontra um obstáculo e aonde precisa chegar. É dessas respostas que nasce a história. E é por isso que preocupa ver **os desenhos ficarem na gaveta**.
+Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
 
-#### O que muda quando o desenho entra no jogo
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
 
-Num jogo, o personagem desenhado anda, pula e reage, e quem decide como é seu filho. A aparência vem do desenho, e a ação vem das regras que ele monta. Ele aperta para testar e vê na hora se o personagem fez o que ele queria. Se não deu certo, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **o personagem que ele desenhou se mexendo na tela**, é o encontro do desenho com as regras do jogo.
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
 
-#### Onde isso acontece
+Botão: Conhecer o treinamento
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Os cursos começam com personagens preparados, para ele aprender primeiro as regras. Quando conclui A Chave do Farol e publica o jogo, chega ao posto Construtor, e o Pinta, o editor de desenhos da plataforma, abre junto com o Estúdio livre: ele desenha o personagem e traz o desenho para o jogo.
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
 
-_[Tela: A janela Trazer do Pinta, dentro do Estúdio, com o cavaleiro desenhado pronto para o jogo]_
+## m9-raciocinar
 
-O Jeffrey, aluno, contou assim:
+### Mais recursos para resolver problemas e encontrar outras saídas.
 
-> “Uma coisa que eu queria dizer era sobre um jogo que eu mesmo criei. Não é do curso, mas eu usei conforme o que eu aprendi com a professora Helena. Eu criei todos os personagens. E esse aqui é o meu personagem, que no caso sou eu mesmo. Ainda estou desenvolvendo, mas está ficando bom.” Jeffrey, aluno
+Você quer que seu filho participe da busca por soluções: observe o que aconteceu, pense numa alternativa e confira se ela funciona.
 
-#### O que você disse que precisa
+**Participar da solução quando falta algo na brincadeira é a conquista que você quer favorecer.**
 
-Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou. Você disse também que quer **que os personagens façam coisas: andem, pulem, reajam**, e é exatamente isso que as regras do jogo fazem.
+Quando falta uma peça do modelo, continuar a montagem pede uma alternativa que ele ainda não encontra sozinho. Oferecer duas peças para experimentar já ajuda a encontrar uma possibilidade. Escolher outra cor para um desenho também costuma depender da sua ajuda.
 
-Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
 
-[Ver o desenho dele entrando no jogo](/kids/comunidade-dos-criadores/oferta)
+### Um treinamento com escolhas, tentativas e orientação
 
-_Helena e Júlio, Sistema Zero Kids_
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
 
-## 9 a 17 · Programação
+A curiosidade sobre como as coisas funcionam oferece um ponto de partida: mudar uma instrução, observar o efeito e investigar por que aconteceu.
 
-_Perfil `9a17-programacao`, destino /kids/comunidade-dos-criadores/oferta._
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
 
-### A curiosidade do seu filho sobre como os jogos são feitos pede alguma coisa que ele possa testar
+Na Chave do Farol, uma regra liga duas coisas: estar com a chave e poder acender o farol. Seu filho monta essa condição com blocos e testa a aventura. O resultado aparece na tela, permitindo conferir quando a regra funciona e o que muda quando a condição não foi cumprida. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ele.
 
-Você contou que ele tem **entre 9 e 12 anos**, que **quer saber como os jogos são feitos, e você não sabe ensinar** e que, quando algo não dá certo num jogo, **ele tenta de outro jeito até dar certo**. A curiosidade dele é o melhor começo.
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
 
-#### Por que a curiosidade precisa de alguma coisa para testar
+### A prática continua fora da tela
 
-De 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, e você disse que **só um pouco disso vira alguma coisa que ele mesmo fez**. A curiosidade já está aí. Só que uma explicação que começa pela lista de comandos faz ele esperar um bom tempo até ver alguma coisa acontecer na tela, e a curiosidade não espera. E é por isso que preocupa ver **a curiosidade dele passar em branco**.
+- **Na escola:** Numa atividade de encaixar ou agrupar objetos, vocês podem comparar formas e tamanhos e observar por que uma peça cabe em um lugar e em outro não.
+- **Em casa e no dia a dia:** Na brincadeira de montar, ofereça duas peças para experimentar quando a primeira não couber. Depois, observem juntos o que mudou.
 
-#### O que muda quando cada comando tem um efeito
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
 
-Programar faz sentido quando cada comando tem um efeito que ele vê e testa. Num jogo, isso acontece o tempo todo: ele monta o comando, aperta para testar e vê na hora se o personagem andou, pulou ou parou como ele esperava. Se não deu certo, ajusta, que é exatamente o que ele já faz quando algo trava. A cena que você quer ver, **ele explicando como um jogo funciona por dentro**, nasce de cada teste: quando o jogo não faz o que ele esperava, ele vai atrás do porquê.
+Uma condição aparece na chave da aventura e pode aparecer de outra forma numa criação seguinte. Projetos diferentes oferecem ocasiões de retomar uma ideia e investigar como usá-la em outro contexto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
 
-#### Onde isso acontece
+### Para participar em casa
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Ele aprende a programar montando jogos, um depois do outro. A aula mostra o passo ao lado do Estúdio, onde ele monta o jogo, e as falas do Zappy, o mascote das aulas, explicam o que fazer; o botão Ouvir lê em voz alta. Os cursos seguem esta ordem: Cadê Todo Mundo, A Chave do Farol, Nave Contra Asteroides, O Jogo do Meu Jeito e Corre, Dino. A Jornada do Criador mostra em que ponto ele está e o que vem depois, dos blocos até o código.
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ele participe das decisões.
 
-_[Tela: O Estúdio com os blocos de um lado e o jogo rodando do outro]_
+O preço e as condições aparecem na próxima página para vocês conferirem se cabem no orçamento.
 
-O Jeffrey, aluno, contou assim:
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
 
-> “O que eu mais gostei foi o processo de como desenvolver o jogo. Cada etapa é importante para garantir que o seu jogo funcione.” Jeffrey, aluno
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
 
-#### O que você disse que precisa
+Botão: Conhecer o treinamento
 
-Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
 
-Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+## m9-expressar
 
-[Ver o caminho para ele aprender a programar](/kids/comunidade-dos-criadores/oferta)
+### Mais clareza para expressar ideias e pedir ajuda.
 
-_Helena e Júlio, Sistema Zero Kids_
+Você quer dar mais espaço para sua filha mostrar o que pensa, explicar uma escolha e pedir a ajuda de que precisa, do jeito que consegue se comunicar.
 
-## 9 a 17 · Escola
+**Mostrar uma ideia dela para alguém da família é uma participação que tem valor para vocês.**
 
-_Perfil `9a17-escola`, destino /kids/comunidade-dos-criadores/oferta._
+O pedido de ajuda na montagem chega antes de ela conseguir mostrar onde ficou difícil. Apontar a peça ou mostrar a tentativa já torna a ajuda mais fácil. Mostrar o que quer contar sobre um desenho também pede apoio.
 
-### Seu filho aprendeu a repetir os passos. O que falta é ver o que os números fazem
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
 
-Você contou que ele tem **entre 9 e 12 anos**, que **na lição, copia o exemplo e trava quando a pergunta muda** e que, quando algo não dá certo num jogo, **ele tenta de outro jeito até dar certo**. Isso tem uma explicação simples.
+### Um treinamento com escolhas, tentativas e orientação
 
-#### Por que ele trava quando a pergunta muda
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
 
-Na escola, ele trava mais em **entender as contas, e não só repetir o exemplo**. Muitas vezes, a dificuldade na escola vem de aprender os passos antes de saber o que aqueles números representam. No caderno, o número não aparece fazendo nada: entra na conta, sai um resultado, e só a correção diz se deu certo. Por isso, uma resposta errada, sozinha, diz pouco sobre capacidade ou vontade. E o tempo de tela já está aí: de 2 a 4 horas por dia dão entre 730 e 1.460 horas por ano em jogos e vídeos, e você disse que **só um pouco disso vira alguma coisa que ele mesmo fez**. E é por isso que preocupa ver **a dificuldade na escola virar desânimo**.
+A vontade de desenhar, construir ou criar imagens oferece um ponto de partida: dar forma a uma ideia e decidir como ela vai funcionar.
 
-#### O que muda quando o número faz alguma coisa
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
 
-No jogo, o número faz alguma coisa. Um comando manda o personagem andar cinco passos. Ele troca para dez, aperta para testar e vê se o personagem foi duas vezes mais longe. Se não deu certo, ajusta, que é exatamente o que ele já faz quando algo trava. E dá para treinar a previsão: antes de mudar quanto vale um ponto ou quantas vidas o personagem tem, ele diz o que vai acontecer no placar, depois joga e confere se acertou. A cena que você quer ver, **ele explicando uma conta com as palavras dele**, cabe numa pergunta que você pode fazer sempre que ele mostrar um jogo: me mostra o que faz o placar mudar.
+Ao montar uma parte da Chave do Farol, sua filha escolhe uma regra e vê o efeito no jogo. Na hora de mostrar, tem algo concreto para apontar: “eu queria que acontecesse isto”, “mudei esta parte”, “aqui eu precisei de ajuda”. Ela pode falar, apontar ou demonstrar a tentativa. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ela.
 
-#### Onde isso acontece
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças e adolescentes de 9 a 17 anos aprendem criando jogos. Aulas, Estúdio, ferramentas de criação, Mural, Clube com moderação e a ajuda da equipe ficam no mesmo lugar. Ali, a aula liga o que ele viu no jogo ao que o comando significa. No jogo do jardim, do curso Cadê Todo Mundo, cada personagem encontrado soma um no contador, e é ele quem monta essa regra.
+### A prática continua fora da tela
 
-_[Tela: O contador de achados muda quando um personagem é encontrado]_
+- **Na escola:** Depois de uma atividade da escola, peça que mostre no desenho ou na montagem uma parte que escolheu fazer. Ela pode apontar enquanto você ajuda a organizar a conversa.
+- **Em casa e no dia a dia:** Ao contar uma brincadeira, ela pode mostrar os brinquedos e demonstrar o que aconteceu primeiro e depois.
 
-O Daniel, pai do Rafael, viu isso acontecer em casa:
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
 
-> “Foi um curso que trouxe pro Rafa uma questão de se pensar, de se organizar, tanto na lógica, na matemática.” Daniel, pai do Rafael
+Cada criação traz outro assunto para explicar: uma escolha de personagem, uma regra revista, uma dúvida que conseguiu mostrar. A continuidade oferece novas ocasiões de conversar sobre o que fez, com o projeto como apoio. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
 
-#### O que você disse que precisa
+### Para participar em casa
 
-Você quer **conseguir acompanhar**. Na sua área, cada filho tem um painel com os cursos, as atividades, as entregas e o posto da Jornada. E a conversa que mais mostra o que ele aprendeu é a mais simples: me mostra o que você mudou.
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ela participe das decisões.
 
-Na próxima página, você vê os cinco jogos do início, como é uma aula, o caminho até o jogo dele e até o código, como você acompanha e os dois planos.
+A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
 
-[Ver a escola dentro do jogo](/kids/comunidade-dos-criadores/oferta)
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
 
-_Helena e Júlio, Sistema Zero Kids_
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
 
-## Menor de 9 · Tempo a dois
+Botão: Conhecer o treinamento
 
-_Perfil `m9-tempo-a-dois`, destino /kids/comunidade-dos-criadores/oferta/criar-junto._
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
 
-### No joguinho do tablet, ela só aperta o que aparece. O que falta é um tempo de tela que seja de vocês dois
+## m9-rotina
 
-Você contou que ela tem **menos de 9 anos**, que **está começando a ler** e que **só fica no joguinho pronto do tablet**. Contou também que vocês conseguem sentar juntos **duas ou três vezes por semana, de 20 a 30 minutos**. Isso é mais do que parece.
+### Mais organização para planejar etapas e acompanhar o que falta.
 
-#### Por que o joguinho pronto não deixa nada feito
+Você quer que seu filho participe mais dos preparativos e combinados, entendendo o que vem primeiro e conferindo o que ainda falta.
 
-No joguinho pronto do tablet, alguém já decidiu tudo: o que aparece, o que acontece em cada toque e quando acaba. Ela aperta o que surge na tela, e o tempo passa sem nada que seja dela. O que ainda falta para ela fazer diferente é a leitura e o mouse, e nessa idade ninguém espera que ela faça sozinha. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto. É por isso que acontece o que você disse que preocupa: **a tela continuar só para assistir e jogar**.
+**Uma sequência mais clara na hora de sair pode dar espaço para a participação dele e reduzir os lembretes repetidos.**
 
-#### O que muda quando vocês criam juntos
+Na preparação para sair, cada etapa ainda costuma depender de um lembrete seu. Uma sequência curta já ajuda seu filho a participar de uma parte da preparação. Separar papel e lápis para desenhar também costuma pedir lembretes.
 
-Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Em vez de apertar o que aparece, ela decide o que vai aparecer. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **ela chamando você para ver o que vocês fizeram**, é como termina cada sessão: com o jogo rodando e ela chamando alguém para testar. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
 
-#### Onde isso acontece
+### Um treinamento com escolhas, tentativas e orientação
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças aprendem criando jogos. Com menos de 9 anos, ela cria com você. Um dos primeiros projetos é o Cadê Todo Mundo, um jogo de procurar bichinhos no jardim. Depois de A Chave do Farol publicada, o Estúdio livre abre para o jogo que ela inventar, com as peças que vocês já usaram nas aulas. Quando ela começar a ler sozinha, passa a criar por conta própria, no mesmo perfil.
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
 
-_[Tela: A aula do Cadê Todo Mundo: o vídeo ao lado do Estúdio e o botão Ouvir]_
+A vontade de fazer algo com você oferece um ponto de partida: compartilhar a criação e deixar escolhas com ele enquanto vocês acompanham o resultado.
 
-A Débora passou pelo Desafio do Primeiro Jogo com 7 anos e contou assim:
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
 
-> “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.” Débora, aluna, 7 anos
+Para acender o farol da aventura, o personagem precisa estar com a chave. Seu filho organiza e testa essa regra em blocos. Se o farol não acender, há uma condição para conferir antes de continuar: a chave já foi pega? O projeto dá um motivo concreto para checar uma etapa. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ele.
 
-#### O que você disse que precisa
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
 
-Você precisa **conseguir conduzir sem saber programar**. O vídeo mostra cada passo, o Zappy lê as falas e os blocos dizem o que fazem, em português. O seu papel é ler, perguntar e deixar a escolha com ela.
+### A prática continua fora da tela
 
-Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.
+- **Na escola:** Antes de uma atividade da escola, vocês podem conferir juntos se estão com o material combinado, uma coisa por vez.
+- **Em casa e no dia a dia:** Na hora de sair, combinem uma sequência curta, como pegar o sapato e depois buscar a mochila. Observe em qual passo ele já consegue participar.
 
-[Ver como vocês criam jogos juntos](/kids/comunidade-dos-criadores/oferta/criar-junto)
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
 
-_Helena e Júlio, Sistema Zero Kids_
+Em uma aventura, ele confere se o personagem tem a chave. Em outro projeto, precisa conferir uma condição diferente para a cena continuar. A prática pode ser retomada com novos objetivos e novas decisões, dentro do catálogo disponível. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
 
-## Menor de 9 · Ideias dele
+### Para participar em casa
 
-_Perfil `m9-ideias`, destino /kids/comunidade-dos-criadores/oferta/criar-junto._
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ele participe das decisões.
 
-### As brincadeiras dela já têm personagem, regra e fim. O que falta é um lugar para elas aparecerem
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
 
-Você contou que ela tem **menos de 9 anos**, que **está começando a ler** e que **inventa brincadeira e personagem o tempo todo**. Contou também que vocês conseguem sentar juntos **duas ou três vezes por semana, de 20 a 30 minutos**. Isso é mais do que parece.
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
 
-#### Por que as ideias ficam na brincadeira
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
 
-Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ela inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ela fazer isso sozinha é a leitura e o mouse, e nessa idade ninguém espera que ela faça sozinha. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto. É por isso que acontece o que você disse que preocupa: **as ideias dela ficarem só na brincadeira**.
+Botão: Conhecer o treinamento
 
-#### O que muda quando vocês criam juntos
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
 
-Criar um jogo é montar a regra da brincadeira com blocos: se tocar, some; se achar, conta mais um. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **o personagem dela aparecendo na tela**, começa na primeira sessão, com o bichinho que aparece quando ela toca no esconderijo. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
+## m9-explorar
 
-#### Onde isso acontece
+### Um caminho para observar, praticar e descobrir o próximo passo.
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças aprendem criando jogos. Com menos de 9 anos, ela cria com você. Um dos primeiros projetos é o Cadê Todo Mundo, um jogo de procurar bichinhos no jardim. Depois de A Chave do Farol publicada, o Estúdio livre abre para o jogo que ela inventar, com as peças que vocês já usaram nas aulas. Quando ela começar a ler sozinha, passa a criar por conta própria, no mesmo perfil.
+O próximo passo pode ser conhecer melhor como sua filha participa: o que desperta curiosidade, quais escolhas já faz e que ajuda lhe permite tentar.
 
-_[Tela: A aula do Cadê Todo Mundo: o vídeo ao lado do Estúdio e o botão Ouvir]_
+Há mais para conhecer na rotina de vocês antes de concentrar a atenção em uma dificuldade. Acompanhar criações que interessem a ela permite perceber como ela escolhe, tenta e pede ajuda. Uma escolha dela, uma tentativa e um pedido de ajuda já dão assunto para essa conversa.
 
-A Débora passou pelo Desafio do Primeiro Jogo com 7 anos e contou assim:
+Ainda é cedo para concluir o que funciona ao longo dos dias. Conhecer uma proposta e observar a vontade de participar ajuda a decidir com mais clareza.
 
-> “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.” Débora, aluna, 7 anos
+### Um treinamento com escolhas, tentativas e orientação
 
-#### O que você disse que precisa
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
 
-Você precisa **conseguir conduzir sem saber programar**. O vídeo mostra cada passo, o Zappy lê as falas e os blocos dizem o que fazem, em português. O seu papel é ler, perguntar e deixar a escolha com ela.
+Como os interesses dela ainda estão sendo descobertos, vale olhar possibilidades juntos e ouvir o que teria vontade de experimentar. Essa escolha faz parte da decisão.
 
-Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
 
-[Ver as ideias dela virando jogo](/kids/comunidade-dos-criadores/oferta/criar-junto)
+Um objetivo da Chave do Farol é levar o personagem até uma chave. Com a orientação da aula, vocês podem observar como ela participa ao montar e testar uma parte desse caminho. A própria tentativa mostra se quer escolher instruções, ver o resultado ou pedir ajuda. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ela.
 
-_Helena e Júlio, Sistema Zero Kids_
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
 
-## Menor de 9 · Curiosidade
+### A prática continua fora da tela
 
-_Perfil `m9-curiosidade`, destino /kids/comunidade-dos-criadores/oferta/criar-junto._
+- **Na escola:** Ao olhar uma atividade que veio da escola, peça que mostre uma parte que gostou de fazer. Observe como prefere contar ou demonstrar.
+- **Em casa e no dia a dia:** Numa brincadeira juntos, ofereça uma pequena escolha, como qual peça usar, e observe que ajuda permite que ela participe.
 
-### Ela quer apertar tudo e saber como funciona. O que falta é um lugar em que apertar faz alguma coisa acontecer
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
 
-Você contou que ela tem **menos de 9 anos**, que **está começando a ler** e que **quer saber como tudo funciona e apertar tudo**. Contou também que vocês conseguem sentar juntos **duas ou três vezes por semana, de 20 a 30 minutos**. Isso é mais do que parece.
+Antes de contratar uma assinatura, vale conhecer os projetos e observar se há interesse e espaço na rotina para voltar. A continuidade pode ser decidida a partir dessas experiências, sem definir de antemão o que ela deveria gostar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
 
-#### Por que apertar tudo ainda não mostra como funciona
+### Para participar em casa
 
-Quando ela aperta tudo, está tentando descobrir o que acontece em cada toque. No joguinho pronto, a resposta já vem decidida, e ela não vê o porquê. O que ainda falta para ela descobrir sozinha é a leitura e o mouse, e nessa idade ninguém espera que ela faça sozinha. Muitos cursos e aplicativos foram pensados para a criança usar sem adulto. É por isso que acontece o que você disse que preocupa: **a curiosidade dela passar em branco**.
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ela participe das decisões.
 
-#### O que muda quando vocês criam juntos
+Vale mostrar a aventura e os exemplos da próxima página a ela e ouvir o que teria vontade de experimentar antes de decidir.
 
-Criar um jogo é montar a regra com blocos: se tocar, some; se achar, conta mais um. Cada bloco que ela escolhe faz alguma coisa acontecer, e ela vê o porquê. Como ela está começando a ler, você lê o passo e os blocos, e ela decide. O botão Ouvir lê as falas do Zappy em voz alta. Vocês apertam para testar e, se não saiu como ela queria, descobrem juntos o porquê. A cena que você quer ver, **ela explicando o que cada botão faz**, nasce de cada teste: ela aperta, vê o que acontece e conta para você. E duas ou três sessões curtas por semana cabem: o projeto fica guardado e espera por vocês.
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
 
-#### Onde isso acontece
+Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajudar a decidir se esse é um caminho que vocês querem experimentar.
 
-A Comunidade dos Criadores é a plataforma do Sistema Zero Kids em que crianças aprendem criando jogos. Com menos de 9 anos, ela cria com você. Um dos primeiros projetos é o Cadê Todo Mundo, um jogo de procurar bichinhos no jardim. Depois de A Chave do Farol publicada, o Estúdio livre abre para o jogo que ela inventar, com as peças que vocês já usaram nas aulas. Quando ela começar a ler sozinha, passa a criar por conta própria, no mesmo perfil.
+Botão: Conhecer o treinamento
 
-_[Tela: A aula do Cadê Todo Mundo: o vídeo ao lado do Estúdio e o botão Ouvir]_
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
 
-A Débora passou pelo Desafio do Primeiro Jogo com 7 anos e contou assim:
+## 9a12-planejar
 
-> “Achei que ia ser difícil, mas fui montando os bloquinhos e deu certo. No último dia chamei a minha mãe pra ver o meu jogo.” Débora, aluna, 7 anos
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
 
-#### O que você disse que precisa
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
 
-Você precisa **conseguir conduzir sem saber programar**. O vídeo mostra cada passo, o Zappy lê as falas e os blocos dizem o que fazem, em português. O seu papel é ler, perguntar e deixar a escolha com ela.
+**Começar uma parte antes de esperar uma ordem sua seria uma conquista importante para ele e para vocês.**
 
-Na próxima página, você vê como é uma sessão de vocês, do vídeo ao teste, o seu papel, as regras de segurança e os dois planos.
+Na hora do dever, começar ainda depende de você indicar uma questão. Escolher a primeira questão junto já ajuda a seguir por um tempo. O começo da arrumação do quarto também costuma depender da sua orientação.
 
-[Ver como a curiosidade dela vira jogo](/kids/comunidade-dos-criadores/oferta/criar-junto)
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
 
-_Helena e Júlio, Sistema Zero Kids_
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Antes de começar o dever, vocês podem olhar as questões e deixar que ele escolha uma para iniciar. Depois, confiram juntos qual é a próxima, conforme a ajuda de que precisa.
+- **Em casa e no dia a dia:** Uma tarefa de casa também pode ser dividida: ao organizar a mesa, ele pode começar separando os pratos e depois conferir o que falta.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 9a12-persistir
+
+### Mais persistência para rever uma tentativa e continuar com apoio.
+
+Você quer que uma tentativa difícil deixe espaço para sua filha continuar aprendendo, com uma pausa, outra estratégia ou ajuda quando precisa.
+
+**Rever uma parte com mais espaço para conversar, sem transformar a retomada numa disputa, faria diferença para vocês.**
+
+Quando a montagem não fica de pé, ela costuma largar as peças e querer parar. Uma pausa e ajuda para olhar a base abrem espaço para outra tentativa. Voltar a uma questão da escola depois de errar também costuma ser difícil.
+
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+As histórias e personagens que interessam a ela oferecem um ponto de partida: imaginar o que deve acontecer e organizar as ações para dar forma à ideia.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, o personagem pode pegar a chave e o farol ainda não acender. A orientação ajuda sua filha a conferir a regra: o jogo guardou que a chave foi pega? Ela muda uma parte e executa novamente para observar o efeito. A próxima tentativa tem uma coisa específica para investigar.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Quando uma conta não der o resultado esperado, vocês podem rever uma etapa, como conferir um número que foi copiado, e tentar novamente.
+- **Em casa e no dia a dia:** Se uma montagem cair, ela pode observar onde faltou apoio e experimentar uma peça diferente, com ajuda e pausa quando precisar.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Num projeto, a dificuldade está no movimento; em outro, numa regra que não disparou. Voltar a investigar situações diferentes oferece novas oportunidades de rever uma parte e pedir ajuda, em vez de depender de um único acerto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 9a12-raciocinar
+
+### Mais recursos para resolver problemas e encontrar outras saídas.
+
+Você quer que seu filho participe da busca por soluções: observe o que aconteceu, pense numa alternativa e confira se ela funciona.
+
+**Usar uma ideia que entendeu numa situação diferente é uma conquista que tem valor fora daquele primeiro exemplo.**
+
+Na escola, acompanhar um exemplo e usar a mesma ideia num exercício diferente ainda são passos que pedem ajudas diferentes. Vocês já encontraram uma pista útil: comparar o que mudou entre as questões. Procurar uma alternativa para um ingrediente que faltou também pede sua ajuda.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A curiosidade sobre como as coisas funcionam oferece um ponto de partida: mudar uma instrução, observar o efeito e investigar por que aconteceu.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, uma regra liga duas coisas: estar com a chave e poder acender o farol. Seu filho monta essa condição com blocos e testa a aventura. O resultado aparece na tela, permitindo conferir quando a regra funciona e o que muda quando a condição não foi cumprida.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Ao comparar duas questões de matemática, vocês podem localizar o que mudou nos dados e conversar sobre por que a mesma conta serve ou precisa ser revista.
+- **Em casa e no dia a dia:** Numa receita, vocês podem conferir o que acontece com a quantidade de ingredientes quando vão preparar mais porções. É outra ocasião de usar uma ideia com um objetivo concreto.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Uma condição aparece na chave da aventura e pode aparecer de outra forma numa criação seguinte. Projetos diferentes oferecem ocasiões de retomar uma ideia e investigar como usá-la em outro contexto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+O preço e as condições aparecem na próxima página para vocês conferirem se cabem no orçamento.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 9a12-expressar
+
+### Mais clareza para expressar ideias e pedir ajuda.
+
+Você quer dar mais espaço para sua filha mostrar o que pensa, explicar uma escolha e pedir a ajuda de que precisa, do jeito que consegue se comunicar.
+
+**Compartilhar uma ideia com colegas ou familiares dá a essa habilidade um lugar nas relações dela.**
+
+Ao ensinar uma brincadeira, organizar a explicação das regras ainda pede sua participação. Demonstrar uma jogada ajuda sua filha a explicar a brincadeira. Mostrar onde ficou uma dúvida no dever também costuma pedir apoio.
+
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A vontade de desenhar, construir ou criar imagens oferece um ponto de partida: dar forma a uma ideia e decidir como ela vai funcionar.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Ao montar uma parte da Chave do Farol, sua filha escolhe uma regra e vê o efeito no jogo. Na hora de mostrar, tem algo concreto para apontar: “eu queria que acontecesse isto”, “mudei esta parte”, “aqui eu precisei de ajuda”. Ela pode falar, apontar ou demonstrar a tentativa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Ao mostrar um trabalho da escola, ela pode apontar uma escolha e explicar como chegou a ela, com o trabalho à frente como apoio.
+- **Em casa e no dia a dia:** Ao ensinar uma brincadeira para alguém da família, ela pode demonstrar uma regra e observar se a outra pessoa entendeu.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Cada criação traz outro assunto para explicar: uma escolha de personagem, uma regra revista, uma dúvida que conseguiu mostrar. A continuidade oferece novas ocasiões de conversar sobre o que fez, com o projeto como apoio. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 9a12-rotina
+
+### Mais organização para planejar etapas e acompanhar o que falta.
+
+Você quer que seu filho participe mais dos preparativos e combinados, entendendo o que vem primeiro e conferindo o que ainda falta.
+
+**Conferir o material com menos lembretes repetidos é uma mudança concreta que faria diferença na rotina.**
+
+Conferir os materiais da mochila ainda depende de você lembrar o que vai ser usado. Uma lista curta ou uma conferência juntos ajuda a participação dele. A preparação para um passeio ou uma atividade escolhida também exige lembretes.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A vontade de fazer algo com você oferece um ponto de partida: compartilhar a criação e deixar escolhas com ele enquanto vocês acompanham o resultado.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Para acender o farol da aventura, o personagem precisa estar com a chave. Seu filho organiza e testa essa regra em blocos. Se o farol não acender, há uma condição para conferir antes de continuar: a chave já foi pega? O projeto dá um motivo concreto para checar uma etapa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Para preparar a mochila, vocês podem conferir uma lista curta de materiais de amanhã. Deixe uma parte com ele e observe quais lembretes ainda ajudam.
+- **Em casa e no dia a dia:** Antes de sair para uma atividade, combinem o que precisa levar e confiram juntos o que já está separado.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele confere se o personagem tem a chave. Em outro projeto, precisa conferir uma condição diferente para a cena continuar. A prática pode ser retomada com novos objetivos e novas decisões, dentro do catálogo disponível. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 9a12-explorar
+
+### Um caminho para observar, praticar e descobrir o próximo passo.
+
+O próximo passo pode ser conhecer melhor como sua filha participa: o que desperta curiosidade, quais escolhas já faz e que ajuda lhe permite tentar.
+
+Há mais para conhecer na rotina de vocês antes de concentrar a atenção em uma dificuldade. Acompanhar criações que interessem a ela permite perceber como ela escolhe, tenta e pede ajuda. Uma escolha dela, uma tentativa e um pedido de ajuda já dão assunto para essa conversa.
+
+Ainda é cedo para concluir o que funciona ao longo dos dias. Conhecer uma proposta e observar a vontade de participar ajuda a decidir com mais clareza.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+Como os interesses dela ainda estão sendo descobertos, vale olhar possibilidades juntos e ouvir o que teria vontade de experimentar. Essa escolha faz parte da decisão.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Um objetivo da Chave do Farol é levar o personagem até uma chave. Com a orientação da aula, vocês podem observar como ela participa ao montar e testar uma parte desse caminho. A própria tentativa mostra se quer escolher instruções, ver o resultado ou pedir ajuda.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** No próximo dever, observe como ela começa, em que parte pede ajuda e como mostra o que fez. Isso pode trazer uma situação real para conversar.
+- **Em casa e no dia a dia:** Ao preparar um lanche juntos, deixe que escolha entre dois ingredientes e mostre a ordem em que quer montar. Observe como explica a escolha e em que parte pede ajuda.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Antes de contratar uma assinatura, vale conhecer os projetos e observar se há interesse e espaço na rotina para voltar. A continuidade pode ser decidida a partir dessas experiências, sem definir de antemão o que ela deveria gostar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Vale mostrar a aventura e os exemplos da próxima página a ela e ouvir o que teria vontade de experimentar antes de decidir.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajudar a decidir se esse é um caminho que vocês querem experimentar.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 13a17-planejar
+
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
+
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
+
+**Participar da organização dos próprios compromissos, com apoio quando precisar, é a conquista que importa para vocês.**
+
+O trabalho da escola chega com um objetivo, mas escolher por onde começar ainda pede sua ajuda. Combinar a primeira etapa já ajuda seu filho a seguir por um tempo. Organizar o começo de um programa com amigos também costuma depender de outra pessoa.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Num trabalho da escola, vocês podem listar as entregas e combinar uma primeira etapa, como separar as fontes antes de começar a escrever. Depois, ele confere o próximo passo.
+- **Em casa e no dia a dia:** Ao organizar um compromisso, ele pode separar o que precisa levar e escolher o que deve fazer antes de sair.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 13a17-persistir
+
+### Mais persistência para rever uma tentativa e continuar com apoio.
+
+Você quer que uma tentativa difícil deixe espaço para sua filha continuar aprendendo, com uma pausa, outra estratégia ou ajuda quando precisa.
+
+**Conversar sobre um ajuste e deixar que ela participe da solução pode dar outro caminho à ajuda de vocês.**
+
+Quando o vídeo fica diferente do que imaginava, ela tende a deixar a edição de lado. Olhar um trecho curto e testar um ajuste ajuda a retomar o vídeo. Retomar um trabalho escolar depois de uma correção também pede apoio.
+
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+As histórias e personagens que interessam a ela oferecem um ponto de partida: imaginar o que deve acontecer e organizar as ações para dar forma à ideia.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, o personagem pode pegar a chave e o farol ainda não acender. A orientação ajuda sua filha a conferir a regra: o jogo guardou que a chave foi pega? Ela muda uma parte e executa novamente para observar o efeito. A próxima tentativa tem uma coisa específica para investigar.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Depois de uma correção, vocês podem localizar um trecho do trabalho e escolher uma revisão por vez. A primeira revisão feita dá algo concreto para comparar.
+- **Em casa e no dia a dia:** Ao editar um vídeo que ficou diferente do que imaginava, ela pode rever um corte ou o volume da música e comparar o resultado. Há uma parte para ajustar antes de decidir refazer tudo.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Num projeto, a dificuldade está no movimento; em outro, numa regra que não disparou. Voltar a investigar situações diferentes oferece novas oportunidades de rever uma parte e pedir ajuda, em vez de depender de um único acerto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 13a17-raciocinar
+
+### Mais recursos para resolver problemas e encontrar outras saídas.
+
+Você quer que seu filho participe da busca por soluções: observe o que aconteceu, pense numa alternativa e confira se ela funciona.
+
+**Encontrar um caminho numa situação diferente do exemplo conhecido, com ajuda se precisar, é uma conquista que vale acompanhar.**
+
+A resolução vista na aula ajuda, mas usar o raciocínio num problema com outros dados ainda pede apoio. Comparar o pedido do problema com o exemplo já ajuda a orientar a resolução. Comparar preço e quantidade numa compra também pede ajuda para organizar o raciocínio.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A curiosidade sobre como as coisas funcionam oferece um ponto de partida: mudar uma instrução, observar o efeito e investigar por que aconteceu.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, uma regra liga duas coisas: estar com a chave e poder acender o farol. Seu filho monta essa condição com blocos e testa a aventura. O resultado aparece na tela, permitindo conferir quando a regra funciona e o que muda quando a condição não foi cumprida.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Ao resolver um problema diferente do exemplo, ele pode identificar o que é pedido, comparar os dados e explicar por que escolheu aquela forma de resolver.
+- **Em casa e no dia a dia:** Ao comparar preços e quantidades de dois produtos, ele pode explicar qual comparação fez e conferir se os dados permitem aquela conclusão.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Uma condição aparece na chave da aventura e pode aparecer de outra forma numa criação seguinte. Projetos diferentes oferecem ocasiões de retomar uma ideia e investigar como usá-la em outro contexto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+O preço e as condições aparecem na próxima página para vocês conferirem se cabem no orçamento.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 13a17-expressar
+
+### Mais clareza para expressar ideias e pedir ajuda.
+
+Você quer dar mais espaço para sua filha mostrar o que pensa, explicar uma escolha e pedir a ajuda de que precisa, do jeito que consegue se comunicar.
+
+**Apresentar uma ideia e participar de uma decisão com outras pessoas é o tipo de conquista que vocês querem favorecer.**
+
+Nas combinações em família, dizer que não gostou vem antes de conseguir explicar o que prefere. Mostrar uma opção e explicar o motivo já ajuda vocês a combinar o programa. Explicar uma proposta num trabalho em grupo também costuma pedir apoio.
+
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A vontade de desenhar, construir ou criar imagens oferece um ponto de partida: dar forma a uma ideia e decidir como ela vai funcionar.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Ao montar uma parte da Chave do Farol, sua filha escolhe uma regra e vê o efeito no jogo. Na hora de mostrar, tem algo concreto para apontar: “eu queria que acontecesse isto”, “mudei esta parte”, “aqui eu precisei de ajuda”. Ela pode falar, apontar ou demonstrar a tentativa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Num trabalho em grupo, ela pode apresentar um exemplo da ideia e explicar uma escolha. Isso também permite mostrar aos colegas em qual parte precisa combinar ajuda.
+- **Em casa e no dia a dia:** Ao propor um programa para a família, ela pode explicar o que prefere e ouvir o que precisa ser combinado com os outros.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Cada criação traz outro assunto para explicar: uma escolha de personagem, uma regra revista, uma dúvida que conseguiu mostrar. A continuidade oferece novas ocasiões de conversar sobre o que fez, com o projeto como apoio. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 13a17-rotina
+
+### Mais organização para planejar etapas e acompanhar o que falta.
+
+Você quer que seu filho participe mais dos preparativos e combinados, entendendo o que vem primeiro e conferindo o que ainda falta.
+
+**Reduzir a sequência de lembretes sobre horário, prazo e material é uma mudança concreta que faria diferença na rotina.**
+
+Preparar-se para uma atividade que ele escolheu ainda costuma depender de lembretes sobre horário e material. Anotar o horário e usar uma lista curta ajuda a participação dele. Acompanhar o prazo de um trabalho escolar também costuma depender de lembretes.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A vontade de fazer algo com você oferece um ponto de partida: compartilhar a criação e deixar escolhas com ele enquanto vocês acompanham o resultado.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Para acender o farol da aventura, o personagem precisa estar com a chave. Seu filho organiza e testa essa regra em blocos. Se o farol não acender, há uma condição para conferir antes de continuar: a chave já foi pega? O projeto dá um motivo concreto para checar uma etapa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Num trabalho com data de entrega, ele pode anotar as etapas e conferir o que falta numa data combinada. Vocês ajustam os lembretes conforme a participação dele.
+- **Em casa e no dia a dia:** Para um compromisso fora de casa, ele pode conferir horário e material necessário, participando da preparação.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele confere se o personagem tem a chave. Em outro projeto, precisa conferir uma condição diferente para a cena continuar. A prática pode ser retomada com novos objetivos e novas decisões, dentro do catálogo disponível. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## 13a17-explorar
+
+### Um caminho para observar, praticar e descobrir o próximo passo.
+
+O próximo passo pode ser conhecer melhor como sua filha participa: o que desperta curiosidade, quais escolhas já faz e que ajuda lhe permite tentar.
+
+Há mais para conhecer na rotina de vocês antes de concentrar a atenção em uma dificuldade. Acompanhar criações que interessem a ela permite perceber como ela escolhe, tenta e pede ajuda. Uma escolha dela, uma tentativa e um pedido de ajuda já dão assunto para essa conversa.
+
+Ainda é cedo para concluir o que funciona ao longo dos dias. Conhecer uma proposta e observar a vontade de participar ajuda a decidir com mais clareza.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+Como os interesses dela ainda estão sendo descobertos, vale olhar possibilidades juntos e ouvir o que teria vontade de experimentar. Essa escolha faz parte da decisão.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Um objetivo da Chave do Farol é levar o personagem até uma chave. Com a orientação da aula, vocês podem observar como ela participa ao montar e testar uma parte desse caminho. A própria tentativa mostra se quer escolher instruções, ver o resultado ou pedir ajuda.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Conversem sobre um trabalho escolar que ela queira mostrar: qual parte decidiu, qual gostaria de melhorar e que ajuda faria diferença.
+- **Em casa e no dia a dia:** Ao escolher uma atividade pessoal, ela pode dizer o que gostaria de experimentar e combinar com você como será apoiada.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Antes de contratar uma assinatura, vale conhecer os projetos e observar se há interesse e espaço na rotina para voltar. A continuidade pode ser decidida a partir dessas experiências, sem definir de antemão o que ela deveria gostar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Vale mostrar a aventura e os exemplos da próxima página a ela e ouvir o que teria vontade de experimentar antes de decidir.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e olhe os exemplos com sua filha. Essa conversa pode ajudar a decidir se esse é um caminho que vocês querem experimentar.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## ampliar
+
+### Mais clareza para expressar ideias e pedir ajuda.
+
+Você quer dar mais espaço para sua filha mostrar o que pensa, explicar uma escolha e pedir a ajuda de que precisa, do jeito que consegue se comunicar.
+
+**Mostrar o próprio raciocínio num trabalho em grupo e ouvir outras possibilidades dá um sentido concreto à comunicação.**
+
+Ela já participa bem das situações que vocês têm acompanhado. Há espaço para ampliar essa participação em criações que interessem a ela. Encontrar novas ideias que despertem a vontade dela é um próximo passo possível.
+
+Conhecer outros assuntos faz parte do interesse dela. Projetos diferentes podem dar novos motivos para praticar as mesmas habilidades.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A vontade de desenhar, construir ou criar imagens oferece um ponto de partida: dar forma a uma ideia e decidir como ela vai funcionar.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Ao montar uma parte da Chave do Farol, sua filha escolhe uma regra e vê o efeito no jogo. Na hora de mostrar, tem algo concreto para apontar: “eu queria que acontecesse isto”, “mudei esta parte”, “aqui eu precisei de ajuda”. Ela pode falar, apontar ou demonstrar a tentativa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Num trabalho em grupo, ela pode apresentar um exemplo da ideia e explicar uma escolha. Isso também permite mostrar aos colegas em qual parte precisa combinar ajuda.
+- **Em casa e no dia a dia:** Ao propor um programa para a família, ela pode explicar o que prefere e ouvir o que precisa ser combinado com os outros.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Cada criação traz outro assunto para explicar: uma escolha de personagem, uma regra revista, uma dúvida que conseguiu mostrar. A continuidade oferece novas ocasiões de conversar sobre o que fez, com o projeto como apoio. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## sem-impacto
+
+### Mais persistência para rever uma tentativa e continuar com apoio.
+
+Você quer que uma tentativa difícil deixe espaço para sua filha continuar aprendendo, com uma pausa, outra estratégia ou ajuda quando precisa.
+
+**Rever uma parte com mais espaço para conversar, sem transformar a retomada numa disputa, faria diferença para vocês.**
+
+Quando a montagem não fica de pé, ela costuma largar as peças e querer parar. Essa situação não costuma atrapalhar a rotina; a ideia é ampliar a participação que vocês desejam, sem transformá-la num problema. No dever consegue rever uma questão; isso aparece mais quando a montagem cai.
+
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+As histórias e personagens que interessam a ela oferecem um ponto de partida: imaginar o que deve acontecer e organizar as ações para dar forma à ideia.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, o personagem pode pegar a chave e o farol ainda não acender. A orientação ajuda sua filha a conferir a regra: o jogo guardou que a chave foi pega? Ela muda uma parte e executa novamente para observar o efeito. A próxima tentativa tem uma coisa específica para investigar.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Quando uma conta não der o resultado esperado, vocês podem rever uma etapa, como conferir um número que foi copiado, e tentar novamente.
+- **Em casa e no dia a dia:** Se uma montagem cair, ela pode observar onde faltou apoio e experimentar uma peça diferente, com ajuda e pausa quando precisar.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Num projeto, a dificuldade está no movimento; em outro, numa regra que não disparou. Voltar a investigar situações diferentes oferece novas oportunidades de rever uma parte e pedir ajuda, em vez de depender de um único acerto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## sem-observacao
+
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
+
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
+
+**O que fará mais diferença ainda precisa ser observado e conversado com ele.**
+
+O trabalho da escola chega com um objetivo, mas escolher por onde começar ainda pede sua ajuda. O efeito disso na rotina ainda precisa ser observado. Ainda falta acompanhar como isso aparece em outras situações.
+
+Ainda falta acompanhar o que se mantém de um dia para outro. Vale olhar o formato juntos e observar a vontade de retomar antes de assumir uma assinatura.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Num trabalho da escola, vocês podem listar as entregas e combinar uma primeira etapa, como separar as fontes antes de começar a escrever. Depois, ele confere o próximo passo.
+- **Em casa e no dia a dia:** Ao organizar um compromisso, ele pode separar o que precisa levar e escolher o que deve fazer antes de sair.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## prioridade-diferente
+
+### Mais clareza para expressar ideias e pedir ajuda.
+
+Você quer dar mais espaço para sua filha mostrar o que pensa, explicar uma escolha e pedir a ajuda de que precisa, do jeito que consegue se comunicar.
+
+**Compartilhar uma ideia com colegas ou familiares dá a essa habilidade um lugar nas relações dela.**
+
+Na escola, acompanhar um exemplo e usar a mesma ideia num exercício diferente ainda são passos que pedem ajudas diferentes. Você vê a conta sendo repetida, mas a explicação de por que usá-la ainda pede ajuda. Na receita ajuda a pensar numa alternativa; isso aparece mais nos exercícios. Para o próximo passo, podemos dar foco à comunicação em decisões que façam sentido para ela.
+
+Se a orientação precisa recomeçar a cada vez, o caminho precisa oferecer novas ocasiões de usar o que foi combinado e observar o que ela já consegue retomar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A vontade de desenhar, construir ou criar imagens oferece um ponto de partida: dar forma a uma ideia e decidir como ela vai funcionar.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Ao montar uma parte da Chave do Farol, sua filha escolhe uma regra e vê o efeito no jogo. Na hora de mostrar, tem algo concreto para apontar: “eu queria que acontecesse isto”, “mudei esta parte”, “aqui eu precisei de ajuda”. Ela pode falar, apontar ou demonstrar a tentativa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Ao mostrar um trabalho da escola, ela pode apontar uma escolha e explicar como chegou a ela, com o trabalho à frente como apoio.
+- **Em casa e no dia a dia:** Ao ensinar uma brincadeira para alguém da família, ela pode demonstrar uma regra e observar se a outra pessoa entendeu.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Cada criação traz outro assunto para explicar: uma escolha de personagem, uma regra revista, uma dúvida que conseguiu mostrar. A continuidade oferece novas ocasiões de conversar sobre o que fez, com o projeto como apoio. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+A próxima página mostra as etapas e os recursos para você avaliar como funcionaria na rotina de vocês.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## ajuda-assumida
+
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
+
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
+
+**Perceber que uma escolha dele fez diferença pode dar sentido a essa participação.**
+
+Na hora de guardar os brinquedos, o começo ainda depende de você indicar a primeira parte. Você acaba guardando boa parte dos brinquedos. Em outros momentos, ele participa quando a ajuda é combinada e sobra uma parte para tentar.
+
+Se a orientação precisa recomeçar a cada vez, o caminho precisa oferecer novas ocasiões de usar o que foi combinado e observar o que ele já consegue retomar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ele.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Em uma atividade da escola, vocês podem olhar os materiais e escolher por qual parte começar, como separar as peças antes de uma montagem.
+- **Em casa e no dia a dia:** Na hora de guardar os brinquedos, deixe uma escolha pequena com ele: começar pelos carrinhos ou pelos blocos. Vocês fazem essa primeira parte juntos.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, vocês fazem juntos. Você lê as instruções conforme necessário e ajusta a ajuda para que ele participe das decisões.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+
+## apoio-pendente
+
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
+
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
+
+**Perceber que uma escolha dele fez diferença pode dar sentido a essa participação.**
+
+Na hora de guardar os brinquedos, o começo ainda depende de você indicar a primeira parte. Você acaba guardando boa parte dos brinquedos. Escolher um material de desenho também costuma pedir sua decisão.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ele.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Em uma atividade da escola, vocês podem olhar os materiais e escolher por qual parte começar, como separar as peças antes de uma montagem.
+- **Em casa e no dia a dia:** Na hora de guardar os brinquedos, deixe uma escolha pequena com ele: começar pelos carrinhos ou pelos blocos. Vocês fazem essa primeira parte juntos.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, um responsável precisa permanecer ao lado, ler e acompanhar as orientações conforme necessário. Esse acompanhamento ainda precisa ser organizado na rotina de vocês antes da compra.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
+
+Botão: Conhecer o formato e os requisitos
+
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+
+## ajuda-inicial
+
+### Mais persistência para rever uma tentativa e continuar com apoio.
+
+Você quer que uma tentativa difícil deixe espaço para sua filha continuar aprendendo, com uma pausa, outra estratégia ou ajuda quando precisa.
+
+**A pausa e a sua ajuda podem abrir espaço para outra tentativa dela, sem que você precise assumir toda a brincadeira.**
+
+A queda de uma torre pode interromper uma brincadeira que ela estava fazendo. Uma pausa e ajuda para montar a base já abrem espaço para outra tentativa. A vontade de parar também aparece quando uma peça não encaixa de primeira.
+
+Ela já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+As histórias e personagens que interessam a ela oferecem um ponto de partida: imaginar o que deve acontecer e organizar as ações para dar forma à ideia.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, o personagem pode pegar a chave e o farol ainda não acender. A orientação ajuda sua filha a conferir a regra: o jogo guardou que a chave foi pega? Ela muda uma parte e executa novamente para observar o efeito. A próxima tentativa tem uma coisa específica para investigar. Você fica ao lado, ajuda a compreender as orientações e a usar o computador, deixando escolhas e tentativas com ela.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Se uma montagem da escola não ficar como ela esperava, ajude a escolher uma parte pequena para refazer, com tempo para uma pausa.
+- **Em casa e no dia a dia:** Quando a torre cair, vocês podem olhar a base e escolher uma peça para apoiar melhor antes de tentar de novo.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Num projeto, a dificuldade está no movimento; em outro, numa regra que não disparou. Voltar a investigar situações diferentes oferece novas oportunidades de rever uma parte e pedir ajuda, em vez de depender de um único acerto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Para os menores de 9 anos, um responsável precisa permanecer ao lado, ler e acompanhar as orientações conforme necessário. Esse acompanhamento ainda precisa ser organizado na rotina de vocês antes da compra.
+
+Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
+
+Botão: Conhecer o formato e os requisitos
+
+Destino: /kids/comunidade-dos-criadores/oferta/criar-junto
+
+## professor
+
+### Mais recursos para resolver problemas e encontrar outras saídas.
+
+Você quer que seu filho participe da busca por soluções: observe o que aconteceu, pense numa alternativa e confira se ela funciona.
+
+**Encontrar um caminho numa situação diferente do exemplo conhecido, com ajuda se precisar, é uma conquista que vale acompanhar.**
+
+A resolução vista na aula ajuda, mas usar o raciocínio num problema com outros dados ainda pede apoio. Comparar o pedido do problema com o exemplo já ajuda a orientar a resolução. Comparar preço e quantidade numa compra também pede ajuda para organizar o raciocínio.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+A curiosidade sobre como as coisas funcionam oferece um ponto de partida: mudar uma instrução, observar o efeito e investigar por que aconteceu.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, uma regra liga duas coisas: estar com a chave e poder acender o farol. Seu filho monta essa condição com blocos e testa a aventura. O resultado aparece na tela, permitindo conferir quando a regra funciona e o que muda quando a condição não foi cumprida.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Ao resolver um problema diferente do exemplo, ele pode identificar o que é pedido, comparar os dados e explicar por que escolheu aquela forma de resolver.
+- **Em casa e no dia a dia:** Ao comparar preços e quantidades de dois produtos, ele pode explicar qual comparação fez e conferir se os dados permitem aquela conclusão.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Uma condição aparece na chave da aventura e pode aparecer de outra forma numa criação seguinte. Projetos diferentes oferecem ocasiões de retomar uma ideia e investigar como usá-la em outro contexto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+A necessidade de professor individual ao vivo que você procura não é atendida por esse formato. A orientação por mensagens não substitui esse acompanhamento.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
+
+Botão: Conhecer o formato e os requisitos
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## reforco
+
+### Mais autonomia para fazer escolhas e dar o primeiro passo.
+
+Você quer ver seu filho participando das próprias decisões: escolhendo por onde começar e procurando ajuda quando precisa.
+
+**Começar uma parte antes de esperar uma ordem sua seria uma conquista importante para ele e para vocês.**
+
+Na hora do dever, começar ainda depende de você indicar uma questão. Escolher a primeira questão junto já ajuda a seguir por um tempo. O começo da arrumação do quarto também costuma depender da sua orientação.
+
+Ele já retoma uma parte do que foi combinado. Isso oferece uma base para continuar: repetir a oportunidade em outros momentos e acrescentar decisões conforme conseguir participar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+O interesse dele por jogos oferece um ponto de partida: investigar como uma regra funciona e decidir o que um personagem consegue fazer.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na aventura A Chave do Farol, acender o farol é o objetivo. Antes, o personagem precisa chegar à chave. Seu filho organiza essa primeira parte com instruções em blocos, testa o movimento e confere se chegou ao lugar que queria. Há algo concreto para decidir antes de seguir.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Antes de começar o dever, vocês podem olhar as questões e deixar que ele escolha uma para iniciar. Depois, confiram juntos qual é a próxima, conforme a ajuda de que precisa.
+- **Em casa e no dia a dia:** Uma tarefa de casa também pode ser dividida: ao organizar a mesa, ele pode começar separando os pratos e depois conferir o que falta.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele organiza o caminho até uma chave. Em outra criação, organiza a ordem de uma história ou das ações de um personagem. São novas ocasiões de escolher por onde começar, com orientações e ajuda conforme precisar. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ele chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+O foco aqui é a prática de habilidades em projetos. A necessidade de correção de lições ou reforço do conteúdo da série que você procura não é atendida diretamente por esse formato.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
+
+Botão: Conhecer o formato e os requisitos
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## continuidade
+
+### Mais organização para planejar etapas e acompanhar o que falta.
+
+Você quer que seu filho participe mais dos preparativos e combinados, entendendo o que vem primeiro e conferindo o que ainda falta.
+
+**Reduzir a sequência de lembretes sobre horário, prazo e material é uma mudança concreta que faria diferença na rotina.**
+
+Preparar-se para uma atividade que ele escolheu ainda costuma depender de lembretes sobre horário e material. Anotar o horário e usar uma lista curta ajuda a participação dele. Acompanhar o prazo de um trabalho escolar também costuma depender de lembretes.
+
+Já existe uma ajuda possível, mas ainda falta um momento para retomá-la. Para um caminho contínuo fazer sentido, esse espaço na rotina precisa ser combinado primeiro.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+Como os interesses dele ainda estão sendo descobertos, vale olhar possibilidades juntos e ouvir o que teria vontade de experimentar. Essa escolha faz parte da decisão.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Para acender o farol da aventura, o personagem precisa estar com a chave. Seu filho organiza e testa essa regra em blocos. Se o farol não acender, há uma condição para conferir antes de continuar: a chave já foi pega? O projeto dá um motivo concreto para checar uma etapa.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Num trabalho com data de entrega, ele pode anotar as etapas e conferir o que falta numa data combinada. Vocês ajustam os lembretes conforme a participação dele.
+- **Em casa e no dia a dia:** Para um compromisso fora de casa, ele pode conferir horário e material necessário, participando da preparação.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ele fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Em uma aventura, ele confere se o personagem tem a chave. Em outro projeto, precisa conferir uma condição diferente para a cena continuar. A prática pode ser retomada com novos objetivos e novas decisões, dentro do catálogo disponível. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dele. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Ainda é preciso combinar quem poderá ajudar quando ele precisar. Organizar esse apoio faz parte da decisão.
+
+Quando ele disser que não conseguiu, vocês podem olhar o que tentou, rever a orientação e escolher uma parte menor para investigar.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Você pode conhecer o treinamento para entender os exemplos e o formato. Antes de comprar, é necessário resolver as condições de acompanhamento ou buscar uma proposta que atenda à necessidade específica de vocês.
+
+Botão: Conhecer o formato e os requisitos
+
+Destino: /kids/comunidade-dos-criadores/oferta
+
+## desanimo
+
+### Mais persistência para rever uma tentativa e continuar com apoio.
+
+Você quer que uma tentativa difícil deixe espaço para sua filha continuar aprendendo, com uma pausa, outra estratégia ou ajuda quando precisa.
+
+**Manter espaço para os projetos de que gosta, inclusive quando algo pede revisão, é uma mudança que tem valor para ela.**
+
+Quando o vídeo fica diferente do que imaginava, ela tende a deixar a edição de lado. O vídeo pode ficar inacabado e que ela evita voltar à edição. Retomar um trabalho escolar depois de uma correção também pede apoio.
+
+O interesse que aparece no começo nem sempre se mantém nos dias seguintes. Variar os projetos pode oferecer novos motivos para participar, mas é preciso olhar o formato com ela e observar se quer voltar.
+
+### Um treinamento com escolhas, tentativas e orientação
+
+Habilidades como autonomia, resolução de problemas e comunicação precisam de oportunidades para serem praticadas. Treiná-las envolve fazer escolhas, observar o resultado, ajustar uma tentativa e voltar a experimentar, com orientação.
+
+As histórias e personagens que interessam a ela oferecem um ponto de partida: imaginar o que deve acontecer e organizar as ações para dar forma à ideia.
+
+É nessa ligação entre interesse e prática que o Sistema Zero organiza seu treinamento de habilidades para a vida. Na Comunidade dos Criadores, projetos guiados de criação e programação oferecem novas oportunidades de praticar essas habilidades ao longo do tempo. A assinatura mantém o acesso aos cursos e ferramentas incluídos para seguir esse caminho; um dos projetos é A Chave do Farol.
+
+Na Chave do Farol, o personagem pode pegar a chave e o farol ainda não acender. A orientação ajuda sua filha a conferir a regra: o jogo guardou que a chave foi pega? Ela muda uma parte e executa novamente para observar o efeito. A próxima tentativa tem uma coisa específica para investigar.
+
+[Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.]
+
+### A prática continua fora da tela
+
+- **Na escola:** Depois de uma correção, vocês podem localizar um trecho do trabalho e escolher uma revisão por vez. A primeira revisão feita dá algo concreto para comparar.
+- **Em casa e no dia a dia:** Ao editar um vídeo que ficou diferente do que imaginava, ela pode rever um corte ou o volume da música e comparar o resultado. Há uma parte para ajustar antes de decidir refazer tudo.
+
+A mesma habilidade pode ser praticada nessas situações, retomando o raciocínio com ela fora da tela. Essa ligação precisa de apoio e de oportunidades no cotidiano; criar o jogo não produz essa mudança automaticamente.
+
+Num projeto, a dificuldade está no movimento; em outro, numa regra que não disparou. Voltar a investigar situações diferentes oferece novas oportunidades de rever uma parte e pedir ajuda, em vez de depender de um único acerto. O valor da continuidade está nessas novas ocasiões de praticar e perceber a participação dela. Manter a assinatura, por si só, não garante interesse nem mudança de hábito.
+
+### Para participar em casa
+
+- **Como acontece:** Esse treinamento acontece no navegador, com aulas gravadas e orientação por mensagens na plataforma.
+- **O que usar:** Para criar, é preciso computador com internet, mouse e teclado; o celular não substitui esse equipamento.
+- **O apoio do responsável:** Estar por perto quando ela chama permite ajudar a localizar uma dúvida e uma orientação para rever.
+
+Ela pode pausar e rever as aulas, retomando em outro momento dentro do período de acesso.
+
+A Comunidade tem planos mensal e anual, até dois perfis Kids e 7 dias para pedir reembolso integral. O acesso acompanha o período contratado.
+
+Conheça o treinamento e os projetos para avaliar se esse caminho de prática pode fazer parte da rotina de vocês.
+
+Botão: Conhecer o treinamento
+
+Destino: /kids/comunidade-dos-criadores/oferta

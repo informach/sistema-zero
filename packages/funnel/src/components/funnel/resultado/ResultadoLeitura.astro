@@ -1,0 +1,50 @@
+---
+import type { LeituraConversa } from '../../../content/resultado-conversa'
+import OfferImage from '../oferta/OfferImage.astro'
+import LeituraTexto from './LeituraTexto.astro'
+
+interface Props {
+  leitura: LeituraConversa
+  atencao: boolean
+}
+const { leitura: c, atencao } = Astro.props
+---
+<article class="rc-leitura">
+  <div class="rc-abertura">
+    <p class="rc-lead">{c.lead}</p>
+    {c.payoff && <p class="rc-beneficio">{c.payoff}</p>}
+    <p>{c.context}</p>
+    <p>{c.attempt}</p>
+  </div>
+ <section class="rc-secao">
+  <h2>Um treinamento com escolhas, tentativas e orientação</h2>
+  <p><LeituraTexto text={c.purpose} emphasis={['fazer escolhas, observar o resultado, ajustar uma tentativa']}/></p>
+  <p>{c.interest}</p>
+  <p><LeituraTexto text={c.offer} emphasis={['treinamento de habilidades para a vida','Desafio do Primeiro Jogo','Comunidade dos Criadores']}/></p>
+  <p>{c.practice}</p>
+  <figure class="rc-tela rc-tela-vida">
+   <OfferImage image={{src:'/img/desafio-primeiro-jogo/farol-estudio-real.webp',alt:'Captura real da Chave do Farol: instruções em blocos e a cena do jogo lado a lado.',width:2400,height:1500}} />
+   <figcaption>A Chave do Farol no Estúdio: a criança organiza instruções e testa o efeito na aventura.</figcaption>
+  </figure>
+ </section>
+ <section class="rc-secao">
+  <h2>A prática continua fora da tela</h2>
+  <ul class="rc-lista-exemplos">
+   <li><strong class="rc-rotulo">Na escola</strong><p>{c.school}</p></li>
+   <li><strong class="rc-rotulo">Em casa e no dia a dia</strong><p>{c.home}</p></li>
+  </ul>
+  <p class="rc-ponte">{c.transfer}</p>
+  {c.continuity&&<p><LeituraTexto text={c.continuity} emphasis={['novas ocasiões de praticar e perceber a participação dele','novas ocasiões de praticar e perceber a participação dela']}/></p>}
+ </section>
+ <section class="rc-secao rc-participacao">
+  <h2>Para participar em casa</h2>
+  <ul class="rc-lista-requisitos">
+   <li><strong class="rc-rotulo">Como acontece</strong><p><LeituraTexto text={c.format} emphasis={['aulas gravadas','orientação por mensagens']}/></p></li>
+   <li><strong class="rc-rotulo">O que usar</strong><p><LeituraTexto text={c.equipment} emphasis={['computador com internet, mouse e teclado']}/></p></li>
+   <li><strong class="rc-rotulo">O apoio do responsável</strong><p><LeituraTexto text={c.support} emphasis={['um responsável precisa permanecer ao lado','vocês fazem juntos','ainda precisa ser organizado','não garantem que ele faça tudo sozinho','não garantem que ela faça tudo sozinha']}/></p></li>
+  </ul>
+  <div class:list={['rc-expectativa',{'rc-atencao':atencao}]}>
+   {atencao&&<strong class="rc-rotulo">Antes de decidir</strong>}<p>{c.expectation}</p>
+  </div>
+ </section>
+</article>

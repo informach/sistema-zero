@@ -418,3 +418,154 @@
     transition: none;
   }
 }
+
+/* Leitura aprovada dos quizzes Kids (06/11/2026), isolada dos resultados adultos. */
+.rc--vida .rc-topo-in {
+  max-width: 780px;
+}
+.rc--vida .rc-logo {
+  max-width: 64vw;
+  height: auto;
+}
+.rc--vida .rc-topo {
+  background: transparent;
+  border: 0;
+}
+.rc--vida .rc-topo-rotulo {
+  font-size: 0.8rem;
+}
+.rc--vida .rc-carta {
+  padding-top: 36px;
+}
+.rc--vida .rc-leitura p {
+  margin: 0 0 26px;
+}
+.rc--vida .rc-lead {
+  font-size: 1.18rem;
+  line-height: 1.6;
+}
+.rc--vida .rc-beneficio {
+  background: var(--rc-marca);
+  border-left: 4px solid var(--rc-tinta);
+  border-radius: 0 14px 14px 0;
+  padding: 19px 23px;
+  font-weight: 800;
+  line-height: 1.5;
+}
+.rc--vida.rc--kids-m9 .rc-beneficio {
+  border-left-color: var(--kof-lilas);
+  background: color-mix(in oklab, var(--kof-lilas) 18%, var(--kof-carta));
+}
+.rc--vida .rc-secao {
+  margin-top: 34px;
+  padding-top: 30px;
+  border-top: 1px solid color-mix(in oklab, var(--rc-tinta) 18%, transparent);
+}
+.rc--vida .rc-secao h2 {
+  font-family: var(--rc-titulo);
+  font-weight: 800;
+  font-size: clamp(1.5rem, 3vw, 1.9rem);
+  line-height: 1.2;
+  margin-bottom: 22px;
+}
+.rc--vida strong {
+  font-weight: 800;
+}
+.rc--vida .rc-tela-vida {
+  margin: 26px 0 0;
+}
+.rc--vida .rc-tela-vida img {
+  aspect-ratio: auto;
+  height: auto;
+  object-fit: contain;
+}
+.rc--vida .rc-lista-exemplos,
+.rc--vida .rc-lista-requisitos {
+  list-style: disc;
+  padding-left: 25px;
+  margin: 22px 0;
+}
+.rc--vida .rc-lista-exemplos li,
+.rc--vida .rc-lista-requisitos li {
+  padding-left: 8px;
+  margin-bottom: 24px;
+}
+.rc--vida li::marker {
+  color: var(--kof-acao);
+  font-size: 1.25em;
+}
+.rc--vida .rc-rotulo {
+  display: block;
+  margin-bottom: 7px;
+}
+.rc--vida .rc-lista-exemplos p,
+.rc--vida .rc-lista-requisitos p {
+  margin: 0;
+}
+.rc--vida .rc-ponte {
+  border-left: 3px solid color-mix(in oklab, var(--kof-acao) 45%, var(--kof-carta));
+  padding-left: 18px;
+}
+.rc--vida .rc-participacao {
+  background: color-mix(in oklab, var(--rc-fundo) 35%, var(--kof-carta));
+  border: 1px solid color-mix(in oklab, var(--rc-tinta) 18%, transparent);
+  border-radius: 18px;
+  padding: 27px 29px 5px;
+}
+.rc--vida .rc-atencao {
+  background: var(--rc-marca);
+  border: 1px solid color-mix(in oklab, var(--kof-amarelo) 75%, var(--rc-tinta));
+  padding: 18px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+}
+.rc--vida .rc-atencao p {
+  margin: 0;
+}
+.rc--vida .rc-cta {
+  background: color-mix(in oklab, var(--kof-azul) 10%, var(--kof-carta));
+  color: var(--rc-tinta);
+}
+.rc--vida .rc-cta .rc-termos {
+  font-size: 1rem;
+  padding-bottom: 20px;
+  border-bottom: 1px solid color-mix(in oklab, var(--rc-tinta) 18%, transparent);
+}
+.rc--vida .rc-botao {
+  display: flex;
+  justify-content: center;
+  padding: 16px 22px;
+  text-align: center;
+  background: var(--kof-acao);
+  color: var(--kof-sobre-acao);
+}
+.rc--vida.rc--kids-m9 .rc-botao {
+  background: color-mix(in oklab, var(--kof-amarelo) 60%, var(--kof-carta));
+  color: var(--rc-tinta);
+}
+@media (max-width: 540px) {
+  .rc--vida .rc-carta {
+    padding-top: 24px;
+  }
+  .rc--vida .rc-beneficio {
+    padding: 17px 19px;
+  }
+  .rc--vida .rc-secao {
+    margin-top: 28px;
+    padding-top: 25px;
+  }
+  .rc--vida .rc-participacao {
+    padding: 22px 20px 1px;
+  }
+  .rc--vida .rc-lista-exemplos,
+  .rc--vida .rc-lista-requisitos {
+    padding-left: 20px;
+  }
+  .rc--vida .rc-lista-exemplos li,
+  .rc--vida .rc-lista-requisitos li {
+    padding-left: 4px;
+  }
+  .rc--vida .rc-rotulo {
+    line-height: 1.4;
+  }
+}

@@ -479,7 +479,10 @@ export default function AnalyticsPanel({ funnel }: { funnel: string }) {
                                     .join(' · ')}
                                 </span>
                               )}
-                              {question.position}. {question.title}
+                              {question.displayPosition === 0
+                                ? 'Entrada'
+                                : `Pergunta ${question.displayPosition ?? question.position}`}{' '}
+                              · {question.title}
                               <details className="text-xs text-muted">
                                 <summary>Identificador e opções</summary>
                                 {question.id} · {question.revision.slice(0, 8)}
