@@ -350,6 +350,10 @@ export const PAGINA_DESAFIO_9A17 = {
       pergunta: 'Para qual idade foi pensado?',
       resposta:
         'Para que crianças e adolescentes de 9 a 17 anos consigam realizar as atividades com mais autonomia, conforme seu momento e familiaridade com o computador. Menores de 9 anos também podem participar, com um responsável acompanhando as atividades.',
+      link: {
+        href: '/kids/desafio-primeiro-jogo/oferta/criar-junto',
+        texto: 'Conhecer a proposta para criar junto.',
+      },
     },
     {
       pergunta: 'Meu filho é autista. Como podemos avaliar a participação?',

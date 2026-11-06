@@ -51,13 +51,6 @@ export const PAGINA_DESAFIO_MENOR9 = {
       height: 1122,
       alt: 'Debinha explica uma ideia no computador, com Dedé e Zappy acompanhando; ilustração da experiência de criar junto.',
     },
-    balao: 'Vamos descobrir um passo de cada vez.',
-    zappy: {
-      src: 'comunidade-dos-criadores/zappy-fala.webp',
-      width: 360,
-      height: 458,
-      alt: '',
-    },
   },
   problema: {
     titulo:
@@ -301,6 +294,10 @@ export const PAGINA_DESAFIO_MENOR9 = {
         pergunta: 'Qual é a idade indicada?',
         resposta:
           'Crianças menores de 9 anos podem participar com um responsável acompanhando as atividades. As atividades foram pensadas para 9 a 17 anos com mais autonomia; para os menores, vocês ajustam o ritmo e fazem juntos. Observe o interesse e o apoio de que seu filho precisa.',
+        link: {
+          href: '/kids/desafio-primeiro-jogo/oferta',
+          texto: 'Conhecer a proposta para 9 a 17 anos.',
+        },
       },
       {
         pergunta: 'Ele ainda não lê sozinho. Como participa?',

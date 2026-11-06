@@ -260,6 +260,8 @@
 
 **faq[2].resposta**: Para que crianças e adolescentes de 9 a 17 anos consigam realizar as atividades com mais autonomia, conforme seu momento e familiaridade com o computador. Menores de 9 anos também podem participar, com um responsável acompanhando as atividades.
 
+**faq[2].link.texto**: Conhecer a proposta para criar junto.
+
 **faq[3].pergunta**: Meu filho é autista. Como podemos avaliar a participação?
 
 **faq[3].resposta**: Comecem juntos e observem como ele compreende uma orientação, usa os controles e comunica o que precisa. As aulas são gravadas e permitem pausar e rever; as falas do Zappy têm botão Ouvir. Ele pode explicar uma escolha falando, apontando ou mostrando. O acompanhamento deve considerar o ritmo e as necessidades de apoio dele, inclusive dos 9 aos 17 anos.

@@ -54,6 +54,12 @@ Não foram desenhados blocos para substituir os blocos reais da plataforma.
 
 - Corrigidos o posicionamento da ampliação, as referências de imagens do Desafio,
   a âncora de habilidades, o rodapé duplicado e o agrupamento dos depoimentos.
+- A revisão do PR detectou links de faixa etária em respostas sem relação com
+  idade: a busca por substring também reconhecia “atividades”, “necessidades”
+  e “Comunidade”. O link agora é declarado somente no item correto da copy,
+  sem depender de palavras da pergunta. A regressão foi reproduzida no navegador.
+- Removidos do módulo e do espelho os dados do antigo balão do herói menor de 9,
+  que já não eram exibidos no layout aprovado.
 - Ampliação compartilhada com diálogo nativo: centralização, limites da tela,
   Escape, botão de fechar, retorno do foco e link para a imagem sem JavaScript.
 - `bun test`: 605 testes aprovados; dois testes de integração com banco ignorados

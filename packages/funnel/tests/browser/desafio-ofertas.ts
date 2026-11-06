@@ -253,6 +253,14 @@ try {
     assert.equal(response?.headers()['cache-control'], 'no-store', `${p.nome}: no-store`)
     await page.evaluate(() => document.fonts.ready)
     assert.equal(await page.locator('h1').count(), 1, `${p.nome}: one h1`)
+    if (p.basePath === kidsBase) {
+      const ageLinks = page.locator('#duvidas a[href*="/desafio-primeiro-jogo/oferta"]')
+      assert.equal(await ageLinks.count(), 1, 'only the age answer links to the other age page')
+      assert.match(
+        await ageLinks.locator('..').locator('..').locator('summary').innerText(),
+        /idade (foi pensado|indicada)/,
+      )
+    }
     const texto = await page.locator('body').innerText()
     assert.match(texto, p.preco, `${p.nome}: live price`)
     assert.doesNotMatch(texto, /R\$\s67/, `${p.nome}: no hand-written price`)

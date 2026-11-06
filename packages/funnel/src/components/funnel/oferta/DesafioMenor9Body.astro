@@ -259,7 +259,7 @@ const CAMINHO = [
           {P.duvidas.itens.map((d) => (
             <details class="cm9-duvida">
               <summary>{d.pergunta}</summary>
-              <p>{fill(d.resposta)}{d.pergunta.includes('idade') && <> <a href={link('/kids/desafio-primeiro-jogo/oferta')}>Conhecer a proposta para 9 a 17 anos.</a></>}</p>
+              <p>{fill(d.resposta)}{'link' in d && <> <a href={link(d.link.href)}>{d.link.texto}</a></>}</p>
             </details>
           ))}
         </div>

@@ -38,10 +38,6 @@
 
 **heroi.ilustracao.alt**: Debinha explica uma ideia no computador, com Dedé e Zappy acompanhando; ilustração da experiência de criar junto.
 
-**heroi.balao**: Vamos descobrir um passo de cada vez.
-
-**heroi.zappy.alt**:
-
 **problema.titulo**: Você quer que ele participe, faça escolhas e encontre um jeito de contar o que precisa.
 
 **problema.texto**: Isso aparece ao guardar os materiais, começar uma atividade da escola ou tentar uma brincadeira nova. A autonomia vai sendo exercitada nessas pequenas situações, com ajuda conforme a necessidade da criança. No Sistema Zero, usamos uma aventura para criar oportunidades de observar, escolher, testar e conversar com você.
@@ -213,6 +209,8 @@
 **duvidas.itens[1].pergunta**: Qual é a idade indicada?
 
 **duvidas.itens[1].resposta**: Crianças menores de 9 anos podem participar com um responsável acompanhando as atividades. As atividades foram pensadas para 9 a 17 anos com mais autonomia; para os menores, vocês ajustam o ritmo e fazem juntos. Observe o interesse e o apoio de que seu filho precisa.
+
+**duvidas.itens[1].link.texto**: Conhecer a proposta para 9 a 17 anos.
 
 **duvidas.itens[2].pergunta**: Ele ainda não lê sozinho. Como participa?
 

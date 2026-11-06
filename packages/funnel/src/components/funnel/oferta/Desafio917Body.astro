@@ -273,7 +273,7 @@ const CAMINHO = [
           {P.faq.map((item) => (
             <details class="c9-duvida">
               <summary>{item.pergunta}</summary>
-              <p>{fill(item.resposta)}{item.pergunta.includes('idade') && <> <a href={link('/kids/desafio-primeiro-jogo/oferta/criar-junto')}>Conhecer a proposta para criar junto.</a></>}</p>
+              <p>{fill(item.resposta)}{'link' in item && <> <a href={link(item.link.href)}>{item.link.texto}</a></>}</p>
             </details>
           ))}
         </div>
