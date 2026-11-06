@@ -89,12 +89,6 @@
 .c917 .pk-figura__destaque {
   color: var(--c9-tinta);
 }
-.c917 .pk-prazo {
-  margin: 0;
-  color: var(--c9-tinta);
-  font-size: 1rem;
-  font-weight: 800;
-}
 
 /* ── Telas com contorno e sombra na cor do capítulo ─────────────────────────── */
 .c917 .pk-tela {

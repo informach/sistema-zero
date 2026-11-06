@@ -1,0 +1,15 @@
+---
+import type { ComunidadePraticaSection } from '../../../funnels/comunidade-dos-criadores/oferta/pratica-types'
+
+interface Props {
+  section: ComunidadePraticaSection
+  young: boolean
+}
+const { section, young } = Astro.props
+const p = young ? 'cm9' : 'c9'
+---
+<div class="cpr-section-head">
+  <span class={young ? 'cm9-selo' : 'c9-tag c9-cor--branco'}>{section.tag}</span>
+  <h2 class={`${p}-h2`} id={`titulo-${section.id}`}>{section.title}</h2>
+  {section.intro && <p class={young ? 'cm9-texto' : 'c9-p'}>{section.intro}</p>}
+</div>

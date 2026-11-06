@@ -23,6 +23,7 @@
   box-shadow: 8px 8px 0 var(--kof-amarelo);
   color: var(--kof-tinta);
   overflow: auto;
+  overscroll-behavior: contain;
 }
 .theme-kids .kof-image-dialog:not([open]) {
   display: none;

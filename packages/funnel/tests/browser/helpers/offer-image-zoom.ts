@@ -31,6 +31,10 @@ export async function checkOfferImageZoom(page: Page) {
         bounds.y + bounds.height <= viewport.height,
       'image fits the screen',
     )
+    await page.keyboard.press('Tab')
+    assert(await dialog.evaluate((element) => element.contains(document.activeElement)))
+    await page.keyboard.press('Shift+Tab')
+    assert(await dialog.evaluate((element) => element.contains(document.activeElement)))
     await page.keyboard.press('Escape')
     assert(!(await dialog.isVisible()))
     assert(await link.evaluate((element) => document.activeElement === element), 'focus restored')

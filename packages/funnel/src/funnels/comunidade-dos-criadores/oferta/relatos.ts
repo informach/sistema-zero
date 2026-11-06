@@ -206,7 +206,11 @@ export const RELATOS: Record<RelatoId, Relato> = {
  * versões; o teste de copy exige que toda fala esteja numa página ou aqui, com o motivo.
  */
 export const RELATOS_RESERVA: Partial<Record<RelatoId, string>> = {
-  AV02: 'O Rafael mandando o link para o amigo: saiu com a continuidade antiga; a nova usa falas sobre seguir criando.',
+  AV09: 'Reservada após a revisão de 06/11/2026, que concentra a oferta em exemplos de prática e nos relatos dos filhos dos fundadores.',
+  AV10: 'Reservada após a revisão de 06/11/2026; o FAQ descreve o apoio conforme a necessidade de cada criança.',
+  N2: 'Reservada após a revisão de 06/11/2026, para uma futura comunicação sobre o acompanhamento da família.',
+  N8: 'Reservada após a revisão de 06/11/2026; a oferta explica o uso de parte do tempo de tela combinado pela família.',
+  N15: 'Reservada após a revisão de 06/11/2026, que apresenta a participação da família por situações observáveis.',
   N4: 'O receio do Daniel com o curso online: estava numa resposta da continuidade antiga; guardada para dúvidas sobre aula gravada.',
   N6: 'A assinatura como investimento, pelo Daniel: a continuidade antiga a punha antes dos planos; a nova não tem fala ali.',
   N7: 'O Rafa que começou e não quis parar: saiu com a continuidade antiga; a página de 9 a 17 diz a ideia na chamada do caso.',

@@ -54,8 +54,6 @@ export const PRESENTE_ADULTO = {
       { cor: 'azul', texto: 'No navegador do computador, com mouse e teclado' },
       { cor: 'rosa', texto: 'O cadastro pode ser pelo celular' },
     ] satisfies { cor: CorAdulto; texto: string }[],
-    prazoCampanha:
-      'Novos cadastros até {{data}} (Brasília). Esse prazo é da campanha; o seu presente vale 7 dias a partir do cadastro.',
     tela: {
       rotulo: 'PLAYER 1 · CADÊ TODO MUNDO',
       imagem: {

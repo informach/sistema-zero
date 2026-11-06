@@ -479,7 +479,8 @@ try {
         assert.equal(await page.locator('.pk-duvidas details').count(), 11)
         if (['kids', 'campanha-kids'].includes(caso.nome)) {
           const prazoDaCampanha = page.locator('.pk-duvidas details').filter({
-            hasText: 'Na campanha, o cadastro também precisa ocorrer dentro do período de resgate',
+            hasText:
+              'Em campanhas, novos cadastros só são aceitos enquanto a campanha estiver aberta.',
           })
           assert.equal(await prazoDaCampanha.count(), caso.nome === 'campanha-kids' ? 1 : 0)
         }
@@ -698,7 +699,7 @@ try {
     await page.goto(
       `${origin}/bolsa/previa?audience=${audience}&startsAt=2026-11-06T03:00:00Z&endsAt=2026-11-09T03:00:00Z`,
     )
-    assert.match(await page.locator('body').innerText(), /08\/11\/2026, às 23h59/)
+    assert.doesNotMatch(await page.locator('body').innerText(), /Novos cadastros até/)
   }
 
   // A página pública do programa é indexada e leva o adulto à seção Embaixador de Meu perfil.

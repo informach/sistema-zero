@@ -80,7 +80,6 @@ const tela = P.hero.tela
       <ul class="cda-requisitos">
         {P.hero.requisitos.map((item) => <li class={`cor-${item.cor}`}><span class="cda-quadradinho" aria-hidden="true"></span>{item.texto}</li>)}
       </ul>
-      {campaign && lastClaimAt && kind !== 'ended' && <p class="pa-prazo">{P.hero.prazoCampanha.replace('{{data}}', dataBrasilia(lastClaimAt))}</p>}
     </div>
     <figure class="pa-monitor">
       <div class="cda-monitor__moldura">
