@@ -1,13 +1,12 @@
 ---
 // Página do Desafio do Primeiro Jogo para crianças menores de 9 anos, criando junto com um adulto
-// (proposta aprovada de 21/10/2026, quadro DesafioMenor9). Copy em
+// (copy e visuais aprovados em 05/11/2026). Copy em
 // `desafio-primeiro-jogo/oferta/pagina-menor9.ts`; veste a linguagem da página "criar junto" da
 // Comunidade (receitas em kids-oferta.css, layout `.cm9` em comunidade-menor9.css) e as peças
 // próprias do Desafio em desafio-menor9.css. Pagamento único, preço do catálogo pela rota.
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-menor9.css'
 import '../../../styles/desafio-menor9.css'
-import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
 import { PAGINA_DESAFIO_MENOR9 as P } from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-menor9'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
@@ -17,7 +16,12 @@ import { funnelOgImage } from '../../../lib/seo'
 import type { OfferPageData } from '../../../server/offer-page'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import DesafioFigura from './DesafioFigura.astro'
 import DesafioIcone from './DesafioIcone.astro'
+import DesafioRelato from './DesafioRelato.astro'
+import OfferImage from './OfferImage.astro'
+import OfferImageZoom from './OfferImageZoom.astro'
+import '../../../styles/desafio-pratica.css'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon } = Astro.props
@@ -25,7 +29,6 @@ const preco = precoDoDesafio(priceReais, coupon)
 const fill = (texto: string) => preencherPreco(texto, preco)
 const img = (src: string) => `/img/${src}`
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
-const debora = RELATOS[P.prova.relato.id]
 
 if (!P.heroi.titulo.includes(P.heroi.enfase)) throw new Error('Ênfase fora do título do herói')
 const [tituloInicio = '', tituloFim = ''] = P.heroi.titulo.split(P.heroi.enfase)
@@ -40,8 +43,6 @@ const PAPEIS = [
   { cor: 'azul', icone: 'pergunta' },
   { cor: 'menta', icone: 'estrela' },
 ] as const
-const CORES_TREINA = ['rosa', 'amarelo', 'menta', 'azul']
-const ICONES_TREINA = ['planejar', 'porta', 'tentar', 'foco'] as const
 const CORES_DEPOIS = ['rosa', 'amarelo', 'menta']
 const CAMINHO = [
   { icone: 'farol', cor: 'amarelo' },
@@ -89,10 +90,6 @@ const CAMINHO = [
             <div class="cm9-heroi__circulo cm9-heroi__circulo--azul" aria-hidden="true"></div>
             <div class="cm9-heroi__circulo cm9-heroi__circulo--menta" aria-hidden="true"></div>
             <img class="cm9-heroi__ilustra" src={img(P.heroi.ilustracao.src)} alt={P.heroi.ilustracao.alt} width={P.heroi.ilustracao.width} height={P.heroi.ilustracao.height} loading="eager" decoding="async" fetchpriority="high" />
-            <div class="cm9-balao">
-              <p class="cm9-balao__fala"><span>{P.heroi.balao}</span></p>
-              <img class="cm9-balao__zappy" src={img(P.heroi.zappy.src)} alt={P.heroi.zappy.alt} width={P.heroi.zappy.width} height={P.heroi.zappy.height} loading="lazy" decoding="async" />
-            </div>
           </div>
         </div>
         <svg class="cm9-onda cm9-onda--branco" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
@@ -106,12 +103,12 @@ const CAMINHO = [
           </div>
           <div class="dm9-jeitos">
             <div class="dm9-jeito">
-              <svg class="dm9-ilustra" role="img" aria-label={P.problema.so.alt} viewBox="0 0 300 190"><rect class="dm9-f-cinza" x="20" y="30" width="150" height="110" rx="20"></rect><rect class="dm9-f-cinza-escuro" x="32" y="42" width="126" height="86" rx="12"></rect><path class="dm9-f-claro" d="M86 70 v30 l26 -15 z"></path><circle class="dm9-f-pele" cx="226" cy="84" r="26"></circle><path class="dm9-f-cabelo" d="M200 82 C 200 58 220 50 234 54 C 252 58 258 72 254 86 C 252 74 240 68 228 70 C 214 72 206 76 200 82 Z"></path><path class="dm9-s-tinta" d="M216 88 h7 M230 88 h7 M220 100 h12" stroke-width="3" stroke-linecap="round"></path><rect class="dm9-f-lilas" x="202" y="112" width="48" height="50" rx="16"></rect></svg>
+              <OfferImage image={P.problema.so.imagem} class="dm9-ilustra" zoom={false} />
               <h3 class="dm9-jeito__titulo">{P.problema.so.titulo}</h3>
               <p>{P.problema.so.texto}</p>
             </div>
             <div class="dm9-jeito dm9-jeito--junto">
-              <svg class="dm9-ilustra" role="img" aria-label={P.problema.junto.alt} viewBox="0 0 300 190"><rect class="dm9-f-laranja" x="14" y="40" width="140" height="100" rx="20"></rect><rect class="dm9-f-carta" x="26" y="52" width="116" height="76" rx="12"></rect><circle class="dm9-f-tinta" cx="66" cy="84" r="7"></circle><circle class="dm9-f-tinta" cx="102" cy="84" r="7"></circle><path class="dm9-s-tinta" d="M66 102 Q84 118 102 102" stroke-width="5" fill="none" stroke-linecap="round"></path><circle class="dm9-f-pele" cx="196" cy="96" r="20"></circle><path class="dm9-f-cabelo" d="M176 94 C 176 74 192 68 204 72 C 218 76 222 86 218 98 C 214 88 206 84 196 86 C 186 88 180 90 176 94 Z"></path><circle class="dm9-f-tinta" cx="190" cy="98" r="2.6"></circle><circle class="dm9-f-tinta" cx="202" cy="98" r="2.6"></circle><path class="dm9-s-tinta" d="M189 106 Q196 112 203 106" stroke-width="2.6" fill="none" stroke-linecap="round"></path><rect class="dm9-f-rosa" x="178" y="118" width="38" height="42" rx="14"></rect><path class="dm9-f-amarelo dm9-s-tinta" d="M196 30 a14 14 0 0 1 8 25 l0 6 l-16 0 l0 -6 a14 14 0 0 1 8 -25 z" stroke-width="2"></path><circle class="dm9-f-pele-adulto" cx="256" cy="78" r="24"></circle><path class="dm9-f-cabelo" d="M232 74 C 234 52 256 48 268 52 C 282 56 284 68 280 78 C 274 66 262 64 252 66 C 242 68 236 70 232 74 Z"></path><circle class="dm9-f-tinta" cx="250" cy="80" r="3"></circle><circle class="dm9-f-tinta" cx="264" cy="80" r="3"></circle><path class="dm9-s-tinta" d="M249 90 Q257 97 265 90" stroke-width="3" fill="none" stroke-linecap="round"></path><rect class="dm9-f-azul" x="234" y="104" width="46" height="64" rx="16"></rect><path class="dm9-s-pele-adulto" d="M236 120 C 226 126 220 128 214 128" stroke-width="9" fill="none" stroke-linecap="round"></path></svg>
+              <OfferImage image={P.problema.junto.imagem} class="dm9-ilustra" zoom={false} />
               <h3 class="dm9-jeito__titulo">{P.problema.junto.titulo}</h3>
               <p>{P.problema.junto.texto}</p>
             </div>
@@ -125,6 +122,7 @@ const CAMINHO = [
         <div class="cm9-wrap cm9-corpo dm9-jogo">
           <div class="dm9-jogo__texto">
             <h2 id="dm9-jogo" class="cm9-h2">{P.jogo.titulo}</h2>
+<p class="cm9-texto">{P.pratica.metodologia}</p>
             <ol class="dm9-etapas">
               {P.jogo.etapas.map((e, i) => (
                 <li>
@@ -135,7 +133,7 @@ const CAMINHO = [
             </ol>
           </div>
           <figure class="dm9-jogo__tela">
-            <img src={img(P.jogo.imagem.src)} alt={P.jogo.imagem.alt} width={P.jogo.imagem.width} height={P.jogo.imagem.height} loading="lazy" decoding="async" />
+            <OfferImage image={P.jogo.imagem} />
             <figcaption>{P.jogo.legenda}</figcaption>
           </figure>
         </div>
@@ -149,14 +147,15 @@ const CAMINHO = [
             {P.sessao.passos.map((passo, i) => (
               <li>
                 <figure class="dm9-sessao__passo">
-                  <img src={img(passo.imagem.src)} alt={passo.imagem.alt} width={passo.imagem.width} height={passo.imagem.height} loading="lazy" decoding="async" />
+                  <OfferImage image={passo.imagem} />
                   <figcaption><span class:list={['cm9-passo__num', `cm9-fundo--${CORES_SESSAO[i]}`]} aria-hidden="true">{i + 1}</span><strong>{passo.texto}</strong></figcaption>
                 </figure>
               </li>
             ))}
           </ol>
           <p class="dm9-nota">{P.sessao.nota}</p>
-        </div>
+        <div class="dc-two-columns dc-sharing"><div class="dc-prose"><h3 class="cm9-h3">{P.pratica.compartilhar.titulo}</h3><p class="cm9-texto">{P.pratica.compartilhar.texto}</p></div><DesafioRelato id="AV02" /></div>
+</div>
         <svg class="cm9-onda cm9-onda--menta" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_SOBE} fill="currentColor"></path></svg>
       </section>
 
@@ -175,17 +174,18 @@ const CAMINHO = [
               </li>
             ))}
           </ul>
-        </div>
+        <div class="dc-parent-benefit"><div class="dc-prose"><h3 class="cm9-h3">{P.pratica.paisTitulo}</h3>{P.pratica.areaDosPais.map((paragrafo) => <p class="cm9-texto">{paragrafo}</p>)}<DesafioFigura image={P.pratica.paisImagem} legenda={P.pratica.paisLegenda} /></div></div>
+</div>
         <svg class="cm9-onda cm9-onda--branco" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
       </section>
 
-      <section class="cm9-sec cm9-sec--branco" aria-labelledby="dm9-treina" data-analytics-id="desafio-m9-treina">
+      <section id="habilidades" class="cm9-sec cm9-sec--branco" aria-labelledby="dm9-treina" data-analytics-id="desafio-m9-treina">
         <div class="cm9-wrap cm9-corpo cm9-pilha cm9-pilha--larga">
           <h2 id="dm9-treina" class="cm9-h2 cm9-h2--m">{P.treina.titulo}</h2>
           <ul class="dm9-habilidades">
-            {P.treina.habilidades.map((h, i) => (
-              <li class="dm9-habilidade">
-                <span class:list={['dm9-habilidade__icone', `cm9-fundo--${CORES_TREINA[i]}`]} aria-hidden="true"><DesafioIcone nome={ICONES_TREINA[i]!} tamanho={44} /></span>
+            {P.treina.habilidades.map((h) => (
+              <li class="dm9-habilidade dc-skill">
+                <DesafioFigura image={h.imagem} legenda={h.legenda} ampliar={h.ampliar} />
                 <h3 class="dm9-habilidade__titulo">{h.titulo}</h3>
                 <p class="dm9-habilidade__texto">{h.texto}</p>
               </li>
@@ -195,28 +195,16 @@ const CAMINHO = [
             <strong>{P.treina.faixa.titulo}</strong>
             <span>{P.treina.faixa.texto}</span>
           </div>
-        </div>
+        <div class="dc-math"><h3 class="cm9-h3">{P.pratica.matematica.titulo}</h3><p class="cm9-texto">{P.pratica.matematica.texto}</p><div class="dc-pair">{P.pratica.matematica.imagens.map((figura) => <DesafioFigura image={figura.imagem} legenda={figura.legenda} />)}</div>{P.pratica.matematica.nota && <p class="cm9-texto">{P.pratica.matematica.nota}</p>}</div>
+</div>
         <svg class="cm9-onda cm9-onda--rosa" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_SOBE} fill="currentColor"></path></svg>
       </section>
 
-      <section class="cm9-sec cm9-sec--rosa" aria-label="O que contam as famílias" data-analytics-id="desafio-m9-prova">
-        <div class="cm9-wrap cm9-corpo dm9-prova">
-          <div class="dm9-relato" data-relato={P.prova.relato.id}>
-            <div class="dm9-relato__quem">
-              <img src={img(P.prova.retrato.src)} alt={P.prova.retrato.alt} width={P.prova.retrato.width} height={P.prova.retrato.height} loading="lazy" decoding="async" />
-              <span><strong>{debora.nome}</strong><br />{P.prova.relato.legenda}</span>
-            </div>
-            <blockquote><p>"{debora.fala}"</p></blockquote>
-          </div>
-          <figure class="dm9-fundadores">
-            <img src={img(P.prova.fundadores.imagem.src)} alt={P.prova.fundadores.imagem.alt} width={P.prova.fundadores.imagem.width} height={P.prova.fundadores.imagem.height} loading="lazy" decoding="async" />
-            <figcaption>{P.prova.fundadores.texto}</figcaption>
-          </figure>
-        </div>
-        <svg class="cm9-onda cm9-onda--laranja" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg>
-      </section>
+      <section class="cm9-sec cm9-sec--rosa" aria-labelledby="dm9-fundadores" data-analytics-id="desafio-m9-prova"><div class="cm9-wrap cm9-corpo cm9-pilha cm9-pilha--larga"><h2 id="dm9-fundadores" class="cm9-h2 cm9-h2--m">{P.pratica.familiaTitulo}</h2><div class="dc-two-columns dc-family"><div class="dc-prose"><figure class="dc-family-photo"><img src={img(P.pratica.familiaImagem.src)} alt={P.pratica.familiaImagem.alt} width={P.pratica.familiaImagem.width} height={P.pratica.familiaImagem.height} loading="lazy" decoding="async" /></figure>{P.pratica.familia.map((paragrafo) => <p class="cm9-texto">{paragrafo}</p>)}</div><div class="dc-family-quotes"><DesafioRelato id="AV04" /><DesafioRelato id="AV03" /></div></div></div><svg class="cm9-onda cm9-onda--creme" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg></section>
 
-      <section id="oferta" class="cm9-sec cm9-sec--laranja" aria-labelledby="dm9-oferta" data-analytics-id="desafio-m9-oferta">
+      <section id="para-comecar" class="cm9-sec cm9-sec--creme" aria-labelledby="desafio-preparo" data-analytics-id="desafio-m9-preparo"><div class="cm9-wrap cm9-corpo cm9-pilha cm9-pilha--larga"><h2 id="desafio-preparo" class="cm9-h2 cm9-h2--m">{P.pratica.preparoTitulo}</h2><div class="dc-two-columns dc-practical"><div class="dc-prose">{P.pratica.paraComecar.map((paragrafo) => <p class="cm9-texto">{paragrafo}</p>)}</div><DesafioFigura image={P.pratica.caderno} legenda={P.pratica.cadernoLegenda} class="dc-caderno" /></div></div><svg class="cm9-onda cm9-onda--laranja" aria-hidden="true" viewBox="0 0 1440 60" preserveAspectRatio="none"><path d={ONDA_DESCE} fill="currentColor"></path></svg></section>
+
+<section id="oferta" class="cm9-sec cm9-sec--laranja" aria-labelledby="dm9-oferta" data-analytics-id="desafio-m9-oferta">
         <div class="cm9-wrap cm9-corpo cm9-corpo--planos cm9-pilha">
           <div class="cm9-cabeca">
             <h2 id="dm9-oferta" class="cm9-h2 cm9-h2--planos">{P.oferta.titulo}</h2>
@@ -271,7 +259,7 @@ const CAMINHO = [
           {P.duvidas.itens.map((d) => (
             <details class="cm9-duvida">
               <summary>{d.pergunta}</summary>
-              <p>{fill(d.resposta)}</p>
+              <p>{fill(d.resposta)}{'link' in d && <> <a href={link(d.link.href)}>{d.link.texto}</a></>}</p>
             </details>
           ))}
         </div>
@@ -289,14 +277,6 @@ const CAMINHO = [
       </section>
     </main>
 
-    <div class="cm9-faixa">
-      <div class="cm9-wrap cm9-faixa__corpo">
-        <img src={img(P.rodape.logo.src)} alt={P.rodape.logo.alt} width={P.rodape.logo.width} height={P.rodape.logo.height} loading="lazy" decoding="async" />
-        <span>{P.rodape.aviso}</span>
-        <span class="cm9-faixa__links">{P.rodape.links.map((l) => <a href={l.href}>{l.label}</a>)}</span>
-      </div>
-    </div>
-
     <div class="kof-mobar cm9-barra" data-mobar aria-hidden="true">
       <p class="kof-mobar__preco"><strong>{preco.preco}</strong> {P.barra.sufixo}</p>
       <a class="cm9-cta cm9-cta--barra" href="#oferta" tabindex="-1">{P.barra.cta}</a>
@@ -304,6 +284,7 @@ const CAMINHO = [
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
   <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />
+  <OfferImageZoom />
 </BaseLayout>
 
 <script>

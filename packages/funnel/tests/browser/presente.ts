@@ -10,6 +10,7 @@
  * (padrão `tmp/presente-review` na raiz). `QA_CHROME_CHANNEL=chrome` usa o Chrome instalado e
  * `QA_CHROMIUM_PATH` um Chromium já baixado; sem os dois, o Chromium do Playwright.
  */
+
 import assert from 'node:assert/strict'
 import { spawn } from 'node:child_process'
 import { mkdir } from 'node:fs/promises'
@@ -17,6 +18,7 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Browser, chromium, type Page } from 'playwright'
+import { checkOfferImageZoom } from './helpers/offer-image-zoom'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = process.env.QA_OUTPUT ?? resolve(cwd, '../../tmp/presente-review')
@@ -306,7 +308,7 @@ const CASOS: Caso[] = [
     nome: 'kids',
     path: '/bolsa/marta-k7q2',
     status: 200,
-    marca: /Seu filho cria um jogo e pratica como/,
+    marca: /Ajude seu filho a resolver problemas e explicar suas ideias/,
     tema: 'theme-kids',
     formulario: true,
   },
@@ -314,7 +316,7 @@ const CASOS: Caso[] = [
     nome: 'kids-legado',
     path: '/bolsa/antigo-01',
     status: 200,
-    marca: /Seu filho cria um jogo e pratica como/,
+    marca: /Ajude seu filho a resolver problemas e explicar suas ideias/,
     tema: 'theme-kids',
     formulario: true,
   },
@@ -456,7 +458,9 @@ try {
       if (await page.locator('#habilidades').count()) {
         const badgeClear = await page.locator('.pk-figura').evaluate((figure) => {
           const badge = figure.querySelector('.pk-figura__rotulo')?.getBoundingClientRect()
-          const image = figure.querySelector(':scope > img')?.getBoundingClientRect()
+          const image = figure
+            .querySelector(':scope > .kof-image-link img')
+            ?.getBoundingClientRect()
           return Boolean(badge && image && badge.bottom <= image.top)
         })
         assert(badgeClear, `${caso.nome} @${largura}: o rótulo não cobre o jogo`)
@@ -470,9 +474,15 @@ try {
         )
         assert.match(
           (await page.locator('[aria-labelledby=pk-mural] img').getAttribute('src')) ?? '',
-          /tela-cade-publicado\.png$/,
+          /cade-jogo-3\.webp$/,
         )
-        assert.equal(await page.locator('.pk-duvidas details').count(), 9)
+        assert.equal(await page.locator('.pk-duvidas details').count(), 11)
+        if (['kids', 'campanha-kids'].includes(caso.nome)) {
+          const prazoDaCampanha = page.locator('.pk-duvidas details').filter({
+            hasText: 'Na campanha, o cadastro também precisa ocorrer dentro do período de resgate',
+          })
+          assert.equal(await prazoDaCampanha.count(), caso.nome === 'campanha-kids' ? 1 : 0)
+        }
         assert.equal(await idade.getAttribute('open'), '')
         await idade.locator('summary').click()
         assert.equal(await idade.getAttribute('open'), null)
@@ -531,6 +541,10 @@ try {
             .locator(selector)
             .screenshot({ path: resolve(output, `${caso.nome}-${largura}-${nome}.png`) })
         }
+      }
+      if (['kids', 'campanha-kids'].includes(caso.nome)) {
+        assert.equal(await page.locator('footer').count(), 1)
+        await checkOfferImageZoom(page)
       }
       responsiveCases++
     }

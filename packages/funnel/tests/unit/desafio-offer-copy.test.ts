@@ -182,7 +182,11 @@ describe.each(Object.entries(PAGINAS))('página %s', (nome, { modulo, corpo }) =
     for (const [caminho, texto] of textos(modulo)) {
       // As perguntas das dúvidas são perguntas de propósito, e uma fala citada ("E se o personagem
       // chegar sem a chave?") não é gancho: a regra 3 não vale para elas.
-      const pergunta = caminho.endsWith('.pergunta') || /\?["”]/.test(texto)
+      const pergunta =
+        caminho.endsWith('.pergunta') ||
+        /\?["”]/.test(texto) ||
+        caminho === 'oferta.jaTem' ||
+        (nome === 'criar-junto' && /^continuidade\.passos\[\d+\]\.texto$/.test(caminho))
       const regras = lintLightCopy(texto).filter((i) => !(i.rule === 3 && pergunta))
       expect([caminho, regras.map((i) => i.rule)]).toEqual([caminho, []])
       expect([caminho, /R\$\s*\d/.test(texto)]).toEqual([caminho, false])

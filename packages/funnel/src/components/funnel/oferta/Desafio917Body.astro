@@ -1,18 +1,13 @@
 ---
-// Página do Desafio do Primeiro Jogo para 9 a 17 anos (proposta aprovada de 21/10/2026, Canvas
-// "Desafio do Primeiro Jogo · três páginas", quadro Desafio917). A copy mora em
+// Página do Desafio do Primeiro Jogo para 9 a 17 anos (copy e visuais aprovados em 05/11/2026).
+// A copy mora em
 // `desafio-primeiro-jogo/oferta/pagina-9a17.ts`; veste a linguagem da página de 9 a 17 da Comunidade
 // (receitas em kids-oferta.css, layout `.c917` em comunidade-917.css) e as peças próprias do Desafio
 // em desafio-917.css. Pagamento único: o preço vem do catálogo pela rota, com o cupom já cotado.
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-917.css'
 import '../../../styles/desafio-917.css'
-import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
-import {
-  legendaRelatoDesafio,
-  PAGINA_DESAFIO_9A17 as P,
-  type RelatoDesafio,
-} from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
+import { PAGINA_DESAFIO_9A17 as P } from '../../../funnels/desafio-primeiro-jogo/oferta/pagina-9a17'
 import { precoDoDesafio, preencherPreco } from '../../../funnels/desafio-primeiro-jogo/oferta/preco'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -22,7 +17,12 @@ import { getDeps } from '../../../server/deps'
 import type { OfferPageData } from '../../../server/offer-page'
 import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
+import DesafioFigura from './DesafioFigura.astro'
 import DesafioIcone from './DesafioIcone.astro'
+import DesafioRelato from './DesafioRelato.astro'
+import OfferImage from './OfferImage.astro'
+import OfferImageZoom from './OfferImageZoom.astro'
+import '../../../styles/desafio-pratica.css'
 
 type Props = OfferPageData['bodyProps']
 const { f, productName, priceReais, ofertaUrl, coupon } = Astro.props
@@ -31,22 +31,12 @@ const fill = (texto: string) => preencherPreco(texto, preco)
 const img = (src: string) => `/img/${src}`
 const link = (path: string) => funnelLinkWithAttribution(path, Astro.url)
 const contaUrl = getDeps().env.KIDS_COMMUNITY_URL
-const relato = (r: RelatoDesafio) => ({
-  id: r.id,
-  fala: RELATOS[r.id].fala,
-  retrato: img(`comunidade-dos-criadores/${RELATOS[r.id].retrato}`),
-  legenda: legendaRelatoDesafio(r),
-})
-const andre = relato(P.fundadores.andre)
-const rafael = relato(P.fundadores.rafael)
 
 const CORES_HEROI = ['verde', 'amarelo', 'azul-claro']
 const CORES_ETAPAS = ['azul-claro', 'rosa', 'verde', 'amarelo']
 const ICONES_ETAPAS = ['setas', 'chave', 'farol', 'certificado'] as const
 const CORES_PASSOS = ['azul', 'roxo', 'rosa', 'amarelo']
-const ICONES_TREINA = ['planejar', 'porta', 'tentar', 'foco'] as const
 const CORES_TREINA = ['azul-claro', 'amarelo', 'verde', 'rosa']
-const ICONES_FAIXA = ['natacao', 'musica', 'lampada'] as const
 const ICONES_RESPONSAVEL = ['painel', 'mensagem', 'relogio', 'computador'] as const
 const CORES_DEPOIS = ['verde', 'amarelo', 'rosa']
 const CAMINHO = [
@@ -96,7 +86,7 @@ const CAMINHO = [
           </div>
           <div class="d9-heroi__visual">
             <figure class="c9-heroi__tela d9-heroi__tela">
-              <img src={img(P.hero.imagem.src)} alt={P.hero.imagem.alt} width={P.hero.imagem.width} height={P.hero.imagem.height} loading="eager" decoding="async" fetchpriority="high" />
+              <OfferImage image={P.hero.imagem} eager />
               <figcaption>{P.hero.legenda}</figcaption>
             </figure>
             <span class="d9-faixa">{P.hero.faixa}</span>
@@ -112,12 +102,12 @@ const CAMINHO = [
           </div>
           <div class="d9-jeitos">
             <div class="d9-jeito">
-              <svg class="d9-ilustra" role="img" aria-label={P.jeitos.so.alt} viewBox="0 0 320 200"><rect class="d9-f-cinza" x="10" y="20" width="170" height="118" rx="18"></rect><rect class="d9-f-cinza-escuro" x="24" y="34" width="142" height="90" rx="10"></rect><path class="d9-s-claro" d="M60 64 l20 8 M130 64 l-20 8" stroke-width="6" stroke-linecap="round"></path><circle class="d9-f-claro" cx="72" cy="82" r="7"></circle><circle class="d9-f-claro" cx="118" cy="82" r="7"></circle><path class="d9-s-claro" d="M76 112 Q95 100 114 112" stroke-width="6" fill="none" stroke-linecap="round"></path><path class="d9-f-claro" d="M146 104 l12 7 l-12 7 z"></path><rect class="d9-f-cinza-escuro" x="82" y="138" width="26" height="18"></rect><rect class="d9-f-cinza-escuro" x="60" y="154" width="70" height="10" rx="5"></rect><circle class="d9-f-pele" cx="254" cy="92" r="28"></circle><path class="d9-f-cabelo" d="M226 86 C 228 62 252 56 264 60 C 282 62 288 78 284 92 C 276 80 262 76 250 78 C 238 80 230 82 226 86 Z"></path><path class="d9-s-tinta" d="M242 96 h9 M258 96 h9 M246 110 h16" stroke-width="3.5" stroke-linecap="round"></path><rect class="d9-f-azul-claro" x="228" y="122" width="52" height="44" rx="14"></rect><rect class="d9-f-cinza" x="206" y="160" width="100" height="30" rx="12"></rect></svg>
+              <OfferImage image={P.jeitos.so.imagem} class="d9-ilustra" zoom={false} />
               <h3 class="d9-jeito__titulo">{P.jeitos.so.titulo}</h3>
               <p>{P.jeitos.so.texto}</p>
             </div>
             <div class="d9-jeito d9-jeito--fazer">
-              <svg class="d9-ilustra" role="img" aria-label={P.jeitos.fazer.alt} viewBox="0 0 320 200"><rect class="d9-f-azul" x="10" y="20" width="170" height="118" rx="18"></rect><rect class="d9-f-tela" x="24" y="34" width="142" height="90" rx="10"></rect><circle class="d9-f-tinta" cx="72" cy="74" r="8"></circle><circle class="d9-f-tinta" cx="118" cy="74" r="8"></circle><circle class="d9-f-rosa" cx="54" cy="96" r="7"></circle><circle class="d9-f-rosa" cx="136" cy="96" r="7"></circle><path class="d9-s-tinta" d="M72 94 Q95 116 118 94" stroke-width="6" fill="none" stroke-linecap="round"></path><rect class="d9-f-azul" x="82" y="138" width="26" height="18"></rect><rect class="d9-f-azul" x="60" y="154" width="70" height="10" rx="5"></rect><path class="d9-f-amarelo d9-s-tinta" d="M254 0 a17 17 0 0 1 10 31 l0 7 l-20 0 l0 -7 a17 17 0 0 1 10 -31 z" stroke-width="2"></path><path class="d9-s-amarelo" d="M226 10 l-8 -5 M282 10 l8 -5 M222 26 h-9 M286 26 h9" stroke-width="3.5" stroke-linecap="round"></path><circle class="d9-f-pele" cx="254" cy="80" r="26"></circle><path class="d9-f-cabelo" d="M228 74 C 230 50 254 44 266 48 C 284 50 290 66 286 80 C 278 68 264 64 252 66 C 240 68 232 70 228 74 Z"></path><circle class="d9-f-tinta" cx="246" cy="82" r="3.5"></circle><circle class="d9-f-tinta" cx="262" cy="82" r="3.5"></circle><path class="d9-s-tinta" d="M244 94 Q254 104 264 94" stroke-width="3.5" fill="none" stroke-linecap="round"></path><rect class="d9-f-amarelo" x="232" y="108" width="44" height="50" rx="14"></rect><path class="d9-s-pele" d="M274 118 C 288 104 294 90 298 76" stroke-width="11" fill="none" stroke-linecap="round"></path><rect class="d9-f-azul" x="236" y="156" width="13" height="36" rx="6"></rect><rect class="d9-f-azul" x="258" y="156" width="13" height="36" rx="6"></rect></svg>
+              <OfferImage image={P.jeitos.fazer.imagem} class="d9-ilustra" zoom={false} />
               <h3 class="d9-jeito__titulo">{P.jeitos.fazer.titulo}</h3>
               <p>{P.jeitos.fazer.texto}</p>
             </div>
@@ -131,6 +121,7 @@ const CAMINHO = [
           <div class="c9-cabeca c9-cabeca--820">
             <span class="c9-tag c9-cor--azul-claro">{P.farol.tag}</span>
             <h2 id="d9-farol" class="c9-h2">{P.farol.titulo}</h2>
+<p class="c9-p">{P.pratica.metodologia}</p>
           </div>
           <div class="d9-trilha">
             <div class="d9-trilha__linha" aria-hidden="true"></div>
@@ -146,7 +137,7 @@ const CAMINHO = [
             </ol>
           </div>
           <div class="d9-blocos">
-            <img src={img(P.farol.blocos.imagem.src)} alt={P.farol.blocos.imagem.alt} width={P.farol.blocos.imagem.width} height={P.farol.blocos.imagem.height} loading="lazy" decoding="async" />
+            <OfferImage image={P.farol.blocos.imagem} />
             <div class="c9-pilha c9-gap-12">
               <h3 class="c9-h3">{P.farol.blocos.titulo}</h3>
               {P.farol.blocos.paragrafos.map((p) => <p class="c9-p">{p}</p>)}
@@ -164,7 +155,7 @@ const CAMINHO = [
           <div class="c9-grade c9-min-200 c9-grade--20 d9-passos">
             {P.aula.passos.map((passo, i) => (
               <article class:list={['c9-passo', `c9-cor--${CORES_PASSOS[i]}`]}>
-                <img src={img(passo.imagem.src)} alt={passo.imagem.alt} width={passo.imagem.width} height={passo.imagem.height} loading="lazy" decoding="async" />
+                <OfferImage image={passo.imagem} />
                 <div class="c9-passo__texto">
                   <h3 class="c9-passo__titulo">{passo.titulo}</h3>
                   <p class="c9-passo__desc">{passo.texto}</p>
@@ -173,10 +164,11 @@ const CAMINHO = [
             ))}
           </div>
           <span class="c9-legenda">{P.aula.nota}</span>
-        </div>
+        <div class="dc-two-columns dc-sharing"><div class="dc-prose"><h3 class="c9-h3">{P.pratica.compartilhar.titulo}</h3><p class="c9-p">{P.pratica.compartilhar.texto}</p></div><DesafioRelato id="AV02" /></div>
+</div>
       </section>
 
-      <section class="c9-sec c9-sec--branco" aria-labelledby="d9-treina" data-analytics-id="desafio-treina">
+      <section id="habilidades" class="c9-sec c9-sec--branco" aria-labelledby="d9-treina" data-analytics-id="desafio-treina">
         <div class="c9-wrap c9-pilha c9-gap-24">
           <div class="c9-cabeca c9-cabeca--820">
             <span class="c9-tag c9-cor--roxo c9-tag--clara">{P.treina.tag}</span>
@@ -184,8 +176,8 @@ const CAMINHO = [
           </div>
           <div class="d9-habilidades">
             {P.treina.habilidades.map((h, i) => (
-              <article class:list={['d9-habilidade', `c9-cor--${CORES_TREINA[i]}`]}>
-                <span class="d9-habilidade__icone" aria-hidden="true"><DesafioIcone nome={ICONES_TREINA[i]!} tamanho={44} /></span>
+              <article class:list={['d9-habilidade', 'dc-skill', `c9-cor--${CORES_TREINA[i]}`]}>
+                <DesafioFigura image={h.imagem} legenda={h.legenda} ampliar={h.ampliar} />
                 <h3 class="d9-habilidade__titulo">{h.titulo}</h3>
                 <p class="d9-habilidade__texto">{h.texto}</p>
               </article>
@@ -194,15 +186,15 @@ const CAMINHO = [
           <div class="d9-faixa-navy">
             <h3 class="c9-h3">{P.treina.faixa.titulo}</h3>
             <ul class="d9-faixa-navy__itens">
-              {P.treina.faixa.itens.map((item, i) => (
+              {P.treina.faixa.itens.map((item) => (
                 <li>
-                  <span class="d9-faixa-navy__icone" aria-hidden="true"><DesafioIcone nome={ICONES_FAIXA[i]!} tamanho={40} /></span>
                   <span><strong>{item.titulo}</strong>{item.texto}</span>
                 </li>
               ))}
             </ul>
           </div>
-        </div>
+        <div class="dc-math"><h3 class="c9-h3">{P.pratica.matematica.titulo}</h3><p class="c9-p">{P.pratica.matematica.texto}</p><div class="dc-pair">{P.pratica.matematica.imagens.map((figura) => <DesafioFigura image={figura.imagem} legenda={figura.legenda} />)}</div>{P.pratica.matematica.nota && <p class="c9-p">{P.pratica.matematica.nota}</p>}</div>
+</div>
       </section>
 
       <section id="responsavel" class="c9-sec c9-sec--creme" aria-labelledby="d9-responsavel" data-analytics-id="desafio-responsavel">
@@ -216,44 +208,15 @@ const CAMINHO = [
               ))}
             </ul>
           </div>
-          <div class="d9-telas c9-b480">
-            <figure class="c9-painel">
-              <img src={img(P.responsavel.painel.src)} alt={P.responsavel.painel.alt} width={P.responsavel.painel.width} height={P.responsavel.painel.height} loading="lazy" decoding="async" />
-            </figure>
-            <figure class="d9-caderno">
-              <img src={img(P.responsavel.caderno.src)} alt={P.responsavel.caderno.alt} width={P.responsavel.caderno.width} height={P.responsavel.caderno.height} loading="lazy" decoding="async" />
-            </figure>
-          </div>
+          <div class="dc-prose"><h3 class="c9-h3">{P.pratica.paisTitulo}</h3>{P.pratica.areaDosPais.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}<DesafioFigura image={P.pratica.paisImagem} legenda={P.pratica.paisLegenda} /></div>
         </div>
       </section>
 
-      <section class="c9-sec c9-sec--branco" aria-labelledby="d9-fundadores" data-analytics-id="desafio-fundadores">
-        <div class="c9-wrap c9-pilha c9-gap-24">
-          <h2 id="d9-fundadores" class="c9-h2">{P.fundadores.titulo}</h2>
-          <div class="c9-lado c9-lado--topo">
-            <div class="c9-pilha c9-gap-16 c9-b480">
-              <figure class="c9-foto">
-                <img src={img(P.fundadores.imagem.src)} alt={P.fundadores.imagem.alt} width={P.fundadores.imagem.width} height={P.fundadores.imagem.height} loading="lazy" decoding="async" />
-              </figure>
-              <p class="c9-p">{P.fundadores.paragrafo}</p>
-              <figure class="c9-relato c9-relato--plano" data-relato={andre.id}>
-                <img src={andre.retrato} alt="" width="160" height="160" loading="lazy" decoding="async" />
-                <blockquote><p>"{andre.fala}"</p></blockquote>
-                <figcaption>{andre.legenda}</figcaption>
-              </figure>
-            </div>
-            <figure class="d9-destaque c9-b420" data-relato={rafael.id}>
-              <blockquote><p>{rafael.fala}</p></blockquote>
-              <figcaption>
-                <img src={rafael.retrato} alt="" width="160" height="160" loading="lazy" decoding="async" />
-                <span>{rafael.legenda}</span>
-              </figcaption>
-            </figure>
-          </div>
-        </div>
-      </section>
+      <section class="c9-sec c9-sec--branco" aria-labelledby="d9-fundadores" data-analytics-id="desafio-fundadores"><div class="c9-wrap c9-pilha c9-gap-24"><h2 id="d9-fundadores" class="c9-h2">{P.pratica.familiaTitulo}</h2><div class="dc-two-columns dc-family"><div class="dc-prose"><figure class="dc-family-photo"><img src={img(P.pratica.familiaImagem.src)} alt={P.pratica.familiaImagem.alt} width={P.pratica.familiaImagem.width} height={P.pratica.familiaImagem.height} loading="lazy" decoding="async" /></figure>{P.pratica.familia.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}</div><div class="dc-family-quotes"><DesafioRelato id="AV04" /><DesafioRelato id="AV03" /></div></div></div></section>
 
-      <section id="oferta" class="c9-sec c9-sec--azul" aria-labelledby="d9-oferta" data-analytics-id="desafio-oferta">
+      <section id="para-comecar" class="c9-sec c9-sec--chao" aria-labelledby="desafio-preparo" data-analytics-id="desafio-preparo"><div class="c9-wrap c9-pilha c9-gap-24"><h2 id="desafio-preparo" class="c9-h2">{P.pratica.preparoTitulo}</h2><div class="dc-two-columns dc-practical"><div class="dc-prose">{P.pratica.paraComecar.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}</div><DesafioFigura image={P.pratica.caderno} legenda={P.pratica.cadernoLegenda} class="dc-caderno" /></div></div></section>
+
+<section id="oferta" class="c9-sec c9-sec--azul" aria-labelledby="d9-oferta" data-analytics-id="desafio-oferta">
         <div class="c9-wrap c9-wrap--planos c9-pilha c9-gap-26">
           <div class="c9-pilha c9-gap-12 c9-cabeca--860">
             <h2 id="d9-oferta" class="c9-h2 c9-h2--planos">{P.oferta.titulo}</h2>
@@ -310,7 +273,7 @@ const CAMINHO = [
           {P.faq.map((item) => (
             <details class="c9-duvida">
               <summary>{item.pergunta}</summary>
-              <p>{fill(item.resposta)}</p>
+              <p>{fill(item.resposta)}{'link' in item && <> <a href={link(item.link.href)}>{item.link.texto}</a></>}</p>
             </details>
           ))}
         </div>
@@ -324,12 +287,6 @@ const CAMINHO = [
             <button type="button" class="c9-btn c9-btn--grande c9-btn--amarelo" data-checkout-cta data-analytics-id="desafio-convite-comprar">{P.fim.cta}</button>
           </div>
         </div>
-        <div class="c9-rodape">
-          <div class="c9-rodape__barra">
-            <span>{P.rodape.aviso}</span>
-            <span class="c9-rodape__links">{P.rodape.links.map((l) => <a href={l.href}>{l.label}</a>)}</span>
-          </div>
-        </div>
       </section>
     </main>
 
@@ -340,6 +297,7 @@ const CAMINHO = [
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
   <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />
+  <OfferImageZoom />
 </BaseLayout>
 
 <script>

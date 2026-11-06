@@ -10,6 +10,7 @@ import { PRESENTE_KIDS as P } from '../../content/presente'
 import { COMUNIDADE_DOS_CRIADORES } from '../../funnels/comunidade-dos-criadores'
 import BaseLayout from '../../layouts/BaseLayout.astro'
 import Footer from '../Footer.astro'
+import OfferImageZoom from '../funnel/oferta/OfferImageZoom.astro'
 
 interface Props {
   title: string
@@ -48,6 +49,7 @@ const { title, description, ready = false, secoes = true } = Astro.props
   <!-- O mesmo Termo do aceite no formulário do presente (`BolsaResgate`): as regras de uso da área
        Kids estão no Termo da Comunidade Kids. Um Termo próprio do presente fica para a revisão jurídica. -->
   <Footer audience="kids" termosHref={`${COMUNIDADE_DOS_CRIADORES.basePath}/termos`} />
+  {secoes && <OfferImageZoom />}
 </BaseLayout>
 <script>
   import { ligarBarraFixa } from '../../lib/barra-fixa'

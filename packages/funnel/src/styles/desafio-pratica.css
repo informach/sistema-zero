@@ -1,0 +1,243 @@
+/* Layout aprovado para as duas páginas Kids; a paleta vem dos tokens. */
+
+.c917 .d9-ilustra,
+.cm9 .dm9-ilustra {
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  aspect-ratio: 3 / 2;
+  object-fit: contain;
+  border-radius: 18px;
+}
+.cm9 .cm9-heroi__ilustra {
+  width: 100%;
+  max-width: 570px;
+}
+.cm9 .cm9-heroi__arte {
+  min-height: 0;
+}
+.c917 .d9-blocos img {
+  cursor: zoom-in;
+}
+.c917 .dc-two-columns,
+.cm9 .dc-two-columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 36px;
+  align-items: center;
+  width: 100%;
+}
+.c917 .dc-prose,
+.cm9 .dc-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.c917 .dc-prose p,
+.cm9 .dc-prose p {
+  margin: 0;
+}
+.c917 .dc-figure,
+.cm9 .dc-figure {
+  margin: 0;
+  min-width: 0;
+  width: 100%;
+}
+.c917 .dc-figure img,
+.cm9 .dc-figure img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 16px;
+}
+.c917 .dc-figure figcaption,
+.cm9 .dc-figure figcaption {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 12px;
+  font-weight: 600;
+  color: inherit;
+}
+.c917 [data-offer-zoom],
+.cm9 [data-offer-zoom] {
+  cursor: zoom-in;
+}
+.c917 [data-offer-zoom]:focus-visible,
+.cm9 [data-offer-zoom]:focus-visible {
+  outline: 3px solid var(--kof-acao);
+  outline-offset: 4px;
+}
+.c917 .d9-habilidades,
+.cm9 .dm9-habilidades {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+}
+.c917 .dc-skill,
+.cm9 .dc-skill {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+  min-width: 0;
+}
+.c917 .dc-skill .dc-figure,
+.cm9 .dc-skill .dc-figure {
+  margin: 0 0 4px;
+}
+.c917 .dc-skill img,
+.cm9 .dc-skill img {
+  width: 100%;
+  height: 350px;
+  object-fit: contain;
+}
+.c917 .dc-skill h3,
+.cm9 .dc-skill h3,
+.c917 .dc-skill p,
+.cm9 .dc-skill p {
+  margin: 0;
+}
+.c917 .dc-pair,
+.cm9 .dc-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.c917 .dc-math,
+.cm9 .dc-math {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 24px;
+}
+.c917 .dc-parent-benefit,
+.cm9 .dc-parent-benefit {
+  margin-top: 40px;
+}
+.c917 .dc-caderno img,
+.cm9 .dc-caderno img {
+  max-height: 580px;
+  object-fit: contain;
+}
+.c917 .dc-family,
+.cm9 .dc-family {
+  align-items: start;
+  gap: 48px;
+}
+.c917 .dc-family-photo,
+.cm9 .dc-family-photo {
+  margin: 0;
+  width: 100%;
+}
+.c917 .dc-family-photo img,
+.cm9 .dc-family-photo img {
+  width: 100%;
+  height: auto;
+  max-height: 340px;
+  object-fit: contain;
+  border-radius: 18px;
+}
+.c917 .dc-family-quotes,
+.cm9 .dc-family-quotes {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.c917 .dc-family-quote,
+.cm9 .dc-family-quote {
+  margin: 0;
+  padding: 28px;
+  border: 2px solid var(--kof-tinta);
+  border-radius: 20px;
+  background: var(--kof-carta);
+  color: var(--kof-tinta);
+  box-shadow: 4px 4px 0 var(--kof-tinta);
+}
+.c917 .dc-family-quote blockquote,
+.cm9 .dc-family-quote blockquote {
+  margin: 0 0 24px;
+  font-size: 20px;
+  line-height: 1.55;
+}
+.c917 .dc-family-quote blockquote p,
+.cm9 .dc-family-quote blockquote p {
+  margin: 0;
+}
+.c917 .dc-family-quote figcaption,
+.cm9 .dc-family-quote figcaption {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.c917 .dc-family-quote figcaption img,
+.cm9 .dc-family-quote figcaption img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.c917 .dc-family-quote figcaption > span,
+.cm9 .dc-family-quote figcaption > span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+.c917 .dc-family-quote strong,
+.cm9 .dc-family-quote strong {
+  font-size: 18px;
+}
+.c917 .dc-sharing,
+.cm9 .dc-sharing {
+  margin-top: 28px;
+}
+.c917 section[data-analytics-id$="-aula"] a[data-offer-zoom] img,
+.cm9 section[data-analytics-id$="-sessao"] a[data-offer-zoom] img {
+  object-fit: contain;
+  object-position: center;
+  background: var(--kof-chao);
+}
+@media (max-width: 760px) {
+  .c917 .dc-two-columns,
+  .cm9 .dc-two-columns,
+  .c917 .d9-habilidades,
+  .cm9 .dm9-habilidades,
+  .c917 .dc-pair,
+  .cm9 .dc-pair {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 24px;
+  }
+  .c917 .dc-skill,
+  .cm9 .dc-skill {
+    padding: 20px;
+  }
+  .c917 .dc-skill img,
+  .cm9 .dc-skill img {
+    height: auto;
+    max-height: 330px;
+    object-fit: contain;
+  }
+  .c917 .dc-family-quote,
+  .cm9 .dc-family-quote {
+    padding: 22px;
+  }
+  .c917 .dc-family-quote blockquote,
+  .cm9 .dc-family-quote blockquote {
+    font-size: 18px;
+  }
+  .c917 .dc-caderno img,
+  .cm9 .dc-caderno img {
+    max-height: 500px;
+  }
+}
+
+.c917 .d9-blocos > .kof-image-link {
+  flex: 1 1 340px;
+  max-width: 460px;
+}
+.c917 .d9-blocos .kof-image-link img {
+  width: 100%;
+}

@@ -6,6 +6,8 @@ import { type EstadoPresente, PRESENTE_KIDS as P } from '../../content/presente'
 import { dataBrasilia } from '../../content/presente-resgate'
 import BolsaResgate from '../../islands/BolsaResgate'
 import type { ReferralGiftPage } from '../../server/referral-gift-page'
+import OfferImage from '../funnel/oferta/OfferImage.astro'
+import PresenteFigura from './PresenteFigura.astro'
 
 interface Props {
   gift: ReferralGiftView
@@ -67,7 +69,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
       {ready && (
         <div class="c9-acao">
           <a class="c9-btn c9-btn--grande" href="#resgatar">{P.hero.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
-          <a class="pk-link" href="#jogo">{P.hero.link}</a>
+          <a class="pk-link" href="#por-que">{P.hero.link}</a>
         </div>
       )}
       {estado && !preview && (
@@ -84,7 +86,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
     <div class="pk-heroi__visual">
       <figure class="pk-figura">
         <span class="pk-figura__rotulo">{P.hero.figura.rotulo}</span>
-        <img src={P.hero.figura.imagem.src} alt={P.hero.figura.imagem.alt} width={P.hero.figura.imagem.width} height={P.hero.figura.imagem.height} loading="eager" decoding="async" fetchpriority="high" />
+        <OfferImage image={P.hero.figura.imagem} eager />
         <figcaption>
           <img src={P.hero.figura.zappy.src} alt={P.hero.figura.zappy.alt} width={P.hero.figura.zappy.width} height={P.hero.figura.zappy.height} loading="lazy" decoding="async" />
           <span><strong class="pk-figura__destaque">{P.hero.figura.destaque}</strong>{P.hero.figura.legenda}</span>
@@ -94,61 +96,19 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
   </div>
 </section>
 
-<section id="jogo" class="c9-sec c9-sec--branco" aria-labelledby="pk-jogo">
-  <div class="c9-wrap c9-lado">
-    <div class="c9-pilha c9-gap-14 c9-b440">
-      <span class="c9-tag pk-cor--azul-fundo">{P.jogo.etiqueta}</span>
-      <h2 id="pk-jogo" class="c9-h2">{P.jogo.titulo}</h2>
-      {P.jogo.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
-      <p class="pk-nota">{P.jogo.nota}</p>
-    </div>
-    <img class="pk-tela c9-cor--azul" src={P.jogo.imagem.src} alt={P.jogo.imagem.alt} width={P.jogo.imagem.width} height={P.jogo.imagem.height} loading="lazy" decoding="async" />
-  </div>
-</section>
+<section id="por-que" class="c9-sec c9-sec--creme" aria-labelledby="pk-por-que"><div class="c9-wrap c9-lado"><div class="c9-pilha c9-gap-14 c9-b440"><span class="c9-tag c9-cor--branco">{P.porQue.etiqueta}</span><h2 id="pk-por-que" class="c9-h2">{P.porQue.titulo}</h2>{P.porQue.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}</div><PresenteFigura figura={P.porQue} cor="amarelo" /></div></section>
 
-<section id="habilidades" class="c9-sec c9-sec--creme" aria-labelledby="pk-habilidades">
-  <div class="c9-wrap c9-pilha c9-gap-26">
-    <div class="c9-cabeca">
-      <span class="c9-tag c9-cor--branco">{P.habilidades.etiqueta}</span>
-      <h2 id="pk-habilidades" class="c9-h2">{P.habilidades.titulo}</h2>
-      <p class="c9-p pk-texto-largo">{P.habilidades.texto}</p>
-    </div>
-    <div class="c9-grade c9-min-300 c9-grade--20">
-      {P.habilidades.cartoes.map((cartao, index) => (
-        <article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}>
-          <h3 class="c9-cartao__titulo">{cartao.titulo}</h3>
-          <p class="c9-cartao__texto">{cartao.texto}</p>
-        </article>
-      ))}
-    </div>
-    <p class="c9-p pk-texto-largo">{P.habilidades.nota}</p>
-  </div>
-</section>
+<section id="jogo" class="c9-sec c9-sec--branco" aria-labelledby="pk-jogo"><div class="c9-wrap c9-lado"><div class="c9-pilha c9-gap-14 c9-b440"><span class="c9-tag pk-cor--azul-fundo">{P.jogo.etiqueta}</span><h2 id="pk-jogo" class="c9-h2">{P.jogo.titulo}</h2>{P.jogo.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}<p class="pk-nota">{P.jogo.nota}</p></div><PresenteFigura figura={P.jogo} /></div></section>
 
-<section class="c9-sec c9-sec--chao" aria-labelledby="pk-aula">
-  <div class="c9-wrap c9-pilha c9-gap-26">
-    <div class="c9-cabeca">
-      <span class="c9-tag c9-cor--branco">{P.aula.etiqueta}</span>
-      <h2 id="pk-aula" class="c9-h2">{P.aula.titulo}</h2>
-    </div>
-    <div class="c9-lado pk-lado-24">
-      <img class="pk-tela pk-tela--larga c9-cor--verde" src={P.aula.imagem.src} alt={P.aula.imagem.alt} width={P.aula.imagem.width} height={P.aula.imagem.height} loading="lazy" decoding="async" />
-      <div class="pk-passos">
-        {P.aula.passos.map((passo, index) => (
-          <article class:list={['c9-cartao', `c9-cor--${CORES_PASSOS[index]}`]}>
-            <h3 class="c9-cartao__titulo">{passo.titulo}</h3>
-            <p class="c9-cartao__texto">{passo.texto}</p>
-          </article>
-        ))}
-      </div>
-    </div>
-    <p class="c9-p pk-texto-largo">{P.aula.nota}</p>
-  </div>
-</section>
+<section id="habilidades" class="c9-sec c9-sec--creme" aria-labelledby="pk-habilidades"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.habilidades.etiqueta}</span><h2 id="pk-habilidades" class="c9-h2">{P.habilidades.titulo}</h2><p class="c9-p pk-texto-largo">{P.habilidades.texto}</p></div><div class="c9-grade c9-min-300 c9-grade--20">{P.habilidades.cartoes.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div><div class="pk-comparacao">{P.habilidades.comparacao.map((figura, index) => <PresenteFigura figura={figura} cor={index === 0 ? 'azul' : 'verde'} />)}</div><p class="c9-p pk-texto-largo">{P.habilidades.nota}</p></div></section>
+
+<section class="c9-sec c9-sec--chao" aria-labelledby="pk-aula"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.aula.etiqueta}</span><h2 id="pk-aula" class="c9-h2">{P.aula.titulo}</h2><p class="c9-p pk-texto-largo">{P.aula.texto}</p></div><div class="c9-lado pk-lado-24"><PresenteFigura figura={P.aula} cor="verde" class="pk-blocos" /><div class="pk-passos">{P.aula.passos.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_PASSOS[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div></div><p class="c9-p pk-texto-largo">{P.aula.nota}</p></div></section>
+
+<section id="em-familia" class="c9-sec c9-sec--branco" aria-labelledby="pk-familia"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.familia.etiqueta}</span><h2 id="pk-familia" class="c9-h2">{P.familia.titulo}</h2><p class="c9-p pk-texto-largo">{P.familia.texto}</p></div><div class="pk-rotina">{P.familia.cartoes.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_PASSOS[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div><PresenteFigura figura={P.familia} cor="rosa" class="pk-conversa" /><p class="c9-p pk-texto-largo">{P.familia.nota}</p></div></section>
 
 <section class="c9-sec c9-sec--branco" aria-labelledby="pk-mural">
   <div class="c9-wrap c9-lado">
-    <img class="pk-tela pk-tela--topo c9-cor--rosa" src={P.mural.imagem.src} alt={P.mural.imagem.alt} width={P.mural.imagem.width} height={P.mural.imagem.height} loading="lazy" decoding="async" />
+    <PresenteFigura figura={P.mural} cor="rosa" />
     <div class="c9-pilha c9-gap-14 c9-b440">
       <span class="c9-tag pk-cor--rosa-fundo">{P.mural.etiqueta}</span>
       <h2 id="pk-mural" class="c9-h2">{P.mural.titulo}</h2>
@@ -164,27 +124,11 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
       <h2 id="pk-plataforma" class="c9-h2">{P.plataforma.titulo}</h2>
       {P.plataforma.paragrafos.map((paragrafo) => <p class="c9-p">{paragrafo}</p>)}
     </div>
-    <img class="pk-foto" src={P.plataforma.imagem.src} alt={P.plataforma.imagem.alt} width={P.plataforma.imagem.width} height={P.plataforma.imagem.height} loading="lazy" decoding="async" />
+    <OfferImage image={P.plataforma.imagem} linkClass="pk-foto" />
   </div>
 </section>
 
-<section class="c9-sec c9-sec--creme" aria-labelledby="pk-condicoes">
-  <div class="c9-wrap c9-pilha c9-gap-26">
-    <div class="c9-cabeca">
-      <span class="c9-tag c9-cor--branco">{P.condicoes.etiqueta}</span>
-      <h2 id="pk-condicoes" class="c9-h2">{P.condicoes.titulo}</h2>
-    </div>
-    <div class="c9-grade c9-min-300 c9-grade--20">
-      {P.condicoes.cartoes.map((cartao, index) => (
-        <article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}>
-          <h3 class="c9-cartao__titulo">{cartao.titulo}</h3>
-          <p class="c9-cartao__texto">{cartao.texto}</p>
-        </article>
-      ))}
-    </div>
-    {ready && <a class="c9-btn c9-btn--grande pk-cta" href="#resgatar">{P.condicoes.cta}</a>}
-  </div>
-</section>
+<section class="c9-sec c9-sec--creme" aria-labelledby="pk-condicoes"><div class="c9-wrap c9-pilha c9-gap-26"><div class="c9-cabeca"><span class="c9-tag c9-cor--branco">{P.condicoes.etiqueta}</span><h2 id="pk-condicoes" class="c9-h2">{P.condicoes.titulo}</h2></div><div class="c9-grade c9-min-300 c9-grade--20">{P.condicoes.cartoes.map((cartao, index) => (<article class:list={['c9-cartao', `c9-cor--${CORES_CONDICOES[index]}`]}><h3 class="c9-cartao__titulo">{cartao.titulo}</h3><div class="c9-cartao__texto">{cartao.paragrafos.map((paragrafo) => <p>{paragrafo}</p>)}</div></article>))}</div><p class="c9-p pk-texto-largo">{P.condicoes.nota}</p>{ready && <a class="c9-btn c9-btn--grande pk-cta" href="#resgatar">{P.condicoes.cta}</a>}</div></section>
 
 <section id="duvidas" class="c9-sec c9-sec--branco" aria-labelledby="pk-duvidas">
   <div class="c9-wrap c9-pilha c9-gap-20">
@@ -193,7 +137,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
       {P.duvidas.itens.map((item, index) => (
         <details class="c9-duvida pk-duvida" open={index === 0}>
           <summary>{item.pergunta}</summary>
-          <p>{item.resposta}</p>
+          <p>{item.resposta}{campaign && 'comPrazoCampanha' in item && item.comPrazoCampanha && ` ${P.duvidas.prazoCampanha}`}</p>
         </details>
       ))}
     </div>

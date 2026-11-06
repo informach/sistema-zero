@@ -1,0 +1,15 @@
+---
+import type { ImagemPresente } from '../../content/presente'
+import OfferImage from '../funnel/oferta/OfferImage.astro'
+
+interface Props {
+  figura: { imagem: ImagemPresente; tituloLegenda: string; legenda: string }
+  cor?: string
+  class?: string
+}
+const { figura, cor = 'azul', class: className } = Astro.props
+---
+<figure class:list={['pk-visual', className]}>
+  <OfferImage image={figura.imagem} class={`pk-tela c9-cor--${cor}`} />
+  <figcaption>{figura.tituloLegenda && <strong>{figura.tituloLegenda} </strong>}{figura.legenda}<span class="pk-ampliar">Toque na imagem para ampliar.</span></figcaption>
+</figure>

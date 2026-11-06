@@ -1,0 +1,18 @@
+---
+interface Props {
+  image: { src: string; alt: string; width: number; height: number }
+  class?: string
+  linkClass?: string
+  eager?: boolean
+  zoom?: boolean
+}
+const { image, class: imageClass, linkClass, eager = false, zoom = true } = Astro.props
+const src = image.src.startsWith('/') ? image.src : `/img/${image.src}`
+---
+{zoom ? (
+  <a href={src} target="_blank" rel="noopener" data-offer-zoom class:list={['kof-image-link', linkClass]} aria-label={`Ampliar: ${image.alt}`} aria-haspopup="dialog">
+    <img {src} alt={image.alt} width={image.width} height={image.height} class={imageClass} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} decoding="async" />
+  </a>
+) : (
+  <img {src} alt={image.alt} width={image.width} height={image.height} class={imageClass} loading={eager ? 'eager' : 'lazy'} fetchpriority={eager ? 'high' : undefined} decoding="async" />
+)}
