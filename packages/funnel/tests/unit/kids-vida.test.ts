@@ -2,10 +2,11 @@ import { describe, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
 import { lintLightCopy } from '@sistemazero/marketing-contracts'
 import { quizDefinition } from '../../src/analytics/quiz-definition'
-import { textoDoResultado } from '../../src/content/resultado-conversa'
+import { semMarcas, textoDoResultado } from '../../src/content/resultado-conversa'
 import { buildKidsResult } from '../../src/funnels/kids-vida'
 import { BRANCHES, KIDS_ENGINES, profileLabels } from '../../src/funnels/kids-vida/engine'
 import { buildNarrative } from '../../src/funnels/kids-vida/narrative'
+import { RESULT_COPY } from '../../src/funnels/kids-vida/result-data'
 import type { CompleteAnswers, KidsMode } from '../../src/funnels/kids-vida/types'
 import { adminFunnelList, getFunnelByKey } from '../../src/funnels/registry'
 import { buildFunnelSteps } from '../../src/server/admin'
@@ -19,6 +20,23 @@ for (const mode of modes)
   describe(`Quiz de habilidades: ${mode}`, () => {
     const engine = KIDS_ENGINES[mode]
     const funnel = getFunnelByKey(key(mode))!
+    test('fixtures recusam escolhas explícitas inválidas e cobrem alcance local em todas as cenas de dificuldade', () => {
+      expect(() => kidsJourney(mode, { impacto: 'invalid' })).toThrow('Unknown fixture answer')
+      for (const idade of ['m9', '9a12', '13a17'])
+        for (const cena of ['comecar', 'erro', 'modelo', 'explicar', 'rotina']) {
+          for (const data of [RESULT_COPY.reach, RESULT_COPY.implications])
+            for (const option of data[idade]![cena]!.options) {
+              expect(option).toHaveLength(2)
+              expect(option.every((value) => typeof value === 'string')).toBe(true)
+            }
+          const result = buildKidsResult(
+            mode,
+            kidsJourney(mode, { idade, cena, alcance: 'local' }).answers,
+          )
+          expect(result).not.toBeNull()
+          expect(textoDoResultado(result!).join(' ')).not.toMatch(/undefined|NaN/)
+        }
+    })
     test('registro, fotografias e admin preservam as variantes, agrupando apenas os marcos de Performance', () => {
       expect(funnel.content.quiz?.version).toBe(engine.version)
       expect(funnel.content.quiz?.total).toBe(10)
@@ -86,6 +104,10 @@ for (const mode of modes)
             expect(text).toContain('computador com internet, mouse e teclado')
             expect(text).toContain('aulas gravadas e orientação por mensagens')
             expect(lintLightCopy(text)).toEqual([])
+            for (const bloco of result.blocos)
+              if (bloco.tipo === 'cta')
+                for (const field of [bloco.termos, bloco.nota])
+                  if (field) expect(lintLightCopy(semMarcas(field))).toEqual([])
             expect(result.destino).toEndWith(idade === 'm9' ? '/oferta/criar-junto' : '/oferta')
           }
     })

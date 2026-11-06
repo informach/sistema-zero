@@ -8,7 +8,7 @@ export const DEFAULT_CHOICES: Record<QuestionId | 'genero', string> = {
   interesse: 'jogos',
   cena: 'comecar',
   tentativas: 'parte',
-  impacto: 'ajuda',
+  impacto: 'apoio',
   alcance: 'outros',
   prioridade: 'planejar',
   beneficio: 'filho',
@@ -36,7 +36,10 @@ export function kidsJourney(mode: KidsMode, patch: Record<string, string> = {}) 
     const id =
       step.key === 'genero' ? 'genero' : step.key === 'idade' ? 'idade' : step.key.split('_')[2]!
     const requested = id === 'idade' ? AGE[choice.idade] : choice[id as keyof typeof choice]
-    const value = step.opcoes.find((o) => o.value === requested)?.value ?? step.opcoes[0]!.value
+    const option = step.opcoes.find((o) => o.value === requested)
+    if (!option && Object.hasOwn(patch, id))
+      throw new Error(`Unknown fixture answer: ${id}=${patch[id]} for ${step.key}`)
+    const value = option?.value ?? step.opcoes[0]!.value
     const next = e.applyAnswer(answers, step.key, value)
     if (!next) throw new Error(`Rejected fixture answer: ${step.key}=${value}`)
     responses.push({ key: step.key, value })

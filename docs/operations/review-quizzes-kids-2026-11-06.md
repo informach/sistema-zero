@@ -38,7 +38,7 @@ usa destaques, listas e uma captura real da Chave do Farol. Quizzes adultos pres
 
 ## Evidências locais
 
-- 617 testes passam, dois skips existentes; contrato da API executado para os dois produtos.
+- 619 testes passam, dois skips existentes; contrato da API executado para os dois produtos.
 - Os 58 resultados aprovados mantêm o hash da copy V5. A matriz cobre todas as combinações
   de idade, situação e prioridade, além de neutralidade, condições e acompanhamento.
 - Navegador sobre o build real e PostgreSQL local isolado: seis jornadas completas,
@@ -49,6 +49,9 @@ usa destaques, listas e uma captura real da Chave do Farol. Quizzes adultos pres
 - A falha intermitente de coleta no teste foi rastreada a HTTP 429: vários visitantes
   simulados compartilhavam o IP em menos de um minuto. Separados os IPs dos visitantes
   locais, as 110 chamadas analíticas retornaram 200. O limite de produção foi preservado.
+- Revisão do PR: o gerador de jornadas rejeita opções explícitas inválidas; a matriz também
+  cobre alcance local em todas as cenas de dificuldade, campos do CTA isolados e a ordem
+  completa do ramo de 13–17 anos na Performance.
 - Capturas e relatório técnico em `.cache/quizzes-vida-browser/`; nenhum contato, compra
   ou e-mail real foi realizado nessa validação.
 
