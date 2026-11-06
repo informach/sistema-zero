@@ -1,0 +1,13 @@
+---
+import type { ComunidadeFigura } from '../../../funnels/comunidade-dos-criadores/oferta/pratica-types'
+import OfferImage from './OfferImage.astro'
+
+interface Props {
+  figure: ComunidadeFigura
+}
+const { figure } = Astro.props
+---
+<figure class="cpr-visual">
+  <OfferImage image={figure.image} linkClass="cpr-zoom" />
+  <figcaption>{figure.caption} <span class="cpr-zoom-hint">Clique para ampliar.</span></figcaption>
+</figure>

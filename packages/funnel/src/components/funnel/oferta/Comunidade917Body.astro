@@ -1,22 +1,16 @@
 ---
-// Página da Comunidade dos Criadores para 9 a 17 anos (proposta aprovada de 19/10/2026; desenho em
-// docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/Pagina917.html). A copy inteira
-// mora em `pagina-9a17.ts`; as receitas em kids-oferta.css e o layout em comunidade-917.css (`.c917`).
-// Preços ao vivo dos planos (fallback COMUNIDADE_PRECO_FALLBACK), falas só de `RELATOS`.
+// Oferta Kids aprovada em 06/11/2026; a continuidade compartilha este corpo.
 import '../../../styles/kids-oferta.css'
 import '../../../styles/comunidade-917.css'
 import { COMUNIDADE_PRECO_FALLBACK } from '../../../funnels/comunidade-dos-criadores/content'
 import { cupomDaOferta } from '../../../funnels/comunidade-dos-criadores/oferta/cupom'
-import {
-  calcularEconomiaAnual,
-  precoPorDiaCents,
-} from '../../../funnels/comunidade-dos-criadores/oferta/economia'
-import {
-  legendaDoRelato,
-  PAGINA_9A17 as P,
-  type Relato917,
-} from '../../../funnels/comunidade-dos-criadores/oferta/pagina-9a17'
-import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+import { calcularEconomiaAnual } from '../../../funnels/comunidade-dos-criadores/oferta/economia'
+import { PAGINA_9A17 } from '../../../funnels/comunidade-dos-criadores/oferta/pagina-9a17'
+import { PAGINA_CONTINUAR } from '../../../funnels/comunidade-dos-criadores/oferta/pagina-continuar'
+import ComunidadePratica from './ComunidadePratica.astro'
+import OfferImage from './OfferImage.astro'
+import OfferImageZoom from './OfferImageZoom.astro'
+import '../../../styles/comunidade-pratica.css'
 import type { FunnelDef } from '../../../funnels/registry'
 import PreCheckoutModal from '../../../islands/PreCheckoutModal'
 import BaseLayout from '../../../layouts/BaseLayout.astro'
@@ -28,6 +22,7 @@ import Footer from '../../Footer.astro'
 import ProductJsonLd from '../../seo/ProductJsonLd.astro'
 
 interface Props {
+  continuidade?: boolean
   f: FunnelDef
   productName: string
   priceLabel: string
@@ -40,7 +35,8 @@ interface Props {
   plans: OfferPlans | null
   coupon: CouponPresentation
 }
-const { f, productName, imagesBase, ofertaUrl, plans, coupon } = Astro.props
+const { f, productName, imagesBase, ofertaUrl, plans, coupon, continuidade = false } = Astro.props
+const P = continuidade ? PAGINA_CONTINUAR : PAGINA_9A17
 const cupom = cupomDaOferta(coupon)
 const img = (file: string) => `${imagesBase}/${file}`
 
@@ -61,57 +57,24 @@ const mensalCents = mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents
 const anualCents = anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents
 // Economia só com os dois preços AO VIVO (nunca contra o fallback); sem ela o selo sai.
 const economiaAnualCents = calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)
-// "Menos de R$ X por dia" (`precoPorDiaCents`: sempre acima da conta exata).
-const precoDiaCents = precoPorDiaCents(mensalCents)
 const precos: Record<string, string> = {
   '{{preco_mensal}}': formatBRLFromCents(mensalCents),
   '{{preco_anual}}': formatBRLFromCents(anualCents),
   '{{equivalente_mensal_anual}}': formatBRLFromCents2(Math.round(anualCents / 12)),
   '{{economia_anual}}': formatBRLFromCents(economiaAnualCents),
-  '{{preco_dia}}': formatBRLFromCents2(precoDiaCents),
 }
 const fill = (text: string) =>
   Object.entries(precos).reduce((acc, [marcador, valor]) => acc.replaceAll(marcador, valor), text)
 const priceReais = ((plans?.main.priceCents ?? mensalCents) / 100).toFixed(2)
 
-// Uma fala de RELATOS: o texto, o retrato e a legenda (nome, papel e o complemento do desenho).
-const relato = (r: Relato917) => {
-  const dados = RELATOS[r.id]
-  const legenda = legendaDoRelato(r.id)
-  return {
-    id: r.id,
-    fala: dados.fala,
-    retrato: img(dados.retrato),
-    legenda: r.complemento ? `${legenda}, ${r.complemento}` : legenda,
-  }
-}
-
-// Cores do desenho, por posição (as classes `c9-cor--*` só apontam para os aliases `--kof-*`).
 const CORES_HEROI = ['verde', 'amarelo', 'azul-claro']
-const CORES_MUDA = ['azul', 'rosa', 'verde', 'roxo', 'amarelo', 'azul']
-const CORES_MUDA_RELATOS = ['verde', 'roxo']
-const CORES_PORQUE_RELATOS = ['rosa', 'amarelo']
-const CORES_PASSOS = ['azul', 'roxo', 'rosa', 'amarelo']
-const POSICAO_PASSOS = ['', '', 'c9-img--esquerda', '']
-const CORES_JOGOS = ['azul', 'amarelo', 'roxo', 'verde', 'rosa']
-const CORES_ESTUDIO = ['verde', 'azul', 'rosa']
-const CORES_TELAS = ['azul', 'verde']
-const CORES_FASES = ['azul', 'amarelo', 'rosa']
-const CORES_IDADES = ['verde', 'roxo']
-const CORES_RESPONSAVEL = ['azul', 'rosa', 'verde', 'roxo']
-const CORES_REGRAS = ['amarelo', 'rosa', 'azul-claro', 'verde', 'amarelo', 'rosa']
 const CORES_DEPOIS = ['verde', 'amarelo', 'rosa', 'azul-claro']
-
-const jeffrey = relato(P.estudio.relato)
-const responsavelRelato = relato(P.responsavel.relato)
-const painelRelato = relato(P.responsavel.relatoPainel)
-const andre = relato(P.fundadores.relato)
 ---
 
 <BaseLayout title={P.seoTitle} description={P.description} canonical={ofertaUrl} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} htmlClass="theme-kids">
   <ProductJsonLd slot="head" name={productName} description={P.description} price={priceReais} url={ofertaUrl} image={img(P.capa)} />
-  <link slot="head" rel="preload" as="image" href={img(P.hero.tela.file)} fetchpriority="high" />
-  <div class="c917">
+  <link slot="head" rel="preload" as="image" href={P.hero.tela.src} fetchpriority="high" />
+  <div class="c917 cpr">
     <a class="c9-pular" href="#conteudo">{P.topo.pular}</a>
     <header class="c9-topo">
       <div class="c9-topo__barra">
@@ -145,12 +108,13 @@ const andre = relato(P.fundadores.relato)
             <div class="c9-heroi__acao">
               <a class="c9-btn c9-btn--grande" href="#planos">{P.cta}<svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg></a>
               <span class="c9-nota">{P.garantiaCurta}</span>
+              <a class="cpr-secondary" href={P.hero.secondary.href}>{P.hero.secondary.label}</a>
             </div>
             <span class="c9-heroi__requisitos">{P.hero.requirements}</span>
           </div>
           <div class="c9-heroi__visual">
             <figure class="c9-heroi__tela">
-              <img src={img(P.hero.tela.file)} alt={P.hero.tela.alt} width={P.hero.tela.width} height={P.hero.tela.height} loading="eager" decoding="async" fetchpriority="high" />
+              <OfferImage image={P.hero.tela} eager linkClass="cpr-hero-image" />
             </figure>
             <figure class="c9-heroi__foto">
               <img src={img(P.hero.foto.file)} alt={P.hero.foto.alt} width={P.hero.foto.width} height={P.hero.foto.height} loading="lazy" decoding="async" />
@@ -166,255 +130,7 @@ const andre = relato(P.fundadores.relato)
         </div>
       </section>
 
-      <section class="c9-sec c9-sec--branco" aria-labelledby="c9-caso">
-        <div class="c9-wrap c9-lado c9-lado--36">
-          <div class="c9-pilha c9-gap-14 c9-b560">
-            <span class="c9-tag c9-cor--creme">{P.caso.eyebrow}</span>
-            <h2 id="c9-caso" class="c9-h2">{P.caso.title}</h2>
-            <p class="c9-p">{P.caso.paragraph}</p>
-          </div>
-          <div class="c9-chamada"><p>{P.caso.callout}</p></div>
-        </div>
-      </section>
-
-      <section class="c9-sec c9-sec--creme" aria-labelledby="c9-muda">
-        <div class="c9-wrap c9-pilha c9-gap-24">
-          <div class="c9-cabeca">
-            <span class="c9-tag c9-cor--branco">{P.muda.eyebrow}</span>
-            <h2 id="c9-muda" class="c9-h2">{P.muda.title}</h2>
-            <p class="c9-p">{P.muda.paragraph}</p>
-          </div>
-          <div class="c9-grade c9-min-330">
-            {P.muda.cards.map((card, index) => (
-              <article class:list={['c9-cartao', `c9-cor--${CORES_MUDA[index]}`, { 'c9-cartao--escuro': index === P.muda.cards.length - 1 }]}>
-                <h3 class="c9-cartao__titulo">{card.title}</h3>
-                <p class="c9-cartao__texto">{card.text}</p>
-              </article>
-            ))}
-          </div>
-          <div class="c9-pilha c9-gap-10">
-            <p class="c9-p">{P.muda.relatosIntro}</p>
-            <div class="c9-grade c9-min-380 c9-grade--16">
-              {P.muda.relatos.map(relato).map((r, index) => (
-                <figure class:list={['c9-relato', `c9-cor--${CORES_MUDA_RELATOS[index]}`]} data-relato={r.id}>
-                  <img src={r.retrato} alt="" width="320" height="320" loading="lazy" decoding="async" />
-                  <blockquote><p>"{r.fala}"</p></blockquote>
-                  <figcaption>{r.legenda}</figcaption>
-                </figure>
-              ))}
-            </div>
-          </div>
-          <div class="c9-acao">
-            <a class="c9-btn" href="#planos">{P.cta}</a>
-            <span class="c9-nota">{P.garantiaCurta}</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="c9-sec c9-sec--navy" aria-labelledby="c9-porque">
-        <div class="c9-wrap c9-lado">
-          <div class="c9-pilha c9-gap-16 c9-b480">
-            <span class="c9-tag c9-tag--clara c9-cor--roxo">{P.porque.eyebrow}</span>
-            <h2 id="c9-porque" class="c9-h2">{P.porque.title}</h2>
-            <p class="c9-p">{P.porque.paragraph}</p>
-          </div>
-          <div class="c9-pilha c9-gap-16 c9-b420">
-            {P.porque.relatos.map(relato).map((r, index) => (
-              <figure class:list={['c9-relato', 'c9-relato--grande', `c9-cor--${CORES_PORQUE_RELATOS[index]}`]} data-relato={r.id}>
-                <img src={r.retrato} alt="" width="320" height="320" loading="lazy" decoding="async" />
-                <blockquote><p>"{r.fala}"</p></blockquote>
-                <figcaption>{r.legenda}</figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="experiencia" class="c9-sec c9-sec--branco" aria-labelledby="c9-aulas">
-        <div class="c9-wrap c9-pilha c9-gap-26">
-          <div class="c9-cabeca c9-cabeca--820">
-            <span class="c9-tag c9-cor--verde">{P.aulas.eyebrow}</span>
-            <h2 id="c9-aulas" class="c9-h2">{P.aulas.title}</h2>
-            <p class="c9-p">{P.aulas.paragraph}</p>
-          </div>
-          <div class="c9-grade c9-min-440 c9-grade--20">
-            {P.aulas.passos.map((passo, index) => (
-              <article class:list={['c9-passo', `c9-cor--${CORES_PASSOS[index]}`]}>
-                <img class={POSICAO_PASSOS[index] || undefined} src={img(passo.imagem.file)} alt={passo.imagem.alt} width={passo.imagem.width} height={passo.imagem.height} loading="lazy" decoding="async" />
-                <div class="c9-passo__texto">
-                  <h3 class="c9-passo__titulo">{passo.title}</h3>
-                  <p class="c9-passo__desc">{passo.text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-          <p class="c9-aviso"><strong>{P.aulas.nota.strong}</strong>{P.aulas.nota.text}</p>
-          <div class="c9-jogos">
-            <h3 class="c9-h3">{P.aulas.jogosTitle}</h3>
-            <p class="c9-p">{P.aulas.jogosParagraph}</p>
-            <div class="c9-grade c9-min-200 c9-grade--14">
-              {P.aulas.jogos.map((jogo, index) => (
-                <figure class:list={['c9-jogo', `c9-cor--${CORES_JOGOS[index]}`]}>
-                  {jogo.imagem ? (
-                    <img src={img(jogo.imagem.file)} alt={jogo.imagem.alt} width={jogo.imagem.width} height={jogo.imagem.height} loading="lazy" decoding="async" />
-                  ) : (
-                    <div class="c9-jogo__quadro" aria-hidden="true">{jogo.quadro}</div>
-                  )}
-                  <figcaption>
-                    <strong class="c9-jogo__nome">{jogo.title}</strong>
-                    <span class="c9-jogo__desc">{jogo.text}</span>
-                  </figcaption>
-                </figure>
-              ))}
-            </div>
-            <span class="c9-legenda">{P.aulas.jogosNota}</span>
-          </div>
-        </div>
-      </section>
-
-      <section id="estudio-dele" class="c9-sec c9-sec--creme" aria-labelledby="c9-estudio">
-        <div class="c9-wrap c9-pilha c9-gap-24">
-          <div class="c9-cabeca c9-cabeca--900">
-            <span class="c9-tag c9-cor--rosa">{P.estudio.eyebrow}</span>
-            <h2 id="c9-estudio" class="c9-h2">{P.estudio.title}</h2>
-            <p class="c9-p">{P.estudio.paragraph}</p>
-          </div>
-          <div class="c9-grade c9-min-300 c9-grade--20">
-            {P.estudio.passos.map((passo, index) => (
-              <article class:list={['c9-etapa', `c9-cor--${CORES_ESTUDIO[index]}`]}>
-                <span class:list={['c9-numero', { 'c9-numero--clara': CORES_ESTUDIO[index] === 'azul' }]} aria-hidden="true">{index + 1}</span>
-                <h3 class="c9-etapa__titulo">{passo.title}</h3>
-                <p class="c9-etapa__texto">{passo.text}</p>
-              </article>
-            ))}
-          </div>
-          <div class="c9-linha c9-gap-20">
-            {P.estudio.telas.map((tela, index) => (
-              <figure class:list={['c9-tela', `c9-cor--${CORES_TELAS[index]}`]}>
-                <img src={img(tela.imagem.file)} alt={tela.imagem.alt} width={tela.imagem.width} height={tela.imagem.height} loading="lazy" decoding="async" />
-                <figcaption><strong>{tela.strong}</strong>{tela.text}</figcaption>
-              </figure>
-            ))}
-          </div>
-          <p class="c9-aviso c9-aviso--branco"><strong>{P.estudio.nota.strong}</strong>{P.estudio.nota.text}</p>
-          <figure class="c9-relato c9-relato--grande c9-relato--destaque c9-cor--azul" data-relato={jeffrey.id}>
-            <img src={jeffrey.retrato} alt="" width="320" height="320" loading="lazy" decoding="async" />
-            <blockquote><p>"{jeffrey.fala}"</p></blockquote>
-            <figcaption>{jeffrey.legenda}</figcaption>
-          </figure>
-          <span class="c9-legenda c9-legenda--menor">{P.estudio.telasNota}</span>
-        </div>
-      </section>
-
-      <section class="c9-sec c9-sec--chao" aria-labelledby="c9-jornada">
-        <div class="c9-wrap c9-pilha c9-gap-24">
-          <div class="c9-cabeca c9-cabeca--880">
-            <span class="c9-tag c9-cor--amarelo">{P.jornada.eyebrow}</span>
-            <h2 id="c9-jornada" class="c9-h2">{P.jornada.title}</h2>
-            <p class="c9-p">{P.jornada.paragraph}</p>
-          </div>
-          <div class="c9-grade c9-min-320 c9-grade--20">
-            {P.jornada.fases.map((fase, index) => (
-              <article class:list={['c9-fase', `c9-cor--${CORES_FASES[index]}`]}>
-                <img src={img(fase.imagem.file)} alt={fase.imagem.alt} width={fase.imagem.width} height={fase.imagem.height} loading="lazy" decoding="async" />
-                <div class="c9-fase__texto">
-                  <span class:list={['c9-pilula', { 'c9-pilula--clara': CORES_FASES[index] === 'azul' }]}>{fase.fase}</span>
-                  <h3 class="c9-fase__titulo">{fase.title}</h3>
-                  <p class="c9-fase__desc">{fase.text}</p>
-                  <span class="c9-fase__postos">{fase.postos}</span>
-                </div>
-              </article>
-            ))}
-          </div>
-          <p class="c9-p">{P.jornada.idadeIntro}</p>
-          <div class="c9-linha c9-gap-20">
-            {P.jornada.idades.map((idade, index) => (
-              <article class:list={['c9-idade', `c9-cor--${CORES_IDADES[index]}`, { 'c9-idade--escura': index === 1 }]}>
-                <img src={img(idade.imagem.file)} alt={idade.imagem.alt} width={idade.imagem.width} height={idade.imagem.height} loading="lazy" decoding="async" />
-                <div class="c9-idade__texto">
-                  <h3 class="c9-idade__titulo">{idade.title}</h3>
-                  <p class="c9-idade__desc">{idade.text}</p>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="responsavel" class="c9-sec c9-sec--creme" aria-labelledby="c9-responsavel">
-        <div class="c9-wrap c9-pilha c9-gap-24">
-          <div class="c9-lado c9-lado--topo">
-            <div class="c9-pilha c9-gap-16 c9-b460">
-              <span class="c9-tag c9-cor--branco">{P.responsavel.eyebrow}</span>
-              <h2 id="c9-responsavel" class="c9-h2">{P.responsavel.title}</h2>
-              <p class="c9-p">{P.responsavel.paragraph}</p>
-              <ul class="c9-lista">
-                {P.responsavel.itens.map((item, index) => (
-                  <li>
-                    <span class:list={['c9-ladrilho', 'c9-ladrilho--alto', `c9-cor--${CORES_RESPONSAVEL[index]}`]} aria-hidden="true"></span>
-                    <span><strong>{item.strong}</strong>{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-              <figure class="c9-relato c9-relato--plano" data-relato={responsavelRelato.id}>
-                <img src={responsavelRelato.retrato} alt="" width="320" height="320" loading="lazy" decoding="async" />
-                <blockquote><p>"{responsavelRelato.fala}"</p></blockquote>
-                <figcaption>{responsavelRelato.legenda}</figcaption>
-              </figure>
-            </div>
-            <div class="c9-pilha c9-gap-18 c9-b480">
-              <figure class="c9-painel">
-                <img src={img(P.responsavel.painel.file)} alt={P.responsavel.painel.alt} width={P.responsavel.painel.width} height={P.responsavel.painel.height} loading="lazy" decoding="async" />
-              </figure>
-              <figure class="c9-relato c9-relato--plano" data-relato={painelRelato.id}>
-                <img src={painelRelato.retrato} alt="" width="320" height="320" loading="lazy" decoding="async" />
-                <blockquote><p>"{painelRelato.fala}"</p></blockquote>
-                <figcaption>{painelRelato.legenda}</figcaption>
-              </figure>
-            </div>
-          </div>
-          <div class="c9-acao">
-            <a class="c9-btn" href="#planos">{P.cta}</a>
-            <span class="c9-nota">{P.garantiaCurta}</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="c9-sec c9-sec--navy" aria-labelledby="c9-seguranca">
-        <div class="c9-wrap c9-pilha c9-gap-24">
-          <div class="c9-cabeca">
-            <span class="c9-tag c9-cor--verde">{P.seguranca.eyebrow}</span>
-            <h2 id="c9-seguranca" class="c9-h2">{P.seguranca.title}</h2>
-            <p class="c9-p">{P.seguranca.paragraph}</p>
-          </div>
-          <div class="c9-grade c9-min-320 c9-grade--16">
-            {P.seguranca.regras.map((regra, index) => (
-              <div class:list={['c9-regra', `c9-cor--${CORES_REGRAS[index]}`]}>
-                <h3 class="c9-regra__titulo">{regra.title}</h3>
-                <p>{regra.text}</p>
-              </div>
-            ))}
-          </div>
-          <p class="c9-p c9-seguranca__nota">{P.seguranca.nota}</p>
-        </div>
-      </section>
-
-      <section class="c9-sec c9-sec--branco" aria-labelledby="c9-fundadores">
-        <div class="c9-wrap c9-lado">
-          <figure class="c9-foto c9-b440">
-            <img src={img(P.fundadores.imagem.file)} alt={P.fundadores.imagem.alt} width={P.fundadores.imagem.width} height={P.fundadores.imagem.height} loading="lazy" decoding="async" />
-          </figure>
-          <div class="c9-pilha c9-gap-14 c9-b460">
-            <span class="c9-tag c9-cor--chao">{P.fundadores.eyebrow}</span>
-            <h2 id="c9-fundadores" class="c9-h2 c9-h2--menor">{P.fundadores.title}</h2>
-            <p class="c9-p">{P.fundadores.paragraph}</p>
-            <figure class="c9-citacao" data-relato={andre.id}>
-              <blockquote><p>"{andre.fala}"</p></blockquote>
-              <figcaption>{andre.legenda}</figcaption>
-            </figure>
-          </div>
-        </div>
-      </section>
+      <ComunidadePratica sections={P.sections} />
 
       <section id="planos" class="c9-sec c9-sec--azul" aria-labelledby="c9-planos">
         <div class="c9-wrap c9-wrap--planos c9-pilha c9-gap-26">
@@ -475,7 +191,7 @@ const andre = relato(P.fundadores.relato)
           {P.faq.map((item) => (
             <details class="c9-duvida">
               <summary>{item.question}</summary>
-              <p>{item.answer}</p>
+              <p>{fill(item.answer)}</p>
             </details>
           ))}
         </div>
@@ -490,13 +206,6 @@ const andre = relato(P.fundadores.relato)
           </div>
           <img class="c9-fim__zappy" src={img(P.closing.zappy.file)} alt={P.closing.zappy.alt} width={P.closing.zappy.width} height={P.closing.zappy.height} loading="lazy" decoding="async" />
         </div>
-        <div class="c9-rodape">
-          <div class="c9-rodape__barra">
-            <img src={img(P.rodape.logo.file)} alt={P.rodape.logo.alt} width={P.rodape.logo.width} height={P.rodape.logo.height} loading="lazy" decoding="async" />
-            <span>{P.rodape.aviso}</span>
-            <span class="c9-rodape__links">{P.rodape.links.map((link) => <a href={link.href}>{link.label}</a>)}</span>
-          </div>
-        </div>
       </section>
     </main>
 
@@ -506,7 +215,8 @@ const andre = relato(P.fundadores.relato)
     </div>
   </div>
   <Footer audience={f.audience} vitalicio={f.lifetimeAccess} termosHref={`${f.basePath}/termos`} />
-  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} />
+  <OfferImageZoom />
+  <PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} {continuidade} />
 </BaseLayout>
 
 <script>

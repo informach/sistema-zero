@@ -1,0 +1,52 @@
+---
+import type { ComunidadePraticaSection } from '../../../funnels/comunidade-dos-criadores/oferta/pratica-types'
+import ComunidadeFigura from './ComunidadeFigura.astro'
+import ComunidadePraticaRelato from './ComunidadePraticaRelato.astro'
+import ComunidadePraticaTitulo from './ComunidadePraticaTitulo.astro'
+
+interface Props {
+  sections: ComunidadePraticaSection[]
+  young?: boolean
+}
+const { sections, young = false } = Astro.props
+const p = young ? 'cm9' : 'c9'
+const colors = young
+  ? ['branco', 'amarelo-fundo', 'menta', 'branco', 'rosa']
+  : ['branco', 'creme', 'chao', 'branco', 'creme']
+const cards = ['azul-claro', 'rosa', 'verde', 'amarelo']
+---
+{sections.map((section, index) => (
+  <section id={section.id} class={`${p}-sec ${p}-sec--${colors[index % colors.length]}`} aria-labelledby={`titulo-${section.id}`}>
+    <div class:list={[`${p}-wrap`, 'cpr-section', { 'cm9-corpo': young }]}>
+      {section.kind === 'family' || (section.visual && section.cards.length === 0) ? (
+        <div class="cpr-split">
+          <div>
+            <ComunidadePraticaTitulo {section} {young} />
+            {section.paras.map(text => <p class={young ? 'cm9-texto' : 'c9-p'}>{text}</p>)}
+            {section.kind === 'family' && section.visual && <ComunidadeFigura figure={section.visual} />}
+          </div>
+          {section.kind === 'family' ? (
+            <div class="cpr-quote-stack"><ComunidadePraticaRelato id="AV04" /><ComunidadePraticaRelato id="AV03" /></div>
+          ) : section.visual && <ComunidadeFigura figure={section.visual} />}
+        </div>
+      ) : (
+        <>
+          <ComunidadePraticaTitulo {section} {young} />
+          {section.visuals && <div class="cpr-gallery">{section.visuals.map(figure => <ComunidadeFigura {figure} />)}</div>}
+          {section.layout === 'visual-first' && section.visual && <ComunidadeFigura figure={section.visual} />}
+          {section.cards.length > 0 && <div class="cpr-cards" data-count={section.cards.length}>
+            {section.cards.map(([title, text], i) => (
+              <article class={young ? 'cm9-carta' : `c9-cartao c9-cor--${cards[i % cards.length]}`}>
+                <h3 class={young ? 'cm9-carta__titulo' : 'c9-cartao__titulo'}>{title}</h3>
+                <p class={young ? 'cm9-carta__texto' : 'c9-cartao__texto'}>{text}</p>
+              </article>
+            ))}
+          </div>}
+          {section.kind === 'quotes' && <ComunidadePraticaRelato id="AV02" />}
+          {section.layout !== 'visual-first' && section.visual && <ComunidadeFigura figure={section.visual} />}
+          {section.paras.map(text => <p class={young ? 'cm9-texto' : 'c9-p'}>{text}</p>)}
+        </>
+      )}
+    </div>
+  </section>
+))}

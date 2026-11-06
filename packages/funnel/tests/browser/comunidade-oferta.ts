@@ -17,6 +17,7 @@ import { createServer } from 'node:http'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { type Browser, chromium } from 'playwright'
+import { checkOfferImageZoom } from './helpers/offer-image-zoom'
 
 const cwd = fileURLToPath(new URL('../../', import.meta.url))
 const output = resolve(cwd, '../../tmp/comunidade-oferta-review')
@@ -234,6 +235,29 @@ try {
   page.on('pageerror', (error) => errors.push(error.message))
   await mkdir(output, { recursive: true })
   let imagens = 0
+  let mainKidsCopy = ''
+
+  // A pessoa pode escolher E-mail antes de o foco inicial atrasado ser executado.
+  // Reproduz a disputa no próprio frame de montagem, sem depender da velocidade do CI.
+  await page.goto(`${origin}${kidsBase}/oferta`)
+  await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'))
+  await page.evaluate(() => {
+    const observer = new MutationObserver(() => {
+      const email = document.querySelector<HTMLInputElement>('[role="dialog"] input[name="email"]')
+      if (!email) return
+      email.focus()
+      observer.disconnect()
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    document.querySelector<HTMLButtonElement>('[data-checkout-cta]')?.click()
+  })
+  await page.waitForTimeout(120)
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.getAttribute('name')),
+    'email',
+    'Initial focus must not interrupt the field already chosen by the user',
+  )
+  await page.keyboard.press('Escape')
 
   for (const p of PAGINAS) {
     console.log(`Checking offer: ${p.nome}`)
@@ -243,6 +267,25 @@ try {
     await page.evaluate(() => document.fonts.ready)
     assert.equal(await page.locator('h1').count(), 1, `${p.nome}: one h1`)
     const texto = await page.locator('body').innerText()
+    if (p.nome.startsWith('kids-')) {
+      const copy = await page.locator('main').innerText()
+      if (p.nome === 'kids-9a17') mainKidsCopy = copy
+      if (p.nome === 'kids-continuar') {
+        assert.equal(copy.replace('Continue ajudando', 'Ajude'), mainKidsCopy)
+      }
+      assert.equal(await page.locator('footer').count(), 1)
+      assert.equal(await page.locator('.c9-rodape,.cm9-faixa').count(), 0)
+      assert.doesNotMatch(texto, /R\$\s*(97|970)(?:\D|$)/, 'FAQ also uses catalog prices')
+      assert.match(copy, /160[\s\S]*280[\s\S]*120|Escolher, esperar o resultado/)
+      await page.screenshot({ path: resolve(output, `${p.nome}-hero.png`) })
+      await checkOfferImageZoom(page)
+      for (const id of ['familia', 'planos']) {
+        await page
+          .locator(`#${id}`)
+          .evaluate((el) => scrollTo(0, el.getBoundingClientRect().top + scrollY))
+        await page.screenshot({ path: resolve(output, `${p.nome}-${id}.png`) })
+      }
+    }
     for (const preco of p.precos) assert.match(texto, preco, `${p.nome}: live price ${preco}`)
     const integrity = await page.evaluate(() => {
       const ids = Array.from(document.querySelectorAll('[id]')).map((el) => el.id)
@@ -272,6 +315,19 @@ try {
     await page.setViewportSize({ width: 390, height: 844 })
     await carregarTudo(page)
     await page.screenshot({ path: resolve(output, `${p.nome}-390.png`), fullPage: true })
+    if (p.nome.startsWith('kids-')) {
+      await checkOfferImageZoom(page)
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = '200%'
+      })
+      assert.equal(
+        await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+        false,
+      )
+      await page.evaluate(() => {
+        document.documentElement.style.fontSize = ''
+      })
+    }
 
     // Os dois planos: cada botão leva o slug do seu plano e o pré-checkout chega ao checkout com
     // ele e com a atribuição da URL.
@@ -295,6 +351,7 @@ try {
       }
       const rodape = await page.getByRole('dialog').innerText()
       assert.match(rodape, /Assinatura mensal ou anual, com 7 dias de garantia/, p.nome)
+      if (p.nome === 'kids-continuar') assert.match(rodape, /mesmo e-mail/)
       await page.getByLabel(p.nome_campo, { exact: true }).fill('Pessoa de Teste')
       await page.getByLabel(/^E-mail/).fill('qa@example.test')
       await page.getByLabel(/^Telefone/).fill('11999999999')

@@ -46,6 +46,8 @@ const CHAVES_TECNICAS = new Set([
   'retina',
   'cor',
   'icone',
+  'kind',
+  'layout',
 ])
 
 /**
@@ -56,7 +58,7 @@ export function espelhoDoModulo(modulo: object, cabecalho = CABECALHO): string {
   const b: string[] = []
   const visita = (valor: unknown, caminho: string) => {
     if (typeof valor === 'string') {
-      b.push(`**${caminho}**: ${valor}`)
+      b.push(`**${caminho}**: ${valor}`.trimEnd())
       return
     }
     if (Array.isArray(valor)) {

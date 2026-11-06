@@ -29,8 +29,8 @@ const novos = {
   'quiz-spin.css': '.qz',
   // A página adulta (arcade): as cores moram só nos tokens `--cda-*` do theme-arcade.css.
   'comunidade-adulto.css': '.cda',
-  // As continuidades (20/10/2026) vestem o layout das páginas irmãs, com o mesmo prefixo.
-  'comunidade-continuar.css': '.c917',
+  // As seções aprovadas das ofertas Kids compartilham a identidade dos dois layouts.
+  'comunidade-pratica.css': '.cpr',
   'comunidade-adulto-continuar.css': '.cda',
   // O presente (20/10/2026): o recebimento Kids veste a 9 a 17, o adulto o arcade, e o painel do
   // embaixador tem o seu namespace neutro.

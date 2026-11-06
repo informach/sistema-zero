@@ -83,8 +83,6 @@ export const PRESENTE_KIDS = {
     link: 'Ver como funciona',
     requisitos:
       'Computador com internet, mouse e teclado para fazer o curso · O cadastro pode ser feito pelo celular',
-    prazoCampanha:
-      'Novos cadastros até {{data}} (Brasília). Esse prazo é da campanha; cada família aceita tem os próprios 7 dias de curso.',
     figura: {
       rotulo: 'Cadê Todo Mundo • 7 dias de presente',
       imagem: {
@@ -279,7 +277,7 @@ export const PRESENTE_KIDS = {
       },
     ],
     prazoCampanha:
-      'Na campanha, o cadastro também precisa ocorrer dentro do período de resgate informado nesta página.',
+      'Em campanhas, novos cadastros só são aceitos enquanto a campanha estiver aberta.',
   },
   resgatar: {
     etiqueta: 'O primeiro passo é do responsável',

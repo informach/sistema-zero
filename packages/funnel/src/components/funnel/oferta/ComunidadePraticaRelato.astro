@@ -1,0 +1,19 @@
+---
+import { RELATOS } from '../../../funnels/comunidade-dos-criadores/oferta/relatos'
+
+interface Props {
+  id: 'AV02' | 'AV03' | 'AV04'
+}
+const { id } = Astro.props
+const relato = RELATOS[id]
+const legends = {
+  AV02: 'Rafael, aluno. Relato sobre o Desafio do Primeiro Jogo.',
+  AV03: 'Débora, filha de Helena e Júlio. Relato sobre o Desafio.',
+  AV04: 'André, filho de Helena e Júlio. Relato sobre o Desafio.',
+}
+---
+<figure class="cpr-quote" data-relato={id}>
+  <img src={`/img/comunidade-dos-criadores/${relato.retrato}`} alt="" width="80" height="80" loading="lazy" decoding="async" />
+  <blockquote><p>“{relato.fala}”</p></blockquote>
+  <figcaption>{legends[id]}</figcaption>
+</figure>

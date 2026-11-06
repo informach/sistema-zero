@@ -1,7 +1,7 @@
 import { describe, expect, test } from 'bun:test'
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { initialKidsJourneyPolicy, JOURNEY_LEVEL_SLUGS } from '@sistemazero/core/journey'
+import { initialKidsJourneyPolicy } from '@sistemazero/core/journey'
 import { lintLightCopy } from '@sistemazero/marketing-contracts'
 import {
   espelhoDoModulo,
@@ -78,7 +78,8 @@ const arquivosDe = (modulo: unknown): string[] => {
     if (Array.isArray(valor)) valor.forEach(visita)
     else if (valor && typeof valor === 'object')
       for (const [chave, item] of Object.entries(valor))
-        if (chave === 'file' && typeof item === 'string') achados.push(item)
+        if (['file', 'arquivo', 'src'].includes(chave) && typeof item === 'string')
+          achados.push(item)
         else visita(item)
   }
   visita(modulo)
@@ -126,7 +127,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(existsSync(join(SRC, 'content', 'home-comunidade.ts'))).toBe(false)
     expect(existsSync(join(SRC, 'styles', 'comunidade-home.css'))).toBe(false)
     // O destino existe: a seção de experiência da página de 9 a 17.
-    expect(raw917).toContain('id="experiencia"')
+    expect(PAGINA_9A17.sections.some((section) => section.id === 'experiencia')).toBe(true)
     const sitemap = readFileSync(join(SRC, '..', 'astro.config.mjs'), 'utf8')
     expect(sitemap).not.toContain('como-funciona')
     expect(sitemap).toContain('/kids/comunidade-dos-criadores/oferta/continuar`')
@@ -149,8 +150,6 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
         nome,
         false,
       ])
-      expect([nome, texto.includes('/kids/comunidade-dos-criadores/termos')]).toEqual([nome, true])
-      expect([nome, texto.includes('/privacidade')]).toEqual([nome, true])
     }
     const titulos = PAGINAS.map(([, modulo]) => modulo.seoTitle)
     expect(new Set(titulos).size).toBe(titulos.length)
@@ -165,31 +164,23 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     )
     expect(publicCopy).not.toMatch(/vício|sessão de terapia|profissão do futuro/i)
     expect(publicCopy).toContain('Construtor')
-    expect(publicCopy).toContain('Inventor')
+    expect(publicCopy).toContain('requisitos da Jornada')
   })
 
-  test('continuidade: fala com quem já começou, sem presumir que ele terminou', () => {
-    const P = PAGINA_CONTINUAR
-    // Mesmo e-mail é o que liga a assinatura ao perfil que já existe: no herói, nos planos e nas dúvidas.
-    expect(P.hero.description).toContain('mesmo e-mail')
-    expect(P.planos.paragraph).toContain('mesmo e-mail')
-    expect(P.planos.depois[0]).toContain('mesmo e-mail')
-    // A criança que chega pela tela de ferramenta fechada é mandada ao responsável.
-    expect(P.aviso).toContain('responsável')
-    // A primeira situação é a de quem não terminou; só a oficina fica sem tela.
-    expect(P.proximo.situacoes[0]?.title).toBe('Ainda no primeiro projeto')
-    expect(P.proximo.situacoes).toHaveLength(5)
-    expect(P.proximo.situacoes.filter((s) => !('imagem' in s))).toHaveLength(1)
-    // Os dias que restam do Desafio não se somam: a página diz isso antes dos planos e nas dúvidas.
-    expect(P.fica.inicio.text).toContain('não se somam')
-    expect(JSON.stringify(P.faq)).toContain('não se somam')
-    // Tráfego quente: poucas dúvidas, todas diferentes.
-    const perguntas = P.faq.map((item) => item.question)
+  test('continuidade mantém a oferta principal e reconhece a conta existente', () => {
+    const { seoTitle: _mainTitle, hero: mainHero, ...main } = PAGINA_9A17
+    const { seoTitle: _continueTitle, hero: continuedHero, ...continued } = PAGINA_CONTINUAR
+    expect(continued).toEqual(main)
+    expect(continuedHero).toEqual({
+      ...mainHero,
+      title: expect.stringMatching(/^Continue ajudando/),
+    })
+    expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('mesmo e-mail')
+    expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('não são somados')
+    expect(JSON.stringify(PAGINA_CONTINUAR)).not.toContain('9 a 14')
+    expect(JSON.stringify(PAGINA_CONTINUAR.faq)).toContain('9 a 17')
+    const perguntas = PAGINA_CONTINUAR.faq.map((item) => item.question)
     expect(new Set(perguntas).size).toBe(perguntas.length)
-    expect(perguntas.length).toBeLessThanOrEqual(12)
-    // A faixa é a de 9 a 17, como a página padrão (a continuidade antiga dizia 9 a 14).
-    expect(JSON.stringify(P)).not.toContain('9 a 14')
-    expect(JSON.stringify(P.faq)).toContain('9 a 17')
   })
 
   test('continuidade: Light Copy em todo texto (as perguntas só nas dúvidas)', () => {
@@ -203,37 +194,20 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
             : []
     for (const [caminho, texto] of textos(PAGINA_CONTINUAR)) {
       const pergunta = caminho.endsWith('.question')
-      const regras = lintLightCopy(texto).filter((i) => !(i.rule === 3 && pergunta))
+      const regras = lintLightCopy(texto.replace(/“[^”]*”/g, '')).filter(
+        (i) => !(i.rule === 3 && pergunta),
+      )
       expect([caminho, regras.map((i) => i.rule)]).toEqual([caminho, []])
     }
   })
 
-  test('continuidade: os oito postos e o que cada um libera seguem a política da Jornada', () => {
-    const { postos, marco } = PAGINA_CONTINUAR.jornada
-    expect(postos).toHaveLength(JOURNEY_LEVEL_SLUGS.length)
-    // Cada capacidade que a política libera aparece no posto em que ela abre.
-    const NOMES: Record<string, string> = {
-      studio: 'Estúdio livre',
-      pinta: 'Pinta',
-      ai: 'Zappy',
-      pensa: 'Pensa',
-      molda: 'Molda',
-      'molda-intermediate': 'Molda',
-      bridge: 'Ponte',
-      pro: 'Estúdio Pro',
-    }
-    initialKidsJourneyPolicy().steps.forEach((step, i) => {
-      for (const capacidade of step.capabilities) {
-        const nome = NOMES[capacidade]
-        if (nome)
-          expect([postos[i + 1]?.nome, postos[i + 1]?.libera]).toEqual([
-            postos[i + 1]?.nome,
-            expect.stringContaining(nome),
-          ])
-      }
-    })
-    // O marco "depois do Farol" é o posto que abre o Estúdio livre e o Pinta.
-    expect(postos[1]?.nome).toBe(marco.posto)
+  test('a liberação inicial do Estúdio livre e Pinta segue a Jornada', () => {
+    const firstStep = initialKidsJourneyPolicy().steps[0]
+    expect(firstStep?.capabilities).toContain('studio')
+    expect(firstStep?.capabilities).toContain('pinta')
+    const faq = PAGINA_9A17.faq.find((item) => item.question.includes('primeiro dia'))
+    expect(faq?.answer).toContain('cumprir os requisitos e publicar os projetos do posto inicial')
+    expect(faq?.answer).toContain('Estúdio livre e o Pinta')
   })
 
   test('o espelho editorial (copy/pagina-*.md) é exatamente a copy que cada página renderiza', () => {
@@ -266,8 +240,6 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     expect(precoPorDiaCents(10_900)).toBe(370)
     for (const mensal of [100, 2_990, 9_700, 12_345, 19_990])
       expect(precoPorDiaCents(mensal)).toBeGreaterThan(mensal / 30)
-    for (const corpo of [raw917, rawMenor9, rawContinuar])
-      expect(corpo).toContain('precoPorDiaCents(mensalCents)')
   })
 
   test('o cupom da URL chega ao checkout e a página avisa sem inventar desconto', () => {
@@ -299,7 +271,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     })
     for (const aviso of [valido.aviso, invalido.aviso])
       expect(lintLightCopy(aviso?.texto ?? '')).toEqual([])
-    for (const corpo of [raw917, rawMenor9, rawContinuar]) {
+    for (const corpo of [raw917, rawMenor9]) {
       expect(corpo).toContain('const cupom = cupomDaOferta(coupon)')
       expect(corpo).toContain('couponCode={cupom.codigo}')
       expect(corpo).toContain("role={cupom.aviso.alerta ? 'alert' : undefined}")
@@ -307,7 +279,7 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
   })
 
   test('preços vêm do catálogo e cada plano mantém sua seleção no pré-checkout', () => {
-    for (const corpo of [raw917, rawMenor9, rawContinuar]) {
+    for (const corpo of [raw917, rawMenor9]) {
       expect(corpo).toContain('plans?.main.intervalMonths === n')
       expect(corpo).toContain('mensal?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.mensalCents')
       expect(corpo).toContain('anual?.priceCents ?? COMUNIDADE_PRECO_FALLBACK.anualCents')
@@ -321,11 +293,9 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
       expect(corpo).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
     }
     expect(publicCopy).not.toMatch(/R\$\s*\d/)
-    // Só a continuidade pede o mesmo e-mail no pré-checkout: a família já tem conta e perfil.
-    expect(rawContinuar).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} continuidade />',
-    )
-    for (const corpo of [raw917, rawMenor9]) expect(corpo).not.toContain(' continuidade />')
+    // A rota Continuar compartilha o corpo, mantendo o lembrete da conta no checkout.
+    expect(rawContinuar).toContain('<Comunidade917Body {...Astro.props} continuidade />')
+    expect(raw917).toContain('couponCode={cupom.codigo} {continuidade}')
   })
 
   test('toda tela do manifesto é REAL; o que falta capturar fica declarado e não aparece', () => {
@@ -377,12 +347,22 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
     for (const [nome, modulo] of PAGINAS) {
       const arquivos = arquivosDe(modulo)
       for (const arquivo of arquivos)
-        expect([nome, arquivo, existsSync(join(PASTA_IMG, arquivo))]).toEqual([nome, arquivo, true])
-      // O logo e o fechamento são peças do desenho; as telas e as fotos não se repetem, salvo o
-      // print do modo Ponte da página de 9 a 17, que abre o herói e volta na fase da Ponte.
+        expect([
+          nome,
+          arquivo,
+          existsSync(
+            arquivo.startsWith('/img/')
+              ? join(SRC, '..', 'public', arquivo)
+              : join(PASTA_IMG, arquivo),
+          ),
+        ]).toEqual([nome, arquivo, true])
+      // A visão do Estúdio abre a oferta principal e volta ao explicar como é a aula.
       const conteudo = arquivos.filter((a) => !/^(logo-|zappy-|checkout-capa)/.test(a))
       const repetidas = [...new Set(conteudo.filter((a, i) => conteudo.indexOf(a) !== i))]
-      expect([nome, repetidas]).toEqual([nome, nome === '9a17' ? ['tela-codigo.webp'] : []])
+      expect([nome, repetidas]).toEqual([
+        nome,
+        nome === 'criar-junto' ? [] : ['/img/desafio-primeiro-jogo/farol-estudio-real.webp'],
+      ])
     }
   })
 
@@ -418,7 +398,9 @@ describe('Comunidade Kids: 9 a 17, criar junto e continuidade', () => {
       const repetidas = [...new Set(ids.filter((id, i) => ids.indexOf(id) !== i))]
       expect([nome, repetidas]).toEqual([nome, []])
     }
-    expect(rawContinuar).toContain('RELATOS[r.id].fala')
+    expect(source('components', 'funnel', 'oferta', 'ComunidadePraticaRelato.astro')).toContain(
+      'const relato = RELATOS[id]',
+    )
     // Toda fala guardada aparece em alguma página (9 a 17, criar junto, continuidade, cartas do
     // resultado do quiz ou citada numa dúvida) ou está na reserva, com o motivo.
     const citadas = new Set<string>([

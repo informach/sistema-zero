@@ -1,464 +1,308 @@
-import type { RelatoId } from './types'
+// Copy aprovada em 06/11/2026: criação com o responsável durante as atividades.
+import type { ComunidadePraticaSection } from './pratica-types'
 
-// Página para responsáveis de crianças menores de 9 anos, que criam o jogo JUNTO com o adulto.
-// Desenho aprovado: docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/
-// PaginaMenor9.html. A copy é a do desenho, palavra por palavra; a criança é "seu filho" e "ele", como na página de 9 a 17 (decisão da dona em 21/10/2026: a página serve a meninos e meninas, e a maioria dos alunos são meninos).
-// Preços nunca entram escritos: os marcadores abaixo são preenchidos pelo body com os planos ao vivo.
-//   {{preco_mensal}}              mensalidade
-//   {{preco_anual}}               valor do anual
-//   {{equivalente_mensal_anual}}  anual dividido por 12
-//   {{economia_anual}}            12 mensalidades menos o anual (o selo sai quando não há economia)
-//   {{preco_dia}}                 mensalidade / 30, arredondada para os 10 centavos seguintes
-
-/** Imagem em public/img/comunidade-dos-criadores, com as medidas reais do arquivo. */
-export interface ImagemMenor9 {
-  arquivo: string
-  /** Versão 2x, quando existe. */
-  retina?: string
-  alt: string
-  largura: number
-  altura: number
-}
-
-/** Frase com o começo em negrito (`destaque`), seguido do resto do texto. */
-export interface TrechoMenor9 {
-  destaque: string
-  texto: string
-}
-
-export interface CartaMenor9 {
-  titulo: string
-  texto: string
-}
-
-export interface FiguraMenor9 {
-  imagem: ImagemMenor9
-  legenda: string
-}
-
-export interface PlanoMenor9 {
-  nome: string
-  preco: string
-  periodo: string
-  texto: string
-  cta: string
-  nota: string
-}
-
-export interface LinkMenor9 {
-  label: string
-  href: string
-}
-
-export interface PaginaMenor9Copy {
-  seoTitle: string
-  description: string
-  /** Capa usada no JSON-LD do produto. */
-  capa: string
-  topo: {
-    /** Link de pular para o conteúdo (só aparece no foco do teclado). */
-    pular: string
-    logo: ImagemMenor9
-    logoLabel: string
-    navLabel: string
-    linkSessao: string
-    cta: string
-  }
-  heroi: {
-    selo: string
-    titulo: string
-    /** Trecho final do título, em cor e com o sublinhado em onda. */
-    enfase: string
-    texto: string
-    beneficios: [string, string, string]
-    cta: string
-    garantia: string
-    requisitos: string
-    ilustracao: ImagemMenor9
-    balao: string
-    zappy: ImagemMenor9
-  }
-  problema: {
-    titulo: string
-    texto: string
-    destaque: string
-  }
-  juntos: {
-    titulo: string
-    texto: string
-    cartas: CartaMenor9[]
-  }
-  papeis: {
-    titulo: string
-    texto: string
-    cartas: [CartaMenor9, CartaMenor9, CartaMenor9]
-    zappy: ImagemMenor9
-  }
-  sessao: {
-    titulo: string
-    texto: string
-    passos: TrechoMenor9[]
-    telas: [FiguraMenor9, FiguraMenor9]
-    relato: {
-      id: RelatoId
-      intro: string
-      legenda: string
-      retrato: ImagemMenor9
-    }
-    cta: string
-    garantia: string
-  }
-  seuPapel: {
-    titulo: string
-    texto: string
-    cuidados: CartaMenor9[]
-  }
-  pecas: {
-    titulo: string
-    texto: string
-    cartas: [CartaMenor9, CartaMenor9, CartaMenor9]
-    jornada: { imagem: ImagemMenor9; legenda: TrechoMenor9 }
-    proximos: TrechoMenor9
-    jogos: FiguraMenor9[]
-    continuidade: TrechoMenor9
-    fundadores: { imagem: ImagemMenor9; texto: string }
-  }
-  seguranca: {
-    titulo: string
-    texto: string
-    regras: CartaMenor9[]
-  }
-  planos: {
-    titulo: string
-    texto: string
-    destaque: string
-    mensal: PlanoMenor9
-    anual: PlanoMenor9 & { selo: string }
-    depois: { titulo: string; passos: string[] }
-    garantia: TrechoMenor9
-  }
-  duvidas: {
-    titulo: string
-    itens: { pergunta: string; resposta: string }[]
-  }
-  fechamento: {
-    titulo: string
-    cta: string
-    garantia: string
-    zappy: ImagemMenor9
-  }
-  rodape: {
-    logo: ImagemMenor9
-    aviso: string
-    termos: LinkMenor9
-    privacidade: LinkMenor9
-  }
-  barra: {
-    preco: string
-    alternativa: string
-    cta: string
-  }
-}
-
-const CTA_PLANOS = 'Ver os planos para criarmos juntos'
-const GARANTIA_CURTA = '7 dias de garantia. Cancele quando quiser, sem multa.'
-
-export const PAGINA_MENOR9: PaginaMenor9Copy = {
+export const PAGINA_MENOR9 = {
   seoTitle:
     'Criar junto, para crianças menores de 9 anos | Comunidade dos Criadores | Sistema Zero',
   description:
-    'Os jogos do seu filho, um depois do outro, feitos com você do lado. Ele decide, você lê e ajuda com o mouse, e o tempo de tela vira um tempo de vocês dois.',
+    'Seu filho escolhe, você ajuda a colocar a ideia em prática, e os dois observam o resultado. Na Comunidade dos Criadores, fazer jogos juntos cria oportunidades para organizar passos, experimentar outra solução e mostrar uma descoberta.',
   capa: 'checkout-capa.webp',
   topo: {
     pular: 'Ir para o conteúdo',
-    logo: { arquivo: 'logo-kids-claro.svg', alt: 'Sistema Zero Kids', largura: 286, altura: 22 },
+    logo: {
+      arquivo: 'logo-kids-claro.svg',
+      alt: 'Sistema Zero Kids',
+      largura: 286,
+      altura: 22,
+    },
     logoLabel: 'Sistema Zero Kids, voltar ao topo',
     navLabel: 'Atalhos da página',
     linkSessao: 'Como é uma sessão',
-    cta: 'Ver os planos',
+    cta: 'Ver planos para criar juntos',
   },
   heroi: {
-    selo: 'Para crianças menores de 9 anos, com um adulto ao lado',
-    titulo: 'Os jogos do seu filho, um depois do outro, feitos com você do lado.',
-    enfase: 'com você do lado.',
+    selo: 'Comunidade dos Criadores · Menores de 9 anos · com um responsável',
+    titulo: 'Ajude seu filho a fazer pequenas escolhas com mais autonomia.',
+    enfase: 'pequenas escolhas com mais autonomia.',
     texto:
-      'Imagine a cara dele quando o personagem que ele escolheu aparece na tela e faz exatamente o que ele mandou. Ele decide, e você lê e ajuda com o mouse. Cada jogo pronto pode ir para os avós jogarem, por um link. Cada aula ensina peças novas, e os próximos jogos ficam maiores, até o jogo que ele inventar.',
+      'Seu filho escolhe, você ajuda a colocar a ideia em prática, e os dois observam o resultado. Na Comunidade dos Criadores, fazer jogos juntos cria oportunidades para organizar passos, experimentar outra solução e mostrar uma descoberta.',
     beneficios: [
-      'Tela junto com você, e não sozinho no tablet',
-      'A ideia dele na tela, do jeito que ele inventou',
-      'Um jogo depois do outro',
+      'Escolhas possíveis para o que ele compreende agora',
+      'Você presente para ajudar na leitura e nos controles',
+      'Novas atividades para continuar praticando juntos',
     ],
-    cta: CTA_PLANOS,
-    garantia: GARANTIA_CURTA,
-    requisitos: 'No computador, com mouse e teclado · Até 2 perfis na mesma assinatura',
+    cta: 'Ver planos para criar juntos',
+    garantia: 'Assinatura mensal ou anual · 7 dias para pedir reembolso integral',
+    requisitos:
+      'Responsável presente durante as atividades · Computador, internet, mouse e teclado · Até 2 perfis Kids',
     ilustracao: {
-      arquivo: 'ilustra-criar-junto.webp',
-      alt: 'Ilustração de uma mãe e um pai atrás do filho no computador, criando um jogo juntos, com o Zappy',
-      largura: 1000,
-      altura: 1263,
+      src: '/img/kids-aprender-criando/criar-juntos.webp',
+      alt: 'Cena ilustrada de criação acompanhada, com os mascotes do Sistema Zero.',
+      width: 1402,
+      height: 1122,
     },
     balao: 'No botão Ouvir, o Zappy lê as falas em voz alta',
-    zappy: { arquivo: 'zappy-fala.webp', alt: '', largura: 360, altura: 458 },
+    zappy: {
+      arquivo: 'zappy-fala.webp',
+      alt: '',
+      largura: 360,
+      altura: 458,
+    },
+    secondary: {
+      href: '#sessao',
+      label: 'Ver como a prática acontece',
+    },
   },
-  problema: {
-    titulo: 'Ele inventa cada brincadeira. E no tablet, só joga joguinho pronto',
-    texto:
-      'Ele inventa regra para o pega-pega, cria personagem, conta fase inteira que só existe na cabeça dele. Aí pega o tablet e fica no joguinho que outra pessoa fez. Você procura alguma coisa melhor e só acha curso para criança maior, que pede leitura, ou aplicativo de passar o tempo. E fica a dúvida de sentar junto para fazer o quê.',
-    destaque:
-      'Muitos cursos e aplicativos foram pensados para a criança usar sozinha. Nessa idade, seu filho ainda precisa de alguém do lado. Aqui, esse alguém é você.',
-  },
-  juntos: {
-    titulo: 'Quando vocês sentam juntos para criar, a tela vira um tempo de vocês dois',
-    texto: 'Veja o que cada sessão traz para ele e para você.',
-    cartas: [
-      {
-        titulo: 'Um tempo de tela que vocês dividem',
-        texto:
-          'Lado a lado, conversando, rindo do teste que deu errado e comemorando quando funciona.',
-      },
-      {
-        titulo: 'Ele diz: fui eu que fiz',
-        texto:
-          'Quando o personagem que ele escolheu aparece na tela, a ideia vira coisa feita por ele.',
-      },
-      {
-        titulo: 'Um jogo para mostrar à família',
-        texto:
-          'Ele esconde os bichinhos no jardim e chama você para achar. Depois, vocês mandam o link para os avós, os tios e os amigos.',
-      },
-      {
-        titulo: 'Ele aprende sem perceber',
-        texto: 'Se tocar, some. Se achar, conta mais um. Ele vê na tela o que cada escolha faz.',
-      },
-      {
-        titulo: 'Quando dá errado, ele tenta de novo',
-        texto:
-          'Errar vira parte da brincadeira: testa, vê o que aconteceu e tenta outra vez, em vez de desistir.',
-      },
-      {
-        titulo: 'Você entende como ele pensa',
-        texto:
-          'Ao explicar o que quer que o jogo faça, ele mostra o raciocínio dele, e você acompanha de perto.',
-      },
-    ],
-  },
-  papeis: {
-    titulo: 'E ele consegue, porque já entende regra de jogo melhor do que parece',
-    texto:
-      'Pique-esconde, pega-pega, quem pisar na lava perde: as brincadeiras que ele inventa já têm regra, ponto e fim. Num jogo de computador é igual. O que ainda falta para ele fazer sozinho é a leitura e o mouse, e isso você empresta enquanto ele decide. É como aprender a falar antes de escrever: nessa fase, ele monta a lógica com blocos, quase sem digitar. Cada um fica com uma parte.',
-    cartas: [
-      {
-        titulo: 'Ele decide',
-        texto: 'Quem se esconde, onde se esconde, o que acontece no toque e a mensagem do final.',
-      },
-      {
-        titulo: 'Você lê e conduz',
-        texto: 'Lê o passo, segura o mouse quando precisar e pergunta "e agora, o que acontece?".',
-      },
-      {
-        titulo: 'O Zappy ajuda',
-        texto:
-          'O Zappy, o mascote da plataforma, lê em voz alta as falas, as perguntas e as instruções quando vocês apertam Ouvir.',
-      },
-    ],
-    zappy: { arquivo: 'zappy-feliz.webp', alt: '', largura: 640, altura: 640 },
-  },
-  sessao: {
-    titulo: 'Na prática, uma sessão de vocês fica assim',
-    texto:
-      'Um dos primeiros projetos é o Cadê Todo Mundo, um jogo de procurar bichinhos escondidos no jardim.',
-    passos: [
-      {
-        destaque: 'Vocês assistem ao vídeo juntos.',
-        texto: 'Se ele quiser ouvir a explicação do Zappy de novo, é só apertar Ouvir.',
-      },
-      { destaque: 'Depois jogam a versão pronta', texto: 'e acham todo mundo.' },
-      {
-        destaque: 'Então montam juntos:',
-        texto:
-          'o esconderijo some com um toque e o jogo conta quem foi achado. Você lê o bloco, ele escolhe.',
-      },
-      {
-        destaque: 'Apertam para testar.',
-        texto: 'Se não saiu como ele queria, descobrem juntos o porquê e testam de novo.',
-      },
-      {
-        destaque: 'E guardam para amanhã.',
-        texto: 'O projeto fica salvo e vocês continuam de onde pararam.',
-      },
-    ],
-    telas: [
-      {
-        imagem: {
-          arquivo: 'tela-jogo-pronto.webp',
-          retina: 'tela-jogo-pronto@2x.webp',
-          alt: 'A versão pronta do Cadê Todo Mundo aberta na aula, com o contador de achados',
-          largura: 1280,
-          altura: 800,
-        },
-        legenda: 'A versão pronta, que vocês jogam primeiro',
-      },
-      {
-        imagem: {
-          arquivo: 'tela-estudio.webp',
-          retina: 'tela-estudio@2x.webp',
-          alt: 'Os blocos do jogo no Estúdio, com o jardim rodando ao lado',
-          largura: 1280,
-          altura: 800,
-        },
-        legenda: 'Os blocos que vocês montam, com o jogo ao lado',
-      },
-    ],
-    relato: {
-      id: 'AV03',
+  sections: [
+    {
+      tag: 'As primeiras escolhas',
+      title: 'Ele já pode participar antes de conseguir fazer tudo sozinho.',
       intro:
-        'A Débora começou pelo Desafio do Primeiro Jogo, que vem incluído na assinatura, e contou assim:',
-      legenda: 'Débora, aluna, 7 anos, sobre o Desafio do Primeiro Jogo',
-      retrato: {
-        arquivo: 'depo-debora-rosto.webp',
-        alt: 'Débora, aluna, sorrindo, de óculos',
-        largura: 480,
-        altura: 480,
-      },
-    },
-    cta: CTA_PLANOS,
-    garantia: GARANTIA_CURTA,
-  },
-  seuPapel: {
-    titulo: 'O seu papel é mais simples do que parece: ler, perguntar e deixar a escolha com ele',
-    texto:
-      'Jogar o que ele criou já é um jeito de participar, para qualquer adulto. E quatro cuidados ajudam a sessão a render.',
-    cuidados: [
-      {
-        titulo: 'Pergunte antes de clicar',
-        texto: 'Um "e agora, o que acontece?" deixa a próxima decisão com ele.',
-      },
-      { titulo: 'Siga a ideia dele', texto: 'Até a ideia mais estranha vira um teste divertido.' },
-      {
-        titulo: 'Pare no melhor momento',
-        texto: 'Encerrem enquanto ainda está gostoso, porque o projeto espera por vocês.',
-      },
-      {
-        titulo: 'Comemore o teste',
-        texto: 'Cada vez que ele aperta para testar, descobre alguma coisa nova.',
-      },
-    ],
-  },
-  pecas: {
-    titulo: 'Cada aula que vocês terminam deixa peças para o jogo que ele inventar',
-    texto:
-      'Ele não recebe todas as peças de uma vez. Recebe as que já sabe usar, uma aula de cada vez, e isso é de propósito: é assim que ele aprende de verdade, em vez de só apertar o que aparece.',
-    cartas: [
-      {
-        titulo: 'Nas aulas, ele aprende com um jogo pronto',
-        texto:
-          'O jardim, o farol, a nave. Em cada um, ele escolhe personagem, cor e regra, e ganha as peças daquela aula: o toque que faz aparecer, a contagem, a chave que acende o farol.',
-      },
-      {
-        titulo: 'Ao publicar A Chave do Farol, o Estúdio dele abre',
-        texto:
-          'Depois de A Chave do Farol, vocês ganham um lugar para começar um jogo do zero, com as peças que ele já conhece. É aqui que a brincadeira que ele inventou vira jogo.',
-      },
-      {
-        titulo: 'Cada aula nova, uma peça nova',
-        texto:
-          'Quanto mais aulas, mais peças e jogos maiores. Ele nunca fica diante de um bloco que não entende, e o desenho dele vira personagem no Pinta.',
-      },
-    ],
-    jornada: {
-      imagem: {
-        arquivo: 'tela-jornada-meus-postos.webp',
-        retina: 'tela-jornada-meus-postos@2x.webp',
-        alt: 'A Jornada do Criador na plataforma: Faísca libera o Estúdio nas aulas; Construtor libera o Estúdio livre e o Pinta',
-        largura: 950,
-        altura: 387,
-      },
-      legenda: {
-        destaque: 'Está escrito na tela dele.',
-        texto:
-          'No posto Construtor, ele cria os seus jogos com as ferramentas dos cursos que terminou. Tela do perfil de teste da equipe.',
-      },
-    },
-    proximos: {
-      destaque: 'Depois do jardim, vêm o farol, a nave, o jogo do jeito dele e o dino,',
-      texto: 'e cada um ensina peças novas para os próximos jogos dele:',
-    },
-    jogos: [
-      {
-        imagem: {
-          arquivo: 'jogo-farol.webp',
-          alt: 'A Chave do Farol: a ilha, a chave e o farol',
-          largura: 1280,
-          altura: 800,
+        'Escolher um personagem, apontar o caminho e perceber que algo mudou são formas de participar. Você ajuda a transformar essa escolha numa ação no computador, lê as orientações e observa o que ele compreendeu.',
+      cards: [],
+      paras: [
+        'O ponto de partida é uma decisão que caiba para ele agora. A cada atividade, vocês encontram novas oportunidades de escolher, comparar e pedir ajuda. Autonomia se pratica com o apoio de que a criança precisa.',
+      ],
+      kind: 'cards',
+      id: 'pratica-0',
+      visual: {
+        image: {
+          src: '/img/kids-aprender-criando/mostrar-uma-duvida.webp',
+          alt: 'Cena ilustrada de uma dúvida comunicada por meio de apontar.',
+          width: 1536,
+          height: 1024,
         },
-        legenda: 'A Chave do Farol',
+        caption:
+          'Apontar uma escolha ou mostrar o que aconteceu já permite participar da conversa.',
       },
-      {
-        imagem: {
-          arquivo: 'jogo-nave.webp',
-          alt: 'Nave Contra Asteroides: a nave e os asteroides',
-          largura: 1180,
-          altura: 690,
-        },
-        legenda: 'Nave Contra Asteroides',
-      },
-      {
-        imagem: {
-          arquivo: 'jogo-dino.webp',
-          alt: 'Corre, Dino: o dino e o cacto',
-          largura: 1264,
-          altura: 723,
-        },
-        legenda: 'Corre, Dino',
-      },
-    ],
-    continuidade: {
-      destaque: 'E esse começo continua com ele quando crescer.',
-      texto:
-        'Quando começar a ler sozinho, passa a criar por conta própria no mesmo perfil, com os jogos e o progresso guardados. Mais adiante chegam o Pensa, o Molda para criar em 3D, a Ponte e o código. Se ele tiver um irmão mais velho, o irmão usa o segundo perfil.',
     },
-    fundadores: {
-      imagem: {
-        arquivo: 'fundadores-casa.webp',
-        alt: 'Helena e Júlio, fundadores, em casa',
-        largura: 1280,
-        altura: 832,
+    {
+      tag: 'Por que brincar de criar',
+      title: 'Uma ideia ganha um efeito que vocês conseguem ver.',
+      intro:
+        'No Cadê Todo Mundo, um personagem está escondido. Vocês montam a instrução que faz o esconderijo desaparecer ao toque. Depois testam: apareceu o personagem? A brincadeira dá um objetivo à sequência de passos.',
+      cards: [
+        [
+          'A criança escolhe e observa',
+          'Ela pode indicar um esconderijo, acompanhar o resultado e mostrar se aconteceu o que esperava.',
+        ],
+        [
+          'O adulto torna a tarefa acessível',
+          'Você lê, ajuda a usar o mouse e divide uma orientação em partes. Oferece opções compreensíveis e deixa espaço para a escolha dela.',
+        ],
+        [
+          'A programação liga escolha e resultado',
+          'Os blocos são instruções que vocês encaixam. Executar o jogo permite conferir o que fizeram e experimentar um ajuste.',
+        ],
+      ],
+      paras: [
+        'A sequência é imaginar uma pequena mudança, planejar, montar, testar e conversar sobre o resultado. Você acompanha as orientações junto com ele; não precisa chegar sabendo programar.',
+      ],
+      kind: 'cards',
+      id: 'metodo',
+      visual: {
+        image: {
+          src: '/img/cade-todo-mundo/cade-blocos-reais.webp',
+          alt: 'Blocos reais do Cadê Todo Mundo, na plataforma.',
+          width: 906,
+          height: 372,
+        },
+        caption:
+          'As instruções são montadas com os blocos reais do Estúdio. O responsável ajuda com os textos e os controles.',
       },
-      texto:
-        'Quem prepara as aulas são Helena e Júlio, pais do André e da Débora e formados em Sistemas de Informação. A Comunidade nasceu dos jogos que eles criaram com os filhos.',
     },
-  },
-  seguranca: {
-    titulo: 'Você também vai querer saber onde ele está criando',
-    texto: 'Por isso, as regras são simples.',
-    regras: [
-      { titulo: 'O perfil público começa desligado', texto: 'Só você pode ligar.' },
-      {
-        titulo: 'O jogo público não mostra o nome dele',
-        texto: 'A página do jogo mostra só o jogo e o título.',
+    {
+      tag: 'Uma sessão de vocês',
+      title: 'Comecem por um objetivo pequeno e deixem um próximo passo combinado.',
+      intro:
+        'As aulas são gravadas e podem ser pausadas e revistas. Reservem um momento possível dentro do tempo de tela já combinado, com um responsável presente durante as atividades.',
+      cards: [
+        [
+          'Olhar e combinar',
+          'Vejam a demonstração e escolham o que vão experimentar: fazer um personagem aparecer, por exemplo.',
+        ],
+        [
+          'Montar e testar',
+          'Você lê a orientação e ajuda nos controles. Ele escolhe, aponta, acompanha e experimenta conforme consegue.',
+        ],
+        [
+          'Conversar e encerrar',
+          'Peça que mostre uma mudança. Guardem o projeto e combinem de onde vão retomar. Uma pausa também faz parte da atividade.',
+        ],
+      ],
+      paras: [
+        'Para criar, vocês precisam de computador, internet, navegador, mouse e teclado. O botão Ouvir lê as falas do Zappy; você ajuda a ler os blocos e a usar os controles. Se a tarefa ficar difícil, reduza o passo ou faça uma pausa. As dúvidas podem ser enviadas nos Recados para a equipe responder por mensagem.',
+      ],
+      kind: 'cards',
+      id: 'sessao',
+      visual: {
+        image: {
+          src: '/img/cade-todo-mundo/cade-experiencia-real.webp',
+          alt: 'Experiência real do curso Cadê Todo Mundo.',
+          width: 2061,
+          height: 1290,
+        },
+        caption:
+          'Vocês observam o que acontece na experiência antes de construir a regra no Estúdio.',
       },
-      {
-        titulo: 'O microfone vem desligado',
-        texto: 'Falar em vez de escrever só funciona se você liberar.',
+    },
+    {
+      tag: 'Habilidades nas pequenas ações',
+      title: 'Escolher, esperar o resultado e mostrar uma descoberta.',
+      intro:
+        'Essas são oportunidades de prática dentro da brincadeira. Você acompanha como seu filho participa e aproxima a experiência de situações conhecidas por ele.',
+      cards: [
+        [
+          'Uma sequência',
+          'Primeiro tocar, depois ver o esconderijo sumir. Na rotina, vocês podem retomar a ideia ao guardar um brinquedo antes de começar outra brincadeira.',
+        ],
+        [
+          'Uma quantidade',
+          'Um personagem apareceu; depois, mais um. Contar os achados aproxima número e quantidade. Fora da tela, vocês podem contar as peças de uma brincadeira.',
+        ],
+        [
+          'Uma tentativa diferente',
+          'Não apareceu o que esperavam. Vocês conferem uma instrução e testam de novo. Relembre essa experiência quando uma construção de brinquedo precisar de outro encaixe.',
+        ],
+        [
+          'Uma ideia compartilhada',
+          'Ele mostra onde tocou ou aponta o personagem que encontrou. Você pode convidá-lo a fazer o mesmo ao mostrar uma atividade da escola.',
+        ],
+      ],
+      paras: [],
+      kind: 'cards',
+      id: 'pratica-3',
+      visual: {
+        image: {
+          src: '/img/kids-aprender-criando/experimentar-outra-possibilidade.webp',
+          alt: 'Cena ilustrada dos mascotes experimentando outra possibilidade de montagem.',
+          width: 1536,
+          height: 1024,
+        },
+        caption:
+          'Comparar duas tentativas pode começar numa brincadeira simples, com ajuda para perceber a diferença.',
       },
-      {
-        titulo: 'O Clube tem moderação',
-        texto: 'Só alunos participam. Com criança pequena, o melhor é postarem juntos.',
+    },
+    {
+      tag: 'Por que manter essa prática',
+      title: 'Voltar a criar dá outras oportunidades para escolher e compreender.',
+      intro:
+        'Um dia, vocês seguem uma orientação para revelar um personagem. Em outro, podem rever a regra, comparar uma mudança ou iniciar outro projeto quando ele estiver pronto. A proposta é retomar as habilidades em situações diferentes, mantendo a sua presença.',
+      cards: [
+        [
+          'Rever o que fez',
+          'Peça que mostre onde tocou e o que apareceu. Ele pode responder apontando, falando ou fazendo de novo.',
+        ],
+        [
+          'Experimentar uma mudança',
+          'Escolham outra aparência ou posição numa etapa que permita isso. Ajudá-lo a comparar o resultado dá sentido à nova tentativa.',
+        ],
+        [
+          'Conhecer outro projeto',
+          'Os cursos seguintes trazem outras regras e objetivos. Vocês avançam conforme a compreensão da criança e os requisitos da Jornada, com apoio durante a atividade.',
+        ],
+      ],
+      paras: [
+        'Não é necessário acelerar para chegar a uma ferramenta ou diminuir a ajuda por causa da idade. Observe se a criança compreende o objetivo, participa das escolhas e consegue mostrar o que aconteceu.',
+      ],
+      kind: 'cards',
+      id: 'continuidade',
+      visual: {
+        image: {
+          src: '/img/comunidade-dos-criadores/tela-jornada-meus-postos@2x.webp',
+          alt: 'Jornada do Criador na plataforma, mostrando os postos Faísca e Construtor.',
+          width: 1900,
+          height: 774,
+        },
+        caption:
+          'A Jornada mostra o que já foi cumprido e o que abre o próximo passo. As ferramentas são liberadas conforme esses requisitos.',
       },
-    ],
-  },
+    },
+    {
+      tag: 'Uma criação para compartilhar',
+      title: 'Mostrar uma ideia dá um motivo para organizar o que se quer dizer.',
+      intro:
+        'Vocês podem mostrar o jogo à família e convidar a criança a apresentar uma escolha. O Mural e o Clube oferecem outras criações e trocas com moderação; o responsável acompanha e administra as permissões.',
+      cards: [
+        [
+          'Uma maneira de se expressar',
+          '“Mostra onde está o personagem que você escolheu” convida a participar falando, apontando ou tocando na tela.',
+        ],
+        [
+          'Você acompanha as trocas',
+          'O perfil público começa desativado. Escolha as permissões pela sua área e esteja junto para conhecer os projetos e as interações.',
+        ],
+      ],
+      paras: [
+        'O relato de Rafael mostra um uso concreto dessa possibilidade: criar algo que outra pessoa possa experimentar.',
+      ],
+      kind: 'quotes',
+      id: 'compartilhar',
+    },
+    {
+      tag: 'O começo da nossa história',
+      title: 'Esse caminho começou com uma pergunta dentro da nossa família.',
+      intro:
+        'Somos Helena e Júlio, pais do André e da Débora, formados em Sistemas de Informação. Queríamos aproveitar o interesse dos nossos filhos para lhes dar oportunidades de pensar, decidir e criar. A criação de jogos entrou na nossa rotina por esse motivo.',
+      cards: [],
+      paras: [
+        'Dessa experiência nasceu o Sistema Zero. Organizamos aulas e ferramentas para que outras famílias encontrem um começo e um caminho de prática. O projeto pronto permite mostrar o que foi construído; as escolhas e tentativas no percurso dão sentido ao trabalho.',
+        'André e Débora, nossos filhos, contam ao lado como viveram o Desafio do Primeiro Jogo.',
+      ],
+      kind: 'family',
+      id: 'familia',
+      visual: {
+        image: {
+          src: '/img/comunidade-dos-criadores/familia-helena-julio-kids.webp',
+          alt: 'Helena, Júlio, André e Débora, a família que deu origem ao Sistema Zero.',
+          width: 880,
+          height: 1019,
+        },
+        caption: 'Helena e Júlio, com André e Débora.',
+      },
+    },
+    {
+      tag: 'O que a assinatura oferece',
+      title: 'Aulas para orientar. Ferramentas para experimentar. Ajuda para continuar.',
+      intro:
+        'A Comunidade reúne essas partes para que a família tenha onde retomar depois da primeira descoberta. Mensal e anual incluem o mesmo acesso; as ferramentas acompanham os requisitos da Jornada.',
+      cards: [
+        [
+          'Cursos e próximos projetos',
+          'Cursos Kids publicados, incluindo o Desafio do Primeiro Jogo, e novos cursos lançados enquanto a assinatura estiver ativa. Vocês podem rever uma orientação antes de avançar.',
+        ],
+        [
+          'Ferramentas com uma função',
+          'No Estúdio, ele constrói o jogo. No Pinta, desenha personagens e cenários; no Pensa, organiza a ideia em etapas; no Molda, cria modelos 3D. Cada ferramenta abre conforme a progressão, no momento previsto pela Jornada.',
+        ],
+        [
+          'Ajuda e compartilhamento',
+          'A equipe responde às dúvidas por mensagens nos Recados. Mural e Clube oferecem espaço para mostrar projetos e trocar ideias com moderação.',
+        ],
+        [
+          'Acompanhamento e dois perfis',
+          'Até dois perfis Kids, com progresso separado. Pela área do responsável, você acompanha atividades e administra acesso e permissões.',
+        ],
+      ],
+      paras: [
+        'A assinatura permite começar pelos cursos disponíveis e continuar com vocês dois criando juntos. O Desafio do Primeiro Jogo está incluído. As ferramentas são liberadas conforme a Jornada, e a criança mantém o apoio de que precisa em cada etapa.',
+      ],
+      kind: 'cards',
+      id: 'incluido',
+    },
+  ],
   planos: {
-    titulo: 'Para começarem juntos, escolha o plano que cabe na rotina de vocês',
+    titulo: 'Escolha o plano que cabe no momento da sua família.',
     texto:
-      'Os dois planos dão acesso a tudo. Vocês têm as aulas dos cursos publicados e dos que forem lançados, o Estúdio e as ferramentas que a Jornada vai abrindo. Têm também o Mural e o Clube com moderação, as dúvidas respondidas pela equipe nos Recados e a área do responsável. A diferença está só na forma de pagar.',
+      'Mensal e anual incluem os mesmos cursos, recursos e até dois perfis Kids. As ferramentas seguem os requisitos da Jornada. A diferença entre os planos está no período contratado e na forma de pagamento.',
     destaque:
-      'Uma assinatura, dois perfis: ele cria junto com você hoje e sozinho quando crescer, e o irmão mais velho usa o outro perfil.',
+      'Vocês criam juntos, com o apoio que a criança precisa agora. Cada perfil tem seu próprio progresso.',
     mensal: {
       nome: 'Mensal',
       preco: '{{preco_mensal}}',
       periodo: '/mês',
       texto:
-        'Menos de {{preco_dia}} por dia. Renova todo mês no cartão, e você cancela quando quiser na sua área, sem multa.',
+        '{{preco_mensal}} por mês, com renovação mensal no cartão. Você pode cancelar pela sua conta, sem multa, e mantém o acesso até o fim do período pago.',
       cta: 'Assinar o mensal',
       nota: '7 dias de garantia',
     },
@@ -468,89 +312,100 @@ export const PAGINA_MENOR9: PaginaMenor9Copy = {
       preco: '{{preco_anual}}',
       periodo: '/ano',
       texto:
-        'Sai por {{equivalente_mensal_anual}} por mês. No Pix à vista, não renova sozinho; no cartão, renova uma vez por ano.',
+        '{{preco_anual}} pelo ano. Equivale a {{equivalente_mensal_anual}} por mês, sem ser um parcelamento. No Pix, pagamento à vista sem renovação automática; no cartão, renovação anual.',
       cta: 'Assinar o anual',
       nota: '7 dias de garantia',
     },
     depois: {
       titulo: 'O que acontece depois de assinar',
       passos: [
-        'Você cria o perfil dele na sua área, com nome e data de nascimento.',
+        'Na sua área, escolha o perfil que já existe ou crie o primeiro, com nome e data de nascimento.',
         'Autoriza o computador que vocês vão usar.',
         'Entram com um código que você gera, válido por 10 minutos.',
-        'A primeira aula abre com o jogo pronto, e vocês já começam a brincar.',
+        'Acessem o perfil Kids, abram o primeiro curso disponível e comecem por uma atividade com acompanhamento.',
       ],
     },
     garantia: {
-      destaque: 'Vocês têm 7 dias para testar juntos a primeira aula.',
-      texto: 'Se não for para vocês, devolvemos o valor inteiro.',
+      destaque: '',
+      texto:
+        'Vocês têm sete dias para conhecer as atividades e observar como a proposta funciona na rotina. Se decidirem não continuar, podem pedir a devolução integral do valor.',
     },
   },
   duvidas: {
-    titulo: 'Algumas dúvidas de quem quer criar junto',
+    titulo: 'Para decidir com clareza',
     itens: [
       {
-        pergunta: 'Ele ainda não lê. Dá certo?',
+        pergunta: 'Já começamos pelo presente ou pelo Desafio. Como continuar?',
         resposta:
-          'Dá, com você lendo. O botão Ouvir lê as falas do Zappy, as perguntas e as instruções. Os blocos e os botões do Estúdio continuam em texto, e é aí que você entra.',
+          'Use o mesmo e-mail do responsável que já tem a conta, para continuar com os perfis e o progresso existentes. Não é preciso concluir o Desafio para assinar: ele está incluído na Comunidade. A assinatura começa quando o pagamento é aprovado; dias restantes do Desafio avulso não são somados ao período contratado. Vocês podem aproveitar o acesso atual e escolher quando faz sentido continuar.',
       },
       {
-        pergunta: 'Ele pode inventar o jogo dele, ou só faz o do curso?',
+        pergunta: 'Ele ainda não lê. Pode participar?',
         resposta:
-          'Os dois, nessa ordem. Nas aulas, ele cria dentro do jogo do curso: escolhe personagem, cor e regra. Depois de A Chave do Farol publicada, o Estúdio livre abre, e vocês montam o jogo que ele inventou com as peças que ele já conhece. Cada curso novo ensina peças novas, e os jogos dele ficam maiores.',
+          'Pode participar com um responsável que leia, ajude nos controles e acompanhe toda a atividade. As falas do Zappy podem ser ouvidas; os blocos e botões ainda têm texto. Observe se ele entende o objetivo e consegue participar das escolhas com o seu apoio.',
       },
       {
-        pergunta: 'E se ele perder o interesse?',
+        pergunta: 'Para qual idade a Comunidade foi pensada?',
         resposta:
-          'As sessões têm o tamanho que vocês quiserem, e dá para parar por semanas e voltar do mesmo ponto. Se não fizer mais sentido, você cancela na sua área, sem multa, e o acesso segue até o fim do período pago.',
+          'Para que crianças e adolescentes de 9 a 17 anos possam participar com mais autonomia, conforme sua leitura e sua familiaridade com o computador. Crianças menores também podem fazer, acompanhadas por um responsável durante as atividades. A idade orienta o ponto de partida; a ajuda depende de cada criança.',
       },
       {
-        pergunta: 'Quanto tempo dura uma sessão?',
+        pergunta: 'Meu filho é autista. Como saber se a proposta combina com ele?',
         resposta:
-          'Vocês decidem. Dá para parar no meio de uma aula e continuar outro dia, do ponto em que pararam.',
+          'Observe seu interesse pela atividade, como compreende as orientações e de que apoio precisa. É possível pausar, rever e participar falando, apontando ou mostrando na tela. Comecem juntos e ajustem a duração e a ajuda. A Comunidade é uma proposta educacional; não oferece avaliação ou tratamento clínico nem promete um resultado igual para todas as crianças.',
       },
       {
-        pergunta: 'Funciona no tablet?',
+        pergunta: 'Ele precisa gostar de videogame ou saber programar?',
         resposta:
-          'Não. Precisa de computador com mouse e teclado, e pode ser o da família. Você conduz o mouse, e ele aponta na tela o que quer.',
+          'Não precisa ter experiência com programação. O interesse pode estar nos personagens, nas histórias, no desenho ou em criar algo com você. As primeiras atividades apresentam os comandos aos poucos. Os sete dias de garantia permitem conhecer a experiência e observar como ele participa.',
       },
       {
-        pergunta: 'Vale assinar para uma criança tão pequena?',
+        pergunta: 'Precisa de qual equipamento?',
         resposta:
-          'A assinatura tem 2 perfis, então serve também para um irmão mais velho e continua com ele quando crescer. E vocês têm 7 dias para testar juntos.',
+          'Para criar: computador com internet, navegador, mouse e teclado. Celular e tablet servem para jogar os projetos publicados, mas não substituem o computador nas atividades de criação. As aulas são gravadas e podem ser pausadas e revistas durante o acesso.',
       },
       {
-        pergunta: 'Ele tem 5 anos. É cedo?',
+        pergunta: 'Como funciona a ajuda quando ele trava?',
         resposta:
-          'Depende mais de ele gostar de inventar brincadeira do que da idade. Com você lendo e conduzindo, as sessões ficam curtas e cada uma termina com alguma coisa na tela. Os 7 dias servem para vocês testarem.',
+          'Vocês podem enviar uma dúvida por escrito nos Recados, mostrando o que tentaram e onde pararam. A equipe responde por mensagens, sem aula individual ao vivo. O responsável continua ajudando conforme a necessidade da criança; para os menores de 9 anos, acompanha durante as atividades.',
       },
       {
-        pergunta: 'Tem app grátis para isso. Qual é a diferença?',
+        pergunta: 'Todas as ferramentas ficam liberadas no primeiro dia?',
         resposta:
-          'O ScratchJr é gratuito, roda no tablet e é uma boa porta de entrada para montar historinhas com blocos. Aqui, cada projeto é guiado, com aula em português e você no papel de ler e conduzir. Junto vêm o Estúdio e as ferramentas que vão abrindo, o Mural para mostrar o jogo à família e as dúvidas respondidas pela equipe nos Recados. E a conta continua com ele quando crescer, no mesmo perfil.',
+          'Os recursos acompanham a Jornada do Criador. Nas primeiras aulas, ele usa o Estúdio dentro do curso. Ao cumprir os requisitos e publicar os projetos do posto inicial, abrem o Estúdio livre e o Pinta. Outros recursos chegam nos postos seguintes. A assinatura mantém acesso aos recursos incluídos e aos cursos publicados durante seu período ativo.',
       },
       {
-        pergunta: 'Como cancelo?',
+        pergunta: 'São dois perfis com a mesma assinatura?',
         resposta:
-          'Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.',
+          'Sim. A assinatura Kids permite até dois perfis de crianças ou adolescentes, cada um com seu progresso. O responsável administra o acesso pela própria conta.',
+      },
+      {
+        pergunta: 'Como funcionam pagamento, renovação e cancelamento?',
+        resposta:
+          'O mensal custa {{preco_mensal}} e renova todo mês no cartão. O anual custa {{preco_anual}}: no Pix, é um pagamento à vista sem renovação automática; no cartão, renova uma vez por ano. Você cancela em Conta → Minhas compras, sem multa, e mantém o acesso até o fim do período pago. Nos primeiros sete dias, pode pedir a devolução integral do valor.',
+      },
+      {
+        pergunta: 'Se eu cancelar, o trabalho dele desaparece?',
+        resposta:
+          'Perfil, progresso, projetos salvos, certificados e posto da Jornada ficam na conta. Os jogos publicados continuam disponíveis para jogar. O acesso aos cursos e às ferramentas da assinatura termina ao acabar o período pago; os registros preservados permitem retomar o percurso se vocês voltarem a assinar.',
       },
     ],
   },
   fechamento: {
-    titulo: 'A próxima brincadeira que ele inventar pode virar um jogo de vocês',
-    cta: CTA_PLANOS,
-    garantia: GARANTIA_CURTA,
-    zappy: { arquivo: 'zappy-festa.webp', alt: '', largura: 640, altura: 640 },
-  },
-  rodape: {
-    logo: { arquivo: 'logo-kids-escuro.svg', alt: 'Sistema Zero Kids', largura: 193, altura: 18 },
-    aviso: 'Comunicação dirigida aos responsáveis',
-    termos: { label: 'Termos de uso', href: '/kids/comunidade-dos-criadores/termos' },
-    privacidade: { label: 'Privacidade', href: '/privacidade' },
+    titulo:
+      'Escolham uma pequena ideia para fazer juntos. Depois, conversem sobre o que aconteceu.',
+    cta: 'Ver planos para criar juntos',
+    garantia: '7 dias de garantia. Cancele quando quiser, sem multa.',
+    zappy: {
+      arquivo: 'zappy-festa.webp',
+      alt: '',
+      largura: 640,
+      altura: 640,
+    },
   },
   barra: {
     preco: '{{preco_mensal}}/mês',
     alternativa: 'ou {{equivalente_mensal_anual}}/mês no anual',
     cta: 'Ver os planos',
   },
-}
+} satisfies { sections: ComunidadePraticaSection[] } & Record<string, unknown>

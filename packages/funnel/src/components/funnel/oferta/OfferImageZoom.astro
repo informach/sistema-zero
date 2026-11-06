@@ -38,6 +38,12 @@ import '../../../styles/offer-image-zoom.css'
       dialog.showModal()
     })
     dialog.querySelector('button')?.addEventListener('click', closeImage)
+    dialog.addEventListener('keydown', (event) => {
+      // The close button is the only control in this image-only dialog.
+      if (event.key !== 'Tab') return
+      event.preventDefault()
+      dialog.querySelector('button')?.focus()
+    })
     dialog.addEventListener('cancel', (event) => {
       event.preventDefault()
       closeImage()

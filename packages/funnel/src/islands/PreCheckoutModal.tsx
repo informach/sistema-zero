@@ -131,8 +131,11 @@ export default function PreCheckoutModal({
     if (open) {
       document.addEventListener('keydown', onKey)
       document.addEventListener('focusin', keepFocus)
-      // Aguarda o frame de montagem do diálogo p/ mover o foco.
-      const t = setTimeout(() => firstFieldRef.current?.focus(), 30)
+      // A montagem pode terminar depois de a pessoa escolher um campo. O foco
+      // inicial nunca deve interromper esse preenchimento e voltar para Nome.
+      const t = setTimeout(() => {
+        if (!dialogRef.current?.contains(document.activeElement)) firstFieldRef.current?.focus()
+      }, 30)
       return () => {
         document.removeEventListener('keydown', onKey)
         document.removeEventListener('focusin', keepFocus)

@@ -1,5 +1,23 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Comunidade Kids: prática e continuidade (06/11/2026)
+
+As três ofertas Kids implementam as propostas aprovadas a partir da revisão de Vivianne:
+habilidades para a vida, criação orientada e oportunidades de continuar praticando. Os layouts
+`c917` e `cm9` são preservados; `ComunidadePratica` renderiza as seções tipadas e usa capturas
+reais, `OfferImage`/`OfferImageZoom` e depoimentos canônicos. Há apenas o rodapé compartilhado.
+
+`PAGINA_CONTINUAR` deriva de `PAGINA_9A17`: somente a headline visível muda para “Continue
+ajudando”. `ComunidadeContinuarBody` delega ao corpo principal; o pré-checkout conserva o
+lembrete de usar a conta existente. Preços, inclusive no FAQ, são preenchidos com o catálogo.
+O teste de navegador compara a copy completa das duas páginas e confere planos, atribuição,
+ampliação, teclado e responsividade. O espelho editorial é gerado por
+`bun scripts/espelho-copy-comunidade.ts`.
+
+O presente de campanha usa seus cards de estado para abertura, pausa e encerramento. O
+parágrafo redundante “Novos cadastros até” foi retirado do hero Kids e adulto; as regras e os
+sete dias de quem já resgatou permanecem no serviço de Referrals.
+
 ## Ofertas Kids aprovadas e primeiro nome público (05/11/2026)
 
 `PRESENTE_KIDS`, `PAGINA_DESAFIO_9A17` e `PAGINA_DESAFIO_MENOR9` implementam as propostas

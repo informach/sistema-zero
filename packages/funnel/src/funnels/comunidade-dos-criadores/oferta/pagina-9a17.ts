@@ -1,86 +1,64 @@
+// Copy aprovada em 06/11/2026: habilidades para a vida, prática orientada e continuidade.
+// Preços são marcadores preenchidos pelo catálogo. Falas vêm de relatos.ts.
+
+import type { ComunidadePraticaSection } from './pratica-types'
 import { RELATOS } from './relatos'
 import type { RelatoId } from './types'
 
-// Página da Comunidade dos Criadores para 9 a 17 anos (proposta aprovada de 19/10/2026, desenho em
-// docs/marketing/comunidade-dos-criadores/proposta-2026-10-19/canvas/Pagina917.html). Toda a copy
-// visível mora aqui, palavra por palavra do desenho; o body (`Comunidade917Body.astro`) só monta.
-// Preços são marcadores preenchidos com os planos ao vivo: {{preco_mensal}}, {{preco_anual}},
-// {{equivalente_mensal_anual}}, {{economia_anual}} e {{preco_dia}}. Falas só de `relatos.ts`.
-
-/** Uma imagem da página: arquivo em `imagesBase`, dimensões reais e o texto alternativo do desenho. */
-export interface Imagem917 {
-  file: string
-  width: number
-  height: number
-  alt: string
-}
-
-/** Uma fala de `RELATOS`; `complemento` estende a legenda (nome e papel) depois de uma vírgula. */
-export interface Relato917 {
-  id: RelatoId
-  complemento?: string
-}
-
-export interface Cartao917 {
-  title: string
-  text: string
-}
-
-/** Trecho com o início em negrito, como nas listas e notas do desenho. */
-export interface Destaque917 {
-  strong: string
-  text: string
-}
-
-const CTA_PLANOS = 'Ver os planos para meu filho'
-const GARANTIA_CURTA = '7 dias de garantia. Cancele quando quiser, sem multa.'
-const GARANTIA_PLANO = '7 dias de garantia'
-
-/** "Daniel, pai do Rafael": o nome e o papel de `RELATOS`, com o papel em minúscula inicial. */
 export function legendaDoRelato(id: RelatoId): string {
   const { nome, papel } = RELATOS[id]
   return `${nome}, ${papel.charAt(0).toLowerCase()}${papel.slice(1)}`
 }
-
-const FLAVIA = RELATOS.AV10
+export const RELATOS_9A17: readonly RelatoId[] = ['AV02', 'AV03', 'AV04']
 
 export const PAGINA_9A17 = {
   seoTitle: 'Comunidade dos Criadores para 9 a 17 anos | Sistema Zero',
   description:
-    'Comunidade dos Criadores, de 9 a 17 anos: aulas, Estúdio e ferramentas de criação, Mural e Clube com moderação, e dúvidas respondidas pela equipe nos Recados, numa plataforma só. Ele aprende criando jogos e manda o link para os amigos jogarem no celular.',
-  cta: CTA_PLANOS,
-  garantiaCurta: GARANTIA_CURTA,
-
+    'Na Comunidade dos Criadores, seu filho exercita planejamento, raciocínio e persistência criando jogos com orientação. O interesse pela criação dá um motivo para começar; novos projetos trazem outras oportunidades de escolher, testar e explicar suas ideias.',
+  capa: 'checkout-capa.webp',
   topo: {
     pular: 'Ir para o conteúdo',
-    logo: { file: 'logo-kids-claro.svg', width: 287, height: 22, alt: 'Sistema Zero Kids' },
+    logo: {
+      file: 'logo-kids-claro.svg',
+      width: 287,
+      height: 22,
+      alt: 'Sistema Zero Kids',
+    },
     logoLabel: 'Sistema Zero Kids, voltar ao topo',
     navLabel: 'Atalhos da página',
     links: [
-      { href: '#experiencia', label: 'Como funciona' },
-      { href: '#responsavel', label: 'Para o responsável' },
+      {
+        href: '#metodo',
+        label: 'Como funciona',
+      },
+      {
+        href: '#responsavel',
+        label: 'Para o responsável',
+      },
     ],
-    cta: { href: '#planos', label: 'Ver os planos' },
+    cta: {
+      href: '#planos',
+      label: 'Ver planos e acesso',
+    },
   },
-
   hero: {
     eyebrow: 'Comunidade dos Criadores · 9 a 17 anos',
-    title: 'Seu filho conhece os jogos de cor. Imagine ele dizendo: ',
-    destaque: 'esse aqui fui eu que fiz.',
+    title: 'Ajude seu filho a resolver problemas e fazer escolhas com mais autonomia, ',
+    destaque: 'na escola e na vida.',
     description:
-      'Nas aulas, ele começa pelo Cadê Todo Mundo, um jogo completo, e segue para os próximos, numa plataforma feita para crianças e adolescentes. Cada curso que ele termina libera peças novas no Estúdio, a área onde ele monta os jogos. Com elas, os jogos ficam maiores, até o jogo que ele mesmo inventou. O jogo vai para o Mural, onde outros alunos jogam e comentam. No Clube, ele troca ideias com outros criadores, e a equipe responde quando ele trava. Você acompanha pela sua área, e não precisa entender de programação para isso.',
+      'Na Comunidade dos Criadores, seu filho exercita planejamento, raciocínio e persistência criando jogos com orientação. O interesse pela criação dá um motivo para começar; novos projetos trazem outras oportunidades de escolher, testar e explicar suas ideias.',
     benefits: [
-      'Um jogo pronto já no primeiro curso, o Cadê Todo Mundo, para mostrar quando você chega em casa',
-      'Depois, os próximos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por ele',
-      'Até o jogo que ele inventou, com as regras dele: ele monta sozinho no Estúdio livre e chama você para ver',
+      'Dividir uma tarefa em passos que consegue experimentar',
+      'Mostrar uma dúvida e investigar o que precisa mudar',
+      'Voltar a usar essas habilidades em novos projetos',
     ],
     requirements:
-      'Para quem lê com autonomia · Computador com internet, mouse e teclado · Até 2 perfis',
+      '9 a 17 anos, com apoio conforme a necessidade · Computador, internet, mouse e teclado · Até 2 perfis Kids',
     tela: {
-      file: 'tela-codigo.webp',
-      width: 1280,
-      height: 800,
-      alt: 'Estúdio no modo Ponte: os blocos de um lado, o código gerado do outro e o jogo rodando',
+      src: '/img/desafio-primeiro-jogo/farol-estudio-real.webp',
+      alt: 'A Chave do Farol no Estúdio real: blocos e resultado lado a lado.',
+      width: 2400,
+      height: 1500,
     },
     foto: {
       file: 'jeffrey-computador.webp',
@@ -89,371 +67,331 @@ export const PAGINA_9A17 = {
       alt: 'Jeffrey, aluno, de fone de ouvido diante do computador',
     },
     fotoLegenda: 'Jeffrey, aluno',
-    chips: ['Blocos e código lado a lado', 'Link que abre no celular'],
-  },
-
-  caso: {
-    eyebrow: 'Talvez seja o seu caso',
-    title:
-      'Ele vive no jogo. E você já se pegou pensando: se ele usasse esse tempo para aprender alguma coisa',
-    paragraph:
-      'Muita família passa por isso. Você procura curso de programação para criança e esbarra sempre nas mesmas coisas: o horário não encaixa, o gratuito é uma aula experimental que para ali, o pago pesa no orçamento e é difícil avaliar antes de começar. Ele tenta sozinho pelo YouTube, trava e larga. E fica a dúvida que ninguém responde: se ele está só jogando ou aprendendo alguma coisa.',
-    callout:
-      'Interesse ele tem de sobra. Falta um lugar onde ele aprenda, crie o próprio jogo, mostre aos amigos e tenha ajuda quando travar. Com tudo no mesmo lugar, ele começa e quer continuar.',
-  },
-
-  muda: {
-    eyebrow: 'O que muda',
-    title: 'Quando ele aprende a criar jogos, ele para de só jogar e começa a fazer os seus.',
-    paragraph:
-      'Ele passa a decidir como o jogo funciona, e você começa a ver isso aparecer no dia a dia.',
-    cards: [
-      {
-        title: 'Em vez de só jogar, ele faz',
-        text: 'Uma regra, uma fase, um jogo publicado. Coisa feita por ele, para mostrar para quem ele quiser.',
-      },
-      {
-        title: 'O jogo que ele inventa no jantar vira jogo de verdade',
-        text: 'Depois de publicar A Chave do Farol, ele monta no Estúdio dele, com as peças que conquistou nos cursos, e manda o link para os amigos jogarem no celular.',
-      },
-      {
-        title: 'Quando dá errado, ele tenta de novo em vez de largar',
-        text: 'Testa, vê o que saiu diferente, ajusta e testa de novo. Cada jogo que funciona é um problema que ele resolveu sozinho.',
-      },
-      {
-        title: 'Vira assunto entre vocês',
-        text: 'Você pede: me mostra o que você mudou. Ele mostra, você joga, e pela primeira vez entende o que ele faz ali.',
-      },
-      {
-        title: 'Ele faz sozinho, no horário dele',
-        text: 'Sem aula marcada e sem você em cima. O projeto fica salvo esperando a próxima ideia.',
-      },
-      {
-        title: 'O adolescente que fala em trabalhar com jogos vê como um jogo é feito de verdade',
-        text: 'Lógica, arte, 3D e, mais adiante, código, na mesma plataforma.',
-      },
-    ] satisfies readonly Cartao917[],
-    relatosIntro: 'Quem já viu isso acontecer em casa:',
-    relatos: [{ id: 'AV08' }, { id: 'AV09' }] satisfies readonly Relato917[],
-  },
-
-  porque: {
-    eyebrow: 'Por que criar',
-    title: 'Isso acontece porque, no jogo pronto, alguém já decidiu tudo por ele',
-    paragraph:
-      'Quanto o personagem pula, quanto vale cada estrela, quando a fase termina: nos jogos que ele joga, essas escolhas vieram prontas. Quando ele cria, cada escolha vira um bloco que ele monta, testa e ajusta até o jogo fazer o que ele imaginou. É nesse vai e volta que entram a lógica, o teste e a paciência para melhorar a própria ideia. Uma mãe e um pai contam como isso apareceu em casa:',
-    relatos: [{ id: 'AV12' }, { id: 'N2' }] satisfies readonly Relato917[],
-  },
-
-  aulas: {
-    eyebrow: 'Como funciona · nas aulas',
-    title: 'Nas aulas, ele aprende fazendo um jogo completo, com o vídeo do lado do Estúdio',
-    paragraph: 'Cada curso segue o mesmo caminho, sempre com o próximo passo à vista.',
-    passos: [
-      {
-        imagem: {
-          file: 'passo-joga.webp',
-          width: 1260,
-          height: 760,
-          alt: 'A versão pronta do Cadê Todo Mundo aberta na aula, com o contador de achados',
-        },
-        title: '1 · Primeiro, joga o pronto',
-        text: 'A aula abre com o jogo terminado, então ele já sabe aonde vai chegar.',
-      },
-      {
-        imagem: {
-          file: 'passo-video.webp',
-          width: 1600,
-          height: 625,
-          alt: 'O vídeo da aula ao lado do Estúdio de blocos',
-        },
-        title: '2 · Depois, monta com o vídeo ao lado',
-        text: 'Ele pausa e monta no Estúdio, o editor de blocos. O botão Ouvir lê as instruções em voz alta.',
-      },
-      {
-        imagem: {
-          file: 'passo-verificar.webp',
-          width: 740,
-          height: 340,
-          alt: 'O botão Verificar projeto, com o que já está cumprido e o que falta',
-        },
-        title: '3 · Então confere cada parte',
-        text: 'O botão "Verificar projeto" mostra o que já está certo antes de ele seguir.',
-      },
-      {
-        imagem: {
-          file: 'passo-mural.webp',
-          width: 1600,
-          height: 786,
-          alt: 'O Mural dos Criadores com os botões Jogar, Copiar link e Fazer a minha versão',
-        },
-        title: '4 · Por fim, publica e manda o link',
-        text: 'O jogo vai para o Mural, onde ficam os jogos da comunidade, com um link que abre no celular.',
-      },
-    ],
-    nota: {
-      strong: 'Nas primeiras aulas do Cadê Todo Mundo,',
-      text: ' ele faz o esconderijo sumir ao toque e o jogo contar cada bichinho encontrado. É a primeira regra do jogo decidida por ele.',
-    } satisfies Destaque917,
-    jogosTitle: 'Os jogos que ele vai fazer primeiro',
-    jogosParagraph:
-      'Um projeto de cada vez, nesta ordem. As peças que cada jogo ensina ficam com ele para os próximos jogos, e cada jogo pode ir para o Mural com um link para mostrar.',
-    jogos: [
-      {
-        imagem: {
-          file: 'jogo-cade.webp',
-          width: 1264,
-          height: 723,
-          alt: 'Cadê Todo Mundo: o jardim com o contador de achados',
-        },
-        title: 'Cadê Todo Mundo',
-        text: 'Ele faz o jogo contar cada bichinho encontrado no jardim.',
-      },
-      {
-        imagem: {
-          file: 'jogo-farol.webp',
-          width: 1280,
-          height: 800,
-          alt: 'A Chave do Farol: a ilha, a chave e o farol',
-        },
-        title: 'A Chave do Farol',
-        text: 'Pega a chave, acende o farol e leva o barco até a costa.',
-      },
-      {
-        imagem: {
-          file: 'jogo-nave.webp',
-          width: 1180,
-          height: 690,
-          alt: 'Nave Contra Asteroides: a nave, os asteroides e o placar',
-        },
-        title: 'Nave Contra Asteroides',
-        text: 'Anda, atira, soma pontos e cuida das três vidas.',
-      },
-      {
-        // Sem tela: o desenho põe um quadro com o texto no lugar da imagem.
-        quadro: 'Do jeito dele',
-        title: 'O Jogo do Meu Jeito',
-        text: 'Desenha a própria nave e os asteroides e coloca no jogo.',
-      },
-      {
-        imagem: {
-          file: 'jogo-dino.webp',
-          width: 1264,
-          height: 723,
-          alt: 'Corre, Dino: o dino, o cacto e o placar',
-        },
-        title: 'Corre, Dino',
-        text: 'Pula os cactos e decide até onde a corrida acelera.',
-      },
-    ] satisfies ReadonlyArray<
-      ({ imagem: Imagem917; quadro?: never } | { quadro: string; imagem?: never }) & Cartao917
-    >,
-    jogosNota: 'As telas são demonstrações feitas pela equipe.',
-  },
-
-  estudio: {
-    eyebrow: 'Como funciona · no Estúdio dele',
-    title:
-      'Cada curso que ele termina libera peças novas no Estúdio dele. É lá que ele faz os jogos que inventa',
-    paragraph:
-      'Cada curso ensina com um jogo completo. As peças que ele aprendeu continuam no Estúdio, e a lista cresce a cada curso.',
-    passos: [
-      {
-        title: 'Termina um curso, ganha as peças',
-        text: 'Os blocos que a aula ensinou, como Colisões, Som e Aparência, ficam no Estúdio dele para sempre. Quando ele conclui e publica os cursos de um posto, sobe para o próximo posto da Jornada do Criador, o caminho de níveis da plataforma.',
-      },
-      {
-        title: 'Sobe de posto, abre a ferramenta',
-        text: 'No posto Construtor, logo depois de A Chave do Farol, abrem o Estúdio livre, para criar o que quiser, e o Pinta, para desenhar. Depois vêm o Pensa, que divide a ideia do jogo em missões, e a ajuda do Zappy, que olha os blocos e diz o que conferir. Por fim chegam o Molda, para criar em 3D, a Ponte, que mostra os blocos ao lado do código, e o código.',
-      },
-      {
-        title: 'Faz o jogo dele com o que já sabe',
-        text: 'Em Meus Jogos, ele começa um projeto do zero com as peças que conquistou. A cada curso, ele ganha peças novas e consegue fazer jogos maiores.',
-      },
-    ] satisfies readonly Cartao917[],
-    telas: [
-      {
-        imagem: {
-          file: 'tela-jornada-meus-postos.webp',
-          width: 950,
-          height: 387,
-          alt: 'A Jornada do Criador na plataforma: Faísca libera o Estúdio nas aulas; Construtor libera o Estúdio livre e o Pinta, para criar os seus jogos com as ferramentas dos cursos que terminou',
-        },
-        strong: 'A Jornada dele, na plataforma.',
-        text: ' O que cada posto libera, escrito na tela: no Construtor, ele cria os seus jogos com as ferramentas dos cursos que terminou.',
-      },
-      {
-        imagem: {
-          file: 'tela-estudio-lista.webp',
-          width: 1280,
-          height: 800,
-          alt: 'A tela Meus Jogos do Estúdio, com o botão Novo projeto e os projetos próprios de um perfil de teste',
-        },
-        strong: 'Meus Jogos.',
-        text: ' Os projetos dele no Estúdio livre, começados do zero. O botão Novo projeto abre com as peças que ele já conquistou.',
-      },
-    ] satisfies ReadonlyArray<{ imagem: Imagem917 } & Destaque917>,
-    nota: {
-      strong: 'Por que nessa ordem.',
-      text: ' Todas as peças no primeiro dia é o jeito mais rápido de ele fechar o programa: dezenas de peças e nenhuma que ele saiba usar. Aqui cada peça chega quando ele já sabe o que fazer com ela. Ele aprende de verdade, em vez de só apertar o que aparece, e o jogo dele fica maior a cada curso.',
-    } satisfies Destaque917,
-    relato: {
-      id: 'N18',
-      complemento:
-        'sobre um jogo que ele mesmo inventou no Estúdio da plataforma, com o que aprendeu nos cursos',
-    } satisfies Relato917,
-    telasNota: 'As telas são do perfil de teste da equipe.',
-  },
-
-  jornada: {
-    eyebrow: 'Jornada do Criador',
-    title: 'E o caminho até o código segue o mesmo ritmo de quem aprende a ler e escrever',
-    paragraph:
-      'Antes de escrever, a criança aprende a falar: escuta, entende e se comunica. Depois reconhece as letras, ainda sem escrever. Só então começa a escrever. A Jornada do Criador, o caminho de postos que ele percorre aqui, tem as mesmas três fases, e é ela que decide em que ordem as ferramentas chegam.',
-    fases: [
-      {
-        imagem: {
-          file: 'tela-estudio.webp',
-          width: 1280,
-          height: 800,
-          alt: 'Estúdio com blocos montados e o jogo rodando ao lado',
-        },
-        fase: 'Fase 1 · a fala',
-        title: 'Blocos',
-        text: 'Ele monta a lógica do jogo com blocos, entende o que cada um faz e já cria jogos inteiros. É onde ele passa a maior parte do tempo. O Construtor abre o Estúdio livre e o Pinta; o Inventor, o Pensa e a ajuda do Zappy; o Explorador de Mundos, o Molda e os jogos em 3D.',
-        postos:
-          'Postos Faísca, Construtor, Inventor, Explorador de Mundos, Mestre dos Jogos e Arquiteto de Mundos',
-      },
-      {
-        imagem: {
-          file: 'tela-codigo.webp',
-          width: 1280,
-          height: 800,
-          alt: 'Modo Ponte com os blocos de um lado e o código gerado do outro',
-        },
-        fase: 'Fase 2 · as letras',
-        title: 'Ponte',
-        text: 'Cada bloco aparece ao lado do código correspondente. Ele aprende o que cada um significa em código, ainda sem escrever.',
-        postos: 'Posto Gênio da Criação',
-      },
-      {
-        imagem: {
-          file: 'estudio-pro-codigo.webp',
-          width: 1440,
-          height: 1000,
-          alt: 'Editor em modo código, com os arquivos do jogo',
-        },
-        fase: 'Fase 3 · a escrita',
-        title: 'Código',
-        text: 'Com a base firme, ele passa a escrever o jogo em código.',
-        postos: 'Posto Lenda',
-      },
-    ],
-    idadeIntro: 'E o caminho conversa com a idade dele.',
-    idades: [
-      {
-        imagem: {
-          file: 'tela-aula-estudio.webp',
-          width: 1280,
-          height: 800,
-          alt: 'Aula com o vídeo do jardim ao lado do Estúdio de blocos',
-        },
-        title: 'De 9 a 12 anos',
-        text: 'Ele manda o primeiro link para os amigos e, no Construtor, desenha personagens e cenários no Pinta. Nas primeiras aulas, vale sentar junto. Depois, basta pedir: me mostra o que você mudou.',
-      },
-      {
-        imagem: {
-          file: 'tela-molda.webp',
-          width: 1280,
-          height: 800,
-          alt: 'Molda com um personagem 3D feito de blocos',
-        },
-        title: 'De 13 a 17 anos',
-        text: 'O projeto é dele do começo ao fim. Ele publica, vê gente jogando e pode fazer a própria versão de jogos do Mural. Mais adiante na trilha, a mesma regra aparece em código.',
-      },
-    ] satisfies ReadonlyArray<{ imagem: Imagem917 } & Cartao917>,
-  },
-
-  responsavel: {
-    eyebrow: 'Para o responsável',
-    title: 'Enquanto isso, você acompanha de longe, sem ficar em cima dele',
-    paragraph: 'Na sua área, você vê o que ele está fazendo e decide como ele entra na plataforma.',
-    itens: [
-      {
-        strong: 'Um painel para cada filho',
-        text: ' mostra os cursos, as atividades, as entregas e o posto da Jornada.',
-      },
-      {
-        strong: 'Toda sexta, no fim da tarde,',
-        text: ' chega um resumo da semana por e-mail, com os jogos que ele publicou. Dá para desligar.',
-      },
-      {
-        strong: 'Você autoriza cada computador',
-        text: ' e escolhe por quanto tempo, de um dia a 90 dias. Ele entra com um código que vale 10 minutos.',
-      },
-      {
-        strong: 'São até 2 perfis,',
-        text: ' cada um com seus jogos, seu progresso e sua Jornada.',
-      },
-    ] satisfies readonly Destaque917[],
-    relato: { id: 'N8' } satisfies Relato917,
-    painel: {
-      file: 'tela-pais-painel.webp',
-      width: 1152,
-      height: 640,
-      alt: 'Painel do responsável com as atividades da semana de um filho',
+    chips: ['Planejar, testar e ajustar', 'Uma ideia que dá para mostrar'],
+    secondary: {
+      href: '#metodo',
+      label: 'Ver como a prática acontece',
     },
-    relatoPainel: { id: 'N15' } satisfies Relato917,
   },
-
-  seguranca: {
-    eyebrow: 'Segurança',
-    title: 'Você também vai querer saber onde ele está criando e com quem conversa',
-    paragraph: 'Por isso, a Comunidade tem regras claras, que você pode conferir.',
-    regras: [
-      {
-        title: 'O Clube é só de alunos',
-        text: 'E as mensagens passam pela equipe antes de aparecer.',
+  cta: 'Ver planos e acesso',
+  garantiaCurta: 'Assinatura mensal ou anual · 7 dias para pedir reembolso integral',
+  sections: [
+    {
+      tag: 'O que você deseja para ele',
+      title: 'Começar uma tarefa, fazer uma escolha e saber o que tentar quando algo não funciona.',
+      intro:
+        'Essas situações aparecem na tarefa da escola, numa brincadeira e nas pequenas responsabilidades de casa. Você quer ajudar seu filho a participar delas com mais recursos, respeitando o jeito e o ritmo dele.',
+      cards: [],
+      paras: [
+        'Uma atividade com objetivo, escolhas e resultado visível oferece uma oportunidade de prática. Na Comunidade, a programação de jogos reúne essas partes em projetos orientados. O interesse pode começar pela história, pelos personagens ou pela vontade de criar algo próprio.',
+      ],
+      kind: 'cards',
+      id: 'pratica-0',
+      visual: {
+        image: {
+          src: '/img/kids-aprender-criando/planejar-caminho.webp',
+          alt: 'Zappy e os mascotes exploram um caminho com passos e escolhas.',
+          width: 1536,
+          height: 1024,
+        },
+        caption:
+          'Um objetivo que faz sentido para a criança abre espaço para planejar o primeiro passo.',
       },
-      { title: 'O perfil público começa desligado', text: 'Só você pode ligar.' },
-      {
-        title: 'O jogo público não mostra o nome dele',
-        text: 'A página do jogo mostra só o jogo e o título.',
-      },
-      {
-        title: 'Não existe chat livre',
-        text: 'Nas aulas gravadas, os alunos não conversam entre si.',
-      },
-      {
-        title: 'O microfone vem desligado',
-        text: 'Falar em vez de escrever só funciona se você liberar.',
-      },
-      {
-        title: 'Você pode pedir a remoção',
-        text: 'Qualquer publicação dele sai do Clube a pedido seu.',
-      },
-    ] satisfies readonly Cartao917[],
-    nota: 'A moderação diminui riscos, e a conversa em casa continua importante. Por isso, o resumo da semana mostra o que ele publicou.',
-  },
-
-  fundadores: {
-    imagem: {
-      file: 'fundadores-casa.webp',
-      width: 1280,
-      height: 832,
-      alt: 'Helena e Júlio, fundadores do Sistema Zero, em casa, diante do notebook',
     },
-    eyebrow: 'Quem está por trás',
-    title: 'Tudo isso começou aqui em casa, com o tempo que nosso filho passava jogando',
-    paragraph:
-      'Somos Helena e Júlio, pais do André e da Débora, formados em Sistemas de Informação. Em vez de brigar com o interesse do André por jogos, usamos uma parte do tempo que ele já ficava na tela para ensiná-lo a criar os próprios jogos. A Comunidade nasceu desse caminho, e somos nós que preparamos as aulas.',
-    relato: { id: 'AV04' } satisfies Relato917,
-  },
-
+    {
+      tag: 'O interesse vira uma oportunidade de prática',
+      title: 'Uma ideia para realizar. Uma escolha para testar. Um resultado para observar.',
+      intro:
+        'Numa aventura, seu filho tem um motivo para pensar: levar uma chave ao farol, por exemplo. Programar é organizar as instruções para isso acontecer. No Estúdio, o espaço de criação da plataforma, ele encaixa blocos e executa o jogo para conferir o resultado.',
+      cards: [
+        [
+          'Planejar uma parte',
+          'Antes de acender o farol, o personagem precisa alcançar a chave. Ele identifica o que deve acontecer primeiro e constrói uma parte de cada vez.',
+        ],
+        [
+          'Testar uma ideia',
+          'O personagem pegou a chave, mas o farol não acendeu. O jogo guardou essa informação? Ele confere a regra e observa o que muda ao testá-la.',
+        ],
+        [
+          'Revisar e explicar',
+          'A orientação ajuda a localizar a dificuldade. Depois do ajuste, ele pode mostrar o que mudou e contar como chegou à solução.',
+        ],
+      ],
+      paras: [
+        'O ciclo de criação é imaginar, planejar, construir, testar, melhorar e compartilhar. O jogo dá uma tarefa concreta para exercitar essas ações. As aulas oferecem orientação; a criança participa das escolhas e das tentativas.',
+      ],
+      kind: 'cards',
+      id: 'metodo',
+      visual: {
+        image: {
+          src: '/img/desafio-primeiro-jogo/farol-blocos-reais.webp',
+          alt: 'Blocos reais da Chave do Farol no Estúdio.',
+          width: 1100,
+          height: 1029,
+        },
+        caption:
+          'Os blocos organizam as instruções. O teste mostra se elas produzem o resultado esperado.',
+      },
+    },
+    {
+      tag: 'Uma atividade em casa',
+      title: 'Ele assiste a uma orientação, experimenta e confere o que fez.',
+      intro:
+        'As aulas são gravadas e ficam junto das atividades, no navegador. Seu filho pode pausar o vídeo, montar os blocos e testar o projeto. Para criar, precisa de computador com internet, mouse e teclado.',
+      cards: [
+        [
+          'Começar por uma parte',
+          'No primeiro acesso, acompanhe para entenderem a proposta. Combinem uma etapa possível e onde vão parar; não é preciso concluir um curso inteiro numa sessão.',
+        ],
+        [
+          'Usar a orientação',
+          'O vídeo e as atividades mostram o próximo passo. As falas do Zappy têm o botão Ouvir. Botões e blocos continuam com textos que podem pedir ajuda na leitura.',
+        ],
+        [
+          'Conseguir ajuda',
+          'Vocês podem rever a instrução e enviar a dúvida nos Recados, o canal de mensagens com a equipe. Mostrar o que tentaram e onde pararam ajuda a explicar a dificuldade.',
+        ],
+      ],
+      paras: [
+        'Vocês escolhem quando pausar e retomar durante o acesso. Celular e tablet podem abrir os jogos publicados; a criação acontece no computador.',
+      ],
+      kind: 'cards',
+      id: 'experiencia',
+      visual: {
+        image: {
+          src: '/img/desafio-primeiro-jogo/farol-estudio-real.webp',
+          alt: 'Projeto A Chave do Farol aberto no Estúdio real, com blocos e jogo lado a lado.',
+          width: 2400,
+          height: 1500,
+        },
+        caption:
+          'No Estúdio, as instruções e o resultado ficam na mesma área de trabalho. Esta é uma captura do projeto usado nas aulas.',
+      },
+      layout: 'visual-first',
+    },
+    {
+      tag: 'Da criação para a escola',
+      title: 'O número move a chave. A frase orienta quem joga.',
+      intro:
+        'A atividade dá um uso concreto a ideias que também aparecem na escola. Você pode retomar a experiência e ajudar seu filho a reconhecer essa relação.',
+      cards: [
+        [
+          'Matemática: calcular e conferir na tela',
+          'Neste exemplo, mudar a posição horizontal de 160 para 280 desloca a chave 120 unidades para a direita. A diferença entre os números corresponde a uma distância visível.',
+        ],
+        [
+          'Português: escrever para um leitor',
+          'Um aviso como “Falta a chave” precisa ajudar quem está jogando. Escolher a mensagem, reler e conferir se ela ficou clara aproxima a escrita de um bilhete ou de uma instrução escolar.',
+        ],
+        [
+          'Investigação: procurar uma pista',
+          'Quando uma regra falha, ele compara o que esperava com o que aconteceu. Fazer uma mudança de cada vez ajuda a conferir uma hipótese, como numa atividade de investigação.',
+        ],
+      ],
+      paras: [],
+      kind: 'cards',
+      id: 'escola',
+      visuals: [
+        {
+          image: {
+            src: '/img/desafio-primeiro-jogo/farol-posicao-x160.webp',
+            alt: 'A chave na posição horizontal 160, na experiência real da Chave do Farol.',
+            width: 800,
+            height: 606,
+          },
+          caption: 'Antes: posição horizontal 160.',
+        },
+        {
+          image: {
+            src: '/img/desafio-primeiro-jogo/farol-posicao-x280.webp',
+            alt: 'A chave deslocada para a posição horizontal 280 na mesma experiência.',
+            width: 800,
+            height: 606,
+          },
+          caption: 'Depois: posição horizontal 280. A chave andou 120 unidades para a direita.',
+        },
+      ],
+    },
+    {
+      tag: 'Da atividade para o dia a dia',
+      title: 'Uma experiência que vocês podem retomar numa situação de verdade.',
+      intro:
+        'O que acontece no jogo vira uma referência para a conversa. Fora da tela, a criança encontra outros detalhes e pode precisar de novo apoio. É nessa aproximação que a família participa.',
+      cards: [
+        [
+          'Na mochila ou no trabalho da escola',
+          'Para terminar o projeto, foi preciso separar etapas. Ao preparar a mochila, pergunte o que vai ser usado primeiro. Com o adolescente, vocês podem pensar nas partes de um trabalho e em qual precisa ficar pronta antes.',
+        ],
+        [
+          'Quando um plano muda',
+          'Uma tentativa precisou de ajuste. Se uma brincadeira ou um plano com os amigos mudar, você pode retomar o que fizeram: entender o problema, considerar outra possibilidade e escolher um próximo passo.',
+        ],
+        [
+          'Na hora de pedir ajuda',
+          'Mostrar “a chave apareceu, mas o farol não acende” localiza a dificuldade. Na tarefa da escola, convide-o a apontar a parte que entendeu e aquela em que parou.',
+        ],
+      ],
+      paras: [],
+      kind: 'cards',
+      id: 'pratica-4',
+      visual: {
+        image: {
+          src: '/img/kids-aprender-criando/organizar-mochila.webp',
+          alt: 'Cena ilustrada dos mascotes organizando materiais da mochila.',
+          width: 1536,
+          height: 1024,
+        },
+        caption:
+          'A ordem dos passos pode virar uma conversa sobre a mochila, uma receita ou as etapas de um trabalho.',
+      },
+    },
+    {
+      tag: 'Por que manter essa prática',
+      title: 'Depois de entender uma regra, vem aprender a usá-la em outra situação.',
+      intro:
+        'Entender uma regra com orientação é um começo. Ao encontrar outra situação, seu filho precisa decidir o que pode aproveitar, o que precisa mudar e quando pedir ajuda. A Comunidade organiza novas ocasiões para praticar esse raciocínio.',
+      cards: [
+        [
+          'Compreender uma relação',
+          'No Cadê Todo Mundo, tocar no esconderijo revela um personagem. A criança observa causa e efeito e monta as instruções para isso acontecer.',
+        ],
+        [
+          'Combinar o que aprendeu',
+          'Na Chave do Farol, pegar a chave precisa mudar uma informação do jogo para permitir a próxima ação. Agora ela relaciona uma sequência de ações e condições.',
+        ],
+        [
+          'Usar numa ideia própria',
+          'Depois de cumprir os requisitos da Jornada, pode criar no Estúdio livre com os recursos conquistados. Decidir uma regra própria exige voltar a planejar, testar e ajustar.',
+        ],
+      ],
+      paras: [
+        'A continuidade pode incluir rever uma aula, terminar uma parte ou experimentar uma mudança. Vocês escolhem um passo que caiba na rotina, usando uma parte do tempo de tela já combinado.',
+      ],
+      kind: 'cards',
+      id: 'continuidade',
+      visual: {
+        image: {
+          src: '/img/comunidade-dos-criadores/tela-jornada-meus-postos@2x.webp',
+          alt: 'Jornada do Criador na plataforma, mostrando os postos Faísca e Construtor.',
+          width: 1900,
+          height: 774,
+        },
+        caption:
+          'A Jornada mostra o que já foi cumprido e o que abre o próximo passo. As ferramentas são liberadas conforme esses requisitos.',
+      },
+    },
+    {
+      tag: 'O que você pode acompanhar',
+      title: 'Além de ver o jogo pronto, repare em como ele participa.',
+      intro:
+        'Você não precisa saber programar para acompanhar. Uma escolha, uma tentativa revista ou uma dúvida bem mostrada dão um ponto de partida para conversar e ajustar a ajuda.',
+      cards: [
+        [
+          'Na hora de começar',
+          'Observe se ele consegue mostrar o que quer fazer primeiro. Se a tarefa ficou grande, ajude a escolher uma parte.',
+        ],
+        [
+          'Diante de uma dificuldade',
+          'Repare se ele localiza onde parou, aceita conferir uma instrução ou pede uma pausa. Apoie a investigação sem exigir que resolva tudo sozinho.',
+        ],
+        [
+          'Ao mostrar o que fez',
+          'Veja se ele consegue apontar uma mudança ou explicar uma escolha. Pode participar falando, mostrando na tela ou convidando você para jogar.',
+        ],
+      ],
+      paras: [
+        'Compare seu filho com o próprio percurso. O apoio pode variar entre atividades; reconhecer que precisa de ajuda também faz parte da autonomia. Para crianças menores de 9 anos, o responsável acompanha durante as atividades.',
+      ],
+      kind: 'cards',
+      id: 'responsavel',
+      visual: {
+        image: {
+          src: '/img/kids-aprender-criando/area-dos-pais-conversa.webp',
+          alt: 'Área dos pais com sugestões de perguntas para conversar sobre uma criação.',
+          width: 1092,
+          height: 288,
+        },
+        caption:
+          'A área do responsável reúne atividades e progresso e oferece perguntas para conversar sobre a criação.',
+      },
+    },
+    {
+      tag: 'Uma criação para compartilhar',
+      title: 'Mostrar uma ideia dá um motivo para organizar o que se quer dizer.',
+      intro:
+        'Quando outra pessoa joga, ela precisa entender as regras. Você pode pedir que seu filho mostre uma escolha e acompanhar o que ele percebe quando alguém experimenta sua criação.',
+      cards: [
+        [
+          'Um assunto entre vocês',
+          '“Me mostra o que você mudou” parte de algo que ele viveu. A resposta pode vir numa explicação, num gesto ou na própria demonstração do jogo.',
+        ],
+        [
+          'Trocas com acompanhamento',
+          'No Mural e no Clube, ele encontra projetos e interações com moderação. O perfil público começa desativado, e você administra as permissões pela sua área.',
+        ],
+      ],
+      paras: [
+        'O relato de Rafael mostra um uso concreto dessa possibilidade: criar algo que outra pessoa possa experimentar.',
+      ],
+      kind: 'quotes',
+      id: 'compartilhar',
+    },
+    {
+      tag: 'O começo da nossa história',
+      title: 'Esse caminho começou com uma pergunta dentro da nossa família.',
+      intro:
+        'Somos Helena e Júlio, pais do André e da Débora, formados em Sistemas de Informação. Queríamos aproveitar o interesse dos nossos filhos para lhes dar oportunidades de pensar, decidir e criar. A criação de jogos entrou na nossa rotina por esse motivo.',
+      cards: [],
+      paras: [
+        'Dessa experiência nasceu o Sistema Zero. Organizamos aulas e ferramentas para que outras famílias encontrem um começo e um caminho de prática. O projeto pronto permite mostrar o que foi construído; as escolhas e tentativas no percurso dão sentido ao trabalho.',
+        'André e Débora, nossos filhos, contam ao lado como viveram o Desafio do Primeiro Jogo.',
+      ],
+      kind: 'family',
+      id: 'familia',
+      visual: {
+        image: {
+          src: '/img/comunidade-dos-criadores/familia-helena-julio-kids.webp',
+          alt: 'Helena, Júlio, André e Débora, a família que deu origem ao Sistema Zero.',
+          width: 880,
+          height: 1019,
+        },
+        caption: 'Helena e Júlio, com André e Débora.',
+      },
+    },
+    {
+      tag: 'O que a assinatura oferece',
+      title: 'Aulas para orientar. Ferramentas para experimentar. Ajuda para continuar.',
+      intro:
+        'A Comunidade reúne essas partes para que a família tenha onde retomar depois da primeira descoberta. Mensal e anual incluem o mesmo acesso; as ferramentas acompanham os requisitos da Jornada.',
+      cards: [
+        [
+          'Cursos e próximos projetos',
+          'Cursos Kids publicados, incluindo o Desafio do Primeiro Jogo, e novos cursos lançados enquanto a assinatura estiver ativa. Vocês podem rever uma orientação antes de avançar.',
+        ],
+        [
+          'Ferramentas com uma função',
+          'No Estúdio, ele constrói o jogo. No Pinta, desenha personagens e cenários; no Pensa, organiza a ideia em etapas; no Molda, cria modelos 3D. Cada ferramenta abre conforme a progressão, no momento previsto pela Jornada.',
+        ],
+        [
+          'Ajuda e compartilhamento',
+          'A equipe responde às dúvidas por mensagens nos Recados. Mural e Clube oferecem espaço para mostrar projetos e trocar ideias com moderação.',
+        ],
+        [
+          'Acompanhamento e dois perfis',
+          'Até dois perfis Kids, com progresso separado. Pela área do responsável, você acompanha atividades e administra acesso e permissões.',
+        ],
+      ],
+      paras: [
+        'O Desafio avulso dá acesso a um primeiro projeto guiado por 30 dias. A Comunidade é a assinatura para continuar pelos cursos e recursos incluídos. Como o Desafio faz parte dela, você pode começar diretamente pela Comunidade.',
+      ],
+      kind: 'cards',
+      id: 'incluido',
+    },
+  ],
   planos: {
-    title: 'Para começar, escolha o plano que cabe na rotina de vocês',
+    title: 'Escolha o plano que cabe no momento da sua família.',
     paragraph:
-      'Os dois planos dão acesso a tudo o que está na lista abaixo, e os cursos novos entram assim que são lançados. A diferença está só na forma de pagar.',
+      'Mensal e anual incluem os mesmos cursos, recursos e até dois perfis Kids. As ferramentas seguem os requisitos da Jornada. A diferença entre os planos está no período contratado e na forma de pagamento.',
     inclui: [
       'Todos os cursos publicados e os lançados durante a assinatura',
       'O Desafio do Primeiro Jogo incluído',
@@ -467,133 +405,101 @@ export const PAGINA_9A17 = {
       title: 'Mensal',
       preco: '{{preco_mensal}}',
       sufixo: '/mês',
-      text: 'Menos de {{preco_dia}} por dia. Renova todo mês no cartão, e você cancela quando quiser na sua área, sem multa.',
+      text: '{{preco_mensal}} por mês, com renovação mensal no cartão. Você pode cancelar pela sua conta, sem multa, e mantém o acesso até o fim do período pago.',
       cta: 'Assinar o mensal',
-      nota: GARANTIA_PLANO,
+      nota: '7 dias de garantia',
     },
     anual: {
       selo: 'Economia de {{economia_anual}}',
       title: 'Anual',
       preco: '{{preco_anual}}',
       sufixo: '/ano',
-      text: 'Sai por {{equivalente_mensal_anual}} por mês. No Pix à vista, não renova sozinho; no cartão, renova uma vez por ano.',
+      text: '{{preco_anual}} pelo ano. Equivale a {{equivalente_mensal_anual}} por mês, sem ser um parcelamento. No Pix, pagamento à vista sem renovação automática; no cartão, renovação anual.',
       cta: 'Assinar o anual',
-      nota: GARANTIA_PLANO,
+      nota: '7 dias de garantia',
     },
     depoisTitle: 'O que acontece depois de assinar',
     depois: [
-      'Você cria o perfil dele na sua área, com nome e data de nascimento.',
+      'Na sua área, escolha o perfil que já existe ou crie o primeiro, com nome e data de nascimento.',
       'Autoriza o computador que ele vai usar e escolhe o prazo.',
       'Ele entra com um código que você gera, válido por 10 minutos.',
-      'A primeira aula abre com o jogo pronto, e a montagem começa na mesma aula.',
+      'Acessem o perfil Kids, abram o primeiro curso disponível e comecem por uma atividade com acompanhamento.',
     ],
     garantia: {
-      strong: 'Vocês têm 7 dias para ver como ele se sai na primeira aula.',
-      text: ' Se não for para vocês, devolvemos o valor inteiro.',
-    } satisfies Destaque917,
+      strong: '',
+      text: 'Vocês têm sete dias para conhecer as atividades e observar como a proposta funciona na rotina. Se decidirem não continuar, podem pedir a devolução integral do valor.',
+    },
   },
-
-  faqTitle: 'Algumas dúvidas que costumam aparecer nessa hora',
+  faqTitle: 'Para decidir com clareza',
   faq: [
     {
-      question: 'Meu filho tem 15 anos. Não vai achar infantil?',
+      question: 'Já começamos pelo presente ou pelo Desafio. Como continuar?',
       answer:
-        'As instruções têm o Zappy, o mascote da plataforma, e uma linguagem de aventura. Mas o que ele faz é jogo de verdade: regras, personagens, publicação e, mais adiante, código. Os 7 dias de garantia servem justamente para ele testar com você.',
+        'Use o mesmo e-mail do responsável que já tem a conta, para continuar com os perfis e o progresso existentes. Não é preciso concluir o Desafio para assinar: ele está incluído na Comunidade. A assinatura começa quando o pagamento é aprovado; dias restantes do Desafio avulso não são somados ao período contratado. Vocês podem aproveitar o acesso atual e escolher quando faz sentido continuar.',
     },
     {
-      question: 'Ele pode fazer o jogo dele desde o primeiro dia?',
+      question: 'Para qual idade a Comunidade foi pensada?',
       answer:
-        'Nas aulas, desde a primeira: cada uma traz os personagens e as peças daquela atividade, e ele já decide regra e personagem ali. O Estúdio livre, para os projetos dele, abre no posto Construtor, logo depois de concluir e publicar A Chave do Farol, com as peças dos cursos que ele terminou. É de propósito: ele nunca fica diante de uma ferramenta que ainda não sabe usar.',
+        'Para que crianças e adolescentes de 9 a 17 anos possam participar com mais autonomia, conforme sua leitura e sua familiaridade com o computador. Crianças menores também podem fazer, acompanhadas por um responsável durante as atividades. A idade orienta o ponto de partida; a ajuda depende de cada criança.',
     },
     {
-      question: 'E se ele largar depois de um mês?',
+      question: 'Meu filho é autista. Como saber se a proposta combina com ele?',
       answer:
-        'Você cancela na sua área, sem multa, e o acesso segue até o fim do período pago. O progresso e os jogos dele ficam guardados. Se for só uma pausa, o modo férias protege a sequência de dias dele enquanto a assinatura continua.',
+        'Observe seu interesse pela atividade, como compreende as orientações e de que apoio precisa. É possível pausar, rever e participar falando, apontando ou mostrando na tela. Comecem juntos e ajustem a duração e a ajuda. A Comunidade é uma proposta educacional; não oferece avaliação ou tratamento clínico nem promete um resultado igual para todas as crianças.',
     },
     {
-      question: 'Ele consegue fazer sozinho?',
-      answer: `Se ele lê com autonomia e usa mouse e teclado, consegue. O vídeo fica ao lado do Estúdio, onde ele monta o jogo, o botão Ouvir lê as instruções e cada parte pode ser conferida antes de seguir. Nas primeiras aulas, vale sentar junto. A ${legendaDoRelato('AV10')}, conta: "${FLAVIA.fala}"`,
+      question: 'Ele precisa gostar de videogame ou saber programar?',
+      answer:
+        'Não precisa ter experiência com programação. O interesse pode estar nos personagens, nas histórias, no desenho ou em criar algo com você. As primeiras atividades apresentam os comandos aos poucos. Os sete dias de garantia permitem conhecer a experiência e observar como ele participa.',
     },
     {
-      question: 'Eu não entendo nada de programação. Consigo ajudar?',
+      question: 'E para um adolescente de 15, 16 ou 17 anos?',
       answer:
-        'Não precisa ajudar com a programação: a aula faz isso. O que ajuda é perguntar: me mostra o que você mudou. Se ele travar, o botão Preciso de ajuda manda a dúvida para a equipe, e a resposta chega por escrito nos Recados.',
+        'A plataforma usa personagens e linguagem de aventura, e as atividades envolvem regras, decisões e projetos próprios conforme a progressão. Observe com seu filho se esse formato desperta interesse. A garantia de sete dias permite conhecer a experiência antes de decidir mantê-la.',
     },
     {
-      question: 'Ele precisa saber desenhar?',
+      question: 'Precisa de qual equipamento?',
       answer:
-        'Não. Os cenários e os personagens das aulas vêm prontos. O Pinta, o editor de desenho, e o Molda, o de 3D, chegam pela Jornada para quando ele quiser criar os seus.',
+        'Para criar: computador com internet, navegador, mouse e teclado. Celular e tablet servem para jogar os projetos publicados, mas não substituem o computador nas atividades de criação. As aulas são gravadas e podem ser pausadas e revistas durante o acesso.',
     },
     {
-      question: 'O Pensa e o Zappy fazem o jogo por ele?',
+      question: 'Como funciona a ajuda quando ele trava?',
       answer:
-        'Não. O Pensa conversa sobre a ideia do jogo e a divide em missões. No Estúdio de blocos, a ajuda do Zappy olha o projeto e diz o que conferir, sem mexer em nada. Os dois são assistentes virtuais, funcionam com inteligência artificial e abrem no posto Inventor. Mais adiante, no Estúdio Pro, em código, o Zappy também pode propor uma mudança no jogo: ela só entra no projeto quando ele revisa e aperta Aplicar alterações, e dá para desfazer. Os créditos, usados também na descrição automática ao publicar no Mural, têm limite por dia e por mês, num só total para a família, e você acompanha na sua área. Quem decide e monta o jogo continua sendo ele.',
+        'Vocês podem enviar uma dúvida por escrito nos Recados, mostrando o que tentaram e onde pararam. A equipe responde por mensagens, sem aula individual ao vivo. O responsável continua ajudando conforme a necessidade da criança; para os menores de 9 anos, acompanha durante as atividades.',
     },
     {
-      question: 'Ele já usa Scratch, Roblox Studio ou tutoriais do YouTube. Qual é a diferença?',
+      question: 'Todas as ferramentas ficam liberadas no primeiro dia?',
       answer:
-        'Scratch e Roblox Studio são grátis e ótimos para quem já sabe por onde começar, e o YouTube ensina um passo solto. Aqui ficam juntos as aulas em português, um projeto de cada vez, as ferramentas que abrem conforme ele avança e um espaço só de alunos, com moderação. E o caminho segue dos blocos até o código. Para quem precisa de professor ao lado em horário fixo, uma escola ao vivo pesa a favor.',
+        'Os recursos acompanham a Jornada do Criador. Nas primeiras aulas, ele usa o Estúdio dentro do curso. Ao cumprir os requisitos e publicar os projetos do posto inicial, abrem o Estúdio livre e o Pinta. Outros recursos chegam nos postos seguintes. A assinatura mantém acesso aos recursos incluídos e aos cursos publicados durante seu período ativo.',
     },
     {
-      question: 'Que computador precisa?',
+      question: 'São dois perfis com a mesma assinatura?',
       answer:
-        'Um computador com internet, navegador atualizado, mouse e teclado. Pode ser o da família. Tudo roda no navegador, sem instalar nada. Celular e tablet não servem para criar, só para jogar o que ele publicou.',
+        'Sim. A assinatura Kids permite até dois perfis de crianças ou adolescentes, cada um com seu progresso. O responsável administra o acesso pela própria conta.',
     },
     {
-      question: 'Vai aumentar o tempo de tela?',
+      question: 'Como funcionam pagamento, renovação e cancelamento?',
       answer:
-        'Os combinados continuam com a família. A ideia é trocar uma parte do tempo de assistir por tempo de criar, e ele pode parar quando quiser e continuar de onde parou.',
+        'O mensal custa {{preco_mensal}} e renova todo mês no cartão. O anual custa {{preco_anual}}: no Pix, é um pagamento à vista sem renovação automática; no cartão, renova uma vez por ano. Você cancela em Conta → Minhas compras, sem multa, e mantém o acesso até o fim do período pago. Nos primeiros sete dias, pode pedir a devolução integral do valor.',
     },
     {
-      question: 'Tem aula ao vivo?',
+      question: 'Se eu cancelar, o trabalho dele desaparece?',
       answer:
-        'As aulas são gravadas, e as dúvidas são respondidas por escrito pela equipe nos Recados, o canal de mensagens da plataforma.',
-    },
-    {
-      question: 'Tenho dois filhos de idades diferentes.',
-      answer:
-        'A assinatura tem até 2 perfis, cada um com seus jogos, seu progresso e sua Jornada. Se o mais novo ainda não lê sozinho, ele cria junto com você.',
-    },
-    {
-      question: 'Como cancelo? O que acontece com os jogos?',
-      answer:
-        'Na sua área, em Conta e depois em Minhas compras, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.',
+        'Perfil, progresso, projetos salvos, certificados e posto da Jornada ficam na conta. Os jogos publicados continuam disponíveis para jogar. O acesso aos cursos e às ferramentas da assinatura termina ao acabar o período pago; os registros preservados permitem retomar o percurso se vocês voltarem a assinar.',
     },
   ],
-
   closing: {
-    title: 'A próxima partida em casa pode ser num jogo feito por ele',
-    zappy: { file: 'zappy-festa.webp', width: 640, height: 640, alt: '' },
+    title: 'Comecem por uma criação. Acompanhem as escolhas que ele faz pelo caminho.',
+    zappy: {
+      file: 'zappy-festa.webp',
+      width: 640,
+      height: 640,
+      alt: '',
+    },
   },
-
-  rodape: {
-    logo: { file: 'logo-kids-escuro.svg', width: 193, height: 18, alt: 'Sistema Zero Kids' },
-    aviso: 'Comunicação dirigida aos responsáveis',
-    links: [
-      { href: '/kids/comunidade-dos-criadores/termos', label: 'Termos de uso' },
-      { href: '/privacidade', label: 'Privacidade' },
-    ],
-  },
-
   barra: {
     preco: '{{preco_mensal}}/mês',
     alternativa: 'ou {{equivalente_mensal_anual}}/mês no anual',
     cta: 'Ver os planos',
   },
-
-  /** Capa do JSON-LD de produto (a mesma do checkout). */
-  capa: 'checkout-capa.webp',
-} as const
-
-/** As falas de `RELATOS` usadas na página, na ordem em que aparecem (AV10 vai dentro de uma dúvida). */
-export const RELATOS_9A17 = [
-  'AV08',
-  'AV09',
-  'AV12',
-  'N2',
-  'N18',
-  'N8',
-  'N15',
-  'AV04',
-  'AV10',
-] as const satisfies readonly RelatoId[]
+} satisfies { sections: ComunidadePraticaSection[] } & Record<string, unknown>
