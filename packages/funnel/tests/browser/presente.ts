@@ -477,6 +477,12 @@ try {
           /cade-jogo-3\.webp$/,
         )
         assert.equal(await page.locator('.pk-duvidas details').count(), 11)
+        if (['kids', 'campanha-kids'].includes(caso.nome)) {
+          const prazoDaCampanha = page.locator('.pk-duvidas details').filter({
+            hasText: 'Na campanha, o cadastro também precisa ocorrer dentro do período de resgate',
+          })
+          assert.equal(await prazoDaCampanha.count(), caso.nome === 'campanha-kids' ? 1 : 0)
+        }
         assert.equal(await idade.getAttribute('open'), '')
         await idade.locator('summary').click()
         assert.equal(await idade.getAttribute('open'), null)

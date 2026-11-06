@@ -60,6 +60,11 @@ Não foram desenhados blocos para substituir os blocos reais da plataforma.
   sem depender de palavras da pergunta. A regressão foi reproduzida no navegador.
 - Removidos do módulo e do espelho os dados do antigo balão do herói menor de 9,
   que já não eram exibidos no layout aprovado.
+- A orientação junto ao formulário do presente reforça o início dos sete dias no
+  cadastro aceito e pede que a família considere a disponibilidade antes do envio,
+  repetindo a regra já explicada nas condições e no FAQ.
+- O complemento do FAQ sobre o prazo da campanha é marcado nos dados, sem
+  depender da redação exata da pergunta.
 - Ampliação compartilhada com diálogo nativo: centralização, limites da tela,
   Escape, botão de fechar, retorno do foco e link para a imagem sem JavaScript.
 - `bun test`: 605 testes aprovados; dois testes de integração com banco ignorados

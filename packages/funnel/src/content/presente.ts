@@ -260,6 +260,7 @@ export const PRESENTE_KIDS = {
         pergunta: 'Quando começam os sete dias?',
         resposta:
           'No cadastro aceito para resgatar o presente. O prazo corre a partir desse momento, inclusive nos dias em que vocês não entrarem. Escolha uma ocasião em que seu filho possa usar o computador nos dias seguintes.',
+        comPrazoCampanha: true,
       },
       {
         pergunta: 'O que acontece quando o prazo termina?',
@@ -284,7 +285,7 @@ export const PRESENTE_KIDS = {
     etiqueta: 'O primeiro passo é do responsável',
     titulo: 'Resgate o presente e combine o primeiro momento juntos',
     texto:
-      'Cadastre a sua conta com os seus dados. Depois, dentro da plataforma, crie o perfil do seu filho e abra o Cadê Todo Mundo no computador. Escolha um momento em que vocês possam aproveitar os próximos sete dias.',
+      'Antes de se cadastrar, escolha uma ocasião em que seu filho possa aproveitar os próximos sete dias. O prazo começa quando o cadastro é aceito. Cadastre a conta com os seus dados; depois, na plataforma, crie o perfil do seu filho e abra o Cadê Todo Mundo no computador.',
     previa:
       'O formulário aparece no link público quando a campanha estiver aberta e o curso disponível. Nesta prévia, nenhum acesso é criado.',
   },

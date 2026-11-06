@@ -137,7 +137,7 @@ const CORES_CONDICOES = ['azul', 'rosa', 'verde']
       {P.duvidas.itens.map((item, index) => (
         <details class="c9-duvida pk-duvida" open={index === 0}>
           <summary>{item.pergunta}</summary>
-          <p>{item.resposta}{campaign && item.pergunta === 'Quando começam os sete dias?' && ` ${P.duvidas.prazoCampanha}`}</p>
+          <p>{item.resposta}{campaign && 'comPrazoCampanha' in item && item.comPrazoCampanha && ` ${P.duvidas.prazoCampanha}`}</p>
         </details>
       ))}
     </div>
