@@ -237,6 +237,28 @@ try {
   let imagens = 0
   let mainKidsCopy = ''
 
+  // A pessoa pode escolher E-mail antes de o foco inicial atrasado ser executado.
+  // Reproduz a disputa no próprio frame de montagem, sem depender da velocidade do CI.
+  await page.goto(`${origin}${kidsBase}/oferta`)
+  await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'))
+  await page.evaluate(() => {
+    const observer = new MutationObserver(() => {
+      const email = document.querySelector<HTMLInputElement>('[role="dialog"] input[name="email"]')
+      if (!email) return
+      email.focus()
+      observer.disconnect()
+    })
+    observer.observe(document.body, { childList: true, subtree: true })
+    document.querySelector<HTMLButtonElement>('[data-checkout-cta]')?.click()
+  })
+  await page.waitForTimeout(120)
+  assert.equal(
+    await page.evaluate(() => document.activeElement?.getAttribute('name')),
+    'email',
+    'Initial focus must not interrupt the field already chosen by the user',
+  )
+  await page.keyboard.press('Escape')
+
   for (const p of PAGINAS) {
     console.log(`Checking offer: ${p.nome}`)
     await page.setViewportSize({ width: 1440, height: 1000 })
