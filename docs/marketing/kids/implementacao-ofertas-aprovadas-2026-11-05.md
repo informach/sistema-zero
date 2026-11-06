@@ -67,6 +67,10 @@ Não foram desenhados blocos para substituir os blocos reais da plataforma.
   depender da redação exata da pergunta.
 - Ampliação compartilhada com diálogo nativo: centralização, limites da tela,
   Escape, botão de fechar, retorno do foco e link para a imagem sem JavaScript.
+- A verificação em staging encontrou uma corrida ao fechar e reabrir imagens:
+  o evento nativo de fechamento podia chegar depois da nova abertura e limpar
+  a imagem atual. A limpeza agora termina na própria ação de fechar. Uma
+  regressão no navegador cobre reabertura imediata, imagem, foco e rolagem.
 - `bun test`: 605 testes aprovados; dois testes de integração com banco ignorados
   conforme a configuração local. Build, tipos e Biome também verificados.
 - Presente: 14 cenários e 44 combinações de página/largura, incluindo resgate,

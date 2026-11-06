@@ -14,6 +14,17 @@ import '../../../styles/offer-image-zoom.css'
   if (dialog && image && typeof dialog.showModal === 'function') {
     let opener: HTMLAnchorElement | null = null
     let previousOverflow = ''
+    const closeImage = () => {
+      if (!dialog.open) return
+      dialog.close()
+      // Finish this lifecycle synchronously: the native close event can arrive
+      // after another image has already been opened.
+      document.documentElement.style.overflow = previousOverflow
+      image.removeAttribute('src')
+      const previousOpener = opener
+      opener = null
+      previousOpener?.focus({ preventScroll: true })
+    }
     document.addEventListener('click', (event) => {
       if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
       const link = event.target instanceof Element ? event.target.closest<HTMLAnchorElement>('a[data-offer-zoom]') : null
@@ -26,16 +37,15 @@ import '../../../styles/offer-image-zoom.css'
       document.documentElement.style.overflow = 'hidden'
       dialog.showModal()
     })
-    dialog.querySelector('button')?.addEventListener('click', () => dialog.close())
+    dialog.querySelector('button')?.addEventListener('click', closeImage)
+    dialog.addEventListener('cancel', (event) => {
+      event.preventDefault()
+      closeImage()
+    })
     dialog.addEventListener('click', (event) => {
       if (event.target !== dialog) return
       const bounds = dialog.getBoundingClientRect()
-      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close()
-    })
-    dialog.addEventListener('close', () => {
-      document.documentElement.style.overflow = previousOverflow
-      image.removeAttribute('src')
-      opener?.focus({ preventScroll: true })
+      if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) closeImage()
     })
   }
 </script>

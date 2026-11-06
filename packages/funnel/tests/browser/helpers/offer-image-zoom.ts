@@ -39,4 +39,38 @@ export async function checkOfferImageZoom(page: Page) {
   await link.click()
   await dialog.getByRole('button', { name: 'Fechar imagem ampliada' }).click()
   assert(!(await dialog.isVisible()))
+
+  // Native `close` events are queued. Reopening before that event must not let
+  // the previous dialog lifecycle clear the new image or restore stale focus.
+  const previousOverflow = await page.evaluate(() => document.documentElement.style.overflow)
+  const second = page.locator('a[data-offer-zoom]').nth(1)
+  await link.click()
+  await page.evaluate(async () => {
+    const current = document.querySelector<HTMLDialogElement>('[data-offer-image-dialog]')!
+    const next = document.querySelectorAll<HTMLAnchorElement>('a[data-offer-zoom]')[1]!
+    current.querySelector<HTMLButtonElement>('button')!.click()
+    next.focus()
+    next.click()
+    await new Promise<void>((resolve) =>
+      requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+    )
+  })
+  assert(await dialog.isVisible(), 'rapidly reopened image remains visible')
+  assert.equal(
+    await dialog.locator('img').getAttribute('alt'),
+    await second.locator('img').getAttribute('alt'),
+  )
+  await dialog.locator('img').evaluate((image) => (image as HTMLImageElement).decode())
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), 'hidden')
+  assert(
+    await dialog.evaluate((element) => element.contains(document.activeElement)),
+    'focus stays in the reopened dialog',
+  )
+  await page.keyboard.press('Escape')
+  assert(!(await dialog.isVisible()))
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), previousOverflow)
+  assert(
+    await second.evaluate((element) => document.activeElement === element),
+    'focus returns to the latest opener',
+  )
 }
