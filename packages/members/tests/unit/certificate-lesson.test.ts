@@ -37,7 +37,7 @@ test('recusa quiz posterior, misturado, ausente ou sem critério', () => {
     expect(certificateLessonIssues(sections, blocks)).toHaveLength(1)
 })
 test('não libera outros bloqueios na aula de certificado nem interfere em outras aulas', () => {
-  const studio = { id: 'studio', content: { kind: 'studio' as const } }
+  const studio = { id: 'studio', content: { kind: 'studio' as const, initialProject: {} } }
   expect(certificateLessonIssues([review, certificate], [...blocks, studio])).toHaveLength(1)
   expect(certificateLessonIssues([review], [blocks[0]!])).toEqual([])
   expect(certificateLessonIssues([], [blocks[1]!])).toEqual([])
