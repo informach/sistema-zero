@@ -6,6 +6,7 @@ import {
   CertificateBlockNotFoundError,
   LessonNotFoundError,
 } from '../../domain/course/course.errors'
+import { hasComingSoonBlock } from '../../domain/course/lesson-block'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { ProgressRepository } from '../../domain/ports/progress-repository.port'
@@ -61,6 +62,17 @@ export class GetCertificateService {
         serial: existing.serial,
         issuedAt: existing.issuedAt.toISOString(),
         revokedAt: existing.revokedAt ? existing.revokedAt.toISOString() : null,
+      }
+    }
+
+    if (hasComingSoonBlock(lesson.blocks)) {
+      return {
+        eligible: false,
+        issued: false,
+        revoked: false,
+        serial: null,
+        issuedAt: null,
+        revokedAt: null,
       }
     }
 

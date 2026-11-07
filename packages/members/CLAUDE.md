@@ -243,7 +243,10 @@ Contrato em `docs/jornada-do-criador.md`; seed em `docs/jornada-criador-seed.md`
   Pós-par abre missão, Poderes e extras. Cada conclusão concede blocos sem publicação no Mural,
   inclusive em cursos arquivados ainda acessíveis. O predicado comum de leitura/concessão/revisão
   aceita published/archived e exclui draft; blocos já congelados não são revogados.
-- `independent-course-access.ts` reconhece Farol/Cadê por concessão específica ativa independente.
+- `independent-course-access.ts` reconhece Farol/Cadê e Nave Contra Asteroides por concessão específica ativa independente.
+  Nave preserva a promessa do Desafio anterior após a mudança para o Construtor (07/11/2026).
+  O slug sozinho não concede acesso: ainda exige a matrícula ativa, com sua validade original;
+  uma assinatura sem compra específica continua seguindo os requisitos da jornada.
   Consultar todas as concessões; a mais forte pode esconder a compra avulsa. Assinatura específica
   não é compra. Presentes explícitos e concessões independentes mantêm seu prazo.
 - `creator_journey_course_grants` preserva acesso pedagógico por UUID; não substitui licença.
@@ -850,6 +853,8 @@ no schema da rota (o `normalize` do Elysia descarta o que não está).
   `live-test-schema.ts` aplica a 0108 sempre (é idempotente).
 
 > **Quiz antes do certificado (03/10/2026):** o rascunho pode publicar quiz obrigatório em seção anterior à emissão, com o quiz e o certificado selecionados nos respectivos critérios. `certificateLessonIssues` mantém a restrição para outros blocos obrigatórios e recusa quiz misturado, posterior ou sem critério. A primeira emissão verifica a seção no servidor; o GET informa `eligible: false` enquanto ela estiver trancada. Certificados já emitidos seguem acessíveis sem reavaliar requisitos novos. Quiz selecionado como critério permite corrigir imediatamente. O CRUD legado sem estrutura mantém a restrição antiga.
+>
+> **Certificado em preparação (07/11/2026):** a autoria por rascunho permite `coming_soon` junto ao certificado, preservando a validação das atividades obrigatórias. Enquanto esse bloco existir, o GET informa `eligible: false` e a primeira emissão responde `LESSON_COMING_SOON` (inclusive para equipe). Certificados já emitidos continuam disponíveis. O bloqueio da aula e das demais rotas de conteúdo permanece vigente.
 
 
 > **Contrato vigente das aulas (26/09/2026):** rascunho e publicação aceitam

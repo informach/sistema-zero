@@ -89,6 +89,50 @@ const updateBlock = (app: App, lessonId: string, blockId: string, content: { kin
 
 describe('Certificado — elegibilidade, emissão idempotente e validação', () => {
   test.each([
+    false,
+    true,
+  ])('em breve impede a primeira emissão, inclusive pela equipe (%s)', async (staff) => {
+    const { app, courses, entitlements } = buildApp()
+    const { slug, courseId, moduleId, lessonIds } = seedSampleCourse(courses)
+    grantLifetime(entitlements, { userId: USER, courseRef: slug })
+    const { lessonId, blockId } = seedCertificateLesson(courses, courseId, moduleId)
+    for (const id of lessonIds) expect((await complete(app, id)).status).toBe(200)
+    const soonId = randomUUID()
+    courses.blocks.push({
+      id: soonId,
+      lessonId,
+      kind: 'coming_soon',
+      sortOrder: 1,
+      content: { kind: 'coming_soon' },
+    })
+    const headers = staff
+      ? { ...authHeaders, 'x-auth-user-role': 'staff', 'x-auth-user-status': 'active' }
+      : authHeaders
+    expect(await getState(app, lessonId, blockId, headers).then(readJson)).toMatchObject({
+      eligible: false,
+      issued: false,
+    })
+    const denied = await issue(app, lessonId, blockId, headers)
+    expect(denied.status).toBe(409)
+    expect((await readJson(denied)).error.code).toBe('LESSON_COMING_SOON')
+    expect((await complete(app, lessonId)).status).toBe(409)
+    courses.blocks = courses.blocks.filter((b) => b.id !== soonId)
+    expect((await issue(app, lessonId, blockId, headers)).status).toBe(200)
+    courses.blocks.push({
+      id: soonId,
+      lessonId,
+      kind: 'coming_soon',
+      sortOrder: 1,
+      content: { kind: 'coming_soon' },
+    })
+    expect(await getState(app, lessonId, blockId, headers).then(readJson)).toMatchObject({
+      eligible: true,
+      issued: true,
+    })
+    expect((await issue(app, lessonId, blockId, headers)).status).toBe(200)
+  })
+
+  test.each([
     'cade-todo-mundo',
     'desafio',
   ])('%s: quiz final impede emissão antecipada, permite corrigir e preserva certificado emitido', async (prefix) => {

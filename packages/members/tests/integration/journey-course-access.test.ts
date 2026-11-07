@@ -59,6 +59,41 @@ async function comEntradaConcluida(
 }
 
 describe('Jornada do Criador — acesso pedagógico aos cursos', () => {
+  test('previous Nave owner can study before Construtor while subscription alone follows the journey', async () => {
+    const { app, courses, entitlements } = buildApp()
+    seedSampleCourse(courses, 'entrada', 'published', 'kids', false, 'primeiros-passos', '2d', 1)
+    const nave = seedSampleCourse(
+      courses,
+      'nave-contra-asteroides',
+      'published',
+      'kids',
+      false,
+      'iniciante',
+      '2d',
+      1,
+    )
+    grantAllKidsCourses(entitlements, { userId: ACCOUNT })
+    const url = 'http://localhost/members/courses/nave-contra-asteroides'
+    expect((await app.handle(new Request(url, { headers }))).status).toBe(423)
+    grantLifetime(entitlements, { userId: ACCOUNT, courseRef: 'nave-contra-asteroides' })
+    expect((await app.handle(new Request(url, { headers }))).status).toBe(200)
+    expect(
+      (await app.handle(new Request(`${url}/lessons/${nave.lessonIds[0]}`, { headers }))).status,
+    ).toBe(200)
+    const response = await app.handle(
+      new Request('http://localhost/members/catalog?audience=kids', { headers }),
+    )
+    const catalog = (await response.json()) as {
+      courses: { courseSlug: string; hasAccess: boolean; careerLock: { locked: boolean } }[]
+    }
+    expect(
+      catalog.courses.find((course) => course.courseSlug === 'nave-contra-asteroides'),
+    ).toMatchObject({
+      hasAccess: true,
+      careerLock: { locked: false },
+    })
+  })
+
   test('curso extra abre só com matrícula específica ou Comunidade, sem exigir o curso-base', async () => {
     const { app, courses, entitlements } = buildApp()
     seedSampleCourse(

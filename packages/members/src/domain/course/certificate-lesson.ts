@@ -11,6 +11,9 @@ export function certificateLessonIssues(
   const certificateIndex = sections.findIndex((s) => s.blockIds.includes(certificate.id))
   const issues: string[] = []
   for (const block of blocks) {
+    // Em breve suspende a aula inteira e a primeira emissão no servidor; não é
+    // uma atividade que possa ser pulada ao emitir o certificado.
+    if (block.content.kind === 'coming_soon') continue
     if (!isCompletionGatingBlock(block.content)) continue
     const index = sections.findIndex((s) => s.blockIds.includes(block.id))
     const section = sections[index]

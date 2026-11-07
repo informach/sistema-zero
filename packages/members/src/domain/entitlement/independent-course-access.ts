@@ -4,6 +4,8 @@ import type { EntitlementAggregate } from './entitlement.aggregate'
 export const INDEPENDENT_JOURNEY_COURSES = new Set([
   'desafio-primeiro-jogo',
   'desafio-primeiro-jogo-adulto',
+  // Former Desafio buyers retain their original course after its move to Construtor.
+  'nave-contra-asteroides',
   'cade-todo-mundo',
   'cade-todo-mundo-adulto',
 ])
