@@ -164,7 +164,10 @@ export function buildCreatorJourneySeed(
       courses.push({
         ...input,
         // A dimensão aparece na tag da trilha; o título cadastrado destaca o projeto.
-        title: input.title.replace(/\b3D\b/gi, '').replace(/\s{2,}/g, ' ').trim(),
+        title: input.title
+          .replace(/\b3D\b/gi, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim(),
         audience,
         slug,
         id,
