@@ -80,7 +80,7 @@ test('explicit gift and manual rights keep their promises, revocation closes the
     ),
   ).toBe('manual-grant')
 })
-test('only the actual specified Farol or Cadê product bypasses the curriculum', () => {
+test('only a matching right for an eligible course bypasses the curriculum', () => {
   expect(independentCourseAccessReason('desafio-primeiro-jogo', [grant()], now)).toBeUndefined()
   expect(
     independentCourseAccessReason('corre-dino', [grant({ courseRef: 'corre-dino' })], now),
@@ -92,4 +92,27 @@ test('only the actual specified Farol or Cadê product bypasses the curriculum',
       now,
     ),
   ).toBe('direct-purchase')
+})
+
+test('legacy Nave purchase keeps its own validity after moving to Construtor', () => {
+  const slug = 'nave-contra-asteroides'
+  const finite = grant({ courseRef: slug })
+  expect(independentCourseAccessReason(slug, [finite], now)).toBe('direct-purchase')
+  expect(
+    independentCourseAccessReason(slug, [finite], new Date('2026-11-01T12:00:00Z')),
+  ).toBeUndefined()
+  const lifetime = grant({ courseRef: slug, expiresAt: null })
+  expect(independentCourseAccessReason(slug, [lifetime], new Date('2030-01-01'))).toBe(
+    'direct-purchase',
+  )
+  lifetime.revoke(now)
+  expect(independentCourseAccessReason(slug, [lifetime], now)).toBeUndefined()
+  expect(independentCourseAccessReason(slug, [grant()], now)).toBeUndefined()
+  expect(
+    independentCourseAccessReason(
+      slug,
+      [grant({ courseRef: slug, sourceKind: 'subscription' })],
+      now,
+    ),
+  ).toBeUndefined()
 })

@@ -243,7 +243,10 @@ Contrato em `docs/jornada-do-criador.md`; seed em `docs/jornada-criador-seed.md`
   Pós-par abre missão, Poderes e extras. Cada conclusão concede blocos sem publicação no Mural,
   inclusive em cursos arquivados ainda acessíveis. O predicado comum de leitura/concessão/revisão
   aceita published/archived e exclui draft; blocos já congelados não são revogados.
-- `independent-course-access.ts` reconhece Farol/Cadê por concessão específica ativa independente.
+- `independent-course-access.ts` reconhece Farol/Cadê e Nave Contra Asteroides por concessão específica ativa independente.
+  Nave preserva a promessa do Desafio anterior após a mudança para o Construtor (07/11/2026).
+  O slug sozinho não concede acesso: ainda exige a matrícula ativa, com sua validade original;
+  uma assinatura sem compra específica continua seguindo os requisitos da jornada.
   Consultar todas as concessões; a mais forte pode esconder a compra avulsa. Assinatura específica
   não é compra. Presentes explícitos e concessões independentes mantêm seu prazo.
 - `creator_journey_course_grants` preserva acesso pedagógico por UUID; não substitui licença.
