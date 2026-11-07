@@ -694,7 +694,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     expect(noHtml.status).toBe(400)
   })
 
-  test('bloco "em breve": aceito solto → 201; recusado numa aula de certificado → 400', async () => {
+  test('bloco "em breve": publica sozinho ou junto ao certificado em qualquer ordem', async () => {
     const { app } = buildApp()
     const { mod, lesson } = await seedTree(app)
 
@@ -708,8 +708,7 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(comRecado.status).toBe(200)
 
-    // "Em breve" TRAVA a conclusão, e a aula do certificado conclui direto pela
-    // emissão — juntos, o diploma sairia numa aula ainda em produção.
+    // A primeira emissão é bloqueada no servidor enquanto a aula estiver em breve.
     const outraAula = await send(app, `/members/admin/modules/${mod.id}/lessons`, 'POST', {
       slug: 'aula-diploma',
       title: 'Diploma',
@@ -721,20 +720,26 @@ describe('Members HTTP — autoria: árvore de conteúdo', () => {
     })
     expect(certificado.status).toBe(200)
 
-    const barrado = await publishBlock(app, outraAula.id, {
+    const preparandoCertificado = await publishBlock(app, outraAula.id, {
       content: { kind: 'coming_soon' },
     })
-    expect(barrado.status).toBe(400)
+    expect(preparandoCertificado.status).toBe(200)
 
-    // Sentido INVERSO: a aula já tem "em breve" e alguém tenta pôr o certificado.
-    // ⚠️ Isto cobre o caminho `lessonHasGatingBlock`, mas NÃO o SQL dele: o fake
-    // in-memory implementa o método chamando a função do DOMÍNIO, então uma
-    // divergência do espelho passaria batida aqui. Quem trava o SQL de verdade é
-    // `tests/db/gating-block-sql.test.ts`, contra Postgres real.
-    const certificadoDepois = await publishBlock(app, lesson.id, {
+    // O bloqueio temporário não permite criar dois certificados no mesmo curso.
+    const duplicado = await publishBlock(app, lesson.id, {
       content: { kind: 'certificate' },
     })
-    expect(certificadoDepois.status).toBe(400)
+    expect(duplicado.status).toBe(400)
+
+    // Sentido inverso, em outro curso: preparar a aula antes de incluir o certificado.
+    const inverse = buildApp().app
+    const { lesson: futura } = await seedTree(inverse)
+    expect(
+      (await publishBlock(inverse, futura.id, { content: { kind: 'coming_soon' } })).status,
+    ).toBe(200)
+    expect(
+      (await publishBlock(inverse, futura.id, { content: { kind: 'certificate' } })).status,
+    ).toBe(200)
   })
 
   test('embed sandbox: tokens seguros → 201; allow-same-origin (escapa do iframe) → 400', async () => {
