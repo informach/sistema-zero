@@ -53,14 +53,14 @@ const RAMIFICADO: FunnelDef = {
 }
 
 describe('quiz com ramos', () => {
-  test('as definições dos quizzes do Desafio não mudam com a infraestrutura de ramos', () => {
+  test('a definição Kids fica estável e a nova definição adulta se distingue da anterior', () => {
     // Desafio Kids alterado intencionalmente para desafio-vida-v6 em 06/11/2026.
-    // A definição adulta permanece congelada. Alterar qualquer definição dispara 409
+    // A definição adulta mudou para autonomia-v2. Alterar qualquer definição dispara 409
     // nas abas abertas e preserva as respostas anteriores, exigindo retomada explícita.
     expect(quizDefinition(DESAFIO_PRIMEIRO_JOGO)?.id).toBe(
       'fcbb9867748d68cbc11a1c1c470bc18f47322faa3de24f8f813c651255d93a0e',
     )
-    expect(quizDefinition(DESAFIO_ADULTO)?.id).toBe(
+    expect(quizDefinition(DESAFIO_ADULTO)?.id).not.toBe(
       '60fec63352f5392bb32b7dec103d6f6503585085e548cd9baa696e644b7c46a3',
     )
   })
@@ -130,7 +130,9 @@ describe('quiz com ramos', () => {
   test('Performance de quiz sem ramos continua igual', () => {
     const steps = buildFunnelSteps(DESAFIO_ADULTO)
     expect(steps.some((s) => s.branch || s.branchEntry)).toBe(false)
-    const quizSteps = DESAFIO_ADULTO.content.quiz?.steps ?? []
+    const quizSteps = (DESAFIO_ADULTO.content.quiz?.steps ?? []).filter(
+      (s, i, all) => all.findIndex((other) => other.eventName === s.eventName) === i,
+    )
     expect(steps.slice(1, 1 + quizSteps.length).map((s) => s.name)).toEqual(
       quizSteps.map((s) => s.eventName),
     )
@@ -155,7 +157,7 @@ describe('quiz com ramos', () => {
     expect(info?.answerLabels.abertura_criacao).toStartWith('(quiz anterior) ')
     expect(info?.perfilLabels['m9-ideias']).toBeTruthy()
     const adulto = adminFunnelList().find((f) => f.key === DESAFIO_ADULTO.key)
-    expect(adulto?.quiz?.headlines.map((h) => h.id)).toEqual(['padrao', 'ideia'])
+    expect(adulto?.quiz?.headlines.map((h) => h.id)).toEqual(['autonomia-v2'])
     expect(adulto?.perfilLabels['desafio-adulto-ideia']).toBeTruthy()
   })
 

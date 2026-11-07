@@ -29,7 +29,7 @@ export const COMUNIDADE_ADULTO_PRECO_FALLBACK = { mensalCents: 9_700, anualCents
 export const COMUNIDADE_ADULTO_CHECKOUT: FunnelCheckoutIntro = {
   titulo: 'Confirme sua assinatura da Comunidade dos Criadores',
   paragrafos: [
-    'Cursos do primeiro jogo ao código, as ferramentas para fazer o jogo inteiro, o Mural, o Clube e ajuda quando você travar, num lugar só. Confira o plano, o valor e a renovação antes de pagar.',
+    'Cursos, ferramentas e apoio para aprender criando jogos e continuar praticando. A liberação segue os requisitos da Jornada. Confira o plano, o valor e a renovação antes de pagar.',
   ],
 }
 
@@ -44,7 +44,7 @@ export const COMUNIDADE_ADULTO_OBRIGADO: FunnelObrigado = {
     'Se já tem conta, entre com seu acesso habitual. No primeiro acesso, siga as instruções enviadas ao e-mail da compra para criar a senha.',
   passosTitulo: 'Os primeiros passos',
   botao: 'Entrar na Comunidade →',
-  entrega: PAGINA_ADULTO.oferta.cartao.inclui,
+  entrega: [...PAGINA_ADULTO.oferta.inclui],
   passos: [
     {
       titulo: 'Confirme seu acesso no e-mail',

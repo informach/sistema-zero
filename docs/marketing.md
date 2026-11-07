@@ -6,6 +6,13 @@
 > [`packages/marketing-app/CLAUDE.md`](../packages/marketing-app/CLAUDE.md) (app).
 > O plano completo de fases vive em `~/.claude/plans/eu-tenho-a-plataforma-wise-nebula.md`.
 
+## Direções de comunicação aprovadas
+
+- [Kids: treinamento de habilidades para a vida](marketing/kids/posicionamento.md).
+- [Adulto: autonomia para criar e realizar ideias](marketing/pro/posicionamento.md).
+
+Esses registros orientam o argumento, os exemplos e a função de cada oferta. Condições comerciais e disponibilidade continuam sendo conferidas no produto e no catálogo.
+
 ## O que é
 
 Ferramenta INTERNA da equipe para gerenciar todo o marketing de conteúdo do Sistema Zero:

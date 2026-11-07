@@ -1,0 +1,1386 @@
+{
+  "desafio": [
+    {
+      "id": "interesse",
+      "number": 1,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Quando pensa em criar alguma coisa no computador, o que mais desperta sua vontade?",
+          "note": "Escolha o que mais se aproxima do seu interesse hoje.",
+          "options": [
+            {
+              "id": "ideia",
+              "label": "Dar forma a uma ideia minha.",
+              "detail": "Como uma história em que a pessoa escolhe o que acontece."
+            },
+            {
+              "id": "entender",
+              "label": "Entender o que acontece por trás da tela.",
+              "detail": "Como descobrir o que faz uma imagem mudar quando eu clico."
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um projeto pelo prazer de criar.",
+              "detail": "Algo que eu possa fazer nas horas livres e mostrar a alguém."
+            },
+            {
+              "id": "descobrir",
+              "label": "Descobrir o que consigo criar.",
+              "detail": "Ainda não tenho uma ideia definida, mas tenho curiosidade de experimentar."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "experiencia",
+      "number": 2,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Qual destas frases melhor descreve sua experiência criando no computador?",
+          "note": "Pode ser uma animação, uma história com escolhas ou uma apresentação com botões. Escolha o ponto a que já chegou.",
+          "options": [
+            {
+              "id": "nunca",
+              "label": "Ainda não comecei uma criação assim.",
+              "detail": "Por enquanto, ficou na curiosidade ou na vontade."
+            },
+            {
+              "id": "acompanhei",
+              "label": "Já reproduzi um exemplo seguindo uma explicação.",
+              "detail": "Fui acompanhando as etapas até ver o resultado."
+            },
+            {
+              "id": "parei",
+              "label": "Já comecei e parei no meio.",
+              "detail": "Cheguei a montar uma parte, mas não concluí o que imaginava."
+            },
+            {
+              "id": "terminei",
+              "label": "Já terminei uma pequena criação e fiz ajustes meus.",
+              "detail": "Além de acompanhar, experimentei escolhas diferentes."
+            },
+            {
+              "id": "proprio",
+              "label": "Já construo e modifico projetos por conta própria.",
+              "detail": "Consigo escolher o que fazer e procurar soluções para a minha ideia."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "computador",
+      "number": 3,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Você consegue usar um computador com internet, mouse e teclado para criar?",
+          "note": "Pode responder a este quiz pelo celular.",
+          "options": [
+            {
+              "id": "meu",
+              "label": "Sim, tenho um computador disponível.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhado",
+              "label": "Sim, uso um computador compartilhado.",
+              "detail": ""
+            },
+            {
+              "id": "verificar",
+              "label": "Ainda preciso confirmar esse acesso.",
+              "detail": ""
+            },
+            {
+              "id": "celular",
+              "label": "Hoje só tenho celular ou tablet.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trava",
+      "number": 4,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante",
+          "title": "Ao imaginar uma criação sua, qual parte parece mais difícil?",
+          "note": "Pense no que acontece entre ter uma ideia e ver uma parte dela funcionar.",
+          "options": [
+            {
+              "id": "comecar",
+              "label": "Escolher um começo que eu consiga fazer.",
+              "detail": "Transformar a ideia em uma primeira parte pequena o bastante para tentar."
+            },
+            {
+              "id": "entender",
+              "label": "Entender como fazer uma mudança minha.",
+              "detail": "Perceber qual parte eu teria de alterar para mudar o resultado."
+            },
+            {
+              "id": "testar",
+              "label": "Descobrir o que deu errado.",
+              "detail": "Saber o que conferir se uma tentativa não funcionar."
+            },
+            {
+              "id": "organizar",
+              "label": "Fazer as partes funcionarem juntas.",
+              "detail": "Saber como ligar cada parte ao restante da ideia."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Ainda não sei qual seria a dificuldade.",
+              "detail": "Quero conhecer outras possibilidades de criação."
+            }
+          ]
+        },
+        {
+          "key": "experiente",
+          "title": "Ao tentar fazer uma criação sua, onde costuma travar?",
+          "note": "Pense no que acontece entre ter uma ideia e ver uma parte dela funcionar.",
+          "options": [
+            {
+              "id": "comecar",
+              "label": "Escolher um começo que eu consiga fazer.",
+              "detail": "Tenho a ideia, mas não sei qual pequena parte construir primeiro."
+            },
+            {
+              "id": "entender",
+              "label": "Entender como fazer uma mudança minha.",
+              "detail": "Consigo acompanhar uma explicação, mas não sei o que alterar para mudar o resultado."
+            },
+            {
+              "id": "testar",
+              "label": "Descobrir o que deu errado.",
+              "detail": "Mudo alguma coisa, o resultado não aparece e não sei o que conferir."
+            },
+            {
+              "id": "organizar",
+              "label": "Fazer as partes funcionarem juntas.",
+              "detail": "Monto partes separadas, mas me perco quando preciso juntar tudo."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Nenhum desses pontos costuma me impedir.",
+              "detail": "Quero conhecer outras possibilidades de criação."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ajuda",
+      "number": 5,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante",
+          "title": "Se uma tentativa não funcionasse como você esperava, o que provavelmente faria?",
+          "note": "Por exemplo: você tenta fazer uma imagem aparecer ao clicar, mas nada acontece.",
+          "options": [
+            {
+              "id": "paro",
+              "label": "Pararia, sem saber o que procurar.",
+              "detail": ""
+            },
+            {
+              "id": "repito",
+              "label": "Tentaria repetir os passos desde o começo.",
+              "detail": "Procuro uma diferença entre o que fiz e a explicação."
+            },
+            {
+              "id": "investigo",
+              "label": "Tentaria conferir uma parte de cada vez.",
+              "detail": "Procuro o ponto em que o resultado ficou diferente do esperado."
+            },
+            {
+              "id": "pergunto",
+              "label": "Procuraria uma explicação para aquele ponto.",
+              "detail": "Mostro o que tentei e o que aconteceu."
+            },
+            {
+              "id": "nao_sei",
+              "label": "Ainda não sei como reagiria.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente",
+          "title": "Quando uma tentativa não funciona como você esperava, o que costuma fazer?",
+          "note": "Por exemplo: você tenta fazer uma imagem aparecer ao clicar, mas nada acontece.",
+          "options": [
+            {
+              "id": "paro",
+              "label": "Paro, sem saber o que procurar.",
+              "detail": ""
+            },
+            {
+              "id": "repito",
+              "label": "Repito os passos desde o começo.",
+              "detail": "Procuro uma diferença entre o que fiz e a explicação."
+            },
+            {
+              "id": "investigo",
+              "label": "Confiro uma parte de cada vez.",
+              "detail": "Procuro o ponto em que o resultado ficou diferente do esperado."
+            },
+            {
+              "id": "pergunto",
+              "label": "Procuro uma explicação para aquele ponto.",
+              "detail": "Mostro o que tentei e o que aconteceu."
+            },
+            {
+              "id": "nao_sei",
+              "label": "Não consigo identificar um jeito que eu use mais.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "condicao",
+      "number": 6,
+      "multiple": true,
+      "variants": [
+        {
+          "key": "base",
+          "title": "O que poderia dificultar levar uma tentativa dessas até o fim?",
+          "note": "Pode marcar mais de uma opção.",
+          "options": [
+            {
+              "id": "tempo",
+              "label": "Não conseguir reservar momentos para fazer e testar.",
+              "detail": "Minha rotina muda bastante ou já está muito cheia."
+            },
+            {
+              "id": "apoio",
+              "label": "Ficar com uma dúvida sem ter onde perguntar.",
+              "detail": ""
+            },
+            {
+              "id": "ao_vivo",
+              "label": "Precisar de uma pessoa me acompanhando ao vivo.",
+              "detail": "Explicações gravadas e respostas por mensagem não seriam suficientes para mim."
+            },
+            {
+              "id": "livre",
+              "label": "Ter de começar com um exemplo preparado.",
+              "detail": "Quero trabalhar diretamente em uma ideia minha."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Não vejo nenhum desses impedimentos hoje.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "efeito",
+      "number": 7,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante",
+          "title": "Quando a vontade de criar fica para depois, o que costuma acontecer?",
+          "note": "Pense no que acontece com essa vontade na sua rotina.",
+          "options": [
+            {
+              "id": "guardado",
+              "label": "A vontade continua, mas fico sem dar o primeiro passo.",
+              "detail": ""
+            },
+            {
+              "id": "referencias",
+              "label": "Guardo mais referências, mas ainda não começo.",
+              "detail": ""
+            },
+            {
+              "id": "avanco",
+              "label": "Escolho uma parte pequena para experimentar quando puder.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Por enquanto, estou bem em só conhecer as possibilidades.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente",
+          "title": "Depois de uma tentativa, o que costuma acontecer com a sua ideia?",
+          "note": "Escolha a situação mais próxima da sua experiência.",
+          "options": [
+            {
+              "id": "guardado",
+              "label": "A ideia ou o arquivo fica guardado e demoro para retomar.",
+              "detail": ""
+            },
+            {
+              "id": "referencias",
+              "label": "Procuro outra explicação e acabo recomeçando.",
+              "detail": ""
+            },
+            {
+              "id": "avanco",
+              "label": "Ajusto uma parte e consigo seguir com o que aprendi.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Por enquanto, estou bem em experimentar sem concluir.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "peso",
+      "number": 8,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante_adiado",
+          "title": "E o que esse começo adiado acaba deixando para depois?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Ideias que eu não sei como começar sozinho.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A chance de descobrir se consigo aprender a fazer.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que vão ficando guardadas junto com as anteriores.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "iniciante_avanca",
+          "title": "Pensando nas próximas ideias, o que ainda acaba ficando para depois?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Ideias que eu não sei como começar sozinho.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A chance de descobrir se consigo aprender a fazer.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que vão ficando guardadas junto com as anteriores.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente_adiado",
+          "title": "O que acaba ficando para depois quando uma tentativa não avança?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Mudanças minhas para as quais não encontro um passo a passo.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A tentativa de criar sozinho, porque não sei se entendi o suficiente.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que deixo guardadas por não conseguir aproveitar o que já aprendi.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente_avanca",
+          "title": "Pensando nas próximas ideias, o que ainda acaba ficando para depois?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Mudanças minhas para as quais não encontro um passo a passo.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A tentativa de criar sozinho, porque não sei se entendi o suficiente.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que deixo guardadas por não conseguir aproveitar o que já aprendi.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conquista",
+      "number": 9,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Qual conquista teria mais valor para você em uma próxima criação?",
+          "note": "Escolha a que mais gostaria de alcançar primeiro.",
+          "options": [
+            {
+              "id": "comecar",
+              "label": "Ter um começo que eu consiga colocar em prática.",
+              "detail": "Abrir a ferramenta, saber o primeiro passo e ver uma parte funcionar."
+            },
+            {
+              "id": "compreender",
+              "label": "Fazer uma mudança e entender por que funcionou.",
+              "detail": "Escolher outra ação e explicar o efeito que ela teve."
+            },
+            {
+              "id": "concluir",
+              "label": "Levar uma pequena criação até o fim.",
+              "detail": "Juntar as partes, testar o conjunto e chegar a uma versão para mostrar."
+            },
+            {
+              "id": "autoria",
+              "label": "Combinar o que aprendi em uma ideia diferente.",
+              "detail": "Usar uma regra conhecida para construir algo que ainda não fiz."
+            },
+            {
+              "id": "explorar",
+              "label": "Experimentar antes de escolher uma conquista.",
+              "detail": "Ainda quero descobrir de que tipo de criação gosto."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beneficio",
+      "number": 10,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "comecar",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "compreender",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "concluir",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "autoria",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "explorar",
+          "title": "O que faria valer a pena conhecer essas possibilidades de criação?",
+          "note": "Pense no que poderia despertar sua vontade de experimentar.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "comunidade": [
+    {
+      "id": "interesse",
+      "number": 1,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Quando pensa em criar alguma coisa no computador, o que mais desperta sua vontade?",
+          "note": "Escolha o que mais se aproxima do seu interesse hoje.",
+          "options": [
+            {
+              "id": "ideia",
+              "label": "Dar forma a uma ideia minha.",
+              "detail": "Como uma história em que a pessoa escolhe o que acontece."
+            },
+            {
+              "id": "entender",
+              "label": "Entender o que acontece por trás da tela.",
+              "detail": "Como descobrir o que faz uma imagem mudar quando eu clico."
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um projeto pelo prazer de criar.",
+              "detail": "Algo que eu possa fazer nas horas livres e mostrar a alguém."
+            },
+            {
+              "id": "descobrir",
+              "label": "Descobrir o que consigo criar.",
+              "detail": "Ainda não tenho uma ideia definida, mas tenho curiosidade de experimentar."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "experiencia",
+      "number": 2,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Qual destas frases melhor descreve sua experiência criando no computador?",
+          "note": "Pode ser uma animação, uma história com escolhas ou uma apresentação com botões. Escolha o ponto a que já chegou.",
+          "options": [
+            {
+              "id": "nunca",
+              "label": "Ainda não comecei uma criação assim.",
+              "detail": "Por enquanto, ficou na curiosidade ou na vontade."
+            },
+            {
+              "id": "acompanhei",
+              "label": "Já reproduzi um exemplo seguindo uma explicação.",
+              "detail": "Fui acompanhando as etapas até ver o resultado."
+            },
+            {
+              "id": "parei",
+              "label": "Já comecei e parei no meio.",
+              "detail": "Cheguei a montar uma parte, mas não concluí o que imaginava."
+            },
+            {
+              "id": "terminei",
+              "label": "Já terminei uma pequena criação e fiz ajustes meus.",
+              "detail": "Além de acompanhar, experimentei escolhas diferentes."
+            },
+            {
+              "id": "proprio",
+              "label": "Já construo e modifico projetos por conta própria.",
+              "detail": "Consigo escolher o que fazer e procurar soluções para a minha ideia."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "computador",
+      "number": 3,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Você consegue usar um computador com internet, mouse e teclado para criar?",
+          "note": "Pode responder a este quiz pelo celular.",
+          "options": [
+            {
+              "id": "meu",
+              "label": "Sim, tenho um computador disponível.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhado",
+              "label": "Sim, uso um computador compartilhado.",
+              "detail": ""
+            },
+            {
+              "id": "verificar",
+              "label": "Ainda preciso confirmar esse acesso.",
+              "detail": ""
+            },
+            {
+              "id": "celular",
+              "label": "Hoje só tenho celular ou tablet.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trava",
+      "number": 4,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante",
+          "title": "Ao imaginar uma criação sua, qual parte parece mais difícil?",
+          "note": "Pense no que acontece entre ter uma ideia e ver uma parte dela funcionar.",
+          "options": [
+            {
+              "id": "comecar",
+              "label": "Escolher um começo que eu consiga fazer.",
+              "detail": "Transformar a ideia em uma primeira parte pequena o bastante para tentar."
+            },
+            {
+              "id": "entender",
+              "label": "Entender como fazer uma mudança minha.",
+              "detail": "Perceber qual parte eu teria de alterar para mudar o resultado."
+            },
+            {
+              "id": "testar",
+              "label": "Descobrir o que deu errado.",
+              "detail": "Saber o que conferir se uma tentativa não funcionar."
+            },
+            {
+              "id": "organizar",
+              "label": "Fazer as partes funcionarem juntas.",
+              "detail": "Saber como ligar cada parte ao restante da ideia."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Ainda não sei qual seria a dificuldade.",
+              "detail": "Quero conhecer outras possibilidades de criação."
+            }
+          ]
+        },
+        {
+          "key": "experiente",
+          "title": "Quando tenta levar uma criação além do que já sabe fazer, onde costuma travar?",
+          "note": "Pense no que acontece entre ter uma ideia e ver uma parte dela funcionar.",
+          "options": [
+            {
+              "id": "comecar",
+              "label": "Escolher um começo que eu consiga fazer.",
+              "detail": "Tenho a ideia, mas não sei qual pequena parte construir primeiro."
+            },
+            {
+              "id": "entender",
+              "label": "Entender como fazer uma mudança minha.",
+              "detail": "Consigo acompanhar uma explicação, mas não sei o que alterar para mudar o resultado."
+            },
+            {
+              "id": "testar",
+              "label": "Descobrir o que deu errado.",
+              "detail": "Mudo alguma coisa, o resultado não aparece e não sei o que conferir."
+            },
+            {
+              "id": "organizar",
+              "label": "Fazer as partes funcionarem juntas.",
+              "detail": "Monto partes separadas, mas me perco quando preciso juntar tudo."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Nenhum desses pontos costuma me impedir.",
+              "detail": "Quero conhecer outras possibilidades de criação."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "ajuda",
+      "number": 5,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante",
+          "title": "Se uma tentativa não funcionasse como você esperava, o que provavelmente faria?",
+          "note": "Por exemplo: você tenta fazer uma imagem aparecer ao clicar, mas nada acontece.",
+          "options": [
+            {
+              "id": "paro",
+              "label": "Pararia, sem saber o que procurar.",
+              "detail": ""
+            },
+            {
+              "id": "repito",
+              "label": "Tentaria repetir os passos desde o começo.",
+              "detail": "Procuro uma diferença entre o que fiz e a explicação."
+            },
+            {
+              "id": "investigo",
+              "label": "Tentaria conferir uma parte de cada vez.",
+              "detail": "Procuro o ponto em que o resultado ficou diferente do esperado."
+            },
+            {
+              "id": "pergunto",
+              "label": "Procuraria uma explicação para aquele ponto.",
+              "detail": "Mostro o que tentei e o que aconteceu."
+            },
+            {
+              "id": "nao_sei",
+              "label": "Ainda não sei como reagiria.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente",
+          "title": "Quando uma tentativa não funciona como você esperava, o que costuma fazer?",
+          "note": "Por exemplo: você tenta fazer uma imagem aparecer ao clicar, mas nada acontece.",
+          "options": [
+            {
+              "id": "paro",
+              "label": "Paro, sem saber o que procurar.",
+              "detail": ""
+            },
+            {
+              "id": "repito",
+              "label": "Repito os passos desde o começo.",
+              "detail": "Procuro uma diferença entre o que fiz e a explicação."
+            },
+            {
+              "id": "investigo",
+              "label": "Confiro uma parte de cada vez.",
+              "detail": "Procuro o ponto em que o resultado ficou diferente do esperado."
+            },
+            {
+              "id": "pergunto",
+              "label": "Procuro uma explicação para aquele ponto.",
+              "detail": "Mostro o que tentei e o que aconteceu."
+            },
+            {
+              "id": "nao_sei",
+              "label": "Não consigo identificar um jeito que eu use mais.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "condicao",
+      "number": 6,
+      "multiple": true,
+      "variants": [
+        {
+          "key": "base",
+          "title": "O que poderia dificultar a continuidade dessa prática na sua rotina?",
+          "note": "Pode marcar mais de uma opção.",
+          "options": [
+            {
+              "id": "tempo",
+              "label": "Não conseguir reservar momentos para fazer e testar.",
+              "detail": "Minha rotina muda bastante ou já está muito cheia."
+            },
+            {
+              "id": "apoio",
+              "label": "Ficar com uma dúvida sem ter onde perguntar.",
+              "detail": ""
+            },
+            {
+              "id": "ao_vivo",
+              "label": "Precisar de uma pessoa me acompanhando ao vivo.",
+              "detail": "Explicações gravadas e respostas por mensagem não seriam suficientes para mim."
+            },
+            {
+              "id": "livre",
+              "label": "Ter de começar com um exemplo preparado.",
+              "detail": "Quero trabalhar diretamente em uma ideia minha."
+            },
+            {
+              "id": "nenhuma",
+              "label": "Não vejo nenhum desses impedimentos hoje.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "efeito",
+      "number": 7,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante",
+          "title": "Quando a vontade de criar fica para depois, o que costuma acontecer?",
+          "note": "Pense no que acontece com essa vontade na sua rotina.",
+          "options": [
+            {
+              "id": "guardado",
+              "label": "A vontade continua, mas fico sem dar o primeiro passo.",
+              "detail": ""
+            },
+            {
+              "id": "referencias",
+              "label": "Guardo mais referências, mas ainda não começo.",
+              "detail": ""
+            },
+            {
+              "id": "avanco",
+              "label": "Escolho uma parte pequena para experimentar quando puder.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Por enquanto, estou bem em só conhecer as possibilidades.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente",
+          "title": "Entre uma criação e a próxima, o que costuma acontecer com o que você aprendeu?",
+          "note": "Escolha a situação mais próxima da sua experiência.",
+          "options": [
+            {
+              "id": "guardado",
+              "label": "Ao retomar, gasto tempo para lembrar o que estava fazendo.",
+              "detail": ""
+            },
+            {
+              "id": "referencias",
+              "label": "Procuro outro passo a passo porque não sei aproveitar o anterior.",
+              "detail": ""
+            },
+            {
+              "id": "avanco",
+              "label": "Uso o que aprendi e experimento uma nova combinação.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Crio de vez em quando e estou bem com esse ritmo.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "peso",
+      "number": 8,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "iniciante_adiado",
+          "title": "E o que esse começo adiado acaba deixando para depois?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Ideias que eu não sei como começar sozinho.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A chance de descobrir se consigo aprender a fazer.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que vão ficando guardadas junto com as anteriores.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "iniciante_avanca",
+          "title": "Pensando nas próximas ideias, o que ainda acaba ficando para depois?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Ideias que eu não sei como começar sozinho.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A chance de descobrir se consigo aprender a fazer.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que vão ficando guardadas junto com as anteriores.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente_adiado",
+          "title": "Como essa falta de continuidade afeta as ideias que você gostaria de realizar?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Mudanças minhas para as quais não encontro um passo a passo.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A tentativa de criar sozinho, porque não sei se entendi o suficiente.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que deixo guardadas por não conseguir aproveitar o que já aprendi.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "experiente_avanca",
+          "title": "Pensando nas próximas ideias, o que ainda acaba ficando para depois?",
+          "note": "Escolha a situação que mais se aproxima da sua. Se isso não pesa para você, também pode dizer.",
+          "options": [
+            {
+              "id": "dependencia",
+              "label": "Mudanças minhas para as quais não encontro um passo a passo.",
+              "detail": ""
+            },
+            {
+              "id": "incerteza",
+              "label": "A tentativa de criar sozinho, porque não sei se entendi o suficiente.",
+              "detail": ""
+            },
+            {
+              "id": "inacabado",
+              "label": "Ter uma criação minha para mostrar a alguém.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Outras ideias que deixo guardadas por não conseguir aproveitar o que já aprendi.",
+              "detail": ""
+            },
+            {
+              "id": "tranquilo",
+              "label": "Isso não pesa para mim. Estou bem com meu ritmo de descoberta.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "conquista",
+      "number": 9,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "base",
+          "title": "Qual conquista teria mais valor para você ao continuar criando?",
+          "note": "Escolha a que mais gostaria de alcançar primeiro.",
+          "options": [
+            {
+              "id": "comecar",
+              "label": "Ter um começo que eu consiga colocar em prática.",
+              "detail": "Abrir a ferramenta, saber o primeiro passo e ver uma parte funcionar."
+            },
+            {
+              "id": "compreender",
+              "label": "Fazer uma mudança e entender por que funcionou.",
+              "detail": "Escolher outra ação e explicar o efeito que ela teve."
+            },
+            {
+              "id": "concluir",
+              "label": "Retomar os projetos e levar as criações adiante.",
+              "detail": "Juntar as partes, testar o conjunto e chegar a uma versão para mostrar."
+            },
+            {
+              "id": "autoria",
+              "label": "Combinar o que aprendi em uma ideia diferente.",
+              "detail": "Usar uma regra conhecida para construir algo que ainda não fiz."
+            },
+            {
+              "id": "explorar",
+              "label": "Experimentar antes de escolher uma conquista.",
+              "detail": "Ainda quero descobrir de que tipo de criação gosto."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "beneficio",
+      "number": 10,
+      "multiple": false,
+      "variants": [
+        {
+          "key": "comecar",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "compreender",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "concluir",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "autoria",
+          "title": "O que essa conquista acrescentaria à sua vida?",
+          "note": "Pense no valor que isso teria para você, além da criação pronta.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        },
+        {
+          "key": "explorar",
+          "title": "O que faria valer a pena conhecer essas possibilidades de criação?",
+          "note": "Pense no que poderia despertar sua vontade de experimentar.",
+          "options": [
+            {
+              "id": "capacidade",
+              "label": "Perceber que consigo aprender e fazer escolhas por conta própria.",
+              "detail": ""
+            },
+            {
+              "id": "prazer",
+              "label": "Ter um interesse meu para aproveitar nas horas livres.",
+              "detail": ""
+            },
+            {
+              "id": "compartilhar",
+              "label": "Poder mostrar algo que fiz e conversar sobre minhas escolhas.",
+              "detail": ""
+            },
+            {
+              "id": "possibilidades",
+              "label": "Ganhar referências para experimentar outras ideias.",
+              "detail": ""
+            },
+            {
+              "id": "conhecer",
+              "label": "Ainda estou conhecendo, sem uma expectativa definida.",
+              "detail": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

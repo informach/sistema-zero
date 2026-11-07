@@ -11,9 +11,9 @@ import {
   useSpinQuiz,
 } from './useSpinQuiz'
 
-// O quiz adulto em conversa (Comunidade v1, 20/10/2026; Desafio v1, 21/10/2026): a entrada tem só o
-// motivo de responder, "Começar" e o link "Tenho menos de 18 anos" (a saída para o quiz Kids, sem
-// nada gravado sobre idade); depois, uma pergunta por tela. Tocar numa opção já grava e segue. A
+// Os quizzes adultos de autonomia têm dez perguntas, com confirmação explícita da escolha e
+// múltipla seleção das condições. O produto aparece somente no resultado. A saída para menores
+// encaminha ao quiz Kids, sem gravar uma idade que não foi perguntada. A
 // pele é a arcade (`.qz--adulto`, tokens `--cda-*` do theme-arcade). Cada funil passa a sua
 // configuração (`AdultoQuizConfig`) por uma ilha fina.
 
@@ -21,6 +21,7 @@ const MINOR = 'menor-de-18'
 
 export interface AdultoQuizConfig {
   engine: SpinEngine
+  defaultTotal?: number
   completesQuiz: (answers: QuizAnswers, key: string, value: QuizAnswerValue) => boolean
   /** A pergunta como a pessoa a vê (ex.: a calculadora da Comunidade); sem ela, a pergunta crua. */
   stepOnScreen?: (step: SelecaoStep, answers: QuizAnswers) => SelecaoStep
@@ -88,6 +89,7 @@ export default function AdultoConversaQuiz({
   const { current, steps, busy, error, conflict, updated, session } = quiz
   // A saída de menor de 18 é só da tela: não grava nada, e voltar dela devolve à entrada.
   const [minor, setMinor] = useState(false)
+  const [reviewing, setReviewing] = useState(false)
   const cursor = minor ? MINOR : quiz.cursor
   const heading = useRef<HTMLHeadingElement>(null)
   const anterior = useRef(cursor)
@@ -95,12 +97,17 @@ export default function AdultoConversaQuiz({
   // O foco vai ao título de cada tela; na entrada, só quando se volta a ela (na primeira abertura a
   // página começa do topo, sem roubar o foco).
   useEffect(() => {
-    if (cursor !== INTRO || anterior.current !== INTRO) heading.current?.focus()
+    if (cursor !== INTRO || anterior.current !== INTRO) {
+      heading.current?.focus({ preventScroll: true })
+      window.scrollTo({ top: 0, behavior: 'instant' })
+    }
     anterior.current = cursor
   }, [cursor])
 
   const go = (key: string) => {
     setMinor(false)
+    if (cursor === REVIEW) setReviewing(true)
+    if (key === INTRO) setReviewing(false)
     quiz.go(key)
   }
 
@@ -215,7 +222,7 @@ export default function AdultoConversaQuiz({
           )}
         </div>
         {!session && !error && <p className="qz-nota">Preparando o quiz…</p>}
-        <p className="qz-nota">{QUIZ_ENTRY.note}</p>
+        {QUIZ_ENTRY.note && <p className="qz-nota">{QUIZ_ENTRY.note}</p>}
       </main>,
     )
   }
@@ -227,10 +234,11 @@ export default function AdultoConversaQuiz({
           Suas respostas
         </h1>
         <p className="qz-descricao">
-          Você pode mudar qualquer resposta. O resultado acompanha o que ficar salvo.
+          Você pode mudar uma resposta. Se ela alterar o sentido de outra pergunta, vamos pedir que
+          confira aquela resposta também.
         </p>
         <ol className="qz-revisao">
-          {steps.map((raw) => {
+          {steps.map((raw, index) => {
             const s = stepOnScreen(raw, current)
             const escolhidas = s.opcoes
               .filter(
@@ -247,6 +255,10 @@ export default function AdultoConversaQuiz({
                 <button
                   className="qz-link"
                   type="button"
+                  disabled={
+                    busy ||
+                    steps.slice(0, index).some((s) => !c.engine.validChoice(s, current[s.key]))
+                  }
                   onClick={() => go(s.key)}
                   aria-label={`Mudar: ${s.titulo}`}
                 >
@@ -290,9 +302,10 @@ export default function AdultoConversaQuiz({
   // A pergunta extra de um perfil só se abre no fim; ela aparece como "Pergunta extra", sem mudar o
   // total (antes, quem caía em B ou D via "10 de 10" e depois "11 de 11").
   const contadas = steps.filter((s) => !s.condicional)
-  const total = contadas.length
+  const total = c.defaultTotal ?? contadas.length
   const extra = step.condicional === true
-  const numero = extra ? total : contadas.findIndex((s) => s.key === step.key) + 1
+  const numero =
+    step.quizPosition ?? (extra ? total : contadas.findIndex((s) => s.key === step.key) + 1)
   const rotulo = extra ? 'Pergunta extra' : `Pergunta ${numero} de ${total}`
   const etapa = c.stages[step.etapa] ?? ''
   const voltar = position === 0 ? INTRO : (steps[position - 1]?.key ?? INTRO)
@@ -303,7 +316,7 @@ export default function AdultoConversaQuiz({
       data-analytics-question={step.key}
       data-analytics-quiz={quizDefinitionId}
       data-analytics-attempt={session?.id}
-      data-analytics-position={position + 1}
+      data-analytics-position={step.quizPosition ?? position + 1}
     >
       <div className="qz-progresso">
         <div className="qz-progresso-linha">
@@ -321,15 +334,23 @@ export default function AdultoConversaQuiz({
           <span style={{ width: `${Math.round((numero / total) * 100)}%` }} />
         </div>
       </div>
-      <h1 className="qz-titulo" ref={heading} tabIndex={-1}>
+      {reviewing && current[step.key] === undefined && (
+        <p className="qz-ajuda" role="status">
+          Esta pergunta precisa ser revista depois da sua alteração. Confira o que combina com você
+          agora.
+        </p>
+      )}
+      <h1 id="qz-question-title" className="qz-titulo" ref={heading} tabIndex={-1}>
         {shown.titulo}
       </h1>
       {shown.subtitulo && <p className="qz-ajuda">{shown.subtitulo}</p>}
       <Opcoes
+        key={`${step.key}:${quiz.revision}`}
         step={shown}
         value={current[step.key]}
         seed={session?.id ?? ''}
-        disabled={busy || conflict}
+        disabled={busy || conflict || updated}
+        valid={(value) => c.engine.validChoice(step, value)}
         completa={(value) => c.completesQuiz(current, step.key, value)}
         onEscolha={(value) => void quiz.save(step.key, value)}
       />
@@ -338,19 +359,20 @@ export default function AdultoConversaQuiz({
         <button className="qz-link" type="button" disabled={busy} onClick={() => go(voltar)}>
           <span aria-hidden="true">←</span> Voltar
         </button>
-        <span>{busy ? 'Salvando…' : 'Toque numa opção'}</span>
+        <span>{busy ? 'Salvando…' : 'Confirme para continuar'}</span>
       </div>
     </main>,
   )
 }
 
-/** As opções como botões: tocar numa grava e segue. */
+/** Escolhas locais até confirmar. A gravação e a decisão continuam no servidor. */
 function Opcoes({
   step,
   value,
   seed,
   disabled,
   completa,
+  valid,
   onEscolha,
 }: {
   step: SelecaoStep
@@ -358,26 +380,75 @@ function Opcoes({
   seed: string
   disabled: boolean
   /** Se esta opção termina o quiz (o leitor de tela ouve "e ver o resultado"). */
-  completa: (value: string) => boolean
-  onEscolha: (value: string) => void
+  completa: (value: QuizAnswerValue) => boolean
+  valid: (value: QuizAnswerValue) => boolean
+  onEscolha: (value: QuizAnswerValue) => void
 }) {
+  const [draft, setDraft] = useState<QuizAnswerValue>(value ?? (step.multiple ? [] : ''))
+  const [notice, setNotice] = useState('')
+  const selected = (option: string) =>
+    Array.isArray(draft) ? draft.includes(option) : draft === option
+  function choose(option: string, checked: boolean) {
+    setNotice('')
+    if (!step.multiple) {
+      setDraft(option)
+      return
+    }
+    const previous = Array.isArray(draft) ? draft : []
+    if (!checked) {
+      setDraft(previous.filter((v) => v !== option))
+      return
+    }
+    if (step.exclusive?.includes(option)) {
+      setDraft([option])
+      setNotice('As outras opções foram desmarcadas.')
+      return
+    }
+    setDraft([...previous.filter((v) => !step.exclusive?.includes(v)), option])
+  }
   return (
-    <ul className="qz-opcoes">
-      {orderedOptions(step, seed).map((o) => (
-        <li key={o.value}>
-          <button
-            type="button"
-            className="qz-opcao"
-            aria-pressed={value === o.value}
-            disabled={disabled}
-            onClick={() => onEscolha(o.value)}
-          >
-            <span className="qz-marca" aria-hidden="true" />
-            <span>{o.label}</span>
-            {completa(o.value) && <span className="sr-only"> e ver o resultado</span>}
-          </button>
-        </li>
-      ))}
-    </ul>
+    <form
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (valid(draft) && !disabled) onEscolha(draft)
+      }}
+    >
+      <fieldset className="qz-escolhas" disabled={disabled} aria-labelledby="qz-question-title">
+        <legend className="sr-only">
+          {step.multiple ? 'Escolha uma ou mais respostas' : 'Escolha uma resposta'}
+        </legend>
+        <ul className="qz-opcoes">
+          {orderedOptions(step, seed).map((o) => (
+            <li key={o.value}>
+              <label className="qz-opcao qz-opcao-confirmada" data-selected={selected(o.value)}>
+                <input
+                  type={step.multiple ? 'checkbox' : 'radio'}
+                  name={step.key}
+                  value={o.value}
+                  checked={selected(o.value)}
+                  onChange={(event) => choose(o.value, event.target.checked)}
+                />
+                <span className="qz-opcao-texto">
+                  {o.heading ? (
+                    <>
+                      <strong>{o.heading}</strong>
+                      <span>{o.label.slice(o.heading.length).trimStart()}</span>
+                    </>
+                  ) : (
+                    o.label
+                  )}
+                </span>
+              </label>
+            </li>
+          ))}
+        </ul>
+      </fieldset>
+      <p className="sr-only" role="status">
+        {notice}
+      </p>
+      <button type="submit" className="qz-botao qz-confirmar" disabled={disabled || !valid(draft)}>
+        {valid(draft) && completa(draft) ? 'Ver meu caminho' : 'Continuar'}
+      </button>
+    </form>
   )
 }

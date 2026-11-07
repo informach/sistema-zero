@@ -1,0 +1,152 @@
+/* Resultados adultos aprovados. Tokens e tipografia pertencem ao tema arcade. */
+.rc--autonomia .rc-carta {
+  max-width: 960px;
+}
+.rc--autonomia .rc-cta {
+  border: 0;
+  border-top: 1px solid var(--cda-linha-forte);
+  padding: 28px 0;
+  background: transparent;
+  box-shadow: none;
+}
+.rc--autonomia .rc-botao {
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  box-shadow: 4px 4px 0 var(--cda-rosa);
+}
+.ra {
+  color: var(--cda-texto-suave);
+}
+.ra p {
+  margin: 0 0 20px;
+}
+.ra h2,
+.ra h3 {
+  font-family: var(--cda-titulo);
+  font-weight: 800;
+  color: var(--cda-texto);
+  line-height: 1.15;
+  margin: 0 0 20px;
+}
+.ra h2 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+}
+.ra h3 {
+  font-size: 1.3rem;
+}
+.ra section {
+  margin-top: 36px;
+}
+.ra .ra-lead {
+  font-size: 1.25rem;
+}
+.ra .ra-conquista {
+  color: var(--cda-texto);
+  background: var(--cda-fundo-2);
+  border-left: 4px solid var(--cda-amarelo);
+  padding: 22px 24px;
+  font: 800 1.3rem / 1.45 var(--cda-titulo);
+  margin: 28px 0;
+}
+.ra-mecanismo {
+  background: var(--cda-fundo-2);
+  border-left: 3px solid var(--cda-menta);
+  padding: 24px;
+  margin: 26px 0 32px;
+}
+.ra-mecanismo p {
+  margin: 0;
+}
+.ra-pratica {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+  list-style: none;
+  padding: 0;
+  margin: 26px 0;
+  counter-reset: practice;
+}
+.ra-pratica li {
+  background: var(--cda-fundo-2);
+  border-top: 2px solid var(--cda-linha-forte);
+  padding: 22px 20px;
+  counter-increment: practice;
+}
+.ra-pratica li::before {
+  content: "0" counter(practice);
+  display: block;
+  font: 1rem var(--cda-pixel);
+  color: var(--cda-amarelo);
+  margin-bottom: 18px;
+}
+.ra-pratica strong {
+  display: block;
+  color: var(--cda-texto);
+  margin-bottom: 10px;
+  line-height: 1.25;
+}
+.ra-pratica p {
+  font-size: 1rem;
+  margin: 0;
+}
+.ra-galeria {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+}
+.ra-galeria figure {
+  margin: 0;
+  min-width: 0;
+}
+.ra-galeria img {
+  width: 100%;
+  aspect-ratio: 16 / 11;
+  object-fit: contain;
+  background: var(--cda-fundo-2);
+  border: 1px solid var(--cda-linha-forte);
+}
+.ra-galeria figcaption {
+  font-size: 0.9rem;
+  margin-top: 12px;
+}
+.ra .ra-legenda {
+  font-size: 0.85rem;
+  color: var(--cda-texto-apoio);
+}
+.ra-condicoes {
+  background: var(--cda-fundo-2);
+  border: 1px solid var(--cda-linha-forte);
+  padding: 26px;
+  margin: 30px 0;
+}
+.ra-condicoes.ra-atencao {
+  border-color: var(--cda-amarelo);
+}
+.ra-condicoes h2 {
+  font-size: 1.5rem;
+}
+.ra-condicoes ul {
+  display: grid;
+  gap: 14px;
+  padding-left: 22px;
+  margin: 0;
+  list-style: disc;
+  font-size: 1.05rem;
+}
+.ra .ra-beneficio {
+  font-size: 1.22rem;
+  margin: 34px 0 0;
+  color: var(--cda-texto);
+}
+@media (max-width: 600px) {
+  .ra-pratica,
+  .ra-galeria {
+    grid-template-columns: 1fr;
+  }
+  .ra .ra-conquista,
+  .ra-condicoes,
+  .ra-mecanismo {
+    padding: 20px;
+  }
+}

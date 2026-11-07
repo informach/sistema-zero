@@ -230,15 +230,15 @@ describe('adminFunnel', () => {
 
     const adulto = 'pro/desafio-primeiro-jogo'
     await lead(adulto, 'def-desafio-adulto', [
-      'respondeu_desafio_adulto_v1_computador',
-      'respondeu_desafio_adulto_v1_sintese',
+      'respondeu_desafio_autonomia_v2_interesse',
+      'respondeu_desafio_autonomia_v2_beneficio',
       'viu_resultado',
     ])
     const pro = await get(adulto)
     expect(pro.total).toBe(1)
-    expect(pro.steps.find((s) => s.name === 'respondeu_desafio_adulto_v1_sintese')?.label).toBe(
-      'Pergunta 8 · Frase-síntese',
-    )
+    expect(
+      pro.steps.find((s) => s.name === 'respondeu_desafio_autonomia_v2_beneficio')?.label,
+    ).toBe('Pergunta 10 · Valor pessoal')
     expect(pro.steps.some((s) => s.name.startsWith('entrou_ramo_'))).toBe(false)
   })
   test('agrega contagem e conversão por etapa (com sessão)', async () => {
@@ -247,7 +247,7 @@ describe('adminFunnel', () => {
     const b = await repo.createLead()
     await repo.insertEvent(a.id, 'entrou_landing')
     await repo.insertEvent(b.id, 'entrou_landing')
-    await repo.insertEvent(a.id, 'respondeu_comunidade_adulto_v1_tempo_jogo')
+    await repo.insertEvent(a.id, 'respondeu_comunidade_autonomia_v2_interesse')
 
     const res = await adminFunnel(getReq(accessCookie(fg)), deps)
     expect(res.status).toBe(200)
@@ -257,7 +257,7 @@ describe('adminFunnel', () => {
     }
     expect(body.total).toBe(2)
     const landing = body.steps.find((s) => s.name === 'entrou_landing')
-    const p1 = body.steps.find((s) => s.name === 'respondeu_comunidade_adulto_v1_tempo_jogo')
+    const p1 = body.steps.find((s) => s.name === 'respondeu_comunidade_autonomia_v2_interesse')
     expect(landing?.count).toBe(2)
     expect(p1?.count).toBe(1)
     expect(p1?.fromTop).toBeCloseTo(0.5)
@@ -581,16 +581,22 @@ describe('adminPerfis', () => {
     expect(body.total).toBe(3)
     // Perfis do funil (mesmo zerados), na ordem do funil.
     expect(body.counts.map((c) => c.perfil)).toEqual([
-      'adulto-horas-livres',
+      'autonomia-comecar',
+      'autonomia-compreender',
+      'autonomia-concluir',
+      'autonomia-autoria',
+      'autonomia-explorar',
       'adulto-ideia',
       'adulto-por-dentro',
     ])
     const byPerfil = new Map(body.counts.map((c) => [c.perfil, c.count]))
     expect(byPerfil.get('adulto-ideia')).toBe(2)
     expect(byPerfil.get('adulto-por-dentro')).toBe(1)
-    expect(byPerfil.get('adulto-horas-livres')).toBe(0)
+    expect(byPerfil.get('autonomia-comecar')).toBe(0)
     // Rótulo legível (não a chave crua) quando o funil é selecionado.
-    expect(body.counts.find((c) => c.perfil === 'adulto-ideia')?.label).toBe('Ideia')
+    expect(body.counts.find((c) => c.perfil === 'adulto-ideia')?.label).toBe(
+      '(quiz anterior) Ideia',
+    )
   })
 
   test('sem funil: só os perfis presentes nos dados (rótulo = a chave)', async () => {

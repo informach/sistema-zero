@@ -24,7 +24,7 @@ interface LeadRow {
   nome: string | null
   email: string | null
   telefone: string | null
-  // Respostas do quiz em JSON (chave → valor) — genérico por funil; + perfil do diagnóstico.
+  // Respostas do quiz em JSON (chave → valor) — genérico por funil; + perfil do quiz.
   quizAnswers: QuizAnswers | null
   answerDetails: AdminQuizAnswer[]
   perfilResultado: string | null
@@ -421,7 +421,7 @@ export default function RespostasTable({
               ))}
             </DetailSection>
 
-            <DetailSection title="Diagnóstico">
+            <DetailSection title="Quiz e perfil">
               <DetailItem label="Perfil" wide>
                 <PerfilBadge label={perfilLabel(selected)} />
               </DetailItem>

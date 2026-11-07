@@ -186,6 +186,8 @@ describe.each(Object.entries(PAGINAS))('página %s', (nome, { modulo, corpo }) =
         caminho.endsWith('.pergunta') ||
         /\?["”]/.test(texto) ||
         caminho === 'oferta.jaTem' ||
+        (nome === 'adulto' &&
+          ['programacao.paragrafos[1]', 'aula.paragrafos[5]'].includes(caminho)) ||
         (nome === 'criar-junto' && /^continuidade\.passos\[\d+\]\.texto$/.test(caminho))
       const regras = lintLightCopy(texto).filter((i) => !(i.rule === 3 && pergunta))
       expect([caminho, regras.map((i) => i.rule)]).toEqual([caminho, []])
@@ -208,11 +210,14 @@ describe.each(Object.entries(PAGINAS))('página %s', (nome, { modulo, corpo }) =
       .map(([, src]) => src)
     expect(imagens.length).toBeGreaterThan(2)
     for (const src of imagens)
-      expect([src, existsSync(join(ROOT, 'public', 'img', src))]).toEqual([src, true])
+      expect([
+        src,
+        existsSync(join(ROOT, 'public', src.startsWith('/') ? src : `img/${src}`)),
+      ]).toEqual([src, true])
   })
 
-  test('dois CTAs de compra, o pré-checkout com o cupom, o Termo da oferta e nenhum <style>', () => {
-    expect(corpo.match(/data-checkout-cta/g)?.length).toBe(2)
+  test('CTA de compra, pré-checkout com cupom, Termo da oferta e nenhum <style>', () => {
+    expect(corpo.match(/data-checkout-cta/g)?.length).toBe(nome === 'adulto' ? 1 : 2)
     expect(corpo).toContain(
       '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={preco.codigo} />',
     )

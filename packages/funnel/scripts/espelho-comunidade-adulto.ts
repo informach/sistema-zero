@@ -65,7 +65,7 @@ function espelhoDoModuloAdulto(titulo: string, modulo: object): string {
   )
   const visita = (valor: unknown, caminho: string) => {
     if (typeof valor === 'string') {
-      b.push(`**${caminho}**: ${valor}`)
+      b.push(`**${caminho}**: ${valor.trimEnd()}`)
       return
     }
     if (Array.isArray(valor)) {

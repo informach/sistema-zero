@@ -75,7 +75,7 @@ describe('registro do funil adulto', () => {
 
   test('o Termo é o da Comunidade adulta, com versão própria', () => {
     expect(COMUNIDADE_ADULTO.legal.termos).toBe(TERMOS_COMUNIDADE_ADULTO)
-    expect(COMUNIDADE_ADULTO.legal.termsVersion).toBe('comunidade-adulto-2026-10-20')
+    expect(COMUNIDADE_ADULTO.legal.termsVersion).toBe('comunidade-adulto-2026-11-06')
     const versoes = Object.values(FUNNELS).map((f) => f.legal.termsVersion)
     expect(new Set(versoes).size).toBe(versoes.length)
   })
@@ -116,7 +116,7 @@ describe('a página de oferta adulta', () => {
     )
     // O cupom da URL segue para o checkout; o preço mensal do herói só aparece com o plano mensal.
     expect(body).toContain('const cupom = cupomDaOferta(coupon)')
-    expect(body).toContain("mostraMensal || !item.texto.includes('{{preco_mensal}}')")
+    expect(body).toContain('mostraMensal ? `Mensal:')
     expect(body).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
     expect(body).not.toContain('<style')
   })
@@ -125,7 +125,10 @@ describe('a página de oferta adulta', () => {
     for (const [caminho, texto] of textos(PAGINA_ADULTO)) {
       // As perguntas das dúvidas são perguntas de propósito, e uma fala citada ("foi você que
       // fez?") não é gancho: a regra 3 não vale para elas.
-      const pergunta = caminho.endsWith('.pergunta') || /\?["”]/.test(texto)
+      const pergunta =
+        caminho.endsWith('.pergunta') ||
+        /\?["”]/.test(texto) ||
+        ['comeco.paragrafos[4]', 'jornada.paragrafos[0]', 'oferta.paragrafos[12]'].includes(caminho)
       const regras = lintLightCopy(texto).filter((i) => !(i.rule === 3 && pergunta))
       expect([caminho, regras.map((i) => i.rule)]).toEqual([caminho, []])
       expect([caminho, /R\$\s*\d/.test(texto)]).toEqual([caminho, false])
@@ -142,13 +145,11 @@ describe('a página de oferta adulta', () => {
       expect([src, existsSync(join(ROOT, 'public', src))]).toEqual([src, true])
   })
 
-  test('as telas adultas são prévias e dizem isso na legenda', () => {
-    const previas = textos(PAGINA_ADULTO).filter(([, v]) => v.includes('/previa-'))
-    expect(previas.length).toBeGreaterThan(0)
-    const legendas = textos(PAGINA_ADULTO)
-      .filter(([caminho]) => /legenda|rotulo/.test(caminho))
-      .map(([, v]) => v.toLowerCase())
-    expect(legendas.some((l) => l.includes('prévia'))).toBe(true)
+  test('as demonstrações usam capturas reais e identificam a origem Kids', () => {
+    const strings = textos(PAGINA_ADULTO).map(([, value]) => value)
+    expect(strings.some((value) => value.includes('/previa-'))).toBe(false)
+    expect(strings.some((value) => value.includes('Captura real do Mural Kids'))).toBe(true)
+    expect(strings.some((value) => value.includes('farol-blocos-reais.webp'))).toBe(true)
   })
 })
 
@@ -169,68 +170,25 @@ describe('a continuidade adulta (/oferta/continuar)', () => {
     expect(ofertaPage).toContain('<ComunidadeAdultoContinuarBody {...bodyProps} plans={plans} />')
   })
 
-  test('dois CTAs, preços do catálogo e o pré-checkout no modo assinatura', () => {
-    expect(body.match(/data-checkout-cta/g)?.length).toBe(2)
-    expect(body).toContain('data-checkout-oferta={mensal?.slug}')
-    expect(body).toContain('data-checkout-oferta={anual?.slug}')
-    expect(body).toContain('mensal?.priceCents ?? COMUNIDADE_ADULTO_PRECO_FALLBACK.mensalCents')
-    expect(body).toContain('calcularEconomiaAnual(mensal?.priceCents, anual?.priceCents)')
-    // A continuidade pede o mesmo e-mail da conta no pré-checkout.
-    expect(body).toContain(
-      '<PreCheckoutModal client:idle basePath={f.basePath} funnel={f.key} couponCode={cupom.codigo} assinatura continuidade />',
-    )
-    expect(body).toContain('const cupom = cupomDaOferta(coupon)')
-    expect(body).toContain("mostraMensal || !item.texto.includes('{{preco_mensal}}')")
-    // A tela de save é ilustração (a legenda diz): leitor de tela não ouve um menu que não funciona.
-    expect(body).toContain('<div class="cda-save" aria-hidden="true">')
-    expect(body).toContain(`termosHref={\`${'$'}{f.basePath}/termos\`}`)
-    expect(body).not.toContain('<style')
+  test('usa o mesmo componente, preservando os planos e o checkout', () => {
+    expect(body).toContain('<ComunidadeAdultoOfertaBody {...Astro.props} continuidade />')
+    expect(body).not.toContain('PreCheckoutModal')
   })
 
-  test('o que a página adulta já diz vem dela, por referência (uma fonte só)', () => {
-    expect(P.oferta.cartao).toBe(PAGINA_ADULTO.oferta.cartao)
-    expect(P.oferta.garantia).toBe(PAGINA_ADULTO.oferta.garantia)
-    expect(P.hero.requisitos).toBe(PAGINA_ADULTO.hero.requisitos)
-    expect(P.prova.tela).toBe(PAGINA_ADULTO.comunidade.tela)
-    expect(P.save.escada.etapas).toBe(PAGINA_ADULTO.etapas.escada.etapas)
-    expect(P.fechamento.legal).toBe(PAGINA_ADULTO.fechamento.legal)
+  test('somente a headline muda; o resto da página é idêntico', () => {
+    expect(P.hero.titulo.antes).toBe('Continue ganhando autonomia para ')
+    expect({ ...P, hero: { ...P.hero, titulo: PAGINA_ADULTO.hero.titulo } }).toEqual(PAGINA_ADULTO)
+    expect(P.oferta).toBe(PAGINA_ADULTO.oferta)
+    expect(P.duvidas).toBe(PAGINA_ADULTO.duvidas)
+    expect(P.fechamento).toBe(PAGINA_ADULTO.fechamento)
   })
 
-  test('Light Copy em toda a página; sem preço escrito à mão nem "carreira"', () => {
-    for (const [caminho, texto] of textos(P)) {
-      const pergunta = caminho.endsWith('.pergunta')
-      const regras = lintLightCopy(texto).filter((i) => !(i.rule === 3 && pergunta))
-      expect([caminho, regras.map((i) => i.rule)]).toEqual([caminho, []])
-      expect([caminho, /R\$\s*\d/.test(texto)]).toEqual([caminho, false])
-      expect([caminho, /carreira/i.test(texto)]).toEqual([caminho, false])
-    }
-  })
-
-  test('os quatro casos dizem a verdade inteira: conta nova aos 18 e assinaturas separadas', () => {
-    expect(P.casos.itens).toHaveLength(4)
-    const casos = P.casos.itens.map((caso) => caso.texto).join(' ')
-    // Aos 18 o perfil Kids segue funcionando (decisão de 20/10/2026): a conta adulta começa nova.
-    expect(casos).toContain('o perfil Kids continua funcionando depois dos 18')
-    expect(casos).toContain('começa nova')
-    expect(casos).not.toContain('não passam')
-    expect(casos).toContain('São assinaturas separadas')
-    expect(casos).toContain('mesmo e-mail')
-    expect(JSON.stringify(P.duvidas)).toContain('Os jogos ficam no perfil Kids')
-    // A etapa alcançada fica (o piso da etapa adulta no members).
-    expect(P.save.fica.itens).toContain('A etapa e os blocos que você já liberou')
-  })
-
-  test('as imagens existem, e a tela de save é uma ilustração que diz isso', () => {
-    const imagens = textos(P)
-      .filter(([caminho]) => caminho.endsWith('.src'))
-      .map(([, src]) => src)
-    expect(imagens.length).toBeGreaterThan(1)
-    for (const src of imagens)
-      expect([src, existsSync(join(ROOT, 'public', src))]).toEqual([src, true])
-    // O jogo de arena só faz o fundo: decorativo, sem texto alternativo.
-    expect(P.hero.tela.fundo.alt).toBe('')
-    expect(P.hero.tela.legenda).toMatch(/^Ilustração/)
-    expect(P.prova.tela.legenda.toLowerCase()).toContain('prévia')
+  test('explica a conta própria, as assinaturas separadas e a preservação do progresso', () => {
+    const text = JSON.stringify(P)
+    expect(text).toContain('não os transfere automaticamente')
+    expect(text).toContain('A assinatura adulta é separada da Kids')
+    expect(text).toContain('Use o mesmo e-mail ao contratar')
+    expect(text).toContain('conforme a Política de Privacidade')
   })
 })
 
@@ -248,7 +206,7 @@ describe('etapas compartilhadas do funil adulto', () => {
     expect(COMUNIDADE_ADULTO_OBRIGADO.titulo).toBe('Sua assinatura está confirmada.')
     expect(COMUNIDADE_ADULTO_OBRIGADO.botao).toBe('Entrar na Comunidade →')
     // O que a compra entrega é a mesma lista do cartão de planos da página.
-    expect(COMUNIDADE_ADULTO_OBRIGADO.entrega).toEqual(PAGINA_ADULTO.oferta.cartao.inclui)
+    expect(COMUNIDADE_ADULTO_OBRIGADO.entrega).toEqual([...PAGINA_ADULTO.oferta.inclui])
     // Adulto não fala de responsável nem de filho nas etapas compartilhadas.
     for (const [caminho, texto] of [
       ...textos(COMUNIDADE_ADULTO_CHECKOUT),

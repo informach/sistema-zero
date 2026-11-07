@@ -281,6 +281,15 @@ try {
     for (const src of srcs) assert.equal((await page.request.get(src)).status(), 200, src)
     imagens += srcs.length
     await carregarTudo(page)
+    await page.locator('main img[src]').evaluateAll(async (images) => {
+      await Promise.all(
+        images.map(async (element) => {
+          const image = element as HTMLImageElement
+          image.loading = 'eager'
+          await image.decode()
+        }),
+      )
+    })
     await page.screenshot({ path: resolve(output, `${p.nome}-1440.png`), fullPage: true })
     for (const width of [320, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 844 })
@@ -322,9 +331,19 @@ try {
       await checkOfferImageZoom(page)
     }
 
-    // Os dois CTAs abrem o pré-checkout, que chega ao checkout com a atribuição da URL.
-    assert.equal(await page.locator('[data-checkout-cta]').count(), 2, `${p.nome}: two CTAs`)
-    for (const indice of [0, 1]) {
+    // O CTA aprovado abre o pré-checkout e preserva a atribuição da URL.
+    const ctaCount = p.basePath === adultBase ? 1 : 2
+    assert.equal(
+      await page.locator('[data-checkout-cta]').count(),
+      ctaCount,
+      `${p.nome}: purchase CTA`,
+    )
+    if (p.basePath === adultBase) {
+      await checkOfferImageZoom(page)
+      assert.equal(await page.locator('footer').count(), 1)
+      assert.equal(await page.locator('.cda footer').count(), 0)
+    }
+    for (const indice of Array.from({ length: ctaCount }, (_, i) => i)) {
       await page.goto(`${origin}${p.path}?utm_source=qa_oferta&utm_campaign=review`)
       await page.waitForFunction(() => !document.querySelector('astro-island[ssr]'))
       await page.locator('[data-checkout-cta]').nth(indice).click()
@@ -342,7 +361,10 @@ try {
       assert.equal(destination.searchParams.get('utm_campaign'), 'review')
     }
   }
-  assert.equal(contacts.length, paginas.length * 2)
+  assert.equal(
+    contacts.length,
+    paginas.reduce((total, p) => total + (p.basePath === adultBase ? 1 : 2), 0),
+  )
 
   for (const audience of ['kids', 'pro']) {
     const slug = `comunidade-dos-criadores-${audience === 'pro' ? 'adulto-' : ''}anual`

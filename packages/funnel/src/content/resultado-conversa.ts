@@ -7,6 +7,8 @@
 // `components/funnel/resultado/ResultadoConversa.astro` o desenha. Trechos entre `[[` e `]]` são as
 // respostas da pessoa devolvidas no texto: viram `<mark>` na página.
 
+import type { AdultNarrative } from '../funnels/adulto-autonomia/types'
+
 export type ResultadoTema = 'kids' | 'kids-m9' | 'adulto'
 
 export type LeituraConversa = Record<
@@ -30,6 +32,7 @@ export type LeituraConversa = Record<
 >
 
 export type BlocoConversa =
+  | { tipo: 'autonomia'; leitura: AdultNarrative }
   | { tipo: 'leitura'; leitura: LeituraConversa; atencao: boolean }
   | { tipo: 'p'; texto: string }
   | { tipo: 'h'; texto: string }
@@ -84,15 +87,27 @@ export function textoDoResultado(r: ResultadoConversa): string[] {
     ...(r.aviso ? [r.aviso] : []),
     r.titulo,
     ...r.blocos.flatMap((b) =>
-      b.tipo === 'leitura'
-        ? Object.values(b.leitura).filter(Boolean)
-        : b.tipo === 'img'
-          ? [b.legenda]
-          : b.tipo === 'relato'
-            ? [b.texto, b.autor]
-            : b.tipo === 'cta'
-              ? [...(b.termos ? [b.termos] : []), b.texto, b.rotulo, ...(b.nota ? [b.nota] : [])]
-              : [b.texto],
+      b.tipo === 'autonomia'
+        ? [
+            b.leitura.lead,
+            b.leitura.priority,
+            ...b.leitura.reasoning,
+            b.leitura.productLead,
+            b.leitura.mechanism,
+            ...b.leitura.practice.flat(),
+            ...b.leitura.continuity,
+            ...b.leitura.fit,
+            b.leitura.benefit,
+          ]
+        : b.tipo === 'leitura'
+          ? Object.values(b.leitura).filter(Boolean)
+          : b.tipo === 'img'
+            ? [b.legenda]
+            : b.tipo === 'relato'
+              ? [b.texto, b.autor]
+              : b.tipo === 'cta'
+                ? [...(b.termos ? [b.termos] : []), b.texto, b.rotulo, ...(b.nota ? [b.nota] : [])]
+                : [b.texto],
     ),
     r.assinatura,
   ].map(semMarcas)

@@ -2,14 +2,68 @@
 // Canvas "Presente Kids e adulto · proposta" (quadro RecebimentoAdulto, aprovado em 20/10/2026). A
 // linguagem é a arcade da oferta adulta (`.cda`, tema `theme-arcade`); `PresenteAdultoOferta.astro`
 // renderiza todo texto visível a partir daqui. O que a página adulta já diz (marca do topo, foto dos
-// fundadores, prévia do Mural, links legais) vem de `PAGINA_ADULTO` por referência: uma fonte só.
+// fundadores, prévia do Mural, links legais) fica nesta página; a oferta paga tem sua própria demonstração e revisão.
 //
 // Decisões da dona (20/10/2026): as telas do curso são as capturas da versão Kids, com a legenda
 // honesta abaixo; o Mural adulto é a prévia com dados de teste; o link do jogo publicado continua
 // depois dos 7 dias, como no Kids. `{{nome}}` é quem deu o presente e `{{data}}` uma data de Brasília.
 
-import { type CorAdulto, PAGINA_ADULTO } from '../funnels/comunidade-adulto/oferta/pagina'
+import type { CorAdulto } from '../funnels/comunidade-adulto/oferta/types'
 import type { EstadosPresente, ImagemPresente } from './presente'
+
+// Identidade e imagens da página do presente, que tem revisão própria.
+const APRESENTACAO_PRESENTE_ADULTO = {
+  pularParaConteudo: 'Ir para o conteúdo',
+  topo: {
+    marcaAria: 'Sistema Zero Comunidade dos Criadores, voltar ao topo',
+    logoAlt: 'Sistema Zero',
+    selo: 'COMUNIDADE DOS CRIADORES',
+    navAria: 'Atalhos da página',
+    links: [
+      {
+        href: '#fase1',
+        label: 'Como funciona',
+      },
+      {
+        href: '#fases',
+        label: 'Etapas',
+      },
+    ],
+    cta: 'Quero criar meu jogo',
+  },
+  comunidade: {
+    tela: {
+      imagem: {
+        src: '/img/comunidade-adulto/previa-mural.webp',
+        alt: 'Mural dos Criadores da área adulta com cartões de jogos publicados',
+        width: 1440,
+        height: 1187,
+      },
+      legenda: 'O Mural, onde ficam os jogos publicados. Prévia da área adulta com dados de teste.',
+    },
+  },
+  fundadores: {
+    imagem: {
+      src: '/img/comunidade-adulto/fundadores-aulas.webp',
+      alt: 'Helena e Júlio, fundadores do Sistema Zero, gravando uma aula com o Estúdio na tela',
+      width: 1280,
+      height: 851,
+    },
+  },
+  fechamento: {
+    legal: {
+      aria: 'Termos e privacidade',
+      termos: {
+        href: '/pro/comunidade-dos-criadores/termos',
+        label: 'Termos de uso',
+      },
+      privacidade: {
+        href: '/privacidade',
+        label: 'Privacidade',
+      },
+    },
+  },
+}
 
 const IMG_KIDS = '/img/comunidade-dos-criadores'
 const LEGENDA_KIDS = 'Tela da versão Kids do curso. Na área adulta, a aparência é outra.'
@@ -19,12 +73,12 @@ export const PRESENTE_ADULTO = {
   description:
     'Em 7 dias, o seu primeiro jogo funcionando no navegador, com o Cadê Todo Mundo na versão adulta e o Mural adulto. Presente gratuito, sem cartão, para quem tem 18 anos ou mais.',
   previaTitle: 'Prévia da campanha | Sistema Zero',
-  pular: PAGINA_ADULTO.pularParaConteudo,
+  pular: APRESENTACAO_PRESENTE_ADULTO.pularParaConteudo,
   topo: {
-    marcaAria: PAGINA_ADULTO.topo.marcaAria,
-    logoAlt: PAGINA_ADULTO.topo.logoAlt,
-    selo: PAGINA_ADULTO.topo.selo,
-    navAria: PAGINA_ADULTO.topo.navAria,
+    marcaAria: APRESENTACAO_PRESENTE_ADULTO.topo.marcaAria,
+    logoAlt: APRESENTACAO_PRESENTE_ADULTO.topo.logoAlt,
+    selo: APRESENTACAO_PRESENTE_ADULTO.topo.selo,
+    navAria: APRESENTACAO_PRESENTE_ADULTO.topo.navAria,
     links: [
       { href: '#jogo', label: 'O que você faz' },
       { href: '#duvidas', label: 'Antes de começar' },
@@ -108,7 +162,7 @@ export const PRESENTE_ADULTO = {
       'No Mural, você também joga o que outros adultos estão criando, comenta e reage.',
     ],
     imagem: {
-      ...PAGINA_ADULTO.comunidade.tela.imagem,
+      ...APRESENTACAO_PRESENTE_ADULTO.comunidade.tela.imagem,
       alt: 'Mural adulto com os jogos publicados pela comunidade',
     },
     legenda: 'Prévia do Mural adulto com dados de teste.',
@@ -122,7 +176,7 @@ export const PRESENTE_ADULTO = {
       'Os seus projetos ficam guardados na conta. Se quiser seguir, a assinatura começa quando você decidir.',
     ],
     imagem: {
-      ...PAGINA_ADULTO.fundadores.imagem,
+      ...APRESENTACAO_PRESENTE_ADULTO.fundadores.imagem,
       alt: 'Helena e Júlio no computador, preparando uma aula',
     },
     legenda: 'Helena e Júlio, que criaram o Sistema Zero e preparam os projetos e as aulas.',
@@ -238,5 +292,5 @@ export const PRESENTE_ADULTO = {
     },
     contato: 'Falar com a equipe',
   } satisfies EstadosPresente,
-  legal: PAGINA_ADULTO.fechamento.legal,
+  legal: APRESENTACAO_PRESENTE_ADULTO.fechamento.legal,
 }

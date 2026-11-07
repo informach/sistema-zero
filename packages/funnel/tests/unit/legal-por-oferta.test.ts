@@ -17,11 +17,11 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
   test('a versão gravada na compra vem do funil do lead', () => {
     expect(termsVersionForFunnel('kids/desafio-primeiro-jogo')).toBe('desafio-2026-10-21')
     expect(termsVersionForFunnel('kids/comunidade-dos-criadores')).toBe(
-      'comunidade-kids-2026-10-20b',
+      'comunidade-kids-2026-11-06',
     )
     // Novos fluxos sem funil usam o default ativo; compras guardam sua versão no snapshot.
-    expect(termsVersionForFunnel('pro/no-comando-da-ia')).toBe('comunidade-adulto-2026-10-20')
-    expect(termsVersionForFunnel(null)).toBe('comunidade-adulto-2026-10-20')
+    expect(termsVersionForFunnel('pro/no-comando-da-ia')).toBe('comunidade-adulto-2026-11-06')
+    expect(termsVersionForFunnel(null)).toBe('comunidade-adulto-2026-11-06')
   })
 
   test('os Termos apontam para a Política única, que tem os capítulos dos dois públicos', () => {
@@ -37,7 +37,10 @@ describe('um Termo por oferta e uma Política de Privacidade', () => {
     const docs = [PRIVACIDADE, ...funis.map((f) => f.legal.termos)].filter(
       // Os textos revistos a partir de 20/10/2026 (a Política voltou em 23/10, com a data de
       // nascimento obrigatória).
-      (d) => ['20 de outubro de 2026', '23 de outubro de 2026'].includes(d.atualizadoEm),
+      (d) =>
+        ['20 de outubro de 2026', '23 de outubro de 2026', '6 de novembro de 2026'].includes(
+          d.atualizadoEm,
+        ),
     )
     expect(docs.length).toBeGreaterThanOrEqual(3)
     for (const doc of docs) {

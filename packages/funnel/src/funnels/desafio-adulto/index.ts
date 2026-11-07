@@ -10,6 +10,7 @@
 // abre a Comunidade dos Criadores adulta.
 
 import { TERMOS_DESAFIO_ADULTO } from '../../content/legal/termos-desafio-adulto'
+import { PROFILE_LABELS } from '../adulto-autonomia/entry'
 import type { FunnelDef } from '../registry'
 import {
   DESAFIO_ADULTO_CHECKOUT,
@@ -54,6 +55,11 @@ export const DESAFIO_ADULTO: FunnelDef = {
     obrigado: DESAFIO_ADULTO_OBRIGADO,
     checkout: DESAFIO_ADULTO_CHECKOUT,
     quiz: DESAFIO_ADULTO_QUIZ,
-    result: { profiles: {}, fecho: '', perfilLabels: DESAFIO_ADULTO_PERFIL_LABELS },
+    result: {
+      profiles: {},
+      fecho: '',
+      perfilLabels: PROFILE_LABELS,
+      legacyPerfilLabels: DESAFIO_ADULTO_PERFIL_LABELS,
+    },
   },
 }

@@ -2,300 +2,374 @@
 
 **seoTitle**: Desafio do Primeiro Jogo para adultos | Sistema Zero
 
-**description**: Você faz o seu primeiro jogo e manda o link para os amigos jogarem. A Chave do Farol, montada com blocos em 3 fases, com 30 dias para fazer no seu ritmo. Pagamento único.
+**description**: Ganhe autonomia para criar com tecnologia. Construa A Chave do Farol com aulas guiadas, programação em blocos e 30 dias de acesso.
 
-**cta**: Quero fazer meu primeiro jogo
+**pularParaConteudo**: Ir para o conteúdo
 
-**condicoes**: {{preco}}, pagamento único · 30 dias de acesso · 7 dias de garantia
+**topo.imagens[0].alt**: Sistema Zero
 
-**topo.pular**: Ir para o conteúdo
+**topo.rotulos[0]**: PRIMEIRO JOGO
 
-**topo.marcaAria**: Sistema Zero, voltar ao topo
+**topo.acoes[0]**: Como funciona
 
-**topo.logoAlt**: Sistema Zero
+**topo.acoes[1]**: O projeto
 
-**topo.selo**: PRIMEIRO JOGO
+**topo.acoes[2]**: Quero começar
 
-**topo.navAria**: Atalhos da página
+**hero.titulo.antes**: Ganhe autonomia para
 
-**topo.links[0].label**: O jogo
+**hero.titulo.destaque**: criar com tecnologia
 
-**topo.links[1].label**: Como funciona
+**hero.titulo.depois**: , começando pelo seu primeiro jogo.
 
-**topo.cta**: Quero fazer meu primeiro jogo
+**hero.texto**: Você começa com um jogo e um caminho preparado. Com aulas guiadas e programação em blocos, aprende a entender as regras, testar suas escolhas e ver uma criação sua funcionar.
 
-**hero.rotulo**: PLAYER 1 · PRESS START
+**hero.imagens[0].alt**: O jogo A Chave do Farol: personagem, chave e farol em uma ilha
 
-**hero.titulo.antes**: Você faz o
+**hero.rotulos[0]**: DESAFIO DO PRIMEIRO JOGO · ADULTOS
 
-**hero.titulo.destaque**: seu primeiro jogo
+**hero.rotulos[1]**: Um começo guiado para quem nunca programou.
 
-**hero.titulo.depois**:  e manda o link para os amigos jogarem.
+**hero.rotulos[2]**: 3 etapas para construir e entender A Chave do Farol.
 
-**hero.texto**: Você monta A Chave do Farol com blocos: personagem, chave, porta e farol. São 3 fases, com 30 dias para fazer no seu ritmo.
+**hero.rotulos[3]**: Vídeo e espaço para construir na mesma aula.
 
-**hero.beneficios[0]**: Aula em vídeo com o Estúdio do lado
+**hero.rotulos[4]**: A CHAVE DO FAROL
 
-**hero.beneficios[1]**: Você não digita código para começar
+**hero.rotulos[5]**: 1P
 
-**hero.beneficios[2]**: Certificado com o seu nome no fim
+**hero.rotulos[6]**: 30 DIAS DE ACESSO
 
-**hero.linkSecundario**: Ver o jogo
+**hero.acoes[0]**: Quero começar meu Desafio
 
-**hero.tela.rotulo**: A CHAVE DO FAROL
+**hero.acoes[1]**: Ver como esse começo acontece
 
-**hero.tela.jogador**: 1P
+**hero.paragrafos[0]**: {{preco}} · pagamento único · 30 dias de acesso · 7 dias de garantia
 
-**hero.tela.imagem.alt**: A Chave do Farol: o personagem na trilha, a chave dourada e o farol listrado na ilha
+**hero.legendas[0]**: O projeto do Desafio: você constrói as regras que fazem essa aventura funcionar.
 
-**hero.tela.legenda**: O jogo que você vai montar.
+**comeco.titulo**: A vontade de criar ganha um caminho quando o primeiro passo fica claro.
 
-**hero.faixa**: 30 DIAS
+**comeco.imagens[0].alt**: Experiência da Chave do Farol em que a posição da chave muda com os valores de x e y
 
-**jeitos.titulo**: Você já pensou em fazer um jogo e nunca soube por onde começar.
+**comeco.rotulos[0]**: DA VONTADE AO PRIMEIRO PASSO
 
-**jeitos.texto**: O tutorial pula etapas e a ferramenta assusta na primeira tela. Sem um caminho, a ideia fica guardada.
+**comeco.paragrafos[0]**: Talvez você queira dar vida a um personagem, mudar uma regra de um jogo ou descobrir como criar no computador. No começo, escolher uma ferramenta, aprender os comandos e decidir o que construir pode parecer coisa demais ao mesmo tempo.
 
-**jeitos.so.titulo**: Só rolar o feed
+**comeco.paragrafos[1]**: Por isso, o Desafio começa com um projeto definido: mover o personagem, encontrar a chave e acender o farol. O cenário e os personagens vêm preparados. Você monta a programação que faz essa aventura acontecer, com explicações para cada parte.
 
-**jeitos.so.texto**: Você só recebe.
+**comeco.paragrafos[2]**: Conforme entende as regras, você experimenta escolhas suas: onde deixar a chave, o que escrever em um aviso, como orientar quem joga. Cada mudança tem um resultado que você pode conferir.
 
-**jeitos.so.alt**: Um celular cinza com uma lista que não acaba e setas de rolar para baixo
+**comeco.paragrafos[3]**: A autonomia começa com uma decisão que você entende.
 
-**jeitos.fazer.titulo**: Fazer o jogo
+**comeco.legendas[0]**: Exploração real do curso: mudar a posição da chave e observar o resultado. As telas de aula foram capturadas no Kids, que oferece o mesmo curso da área adulta.
 
-**jeitos.fazer.texto**: Você decide e o jogo responde.
+**comoFunciona.titulo**: Criar um jogo ajuda você a enxergar o resultado das suas escolhas.
 
-**jeitos.fazer.alt**: Uma tela com blocos coloridos de um lado e um farol aceso do outro, com uma lâmpada acima
+**comoFunciona.imagens[0].alt**: Captura real: chave na posição horizontal 160
 
-**jeitos.frase**: A tela é a mesma. Muda o que você faz com ela.
+**comoFunciona.imagens[1].alt**: Captura real: chave na posição horizontal 280
 
-**jogo.rotulo**: AS FASES
+**comoFunciona.rotulos[0]**: APRENDER FAZENDO
 
-**jogo.titulo**: O seu primeiro jogo, em 3 fases
+**comoFunciona.rotulos[1]**: CHAVE À ESQUERDA · X = 160
 
-**jogo.fases[0].rotulo**: FASE 1
+**comoFunciona.rotulos[2]**: CHAVE À DIREITA · X = 280
 
-**jogo.fases[0].titulo**: O personagem anda
+**comoFunciona.paragrafos[0]**: Imagine que você quer colocar a chave mais longe do personagem. Para fazer isso, precisa entender o comando que controla a posição dela. No jogo, você muda um valor, vê o efeito e pode comparar o resultado com o que imaginou.
 
-**jogo.fases[0].texto**: Você faz o personagem andar com as setas do teclado.
+**comoFunciona.paragrafos[1]**: Quando você entende o que x controla, pode escolher outra posição para a chave e conferir se ela ficou onde queria. O comando passa a servir a uma intenção sua. Essa relação entre decidir, testar e compreender orienta o Desafio.
 
-**jogo.fases[1].rotulo**: FASE 2
+**comoFunciona.legendas[0]**: O valor de x indica a posição horizontal da chave.
 
-**jogo.fases[1].titulo**: A chave muda o jogo
+**comoFunciona.legendas[1]**: Você aumenta o valor. A chave se desloca para a direita.
 
-**jogo.fases[1].texto**: Sem a chave, a porta fica fechada. Com a chave, ela abre.
+**comoFunciona.destaques[0]**: Uma mudança pequena. Uma relação que você consegue explicar.
 
-**jogo.fases[2].rotulo**: FASE 3
+**programacao.titulo**: Programar é dizer ao jogo o que deve acontecer.
 
-**jogo.fases[2].titulo**: O farol acende
+**programacao.imagens[0].alt**: Blocos reais da coleta da chave e da condição que acende o farol
 
-**jogo.fases[2].texto**: Com a chave, o farol acende e o barco chega.
+**programacao.rotulos[0]**: AS IDEIAS VIRAM INSTRUÇÕES
 
-**jogo.fases[3].rotulo**: FASE CONCLUÍDA
+**programacao.paragrafos[0]**: Para o jogo responder às suas escolhas, ele precisa de instruções. Você monta essas instruções encaixando blocos com os comandos escritos no Estúdio, o espaço de criação da plataforma. A aula apresenta o que cada comando faz e como combinar as partes.
 
-**jogo.fases[3].titulo**: Certificado
+**programacao.paragrafos[1]**: Para isso, o jogo precisa guardar uma informação: o personagem já pegou a chave? Quando ele chega ao farol, uma condição consulta essa informação e escolhe a resposta.
 
-**jogo.fases[3].texto**: Com o seu nome, quando o jogo fica pronto.
+**programacao.paragrafos[2]**: O farol continua apagado e aparece o aviso de que falta a chave.
 
-**jogo.blocos.imagem.alt**: Os blocos da regra do farol: quando o personagem encosta no farol, se tem a chave, o farol acende; se não tem, aparece o aviso de que falta a chave
+**programacao.paragrafos[3]**: O farol acende, a mensagem muda e o barco chega.
 
-**jogo.blocos.titulo**: Blocos com as palavras escritas
+**programacao.paragrafos[4]**: Você monta e testa os dois caminhos. Assim, consegue relacionar o comando àquilo que vê acontecer na tela.
 
-**jogo.blocos.paragrafos[0]**: Você encaixa blocos como "Se tem a chave, acender o farol". A lógica é a mesma do código.
+**programacao.legendas[0]**: Blocos reais da Chave do Farol. Clique para ler os comandos em tamanho maior.
 
-**jogo.blocos.paragrafos[1]**: O jogo fica do seu jeito: você escolhe o personagem, o cenário e onde a chave fica escondida.
+**programacao.subtitulos[0]**: O farol só pode acender depois que a chave foi encontrada.
 
-**aula.rotulo**: COMO JOGAR
+**programacao.destaques[0]**: Sem a chave
 
-**aula.titulo**: Cada aula tem o ritmo de uma partida
+**programacao.destaques[1]**: Com a chave
 
-**aula.passos[0].titulo**: 1. Joga a versão pronta
+**jogo.titulo**: Três etapas para juntar as partes e fazer a aventura funcionar.
 
-**aula.passos[0].texto**: Você vê aonde vai chegar.
+**jogo.rotulos[0]**: O SEU PRIMEIRO PROJETO
 
-**aula.passos[0].imagem.alt**: A versão pronta do jogo aberta na aula
+**jogo.rotulos[1]**: ETAPA 01
 
-**aula.passos[1].titulo**: 2. Vê o vídeo e monta
+**jogo.rotulos[2]**: ETAPA 02
 
-**aula.passos[1].texto**: O vídeo fica do lado dos blocos.
+**jogo.rotulos[3]**: ETAPA 03
 
-**aula.passos[1].imagem.alt**: O vídeo da aula à esquerda e o Estúdio de blocos à direita
+**jogo.paragrafos[0]**: Cada etapa acrescenta uma parte do jogo. As explicações e os testes ajudam você a perceber como elas se conectam.
 
-**aula.passos[2].titulo**: 3. Confere com um botão
+**jogo.paragrafos[1]**: Explore posições e monte o movimento com as setas. Confira o que acontece quando o personagem chega aos limites da tela.
 
-**aula.passos[2].texto**: Ele mostra o que já está certo e o que falta.
+**jogo.paragrafos[2]**: <strong>Você pratica:</strong> organizar comandos e observar seus efeitos.
 
-**aula.passos[2].imagem.alt**: O botão Verificar projeto, com o que já está cumprido e o que falta
+**jogo.paragrafos[3]**: Monte a coleta e guarde a informação de que a chave foi encontrada. Ela precisa continuar valendo quando o personagem se afasta.
 
-**aula.passos[3].titulo**: 4. Publica e manda o link
+**jogo.paragrafos[4]**: <strong>Você pratica:</strong> conferir se uma ação produziu o resultado esperado.
 
-**aula.passos[3].texto**: Os amigos jogam no celular.
+**jogo.paragrafos[5]**: Monte a condição do farol, faça escolhas de personalização e teste o jogo inteiro antes de concluir e publicar.
 
-**aula.passos[3].imagem.alt**: O Mural com os jogos publicados
+**jogo.paragrafos[6]**: <strong>Você pratica:</strong> combinar partes, revisar e concluir um projeto.
 
-**aula.nota**: Telas da versão Kids da plataforma, no curso Cadê Todo Mundo. Na área adulta, a aparência é outra.
+**jogo.paragrafos[7]**: O prazo começa com a aprovação do pagamento. As etapas indicam a sequência do projeto: você pode assistir a uma parte, praticar e continuar em outro momento dentro desse período.
 
-**ganha.rotulo**: O QUE VOCÊ GANHA
+**jogo.subtitulos[0]**: Dê movimento ao personagem.
 
-**ganha.titulo**: Fazendo o jogo, você exercita
+**jogo.subtitulos[1]**: Faça o jogo lembrar da chave.
 
-**ganha.habilidades[0].titulo**: Pensar com lógica
+**jogo.subtitulos[2]**: Conecte a regra ao final da aventura.
 
-**ganha.habilidades[0].texto**: Se tem a chave, a porta abre. Se não tem, fica fechada.
+**jogo.destaques[0]**: Você distribui as etapas dentro dos 30 dias de acesso.
 
-**ganha.habilidades[1].titulo**: Planejar
+**aula.titulo**: Você acompanha a explicação e coloca a mão no projeto, na mesma aula.
 
-**ganha.habilidades[1].texto**: Dividir o jogo em partes e decidir a ordem.
+**aula.imagens[0].alt**: Estúdio real com a programação da Chave do Farol e o jogo em execução
 
-**ganha.habilidades[2].titulo**: Resolver problemas
+**aula.imagens[1].alt**: Lista real de objetivos do projeto e botão Verificar projeto
 
-**ganha.habilidades[2].texto**: Quando algo não funciona, você acha o erro e corrige.
+**aula.rotulos[0]**: ORIENTAÇÃO EM CADA PARTE
 
-**ganha.habilidades[3].titulo**: Terminar o que começou
+**aula.rotulos[1]**: 01
 
-**ganha.habilidades[3].texto**: Um jogo pronto, com link para mostrar.
+**aula.rotulos[2]**: 02
 
-**ganha.faixa.titulo**: Você faz por gosto, no seu ritmo.
+**aula.rotulos[3]**: 03
 
-**ganha.faixa.texto**: Sem horário marcado e sem prova. Dez minutos num dia, uma hora no outro.
+**aula.rotulos[4]**: 04
 
-**quem.rotulo**: QUEM JOGA
+**aula.paragrafos[0]**: O vídeo fica ao lado do espaço de prática. Você assiste a um trecho, pausa, experimenta e confere o resultado antes de continuar.
 
-**quem.titulo**: Para quem é
+**aula.paragrafos[1]**: Veja o que deve acontecer naquela parte do jogo.
 
-**quem.perfis[0].marca**: P1
+**aula.paragrafos[2]**: Acompanhe a explicação e teste a construção no projeto.
 
-**quem.perfis[0].texto**: Quem nunca programou.
+**aula.paragrafos[3]**: A verificação da atividade ajuda a identificar os objetivos cumpridos e o que precisa ser revisto.
 
-**quem.perfis[1].marca**: P2
+**aula.paragrafos[4]**: Reveja a explicação, consulte o Caderno do Aluno ou envie sua dúvida por mensagem.
 
-**quem.perfis[1].texto**: Quem já tentou sozinho e parou.
+**aula.paragrafos[5]**: A chave sumiu, mas o jogo guardou que ela foi coletada? A condição está consultando essa informação? A aula e os testes ajudam a localizar a parte que merece atenção.
 
-**quem.perfis[2].marca**: P3
+**aula.legendas[0]**: O Estúdio usado no projeto: os comandos de um lado, o jogo em execução do outro.
 
-**quem.perfis[2].texto**: Quem cresceu jogando e quer fazer o próprio jogo.
+**aula.legendas[1]**: A lista de objetivos ajuda a conferir o que já funciona e o que falta revisar.
 
-**quem.requisito**: Para pessoas com 18 anos ou mais. Precisa de computador com mouse e teclado.
+**aula.subtitulos[0]**: Entenda o objetivo.
 
-**quem.caderno.imagem.alt**: Uma página do Caderno do Aluno adulto da Chave do Farol, com os três testes do jogo inteiro
+**aula.subtitulos[1]**: Monte e experimente.
 
-**quem.caderno.legenda**: O Caderno do Aluno explica cada teste, passo a passo.
+**aula.subtitulos[2]**: Confira o que falta.
 
-**fundadores.rotulo**: QUEM FEZ O JOGO
+**aula.subtitulos[3]**: Retome com apoio.
 
-**fundadores.titulo**: A gente programa há mais de dez anos, e começou a fazer jogos em casa
+**aula.subtitulos[4]**: Se o farol não acendeu, você tem um ponto para investigar.
 
-**fundadores.paragrafos[0]**: Somos Helena e Júlio, formados em Sistemas de Informação, com mais de dez anos criando sistemas em empresas como Banco do Brasil, Tractebel e InCeres.
+**habilidades.titulo**: Planejar, resolver problemas e testar ideias faz parte da construção.
 
-**fundadores.paragrafos[1]**: O Sistema Zero começou com os jogos que fizemos com os nossos filhos. As aulas do Desafio são nossas.
+**habilidades.rotulos[0]**: O QUE VOCÊ PRATICA AO CRIAR
 
-**fundadores.imagem.alt**: Helena e Júlio, fundadores do Sistema Zero, gravando uma aula com o Estúdio na tela
+**habilidades.rotulos[1]**: PLANEJAMENTO
 
-**oferta.rotulo**: INSERT COIN
+**habilidades.rotulos[2]**: RESOLUÇÃO DE PROBLEMAS
 
-**oferta.titulo**: Comece o seu primeiro jogo hoje
+**habilidades.rotulos[3]**: PERSISTÊNCIA
 
-**oferta.selo**: DESAFIO DO PRIMEIRO JOGO
+**habilidades.rotulos[4]**: CRIATIVIDADE E COMUNICAÇÃO
 
-**oferta.sufixo**: pagamento único
+**habilidades.paragrafos[0]**: Para fazer o jogo funcionar, você precisa dividir o objetivo em partes, investigar um resultado inesperado e explicar suas escolhas. É assim que essas habilidades entram na prática, ligadas a algo que você quer realizar.
 
-**oferta.porDia**: Menos de {{preco_dia}} por dia de acesso.
+**habilidades.paragrafos[1]**: A sequência do curso mostra como dividir a aventura em movimento, coleta e condição. Você aprende a conferir cada parte antes de testar tudo junto.
 
-**oferta.inclui[0]**: As 3 fases da Chave do Farol e o certificado
+**habilidades.paragrafos[2]**: Se o farol acende sem a chave, você verifica a condição que controla essa ação. Faz um ajuste e testa de novo para descobrir se resolveu a causa.
 
-**oferta.inclui[1]**: Aulas em vídeo com o Estúdio dentro da aula
+**habilidades.paragrafos[3]**: Se a primeira tentativa falha, você compara o que esperava com o que aconteceu. Pode rever a explicação, escolher uma parte para corrigir e repetir o teste.
 
-**oferta.inclui[2]**: Caderno do Aluno e tutoriais do Como fazer
+**habilidades.paragrafos[4]**: Você escreve um aviso que ajude quem joga a descobrir o próximo passo. Depois, testa a mensagem e pode explicar por que escolheu aquelas palavras.
 
-**oferta.inclui[3]**: Ajuda por mensagens
+**habilidades.paragrafos[5]**: Organizar uma viagem também envolve dividir um objetivo em etapas. Investigar por que uma planilha calculou um valor errado também pede conferir regras e testar uma mudança. No Desafio, você pratica esses modos de pensar dentro do jogo e pode observar o que cada tentativa ensina.
 
-**oferta.inclui[4]**: Publicar o jogo no Mural e mandar o link
+**habilidades.subtitulos[0]**: Transformar um objetivo em partes.
 
-**oferta.inclui[5]**: 30 dias de acesso, sem renovação
+**habilidades.subtitulos[1]**: Procurar a causa do que aconteceu.
 
-**oferta.incluiLabel**: O que está incluído no Desafio
+**habilidades.subtitulos[2]**: Dar uma direção à próxima tentativa.
 
-**oferta.garantia**: 7 dias de garantia. Se não gostar, você pede o dinheiro de volta nesse prazo.
+**habilidades.subtitulos[3]**: Escolher e explicar o que mudou.
 
-**oferta.depoisTitulo**: Depois da compra
+**habilidades.destaques[0]**: Você pode reconhecer esse raciocínio em outros projetos.
 
-**oferta.depois[0]**: Você recebe o acesso por e-mail e WhatsApp.
+**realizacao.titulo**: Há uma satisfação própria em ver funcionar algo que você ajudou a construir.
 
-**oferta.depois[1]**: Cria a sua senha e entra.
+**realizacao.imagens[0].alt**: Página do Caderno do Aluno com os testes do jogo completo
 
-**oferta.depois[2]**: Começa a primeira aula. Os 30 dias contam da aprovação do pagamento.
+**realizacao.rotulos[0]**: O PRAZER DE FAZER
 
-**oferta.jaTem**: Para quem já tem conta no Sistema Zero:
+**realizacao.paragrafos[0]**: Quando o farol acende, você consegue apontar a regra que montou para isso acontecer. Ao mudar uma mensagem ou a posição da chave, vê uma escolha sua aparecer na aventura. O resultado tem uma participação que você reconhece.
 
-**oferta.jaTemLink**: entrar com o seu acesso.
+**realizacao.paragrafos[1]**: Ao concluir, você pode publicar no Mural dos Criadores e compartilhar o link para outras pessoas jogarem. Mostrar o que fez e contar como resolveu uma dificuldade também faz parte dessa realização.
 
-**caminho.rotulo**: PRÓXIMA FASE
+**realizacao.paragrafos[2]**: Para quem sempre quis criar um jogo, esse desejo ganha um começo possível.
 
-**caminho.titulo**: O primeiro jogo é o começo
+**realizacao.paragrafos[3]**: Se você chegou pela curiosidade de aprender, o projeto também pode ser uma forma de ter um tempo seu para experimentar e criar.
 
-**caminho.passos[0].titulo**: O primeiro jogo
+**realizacao.legendas[0]**: Um trecho do Caderno do Aluno: os testes ajudam você a reconhecer quando o projeto está funcionando.
 
-**caminho.passos[0].texto**: A Chave do Farol, aqui no Desafio.
+**paraQuem.titulo**: Você pode chegar pela curiosidade, por uma ideia ou pela vontade de tentar de novo.
 
-**caminho.passos[1].titulo**: Jogos maiores
+**paraQuem.rotulos[0]**: UM COMEÇO PARA ADULTOS
 
-**caminho.passos[1].texto**: Na Comunidade, um curso depois do outro.
+**paraQuem.rotulos[1]**: PARA FAZER O DESAFIO
 
-**caminho.passos[2].titulo**: Um jogo com a sua ideia
+**paraQuem.rotulos[2]**: Ter 18 anos ou mais e usar a própria conta.
 
-**caminho.passos[2].texto**: Feito com as peças que você juntou nos cursos.
+**paraQuem.rotulos[3]**: Computador com mouse, teclado e conexão à internet.
 
-**caminho.texto**: Quem quiser continuar, segue na Comunidade dos Criadores, com jogos cada vez maiores. A escolha fica para depois do primeiro jogo.
+**paraQuem.rotulos[4]**: Navegador para assistir e construir. As ferramentas ficam na plataforma.
 
-**caminho.link**: Conhecer a Comunidade dos Criadores
+**paraQuem.rotulos[5]**: Tempo para praticar e retomar as três etapas dentro dos 30 dias.
 
-**duvidas.titulo**: Dúvidas antes de apertar start
+**paraQuem.itens[0]**: <span class="cda-rotulo">01</span><span>Nunca programou e quer um primeiro caminho explicado.</span>
 
-**duvidas.itens[0].pergunta**: Nunca programei. Consigo?
+**paraQuem.itens[1]**: <span class="cda-rotulo">02</span><span>Já acompanhou tutoriais e quer compreender melhor o que está construindo.</span>
 
-**duvidas.itens[0].resposta**: Consegue. Você encaixa blocos com as palavras escritas, e o vídeo mostra cada passo.
+**paraQuem.itens[2]**: <span class="cda-rotulo">03</span><span>Gosta de aprender, experimentar e ter um projeto criativo seu.</span>
 
-**duvidas.itens[1].pergunta**: Tenho mais de 30 anos. É para mim?
+**paraQuem.paragrafos[0]**: O Desafio é introdutório, com um projeto definido e orientação. Você começa por essa aventura e conhece uma forma de aprender criando.
 
-**duvidas.itens[1].resposta**: É para quem tem 18 anos ou mais. A idade não muda nada: o que conta é a vontade de fazer o jogo.
+**paraQuem.paragrafos[1]**: As aulas são gravadas. Você escolhe os horários, pausa quando precisa e continua depois.
 
-**duvidas.itens[2].pergunta**: O curso é infantil?
+**paraQuem.subtitulos[0]**: Prepare o seu espaço de prática.
 
-**duvidas.itens[2].resposta**: A área adulta tem aparência e linguagem próprias. O jogo do Desafio é A Chave do Farol nas duas versões, porque é um bom primeiro jogo para qualquer idade.
+**quemCriou.titulo**: Somos Helena e Júlio. A criação de jogos começou na nossa família.
 
-**duvidas.itens[3].pergunta**: Quanto tempo preciso por dia?
+**quemCriou.imagens[0].alt**: Helena e Júlio, fundadores do Sistema Zero, preparando uma aula
 
-**duvidas.itens[3].resposta**: Você decide. As aulas são divididas em partes curtas, e tudo fica salvo para continuar depois.
+**quemCriou.rotulos[0]**: QUEM PREPAROU ESSE CAMINHO
 
-**duvidas.itens[4].pergunta**: Funciona no celular?
+**quemCriou.paragrafos[0]**: Somos formados em Sistemas de Informação e temos mais de dez anos de experiência criando sistemas. O Sistema Zero começou com os jogos que fizemos com nossos filhos.
 
-**duvidas.itens[4].resposta**: Para montar, precisa de computador com mouse e teclado. Depois de publicado, o jogo abre no celular.
+**quemCriou.paragrafos[1]**: Hoje, organizamos essa experiência em cursos para crianças e adultos. Nosso trabalho é preparar o projeto, explicar suas partes e propor testes que ajudem você a entender o que está construindo.
 
-**duvidas.itens[5].pergunta**: Qual é a diferença para a Comunidade?
+**quemCriou.paragrafos[2]**: Queremos que você encontre nesse primeiro jogo uma oportunidade de aprender, fazer escolhas e reconhecer o que conseguiu criar.
 
-**duvidas.itens[5].resposta**: O Desafio é um jogo só, com 30 dias e pagamento único. A Comunidade é a assinatura com os cursos da plataforma, para quem quer continuar.
+**oferta.titulo**: O primeiro projeto e o caminho para construir já estão preparados.
 
-**duvidas.itens[6].pergunta**: É assinatura?
+**oferta.rotulos[0]**: O SEU PRIMEIRO PASSO
 
-**duvidas.itens[6].resposta**: Não. É um pagamento único de {{preco}}, sem renovação.
+**oferta.rotulos[1]**: DESAFIO DO PRIMEIRO JOGO · ADULTOS
 
-**duvidas.itens[7].pergunta**: O que acontece depois dos 30 dias?
+**oferta.rotulos[2]**: As três etapas da Chave do Farol.
 
-**duvidas.itens[7].resposta**: As aulas fecham. O jogo publicado continua com o link funcionando, e o que você fez fica guardado na conta.
+**oferta.rotulos[3]**: Aulas em vídeo e Estúdio nas atividades do curso.
 
-**fechamento.titulo**: A próxima partida pode ser no jogo que você fez.
+**oferta.rotulos[4]**: Caderno do Aluno e tutoriais de apoio.
 
-**fechamento.texto**: {{preco}}, pagamento único. 30 dias de acesso. 7 dias de garantia.
+**oferta.rotulos[5]**: Ajuda por mensagens para suas dúvidas.
 
-**fechamento.cta**: Quero fazer meu primeiro jogo
+**oferta.rotulos[6]**: Acesso ao Mural para publicar e compartilhar o projeto.
 
-**fechamento.legal.aria**: Documentos legais
+**oferta.rotulos[7]**: Certificado após cumprir os requisitos do curso.
 
-**fechamento.legal.termos.label**: Termos do Desafio
+**oferta.paragrafos[0]**: Você recebe as três etapas da Chave do Farol, as aulas e o espaço para praticar. Ao longo da construção, aprende o que faz cada parte funcionar e testa suas mudanças, com materiais de consulta e orientação por mensagens.
 
-**fechamento.legal.privacidade.label**: Privacidade
+**oferta.paragrafos[1]**: {{preco}}<span> pagamento único</span>
 
-**barra.sufixo**: pagamento único
+**oferta.paragrafos[2]**: 30 dias de acesso. Sem renovação automática.
 
-**barra.cta**: Começar
+**oferta.paragrafos[3]**: <span>7 dias corridos a partir da compra para pedir o reembolso integral.</span>
+
+**oferta.paragrafos[4]**: Pagamento por Pix ou cartão de crédito.
+
+**oferta.subtitulos[0]**: DEPOIS DA COMPRA
+
+**oferta.itens[0]**: <span class="cda-depois__numero">01</span><span>O pagamento é confirmado e as instruções chegam ao seu e-mail.</span>
+
+**oferta.itens[1]**: <span class="cda-depois__numero">02</span><span>Você acessa sua conta e abre a primeira aula.</span>
+
+**oferta.itens[2]**: <span class="cda-depois__numero">03</span><span>Organiza a prática dentro dos 30 dias contados da aprovação do pagamento.</span>
+
+**oferta.acoes[0]**: Quero começar meu Desafio
+
+**depois.titulo**: Entender o primeiro projeto dá referências para as próximas ideias.
+
+**depois.rotulos[0]**: DEPOIS DO PRIMEIRO PROJETO
+
+**depois.paragrafos[0]**: No Farol, você conhece regras para mover, lembrar e decidir. Isso dá referências para imaginar outras situações: um personagem que precisa de um objeto para continuar ou uma mensagem que muda conforme a escolha de quem joga. Desenvolver essas ideias pede novas combinações e prática.
+
+**depois.paragrafos[1]**: A Comunidade dos Criadores oferece continuidade por assinatura, com cursos e recursos liberados ao longo da jornada. Você pode avaliar esse próximo passo depois de experimentar o Desafio, que é uma compra única com seu próprio projeto completo.
+
+**duvidas.titulo**: O que você precisa saber para começar.
+
+**duvidas.rotulos[0]**: ANTES DE COMEÇAR
+
+**duvidas.itens[0].pergunta**: Nunca programei. Como vou começar?
+
+**duvidas.itens[0].resposta**: O curso começa com um projeto preparado e instruções em blocos, com os comandos escritos. As explicações apresentam cada parte, e você monta e testa no Estúdio dentro da aula. O percurso foi organizado para iniciantes.
+
+**duvidas.itens[1].pergunta**: Preciso ter uma ideia de jogo pronta?
+
+**duvidas.itens[1].resposta**: Você começa com A Chave do Farol, que já tem um objetivo e um caminho de construção. Ao longo das atividades, faz as escolhas propostas e conhece recursos que podem inspirar suas próximas criações.
+
+**duvidas.itens[2].pergunta**: O curso também é oferecido no Kids?
+
+**duvidas.itens[2].resposta**: Sim. O curso e o projeto são os mesmos, com personagens, cenário e explicações que também aparecem no Kids. Na plataforma adulta, você usa sua própria conta e participa da área adulta. Os fundamentos trabalhados são os mesmos: organizar instruções, guardar informações, criar condições e testar.
+
+**duvidas.itens[3].pergunta**: Quanto tempo preciso reservar?
+
+**duvidas.itens[3].resposta**: Você tem 30 dias de acesso a partir da aprovação do pagamento. As aulas são gravadas e divididas em partes, e seu projeto fica salvo para continuar depois. Reserve momentos para assistir, experimentar e rever o que precisar; o ritmo de conclusão varia de pessoa para pessoa.
+
+**duvidas.itens[4].pergunta**: Posso fazer pelo celular?
+
+**duvidas.itens[4].resposta**: Para assistir e construir nas atividades, use um computador com mouse, teclado e internet. Depois de publicado, o jogo pode ser aberto pelo link no navegador do celular de quem vai jogar.
+
+**duvidas.itens[5].pergunta**: E se eu travar em alguma parte?
+
+**duvidas.itens[5].resposta**: Você pode rever a explicação, consultar o Caderno do Aluno e os tutoriais de apoio. A verificação da atividade ajuda a conferir os objetivos do projeto. Se a dúvida continuar, envie uma mensagem à equipe pela plataforma. As respostas podem levar um tempo.
+
+**duvidas.itens[6].pergunta**: Vou poder criar qualquer jogo depois do Desafio?
+
+**duvidas.itens[6].resposta**: Você começa com um projeto guiado e aprende seus fundamentos: movimento, memória, condições e testes. Também experimenta as mudanças propostas nas aulas. Criar jogos diferentes exige ampliar esse repertório e continuar praticando. No Desafio, o Estúdio é liberado para as atividades do curso.
+
+**duvidas.itens[7].pergunta**: Essa compra cria uma assinatura?
+
+**duvidas.itens[7].resposta**: Não. Você paga {{preco}} uma vez e recebe 30 dias de acesso ao Desafio. A Comunidade dos Criadores é uma assinatura separada, que você escolhe contratar se quiser continuar.
+
+**duvidas.itens[8].pergunta**: O que acontece depois dos 30 dias?
+
+**duvidas.itens[8].resposta**: O acesso às aulas e ao Estúdio das atividades termina. Você continua podendo visitar o Mural para ver e jogar, mas esse acesso de visitante não permite novas publicações, comentários ou reações. O link do seu jogo continua funcionando enquanto a publicação estiver disponível. Seus projetos e progresso ficam guardados conforme a Política de Privacidade e podem ser retomados com uma nova contratação que inclua esse acesso.
+
+**duvidas.itens[9].pergunta**: Como funciona a garantia?
+
+**duvidas.itens[9].resposta**: Você pode solicitar o reembolso integral em até sete dias corridos da compra. As orientações e o contato estão nos Termos de Uso do Desafio, disponíveis no rodapé.
+
+**fechamento.titulo**: Transforme a vontade de criar em um projeto que você pode mostrar.
+
+**fechamento.rotulos[0]**: A PRIMEIRA CRIAÇÃO COMEÇA AQUI
+
+**fechamento.paragrafos[0]**: Comece com a Chave do Farol: monte as regras, experimente suas escolhas e compartilhe o resultado. Um primeiro jogo para praticar o que você veio buscar: entender, criar e realizar.
+
+**fechamento.paragrafos[1]**: {{preco}} · pagamento único · 30 dias de acesso · 7 dias de garantia
+
+**fechamento.acoes[0]**: Quero começar meu Desafio

@@ -72,7 +72,8 @@ const EventBody = z.object({
  * percursos (ramos e condicionais), e na lista declarada nos outros.
  */
 function questionPosition(quiz: FunnelQuiz, step: QuizStep, answers: QuizAnswers): number {
-  if (step.quizPosition !== undefined) return step.quizPosition + 1
+  if (step.quizPosition !== undefined)
+    return step.quizPosition + (quiz.steps.some((s) => s.quizPosition === 0) ? 1 : 0)
   const active = quiz.activeSteps?.(answers)
   const index = active ? active.findIndex((s) => s.key === step.key) : -1
   return (index >= 0 ? index : quiz.steps.indexOf(step)) + 1

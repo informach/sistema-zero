@@ -10,8 +10,10 @@ import '../../../styles/kids-oferta.css'
 import '../../../styles/resultado-conversa.css'
 import { type ResultadoConversa, trechosConversa } from '../../../content/resultado-conversa'
 import QuizResultadoFeedback from '../../../islands/QuizResultadoFeedback'
+import Footer from '../../Footer.astro'
 import OfferImageZoom from '../oferta/OfferImageZoom.astro'
 import LeituraTexto from './LeituraTexto.astro'
+import ResultadoAutonomia from './ResultadoAutonomia.astro'
 import ResultadoLeitura from './ResultadoLeitura.astro'
 
 interface Props {
@@ -25,6 +27,7 @@ interface Props {
 }
 const { resultado: r, quizPath, revision, sessionToken, restartLabel } = Astro.props
 const leitura = r.blocos.some((b) => b.tipo === 'leitura')
+const autonomia = r.blocos.some((b) => b.tipo === 'autonomia')
 /** A linha abaixo do botão nas ofertas de assinatura (a Comunidade); o Desafio traz a sua. */
 const NOTA_PADRAO = 'O preço e os planos aparecem na próxima página.'
 const logo =
@@ -38,7 +41,7 @@ const logo =
       }
 ---
 
-<div class:list={['rc', `rc--${r.tema}`, { 'rc--vida': leitura }]} data-quiz-profile={r.perfil}>
+<div class:list={['rc', `rc--${r.tema}`, { 'rc--vida': leitura, 'rc--autonomia': autonomia }]} data-quiz-profile={r.perfil}>
   <a href="#resultado" class="rc-pular">Pular para o resultado</a>
   <header class="rc-topo">
     <div class="rc-topo-in">
@@ -47,12 +50,14 @@ const logo =
     </div>
   </header>
   <main id="resultado" class="rc-carta">
-    <span class="rc-selo">{leitura ? 'Um caminho para sua família' : 'Seu resultado'}</span>
+    <span class="rc-selo">{leitura ? 'Um caminho para sua família' : autonomia ? 'Seu próximo passo' : 'Seu resultado'}</span>
     {r.aviso && <p class="rc-aviso">{r.aviso}</p>}
     <h1 class="rc-titulo">{r.titulo}</h1>
     {
       r.blocos.map((b) =>
-        b.tipo === 'leitura' ? (
+        b.tipo === 'autonomia' ? (
+          <ResultadoAutonomia leitura={b.leitura}/>
+        ) : b.tipo === 'leitura' ? (
           <ResultadoLeitura leitura={b.leitura} atencao={b.atencao} />
         ) : b.tipo === 'h' ? (
           <h2 class="rc-h">{b.texto}</h2>
@@ -104,4 +109,5 @@ const logo =
     />
   </main>
 </div>
-{leitura && <OfferImageZoom />}
+{(leitura || autonomia) && <OfferImageZoom />}
+{autonomia && <Footer audience="pro" termosHref={r.destino.replace(/\/oferta$/, '/termos')} />}
