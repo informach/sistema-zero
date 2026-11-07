@@ -6,6 +6,7 @@
 import '../../styles/kids-oferta.css'
 import '../../styles/quiz-spin.css'
 import BaseLayout from '../../layouts/BaseLayout.astro'
+import Footer from '../Footer.astro'
 
 interface Props {
   title: string
@@ -13,9 +14,11 @@ interface Props {
   /** Sem imagem, a prévia do link sai sem foto (o Desafio adulto não mostra o jogo antes do resultado). */
   ogImage?: string
   tema: 'kids' | 'adulto'
+  termosHref?: string
 }
-const { title, description, ogImage, tema } = Astro.props
+const { title, description, ogImage, tema, termosHref } = Astro.props
 ---
 <BaseLayout title={title} description={description} ogImage={ogImage} htmlClass={tema === 'adulto' ? 'theme-arcade' : 'theme-kids'} noindex={true}>
   <slot />
+  {tema === 'adulto' && <Footer audience="pro" termosHref={termosHref} />}
 </BaseLayout>

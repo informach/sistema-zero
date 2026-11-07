@@ -3,6 +3,8 @@
 export interface Opcao {
   value: string
   label: string
+  /** Nome da habilidade em destaque; também faz parte de label, para relatórios acessíveis. */
+  heading?: string
   /** Selo curto no badge (ex.: emoji 🎮 ou letra). Default: o próprio `value`. */
   badge?: string
   /** URL pública da imagem (public/img/...). Renderiza placeholder se ausente. */
@@ -26,6 +28,8 @@ interface StepBase {
    * comum a todos os percursos. O /admin numera e encadeia cada ramo à parte.
    */
   ramo?: string
+  /** Posição visível, comum às variantes da mesma pergunta; 0 identifica a entrada filho/filha. */
+  quizPosition?: number
 }
 
 export interface MultiplaEscolhaStep extends StepBase {
@@ -47,6 +51,7 @@ export interface SelecaoStep extends StepBase {
    * Comunidade adulta: rotina → trava → quer.
    */
   etapa: 'rotina' | 'casa' | 'desejo' | 'filho' | 'objetivos' | 'comeco' | 'trava' | 'quer'
+  stageLabel?: string
   /** Opções em cartas grandes (com a `image` de cada opção, quando houver) em vez de lista. */
   cartas?: boolean
   opcoes: Opcao[]

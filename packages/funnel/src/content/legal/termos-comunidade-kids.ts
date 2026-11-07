@@ -16,7 +16,7 @@ const ASSINATURA = 'Comunidade dos Criadores Kids'
 export const TERMOS_COMUNIDADE_KIDS: LegalDoc = {
   titulo: 'Termos de Uso da Comunidade dos Criadores Kids',
   descricao: `Condições para a contratação e o uso da assinatura da ${ASSINATURA}, a área infantil da plataforma da ${EMPRESA.razaoSocial}. A compra e o aceite são feitos por um adulto responsável.`,
-  atualizadoEm: '20 de outubro de 2026',
+  atualizadoEm: '6 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -69,7 +69,7 @@ export const TERMOS_COMUNIDADE_KIDS: LegalDoc = {
     {
       titulo: '6. Do pagamento',
       paragrafos: [
-        'O Responsável escolhe o plano mensal ou o plano anual. As cobranças são processadas pela Efí S.A. Instituição de Pagamento ("Efí"), nas modalidades Pix e cartão de crédito. No cartão de crédito, a assinatura é recorrente: a cobrança se repete automaticamente a cada período (mensal ou anual) até o cancelamento. O plano anual também pode ser pago à vista via Pix; nesse caso, o pagamento garante 12 (doze) meses de acesso, não cria cobrança recorrente, e a continuidade depende de uma nova contratação, para a qual a Empresa envia um lembrete por e-mail antes do vencimento. Cupons de desconto não se aplicam à Assinatura. O plano, o valor, a periodicidade e a forma de renovação são exibidos no checkout antes do pagamento e ficam registrados na conta do Responsável.',
+        'O Responsável escolhe o plano mensal ou o plano anual. As cobranças são processadas pela Efí S.A. Instituição de Pagamento ("Efí"), nas modalidades Pix e cartão de crédito. No cartão de crédito, a assinatura é recorrente: a cobrança se repete automaticamente a cada período (mensal ou anual) até o cancelamento. O plano anual também pode ser pago à vista via Pix; nesse caso, o pagamento garante 12 (doze) meses de acesso, não cria cobrança recorrente, e a continuidade depende de uma nova contratação, para a qual a Empresa envia um lembrete por e-mail antes do vencimento. Quando houver cupom válido para o plano escolhido, o desconto se aplica somente à primeira cobrança. As renovações são cobradas pelo valor normal do plano. O plano, o valor, a periodicidade e a forma de renovação são exibidos no checkout antes do pagamento e ficam registrados na conta do Responsável.',
         'Se uma cobrança recorrente não for aprovada, a Empresa avisa o Responsável por e-mail. O acesso continua até o fim do período já pago, acrescido de um curto prazo de tolerância, e é pausado automaticamente caso o pagamento não seja regularizado. O Responsável pode reativar a assinatura a qualquer momento.',
         'Os dados completos do cartão não transitam pelos servidores da Empresa: a captura é feita de forma segura, por tokenização, diretamente pelo processador de pagamentos.',
       ],

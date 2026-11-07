@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { createKidsQuiz } from '../../kids-vida'
 import type { FunnelQuiz } from '../../registry'
 import {
   activeCommunitySteps,
@@ -15,7 +16,7 @@ import { COMMUNITY_QUESTIONS_V4 } from './questions-v4'
 import { COMMUNITY_QUESTIONS_V5 } from './questions-v5'
 import { buildCommunityResult } from './result'
 
-export const COMMUNITY_QUIZ: FunnelQuiz = {
+export const COMMUNITY_QUIZ_ANTERIOR: FunnelQuiz = {
   version: QUIZ_VERSION,
   presentation: 'comunidade',
   steps: COMMUNITY_QUESTIONS,
@@ -49,3 +50,9 @@ export const COMMUNITY_QUIZ: FunnelQuiz = {
   branchOf: communityBranch,
   conversa: buildCommunityResult,
 }
+
+export const COMMUNITY_QUIZ = createKidsQuiz('comunidade', [
+  ...COMMUNITY_QUESTIONS,
+  ...COMMUNITY_QUESTIONS_V5,
+  ...COMMUNITY_QUESTIONS_V4,
+])

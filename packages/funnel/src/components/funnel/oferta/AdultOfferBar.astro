@@ -1,0 +1,40 @@
+---
+interface Props {
+  price: string
+  detail: string
+  action: string
+}
+const { price, detail, action } = Astro.props
+---
+<aside class="adult-mobile" data-adult-offer-bar aria-label="Resumo da oferta" aria-hidden="true" inert>
+  <div><strong>{price}</strong><span class="adult-mobile-detail">{detail}</span></div>
+  <a class="cda-btn cda-btn--barra" href="#oferta">{action}</a>
+</aside>
+<script>
+  const bar = document.querySelector<HTMLElement>('[data-adult-offer-bar]')
+  const hero = document.getElementById('inicio')
+  const offer = document.getElementById('oferta')
+  const footer = document.querySelector('footer')
+  if (bar && hero && offer && footer) {
+    let scheduled = false
+    const update = () => {
+      scheduled = false
+      const bounds = offer.getBoundingClientRect()
+      const visible = window.matchMedia('(max-width: 760px)').matches
+        && hero.getBoundingClientRect().bottom < 0
+        && !(bounds.top < window.innerHeight && bounds.bottom > 0)
+        && footer.getBoundingClientRect().top >= window.innerHeight
+      bar.classList.toggle('is-visible', visible)
+      bar.inert = !visible
+      bar.setAttribute('aria-hidden', String(!visible))
+    }
+    const schedule = () => {
+      if (scheduled) return
+      scheduled = true
+      requestAnimationFrame(update)
+    }
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    update()
+  }
+</script>

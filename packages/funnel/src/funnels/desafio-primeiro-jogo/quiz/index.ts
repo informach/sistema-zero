@@ -1,4 +1,6 @@
 import { z } from 'zod'
+import { createKidsQuiz } from '../../kids-vida'
+import { profileLabels } from '../../kids-vida/engine'
 import type { FunnelQuiz } from '../../registry'
 import {
   activeDesafioSteps,
@@ -21,7 +23,7 @@ import { PROFILE_LABELS_9A17, PROFILE_LABELS_M9 } from './result-copy'
  * Rótulos dos perfis no /admin. O ramo de 9 a 17 usa os slugs da v4 (os Perfis seguem comparáveis
  * entre as versões); o menor de 9 tem os seus.
  */
-export const DESAFIO_PERFIL_LABELS: Record<string, string> = Object.fromEntries([
+export const DESAFIO_LEGACY_PERFIL_LABELS: Record<string, string> = Object.fromEntries([
   ...Object.entries(PROFILE_IDS).map(([p, slug]) => [
     slug,
     PROFILE_LABELS_9A17[p as keyof typeof PROFILE_IDS],
@@ -32,7 +34,7 @@ export const DESAFIO_PERFIL_LABELS: Record<string, string> = Object.fromEntries(
   ]),
 ])
 
-export const DESAFIO_QUIZ: FunnelQuiz = {
+export const DESAFIO_QUIZ_ANTERIOR: FunnelQuiz = {
   version: QUIZ_VERSION,
   presentation: 'desafio-kids',
   steps: DESAFIO_QUESTIONS,
@@ -59,3 +61,9 @@ export const DESAFIO_QUIZ: FunnelQuiz = {
   branchOf: desafioBranch,
   conversa: buildDesafioKidsResult,
 }
+
+export const DESAFIO_PERFIL_LABELS = profileLabels
+export const DESAFIO_QUIZ = createKidsQuiz('desafio', [
+  ...DESAFIO_QUESTIONS,
+  ...DESAFIO_QUESTIONS_V4,
+])

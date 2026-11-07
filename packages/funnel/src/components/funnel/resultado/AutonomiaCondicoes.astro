@@ -1,0 +1,11 @@
+---
+interface Props {
+  items: string[]
+  attention: boolean
+}
+const { items, attention } = Astro.props
+---
+<aside class:list={['ra-condicoes',{'ra-atencao':attention}]}>
+  <h2>{attention?'Antes de escolher, confira estas condições.':'Como essa prática cabe na sua rotina.'}</h2>
+  <ul>{items.map(item=><li>{item}</li>)}</ul>
+</aside>

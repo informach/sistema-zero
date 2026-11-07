@@ -37,6 +37,7 @@ export interface KidsQuizConfig {
     sobre: string
     voltar: string
     tocar: string
+    image?: string
   }
   stageLabels: Record<'9a17' | 'm9', Record<'rotina' | 'casa' | 'desejo', string>>
   adultExit: { title: string; text: string; action: string; fallbackAction: string; fix: string }
@@ -174,6 +175,15 @@ export default function KidsConversaQuiz({
         <span className="qz-selo">{QUIZ_ENTRY.eyebrow}</span>
         <Manchete headline={manchete} headingRef={heading} />
         <p className="qz-descricao">{QUIZ_ENTRY.description}</p>
+        {QUIZ_ENTRY.image && (
+          <img
+            className="qz-intro-visual"
+            src={QUIZ_ENTRY.image}
+            width="1536"
+            height="1024"
+            alt="Zappy, Dedé e Debinha planejam um caminho juntos."
+          />
+        )}
         {errorView}
         {started ? (
           <div className="qz-acoes">
@@ -224,6 +234,11 @@ export default function KidsConversaQuiz({
           </section>
         )}
         <p className="qz-nota">{QUIZ_ENTRY.note}</p>
+        {adultQuizPath && (
+          <a className="qz-link qz-link--centro" href={linkWithAttribution(adultQuizPath)}>
+            Estou buscando um caminho para mim
+          </a>
+        )}
       </main>,
     )
   }
@@ -323,19 +338,27 @@ export default function KidsConversaQuiz({
   // A carta de filho ou filha fica fora da contagem: a idade é a primeira pergunta. A pergunta extra
   // de um perfil só se abre no fim; ela aparece como "Pergunta extra", sem mudar o total.
   const contadas = steps.filter((s) => !s.condicional && s.key !== GENERO_STEP.key)
-  const total = branch === '9a17' || branch === 'm9' ? contadas.length : c.defaultTotal
+  const total =
+    step.quizPosition !== undefined
+      ? c.defaultTotal
+      : branch === '9a17' || branch === 'm9'
+        ? contadas.length
+        : c.defaultTotal
   const extra = step.condicional === true
-  const numero = extra ? total : Math.max(contadas.findIndex((s) => s.key === step.key) + 1, 1)
+  const numero =
+    step.quizPosition ??
+    (extra ? total : Math.max(contadas.findIndex((s) => s.key === step.key) + 1, 1))
   const rotulo = extra ? 'Pergunta extra' : `Pergunta ${numero} de ${total}`
   const etapa =
-    step.key === IDADE_STEP.key
+    shown.stageLabel ??
+    (step.key === IDADE_STEP.key
       ? flexionar(QUIZ_ENTRY.sobre, genero)
       : flexionar(
           c.stageLabels[branch === 'm9' ? 'm9' : '9a17'][
             step.etapa as 'rotina' | 'casa' | 'desejo'
           ] ?? '',
           genero,
-        )
+        ))
   // Da idade, Voltar leva à pergunta de filho ou filha (na entrada ela não aparece mais depois de
   // respondida); dela, à entrada.
   const voltar = position === 0 ? INTRO : (steps[position - 1]?.key ?? INTRO)
@@ -347,7 +370,9 @@ export default function KidsConversaQuiz({
       data-analytics-question={step.key}
       data-analytics-quiz={quizDefinitionId}
       data-analytics-attempt={session?.id}
-      data-analytics-position={position + 1}
+      data-analytics-position={
+        step.quizPosition !== undefined ? step.quizPosition + 1 : position + 1
+      }
     >
       {/* A pergunta de filho ou filha fica fora da contagem, como na entrada. */}
       {contagem && (
@@ -431,7 +456,16 @@ function Opcoes({
               onClick={() => onEscolha(o.value)}
             >
               {!idade && <span className="qz-marca" aria-hidden="true" />}
-              <span>{o.label}</span>
+              <span className={o.heading ? 'qz-opcao-texto' : undefined}>
+                {o.heading ? (
+                  <>
+                    <strong>{o.heading}</strong>
+                    <span>{o.label.slice(o.heading.length + 2)}</span>
+                  </>
+                ) : (
+                  o.label
+                )}
+              </span>
               {completa(o.value) && <span className="sr-only"> e ver o resultado</span>}
             </button>
           </li>

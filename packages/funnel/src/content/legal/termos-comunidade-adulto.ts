@@ -13,7 +13,7 @@ const ASSINATURA = 'Comunidade dos Criadores'
 export const TERMOS_COMUNIDADE_ADULTO: LegalDoc = {
   titulo: 'Termos de Uso da Comunidade dos Criadores',
   descricao: `Condições para a contratação e o uso da assinatura da ${ASSINATURA}, a área adulta da plataforma da ${EMPRESA.razaoSocial}, contratada por pessoa maior de 18 anos para uso próprio.`,
-  atualizadoEm: '20 de outubro de 2026',
+  atualizadoEm: '6 de novembro de 2026',
   secoes: [
     {
       titulo: '1. Das definições',
@@ -80,7 +80,7 @@ export const TERMOS_COMUNIDADE_ADULTO: LegalDoc = {
       titulo: '6. Do pagamento',
       paragrafos: [
         'O Usuário escolhe o plano mensal ou o plano anual. As cobranças são processadas pela Efí S.A. Instituição de Pagamento ("Efí"), nas modalidades Pix e cartão de crédito. O plano mensal é pago com cartão de crédito, e a assinatura é recorrente: a cobrança se repete automaticamente a cada mês até o cancelamento. O plano anual pode ser pago com cartão de crédito, também de forma recorrente (a cobrança se repete a cada ano até o cancelamento), ou à vista via Pix. No Pix, o pagamento garante 12 (doze) meses de acesso, não cria cobrança recorrente, e a continuidade depende de uma nova contratação, para a qual a Empresa envia um lembrete por e-mail antes do vencimento.',
-        'Cupons de desconto não se aplicam à Assinatura. O plano, o valor, a periodicidade e a forma de renovação são exibidos no checkout antes do pagamento e ficam registrados na conta do Usuário.',
+        'Quando houver cupom válido para o plano escolhido, o desconto se aplica somente à primeira cobrança. As renovações são cobradas pelo valor normal do plano. O plano, o valor, a periodicidade e a forma de renovação são exibidos no checkout antes do pagamento e ficam registrados na conta do Usuário.',
         'Se uma cobrança recorrente não for aprovada, a Empresa avisa o Usuário por e-mail. O acesso continua até o fim do período já pago, acrescido de um curto prazo de tolerância, e é pausado automaticamente caso o pagamento não seja regularizado. O Usuário pode reativar a assinatura a qualquer momento.',
         'Os dados completos do cartão não transitam pelos servidores da Empresa: a captura é feita de forma segura, por tokenização, diretamente pelo processador de pagamentos.',
       ],

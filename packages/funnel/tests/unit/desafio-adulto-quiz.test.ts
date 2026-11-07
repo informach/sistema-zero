@@ -140,10 +140,10 @@ describe('Desafio adulto v1: entrada e perguntas sem o produto antes do resultad
       expect(['rotina', 'trava', 'quer']).toContain(s.etapa)
     }
     expect(DESAFIO_ADULTO_QUIZ).toMatchObject({
-      version: QUIZ_VERSION,
+      version: 'desafio-autonomia-v2',
       presentation: 'desafio-adulto',
-      total: 8,
-      defaultHeadline: 'padrao',
+      total: 10,
+      defaultHeadline: 'autonomia-v2',
     })
     expect(DESAFIO_ADULTO_QUIZ.branches).toBeUndefined()
   })
@@ -151,7 +151,7 @@ describe('Desafio adulto v1: entrada e perguntas sem o produto antes do resultad
   test('o funil adulto liga quiz e resultado, com os rótulos dos perfis', () => {
     expect(funnel.steps).toMatchObject({ quiz: true, resultado: true })
     expect(funnel.content.quiz).toBe(DESAFIO_ADULTO_QUIZ)
-    expect(funnel.content.result?.perfilLabels).toBe(DESAFIO_ADULTO_PERFIL_LABELS)
+    expect(funnel.content.result?.legacyPerfilLabels).toBe(DESAFIO_ADULTO_PERFIL_LABELS)
     for (const slug of Object.values(PROFILE_IDS)) {
       expect(slug.length).toBeLessThanOrEqual(32)
       expect(DESAFIO_ADULTO_PERFIL_LABELS[slug]).toBeTruthy()
@@ -168,7 +168,7 @@ describe('Desafio adulto v1: entrada e perguntas sem o produto antes do resultad
     expect(completesDesafioAdultoQuiz(quase, 'sintese', 'conhecer')).toBe(true)
     expect(completesDesafioAdultoQuiz(quase, 'cena', 'A')).toBe(false)
     expect(isDesafioAdultoQuizComplete({ ...answersAdulto(), _quiz_version: 'outra' })).toBe(false)
-    expect(isQuizComplete(DESAFIO_ADULTO_QUIZ, answersAdulto())).toBe(true)
+    expect(isQuizComplete(DESAFIO_ADULTO_QUIZ, answersAdulto())).toBe(false)
   })
 })
 

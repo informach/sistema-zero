@@ -1,10 +1,16 @@
 ---
 import { quizDefinition } from '../../../analytics/quiz-definition'
 import QuizConversaLayout from '../../../components/funnel/QuizConversaLayout.astro'
-import { QUIZ_ENTRY as ADULT_QUIZ_ENTRY } from '../../../funnels/comunidade-adulto/quiz/entry-copy'
-import { QUIZ_ENTRY } from '../../../funnels/comunidade-dos-criadores/quiz/entry-copy'
-import { QUIZ_ENTRY as DESAFIO_ADULTO_QUIZ_ENTRY } from '../../../funnels/desafio-adulto/quiz/entry-copy'
-import { QUIZ_ENTRY as DESAFIO_QUIZ_ENTRY } from '../../../funnels/desafio-primeiro-jogo/quiz/entry-copy'
+import { ENTRY as ADULT_ENTRY } from '../../../funnels/adulto-autonomia/entry'
+
+const ADULT_QUIZ_ENTRY = { ...ADULT_ENTRY.comunidade, pageTitle: ADULT_ENTRY.comunidade.title }
+const DESAFIO_ADULTO_QUIZ_ENTRY = { ...ADULT_ENTRY.desafio, pageTitle: ADULT_ENTRY.desafio.title }
+
+import { quizEntry } from '../../../funnels/kids-vida/entry'
+
+const QUIZ_ENTRY = quizEntry('comunidade')
+const DESAFIO_QUIZ_ENTRY = quizEntry('desafio')
+
 import { getFunnel, getFunnelByKey, quizHeadlineId } from '../../../funnels/registry'
 import ComunidadeAdultoQuiz from '../../../islands/ComunidadeAdultoQuiz'
 import ComunidadeQuiz from '../../../islands/ComunidadeQuiz'
@@ -62,7 +68,7 @@ const q1Images =
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>
 ) : quiz.presentation === 'desafio-adulto' ? (
-  <QuizConversaLayout title={`${DESAFIO_ADULTO_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={DESAFIO_ADULTO_QUIZ_ENTRY.description} tema="adulto">
+  <QuizConversaLayout title={`${DESAFIO_ADULTO_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={DESAFIO_ADULTO_QUIZ_ENTRY.description} tema="adulto" termosHref={`${f.basePath}/termos`}>
     <DesafioAdultoQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} kidsQuizPath={desafioKidsQuizPath} />
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>
@@ -72,7 +78,7 @@ const q1Images =
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>
 ) : quiz.presentation === 'comunidade-adulto' ? (
-  <QuizConversaLayout title={`${ADULT_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={ADULT_QUIZ_ENTRY.description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} tema="adulto">
+  <QuizConversaLayout title={`${ADULT_QUIZ_ENTRY.pageTitle} | Sistema Zero`} description={ADULT_QUIZ_ENTRY.description} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} tema="adulto" termosHref={`${f.basePath}/termos`}>
     <ComunidadeAdultoQuiz client:load funnel={f.key} basePath={f.basePath} quizDefinitionId={quizDefinitionId} headline={headline} kidsQuizPath={kidsQuizPath} />
     <noscript><p>Ative o JavaScript no navegador para responder ao quiz.</p></noscript>
   </QuizConversaLayout>

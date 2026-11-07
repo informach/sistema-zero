@@ -8,6 +8,7 @@
 // ligada por `altOffer` (alternador do checkout). A landing `/pro` abre esta Comunidade.
 
 import { TERMOS_COMUNIDADE_ADULTO } from '../../content/legal/termos-comunidade-adulto'
+import { PROFILE_LABELS } from '../adulto-autonomia/entry'
 import type { FunnelDef } from '../registry'
 import {
   COMUNIDADE_ADULTO_CHECKOUT,
@@ -36,7 +37,7 @@ export const COMUNIDADE_ADULTO: FunnelDef = {
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
-  legal: { termos: TERMOS_COMUNIDADE_ADULTO, termsVersion: 'comunidade-adulto-2026-10-20' },
+  legal: { termos: TERMOS_COMUNIDADE_ADULTO, termsVersion: 'comunidade-adulto-2026-11-06' },
   content: {
     copy: COMUNIDADE_ADULTO_PRODUTO,
     landing: COMUNIDADE_ADULTO_LANDING,
@@ -44,6 +45,11 @@ export const COMUNIDADE_ADULTO: FunnelDef = {
     obrigado: COMUNIDADE_ADULTO_OBRIGADO,
     checkout: COMUNIDADE_ADULTO_CHECKOUT,
     quiz: COMUNIDADE_ADULTO_QUIZ,
-    result: { profiles: {}, fecho: '', perfilLabels: ADULT_PROFILE_LABELS },
+    result: {
+      profiles: {},
+      fecho: '',
+      perfilLabels: PROFILE_LABELS,
+      legacyPerfilLabels: ADULT_PROFILE_LABELS,
+    },
   },
 }

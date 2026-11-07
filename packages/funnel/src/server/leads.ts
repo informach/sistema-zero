@@ -72,6 +72,8 @@ const EventBody = z.object({
  * percursos (ramos e condicionais), e na lista declarada nos outros.
  */
 function questionPosition(quiz: FunnelQuiz, step: QuizStep, answers: QuizAnswers): number {
+  if (step.quizPosition !== undefined)
+    return step.quizPosition + (quiz.steps.some((s) => s.quizPosition === 0) ? 1 : 0)
   const active = quiz.activeSteps?.(answers)
   const index = active ? active.findIndex((s) => s.key === step.key) : -1
   return (index >= 0 ? index : quiz.steps.indexOf(step)) + 1
@@ -197,6 +199,21 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
   )
     return jsonError('O quiz mudou. Atualize a página para continuar.', 409, 'QUIZ_UPDATED')
 
+  // Antes de validar a chave: uma aba antiga pode enviar uma pergunta que já foi retirada.
+  // O conflito oferece retomada sem sobrescrever o histórico, inclusive sem snapshot antigo.
+  const storedVersion = lead.quizAnswers?._quiz_version
+  if (
+    quiz.applyAnswer &&
+    quiz.version &&
+    typeof storedVersion === 'string' &&
+    storedVersion !== quiz.version
+  )
+    return jsonError(
+      'O quiz foi atualizado. Retome para responder a versão nova.',
+      409,
+      'QUIZ_CONFLICT',
+    )
+
   const { key, value, lastStep, eventName } = parsed.data
   const step = quiz.steps.find((s) =>
     s.tipo === 'calculadora' || s.tipo === 'calculadora_prefilled'
@@ -240,17 +257,6 @@ export async function patchLead(request: Request, deps: LeadDeps): Promise<Respo
       return jsonError('Inicie uma nova resposta para continuar.', 409, 'ALREADY_PAID')
     const previous = lead.quizAnswers ?? {}
     const revision = typeof previous._quiz_revision === 'number' ? previous._quiz_revision : 0
-    // Uma aba aberta antes da troca de versão não grava por cima de respostas de OUTRA versão
-    // do quiz (o `applyAnswer` as trataria como vazias e apagaria o lead antigo). O 409 leva a
-    // ilha a "Retomar", e retomar abre um lead novo na versão atual.
-    const storedVersion = previous._quiz_version
-    if (quiz.version && typeof storedVersion === 'string' && storedVersion !== quiz.version) {
-      return jsonError(
-        'O quiz foi atualizado. Retome para responder a versão nova.',
-        409,
-        'QUIZ_CONFLICT',
-      )
-    }
     if (
       parsed.data.revision !== revision ||
       parsed.data.funnel !== lead.funnel ||

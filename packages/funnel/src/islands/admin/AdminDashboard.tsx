@@ -17,8 +17,8 @@ export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[]
   const [funnel, setFunnel] = useState('')
   const [saindo, setSaindo] = useState(false)
   // Quiz versionado: Performance e Perfis podem olhar só a versão atual do quiz (sem as respostas
-  // antigas nem quem foi direto à oferta) e separar as manchetes do teste A/B. O recorte vem
-  // ligado só no funil que tem teste A/B (a Comunidade); nos outros, a visão segue completa.
+  // antigas nem quem foi direto à oferta) e separar as manchetes do teste A/B. Ao selecionar
+  // um quiz versionado, o recorte atual começa ligado; o histórico continua disponível.
   const [quizAtual, setQuizAtual] = useState(false)
   const [manchete, setManchete] = useState('')
   const quizInfo = funnels.find((f) => f.key === funnel)?.quiz
@@ -79,7 +79,7 @@ export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[]
               setFunnel(e.target.value)
               setManchete('')
               const info = funnels.find((f) => f.key === e.target.value)?.quiz
-              setQuizAtual(Boolean(info && info.headlines.length > 1))
+              setQuizAtual(Boolean(info))
             }}
             aria-label="Filtrar por funil"
             className="rounded-lg border border-line bg-card/50 px-3 py-2 text-sm font-medium text-ink"
@@ -107,8 +107,9 @@ export default function AdminDashboard({ funnels }: { funnels: AdminFunnelInfo[]
             <span>
               Só quem abriu o quiz atual ({quizInfo.version})
               <span className="block text-xs font-normal text-muted">
-                Quem foi direto à oferta fica de fora. Com uma manchete escolhida, fica sempre
-                ligado.
+                Quem foi direto à oferta fica de fora.
+                {quizInfo.headlines.length > 1 &&
+                  ' Com uma manchete escolhida, fica sempre ligado.'}
               </span>
             </span>
           </label>

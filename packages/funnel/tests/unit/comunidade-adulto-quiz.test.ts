@@ -90,7 +90,11 @@ const rawTexts = (r: ResultadoConversa): string[] => [
         ? [b.texto, b.autor]
         : b.tipo === 'cta'
           ? [b.texto, b.rotulo]
-          : [b.texto],
+          : b.tipo === 'autonomia'
+            ? []
+            : b.tipo === 'leitura'
+              ? Object.values(b.leitura)
+              : [b.texto],
   ),
   r.assinatura,
 ]
@@ -456,27 +460,11 @@ describe('Quiz adulto v1: o motor', () => {
     expect(d({ codigo: 'codigo_ja' }, 'D')).toEqual([[], ['codigo'], 'precisa_conferir'])
     expect(d({ codigo: 'tanto_faz' }, 'D')[1]).toEqual([])
   })
-  test('a definição do registry: versão, perguntas, validação, perfil e manchetes', () => {
+  test('a versão atual conserva os rótulos e perguntas antigos, sem aceitar o percurso antigo', () => {
     const q = COMUNIDADE_ADULTO_QUIZ
-    expect(q.version).toBe('comunidade-adulto-v1')
-    expect(q.presentation).toBe('comunidade-adulto')
-    expect(q.total).toBe(10)
-    expect(q.steps).toBe(ADULT_QUESTIONS)
-    expect(q.branches).toBeUndefined()
-    expect(Object.keys(q.valueSchema).sort()).toEqual(ADULT_QUESTIONS.map((s) => s.key).sort())
-    expect(q.valueSchema.garantia!.safeParse('trabalho').success).toBe(true)
-    expect(q.valueSchema.garantia!.safeParse(VALOR_ANTIGO).success).toBe(false)
-    expect(q.valueSchema.cena!.safeParse(['A']).success).toBe(false)
-    expect(q.valueSchema.ferramenta!.safeParse('roblox').success).toBe(true)
-    expect(q.computePerfil!(respostas())).toBe('adulto-ideia')
-    expect(q.computePerfil!(perfil('A'))).toBe('adulto-horas-livres')
-    expect(q.computePerfil!(perfil('D'))).toBe('adulto-por-dentro')
-    expect(q.computePerfil!({ _quiz_version: QUIZ_VERSION })).toBeNull()
-    expect(q.headlines).toEqual({
-      padrao: QUIZ_HEADLINES.padrao.label,
-      ideia: QUIZ_HEADLINES.ideia.label,
-    })
-    expect(q.defaultHeadline).toBe('padrao')
+    expect(q.version).toBe('comunidade-autonomia-v2')
+    expect(q.legacySteps).toBe(ADULT_QUESTIONS)
+    expect(q.computePerfil!(respostas())).toBeNull()
     expect(ADULT_PROFILE_LABELS).toEqual({
       'adulto-horas-livres': 'Horas livres',
       'adulto-ideia': 'Ideia',

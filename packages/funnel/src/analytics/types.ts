@@ -30,6 +30,8 @@ export interface QuizQuestionSnapshot {
   id: string
   title: string
   position: number
+  /** Contagem apresentada à família; 0 é a entrada filho/filha, fora das dez perguntas. */
+  displayPosition?: number
   type: string
   revision: string
   options: { value: string; label: string }[]

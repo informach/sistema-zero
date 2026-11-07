@@ -1,5 +1,56 @@
 # CLAUDE.md — `@sistemazero/funnel`
 
+## Quizzes adultos: autonomia para criar (06/11/2026)
+
+As versões vigentes são `desafio-autonomia-v2` e `comunidade-autonomia-v2`.
+`src/funnels/adulto-autonomia` compartilha perguntas, motor e narrativa da proposta V2 aprovada.
+O mote é autonomia para criar e realizar suas ideias. Produto somente no resultado.
+Cada percurso tem dez perguntas SPIN; não há idade gravada (a entrada oferece a saída Kids).
+A Q6 aceita várias condições; “nenhuma” é exclusiva. Todas as escolhas exigem confirmação.
+Q4/Q5/Q7 dependem da experiência; Q8 também do efeito; Q10 depende da conquista.
+Variantes têm chaves e textos próprios, mas compartilham a posição e o evento de Performance.
+O perfil `autonomia-*` é a conquista declarada na Q9. Condições se acumulam no resultado,
+sem suprimir limites de computador, formato, tempo ou Estúdio livre.
+
+A edição apaga somente respostas que perderam contexto e pede nova confirmação dessas perguntas.
+O servidor controla versão, snapshot, revisão, token, sequência e opções válidas. Leads v1
+permanecem intactos; abrir o quiz vigente cria uma nova sessão quando necessário.
+O admin usa snapshots para títulos e alternativas exatos; o fallback conserva perguntas/perfis
+v1. Performance mostra dez marcos; Perfis distingue histórico; Métricas usa variantes próprias.
+A posição analítica adulta é 1–10. O offset +1 vale apenas para quizzes com entrada em posição 0.
+Rever respostas preserva campanha, cupom e UTMs na URL. O resultado usa capturas reais e rodapé único.
+
+Referências: `docs/marketing/pro/posicionamento.md` e espelhos em `docs/marketing/pro/quizzes`.
+Gerador: `bun scripts/espelho-quiz-adulto.ts`. Testes: `adulto-autonomia.test.ts`,
+`api-adulto-autonomia.test.ts` e `tests/browser/adulto-autonomia.ts` (PostgreSQL local isolado).
+Os módulos v1 ficam disponíveis para histórico e testes; não são a definição publicada atual.
+
+## Quizzes Kids: habilidades para a vida (06/11/2026)
+
+Desafio usa `desafio-vida-v6`; Comunidade, `comunidade-vida-v7`. O módulo `kids-vida`
+compartilha o motor, dez perguntas SPIN e resultados personalizados. Filho/filha é uma
+entrada fora da contagem. Há exemplos próprios para menores de 9, 9–12 e 13–17 anos;
+18+ encaminha ao adulto. O produto aparece apenas no resultado. O corpo `leitura` usa
+destaques, listas e captura real do Farol, preservando as condições de participação.
+
+Cada variante contextual tem chave e snapshot próprios; variantes da mesma pergunta e
+idade compartilham o evento de Performance. `quizPosition` preserva a contagem de 1 a 10;
+`displayPosition` no snapshot identifica também a entrada (0). Mudanças de idade, situação
+ou prioridade eliminam respostas que perderam contexto. O servidor valida percurso,
+versão, revisão, token e snapshot. Leads antigos não são migrados nem sobrescritos.
+
+Admin: Respostas usa o snapshot arquivado, Performance agrupa variantes, Perfis distingue
+os perfis atuais dos históricos e Métricas mede visualização e resposta por variante.
+O filtro de versão atual começa ligado para todo quiz versionado; desligá-lo inclui o
+histórico. As definições e rótulos anteriores ficam disponíveis para leitura histórica.
+Não alterar os quizzes adultos ao revisar esse módulo.
+
+`tests/unit/kids-vida.test.ts` confere os 58 resultados aprovados e os percursos possíveis;
+o contrato de API cobre os dois produtos. `tests/browser/kids-vida.ts` testa o build com
+PostgreSQL local isolado, seis jornadas, 58 resultados e as quatro abas administrativas.
+Os scripts `espelho-quiz-desafio.ts` e `espelho-quiz-comunidade.ts` geram os espelhos atuais;
+a copy anterior está arquivada em `copy/historico/`.
+
 ## Comunidade Kids: prática e continuidade (06/11/2026)
 
 As três ofertas Kids implementam as propostas aprovadas a partir da revisão de Vivianne:

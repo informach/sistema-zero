@@ -64,3 +64,65 @@
   object-fit: contain;
   border-radius: 8px;
 }
+
+/* A mesma interação acessível, com a identidade da área adulta. */
+.theme-arcade .kof-image-link {
+  display: block;
+  min-width: 0;
+  cursor: zoom-in;
+}
+.theme-arcade .kof-image-link:focus-visible {
+  outline: 3px solid var(--cda-amarelo);
+  outline-offset: 5px;
+}
+.theme-arcade .kof-image-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  padding: 16px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100dvh - 32px);
+  width: max-content;
+  height: max-content;
+  background: var(--cda-fundo-2);
+  border: 2px solid var(--cda-linha-forte);
+  color: var(--cda-texto);
+  font-family: var(--cda-corpo);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.theme-arcade .kof-image-dialog:not([open]) {
+  display: none;
+}
+.theme-arcade .kof-image-dialog::backdrop {
+  background: color-mix(in oklab, var(--cda-fundo) 94%, transparent);
+}
+.theme-arcade .kof-image-dialog__top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.theme-arcade .kof-image-dialog__top button {
+  background: var(--cda-amarelo);
+  color: var(--cda-fundo);
+  border: 0;
+  padding: 10px 14px;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+}
+.theme-arcade .kof-image-dialog__top button:focus-visible {
+  outline: 3px solid var(--cda-amarelo);
+  outline-offset: 3px;
+}
+.theme-arcade .kof-image-dialog img {
+  display: block;
+  max-width: calc(100vw - 68px);
+  max-height: calc(100dvh - 132px);
+  width: auto;
+  height: auto;
+  margin: auto;
+  object-fit: contain;
+}

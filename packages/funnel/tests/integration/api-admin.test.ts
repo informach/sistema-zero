@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import type { QuizDefinition } from '../../src/analytics/types'
+import { profileLabels } from '../../src/funnels/kids-vida/engine'
 import { DEFAULT_FUNNEL } from '../../src/funnels/registry'
 import { ADMIN_ACCESS_COOKIE, ADMIN_REFRESH_COOKIE } from '../../src/lib/admin-auth'
 import {
@@ -14,8 +16,14 @@ import { createFakeGateway, type FakeGatewayState } from '../fakes/fake-gateway'
 function setup() {
   const { repo, quizVersions } = createFakeRepo()
   const fg = createFakeGateway()
-  const deps = { repo, gateway: fg.gateway, secureCookie: false }
-  return { repo, fg, deps, quizVersions }
+  const definitions = new Map<string, QuizDefinition>()
+  const deps = {
+    repo,
+    gateway: fg.gateway,
+    secureCookie: false,
+    quizDefinitions: { quiz: async (id: string) => definitions.get(id) ?? null },
+  }
+  return { repo, fg, deps, quizVersions, definitions }
 }
 
 function loginReq(body?: unknown): Request {
@@ -112,28 +120,28 @@ describe('admin auth (sessão via /auth/me)', () => {
 })
 
 describe('adminFunnel', () => {
-  test('Comunidade v6: cada ramo tem a sua cadeia e o resultado compara com a soma dos ramos', async () => {
+  test('Comunidade v7: cada ramo tem a sua cadeia e o resultado compara com a soma dos ramos', async () => {
     const { repo, fg, deps, quizVersions } = setup()
     const funnel = 'kids/comunidade-dos-criadores'
-    quizVersions.set('def-v6', 'comunidade-orientacao-v6')
+    quizVersions.set('def-v7', 'comunidade-vida-v7')
     const v5 = await repo.createLead(funnel, null, 'def-v5')
     await repo.insertEvent(v5.id, 'entrou_landing')
     const lead = async (eventos: string[]) => {
-      const { id } = await repo.createLead(funnel, null, 'def-v6')
+      const { id } = await repo.createLead(funnel, null, 'def-v7')
       for (const e of ['entrou_landing', ...eventos]) await repo.insertEvent(id, e)
     }
-    const entrada = ['respondeu_comunidade_v6_genero', 'respondeu_comunidade_v6_idade']
-    await lead([...entrada, 'entrou_ramo_9a17', 'respondeu_comunidade_v6_sintese', 'viu_resultado'])
+    const entrada = ['respondeu_comunidade_v7_genero', 'respondeu_comunidade_v7_idade']
     await lead([
       ...entrada,
-      'entrou_ramo_9a17',
-      'respondeu_comunidade_v6_sintese',
-      'respondeu_comunidade_v6_escola',
+      'entrou_ramo_9a12',
+      'respondeu_comunidade_v7_9a12_condicao',
+      'viu_resultado',
     ])
+    await lead([...entrada, 'entrou_ramo_9a12', 'respondeu_comunidade_v7_9a12_condicao'])
     await lead([
       ...entrada,
       'entrou_ramo_m9',
-      'respondeu_comunidade_v6_m9_sintese',
+      'respondeu_comunidade_v7_m9_condicao',
       'viu_resultado',
     ])
     await lead([...entrada, 'entrou_ramo_adulto'])
@@ -155,42 +163,45 @@ describe('adminFunnel', () => {
     }
     expect(body.total).toBe(4)
     const step = (name: string) => body.steps.find((s) => s.name === name)!
-    expect(step('respondeu_comunidade_v6_idade').label).toBe('Pergunta 2 · Idade')
-    expect(step('entrou_ramo_9a17')).toMatchObject({
-      label: 'Ramo · 9 a 17 anos',
+    expect(step('respondeu_comunidade_v7_idade').label).toBe('Pergunta 1 · Idade')
+    expect(step('entrou_ramo_9a12')).toMatchObject({
+      label: 'Ramo · De 9 a 12 anos',
       count: 2,
-      branch: '9 a 17 anos',
+      branch: 'De 9 a 12 anos',
     })
-    expect(step('entrou_ramo_9a17').fromPrev).toBeCloseTo(2 / 4)
+    expect(step('entrou_ramo_9a12').fromPrev).toBeCloseTo(2 / 4)
     expect(step('entrou_ramo_m9').fromPrev).toBeCloseTo(1 / 4)
-    expect(step('entrou_ramo_adulto').label).toBe('Saída · 18 ou mais')
-    expect(step('respondeu_comunidade_v6_sintese').label).toBe('Pergunta 11 · Frase-síntese')
-    expect(step('respondeu_comunidade_v6_m9_sintese').label).toBe('Pergunta 10 · Frase-síntese')
-    expect(step('respondeu_comunidade_v6_escola').label).toBe('Extra · Escola (perfil F)')
+    expect(step('entrou_ramo_adulto').label).toBe('Saída · 18 anos ou mais')
+    expect(step('respondeu_comunidade_v7_9a12_condicao').label).toBe(
+      'Pergunta 10 · O que precisa conferir',
+    )
+    expect(step('respondeu_comunidade_v7_m9_condicao').label).toBe(
+      'Pergunta 10 · O que precisa conferir',
+    )
     // O resultado compara com o fim dos dois ramos com perguntas (2 + 1), sem a saída.
     expect(step('viu_resultado').fromPrev).toBeCloseTo(2 / 3)
   })
-  test('Desafio v5: os ramos do Kids no /admin e o quiz adulto sem ramos', async () => {
+  test('Desafio v6: os ramos do Kids no /admin e o quiz adulto sem ramos', async () => {
     const { repo, fg, deps, quizVersions } = setup()
     const funnel = 'kids/desafio-primeiro-jogo'
-    quizVersions.set('def-desafio-v5', 'desafio-farol-v5')
+    quizVersions.set('def-desafio-v6', 'desafio-vida-v6')
     const lead = async (f: string, def: string, eventos: string[]) => {
       const { id } = await repo.createLead(f, null, def)
       for (const e of ['entrou_landing', ...eventos]) await repo.insertEvent(id, e)
     }
-    const entrada = ['respondeu_desafio_v5_genero', 'respondeu_desafio_v5_idade']
-    await lead(funnel, 'def-desafio-v5', [
+    const entrada = ['respondeu_desafio_v6_genero', 'respondeu_desafio_v6_idade']
+    await lead(funnel, 'def-desafio-v6', [
       ...entrada,
-      'entrou_ramo_9a17',
-      'respondeu_desafio_v5_sintese',
+      'entrou_ramo_9a12',
+      'respondeu_desafio_v6_9a12_condicao',
       'viu_resultado',
     ])
-    await lead(funnel, 'def-desafio-v5', [
+    await lead(funnel, 'def-desafio-v6', [
       ...entrada,
       'entrou_ramo_m9',
-      'respondeu_desafio_v5_m9_sintese',
+      'respondeu_desafio_v6_m9_condicao',
     ])
-    await lead(funnel, 'def-desafio-v5', [...entrada, 'entrou_ramo_adulto'])
+    await lead(funnel, 'def-desafio-v6', [...entrada, 'entrou_ramo_adulto'])
     // Um lead da v4 fica fora do recorte "quiz atual".
     await lead(funnel, 'def-desafio-v4', ['desafio_resposta_idade'])
     const get = async (f: string, query = '') => {
@@ -208,24 +219,26 @@ describe('adminFunnel', () => {
     const body = await get(funnel, '&quiz=atual')
     expect(body.total).toBe(3)
     const step = (name: string) => body.steps.find((s) => s.name === name)!
-    expect(step('respondeu_desafio_v5_idade').label).toBe('Pergunta 2 · Idade')
-    expect(step('entrou_ramo_9a17')).toMatchObject({ label: 'Ramo · De 9 a 17', count: 1 })
-    expect(step('entrou_ramo_m9')).toMatchObject({ label: 'Ramo · Menor de 9', count: 1 })
-    expect(step('entrou_ramo_adulto').label).toBe('Saída · 18 ou mais')
-    expect(step('respondeu_desafio_v5_sintese').label).toBe('Pergunta 9 · Frase-síntese')
+    expect(step('respondeu_desafio_v6_idade').label).toBe('Pergunta 1 · Idade')
+    expect(step('entrou_ramo_9a12')).toMatchObject({ label: 'Ramo · De 9 a 12 anos', count: 1 })
+    expect(step('entrou_ramo_m9')).toMatchObject({ label: 'Ramo · Menores de 9 anos', count: 1 })
+    expect(step('entrou_ramo_adulto').label).toBe('Saída · 18 anos ou mais')
+    expect(step('respondeu_desafio_v6_9a12_condicao').label).toBe(
+      'Pergunta 10 · O que precisa conferir',
+    )
     expect(step('viu_resultado').fromPrev).toBeCloseTo(1 / 2)
 
     const adulto = 'pro/desafio-primeiro-jogo'
     await lead(adulto, 'def-desafio-adulto', [
-      'respondeu_desafio_adulto_v1_computador',
-      'respondeu_desafio_adulto_v1_sintese',
+      'respondeu_desafio_autonomia_v2_interesse',
+      'respondeu_desafio_autonomia_v2_beneficio',
       'viu_resultado',
     ])
     const pro = await get(adulto)
     expect(pro.total).toBe(1)
-    expect(pro.steps.find((s) => s.name === 'respondeu_desafio_adulto_v1_sintese')?.label).toBe(
-      'Pergunta 8 · Frase-síntese',
-    )
+    expect(
+      pro.steps.find((s) => s.name === 'respondeu_desafio_autonomia_v2_beneficio')?.label,
+    ).toBe('Pergunta 10 · Valor pessoal')
     expect(pro.steps.some((s) => s.name.startsWith('entrou_ramo_'))).toBe(false)
   })
   test('agrega contagem e conversão por etapa (com sessão)', async () => {
@@ -234,7 +247,7 @@ describe('adminFunnel', () => {
     const b = await repo.createLead()
     await repo.insertEvent(a.id, 'entrou_landing')
     await repo.insertEvent(b.id, 'entrou_landing')
-    await repo.insertEvent(a.id, 'respondeu_comunidade_adulto_v1_tempo_jogo')
+    await repo.insertEvent(a.id, 'respondeu_comunidade_autonomia_v2_interesse')
 
     const res = await adminFunnel(getReq(accessCookie(fg)), deps)
     expect(res.status).toBe(200)
@@ -244,7 +257,7 @@ describe('adminFunnel', () => {
     }
     expect(body.total).toBe(2)
     const landing = body.steps.find((s) => s.name === 'entrou_landing')
-    const p1 = body.steps.find((s) => s.name === 'respondeu_comunidade_adulto_v1_tempo_jogo')
+    const p1 = body.steps.find((s) => s.name === 'respondeu_comunidade_autonomia_v2_interesse')
     expect(landing?.count).toBe(2)
     expect(p1?.count).toBe(1)
     expect(p1?.fromTop).toBeCloseTo(0.5)
@@ -253,6 +266,75 @@ describe('adminFunnel', () => {
 })
 
 describe('adminLeads', () => {
+  test('ordena respostas pelo snapshot, preserva textos antigos e consulta cada definição uma vez', async () => {
+    const { repo, fg, deps, definitions } = setup()
+    const id = 'snapshot-arquivado'
+    definitions.set(id, {
+      id,
+      funnel: 'kids/desafio-primeiro-jogo',
+      version: 'desafio-anterior',
+      questions: [
+        {
+          id: 'idade',
+          title: 'Idade na versão arquivada',
+          position: 2,
+          type: 'selecao',
+          revision: 'old',
+          options: [{ value: '9_12', label: 'Faixa arquivada' }],
+        },
+        {
+          id: 'genero',
+          title: 'Entrada arquivada',
+          position: 1,
+          type: 'selecao',
+          revision: 'old',
+          options: [{ value: 'filha', label: 'Minha filha na versão arquivada' }],
+        },
+      ],
+    })
+    for (let i = 0; i < 2; i++) {
+      const lead = await repo.createLead('kids/desafio-primeiro-jogo', null, id)
+      await repo.updateLead(lead.id, {
+        quizAnswers: { idade: '9_12', genero: 'filha', _quiz_version: 'desafio-anterior' },
+      })
+    }
+    let reads = 0
+    const response = await adminLeads(leadsReq(fg), {
+      ...deps,
+      quizDefinitions: {
+        quiz: async (key) => {
+          reads++
+          return definitions.get(key) ?? null
+        },
+      },
+    })
+    expect(response.status).toBe(200)
+    expect(reads).toBe(1)
+    for (const lead of (await response.json()).leads) {
+      expect(lead.answerDetails.map((q: { key: string }) => q.key)).toEqual(['genero', 'idade'])
+      expect(lead.answerDetails[1]).toMatchObject({
+        label: 'Idade na versão arquivada',
+        options: { '9_12': 'Faixa arquivada' },
+      })
+    }
+  })
+  test('sem snapshot, mantém perguntas antigas legíveis e na ordem declarada', async () => {
+    const { repo, fg, deps } = setup()
+    const lead = await repo.createLead('kids/desafio-primeiro-jogo')
+    await repo.updateLead(lead.id, {
+      quizAnswers: {
+        vida_9a12_cena: 'erro',
+        idade: '9_12',
+        genero: 'filha',
+        vida_9a12_interesse: 'jogos',
+        _quiz_version: 'desafio-vida-v6',
+      },
+    })
+    const response = await adminLeads(leadsReq(fg), deps)
+    expect(
+      (await response.json()).leads[0].answerDetails.map((q: { key: string }) => q.key),
+    ).toEqual(['genero', 'idade', 'vida_9a12_interesse', 'vida_9a12_cena'])
+  })
   test('lista os leads com sessão (com total)', async () => {
     const { repo, fg, deps } = setup()
     await repo.createLead()
@@ -391,20 +473,16 @@ describe('adminPerfis', () => {
     )
     const body = await response.json()
     expect(body.counts.map((c: { perfil: string }) => c.perfil)).toEqual([
-      '9a17-tela',
-      '9a17-jogos',
-      '9a17-desenho',
-      '9a17-programacao',
-      '9a17-escola',
-      'm9-tempo-a-dois',
+      ...Object.keys(profileLabels),
       'm9-ideias',
-      'm9-curiosidade',
       'expressao-visual',
     ])
     expect(body.total).toBe(2)
-    expect(body.counts.find((c: { perfil: string }) => c.perfil === '9a17-tela')?.count).toBe(0)
+    expect(
+      body.counts.find((c: { perfil: string }) => c.perfil === 'vida-9a12-planejar')?.count,
+    ).toBe(0)
     // O perfil da v5 aparece com o rótulo de antes, marcado como quiz anterior.
-    expect(body.counts.at(-1)).toEqual({
+    expect(body.counts.find((c: { perfil: string }) => c.perfil === 'expressao-visual')).toEqual({
       perfil: 'expressao-visual',
       label: '(quiz anterior) Desenho e personagens',
       count: 1,
@@ -434,7 +512,7 @@ describe('adminPerfis', () => {
     const { repo, fg, deps, quizVersions } = setup()
     const funnel = 'kids/comunidade-dos-criadores'
     quizVersions.set('def-v5', 'comunidade-orientacao-v5')
-    quizVersions.set('def-v6', 'comunidade-orientacao-v6')
+    quizVersions.set('def-v6', 'comunidade-vida-v7')
     const make = async (definition: string, quizHeadline: string | null, perfil: string) => {
       const attribution = quizHeadline
         ? {
@@ -453,9 +531,9 @@ describe('adminPerfis', () => {
       await repo.updateLead(id, { perfilResultado: perfil })
     }
     await make('def-v5', null, 'tempo-de-tela')
-    await make('def-v6', 'padrao', '9a17-escola')
-    await make('def-v6', 'tela', '9a17-tela')
-    await make('def-v6', 'tela', 'm9-ideias')
+    await make('def-v6', 'habilidades', 'vida-9a12-planejar')
+    await make('def-v6', 'habilidades', 'vida-13a17-expressar')
+    await make('def-v6', null, 'vida-m9-explorar')
     const total = async (query: string) =>
       (
         await (
@@ -469,11 +547,9 @@ describe('adminPerfis', () => {
       ).total
     expect(await total('')).toBe(4)
     expect(await total('&quiz=atual')).toBe(3)
-    expect(await total('&quiz=atual&manchete=tela')).toBe(2)
-    // Escolher uma manchete recorta sempre o quiz atual: o A/B compara só quem viu uma das duas
-    // (o lead da v5, sem registro de manchete, não conta como "padrão").
-    expect(await total('&manchete=padrao')).toBe(1)
-    expect(await total('&manchete=tela')).toBe(2)
+    expect(await total('&quiz=atual&manchete=habilidades')).toBe(3)
+    expect(await total('&manchete=habilidades')).toBe(3)
+    expect(await total('&manchete=tela')).toBe(4) // Variante anterior não é reinterpretada como a nova.
     expect(await total('&manchete=inventada')).toBe(4)
   })
   test('401 sem sessão', async () => {
@@ -505,16 +581,22 @@ describe('adminPerfis', () => {
     expect(body.total).toBe(3)
     // Perfis do funil (mesmo zerados), na ordem do funil.
     expect(body.counts.map((c) => c.perfil)).toEqual([
-      'adulto-horas-livres',
+      'autonomia-comecar',
+      'autonomia-compreender',
+      'autonomia-concluir',
+      'autonomia-autoria',
+      'autonomia-explorar',
       'adulto-ideia',
       'adulto-por-dentro',
     ])
     const byPerfil = new Map(body.counts.map((c) => [c.perfil, c.count]))
     expect(byPerfil.get('adulto-ideia')).toBe(2)
     expect(byPerfil.get('adulto-por-dentro')).toBe(1)
-    expect(byPerfil.get('adulto-horas-livres')).toBe(0)
+    expect(byPerfil.get('autonomia-comecar')).toBe(0)
     // Rótulo legível (não a chave crua) quando o funil é selecionado.
-    expect(body.counts.find((c) => c.perfil === 'adulto-ideia')?.label).toBe('Ideia')
+    expect(body.counts.find((c) => c.perfil === 'adulto-ideia')?.label).toBe(
+      '(quiz anterior) Ideia',
+    )
   })
 
   test('sem funil: só os perfis presentes nos dados (rótulo = a chave)', async () => {

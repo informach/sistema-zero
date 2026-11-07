@@ -303,6 +303,15 @@ try {
     for (const src of srcs) assert.equal((await page.request.get(src)).status(), 200, src)
     imagens += srcs.length
     await carregarTudo(page)
+    await page.locator('main img[src]').evaluateAll(async (images) => {
+      await Promise.all(
+        images.map(async (element) => {
+          const image = element as HTMLImageElement
+          image.loading = 'eager'
+          await image.decode()
+        }),
+      )
+    })
     await page.screenshot({ path: resolve(output, `${p.nome}-1440.png`), fullPage: true })
     for (const width of [320, 390, 768, 1024, 1440]) {
       await page.setViewportSize({ width, height: 844 })
@@ -315,20 +324,29 @@ try {
     await page.setViewportSize({ width: 390, height: 844 })
     await carregarTudo(page)
     await page.screenshot({ path: resolve(output, `${p.nome}-390.png`), fullPage: true })
-    if (p.nome.startsWith('kids-')) {
-      await checkOfferImageZoom(page)
-      await page.evaluate(() => {
-        document.documentElement.style.fontSize = '200%'
-      })
-      assert.equal(
-        await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
-        false,
-      )
-      await page.evaluate(() => {
-        document.documentElement.style.fontSize = ''
-      })
-    }
+    await checkOfferImageZoom(page)
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = '200%'
+    })
+    assert.equal(
+      await page.evaluate(() => document.documentElement.scrollWidth > innerWidth),
+      false,
+    )
+    await page.evaluate(() => {
+      document.documentElement.style.fontSize = ''
+    })
 
+    if (p.basePath === adultBase) {
+      for (const width of [390, 1440]) {
+        await page.setViewportSize({ width, height: 844 })
+        for (const selector of ['#inicio', '#projetos', '#oferta', 'footer']) {
+          await page.locator(selector).scrollIntoViewIfNeeded()
+          await page.screenshot({
+            path: resolve(output, `${p.nome}-${width}-${selector.replace('#', '')}.png`),
+          })
+        }
+      }
+    }
     // Os dois planos: cada botão leva o slug do seu plano e o pré-checkout chega ao checkout com
     // ele e com a atribuição da URL.
     const ctas = page.locator('[data-checkout-cta]')
@@ -364,6 +382,20 @@ try {
     }
   }
   assert.equal(contacts.length, PAGINAS.length * 2)
+  const visiblePages: string[] = []
+  for (const path of [`${adultBase}/oferta`, `${adultBase}/oferta/continuar`]) {
+    await page.goto(`${origin}${path}`)
+    assert.equal(await page.locator('footer').count(), 1)
+    assert.equal(await page.locator('.cda footer').count(), 0)
+    visiblePages.push(
+      await page.locator('.cda').evaluate((element) => {
+        const copy = element.cloneNode(true) as HTMLElement
+        copy.querySelector('h1')!.textContent = 'HEADLINE'
+        return copy.innerHTML
+      }),
+    )
+  }
+  assert.equal(visiblePages[0], visiblePages[1], 'Only the adult continuation headline changes')
 
   // As cinco páginas de perfil (até 20/10/2026) levam à página 9 a 17, com a mesma query.
   for (const antiga of [

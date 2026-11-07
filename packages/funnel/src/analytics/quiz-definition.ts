@@ -22,6 +22,7 @@ export function quizDefinition(funnel: FunnelDef): QuizDefinition | null {
   const quiz = funnel.content.quiz
   if (!quiz) return null
   const version = quiz.version ?? 'sem-versao-declarada'
+  const entryOffset = quiz.steps.some((step) => step.quizPosition === 0) ? 1 : 0
   const id = hash({
     funnel: funnel.key,
     version,
@@ -43,8 +44,11 @@ export function quizDefinition(funnel: FunnelDef): QuizDefinition | null {
       title: step.titulo,
       // Num quiz com ramos, cada ramo continua a contagem das perguntas comuns.
       position:
-        quiz.steps.slice(0, index).filter((s) => !s.ramo || s.ramo === step.ramo).length + 1,
+        step.quizPosition !== undefined
+          ? step.quizPosition + entryOffset
+          : quiz.steps.slice(0, index).filter((s) => !s.ramo || s.ramo === step.ramo).length + 1,
       type: step.tipo,
+      ...(step.quizPosition !== undefined ? { displayPosition: step.quizPosition } : {}),
       revision: hash(step),
       ...(step.ramo ? { branch: quiz.branches?.[step.ramo] ?? step.ramo } : {}),
       ...(step.condicional ? { conditional: true } : {}),

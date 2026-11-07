@@ -53,6 +53,10 @@ const conversa = carta && {
     b.tipo === 'cta' ? { ...b, href: funnelLinkWithAttribution(b.href, Astro.url) } : b,
   ),
 }
+const reviewQuizUrl = funnelLinkWithAttribution(
+  quizPathWithHeadline(f.basePath, quiz, headline),
+  Astro.url,
+)
 
 // Uma linha por revisão: recarregar a carta não repete o evento.
 await repo.insertEvent(
@@ -90,7 +94,7 @@ const fecho = rc(result.fecho)
 
 {conversa ? (
   <BaseLayout title="Seu resultado | Sistema Zero" description={f.seoDescription} ogImage={funnelOgImage(f, Astro.site ?? Astro.url)} noindex={true} htmlClass={f.theme ? `theme-${f.theme}` : undefined}>
-    <ResultadoConversa resultado={conversa} quizPath={quizPathWithHeadline(f.basePath, quiz, headline)} revision={revision} sessionToken={quizSessionToken(lead.id)} restartLabel={f.audience === 'kids' ? 'Responder pensando em outra criança' : undefined} />
+    <ResultadoConversa resultado={conversa} quizPath={reviewQuizUrl} revision={revision} sessionToken={quizSessionToken(lead.id)} restartLabel={f.audience === 'kids' ? 'Responder pensando em outra criança' : undefined} />
   </BaseLayout>
 ) : bloco && (<BaseLayout
   title={`Seu mapa de criação | ${f.productName}`}

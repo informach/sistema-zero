@@ -53,15 +53,14 @@ const RAMIFICADO: FunnelDef = {
 }
 
 describe('quiz com ramos', () => {
-  test('as definições dos quizzes do Desafio não mudam com a infraestrutura de ramos', () => {
-    // Fixadas em 20/10/2026: uma mudança aqui abriria uma versão nova do quiz para quem está
-    // respondendo agora (o 409 "O quiz mudou"). A do Desafio mudou DE PROPÓSITO em 21/10/2026, duas
-    // vezes: a `desafio-farol-v4` (faixa de 9 a 17) e, no mesmo dia, a `desafio-farol-v5` em
-    // conversa, com ramos; o Desafio adulto ganhou o quiz `desafio-adulto-v1`.
+  test('a definição Kids fica estável e a nova definição adulta se distingue da anterior', () => {
+    // Desafio Kids alterado intencionalmente para desafio-vida-v6 em 06/11/2026.
+    // A definição adulta mudou para autonomia-v2. Alterar qualquer definição dispara 409
+    // nas abas abertas e preserva as respostas anteriores, exigindo retomada explícita.
     expect(quizDefinition(DESAFIO_PRIMEIRO_JOGO)?.id).toBe(
-      'e54f34c626e16bf74eb64f63c446a9d768522d819676d422f34dbe747e023cff',
+      'fcbb9867748d68cbc11a1c1c470bc18f47322faa3de24f8f813c651255d93a0e',
     )
-    expect(quizDefinition(DESAFIO_ADULTO)?.id).toBe(
+    expect(quizDefinition(DESAFIO_ADULTO)?.id).not.toBe(
       '60fec63352f5392bb32b7dec103d6f6503585085e548cd9baa696e644b7c46a3',
     )
   })
@@ -131,7 +130,9 @@ describe('quiz com ramos', () => {
   test('Performance de quiz sem ramos continua igual', () => {
     const steps = buildFunnelSteps(DESAFIO_ADULTO)
     expect(steps.some((s) => s.branch || s.branchEntry)).toBe(false)
-    const quizSteps = DESAFIO_ADULTO.content.quiz?.steps ?? []
+    const quizSteps = (DESAFIO_ADULTO.content.quiz?.steps ?? []).filter(
+      (s, i, all) => all.findIndex((other) => other.eventName === s.eventName) === i,
+    )
     expect(steps.slice(1, 1 + quizSteps.length).map((s) => s.name)).toEqual(
       quizSteps.map((s) => s.eventName),
     )
@@ -140,32 +141,34 @@ describe('quiz com ramos', () => {
   test('Desafio Kids: entrada, um ramo de cada lado e a saída de 18 ou mais', () => {
     const names = buildFunnelSteps(DESAFIO_PRIMEIRO_JOGO).map((s) => s.name)
     const i = (name: string) => names.indexOf(name)
-    expect(i('respondeu_desafio_v5_idade')).toBeGreaterThan(i('respondeu_desafio_v5_genero'))
-    expect(i(branchEventName('9a17'))).toBeGreaterThan(i('respondeu_desafio_v5_idade'))
-    expect(i('respondeu_desafio_v5_sintese')).toBeGreaterThan(i(branchEventName('9a17')))
-    expect(i(branchEventName('m9'))).toBeGreaterThan(i('respondeu_desafio_v5_sintese'))
-    expect(i('respondeu_desafio_v5_m9_sintese')).toBeGreaterThan(i(branchEventName('m9')))
-    expect(i(branchEventName('adulto'))).toBeGreaterThan(i('respondeu_desafio_v5_m9_sintese'))
+    expect(i('respondeu_desafio_v6_idade')).toBeGreaterThan(i('respondeu_desafio_v6_genero'))
+    expect(i(branchEventName('9a12'))).toBeGreaterThan(i('respondeu_desafio_v6_idade'))
+    expect(i('respondeu_desafio_v6_9a12_condicao')).toBeGreaterThan(i(branchEventName('9a12')))
+    expect(i(branchEventName('13a17'))).toBeGreaterThan(i('respondeu_desafio_v6_9a12_condicao'))
+    expect(i('respondeu_desafio_v6_13a17_condicao')).toBeGreaterThan(i(branchEventName('13a17')))
+    expect(i(branchEventName('m9'))).toBeGreaterThan(i('respondeu_desafio_v6_13a17_condicao'))
+    expect(i('respondeu_desafio_v6_m9_condicao')).toBeGreaterThan(i(branchEventName('m9')))
+    expect(i(branchEventName('adulto'))).toBeGreaterThan(i('respondeu_desafio_v6_m9_condicao'))
     expect(i('viu_resultado')).toBeGreaterThan(i(branchEventName('adulto')))
     const info = adminFunnelList().find((f) => f.key === DESAFIO_PRIMEIRO_JOGO.key)
-    expect(info?.quiz?.branches?.map((b) => b.id)).toEqual(['9a17', 'm9', 'adulto'])
-    expect(info?.quiz?.headlines.map((h) => h.id)).toEqual(['padrao', 'tela'])
+    expect(info?.quiz?.branches?.map((b) => b.id)).toEqual(['9a12', '13a17', 'm9', 'adulto'])
+    expect(info?.quiz?.headlines.map((h) => h.id)).toEqual(['habilidades'])
     // As respostas da v4 seguem legíveis em Respostas.
     expect(info?.answerLabels.abertura_criacao).toStartWith('(quiz anterior) ')
     expect(info?.perfilLabels['m9-ideias']).toBeTruthy()
     const adulto = adminFunnelList().find((f) => f.key === DESAFIO_ADULTO.key)
-    expect(adulto?.quiz?.headlines.map((h) => h.id)).toEqual(['padrao', 'ideia'])
+    expect(adulto?.quiz?.headlines.map((h) => h.id)).toEqual(['autonomia-v2'])
     expect(adulto?.perfilLabels['desafio-adulto-ideia']).toBeTruthy()
   })
 
   test('manchete genérica: só os ids que o quiz declara, o padrão sem parâmetro', () => {
     const quiz = COMUNIDADE_DOS_CRIADORES.content.quiz
-    expect(quizHeadlineId(quiz, 'tela')).toBe('tela')
+    expect(quizHeadlineId(quiz, 'tela')).toBe('habilidades')
     expect(quizHeadlineId(quiz, '<script>')).toBe(quiz?.defaultHeadline)
     expect(quizHeadlineId(quiz, null)).toBe(quiz?.defaultHeadline)
     expect(quizHeadlineId(undefined, 'tela')).toBeUndefined()
-    expect(quizHeadlineId(DESAFIO_PRIMEIRO_JOGO.content.quiz, 'tela')).toBe('tela')
-    expect(quizPathWithHeadline('/kids/x', quiz, 'tela')).toBe('/kids/x/quiz?manchete=tela')
+    expect(quizHeadlineId(DESAFIO_PRIMEIRO_JOGO.content.quiz, 'tela')).toBe('habilidades')
+    expect(quizPathWithHeadline('/kids/x', quiz, 'tela')).toBe('/kids/x/quiz')
     expect(quizPathWithHeadline('/kids/x', quiz, quiz?.defaultHeadline)).toBe('/kids/x/quiz')
     expect(quizPathWithHeadline('/kids/x', quiz, 'outra')).toBe('/kids/x/quiz')
   })

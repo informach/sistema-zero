@@ -23,26 +23,8 @@ import {
 import { DESAFIO_ADULTO_QUESTIONS } from '../src/funnels/desafio-adulto/quiz/questions'
 import { buildDesafioAdultoResult } from '../src/funnels/desafio-adulto/quiz/result'
 import { PROFILE_LABELS as ADULTO_LABELS } from '../src/funnels/desafio-adulto/quiz/result-copy'
-import {
-  CLEAR_PROFILE_MIN,
-  PROFILE_IDS,
-  PROFILE_IDS_M9,
-  PROFILE_WEIGHTS,
-  QUIZ_VERSION,
-} from '../src/funnels/desafio-primeiro-jogo/quiz/engine'
-import {
-  ADULT_EXIT,
-  QUIZ_ENTRY,
-  QUIZ_HEADLINES,
-  STAGE_LABELS,
-} from '../src/funnels/desafio-primeiro-jogo/quiz/entry-copy'
-import { BRANCHES, DESAFIO_QUESTIONS } from '../src/funnels/desafio-primeiro-jogo/quiz/questions'
-import { buildDesafioKidsResult } from '../src/funnels/desafio-primeiro-jogo/quiz/result'
-import {
-  PROFILE_LABELS_9A17,
-  PROFILE_LABELS_M9,
-} from '../src/funnels/desafio-primeiro-jogo/quiz/result-copy'
 import type { QuizAnswers } from '../src/lib/quiz-types'
+import { espelhoPerguntasVida, espelhoResultadosVida } from './espelho-quiz-vida'
 
 export const PASTA_ESPELHO_QUIZ_DESAFIO = join(
   import.meta.dir,
@@ -72,42 +54,7 @@ function manchetes(headlines: Record<string, { label: string; title: string }>):
   ])
 }
 
-export function espelhoPerguntasKids(): string {
-  const b: string[] = [CABECALHO, '# Quiz Kids do Desafio: entrada, ramos e perguntas']
-  b.push(
-    `_Versão \`${QUIZ_VERSION}\`. Nenhuma tela antes do resultado cita o Desafio, A Chave do Farol, curso, aula, plataforma, preço ou prazo. O texto é escrito no masculino e vira "ela" quando a entrada é "Na minha filha"._`,
-  )
-  b.push('## Entrada', `_${QUIZ_ENTRY.eyebrow}_`, ...manchetes(QUIZ_HEADLINES))
-  b.push(QUIZ_ENTRY.description, QUIZ_ENTRY.note)
-  b.push(
-    '## Ramos',
-    Object.entries(BRANCHES)
-      .map(([id, label]) => `- \`${id}\`: ${label}`)
-      .join('\n'),
-  )
-  b.push(
-    '### Saída de 18 ou mais',
-    `**${ADULT_EXIT.title}**`,
-    ADULT_EXIT.text,
-    `[${ADULT_EXIT.action}] (quiz adulto do Desafio) · ${ADULT_EXIT.fix}`,
-  )
-  b.push('## Perguntas')
-  for (const step of DESAFIO_QUESTIONS) {
-    const ramo = step.ramo ? BRANCHES[step.ramo as keyof typeof BRANCHES] : 'Entrada'
-    const etapa = step.ramo
-      ? STAGE_LABELS[step.ramo === 'm9' ? 'm9' : '9a17'][step.etapa as 'rotina' | 'casa' | 'desejo']
-      : 'Entrada'
-    b.push(`### ${ramo}. ${step.titulo}`)
-    b.push(`_Etapa: ${etapa}. Chave \`${step.key}\`. No /admin: ${step.rotuloCurto}._`)
-    if (step.subtitulo) b.push(step.subtitulo)
-    b.push(step.opcoes.map((o) => `- \`${o.value}\`: ${o.label}`).join('\n'))
-  }
-  b.push(
-    '## Regra do perfil',
-    `Nos dois ramos, a cena de casa e a frase-síntese valem ${PROFILE_WEIGHTS.cena}; a cena desejada vale ${PROFILE_WEIGHTS.cena_desejada}. O empate vai para a síntese, depois para a cena. Com ${CLEAR_PROFILE_MIN} pontos ou mais, o diagnóstico é claro; abaixo, a carta avisa que as respostas apontaram para mais de um lado. No menor de 9, a cena dos avós soma para o tempo a dois, e o irmão mais velho não soma.`,
-  )
-  return `${b.join('\n\n')}\n`
-}
+export const espelhoPerguntasKids = () => espelhoPerguntasVida('desafio')
 
 const marcado = (texto: string) => texto.replaceAll('[[', '**').replaceAll(']]', '**')
 
@@ -131,54 +78,7 @@ function carta(titulo: string, r: ResultadoConversa): string[] {
   return b
 }
 
-const base917: QuizAnswers = {
-  _quiz_version: QUIZ_VERSION,
-  _quiz_revision: 9,
-  genero: 'filho',
-  idade: '9_12',
-  tempo_tela: '2_4',
-  computador: 'so_dele',
-  trava: 'desiste',
-  garantia: 'ajuda',
-}
-const baseM9: QuizAnswers = {
-  _quiz_version: QUIZ_VERSION,
-  _quiz_revision: 9,
-  genero: 'filha',
-  idade: 'menos_9',
-  m9_leitura: 'comecando',
-  m9_computador: 'sim',
-  m9_tempo_juntos: 'duas_tres',
-  m9_garantia: 'nao_programar',
-}
-
-export function espelhoResultadosKids(): string {
-  const b: string[] = [CABECALHO, '# Quiz Kids do Desafio: o resultado em conversa']
-  b.push(
-    '_Uma carta de cada perfil, com as respostas que levam a ele nas três perguntas de perfil (o menor de 9 está no feminino, para mostrar a troca). Em **negrito**, as respostas da família devolvidas no texto. As outras respostas mudam frases da carta; todas estão em `result-copy.ts`._',
-  )
-  for (const letra of Object.keys(PROFILE_IDS) as (keyof typeof PROFILE_IDS)[]) {
-    const r = buildDesafioKidsResult({
-      ...base917,
-      cena: letra,
-      cena_desejada: letra,
-      sintese: letra,
-    })
-    if (!r) throw new Error(`Sem carta para ${letra}`)
-    b.push(...carta(`De 9 a 17 · ${PROFILE_LABELS_9A17[letra]}`, r))
-  }
-  for (const letra of Object.keys(PROFILE_IDS_M9) as (keyof typeof PROFILE_IDS_M9)[]) {
-    const r = buildDesafioKidsResult({
-      ...baseM9,
-      m9_cena: letra,
-      m9_cena_desejada: letra,
-      m9_sintese: letra,
-    })
-    if (!r) throw new Error(`Sem carta para m9 ${letra}`)
-    b.push(...carta(PROFILE_LABELS_M9[letra], r))
-  }
-  return `${b.join('\n\n')}\n`
-}
+export const espelhoResultadosKids = () => espelhoResultadosVida('desafio')
 
 export function espelhoPerguntasAdulto(): string {
   const b: string[] = [CABECALHO, '# Quiz adulto do Desafio: entrada e perguntas']

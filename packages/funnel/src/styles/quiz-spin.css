@@ -9,6 +9,28 @@
  * Nenhuma cor própria: as peles só apontam os aliases `--qz-*` para os tokens do tema.
  */
 
+.qz .qz-intro-visual {
+  display: block;
+  width: 100%;
+  max-height: 235px;
+  object-fit: cover;
+  object-position: center 55%;
+  margin: 24px 0;
+  border: 2px solid var(--qz-tinta);
+  border-radius: 20px;
+}
+.qz .qz-opcao-texto {
+  min-width: 0;
+}
+.qz .qz-opcao-texto strong {
+  display: block;
+  margin-bottom: 7px;
+}
+.qz .qz-opcao-texto > span {
+  display: block;
+  font-weight: 400;
+  line-height: 1.45;
+}
 .qz {
   --qz-margem: 18px;
   min-height: 100vh;
@@ -536,4 +558,38 @@
   .qz .qz-barra span {
     transition: none;
   }
+}
+
+/* Quizzes adultos de autonomia: confirmação explícita e seleção múltipla acessível. */
+.qz--adulto .qz-escolhas {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.qz--adulto .qz-opcao-confirmada {
+  cursor: pointer;
+  align-items: flex-start;
+}
+.qz--adulto .qz-opcao-confirmada[data-selected="true"] {
+  border-color: var(--cda-amarelo);
+  background: var(--cda-carta);
+}
+.qz--adulto .qz-opcao-confirmada input {
+  accent-color: var(--cda-amarelo);
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.qz--adulto .qz-opcao-confirmada:has(input:focus-visible) {
+  outline: 3px solid var(--cda-amarelo);
+  outline-offset: 4px;
+}
+.qz--adulto .qz-escolhas:disabled {
+  opacity: 0.65;
+}
+.qz--adulto .qz-confirmar {
+  width: 100%;
+  margin-top: 28px;
 }

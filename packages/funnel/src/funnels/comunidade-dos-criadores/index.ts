@@ -11,6 +11,7 @@
 // (JSON-LD/og) passa a ser o anual — preferir a mensal como principal.
 
 import { TERMOS_COMUNIDADE_KIDS } from '../../content/legal/termos-comunidade-kids'
+import { profileLabels } from '../kids-vida/engine'
 import type { FunnelDef } from '../registry'
 import {
   COMUNIDADE_CHECKOUT,
@@ -51,7 +52,7 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
   // Assinatura: sem o disclaimer de acesso vitalício no rodapé.
   lifetimeAccess: false,
   steps: { quiz: true, resultado: true, upsell: false, downsell: false },
-  legal: { termos: TERMOS_COMUNIDADE_KIDS, termsVersion: 'comunidade-kids-2026-10-20b' },
+  legal: { termos: TERMOS_COMUNIDADE_KIDS, termsVersion: 'comunidade-kids-2026-11-06' },
   content: {
     copy: COMUNIDADE_PRODUTO,
     landing: COMUNIDADE_LANDING,
@@ -62,7 +63,9 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
     result: {
       profiles: {},
       fecho: '',
-      perfilLabels: {
+      perfilLabels: profileLabels,
+      legacyPerfilLabels: {
+        ...PERFIS_V5,
         ...Object.fromEntries(
           Object.entries(PROFILE_IDS).map(([id, slug]) => [
             slug,
@@ -76,7 +79,6 @@ export const COMUNIDADE_DOS_CRIADORES: FunnelDef = {
           ]),
         ),
       },
-      legacyPerfilLabels: PERFIS_V5,
     },
   },
 }

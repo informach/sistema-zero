@@ -1,0 +1,77 @@
+---
+import type { AdultNarrative } from '../../../funnels/adulto-autonomia/types'
+import '../../../styles/resultado-autonomia.css'
+import OfferImage from '../oferta/OfferImage.astro'
+import AutonomiaCondicoes from './AutonomiaCondicoes.astro'
+
+interface Props {
+  leitura: AdultNarrative
+}
+const { leitura: r } = Astro.props
+const farol = {
+  src: '/img/desafio-primeiro-jogo/farol-jogo-real.webp',
+  alt: 'A Chave do Farol: personagem, chave e destino na aventura.',
+  width: 1440,
+  height: 1080,
+}
+const gallery =
+  r.mode === 'comunidade'
+    ? [
+        {
+          image: {
+            src: '/img/cade-todo-mundo/cade-jogo-3.webp',
+            alt: 'Cadê Todo Mundo: os personagens encontrados ao clicar.',
+            width: 1440,
+            height: 810,
+          },
+          title: 'Cadê Todo Mundo',
+          text: 'Relacionar um clique a uma ação.',
+        },
+        {
+          image: farol,
+          title: 'A Chave do Farol',
+          text: 'Combinar movimento, coleta e uma condição.',
+        },
+      ]
+    : [
+        {
+          image: farol,
+          title: 'A aventura que você constrói',
+          text: 'Movimento, chave e farol dão um objetivo às regras.',
+        },
+        {
+          image: {
+            src: '/img/desafio-primeiro-jogo/farol-blocos-reais.webp',
+            alt: 'Blocos reais da Chave do Farol: coleta da chave e condição para acender o farol.',
+            width: 1100,
+            height: 1029,
+          },
+          title: 'As instruções por dentro',
+          text: 'Blocos reais da plataforma, montados e testados durante o curso.',
+        },
+      ]
+---
+<article class="ra">
+  <p class="ra-lead">{r.lead}</p>
+  {r.warningFirst&&<AutonomiaCondicoes items={r.fit} attention={true} />}
+  <p class="ra-conquista">{r.priority}</p>
+  <section>
+    <h2>{r.mode==='comunidade'?'O que dá continuidade à sua criação.':'O que pode ajudar você a avançar.'}</h2>
+    {r.reasoning.map(p=><p>{p}</p>)}
+  </section>
+  <section>
+    <h2>{r.warningFirst?'Conheça o formato para comparar.':'Um caminho para colocar isso em prática.'}</h2>
+    <p>{r.productLead}</p>
+    <div class="ra-mecanismo"><h3>Por que criar jogos ajuda nesse caminho.</h3><p>{r.mechanism}</p></div>
+    <h3>{r.mode==='comunidade'?'O que você pratica de uma criação para a seguinte.':'O que você pratica na aventura do Farol.'}</h3>
+    <ol class="ra-pratica">{r.practice.map(([heading,text])=><li><strong>{heading}</strong><p>{text}</p></li>)}</ol>
+    <div class="ra-galeria">{gallery.map(g=><figure><OfferImage image={g.image}/><figcaption><strong>{g.title}.</strong> {g.text} Clique para ampliar.</figcaption></figure>)}</div>
+    <p class="ra-legenda">Capturas reais dos cursos na área Kids. Os mesmos cursos são oferecidos na área adulta, com conta e espaços de participação próprios.</p>
+  </section>
+  <section>
+    <h2>{r.mode==='comunidade'?'Como a assinatura sustenta essa continuidade.':'Como funciona esse primeiro projeto.'}</h2>
+    {r.continuity.map(p=><p>{p}</p>)}
+  </section>
+  {!r.warningFirst&&<AutonomiaCondicoes items={r.fit} attention={false} />}
+  <p class="ra-beneficio">{r.benefit}</p>
+</article>

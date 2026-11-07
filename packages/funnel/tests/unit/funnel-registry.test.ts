@@ -10,7 +10,9 @@ const quiz: FunnelQuiz = {
 describe('isQuizComplete', () => {
   test('a regra compartilhada exige respostas para todas as perguntas declaradas', () => {
     expect(isQuizComplete(quiz, {})).toBe(false)
-    expect(isQuizComplete(quiz, { tempo_jogo: 'menos_3' })).toBe(false)
-    expect(isQuizComplete(quiz, { tempo_jogo: 'menos_3', computador: 'meu' })).toBe(true)
+    expect(isQuizComplete(quiz, { [quiz.steps[0]!.key]: 'prazer' })).toBe(false)
+    expect(
+      isQuizComplete(quiz, { [quiz.steps[0]!.key]: 'prazer', [quiz.steps[1]!.key]: 'nunca' }),
+    ).toBe(true)
   })
 })

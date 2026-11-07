@@ -38,7 +38,7 @@ export default function PerfisPanel({ funnel, scope = '' }: { funnel: string; sc
     <div>
       <p className="mb-5 text-sm text-muted">
         <span className="font-bold text-ink">{total}</span>{' '}
-        {total === 1 ? 'lead com diagnóstico' : 'leads com diagnóstico'}
+        {total === 1 ? 'lead com perfil' : 'leads com perfil'}
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
         {counts.map((c) => (

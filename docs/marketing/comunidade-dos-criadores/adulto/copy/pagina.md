@@ -6,538 +6,414 @@ _Os preços aparecem como marcadores (`{{preco_mensal}}`, `{{preco_anual}}`…):
 
 **seoTitle**: Comunidade dos Criadores para adultos | Sistema Zero
 
-**description**: Para quem tem 18 anos ou mais e cresceu jogando. Você faz o primeiro jogo no navegador do computador e segue criando outros, cada vez maiores, até o jogo com a sua ideia. 7 dias de garantia. Cancele quando quiser.
+**description**: Ganhe autonomia para realizar suas ideias. Cursos, projetos de jogos, ferramentas e apoio para continuar criando na Comunidade adulta.
 
 **pularParaConteudo**: Ir para o conteúdo
 
-**topo.marcaAria**: Sistema Zero Comunidade dos Criadores, voltar ao topo
+**topo.imagens[0].alt**: Sistema Zero
 
-**topo.logoAlt**: Sistema Zero
+**topo.rotulos[0]**: COMUNIDADE DOS CRIADORES
 
-**topo.selo**: COMUNIDADE DOS CRIADORES
+**topo.acoes[0]**: Como funciona
 
-**topo.navAria**: Atalhos da página
+**topo.acoes[1]**: A Jornada
 
-**topo.links[0].label**: Como funciona
+**topo.acoes[2]**: Ver planos
 
-**topo.links[1].label**: Etapas
+**hero.titulo.antes**: Ganhe autonomia para
 
-**topo.cta**: Quero criar meu jogo
+**hero.titulo.destaque**: realizar suas ideias
 
-**hero.rotulo**: PLAYER 1 · PRESS START
+**hero.titulo.depois**: , criando um jogo de cada vez.
 
-**hero.titulo.antes**: Você sempre quis fazer um jogo. Aqui você faz o primeiro e 
+**hero.texto**: Com aulas guiadas e programação em blocos, você aprende a construir jogos e entender como eles funcionam. A assinatura reúne projetos, ferramentas e apoio para continuar praticando e experimentar ideias suas.
 
-**hero.titulo.destaque**: segue criando outros
+**hero.imagens[0].alt**: A Chave do Farol em execução: personagem, chave e farol na ilha
 
-**hero.titulo.depois**: , cada vez maiores, até o jogo com a sua ideia.
+**hero.rotulos[0]**: COMUNIDADE DOS CRIADORES · ADULTOS
 
-**hero.texto**: Você desenha o herói, decide as regras e escolhe quanto vale cada ponto. A vontade de entender como um jogo funciona por dentro, que você tem desde criança, vira jogos feitos por você.
+**hero.rotulos[1]**: Comece do zero ou retome o que já aprendeu.
 
-**hero.beneficios[0]**: O primeiro jogo pronto já no primeiro curso.
+**hero.rotulos[2]**: Monte, teste e personalize os projetos dos cursos.
 
-**hero.beneficios[1]**: Depois, novos jogos: cada curso ensina uma parte nova, como placar, vidas e personagens desenhados por você.
+**hero.rotulos[3]**: Publique suas criações e compartilhe o que fez.
 
-**hero.beneficios[2]**: Até o seu próprio jogo: você monta a sua ideia no Estúdio livre, e mais adiante o Pensa ajuda a dividi-la em partes.
+**hero.rotulos[4]**: UMA IDEIA EM FUNCIONAMENTO
 
-**hero.beneficios[3]**: Um link para mandar aos amigos. O jogo abre no celular deles, sem cadastro.
+**hero.rotulos[5]**: A CHAVE DO FAROL
 
-**hero.cta**: Quero começar a criar meus jogos
+**hero.acoes[0]**: Quero criar na Comunidade
 
-**hero.garantia**: 7 dias de garantia. Cancele quando quiser.
+**hero.itens[0]**: <span aria-hidden="true" class="cda-quadradinho"></span>18 anos ou mais
 
-**hero.requisitos[0].texto**: Para quem tem 18 anos ou mais
+**hero.itens[1]**: <span aria-hidden="true" class="cda-quadradinho"></span>No navegador do computador
 
-**hero.requisitos[1].texto**: No navegador do computador
+**hero.legendas[0]**: Um dos projetos do percurso: você monta as regras, testa a aventura e experimenta suas escolhas.
 
-**hero.requisitos[2].texto**: {{preco_mensal}} por mês, menos de {{preco_dia}} por dia
+**comeco.titulo**: Entender o que você fez abre espaço para criar algo diferente.
 
-**hero.tela.rotulo**: ABERTURA DO JOGO
+**comeco.rotulos[0]**: DA VONTADE À PRÁTICA
 
-**hero.tela.imagem.alt**: Jogo de arena em pixel art ao fundo de uma abertura de exemplo, com o nome do jogo e um texto com o nome de quem criou
+**comeco.paragrafos[0]**: Você pode ter vontade de criar um jogo, entender melhor a tecnologia ou desenvolver um projeto nas horas livres. Um primeiro passo é acompanhar uma construção. O avanço aparece quando você entende uma regra e começa a decidir o que quer mudar nela.
 
-**hero.tela.jogo**: GUARDIÕES DA ARENA
+**comeco.paragrafos[1]**: Na Comunidade, os cursos oferecem esse começo: um projeto preparado, explicações e um espaço para montar e testar. Conforme aprende, você experimenta mudanças e usa o que entendeu em outras construções.
 
-**hero.tela.autoria.antes**: UM JOGO DE 
+**comeco.paragrafos[2]**: Imagine mudar o aviso que aparece antes de abrir uma passagem. Você precisa saber quando ele aparece, qual informação deve trazer e como testar se ficou claro. Uma pequena escolha já pede compreensão do que você está criando.
 
-**hero.tela.autoria.nome**: SEU NOME
+**comeco.paragrafos[3]**: Você acompanha os cursos, usa as ferramentas liberadas e mantém os projetos na conta para retomá-los. A Jornada, o percurso de cursos e etapas da plataforma, mostra os requisitos para avançar. Há também espaços para compartilhar e enviar dúvidas à equipe.
 
-**hero.tela.start**: PRESS START
+**comeco.paragrafos[4]**: Já tem uma conta adulta? Use o mesmo e-mail ao assinar. Você pode retomar uma aula, terminar um projeto ou seguir para os próximos passos disponíveis no seu percurso.
 
-**hero.tela.recorde**: 1P · RECORDE 00450
+**comeco.destaques[0]**: Cursos, prática e ajuda no mesmo lugar.
 
-**hero.tela.direitos**: © VOCÊ
+**projetos.titulo**: Cada projeto acrescenta algo ao que você consegue fazer.
 
-**hero.tela.legenda**: Exemplo de abertura que você pode montar no Estúdio, escrevendo o seu nome num texto do jogo. Imagem de exemplo, com dados fictícios.
+**projetos.imagens[0].alt**: Cadê Todo Mundo: os animais encontrados aparecem na cena
 
-**problema.rotulo**: A IDEIA QUE FICOU NA CABEÇA
+**projetos.imagens[1].alt**: A Chave do Farol com a chave no caminho até o farol
 
-**problema.titulo**: Talvez você já tenha imaginado um jogo inteiro no meio de uma partida
+**projetos.rotulos[0]**: O QUE MUDA DE UMA CRIAÇÃO PARA OUTRA
 
-**problema.texto**: Uma fase mais difícil, um chefe diferente, uma regra que deixaria tudo mais divertido. Você sempre quis fazer um jogo. Aí abre um programa profissional de fazer jogos, como a Unity, vê dezenas de janelas e fecha no mesmo dia. Ou segue um tutorial que acaba antes de chegar na sua ideia. Ou começa logo pelo jogo dos sonhos, com mundo aberto e história longa, e para no meio. Com o trabalho, a família e o cansaço da noite, o projeto fica para depois, e a ideia continua na gaveta.
+**projetos.rotulos[1]**: CADÊ TODO MUNDO
 
-**problema.trava.rotulo**: O QUE TRAVA
+**projetos.rotulos[2]**: A CHAVE DO FAROL
 
-**problema.trava.texto**: O problema quase sempre está no ponto de partida: um projeto grande demais, num programa feito para empresas de jogos e sem um próximo passo claro. Por isso, aqui o primeiro jogo é pequeno de propósito, para você terminar, mostrar e ficar com vontade de fazer o próximo.
+**projetos.paragrafos[0]**: Veja como duas construções do Sistema Zero trabalham decisões diferentes. Em uma, você liga um clique a uma ação. Na outra, faz o resultado depender de algo que já aconteceu no jogo.
 
-**levelUp.rotulo**: LEVEL UP
+**projetos.paragrafos[1]**: Ao clicar em um esconderijo, um personagem aparece. Você relaciona a ação de quem joga à resposta que programou e confere o contador de encontrados.
 
-**levelUp.titulo**: Quando a ideia sai da cabeça, você passa a ser quem cria o jogo
+**projetos.paragrafos[2]**: <strong>O que essa experiência ajuda a entender:</strong> você descobre como ligar o clique de quem joga a uma ação na cena.
 
-**levelUp.texto**: Você decide como o jogo funciona. Isso muda mais coisas do que parece.
+**projetos.paragrafos[3]**: Chegar ao farol só resolve a aventura se a chave já foi encontrada. Você guarda essa informação e monta a condição que decide o que acontece.
 
-**levelUp.cartas[0].titulo**: A ideia vira um jogo terminado
+**projetos.paragrafos[4]**: <strong>O que essa experiência acrescenta:</strong> você aprende a guardar uma informação e usá-la para decidir o resultado.
 
-**levelUp.cartas[0].texto**: Com começo, meio e fim, rodando no navegador e pronto para mandar o link. O "um dia eu faço" sai da lista.
+**projetos.paragrafos[5]**: A ação de clicar e a regra de conferir um objeto podem se encontrar em outra ideia: uma passagem que só abre quando a pessoa tem a chave. Para construir essa combinação, você precisa adaptar as instruções e testar os caminhos. É nesse tipo de prática que o que aprendeu ganha outro uso.
 
-**levelUp.cartas[1].titulo**: Você ouve "foi você que fez?"
+**projetos.paragrafos[6]**: São exemplos do que você constrói nos cursos. A área de membros mostra quais estão disponíveis e os requisitos para acessá-los.
 
-**levelUp.cartas[1].texto**: Você compartilha no grupo, os amigos jogam pelo celular e alguém trava na fase que você desenhou.
+**projetos.subtitulos[0]**: Revelar um personagem ao clicar.
 
-**levelUp.cartas[2].titulo**: Você passa a reparar em como os jogos são feitos
+**projetos.subtitulos[1]**: Acender o farol só depois de pegar a chave.
 
-**levelUp.cartas[2].texto**: Você nota como o pulo foi ajustado, por que aquela fase é difícil e onde o jogo esconde as dicas. Jogar fica ainda melhor.
+**projetos.legendas[0]**: Captura real de Cadê Todo Mundo.
 
-**levelUp.cartas[3].titulo**: A noite livre termina com uma fase nova
+**projetos.legendas[1]**: Captura real da Chave do Farol.
 
-**levelUp.cartas[3].texto**: Em vez de mais uma partida, uma fase nova, um personagem, uma regra que ficou melhor. Tudo fica salvo e espera você voltar.
+**projetos.destaques[0]**: Você começa a reconhecer peças que pode combinar.
 
-**levelUp.cartas[4].titulo**: O jogo inteiro tem a sua cara
+**programacao.titulo**: Os blocos ajudam você a enxergar as instruções que fazem o jogo funcionar.
 
-**levelUp.cartas[4].texto**: Você desenha o herói, escreve as regras e decide o que acontece em cada fase.
+**programacao.imagens[0].alt**: Blocos reais da Chave do Farol: coleta da chave e condição para acender o farol
 
-**levelUp.cartas[5].titulo**: Você encontra gente que curte o mesmo
+**programacao.rotulos[0]**: COMPREENDER PARA PODER ESCOLHER
 
-**levelUp.cartas[5].texto**: Na conversa do Clube e no Desafio do mês, você mostra o que fez, joga o jogo dos outros e sai com ideia para o próximo.
+**programacao.paragrafos[0]**: Para o jogo responder a uma escolha, ele precisa de instruções. Você começa montando essas instruções com blocos, no Estúdio da plataforma. Cada bloco tem um comando escrito; a aula explica o que ele faz e como encaixá-lo na construção.
 
-**levelUp.cta**: Quero começar a criar meus jogos
+**programacao.paragrafos[1]**: Você monta a regra, testa os dois casos e confere se a resposta corresponde ao que esperava. Depois, pode personalizar um aviso e observar se ele ajuda quem joga a entender o próximo passo.
 
-**levelUp.garantia**: 7 dias de garantia. Cancele quando quiser.
+**programacao.paragrafos[2]**: Por exemplo: o aviso “Falta a chave” pode ganhar uma pista mais clara sobre o que procurar. Você escolhe as palavras e testa a mensagem no momento em que ela aparece.
 
-**base.rotulo**: VOCÊ JÁ TEM A BASE
+**programacao.paragrafos[3]**: Você entende a regra e tem um motivo para fazer a mudança.
 
-**base.titulo**: Você já sabe mais do que imagina: conhece as regras dos jogos que jogou
+**programacao.legendas[0]**: Os blocos reais do projeto. Clique para ampliar e ler as instruções.
 
-**base.texto**: Quem passou horas jogando já conhece as regras de um jogo por dentro: pular na hora certa, pegar a chave antes da porta, perder uma vida ao encostar no inimigo, voltar ao último checkpoint. Criar um jogo é montar essas mesmas regras e ver o jogo obedecer. Aqui você monta com blocos: peças de encaixar com o comando já escrito. Veja abaixo quatro dessas regras nos primeiros jogos que você faz.
+**programacao.subtitulos[0]**: O farol acende com a chave e continua apagado sem ela.
 
-**base.regras[0].nome**: PULO
+**comoFunciona.titulo**: Assista a um trecho, construa e confira o resultado.
 
-**base.regras[0].texto**: No Corre, Dino, o dino pula o cacto quando você aperta a tecla.
+**comoFunciona.imagens[0].alt**: Estúdio real da Chave do Farol com blocos e jogo em execução
 
-**base.regras[0].codigo**: QUANDO APERTAR · PULAR
+**comoFunciona.rotulos[0]**: COMO A PRÁTICA ACONTECE
 
-**base.regras[1].nome**: VIDAS
+**comoFunciona.paragrafos[0]**: O vídeo e o espaço de prática ficam na mesma aula. Você pode pausar para montar, rodar o projeto e voltar à explicação. Assim, cada parte apresentada tem uma oportunidade de ser experimentada.
 
-**base.regras[1].texto**: Na Nave Contra Asteroides, a nave tem três vidas. Encostou no asteroide, perde uma.
+**comoFunciona.paragrafos[1]**: Se o farol acende sem a chave, a condição que controla essa ação é um ponto para investigar. A verificação da atividade ajuda a conferir os objetivos; os materiais da aula e o canal de mensagens da equipe ajudam a retomar a construção.
 
-**base.regras[1].codigo**: SE TOCAR ASTEROIDE · VIDAS - 1
+**comoFunciona.legendas[0]**: Captura real do Estúdio na aula do Farol. As telas de aula da plataforma foram feitas no Kids, que usa os mesmos cursos e ferramentas.
 
-**base.regras[2].nome**: CHAVE
+**comoFunciona.itens[0]**: <strong>1. Entenda o objetivo.</strong>Veja o que aquela parte do projeto precisa fazer.
 
-**base.regras[2].texto**: Na Chave do Farol, o farol só acende depois de pegar a chave.
+**comoFunciona.itens[1]**: <strong>2. Monte e teste.</strong>Acompanhe a construção, rode o jogo e observe o resultado.
 
-**base.regras[2].codigo**: SE TEM CHAVE · ACENDER FAROL
+**comoFunciona.itens[2]**: <strong>3. Confira e ajuste.</strong>Use os objetivos da atividade e os materiais de apoio para revisar o que falta.
 
-**base.regras[3].nome**: PONTOS
+**comoFunciona.itens[3]**: <strong>4. Explique e compartilhe.</strong>Ao concluir, você pode publicar no Mural e mostrar uma escolha que fez.
 
-**base.regras[3].texto**: Na Nave, cada asteroide acertado soma no placar. Quanto vale, você decide.
+**comoFunciona.destaques[0]**: Quando algo falha, você tem o que conferir.
 
-**base.regras[3].codigo**: SE ACERTAR ASTEROIDE · PLACAR + 1
+**jornada.titulo**: Você ganha novas possibilidades ao usar o que aprendeu em situações diferentes.
 
-**comoFunciona.rotulo**: COMO FUNCIONA
+**jornada.rotulos[0]**: POR QUE CONTINUAR
 
-**comoFunciona.titulo**: Na prática, você assiste, monta e vê o jogo funcionar na mesma tela
+**jornada.rotulos[1]**: APRENDER
 
-**comoFunciona.texto**: O vídeo da aula fica de um lado e o Estúdio, onde você monta o jogo, fica do outro. Você pausa, monta e vê o resultado antes de seguir. Tudo fica salvo na sua conta, e você continua de onde parou.
+**jornada.rotulos[2]**: EXPERIMENTAR
 
-**comoFunciona.passos[0].titulo**: Primeiro, você joga a versão pronta
+**jornada.rotulos[3]**: AMPLIAR
 
-**comoFunciona.passos[0].texto**: Assim você sabe aonde vai chegar antes de montar a primeira peça.
+**jornada.rotulos[4]**: CRIAR
 
-**comoFunciona.passos[1].titulo**: Depois, muda uma regra
+**jornada.rotulos[5]**: COMO O ACESSO É LIBERADO
 
-**comoFunciona.passos[1].texto**: Você monta os blocos que decidem o pulo, o valor da moeda e o fim da fase.
+**jornada.paragrafos[0]**: Depois de montar uma regra com orientação, vem outra pergunta: como adaptá-la para fazer algo diferente? Novos projetos dão oportunidades de experimentar essa adaptação, perceber o que ainda falta aprender e combinar o que já funciona. A assinatura mantém esse espaço de prática e acesso ao percurso durante o período contratado.
 
-**comoFunciona.passos[2].titulo**: Então testa e confere
+**jornada.paragrafos[1]**: O projeto preparado dá um objetivo: fazer o personagem andar, por exemplo. A explicação mostra as instruções, e você confere o movimento no jogo.
 
-**comoFunciona.passos[2].texto**: Roda o jogo e vê se ele obedeceu. O botão Verificar esta etapa diz o que já está certo antes de você seguir.
+**jornada.paragrafos[2]**: Você muda a posição da chave ou o texto de um aviso. Tem uma intenção para a mudança e testa se o resultado corresponde ao que imaginou.
 
-**comoFunciona.passos[3].titulo**: Por fim, publica
+**jornada.paragrafos[3]**: Uma ação que você já conhece passa a depender de uma condição. Você junta as partes e testa o que acontece em cada situação.
 
-**comoFunciona.passos[3].texto**: O jogo ganha uma página que abre no celular de quem você quiser, sem cadastro.
+**jornada.paragrafos[4]**: Quando o Estúdio livre é liberado no seu percurso, você pode começar um projeto próprio com os recursos disponíveis. Escolhe uma ideia, divide a construção e testa suas soluções.
 
-**comoFunciona.tela.imagem.alt**: Aula da Nave Contra Asteroides na área adulta: o vídeo à esquerda, o Estúdio com os blocos à direita e o botão de rodar o jogo
+**jornada.paragrafos[5]**: A Jornada mostra os cursos, os requisitos de cada etapa e os recursos que você pode liberar. Cumprir esses requisitos abre novos acessos sem cobrança adicional por essa liberação. O catálogo está em expansão: os cursos publicados durante sua assinatura também entram no percurso.
 
-**comoFunciona.tela.legenda**: Prévia da aula da Nave Contra Asteroides na área adulta, maquete com dados de teste: vídeo de um lado, Estúdio do outro e o botão de rodar o jogo
+**jornada.subtitulos[0]**: Começar com um objetivo definido.
 
-**comoFunciona.exemplo.rotulo**: POR EXEMPLO
+**jornada.subtitulos[1]**: Experimentar mudanças com intenção.
 
-**comoFunciona.exemplo.texto**: Na Nave Contra Asteroides, cada asteroide acertado vale um ponto. Você troca o valor para cinco, roda o jogo e vê o placar disparar. É a primeira regra do jogo decidida por você.
+**jornada.subtitulos[2]**: Combinar o que já entendeu.
 
-**comoFunciona.classicos.rotulo**: OS PRIMEIROS JOGOS
+**jornada.subtitulos[3]**: Dar forma a projetos próprios.
 
-**comoFunciona.classicos.titulo**: Você começa pelos clássicos
+**habilidades.titulo**: Planejar, investigar e fazer escolhas entram na construção do seu jogo.
 
-**comoFunciona.classicos.texto**: Uma nave contra asteroides, um dino que corre dos cactos, um farol que só acende com a chave. São jogos pequenos de propósito, que ensinam as regras usadas em todo jogo. São os primeiros que você termina e publica com o seu nome, antes dos maiores.
+**habilidades.rotulos[0]**: O QUE VOCÊ PRATICA AO CRIAR
 
-**comoFunciona.classicos.jogos[0].nome**: Cadê Todo Mundo
+**habilidades.rotulos[1]**: PLANEJAMENTO
 
-**comoFunciona.classicos.jogos[0].texto**: Um jardim com bichinhos escondidos. O jogo conta cada um que você encontra.
+**habilidades.rotulos[2]**: RESOLUÇÃO DE PROBLEMAS
 
-**comoFunciona.classicos.jogos[0].imagem.alt**: Cadê Todo Mundo: o jardim com o contador de achados
+**habilidades.rotulos[3]**: PERSISTÊNCIA
 
-**comoFunciona.classicos.jogos[1].nome**: A Chave do Farol
+**habilidades.rotulos[4]**: CRIATIVIDADE E COMUNICAÇÃO
 
-**comoFunciona.classicos.jogos[1].texto**: Pegue a chave, acenda o farol e traga o barco até a costa.
+**habilidades.paragrafos[0]**: Essas habilidades aparecem em ações que você consegue observar: separar um objetivo em partes, procurar a causa de uma falha e explicar por que fez uma mudança.
 
-**comoFunciona.classicos.jogos[1].imagem.alt**: A Chave do Farol: a ilha, a chave e o farol
+**habilidades.paragrafos[1]**: A sequência do curso mostra como separar movimento, coleta e condição. Você aprende a conferir cada parte antes de testar a aventura completa.
 
-**comoFunciona.classicos.jogos[2].nome**: Nave Contra Asteroides
+**habilidades.paragrafos[2]**: O personagem chegou ao destino, mas o jogo não terminou. Você observa o que aconteceu, confere a condição de conclusão e testa um ajuste.
 
-**comoFunciona.classicos.jogos[2].texto**: Ande, atire, some pontos e cuide das três vidas.
+**habilidades.paragrafos[3]**: Depois de uma tentativa que falhou, você pode rever a explicação, escolher uma parte para ajustar e testar de novo. Há um próximo passo para investigar.
 
-**comoFunciona.classicos.jogos[2].imagem.alt**: Nave Contra Asteroides: a nave, os asteroides e o placar
+**habilidades.paragrafos[4]**: Ao escrever um aviso, você pensa no que a pessoa precisa saber para continuar jogando. Depois, pode mostrar a mensagem e explicar por que escolheu aquelas palavras.
 
-**comoFunciona.classicos.jogos[3].nome**: O Jogo do Meu Jeito
+**habilidades.paragrafos[5]**: Ver o personagem se mover porque você montou aquela regra. Mostrar a alguém a mensagem que escolheu. Essas pequenas realizações dão um significado próprio ao que você está aprendendo. O desejo de criar jogos pode ganhar espaço nas horas livres, e a curiosidade pode virar uma criação para compartilhar.
 
-**comoFunciona.classicos.jogos[3].texto**: Você desenha a sua nave e os seus asteroides e coloca no jogo.
+**habilidades.subtitulos[0]**: Planejar o que vem primeiro.
 
-**comoFunciona.classicos.jogos[3].marcador**: DO SEU JEITO
+**habilidades.subtitulos[1]**: Investigar antes de mudar tudo.
 
-**comoFunciona.classicos.jogos[4].nome**: Corre, Dino
+**habilidades.subtitulos[2]**: Retomar com um próximo passo.
 
-**comoFunciona.classicos.jogos[4].texto**: Pule os cactos e decida até onde a corrida acelera.
+**habilidades.subtitulos[3]**: Escolher e explicar o que fez.
 
-**comoFunciona.classicos.jogos[4].imagem.alt**: Corre, Dino: o dino, o cacto e o placar
+**habilidades.destaques[0]**: Há também o prazer de ter algo seu em construção.
 
-**comoFunciona.classicos.nota**: As imagens são dos cursos infantis. Na área adulta, os mesmos jogos têm outra aparência.
+**ferramentas.titulo**: Para programar as regras, criar a arte e explorar novas formas de construir.
 
-**etapas.rotulo**: SELECIONE A ETAPA
+**ferramentas.imagens[0].alt**: Modo Ponte real com blocos e código lado a lado no projeto Cadê Todo Mundo
 
-**etapas.titulo**: Cada curso que você termina libera peças novas no Estúdio. Com elas, você faz jogos maiores, até o que está na sua cabeça
+**ferramentas.rotulos[0]**: MAIS RECURSOS PARA DAR FORMA ÀS IDEIAS
 
-**etapas.texto**: Cada curso ensina com um jogo completo. Os blocos que você aprendeu continuam no seu Estúdio, e a lista cresce a cada curso.
+**ferramentas.paragrafos[0]**: O Estúdio reúne as instruções do jogo. Outros recursos permitem desenhar personagens, modelar objetos e conhecer o código por trás dos blocos. Cada ferramenta é liberada quando você cumpre os requisitos previstos no percurso.
 
-**etapas.passos[0].rotulo**: PASSO 1
+**ferramentas.paragrafos[1]**: Pensa e Zappy usam inteligência artificial para apoiar o planejamento e a revisão do projeto. São liberados em etapas do percurso e têm limites diários e mensais exibidos na conta. Você confere as sugestões e decide como usá-las.
 
-**etapas.passos[0].titulo**: Termina um curso, ganha os blocos
+**ferramentas.subtitulos[0]**: Cada recurso tem um papel na criação.
 
-**etapas.passos[0].texto**: Cada curso ensina blocos novos, como Colisões, Som e Aparência, e eles ficam no seu Estúdio para sempre. Ao concluir os cursos de uma etapa, você sobe para a próxima. São 7 etapas, cada uma com nome e cor.
+**ferramentas.itens[0]**: <strong>Estúdio</strong>Montar as regras e rodar o jogo para conferir, por exemplo, se o personagem responde ao comando.
 
-**etapas.passos[1].rotulo**: PASSO 2
+**ferramentas.itens[1]**: <strong>Pinta e Molda</strong>Desenhar um personagem em 2D ou modelar um objeto em 3D para usar nas suas criações.
 
-**etapas.passos[1].titulo**: Sobe de etapa, abre a ferramenta
+**ferramentas.itens[2]**: <strong>Ponte e Estúdio Pro</strong>Na Ponte, ver o código que os blocos geram. No Estúdio Pro, trabalhar também escrevendo esse código, nas etapas correspondentes.
 
-**etapas.passos[1].texto**: O Estúdio livre, para criar o que quiser, e o Pinta, para desenhar, abrem quando você conclui a primeira etapa. Depois chegam o Molda, para criar em três dimensões, e a Ponte, que mostra cada bloco ao lado do código. Também chegam o Pensa, que conversa sobre a ideia do seu jogo e a divide em missões, e o Zappy, o tutor do Estúdio, que olha os seus blocos e diz o que conferir, sem mexer neles. Por fim vem o Estúdio Pro, onde você escreve em código. Lá o Zappy pode propor uma mudança, que só entra no jogo quando você revisa e aperta Aplicar alterações.
+**ferramentas.legendas[0]**: O modo Ponte mostra o código gerado pelos blocos. É um recurso de etapas posteriores, sujeito aos requisitos da Jornada. Captura real do Estúdio.
 
-**etapas.passos[2].rotulo**: PASSO 3
+**comunidade.titulo**: Mostrar o que você criou também ajuda a pensar na próxima versão.
 
-**etapas.passos[2].titulo**: Faz o seu jogo com o que já sabe
+**comunidade.imagens[0].alt**: Mural dos Criadores com jogos publicados, botões Jogar, Copiar link e Fazer a minha versão
 
-**etapas.passos[2].texto**: Em Meus Jogos, você começa um projeto do zero com os blocos que conquistou. A cada curso, você ganha blocos novos e consegue fazer jogos maiores: do jogo de uma tela só ao jogo de várias fases.
+**comunidade.rotulos[0]**: CRIAR TAMBÉM PODE SER UMA TROCA
 
-**etapas.escada.titulo**: As 7 etapas, uma por uma
+**comunidade.paragrafos[0]**: No Mural dos Criadores, você pode publicar um projeto e compartilhar o link. Quem recebe joga pelo navegador, inclusive no celular. Se essa pessoa não entender um aviso, por exemplo, você tem uma pergunta concreta para revisar: que informação faltou para ela continuar?
 
-**etapas.escada.legenda[0].texto**: fase 1, blocos
+**comunidade.paragrafos[1]**: <strong>No Clube,</strong> você pode conversar com outros membros adultos e trocar experiências sobre as criações.
 
-**etapas.escada.legenda[1].texto**: fase 2, Ponte
+**comunidade.paragrafos[2]**: <strong>No Desafio do mês,</strong> um tema dá outra oportunidade de experimentar e mostrar uma ideia.
 
-**etapas.escada.legenda[2].texto**: fase 3, código
+**comunidade.paragrafos[3]**: <strong>Nos Recados,</strong> você envia dúvidas à equipe. Os tutoriais e materiais dos cursos também ajudam a retomar a prática.
 
-**etapas.escada.libera**: Libera:
+**comunidade.paragrafos[4]**: Você escolhe como participar e quais projetos quer publicar. Um jogo compartilhado pode ser uma oportunidade de conversar sobre o que funcionou e o que você gostaria de mudar.
 
-**etapas.escada.etapas[0].rotulo**: ETAPA 1
+**comunidade.legendas[0]**: Captura real do Mural Kids, mostrando os recursos de publicação e compartilhamento. A área adulta tem seu próprio Mural e sua própria comunidade.
 
-**etapas.escada.etapas[0].nome**: Aprendiz
+**comunidade.subtitulos[0]**: Há espaços para mostrar, conversar e pedir ajuda.
 
-**etapas.escada.etapas[0].nivel**: Primeiros passos 2D
+**seuRitmo.titulo**: Você pode parar depois de um teste e retomar o projeto em outro momento.
 
-**etapas.escada.etapas[0].libera**: Estúdio livre e Pinta
+**seuRitmo.rotulos[0]**: UMA PRÁTICA QUE VOCÊ PODE RETOMAR
 
-**etapas.escada.etapas[1].rotulo**: ETAPA 2
+**seuRitmo.rotulos[1]**: Nunca programou e quer um caminho explicado.
 
-**etapas.escada.etapas[1].nome**: Construtor
+**seuRitmo.rotulos[2]**: Já experimentou criar e quer entender melhor suas escolhas.
 
-**etapas.escada.etapas[1].nivel**: Jogos 2D · Iniciante
+**seuRitmo.rotulos[3]**: Quer desenvolver projetos por interesse, aprendizado e prazer de realizar.
 
-**etapas.escada.etapas[1].libera**: Blocos novos no Estúdio
+**seuRitmo.rotulos[4]**: PARA PARTICIPAR
 
-**etapas.escada.etapas[2].rotulo**: ETAPA 3
+**seuRitmo.rotulos[5]**: Ter 18 anos ou mais e usar uma conta adulta própria.
 
-**etapas.escada.etapas[2].nome**: Inventor
+**seuRitmo.rotulos[6]**: Computador com internet, mouse e teclado.
 
-**etapas.escada.etapas[2].nivel**: Jogos 3D · Iniciante
+**seuRitmo.rotulos[7]**: Navegador atualizado. As ferramentas funcionam na plataforma.
 
-**etapas.escada.etapas[2].libera**: Molda, para criar em 3D
+**seuRitmo.rotulos[8]**: Reservar momentos para assistir, construir e testar.
 
-**etapas.escada.etapas[3].rotulo**: ETAPA 4
+**seuRitmo.paragrafos[0]**: Em uma sessão, você pode montar o movimento. Na seguinte, conferir a coleta de um objeto. As aulas são gravadas, os projetos ficam salvos e você organiza esses momentos durante o período de acesso.
 
-**etapas.escada.etapas[3].nome**: Explorador de Mundos
+**seuRitmo.paragrafos[1]**: Os personagens e cenários dos cursos vêm preparados. Você pode começar pela programação e explorar o desenho de elementos próprios quando os recursos correspondentes estiverem liberados.
 
-**etapas.escada.etapas[3].nivel**: Jogos 2D · Intermediário
+**seuRitmo.paragrafos[2]**: A orientação acontece nas aulas gravadas e por mensagens. O tempo de conclusão depende do projeto, da prática e do ritmo de cada pessoa.
 
-**etapas.escada.etapas[3].libera**: Blocos novos no Estúdio
+**seuRitmo.subtitulos[0]**: Um caminho para quem quer aprender criando.
 
-**etapas.escada.etapas[4].rotulo**: ETAPA 5
+**seuRitmo.subtitulos[1]**: Prepare seu espaço de criação.
 
-**etapas.escada.etapas[4].nome**: Mestre dos Jogos
+**quemCriou.titulo**: Somos Helena e Júlio. A criação de jogos começou na nossa família.
 
-**etapas.escada.etapas[4].nivel**: Jogos 3D · Intermediário
+**quemCriou.imagens[0].alt**: Helena e Júlio, fundadores do Sistema Zero, preparando uma aula
 
-**etapas.escada.etapas[4].libera**: Blocos novos no Estúdio
+**quemCriou.rotulos[0]**: QUEM PREPARA ESSE CAMINHO
 
-**etapas.escada.etapas[5].rotulo**: ETAPA 6
+**quemCriou.paragrafos[0]**: Somos formados em Sistemas de Informação e temos mais de dez anos de experiência criando sistemas. O Sistema Zero começou com os jogos que fizemos com nossos filhos.
 
-**etapas.escada.etapas[5].nome**: Arquiteto de Mundos
+**quemCriou.paragrafos[1]**: Hoje, organizamos projetos, explicações e materiais para que crianças e adultos encontrem um caminho para criar. Os mesmos cursos aparecem nas duas áreas, com contas e espaços de convivência próprios.
 
-**etapas.escada.etapas[5].nivel**: Jogos 2D · Avançado
+**quemCriou.paragrafos[2]**: Nosso trabalho é ajudar você a compreender as partes, experimentar escolhas e encontrar oportunidades de continuar construindo.
 
-**etapas.escada.etapas[5].libera**: Ponte, Pensa e Zappy
+**oferta.titulo**: Escolha seu plano na Comunidade dos Criadores.
 
-**etapas.escada.etapas[6].rotulo**: ETAPA 7
+**oferta.textoPlanoUnico**: O plano disponível inclui os cursos, ferramentas e espaços da comunidade, conforme os requisitos da Jornada. Confira abaixo o período contratado e como o pagamento renova.
 
-**etapas.escada.etapas[6].nome**: Gênio da Criação
+**oferta.rotulos[0]**: PARA DAR SEQUÊNCIA ÀS SUAS IDEIAS
 
-**etapas.escada.etapas[6].nivel**: Jogos 3D · Avançado
+**oferta.rotulos[1]**: COMUNIDADE DOS CRIADORES
 
-**etapas.escada.etapas[6].libera**: Estúdio Pro, em código
+**oferta.rotulos[2]**: ADULTOS · SISTEMA ZERO
 
-**etapas.escada.fim.rotulo**: DEPOIS DA ETAPA 7
+**oferta.paragrafos[0]**: Os dois planos incluem os mesmos cursos, ferramentas e espaços da comunidade. Os requisitos da Jornada valem para ambos. Você escolhe o período contratado e confere abaixo como cada pagamento renova.
 
-**etapas.escada.fim.nome**: Lenda
+**oferta.paragrafos[1]**: {{preco_mensal}}<span>/mês</span>
 
-**etapas.escada.fim.nivel**: Todas as etapas concluídas
+**oferta.paragrafos[2]**: Cobrança mensal no cartão de crédito. Renova automaticamente até você cancelar.
 
-**etapas.escada.fim.texto**: Nome em dourado no perfil e no Mural.
+**oferta.paragrafos[3]**: 7 dias de garantia na contratação.
 
-**etapas.fases[0].rotulo**: FASE 1 · BLOCOS
+**oferta.paragrafos[4]**: {{economia_anual}} A MENOS QUE 12 MENSALIDADES
 
-**etapas.fases[0].titulo**: A lógica do jogo, no Estúdio
+**oferta.paragrafos[5]**: {{preco_anual}}<span>/ano</span>
 
-**etapas.fases[0].texto**: Você monta cada regra com blocos e vê funcionar: quando apertar, pular; se tocar no asteroide, perder uma vida. É o mesmo Estúdio das aulas e de Meus Jogos. Com o Pinta e o Molda, você desenha o herói e o cenário, em 2D ou em 3D.
+**oferta.paragrafos[6]**: Equivalente a {{equivalente_mensal_anual}} por mês.
 
-**etapas.fases[0].imagem.alt**: O Estúdio com os blocos montados e o jogo rodando ao lado
+**oferta.paragrafos[7]**: 12 meses de acesso. No Pix à vista, termina sem renovação automática. No cartão, renova a cada ano até você cancelar.
 
-**etapas.fases[1].rotulo**: FASE 2 · PONTE
+**oferta.paragrafos[8]**: 7 dias de garantia na contratação.
 
-**etapas.fases[1].titulo**: Blocos e código lado a lado
+**oferta.paragrafos[9]**: A equivalência mensal do anual serve para comparar os planos; não é uma cobrança mensal de {{equivalente_mensal_anual}}.
 
-**etapas.fases[1].texto**: No modo Ponte, cada bloco aparece ao lado do código que ele gera, e você aprende a ler código antes de escrever. O Pensa e o Zappy chegam nesta fase.
+**oferta.paragrafos[10]**: O cancelamento interrompe cobranças futuras. Seu acesso continua até o fim do período já pago. Nos primeiros sete dias corridos da contratação, você pode solicitar o reembolso integral.
 
-**etapas.fases[1].imagem.alt**: Modo Ponte: blocos de um lado, código JavaScript do outro e o jogo rodando
+**oferta.paragrafos[11]**: As instruções de acesso chegam ao e-mail da compra. Na área de membros, você abre a Jornada, escolhe um curso disponível e começa ou retoma a prática.
 
-**etapas.fases[2].rotulo**: FASE 3 · CÓDIGO
+**oferta.paragrafos[12]**: Já tem uma conta adulta? Use o mesmo e-mail ao contratar para reunir o acesso, os projetos e o progresso nessa conta.
 
-**etapas.fases[2].titulo**: O Estúdio Pro, em código
+**oferta.subtitulos[0]**: MENSAL
 
-**etapas.fases[2].texto**: Aqui você escreve o jogo inteiro em código, com arquivos e pastas. É a última fase, para quem quiser ir até o fim.
+**oferta.subtitulos[1]**: ANUAL
 
-**etapas.fases[2].imagem.alt**: Estúdio Pro no modo código, com a árvore de arquivos e o editor
+**oferta.subtitulos[2]**: Você pode cancelar a renovação pela conta.
 
-**etapas.ordem.rotulo**: POR QUE NESSA ORDEM
+**oferta.subtitulos[3]**: Depois da aprovação do pagamento.
 
-**etapas.ordem.texto**: Abrir um programa profissional de jogos no primeiro dia dá no que você conhece: dezenas de janelas e nenhum próximo passo. Aqui, cada ferramenta abre quando você já sabe o suficiente para usar. Assim você aprende de verdade, e os jogos que consegue fazer ficam maiores.
+**oferta.acoes[0]**: Assinar o mensal
 
-**etapas.nota**: No Pinta e no Molda, o desenho é todo seu, sem sugestão automática. As telas são prévias da área adulta com dados de teste.
+**oferta.acoes[1]**: Assinar o anual
 
-**etapas.cta**: Quero começar pela etapa 1
+**oferta.inclui[0]**: Cursos disponíveis e os publicados durante o período da assinatura.
 
-**etapas.garantia**: 7 dias de garantia. Cancele quando quiser.
+**oferta.inclui[1]**: Estúdio e ferramentas de criação, com liberação gradual pelo percurso.
 
-**comunidade.rotulo**: MULTIPLAYER
+**oferta.inclui[2]**: Mural, Clube e atividades da comunidade adulta.
 
-**comunidade.titulo**: Depois de pronto, outras pessoas jogam o seu jogo
+**oferta.inclui[3]**: Materiais de apoio e orientação por mensagens nos Recados.
 
-**comunidade.texto**: É para isso que existe a comunidade. Ela tem quatro lugares:
+**oferta.inclui[4]**: Registro de progresso e certificados ao cumprir os requisitos dos cursos.
 
-**comunidade.tela.imagem.alt**: Mural dos Criadores da área adulta com cartões de jogos publicados
+**duvidas.titulo**: As dúvidas que ajudam a escolher seu próximo passo.
 
-**comunidade.tela.legenda**: O Mural, onde ficam os jogos publicados. Prévia da área adulta com dados de teste.
+**duvidas.rotulos[0]**: ANTES DE ASSINAR
 
-**comunidade.lugares[0].nome**: o Mural dos Criadores,
+**duvidas.itens[0].pergunta**: Nunca programei. Por onde vou começar?
 
-**comunidade.lugares[0].texto**:  onde quem recebe o link joga no celular, sem criar conta, e você pode fazer a sua versão dos jogos dos outros;
+**duvidas.itens[0].resposta**: Pelos projetos iniciais disponíveis no seu percurso. As aulas apresentam os comandos em blocos e explicam a construção passo a passo. Você monta as instruções e confere o resultado na mesma aula. A Jornada mostra por onde começar e os requisitos para avançar.
 
-**comunidade.lugares[1].nome**: o Clube,
+**duvidas.itens[1].pergunta**: Preciso ter uma ideia de jogo ou saber desenhar?
 
-**comunidade.lugares[1].texto**:  a conversa com outras pessoas de 18 anos ou mais que também estão criando;
+**duvidas.itens[1].resposta**: Você começa com os projetos, personagens e cenários preparados para os cursos. Ao aprender, experimenta as escolhas propostas nas aulas. Desenhar elementos próprios e criar outros projetos são possibilidades para explorar com os recursos que for liberando.
 
-**comunidade.lugares[2].nome**: o Desafio do mês,
+**duvidas.itens[2].pergunta**: Preciso fazer o Desafio antes? Qual é a diferença?
 
-**comunidade.lugares[2].texto**:  com um tema para todo mundo criar e mostrar;
+**duvidas.itens[2].resposta**: Você pode entrar diretamente na Comunidade. O Desafio é uma compra única, com 30 dias de acesso à Chave do Farol e aos recursos incluídos nessa oferta. A Comunidade dá continuidade por assinatura, com cursos, ferramentas e espaços de participação conforme o percurso. Comprar o Desafio não cria uma assinatura.
 
-**comunidade.lugares[3].nome**: o ranking,
+**duvidas.itens[3].pergunta**: Todos os cursos e ferramentas abrem no primeiro dia?
 
-**comunidade.lugares[3].texto**:  em que o seu nome só aparece se você ligar o perfil público.
+**duvidas.itens[3].resposta**: A liberação é gradual. Você começa com o que está disponível na sua etapa e avança ao cumprir os requisitos indicados na Jornada. A plataforma está em expansão, e novos cursos publicados durante sua assinatura entram no acesso conforme esses requisitos. A liberação prevista no percurso não tem cobrança adicional.
 
-**comunidade.ajuda.titulo**: E quando você travar, tem ajuda
+**duvidas.itens[4].pergunta**: Posso criar um projeto com uma ideia minha?
 
-**comunidade.ajuda.texto**: As dúvidas são respondidas pela equipe nos Recados, o canal de mensagens da plataforma. Nas etapas avançadas, o Zappy, o tutor do Estúdio, olha os seus blocos e diz o que conferir; quem decide e monta continua sendo você.
+**duvidas.itens[4].resposta**: Sim. Depois de cumprir os requisitos que liberam o Estúdio livre, você pode iniciar projetos próprios com os recursos disponíveis na sua conta. Os cursos apresentam regras e construções que podem servir de referência para testar suas ideias.
 
-**paraQuem.titulo**: Para você decidir com calma, vale saber para quem isso foi feito
+**duvidas.itens[5].pergunta**: Os cursos são os mesmos oferecidos no Kids?
 
-**paraQuem.sim.rotulo**: É PARA VOCÊ SE
+**duvidas.itens[5].resposta**: Sim. Os cursos, projetos e explicações são compartilhados. Os fundamentos da criação são os mesmos, e os exemplos mostram personagens e cenas usados nas aulas. Na área adulta, você participa com conta própria, aparência e espaços de convivência destinados a adultos.
 
-**paraQuem.sim.itens[0]**: tem 18 anos ou mais e joga desde sempre;
+**duvidas.itens[6].pergunta**: Posso usar a assinatura do meu filho ou trazer um perfil Kids?
 
-**paraQuem.sim.itens[1]**: quer entender como um jogo funciona por dentro e fazer o seu;
+**duvidas.itens[6].resposta**: A assinatura adulta é separada da Kids e usa uma conta pessoal para quem tem 18 anos ou mais. Projetos de um perfil Kids continuam associados a esse perfil; contratar a área adulta não os transfere automaticamente.
 
-**paraQuem.sim.itens[2]**: nunca programou, ou programou pouco;
+**duvidas.itens[7].pergunta**: Quanto tempo preciso reservar? Há aulas ao vivo?
 
-**paraQuem.sim.itens[3]**: tem computador com internet, mouse e teclado.
+**duvidas.itens[7].resposta**: As aulas são gravadas, e você organiza os horários. Reserve momentos para assistir, construir e testar; os projetos ficam salvos para continuar depois. O tempo de conclusão varia conforme o projeto e a prática de cada pessoa. A ajuda da equipe acontece por mensagens.
 
-**paraQuem.nao.rotulo**: AINDA NÃO É PARA VOCÊ SE
+**duvidas.itens[8].pergunta**: Posso criar pelo celular?
 
-**paraQuem.nao.itens[0]**: quer se preparar para trabalhar com jogos ou montar portfólio;
+**duvidas.itens[8].resposta**: Para construir nas aulas e usar as ferramentas, você precisa de um computador com internet, mouse e teclado. Tudo funciona no navegador. O celular pode ser usado para jogar e mostrar os projetos publicados.
 
-**paraQuem.nao.itens[1]**: precisa de professor ao vivo toda semana;
+**duvidas.itens[9].pergunta**: Como recebo ajuda quando travo?
 
-**paraQuem.nao.itens[2]**: quer criar pelo celular ou pelo tablet;
+**duvidas.itens[9].resposta**: Você pode rever a aula, consultar os materiais e enviar dúvidas à equipe nos Recados. As respostas são por mensagem e podem levar um tempo. Pensa e Zappy entram como apoio nas etapas em que forem liberados, com limites diários e mensais exibidos na conta.
 
-**paraQuem.nao.itens[3]**: procura aprender um programa profissional de jogos, como Unity ou Unreal.
+**duvidas.itens[10].pergunta**: Já tenho uma conta adulta. Meu progresso fica nela?
 
-**fundadores.rotulo**: QUEM CRIOU
+**duvidas.itens[10].resposta**: Use o mesmo e-mail ao contratar. Os projetos e o progresso permanecem associados à conta, conforme a Política de Privacidade. Com a assinatura ativa, você retoma os recursos incluídos no acesso e liberados pela sua Jornada.
 
-**fundadores.titulo**: A gente programa há mais de dez anos, e começou a fazer jogos em casa
+**duvidas.itens[11].pergunta**: Como o plano anual é cobrado?
 
-**fundadores.texto**: Somos Helena e Júlio, formados em Sistemas de Informação, com mais de dez anos criando sistemas em empresas como Banco do Brasil, Tractebel e InCeres. O Sistema Zero começou com os jogos que fizemos com os nossos filhos. A área adulta usa o mesmo Estúdio e um Mural próprio, com a cara de quem gosta de jogo, e somos nós que preparamos as aulas.
+**duvidas.itens[11].resposta**: O plano custa {{preco_anual}} por ano. No Pix, o pagamento é à vista e não renova automaticamente. No cartão, a cobrança renova a cada ano até você cancelar. {{equivalente_mensal_anual}} é o equivalente mensal do total anual, usado para comparar os planos; não é o valor de uma parcela. As condições aparecem no checkout antes do pagamento.
 
-**fundadores.imagem.alt**: Helena e Júlio, fundadores do Sistema Zero, gravando uma aula com o Estúdio na tela
+**duvidas.itens[12].pergunta**: O que acontece se eu cancelar?
 
-**oferta.rotulo**: INSERT COIN
+**duvidas.itens[12].resposta**: O cancelamento da renovação pode ser feito na área de Compras. Ele interrompe as próximas cobranças, e o acesso continua até o fim do período pago. Os projetos e o progresso permanecem armazenados conforme a Política de Privacidade. Publicações continuam acessíveis para visita no Mural enquanto disponíveis.
 
-**oferta.titulo**: Cursos, ferramentas, Mural e ajuda para fazer o primeiro jogo e os próximos, num lugar só
+**duvidas.itens[13].pergunta**: Como funciona a garantia?
 
-**oferta.texto**: Os cursos levam você do primeiro jogo ao código. Com o Estúdio, o Pinta e o Molda, você faz as regras, os desenhos e o 3D. O Mural publica o seu jogo com um link que abre no celular de quem você quiser. O Clube e o Desafio do mês juntam gente que também está criando. Os tutoriais e os Recados ajudam quando você trava. As etapas definem a ordem, e cada ferramenta abre quando você já sabe usar. Os cursos lançados durante a assinatura entram sem custo extra. Os dois planos dão acesso a tudo: muda só a forma de pagar.
+**duvidas.itens[13].resposta**: Você pode solicitar o reembolso integral nos primeiros sete dias corridos da contratação. As orientações e o contato estão nos Termos de Uso, no rodapé. Cancelar uma renovação e pedir reembolso são ações diferentes: o cancelamento impede cobranças futuras e mantém o acesso até o fim do período já pago.
 
-**oferta.depois.rotulo**: O QUE ACONTECE DEPOIS DE ASSINAR
+**fechamento.titulo**: Dê às suas ideias um lugar para ganhar forma.
 
-**oferta.depois.passos[0]**: Depois do pagamento, você recebe por e-mail o link para criar a senha e entrar.
+**fechamento.rotulos[0]**: UMA CRIAÇÃO DE CADA VEZ
 
-**oferta.depois.passos[1]**: Abre o primeiro curso e joga a versão pronta.
+**fechamento.paragrafos[0]**: Escolha o plano, abra um curso disponível e dê o próximo passo na sua criação. As aulas, as ferramentas e os espaços da Comunidade ficam reunidos para você aprender, testar e continuar.
 
-**oferta.depois.passos[2]**: Muda a primeira regra, testa e salva.
-
-**oferta.depois.passos[3]**: Publica o primeiro jogo e manda o link para alguém.
-
-**oferta.garantia.destaque**: Você tem 7 dias para testar.
-
-**oferta.garantia.texto**:  Se não for para você, é só pedir o reembolso integral por e-mail dentro desse prazo.
-
-**oferta.cartao.marca**: COMUNIDADE DOS CRIADORES
-
-**oferta.cartao.empresa**: SISTEMA ZERO
-
-**oferta.cartao.inclui[0]**: Cursos do primeiro jogo ao código
-
-**oferta.cartao.inclui[1]**: Estúdio, Pinta e Molda para fazer o jogo inteiro: regras, arte e 3D
-
-**oferta.cartao.inclui[2]**: Mural para publicar e mostrar
-
-**oferta.cartao.inclui[3]**: Clube e Desafio do mês para mostrar o que você fez
-
-**oferta.cartao.inclui[4]**: Etapas, conquistas e certificado para ver a sua evolução
-
-**oferta.cartao.inclui[5]**: Tutoriais e Recados para quando travar
-
-**oferta.cartao.mensal.rotulo**: MENSAL
-
-**oferta.cartao.mensal.preco**: {{preco_mensal}}
-
-**oferta.cartao.mensal.sufixo**: /mês
-
-**oferta.cartao.mensal.texto**: Menos de {{preco_dia}} por dia. Renova todo mês no cartão, e você cancela quando quiser.
-
-**oferta.cartao.mensal.cta**: Assinar o mensal
-
-**oferta.cartao.mensal.garantia**: 7 dias de garantia
-
-**oferta.cartao.anual.selo**: ECONOMIA DE {{economia_anual}}
-
-**oferta.cartao.anual.rotulo**: ANUAL
-
-**oferta.cartao.anual.preco**: {{preco_anual}}
-
-**oferta.cartao.anual.sufixo**: /ano
-
-**oferta.cartao.anual.texto**: Sai por {{equivalente_mensal_anual}} por mês. No Pix à vista, não renova sozinho; no cartão, renova uma vez por ano.
-
-**oferta.cartao.anual.cta**: Assinar o anual
-
-**oferta.cartao.anual.garantia**: 7 dias de garantia
-
-**oferta.cartao.nota**: No navegador do computador, com mouse e teclado.
-
-**duvidas.rotulo**: PERGUNTAS
-
-**duvidas.titulo**: Dúvidas comuns antes de assinar
-
-**duvidas.itens[0].pergunta**: Tenho 18 anos. É para mim?
-
-**duvidas.itens[0].resposta**: É. A área adulta é para quem tem 18 anos ou mais, na faculdade, no trabalho ou nos dois. O que junta todo mundo é gostar de jogo.
-
-**duvidas.itens[1].pergunta**: Tenho mais de 30 anos e nunca programei. É tarde?
-
-**duvidas.itens[1].resposta**: Não. Aqui ninguém compete com quem começou aos 15 anos para trabalhar com isso. O objetivo é criar jogos nas horas livres. A primeira fase usa blocos, então você vê cada regra montada na tela. O primeiro curso traz os blocos e o projeto preparados.
-
-**duvidas.itens[2].pergunta**: Nunca programei. Consigo?
-
-**duvidas.itens[2].resposta**: Consegue começar. O primeiro curso usa blocos e um projeto preparado, e cada parte é conferida antes da próxima. A proposta é você criar jogos nas horas livres, começando pelo primeiro, sem prometer uma profissão.
-
-**duvidas.itens[3].pergunta**: Bloco de montar não é coisa de criança?
-
-**duvidas.itens[3].resposta**: Os blocos são só a primeira fase. Com eles, você monta a regra sem digitar código e vê como ela funciona. Na segunda fase, a Ponte mostra cada bloco ao lado do código que ele gera. Na terceira, você escreve o jogo em código.
-
-**duvidas.itens[4].pergunta**: É a mesma plataforma das crianças?
-
-**duvidas.itens[4].resposta**: Em parte. Os primeiros projetos são os mesmos clássicos da trilha infantil, uma nave, um dino, um farol, porque eles ensinam as mesmas regras de jogo. A área, as aulas, a conversa e o caminho até o código são adultos, com outra conta e outra aparência.
-
-**duvidas.itens[5].pergunta**: Que computador eu preciso?
-
-**duvidas.itens[5].resposta**: Um computador com internet, navegador atualizado, mouse e teclado. Tudo roda no navegador, sem instalar nada. O celular serve para jogar e mostrar o que você publicou.
-
-**duvidas.itens[6].pergunta**: Quanto tempo preciso por semana?
-
-**duvidas.itens[6].resposta**: Quem decide é você. As aulas são gravadas, o projeto fica salvo e você continua de onde parou.
-
-**duvidas.itens[7].pergunta**: Preciso saber desenhar?
-
-**duvidas.itens[7].resposta**: Não. Os personagens e os cenários das aulas vêm prontos. O Pinta e o Molda entram pelas etapas, o Pinta na primeira e o Molda na terceira, para você desenhar os seus em 2D ou em 3D. Nos dois, o desenho é todo seu.
-
-**duvidas.itens[8].pergunta**: Posso fazer um jogo meu, e não só os dos cursos?
-
-**duvidas.itens[8].resposta**: Pode, e é para isso que os cursos existem. O Estúdio livre abre ao concluir a primeira etapa, com os blocos que você já aprendeu, e cresce a cada curso. Os seus projetos ficam em Meus Jogos, e qualquer um ganha um link para mostrar.
-
-**duvidas.itens[9].pergunta**: O Pensa e o Zappy custam à parte?
-
-**duvidas.itens[9].resposta**: Não. A assinatura inclui créditos para os dois, com limite por dia e por mês, que você acompanha no seu perfil. A descrição automática ao publicar no Mural usa os mesmos créditos. O Pinta e o Molda não gastam créditos.
-
-**duvidas.itens[10].pergunta**: Tem aula ao vivo?
-
-**duvidas.itens[10].resposta**: As aulas são gravadas para caber no seu horário, e as dúvidas são respondidas pela equipe nos Recados.
-
-**duvidas.itens[11].pergunta**: Posso cancelar quando quiser?
-
-**duvidas.itens[11].resposta**: Pode. O cancelamento fica na sua conta, em Compras e assinatura, sem multa e sem fidelidade. O acesso segue até o fim do período pago, e os jogos publicados continuam no Mural.
-
-**fechamento.rotulo**: CONTINUE
-
-**fechamento.titulo**: A próxima partida pode ser num jogo feito por você
-
-**fechamento.texto**: E a ideia que você teve jogando ontem pode virar a primeira fase dele.
-
-**fechamento.cta**: Quero começar a criar meus jogos
-
-**fechamento.garantia**: 7 dias de garantia. Cancele quando quiser.
-
-**fechamento.legal.aria**: Termos e privacidade
-
-**fechamento.legal.termos.label**: Termos de uso
-
-**fechamento.legal.privacidade.label**: Privacidade
-
-**barra.preco**: {{preco_mensal}}/mês
-
-**barra.alternativa**: ou {{equivalente_mensal_anual}}/mês no anual
-
-**barra.cta**: Quero criar meu jogo
+**fechamento.acoes[0]**: Quero criar na Comunidade
