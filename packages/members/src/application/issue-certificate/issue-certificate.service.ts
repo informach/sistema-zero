@@ -11,9 +11,10 @@ import {
   CertificateBlockNotFoundError,
   CertificateNotEligibleError,
   CertificateRevokedError,
+  LessonComingSoonError,
   LessonNotFoundError,
 } from '../../domain/course/course.errors'
-import type { CertificateBlock } from '../../domain/course/lesson-block'
+import { type CertificateBlock, hasComingSoonBlock } from '../../domain/course/lesson-block'
 import type { CertificateRepository } from '../../domain/ports/certificate-repository.port'
 import type { CourseRepository } from '../../domain/ports/course-repository.port'
 import type { LearningRepository } from '../../domain/ports/learning-repository.port'
@@ -98,6 +99,8 @@ export class IssueCertificateService {
       await this.completeCertificateLesson(input, lesson, course)
       return { certificate: toCertificateView(existing), config }
     }
+
+    if (hasComingSoonBlock(lesson.blocks)) throw new LessonComingSoonError()
 
     const studentName = input.studentName.trim()
     if (studentName.length === 0) {
