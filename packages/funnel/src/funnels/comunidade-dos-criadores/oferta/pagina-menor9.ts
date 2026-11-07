@@ -357,7 +357,7 @@ export const PAGINA_MENOR9 = {
       {
         pergunta: 'Ele precisa gostar de videogame ou saber programar?',
         resposta:
-          'Não precisa ter experiência com programação. O interesse pode estar nos personagens, nas histórias, no desenho ou em criar algo com você. As primeiras atividades apresentam os comandos aos poucos. Os sete dias de garantia permitem conhecer a experiência e observar como ele participa.',
+          'Não precisa gostar de videogame nem saber programar. O interesse pode estar nos personagens, nas histórias, no desenho ou em criar algo com você. As primeiras atividades apresentam os comandos aos poucos. Os sete dias de garantia permitem conhecer a experiência e observar como ele participa.',
       },
       {
         pergunta: 'Precisa de qual equipamento?',
@@ -373,6 +373,11 @@ export const PAGINA_MENOR9 = {
         pergunta: 'Todas as ferramentas ficam liberadas no primeiro dia?',
         resposta:
           'Os recursos acompanham a Jornada do Criador. Nas primeiras aulas, ele usa o Estúdio dentro do curso. Ao cumprir os requisitos e publicar os projetos do posto inicial, abrem o Estúdio livre e o Pinta. Outros recursos chegam nos postos seguintes. A assinatura mantém acesso aos recursos incluídos e aos cursos publicados durante seu período ativo.',
+      },
+      {
+        pergunta: 'O Pensa e a ajuda do Zappy têm limites de uso?',
+        resposta:
+          'A ajuda do Zappy no Estúdio e o Pensa usam inteligência artificial e consomem créditos, com limites por dia e por mês compartilhados pelos perfis da família. Você acompanha o saldo na sua área. As falas do Zappy nas aulas são preparadas pela equipe e não consomem esses créditos.',
       },
       {
         pergunta: 'São dois perfis com a mesma assinatura?',

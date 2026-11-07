@@ -274,7 +274,7 @@
 
 **duvidas.itens[4].pergunta**: Ele precisa gostar de videogame ou saber programar?
 
-**duvidas.itens[4].resposta**: Não precisa ter experiência com programação. O interesse pode estar nos personagens, nas histórias, no desenho ou em criar algo com você. As primeiras atividades apresentam os comandos aos poucos. Os sete dias de garantia permitem conhecer a experiência e observar como ele participa.
+**duvidas.itens[4].resposta**: Não precisa gostar de videogame nem saber programar. O interesse pode estar nos personagens, nas histórias, no desenho ou em criar algo com você. As primeiras atividades apresentam os comandos aos poucos. Os sete dias de garantia permitem conhecer a experiência e observar como ele participa.
 
 **duvidas.itens[5].pergunta**: Precisa de qual equipamento?
 
@@ -288,17 +288,21 @@
 
 **duvidas.itens[7].resposta**: Os recursos acompanham a Jornada do Criador. Nas primeiras aulas, ele usa o Estúdio dentro do curso. Ao cumprir os requisitos e publicar os projetos do posto inicial, abrem o Estúdio livre e o Pinta. Outros recursos chegam nos postos seguintes. A assinatura mantém acesso aos recursos incluídos e aos cursos publicados durante seu período ativo.
 
-**duvidas.itens[8].pergunta**: São dois perfis com a mesma assinatura?
+**duvidas.itens[8].pergunta**: O Pensa e a ajuda do Zappy têm limites de uso?
 
-**duvidas.itens[8].resposta**: Sim. A assinatura Kids permite até dois perfis de crianças ou adolescentes, cada um com seu progresso. O responsável administra o acesso pela própria conta.
+**duvidas.itens[8].resposta**: A ajuda do Zappy no Estúdio e o Pensa usam inteligência artificial e consomem créditos, com limites por dia e por mês compartilhados pelos perfis da família. Você acompanha o saldo na sua área. As falas do Zappy nas aulas são preparadas pela equipe e não consomem esses créditos.
 
-**duvidas.itens[9].pergunta**: Como funcionam pagamento, renovação e cancelamento?
+**duvidas.itens[9].pergunta**: São dois perfis com a mesma assinatura?
 
-**duvidas.itens[9].resposta**: O mensal custa {{preco_mensal}} e renova todo mês no cartão. O anual custa {{preco_anual}}: no Pix, é um pagamento à vista sem renovação automática; no cartão, renova uma vez por ano. Você cancela em Conta → Minhas compras, sem multa, e mantém o acesso até o fim do período pago. Nos primeiros sete dias, pode pedir a devolução integral do valor.
+**duvidas.itens[9].resposta**: Sim. A assinatura Kids permite até dois perfis de crianças ou adolescentes, cada um com seu progresso. O responsável administra o acesso pela própria conta.
 
-**duvidas.itens[10].pergunta**: Se eu cancelar, o trabalho dele desaparece?
+**duvidas.itens[10].pergunta**: Como funcionam pagamento, renovação e cancelamento?
 
-**duvidas.itens[10].resposta**: Perfil, progresso, projetos salvos, certificados e posto da Jornada ficam na conta. Os jogos publicados continuam disponíveis para jogar. O acesso aos cursos e às ferramentas da assinatura termina ao acabar o período pago; os registros preservados permitem retomar o percurso se vocês voltarem a assinar.
+**duvidas.itens[10].resposta**: O mensal custa {{preco_mensal}} e renova todo mês no cartão. O anual custa {{preco_anual}}: no Pix, é um pagamento à vista sem renovação automática; no cartão, renova uma vez por ano. Você cancela em Conta → Minhas compras, sem multa, e mantém o acesso até o fim do período pago. Nos primeiros sete dias, pode pedir a devolução integral do valor.
+
+**duvidas.itens[11].pergunta**: Se eu cancelar, o trabalho dele desaparece?
+
+**duvidas.itens[11].resposta**: Perfil, progresso, projetos salvos, certificados e posto da Jornada ficam na conta. Os jogos publicados continuam disponíveis para jogar. O acesso aos cursos e às ferramentas da assinatura termina ao acabar o período pago; os registros preservados permitem retomar o percurso se vocês voltarem a assinar.
 
 **fechamento.titulo**: Escolham uma pequena ideia para fazer juntos. Depois, conversem sobre o que aconteceu.
 
