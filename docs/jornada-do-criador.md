@@ -10,12 +10,14 @@ Cada posto ensina um tipo de jogo em duas dimensões. Primeiro vem a base 2D, de
 
 Nas telas (Kids, comunidade adulta e Admin) as duas bases se chamam **Cursos da trilha** ("Curso da trilha 2D", "Curso da trilha 3D"; decisão de 26/10/2026). "Base" e "par" ficam só por dentro: ids, contratos e este documento técnico.
 
+Nos títulos dos cursos, a dimensão 3D não se repete: **A Ilha do Farol**, **Corrida Infinita**, **Galeria de Alvos**. A tag identifica o formato. A regra vale para Kids e Adulto, em staging e produção, inclusive para títulos compostos dos cursos de Maestria. Tags, nomes técnicos das áreas, slugs, IDs, requisitos, aulas e conquistas mantêm sua identidade; a atualização editorial não muda o formato do curso.
+
 | Posto | Jogo-base | Missão em outro contexto | Poderes distintos para avançar |
 |---|---|---|---|
-| Faísca | Chave e porta: Farol / Ilha 3D | Jardim Secreto | 1 |
-| Construtor(a) | Tiro espacial: Nave / Patrulha 3D | Estação de Reciclagem | 2 |
-| Inventor(a) | Corrida infinita: Dino / Runner 3D | Entregador na Tempestade | 2 |
-| Explorador(a) de Mundos | Acerte o Alvo / Galeria 3D, em Python | Vagalumes | 2 |
+| Faísca | Chave e porta: Farol / A Ilha do Farol | Jardim Secreto | 1 |
+| Construtor(a) | Tiro espacial: Nave / Patrulha Espacial | Estação de Reciclagem | 2 |
+| Inventor(a) | Corrida infinita: Dino / Corrida Infinita | Entregador na Tempestade | 2 |
+| Explorador(a) de Mundos | Acerte o Alvo / Galeria de Alvos, em Python | Vagalumes | 2 |
 | Mestre dos Jogos | Plataforma por fases: Mina / Ilhas Suspensas | Entrega nos Telhados | 2 |
 | Arquiteto(a) de Mundos | Defesa por ondas: Guardiões do Cristal, JavaScript | Resgate na Estação | 2 |
 | Gênio da Criação | Construção e gestão: Ilha que Floresce, JavaScript | Base na Lua | 2 |

@@ -1,6 +1,8 @@
 # Cadastro da Jornada do Criador revisada
 
 O manifesto editorial está em `packages/members/src/infrastructure/config/creator-journey-curriculum.json`.
+
+Os títulos cadastrados dos cursos não repetem `3D`: o seed usa o nome do projeto e preserva a dimensão em `track` e nas tags da interface. A regra também vale para os títulos compostos dos núcleos de Maestria; os nomes técnicos das áreas continuam identificando a trilha. Renomear cursos existentes exige atualizar somente o título, mantendo UUID, slug, aulas, metadados pedagógicos e conquistas. Os rótulos correspondentes de extras e níveis são publicados pelas políticas versionadas de Kids e Adulto, preservando os requisitos.
 O seed cria o planejamento no Admin e vincula as políticas aos UUIDs dos cursos. Não publica
 aulas nem transforma exemplos de jogos em cursos gravados. A publicação do currículo e a
 publicação de cada curso são operações diferentes.

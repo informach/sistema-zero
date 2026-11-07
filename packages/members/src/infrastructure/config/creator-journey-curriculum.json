@@ -138,7 +138,7 @@
       ],
       "unlocks": [
         "Farol concluído: seus blocos passam ao Estúdio, conforme a regra definida pelo produto.",
-        "Ilha 3D concluída: seus blocos 3D também entram no repertório.",
+        "A Ilha do Farol concluída: seus blocos 3D também entram no repertório.",
         "Par concluído: missão, quatro Poderes e extras do Faísca ficam disponíveis."
       ],
       "evidence": "Dois contextos funcionam e o aluno consegue reconhecer a informação que decide o resultado. Um Poder é aprendido e aplicado em uma versão de um dos jogos-base.",
@@ -278,7 +278,7 @@
           "origin": "Exemplos Turtle Race, Starry e Spinner"
         },
         {
-          "title": "Minha primeira peça 3D",
+          "title": "Minha primeira peça",
           "purpose": "Conhecer Molda, salvar um modelo e importá-lo em uma cena preparada.",
           "origin": "Molda + Meu Herói do Molda"
         }
@@ -330,7 +330,7 @@
           ]
         },
         {
-          "title": "Corrida Infinita 3D",
+          "title": "Corrida Infinita",
           "dimension": "3D",
           "environment": "Blocos · Jogo 3D",
           "origin": "Exemplo Corrida Infinita. Câmera e corredor chegam preparados; animação avançada fica em extra.",
@@ -428,7 +428,7 @@
         }
       ],
       "unlocks": [
-        "Blocos do Dino e da Corrida 3D entram ao concluir cada curso.",
+        "Blocos do Dino e da Corrida Infinita entram ao concluir cada curso.",
         "O par abre missão, Poderes e extras.",
         "Molda e Pensa são usados nos extras conforme o direito da ferramenta; o tutorial acompanha o primeiro uso."
       ],
@@ -475,7 +475,7 @@
           ]
         },
         {
-          "title": "Galeria de Alvos 3D",
+          "title": "Galeria de Alvos",
           "dimension": "3D",
           "environment": "Python · Raylib 3D",
           "origin": "Adaptar Primeira Cena 3D e a seleção de Clarão com Shader, retirando o shader dos objetivos. O jogo-base completo é novo.",
@@ -770,7 +770,7 @@
           ]
         },
         {
-          "title": "Guardiões do Cristal 3D",
+          "title": "Guardiões do Cristal",
           "dimension": "3D",
           "environment": "JavaScript · three.js",
           "origin": "Defesa da Torre (na mão) como referência; câmera e iluminação simples, sem shaders novos.",
@@ -858,7 +858,7 @@
           "origin": "Novo extra de interface para jogos JavaScript"
         },
         {
-          "title": "Passeio 3D",
+          "title": "Passeio",
           "purpose": "Explorar direção e câmera em terceira pessoa.",
           "origin": "Passeio 3D (na mão)"
         },
@@ -917,7 +917,7 @@
           ]
         },
         {
-          "title": "Ilha que Floresce 3D",
+          "title": "Ilha que Floresce",
           "dimension": "3D",
           "environment": "JavaScript · three.js · Pro",
           "origin": "Adaptar a grade de Mundo de Blocos para a mesma gestão do jogo 2D. A simulação completa é nova.",
@@ -1196,7 +1196,7 @@
             "O jogador encontra o objetivo e consegue completar a sala.",
             "O aluno modifica uma posição ou um limite e prevê o resultado."
           ],
-          "credit": "Ilha 3D e Galeria de Alvos da jornada oferecem evidência parcial. A câmera e o ambiente Python deste nível precisam ser conferidos; não reensinar uma condição já comprovada."
+          "credit": "A Ilha do Farol e Galeria de Alvos da jornada oferecem evidência parcial. A câmera e o ambiente Python deste nível precisam ser conferidos; não reensinar uma condição já comprovada."
         },
         {
           "title": "II · Agentes, ondas e orientação",
@@ -1403,7 +1403,7 @@
             "Câmera e controles funcionam na situação escolhida.",
             "O aluno prevê o efeito de uma alteração espacial e a testa."
           ],
-          "credit": "Ilha 3D do Farol e Runner 3D transferem regras. O kit Mundo 3D e a evidência de orientação precisam ser conferidos, sem refazer conceitos já comprovados."
+          "credit": "A Ilha do Farol e Corrida Infinita transferem regras. O kit Mundo 3D e a evidência de orientação precisam ser conferidos, sem refazer conceitos já comprovados."
         },
         {
           "title": "II · Personagens e sistemas vivos",
@@ -1648,7 +1648,7 @@
           "credit": "Animações feitas em extras podem contar. Uma animação reproduzida só no editor precisa ainda ser integrada e verificada no jogo."
         },
         {
-          "title": "III · Um conjunto 3D para um jogo",
+          "title": "III · Um conjunto para um jogo",
           "anchor": "Projeto: substituir um mundo de formas por um conjunto pequeno de modelos próprios; pode ser um jogo autoral ou o protótipo fornecido.",
           "steps": [
             "Definir identidade, escala e orçamento de cena com um teste inicial.",
