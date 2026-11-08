@@ -104,6 +104,8 @@ describe('Ponte: a exploração livre completa as metas e a fala acompanha a ord
     expect(fala(PONTE, [ponte])).toBe('bridge-closed')
     expect(fala(PONTE, [ponte, puxar])).toBe('bridge-hurry')
     expect(fala(PONTE, [ponte, puxar, ponte])).toBe('bridge-crossed')
+    // Na pedra a alavanca não responde: a fala manda jogar de novo (full review 08/11/2026).
+    expect(falas.get('bridge-crossed')).toContain('Jogue de novo')
     expect(fala(PONTE, [ponte, puxar, ...quatro])).toBe('bridge-rose')
     expect(fala(PONTE, [ponte, puxar, ponte, recomecar, puxar])).toBe('bridge-wait')
     const subiu = [ponte, puxar, ponte, recomecar, puxar, ...quatro]
@@ -169,6 +171,19 @@ describe('Moedas: a exploração livre completa as metas e a fala acompanha a or
     expect(fala(MOEDAS, [...umaVez, desligar, moeda(2), moeda(3), moeda(2)])).toBe(
       'coin-chest-restart',
     )
+    // Sem nenhuma moeda (logo depois de jogar de novo), pegar algumas antes (full review).
+    expect(
+      fala(MOEDAS, [...umaVez, desligar, moeda(2), afastar, moeda(2), { type: 'restart-coins' }]),
+    ).toBe('coin-chest-take')
+  })
+
+  test('com o sumiço desligado desde o começo, a fala pede para religar (full review 08/11/2026)', () => {
+    // A moeda que não some (`no-double`) só aparece com o sumiço ligado: a fala precisa pedir.
+    const semSumico: SceneAction[] = [desligar, moeda(0), moeda(1), afastar, moeda(0)]
+    const s = jogar(MOEDAS, semSumico)
+    expect(s.evidence.discoveries).toContain('counts-again')
+    expect(s.evidence.discoveries).not.toContain('no-double')
+    expect(fala(MOEDAS, semSumico)).toBe('coin-compare-on')
   })
 
   test('a comparação das perguntas do baú: ir até ele e, parado lá, trocar a peça', () => {

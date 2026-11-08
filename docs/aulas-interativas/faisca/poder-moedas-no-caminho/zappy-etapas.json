@@ -27,12 +27,20 @@
         "text": "Sem sumiço: passe de novo na mesma moeda."
       },
       {
+        "id": "coin-compare-on",
+        "text": "E se a moeda sumir? Ligue o sumiço."
+      },
+      {
         "id": "coin-chest",
         "text": "Com menos de 5, o baú abre? Vá até ele."
       },
       {
         "id": "coin-chest-restart",
         "text": "Jogue de novo e leve menos de 5 ao baú."
+      },
+      {
+        "id": "coin-chest-take",
+        "text": "Pegue algumas moedas, menos de 5, e vá ao baú."
       },
       {
         "id": "coin-rules",

@@ -144,7 +144,6 @@ const speech = {
   'door-not-go': 'Ande até o farol e ouça a resposta.',
   'door-not-opened': 'Abriu sem a chave! Encaixe o "não" e veja.',
   'door-not-closed': 'Fechada com a chave! Encaixe o "não" e veja.',
-  'door-not-add': 'Encaixe o "não" ali embaixo e veja a resposta.',
   'door-not-remove': 'Tire o "não" ali embaixo e veja a resposta.',
   'door-not-with': 'E com a chave? Pegue a chave e compare.',
   'door-not-without': 'E sem a chave? Toque em Jogar de novo.',
@@ -227,9 +226,8 @@ export function portaDoNaoGuidance(
     // chave, esta nunca "falta" e a fala afirmaria a troca.
     if (has(`not-flips-${chave}`)) return l.hasKey ? 'door-not-without' : 'door-not-with'
     if (l.not === true) return 'door-not-remove'
-    if (l.door === 'open' && !l.hasKey) return 'door-not-opened'
-    if (l.door !== 'open' && l.hasKey) return 'door-not-closed'
-    return 'door-not-add'
+    // Sem o "não", a porta abre só sem a chave (`lighthouseDoorAnswer`): aberta = sem chave.
+    return l.door === 'open' ? 'door-not-opened' : 'door-not-closed'
   }
   const testouAlguma = ['locked', 'not-locked'].some((q) =>
     ['with-key', 'without-key'].some((k) => has(`asked-${q}-${k}`)),
@@ -281,6 +279,11 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
   if (activity.scene === 'island-3d' && state.island3d)
     return islandGuidance(state, activity.setup?.goals)
   const has = (id: string) => state.evidence.discoveries.includes(id)
+  // Nos Poderes, a meta que a atividade não pede conta como feita: o Zappy não cobra um teste que
+  // o bloco não pede, e o fim chega com as metas DELE (full review 08/11/2026).
+  const metasDoBloco = activity.setup?.goals
+  const hasOuNaoPede = (id: string) =>
+    has(id) || (metasDoBloco !== undefined && !metasDoBloco.includes(id))
   const livre = GUIAS_LIVRES[activity.scene]
   if (livre) {
     const id = livre.guidance(state, has, activity)
@@ -436,16 +439,16 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
                 : 'touch-remove'
       break
     case 'timed-bridge':
-      id = ponteGuidance(state, has)
+      id = ponteGuidance(state, hasOuNaoPede)
       break
     case 'coin-counter':
-      id = moedasGuidance(state, has)
+      id = moedasGuidance(state, hasOuNaoPede)
       break
     case 'symbol-sequence':
-      id = simbolosGuidance(state, has)
+      id = simbolosGuidance(state, hasOuNaoPede)
       break
     case 'two-pieces':
-      id = cabanaGuidance(state, has)
+      id = cabanaGuidance(state, hasOuNaoPede)
       break
     case 'found-counter':
       // ⭐ 08/11/2026: a fala pede o primeiro teste que falta (achar, outro, grama, repetir, recomeçar).

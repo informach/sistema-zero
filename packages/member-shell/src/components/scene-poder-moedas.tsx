@@ -117,10 +117,14 @@ export function MoedasLivre() {
     }
     ultimo.current = c.adds
   }, [c.adds])
-  const bau = useRef(c.chest)
+  // O baú soa quando o personagem chega nele ou a resposta muda (trocar a peça parado ali), nunca
+  // ao reabrir a tela com o estado guardado.
+  const bau = useRef({ at: c.at, chest: c.chest })
   useEffect(() => {
-    if (c.at === 'chest') c.chest === 'open' ? SONS.abre() : SONS.tranca()
-    bau.current = c.chest
+    const antes = bau.current
+    if (c.at === 'chest' && (antes.at !== 'chest' || antes.chest !== c.chest))
+      c.chest === 'open' ? SONS.abre() : SONS.tranca()
+    bau.current = { at: c.at, chest: c.chest }
   }, [c.at, c.chest])
   const jogarDeNovo = () => {
     andar.voltar()

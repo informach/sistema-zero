@@ -6,7 +6,7 @@
  * lugar do relógio é uma peça que se troca ("quando puxa a alavanca" × "quando a partida começa").
  * `ponteAberta` fica para a montagem: o caderninho diz "A ponte está aberta? SIM / NÃO".
  */
-import { discoverySpeech, ponteGuidance } from '@sistemazero/core/learning/scene'
+import { discoverySpeech, ponteGuidance, TIMED_BRIDGE } from '@sistemazero/core/learning/scene'
 import { FAROL_LAYOUT } from '@sistemazero/studio/arte'
 import { useEffect, useRef, useState } from 'react'
 import { SONS } from '../lib/scene-sons'
@@ -122,12 +122,21 @@ export function PonteLivre() {
   useEffect(() => {
     if (andar.andando && !rodando) setRodando(true)
   }, [andar.andando, rodando])
-  const { dispatch } = base
+  // O segundo só passa enquanto muda alguma coisa (um "depois de" contando, ou a puxada ainda sem 4
+  // segundos para comparar): parada, a criança não grava um tique por segundo para sempre. Com a aba
+  // escondida o relógio espera. O tique não é gesto (`tempo`), e o `dispatch` do player muda a cada
+  // render: por ref, o intervalo não recomeça a cada gesto e o segundo do jogo não estica.
+  const precisaDoTempo =
+    b.timers.length > 0 || (b.sincePull !== null && b.sincePull < TIMED_BRIDGE.seconds)
+  const passar = useRef(base.tempo ?? base.dispatch)
+  passar.current = base.tempo ?? base.dispatch
   useEffect(() => {
-    if (!rodando || atravessou) return
-    const t = setInterval(() => dispatch({ type: 'wait-second' }), 1000)
+    if (!rodando || atravessou || !precisaDoTempo) return
+    const t = setInterval(() => {
+      if (!document.hidden) passar.current({ type: 'wait-second' })
+    }, 1000)
     return () => clearInterval(t)
-  }, [rodando, atravessou, dispatch])
+  }, [rodando, atravessou, precisaDoTempo])
   const contando = b.timers.length > 0
   // biome-ignore lint/correctness/useExhaustiveDependencies: o tique toca a cada segundo do relógio (`b.clock`).
   useEffect(() => {
@@ -140,12 +149,15 @@ export function PonteLivre() {
       p.dispatch({ type: 'pull-lever' })
     } else p.dispatch({ type: 'touch-bridge' })
   })
+  const montou = useRef(false)
   // biome-ignore lint/correctness/useExhaustiveDependencies: o personagem vai à pedra só quando atravessa (`andar.ir` muda a cada render).
   useEffect(() => {
+    // Ao reabrir a tela já atravessada, o personagem volta à pedra, sem o som da chegada.
     if (atravessou) {
       andar.ir(NA_PEDRA)
-      SONS.abre()
+      if (montou.current) SONS.abre()
     }
+    montou.current = true
   }, [atravessou])
   const subidas = useRef(b.rises)
   useEffect(() => {
@@ -180,6 +192,7 @@ export function PonteLivre() {
         <TimedBridgeStage
           state={p.state}
           heroi={atravessou ? undefined : { ...andar.pos, esquerda: andar.esquerda }}
+          livre
         />
       }
       controles={

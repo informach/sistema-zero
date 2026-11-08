@@ -149,8 +149,9 @@ for (const [index, aula] of simbolosAulas.entries()) {
                 },
                 'count-vs-order': {
                   label: 'No baú que só conta, a ordem errada também abriu',
+                  // O motor só conta a comparação depois de o baú da ordem responder.
                   pedido:
-                    'Troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
+                    'Com o baú da ordem já testado, troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
                 },
               },
             },

@@ -19,10 +19,14 @@ export const SIMBOLOS_SPEECH = {
   'symbols-sun': 'Aceso! E agora, a lua?',
   'symbols-follow': 'Siga a placa até o fim: sol, lua, estrela.',
   'symbols-skip': 'E se pular a lua? Vá do sol à estrela por cima.',
+  'symbols-skip-restart': 'Jogue de novo e vá do sol à estrela por cima.',
   'symbols-middle': 'Jogue de novo e comece pela lua.',
   'symbols-retry': 'Errou? Siga a placa de novo, sem recomeçar.',
+  'symbols-retry-restart': 'Jogue de novo: erre a vez e siga a placa.',
   'symbols-place': 'E se o baú só contar? Troque a peça.',
   'symbols-count': 'Só contando: toque fora da ordem e olhe o baú.',
+  'symbols-count-restart': 'Jogue de novo e toque fora da ordem.',
+  'symbols-count-early': 'Primeiro teste o baú da ordem: troque a peça de volta.',
   'symbols-count-back': 'Troque de volta e compare as duas peças.',
   'symbols-idea':
     'O jogo guarda um passo: até onde a sequência chegou. Cada símbolo pergunta se é a vez dele; fora da vez, o passo volta ao começo.',
@@ -48,11 +52,18 @@ export function simbolosGuidance(
 ): keyof typeof SIMBOLOS_SPEECH {
   const q = state.sequence
   if (SIMBOLOS_GOALS.every(has)) return 'symbols-complete'
-  if (q.mode === 'count') return has('count-vs-order') ? 'symbols-count-back' : 'symbols-count'
+  const aberto = q.chest === 'open'
+  if (q.mode === 'count') {
+    if (has('count-vs-order')) return 'symbols-count-back'
+    // O motor só conta a comparação depois de o baú da ordem responder (`touch-symbol`).
+    if (!['right-order', 'out-of-turn', 'middle-start'].some(has)) return 'symbols-count-early'
+    return aberto ? 'symbols-count-restart' : 'symbols-count'
+  }
   if (!has('step-moves')) return q.passo === 0 ? 'symbols-start' : 'symbols-sun'
   if (!has('right-order')) return 'symbols-follow'
-  if (!has('out-of-turn')) return 'symbols-skip'
+  // Com o baú aberto, tocar não faz nada: as falas pedem para jogar de novo.
+  if (!has('out-of-turn')) return aberto ? 'symbols-skip-restart' : 'symbols-skip'
   if (!has('middle-start')) return 'symbols-middle'
-  if (!has('restart-works')) return 'symbols-retry'
+  if (!has('restart-works')) return q.missed && !aberto ? 'symbols-retry' : 'symbols-retry-restart'
   return 'symbols-place'
 }

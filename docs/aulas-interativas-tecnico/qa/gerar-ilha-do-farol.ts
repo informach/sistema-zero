@@ -48,9 +48,14 @@ const visit = (v: unknown) => {
   for (const c of Object.values(v)) visit(c)
 }
 visit(projects.personalizar.blocksState)
-/** O `goalCopy` do manifesto: o pedido de cada descoberta, na língua da tela livre. */
-const pedidosDaExperiencia = (pedidos: Record<string, string>) =>
-  Object.fromEntries(Object.entries(pedidos).map(([meta, pedido]) => [meta, { pedido }]))
+/**
+ * O `goalCopy` do manifesto: o pedido de cada descoberta, na língua da tela livre (e o rótulo,
+ * quando o do catálogo fala de outra tela).
+ */
+const pedidosDaExperiencia = (pedidos: Record<string, string | { label: string; pedido: string }>) =>
+  Object.fromEntries(
+    Object.entries(pedidos).map(([meta, p]) => [meta, typeof p === 'string' ? { pedido: p } : p]),
+  )
 const goals: Record<string, string[]> = {
   'ponto-de-vista': ['other-view', 'same-place'],
   'posicao-3d': ['axis-x', 'axis-y', 'axis-z'],

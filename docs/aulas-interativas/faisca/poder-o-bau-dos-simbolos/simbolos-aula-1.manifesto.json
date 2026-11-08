@@ -2869,7 +2869,7 @@
               },
               "count-vs-order": {
                 "label": "No baú que só conta, a ordem errada também abriu",
-                "pedido": "Troque a peça para \"só quantos foram tocados\" e toque os símbolos fora da ordem."
+                "pedido": "Com o baú da ordem já testado, troque a peça para \"só quantos foram tocados\" e toque os símbolos fora da ordem."
               }
             }
           }

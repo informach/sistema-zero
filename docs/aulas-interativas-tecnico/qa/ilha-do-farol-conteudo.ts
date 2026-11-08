@@ -18,7 +18,7 @@ export type IlhaTrecho = {
    * O que cada descoberta pede, na língua da tela livre (08/11/2026): vira o `goalCopy` do
    * manifesto (sem ele, a criança leria os pedidos do catálogo, com os botões de antes).
    */
-  pedidos?: Record<string, string>
+  pedidos?: Record<string, string | { label: string; pedido: string }>
   /**
    * A cena da experiência, quando não é a experiência 3D de posição (02/11/2026): a pergunta com o
    * não usa a porta do farol (`lighthouse-key`), ligada ao modo do não pelas metas `not-flips-*`.
@@ -182,8 +182,15 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
           'Na câmera, toque em Lado. Na altura da chave, toque no − até ela chegar perto do personagem e olhe o resultado do encontro. Se quiser, mostre as caixas do encontro.',
         ],
         pedidos: {
-          'contact-apart': 'Olhe de lado o personagem e a chave que de cima parecem juntos.',
-          'contact-touch': 'Baixe a chave até ela encostar no personagem.',
+          // O rótulo do catálogo fala de "áreas" (as caixas de colisão); aqui é o que a criança vê.
+          'contact-apart': {
+            label: 'Parecer junto não é encostar',
+            pedido: 'Olhe de lado o personagem e a chave que de cima parecem juntos.',
+          },
+          'contact-touch': {
+            label: 'Encostar é se tocar de verdade',
+            pedido: 'Baixe a chave até ela encostar no personagem.',
+          },
         },
         text: '[engaging, energetic, conversational voice] Encostar é quando duas coisas do jogo se tocam de verdade. No seu jogo, o personagem vai pegar a chave quando encostar nela. [curious] Sabe quando você bate palmas? As mãos só fazem barulho quando se tocam de verdade. [engaging, energetic, conversational voice] Na ilha, olhando de cima, a chave pode parecer estar em cima do personagem. [curious] Será que eles estão encostando? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
       },

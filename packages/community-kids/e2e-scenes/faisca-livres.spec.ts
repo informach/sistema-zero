@@ -138,6 +138,8 @@ async function andar3d(page: Page, x: number, z: number) {
     await page.waitForTimeout(Math.max(40, Math.min(250, (d / 4) * 1000)))
     for (const t of melhor?.teclas ?? []) await page.keyboard.up(t)
   }
+  const p = await ilha(page)
+  throw new Error(`não chegou a (${x}, ${z}): parou em (${p.x}, ${p.z})`)
 }
 
 test.describe('a Ilha do Farol: a cena é o jogo 3D do curso', () => {
@@ -210,6 +212,11 @@ test.describe('no celular (390 px), nada passa da largura da tela', () => {
       const erros: string[] = []
       page.on('pageerror', (e) => erros.push(e.message))
       await abrir(page, curso, bloco, 390)
+      // Na Ilha, mede com a cena 3D já montada (o canvas, o aviso e os controles de verdade).
+      if (curso === 'ilha')
+        await expect(page.locator('.sz-island-world[data-ready="true"]')).toBeVisible({
+          timeout: 30_000,
+        })
       const medida = await page.evaluate(() => ({
         conteudo: document.documentElement.scrollWidth,
         janela: innerWidth,

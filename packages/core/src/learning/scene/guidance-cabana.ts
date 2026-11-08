@@ -18,6 +18,8 @@ export const CABANA_SPEECH = {
   'cabin-one-take': 'Pegue uma peça só e vá até a cabana.',
   'cabin-one-restart': 'Jogue de novo e leve uma peça só.',
   'cabin-both': 'E com as duas? Pegue a outra e vá até a cabana.',
+  'cabin-both-take': 'E com as duas? Pegue as duas e vá até a cabana.',
+  'cabin-two': 'Com as duas peças! Agora vá até a cabana.',
   'cabin-order': 'Jogue de novo e comece pela outra peça.',
   'cabin-rule': 'E se trocar o "e" pelo "ou"? Toque na peça.',
   'cabin-or': 'Com "ou": leve uma peça só até a cabana.',
@@ -50,7 +52,8 @@ export function cabanaGuidance(
   if (!has('none-closed')) return pecas === 0 ? 'cabin-start' : 'cabin-start-restart'
   if (!has('one-closed'))
     return pecas === 1 ? 'cabin-one' : pecas === 0 ? 'cabin-one-take' : 'cabin-one-restart'
-  if (!has('both-open')) return 'cabin-both'
+  if (!has('both-open'))
+    return pecas === 2 ? 'cabin-two' : pecas === 1 ? 'cabin-both' : 'cabin-both-take'
   if (!has('any-order')) return 'cabin-order'
   return 'cabin-rule'
 }

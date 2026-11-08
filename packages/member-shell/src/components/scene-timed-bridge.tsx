@@ -58,10 +58,16 @@ const sim = (v: boolean) => (v ? 'verdadeiro' : 'falso')
 export function TimedBridgeStage({
   state,
   heroi,
+  livre = heroi !== undefined,
 }: {
   state: SceneState
   /** O lugar do personagem no andar livre (a tela livre); sem ele, o lugar do motor, como antes. */
   heroi?: { x: number; y: number; esquerda?: boolean }
+  /**
+   * A tela livre (o nome da variável fica para a montagem). Vem do `heroi`, mas a ponte atravessada
+   * esconde o personagem do andar e continua sendo a tela livre.
+   */
+  livre?: boolean
 }) {
   const b = state.bridge
   const hero = FAROL_LAYOUT.personagem
@@ -74,7 +80,9 @@ export function TimedBridgeStage({
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A ponte apressada"
-      descricao={`A ponte está ${b.ponteAberta ? 'baixada' : 'levantada'}. O relógio ${b.timers.length ? `contou ${contados} de ${TIMED_BRIDGE.seconds} segundos` : 'está parado'}. O aviso do jogo diz: ${aviso}`}
+      // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
+      // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
+      descricao={`${livre ? 'A ponte' : `ponteAberta é ${sim(b.ponteAberta)}: a ponte`} está ${b.ponteAberta ? 'baixada' : 'levantada'}. O relógio ${b.timers.length ? `contou ${contados} de ${TIMED_BRIDGE.seconds} segundos` : 'está parado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"

@@ -10,9 +10,11 @@ import {
 } from '@sistemazero/core/learning/scene'
 import type { ReactElement, ReactNode } from 'react'
 import { renderToStaticMarkup } from 'react-dom/server'
+import { CoinCounterStage } from '../src/components/scene-coin-counter'
 import { DiscoveryContext } from '../src/components/scene-discovery-frame'
 import { MoedasLivre } from '../src/components/scene-poder-moedas'
 import { PonteLivre } from '../src/components/scene-poder-ponte'
+import { TimedBridgeStage } from '../src/components/scene-timed-bridge'
 
 /**
  * As telas livres dos Poderes "A ponte apressada" e "Moedas no caminho" (08/11/2026, proposta
@@ -82,7 +84,9 @@ describe('Ponte: a tela livre', () => {
     expect(texto(inicio)).toContain('A ponte está aberta? NÃO')
     const partida = play([{ type: 'timer-place', place: 'start' }])
     expect(texto(tela(activity, partida, <PonteLivre />))).toContain('quando a partida começa')
-    expect(texto(tela(activity, play([puxar]), <PonteLivre />))).toContain('A ponte está aberta? SIM')
+    expect(texto(tela(activity, play([puxar]), <PonteLivre />))).toContain(
+      'A ponte está aberta? SIM',
+    )
   })
 
   test('os seis cartões perguntam, e a fala é a do motor', () => {
@@ -133,5 +137,23 @@ describe('Moedas: a tela livre', () => {
     const html = texto(tela(so.activity, so.play([]), <MoedasLivre />))
     expect(html).toContain('O que muda ao pegar uma moeda?')
     expect(html).not.toContain('Com menos de 5, o baú abre?')
+  })
+})
+
+describe('o palco sem `heroi` continua lendo o nome da variável (full review 08/11/2026)', () => {
+  // Os quizzes e as bancadas usam o mesmo palco e ensinam pelo nome da variável: o leitor de tela
+  // lê o que a tela escreve. Só a tela livre fala do jeito da criança.
+  test('ponte e moedas', () => {
+    const ponte = caso('timed-bridge')
+    expect(renderToStaticMarkup(<TimedBridgeStage state={ponte.play([])} />)).toContain(
+      'ponteAberta é falso',
+    )
+    expect(
+      renderToStaticMarkup(<TimedBridgeStage state={ponte.play([])} heroi={{ x: 21, y: 200 }} />),
+    ).not.toContain('ponteAberta')
+    const moedas = caso('coin-counter')
+    expect(renderToStaticMarkup(<CoinCounterStage state={moedas.play([])} />)).toContain(
+      'moedas guarda 0',
+    )
   })
 })

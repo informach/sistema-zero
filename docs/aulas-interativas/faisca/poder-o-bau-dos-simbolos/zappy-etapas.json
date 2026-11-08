@@ -19,6 +19,10 @@
         "text": "E se pular a lua? Vá do sol à estrela por cima."
       },
       {
+        "id": "symbols-skip-restart",
+        "text": "Jogue de novo e vá do sol à estrela por cima."
+      },
+      {
         "id": "symbols-middle",
         "text": "Jogue de novo e comece pela lua."
       },
@@ -27,12 +31,24 @@
         "text": "Errou? Siga a placa de novo, sem recomeçar."
       },
       {
+        "id": "symbols-retry-restart",
+        "text": "Jogue de novo: erre a vez e siga a placa."
+      },
+      {
         "id": "symbols-place",
         "text": "E se o baú só contar? Troque a peça."
       },
       {
         "id": "symbols-count",
         "text": "Só contando: toque fora da ordem e olhe o baú."
+      },
+      {
+        "id": "symbols-count-restart",
+        "text": "Jogue de novo e toque fora da ordem."
+      },
+      {
+        "id": "symbols-count-early",
+        "text": "Primeiro teste o baú da ordem: troque a peça de volta."
       },
       {
         "id": "symbols-count-back",

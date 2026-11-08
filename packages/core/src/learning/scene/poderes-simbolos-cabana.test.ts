@@ -85,7 +85,9 @@ describe('O baú dos símbolos em exploração livre', () => {
     expect(fala([tocar('sol')])).toBe('symbols-sun')
     expect(fala([tocar('sol'), tocar('lua')])).toBe('symbols-follow')
     const aberto = [tocar('sol'), tocar('lua'), tocar('estrela')]
-    expect(fala(aberto)).toBe('symbols-skip')
+    // Com o baú aberto, tocar não faz nada: a fala pede para jogar de novo (full review 08/11/2026).
+    expect(fala(aberto)).toBe('symbols-skip-restart')
+    expect(fala([...aberto, recomecar])).toBe('symbols-skip')
     const pulou = [...aberto, recomecar, tocar('sol'), tocar('estrela')]
     expect(fala(pulou)).toBe('symbols-middle')
     const meio = [...pulou, tocar('lua')]
@@ -100,8 +102,31 @@ describe('O baú dos símbolos em exploração livre', () => {
     expect(fala([tocar('lua'), tocar('sol')])).toBe('symbols-sun')
   })
 
+  test('o "sem recomeçar" só vale depois de errar, com o baú fechado (full review 08/11/2026)', () => {
+    // Sem erro nesta partida e com o baú aberto, seguir a placa não faz nada.
+    const semErro = [
+      tocar('lua'),
+      recomecar,
+      tocar('sol'),
+      tocar('estrela'),
+      recomecar,
+      tocar('sol'),
+      tocar('lua'),
+      tocar('estrela'),
+    ]
+    expect(play(semErro).sequence.chest).toBe('open')
+    expect(fala(semErro)).toBe('symbols-retry-restart')
+    expect(fala([...semErro, recomecar])).toBe('symbols-retry-restart')
+    expect(fala([...semErro, recomecar, tocar('lua')])).toBe('symbols-retry')
+  })
+
   test('o baú que só conta: a comparação pede o baú que confere a vez antes', () => {
-    expect(fala([contar])).toBe('symbols-count')
+    // Sem ter visto o baú da ordem responder, a fala manda testar ele primeiro (full review).
+    expect(fala([contar])).toBe('symbols-count-early')
+    expect(fala([tocar('lua'), contar])).toBe('symbols-count')
+    // Com o baú já aberto em ordem, tocar não faz nada: jogar de novo.
+    const abriuEmOrdem = [tocar('lua'), contar, tocar('sol'), tocar('lua'), tocar('estrela')]
+    expect(fala(abriuEmOrdem)).toBe('symbols-count-restart')
     // Sem o primeiro termo, a ordem errada abrindo o baú que só conta ainda não é comparação.
     const semPrimeiroTermo = [contar, tocar('estrela'), tocar('lua'), tocar('sol')]
     expect(play(semPrimeiroTermo).evidence.discoveries).not.toContain('count-vs-order')
@@ -172,6 +197,9 @@ describe('O segredo da cabana em exploração livre', () => {
     expect(fala([encostar])).toBe('cabin-one-take')
     expect(fala([encostar, pegar('key')])).toBe('cabin-one')
     expect(fala([encostar, pegar('key'), encostar])).toBe('cabin-both')
+    // Com as duas na mão, vá até a cabana; sem nenhuma (jogou de novo), pegue as duas.
+    expect(fala([encostar, pegar('key'), encostar, pegar('emblem')])).toBe('cabin-two')
+    expect(fala([encostar, pegar('key'), encostar, nova])).toBe('cabin-both-take')
     const abriu = [encostar, pegar('key'), encostar, pegar('emblem'), encostar]
     expect(fala(abriu)).toBe('cabin-order')
     const outraOrdem = [...abriu, nova, pegar('emblem'), pegar('key'), encostar]

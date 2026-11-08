@@ -27,6 +27,14 @@
         "text": "E com as duas? Pegue a outra e vá até a cabana."
       },
       {
+        "id": "cabin-both-take",
+        "text": "E com as duas? Pegue as duas e vá até a cabana."
+      },
+      {
+        "id": "cabin-two",
+        "text": "Com as duas peças! Agora vá até a cabana."
+      },
+      {
         "id": "cabin-order",
         "text": "Jogue de novo e comece pela outra peça."
       },

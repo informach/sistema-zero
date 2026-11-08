@@ -279,6 +279,11 @@ export function useRepetir(ms = 160) {
       fn()
       t.current = setInterval(fn, ms)
     },
+    /** Troca o que se repete sem dar o passo de agora (soltou uma seta e outra continua segura). */
+    continuar: (fn: () => void) => {
+      parar()
+      t.current = setInterval(fn, ms)
+    },
     parar,
   }
 }

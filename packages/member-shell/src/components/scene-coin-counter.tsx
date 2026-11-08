@@ -73,7 +73,9 @@ export function CoinCounterStage({
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="O contador de moedas"
-      descricao={`${noCaminho} moedas no caminho. O jogo guarda ${c.moedas} ${c.moedas === 1 ? 'moeda' : 'moedas'}. O baú está ${c.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
+      // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
+      // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
+      descricao={`${noCaminho} moedas no caminho. ${heroi ? `O jogo guarda ${c.moedas} ${c.moedas === 1 ? 'moeda' : 'moedas'}` : `moedas guarda ${c.moedas}`}. O baú está ${c.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"
