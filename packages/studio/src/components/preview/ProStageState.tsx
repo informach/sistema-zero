@@ -20,7 +20,7 @@ const STEP_KEYS: Record<ProStageFlavor, readonly string[]> = {
  * de sempre em "Ver detalhes"), erro (título curto, a mensagem técnica dobrada, "Tentar de
  * novo") e sem suporte. Nas fases rodando/esperando/concluído a prévia mostra o jogo e este
  * cartão não renderiza nada. `children` é a cauda de log ou a saída do build, dentro dos
- * detalhes. ⚠️ O botão do ▶ se chama "Rodar o jogo/programa", não "Rodar": o "Rodar" exato é
+ * detalhes (nunca no parado: a saída da rodada anterior não é o estado de agora). ⚠️ O botão do ▶ se chama "Rodar o jogo/programa", não "Rodar": o "Rodar" exato é
  * o da Topbar, o que carrega o `data-live-target` e o que os e2e clicam.
  */
 export function ProStageState({
@@ -53,7 +53,6 @@ export function ProStageState({
         </button>
         <p className="sz-pro-stage-state__title">{t(`pro.stage.idle.${subject}`)}</p>
         <p className="sz-pro-stage-state__hint">{t('pro.stage.idle.hint')}</p>
-        {children}
       </div>
     )
   }

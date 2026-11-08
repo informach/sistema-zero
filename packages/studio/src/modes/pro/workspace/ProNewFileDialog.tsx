@@ -144,10 +144,7 @@ export function ProNewFileDialog({
                   key={option}
                   type="button"
                   aria-pressed={kind === option}
-                  className={cn(
-                    'sz-pro-row min-h-14 border-sz-border',
-                    kind === option && 'border-sz-accent',
-                  )}
+                  className="sz-pro-row sz-pro-row--card min-h-14"
                   onClick={() => setKind(option)}
                 >
                   <span
@@ -167,7 +164,7 @@ export function ProNewFileDialog({
           <input
             ref={input}
             name="new-pro-node"
-            aria-label="Nome do novo item"
+            aria-label={t('pro.newFile.nameField')}
             autoComplete="off"
             value={name}
             maxLength={120}
@@ -175,7 +172,11 @@ export function ProNewFileDialog({
               setName(event.target.value)
               setError(null)
             }}
-            placeholder={kind === 'dir' ? 'pasta' : `arquivo.${EXTENSION[kind]}`}
+            placeholder={
+              kind === 'dir'
+                ? t('pro.newFile.placeholderDir')
+                : t('pro.newFile.placeholderFile', { ext: EXTENSION[kind] })
+            }
             className="min-h-11 rounded-xl border-2 border-sz-border bg-sz-bg px-3 font-mono font-normal text-sz-fg placeholder:text-sz-fg-mute"
           />
         </label>

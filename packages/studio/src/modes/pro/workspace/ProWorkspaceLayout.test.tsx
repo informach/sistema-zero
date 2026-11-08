@@ -88,12 +88,17 @@ describe('layout contínuo do Pro', () => {
     // Celular: abas no rodapé; o grupo de painéis fica montado.
     view.rerender(content(390))
     expect(root.getAttribute('data-sz-pro-tier')).toBe('phone')
+    // Botões com `aria-pressed`, não `tab`: uma `tablist` exige painéis ligados por
+    // `aria-controls`, e as partes da tela não são painéis de abas.
     const tabs = view.getByRole('navigation', { name: 'Partes da tela' })
-    fireEvent.click(within(tabs).getByRole('tab', { name: 'Jogo' }))
-    fireEvent.click(within(tabs).getByRole('tab', { name: 'Saída' }))
-    fireEvent.click(within(tabs).getByRole('tab', { name: 'Arquivos' }))
+    fireEvent.click(within(tabs).getByRole('button', { name: 'Jogo' }))
+    expect(within(tabs).getByRole('button', { name: 'Jogo' }).getAttribute('aria-pressed')).toBe(
+      'true',
+    )
+    fireEvent.click(within(tabs).getByRole('button', { name: 'Saída' }))
+    fireEvent.click(within(tabs).getByRole('button', { name: 'Arquivos' }))
     expect(view.getByText('seletor do celular')).toBeTruthy()
-    fireEvent.click(within(tabs).getByRole('tab', { name: 'Código' }))
+    fireEvent.click(within(tabs).getByRole('button', { name: 'Código' }))
     expect(view.queryByRole('button', { name: 'Só o código' })).toBeNull()
 
     view.rerender(content(1440))
@@ -132,6 +137,43 @@ describe('layout contínuo do Pro', () => {
     fireEvent.click(within(rail).getByRole('button', { name: 'Materiais' }))
     fireEvent.keyDown(panel as HTMLElement, { key: 'Escape' })
     expect(panel?.hidden).toBe(true)
+    view.unmount()
+  })
+
+  it('abrir já no tablet começa com a gaveta FECHADA (ela cobriria o código)', () => {
+    const view = render(content(900))
+    const rail = view.getByRole('navigation', { name: 'Explorar o projeto' })
+    const files = within(rail).getByRole('button', { name: 'Arquivos' })
+    const panel = document.getElementById(files.getAttribute('aria-controls') ?? '')
+    expect(panel?.hidden).toBe(true)
+    view.unmount()
+  })
+
+  it('no celular há UM studio-run e no máximo UM studio-stop, sempre no que está visível', () => {
+    // O cursor da professora usa `querySelector` (o primeiro da página): um alvo escondido na
+    // frente do visível apontaria para o nada.
+    const view = render(content(390))
+    const targets = (id: string) =>
+      Array.from(view.container.querySelectorAll(`[data-live-target="${id}"]`))
+    const tabs = view.getByRole('navigation', { name: 'Partes da tela' })
+    // Aba Código: o botão flutuante; o par do palco está escondido e sem alvo.
+    expect(targets('studio-run')).toHaveLength(1)
+    expect(targets('studio-run')[0]?.className).toContain('sz-pro-fab')
+    expect(targets('studio-stop')).toHaveLength(0)
+    // Aba Jogo: o par embaixo do palco.
+    fireEvent.click(within(tabs).getByRole('button', { name: 'Jogo' }))
+    expect(targets('studio-run')).toHaveLength(1)
+    expect(targets('studio-stop')).toHaveLength(1)
+    expect(targets('studio-run')[0]?.closest('[hidden]')).toBeNull()
+    expect(targets('studio-stop')[0]?.closest('[hidden]')).toBeNull()
+    // Aba Arquivos: nenhum (nada de Rodar visível ali).
+    fireEvent.click(within(tabs).getByRole('button', { name: 'Arquivos' }))
+    expect(targets('studio-run')).toHaveLength(0)
+    expect(targets('studio-stop')).toHaveLength(0)
+    // Largo: os alvos são da Topbar, nenhum no palco.
+    view.rerender(content(1440))
+    expect(targets('studio-run')).toHaveLength(0)
+    expect(targets('studio-stop')).toHaveLength(0)
     view.unmount()
   })
 

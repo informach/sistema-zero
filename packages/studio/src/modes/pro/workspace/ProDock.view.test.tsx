@@ -3,7 +3,7 @@ import { act, cleanup, fireEvent, render, screen, within } from '@testing-librar
 import { useState } from 'react'
 import { createEmptyProject } from '../../../core/project'
 import type { ProjectTree } from '../../../core/proProject'
-import type { ProEditorDiagnostic } from '../../../monaco/pro/session'
+import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { StudioStoresContext } from '../../../state/storesContext'
 import { createStudioStores } from '../../../state/studioStores'
 import { studioTutorSourceHash } from '../../../studio/tutorSafety'
@@ -28,8 +28,11 @@ function mount({
   python = false,
   diagnostics = [problem] as ProEditorDiagnostic[] | null,
   initial = 'closed' as ProWorkspaceBottom,
+  analysis = { status: 'ready' } as ProAnalysisState,
+  hideMessages = false,
 } = {}) {
   const stores = createStudioStores({ persistence: 'none' })
+  if (hideMessages) stores.ui.getState().setConsoleVisibilityOverride(false)
   stores.project.setState({
     project: {
       ...createEmptyProject('dock', 'Jogo'),
@@ -49,7 +52,7 @@ function mount({
       <ProDock
         tree={tree}
         diagnostics={diagnostics}
-        analysis={{ status: 'ready' }}
+        analysis={analysis}
         selected={bottom}
         onSelect={setBottom}
         navigate={navigate}
@@ -100,6 +103,25 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     ])
   })
 
+  it('Python: o campo "Comando Python" mora no Experimentar comandos, não nas Mensagens', () => {
+    mount({ python: true, initial: 'repl' })
+    expect(
+      within(screen.getByRole('tabpanel')).getByRole('textbox', { name: 'Comando Python' }),
+    ).toBeTruthy()
+    fireEvent.click(screen.getByRole('tab', { name: 'Mensagens do programa' }))
+    const messages = screen.getByRole('tabpanel')
+    expect(messages.getAttribute('aria-labelledby')).toContain('console')
+    expect(within(messages).queryByRole('textbox', { name: 'Comando Python' })).toBeNull()
+  })
+
+  it('Python: esconder "Mensagens do programa" pelo menu ⋯ não leva o Experimentar comandos junto', () => {
+    mount({ python: true, hideMessages: true })
+    expect(screen.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+      'Problemas1',
+      'Experimentar comandos',
+    ])
+  })
+
   it('cada problema vira um cartão: lugar, a dica como texto principal, ir para a linha e pedir dica', () => {
     const { navigate, investigate } = mount({ initial: 'problems' })
     const panel = screen.getByRole('tabpanel')
@@ -120,6 +142,14 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     expect(screen.getByText(/Rode o jogo para ver o resultado/)).toBeTruthy()
   })
 
+  it('sem a análise pronta (ainda analisando, ou ela falhou) não há ✓: zero problemas não é "tudo certo"', () => {
+    mount({ diagnostics: [], analysis: { status: 'error', message: 'o analisador caiu' } })
+    expect(screen.getByRole('tab', { name: /Problemas/ }).textContent).toBe('Problemas')
+    cleanup()
+    mount({ diagnostics: [], analysis: { status: 'pending' } })
+    expect(screen.getByRole('tab', { name: /Problemas/ }).textContent).toBe('Problemas')
+  })
+
   it('Mensagens: filtros Tudo · Avisos · Erros sobre o console da instância', () => {
     const { stores } = mount({ initial: 'console' })
     act(() => {
@@ -137,7 +167,9 @@ describe('a gaveta de baixo do Pro (redesenho de 11/2026)', () => {
     expect(panel.textContent).toContain('cuidado')
     fireEvent.click(within(panel).getByRole('button', { name: 'Erros' }))
     expect(panel.textContent).toContain('Nada aqui com este filtro.')
-    // O campo de comando Python NÃO mora nas Mensagens.
-    expect(within(panel).queryByRole('textbox', { name: 'Comando Python' })).toBeNull()
+    // A contagem é do que está NA TELA, não do console inteiro.
+    expect(panel.textContent).toContain('0 mensagens')
+    fireEvent.click(within(panel).getByRole('button', { name: 'Avisos' }))
+    expect(panel.textContent).toContain('1 mensagem')
   })
 })

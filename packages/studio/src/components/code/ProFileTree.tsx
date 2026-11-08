@@ -77,22 +77,27 @@ export function ProFileTree({
   }
   const [creating, setCreating] = useState<{ base?: string } | null>(null)
   const [renaming, setRenaming] = useState<{ from: string; to: string } | null>(null)
-  const [error, setError] = useState<string | null>(null)
   const [status, setStatus] = useState('')
   const renameInputRef = useRef<HTMLInputElement | null>(null)
   const fileButtons = useRef(new Map<string, HTMLButtonElement>())
   const [focused, setFocused] = useState('')
   const canEdit = !observer && !operationsBusy && Boolean(onRequestOperation)
-  const visible: TreeViewNode[] = []
-  const collect = (nodes: TreeViewNode[]) => {
+  // Duas árvores (a sua e a "Configuração"), cada uma com a SUA parada de Tab e as setas andando
+  // só dentro dela: um `tabIndex` itinerante compartilhado deixava a segunda árvore sem parada.
+  const collect = (nodes: TreeViewNode[], into: TreeViewNode[] = []): TreeViewNode[] => {
     for (const node of nodes) {
-      visible.push(node)
-      if (node.kind === 'dir' && !collapsed.has(node.path)) collect(node.children)
+      into.push(node)
+      if (node.kind === 'dir' && !collapsed.has(node.path)) collect(node.children, into)
     }
+    return into
   }
-  collect(yours)
-  if (configOpen) collect(config)
-  const focusPath = visible.some((node) => node.path === focused) ? focused : visible[0]?.path
+  const visibleYours = collect(yours)
+  const visibleConfig = configOpen ? collect(config) : []
+  const treeOf = (path: string) =>
+    visibleConfig.some((node) => node.path === path) ? visibleConfig : visibleYours
+  const focusPathIn = (list: TreeViewNode[]) =>
+    list.some((node) => node.path === focused) ? focused : list[0]?.path
+  const focusPaths = new Set([focusPathIn(visibleYours), focusPathIn(visibleConfig)])
 
   // Abrir um arquivo de configuração (pelo "Ir para um arquivo", por um guia) abre a gaveta.
   useEffect(() => {
@@ -122,7 +127,6 @@ export function ProFileTree({
     if (!renaming) return
     onRequestOperation?.({ kind: 'rename', from: renaming.from, to: renaming.to.trim() })
     setRenaming(null)
-    setError(null)
   }
   const copyPath = async (path: string) => {
     try {
@@ -165,7 +169,6 @@ export function ProFileTree({
                   if (e.key === 'Enter') handleRenameSave()
                   if (e.key === 'Escape') {
                     setRenaming(null)
-                    setError(null)
                   }
                 }}
                 className="min-h-10 rounded-xl border-2 border-sz-accent bg-sz-bg px-2 font-mono text-sm text-sz-fg"
@@ -181,9 +184,10 @@ export function ProFileTree({
               aria-setsize={siblings.length}
               aria-selected={!isDir && isActive}
               aria-expanded={isDir ? !isCollapsed : undefined}
-              tabIndex={node.path === focusPath ? 0 : -1}
+              tabIndex={focusPaths.has(node.path) ? 0 : -1}
               onFocus={() => setFocused(node.path)}
               onKeyDown={(event) => {
+                const visible = treeOf(node.path)
                 const position = visible.findIndex((item) => item.path === node.path)
                 let next: string | undefined
                 if (event.key === 'ArrowDown')
@@ -260,7 +264,6 @@ export function ProFileTree({
                             label: t('pro.files.newHere'),
                             disabled: observer || operationsBusy,
                             onSelect: () => {
-                              setError(null)
                               setCreating({ base: node.path })
                               setCollapsed((prev) => {
                                 const next = new Set(prev)
@@ -308,7 +311,6 @@ export function ProFileTree({
           className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--primary"
           disabled={observer || operationsBusy}
           onClick={() => {
-            setError(null)
             setCreating({})
           }}
         >
@@ -347,11 +349,6 @@ export function ProFileTree({
           </div>
         ) : null}
       </div>
-      {error && (
-        <p role="alert" className="px-3 pb-2 text-xs text-sz-error">
-          {error}
-        </p>
-      )}
       <p role="status" className="sr-only">
         {status}
       </p>

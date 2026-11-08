@@ -407,7 +407,9 @@ export function Terminal(): JSX.Element {
             </summary>
             <ul className="mt-2 mb-0 list-none space-y-1 p-0">
               <li>
-                <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">npm install nome</code>{' '}
+                <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">
+                  {t('terminal.intro.installExample')}
+                </code>{' '}
                 {t('terminal.intro.install')}
               </li>
               <li>

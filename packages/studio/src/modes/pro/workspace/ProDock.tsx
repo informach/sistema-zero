@@ -8,6 +8,7 @@ import type { ProjectTree } from '../../../core/proProject'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../../monaco/pro/session'
 import { glossErrorMessage } from '../../../state/errorGloss'
 import { ERROR_LOG_KINDS, useLogsStore } from '../../../state/logsStore'
+import { useStudioConfig } from '../../../studio/config'
 import { useT } from '../../../studio/i18n'
 import { currentProDiagnostics } from './diagnostics'
 import type { ProWorkspaceBottom } from './model'
@@ -70,6 +71,7 @@ export function ProDock({
 }): JSX.Element {
   const t = useT()
   const allowed = useVisibleBottomTabs()
+  const config = useStudioConfig()
   const entries = useLogsStore((state) => state.entries)
   const problems = useMemo(
     () => currentProDiagnostics(diagnostics ?? [], tree),
@@ -88,10 +90,17 @@ export function ProDock({
   )
   const count = problems.length + runtime.length
   const hasConsole = allowed.some((item) => item.id === 'console')
+  // O "Experimentar comandos" depende só do portão do HOST: esconder "Mensagens do programa"
+  // pelo menu ⋯ (a preferência que o `useVisibleBottomTabs` cruza) não pode levar o REPL junto.
+  const hasRepl = python && config.console
   const hasTerminal = !python && allowed.some((item) => item.id === 'terminal')
   const subject = python ? 'program' : 'game'
   const tabs: DockTab[] = python
-    ? ['problems', ...(hasConsole ? (['repl', 'console'] as const) : [])]
+    ? [
+        'problems',
+        ...(hasRepl ? (['repl'] as const) : []),
+        ...(hasConsole ? (['console'] as const) : []),
+      ]
     : [
         ...(hasConsole ? (['console'] as const) : []),
         'problems',
@@ -139,7 +148,7 @@ export function ProDock({
               {tab === 'problems' ? (
                 count ? (
                   <span className="sz-pro-badge">{count}</span>
-                ) : diagnostics !== null && analysis?.status !== 'pending' ? (
+                ) : diagnostics !== null && (analysis?.status ?? 'ready') === 'ready' ? (
                   <span className="sz-pro-badge sz-pro-badge--ok">
                     <span aria-hidden="true">✓</span>
                     <span className="sr-only">{t('pro.dock.noProblems')}</span>

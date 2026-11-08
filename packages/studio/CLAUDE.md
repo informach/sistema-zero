@@ -41,6 +41,16 @@ O que vale lembrar:
   apertado, ficou em 114 755 de 120 000.
 - Receitas `.sz-pro-*` e o token `--color-sz-joy` (o amarelo do Compartilhar no Pro) em
   `styles/studio.css`, só com tokens.
+- **Full review do mesmo dia**, o que ficou de regra: o tablet ABRE com a gaveta fechada (só o
+  largo abre o painel); o Esc da gaveta só vale dentro dela e fora de campos, menus e janelas; no
+  celular os `data-live-target` só existem no que está à vista (o botão flutuante na aba Código, o
+  par do palco na aba Jogo, nenhum nas outras); a aba do editor e as abas do celular são BOTÕES
+  (`aria-current`/`aria-pressed`), porque uma `tablist` exige painéis; a gaveta só mostra o ✓ com
+  a análise pronta; o "Experimentar comandos" depende só do portão do host (esconder "Mensagens
+  do programa" não o leva junto); "Atalhos do teclado" só no Pro e só com o que vale ali (Ctrl+Alt+K
+  com o Zappy, Ctrl+Enter no Python, ⇧⌘Z para refazer no Mac); cada árvore de arquivos tem a sua
+  parada de Tab; `sizes` sempre volta somando 100, entre 20 e 80. "Mostrar na lista de arquivos" e
+  "Deixar esta aba aberta" entraram no menu Mais (o teclado também fixa a aba temporária).
 
 ## Studio dentro de um diálogo modal: `StudioPortalContainerProvider` (01/11/2026)
 

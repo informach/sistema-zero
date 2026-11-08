@@ -143,6 +143,25 @@ describe('ProFileTree', () => {
     expect(view.getByRole('treeitem', { name: 'index.html' }).textContent).toContain(
       'A página que segura o jogo',
     )
+    // Duas árvores, cada uma com a SUA parada de Tab, e as setas não pulam de uma para a outra.
+    const trees = view.getAllByRole('tree')
+    expect(trees).toHaveLength(2)
+    for (const tree of trees)
+      expect(
+        within(tree)
+          .getAllByRole('treeitem')
+          .filter((item) => item.tabIndex === 0),
+      ).toHaveLength(1)
+    const lastOfYours = within(trees[0] as HTMLElement)
+      .getAllByRole('treeitem')
+      .at(-1) as HTMLElement
+    lastOfYours.focus()
+    fireEvent.keyDown(lastOfYours, { key: 'ArrowDown' })
+    expect(document.activeElement).toBe(lastOfYours)
+    const firstConfig = within(trees[1] as HTMLElement).getAllByRole('treeitem')[0] as HTMLElement
+    firstConfig.focus()
+    fireEvent.keyDown(firstConfig, { key: 'ArrowDown' })
+    expect(document.activeElement).toBe(view.getByRole('treeitem', { name: 'vite.config.js' }))
   })
 
   it('"Novo" abre "Criar um arquivo": a terminação entra sozinha, na pasta src/', () => {

@@ -51,6 +51,12 @@ describe('workspace Pro', () => {
     expect(migrateWorkspaceSizes([10, 80, 10])).toEqual([80, 20])
     expect(migrateWorkspaceSizes([10, 10, 80])).toEqual([20, 80])
     expect(migrateWorkspaceSizes([60, 40])).toEqual([60, 40])
+    // Dois tamanhos que não somam 100 (o `setLayout` os recusaria) viram a mesma proporção em 100,
+    // e um palco espremido abaixo de 20 é preso ao mínimo do grupo.
+    expect(migrateWorkspaceSizes([80, 80])).toEqual([50, 50])
+    expect(migrateWorkspaceSizes([30, 10])).toEqual([75, 25])
+    expect(migrateWorkspaceSizes([88, 12])).toEqual([80, 20])
+    expect(parseWorkspace({ ...emptyWorkspace(), sizes: [70, 70] }, tree)?.sizes).toEqual([50, 50])
     // O que já está no formato novo passa inteiro, inclusive a vista e a gaveta nova.
     expect(
       parseWorkspace(

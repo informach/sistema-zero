@@ -167,6 +167,13 @@ test('the real controls run, answer input, distinguish edited source and restart
     </StrictMode>
   )
   const rendered = render(content())
+  // A Ponte clássica continua com os alvos na própria barra (lá não há Rodar na Topbar).
+  expect(screen.getByRole('button', { name: 'Rodar' }).getAttribute('data-live-target')).toBe(
+    'studio-run',
+  )
+  expect(screen.getByRole('button', { name: 'Parar' }).getAttribute('data-live-target')).toBe(
+    'studio-stop',
+  )
   fireEvent.click(screen.getByRole('button', { name: 'Rodar' }))
   await screen.findByText('Rodando')
   expect(f.runs()).toBe(1)
@@ -349,6 +356,9 @@ test('Pro: `controls="hidden"` tira a barra, mostra o cartão e entrega Rodar/Pa
   await act(async () => {})
   expect(screen.queryByRole('button', { name: 'Rodar' })).toBeNull()
   expect(screen.queryByRole('button', { name: 'Parar' })).toBeNull()
+  // Os alvos do cursor da professora são da Topbar no Pro: a prévia escondida não leva nenhum
+  // (o cursor usa `querySelector`, e um alvo aqui na frente roubaria o da barra).
+  expect(rendered.container.querySelector('[data-live-target]')).toBeNull()
   expect(screen.getByText('Aperte Rodar para ver seu programa')).toBeTruthy()
   expect(received).toHaveLength(1)
   const commands = received[0]

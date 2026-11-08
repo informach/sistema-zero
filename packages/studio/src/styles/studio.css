@@ -820,8 +820,13 @@
   .sz-pro-row:hover {
     background: var(--color-sz-panel-soft);
   }
+  /* O cartão de tipo da janela "Criar um arquivo": borda visível, a escolhida no acento. */
+  .sz-pro-row--card {
+    border-color: var(--color-sz-border);
+  }
   .sz-pro-row[aria-selected="true"],
-  .sz-pro-row[aria-current="true"] {
+  .sz-pro-row[aria-current="true"],
+  .sz-pro-row[aria-pressed="true"] {
     border-color: var(--color-sz-accent);
     background: color-mix(in oklab, var(--color-sz-accent) 8%, var(--color-sz-panel));
   }
@@ -968,19 +973,6 @@
   .sz-pro-btn--primary:hover:not(:disabled) {
     background: color-mix(in oklab, var(--color-sz-accent) 88%, var(--color-sz-fg));
   }
-  .sz-pro-btn--joy {
-    border-color: transparent;
-    background: var(--color-sz-joy);
-    color: var(--color-sz-on-joy);
-  }
-  .sz-pro-btn--joy:hover:not(:disabled) {
-    background: color-mix(in oklab, var(--color-sz-joy) 86%, var(--color-sz-panel));
-  }
-  .sz-pro-btn--danger {
-    border-color: transparent;
-    background: var(--color-sz-error);
-    color: var(--color-sz-bg);
-  }
   .sz-pro-btn--sm {
     min-height: 2rem;
     padding-inline: 0.75rem;
@@ -1039,7 +1031,7 @@
     background: var(--color-sz-panel-soft);
     color: var(--color-sz-fg);
   }
-  .sz-pro-edtab[aria-selected="true"] {
+  .sz-pro-edtab[aria-current="true"] {
     border-color: var(--color-sz-border);
     background: var(--color-sz-bg);
     color: var(--color-sz-fg);
@@ -1144,7 +1136,7 @@
     width: 1.375rem;
     height: 1.375rem;
   }
-  .sz-pro-tabbar-btn[aria-selected="true"] {
+  .sz-pro-tabbar-btn[aria-pressed="true"] {
     background: color-mix(in oklab, var(--color-sz-accent) 10%, var(--color-sz-panel));
     color: var(--color-sz-accent);
   }
@@ -1157,11 +1149,6 @@
     border: 2px solid var(--color-sz-panel);
     border-radius: 9999px;
     background: var(--sz-pro-pill-tone, var(--color-sz-success));
-  }
-  .sz-pro-tabbar-btn__badge {
-    position: absolute;
-    top: 0.25rem;
-    right: calc(50% - 1.375rem);
   }
   .sz-pro-fab {
     position: absolute;
@@ -1667,24 +1654,6 @@
     text-align: center;
     text-overflow: ellipsis;
     white-space: nowrap;
-  }
-  /* Menus e janelas no celular sobem como FOLHAS (a classe vai no conteúdo portalado). */
-  .sz-pro-sheet {
-    position: fixed;
-    inset: auto 0 0 0;
-    max-height: 85dvh;
-    border-radius: 1.25rem 1.25rem 0 0;
-    border-bottom: 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-  }
-  .sz-pro-sheet::before {
-    content: "";
-    display: block;
-    width: 2.5rem;
-    height: 0.25rem;
-    margin: 0.5rem auto 0;
-    border-radius: 9999px;
-    background: var(--color-sz-border);
   }
 }
 

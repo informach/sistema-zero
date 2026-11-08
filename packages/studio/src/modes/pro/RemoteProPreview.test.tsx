@@ -181,12 +181,20 @@ describe('preview Pro remoto', () => {
     )
     cleanup()
     useProjectStore.setState({ project: { ...project(), id: 'pro-remoto-2' } })
-    render(<RemoteProPreview runtime={{ build: slow }} />)
+    const second = render(<RemoteProPreview runtime={{ build: slow }} />)
     await waitFor(() => expect(slow).toHaveBeenCalledTimes(1))
     expect(useProRun.getState().state?.phase).toBe('preparing')
     act(() => useProRun.getState().actions?.stop())
     expect(signals.at(-1)?.aborted).toBe(true)
-    release({ html: '<html><body>tarde</body></html>' })
+    // O resultado que chega DEPOIS do Parar não liga o jogo: espera a promessa resolver de
+    // verdade (e os efeitos rodarem) antes de conferir, senão a conferência passaria antes de o
+    // resultado tardio ter qualquer chance de agir.
+    await act(async () => {
+      release({ html: '<html><body>tarde</body></html>' })
+      await new Promise((resolve) => setTimeout(resolve, 20))
+    })
     expect(useProRun.getState().state?.phase).toBe('idle')
+    expect(second.container.querySelector('iframe')).toBeNull()
+    expect(screen.getByText('Aperte Rodar para ver seu jogo')).toBeTruthy()
   })
 })

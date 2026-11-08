@@ -51,7 +51,7 @@ export function ProWorkspaceLayout({
   searchRequest,
   codeRequest = 0,
 }: {
-  navigator: (close: () => void, options: { phone: boolean }) => ReactNode
+  navigator: (close: () => void, options: { phone: boolean; visible: boolean }) => ReactNode
   editor: ReactNode
   preview: ReactNode | null
   tutor: ReactNode
@@ -69,7 +69,9 @@ export function ProWorkspaceLayout({
   const phone = tier === 'phone'
   const { open: tutorOpen, setOpen: setTutorOpen } = useStudioTutor()
   const [phoneTab, setPhoneTab] = useState<PhoneTab>('code')
-  const [panelOpen, setPanelOpen] = useState(true)
+  // O painel lateral nasce aberto só no largo: no tablet ele é uma gaveta (fechada até a criança
+  // pedir) e no celular quem manda é a aba do rodapé.
+  const [panelOpen, setPanelOpen] = useState(() => tier === 'wide')
   const group = useRef<ImperativePanelGroupHandle>(null)
   const [panelsReady, setPanelsReady] = useState(false)
   const interacted = useRef(false)
@@ -78,7 +80,7 @@ export function ProWorkspaceLayout({
   const hasPreview = Boolean(preview)
   const proRun = useProRunApi()
 
-  // No tablet o painel nasce fechado (é uma gaveta); no largo, aberto.
+  // Trocar de tamanho EM USO: no tablet a gaveta fecha; no largo a coluna volta.
   const previousTier = useRef(tier)
   useEffect(() => {
     if (previousTier.current === tier) return
@@ -128,15 +130,26 @@ export function ProWorkspaceLayout({
   useEffect(() => {
     if (codeRequest) setPhoneTab('code')
   }, [codeRequest])
-  // A gaveta do tablet também fecha no Esc.
+  // A gaveta do tablet também fecha no Esc, mas só o Esc que é DELA: o de um campo (desistir de
+  // renomear), de uma janela ou de um menu continua sendo de quem o recebeu.
   useEffect(() => {
     if (tier !== 'tablet' || !panelOpen) return
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setPanelOpen(false)
+      if (event.key !== 'Escape' || event.defaultPrevented) return
+      const target = event.target instanceof Element ? event.target : null
+      if (
+        target?.closest(
+          'input, textarea, select, [contenteditable="true"], dialog, [role="dialog"], [role="menu"]',
+        )
+      )
+        return
+      const panel = document.getElementById(panelId)
+      if (target && target !== document.body && !panel?.contains(target)) return
+      setPanelOpen(false)
     }
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
-  }, [tier, panelOpen])
+  }, [tier, panelOpen, panelId])
 
   const arrange = (layout: ProWorkspacePreferences['layout']) => {
     if (layout === 'game') setTutorOpen(false)
@@ -180,7 +193,8 @@ export function ProWorkspaceLayout({
       className="sz-pro-root relative flex h-full min-h-0 flex-col bg-sz-bg"
     >
       <div hidden={bodyHidden} className="relative flex min-h-0 flex-1">
-        <div className={phone ? 'hidden' : 'flex'}>
+        {/* O trilho fica ACIMA do fundo escuro da gaveta: trocar de vista é um toque só. */}
+        <div className={phone ? 'hidden' : 'relative z-30 flex'}>
           <ProRail
             view={preferences.panel}
             open={panelOpen}
@@ -207,7 +221,7 @@ export function ProWorkspaceLayout({
             phone && 'sz-pro-side--full',
           )}
         >
-          {navigator(closePanel, { phone })}
+          {navigator(closePanel, { phone, visible: sideVisible })}
         </div>
         {/* No celular, na aba Arquivos, o painel lateral ocupa a tela: o grupo fica montado e
             escondido (regra 12). */}
@@ -258,6 +272,7 @@ export function ProWorkspaceLayout({
                     layout={preferences.layout}
                     tier={tier}
                     onArrange={arrange}
+                    liveTargets={phone && phoneTab === 'game'}
                   >
                     {preview}
                   </ProStage>
@@ -277,9 +292,7 @@ export function ProWorkspaceLayout({
               <div className={phone ? 'contents' : 'relative h-full'}>{tutor}</div>
             </Panel>
           </PanelGroup>
-          {phone && phoneTab === 'code' && hasPreview ? (
-            <PhoneRunFab onRun={() => setPhoneTab('game')} />
-          ) : null}
+          {phone && phoneTab === 'code' && hasPreview ? <PhoneRunFab /> : null}
         </div>
       </div>
       <div
@@ -308,8 +321,12 @@ export function ProWorkspaceLayout({
   )
 }
 
-/** O Rodar flutuando na aba Código do celular (a Topbar não mostra o par nesse tamanho). */
-function PhoneRunFab({ onRun }: { onRun: () => void }): JSX.Element {
+/**
+ * O Rodar flutuando na aba Código do celular (a Topbar não mostra o par nesse tamanho). Rodar
+ * também traz o palco (`revealStage`: a aba do jogo, e o Zappy fecha). ⚠️ Os `data-live-target`
+ * do cursor da professora estão SÓ no que está visível: aqui na aba Código, no palco na aba Jogo.
+ */
+function PhoneRunFab(): JSX.Element {
   const t = useT()
   const api = useProRunApi()
   const { phase, canRun } = useProRun(
@@ -325,8 +342,9 @@ function PhoneRunFab({ onRun }: { onRun: () => void }): JSX.Element {
       data-live-target="studio-run"
       disabled={!canRun}
       onClick={() => {
-        api.getState().actions?.run()
-        onRun()
+        const { actions, revealStage } = api.getState()
+        actions?.run()
+        revealStage?.()
       }}
     >
       <IconPlay />
@@ -365,14 +383,15 @@ function PhoneTabBar({
     { id: 'output', label: t('pro.phone.output'), Icon: IconMessageSquare },
   ]
   return (
+    // Botões de alternar (aria-pressed), e não abas: as partes da tela não são painéis de uma
+    // lista de abas (código, jogo e saída moram em lugares diferentes do layout).
     <nav className="sz-pro-tabbar" aria-label={t('pro.phone.parts')}>
-      <div role="tablist" className="contents">
+      <div className="contents">
         {tabs.map(({ id, label, Icon }) => (
           <button
             key={id}
             type="button"
-            role="tab"
-            aria-selected={tab === id}
+            aria-pressed={tab === id}
             className="sz-pro-tabbar-btn"
             onClick={() => onSelect(id)}
           >

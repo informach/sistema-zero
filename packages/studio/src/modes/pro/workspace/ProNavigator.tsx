@@ -41,6 +41,7 @@ export function ProNavigator({
   view: controlledView,
   onViewChange,
   showViewSwitcher = true,
+  visible = true,
   ...treeProps
 }: ProFileTreeProps & {
   tree: ProjectTree
@@ -53,6 +54,8 @@ export function ProNavigator({
   onViewChange?: (view: ProWorkspacePanel) => void
   /** O seletor das quatro vistas no topo: só onde não há o trilho (o celular). */
   showViewSwitcher?: boolean
+  /** O painel está à vista (o foco só pode ir para um campo que aparece). */
+  visible?: boolean
 }) {
   const t = useT()
   const openAssetsTab = useUIStore((state) => state.openAssetsTab)
@@ -98,18 +101,38 @@ export function ProNavigator({
   }, [results.items])
   const latestSetView = useRef(setView)
   latestSetView.current = setView
+  // Ctrl+Shift+F e "Mostrar na lista de arquivos" chegam com o painel às vezes ESCONDIDO (a gaveta
+  // do tablet fechada, a coluna fechada no largo): o pedido fica guardado e é atendido quando o
+  // painel aparece. Focar um campo escondido falha em silêncio, e o que a criança digitasse em
+  // seguida iria para o CÓDIGO, embaixo da gaveta.
+  const pendingSearchFocus = useRef(false)
+  const pendingReveal = useRef(false)
+  const [treeReveal, setTreeReveal] = useState(0)
   useEffect(() => {
     if (!searchRequest) return
+    pendingSearchFocus.current = true
     latestSetView.current('search')
     setMode('content')
-    searchInput.current?.focus()
   }, [searchRequest])
   useEffect(() => {
-    if (view === 'search') searchInput.current?.focus()
-  }, [view])
-  useEffect(() => {
-    if (revealRequest) latestSetView.current('files')
+    if (!revealRequest) return
+    pendingReveal.current = true
+    latestSetView.current('files')
   }, [revealRequest])
+  // biome-ignore lint/correctness/useExhaustiveDependencies: os pedidos são GATILHOS (com o painel já à vista na vista certa, um pedido novo também precisa ser atendido); o corpo lê só refs
+  useEffect(() => {
+    if (!visible) return
+    if (view === 'search' && pendingSearchFocus.current) {
+      pendingSearchFocus.current = false
+      searchInput.current?.focus()
+    } else if (view === 'files' && pendingReveal.current) {
+      pendingReveal.current = false
+      setTreeReveal((value) => value + 1)
+    }
+  }, [visible, view, searchRequest, revealRequest])
+  useEffect(() => {
+    if (view === 'search' && visible) searchInput.current?.focus()
+  }, [view, visible])
   return (
     <div className="flex h-full min-h-0 flex-col bg-sz-panel">
       <nav
@@ -277,7 +300,7 @@ export function ProNavigator({
                             {item.recipe.label}
                           </span>
                           <span className="mt-1 block text-xs text-sz-fg-soft">
-                            {item.recipe.steps.length} passos ·{' '}
+                            {t('pro.guides.stepCount', { count: item.recipe.steps.length })} ·{' '}
                             {item.recipe.references
                               .map((ref) => proFileBaseName(ref.path))
                               .join(', ')}
@@ -294,7 +317,7 @@ export function ProNavigator({
       )}
       <div className={view === 'files' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
         <div className="min-h-0 flex-1">
-          <ProFileTree {...treeProps} revealRequest={view === 'files' ? revealRequest : 0} />
+          <ProFileTree {...treeProps} revealRequest={treeReveal} />
         </div>
       </div>
       {view === 'search' && (

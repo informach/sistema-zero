@@ -37,6 +37,7 @@ export function ProEditorStrip({
   onShowStage,
   onQuickOpen,
   onCloseOthers,
+  onReveal,
 }: {
   ctx: MonacoHeaderContext
   subject: ProStageSubject
@@ -49,6 +50,8 @@ export function ProEditorStrip({
   onShowStage: () => void
   onQuickOpen: () => void
   onCloseOthers: () => void
+  /** Abre o painel Arquivos com o arquivo de agora à vista e em foco. */
+  onReveal: () => void
 }): JSX.Element {
   const t = useT()
   const fontSize = useSettingsStore((s) => (s.codeFontSizeChosen ? s.codeFontSize : 16))
@@ -118,6 +121,16 @@ export function ProEditorStrip({
           onSelect: onToggleWhitespace,
         },
         {
+          id: 'reveal',
+          label: t('pro.revealInTree'),
+          disabled: !ctx.active,
+          onSelect: onReveal,
+        },
+        // A aba temporária (itálico) também se fixa pelo teclado, não só com o duplo clique.
+        ...(ctx.active && ctx.temporaryFile === ctx.active
+          ? [{ id: 'pin', label: t('pro.pinTab'), onSelect: () => ctx.pinFile(ctx.active) }]
+          : []),
+        {
           id: 'closeOthers',
           label: t('pro.closeOtherTabs'),
           disabled: ctx.files.length < 2,
@@ -140,8 +153,10 @@ export function ProEditorStrip({
   ]
   return (
     <div className="sz-pro-strip">
-      <div
-        role="tablist"
+      {/* Botões, e não uma lista de abas: o × de fechar mora ao lado de cada aba, e uma
+          `tablist` só pode ter abas dentro. A aba de agora leva `aria-current`; o nome acessível
+          é o CAMINHO (src/main.ts e src/converted/main.ts não podem soar iguais). */}
+      <nav
         aria-label={t('pro.tabs.list')}
         className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
       >
@@ -153,8 +168,8 @@ export function ProEditorStrip({
             <div key={file.name} className="group flex flex-none items-center">
               <button
                 type="button"
-                role="tab"
-                aria-selected={active}
+                aria-current={active ? 'true' : undefined}
+                aria-label={file.name}
                 title={file.name}
                 className={cn('sz-pro-edtab', temporary && 'sz-pro-edtab--temporary')}
                 onClick={() => ctx.setActive(file.name)}
@@ -181,7 +196,7 @@ export function ProEditorStrip({
             </div>
           )
         })}
-      </div>
+      </nav>
       <div className="flex flex-none items-center gap-1">
         {layout === 'code' ? (
           <button

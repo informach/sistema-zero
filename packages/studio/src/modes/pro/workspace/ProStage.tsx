@@ -41,12 +41,15 @@ export function ProStage({
   layout,
   tier,
   onArrange,
+  liveTargets = false,
   children,
 }: {
   subject: ProStageSubject
   layout: Layout
   tier: ProLayoutTier
   onArrange: (layout: Layout) => void
+  /** O par Rodar/Parar do celular leva os alvos da professora só quando está à vista. */
+  liveTargets?: boolean
   children: ReactNode
 }): JSX.Element {
   const t = useT()
@@ -136,7 +139,7 @@ export function ProStage({
           <button
             type="button"
             className="sz-pro-btn sz-pro-btn--primary"
-            data-live-target="studio-run"
+            data-live-target={liveTargets ? 'studio-run' : undefined}
             disabled={!canRun}
             onClick={() => api.getState().actions?.run()}
           >
@@ -146,7 +149,7 @@ export function ProStage({
           <button
             type="button"
             className="sz-pro-btn"
-            data-live-target="studio-stop"
+            data-live-target={liveTargets ? 'studio-stop' : undefined}
             disabled={!canStop}
             onClick={() => api.getState().actions?.stop()}
           >

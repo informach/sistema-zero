@@ -229,9 +229,12 @@ describe('Topbar × o projeto Pro (redesenho de 11/2026)', () => {
     expect(parar.getAttribute('data-live-target')).toBe('studio-stop')
     expect(rodar.hasAttribute('disabled')).toBe(true)
     expect(parar.hasAttribute('disabled')).toBe(true)
-    // Só UM alvo de cada na página (o cursor da professora usa `querySelector`).
-    expect(document.querySelectorAll('[data-live-target="studio-run"]')).toHaveLength(1)
-    expect(document.querySelectorAll('[data-live-target="studio-stop"]')).toHaveLength(1)
+    // A barra contribui com UM alvo de cada (o cursor da professora usa `querySelector`). Que
+    // ninguém mais na página desenhe os seus no largo é cobrado onde eles moram:
+    // `ProWorkspaceLayout.test.tsx` (palco e botão flutuante) e `PythonRuntimePreview.test.tsx`
+    // (`controls="hidden"`).
+    expect(header.querySelectorAll('[data-live-target="studio-run"]')).toHaveLength(1)
+    expect(header.querySelectorAll('[data-live-target="studio-stop"]')).toHaveLength(1)
   })
 
   it('lê a store da instância: Rodar vira "Rodar de novo", chama a ação e traz o palco; Parar para', () => {

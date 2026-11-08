@@ -13,6 +13,7 @@ import type { MonacoHighlight, MonacoTabsProps } from '../../monaco/MonacoTabs'
 import { getMonacoModelPath } from '../../monaco/modelPaths'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProRunApi } from '../../state/proRun'
 import { useStudioConfig } from '../../studio/config'
 import { useT } from '../../studio/i18n'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
@@ -54,6 +55,7 @@ export function ProWorkspace({
 }): JSX.Element {
   const t = useT()
   const store = useProjectStoreApi()
+  const proRun = useProRunApi()
   const { projectId, tree, templateId, entrypoint, python } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,
@@ -99,7 +101,8 @@ export function ProWorkspace({
   // "Mostrar espaços" (ligado por padrão no Python, onde a indentação organiza o código).
   const [showWhitespace, setShowWhitespace] = useState(python)
   useEffect(() => {
-    readyEditor?.updateOptions({ renderWhitespace: showWhitespace ? 'all' : 'none' })
+    // Desligado = o padrão do Monaco (os espaços aparecem só no trecho selecionado).
+    readyEditor?.updateOptions({ renderWhitespace: showWhitespace ? 'all' : 'selection' })
   }, [readyEditor, showWhitespace])
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
     [],
@@ -145,6 +148,18 @@ export function ProWorkspace({
     )
   })
   const [searchRequest, setSearchRequest] = useState(0)
+  // "Mostrar na lista de arquivos" (era o clique no nome do arquivo, no breadcrumb que saiu).
+  const [revealRequest, setRevealRequest] = useState(0)
+  const revealActiveFile = () => {
+    const active = workspaceState.activeFile
+    if (!active) return
+    changeWorkspace((previous) => ({
+      ...previous,
+      panel: 'files',
+      collapsed: previous.collapsed.filter((path) => !active.startsWith(`${path}/`)),
+    }))
+    setRevealRequest((value) => value + 1)
+  }
   const descriptions = useMemo(() => proFileDescriptions(templateId, tree), [templateId, tree])
   const {
     config: tutorConfig,
@@ -223,12 +238,13 @@ export function ProWorkspace({
     changeWorkspace((previous) => closeWorkspaceFile(previous, name))
   }
 
-  const navigator = (close: () => void, options: { phone: boolean }) => (
+  const navigator = (close: () => void, options: { phone: boolean; visible: boolean }) => (
     <ProNavigator
       tree={tree}
       view={workspaceState.panel}
       onViewChange={(panel) => changeWorkspace((previous) => ({ ...previous, panel }))}
       showViewSwitcher={options.phone}
+      visible={options.visible}
       onGuideReference={async (path, name) => {
         handleSelectFile(path)
         close()
@@ -273,6 +289,7 @@ export function ProWorkspace({
       activeFile={activeFile}
       descriptions={descriptions}
       searchRequest={searchRequest}
+      revealRequest={revealRequest}
       collapsedPaths={workspaceState.collapsed}
       onCollapsedChange={(collapsed) => changeWorkspace((previous) => ({ ...previous, collapsed }))}
       onSelectFile={(path) => {
@@ -433,9 +450,10 @@ export function ProWorkspace({
                   editor={editorRef}
                   showWhitespace={showWhitespace}
                   onToggleWhitespace={() => setShowWhitespace((value) => !value)}
-                  onShowStage={() =>
-                    changeWorkspace((previous) => ({ ...previous, layout: 'split' }))
-                  }
+                  // O mesmo caminho do Rodar: sai de "Só o código", fecha o Zappy e, no
+                  // celular, abre a aba do jogo.
+                  onShowStage={() => proRun.getState().revealStage?.()}
+                  onReveal={revealActiveFile}
                   onQuickOpen={() => setQuickOpen({ query: '' })}
                   onCloseOthers={() =>
                     changeWorkspace((previous) =>
@@ -493,7 +511,7 @@ export function ProWorkspace({
         preferences={workspaceState}
         change={changeWorkspace}
         gameRequest={focusNonce}
-        searchRequest={searchRequest}
+        searchRequest={searchRequest + revealRequest}
         codeRequest={codeRequest}
         dock={
           <ProDock

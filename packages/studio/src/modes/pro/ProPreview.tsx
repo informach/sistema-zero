@@ -518,6 +518,7 @@ function WebContainerProPreview({ active = true }: { active?: boolean }): JSX.El
         stoppedByUser.current = true
         setStarted(false)
         setUrl(null)
+        setLogTail([])
         setPhase('stopped')
       },
       // Recarrega o APP sem tocar no servidor (a `key` do iframe).

@@ -105,8 +105,9 @@ export function ConsolePanel({ variant }: { variant?: 'messages' | 'repl' } = {}
           </fieldset>
         ) : null}
         <span className="text-xs text-sz-fg-mute">
-          {t(allEntries.length === 1 ? 'console.message' : 'console.messages', {
-            count: allEntries.length,
+          {/* Conta o que está NA TELA: com o filtro "Erros", 12 mensagens e 2 visíveis diria 12. */}
+          {t(entries.length === 1 ? 'console.message' : 'console.messages', {
+            count: entries.length,
           })}
         </span>
         <Button variant="ghost" size="sm" onClick={clear}>

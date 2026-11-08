@@ -180,13 +180,14 @@ export function parseWorkspace(value: unknown, tree: ProjectTree): ProWorkspaceP
 }
 
 /**
- * Três tamanhos antigos `[arquivos, código, jogo]` viram `[código, palco]` com a MESMA proporção
- * entre código e jogo (o painel de arquivos deixou de ser redimensionável), somando 100 e com cada
- * um entre 20 e 80, que é o que o grupo de painéis aceita. Dois tamanhos passam como vieram.
+ * `[código, palco]` sempre somando 100 e com cada um entre 20 e 80, que é o que o grupo de
+ * painéis aceita (o `setLayout` recusa um layout que não soma 100). Três tamanhos antigos
+ * `[arquivos, código, jogo]` mantêm a MESMA proporção entre código e jogo (o painel de arquivos
+ * deixou de ser redimensionável); dois tamanhos que não somam 100 (gravados à mão, ou por um
+ * adapter do host) também são renormalizados, em vez de passarem como vieram.
  */
 export function migrateWorkspaceSizes(sizes: readonly number[]): number[] {
-  if (sizes.length !== 3) return [...sizes]
-  const [, code = 60, game = 40] = sizes
+  const [code = 60, game = 40] = sizes.length === 3 ? sizes.slice(1) : sizes
   const total = code + game
   const codeShare = total > 0 ? (code / total) * 100 : 60
   const clamped = Math.round(Math.min(80, Math.max(20, codeShare)) * 10) / 10

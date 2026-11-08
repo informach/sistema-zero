@@ -420,7 +420,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       onSelect: () => void setTheme(theme === 'dark' ? 'light' : 'dark'),
     }
   }
-  if (projectMode === 'code')
+  // Só no Pro: os atalhos listados (Ir para um arquivo, Mapa do arquivo, Todas as ações…) são do
+  // editor do Pro; o modo Código clássico não tem nenhum deles.
+  if (projectKind === 'pro' && projectMode === 'code')
     behaviors.shortcuts = { icon: <IconKeyboard />, onSelect: () => setShowShortcuts(true) }
   if (onExit) behaviors.projects = { icon: <IconGrid />, onSelect: () => void exitToProjects() }
 
@@ -597,7 +599,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
       {showShortcuts && (
         <Suspense fallback={null}>
-          <ProShortcutsDialog open onClose={() => setShowShortcuts(false)} />
+          <ProShortcutsDialog
+            open
+            onClose={() => setShowShortcuts(false)}
+            python={python}
+            zappy={Boolean(tutor.config)}
+          />
         </Suspense>
       )}
       {showExport && (

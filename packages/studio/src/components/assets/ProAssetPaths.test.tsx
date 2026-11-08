@@ -93,7 +93,11 @@ it('filters canonical materials, opens only requested previews and sends literal
   const queries: string[] = []
   const view = render(<ProAssetPaths assets={assets} onFindUses={(query) => queries.push(query)} />)
   await view.findByText('estrela')
-  // A miniatura é decorativa (alt vazio); a imagem com nome só no material escolhido.
+  // A miniatura EXISTE na grade, mas é decorativa (alt vazio, dentro de `aria-hidden`): para o
+  // leitor de tela, a imagem com nome é só a do material escolhido.
+  const thumb = view.container.querySelector('.sz-pro-asset__thumb img')
+  expect(thumb?.getAttribute('src')).toBe(assets[0]!.dataUrl)
+  expect(thumb?.getAttribute('alt')).toBe('')
   expect(view.queryByRole('img')).toBeNull()
   expect(view.queryByRole('button', { name: 'Copiar exemplo' })).toBeNull()
   expect(view.getByRole('tab', { name: /Imagens/ }).textContent).toContain('1')
@@ -105,6 +109,7 @@ it('filters canonical materials, opens only requested previews and sends literal
   expect(queries[1]).toBe('star')
   fireEvent.change(view.getByRole('searchbox'), { target: { value: 'missing' } })
   expect(view.queryByRole('img')).toBeNull()
+  expect(view.container.querySelector('.sz-pro-asset__thumb img')).toBeNull()
   expect(view.getByText('Nenhum material encontrado.')).toBeDefined()
 })
 
