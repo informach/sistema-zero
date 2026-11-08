@@ -254,7 +254,7 @@ const aula1 = {
     video('video-a1-toque', 'Um toque pode chamar uma ação'),
     dialogue(
       'ponte-a1-toque',
-      'Sua vez! Investigue a ligação entre o toque e a reação no jardim. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.',
+      'Sua vez! Investigue o que um toque faz no jardim, com a regra do toque encaixada e sem ela. Você escolhe a ordem dos testes, e o Zappy sugere o que observar.',
     ),
     {
       key: 'experiencia-toque',
@@ -264,7 +264,7 @@ const aula1 = {
         semPerguntaFinal: true,
         title: 'O toque faz o jogo responder',
         instructions:
-          'Compare os toques com a reação ligada e desligada. Escolha qual esconderijo testar e repita quando quiser.',
+          'Toque nos esconderijos com a regra do toque encaixada e sem ela. Compare o que aparece e repita quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',
@@ -343,7 +343,8 @@ const aula2 = {
         required: true,
         semPerguntaFinal: true,
         title: 'Quantos você já encontrou?',
-        instructions: 'Encontre um personagem. Olhe o valor guardado em achados e o placar.',
+        instructions:
+          'Encontre um personagem e olhe o número de achados. Compare com um toque na grama e em quem já apareceu.',
         hints: [],
         activity: {
           type: 'experimentation',

@@ -20,7 +20,7 @@ O conceito central é ligar um acontecimento a uma reação e aplicar a reação
 
 Preservar a ilustração das cócegas e a risada do Zappy. O vídeo nomeia ação e reação, liga a ideia ao jogo e propõe observar o que muda quando existe uma reação ligada ao toque. Os controles e as sugestões de comparação ficam na atividade.
 
-O motor escolhe as falas conforme a regra, o último teste e as descobertas. Arbusto e pedras estão disponíveis desde o início. A pessoa pode ligar a reação primeiro ou testar sem ela. Esconder de novo prepara outra tentativa e conserva a ligação e as descobertas. O diagrama destaca quem recebeu o toque; apenas o esconderijo escolhido reage. Todos os controles pertinentes continuam disponíveis, inclusive depois de concluir.
+O motor escolhe as falas conforme a regra, o último teste e as descobertas. Arbusto e pedras estão disponíveis desde o início. A pessoa pode encaixar a regra primeiro ou testar sem ela (desde 08/11/2026 a regra é uma PEÇA, "Quando tocar → mostrar", que encaixa num slot desenhado em cima do jardim). Esconder de novo prepara outra tentativa e conserva a ligação e as descobertas. O diagrama destaca quem recebeu o toque; apenas o esconderijo escolhido reage. Todos os controles pertinentes continuam disponíveis, inclusive depois de concluir.
 
 Manter os componentes reais, o diagrama colorido, o estado da ligação, as descobertas, as pistas, o desfazer e o resumo final. Cor acompanha rótulos e ícones. Texto, Ouvir e botão principal correspondem à mesma etapa. Não iniciar áudio inesperado ao trocar a fala.
 

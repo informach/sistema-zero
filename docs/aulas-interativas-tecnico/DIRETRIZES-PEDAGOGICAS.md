@@ -316,6 +316,18 @@ Primeira aplicação: a câmera lenta do Farol, Dia 1 (registro em `modulos-desa
 
 Ficam fora do vídeo: o tour pelos controles ("Olha aqui: nesta experiência, este botão…", "aqui você vê…"), os nomes dos botões, a sequência de testes ("faça X e depois Y", "nas duas vezes", "depois teste mais…") e o que a cena mostra quando ela testa. Na tela, o vídeo só amplia a experiência e mostra a cena parada. A instrução da página tem uma ou duas frases no mesmo molde ("Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser."). Referência: `cade-todo-mundo-aula-2.roteiro.md`, parte 2. A aula 1 do Desafio e o Cadê já estavam gravados e ficaram como estão; o guarda é `qa/convite-da-experiencia.test.ts`.
 
+**A moldura das experiências livres (08/11/2026).** Uma criança testou as experiências do Cadê e do Farol e não entendeu o que fazer. A proposta aprovada pela responsável (Canvas "Experiências do Cadê e do Farol") virou a moldura de TODAS as experiências livres (`scene-discovery-frame.tsx` no member-shell):
+
+- **Uma fala curta do Zappy por vez** (no máximo 12 palavras, nas experiências novas), que muda com o estado. Depois do primeiro gesto da criança e com o som ligado, a voz do Zappy toca SOZINHA a cada fala nova, sem pausar os quadros da cena. O botão de som, na linha de cima, desliga os sons e a voz automática neste aparelho.
+- **Cartões de pergunta, só de leitura.** A criança explora na ordem que quiser; o cartão vira "Descobri: …" quando a descoberta cai, com uma estrela, o selo "Você descobriu!" no palco e um som. Nada de escolher um cartão para pedir dica.
+- **Controles com a forma do que imitam**, dentro da cena ou num painel logo abaixo dela, cada um num módulo com o nome do que é no jogo: a tecla de seta igual à do teclado (e o WASD), as quatro setas para andar livre, Devagar e Rápido, a cerca da beirada, o lápis do caderninho do jogo, a peça da regra que encaixa, os números com − e +.
+- **O palco é a tela do jogo** que a criança vai montar: o mesmo cenário, as coisas nos mesmos lugares e o personagem começando onde começa no jogo.
+- **Sons do jogo** quando algo acontece (pegar a chave, a porta trancar ou abrir, o ponto somar, cada quadro no Devagar).
+- **"Seus testes"**: fotinhos dos testes feitos, para comparar sem depender da memória.
+- **No fim, a ideia no balão do Zappy**, com "No seu jogo:" (a ponte para a montagem, sem nome de bloco) e o "Ouvir" lendo as duas frases.
+- **Recomeçar pede confirmação** ("Apagar as descobertas?").
+- Nomes de variável (como `temChave`) só aparecem na montagem.
+
 Aplicar a direção de 26/10/2026 em [Conceito, investigação e construção](DESCOBERTA-GUIADA.md#explorar-para-compreender-direção-de-26102026). Distinguir editar uma regra, dar uma entrada e executar o teste. As palavras do controle precisam dizer qual dessas operações acontece. Não apresentar uma tecla como se fosse um bloco nem apagar uma coleta ao editar a regra depois do encontro.
 
 Simplicidade não significa limitar a experiência a um ou dois cliques. Oferecer repetição suficiente para perceber a relação: muitos quadros para movimento; ida e volta nos eixos; reação ligada/desligada em objetos diferentes; novo achado, vazio e repetição para contagem. Os objetivos são observações que podem ser feitas em qualquer ordem. Manter referências visuais permanentes quando elas tornam a comparação possível.

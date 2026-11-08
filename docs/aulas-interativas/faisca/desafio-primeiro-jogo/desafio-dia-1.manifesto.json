@@ -1727,11 +1727,11 @@
         "required": true,
         "title": "O jogo em câmera lenta",
         "semPerguntaFinal": true,
-        "instructions": "Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem dos testes e pode repetir quando quiser.",
         "hints": [
-          "Repare nas pegadas e na tira de quadros enquanto a seta está apertada.",
-          "Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.",
-          "Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos."
+          "Repare nas pegadas e nos quadros do jogo enquanto a seta está apertada.",
+          "Compare os quadros com a seta solta e, em seguida, Devagar com Rápido.",
+          "Escolha Devagar e segure a seta. Solte a seta e deixe passar alguns quadros. Escolha Rápido e segure a seta por alguns segundos."
         ],
         "activity": {
           "type": "experimentation",
@@ -1743,15 +1743,15 @@
             "goalCopy": {
               "moves-each-frame": {
                 "label": "Um passinho a cada quadro",
-                "pedido": "Clique em Câmera lenta, segure a seta e observe a tira de quadros."
+                "pedido": "Escolha Devagar, segure a seta e olhe os quadros do jogo."
               },
               "stopped-after-release": {
                 "label": "Seta solta, personagem parado",
-                "pedido": "Em câmera lenta, solte a seta e observe os próximos quadros."
+                "pedido": "Em Devagar, solte a seta e olhe os próximos quadros."
               },
               "walked-real-speed": {
                 "label": "Os passinhos viraram uma caminhada",
-                "pedido": "Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare."
+                "pedido": "Escolha Rápido, segure a seta por alguns segundos e compare."
               }
             }
           }
@@ -1772,7 +1772,7 @@
     },
     {
       "key": "video-d1-limite",
-      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.\",\"ancoraDepois\":\"O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, este botão liga e\",\"falaPrincipal\":\"E se eu ligar o limite com ele já fora da tela?\",\"falaPersonagem\":\"E se eu ligar o limite com ele já fora da tela?\",\"tags\":[\"[curious]\"]}]"
+      "plannedVideo": "Título: Até onde ele pode ir?\n\nMaster integral da professora. Roteiro: desafio-dia-1.roteiro.md. Substituições kids: [{\"id\":\"video-d1-limite-K1\",\"clipe\":\"video-d1-limite\",\"personagem\":\"Debinha\",\"ocorrencia\":1,\"ancoraAntes\":\"Depois, o jogo confere se ele passou da beirada e, se passou, puxa ele de volta para dentro. Isso é o limite da tela.\",\"ancoraDepois\":\"O que você acha que acontece? Isso você vai testar na experiência. Olha aqui: nesta experiência, esta cerca liga e\",\"falaPrincipal\":\"E se eu ligar o limite com ele já fora da tela?\",\"falaPersonagem\":\"E se eu ligar o limite com ele já fora da tela?\",\"tags\":[\"[curious]\"]}]"
     },
     {
       "key": "ponte-d1-limite",
@@ -1789,11 +1789,11 @@
         "required": true,
         "title": "A beirada da tela",
         "semPerguntaFinal": true,
-        "instructions": "Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
         "hints": [
           "Olhe a faixa fora da tela quando o personagem chega na beirada.",
-          "E se o limite for ligado com ele já fora da tela? Observe o próximo quadro.",
-          "Com o limite desligado, clique em Velocidade de verdade e segure a seta até ele sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada."
+          "E se a cerca for ligada com ele já fora da tela? Olhe o próximo quadro.",
+          "Com a cerca desligada, escolha Rápido e segure a seta até ele sair da tela. Ligue a cerca. Escolha Devagar e segure a seta na beirada."
         ],
         "activity": {
           "type": "experimentation",
@@ -1805,15 +1805,15 @@
             "goalCopy": {
               "left-the-screen": {
                 "label": "Sem o limite, ele saiu da tela",
-                "pedido": "Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela."
+                "pedido": "Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela."
               },
               "came-back-inside": {
                 "label": "Com o limite ligado, ele voltou para dentro",
-                "pedido": "Com ele fora da tela, clique em Ligar o limite da tela e observe o próximo quadro."
+                "pedido": "Com o personagem fora da tela, ligue a cerca e olhe o próximo quadro."
               },
               "stayed-inside": {
                 "label": "Com o limite, ele ficou na beirada",
-                "pedido": "Com o limite ligado, leve o personagem até a beirada, clique em Câmera lenta e observe a tira."
+                "pedido": "Com a cerca ligada, leve o personagem até a beirada, escolha Devagar e olhe os quadros."
               }
             }
           }

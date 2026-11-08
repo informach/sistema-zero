@@ -86,7 +86,7 @@ Comparar os dois modos em qualquer ordem: recolher sem guardar; recolher guardan
 
 **Convite da experiência:** Faça o personagem pegar a chave com a memória da chave ligada e com ela desligada, e compare a chave, o aviso e temChave. Depois teste se temChave muda quando o personagem se afasta e quando começa uma partida nova. Você escolhe a ordem dos testes e pode repetir quando quiser.
 
-**Só a ideia e convite à investigação, 02/11/2026 (decisões da responsável, régua do Dia 1 e do Cadê):** a experiência não fala de regra, ação nem bloco. O que liga e desliga é a **memória da chave** (botão **Ligar a memória da chave**), e a figura do encontro diz "A chave sai do chão", "O jogo guarda em temChave" e "O aviso muda". O vídeo apresenta as três coisas que podem acontecer no encontro e devolve a pergunta do Dedé ("O que você acha? Isso você vai testar na experiência."). O Zappy pergunta e diz o que observar antes de cada teste e explica depois; as pistas vão do aberto ao direto, com os botões reais. Na montagem, cada bloco é ligado à ideia ("É este bloco que tira a chave do chão", "É este bloco que liga a memória da chave", "É este bloco que muda o aviso").
+**Só a ideia e convite à investigação, 02/11/2026 (decisões da responsável, régua do Dia 1 e do Cadê):** a experiência não fala de regra, ação nem bloco. O que liga e desliga é a **memória da chave** (desde 08/11/2026, o **lápis** do **Caderninho do jogo**, que escreve "Tem a chave? SIM/NÃO"; `temChave` só aparece na montagem). O vídeo apresenta as três coisas que podem acontecer no encontro e devolve a pergunta do Dedé ("O que você acha? Isso você vai testar na experiência."). O Zappy pergunta e diz o que observar antes de cada teste e explica depois; as pistas vão do aberto ao direto, com os botões reais. Na montagem, cada bloco é ligado à ideia ("É este bloco que tira a chave do chão", "É este bloco que liga a memória da chave", "É este bloco que muda o aviso").
 
 ### Seção 2. Recolha a chave
 
@@ -123,7 +123,7 @@ Testar coleta, mudança do aviso e reinício por Atualizar, que a fala pede ("Ag
 
 ## Experiências e demonstrações desta aula
 
-Cena `collect-and-remember`, cenário Farol, em exploração livre: Ligar a memória da chave, Encostar na chave, Afastar e Recomeçar a partida. Quatro metas: coletar sem memória, coletar com memória, conservar a informação ao afastar e reiniciar depois da coleta guardada. O reinício mantém a memória escolhida e as descobertas, mas recoloca a chave e temChave falso. A memória pode ser ligada ou desligada depois da coleta; a mudança vale para o próximo encontro. Sem palpite ou pergunta final obrigatórios.
+Cena `collect-and-remember`, cenário Farol, em exploração livre (moldura nova, 08/11/2026): o personagem anda LIVRE em 4 direções (setas e WASD, ou as quatro teclas na tela) e pega a chave encostando nela; afastar-se é andar para longe; o lápis liga a anotação; **Jogar de novo** é a partida nova. Quatro metas: coletar sem memória, coletar com memória, conservar a informação ao afastar e reiniciar depois da coleta guardada. O reinício mantém a memória escolhida e as descobertas, mas recoloca a chave e temChave falso. A memória pode ser ligada ou desligada depois da coleta; a mudança vale para o próximo encontro. Sem palpite ou pergunta final obrigatórios.
 
 A verificação é cumulativa em cada montagem: a parte 2 confere o movimento e a retirada; a parte 3 acrescenta temChave; a entrega confere os nove critérios. O texto do aviso pode usar palavras próprias; o teste jogado confere seu sentido.
 

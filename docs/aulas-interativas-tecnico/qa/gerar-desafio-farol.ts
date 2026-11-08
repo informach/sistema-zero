@@ -330,27 +330,26 @@ const dia1 = {
     experienciaAndar(
       'experiencia-quadro',
       'O jogo em câmera lenta',
-      'Compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+      'Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem dos testes e pode repetir quando quiser.',
       ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       {
         'moves-each-frame': {
           label: 'Um passinho a cada quadro',
-          pedido: 'Clique em Câmera lenta, segure a seta e observe a tira de quadros.',
+          pedido: 'Escolha Devagar, segure a seta e olhe os quadros do jogo.',
         },
         'stopped-after-release': {
           label: 'Seta solta, personagem parado',
-          pedido: 'Em câmera lenta, solte a seta e observe os próximos quadros.',
+          pedido: 'Em Devagar, solte a seta e olhe os próximos quadros.',
         },
         'walked-real-speed': {
           label: 'Os passinhos viraram uma caminhada',
-          pedido:
-            'Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare.',
+          pedido: 'Escolha Rápido, segure a seta por alguns segundos e compare.',
         },
       },
       [
-        'Repare nas pegadas e na tira de quadros enquanto a seta está apertada.',
-        'Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.',
-        'Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos.',
+        'Repare nas pegadas e nos quadros do jogo enquanto a seta está apertada.',
+        'Compare os quadros com a seta solta e, em seguida, Devagar com Rápido.',
+        'Escolha Devagar e segure a seta. Solte a seta e deixe passar alguns quadros. Escolha Rápido e segure a seta por alguns segundos.',
       ],
     ),
     video('video-d1-andar', 'Faça o personagem andar', 'desafio-dia-1.roteiro.md'),
@@ -368,29 +367,28 @@ const dia1 = {
     experienciaAndar(
       'experiencia-limite',
       'A beirada da tela',
-      'Compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+      'Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.',
       ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       {
         'left-the-screen': {
           label: 'Sem o limite, ele saiu da tela',
           pedido:
-            'Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela.',
+            'Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela.',
         },
         'came-back-inside': {
           label: 'Com o limite ligado, ele voltou para dentro',
-          pedido:
-            'Com ele fora da tela, clique em Ligar o limite da tela e observe o próximo quadro.',
+          pedido: 'Com o personagem fora da tela, ligue a cerca e olhe o próximo quadro.',
         },
         'stayed-inside': {
           label: 'Com o limite, ele ficou na beirada',
           pedido:
-            'Com o limite ligado, leve o personagem até a beirada, clique em Câmera lenta e observe a tira.',
+            'Com a cerca ligada, leve o personagem até a beirada, escolha Devagar e olhe os quadros.',
         },
       },
       [
         'Olhe a faixa fora da tela quando o personagem chega na beirada.',
-        'E se o limite for ligado com ele já fora da tela? Observe o próximo quadro.',
-        'Com o limite desligado, clique em Velocidade de verdade e segure a seta até ele sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada.',
+        'E se a cerca for ligada com ele já fora da tela? Olhe o próximo quadro.',
+        'Com a cerca desligada, escolha Rápido e segure a seta até ele sair da tela. Ligue a cerca. Escolha Devagar e segure a seta na beirada.',
       ],
     ),
     video('video-d1-borda', 'Mantenha o personagem na tela', 'desafio-dia-1.roteiro.md'),
@@ -464,11 +462,11 @@ const dia2 = {
         // pistas do modelo citam "Guardar a coleta", que esta tela não tem: do aberto ao direto.
         // Molde do Cadê (02/11/2026): a instrução diz o que comparar, sem sequência de testes.
         instructions:
-          'Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.',
+          'Ande até a chave e olhe o caderninho do jogo, com o lápis ligado e desligado. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [
-          'Olhe a chave, o aviso e temChave: são três coisas diferentes.',
-          'Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.',
-          'Se a chave não estiver no chão, clique em Recomeçar a partida. Com a memória desligada, clique em Encostar na chave. Depois clique em Ligar a memória da chave, em Recomeçar a partida e em Encostar na chave. Por último, clique em Afastar e em Recomeçar a partida, observando temChave.',
+          'Olhe a chave no chão e o caderninho do jogo: são coisas diferentes.',
+          'Compare o caderninho depois de pegar a chave com o lápis desligado e com o lápis ligado.',
+          'Com o lápis desligado, ande até a chave. Ligue o lápis, toque em Jogar de novo e pegue a chave. Ande para longe da chave e toque em Jogar de novo, olhando o caderninho.',
         ],
         activity: {
           type: 'experimentation',
@@ -480,19 +478,16 @@ const dia2 = {
             // "Guardar a coleta", da bancada antiga).
             goalCopy: {
               'collected-without-memory': {
-                pedido:
-                  'Com a memória da chave desligada, clique em Encostar na chave e observe temChave.',
+                pedido: 'Com o lápis desligado, ande até a chave e olhe o caderninho.',
               },
               'collected-with-memory': {
-                pedido:
-                  'Clique em Ligar a memória da chave, recomece a partida e clique em Encostar na chave.',
+                pedido: 'Ligue o lápis, toque em Jogar de novo e pegue a chave.',
               },
               'remembered-after-leaving': {
-                pedido: 'Depois de o jogo guardar a chave, clique em Afastar e observe temChave.',
+                pedido: 'Com SIM no caderninho, ande para longe da chave e olhe o caderninho.',
               },
               'reset-after-remembering': {
-                pedido:
-                  'Depois de o jogo guardar a chave, clique em Recomeçar a partida e observe temChave.',
+                pedido: 'Com SIM no caderninho, toque em Jogar de novo e olhe o caderninho.',
               },
             },
           },
@@ -579,11 +574,11 @@ const dia3 = {
         // A pergunta da porta com "sim" e "não" (então/senão ficam para a montagem). A pista do
         // modelo cita "Levar a chave", que esta tela não tem.
         instructions:
-          'Compare a resposta da porta e temChave com o personagem sem a chave e com a chave. Você escolhe a ordem e pode repetir quando quiser.',
+          'Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [
-          'Olhe temChave antes de testar a porta.',
-          'Compare a resposta da porta com temChave falso e com temChave verdadeiro.',
-          'Se o personagem estiver com a chave, clique em Tirar a chave do personagem. Clique em Testar a porta. Depois clique em Dar a chave ao personagem e em Testar a porta de novo.',
+          'Olhe o caderninho antes de chegar à porta.',
+          'Compare a resposta da porta com NÃO e com SIM no caderninho.',
+          'Toque em Jogar de novo e ande direto até a porta. Toque em Jogar de novo, pegue a chave no chão e ande até a porta.',
         ],
         activity: {
           type: 'experimentation',
@@ -591,10 +586,8 @@ const dia3 = {
           setup: {
             freeExploration: true,
             goalCopy: {
-              'locked-without-key': { pedido: 'Sem a chave, clique em Testar a porta.' },
-              'opened-with-key': {
-                pedido: 'Clique em Dar a chave ao personagem e em Testar a porta.',
-              },
+              'locked-without-key': { pedido: 'Sem pegar a chave, ande até a porta do farol.' },
+              'opened-with-key': { pedido: 'Pegue a chave no chão e ande até a porta do farol.' },
             },
           },
           cenario: 'farol',
@@ -637,7 +630,7 @@ const dia3 = {
         // x para menos…"), sem contar para que lado o número leva a chave. O alvo opcional fica na
         // própria cena (molde do Cadê, 02/11/2026: a instrução diz só o que comparar).
         instructions:
-          'Compare para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.',
+          'Use o − e o + de cada número e compare para onde a chave vai. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',

@@ -641,11 +641,11 @@
           "kind": "interactive",
           "required": true,
           "title": "A nave em câmera lenta",
-          "instructions": "Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
-            "Repare nas marcas e na tira de quadros enquanto você segura a seta.",
-            "Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade.",
-            "Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos."
+            "Repare nas marcas e nos quadros do jogo enquanto você segura a seta.",
+            "Compare os quadros com a seta solta e, em seguida, Devagar com Rápido.",
+            "Escolha Devagar e segure a seta. Solte a seta e deixe passar alguns quadros. Escolha Rápido e segure a seta por alguns segundos."
           ],
           "semPerguntaFinal": true,
           "activity": {
@@ -658,15 +658,15 @@
               "goalCopy": {
                 "moves-each-frame": {
                   "label": "Um passinho a cada quadro",
-                  "pedido": "Clique em Câmera lenta, segure a seta e observe a tira de quadros."
+                  "pedido": "Escolha Devagar, segure a seta e olhe os quadros do jogo."
                 },
                 "stopped-after-release": {
                   "label": "Seta solta, nave parada",
-                  "pedido": "Em câmera lenta, solte a seta e observe os próximos quadros."
+                  "pedido": "Em Devagar, solte a seta e olhe os próximos quadros."
                 },
                 "walked-real-speed": {
                   "label": "Os passinhos viraram um voo",
-                  "pedido": "Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare."
+                  "pedido": "Escolha Rápido, segure a seta por alguns segundos e compare."
                 }
               }
             }
@@ -840,11 +840,11 @@
           "kind": "interactive",
           "required": true,
           "title": "A beirada da tela",
-          "instructions": "Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.",
+          "instructions": "Compare a nave na beirada com a cerca desligada e com a cerca ligada, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.",
           "hints": [
             "Olhe a faixa fora da tela quando a nave chega na beirada.",
-            "E se o limite for ligado com a nave já fora da tela? Observe o próximo quadro.",
-            "Com o limite desligado, clique em Velocidade de verdade e segure a seta até a nave sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada."
+            "E se a cerca for ligada com a nave já fora da tela? Olhe o próximo quadro.",
+            "Com a cerca desligada, escolha Rápido e segure a seta até a nave sair da tela. Ligue a cerca. Escolha Devagar e segure a seta na beirada."
           ],
           "semPerguntaFinal": true,
           "activity": {
@@ -857,15 +857,15 @@
               "goalCopy": {
                 "left-the-screen": {
                   "label": "Sem o limite, a nave saiu da tela",
-                  "pedido": "Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela."
+                  "pedido": "Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela."
                 },
                 "came-back-inside": {
                   "label": "Com o limite ligado, a nave voltou para dentro",
-                  "pedido": "Com a nave fora da tela, clique em Ligar o limite da tela e observe o próximo quadro."
+                  "pedido": "Com a nave fora da tela, ligue a cerca e olhe o próximo quadro."
                 },
                 "stayed-inside": {
                   "label": "Com o limite, a nave ficou na beirada",
-                  "pedido": "Com o limite ligado, leve a nave até a beirada, clique em Câmera lenta e observe a tira."
+                  "pedido": "Com a cerca ligada, leve a nave até a beirada, escolha Devagar e olhe os quadros."
                 }
               }
             }
