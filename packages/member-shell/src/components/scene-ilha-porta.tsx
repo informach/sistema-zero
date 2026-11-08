@@ -63,7 +63,6 @@ export const AVISOS = {
   apagado: 'O farol continua apagado.',
 } as const
 
-/** O andar do jogo 3D: as setas andam no chão (x e z), com a velocidade do `topDown` (4). */
 /**
  * Para onde as setas levam, girando com a câmera: a MESMA conta do runtime do Jogo 3D
  * (`controlWithKeys` no modo `framed`). `ix` é → menos ←, `iz` é ↓ menos ↑ ("para cima" é para longe
@@ -75,6 +74,7 @@ export function setasNaVista(ix: number, iz: number) {
   return { vx: ix * ca + iz * sa, vz: iz * ca - ix * sa }
 }
 
+/** O andar do jogo 3D: as setas andam no chão (x e z), com a velocidade do `topDown` (4). */
 export function useAndar3D(inicio: Ponto, velocidade = 4) {
   const [pos, setPos] = useState(inicio)
   const [rumo, setRumo] = useState(Math.PI / 2)
@@ -145,6 +145,7 @@ export function IlhaDoJogo({
   aceso,
   aviso,
   balao,
+  onPronto,
 }: {
   heroi: Ponto
   rumo: number
@@ -152,12 +153,21 @@ export function IlhaDoJogo({
   aceso: boolean
   aviso: string
   balao: BalaoDaIlha | null
+  /** Avisa quando a cena fica pronta (antes disso a tela não deixa andar às cegas). */
+  onPronto?: (pronto: boolean) => void
 }) {
   const host = useRef<HTMLDivElement>(null)
   const atual = useRef({ heroi, rumo, chaveNoChao, aceso })
   const update = useRef<(() => void) | null>(null)
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [ancora, setAncora] = useState<{ x: number; y: number } | null>(null)
+  // Cada "Tentar de novo" monta a cena outra vez.
+  const [tentativa, setTentativa] = useState(0)
+  const avisarPronto = useRef(onPronto)
+  avisarPronto.current = onPronto
+  useEffect(() => {
+    avisarPronto.current?.(status === 'ready')
+  }, [status])
   useEffect(() => {
     atual.current = { heroi, rumo, chaveNoChao, aceso }
     update.current?.()
@@ -175,10 +185,13 @@ export function IlhaDoJogo({
       renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2))
       renderer.setClearColor('#94d5f5')
       renderer.domElement.setAttribute('role', 'img')
-      renderer.domElement.setAttribute(
-        'aria-label',
-        'A ilha do jogo em 3D: o personagem, a chave perto das pedras e o farol na ilhota.',
-      )
+      const descrever = (chaveNoChao: boolean, aceso: boolean) =>
+        renderer.domElement.setAttribute(
+          'aria-label',
+          `A ilha do jogo em 3D: o personagem, ${
+            chaveNoChao ? 'a chave perto das pedras' : 'sem a chave no chão'
+          } e o farol ${aceso ? 'aceso' : 'apagado'} na ilhota.`,
+        )
       host.current.appendChild(renderer.domElement)
       world.add(new T.AmbientLight('#ffffff', 2.1))
       const sun = new T.DirectionalLight('#ffffff', 1.7)
@@ -188,6 +201,8 @@ export function IlhaDoJogo({
       let observer: ResizeObserver | undefined
       let anim: number | null = null
       cleanup = () => {
+        // Uma vez só: no erro, o `catch` limpa e a desmontagem chamaria de novo.
+        cleanup = () => {}
         observer?.disconnect()
         if (anim !== null) cancelAnimationFrame(anim)
         update.current = null
@@ -198,8 +213,12 @@ export function IlhaDoJogo({
             ? Array.isArray(m.material)
               ? m.material
               : [m.material]
-            : [])
+            : []) {
             recursos.add(mat)
+            // As texturas do GLB também (como no `IslandWorld`).
+            for (const valor of Object.values(mat))
+              if (valor instanceof T.Texture) recursos.add(valor)
+          }
         })
         for (const r of recursos) r.dispose()
         renderer.dispose()
@@ -236,6 +255,7 @@ export function IlhaDoJogo({
       const render = () => {
         if (disposed) return
         const s = atual.current
+        descrever(s.chaveNoChao, s.aceso)
         key.visible = s.chaveNoChao
         key.position.set(CHAVE.x, CHAVE_Y, CHAVE.z)
         hero.position.set(s.heroi.x, 0.8, s.heroi.z)
@@ -295,8 +315,9 @@ export function IlhaDoJogo({
       update.current()
       setStatus('ready')
     }
-    mount().catch(() => {
+    mount().catch((erro) => {
       if (!disposed) {
+        console.error('[ilha-do-farol] a cena 3D não abriu', erro)
         cleanup()
         setStatus('error')
       }
@@ -305,7 +326,7 @@ export function IlhaDoJogo({
       disposed = true
       cleanup()
     }
-  }, [])
+  }, [tentativa])
   return (
     <div
       className="sz-island-world sz-discovery-livre-ilha-jogo"
@@ -316,6 +337,10 @@ export function IlhaDoJogo({
       <div ref={host} className="sz-island-canvas" />
       <span className="sz-discovery-livre-ilha-aviso" role="status">
         {aviso}
+      </span>
+      {/* A resposta da porta para o leitor de tela (o balão é desenho preso ao farol). */}
+      <span className="sr-only" aria-live="polite">
+        {balao && status === 'ready' ? balao.texto : ''}
       </span>
       {balao && ancora && status === 'ready' ? (
         <span
@@ -329,7 +354,18 @@ export function IlhaDoJogo({
       ) : null}
       {status === 'loading' && <p role="status">Preparando a ilha…</p>}
       {status === 'error' && (
-        <p role="alert">Não foi possível abrir a cena 3D. Reabra a aula para tentar novamente.</p>
+        <div role="alert" className="sz-discovery-livre-ilha-erro">
+          <p>Não foi possível abrir a ilha.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setStatus('loading')
+              setTentativa((t) => t + 1)
+            }}
+          >
+            Tentar de novo
+          </button>
+        </div>
       )}
     </div>
   )

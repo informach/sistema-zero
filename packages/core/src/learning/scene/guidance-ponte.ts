@@ -19,7 +19,7 @@ export const PONTE_SPEECH = {
   'bridge-rose': 'Subiu sozinha! Saia e volte à alavanca.',
   'bridge-place': 'E se o relógio começar com a partida?',
   'bridge-free': 'Ande, puxe e compare o relógio.',
-  'bridge-crossed': 'O sino tocou! E se esperar o relógio chegar a 4?',
+  'bridge-crossed': 'O sino tocou! Jogue de novo e espere chegar a 4.',
   'bridge-crossed-again': 'O sino tocou! Toque em Jogar de novo e teste mais.',
   'bridge-clock-start': 'Agora o relógio conta desde o primeiro passo. Ande!',
   'bridge-clock-running': 'O relógio já está contando! Vá até a alavanca.',

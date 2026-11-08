@@ -89,10 +89,13 @@ export function CabanaLivre() {
       p.dispatch({ type: 'take-piece', piece: alvo })
     }
   })
-  const porta = useRef(k.at)
+  // A porta soa quando o personagem chega nela ou a resposta muda (trocar "e" por "ou" parado ali).
+  const porta = useRef({ at: k.at, door: k.door })
   useEffect(() => {
-    if (k.at === 'door' && porta.current !== 'door') k.door === 'open' ? SONS.abre() : SONS.tranca()
-    porta.current = k.at
+    const antes = porta.current
+    if (k.at === 'door' && (antes.at !== 'door' || antes.door !== k.door))
+      k.door === 'open' ? SONS.abre() : SONS.tranca()
+    porta.current = { at: k.at, door: k.door }
   }, [k.at, k.door])
   const jogarDeNovo = () => {
     andar.voltar()

@@ -17,7 +17,7 @@ import {
   discoverySpeech,
   lighthouseDoorAnswer,
 } from '@sistemazero/core/learning/scene'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { SONS } from '../lib/scene-sons'
 import {
   BotaoGrande,
@@ -72,7 +72,15 @@ const fotoDe: FotoDe = (_antes, depois, acao) => {
 }
 
 export function PortaDoNao() {
-  const andar = useAndar3D(INICIO)
+  const andar3d = useAndar3D(INICIO)
+  // Antes de a ilha aparecer, o personagem não anda (andaria às cegas e as descobertas cairiam).
+  const [pronto, setPronto] = useState(false)
+  const andar = {
+    ...andar3d,
+    segurar: (d: Parameters<typeof andar3d.segurar>[0]) => {
+      if (pronto) andar3d.segurar(d)
+    },
+  }
   const p = useFotinhos({ fotoDe })
   const l = p.state.lighthouse
   const not = l.not === true
@@ -84,12 +92,14 @@ export function PortaDoNao() {
   const longe = ateOFarol > LONGE_DO_FAROL
   const testou = typeof l.checkedKey === 'boolean'
   const { dispatch } = p
+  // Com o farol aceso, a chave fica no chão até jogar de novo (pegar mudaria a pergunta e apagaria o
+  // farol, que fica aceso até a partida nova).
   useEffect(() => {
-    if (naChave && !l.hasKey) {
+    if (naChave && !l.hasKey && l.door !== 'open') {
       SONS.pegar()
       dispatch({ type: 'key-state', hasKey: true })
     }
-  }, [naChave, l.hasKey, dispatch])
+  }, [naChave, l.hasKey, l.door, dispatch])
   useEffect(() => {
     if (naPorta && !testou) dispatch({ type: 'try-lighthouse-door' })
   }, [naPorta, testou, dispatch])
@@ -152,6 +162,7 @@ export function PortaDoNao() {
           aceso={l.door === 'open'}
           aviso={aviso}
           balao={balao}
+          onPronto={setPronto}
         />
       }
       controles={
@@ -168,6 +179,7 @@ export function PortaDoNao() {
               pulsar={testou && !f(`not-flips-${chave}`)}
               aria={not ? 'Tirar o não da pergunta' : 'Encaixar o não na pergunta'}
               onClick={() => {
+                if (!pronto) return
                 SONS.encaixe()
                 dispatch({ type: 'door-question', not: !not })
               }}

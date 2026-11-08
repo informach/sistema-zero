@@ -65,6 +65,8 @@ export function IslandWorld({
         })
       let observer: ResizeObserver | undefined
       cleanup = () => {
+        // Uma vez só: no erro, o `catch` limpa e a desmontagem chamaria de novo.
+        cleanup = () => {}
         observer?.disconnect()
         update.current = null
         release(world)

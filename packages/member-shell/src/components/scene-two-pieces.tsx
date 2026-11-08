@@ -77,7 +77,9 @@ export function TwoPiecesStage({
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="A porta com duas peças"
-      descricao={`Tem a chave: ${p.temChave ? 'sim' : 'não'}. Tem o emblema: ${p.temEmblema ? 'sim' : 'não'}. A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}. O aviso do jogo diz: ${aviso}`}
+      // Na tela livre (com `heroi`) a variável só aparece na montagem; nos quizzes e nas bancadas, o
+      // leitor de tela continua lendo o nome dela, como a tela escreve (full review 08/11/2026).
+      descricao={`${heroi ? `Tem a chave: ${p.temChave ? 'sim' : 'não'}. Tem o emblema: ${p.temEmblema ? 'sim' : 'não'}.` : `temChave é ${sim(p.temChave)} e temEmblema é ${sim(p.temEmblema)}.`} A cabana está ${p.door === 'open' ? 'aberta' : 'fechada'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"

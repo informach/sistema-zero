@@ -124,9 +124,10 @@ describe('a ilha do jogo: os lugares e as setas', () => {
     expect(cima.vz).toBeCloseTo(-Math.cos(VISTA.az))
     expect(cima.vx).toBeGreaterThan(0)
     expect(cima.vz).toBeLessThan(0)
-    // Sem giro, as setas seriam o x e o z do mundo.
+    // → é a direita da câmera: (cos az, −sin az). Sem giro, as setas seriam o x e o z do mundo.
     const direita = setasNaVista(1, 0)
-    expect(Math.hypot(direita.vx, direita.vz)).toBeCloseTo(1)
+    expect(direita.vx).toBeCloseTo(Math.cos(VISTA.az))
+    expect(direita.vz).toBeCloseTo(-Math.sin(VISTA.az))
   })
 })
 

@@ -149,11 +149,27 @@ export function IslandDiscovery() {
   )
   const repetir = useRepetir()
   const [segurando, setSegurando] = useState<ReadonlySet<Direcao>>(new Set())
+  // As setas seguras, na ordem: soltar uma volta a andar com a que continua segura (a última vale).
+  const seguras = useRef<Direcao[]>([])
+  const segurarSeta = (d: Direcao) => {
+    if (!pronto) return
+    seguras.current = [...seguras.current.filter((x) => x !== d), d]
+    setSegurando(new Set(seguras.current))
+    repetir.segurar(() => andarUm(d))
+  }
+  const soltarSeta = (d: Direcao) => {
+    seguras.current = seguras.current.filter((x) => x !== d)
+    setSegurando(new Set(seguras.current))
+    const outra = seguras.current.at(-1)
+    if (outra) repetir.continuar(() => andarUm(outra))
+    else repetir.parar()
+  }
 
   // O gesto que mexe e, no contato, o jogo conferindo o encontro logo depois.
   const atual = useRef(s)
   atual.current = s
   const mudar = (eixo: Eixo, d: 1 | -1) => {
+    if (!pronto) return
     const k = atual.current.key[eixo]
     const novo = k + d * 0.5
     if (novo < (eixo === 'y' ? 0 : -4) || novo > 4) {
@@ -230,6 +246,8 @@ export function IslandDiscovery() {
             }
             disabled={!pronto}
             onClick={() => {
+              // A câmera que já está aqui não muda nada (nem descobre "olhar de outro lugar").
+              if (v.v === s.view) return
               p.dispatch({ type: 'island-view', view: v.v })
               // No contato, o jogo confere o encontro o tempo todo: olhar de outro lugar também é
               // ver o resultado do encontro (a descoberta cai quando a criança olha, não no passo).
@@ -383,14 +401,8 @@ export function IslandDiscovery() {
               <Cruzeta
                 raiz={raiz}
                 segurando={segurando}
-                segurar={(d) => {
-                  setSegurando(new Set([d]))
-                  repetir.segurar(() => andarUm(d))
-                }}
-                soltar={() => {
-                  setSegurando(new Set())
-                  repetir.parar()
-                }}
+                segurar={segurarSeta}
+                soltar={soltarSeta}
                 mao={f('contact-touch') && p.fotos.length < 3}
               />
             </Modulo>

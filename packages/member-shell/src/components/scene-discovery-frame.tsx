@@ -73,6 +73,11 @@ export const DiscoveryContext = createContext<{
    * `dispatch`, cada tique apagaria o aviso da descoberta que acabou de cair.
    */
   tick?: (seconds: number) => void
+  /**
+   * Um passo do relógio do JOGO que não é gesto da criança (o segundo da ponte, 08/11/2026): como o
+   * `tick`, não apaga o aviso da descoberta nem a frase "Continuamos de onde você parou.".
+   */
+  tempo?: (a: SceneAction) => void
   dialogue: (text: string, opcoes?: FalaDaDescoberta) => ReactNode
   tools: ReactNode
   /** Só o "Continuar para a pergunta" (as telas da moldura nova não mostram o Desfazer nem a pista). */

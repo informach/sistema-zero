@@ -1387,6 +1387,9 @@ export function SceneActivityView({
                       running,
                       setRunning,
                       tick: (seconds) => action.current({ type: 'advance', seconds }),
+                      tempo: (a) => {
+                        if (ready && !conflict && !previsaoPendente) action.current(a)
+                      },
                       instruction,
                       dialogue: (text, opcoes) =>
                         opcoes

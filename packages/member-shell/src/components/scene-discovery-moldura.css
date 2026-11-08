@@ -1738,6 +1738,27 @@
   cursor: wait;
 }
 /* A ilha do jogo em 3D (aula 3): o aviso do jogo no alto e o balão preso ao farol. */
+/* A ilha não abriu: o recado e o "Tentar de novo" no meio da cena. */
+.sz-discovery-livre-ilha-erro {
+  position: absolute;
+  inset: 35% 1rem auto;
+  z-index: 3;
+  display: grid;
+  justify-items: center;
+  gap: 0.6rem;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: var(--color-card);
+  text-align: center;
+}
+.sz-discovery-livre-ilha-erro button {
+  min-height: 44px;
+  border-radius: 999px;
+  padding: 0 1.1rem;
+  background: var(--sz-kids-acao, var(--primary));
+  color: #fff;
+  font-weight: 800;
+}
 .sz-discovery-livre-ilha-aviso {
   position: absolute;
   top: 10px;

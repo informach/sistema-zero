@@ -95,9 +95,11 @@
             "freeExploration": true,
             "goalCopy": {
               "contact-apart": {
+                "label": "Parecer junto não é encostar",
                 "pedido": "Olhe de lado o personagem e a chave que de cima parecem juntos."
               },
               "contact-touch": {
+                "label": "Encostar é se tocar de verdade",
                 "pedido": "Baixe a chave até ela encostar no personagem."
               }
             }
