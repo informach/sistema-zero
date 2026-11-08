@@ -52,6 +52,7 @@ import { projectHas3DMaterials } from '../assets/has3DConsumer'
 import { HostMenuButton } from './HostMenuButton'
 import { LoadingScreen } from './LoadingViews'
 import {
+  proLayoutTier,
   STUDIO_BAR_COMPACT_MAX_PX,
   STUDIO_BAR_LABELS_MIN_PX,
   STUDIO_BAR_UNDO_MIN_PX,
@@ -464,7 +465,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
             dele é o Código, e o segmentado de um item só não dizia nada. Sem prévia (o host
             desligou) não há centro: a direita vai à ponta pelo `.sz-bar__start + .sz-bar__end`. */}
         {projectKind === 'pro' ? (
-          config.preview ? (
+          config.preview && proLayoutTier(width) !== 'phone' ? (
+            // No celular o Rodar é o botão flutuante da aba Código e o par embaixo do palco.
             <div className="sz-bar__center">
               <ProRunControls iconOnly={iconOnly} />
             </div>
@@ -499,7 +501,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
               teria o que esconder e a criança clicaria achando que o app quebrou.
               Some. Quem garante que a aba continua lá é o `previewAvailable` dos
               modos, que ignora a preferência de desktop no ramo NarrowPanels. */}
-          {config.preview && !isNarrow ? (
+          {config.preview && !isNarrow && projectKind !== 'pro' ? (
+            // No Pro quem mostra e esconde o palco é o segmentado do próprio palco (Lado a lado /
+            // Só o código / Só o jogo), e a preferência `showPreview` do clássico não vale lá.
             <BarIconButton
               label={showPreview ? t('topbar.hidePreview') : t('topbar.showPreview')}
               pressed={showPreview}

@@ -1,6 +1,7 @@
 import type * as Monaco from 'monaco-editor'
 import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { Button, Modal } from '#ui'
+import { cn, Modal } from '#ui'
+import { proFileBaseName } from '../../../components/code/proFileKinds'
 import { type ProExample, proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
 import { getMonacoModelPath } from '../../../monaco/modelPaths'
@@ -16,6 +17,21 @@ import { useProCommands } from './useProCommands'
 
 const button =
   'min-h-9 rounded px-2 text-xs hover:bg-sz-panel focus-visible:outline focus-visible:outline-sz-accent disabled:opacity-40'
+
+/** O que a faixa do editor pede daqui (as janelas moram aqui; a faixa só abre). */
+export interface ProEditorTools {
+  openSymbols(): void
+  openCommands(): void
+  findReferences(): void
+  rename(): void
+}
+
+/**
+ * A LÓGICA e as JANELAS das ferramentas de código do Pro (redesenho de 11/2026): o mapa do
+ * arquivo, "Onde isto é usado", "Trocar nome em todo lugar", a paleta "Todas as ações" e os
+ * atalhos do Monaco (`useProCommands`). Não desenha mais a faixa de botões: a faixa única sobre
+ * o código (`ProEditorStrip`) chama o `ProEditorTools` publicado por `onToolsReady`.
+ */
 export function ProCodeTools({
   path,
   tree,
@@ -33,6 +49,7 @@ export function ProCodeTools({
   format,
   help,
   examples = proCodeExamples,
+  onToolsReady,
 }: {
   path: string
   tree: ProjectTree
@@ -50,6 +67,8 @@ export function ProCodeTools({
   format: () => void
   help?: (intent: 'explain' | 'investigate' | 'change') => void
   examples?: (path: string) => ProExample[]
+  /** As ações que a faixa do editor chama (`null` ao sair). */
+  onToolsReady?: (tools: ProEditorTools | null) => void
 }) {
   const t = useT()
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -201,18 +220,19 @@ export function ProCodeTools({
       ? (['explain', 'investigate', 'change'] as const).map(
           (intent): ProCommand => ({
             id: intent,
-            label:
-              intent === 'explain'
-                ? 'Explicar trecho com Zappy'
-                : intent === 'investigate'
-                  ? 'Investigar trecho com Zappy'
-                  : 'Pedir mudança nestas linhas',
+            label: t(`pro.zappy.${intent}`),
             enabled: Boolean(path) && (intent !== 'change' || author),
             ...(intent === 'change' ? { shortcut: 'Ctrl/Cmd+Alt+K' } : {}),
             run: () => help(intent),
           }),
         )
       : []),
+    {
+      id: 'back',
+      label: t('pro.back'),
+      enabled: canGoBack,
+      run: back,
+    },
     {
       id: 'search',
       label: t('pro.quickOpen'),
@@ -246,7 +266,7 @@ export function ProCodeTools({
     },
     {
       id: 'materials',
-      label: 'Abrir biblioteca de materiais',
+      label: t('pro.materialsCommand'),
       enabled: true,
       run: () => showAssets(true),
     },
@@ -271,14 +291,14 @@ export function ProCodeTools({
     },
     {
       id: 'recover',
-      label: 'Recuperar arquivos e materiais',
+      label: t('pro.recoverCommand'),
       enabled: author && !busy,
       run: recover,
     },
     ...examples(path).map(
       (example): ProCommand => ({
         id: `example:${example.id}`,
-        label: `Inserir exemplo: ${example.label}`,
+        label: t('pro.insertExample', { label: example.label }),
         enabled: author && !busy,
         run: () =>
           prepare({
@@ -293,45 +313,53 @@ export function ProCodeTools({
     ),
   ]
   useProCommands(readyEditor, commands)
+  // As ações para a faixa do editor: um objeto estável que chama a versão mais nova de cada
+  // função (via ref), publicado uma vez e retirado na saída.
+  const latestActions = useRef({ findReferences, capture })
+  latestActions.current = { findReferences, capture }
+  const tools = useMemo<ProEditorTools>(
+    () => ({
+      openSymbols: () => setOpen(true),
+      openCommands: () => {
+        setQuery('')
+        setToolsOpen(true)
+      },
+      findReferences: () => void latestActions.current.findReferences(),
+      rename: () => {
+        setError(null)
+        setRename(latestActions.current.capture())
+      },
+    }),
+    [],
+  )
+  useEffect(() => {
+    onToolsReady?.(tools)
+    return () => onToolsReady?.(null)
+  }, [tools, onToolsReady])
+  const closeSymbols = () => {
+    setOpen(false)
+    setSymbols((previous) => (previous?.error ? { ...previous, error: null } : previous))
+  }
   return (
-    <div className="shrink-0 border-b border-sz-border-soft px-2">
-      <nav className="flex flex-wrap items-center gap-1" aria-label="Navegar no código">
-        <button type="button" className={button} disabled={!canGoBack} onClick={back}>
-          ← Voltar
-        </button>
-        <button
-          type="button"
-          className={button}
-          aria-expanded={open}
-          onClick={() => setOpen(!open)}
-        >
-          {t('pro.symbols')}
-        </button>
-        <button
-          type="button"
-          className={button}
-          onClick={() => {
-            setQuery('')
-            setToolsOpen(true)
-          }}
-        >
-          {t('pro.commands')}
-        </button>
-      </nav>
+    <>
       <Modal
         open={toolsOpen}
         onClose={() => setToolsOpen(false)}
         title={t('pro.commands')}
-        footer={<Button onClick={() => setToolsOpen(false)}>Voltar ao código</Button>}
+        footer={
+          <button type="button" className="sz-pro-btn" onClick={() => setToolsOpen(false)}>
+            {t('pro.backToCode')}
+          </button>
+        }
       >
         <label className="block">
-          O que você quer fazer?
+          {t('pro.palette.question')}
           <input
             type="search"
             value={query}
             maxLength={100}
             onChange={(event) => setQuery(event.target.value)}
-            className="my-2 block min-h-10 w-full rounded border border-sz-border bg-sz-bg px-3"
+            className="my-2 block min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3"
           />
         </label>
         <ul className="space-y-1">
@@ -340,7 +368,7 @@ export function ProCodeTools({
               <button
                 type="button"
                 disabled={!command.enabled}
-                className={`${button} flex w-full items-center justify-between text-left`}
+                className={cn(button, 'flex w-full items-center justify-between text-left')}
                 onClick={() => {
                   setToolsOpen(false)
                   runProCommand(commands, command.id)
@@ -348,48 +376,68 @@ export function ProCodeTools({
               >
                 <span>{command.label}</span>
                 {command.shortcut && (
-                  <span className="ml-3 text-sz-fg-mute">{command.shortcut}</span>
+                  <kbd className="ml-3 font-sans text-sz-fg-mute">{command.shortcut}</kbd>
                 )}
               </button>
             </li>
           ))}
         </ul>
-        {!findProCommands(commands, query).length && (
-          <p role="status">Nenhuma ação com esse nome.</p>
-        )}
-        <p className="mt-3 text-xs">
-          Exemplos são funções pequenas para conferir e conectar ao seu jogo. A paleta nativa do
-          editor continua disponível pelo menu do código.
-        </p>
+        {!findProCommands(commands, query).length && <p role="status">{t('pro.palette.none')}</p>}
+        <p className="mt-3 text-xs text-sz-fg-soft">{t('pro.palette.hint')}</p>
       </Modal>
-      {open && (
-        <section className="max-h-40 overflow-auto pb-2" aria-label="Mapa do arquivo">
-          {symbolsPending && (
-            <p role="status" className="p-2 text-xs text-sz-fg-mute">
-              Analisando símbolos…
-            </p>
-          )}
-          {!symbolsPending && !symbols.length && (
-            <p className="p-2 text-xs text-sz-fg-mute">Nenhum símbolo disponível neste arquivo.</p>
-          )}
-          {symbols.map((symbol) => (
-            <button
-              key={`${symbol.start}:${symbol.name}`}
-              type="button"
-              className={`${button} block w-full truncate text-left`}
-              style={{ paddingLeft: `${8 + symbol.depth * 12}px` }}
-              onClick={() => {
-                const target = proSourcePosition(content, symbol.start)
-                navigate(path, target.line, target.column)
-              }}
-            >
-              {symbol.name}
-            </button>
-          ))}
-        </section>
-      )}
+      <Modal
+        open={open}
+        onClose={closeSymbols}
+        title={t('pro.symbols')}
+        footer={
+          <button type="button" className="sz-pro-btn" onClick={closeSymbols}>
+            {t('pro.backToCode')}
+          </button>
+        }
+      >
+        <p className="mb-2 text-xs text-sz-fg-soft">{proFileBaseName(path)}</p>
+        {symbolsPending && (
+          <p role="status" className="p-2 text-xs text-sz-fg-mute">
+            {t('pro.symbols.pending')}
+          </p>
+        )}
+        {!symbolsPending && !symbols.length && !visibleError && (
+          <p className="p-2 text-sm text-sz-fg-soft">{t('pro.symbols.empty')}</p>
+        )}
+        {open && visibleError && (
+          <p role="status" className="py-2 text-xs text-sz-error">
+            {visibleError}
+          </p>
+        )}
+        <ul className="max-h-80 space-y-1 overflow-auto">
+          {symbols.map((symbol) => {
+            const target = proSourcePosition(content, symbol.start)
+            return (
+              <li key={`${symbol.start}:${symbol.name}`}>
+                <button
+                  type="button"
+                  className={cn(button, 'flex w-full items-center justify-between text-left')}
+                  style={{ paddingLeft: `${8 + symbol.depth * 12}px` }}
+                  onClick={() => {
+                    closeSymbols()
+                    navigate(path, target.line, target.column)
+                  }}
+                >
+                  <span className="truncate">{symbol.name}</span>
+                  <span className="ml-3 text-sz-fg-mute">
+                    {t('pro.symbols.line', { line: target.line })}
+                  </span>
+                </button>
+              </li>
+            )
+          })}
+        </ul>
+      </Modal>
       {references.length > 0 && (
-        <section className="max-h-40 overflow-auto pb-2" aria-label="Referências encontradas">
+        <section
+          className="max-h-40 shrink-0 overflow-auto border-b border-sz-border-soft px-2 pb-2"
+          aria-label="Referências encontradas"
+        >
           <button
             type="button"
             className={button}
@@ -398,7 +446,7 @@ export function ProCodeTools({
               setReferences(null)
             }}
           >
-            Fechar referências
+            {t('pro.references.close')}
           </button>
           {references.map((item) => (
             <button
@@ -412,51 +460,64 @@ export function ProCodeTools({
           ))}
         </section>
       )}
-      {rename && (
-        <form
-          className="flex flex-wrap items-center gap-2 py-2"
-          onSubmit={(event) => {
-            event.preventDefault()
-            const node = tree[rename.path]
-            if (node?.kind !== 'file' || node.content !== rename.content) {
-              setError('O arquivo mudou. Selecione o nome novamente.')
-              return
-            }
-            prepare({ kind: 'symbol', path: rename.path, offset: rename.offset, name: rename.name })
-            setRename(null)
-          }}
-        >
-          <label className="text-xs">
-            Novo nome{' '}
-            <input
-              aria-label="Novo nome do símbolo"
-              value={rename.name}
-              onChange={(event) => setRename({ ...rename, name: event.target.value })}
-              className="rounded border border-sz-border bg-sz-bg p-2"
-            />
-          </label>
-          <button className={button} type="submit">
-            Conferir referências
-          </button>
-          <button className={button} type="button" onClick={() => setRename(null)}>
-            Cancelar
-          </button>
-        </form>
-      )}
-      {visibleError && (
-        <p role="status" className="py-2 text-xs text-sz-error">
-          {visibleError}{' '}
-          <button
-            type="button"
-            onClick={() => {
-              setError(null)
-              setSymbols((previous) => (previous?.error ? { ...previous, error: null } : previous))
+      <Modal open={Boolean(rename)} onClose={() => setRename(null)} title={t('pro.renameSymbol')}>
+        {rename && (
+          <form
+            className="flex flex-col gap-3"
+            onSubmit={(event) => {
+              event.preventDefault()
+              const node = tree[rename.path]
+              if (node?.kind !== 'file' || node.content !== rename.content) {
+                setError('O arquivo mudou. Selecione o nome novamente.')
+                setRename(null)
+                return
+              }
+              prepare({
+                kind: 'symbol',
+                path: rename.path,
+                offset: rename.offset,
+                name: rename.name,
+              })
+              setRename(null)
             }}
           >
+            <p className="m-0 text-sm text-sz-fg-soft">
+              {t('pro.rename.current')}:{' '}
+              <code className="rounded bg-sz-panel-soft px-1.5 py-0.5 text-sz-fg">
+                {editor.current
+                  ?.getModel()
+                  ?.getWordAtPosition(editor.current.getPosition() ?? { lineNumber: 1, column: 1 })
+                  ?.word ?? rename.name}
+              </code>
+            </p>
+            <label className="text-sm">
+              {t('pro.rename.new')}
+              <input
+                aria-label="Novo nome do símbolo"
+                value={rename.name}
+                onChange={(event) => setRename({ ...rename, name: event.target.value })}
+                className="mt-1 block min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3 font-mono"
+              />
+            </label>
+            <div className="flex flex-wrap justify-end gap-2">
+              <button className="sz-pro-btn" type="button" onClick={() => setRename(null)}>
+                {t('pro.cancel')}
+              </button>
+              <button className="sz-pro-btn sz-pro-btn--primary" type="submit">
+                {t('pro.rename.check')}
+              </button>
+            </div>
+          </form>
+        )}
+      </Modal>
+      {!open && visibleError && (
+        <p role="status" className="shrink-0 px-3 py-2 text-xs text-sz-error">
+          {visibleError}{' '}
+          <button type="button" className="underline" onClick={() => setError(null)}>
             Fechar
           </button>
         </p>
       )}
-    </div>
+    </>
   )
 }

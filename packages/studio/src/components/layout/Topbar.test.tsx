@@ -262,6 +262,15 @@ describe('Topbar × o projeto Pro (redesenho de 11/2026)', () => {
     expect(within(meio).getByRole('button', { name: 'Rodar' }).hasAttribute('disabled')).toBe(true)
   })
 
+  it('no celular (abaixo de 720px) o meio some: o Rodar é o botão flutuante do workspace', () => {
+    const { header } = mountPro(600)
+    expect(Array.from(header.children).map((el) => el.className)).toEqual([
+      'sz-bar__start',
+      'sz-bar__end',
+    ])
+    expect(document.querySelectorAll('[data-live-target="studio-run"]')).toHaveLength(0)
+  })
+
   it('no estreito os dois ficam só no ícone, com o nome acessível de sempre', () => {
     const { header } = mountPro(800)
     const meio = header.children[1] as HTMLElement

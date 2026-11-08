@@ -1,6 +1,6 @@
 import Editor, { type OnChange, type OnMount } from '@monaco-editor/react'
 import type * as monacoNs from 'monaco-editor'
-import type { JSX } from 'react'
+import type { JSX, ReactNode } from 'react'
 import { useCallback, useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useMeasuredWidth } from '../hooks/useMeasuredWidth'
 import { useStudioCodeObservation } from '../studio/code-observation'
@@ -157,6 +157,13 @@ export interface MonacoTabsProps {
   className?: string
   /** Conteúdo extra renderizado à direita da fila de abas. */
   tabsRightSlot?: JSX.Element
+  /**
+   * Substitui o cabeçalho INTEIRO (abas + Formatar + `tabsRightSlot`) por um desenho do chamador,
+   * que recebe o estado interno de que precisa (redesenho do Pro, 11/2026: a faixa única sobre o
+   * código). Trocar, fechar e fixar aba continuam passando pelos callbacks de sempre. Sem o slot,
+   * nada muda (a Ponte clássica).
+   */
+  headerSlot?: (context: MonacoHeaderContext) => ReactNode
   /** Linhas de infraestrutura que podem ficar recolhidas no arquivo exibido. */
   hiddenAreas?: (file: MonacoTabsFile) => readonly MonacoHiddenArea[]
   /**
@@ -205,6 +212,23 @@ export interface MonacoTabsProps {
     editor: monacoNs.editor.IStandaloneCodeEditor | null,
     scope?: { modelPathPrefix: string },
   ) => void
+}
+
+/** O que o cabeçalho de fora (`headerSlot`) recebe deste editor. */
+export interface MonacoHeaderContext {
+  files: readonly MonacoTabsFile[]
+  active: string
+  setActive: (fileName: string) => void
+  temporaryFile: string | null
+  canClose: (fileName: string) => boolean
+  closeFile: (fileName: string) => void
+  pinFile: (fileName: string) => void
+  format: () => void
+  formatBusy: boolean
+  /** A aba ativa tem formatador (README.md, .svg e texto puro não têm). */
+  canFormat: boolean
+  /** O PRÓPRIO contêiner do editor está estreito (abaixo de 480px). */
+  compact: boolean
 }
 
 /** Ícone "formatar" (linhas alinhadas) — usado no botão compacto, sem dep externa. */
@@ -310,6 +334,7 @@ export function MonacoTabs({
   indentSize = 2,
   className,
   tabsRightSlot,
+  headerSlot,
   hiddenAreas,
   formatLabel,
   onFormatIssue,
@@ -935,71 +960,87 @@ export function MonacoTabs({
       ref={rootRef}
       className={['flex h-full min-h-0 flex-col', className].filter(Boolean).join(' ')}
     >
-      <div className="flex items-stretch border-b border-sz-border bg-sz-panel">
-        <div className="flex flex-1 overflow-x-auto">
-          {files.map((f) => {
-            const isActive = f.name === current
-            const closable = canCloseFile?.(f.name) ?? false
-            return (
-              <div
-                key={f.name}
-                className={[
-                  'group flex items-center transition-colors',
-                  isActive
-                    ? 'border-b-2 border-sz-accent text-sz-fg'
-                    : 'border-b-2 border-transparent text-sz-fg-soft hover:text-sz-fg',
-                ].join(' ')}
-              >
-                <button
-                  type="button"
-                  onClick={() => setActive(f.name)}
-                  onDoubleClick={() => onPinFile?.(f.name)}
-                  title={f.name}
+      {headerSlot ? (
+        headerSlot({
+          files,
+          active: current,
+          setActive,
+          temporaryFile: temporaryFile ?? null,
+          canClose: (name) => canCloseFile?.(name) ?? false,
+          closeFile: (name) => onCloseFile?.(name),
+          pinFile: (name) => onPinFile?.(name),
+          format: () => void handleFormat(),
+          formatBusy,
+          canFormat,
+          compact,
+        })
+      ) : (
+        <div className="flex items-stretch border-b border-sz-border bg-sz-panel">
+          <div className="flex flex-1 overflow-x-auto">
+            {files.map((f) => {
+              const isActive = f.name === current
+              const closable = canCloseFile?.(f.name) ?? false
+              return (
+                <div
+                  key={f.name}
                   className={[
-                    'py-2 pl-3 text-xs font-medium',
-                    temporaryFile === f.name ? 'italic' : '',
-                    closable ? 'pr-1' : 'pr-3',
+                    'group flex items-center transition-colors',
+                    isActive
+                      ? 'border-b-2 border-sz-accent text-sz-fg'
+                      : 'border-b-2 border-transparent text-sz-fg-soft hover:text-sz-fg',
                   ].join(' ')}
                 >
-                  {f.name}
-                </button>
-                {closable && (
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onCloseFile?.(f.name)
-                    }}
-                    className="mr-1 rounded px-1 text-sz-fg-soft opacity-60 hover:bg-sz-border hover:opacity-100"
-                    title={`Fechar ${f.name}`}
-                    aria-label={`Fechar ${f.name}`}
+                    onClick={() => setActive(f.name)}
+                    onDoubleClick={() => onPinFile?.(f.name)}
+                    title={f.name}
+                    className={[
+                      'py-2 pl-3 text-xs font-medium',
+                      temporaryFile === f.name ? 'italic' : '',
+                      closable ? 'pr-1' : 'pr-3',
+                    ].join(' ')}
                   >
-                    ×
+                    {f.name}
                   </button>
-                )}
-              </div>
-            )
-          })}
-        </div>
-        {formatLabel && (
-          <div className="flex items-center border-l border-sz-border px-2">
-            <button
-              type="button"
-              onClick={handleFormat}
-              disabled={formatBusy || !canFormat}
-              aria-busy={formatBusy}
-              title={`${formatLabel} (Shift+Alt+F)`}
-              aria-label={formatLabel}
-              className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg disabled:opacity-50 disabled:hover:bg-transparent"
-            >
-              {compact ? <FormatGlyph /> : formatLabel}
-            </button>
+                  {closable && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onCloseFile?.(f.name)
+                      }}
+                      className="mr-1 rounded px-1 text-sz-fg-soft opacity-60 hover:bg-sz-border hover:opacity-100"
+                      title={`Fechar ${f.name}`}
+                      aria-label={`Fechar ${f.name}`}
+                    >
+                      ×
+                    </button>
+                  )}
+                </div>
+              )
+            })}
           </div>
-        )}
-        {tabsRightSlot && (
-          <div className="flex items-center border-l border-sz-border px-2">{tabsRightSlot}</div>
-        )}
-      </div>
+          {formatLabel && (
+            <div className="flex items-center border-l border-sz-border px-2">
+              <button
+                type="button"
+                onClick={handleFormat}
+                disabled={formatBusy || !canFormat}
+                aria-busy={formatBusy}
+                title={`${formatLabel} (Shift+Alt+F)`}
+                aria-label={formatLabel}
+                className="inline-flex items-center rounded px-2.5 py-1.5 text-xs font-medium leading-none text-sz-fg hover:bg-sz-bg disabled:opacity-50 disabled:hover:bg-transparent"
+              >
+                {compact ? <FormatGlyph /> : formatLabel}
+              </button>
+            </div>
+          )}
+          {tabsRightSlot && (
+            <div className="flex items-center border-l border-sz-border px-2">{tabsRightSlot}</div>
+          )}
+        </div>
+      )}
       {languageIssue && (
         <div role="status" className="shrink-0 px-3 py-1 text-xs">
           {languageIssue}

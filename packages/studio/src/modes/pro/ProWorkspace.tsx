@@ -13,7 +13,6 @@ import { getMonacoModelPath } from '../../monaco/modelPaths'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
-import { useT } from '../../studio/i18n'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
 import { useStudioTutor } from '../../studio/tutor'
 import { currentProDiagnostics } from './workspace/diagnostics'
@@ -27,6 +26,7 @@ import {
 } from './workspace/model'
 import { ProBottomPanel } from './workspace/ProBottomPanel'
 import { ProCodeTools } from './workspace/ProCodeTools'
+import { ProEditorStrip, type ProEditorTools } from './workspace/ProEditorStrip'
 import { ProNavigator } from './workspace/ProNavigator'
 import { ProOperationReview } from './workspace/ProOperationReview'
 import { ProQuickOpen } from './workspace/ProQuickOpen'
@@ -50,16 +50,18 @@ export function ProWorkspace({
   preview: ReactNode
   examples?: (path: string) => ProExample[]
 }): JSX.Element {
-  const t = useT()
   const store = useProjectStoreApi()
-  const { projectId, tree, templateId, entrypoint } = useProjectStore(
+  const { projectId, tree, templateId, entrypoint, python } = useProjectStore(
     useShallow((s) => ({
       projectId: s.project?.id,
       tree: s.project?.tree ?? EMPTY_TREE,
       templateId: s.project?.proMeta?.templateId,
       entrypoint: s.project && isPythonProject(s.project) ? s.project.python.entrypoint : undefined,
+      python: Boolean(s.project && isPythonProject(s.project)),
     })),
   )
+  // O que a criança vê no palco: um JOGO (JavaScript) ou um PROGRAMA (Python).
+  const subject = python ? ('program' as const) : ('game' as const)
   const [editError, setEditError] = useState<string | null>(null)
   const observer = useProjectStore((state) => state.editingAccess === 'observer')
   const studioConfig = useStudioConfig()
@@ -87,6 +89,13 @@ export function ProWorkspace({
   const [languageSession, setLanguageSession] = useState<ProWorkspaceLanguage | null>(null)
   const [quickOpen, setQuickOpen] = useState<{ query: string } | null>(null)
   const formatRef = useRef<(() => void) | null>(null)
+  // As janelas do `ProCodeTools`, abertas pela faixa do editor (redesenho de 11/2026).
+  const [tools, setTools] = useState<ProEditorTools | null>(null)
+  // "Mostrar espaços" (ligado por padrão no Python, onde a indentação organiza o código).
+  const [showWhitespace, setShowWhitespace] = useState(python)
+  useEffect(() => {
+    readyEditor?.updateOptions({ renderWhitespace: showWhitespace ? 'all' : 'none' })
+  }, [readyEditor, showWhitespace])
   const [locations, setLocations] = useState<Array<{ path: string; line: number; column: number }>>(
     [],
   )
@@ -131,7 +140,6 @@ export function ProWorkspace({
     )
   })
   const [searchRequest, setSearchRequest] = useState(0)
-  const [revealRequest, setRevealRequest] = useState(0)
   const descriptions = useMemo(() => proFileDescriptions(templateId, tree), [templateId, tree])
   const {
     config: tutorConfig,
@@ -210,12 +218,15 @@ export function ProWorkspace({
     changeWorkspace((previous) => closeWorkspaceFile(previous, name))
   }
 
-  const navigator = (close?: () => void) => (
+  const navigator = (close: () => void, options: { phone: boolean }) => (
     <ProNavigator
       tree={tree}
+      view={workspaceState.panel}
+      onViewChange={(panel) => changeWorkspace((previous) => ({ ...previous, panel }))}
+      showViewSwitcher={options.phone}
       onGuideReference={async (path, name) => {
         handleSelectFile(path)
-        close?.()
+        close()
         if (!operations.language.current)
           throw new Error('Arquivo aberto. Aguarde a análise para localizar o símbolo.')
         const symbols = await operations.language.current.requestForTree(tree, 'symbols', path)
@@ -257,12 +268,11 @@ export function ProWorkspace({
       activeFile={activeFile}
       descriptions={descriptions}
       searchRequest={searchRequest}
-      revealRequest={revealRequest}
       collapsedPaths={workspaceState.collapsed}
       onCollapsedChange={(collapsed) => changeWorkspace((previous) => ({ ...previous, collapsed }))}
       onSelectFile={(path) => {
         handleSelectFile(path)
-        close?.()
+        close()
       }}
       onPinFile={(path) => changeWorkspace((previous) => openWorkspaceFile(previous, path, true))}
       onResult={(result) => {
@@ -275,7 +285,7 @@ export function ProWorkspace({
           startColumn: result.column,
           nonce: (previous?.nonce ?? 0) + 1,
         }))
-        close?.()
+        close()
       }}
     />
   )
@@ -323,6 +333,7 @@ export function ProWorkspace({
         search={() => setQuickOpen({ query: '' })}
         searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
+        onToolsReady={setTools}
         path={activeFile}
         tree={tree}
         language={languageSession}
@@ -369,60 +380,6 @@ export function ProWorkspace({
           </button>
         </p>
       )}
-      {activeFile && (
-        <nav
-          aria-label={t('pro.breadcrumb')}
-          className="flex shrink-0 flex-wrap items-center gap-1 border-b border-sz-border-soft px-3 py-1 text-xs"
-        >
-          {activeFile.split('/').map((part, index, parts) => (
-            <button
-              key={parts.slice(0, index + 1).join('/')}
-              type="button"
-              className="min-h-8 rounded px-1 hover:bg-sz-panel"
-              onClick={() => {
-                if (index < parts.length - 1) {
-                  setQuickOpen({ query: `${parts.slice(0, index + 1).join('/')}/` })
-                  return
-                }
-                setRevealRequest((previous) => previous + 1)
-                changeWorkspace((previous) => ({
-                  ...previous,
-                  collapsed: previous.collapsed.filter(
-                    (path) => !activeFile.startsWith(`${path}/`),
-                  ),
-                }))
-              }}
-            >
-              {index ? '/ ' : ''}
-              {part}
-            </button>
-          ))}
-          {workspaceState.temporaryFile === activeFile && (
-            <button
-              type="button"
-              className="ml-auto min-h-8 rounded px-2 text-sz-accent"
-              onClick={() => changeWorkspace((previous) => pinWorkspaceFile(previous, activeFile))}
-            >
-              {t('pro.pinTab')}
-            </button>
-          )}
-          {openFiles.length > 1 && (
-            <button
-              type="button"
-              className="min-h-8 rounded px-2"
-              onClick={() =>
-                changeWorkspace((previous) => ({
-                  ...previous,
-                  openFiles: [activeFile],
-                  temporaryFile: null,
-                }))
-              }
-            >
-              {t('pro.closeOtherTabs')}
-            </button>
-          )}
-        </nav>
-      )}
       <div className="min-h-0 flex-1">
         <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
           <Editor
@@ -453,6 +410,29 @@ export function ProWorkspace({
                 changeWorkspace((previous) => pinWorkspaceFile(previous, name))
             }}
             readOnly={observer}
+            headerSlot={(ctx) => (
+              <ProEditorStrip
+                ctx={ctx}
+                subject={subject}
+                layout={workspaceState.layout}
+                entrypoint={entrypoint}
+                tools={tools}
+                editor={editorRef}
+                showWhitespace={showWhitespace}
+                onToggleWhitespace={() => setShowWhitespace((value) => !value)}
+                onShowStage={() =>
+                  changeWorkspace((previous) => ({ ...previous, layout: 'split' }))
+                }
+                onQuickOpen={() => setQuickOpen({ query: '' })}
+                onCloseOthers={() =>
+                  changeWorkspace((previous) =>
+                    previous.activeFile
+                      ? { ...previous, openFiles: [previous.activeFile], temporaryFile: null }
+                      : previous,
+                  )
+                }
+              />
+            )}
             onFormatReady={(run) => {
               formatRef.current = run
             }}
@@ -494,12 +474,13 @@ export function ProWorkspace({
         editor={codeEditor}
         preview={previewAvailable ? preview : null}
         tutor={tutorDock}
+        subject={subject}
         preferences={workspaceState}
         change={changeWorkspace}
         gameRequest={focusNonce}
-        searchRequest={searchRequest + revealRequest}
+        searchRequest={searchRequest}
         codeRequest={codeRequest}
-        bottom={
+        dock={
           <ProBottomPanel
             tree={tree}
             diagnostics={diagnostics}

@@ -6,6 +6,7 @@ import type { ProjectTree } from '../../../core/proProject'
 import { useProjectStore } from '../../../state/projectStore'
 import { useUIStore } from '../../../state/uiStore'
 import { useT } from '../../../studio/i18n'
+import type { ProWorkspacePanel } from './model'
 import { type ProSearchResult, searchProFiles } from './search'
 
 const ProAssetPaths = lazy(() =>
@@ -24,6 +25,9 @@ export function ProNavigator({
   onResult,
   onInsert,
   onGuideReference,
+  view: controlledView,
+  onViewChange,
+  showViewSwitcher = true,
   ...treeProps
 }: ProFileTreeProps & {
   tree: ProjectTree
@@ -31,10 +35,20 @@ export function ProNavigator({
   onResult(result: ProSearchResult): void
   onInsert(example: ProExample): void
   onGuideReference?: (path: string, symbol: string) => Promise<void>
+  /** A vista escolhida no trilho (redesenho de 11/2026); sem ela, o painel guarda a própria. */
+  view?: ProWorkspacePanel
+  onViewChange?: (view: ProWorkspacePanel) => void
+  /** O seletor das quatro vistas no topo: só onde não há o trilho (o celular). */
+  showViewSwitcher?: boolean
 }) {
   const t = useT()
   const setShowAssets = useUIStore((state) => state.setShowAssets)
-  const [view, setView] = useState<'files' | 'search' | 'materials' | 'guides'>('files')
+  const [ownView, setOwnView] = useState<ProWorkspacePanel>('files')
+  const view = controlledView ?? ownView
+  const setView = (next: ProWorkspacePanel) => {
+    setOwnView(next)
+    onViewChange?.(next)
+  }
   const [guideQuery, setGuideQuery] = useState('')
   const [guideNotice, setGuideNotice] = useState('')
   const assets = useProjectStore((state) => state.project?.assets)
@@ -55,9 +69,11 @@ export function ProNavigator({
     () => (view === 'search' ? searchProFiles(tree, query, mode) : { items: [], truncated: false }),
     [view, tree, query, mode],
   )
+  const latestSetView = useRef(setView)
+  latestSetView.current = setView
   useEffect(() => {
     if (!searchRequest) return
-    setView('search')
+    latestSetView.current('search')
     setMode('content')
     searchInput.current?.focus()
   }, [searchRequest])
@@ -65,12 +81,13 @@ export function ProNavigator({
     if (view === 'search') searchInput.current?.focus()
   }, [view])
   useEffect(() => {
-    if (revealRequest) setView('files')
+    if (revealRequest) latestSetView.current('files')
   }, [revealRequest])
   return (
     <div className="flex h-full min-h-0 flex-col bg-sz-panel">
       <nav
         aria-label={t('pro.navigation')}
+        hidden={!showViewSwitcher}
         className="flex shrink-0 flex-wrap gap-1 border-b border-sz-border-soft p-2"
       >
         <button
@@ -113,7 +130,7 @@ export function ProNavigator({
             className={`${control} mb-2 w-full border border-sz-border`}
             onClick={() => setShowAssets(true)}
           >
-            Abrir biblioteca de materiais
+            {t('pro.materialsCommand')}
           </button>
           <p className="mb-2 text-xs">
             {python

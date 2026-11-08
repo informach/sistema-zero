@@ -18,7 +18,8 @@ import { useStudioTheme } from '../../studio/theme'
 export function MonacoTabs(props: MonacoTabsProps) {
   const t = useT()
   const theme = useStudioTheme()
-  const fontSize = useSettingsStore((state) => (state.codeFontSizeChosen ? state.codeFontSize : 15))
+  // 16px por padrão (redesenho de 11/2026): a criança lê melhor; o "Aa" da faixa troca.
+  const fontSize = useSettingsStore((state) => (state.codeFontSizeChosen ? state.codeFontSize : 16))
   const onEditorReady = useCodeHistory()
   const onFormatIssue = useFormatIssueLogger()
   return (
@@ -28,7 +29,7 @@ export function MonacoTabs(props: MonacoTabsProps) {
       fontSize={fontSize}
       formatLabel={t('pro.organizeCode')}
       onFormatIssue={onFormatIssue}
-      tabsRightSlot={<FontSizeControls defaultSize={15} />}
+      tabsRightSlot={<FontSizeControls defaultSize={16} />}
       onEditorReady={(editor, scope) => {
         onEditorReady(editor)
         props.onEditorReady?.(editor, scope)

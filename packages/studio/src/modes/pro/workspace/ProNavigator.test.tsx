@@ -30,7 +30,7 @@ describe('navegação do projeto', () => {
         />
       </StudioStoresContext.Provider>,
     )
-    fireEvent.click(view.getByRole('button', { name: 'Buscar' }))
+    fireEvent.click(view.getByRole('button', { name: 'Procurar' }))
     fireEvent.click(view.getByRole('button', { name: 'Conteúdo' }))
     fireEvent.change(view.getByRole('searchbox'), { target: { value: 'score' } })
     fireEvent.click(view.getByRole('button', { name: /rules.ts:2/ }))
@@ -38,7 +38,7 @@ describe('navegação do projeto', () => {
     await act(async () => {
       fireEvent.click(view.getByRole('button', { name: 'Materiais' }))
     })
-    fireEvent.click(view.getByRole('button', { name: 'Abrir biblioteca de materiais' }))
+    fireEvent.click(view.getByRole('button', { name: 'Trazer materiais' }))
     expect(stores.ui.getState().showAssets).toBe(true)
   })
 })

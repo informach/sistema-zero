@@ -1383,6 +1383,97 @@
     cursor: not-allowed;
     opacity: 0.5;
   }
+  /* O painel lateral nos três tamanhos: coluna fixa no largo, gaveta por cima do código no
+     tablet, a tela inteira (a aba Arquivos) no celular. É SEMPRE o mesmo nó. */
+  .sz-pro-side {
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    background: var(--color-sz-panel);
+  }
+  .sz-pro-side--column {
+    width: 18rem;
+    flex: none;
+    border-right: 1px solid var(--color-sz-border);
+  }
+  .sz-pro-side--drawer {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 5rem;
+    z-index: 30;
+    width: min(20rem, calc(100% - 5rem));
+    border-right: 1px solid var(--color-sz-border);
+    box-shadow: 8px 0 24px color-mix(in oklab, var(--color-sz-bg) 35%, transparent);
+  }
+  .sz-pro-side--full {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+  .sz-pro-backdrop {
+    position: absolute;
+    inset: 0;
+    z-index: 20;
+    border: 0;
+    background: color-mix(in oklab, var(--color-sz-bg) 45%, transparent);
+    cursor: default;
+  }
+  /* O cabeçalho do palco: [Jogo] [pílula] … [segmentado] [⟳] [tela cheia]. */
+  .sz-pro-stage__head {
+    display: flex;
+    min-height: 2.75rem;
+    flex: none;
+    align-items: center;
+    gap: 0.5rem;
+    padding-inline: 0.75rem 0.5rem;
+    border-bottom: 1px solid var(--color-sz-border);
+    background: var(--color-sz-panel);
+  }
+  .sz-pro-stage__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  /* O × da aba do editor: na ativa sempre; nas outras só no hover/foco (e no toque, sempre). */
+  .sz-pro-edtab__close {
+    display: inline-flex;
+    width: 1.5rem;
+    height: 1.5rem;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    margin-inline: -0.25rem 0.125rem;
+    border: 0;
+    border-radius: 9999px;
+    background: transparent;
+    color: var(--color-sz-fg-soft);
+    font: inherit;
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .sz-pro-edtab__close:hover {
+    background: var(--color-sz-panel-soft);
+    color: var(--color-sz-fg);
+  }
+  .sz-pro-edtab__close--quiet {
+    opacity: 0;
+  }
+  .group:hover > .sz-pro-edtab__close--quiet,
+  .sz-pro-edtab__close--quiet:focus-visible {
+    opacity: 1;
+  }
+  @media (any-pointer: coarse) {
+    .sz-pro-edtab__close--quiet {
+      opacity: 1;
+    }
+  }
+  .sz-pro-aa {
+    font-size: 0.875rem;
+    font-weight: 900;
+    letter-spacing: -0.02em;
+  }
   /* Menus e janelas no celular sobem como FOLHAS (a classe vai no conteúdo portalado). */
   .sz-pro-sheet {
     position: fixed;

@@ -5,7 +5,10 @@ import type { ProjectTree } from '../../../core/proProject'
 import type { ProLanguageSession } from '../../../monaco/pro/session'
 import { pythonDocumentOffset } from '../../../python/language/editorCoordinates'
 import type { ProWorkspaceLanguage } from './language'
-import { ProCodeTools } from './ProCodeTools'
+import { ProCodeTools, type ProEditorTools } from './ProCodeTools'
+
+// As janelas abrem pelas ações que o componente publica para a faixa do editor.
+let tools: ProEditorTools | null = null
 
 function toolsFixture(language: ProLanguageSession | null) {
   const content = 'const score = 1; const stars = score'
@@ -33,6 +36,9 @@ function toolsFixture(language: ProLanguageSession | null) {
     recover: () => {},
     search: () => {},
     format: () => {},
+    onToolsReady: (next: ProEditorTools | null) => {
+      tools = next
+    },
   }
 }
 
@@ -68,11 +74,11 @@ it('maps a normalized Python editor cursor to the unchanged saved source for ref
       }}
     />,
   )
-  await act(async () => fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' })))
-  expect(view.queryByRole('button', { name: 'valor' })).not.toBeNull()
-  fireEvent.click(view.getByRole('button', { name: 'Comandos…' }))
+  await act(async () => tools?.openSymbols())
+  expect(view.queryByRole('button', { name: /^valor\b/ })).not.toBeNull()
+  act(() => tools?.openCommands())
   await act(async () => {
-    fireEvent.click(view.getByRole('button', { name: /Localizar referências.*Shift/ }))
+    fireEvent.click(view.getByRole('button', { name: /Onde isto é usado.*Shift/ }))
   })
   expect(calls).toContainEqual(['references', 'main.py', source.lastIndexOf('valor')])
   expect(view.queryByText(/Clique no nome dentro do código/)).toBeNull()
@@ -81,12 +87,12 @@ it('maps a normalized Python editor cursor to the unchanged saved source for ref
 it('loads an already open symbols panel when the language session becomes ready', async () => {
   const props = toolsFixture(null)
   const view = render(<ProCodeTools {...props} />)
-  fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' }))
+  act(() => tools?.openSymbols())
   const language = {
     request: async () => [{ name: 'score', start: 6, depth: 0 }],
   } as unknown as ProLanguageSession
   await act(async () => view.rerender(<ProCodeTools {...props} language={language} />))
-  expect(view.queryByRole('button', { name: 'score' })).not.toBeNull()
+  expect(view.queryByRole('button', { name: /^score\b/ })).not.toBeNull()
 })
 
 it('keeps the latest reference search when an older request finishes afterwards', async () => {
@@ -98,8 +104,8 @@ it('keeps the latest reference search when an older request finishes afterwards'
   } as unknown as ProLanguageSession)
   const view = render(<ProCodeTools {...props} />)
   const search = () => {
-    fireEvent.click(view.getByRole('button', { name: 'Comandos…' }))
-    fireEvent.click(view.getByRole('button', { name: /Localizar referências.*Shift/ }))
+    act(() => tools?.openCommands())
+    fireEvent.click(view.getByRole('button', { name: /Onde isto é usado.*Shift/ }))
   }
   search()
   search()
@@ -116,14 +122,14 @@ it('discards symbols from a replaced language session and loads the replacement'
   const old = Promise.withResolvers<unknown>()
   const props = toolsFixture({ request: () => old.promise } as unknown as ProLanguageSession)
   const view = render(<ProCodeTools {...props} />)
-  fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' }))
+  act(() => tools?.openSymbols())
   const language = {
     request: async () => [{ name: 'current', start: 6, depth: 0 }],
   } as unknown as ProLanguageSession
   await act(async () => view.rerender(<ProCodeTools {...props} language={language} />))
   await act(async () => old.resolve([{ name: 'outdated', start: 6, depth: 0 }]))
-  expect(view.queryByRole('button', { name: 'outdated' })).toBeNull()
-  expect(view.queryByRole('button', { name: 'current' })).not.toBeNull()
+  expect(view.queryByRole('button', { name: /^outdated\b/ })).toBeNull()
+  expect(view.queryByRole('button', { name: /^current\b/ })).not.toBeNull()
 })
 
 it('shows a symbols failure and clears it when the language session recovers', async () => {
@@ -134,7 +140,7 @@ it('shows a symbols failure and clears it when the language session recovers', a
   } as unknown as ProLanguageSession)
   const view = render(<ProCodeTools {...props} />)
   await act(async () => {
-    fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' }))
+    act(() => tools?.openSymbols())
   })
   expect(view.getByRole('status').textContent).toContain('A análise foi interrompida.')
   expect(view.queryByText('Analisando símbolos…')).toBeNull()
@@ -143,7 +149,7 @@ it('shows a symbols failure and clears it when the language session recovers', a
   } as unknown as ProLanguageSession
   await act(async () => view.rerender(<ProCodeTools {...props} language={language} />))
   expect(view.queryByText('A análise foi interrompida.')).toBeNull()
-  expect(view.getByRole('button', { name: 'score' })).toBeDefined()
+  expect(view.getByRole('button', { name: /^score\b/ })).toBeDefined()
 })
 
 it.each([
@@ -153,8 +159,8 @@ it.each([
   const request = Promise.withResolvers<unknown>()
   const props = toolsFixture({ request: () => request.promise } as unknown as ProLanguageSession)
   const view = render(<ProCodeTools {...props} />)
-  fireEvent.click(view.getByRole('button', { name: 'Comandos…' }))
-  fireEvent.click(view.getByRole('button', { name: /Localizar referências.*Shift/ }))
+  act(() => tools?.openCommands())
+  fireEvent.click(view.getByRole('button', { name: /Onde isto é usado.*Shift/ }))
   view.rerender(<ProCodeTools {...props} path="other.ts" />)
   view.rerender(<ProCodeTools {...props} />)
   await act(async () => {
@@ -174,8 +180,8 @@ it('does not reopen references when a pending search completes after dismissal',
   } as unknown as ProLanguageSession)
   const view = render(<ProCodeTools {...props} />)
   const search = () => {
-    fireEvent.click(view.getByRole('button', { name: 'Comandos…' }))
-    fireEvent.click(view.getByRole('button', { name: /Localizar referências.*Shift/ }))
+    act(() => tools?.openCommands())
+    fireEvent.click(view.getByRole('button', { name: /Onde isto é usado.*Shift/ }))
   }
   search()
   await act(async () => {
@@ -220,13 +226,16 @@ it('keeps syntactic symbols for an unchanged file and discards an old response a
     recover: () => {},
     search: () => {},
     format: () => {},
+    onToolsReady: (next: ProEditorTools | null) => {
+      tools = next
+    },
   }
   const view = render(<ProCodeTools {...props} />)
-  fireEvent.click(view.getByRole('button', { name: 'Símbolos do arquivo' }))
+  act(() => tools?.openSymbols())
   expect(calls).toBe(1)
-  expect(view.getByRole('status').textContent).toContain('Analisando')
+  expect(view.getByRole('status').textContent).toContain('Lendo o mapa')
   await act(async () => finish([{ name: 'score', start: 6, depth: 0 }]))
-  expect(view.getByRole('button', { name: 'score' })).toBeDefined()
+  expect(view.getByRole('button', { name: /^score\b/ })).toBeDefined()
   view.rerender(
     <ProCodeTools
       {...props}
@@ -241,7 +250,7 @@ it('keeps syntactic symbols for an unchanged file and discards an old response a
   content = 'const stars = 1'
   view.rerender(<ProCodeTools {...props} tree={{ 'main.ts': { kind: 'file', content } }} />)
   await act(async () => old([{ name: 'points', start: 6, depth: 0 }]))
-  expect(view.queryByRole('button', { name: 'points' })).toBeNull()
+  expect(view.queryByRole('button', { name: /^points\b/ })).toBeNull()
   await act(async () => finish([{ name: 'stars', start: 6, depth: 0 }]))
-  expect(view.getByRole('button', { name: 'stars' })).toBeDefined()
+  expect(view.getByRole('button', { name: /^stars\b/ })).toBeDefined()
 })
