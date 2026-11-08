@@ -34,7 +34,8 @@ const CASOS: [curso: string, bloco: string][] = [
   ].map((bloco): [string, string] => ['dino', bloco]),
   ['nave', 'experiencia-tamanho-do-passinho'],
   ['nave', 'experiencia-meta-do-jogo'],
-  ['ilha', 'experiencia-pergunta-com-nao'],
+  // A porta com o não da Ilha (aula 3) saiu daqui em 08/11/2026: ela veste a moldura nova, na
+  // ilha 3D, e o `faisca-livres.spec.ts` a confere (também no celular).
 ]
 
 for (const largura of [1366, 320]) {
@@ -44,12 +45,6 @@ for (const largura of [1366, 320]) {
       page.on('pageerror', (erro) => erros.push(erro.message))
       await page.setViewportSize({ width: largura, height: 844 })
       await page.goto(`/?course=${curso}&block=${bloco}&width=900`)
-      if (largura === 320 && bloco === 'experiencia-pergunta-com-nao') {
-        await page.addStyleTag({
-          content:
-            '[data-tabela-do-nao] { font-family: monospace; letter-spacing: .12em; word-spacing: .16em; }',
-        })
-      }
       await expect(page.locator('.sz-scene-prancha')).toBeVisible()
       await expect(page.getByRole('button', { name: 'Recomeçar experiência' })).toBeVisible()
       const medida = await page.evaluate(() => ({
