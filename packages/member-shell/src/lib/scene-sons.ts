@@ -6,6 +6,8 @@
  * Zappy. Toda leitura e escrita passa por try/catch: sem armazenamento (aba privada), vale ligado.
  */
 const CHAVE = 'sz:experiencia:som'
+/** O evento da janela quando o som da experiência liga ou desliga. */
+export const EVENTO_DO_SOM = 'sz:experiencia:som'
 
 export function sonsLigados(): boolean {
   try {
@@ -21,7 +23,10 @@ export function ligarSons(ligar: boolean) {
   } catch {
     // Sem armazenamento a escolha vale só nesta página.
   }
-  if (!ligar && typeof window !== 'undefined') window.speechSynthesis?.cancel()
+  if (typeof window === 'undefined') return
+  if (!ligar) window.speechSynthesis?.cancel()
+  // Avisa quem fala (a `DialogueBlockView`): desligado, o MP3 que já está tocando também para.
+  window.dispatchEvent(new Event(EVENTO_DO_SOM))
 }
 
 let contexto: AudioContext | null = null
@@ -36,6 +41,9 @@ function tocar(notas: readonly Nota[]) {
     if (!C) return
     contexto ??= new C()
     const ctx = contexto
+    // ⚠️ Criado fora de um gesto (o som da descoberta nasce num efeito), o Safari do iOS deixa o
+    // contexto SUSPENSO para sempre. Pedir a retomada a cada som destrava no primeiro gesto seguinte.
+    if (ctx.state === 'suspended') void ctx.resume().catch(() => {})
     const t = ctx.currentTime
     for (const n of notas) {
       const o = ctx.createOscillator()

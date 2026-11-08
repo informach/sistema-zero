@@ -176,6 +176,10 @@ const speech = {
   'touch-exhausted': 'Todos apareceram. Toque em Esconder de novo e teste mais.',
   'touch-nothing': 'Nada aconteceu. Encaixe a regra e toque de novo.',
   'touch-remove': 'Agora tire a regra. O toque ainda mostra alguém?',
+  // Full review 08/11/2026: com a regra já fora, a fala pede o teste que falta SEM ela, ou que a
+  // regra volte para testar as pedras (antes pedia para tirar a regra que já tinha saído).
+  'touch-without': 'Sem a regra, toque num esconderijo. Aparece alguém?',
+  'touch-stones': 'Encaixe a regra de novo e toque nas pedras.',
   'touch-idea':
     'Tocar sozinho não faz nada. O jogo só responde quando uma regra liga o toque a uma ação.',
   'touch-bridge':
@@ -420,11 +424,11 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
           : !state.match.touch
             ? !has('no-response')
               ? has('responds')
-                ? 'touch-remove'
+                ? 'touch-without'
                 : 'touch-first'
               : !has('responds')
                 ? 'touch-nothing'
-                : 'touch-with'
+                : 'touch-stones'
             : !has('responds')
               ? 'touch-with-first'
               : !has('second-target')

@@ -43,6 +43,19 @@ aprovada no Canvas "Experiências do Cadê e do Farol" virou a moldura de TODAS 
   de uma cena NÃO se pausam (a voz automática congelava os quadros do Farol a cada fala nova);
   vídeo segue pausando tudo. A `DialogueBlockView` e o `ZappyOuvirButton` são `fala`; o
   `useRitmoDosQuadros` e o dono da cena (`scene-activity`) são `relogio`.
+- **Full review de 08/11/2026 (o que ficou de regra):**
+  - o foco de mídia é de MAIS DE UM dono (`comFoco`): quem convive com quem pediu não é pausado e
+    continua com o foco (com um dono só, a fala tirava o foco do relógio sem pausá-lo e o bipe da
+    cena calava para sempre); pedido antigo do mesmo dono é invalidado por pedido;
+  - a voz automática espera a fala ASSENTAR (`FALA_ASSENTA_MS`, 700 ms) antes de tocar: no andar a
+    fala trocava a cada aperto da seta e o Zappy recomeçava várias vezes por segundo;
+  - desligar o som avisa pela janela (`EVENTO_DO_SOM`) e a `DialogueBlockView` para também o MP3;
+  - o `AudioContext` dos sons é retomado a cada som (no iOS ele nasce suspenso fora de um gesto);
+  - a seta e o WASD não pegam a tecla com o foco num `video` ou `audio` (`alvoDeTexto`);
+  - na posição, o passo que passaria da borda é RECUSADO com o aviso, nunca cortado no 0: cortado,
+    a chave saía da grade de 60 e 40 e o alvo (271, 253) ficava impossível;
+  - o selo "Você descobriu!" sai na hora quando o Recomeçar apaga as descobertas; o gesto recusado
+    não leva a fotinho da próxima mudança (`GESTO_VALE_MS`).
 - **Sons** (`lib/scene-sons.ts`): `SONS.descoberta|quadro|encaixe|aparece|nada|ponto|pegar|tranca|
   abre|escreve|borda`, feitos na hora com WebAudio, sem arquivo. A preferência é por aparelho
   (`sz:experiencia:som`, toda leitura em try/catch) e desliga também a voz automática.

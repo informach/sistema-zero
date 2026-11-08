@@ -27,6 +27,14 @@
         "text": "Agora tire a regra. O toque ainda mostra alguém?"
       },
       {
+        "id": "touch-without",
+        "text": "Sem a regra, toque num esconderijo. Aparece alguém?"
+      },
+      {
+        "id": "touch-stones",
+        "text": "Encaixe a regra de novo e toque nas pedras."
+      },
+      {
         "id": "touch-idea",
         "text": "Tocar sozinho não faz nada. O jogo só responde quando uma regra liga o toque a uma ação."
       },
