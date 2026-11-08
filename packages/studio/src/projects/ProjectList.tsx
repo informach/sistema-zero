@@ -45,7 +45,7 @@ import {
 import { captureProjectStorageScope } from '../state/projectStorageRuntime'
 import { type ProjectSortOrder, useSettingsStore } from '../state/settingsStore'
 import { type StudioHostChromeStatus, useStudioHostChrome } from '../studio/host-chrome'
-import { useT } from '../studio/i18n'
+import { useSharedT } from '../studio/shared-i18n'
 import { type StudioTheme, StudioThemeProvider } from '../studio/theme'
 import {
   matchesNormalizedName,
@@ -184,7 +184,7 @@ export function ProjectList({
   showExamples = false,
   sections,
 }: ProjectListProps): JSX.Element {
-  const t = useT()
+  const t = useSharedT()
   const [projects, setProjects] = useState<ProjectSummary[] | null>(null)
   const [search, setSearch] = useState('')
   // Filtro de modo (Blocos × Código): junto da busca, é o que mantém a lista navegável

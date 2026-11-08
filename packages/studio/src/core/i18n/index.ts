@@ -1,8 +1,8 @@
 import { en } from './en'
 import { ptBR } from './pt-BR'
+import { createDictionaryTranslator, type Locale, type Translator } from './translator'
 
-export type Locale = 'pt-BR' | 'en'
-export type Translator = (key: string, vars?: Record<string, string | number>) => string
+export type { Locale, Translator } from './translator'
 
 const DICT: Record<Locale, Record<string, string>> = {
   'pt-BR': ptBR,
@@ -18,14 +18,11 @@ export function translate(
   key: string,
   vars: Record<string, string | number> = {},
 ): string {
-  const raw = (DICT[locale] ?? DICT['pt-BR'])[key] ?? key
-  return raw.replace(/\{(\w+)\}/g, (_, k: string) =>
-    vars[k] !== undefined ? String(vars[k]) : `{${k}}`,
-  )
+  return createTranslator(locale)(key, vars)
 }
 
 export function createTranslator(locale: Locale = 'pt-BR'): Translator {
-  return (key, vars) => translate(locale, key, vars)
+  return createDictionaryTranslator(DICT, locale)
 }
 
 /** Tradução padrão para telas avulsas que não pertencem a uma instância Studio. */

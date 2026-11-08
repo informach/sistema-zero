@@ -37,8 +37,10 @@ O que vale lembrar:
   Código.
 - **`ProWorkspacePreferences.sizes` é `[código, palco]`** (tipo público); os três números antigos
   migram mantendo a proporção. `panel` e `bottom: 'repl'` são novos.
-- O teto CRU da lista inicial subiu para 380 000 (os dicionários moram nela); o gzip, o guarda
-  apertado, ficou em 114 755 de 120 000.
+- A lista inicial usa `studio/shared-i18n.ts`, sem os dicionários `core/i18n/pro/`. O editor
+  carrega o vocabulário completo; ambos respeitam o mesmo contexto de idioma por instância.
+  Após a correção do review de 08/11, a lista mede 351 912 bytes crus e 114 511 gzip, abaixo
+  dos tetos preservados de 380 000/120 000. O teste do bundle também guarda essa separação.
 - Receitas `.sz-pro-*` e o token `--color-sz-joy` (o amarelo do Compartilhar no Pro) em
   `styles/studio.css`, só com tokens.
 - **Full review do mesmo dia**, o que ficou de regra: o tablet ABRE com a gaveta fechada (só o

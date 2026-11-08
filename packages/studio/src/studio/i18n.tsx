@@ -1,8 +1,8 @@
-import { createContext, type JSX, type ReactNode, useContext, useMemo } from 'react'
+import { type JSX, type ReactNode, useContext, useMemo } from 'react'
 import { createTranslator, type Locale, type Translator } from '../core/i18n'
+import { StudioI18nContext } from './i18n-context'
 
 const defaultTranslator = createTranslator('pt-BR')
-const StudioI18nContext = createContext<Translator>(defaultTranslator)
 
 export function StudioI18nProvider({
   locale = 'pt-BR',
@@ -17,5 +17,5 @@ export function StudioI18nProvider({
 
 /** Tradutor da instância Studio mais próxima; fora dela, usa pt-BR. */
 export function useT(): Translator {
-  return useContext(StudioI18nContext)
+  return useContext(StudioI18nContext) ?? defaultTranslator
 }

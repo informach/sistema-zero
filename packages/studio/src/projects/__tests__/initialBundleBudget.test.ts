@@ -4,13 +4,10 @@ import { gzipSync } from 'node:zlib'
 import { build } from 'vite'
 
 /**
- * ⚠️ O teto CRU da lista inicial subiu de 360 000 para 380 000 em 08/11/2026.
- *
- * O redesenho do Studio Pro trouxe os textos dele (Rodar/Parar, o palco, a faixa do editor, os
- * painéis Arquivos/Procurar/Materiais/Guias, a gaveta), e os dois dicionários moram aqui: a
- * lista foi a 364 261 bytes crus. Nenhum módulo do Pro entrou nela (o chunk tem só `icons.tsx`
- * e os dicionários além do que já tinha). O gzip, o guarda apertado, foi de 114 106 a 114 755
- * de 120 000. A folga de ~4% cobre o resto do redesenho sem virar alarme a cada texto novo.
+ * A lista usa somente os dicionários compartilhados. O vocabulário `pro.*` entra com o
+ * editor; a guarda do grafo abaixo impede que ele volte à carga inicial. O redesenho de
+ * 08/11/2026 havia levado a lista a 121 937 bytes gzip, acima do teto de 120 000.
+ * Os limites de bytes continuam iguais aos anteriores à correção dessa dependência.
  *
  * (Histórico) O teto CRU da lista inicial subiu de 350 000 para 360 000 em 25/10/2026.
  *
@@ -92,6 +89,14 @@ test('a lista inicial não pré-carrega o editor nem os catálogos pesados', asy
   )
 
   expect(initialChunks.every(Boolean)).toBe(true)
+  for (const chunk of initialChunks) {
+    if (chunk?.type !== 'chunk') continue
+    expect(
+      Object.keys(chunk.modules).filter((moduleId) =>
+        moduleId.replace(/\\/g, '/').includes('/src/core/i18n/pro/'),
+      ),
+    ).toEqual([])
+  }
   const initialBytes = initialChunks.reduce(
     (total, entry) => total + (entry?.type === 'chunk' ? Buffer.byteLength(entry.code) : 0),
     0,

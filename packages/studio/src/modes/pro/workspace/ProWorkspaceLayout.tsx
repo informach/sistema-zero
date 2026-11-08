@@ -128,8 +128,16 @@ export function ProWorkspaceLayout({
     }))
   }, [searchRequest, change])
   useEffect(() => {
-    if (codeRequest) setPhoneTab('code')
-  }, [codeRequest])
+    if (!codeRequest) return
+    setPhoneTab('code')
+    change((previous) => (previous.layout === 'game' ? { ...previous, layout: 'split' } : previous))
+  }, [codeRequest, change])
+  // O Zappy mora no grupo de painéis estável. Ao abrir a partir de Arquivos ou Saída,
+  // revela a aba Código antes de pintar para o tutor não herdar um ancestral escondido.
+  useLayoutEffect(() => {
+    if (phone && tutorOpen)
+      setPhoneTab((previous) => (previous === 'files' || previous === 'output' ? 'code' : previous))
+  }, [phone, tutorOpen])
   // A gaveta do tablet também fecha no Esc, mas só o Esc que é DELA: o de um campo (desistir de
   // renomear), de uma janela ou de um menu continua sendo de quem o recebeu.
   useEffect(() => {
@@ -308,7 +316,7 @@ export function ProWorkspaceLayout({
           subject={subject}
           onSelect={(next) => {
             setPhoneTab(next)
-            if (next === 'game') setTutorOpen(false)
+            setTutorOpen(false)
             // A aba Saída é a gaveta inteira: se ela estava fechada, abre nos Problemas.
             if (next === 'output')
               change((previous) =>
