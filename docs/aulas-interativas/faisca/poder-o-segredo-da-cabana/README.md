@@ -18,6 +18,18 @@ Passo a passo do projeto; duas montagens, um quiz de duas perguntas e a entrega.
 Nenhum bloco novo: a pergunta usa o bloco **e / ou** (`sz_val_logic`, Programação → Lógica e Se),
 que já é do iniciante nos dois jogos.
 
+## A experiência na moldura nova (08/11/2026)
+
+A experiência da aula 1 segue a proposta "Experiências do Faísca" (aprovada): passar na chave ou no emblema é pegar e chegar à porta é a cabana perguntar; a pergunta aparece inteira ("Tem a chave e tem o emblema?") e a peça do meio se troca por "ou"; parada na porta, trocar a peça faz a cabana responder de novo na hora; o caderninho tem as duas linhas. Os botões de
+gesto de antes saíram, e os nomes das variáveis ficam para a montagem (o vídeo da experiência
+continua apresentando a variável, como na Chave do Farol). A instrução, as pistas, os pedidos de
+cada descoberta e o Passo a passo falam a língua dessa tela; as falas do Zappy vêm do motor
+(`guidance-*.ts` do core), com a ideia e o "No seu jogo" do fim.
+
+**Pendências de produção:** gerar de novo a voz do Zappy no Admin, reimportar a aula 1 (o progresso
+em andamento da experiência recomeça; a ordem de deploy é members antes de kids e community) e
+anexar o PDF novo do Passo a passo.
+
 ## Arquivos de produção
 
 - [Aula 1: Duas peças para abrir (2D)](cabana-aula-1.md) · [manifesto](cabana-aula-1.manifesto.json) · [roteiro](cabana-aula-1.roteiro.md).

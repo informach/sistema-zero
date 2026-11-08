@@ -43,3 +43,5 @@ As experiências ganharam a moldura nova (cartões de pergunta, controles com a 
 2. **Reimportar os manifestos** deste curso no Admin. ⚠️ Reimportar recomeça o progresso em andamento nessas experiências.
 3. **Gerar de novo a voz do Zappy** ("Gerar a voz do Zappy" no Admin) e publicar: as falas das experiências mudaram, e reimportar apaga as `vozes` antigas.
 4. **Regravar o trecho do vídeo da aula 1** (`video-a1-toque`) que aponta o botão antigo "Ligar a reação ao toque": hoje a regra é a peça "Quando tocar → mostrar" que encaixa sobre o jardim (o roteiro já diz `[apontar "Regra do toque"]`).
+
+**Fecho único do convite (08/11/2026, decisão dela):** a instrução das experiências das aulas 1 e 2 (o toque e os achados) passou a terminar em "Você escolhe a ordem e pode repetir quando quiser.", o mesmo fecho do Faísca (`video-experiencia.test.ts`). Os vídeos gravados não mudam; a mudança chega com a reimportação dos manifestos acima.

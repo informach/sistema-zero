@@ -35,3 +35,5 @@ As experiências ganharam a moldura nova (cartões de pergunta, controles com a 
 3. **Gerar de novo a voz do Zappy** ("Gerar a voz do Zappy" no Admin) e publicar: as falas das experiências mudaram, e reimportar apaga as `vozes` antigas.
 4. **Vídeos do Dia 1** (`video-d1-quadro` e `video-d1-limite`): o roteiro passou a citar Devagar, o filme dos quadros e a cerca (no lugar de Câmera lenta, Velocidade de verdade, a tira e Ligar o limite da tela). Regravar os trechos que apontam esses controles.
 5. **Passo a passo do projeto (PDF)** já regenerado com os nomes novos; anexar a versão nova.
+
+**Fecho único do convite (08/11/2026, decisão dela):** a instrução das experiências do Dia 1 (câmera lenta e beirada) passou a terminar em "Você escolhe a ordem e pode repetir quando quiser.", o mesmo fecho do Faísca (`video-experiencia.test.ts`). Os vídeos gravados não mudam; a mudança chega com a reimportação dos manifestos acima.

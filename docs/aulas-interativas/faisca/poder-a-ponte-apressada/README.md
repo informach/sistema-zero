@@ -19,6 +19,18 @@ um quiz de duas perguntas e a entrega.
 Nenhum bloco novo: o tempo usa o "depois de N segundos" de Programação → Repetições
 (`sz_js_set_timeout_seconds`), que é do iniciante e igual nos dois jogos.
 
+## A experiência na moldura nova (08/11/2026)
+
+A experiência da aula 1 segue a proposta "Experiências do Faísca" (aprovada): o personagem anda até a alavanca e até a ponte (a água não deixa passar), o relógio do jogo anda sozinho (um segundo por segundo, e o relógio da partida começa no primeiro passo) e onde ele começa é uma peça que se troca ("quando puxa a alavanca" ou "quando a partida começa"); o caderninho diz "A ponte está aberta?". Os botões de
+gesto de antes saíram, e os nomes das variáveis ficam para a montagem (o vídeo da experiência
+continua apresentando a variável, como na Chave do Farol). A instrução, as pistas, os pedidos de
+cada descoberta e o Passo a passo falam a língua dessa tela; as falas do Zappy vêm do motor
+(`guidance-*.ts` do core), com a ideia e o "No seu jogo" do fim.
+
+**Pendências de produção:** gerar de novo a voz do Zappy no Admin, reimportar a aula 1 (o progresso
+em andamento da experiência recomeça; a ordem de deploy é members antes de kids e community) e
+anexar o PDF novo do Passo a passo.
+
 ## Arquivos de produção
 
 - [Aula 1: Aberta por um tempo (2D)](ponte-aula-1.md) · [manifesto](ponte-aula-1.manifesto.json) · [roteiro](ponte-aula-1.roteiro.md).
