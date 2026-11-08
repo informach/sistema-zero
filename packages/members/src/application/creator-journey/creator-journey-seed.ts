@@ -51,7 +51,7 @@ export interface CreatorEditorialSpec {
     }[]
     extras: {
       title: string
-      track?: '2d' | '3d'
+      track?: string
       purpose: string
       origin: string
       authoredSource?: { courseSlug: string; directory: string; lessons: string[]; note: string }
@@ -101,6 +101,10 @@ export interface CreatorJourneySeedPlan {
 function stableId(key: string): string {
   const hex = createHash('sha256').update(`sistema-zero:creator-journey:${key}`).digest('hex')
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-5${hex.slice(13, 16)}-a${hex.slice(17, 20)}-${hex.slice(20, 32)}`
+}
+function editorialTrack(track = '2d'): '2d' | '3d' {
+  if (track !== '2d' && track !== '3d') throw new Error(`Dimensão editorial inválida: ${track}`)
+  return track
 }
 export function creatorSeedOutlineHash(outline: readonly string[]): string {
   return createHash('sha256').update(JSON.stringify(outline)).digest('hex')
@@ -243,7 +247,7 @@ export function buildCreatorJourneySeed(
           key: `${stage.id}-extra-${extraIndex + 1}`,
           title: extra.title,
           level,
-          track: extra.track ?? '2d',
+          track: editorialTrack(extra.track),
           description: `${extra.purpose}\n\n${extra.origin}\n\nExtra opcional, sem requisito de promoção.`,
           outline: [`Explorar e aplicar — ${extra.purpose}`],
           existingSlug: EXISTING_EXTRAS[extra.title],
