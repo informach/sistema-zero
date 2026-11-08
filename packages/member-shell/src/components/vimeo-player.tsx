@@ -3,9 +3,10 @@
 import type { VideoWatchCoverage } from '@sistemazero/core/learning'
 import Player from '@vimeo/player'
 import { Maximize2, Minimize2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
 import type { LessonVideoControls } from './lesson-player-context'
+import { LessonVideoFloatContext } from './lesson-video-float'
 
 interface VimeoPlayerProps {
   /** ID numérico já extraído da URL (nunca o `src` cru). */
@@ -60,6 +61,7 @@ export function VimeoPlayer({
   onControls,
   thresholdPercent = 0.9,
 }: VimeoPlayerProps) {
+  const float = useContext(LessonVideoFloatContext)
   const containerRef = useRef<HTMLDivElement>(null)
   const hostRef = useRef<HTMLDivElement>(null)
   // A instância viva do SDK: o efeito da tela cheia precisa falar com ela.
@@ -110,6 +112,9 @@ export function VimeoPlayer({
       portrait: false,
       dnt: true,
       playsinline: true,
+      // A expansão é do nosso container, com watermark. Um segundo botão dentro
+      // do iframe escaparia também da regra que retira a expansão da miniatura.
+      fullscreen: false,
       // Sem atalhos de teclado no player (08/11/2026, relato dela): com o foco no vídeo, o D
       // abria o painel de diagnóstico do Vimeo. A criança joga com W/A/S/D na experiência ao
       // lado e o foco fica no iframe depois do play. Os botões do player seguem funcionando,
@@ -283,14 +288,16 @@ export function VimeoPlayer({
           {watermark}
         </span>
       ) : null}
-      <button
-        type="button"
-        onClick={toggleFullscreen}
-        aria-label={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
-        className="absolute right-3 top-3 rounded-lg bg-black/50 p-2 text-white/90 opacity-0 transition-opacity hover:bg-black/70 focus-visible:opacity-100 group-hover/player:opacity-100"
-      >
-        {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
-      </button>
+      {float?.mode !== 'floating' && (
+        <button
+          type="button"
+          onClick={toggleFullscreen}
+          aria-label={isFullscreen ? 'Sair da tela cheia' : 'Tela cheia'}
+          className="absolute right-3 top-3 rounded-lg bg-black/50 p-2 text-white/90 opacity-0 transition-opacity hover:bg-black/70 focus-visible:opacity-100 group-hover/player:opacity-100"
+        >
+          {isFullscreen ? <Minimize2 className="size-4" /> : <Maximize2 className="size-4" />}
+        </button>
+      )}
     </div>
   )
 }
