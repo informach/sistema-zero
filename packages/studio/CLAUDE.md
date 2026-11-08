@@ -51,6 +51,19 @@ O que vale lembrar:
   com o Zappy, Ctrl+Enter no Python, ⇧⌘Z para refazer no Mac); cada árvore de arquivos tem a sua
   parada de Tab; `sizes` sempre volta somando 100, entre 20 e 80. "Mostrar na lista de arquivos" e
   "Deixar esta aba aberta" entraram no menu Mais (o teclado também fixa a aba temporária).
+- **Folhas no celular** (`studio/sheet-context.ts`): o `Shell` liga `StudioSheetProvider` só no
+  Pro abaixo de 720px, e o `Menu` e o `Modal` (portalados, fora do `[data-sz-pro-tier]`) trocam a
+  forma do MESMO painel para `.sz-sheet` (`data-sz-sheet`); nada remonta ao trocar de tamanho.
+  Vale para a Topbar e as janelas do Shell. Fora do Pro o contexto é `false` e nada muda.
+- **Pinta e Molda nos Materiais**: com os adapters do host, a aba Imagens ganha "Trazer do
+  Pinta" e a 3D "Trazer do Molda" (as mesmas janelas da "Materiais do jogo", lazy), só para quem
+  edita; o material trazido fica escolhido. "Trazer", não "Desenhar": a galeria traz o que já foi
+  desenhado, o Studio não abre o editor do Pinta. O Molda some no Python pelo próprio hook.
+- **Comandos úteis do terminal** (`components/terminal/terminalCommands.ts`): Ver os arquivos,
+  Ver as peças do jogo, Ver as bibliotecas, Instalar uma biblioteca (só digita `npm install `),
+  Limpar a tela, Parar o que está rodando (Ctrl+C) e o "Travou? Reiniciar terminal", na faixa que
+  só existe com o shell pronto. ⚠️ Sem `npm run dev`: o `server-ready` da prévia não filtra porta
+  e trocaria a prévia para o servidor aberto no terminal.
 
 ## Studio dentro de um diálogo modal: `StudioPortalContainerProvider` (01/11/2026)
 

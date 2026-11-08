@@ -10,6 +10,7 @@ import type { Terminal as XTerm } from '@xterm/xterm'
 import { useShallow } from 'zustand/react/shallow'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useT } from '../../studio/i18n'
+import { TERMINAL_COMMANDS, type TerminalCommand } from './terminalCommands'
 import {
   buildTerminalFileContents,
   buildTerminalFileTree,
@@ -365,36 +366,58 @@ export function Terminal(): JSX.Element {
     }
   }, [cleanupRuntime, project, status])
 
-  return (
-    <div className="relative h-full bg-sz-panel">
-      <div ref={containerRef} className="h-full w-full" />
+  // Os "Comandos úteis": escreve no shell aberto (só existe com o terminal pronto) e devolve o
+  // foco ao terminal, para a criança completar o `npm install ` ou ver a saída.
+  const sendCommand = useCallback((command: TerminalCommand) => {
+    const runtime = runtimeRef.current
+    if (!runtime) return
+    void runtime.input.write(command.input).catch(() => undefined)
+    runtime.term.focus?.()
+  }, [])
 
+  return (
+    <div className="relative flex h-full flex-col bg-sz-panel">
       {status === 'ready' && (
-        // O shell interativo (jsh) NUNCA é morto por timeout; só por aqui (ou
-        // pela troca de projeto). Um jsh interativo não dá para instrumentar com
-        // um kill-timer (não é um loop), então a recuperação de "travei" precisa
-        // ser ÓBVIA para uma criança: o botão diz explicitamente que serve para
-        // destravar, e a dica lembra que Ctrl-C interrompe o programa antes de
-        // recorrer ao reinício (que remonta o FS e abre um novo shell).
-        <div className="absolute right-2 top-2 z-10 flex flex-col items-end gap-1">
+        // O shell interativo (jsh) NUNCA é morto por timeout; só por aqui (ou pela troca de
+        // projeto). A recuperação de "travei" precisa ser ÓBVIA para uma criança: o "Parar o que
+        // está rodando" manda o Ctrl+C, e o último botão diz que serve para destravar (remonta o
+        // FS e abre um shell novo). A faixa só existe pronta; o xterm se reajusta sozinho
+        // (`ResizeObserver` no contêiner).
+        <div
+          role="toolbar"
+          aria-label={t('terminal.commands.label')}
+          className="flex shrink-0 items-center gap-1 overflow-x-auto border-b border-sz-border-soft px-2 py-1.5"
+        >
+          <span className="sz-pro-section-label m-0 shrink-0 pr-1">
+            {t('terminal.commands.label')}
+          </span>
+          {TERMINAL_COMMANDS.map((command) => (
+            <button
+              key={command.id}
+              type="button"
+              className="sz-pro-btn sz-pro-btn--sm shrink-0"
+              title={command.display}
+              onClick={() => sendCommand(command)}
+            >
+              {t(command.labelKey)}
+            </button>
+          ))}
           <button
             type="button"
             onClick={handleLoad}
-            title="Reiniciar o terminal se ele travar"
-            className="rounded border border-sz-border bg-sz-panel/80 px-2 py-1 text-xs text-sz-fg-soft hover:text-sz-accent"
+            title={t('terminal.restartHint')}
+            className="sz-pro-btn sz-pro-btn--sm ml-auto shrink-0"
           >
-            Travou? Reiniciar terminal
+            {t('terminal.restart')}
           </button>
-          <p className="rounded bg-sz-panel/80 px-2 py-0.5 text-[10px] text-sz-fg-mute">
-            Dica: aperte <kbd className="font-mono text-sz-fg-soft">Ctrl</kbd>+
-            <kbd className="font-mono text-sz-fg-soft">C</kbd> para interromper o programa
-          </p>
         </div>
       )}
+      <div ref={containerRef} className="min-h-0 w-full flex-1" />
 
       {status === 'idle' && (
         // O cartão de apresentação (redesenho do Pro, 11/2026): o que o terminal é, o botão para
-        // abrir e "O que dá para fazer nele?" com três comandos. A explicação técnica fica dobrada.
+        // abrir e "O que dá para fazer nele?" com os mesmos comandos da faixa. A explicação
+        // técnica fica dobrada.
         <TerminalOverlay>
           <p className="m-0 text-base font-black text-sz-fg">{t('terminal.intro.title')}</p>
           <p className="m-0 max-w-md text-sz-fg-soft">{t('terminal.intro.body')}</p>
@@ -406,22 +429,16 @@ export function Terminal(): JSX.Element {
               {t('terminal.intro.what')}
             </summary>
             <ul className="mt-2 mb-0 list-none space-y-1 p-0">
-              <li>
-                <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">
-                  {t('terminal.intro.installExample')}
-                </code>{' '}
-                {t('terminal.intro.install')}
-              </li>
-              <li>
-                <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">ls</code>{' '}
-                {t('terminal.intro.list')}
-              </li>
-              <li>
-                <kbd className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">Ctrl</kbd>+
-                <kbd className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">C</kbd>{' '}
-                {t('terminal.intro.stop')}
-              </li>
+              {TERMINAL_COMMANDS.map((command) => (
+                <li key={command.id}>
+                  <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">
+                    {command.display}
+                  </code>{' '}
+                  {t(command.labelKey)}
+                </li>
+              ))}
             </ul>
+            <p className="mt-2 mb-0 text-sz-fg-soft">{t('terminal.intro.noDev')}</p>
             <p className="mt-2 mb-0 text-sz-fg-mute">{t('terminal.intro.tech')}</p>
           </details>
         </TerminalOverlay>

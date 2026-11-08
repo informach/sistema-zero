@@ -1,5 +1,5 @@
 import { expect, it, spyOn } from 'bun:test'
-import { act, fireEvent, render } from '@testing-library/react'
+import { act, fireEvent, render, waitFor } from '@testing-library/react'
 import { isPythonProject } from '../../core/editableProject'
 import { buildProAssetBundle } from '../../core/proAssets'
 import { createEmptyProject, type ProjectAsset } from '../../core/project'
@@ -10,6 +10,8 @@ import { documentFixture } from '../../state/fixtures/projectDocuments'
 import { refinePythonProjectDocument } from '../../state/pythonProjectValidation'
 import { StudioStoresContext } from '../../state/storesContext'
 import { createStudioStores } from '../../state/studioStores'
+import { StudioMoldaLibraryProvider } from '../../studio/molda-library'
+import { StudioPintaLibraryProvider } from '../../studio/pinta-library'
 import * as materializer from './editorAssetEntries'
 import { editorAssetEntries } from './editorAssetEntries'
 import { ProAssetPaths } from './ProAssetPaths'
@@ -201,4 +203,80 @@ it('Sons e 3D têm abas próprias com a contagem; a aba vazia oferece trazer', a
   fireEvent.click(view.getByRole('button', { name: 'Trazer do computador ou da biblioteca' }))
   fireEvent.click(view.getByRole('button', { name: 'Trazer' }))
   expect(brought).toEqual(['sounds', 'sounds'])
+})
+
+const image = (id: string, name: string): ProjectAsset => ({
+  id,
+  name,
+  kind: 'image',
+  source: 'upload',
+  dataUrl:
+    'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jZwoAAAAASUVORK5CYII=',
+})
+const pintaAdapter = {
+  list: async () => [],
+  import: async () => ({ ok: false as const, error: 'não usado' }),
+} as never
+const moldaAdapter = {
+  list: async () => [],
+  import: async () => ({ ok: false as const, error: 'não usado' }),
+} as never
+
+it('com os adapters do host: "Trazer do Pinta" em Imagens e "Trazer do Molda" em 3D abrem as galerias', async () => {
+  const view = render(
+    <StudioPintaLibraryProvider value={pintaAdapter}>
+      <StudioMoldaLibraryProvider value={moldaAdapter}>
+        <ProAssetPaths assets={[]} onBring={() => {}} />
+      </StudioMoldaLibraryProvider>
+    </StudioPintaLibraryProvider>,
+  )
+  // Imagens vazia: o Pinta é a ação principal do vazio; o Molda não aparece aqui.
+  const pinta = await view.findByRole('button', { name: 'Trazer do Pinta' })
+  expect(pinta.className).toContain('sz-pro-btn--primary')
+  expect(view.queryByRole('button', { name: 'Trazer do Molda' })).toBeNull()
+  fireEvent.click(pinta)
+  expect(await view.findByRole('dialog', { name: 'Trazer do Pinta' })).toBeTruthy()
+  fireEvent(
+    view.getByRole('dialog', { name: 'Trazer do Pinta' }),
+    new Event('cancel', { cancelable: true }),
+  )
+  await waitFor(() => expect(view.queryByRole('dialog', { name: 'Trazer do Pinta' })).toBeNull())
+  fireEvent.click(view.getByRole('tab', { name: /3D/ }))
+  expect(view.queryByRole('button', { name: 'Trazer do Pinta' })).toBeNull()
+  fireEvent.click(view.getByRole('button', { name: 'Trazer do Molda' }))
+  expect(await view.findByRole('dialog', { name: 'Trazer do Molda' })).toBeTruthy()
+})
+
+it('sem adapter não há botão; quem só observa também não vê; o material trazido fica escolhido', async () => {
+  const bare = render(<ProAssetPaths assets={[]} />)
+  await bare.findByText('Este jogo ainda não tem imagens.')
+  expect(bare.queryByRole('button', { name: 'Trazer do Pinta' })).toBeNull()
+  bare.unmount()
+
+  const stores = createStudioStores({ persistence: 'none' })
+  act(() => stores.project.setState({ editingAccess: 'observer' }))
+  const observer = render(
+    <StudioStoresContext.Provider value={stores}>
+      <StudioPintaLibraryProvider value={pintaAdapter}>
+        <ProAssetPaths assets={[]} />
+      </StudioPintaLibraryProvider>
+    </StudioStoresContext.Provider>,
+  )
+  await observer.findByText('Este jogo ainda não tem imagens.')
+  expect(observer.queryByRole('button', { name: 'Trazer do Pinta' })).toBeNull()
+  observer.unmount()
+
+  const assets = [image('star', 'estrela')]
+  const content = (list: ProjectAsset[]) => (
+    <StudioPintaLibraryProvider value={pintaAdapter}>
+      <ProAssetPaths assets={list} />
+    </StudioPintaLibraryProvider>
+  )
+  const view = render(content(assets))
+  await view.findByText('estrela')
+  fireEvent.click(view.getByRole('button', { name: 'Trazer do Pinta' }))
+  await view.findByRole('dialog', { name: 'Trazer do Pinta' })
+  // A galeria grava no projeto; a lista nova chega pela prop e o material novo fica escolhido.
+  view.rerender(content([...assets, image('drawn', 'heroi')]))
+  expect(await view.findByRole('img', { name: 'heroi' })).toBeTruthy()
 })

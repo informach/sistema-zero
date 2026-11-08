@@ -9,6 +9,7 @@ import { useUIStore } from '../../state/uiStore'
 import { useStudioConfig } from '../../studio/config'
 import { StudioLayoutProvider, useStudioWidth } from '../../studio/layoutContext'
 import { LegacyAIEntryPoints } from '../../studio/legacy-ai'
+import { StudioSheetProvider } from '../../studio/sheet-context'
 import { DrawingSyncWatcher } from '../assets/DrawingSyncWatcher'
 import { useAssetsPanelWiring } from '../assets/useAssetsPanel'
 import { ZappyPanelBoundary } from '../tutor/ZappyPanelBoundary'
@@ -16,6 +17,7 @@ import { BottomPanel } from './BottomPanel'
 import { useVisibleBottomTabs } from './bottomTabs'
 import { ConvertLegacyPrompt } from './ConvertLegacyPrompt'
 import { SectionErrorFallback } from './ErrorViews'
+import { proLayoutTier } from './layoutBreakpoints'
 import { ModeArea } from './ModeArea'
 import { NarrowLayout } from './NarrowLayout'
 import { ProTutorDockContext } from './proTutorDock'
@@ -79,105 +81,114 @@ export function Shell({
 
   return (
     <StudioLayoutProvider value={layout}>
-      <LegacyAIEntryPoints />
-      <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg text-sz-fg">
-        {/* Só monta o layout DEPOIS de medir a largura. `width` começa em 0 (que
+      {/* No Pro do celular os menus e as janelas viram folhas que sobem de baixo. O provider fica
+          sempre montado: trocar de tamanho só troca o valor, nada remonta (regra 12). */}
+      <StudioSheetProvider value={isPro && proLayoutTier(layout.width) === 'phone'}>
+        <LegacyAIEntryPoints />
+        <div ref={rootRef} className="relative flex h-full flex-col bg-sz-bg text-sz-fg">
+          {/* Só monta o layout DEPOIS de medir a largura. `width` começa em 0 (que
             cai no branch wide); pintar o wide e trocar para o narrow no frame
             seguinte REMONTARIA os editores pesados (Blockly/Monaco) e abria
             corrida na injeção do Blockly ("Can't change mode"). A medição é
             síncrona (useLayoutEffect, antes do paint), então este estado
             não-medido nunca chega à tela; o ResizeObserver cobre o caso de o
             Studio só ganhar tamanho depois (ex.: montado oculto). */}
-        {layout.width > 0 && (
-          <>
-            <Topbar
-              onExit={onExit}
-              onPromoteToPro={onPromoteToPro}
-              canToggleTheme={canToggleTheme}
-            />
-            {isPro ? (
-              <ProTutorDockContext.Provider
-                value={
-                  <ZappyPanelBoundary
-                    embedded
-                    onError={(error) => onRenderError?.('zappy', error)}
-                  />
-                }
-              >
-                <main className="flex min-h-0 flex-1 flex-col">
-                  <div key={projectId} className="h-full min-h-0 w-full">
-                    <ModeArea projectMode={projectMode} projectId={projectId} />
-                  </div>
-                </main>
-              </ProTutorDockContext.Provider>
-            ) : layout.isNarrow ? (
-              <NarrowLayout projectMode={projectMode} projectId={projectId} />
-            ) : (
-              <main className="flex min-h-0 flex-1 flex-col">
-                <PanelGroup
-                  direction="vertical"
-                  className="h-full w-full"
-                  autoSaveId={verticalAutoSaveId}
+          {layout.width > 0 && (
+            <>
+              <Topbar
+                onExit={onExit}
+                onPromoteToPro={onPromoteToPro}
+                canToggleTheme={canToggleTheme}
+              />
+              {isPro ? (
+                <ProTutorDockContext.Provider
+                  value={
+                    <ZappyPanelBoundary
+                      embedded
+                      onError={(error) => onRenderError?.('zappy', error)}
+                    />
+                  }
                 >
-                  {/* `key` por projeto: ao trocar de projeto, remonta a subárvore do
-                  modo (e, dentro dela, Monaco e Preview) — assim os valores
-                  debounced e refs começam já com o conteúdo do novo projeto, sem
-                  mostrar/renderizar o projeto anterior no primeiro instante. */}
-                  <Panel
-                    id="sz-editor"
-                    order={1}
-                    defaultSize={hasBottomPanel ? 70 : 100}
-                    minSize={30}
-                  >
+                  <main className="flex min-h-0 flex-1 flex-col">
                     <div key={projectId} className="h-full min-h-0 w-full">
                       <ModeArea projectMode={projectMode} projectId={projectId} />
                     </div>
-                  </Panel>
-                  {hasBottomPanel && (
-                    <>
-                      <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
-                      <Panel id="sz-bottom" order={2} defaultSize={30} minSize={10} maxSize={70}>
-                        <BottomPanel />
-                      </Panel>
-                    </>
+                  </main>
+                </ProTutorDockContext.Provider>
+              ) : layout.isNarrow ? (
+                <NarrowLayout projectMode={projectMode} projectId={projectId} />
+              ) : (
+                <main className="flex min-h-0 flex-1 flex-col">
+                  <PanelGroup
+                    direction="vertical"
+                    className="h-full w-full"
+                    autoSaveId={verticalAutoSaveId}
+                  >
+                    {/* `key` por projeto: ao trocar de projeto, remonta a subárvore do
+                  modo (e, dentro dela, Monaco e Preview) — assim os valores
+                  debounced e refs começam já com o conteúdo do novo projeto, sem
+                  mostrar/renderizar o projeto anterior no primeiro instante. */}
+                    <Panel
+                      id="sz-editor"
+                      order={1}
+                      defaultSize={hasBottomPanel ? 70 : 100}
+                      minSize={30}
+                    >
+                      <div key={projectId} className="h-full min-h-0 w-full">
+                        <ModeArea projectMode={projectMode} projectId={projectId} />
+                      </div>
+                    </Panel>
+                    {hasBottomPanel && (
+                      <>
+                        <PanelResizeHandle className="sz-resize-handle sz-resize-handle--horizontal" />
+                        <Panel id="sz-bottom" order={2} defaultSize={30} minSize={10} maxSize={70}>
+                          <BottomPanel />
+                        </Panel>
+                      </>
+                    )}
+                  </PanelGroup>
+                </main>
+              )}
+              {showExtensions && config.extensions && (
+                <ErrorBoundary
+                  label="extensões"
+                  resetKeys={[showExtensions]}
+                  fallback={(p) => (
+                    <SectionErrorFallback {...p} title="Não foi possível abrir as extensões" />
                   )}
-                </PanelGroup>
-              </main>
-            )}
-            {showExtensions && config.extensions && (
-              <ErrorBoundary
-                label="extensões"
-                resetKeys={[showExtensions]}
-                fallback={(p) => (
-                  <SectionErrorFallback {...p} title="Não foi possível abrir as extensões" />
-                )}
-              >
-                <Suspense fallback={null}>
-                  <ExtensionsPanel open={showExtensions} onClose={() => setShowExtensions(false)} />
-                </Suspense>
-              </ErrorBoundary>
-            )}
-            {showAssets && (
-              <ErrorBoundary
-                label="materiais"
-                resetKeys={[showAssets]}
-                fallback={(p) => (
-                  <SectionErrorFallback {...p} title="Não foi possível abrir os materiais" />
-                )}
-              >
-                <Suspense fallback={null}>
-                  <AssetsPanel {...assetsPanel} />
-                </Suspense>
-              </ErrorBoundary>
-            )}
-            <ConvertLegacyPrompt onPromoteToPro={onPromoteToPro} />
-            <DrawingSyncWatcher />
-            {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
+                >
+                  <Suspense fallback={null}>
+                    <ExtensionsPanel
+                      open={showExtensions}
+                      onClose={() => setShowExtensions(false)}
+                    />
+                  </Suspense>
+                </ErrorBoundary>
+              )}
+              {showAssets && (
+                <ErrorBoundary
+                  label="materiais"
+                  resetKeys={[showAssets]}
+                  fallback={(p) => (
+                    <SectionErrorFallback {...p} title="Não foi possível abrir os materiais" />
+                  )}
+                >
+                  <Suspense fallback={null}>
+                    <AssetsPanel {...assetsPanel} />
+                  </Suspense>
+                </ErrorBoundary>
+              )}
+              <ConvertLegacyPrompt onPromoteToPro={onPromoteToPro} />
+              <DrawingSyncWatcher />
+              {/* ⚠️ O tutor vai SEMPRE embrulhado: um erro do Zappy não pode
                 derrubar o Estúdio (ver ZappyPanelBoundary.tsx). */}
-            {!isPro && <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />}
-          </>
-        )}
-      </div>
+              {!isPro && (
+                <ZappyPanelBoundary onError={(error) => onRenderError?.('zappy', error)} />
+              )}
+            </>
+          )}
+        </div>
+      </StudioSheetProvider>
     </StudioLayoutProvider>
   )
 }

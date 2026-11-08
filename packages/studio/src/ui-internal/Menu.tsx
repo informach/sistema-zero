@@ -2,6 +2,7 @@ import type { JSX, KeyboardEvent, ReactNode } from 'react'
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useStudioPortalContainer } from '../studio/portal-container'
+import { useStudioSheets } from '../studio/sheet-context'
 import { StudioThemeScope } from '../studio/theme'
 import { cn } from './cn'
 
@@ -78,6 +79,8 @@ export function Menu({
   const [open, setOpen] = useState(false)
   const portalContainer = useStudioPortalContainer()
   const [pos, setPos] = useState<PanelPos | null>(null)
+  // No Pro do celular o MESMO painel vira folha que sobe de baixo (sem as coordenadas do gatilho).
+  const sheet = useStudioSheets()
   const triggerRef = useRef<HTMLButtonElement>(null)
   const itemRefs = useRef<Array<HTMLButtonElement | null>>([])
 
@@ -189,7 +192,10 @@ export function Menu({
               type="button"
               aria-hidden="true"
               tabIndex={-1}
-              className="fixed inset-0 z-40 cursor-default bg-transparent"
+              className={cn(
+                'fixed inset-0 z-40 cursor-default',
+                sheet ? 'sz-sheet-backdrop' : 'bg-transparent',
+              )}
               onMouseDown={(e) => {
                 e.preventDefault()
                 close()
@@ -198,11 +204,16 @@ export function Menu({
             <div
               role="menu"
               aria-label={label}
-              style={{ top: pos.top, left: pos.left, right: pos.right }}
-              className={cn(
-                'fixed z-50 max-h-[min(70vh,32rem)] overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg',
-                hasHint ? 'min-w-72' : 'min-w-56',
-              )}
+              data-sz-sheet={sheet ? '' : undefined}
+              style={sheet ? undefined : { top: pos.top, left: pos.left, right: pos.right }}
+              className={
+                sheet
+                  ? 'sz-sheet sz-sheet--menu'
+                  : cn(
+                      'fixed z-50 max-h-[min(70vh,32rem)] overflow-auto rounded-lg border border-sz-border bg-sz-panel py-1 shadow-lg',
+                      hasHint ? 'min-w-72' : 'min-w-56',
+                    )
+              }
             >
               {sections.map((section, si) => (
                 <fieldset

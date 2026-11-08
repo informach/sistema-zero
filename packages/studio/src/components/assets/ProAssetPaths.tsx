@@ -1,6 +1,6 @@
-import { useEffect, useId, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
 import type { ProjectAsset } from '#core'
-import { cn, IconBox, IconFile, IconImage, IconMusic, IconPlus } from '#ui'
+import { cn, IconBox, IconBrush, IconFile, IconImage, IconMusic, IconPlus } from '#ui'
 import { isPythonProject } from '../../core/editableProject'
 import type { ProAssetManifestEntry } from '../../core/proAssets'
 import { type ProExample, proAssetExample } from '../../core/proExamples'
@@ -8,6 +8,8 @@ import { pythonProAssetExample } from '../../python/proExamples'
 import { useProjectStore } from '../../state/projectStore'
 import type { AssetsTab } from '../../state/uiStore'
 import { useT } from '../../studio/i18n'
+import { useStudioMoldaLibrary } from '../../studio/molda-library'
+import { useStudioPintaLibrary } from '../../studio/pinta-library'
 import { editorAssetEntries } from './editorAssetEntries'
 
 const TAB_OF: Record<ProjectAsset['kind'], AssetsTab> = {
@@ -24,6 +26,14 @@ const TAB_KEY: Record<AssetsTab, string> = {
   fonts: 'fonts',
 }
 const TAB_ICON = { images: IconImage, sounds: IconMusic, models3d: IconBox, fonts: IconFile }
+// As janelas da galeria do Pinta e do Molda só baixam quando a criança pede (as mesmas da janela
+// "Materiais do jogo"; gravam no projeto pela store).
+const PintaImportDialog = lazy(() =>
+  import('./PintaImportDialog').then((module) => ({ default: module.PintaImportDialog })),
+)
+const MoldaImportDialog = lazy(() =>
+  import('./MoldaImportDialog').then((module) => ({ default: module.MoldaImportDialog })),
+)
 
 /**
  * Os Materiais do jogo no painel do Pro (redesenho de 11/2026): o "Trazer" (abre a janela
@@ -31,7 +41,10 @@ const TAB_ICON = { images: IconImage, sounds: IconMusic, models3d: IconBox, font
  * de miniaturas e, no material escolhido, o caminho "Para usar no código" com "Copiar", "Onde é
  * usado" (a busca literal no projeto) e "Como usar neste jogo" (os exemplos revisados de
  * sempre). Os caminhos e IDs são os canônicos do manifesto (JS) ou do runtime Python; a régua de
- * colisão com os fontes Python continua a de `editorAssetEntries`.
+ * colisão com os fontes Python continua a de `editorAssetEntries`. Com os adapters do host, a aba
+ * Imagens ganha "Trazer do Pinta" e a 3D "Trazer do Molda" (o Molda já some no Python pelo
+ * próprio hook); só para quem edita. "Trazer", e não "Desenhar": a galeria traz o que a criança
+ * já desenhou, o Studio não abre o editor do Pinta.
  */
 export function ProAssetPaths({
   assets,
@@ -49,6 +62,12 @@ export function ProAssetPaths({
 }) {
   const t = useT()
   const id = useId()
+  const author = useProjectStore((state) => state.editingAccess === 'author')
+  const pintaLibrary = useStudioPintaLibrary()
+  const moldaLibrary = useStudioMoldaLibrary()
+  const [library, setLibrary] = useState<'pinta' | 'molda' | null>(null)
+  // Os ids de antes da importação: o material novo (o que não estava aqui) fica escolhido.
+  const before = useRef<Set<string> | null>(null)
   const projectId = useProjectStore((state) => state.project?.id)
   const language = useProjectStore((state): 'python' | 'javascript' =>
     state.project?.programmingLanguage === 'python' ? 'python' : 'javascript',
@@ -124,6 +143,39 @@ export function ProAssetPaths({
   ]
   const [tab, setTab] = useState<AssetsTab>('images')
   const activeTab = tabs.includes(tab) ? tab : 'images'
+  useEffect(() => {
+    const known = before.current
+    if (!known) return
+    const added = assets.find((asset) => !known.has(asset.id))
+    if (!added) return
+    before.current = null
+    setTab(TAB_OF[added.kind])
+    setQuery('')
+    setSelectedId(added.id)
+  }, [assets])
+  const creation =
+    activeTab === 'images' && pintaLibrary && author
+      ? ('pinta' as const)
+      : activeTab === 'models3d' && moldaLibrary && author
+        ? ('molda' as const)
+        : null
+  const openLibrary = (which: 'pinta' | 'molda') => {
+    before.current = new Set(assets.map((asset) => asset.id))
+    setLibrary(which)
+  }
+  const creationButton = (primary: boolean) =>
+    creation ? (
+      <button
+        type="button"
+        className={cn('sz-pro-btn sz-pro-btn--sm', primary && 'sz-pro-btn--primary')}
+        onClick={() => openLibrary(creation)}
+      >
+        {creation === 'pinta' ? <IconBrush /> : <IconBox />}
+        <span>
+          {t(creation === 'pinta' ? 'pro.materials.fromPinta' : 'pro.materials.fromMolda')}
+        </span>
+      </button>
+    ) : null
   const entries = current
     ? state.entries.filter(
         (asset) =>
@@ -140,16 +192,19 @@ export function ProAssetPaths({
     <div className="flex flex-col gap-3 text-sm">
       <div className="flex items-center justify-between gap-2">
         <h2 className="m-0 text-base font-black">{t('pro.materials')}</h2>
-        {onBring ? (
-          <button
-            type="button"
-            className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--primary"
-            onClick={() => onBring(activeTab)}
-          >
-            <IconPlus />
-            <span>{t('pro.materials.bring')}</span>
-          </button>
-        ) : null}
+        <div className="flex flex-wrap items-center justify-end gap-1">
+          {counts[activeTab] > 0 ? creationButton(false) : null}
+          {onBring ? (
+            <button
+              type="button"
+              className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--primary"
+              onClick={() => onBring(activeTab)}
+            >
+              <IconPlus />
+              <span>{t('pro.materials.bring')}</span>
+            </button>
+          ) : null}
+        </div>
       </div>
       <div role="tablist" aria-label={t('pro.materials.kinds')} className="sz-pro-seg self-start">
         {tabs.map((item) => (
@@ -200,6 +255,7 @@ export function ProAssetPaths({
               <Icon />
             </span>
             <p className="m-0 text-sz-fg-soft">{t(`pro.materials.empty.${TAB_KEY[activeTab]}`)}</p>
+            {creationButton(true)}
             {onBring ? (
               <button
                 type="button"
@@ -269,6 +325,15 @@ export function ProAssetPaths({
           {copyStatus}
         </p>
       </div>
+      {library ? (
+        <Suspense fallback={null}>
+          {library === 'pinta' ? (
+            <PintaImportDialog onClose={() => setLibrary(null)} />
+          ) : (
+            <MoldaImportDialog onClose={() => setLibrary(null)} />
+          )}
+        </Suspense>
+      ) : null}
     </div>
   )
 }
