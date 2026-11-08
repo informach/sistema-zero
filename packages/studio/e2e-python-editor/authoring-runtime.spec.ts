@@ -23,7 +23,7 @@ for (const kind of ['classic', 'pro'] as const)
       if (kind === 'classic') {
         await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
         await page.getByRole('menuitem', { name: 'Console', exact: true }).click()
-      } else await page.getByRole('button', { name: 'Console', exact: true }).click()
+      } else await page.getByRole('tab', { name: 'Mensagens do programa', exact: true }).click()
       await expect(page.getByText(/^drawing-ready \(/)).toBeVisible()
       const source =
         'import turtle\nturtle.forward(50)\nprint("author-edit-ready")\nturtle.done()\n'

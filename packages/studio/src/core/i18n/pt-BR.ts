@@ -188,6 +188,7 @@ export const ptBR: Record<string, string> = {
   'pro.palette.none': 'Nenhuma ação com esse nome.',
   'pro.palette.hint':
     'Exemplos são funções pequenas para conferir e conectar ao seu jogo. A paleta nativa do editor continua disponível pelo menu do código.',
+  'pro.symbols.close': 'Fechar o mapa',
   'pro.symbols.pending': 'Lendo o mapa…',
   'pro.symbols.empty': 'Este arquivo ainda não tem funções ou classes para mapear.',
   'pro.symbols.line': 'linha {line}',
@@ -295,6 +296,13 @@ export const ptBR: Record<string, string> = {
   'topbar.projects': 'Meus projetos',
   'topbar.more': 'Mais opções',
   'topbar.theme': 'Mudar tema',
+  'topbar.shortcuts': 'Atalhos do teclado',
+  'pro.shortcuts.navigate': 'Andar pelo projeto',
+  'pro.shortcuts.edit': 'Mexer no código',
+  'pro.shortcuts.help': 'Zappy e Python',
+  'pro.shortcuts.comment': 'Transformar a linha em comentário',
+  'pro.shortcuts.replTest': 'Testar a linha de Python',
+  'pro.shortcuts.hint': 'Os atalhos valem com o cursor dentro do código.',
   'topbar.showPreview': 'Mostrar pré-visualização',
   'topbar.hidePreview': 'Ocultar pré-visualização',
   // Os grupos do menu ⋯ (ver `components/layout/topbar/menuLayout.ts`): cada um é a

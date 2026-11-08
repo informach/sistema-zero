@@ -212,9 +212,9 @@ test('Pro console runs real Python in the current namespace without changing sav
   await page.evaluate(() => pythonBridgeProbe.create())
   const source = 'valor = 40\n'
   await page.evaluate((source) => pythonBridgeProbe.openPro({ 'src/main.py': source }), source)
-  await page.getByRole('button', { name: 'Console', exact: true }).click()
+  await page.getByRole('tab', { name: 'Experimentar comandos' }).click()
   const command = page.getByRole('textbox', { name: 'Comando Python', exact: true })
-  const execute = page.getByRole('button', { name: 'Executar comando', exact: true })
+  const execute = page.getByRole('button', { name: 'Testar', exact: true })
   await command.fill('valor + 2')
   await expect(execute).toBeDisabled()
   await page.getByRole('button', { name: 'Rodar', exact: true }).click()

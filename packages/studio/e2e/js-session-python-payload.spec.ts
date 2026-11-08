@@ -29,7 +29,7 @@ async function openNewProject(page: Page, pro: boolean) {
   await page.getByRole('button', { name: 'Criar e abrir' }).click()
   await expect(page).toHaveURL(/\/editor\//)
   // The Pro preview keeps downloading the WebContainer; the editor is the settled UI here.
-  if (pro) await page.getByRole('button', { name: 'Ocultar pré-visualização' }).click()
+  if (pro) await page.getByRole('button', { name: 'Só o código' }).click()
   await expect(page.locator(pro ? '.monaco-editor' : '.blocklySvg').first()).toBeVisible({
     timeout: 30_000,
   })

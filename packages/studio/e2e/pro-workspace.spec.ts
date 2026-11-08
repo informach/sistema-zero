@@ -44,9 +44,10 @@ test('loads symbols opened before the language module arrives', async ({ page })
   try {
     await page.goto(`http://127.0.0.1:${address.port}`, { waitUntil: 'domcontentloaded' })
     await requested.promise
-    await page.getByRole('button', { name: 'Símbolos do arquivo', exact: true }).click()
+    await page.getByRole('button', { name: 'Mais', exact: true }).click()
+    await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
     resume.resolve()
-    await expect(page.getByRole('button', { name: 'score', exact: true })).toBeVisible()
+    await expect(page.getByRole('button', { name: /^score\b/ })).toBeVisible()
   } finally {
     resume.resolve()
   }
@@ -59,11 +60,11 @@ test('reports a language module loading failure in Problems instead of analysing
   const address = server.httpServer.address()
   if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
   await page.goto(`http://127.0.0.1:${address.port}`)
-  await page.getByRole('button', { name: /^Problemas/ }).click()
+  await page.getByRole('tab', { name: /^Problemas/ }).click()
   await expect(
     page.getByRole('alert').filter({ hasText: 'A análise não pôde ser concluída' }),
   ).toBeVisible()
-  await expect(page.getByText('Analisando o código…', { exact: true })).toBeHidden()
+  await expect(page.getByText('Lendo o código…', { exact: true })).toBeHidden()
   await expect(page.getByText(/Salve o projeto antes de recarregar a página/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Reiniciar análise', exact: true })).toBeHidden()
   const input = page.locator('.monaco-editor textarea.inputarea').first()
@@ -74,8 +75,10 @@ test('reports a language module loading failure in Problems instead of analysing
   await expect(page.getByLabel('Buffers da sessão')).toContainText('// editing remains available')
   await page.unroute('**/session-*.js')
   await page.reload()
-  await page.getByRole('button', { name: /^Problemas/ }).click()
-  await expect(page.getByRole('button', { name: 'src/closed.ts:1', exact: true })).toBeVisible()
+  await page.getByRole('tab', { name: /^Problemas/ }).click()
+  await expect(
+    page.getByRole('button', { name: 'Ir para src/closed.ts:1', exact: true }),
+  ).toBeVisible()
   await expect(
     page.getByRole('alert').filter({ hasText: 'A análise não pôde ser concluída' }),
   ).toBeHidden()
@@ -112,11 +115,12 @@ test('recovers an open symbols panel when a failed language worker is restarted'
   const address = server.httpServer.address()
   if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
   await page.goto(`http://127.0.0.1:${address.port}`)
-  await page.getByRole('button', { name: 'Símbolos do arquivo', exact: true }).click()
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
   await expect(page.getByRole('button', { name: 'Reiniciar análise', exact: true })).toBeVisible()
   await page.unroute('**/pro-language.worker-*.js')
   await page.getByRole('button', { name: 'Reiniciar análise', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'score', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^score\b/ })).toBeVisible()
   await expect(page.getByText(/Salve o projeto antes de recarregar a página/)).toBeHidden()
 })
 
@@ -151,7 +155,7 @@ test('uses conventional keyboard navigation, native commands and reviewed symbol
   await expect(input).toBeVisible({ timeout: 30_000 })
   await input.focus()
   await input.press('Control+p')
-  const quick = page.getByRole('dialog', { name: 'Abrir arquivo rapidamente' })
+  const quick = page.getByRole('dialog', { name: 'Ir para um arquivo' })
   await expect(quick).toBeVisible()
   await quick.getByRole('combobox').fill('config.ts')
   await quick.getByRole('combobox').press('Enter')
@@ -188,8 +192,8 @@ test('uses conventional keyboard navigation, native commands and reviewed symbol
   await input.press('F1')
   const palette = page.locator('.quick-input-widget')
   await expect(palette).toBeVisible()
-  await palette.getByRole('combobox').fill('>Studio: Localizar referências')
-  await expect(palette).toContainText('Studio: Localizar referências')
+  await palette.getByRole('combobox').fill('>Studio: Onde isto é usado')
+  await expect(palette).toContainText('Studio: Onde isto é usado')
   await palette.getByRole('combobox').press('Escape')
   await input.press('Control+f')
   await expect(page.locator('.find-widget')).toBeVisible()
@@ -227,7 +231,8 @@ test('updates language and removes obsolete markers when an open file changes ex
   await expect.poll(async () => (await inspect('src/closed.ts')).markers.length).toBeGreaterThan(0)
   const original = await inspect('src/closed.ts')
   const rename = async (from: string, to: string) => {
-    await page.getByRole('button', { name: `Renomear ou mover ${from}` }).click()
+    await page.getByRole('button', { name: `Opções de ${from}` }).click()
+    await page.getByRole('menuitem', { name: 'Mudar o nome' }).click()
     const field = page.getByLabel(`Renomear ${from.split('/').at(-1)}`)
     await field.fill(to)
     await field.press('Enter')
@@ -245,7 +250,8 @@ test('updates language and removes obsolete markers when an open file changes ex
     language: 'plaintext',
     markers: [],
   })
-  await page.getByRole('button', { name: 'Comandos…', exact: true }).click()
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
   await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await expect(page.getByRole('treeitem', { name: 'src/closed.js', exact: true })).toBeVisible()
@@ -270,36 +276,35 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
   await page.goto(`http://127.0.0.1:${address.port}`)
   await expect(page.locator('.monaco-editor').first()).toBeVisible({ timeout: 30_000 })
-  await page.getByRole('button', { name: /Problemas/ }).click()
-  await expect(page.getByRole('button', { name: 'src/closed.ts:1' })).toBeVisible({
+  await page.getByRole('tab', { name: /Problemas/ }).click()
+  await expect(page.getByRole('button', { name: 'Ir para src/closed.ts:1' })).toBeVisible({
     timeout: 30_000,
   })
-  await page.getByRole('button', { name: 'Investigar com Zappy', exact: true }).first().click()
+  await page.getByRole('button', { name: 'Pedir uma dica ao Zappy', exact: true }).first().click()
   await expect(page.getByPlaceholder('O que deveria acontecer e o que aconteceu?')).toHaveValue(
     /TS2322/,
   )
   await expect(page.getByText('Confira o nome no arquivo.', { exact: true })).toBeHidden()
   await page.getByRole('button', { name: 'Fechar Zappy', exact: true }).first().click()
-  await page.getByRole('button', { name: 'Recolher painéis' }).click()
+  await page.getByRole('button', { name: 'Fechar a gaveta' }).click()
   await inspectWorkspaceBuffers(page)
   const before = await page.getByLabel('Buffers da sessão').textContent()
   expect(before).not.toContain('src/closed.ts')
   const game = page.frameLocator('iframe').getByText(/Sessão \d+/)
   await expect(game).toBeVisible({ timeout: 30_000 })
   const gameSession = await game.textContent()
-  await page.getByRole('button', { name: 'Ampliar código' }).click()
+  await page.getByRole('button', { name: 'Só o código' }).click()
   await page.setViewportSize({ width: 700, height: 900 })
-  await page.getByRole('button', { name: 'Jogo', exact: true }).click()
+  const phoneTabs = page.getByRole('navigation', { name: 'Partes da tela' })
+  await phoneTabs.getByRole('tab', { name: 'Jogo', exact: true }).click()
   await expect(game).toHaveText(gameSession!)
-  await page
-    .getByLabel('Organizar o editor')
-    .getByRole('button', { name: 'Código', exact: true })
-    .click()
+  await phoneTabs.getByRole('tab', { name: 'Código', exact: true }).click()
   await page.setViewportSize({ width: 1440, height: 1000 })
-  await page.getByRole('button', { name: 'Código e jogo' }).click()
+  await page.getByRole('button', { name: 'Mostrar o jogo' }).click()
   await inspectWorkspaceBuffers(page)
   expect(await page.getByLabel('Buffers da sessão').textContent()).toBe(before)
-  await page.getByRole('button', { name: 'Renomear ou mover src/config.ts' }).click()
+  await page.getByRole('button', { name: 'Opções de src/config.ts' }).click()
+  await page.getByRole('menuitem', { name: 'Mudar o nome' }).click()
   await page.getByLabel('Renomear config.ts').fill('src/settings.ts')
   await page.getByLabel('Renomear config.ts').press('Enter')
   await expect(page.getByRole('dialog', { name: 'Conferir mudança nos arquivos' })).toBeVisible()
@@ -311,7 +316,8 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await expect(page.getByRole('treeitem', { name: 'src/settings.ts' })).toBeVisible()
   await inspectWorkspaceBuffers(page)
   await expect(page.getByLabel('Buffers da sessão')).toContainText('./settings')
-  await page.getByRole('button', { name: 'Comandos…', exact: true }).click()
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
   await page.getByRole('button', { name: 'Recuperar arquivos e materiais', exact: true }).click()
   await page.getByRole('button', { name: 'Recuperar', exact: true }).first().click()
   await page
@@ -319,7 +325,8 @@ test('keeps buffers and the game session across layout changes, reviews rename a
     .getByRole('button', { name: /Fechar/ })
     .click()
   await expect(page.getByRole('treeitem', { name: 'src/config.ts' })).toBeVisible()
-  await page.getByRole('button', { name: 'Comandos…', exact: true }).click()
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Todas as ações…' }).click()
   await page.getByRole('searchbox', { name: 'O que você quer fazer?' }).fill('placar')
   await page.getByRole('button', { name: 'Inserir exemplo: um placar' }).click()
   await expect(page.getByText(/Inserir um placar no fim/)).toBeVisible()
@@ -327,6 +334,7 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await inspectWorkspaceBuffers(page)
   await expect(page.getByLabel('Buffers da sessão')).toContainText('function criarPlacar')
   await page.getByRole('button', { name: 'Materiais', exact: true }).click()
+  await page.getByRole('button', { name: 'Ver estrela' }).click()
   await page.getByText('Como usar neste jogo', { exact: true }).click()
   const materialUrl = await page
     .locator('code')
@@ -337,7 +345,7 @@ test('keeps buffers and the game session across layout changes, reviews rename a
   await page.getByRole('button', { name: 'Aplicar mudança', exact: true }).click()
   await inspectWorkspaceBuffers(page)
   await expect(page.getByLabel('Buffers da sessão')).toContainText(materialUrl!)
-  await page.getByRole('button', { name: 'Buscar caminho no código', exact: true }).click()
+  await page.getByRole('button', { name: 'Procurar o caminho no código', exact: true }).click()
   await expect(page.getByRole('searchbox', { name: 'Encontrar no código do projeto' })).toHaveValue(
     materialUrl!,
   )
@@ -390,7 +398,7 @@ test('observer hosts remain inert and tutor-free author hosts retain navigation'
   await expect(input).toBeVisible({ timeout: 30_000 })
   await input.focus()
   await input.press('Control+p')
-  await expect(page.getByRole('dialog', { name: 'Abrir arquivo rapidamente' })).toBeVisible()
+  await expect(page.getByRole('dialog', { name: 'Ir para um arquivo' })).toBeVisible()
 })
 
 test('keeps continuous edits intact while the symbols panel is open', async ({ page }) => {
@@ -401,8 +409,9 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
   await page.goto(`http://127.0.0.1:${address.port}`)
   const input = page.locator('.monaco-editor textarea.inputarea').first()
   await expect(input).toBeVisible({ timeout: 30_000 })
-  await page.getByRole('button', { name: 'Símbolos do arquivo', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'score', exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Mais', exact: true }).click()
+  await page.getByRole('menuitem', { name: 'Mapa do arquivo' }).click()
+  await expect(page.getByRole('button', { name: /^score\b/ })).toBeVisible()
   await input.focus()
   await input.press('Control+End')
   const comment = `// ${'s'.repeat(1000)}`
@@ -419,6 +428,6 @@ test('keeps continuous edits intact while the symbols panel is open', async ({ p
     content: string
   }>
   expect(models.some((model) => model.content.endsWith(text))).toBe(true)
-  await expect(page.getByRole('button', { name: 'continuousEdit', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: /^continuousEdit\b/ })).toBeVisible()
   expect(errors).toEqual([])
 })

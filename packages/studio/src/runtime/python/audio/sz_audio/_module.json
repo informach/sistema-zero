@@ -33,10 +33,7 @@
   "audio": {
     "container": "RIFF/WAVE",
     "encoding": "PCM16",
-    "channels": [
-      1,
-      2
-    ],
+    "channels": [1, 2],
     "assetsTotalBytes": 33554432,
     "policy": {
       "version": 1,

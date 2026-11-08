@@ -1,5 +1,47 @@
 # @sistemazero/studio
 
+## O redesenho do Studio Pro (08/11/2026)
+
+Pedido dela: o Pro (JavaScript e Python) bonito, intuitivo e fácil para uma criança, no tema da
+plataforma. Proposta aprovada no Canvas "Studio Pro — Redesenho"; mapa técnico em
+[`docs/architecture.md`](docs/architecture.md) §"Redesenho do workspace Pro". Decisões dela:
+
+1. **"Rodar / Rodar de novo / Parar" em TODA prévia**, também na Ponte Python clássica (família
+   `run.*` do i18n). O player público continua com "Jogar", que é outra ação.
+2. **O `print()` fica na gaveta "Mensagens do programa"**; no palco só a tela do programa e a
+   "Conversa com o programa" do `input()`.
+
+O que vale lembrar:
+
+- ⭐ **Um botão manda.** Rodar e Parar moram no MEIO da Topbar no Pro (`ProRunControls`, lendo a
+  store `proRun` da instância) e carregam os `data-live-target` da professora; no celular eles
+  vão ao botão flutuante e ao par embaixo do palco. ⚠️ Sempre exatamente UM `studio-run` e um
+  `studio-stop` na página (o cursor usa `querySelector`): no Pro a prévia Python não desenha os
+  seus (`controls="hidden"`).
+- ⚠️ **Parar no WebContainer mata install e dev-server, mas a posse do FS fica** (só sai no unmount
+  ou na troca de projeto): Rodar de novo é rápido. O remoto, parado, só esconde o resultado e
+  aborta o build em voo.
+- ⚠️ **Regra 12 nos três tamanhos do Pro** (`proLayoutTier`: 1200/720): trilho, painel lateral,
+  `PanelGroup`, gaveta e abas do celular são sempre o mesmo DOM. `ProWorkspaceLayout.test.tsx`
+  conta uma montagem por painel através de largo → tablet → celular.
+- **Vocabulário de criança, poder de profissional** (nada saiu, mudou de nome e lugar): Procurar,
+  Arrumar código, Mapa do arquivo, Onde isto é usado, Trocar nome em todo lugar, Todas as ações
+  (Ctrl+Shift+P agora abre de verdade), Ir para um arquivo, Fechar as outras abas, Trazer
+  materiais, "Testar" no Python, "Abrir o terminal". Os nomes acessíveis que os e2e usam estão
+  nos testes; "Comando Python", "Nome do novo item", "Novo nome do símbolo", "Conferir
+  referências" e o `treeitem` com o caminho continuam iguais.
+- **Materiais em UM lugar** (o trilho). A cópia recolhida "Usar materiais no código" saiu da
+  janela "Materiais do jogo".
+- **"Extensões" some do menu só no Pro em JavaScript** (o Python instala Turtle, Pygame e Raylib
+  por ali). O Terminal some para o Python (não existe lá). "Atalhos do teclado" entra no modo
+  Código.
+- **`ProWorkspacePreferences.sizes` é `[código, palco]`** (tipo público); os três números antigos
+  migram mantendo a proporção. `panel` e `bottom: 'repl'` são novos.
+- O teto CRU da lista inicial subiu para 380 000 (os dicionários moram nela); o gzip, o guarda
+  apertado, ficou em 114 755 de 120 000.
+- Receitas `.sz-pro-*` e o token `--color-sz-joy` (o amarelo do Compartilhar no Pro) em
+  `styles/studio.css`, só com tokens.
+
 ## Studio dentro de um diálogo modal: `StudioPortalContainerProvider` (01/11/2026)
 
 O `Menu` e o `Modal` portalavam para o `document.body`, e o Blockly também põe lá o editor de

@@ -13,6 +13,7 @@ import {
   IconGraduation,
   IconGrid,
   IconImage,
+  IconKeyboard,
   IconLaptop,
   IconMessageSquare,
   IconMoon,
@@ -73,6 +74,11 @@ import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
 const ExportDialog = lazy(() =>
   import('./ExportDialog').then((module) => ({ default: module.ExportDialog })),
 )
+const ProShortcutsDialog = lazy(() =>
+  import('./topbar/ProShortcutsDialog').then((module) => ({
+    default: module.ProShortcutsDialog,
+  })),
+)
 
 /** O que cada item do menu "⋯" FAZ. O nome, o grupo e a ordem vêm da árvore editorial. */
 interface MenuItemBehavior {
@@ -109,7 +115,7 @@ export interface TopbarProps {
  */
 export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps): JSX.Element {
   const t = useT()
-  const { hasProject, projectId, projectName, projectMode, projectKind, has3DInProject } =
+  const { hasProject, projectId, projectName, projectMode, projectKind, python, has3DInProject } =
     useProjectStore(
       useShallow((s) => ({
         hasProject: Boolean(s.project),
@@ -117,6 +123,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         projectName: s.project?.name ?? '',
         projectMode: s.project?.mode ?? 'blocks',
         projectKind: s.project?.kind,
+        python: s.project?.programmingLanguage === 'python',
         // ⚠️ Um BOOLEAN, nunca a referência do projeto: o `useShallow` compara o que
         // sai daqui, e devolver `s.project` re-renderizaria a barra inteira a cada
         // tecla. A régua em si é memoizada por identidade do `blocksState` (ver
@@ -187,6 +194,7 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   }, [projectId, stores])
   const [showShare, setShowShare] = useState(false)
   const [showExport, setShowExport] = useState(false)
+  const [showShortcuts, setShowShortcuts] = useState(false)
   const [showConvert, setShowConvert] = useState(false)
   const [converting, setConverting] = useState(false)
   const [conversionError, setConversionError] = useState<string | null>(null)
@@ -328,7 +336,9 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // "Trazer o que eu enviei" (só na aula — o host passa o callback). Logo após
   // Salvar: é a ação de "recuperar do servidor" do mesmo grupo.
   if (onCloudSync) behaviors.sync = { icon: <IconRefresh />, onSelect: () => onCloudSync() }
-  if (config.extensions) {
+  // O Pro em JavaScript não usa extensões de blocos (é a árvore Vite); o Pro em Python usa
+  // (Turtle, Pygame Zero, Pygame-ce, Raylib moram nas extensões).
+  if (config.extensions && !(projectKind === 'pro' && !python)) {
     behaviors.extensions = {
       icon: <IconPuzzle />,
       active: showExtensions,
@@ -368,12 +378,18 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
   // narrow a aba some). O Preview tem ainda o ícone dedicado na própria Topbar.
   if (config.console) {
     behaviors.console = {
+      // No Pro, a aba que este item mostra se chama "Mensagens do jogo/do programa".
+      label:
+        projectKind === 'pro'
+          ? t(python ? 'pro.dock.messages.program' : 'pro.dock.messages.game')
+          : undefined,
       icon: <IconMessageSquare />,
       active: showConsole,
       onSelect: () => setConsoleVisibilityOverride(!showConsole),
     }
   }
-  if (projectMode === 'code' && config.terminal) {
+  // O terminal é o do WebContainer (JavaScript); o Python não tem.
+  if (projectMode === 'code' && config.terminal && !python) {
     behaviors.terminal = {
       icon: <IconTerminal />,
       active: showTerminal,
@@ -404,6 +420,8 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
       onSelect: () => void setTheme(theme === 'dark' ? 'light' : 'dark'),
     }
   }
+  if (projectMode === 'code')
+    behaviors.shortcuts = { icon: <IconKeyboard />, onSelect: () => setShowShortcuts(true) }
   if (onExit) behaviors.projects = { icon: <IconGrid />, onSelect: () => void exitToProjects() }
 
   const sections: MenuSection[] = STUDIO_MENU_LAYOUT.map((group) => ({
@@ -533,7 +551,12 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
                 // mantém o botão focável/tocável p/ revelar a bolha de dica.
                 aria-disabled={Boolean(shareDisabledReason)}
                 aria-label={shareDisabledReason ?? t('share.action')}
-                className={cn('sz-bar-pill sz-bar-pill--primary', iconOnly && 'sz-bar-pill--icon')}
+                className={cn(
+                  'sz-bar-pill',
+                  // No Pro o azul é do Rodar: o Compartilhar ganha o amarelo da alegria.
+                  projectKind === 'pro' ? 'sz-bar-pill--joy' : 'sz-bar-pill--primary',
+                  iconOnly && 'sz-bar-pill--icon',
+                )}
               >
                 <IconShare />
                 {!iconOnly ? <span>{t('share.action')}</span> : null}
@@ -572,6 +595,11 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
         </ul>
       </Modal>
       <ShareDialog open={showShare} onClose={() => setShowShare(false)} adapter={share} />
+      {showShortcuts && (
+        <Suspense fallback={null}>
+          <ProShortcutsDialog open onClose={() => setShowShortcuts(false)} />
+        </Suspense>
+      )}
       {showExport && (
         <Suspense
           fallback={

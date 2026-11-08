@@ -94,6 +94,8 @@ export function ProWorkspace({
   const formatRef = useRef<(() => void) | null>(null)
   // As janelas do `ProCodeTools`, abertas pela faixa do editor (redesenho de 11/2026).
   const [tools, setTools] = useState<ProEditorTools | null>(null)
+  // A coluna ao lado do editor onde o "Mapa do arquivo" aparece.
+  const [mapSlot, setMapSlot] = useState<HTMLDivElement | null>(null)
   // "Mostrar espaços" (ligado por padrão no Python, onde a indentação organiza o código).
   const [showWhitespace, setShowWhitespace] = useState(python)
   useEffect(() => {
@@ -295,7 +297,7 @@ export function ProWorkspace({
 
   const codeEditor = (
     <section
-      className="flex h-full min-h-0 flex-col"
+      className="relative flex h-full min-h-0 flex-col"
       aria-label="Código do projeto"
       onKeyDownCapture={(event) => {
         // Ctrl+K is a Monaco chord prefix. Keep it intact; this action has its own scoped shortcut.
@@ -337,6 +339,7 @@ export function ProWorkspace({
         searchProject={() => setSearchRequest((previous) => previous + 1)}
         format={() => formatRef.current?.()}
         onToolsReady={setTools}
+        mapContainer={mapSlot}
         path={activeFile}
         tree={tree}
         language={languageSession}
@@ -389,79 +392,82 @@ export function ProWorkspace({
           {t('pro.files.configBanner')}
         </p>
       )}
-      <div className="min-h-0 flex-1">
-        <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
-          <Editor
-            key={projectId}
-            files={filesArray}
-            modelPathPrefix={projectId}
-            activeFile={activeFile}
-            highlight={tutorHighlight}
-            onActiveFileChange={handleSelectFile}
-            onChange={(name, value) => {
-              const state = store.getState()
-              const current = state.project
-              const original = tree[name]
-              if (!current || current.id !== projectId || state.editingAccess === 'observer')
-                return { rejectedValue: original?.kind === 'file' ? original.content : '' }
-              if (isPythonProject(current)) {
-                const accepted = current.kind === 'pro' ? current.tree[name] : undefined
-                const issue = state.setPythonFile(name, value)
-                setEditError(
-                  issue
-                    ? `${issue} A alteração foi recusada; o código anterior foi mantido.`
-                    : null,
-                )
-                if (issue)
-                  return { rejectedValue: accepted?.kind === 'file' ? accepted.content : '' }
-              } else state.setProFileContent(name, value)
-              if (workspaceState.temporaryFile === name)
-                changeWorkspace((previous) => pinWorkspaceFile(previous, name))
-            }}
-            readOnly={observer}
-            headerSlot={(ctx) => (
-              <ProEditorStrip
-                ctx={ctx}
-                subject={subject}
-                layout={workspaceState.layout}
-                entrypoint={entrypoint}
-                tools={tools}
-                editor={editorRef}
-                showWhitespace={showWhitespace}
-                onToggleWhitespace={() => setShowWhitespace((value) => !value)}
-                onShowStage={() =>
-                  changeWorkspace((previous) => ({ ...previous, layout: 'split' }))
-                }
-                onQuickOpen={() => setQuickOpen({ query: '' })}
-                onCloseOthers={() =>
-                  changeWorkspace((previous) =>
-                    previous.activeFile
-                      ? { ...previous, openFiles: [previous.activeFile], temporaryFile: null }
-                      : previous,
+      <div className="flex min-h-0 flex-1">
+        <div className="min-h-0 min-w-0 flex-1">
+          <Suspense fallback={<EditorSkeleton message="Carregando editor de código…" />}>
+            <Editor
+              key={projectId}
+              files={filesArray}
+              modelPathPrefix={projectId}
+              activeFile={activeFile}
+              highlight={tutorHighlight}
+              onActiveFileChange={handleSelectFile}
+              onChange={(name, value) => {
+                const state = store.getState()
+                const current = state.project
+                const original = tree[name]
+                if (!current || current.id !== projectId || state.editingAccess === 'observer')
+                  return { rejectedValue: original?.kind === 'file' ? original.content : '' }
+                if (isPythonProject(current)) {
+                  const accepted = current.kind === 'pro' ? current.tree[name] : undefined
+                  const issue = state.setPythonFile(name, value)
+                  setEditError(
+                    issue
+                      ? `${issue} A alteração foi recusada; o código anterior foi mantido.`
+                      : null,
                   )
-                }
-              />
-            )}
-            onFormatReady={(run) => {
-              formatRef.current = run
-            }}
-            canCloseFile={() => true}
-            onCloseFile={handleCloseFile}
-            temporaryFile={workspaceState.temporaryFile}
-            onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
-            onEditorReady={(editor) => {
-              editorRef.current = editor
-              setReadyEditor(editor)
-            }}
-            onProLanguageReady={(session) => {
-              operations.language.current = session
-              setLanguageSession(session)
-              if (!session) setDiagnostics(null)
-            }}
-            onProDiagnostics={setDiagnostics}
-            onProAnalysis={updateAnalysis}
-          />
-        </Suspense>
+                  if (issue)
+                    return { rejectedValue: accepted?.kind === 'file' ? accepted.content : '' }
+                } else state.setProFileContent(name, value)
+                if (workspaceState.temporaryFile === name)
+                  changeWorkspace((previous) => pinWorkspaceFile(previous, name))
+              }}
+              readOnly={observer}
+              headerSlot={(ctx) => (
+                <ProEditorStrip
+                  ctx={ctx}
+                  subject={subject}
+                  layout={workspaceState.layout}
+                  entrypoint={entrypoint}
+                  tools={tools}
+                  editor={editorRef}
+                  showWhitespace={showWhitespace}
+                  onToggleWhitespace={() => setShowWhitespace((value) => !value)}
+                  onShowStage={() =>
+                    changeWorkspace((previous) => ({ ...previous, layout: 'split' }))
+                  }
+                  onQuickOpen={() => setQuickOpen({ query: '' })}
+                  onCloseOthers={() =>
+                    changeWorkspace((previous) =>
+                      previous.activeFile
+                        ? { ...previous, openFiles: [previous.activeFile], temporaryFile: null }
+                        : previous,
+                    )
+                  }
+                />
+              )}
+              onFormatReady={(run) => {
+                formatRef.current = run
+              }}
+              canCloseFile={() => true}
+              onCloseFile={handleCloseFile}
+              temporaryFile={workspaceState.temporaryFile}
+              onPinFile={(path) => changeWorkspace((previous) => pinWorkspaceFile(previous, path))}
+              onEditorReady={(editor) => {
+                editorRef.current = editor
+                setReadyEditor(editor)
+              }}
+              onProLanguageReady={(session) => {
+                operations.language.current = session
+                setLanguageSession(session)
+                if (!session) setDiagnostics(null)
+              }}
+              onProDiagnostics={setDiagnostics}
+              onProAnalysis={updateAnalysis}
+            />
+          </Suspense>
+        </div>
+        <div ref={setMapSlot} className="sz-pro-map-slot" />
       </div>
     </section>
   )

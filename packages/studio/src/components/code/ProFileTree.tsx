@@ -216,11 +216,17 @@ export function ProFileTree({
               className="sz-pro-row min-w-0 flex-1"
               title={node.path}
             >
-              {isDir ? (
-                <span aria-hidden="true" className="-mr-1 flex w-4 flex-none text-sz-fg-soft">
-                  {isCollapsed ? <IconChevronRight size={16} /> : <IconChevronDown size={16} />}
-                </span>
-              ) : null}
+              {/* A seta da pasta (ou o mesmo espaço vazio no arquivo): os ladrilhos de um mesmo
+                  nível ficam alinhados. */}
+              <span aria-hidden="true" className="-mr-1 flex w-4 flex-none text-sz-fg-soft">
+                {isDir ? (
+                  isCollapsed ? (
+                    <IconChevronRight size={16} />
+                  ) : (
+                    <IconChevronDown size={16} />
+                  )
+                ) : null}
+              </span>
               <span aria-hidden="true" className={cn('sz-pro-tile', `sz-pro-tile--${kind.tone}`)}>
                 {kind.short || (isDir ? <IconFolder /> : kind.config ? <IconLock /> : <IconFile />)}
               </span>

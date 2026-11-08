@@ -11,6 +11,7 @@ import {
   IconWindow,
 } from '#ui'
 import type { ProLayoutTier } from '../../../components/layout/layoutBreakpoints'
+import { useMeasuredWidth } from '../../../hooks/useMeasuredWidth'
 import { type ProRunPhase, proRunLabelKey, useProRun, useProRunApi } from '../../../state/proRun'
 import { useT } from '../../../studio/i18n'
 import type { ProWorkspacePreferences } from './model'
@@ -63,7 +64,10 @@ export function ProStage({
     })),
   )
   const phone = tier === 'phone'
-  const compact = tier !== 'wide'
+  // O segmentado fica só no ícone quando o PRÓPRIO palco é estreito (o palco ocupa a fatia que a
+  // criança deixou), não só pelo tamanho do Studio.
+  const width = useMeasuredWidth(card)
+  const compact = tier !== 'wide' || (width > 0 && width < 640)
   const stageOnly = subject === 'game' ? 'pro.layout.game' : 'pro.layout.program'
   const segment: { id: Layout; key: string; Icon: typeof IconColumns }[] = [
     { id: 'split', key: 'pro.layout.split', Icon: IconColumns },

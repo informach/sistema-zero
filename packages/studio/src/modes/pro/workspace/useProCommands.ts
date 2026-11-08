@@ -25,6 +25,7 @@ export function useProCommands(
         symbols: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyO,
         rename: KeyCode.F2,
         references: KeyMod.Shift | KeyCode.F12,
+        commands: KeyMod.CtrlCmd | KeyMod.Shift | KeyCode.KeyP,
       }
       for (const command of latest.current) {
         const id = `studio.pro.${command.id}`

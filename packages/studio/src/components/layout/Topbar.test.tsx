@@ -262,6 +262,37 @@ describe('Topbar × o projeto Pro (redesenho de 11/2026)', () => {
     expect(within(meio).getByRole('button', { name: 'Rodar' }).hasAttribute('disabled')).toBe(true)
   })
 
+  it('no Pro o Compartilhar é amarelo (o azul é do Rodar) e o olho da prévia não existe', () => {
+    const stores = createStudioStores({ persistence: 'none' })
+    stores.project.getState().setProject({
+      ...createEmptyProject('01J00000000000000000000PRO', 'Meu jogo Pro'),
+      kind: 'pro',
+      mode: 'code',
+    } as never)
+    mount(1440, null, (node) => (
+      <StudioStoresContext.Provider value={stores}>
+        <StudioShareProvider value={SHARE}>{node}</StudioShareProvider>
+      </StudioStoresContext.Provider>
+    ))
+    expect(screen.getByRole('button', { name: 'Compartilhar' }).className).toBe(
+      'sz-bar-pill sz-bar-pill--joy',
+    )
+    expect(screen.queryByRole('button', { name: 'Ocultar pré-visualização' })).toBeNull()
+  })
+
+  it('menu ⋯ no Pro em JavaScript: "Mensagens do jogo", "Atalhos do teclado" e sem Extensões', async () => {
+    mountPro()
+    fireEvent.click(screen.getByRole('button', { name: 'Mais opções' }))
+    const ids = screen
+      .getAllByRole('menuitem')
+      .map((item) => item.getAttribute('data-sz-menu-item'))
+    expect(ids).toContain('shortcuts')
+    expect(ids).not.toContain('extensions')
+    expect(screen.getByRole('menuitem', { name: 'Mensagens do jogo' })).toBeTruthy()
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Atalhos do teclado' }))
+    expect(await screen.findByRole('dialog', { name: 'Atalhos do teclado' })).toBeTruthy()
+  })
+
   it('no celular (abaixo de 720px) o meio some: o Rodar é o botão flutuante do workspace', () => {
     const { header } = mountPro(600)
     expect(Array.from(header.children).map((el) => el.className)).toEqual([

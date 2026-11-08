@@ -1,6 +1,7 @@
 import type * as Monaco from 'monaco-editor'
-import { type RefObject, useEffect, useMemo, useRef, useState } from 'react'
-import { cn, Modal } from '#ui'
+import { type ReactNode, type RefObject, useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { cn, IconX, Modal } from '#ui'
 import { proFileBaseName } from '../../../components/code/proFileKinds'
 import { type ProExample, proCodeExamples } from '../../../core/proExamples'
 import type { ProjectTree } from '../../../core/proProject'
@@ -50,6 +51,7 @@ export function ProCodeTools({
   help,
   examples = proCodeExamples,
   onToolsReady,
+  mapContainer,
 }: {
   path: string
   tree: ProjectTree
@@ -69,6 +71,8 @@ export function ProCodeTools({
   examples?: (path: string) => ProExample[]
   /** As ações que a faixa do editor chama (`null` ao sair). */
   onToolsReady?: (tools: ProEditorTools | null) => void
+  /** A coluna ao lado do editor onde o mapa do arquivo aparece (sem ela, aparece aqui). */
+  mapContainer?: HTMLElement | null
 }) {
   const t = useT()
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -228,6 +232,17 @@ export function ProCodeTools({
         )
       : []),
     {
+      id: 'commands',
+      label: t('pro.commands'),
+      shortcut: 'Ctrl/Cmd+Shift+P',
+      keybinding: 'commands',
+      enabled: true,
+      run: () => {
+        setQuery('')
+        setToolsOpen(true)
+      },
+    },
+    {
       id: 'back',
       label: t('pro.back'),
       enabled: canGoBack,
@@ -313,6 +328,8 @@ export function ProCodeTools({
     ),
   ]
   useProCommands(readyEditor, commands)
+  // A paleta não lista a si mesma.
+  const paletteCommands = commands.filter((command) => command.id !== 'commands')
   // As ações para a faixa do editor: um objeto estável que chama a versão mais nova de cada
   // função (via ref), publicado uma vez e retirado na saída.
   const latestActions = useRef({ findReferences, capture })
@@ -336,6 +353,7 @@ export function ProCodeTools({
     onToolsReady?.(tools)
     return () => onToolsReady?.(null)
   }, [tools, onToolsReady])
+  const placeMap = (node: ReactNode) => (mapContainer ? createPortal(node, mapContainer) : node)
   const closeSymbols = () => {
     setOpen(false)
     setSymbols((previous) => (previous?.error ? { ...previous, error: null } : previous))
@@ -363,7 +381,7 @@ export function ProCodeTools({
           />
         </label>
         <ul className="space-y-1">
-          {findProCommands(commands, query).map((command) => (
+          {findProCommands(paletteCommands, query).map((command) => (
             <li key={command.id}>
               <button
                 type="button"
@@ -382,57 +400,80 @@ export function ProCodeTools({
             </li>
           ))}
         </ul>
-        {!findProCommands(commands, query).length && <p role="status">{t('pro.palette.none')}</p>}
+        {!findProCommands(paletteCommands, query).length && (
+          <p role="status">{t('pro.palette.none')}</p>
+        )}
         <p className="mt-3 text-xs text-sz-fg-soft">{t('pro.palette.hint')}</p>
       </Modal>
-      <Modal
-        open={open}
-        onClose={closeSymbols}
-        title={t('pro.symbols')}
-        footer={
-          <button type="button" className="sz-pro-btn" onClick={closeSymbols}>
-            {t('pro.backToCode')}
-          </button>
-        }
-      >
-        <p className="mb-2 text-xs text-sz-fg-soft">{proFileBaseName(path)}</p>
-        {symbolsPending && (
-          <p role="status" className="p-2 text-xs text-sz-fg-mute">
-            {t('pro.symbols.pending')}
-          </p>
+      {open &&
+        placeMap(
+          // O mapa do arquivo é uma coluna ao lado do código, NÃO uma janela: dá para continuar
+          // escrevendo com ele aberto (o mapa acompanha as mudanças), e ele não cobre nada.
+          <section
+            aria-label={t('pro.symbols')}
+            className="sz-pro-map"
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                event.stopPropagation()
+                closeSymbols()
+                editor.current?.focus()
+              }
+            }}
+          >
+            <header className="flex items-center gap-2 border-b border-sz-border-soft px-3 py-2">
+              <h3 className="m-0 min-w-0 flex-1 text-sm font-black">
+                {t('pro.symbols')}
+                <span className="ml-2 font-normal text-sz-fg-soft">{proFileBaseName(path)}</span>
+              </h3>
+              <button
+                type="button"
+                className="sz-pro-btn sz-pro-btn--sm sz-pro-btn--icon"
+                aria-label={t('pro.symbols.close')}
+                onClick={() => {
+                  closeSymbols()
+                  editor.current?.focus()
+                }}
+              >
+                <IconX />
+              </button>
+            </header>
+            <div className="min-h-0 overflow-auto p-2">
+              {symbolsPending && (
+                <p role="status" className="m-0 p-2 text-xs text-sz-fg-mute">
+                  {t('pro.symbols.pending')}
+                </p>
+              )}
+              {!symbolsPending && !symbols.length && !visibleError && (
+                <p className="m-0 p-2 text-sm text-sz-fg-soft">{t('pro.symbols.empty')}</p>
+              )}
+              {visibleError && (
+                <p role="status" className="m-0 p-2 text-xs text-sz-error">
+                  {visibleError}
+                </p>
+              )}
+              <ul className="m-0 list-none space-y-0.5 p-0">
+                {symbols.map((symbol) => {
+                  const target = proSourcePosition(content, symbol.start)
+                  return (
+                    <li key={`${symbol.start}:${symbol.name}`}>
+                      <button
+                        type="button"
+                        className={cn(button, 'flex w-full items-center justify-between text-left')}
+                        style={{ paddingLeft: `${8 + symbol.depth * 12}px` }}
+                        onClick={() => navigate(path, target.line, target.column)}
+                      >
+                        <span className="truncate font-mono">{symbol.name}</span>
+                        <span className="ml-3 flex-none text-sz-fg-mute">
+                          {t('pro.symbols.line', { line: target.line })}
+                        </span>
+                      </button>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </section>,
         )}
-        {!symbolsPending && !symbols.length && !visibleError && (
-          <p className="p-2 text-sm text-sz-fg-soft">{t('pro.symbols.empty')}</p>
-        )}
-        {open && visibleError && (
-          <p role="status" className="py-2 text-xs text-sz-error">
-            {visibleError}
-          </p>
-        )}
-        <ul className="max-h-80 space-y-1 overflow-auto">
-          {symbols.map((symbol) => {
-            const target = proSourcePosition(content, symbol.start)
-            return (
-              <li key={`${symbol.start}:${symbol.name}`}>
-                <button
-                  type="button"
-                  className={cn(button, 'flex w-full items-center justify-between text-left')}
-                  style={{ paddingLeft: `${8 + symbol.depth * 12}px` }}
-                  onClick={() => {
-                    closeSymbols()
-                    navigate(path, target.line, target.column)
-                  }}
-                >
-                  <span className="truncate">{symbol.name}</span>
-                  <span className="ml-3 text-sz-fg-mute">
-                    {t('pro.symbols.line', { line: target.line })}
-                  </span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      </Modal>
       {references.length > 0 && (
         <section
           className="max-h-40 shrink-0 overflow-auto border-b border-sz-border-soft px-2 pb-2"

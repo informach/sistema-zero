@@ -180,7 +180,7 @@ export function ProWorkspaceLayout({
       className="sz-pro-root relative flex h-full min-h-0 flex-col bg-sz-bg"
     >
       <div hidden={bodyHidden} className="relative flex min-h-0 flex-1">
-        <div hidden={phone}>
+        <div className={phone ? 'hidden' : 'flex'}>
           <ProRail
             view={preferences.panel}
             open={panelOpen}
@@ -209,7 +209,9 @@ export function ProWorkspaceLayout({
         >
           {navigator(closePanel, { phone })}
         </div>
-        <div className="relative min-h-0 min-w-0 flex-1">
+        {/* No celular, na aba Arquivos, o painel lateral ocupa a tela: o grupo fica montado e
+            escondido (regra 12). */}
+        <div hidden={phone && phoneTab === 'files'} className="relative min-h-0 min-w-0 flex-1">
           <PanelGroup
             ref={group}
             direction="horizontal"

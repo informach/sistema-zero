@@ -47,12 +47,15 @@ for (const kind of ['classic', 'pro'] as const) {
       .poll(async () => JSON.stringify(await page.evaluate(() => studioFreeProbe.saved())))
       .toContain('free-python')
     await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
-    const consoleMenu = page.getByRole('menuitem', { name: 'Console', exact: true })
+    const consoleMenu = page.getByRole('menuitem', {
+      name: kind === 'pro' ? 'Mensagens do programa' : 'Console',
+      exact: true,
+    })
     if ((await consoleMenu.getAttribute('aria-current')) !== 'true') await consoleMenu.click()
     else await page.keyboard.press('Escape')
     if (kind === 'pro') {
-      const consoleTab = page.getByRole('button', { name: 'Console', exact: true })
-      if ((await consoleTab.getAttribute('aria-expanded')) !== 'true') await consoleTab.click()
+      const consoleTab = page.getByRole('tab', { name: 'Mensagens do programa', exact: true })
+      if ((await consoleTab.getAttribute('aria-selected')) !== 'true') await consoleTab.click()
     }
     const clearConsole = page.getByRole('button', { name: 'Limpar', exact: true })
     await expect(clearConsole).toBeVisible()

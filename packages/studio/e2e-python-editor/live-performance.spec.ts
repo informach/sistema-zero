@@ -163,13 +163,16 @@ for (const kind of ['classic', 'pro'] as const)
         // Pro does not mount it until its tab is visited.
         preparing('open console menu')
         await page.getByRole('button', { name: 'Mais opções', exact: true }).click()
-        const consoleMenu = page.getByRole('menuitem', { name: 'Console', exact: true })
+        const consoleMenu = page.getByRole('menuitem', {
+          name: kind === 'pro' ? 'Mensagens do programa' : 'Console',
+          exact: true,
+        })
         if ((await consoleMenu.getAttribute('aria-current')) !== 'true') await consoleMenu.click()
         else await page.keyboard.press('Escape')
         if (kind === 'pro') {
           preparing('open Pro console tab')
-          const consoleTab = page.getByRole('button', { name: 'Console', exact: true })
-          if ((await consoleTab.getAttribute('aria-expanded')) !== 'true') await consoleTab.click()
+          const consoleTab = page.getByRole('tab', { name: 'Mensagens do programa', exact: true })
+          if ((await consoleTab.getAttribute('aria-selected')) !== 'true') await consoleTab.click()
         }
         preparing('wait for console visible')
         await expect(page.getByRole('button', { name: 'Limpar', exact: true })).toBeVisible()
@@ -247,7 +250,10 @@ for (const kind of ['classic', 'pro'] as const)
             return performance.timeOrigin + performance.now()
           })
           await page
-            .getByRole('button', { name: phase === 'cold' ? 'Rodar' : 'Rodar de novo', exact: true })
+            .getByRole('button', {
+              name: phase === 'cold' ? 'Rodar' : 'Rodar de novo',
+              exact: true,
+            })
             .click()
           if (previous) {
             // Do not accidentally time the previous generation's already drawn canvas.
