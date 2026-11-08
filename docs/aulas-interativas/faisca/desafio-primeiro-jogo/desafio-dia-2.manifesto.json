@@ -3,9 +3,7 @@
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-2",
   "title": "A chave muda o curso",
-  "retireBlockKeys": [
-    "video-d2-teste"
-  ],
+  "retireBlockKeys": ["video-d2-teste"],
   "blocks": [
     {
       "key": "video-d2-contexto",
@@ -99,9 +97,7 @@
         "purpose": "submission",
         "chain": "desafio-primeiro-jogo",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_start",
@@ -7125,20 +7121,13 @@
       "title": "O jogo guardou a chave?",
       "intent": "exploration",
       "objective": "Distinguir retirada, aviso e memória; observar a informação ao afastar e ao recomeçar.",
-      "blockKeys": [
-        "video-d2-contexto",
-        "ponte-d2-contexto",
-        "experiencia-memoria"
-      ],
+      "blockKeys": ["video-d2-contexto", "ponte-d2-contexto", "experiencia-memoria"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-contexto",
-          "experiencia-memoria"
-        ]
+        "blockIds": ["video-d2-contexto", "experiencia-memoria"]
       }
     },
     {
@@ -7146,18 +7135,13 @@
       "title": "Recolha a chave",
       "intent": "application",
       "objective": "Programar o encontro entre personagem e chave e tirar a chave da partida.",
-      "blockKeys": [
-        "video-d2-recolher",
-        "ponte-d2-recolher"
-      ],
+      "blockKeys": ["video-d2-recolher", "ponte-d2-recolher"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-recolher"
-        ],
+        "blockIds": ["video-d2-recolher"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -7241,18 +7225,13 @@
       "title": "Guarde que a chave foi encontrada",
       "intent": "application",
       "objective": "Criar temChave em falso e guardar verdadeiro no encontro com a chave.",
-      "blockKeys": [
-        "video-d2-guardar",
-        "ponte-d2-guardar"
-      ],
+      "blockKeys": ["video-d2-guardar", "ponte-d2-guardar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-guardar"
-        ],
+        "blockIds": ["video-d2-guardar"],
         "projectChecks": [
           {
             "id": "memoria-em-execucao",
@@ -7462,20 +7441,13 @@
       "title": "Avise quem está jogando",
       "intent": "delivery",
       "objective": "Mostrar o aviso da coleta, testar a coleta inteira e enviar a atividade.",
-      "blockKeys": [
-        "video-d2-programar",
-        "ponte-d2-programar",
-        "projeto"
-      ],
+      "blockKeys": ["video-d2-programar", "ponte-d2-programar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-programar",
-          "projeto"
-        ],
+        "blockIds": ["video-d2-programar", "projeto"],
         "projectChecks": [
           {
             "id": "memoria-em-execucao",

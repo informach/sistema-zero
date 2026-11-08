@@ -2293,9 +2293,7 @@
                 "label": "A chave volta para o chão."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Com \"e\", as duas respostas precisam ser verdadeiras. temChave é verdadeiro, mas temEmblema ainda é falso, então a pergunta inteira dá falso e o jogo segue o senão: a cabana fica fechada e o aviso aparece."
           },
           {
@@ -2316,9 +2314,7 @@
                 "label": "Abre: com \"ou\", basta uma das duas ser verdadeira."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "Com \"ou\", uma resposta verdadeira já basta: temEmblema é verdadeiro, então a cabana abre com uma peça só. Por isso a cabana usa \"e\", que só abre com as duas."
           },
           {
@@ -2338,9 +2334,7 @@
                 "label": "A variável temEmblema começa falsa."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Se uma peça só já abre, a pergunta não está exigindo as duas: ela usa \"ou\" no lugar de \"e\", ou esqueceu temEmblema. Começar falsa está certo: o emblema ainda não foi pego."
           },
           {
@@ -2360,9 +2354,7 @@
                 "label": "Uma só com a chave, uma só com o emblema e uma com as duas (e tentar sem nenhuma)."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A regra tem que abrir com as duas e ficar fechada com uma só, qualquer que seja. Testando só com as duas, uma regra com \"ou\" passaria sem você perceber."
           }
         ]
@@ -2387,9 +2379,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-2-2d",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -10406,20 +10396,13 @@
       "title": "A cabana do faroleiro",
       "intent": "explanation",
       "objective": "A cabana do faroleiro.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -10427,19 +10410,13 @@
       "title": "O seu Passo a passo do projeto",
       "intent": "material",
       "objective": "O seu Passo a passo do projeto.",
-      "blockKeys": [
-        "video-material",
-        "ponte-material",
-        "materiais"
-      ],
+      "blockKeys": ["video-material", "ponte-material", "materiais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-material"
-        ]
+        "blockIds": ["video-material"]
       }
     },
     {
@@ -10447,20 +10424,13 @@
       "title": "A porta com duas peças",
       "intent": "exploration",
       "objective": "A porta com duas peças.",
-      "blockKeys": [
-        "video-experiencia",
-        "ponte-experiencia",
-        "experiencia"
-      ],
+      "blockKeys": ["video-experiencia", "ponte-experiencia", "experiencia"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-experiencia",
-          "experiencia"
-        ]
+        "blockIds": ["video-experiencia", "experiencia"]
       }
     },
     {
@@ -10468,18 +10438,13 @@
       "title": "Guarde o emblema",
       "intent": "application",
       "objective": "Guarde o emblema.",
-      "blockKeys": [
-        "video-emblema",
-        "ponte-emblema"
-      ],
+      "blockKeys": ["video-emblema", "ponte-emblema"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-emblema"
-        ],
+        "blockIds": ["video-emblema"],
         "projectChecks": [
           {
             "id": "guardar",
@@ -10492,10 +10457,7 @@
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "chave"
-                  ]
+                  "avoidPaths": ["cabana", "chave"]
                 },
                 {
                   "action": "wait",
@@ -10546,18 +10508,13 @@
       "title": "A cabana pede as duas",
       "intent": "application",
       "objective": "A cabana pede as duas.",
-      "blockKeys": [
-        "video-porta",
-        "ponte-porta"
-      ],
+      "blockKeys": ["video-porta", "ponte-porta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-porta"
-        ],
+        "blockIds": ["video-porta"],
         "projectChecks": [
           {
             "id": "recolher",
@@ -10597,10 +10554,7 @@
                   "actorPath": "personagem",
                   "targetPath": "cabana",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "chave",
-                    "emblema"
-                  ]
+                  "avoidPaths": ["chave", "emblema"]
                 },
                 {
                   "action": "wait",
@@ -10640,19 +10594,14 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "emblema"
-                  ]
+                  "avoidPaths": ["cabana", "emblema"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "cabana",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "emblema"
-                  ]
+                  "avoidPaths": ["emblema"]
                 },
                 {
                   "action": "wait",
@@ -10693,19 +10642,14 @@
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "chave"
-                  ]
+                  "avoidPaths": ["cabana", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "cabana",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 },
                 {
                   "action": "wait",
@@ -10746,19 +10690,14 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "emblema"
-                  ]
+                  "avoidPaths": ["cabana", "emblema"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "cabana"
-                  ]
+                  "avoidPaths": ["cabana"]
                 },
                 {
                   "action": "approachSprite",
@@ -10792,19 +10731,14 @@
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "chave"
-                  ]
+                  "avoidPaths": ["cabana", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "cabana"
-                  ]
+                  "avoidPaths": ["cabana"]
                 },
                 {
                   "action": "approachSprite",
@@ -10871,10 +10805,7 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "emblema",
-                    "cabana"
-                  ]
+                  "avoidPaths": ["emblema", "cabana"]
                 },
                 {
                   "action": "approachSprite",
@@ -10905,18 +10836,13 @@
       "title": "Pense na cabana",
       "intent": "explanation",
       "objective": "Pense na cabana.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -10924,20 +10850,13 @@
       "title": "Envie o seu jogo com a cabana",
       "intent": "delivery",
       "objective": "Envie o seu jogo com a cabana.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "recolher",
@@ -10977,10 +10896,7 @@
                   "actorPath": "personagem",
                   "targetPath": "cabana",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "chave",
-                    "emblema"
-                  ]
+                  "avoidPaths": ["chave", "emblema"]
                 },
                 {
                   "action": "wait",
@@ -11020,19 +10936,14 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "emblema"
-                  ]
+                  "avoidPaths": ["cabana", "emblema"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "cabana",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "emblema"
-                  ]
+                  "avoidPaths": ["emblema"]
                 },
                 {
                   "action": "wait",
@@ -11073,19 +10984,14 @@
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "chave"
-                  ]
+                  "avoidPaths": ["cabana", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "cabana",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 },
                 {
                   "action": "wait",
@@ -11126,19 +11032,14 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "emblema"
-                  ]
+                  "avoidPaths": ["cabana", "emblema"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "cabana"
-                  ]
+                  "avoidPaths": ["cabana"]
                 },
                 {
                   "action": "approachSprite",
@@ -11172,19 +11073,14 @@
                   "actorPath": "personagem",
                   "targetPath": "emblema",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "cabana",
-                    "chave"
-                  ]
+                  "avoidPaths": ["cabana", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "cabana"
-                  ]
+                  "avoidPaths": ["cabana"]
                 },
                 {
                   "action": "approachSprite",
@@ -11251,10 +11147,7 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "emblema",
-                    "cabana"
-                  ]
+                  "avoidPaths": ["emblema", "cabana"]
                 },
                 {
                   "action": "approachSprite",

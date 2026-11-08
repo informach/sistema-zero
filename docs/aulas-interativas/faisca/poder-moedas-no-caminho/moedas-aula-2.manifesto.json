@@ -2499,9 +2499,7 @@
                 "label": "Volta para 0, porque a moeda sumiu."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A moeda saiu do grupo quando foi pega. Voltar ao lugar dela não encosta em moeda nenhuma, então nada soma: moedas continua em 3. É a mesma regra do jogo 2D, em outro mundo."
           },
           {
@@ -2521,9 +2519,7 @@
                 "label": "Antes do Se, para tocar sempre que encostar."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "O \"então\" só roda quando a comparação é verdadeira, ou seja, com 5 moedas ou mais. No senão ou antes do Se, o baú abriria sem moedas suficientes."
           }
         ]
@@ -2548,9 +2544,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-1-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -13782,20 +13776,13 @@
       "title": "As moedas chegaram à ilha",
       "intent": "explanation",
       "objective": "As moedas chegaram à ilha.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -13803,18 +13790,13 @@
       "title": "Conte as moedas da ilha",
       "intent": "application",
       "objective": "Conte as moedas da ilha.",
-      "blockKeys": [
-        "video-coleta",
-        "ponte-coleta"
-      ],
+      "blockKeys": ["video-coleta", "ponte-coleta"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-coleta"
-        ],
+        "blockIds": ["video-coleta"],
         "projectChecks": [
           {
             "id": "zero",
@@ -14003,18 +13985,13 @@
       "title": "O número na tela da ilha",
       "intent": "application",
       "objective": "O número na tela da ilha.",
-      "blockKeys": [
-        "video-placar",
-        "ponte-placar"
-      ],
+      "blockKeys": ["video-placar", "ponte-placar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-placar"
-        ],
+        "blockIds": ["video-placar"],
         "projectChecks": [
           {
             "id": "zero",
@@ -14219,18 +14196,13 @@
       "title": "O baú da ilha abre",
       "intent": "application",
       "objective": "O baú da ilha abre.",
-      "blockKeys": [
-        "video-bau",
-        "ponte-bau"
-      ],
+      "blockKeys": ["video-bau", "ponte-bau"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-bau"
-        ],
+        "blockIds": ["video-bau"],
         "projectChecks": [
           {
             "id": "placar",
@@ -14885,18 +14857,13 @@
       "title": "Pense nas moedas da ilha",
       "intent": "explanation",
       "objective": "Pense nas moedas da ilha.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -14904,20 +14871,13 @@
       "title": "Envie a sua ilha com moedas",
       "intent": "delivery",
       "objective": "Envie a sua ilha com moedas.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "placar",
