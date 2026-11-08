@@ -50,6 +50,10 @@ afterAll(() => {
 })
 
 const { VimeoPlayer } = await import('@sistemazero/member-shell/components/vimeo-player')
+const { LessonVideo } = await import('@sistemazero/member-shell/components/lesson-video')
+const { LessonVideoFloatContext, LessonVideoFrame } = await import(
+  '@sistemazero/member-shell/components/lesson-video-float'
+)
 
 /** Finge a Fullscreen API: o jsdom/happy-dom não a implementa. */
 function entrarEmTelaCheia(alvo: Element | null) {
@@ -103,3 +107,39 @@ describe('resolução do vídeo da aula', () => {
     expect(chamadas).toEqual(['1080p'])
   })
 })
+
+for (const entry of ['bloco de vídeo', 'player da gravação'] as const)
+  test(`${entry}: a miniatura não oferece tela cheia e a volta ao layout normal preserva o player`, () => {
+    const content = {
+      kind: 'video' as const,
+      provider: 'vimeo' as const,
+      src: 'https://vimeo.com/123456',
+    }
+    const slot = { viewerId: null, onMinimize: () => {} }
+    const view = (mode: 'floating' | 'hidden' | null) => (
+      <LessonVideoFloatContext.Provider value={{ ...slot, mode }}>
+        {entry === 'bloco de vídeo' ? (
+          <LessonVideo content={content} />
+        ) : (
+          <LessonVideoFrame>
+            <VimeoPlayer vimeoId="123456" />
+          </LessonVideoFrame>
+        )}
+      </LessonVideoFloatContext.Provider>
+    )
+    const { getByRole, queryByRole, rerender } = render(view(null))
+    expect(getByRole('button', { name: 'Tela cheia' })).toBeTruthy()
+    expect(construidos).toHaveLength(1)
+    // O iframe não deve deixar um segundo atalho de expansão dentro da miniatura.
+    expect(construidos[0]?.fullscreen).toBe(false)
+
+    rerender(view('floating'))
+    expect(queryByRole('button', { name: 'Tela cheia' }) === null).toBe(true)
+    expect(getByRole('button', { name: 'Aumentar o vídeo' })).toBeTruthy()
+    expect(getByRole('button', { name: 'Minimizar o vídeo' })).toBeTruthy()
+    expect(construidos).toHaveLength(1)
+
+    rerender(view(null))
+    expect(getByRole('button', { name: 'Tela cheia' })).toBeTruthy()
+    expect(construidos).toHaveLength(1)
+  })
