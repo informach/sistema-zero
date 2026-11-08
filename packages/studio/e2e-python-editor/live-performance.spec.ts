@@ -153,7 +153,7 @@ for (const kind of ['classic', 'pro'] as const)
       preparing('create child editor')
       await page.evaluate(() => studioLiveProbe.create('child'))
       preparing('wait for execute enabled')
-      await expect(page.getByRole('button', { name: 'Executar', exact: true })).toBeEnabled()
+      await expect(page.getByRole('button', { name: 'Rodar', exact: true })).toBeEnabled()
       if (f1) {
         preparing('wait for F1 source')
         await expect
@@ -230,7 +230,7 @@ for (const kind of ['classic', 'pro'] as const)
               : 'import turtle\nturtle.hideturtle()\nturtle.speed(0)\nturtle.pensize(6)\nturtle.forward(60)\nturtle.done()\n'
             await page.evaluate((source) => studioLiveProbe.source(source), source)
             await expect(
-              page.getByText('Seu código mudou. Clique em Reiniciar para executar a nova versão.'),
+              page.getByText('Seu código mudou. Aperte Rodar de novo para ver a nova versão.'),
             ).toBeVisible()
           }
           const previous =
@@ -247,7 +247,7 @@ for (const kind of ['classic', 'pro'] as const)
             return performance.timeOrigin + performance.now()
           })
           await page
-            .getByRole('button', { name: phase === 'cold' ? 'Executar' : 'Reiniciar', exact: true })
+            .getByRole('button', { name: phase === 'cold' ? 'Rodar' : 'Rodar de novo', exact: true })
             .click()
           if (previous) {
             // Do not accidentally time the previous generation's already drawn canvas.

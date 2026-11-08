@@ -92,10 +92,10 @@ export async function runPythonLessonPreview(
   }
   const preview = page.locator('[data-python-status]')
   await expect(preview).toHaveCount(1)
-  await expect(preview.getByRole('button', { name: /^(Executar|Reiniciar)$/ })).toBeEnabled({
+  await expect(preview.getByRole('button', { name: /^(Rodar|Rodar de novo)$/ })).toBeEnabled({
     timeout: 60_000,
   })
-  await preview.getByRole('button', { name: /^(Executar|Reiniciar)$/ }).click()
+  await preview.getByRole('button', { name: /^(Rodar|Rodar de novo)$/ }).click()
   await expect(preview).toHaveAttribute('data-python-status', 'waiting-input', { timeout: 60_000 })
   await expect(preview.getByLabel(`${marker}:`, { exact: true })).toBeVisible()
   await expect

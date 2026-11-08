@@ -34,10 +34,10 @@ describe('proRun (o estado de execução do projeto Pro)', () => {
 
   it('o rótulo do botão principal: Rodar parado, Rodar de novo com algo em andamento ou feito', () => {
     expect(proRunLabelKey(null)).toBe('run.run')
-    expect(proRunLabelKey({ phase: 'idle', canRun: true, canStop: false })).toBe('run.run')
-    expect(proRunLabelKey({ phase: 'unsupported', canRun: false, canStop: false })).toBe('run.run')
+    expect(proRunLabelKey({ phase: 'idle' })).toBe('run.run')
+    expect(proRunLabelKey({ phase: 'unsupported' })).toBe('run.run')
     for (const phase of ['preparing', 'running', 'waiting', 'done', 'error'] as const)
-      expect(proRunLabelKey({ phase, canRun: true, canStop: true })).toBe('run.runAgain')
+      expect(proRunLabelKey({ phase })).toBe('run.runAgain')
   })
 
   it('cada <Studio> tem a sua store; fora de um Studio o hook lê a default de módulo', () => {

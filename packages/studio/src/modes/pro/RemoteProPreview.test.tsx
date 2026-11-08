@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, mock, test } from 'bun:test'
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react'
 import type { Project } from '#core'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
+import { useProRun } from '../../state/proRun'
 import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
 import { RemoteProPreview } from './RemoteProPreview'
 
@@ -96,15 +97,17 @@ describe('preview Pro remoto', () => {
     useProjectStore.setState({ project: project() })
     render(<RemoteProPreview runtime={{ build }} />)
     await waitFor(() => expect(build).toHaveBeenCalledTimes(1))
-    await waitFor(() => expect(screen.getByText('▶ Executar de novo')).toBeTruthy())
+    // Sem barra própria (11/2026): o estado vai à store que a Topbar lê.
+    await waitFor(() => expect(useProRun.getState().state?.phase).toBe('running'))
+    expect(useProRun.getState().state?.stale).toBeUndefined()
 
     act(() => {
       useProjectStore.setState({ project: project('console.log("editado")', 20) })
     })
-    await waitFor(() => expect(screen.getByText('▶ Executar alterações')).toBeTruthy())
+    await waitFor(() => expect(useProRun.getState().state?.stale).toBe(true))
     expect(build).toHaveBeenCalledTimes(1)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Executar alterações' }))
+    act(() => useProRun.getState().actions?.run())
     await waitFor(() => expect(build).toHaveBeenCalledTimes(2))
     const second = build.mock.calls[1]?.[0]
     expect(second?.project.tree?.['src/main.ts']).toEqual({
@@ -136,7 +139,7 @@ describe('preview Pro remoto', () => {
     const { container } = render(<RemoteProPreview runtime={runtime} />)
     await waitFor(() => expect(container.querySelector('iframe')?.src).toBe(artifact.url))
     const originalFrame = container.querySelector('iframe')
-    fireEvent.click(screen.getByRole('button', { name: 'Executar alterações' }))
+    act(() => useProRun.getState().actions?.run())
     await waitFor(() => expect(screen.getByRole('alert').textContent).toContain('não compila'))
     expect(container.querySelector('iframe')).toBe(originalFrame)
     act(() => useProjectStore.setState({ project: { ...project(), id: 'other' } }))
@@ -145,5 +148,45 @@ describe('preview Pro remoto', () => {
     await waitFor(() =>
       expect(container.querySelector('iframe')?.getAttribute('srcdoc')).toContain('Outro projeto'),
     )
+  })
+
+  test('Parar esconde o resultado e aborta o build em voo; Rodar compila de novo', async () => {
+    const signals: AbortSignal[] = []
+    const build = mock(async ({ signal }: Parameters<StudioProRuntimeAdapter['build']>[0]) => {
+      if (signal) signals.push(signal)
+      return { html: '<html><head></head><body>ok</body></html>' }
+    })
+    useProjectStore.setState({ project: project() })
+    const { container } = render(<RemoteProPreview runtime={{ build }} />)
+    await waitFor(() => expect(container.querySelector('iframe')).not.toBeNull())
+    act(() => useProRun.getState().actions?.stop())
+    expect(container.querySelector('iframe')).toBeNull()
+    expect(screen.getByText('Aperte Rodar para ver seu jogo')).toBeTruthy()
+    expect(useProRun.getState().state).toMatchObject({
+      phase: 'idle',
+      canRun: true,
+      canStop: false,
+    })
+    act(() => useProRun.getState().actions?.run())
+    await waitFor(() => expect(build).toHaveBeenCalledTimes(2))
+    await waitFor(() => expect(container.querySelector('iframe')).not.toBeNull())
+    // Parar no meio da compilação aborta o pedido ao BFF.
+    let release: (result: StudioProRuntimeBuildResult) => void = () => {}
+    const slow = mock(
+      ({ signal }: Parameters<StudioProRuntimeAdapter['build']>[0]) =>
+        new Promise<StudioProRuntimeBuildResult>((resolve) => {
+          if (signal) signals.push(signal)
+          release = resolve
+        }),
+    )
+    cleanup()
+    useProjectStore.setState({ project: { ...project(), id: 'pro-remoto-2' } })
+    render(<RemoteProPreview runtime={{ build: slow }} />)
+    await waitFor(() => expect(slow).toHaveBeenCalledTimes(1))
+    expect(useProRun.getState().state?.phase).toBe('preparing')
+    act(() => useProRun.getState().actions?.stop())
+    expect(signals.at(-1)?.aborted).toBe(true)
+    release({ html: '<html><body>tarde</body></html>' })
+    expect(useProRun.getState().state?.phase).toBe('idle')
   })
 })

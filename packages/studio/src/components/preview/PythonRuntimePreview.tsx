@@ -11,6 +11,9 @@ import {
   type PythonExecutionView,
 } from '../../runtime/python/controller'
 import type { StudioRuntimeEvent } from '../../runtime/types'
+import { useT } from '../../studio/i18n'
+import { ProStageState } from './ProStageState'
+import { pythonExecuting, pythonPreviewIsStale, pythonRunState } from './pythonRunState'
 
 export interface PythonRuntimePreviewProps {
   project: PythonProjectDocument
@@ -28,28 +31,44 @@ export interface PythonRuntimePreviewProps {
   onRunningChange?(running: boolean): void
   /** Editor-only command bridge; the public player does not expose an authoring console. */
   onControllerReady?(controller: PythonExecutionController | null): void
+  /**
+   * `inline` (padrão: a Ponte clássica, o Admin, os hosts) desenha a barra Rodar · Parar ·
+   * estado · tela cheia em cima do programa; `hidden` (o projeto Pro, redesenho de 11/2026) não
+   * desenha nada disso: a Topbar manda pelo `onCommandsReady` e o palco mostra o cartão de
+   * estado (parado, preparando, erro) por cima da área de execução.
+   */
+  controls?: 'inline' | 'hidden'
+  /** O Rodar/Parar desta prévia, publicados UMA vez por controlador (`null` quando ele sai). */
+  onCommandsReady?(commands: PythonRunCommands | null): void
+}
+
+/** O que quem fica fora da prévia (a Topbar do Pro) pode mandar fazer. */
+export interface PythonRunCommands {
+  run(): void
+  stop(): void
 }
 
 const idle: PythonExecutionView = { status: 'idle' }
 const idleSnapshot = () => idle
 const emptySubscribe = () => () => {}
-const statusLabels: Record<PythonExecutionView['status'], string> = {
-  idle: 'Pronto para executar',
-  loading: 'Preparando Python…',
-  ready: 'Iniciando…',
-  running: 'Executando',
-  'waiting-input': 'Esperando sua resposta',
-  paused: 'Pausado',
-  completed: 'Programa concluído',
-  stopped: 'Parado',
-  failed: 'Não foi possível executar',
+// Os rótulos unificados de execução (decisão da dona, 08/11/2026): os mesmos do Pro e da Topbar.
+const STATUS_KEYS: Record<PythonExecutionView['status'], string> = {
+  idle: 'run.status.idle',
+  loading: 'run.status.loading',
+  ready: 'run.status.ready',
+  running: 'run.status.running',
+  'waiting-input': 'run.status.waiting',
+  paused: 'run.status.paused',
+  completed: 'run.status.done',
+  stopped: 'run.status.stopped',
+  failed: 'run.status.error',
 }
-const executing = (status: PythonExecutionView['status']) =>
-  ['loading', 'ready', 'running', 'waiting-input', 'paused'].includes(status)
+const executing = pythonExecuting
 const isCancelled = (error: unknown) => error instanceof DOMException && error.name === 'AbortError'
 
 /** The same isolated surface is used in an editor and on the public play page. */
 export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
+  const t = useT()
   const root = useRef<HTMLDivElement>(null)
   const mount = useRef<HTMLDivElement>(null)
   const latest = useRef(props)
@@ -102,6 +121,18 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
     props.onControllerReady?.(controller)
     return () => props.onControllerReady?.(null)
   }, [controller, props.onControllerReady])
+  // Rodar/Parar para quem fica fora (a Topbar do Pro): um objeto por controlador, que chama a
+  // versão MAIS NOVA das funções (via ref), sem depender da identidade do callback do pai.
+  const handlers = useRef({ run: () => {}, stop: () => {} })
+  useEffect(() => {
+    if (!controller) return
+    const commands: PythonRunCommands = {
+      run: () => handlers.current.run(),
+      stop: () => handlers.current.stop(),
+    }
+    latest.current.onCommandsReady?.(commands)
+    return () => latest.current.onCommandsReady?.(null)
+  }, [controller])
 
   // Permission/environment/owner changes revoke the old generation before passive effects.
   // biome-ignore lint/correctness/useExhaustiveDependencies: these host values are the invalidation keys of a running generation.
@@ -189,7 +220,8 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
   }, [controller, props.capture, hasTurtle, view.identity, view.status])
 
   function run() {
-    if (!controller) return
+    const current = currentController.current
+    if (!current) return
     try {
       latest.current.beforeRun?.()
     } catch (cause) {
@@ -198,7 +230,15 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
     }
     focusOnReady.current = true
     setError(null)
-    void controller.run().catch(() => {})
+    void current.run().catch(() => {})
+  }
+  function stop() {
+    setError(null)
+    void currentController.current?.stop()
+  }
+  handlers.current = { run, stop }
+  function fullscreen() {
+    void root.current?.requestFullscreen?.().catch(() => setError(t('run.fullscreenUnavailable')))
   }
   function sendInput(eof = false) {
     if (!controller || !view.input || inputSubmission.current) return
@@ -227,107 +267,104 @@ export function PythonRuntimePreview(props: PythonRuntimePreviewProps) {
         }
       })
   }
-  const previous = view.project
-  const stale =
-    previous &&
-    (previous.files !== props.project.files ||
-      previous.tree !== props.project.tree ||
-      previous.assets !== props.project.assets ||
-      previous.python !== props.project.python ||
-      previous.runtime !== props.project.runtime ||
-      previous.installedExtensions !== props.project.installedExtensions)
+  const stale = pythonPreviewIsStale(view, props.project)
+  const hidden = props.controls === 'hidden'
+  const canRun = Boolean(
+    controller && props.canExecute && props.environment && view.status !== 'loading',
+  )
+  const canStop = Boolean(controller && (view.identity || executing(view.status)))
+  const runState = pythonRunState(view, { canRun, canStop, stale })
+  // No Pro, o cartão de estado cobre a área de execução enquanto não há programa na tela.
+  const card =
+    hidden &&
+    (runState.phase === 'idle' || runState.phase === 'preparing' || runState.phase === 'error')
   return (
     <div
       ref={root}
       className="relative flex h-full min-h-0 flex-col bg-sz-bg"
       data-python-status={view.status}
     >
-      <div className="flex flex-wrap items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
-        <Button
-          size="sm"
-          variant="primary"
-          data-live-target="studio-run"
-          disabled={
-            !controller || !props.canExecute || !props.environment || view.status === 'loading'
-          }
-          onClick={run}
-        >
-          {view.identity ? 'Reiniciar' : 'Executar'}
-        </Button>
-        <Button
-          size="sm"
-          variant="ghost"
-          data-live-target="studio-stop"
-          disabled={!controller || (!view.identity && !executing(view.status))}
-          onClick={() => {
-            setError(null)
-            void controller?.stop()
-          }}
-        >
-          Parar
-        </Button>
-        <span className="min-w-0 flex-1 px-1 text-xs text-sz-fg-soft" role="status">
-          {statusLabels[view.status]}
-        </span>
-        <Button
-          size="sm"
-          variant="ghost"
-          aria-label="Abrir prévia em tela cheia"
-          onClick={() => {
-            void root.current
-              ?.requestFullscreen?.()
-              .catch(() => setError('A tela cheia não está disponível neste navegador.'))
-          }}
-        >
-          ⛶
-        </Button>
-      </div>
+      {!hidden && (
+        <div className="flex flex-wrap items-center gap-1 border-b border-sz-border bg-sz-panel px-2 py-1">
+          <Button
+            size="sm"
+            variant="primary"
+            data-live-target="studio-run"
+            disabled={!canRun}
+            onClick={run}
+          >
+            {view.identity ? t('run.runAgain') : t('run.run')}
+          </Button>
+          <Button
+            size="sm"
+            variant="ghost"
+            data-live-target="studio-stop"
+            disabled={!canStop}
+            onClick={stop}
+          >
+            {t('run.stop')}
+          </Button>
+          <span className="min-w-0 flex-1 px-1 text-xs text-sz-fg-soft" role="status">
+            {t(STATUS_KEYS[view.status])}
+          </span>
+          <Button size="sm" variant="ghost" aria-label={t('run.fullscreen')} onClick={fullscreen}>
+            ⛶
+          </Button>
+        </div>
+      )}
       {stale && (
         <p className="m-0 border-b border-sz-border px-3 py-1 text-xs text-sz-fg-soft">
-          Seu código mudou. Clique em Reiniciar para executar a nova versão.
+          {t('run.stale')}
         </p>
       )}
-      {(error ?? view.error) && (
+      {(error ?? (card ? null : view.error)) && (
         <p role="alert" className="m-0 border-b border-sz-border px-3 py-2 text-sm">
           {error ?? view.error}
         </p>
       )}
       {!props.environment && (
-        <p className="px-3 text-sm text-sz-fg-soft">
-          O ambiente Python ainda não está disponível nesta página.
-        </p>
+        <p className="px-3 text-sm text-sz-fg-soft">{t('run.noEnvironment')}</p>
       )}
-      <div ref={mount} className="flex min-h-0 flex-1 overflow-hidden bg-white" />
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div ref={mount} className="flex min-h-0 flex-1 overflow-hidden bg-white" />
+        {card && (
+          <div className="absolute inset-0">
+            <ProStageState state={runState} subject="program" flavor="python" onRun={run} />
+          </div>
+        )}
+      </div>
       {view.input && (
+        // A "Conversa com o programa" (redesenho de 11/2026): a pergunta do input() num balão, a
+        // resposta embaixo, "Responder" e, discreto, o "Encerrar entrada" (EOF).
         <form
-          className="flex flex-wrap items-center gap-2 border-t border-sz-border bg-sz-panel p-2"
+          className="sz-pro-talk"
+          aria-label={t('run.conversation')}
           onSubmit={(event) => {
             event.preventDefault()
             sendInput()
           }}
         >
-          <label className="flex min-w-0 flex-1 flex-col gap-1 text-sm">
-            {view.input.prompt || 'Digite sua resposta'}
+          <label className="sz-pro-talk__ask text-sm">
+            <span className="sz-pro-talk__bubble">{view.input.prompt || t('run.yourAnswer')}</span>
             <input
               autoComplete="off"
               value={input}
               onChange={(event) => setInput(event.target.value)}
-              className="min-w-0 rounded border border-sz-border bg-sz-bg px-2 py-1 text-sz-fg"
+              className="sz-pro-talk__input"
             />
           </label>
-          <Button size="sm" type="submit" disabled={sendingInput}>
-            Enviar
-          </Button>
-          <Button
-            size="sm"
-            variant="ghost"
+          <button type="submit" className="sz-pro-btn sz-pro-btn--primary" disabled={sendingInput}>
+            {t('run.answer')}
+          </button>
+          <button
             type="button"
+            className="sz-pro-talk__eof"
             disabled={sendingInput}
             onClick={() => sendInput(true)}
-            title="Encerra a entrada de texto (EOF), sem parar o programa"
+            title={t('run.endInputHint')}
           >
-            Encerrar entrada
-          </Button>
+            {t('run.endInput')}
+          </button>
         </form>
       )}
     </div>

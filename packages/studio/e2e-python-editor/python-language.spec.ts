@@ -48,7 +48,7 @@ test('Pro symbol rename validates Python names and reviews cross-file changes wi
       content: '# valor preservado\npontos = 42\r\n',
     },
   )
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
   await expect
     .poll(
       () =>
@@ -167,7 +167,7 @@ test('Pro file rename reviews real CPython imports, warns on deletion and recove
   expect(
     (await page.evaluate(() => pythonBridgeProbe.proState())).tree?.['src/helper.py'],
   ).toBeUndefined()
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
   await expect
     .poll(
       () =>
@@ -199,8 +199,8 @@ test('Pro file rename reviews real CPython imports, warns on deletion and recove
     (await page.evaluate(() => pythonBridgeProbe.proState())).tree?.['src/tools.py'],
   ).toBeUndefined()
   await history.getByRole('button', { name: 'Fechar histórico', exact: true }).click()
-  await page.getByRole('button', { name: 'Reiniciar', exact: true }).click()
-  await expect(page.getByText('Programa concluído', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Rodar de novo', exact: true }).click()
+  await expect(page.getByText('Concluído', { exact: true })).toBeVisible()
   await page.evaluate(() => pythonBridgeProbe.unmount())
 })
 
@@ -217,7 +217,7 @@ test('Pro console runs real Python in the current namespace without changing sav
   const execute = page.getByRole('button', { name: 'Executar comando', exact: true })
   await command.fill('valor + 2')
   await expect(execute).toBeDisabled()
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
   await expect(execute).toBeEnabled({ timeout: 30_000 })
   await execute.click()
   await expect
@@ -251,7 +251,7 @@ test('Pro console runs real Python in the current namespace without changing sav
     kind: 'file',
     content: source,
   })
-  await page.getByRole('button', { name: 'Reiniciar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar de novo', exact: true }).click()
   await command.fill('valor')
   await expect(execute).toBeEnabled({ timeout: 30_000 })
   await execute.click()

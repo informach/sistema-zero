@@ -25,12 +25,10 @@ export type ProRunPhase =
   | 'error'
   | 'unsupported'
 
-export type ProRunStepIndex = 1 | 2 | 3
-
 export interface ProRunState {
   phase: ProRunPhase
-  /** Só em `preparing`: qual dos três passos nomeados está em andamento. */
-  step?: { index: ProRunStepIndex; total: 3 }
+  /** Só em `preparing`: qual dos passos nomeados está em andamento (o remoto tem um só). */
+  step?: { index: number; total: number }
   /** O jogo rodando/compilado é mais velho que o código do editor. */
   stale?: boolean
   canRun: boolean
@@ -95,7 +93,9 @@ export function useProRunApi(): StoreApi<ProRunStore> {
 }
 
 /** O rótulo do botão principal: "Rodar" parado, "Rodar de novo" com algo em andamento ou feito. */
-export function proRunLabelKey(state: ProRunState | null): 'run.run' | 'run.runAgain' {
+export function proRunLabelKey(
+  state: Pick<ProRunState, 'phase'> | null,
+): 'run.run' | 'run.runAgain' {
   if (!state) return 'run.run'
   return state.phase === 'idle' || state.phase === 'unsupported' ? 'run.run' : 'run.runAgain'
 }

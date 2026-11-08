@@ -21,7 +21,7 @@ export async function installDrawingTiming(page: Page) {
           (event) => {
             if (!event.isTrusted || !(event.target instanceof Element)) return
             const label = event.target.closest('button')?.textContent?.trim()
-            if (label !== 'Executar' && label !== 'Reiniciar') return
+            if (label !== 'Rodar' && label !== 'Rodar de novo') return
             const clock = globalThis as typeof globalThis & RunClickClock
             clock.studioRunClickedAt = performance.timeOrigin + event.timeStamp
             performance.mark('studio-python-execute-click')

@@ -84,7 +84,7 @@ test('Ponte synchronizes actual Blockly and Monaco edits and executes the saved 
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('(40)')
   await page.evaluate(() => pythonBridgeProbe.replaceSource('# meu código\nx = 9\nprint(x)\n'))
   await expect(page.locator('.blocklyTextInputField').filter({ hasText: /^9$/ })).toBeVisible()
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
   await expect
     .poll(() =>
       page.evaluate(() =>
@@ -95,7 +95,7 @@ test('Ponte synchronizes actual Blockly and Monaco edits and executes the saved 
       ),
     )
     .toContain('9')
-  await expect(page.getByText('Programa concluído', { exact: true })).toBeVisible()
+  await expect(page.getByText('Concluído', { exact: true })).toBeVisible()
   await page.screenshot({ path: testInfo.outputPath('python-ponte-wide.png') })
 })
 
@@ -266,15 +266,15 @@ test('Pro Python routes to its source editor and interpreter and keeps narrow pr
   await page.evaluate(() => pythonBridgeProbe.openPro())
   await expect(page.locator('section[aria-label="Editor de blocos Python"]')).toHaveCount(0)
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('Pro Python')
-  await page.getByRole('button', { name: 'Executar', exact: true }).click()
-  await expect(page.getByText('Programa concluído', { exact: true })).toBeVisible()
+  await page.getByRole('button', { name: 'Rodar', exact: true }).click()
+  await expect(page.getByText('Concluído', { exact: true })).toBeVisible()
   await page.setViewportSize({ width: 640, height: 850 })
   await page.evaluate(() => pythonBridgeProbe.layout(true))
   const navigation = page.getByRole('navigation', { name: 'Organizar o editor' })
   await expect(navigation.getByRole('button', { name: 'Código', exact: true })).toBeVisible()
   await navigation.getByRole('button', { name: 'Jogo', exact: true }).click()
-  await expect(page.getByRole('button', { name: 'Reiniciar', exact: true })).toBeVisible()
-  await expect(page.getByText('Programa concluído', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Rodar de novo', exact: true })).toBeVisible()
+  await expect(page.getByText('Concluído', { exact: true })).toBeVisible()
   await expect(page.getByRole('tab', { name: 'Terminal', exact: true })).toHaveCount(0)
   await navigation.getByRole('button', { name: 'Código', exact: true }).click()
   await expect(page.locator('.monaco-editor .view-lines')).toContainText('Pro Python')

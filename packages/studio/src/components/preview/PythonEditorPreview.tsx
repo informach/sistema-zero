@@ -1,7 +1,11 @@
 import { isPythonProject } from '../../core/editableProject'
-import type { PythonExecutionController } from '../../runtime/python/controller'
+import type {
+  PythonExecutionController,
+  PythonExecutionView,
+} from '../../runtime/python/controller'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useProRunApi } from '../../state/proRun'
 import {
   usePendingEditorEdits,
   usePythonEditorConsole,
@@ -9,8 +13,19 @@ import {
 } from '../../state/studioStores'
 import { useStudioExecution } from '../../studio/observation'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
-import { PythonRuntimePreview } from './PythonRuntimePreview'
+import { type PythonRunCommands, PythonRuntimePreview } from './PythonRuntimePreview'
+import { pythonExecuting, pythonPreviewIsStale, pythonRunState } from './pythonRunState'
 
+const IDLE_VIEW: PythonExecutionView = { status: 'idle' }
+const emptySubscribe = () => () => {}
+const noView = () => null
+
+/**
+ * A prévia Python do EDITOR (a Ponte clássica e o Pro): liga o controlador ao console da instância,
+ * leva print/erros ao `logsStore` e, no projeto Pro (redesenho de 11/2026), publica o estado de
+ * execução e o Rodar/Parar na store `proRun`, que a Topbar lê. A barra da própria prévia some no
+ * Pro (`controls="hidden"`); na Ponte continua como sempre, com os rótulos unificados.
+ */
 export function PythonEditorPreview() {
   const project = useProjectStore((state) => state.project)
   const store = useProjectStoreApi()
@@ -36,10 +51,47 @@ export function PythonEditorPreview() {
   )
   const environment = useStudioRuntimeEnvironment()
   const execution = useStudioExecution()
-  if (!project || !isPythonProject(project)) return null
+  const proRun = useProRunApi()
+  const [commands, setCommands] = useState<PythonRunCommands | null>(null)
+  const view = useSyncExternalStore(
+    consoleBridge?.subscribe ?? emptySubscribe,
+    consoleBridge?.getSnapshot ?? noView,
+    noView,
+  )
+  const python = project && isPythonProject(project) ? project : null
+  const pro = python?.kind === 'pro'
+  const canExecute = execution.editingAccess === 'author'
+  const current = view ?? IDLE_VIEW
+  const stale = Boolean(python && pythonPreviewIsStale(current, python))
+  const runState = useMemo(
+    () =>
+      pro && commands
+        ? pythonRunState(current, {
+            stale,
+            canRun: canExecute && Boolean(environment) && current.status !== 'loading',
+            canStop: Boolean(current.identity || pythonExecuting(current.status)),
+          })
+        : null,
+    [pro, commands, current, stale, canExecute, environment],
+  )
+  useEffect(() => {
+    if (!pro) return
+    proRun.getState().publish(runState, runState ? commands : null)
+  }, [pro, proRun, runState, commands])
+  const proRef = useRef(pro)
+  proRef.current = pro
+  useEffect(
+    () => () => {
+      if (proRef.current) proRun.getState().publish(null, null)
+    },
+    [proRun],
+  )
+  if (!python) return null
   return (
     <PythonRuntimePreview
-      project={project}
+      project={python}
+      controls={pro ? 'hidden' : 'inline'}
+      onCommandsReady={setCommands}
       currentProject={() => {
         const current = store.getState().project
         return current && isPythonProject(current) ? current : null
@@ -99,4 +151,4 @@ export function PythonEditorPreview() {
   )
 }
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'

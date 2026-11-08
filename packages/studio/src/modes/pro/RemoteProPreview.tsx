@@ -1,21 +1,27 @@
 import { buildProRuntimeBridgeScript } from '@sistemazero/core/studio/pro-runtime-bridge'
-import { type JSX, type ReactNode, useEffect, useMemo, useRef, useState } from 'react'
-import { Button } from '#ui'
+import { type JSX, type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ProStageState } from '../../components/preview/ProStageState'
 import { javaScriptProject } from '../../core/editableProject'
-import { useMeasuredWidth } from '../../hooks/useMeasuredWidth'
 import { createGameStorageSession } from '../../state/gameStorage'
 import { useLogsStore } from '../../state/logsStore'
 import { captureProjectStorageScope } from '../../state/projectStorageRuntime'
 import { useProjectStore } from '../../state/projectStore'
+import { type ProRunActions, type ProRunState, useProRunApi } from '../../state/proRun'
+import { useT } from '../../studio/i18n'
 import type { StudioProRuntimeAdapter, StudioProRuntimeBuildResult } from '../../studio/pro-runtime'
 import { ProArtifactPreview } from './ProArtifactPreview'
 import { isProConsoleMessage } from './proConsoleBridge'
 import { useProGameStorage } from './useProGameStorage'
 
-const TOOLBAR_COMPACT_MAX_PX = 400
-
 type Phase = 'building' | 'ready' | 'error'
 
+/**
+ * A prévia do projeto Pro com o compilador REMOTO (aulas e Admin, sem COOP/COEP): manda o snapshot
+ * ao BFF e mostra o HTML compilado num iframe isolado. Desde o redesenho de 11/2026 não tem barra
+ * própria: Rodar (= compilar de novo), Parar (= esconder o resultado e abortar o build em voo) e
+ * Atualizar chegam da Topbar pela store `proRun`, e os estados (parado, montando, erro) são o
+ * cartão compartilhado das prévias Pro.
+ */
 export function RemoteProPreview({
   runtime,
   active = true,
@@ -23,18 +29,21 @@ export function RemoteProPreview({
   runtime: StudioProRuntimeAdapter
   active?: boolean
 }): JSX.Element | null {
+  const t = useT()
+  const proRun = useProRunApi()
   const [started, setStarted] = useState(active)
+  // Parar da criança: a volta de `active` (fechar a proposta do construtor) não religa sozinha.
+  const stoppedByUser = useRef(false)
   useEffect(() => {
-    if (active) setStarted(true)
+    if (active && !stoppedByUser.current) setStarted(true)
   }, [active])
+  const startedRef = useRef(started)
+  startedRef.current = started
   const project = useProjectStore((state) => javaScriptProject(state.project))
   const pushLog = useLogsStore((state) => state.push)
   const latestProjectRef = useRef(project)
   latestProjectRef.current = project
   const iframeRef = useRef<HTMLIFrameElement>(null)
-  const toolbarRef = useRef<HTMLDivElement>(null)
-  const toolbarWidth = useMeasuredWidth(toolbarRef)
-  const compactToolbar = toolbarWidth > 0 && toolbarWidth < TOOLBAR_COMPACT_MAX_PX
 
   const [phase, setPhase] = useState<Phase>('building')
   const [compiled, setCompiled] = useState<{
@@ -55,6 +64,8 @@ export function RemoteProPreview({
     authorized && compiled?.projectId === projectId && compiled.runtime === runtime
       ? compiled.result
       : null
+  // Parado esconde o resultado; o compilado fica guardado para quando a criança rodar de novo.
+  const shown = started ? result : null
   const stale = currentRevision !== builtRevision
   const scope = captureProjectStorageScope()
   // biome-ignore lint/correctness/useExhaustiveDependencies: replace the captured backend on profile changes
@@ -66,8 +77,8 @@ export function RemoteProPreview({
     frame: iframeRef,
     projectId,
     revision: builtRevision ?? 0,
-    identity: `${result?.artifact?.id ?? builtRevision ?? ''}:${reloadNonce}`,
-    origin: active && result?.html ? 'null' : null,
+    identity: `${shown?.artifact?.id ?? builtRevision ?? ''}:${reloadNonce}`,
+    origin: active && shown?.html ? 'null' : null,
   })
 
   useEffect(() => {
@@ -143,73 +154,86 @@ export function RemoteProPreview({
     return () => window.removeEventListener('message', handler)
   }, [pushLog, active])
 
-  const rebuild = () => {
+  const rebuild = useCallback(() => {
     const latest = latestProjectRef.current
     if (latest?.kind !== 'pro') return
     setAttempt((value) => value + 1)
-  }
+  }, [])
+  // As ações que a Topbar chama. Rodar = compilar (de novo); Parar = abortar o build em voo (a
+  // cleanup do efeito) e esconder o resultado; Atualizar = remontar o iframe.
+  const actions = useMemo<ProRunActions>(
+    () => ({
+      run: () => {
+        if (startedRef.current) {
+          rebuild()
+          return
+        }
+        stoppedByUser.current = false
+        setStarted(true)
+      },
+      stop: () => {
+        stoppedByUser.current = true
+        setStarted(false)
+      },
+      reload: () => setReloadNonce((value) => value + 1),
+    }),
+    [rebuild],
+  )
+  const runState = useMemo<ProRunState | null>(() => {
+    if (!active) return null
+    if (!authorized)
+      return {
+        phase: 'error',
+        canRun: false,
+        canStop: false,
+        error: t('pro.stage.authorityChanged'),
+      }
+    if (!started) return { phase: 'idle', canRun: true, canStop: false }
+    if (phase === 'building')
+      return {
+        phase: 'preparing',
+        step: { index: 1, total: 1 },
+        canRun: false,
+        canStop: true,
+        ...(result ? { stale } : {}),
+      }
+    if (phase === 'error')
+      return { phase: 'error', canRun: true, canStop: Boolean(result), error: error ?? undefined }
+    return { phase: 'running', canRun: true, canStop: true, ...(stale ? { stale } : {}) }
+  }, [active, authorized, started, phase, result, stale, error, t])
+  useEffect(() => {
+    proRun.getState().publish(runState, runState ? actions : null)
+  }, [proRun, runState, actions])
+  useEffect(() => () => proRun.getState().publish(null, null), [proRun])
 
   if (!active) return null
 
-  if (!authorized)
-    return <PreviewOverlay>A autoria mudou. Aguarde a sincronização para executar.</PreviewOverlay>
+  if (!authorized) return <PreviewOverlay>{t('pro.stage.authorityChanged')}</PreviewOverlay>
 
-  if (result) {
+  if (shown) {
     return (
       <div className="flex h-full w-full flex-col bg-sz-bg">
-        <div
-          ref={toolbarRef}
-          className="flex items-center gap-1 border-sz-border border-b bg-sz-panel px-2 py-1"
-        >
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setReloadNonce((value) => value + 1)}
-            title="Recarregar o resultado compilado"
-            aria-label="Atualizar o preview"
-          >
-            {compactToolbar ? '⟳' : '⟳ Atualizar'}
-          </Button>
-          <Button
-            size="sm"
-            variant={stale ? 'primary' : 'ghost'}
-            onClick={rebuild}
-            disabled={phase === 'building'}
-            title="Compilar novamente com as alterações atuais"
-            aria-label="Executar alterações"
-          >
-            {compactToolbar ? '▶' : stale ? '▶ Executar alterações' : '▶ Executar de novo'}
-          </Button>
-          {project?.name ? (
-            <span
-              className="ml-2 min-w-0 flex-1 truncate font-medium text-sz-fg-soft text-xs"
-              title={project.name}
-            >
-              {project.name}
-            </span>
-          ) : null}
-        </div>
         {phase === 'building' ? (
           <p role="status" className="px-3 py-2 text-sz-fg-soft text-xs">
-            Compilando alterações. A última versão continua disponível.
+            {t('pro.stage.rebuilding')}
           </p>
         ) : null}
         {phase === 'error' ? (
           <div role="alert" className="border-sz-border border-b p-3 text-xs">
             <p className="text-sz-error">{error}</p>
-            <p>Este preview mostra a última compilação válida.</p>
+            <p>{t('pro.stage.lastBuild')}</p>
             <BuildOutput output={output} />
           </div>
         ) : null}
         <div className="min-h-0 flex-1 bg-white">
-          {result.artifact ? (
+          {shown.artifact ? (
             <ProArtifactPreview
-              artifact={result.artifact}
+              artifact={shown.artifact}
               identity={`${scope.identity}:${projectId}:${reloadNonce}`}
               revision={builtRevision ?? 0}
               backend={backend}
               title="Pré-visualização do projeto Pro"
-              recoveryHint="Use Executar alterações para compilar o projeto novamente."
+              recoveryHint="Use Rodar de novo para montar o projeto outra vez."
               onConsole={(message) =>
                 pushLog({
                   source: 'sz-preview',
@@ -224,7 +248,7 @@ export function RemoteProPreview({
               key={storageName}
               ref={iframeRef}
               name={storageName}
-              srcDoc={result.html}
+              srcDoc={shown.html}
               title="Pré-visualização do projeto Pro"
               sandbox="allow-scripts allow-pointer-lock"
               referrerPolicy="no-referrer"
@@ -236,27 +260,15 @@ export function RemoteProPreview({
     )
   }
 
-  if (phase === 'error') {
-    return (
-      <PreviewOverlay>
-        <p className="text-sz-error">Não foi possível compilar o projeto.</p>
-        {error ? <p className="max-w-md text-sz-fg-mute">{error}</p> : null}
-        <BuildOutput output={output} />
-        <Button variant="ghost" size="sm" onClick={rebuild}>
-          Tentar de novo
-        </Button>
-      </PreviewOverlay>
-    )
-  }
-
   return (
-    <PreviewOverlay>
-      <p className="text-sz-fg-soft">Preparando o projeto Pro…</p>
-      <p className="max-w-md text-sz-fg-mute">
-        O projeto está sendo compilado em um ambiente seguro. Isso pode levar alguns segundos na
-        primeira vez.
-      </p>
-    </PreviewOverlay>
+    <ProStageState
+      state={runState ?? { phase: 'idle', canRun: true, canStop: false }}
+      subject="game"
+      flavor="remote"
+      onRun={actions.run}
+    >
+      <BuildOutput output={output} />
+    </ProStageState>
   )
 }
 
@@ -275,9 +287,5 @@ function PreviewOverlay({ children }: { children: ReactNode }): JSX.Element {
 
 function BuildOutput({ output }: { output: string }): JSX.Element | null {
   if (!output.trim()) return null
-  return (
-    <pre className="max-h-40 w-full max-w-md overflow-auto rounded bg-sz-bg p-2 text-left font-mono text-[10px] text-sz-fg-mute leading-tight">
-      {output}
-    </pre>
-  )
+  return <pre className="sz-pro-stage-state__tech">{output}</pre>
 }

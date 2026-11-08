@@ -5,6 +5,7 @@ import {
   PanelGroup,
   PanelResizeHandle,
 } from 'react-resizable-panels'
+import { useProRunApi } from '../../../state/proRun'
 import { useUIStore } from '../../../state/uiStore'
 import { useStudioLayout } from '../../../studio/layoutContext'
 import { useStudioTutor } from '../../../studio/tutor'
@@ -83,6 +84,20 @@ export function ProWorkspaceLayout({
     setTutorOpen(false)
     change((previous) => ({ ...previous, layout: 'split' }))
   }, [gameRequest, setShowPreview, setTutorOpen, change])
+  // A Topbar chama junto com Rodar (redesenho de 11/2026): traz o palco à vista, saindo de
+  // "Só o código" e, no estreito, abrindo a aba do jogo.
+  const proRun = useProRunApi()
+  useEffect(() => {
+    proRun.getState().setRevealStage(() => {
+      setNarrowView('game')
+      setShowPreview(true)
+      setTutorOpen(false)
+      change((previous) =>
+        previous.layout === 'code' ? { ...previous, layout: 'split' } : previous,
+      )
+    })
+    return () => proRun.getState().setRevealStage(null)
+  }, [proRun, setShowPreview, setTutorOpen, change])
   useEffect(() => {
     if (!searchRequest) return
     setNarrowView('files')

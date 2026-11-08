@@ -542,7 +542,7 @@ async function actor(canvas: Locator, game: Game, missile = false) {
 async function play(page: Page, game: Game, release: string) {
   const saved = python(await page.evaluate(() => studioFreeProbe.saved()))
   const expectedRevision = (await preparePythonExecutionSnapshot(saved)).revision
-  const runButton = page.getByRole('button', { name: /^(Executar|Reiniciar)$/ })
+  const runButton = page.getByRole('button', { name: /^(Rodar|Rodar de novo)$/ })
   await expect(runButton).toBeEnabled()
   const previousFrames = await page.locator(frameSelector).elementHandles()
   let observedRevision: unknown

@@ -64,6 +64,7 @@ import { HostStatusSeal } from './topbar/HostStatusSeal'
 import { ModeSegment } from './topbar/ModeSegment'
 import { STUDIO_MENU_LAYOUT, type StudioMenuItemId } from './topbar/menuLayout'
 import { ProjectNameField } from './topbar/ProjectNameField'
+import { ProRunControls } from './topbar/ProRunControls'
 import { SavePill, type SaveTone } from './topbar/SavePill'
 import { UndoRedo, undoRedoMenuItems, useUndoRedo } from './topbar/UndoRedo'
 
@@ -93,7 +94,8 @@ export interface TopbarProps {
 
 /**
  * A barra do editor no desenho da tela-modelo do Estúdio (11/09/2026): TRÊS grupos numa linha.
- * À esquerda [menu do host][← marca][nome ✎][Salvo][nuvem]; no MEIO o segmentado dos modos; à
+ * À esquerda [menu do host][← marca][nome ✎][Salvo][nuvem]; no MEIO o segmentado dos modos (no
+ * projeto Pro, Rodar / Parar, desde o redesenho de 11/2026); à
  * direita [Zappy][desfazer][refazer][olho da prévia][⋯][Compartilhar] (no compacto desfazer e
  * refazer moram no "⋯"). As regras visuais são as `.sz-bar-*` do
  * `studio.css`: é o MESMO componente do Estúdio Completo, do bloco de aula, do admin e da
@@ -458,7 +460,16 @@ export function Topbar({ onExit, onPromoteToPro, canToggleTheme }: TopbarProps):
           {hostChrome?.status ? <HostStatusSeal status={hostChrome.status} dot={iconOnly} /> : null}
         </div>
 
-        {availableModes.length > 0 ? (
+        {/* No projeto Pro o meio da barra é Rodar / Parar (redesenho de 11/2026): o único modo
+            dele é o Código, e o segmentado de um item só não dizia nada. Sem prévia (o host
+            desligou) não há centro: a direita vai à ponta pelo `.sz-bar__start + .sz-bar__end`. */}
+        {projectKind === 'pro' ? (
+          config.preview ? (
+            <div className="sz-bar__center">
+              <ProRunControls iconOnly={iconOnly} />
+            </div>
+          ) : null
+        ) : availableModes.length > 0 ? (
           <div className="sz-bar__center">
             <ModeSegment
               modes={availableModes}

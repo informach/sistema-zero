@@ -107,7 +107,7 @@ test('Python audio without a user gesture reports the browser autoplay denial', 
   const failed = await evaluate<{
     events: Array<{ type: string; traceback?: string; message?: string }>
   }>(cdp, state)
-  expect(JSON.stringify(failed)).toContain('Clique em Jogar ou Executar')
+  expect(JSON.stringify(failed)).toContain('Clique em Jogar ou Rodar')
   expect(await evaluate(cdp, 'navigator.userActivation.hasBeenActive')).toBe(false)
   expect(
     (await evaluate<Array<{ paused: boolean; src: string | null }>>(cdp, media)).every(
