@@ -65,10 +65,10 @@ describe('o despacho da cena chega a um palco e a uma bancada de verdade', () =>
     SCENE_IDS.map((scene) => [scene]),
   )('%s: a bancada (ou o palco) tem onde mexer', (scene) => {
     if (scene === 'island-3d') {
+      // A câmera é um controle com três lugares (proposta do Faísca, 08/11/2026).
       const html = ilha()
-      expect(html).toContain('Ver de frente')
-      expect(html).toContain('Ver de lado')
-      expect(html).toContain('Ver de cima')
+      expect(html).toContain('Onde fica a câmera')
+      for (const lugar of ['Frente', 'Lado', 'Cima']) expect(html).toContain(`>${lugar}</button>`)
       return
     }
     const state = openScene({ scene })

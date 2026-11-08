@@ -1,295 +1,176 @@
 'use client'
-
+/**
+ * Tela livre do Poder "O baú dos símbolos" (08/11/2026, proposta "Experiências do Faísca" aprovada). O personagem ANDA até as pedras: chegar numa
+ * pedra é tocar o símbolo (sai o "Tocar o sol / a lua / a estrela"). Como o baú decide é uma peça que
+ * se troca ("confere a ordem" × "só conta"). O `passo` fica para a montagem: o caderninho diz "Em que
+ * passo da placa?".
+ */
+import { discoveryGuidance, discoverySpeech } from '@sistemazero/core/learning/scene'
+import { FAROL_LAYOUT } from '@sistemazero/studio/arte'
+import { useEffect, useRef } from 'react'
+import { SONS } from '../lib/scene-sons'
 import {
-  discoveryGuidance,
-  type SceneState,
-  SEQUENCE_SYMBOLS,
-  type SequenceSymbol,
-} from '@sistemazero/core/learning/scene'
-import { farolSvgUrl } from '@sistemazero/studio/arte'
-import { Hand, Hash } from 'lucide-react'
-import { SceneCenarioProvider } from './scene-cenario-context'
-import { Frame, SceneButton, useDiscovery } from './scene-discovery-frame'
-import { SymbolSequenceStage } from './scene-symbol-sequence'
+  BotaoGrande,
+  type Cartao,
+  type FotoDe,
+  Frame,
+  Modulo,
+  semNoSeuJogo,
+  useFotinhos,
+} from './scene-discovery-frame'
+import {
+  CaderninhoDe,
+  cartoesDaAtividade,
+  centro,
+  ModuloAndar,
+  Troca,
+  useChegada,
+  useMapaLivre,
+} from './scene-faisca-livre'
+import { PEDRAS_DA_CENA, SymbolSequenceStage } from './scene-symbol-sequence'
 
-/**
- * A experiência do Poder "O baú dos símbolos" em exploração livre (Faísca, 02/11/2026): só a IDEIA,
- * no molde de `Door` e `Memory` (`scene-discovery-controls.tsx`). Cada símbolo pergunta "é a minha
- * vez?", e passo é o número que o jogo guarda para saber até onde a sequência chegou. Nada de
- * bloco, regra, Se, então nem senão: os blocos só aparecem na montagem do Estúdio.
- *
- * O que cada resposta faz ("sim" acende e passo anda; "não" volta passo a 0) fica com "?" até a
- * criança testar aquele caso, como a pergunta da porta do Farol.
- */
-
-const FALADO: Record<SequenceSymbol, string> = { sol: 'o sol', lua: 'a lua', estrela: 'a estrela' }
-
-/** O que comparar: a lista diz o propósito de cada teste, sem contar o resultado. */
-export const SIMBOLOS_DESCOBERTAS = [
-  'Toque o sol e depois a lua e observe passo.',
-  'Toque os três símbolos na ordem da placa e observe o baú.',
-  'Com o sol aceso, pule um símbolo e observe passo.',
-  'Comece pelo meio, sem nada aceso, e observe passo.',
-  'Depois de errar, tente a ordem da placa sem recomeçar a partida.',
-  'No baú que só conta, toque os símbolos fora da ordem e compare.',
-] as const
-const METAS = [
-  'step-moves',
-  'right-order',
-  'out-of-turn',
-  'middle-start',
-  'restart-works',
-  'count-vs-order',
-] as const
-
-type Sequencia = SceneState['sequence']
-export type GestoDosSimbolos = SequenceSymbol | 'recomecar' | 'ordem' | 'contar' | null
-
-/** O próximo símbolo na ordem da placa, a partir de passo. */
-const naVez = (passo: number): SequenceSymbol =>
-  passo === 0 ? 'sol' : passo === 1 ? 'lua' : 'estrela'
-/** Um símbolo fora da vez, a partir de passo. */
-const foraDaVez = (passo: number): SequenceSymbol => (passo === 1 ? 'estrela' : 'lua')
-
-/**
- * O botão em destaque é o gesto que a fala do Zappy pede agora (a régua do Farol, 02/11/2026).
- * Com o baú aberto, os símbolos não respondem: o gesto é recomeçar a partida.
- */
-export function proximoGestoDosSimbolos(fala: string | undefined, q: Sequencia): GestoDosSimbolos {
-  const aberto = q.chest === 'open'
-  switch (fala) {
-    case 'symbols-start':
-    case 'symbols-retry':
-      return 'sol'
-    case 'symbols-sun':
-    case 'symbols-sun-again':
-      return 'lua'
-    case 'symbols-moon':
-      return 'estrela'
-    case 'symbols-opened':
-      return aberto ? 'recomecar' : q.passo === 1 ? 'estrela' : 'sol'
-    case 'symbols-middle':
-      return aberto || q.lit.length > 0 ? 'recomecar' : 'lua'
-    case 'symbols-again':
-      return aberto ? 'recomecar' : naVez(q.passo)
-    case 'symbols-again-err':
-      return aberto ? 'recomecar' : foraDaVez(q.passo)
-    case 'symbols-count':
-    case 'symbols-count-try':
-      if (q.mode === 'order') return 'contar'
-      if (aberto) return 'recomecar'
-      return (['estrela', 'lua', 'sol'] as const).find((s) => !q.lit.includes(s)) ?? 'recomecar'
-    case 'symbols-count-early':
-    case 'symbols-count-back':
-      return 'ordem'
-    default:
-      return null
-  }
+const CARTOES: Cartao[] = [
+  {
+    id: 'step-moves',
+    emoji: '👣',
+    pergunta: 'Tocando o sol e depois a lua, o que muda?',
+    descoberta: 'o passo anda: 1, depois 2.',
+  },
+  {
+    id: 'right-order',
+    emoji: '☀️',
+    pergunta: 'E seguindo a placa até o fim?',
+    descoberta: 'o baú abre.',
+  },
+  {
+    id: 'out-of-turn',
+    emoji: '❌',
+    pergunta: 'E se pular um símbolo?',
+    descoberta: 'fora da vez, a tentativa recomeça.',
+  },
+  {
+    id: 'middle-start',
+    emoji: '🌙',
+    pergunta: 'E se começar pelo meio?',
+    descoberta: 'nada avança.',
+  },
+  {
+    id: 'restart-works',
+    emoji: '🔁',
+    pergunta: 'Depois de errar, ainda dá?',
+    descoberta: 'sim: na ordem certa, o baú abre.',
+  },
+  {
+    id: 'count-vs-order',
+    emoji: '🔢',
+    pergunta: 'E se o baú só contar os símbolos?',
+    descoberta: 'só contando, a ordem errada também abre.',
+  },
+]
+const NOME = { sol: 'Sol', lua: 'Lua', estrela: 'Estrela' } as const
+const fotoDe: FotoDe = (antes, depois, acao) => {
+  if (acao.type !== 'touch-symbol') return null
+  const a = antes.sequence
+  const d = depois.sequence
+  if (d.chest === 'open' && a.chest !== 'open')
+    return { titulo: NOME[acao.symbol], texto: 'o baú abriu!' }
+  if (d.mode === 'count')
+    return {
+      titulo: `${NOME[acao.symbol]} (só contando)`,
+      texto: `${d.lit.length} ${d.lit.length === 1 ? 'tocado' : 'tocados'}`,
+    }
+  return d.passo > a.passo
+    ? { titulo: NOME[acao.symbol], texto: `passo ${a.passo} → ${d.passo}` }
+    : { titulo: `${NOME[acao.symbol]} fora da vez`, texto: `passo ${a.passo} → ${d.passo}` }
 }
-
-/** A resposta do último toque à pergunta "é a minha vez?" (só no baú que confere a vez). */
-export function respostaDoToque(q: Sequencia): boolean | null {
-  if (q.mode !== 'order' || q.at === null) return null
-  if (q.at === 'sol') return true
-  return !(q.passo === 0 && q.lit.length === 0)
+const ALVOS = {
+  sol: centro(PEDRAS_DA_CENA.sol),
+  lua: centro(PEDRAS_DA_CENA.lua),
+  estrela: centro(PEDRAS_DA_CENA.estrela),
 }
-
-function Bifurcacao({
-  rotulo,
-  revelado,
-  escolhido,
-  arte,
-  texto,
-  espera,
-}: {
-  rotulo: string
-  revelado: boolean
-  escolhido: boolean | null
-  arte: Parameters<typeof farolSvgUrl>[0]
-  texto: string
-  espera: string
-}) {
-  return (
-    <div data-selected={escolhido === true} data-muted={escolhido === false}>
-      <span>{rotulo}</span>
-      {revelado ? (
-        <img src={farolSvgUrl(arte)} alt="" />
-      ) : (
-        <b className="door-fork-unknown" aria-hidden="true">
-          ?
-        </b>
-      )}
-      <strong>{revelado ? texto : 'Teste para descobrir'}</strong>
-      <small>
-        {escolhido === true ? '✓ última resposta' : escolhido === false ? 'Não foi usada' : espera}
-      </small>
-    </div>
-  )
-}
-
-/**
- * A figura da ideia: no baú que confere a vez, a pergunta de cada símbolo e as duas respostas; no
- * baú que só conta, quantos símbolos diferentes foram tocados.
- */
-export function PerguntaDosSimbolos({
-  q,
-  revelado,
-}: {
-  q: Sequencia
-  revelado: { sim: boolean; nao: boolean; conta: boolean; qualquerOrdem: boolean }
-}) {
-  if (q.mode === 'count') {
-    const tres = q.lit.length === SEQUENCE_SYMBOLS.length
-    const tocou = q.at !== null
-    return (
-      <figure className="sz-scene-regra door-rule" data-bau="conta">
-        <figcaption className="sz-scene-regra-titulo">O baú que só conta</figcaption>
-        <div className="movement-event">
-          <Hand size={17} /> Tocar um símbolo
-        </div>
-        <div className="door-question">
-          <Hash size={20} />
-          <strong>Quantos símbolos diferentes foram tocados?</strong>
-          <span>
-            contados: {q.lit.length} de {SEQUENCE_SYMBOLS.length}
-          </span>
-        </div>
-        <div className="door-forks">
-          <Bifurcacao
-            rotulo="Menos de três"
-            revelado={tocou || revelado.conta}
-            escolhido={tocou ? !tres : null}
-            arte="bau-fechado"
-            texto="O baú continua fechado"
-            espera="Aguardando um toque"
-          />
-          <Bifurcacao
-            rotulo="Os três"
-            revelado={revelado.conta || (tres && q.chest === 'open')}
-            escolhido={tocou ? tres : null}
-            arte="bau-aberto"
-            texto={revelado.qualquerOrdem ? 'O baú abre, em qualquer ordem' : 'O baú abre'}
-            espera="Aguardando um toque"
-          />
-        </div>
-      </figure>
-    )
-  }
-  const resposta = respostaDoToque(q)
-  return (
-    <figure className="sz-scene-regra door-rule" data-bau="vez">
-      <figcaption className="sz-scene-regra-titulo">A pergunta de cada símbolo</figcaption>
-      <div className="movement-event">
-        <Hand size={17} /> {q.at === null ? 'Tocar um símbolo' : `Você tocou ${FALADO[q.at]}`}
-      </div>
-      <div className="door-question">
-        <Hash size={20} />
-        <strong>É a minha vez?</strong>
-        <span>passo agora: {q.passo}</span>
-      </div>
-      <div className="door-forks">
-        <Bifurcacao
-          rotulo="Sim"
-          revelado={revelado.sim || resposta === true}
-          escolhido={resposta}
-          arte="pedra-sol-acesa"
-          texto="O símbolo acende, e passo anda"
-          espera="Aguardando um toque"
-        />
-        <Bifurcacao
-          rotulo="Não"
-          revelado={revelado.nao || resposta === false}
-          escolhido={resposta === null ? null : !resposta}
-          arte="pedra-lua"
-          texto="passo volta a 0, e tudo apaga"
-          espera="Aguardando um toque"
-        />
-      </div>
-    </figure>
-  )
-}
+const INICIO = { x: FAROL_LAYOUT.personagem.x, y: FAROL_LAYOUT.personagem.y }
 
 export function SimbolosLivre() {
-  const m = useDiscovery()
-  const q = m.state.sequence
-  const seen = (id: string) => m.state.evidence.discoveries.includes(id)
-  const completed = METAS.map(seen)
-  const gesto = proximoGestoDosSimbolos(discoveryGuidance(m.activity, m.state)?.id, q)
-  const tom = (qual: GestoDosSimbolos) => (gesto === qual ? 'gesto' : 'ferramenta')
-  const aberto = q.chest === 'open'
-  const trocar = (mode: Sequencia['mode']) => {
-    if (q.mode !== mode) m.dispatch({ type: 'sequence-mode', mode })
+  const p = useFotinhos({ fotoDe })
+  const q = p.state.sequence
+  const f = (id: string) => p.state.evidence.discoveries.includes(id)
+  const raiz = useRef<HTMLDivElement>(null)
+  const andar = useMapaLivre({ inicio: INICIO })
+  useChegada(andar.pos, ALVOS, 30, (s) => p.dispatch({ type: 'touch-symbol', symbol: s }))
+  const antes = useRef({ passo: q.passo, chest: q.chest, lit: q.lit.length })
+  useEffect(() => {
+    const a = antes.current
+    if (q.chest === 'open' && a.chest !== 'open') SONS.abre()
+    else if (q.passo > a.passo || q.lit.length > a.lit) SONS.aparece()
+    else if (q.at && (q.passo < a.passo || q.missed)) SONS.nada()
+    antes.current = { passo: q.passo, chest: q.chest, lit: q.lit.length }
+  }, [q.passo, q.chest, q.lit.length, q.at, q.missed])
+  const jogarDeNovo = () => {
+    andar.voltar()
+    p.dispatch({ type: 'restart-symbols' })
   }
   return (
     <Frame
+      raiz={raiz}
       title="A ordem dos símbolos"
-      stage={
-        <SceneCenarioProvider cenario="farol">
-          <SymbolSequenceStage state={m.state} />
-        </SceneCenarioProvider>
-      }
       kind="simbolos"
-      activity={m.activity}
-      state={m.state}
-      text={m.instruction}
-      goals={[...SIMBOLOS_DESCOBERTAS]}
-      completed={completed}
-      done={completed.filter(Boolean).length}
-      reset={() => m.dispatch({ type: 'reset' })}
-      // A figura da ideia mora embaixo do palco, no molde da `Memory` (full review de 02/11/2026):
-      // na coluna da direita, ela empurrava o palco fixo para fora da tela.
-      after={
-        <PerguntaDosSimbolos
-          q={q}
-          revelado={{
-            sim: seen('step-moves') || seen('right-order'),
-            nao: seen('out-of-turn') || seen('middle-start'),
-            conta: seen('count-vs-order'),
-            qualquerOrdem: seen('count-vs-order'),
-          }}
-        />
+      activity={p.activity}
+      state={p.state}
+      text={discoveryGuidance(p.activity, p.state)?.text ?? ''}
+      reset={() => {
+        andar.voltar()
+        p.dispatch({ type: 'reset' })
+      }}
+      cartoes={cartoesDaAtividade(CARTOES, p.activity)}
+      fotos={p.fotos}
+      ideia={discoverySpeech('symbols-idea')}
+      ponte={semNoSeuJogo(discoverySpeech('symbols-bridge'))}
+      stage={
+        <SymbolSequenceStage state={p.state} heroi={{ ...andar.pos, esquerda: andar.esquerda }} />
       }
-    >
-      <div className="sz-discovery-controls free-controls">
-        {SEQUENCE_SYMBOLS.map((s) => (
-          <SceneButton
-            key={s}
-            tom={tom(s)}
-            disabled={aberto}
-            onClick={() => m.dispatch({ type: 'touch-symbol', symbol: s })}
-          >
-            {`Tocar ${FALADO[s]}`}
-          </SceneButton>
-        ))}
-        <SceneButton tom={tom('recomecar')} onClick={() => m.dispatch({ type: 'restart-symbols' })}>
-          Recomeçar a partida
-        </SceneButton>
-      </div>
-      <fieldset className="sz-discovery-controls free-controls">
-        <legend className="sz-discovery-small">Qual baú está no jogo</legend>
-        <SceneButton
-          tom={tom('ordem')}
-          aria-pressed={q.mode === 'order'}
-          onClick={() => trocar('order')}
-        >
-          O baú confere a vez
-        </SceneButton>
-        <SceneButton
-          tom={tom('contar')}
-          aria-pressed={q.mode === 'count'}
-          onClick={() => trocar('count')}
-        >
-          O baú só conta
-        </SceneButton>
-      </fieldset>
-      <p className="sz-discovery-small">
-        {aberto
-          ? 'O baú abriu. Recomeçar a partida fecha o baú e apaga os símbolos; suas descobertas continuam marcadas.'
-          : 'Trocar de baú começa uma partida nova. Suas descobertas continuam marcadas.'}
-      </p>
-      <p className="sz-discovery-free-hint">
-        Experimente à vontade. Os destaques sugerem um próximo teste; você escolhe a ordem.
-      </p>
-    </Frame>
+      controles={
+        <>
+          <Modulo titulo="A regra do baú" icone="🧩" largo>
+            <Troca
+              rotulo="O baú confere"
+              antes="O baú confere"
+              opcoes={[
+                { v: 'order', peca: <>a ordem dos símbolos</>, aria: 'O baú confere a ordem' },
+                {
+                  v: 'count',
+                  peca: <>só quantos foram tocados</>,
+                  aria: 'O baú só conta os símbolos',
+                },
+              ]}
+              valor={q.mode}
+              pulsar={f('restart-works') && !f('count-vs-order') ? 'count' : null}
+              onChange={(v) => {
+                SONS.encaixe()
+                andar.voltar()
+                p.dispatch({ type: 'sequence-mode', mode: v })
+              }}
+            />
+          </Modulo>
+          <ModuloAndar raiz={raiz} andar={andar} mao={p.fotos.length === 0 && !andar.andando} />
+          <Modulo titulo="O jogo guarda" icone="📓" dica="Cada símbolo olha aqui.">
+            <CaderninhoDe
+              linhas={[
+                q.mode === 'order'
+                  ? { pergunta: 'Em que passo da placa?', resposta: `${q.passo} de 3` }
+                  : { pergunta: 'Quantos símbolos tocados?', resposta: `${q.lit.length} de 3` },
+              ]}
+            />
+          </Modulo>
+          <Modulo titulo="Partida" icone="🔄" dica="Os símbolos apagam e o passo volta a 0.">
+            <BotaoGrande
+              pulsar={q.chest === 'open' || (f('out-of-turn') && !f('middle-start'))}
+              onClick={jogarDeNovo}
+            >
+              <span aria-hidden>🔄</span> Jogar de novo
+            </BotaoGrande>
+          </Modulo>
+        </>
+      }
+    />
   )
 }
