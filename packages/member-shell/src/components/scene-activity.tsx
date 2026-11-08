@@ -80,6 +80,7 @@ import { useLearningExecution } from './learning-execution-context'
 import { useLessonPlayer } from './lesson-player-context'
 import { useLessonPreview } from './lesson-preview-context'
 import { tituloJaDito, useLessonSection } from './lesson-section-context'
+import { ZappyAnimated } from './lesson-ui/mascot-animated'
 import { RelogioDaArteProvider } from './scene-arte'
 import { SceneConclusion, SceneExplicacao } from './scene-conclusion'
 import {
@@ -93,7 +94,7 @@ import {
 import { SceneDescobertas } from './scene-descobertas'
 import { SomDaBancada } from './scene-dino-controls'
 import { Door, Memory, Position, Walk } from './scene-discovery-controls'
-import { DiscoveryContext } from './scene-discovery-frame'
+import { DiscoveryContext, type FalaDaDescoberta } from './scene-discovery-frame'
 import { ProposedGarden } from './scene-discovery-garden'
 import { sceneDisplaySamples } from './scene-display-samples'
 import { PortaDoNao } from './scene-door-not'
@@ -427,6 +428,33 @@ export function SceneActivityView({
         speech={fala}
         mascot={secao?.temDialogo || semMascote ? undefined : player?.dialogueMascot?.('speaking')}
       />
+    )
+  }
+  /**
+   * ⭐ O balão da moldura das experiências livres (08/11/2026): a pose de festa no fim, o corpo rico
+   * (o cartão da ideia), várias frases no "Ouvir" e a voz que toca sozinha (`falarSozinho`). O MP3
+   * de cada frase vale só quando ela é exatamente uma fala fixa gerada na autoria.
+   */
+  const renderFalaDaDescoberta = (text: string, opcoes: FalaDaDescoberta) => {
+    const textos = (opcoes.textos ?? [text]).map(falaDaInstrucao)
+    const roteiros = textos.map(
+      (t) => falasFixasDoZappy.find((fala) => fala.visibleText === textoFalado(t))?.speechText ?? t,
+    )
+    const pose = opcoes.pose ?? 'speaking'
+    const mascot = secao?.temDialogo ? undefined : player?.renderInstruction ? (
+      <ZappyAnimated expression={pose} className="size-16 sm:size-20" />
+    ) : (
+      player?.dialogueMascot?.(pose)
+    )
+    return (
+      <DialogueBlockView
+        content={{ kind: 'dialogue', text, pose }}
+        speech={{ texts: textos, fallbackToBrowser: true, vozes: activity.vozes, roteiros }}
+        mascot={mascot}
+        falarSozinho={opcoes.falarSozinho}
+      >
+        {opcoes.corpo}
+      </DialogueBlockView>
     )
   }
   /**
@@ -1360,11 +1388,14 @@ export function SceneActivityView({
                       setRunning,
                       tick: (seconds) => action.current({ type: 'advance', seconds }),
                       instruction,
-                      dialogue: (text) =>
-                        renderDialogue(text, {
-                          texts: [falaDaInstrucao(text)],
-                          fallbackToBrowser: true,
-                        }),
+                      dialogue: (text, opcoes) =>
+                        opcoes
+                          ? renderFalaDaDescoberta(text, opcoes)
+                          : renderDialogue(text, {
+                              texts: [falaDaInstrucao(text)],
+                              fallbackToBrowser: true,
+                            }),
+                      continuar: continuarParaPergunta,
                       tools: (
                         <>
                           {desfazer}
