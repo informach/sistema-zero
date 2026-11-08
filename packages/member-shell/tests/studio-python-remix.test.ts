@@ -335,6 +335,38 @@ test('an authorization denial or cancellation never yields an importable Python 
 
 const authoringBlockIds = PYTHON_PROGRAMMING_CODECS.map(({ id }) => id)
 
+test('example copy accepts approved hidden variants and rejects their revocation', async () => {
+  const f = await fixture()
+  const hidden = PYTHON_PROGRAMMING_CODECS.find((codec) => codec.hidden)!
+  expect(hidden).toBeDefined()
+  const input = {
+    snapshot: f.project,
+    viewerId: f.viewerId,
+    audience: 'kids' as const,
+    options: f.options,
+    signal: f.signal,
+    authoringRequirements: {
+      requiredBlockIds: [hidden.id],
+      requiredModes: ['blocks', 'bridge'] as const,
+    },
+  }
+  await expect(
+    authorizePythonPrivateCopy({
+      ...input,
+      request: async (request) => ({ ...(await f.decision(request)), blockIds: authoringBlockIds }),
+    }),
+  ).resolves.toEqual(f.project)
+  await expect(
+    authorizePythonPrivateCopy({
+      ...input,
+      request: async (request) => ({
+        ...(await f.decision(request)),
+        blockIds: authoringBlockIds.filter((id) => id !== hidden.id),
+      }),
+    }),
+  ).rejects.toThrow('autoria')
+})
+
 for (const [name, change] of [
   ['required block removed', { blockIds: authoringBlockIds.filter((id) => id !== 'sz_py_class') }],
   ['Ponte removed', { curation: { pythonLevel: 3, allowedModes: ['blocks'] } }],

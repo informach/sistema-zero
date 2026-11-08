@@ -147,6 +147,10 @@ async function authorizePythonCopy(
         allowCategories: decision.curation.allowCategories,
       })
       const available = new Set(palette.entries.map(({ id }) => id))
+      // Existing examples can contain the hidden statement/value variants of a
+      // visible concept. They still require explicit approval by this release.
+      for (const entry of authoring.catalog)
+        if (entry.hidden && authoring.approvedBlockIds.has(entry.id)) available.add(entry.id)
       if (required.requiredBlockIds.some((id) => !available.has(id)))
         throw new Error('A autoria deste exemplo mudou. Reabra a criação do projeto.')
     }

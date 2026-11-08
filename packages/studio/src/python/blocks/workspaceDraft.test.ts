@@ -19,9 +19,10 @@ test('Python stores a single current collection envelope even for one editable f
   const blocksState = updatePythonWorkspaceDraft(project, 'main.py', draft)
   expect(blocksState).toEqual({
     kind: 'python-workspace-collection',
-    version: 1,
+    version: 2,
     activePath: 'main.py',
     drafts: [draft],
+    scratch: [],
   })
   expect(readPythonWorkspaceDraft({ ...project, blocksState })).toEqual(draft)
   // Individual draft entries are data inside the collection, never another document format.
@@ -203,9 +204,10 @@ test('renaming cannot publish a visual collection exceeding its recovery budget'
   }
   const state = {
     kind: 'python-workspace-collection',
-    version: 1,
+    version: 2,
     activePath: 'main.py',
     drafts: [main, other],
+    scratch: [],
   }
   let textChars = 0
   JSON.stringify(state, (key, value) => {

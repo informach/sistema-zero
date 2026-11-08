@@ -1,8 +1,10 @@
+import * as Blockly from 'blockly/core'
 import type { PythonNode, PythonParsedDocument } from '../language/types'
 import { pythonWorkspaceToVisual } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import type { PythonBlockCodec } from './contract'
 import { nodes, pythonSemanticTree } from './nodes'
+import { pythonProgramArea } from './programArea'
 import { pythonVisualToAST } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
 import { readPythonWorkspaceState } from './readWorkspaceState'
@@ -49,4 +51,26 @@ export function preparePythonWorkspaceRestore(
     }
   })
   return { state, origins, rootIds }
+}
+
+/** Validate separately, then append after binding Program origins to the current source. */
+export function preparePythonScratchRestore(
+  raw: Record<string, unknown> | undefined,
+  codecs: readonly PythonBlockCodec[] = PYTHON_PROGRAMMING_CODECS,
+) {
+  if (!raw) return
+  let ids: string[] = []
+  const state = readPythonWorkspaceState(raw, codecs, (workspace) => {
+    if (pythonProgramArea(workspace))
+      throw new Error('Rascunhos não podem conter uma área Programa.')
+    ids = workspace.getAllBlocks(false).map((block) => block.id)
+  })
+  // The preflight validator checked every serialized block, including nested IDs.
+  const blocks =
+    (state.blocks as { blocks: Blockly.serialization.blocks.State[] } | undefined)?.blocks ?? []
+  return (workspace: Blockly.Workspace) => {
+    if (ids.some((id) => workspace.getBlockById(id)))
+      throw new Error('Os rascunhos e o Programa precisam ter identificadores distintos.')
+    for (const block of blocks) Blockly.serialization.blocks.append(block, workspace)
+  }
 }

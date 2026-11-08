@@ -2,8 +2,44 @@ import * as Blockly from 'blockly/core'
 import type { PythonNode, PythonValue } from '../language/types'
 import type { PythonBlocklyBlock } from './blockly'
 import { isNode, pythonSemanticTree } from './nodes'
+import { PYTHON_PROGRAM } from './programArea'
 import type { PythonOpaqueBlock, PythonVisualOrigin } from './projection'
 import { type PythonWorkspaceOrigins, withoutPythonOrigins } from './provenance'
+
+/** Presentation and scratch blocks do not change the executable program. */
+export function samePythonWorkspaceProgram(
+  before: Record<string, unknown>,
+  after: Record<string, unknown>,
+): boolean {
+  const executable = (state: Record<string, unknown>) => {
+    const saved = state as ReturnType<typeof Blockly.serialization.workspaces.save>
+    const roots = saved.blocks?.blocks as Blockly.serialization.blocks.State[] | undefined
+    if (!roots) return state
+    const areas = roots.filter((block) => block.type === PYTHON_PROGRAM)
+    const selected = areas.length === 1 ? areas : roots
+    const clean = (block: Blockly.serialization.blocks.State): unknown => {
+      const { x: _x, y: _y, collapsed: _collapsed, icons: _icons, ...rest } = block
+      const connection = (value: Blockly.serialization.blocks.ConnectionState) => ({
+        ...value,
+        ...(value.block ? { block: clean(value.block) } : {}),
+        ...(value.shadow ? { shadow: clean(value.shadow) } : {}),
+      })
+      return {
+        ...rest,
+        ...(block.inputs
+          ? {
+              inputs: Object.fromEntries(
+                Object.entries(block.inputs).map(([key, value]) => [key, connection(value)]),
+              ),
+            }
+          : {}),
+        ...(block.next ? { next: connection(block.next) } : {}),
+      }
+    }
+    return { blocks: { ...saved.blocks, blocks: selected.map(clean) } }
+  }
+  return JSON.stringify(executable(before)) === JSON.stringify(executable(after))
+}
 
 function sourceWithCurrentOrigin(value: PythonOpaqueBlock, parsed?: PythonNode): PythonOpaqueBlock {
   const node =
@@ -35,12 +71,13 @@ export function rebasePythonWorkspaceState(
     const parsed = state.id ? origins.get(state.id) : undefined
     if (state.type.startsWith('sz_py_source_'))
       state.extraState = sourceWithCurrentOrigin(state.extraState as PythonOpaqueBlock, parsed)
-    else if (state.type.startsWith('sz_py_')) {
+    else if (state.type.startsWith('sz_py_') && state.type !== PYTHON_PROGRAM) {
       state.extraState = {
         ...state.extraState,
         origin: parsed ? { nodeId: parsed.id, range: structuredClone(parsed.range) } : undefined,
       }
-    } else throw new Error('O rascunho contém um bloco de outro ambiente.')
+    } else if (state.type !== PYTHON_PROGRAM)
+      throw new Error('O rascunho contém um bloco de outro ambiente.')
     for (const connection of [
       ...Object.values(state.inputs ?? {}),
       ...(state.next ? [state.next] : []),

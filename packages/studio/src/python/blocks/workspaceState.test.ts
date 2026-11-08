@@ -8,7 +8,34 @@ import {
 import { expression, integer, moduleNode } from './nodes'
 import { pythonASTToVisual, pythonVisualToAST } from './projection'
 import { bindPythonVisualOrigins } from './provenance'
-import { recoverPythonWorkspaceOrigins, savePythonWorkspace } from './workspaceState'
+import {
+  recoverPythonWorkspaceOrigins,
+  samePythonWorkspaceProgram,
+  savePythonWorkspace,
+} from './workspaceState'
+
+test('moving roots preserves the program; editing a field or connection does not', () => {
+  const workspace = new Blockly.Workspace()
+  try {
+    const tree = moduleNode([expression(integer('1')), expression(integer('2'))])
+    const roots = pythonVisualToWorkspace(pythonASTToVisual(tree), workspace)
+    const origins = bindPythonVisualOrigins(pythonWorkspaceToVisual(workspace, roots), tree)
+    const before = savePythonWorkspace(workspace, origins)
+    const root = workspace.getBlockById(roots[0]!)!
+    root.moveBy(100, 200)
+    const moved = savePythonWorkspace(workspace, origins)
+    expect(moved).not.toEqual(before)
+    expect(samePythonWorkspaceProgram(before, moved)).toBe(true)
+    const literal = workspace.getBlocksByType('sz_py_integer', false)[0]!
+    literal.setFieldValue('3', 'NUMBER')
+    expect(samePythonWorkspaceProgram(moved, savePythonWorkspace(workspace, origins))).toBe(false)
+    literal.setFieldValue('1', 'NUMBER')
+    root.getNextBlock()!.unplug()
+    expect(samePythonWorkspaceProgram(moved, savePythonWorkspace(workspace, origins))).toBe(false)
+  } finally {
+    workspace.dispose()
+  }
+})
 
 test('saved draft receives current provenance while the live undo metadata stays untouched', () => {
   const workspace = new Blockly.Workspace(),

@@ -5,9 +5,15 @@ import type { Root } from 'react-dom/client'
 import { StudioProEditor } from '../../../member-shell/src/components/studio/studio-pro-editor'
 import { useFreeStudioOptions } from '../../../member-shell/src/components/studio/use-free-options'
 import { useFreeStudioRuntime } from '../../../member-shell/src/components/studio/use-free-runtime'
-import type { EditableStudioProject } from '../../src/core/editableProject'
+import { type EditableStudioProject, isPythonProject } from '../../src/core/editableProject'
 import * as Studio from '../../src/index'
 import { ProjectList } from '../../src/projects/ProjectList'
+import {
+  createPythonWorkspaceDraft,
+  readPythonScratchWorkspace,
+  readPythonWorkspaceDraft,
+  updatePythonWorkspaceDraft,
+} from '../../src/python/blocks/workspaceDraft'
 import { createStudioStores } from '../../src/state/studioStores'
 
 /** Real project gallery, store and shared Pro host; controlled free service ports are explicit. */
@@ -16,6 +22,7 @@ export function createFreeProbe(root: Root) {
   let viewerId = ''
   let includePintaAsset = false
   let includeExamples = false
+  let legacyProject: EditableStudioProject | null = null
   function visualWorkspace() {
     const workspaces = Blockly.common
       .getAllWorkspaces()
@@ -138,17 +145,97 @@ export function createFreeProbe(root: Root) {
     async saved() {
       return currentProjectId ? Studio.createLocalPersistenceAdapter().load(currentProjectId) : null
     },
+    async savedProgramArea(path: string) {
+      const adapter = Studio.createLocalPersistenceAdapter()
+      const project = currentProjectId ? await adapter.load(currentProjectId) : null
+      // The normal shell read deliberately omits the heavy block partition.
+      if (!project || !isPythonProject(project) || project.kind !== 'classic') return null
+      const hydrated = {
+        ...project,
+        blocksState: (await adapter.loadBlocksState?.(project)) ?? null,
+      }
+      const draft = readPythonWorkspaceDraft(hydrated, path)
+      const scratch = readPythonScratchWorkspace(hydrated, path) as
+        | ReturnType<typeof Blockly.serialization.workspaces.save>
+        | undefined
+      const state = draft?.workspace as
+        | ReturnType<typeof Blockly.serialization.workspaces.save>
+        | undefined
+      return {
+        pending: draft?.pending,
+        baseSource: draft?.baseSource,
+        scratchIds:
+          scratch?.blocks?.blocks?.map((block: Blockly.serialization.blocks.State) => block.id) ??
+          [],
+        rootIds: draft?.rootIds,
+        rootTypes: state?.blocks?.blocks?.map(
+          (block: Blockly.serialization.blocks.State) => block.type,
+        ),
+      }
+    },
+    /** Seed an actual pre-area cache, then reopen it through normal persistence/hydration. */
+    async legacyWorkspaceSnapshot() {
+      const project = currentProjectId
+        ? await Studio.createLocalPersistenceAdapter().load(currentProjectId)
+        : null
+      if (!project || !isPythonProject(project) || project.kind !== 'classic')
+        throw new Error('Expected Python classic')
+      const workspace = Blockly.serialization.workspaces.save(visualWorkspace())
+      const area = (workspace.blocks.blocks as Blockly.serialization.blocks.State[]).find(
+        (block) => block.type === 'sz_py_program',
+      )
+      const first = area?.inputs?.BODY?.block
+      if (!first?.id) throw new Error('Expected a nonempty program')
+      workspace.blocks.blocks = [first]
+      const queue = [first]
+      while (queue.length) {
+        const block = queue.pop()!
+        delete block.collapsed
+        for (const connection of [
+          ...Object.values(block.inputs ?? {}),
+          ...(block.next ? [block.next] : []),
+        ]) {
+          if (connection.block) queue.push(connection.block)
+          if (connection.shadow) queue.push(connection.shadow)
+        }
+      }
+      const draft = {
+        ...createPythonWorkspaceDraft(project, 'main.py', workspace, [first.id]),
+        pending: false,
+      }
+      legacyProject = {
+        ...project,
+        blocksState: updatePythonWorkspaceDraft(project, 'main.py', draft),
+      }
+      return first.id
+    },
+    async saveLegacyWorkspace() {
+      if (!legacyProject) throw new Error('Capture the legacy workspace before closing')
+      await Studio.createLocalPersistenceAdapter().save(legacyProject)
+      legacyProject = null
+    },
     workspace() {
       const workspace = visualWorkspace()
       const blocks = workspace.getAllBlocks(false)
       return {
         id: workspace.id,
         count: blocks.length,
+        mounted: workspace.getCanvas().querySelectorAll('g[data-id]').length,
         opaque: blocks
           .filter((block) => block.type.startsWith('sz_py_source_'))
           .map((block) => block.id),
         types: [...new Set(blocks.map((block) => block.type))].sort(),
       }
+    },
+    /** Navigation only, to measure a real whole-program drag without detaching syntax. */
+    focusProgramRoot(collapseFunctions = false) {
+      const workspace = visualWorkspace()
+      if (collapseFunctions)
+        for (const block of workspace.getBlocksByType('sz_py_def', false)) block.setCollapsed(true)
+      const root = workspace.getTopBlocks(false)[0]!
+      const position = root.getRelativeToSurfaceXY()
+      workspace.scroll(40 - position.x * workspace.scale, 180 - position.y * workspace.scale)
+      return root.id
     },
     /** Navigation only: Playwright types into the actual Blockly field afterward. */
     focusAssignmentField(variable: string, fieldName: string) {
@@ -165,7 +252,7 @@ export function createFreeProbe(root: Root) {
       const field = value?.getField(fieldName)
       if (!value || !field) throw new Error(`Missing editable field ${variable}.${fieldName}`)
       workspace.centerOnBlock(value.id)
-      return { blockId: value.id, value: field.getValue() }
+      return { blockId: value.id, assignmentId: assignments[0]!.id, value: field.getValue() }
     },
     source(value: string) {
       const editor = monaco.editor

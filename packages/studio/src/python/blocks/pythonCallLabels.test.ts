@@ -4,6 +4,7 @@ import type { PythonNode } from '../language/types'
 import { pythonVisualToWorkspace } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS as codecs } from './catalog'
 import { call, integer, moduleNode, name, node, pass } from './nodes'
+import { ensurePythonProgramArea } from './programArea'
 import { pythonASTToVisual } from './projection'
 import { attachPythonCallLabels, refreshPythonCallLabels } from './pythonCallLabels'
 
@@ -55,6 +56,20 @@ const labels = () =>
     )
 const settle = () => new Promise((done) => setTimeout(done, 20))
 const definition = () => workspace.getBlocksByType('sz_py_def', true)[0]!
+
+test('Programa keeps module function labels and scratch definitions cannot shadow them', () => {
+  open([def('mover', ['distancia']), run('mover', 1)])
+  ensurePythonProgramArea(
+    workspace,
+    workspace.getTopBlocks(false).map((block) => block.id),
+    'main.py',
+  )
+  const scratch = workspace.newBlock('sz_py_def')
+  scratch.setFieldValue('mover', 'NAME')
+  scratch.setFieldValue('outra', 'PARAMS')
+  refreshPythonCallLabels(workspace)
+  expect(labels()).toEqual([['com distancia']])
+})
 
 test('the real block shows the name of each parameter, not only the projection', () => {
   open([def('mover', ['distancia', 'angulo']), run('mover', 3), run('outra', 1)])

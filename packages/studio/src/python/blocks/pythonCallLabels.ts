@@ -1,5 +1,6 @@
 import * as Blockly from 'blockly/core'
 import { pythonCallArgumentLabel, pythonDefinedParams } from './flowCatalog'
+import { PYTHON_PROGRAM, pythonProgramArea } from './programArea'
 
 const DEFINITION = 'sz_py_def'
 const CALLS = new Set(['sz_py_run', 'sz_py_run_value'])
@@ -11,10 +12,13 @@ const CALLS = new Set(['sz_py_run', 'sz_py_run_value'])
  */
 export function pythonWorkspaceFunctionParams(workspace: Blockly.Workspace) {
   const found = new Map<string, readonly string[] | undefined>()
+  const area = pythonProgramArea(workspace)
   for (const block of workspace.getBlocksByType(DEFINITION, false)) {
+    if (area && block.getRootBlock() !== area) continue
     const name = String(block.getFieldValue('NAME') ?? '').trim()
     if (!name) continue
-    const outside = block.getSurroundParent() === null
+    const surround = block.getSurroundParent()
+    const outside = surround === null || surround.type === PYTHON_PROGRAM
     const params = pythonDefinedParams(String(block.getFieldValue('PARAMS') ?? ''))
     found.set(name, found.has(name) || !outside ? undefined : params)
   }

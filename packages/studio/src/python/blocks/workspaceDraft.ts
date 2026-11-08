@@ -1,5 +1,6 @@
 import { copyStudioProjectJson } from '@sistemazero/core/studio/project-json'
 import type { PythonClassicProjectDocument, PythonProjectDocument } from '../../core/pythonProject'
+import { splitPythonWorkspace } from './workspaceParts'
 
 /** A recoverable editing buffer. It is never an executable source of truth. */
 export interface PythonWorkspaceDraft {
@@ -14,14 +15,22 @@ export interface PythonWorkspaceDraft {
 }
 export interface PythonWorkspaceState {
   kind: 'python-workspace-collection'
-  version: 1
+  version: 2
   activePath: string
   drafts: PythonWorkspaceDraft[]
+  /** Independent of source revisions and of an unfinished executable edit. */
+  scratch: { path: string; workspace: Record<string, unknown> }[]
 }
 
 /** Explicit empty cache: unlike a quick-load null, this must replace older saved drafts. */
 export function emptyPythonWorkspaceState(): PythonWorkspaceState {
-  return { kind: 'python-workspace-collection', version: 1, activePath: '', drafts: [] }
+  return {
+    kind: 'python-workspace-collection',
+    version: 2,
+    activePath: '',
+    drafts: [],
+    scratch: [],
+  }
 }
 
 const limits = { nodes: 160_000, textChars: 8_388_608, depth: 40_064 }
@@ -63,10 +72,12 @@ function decodeState(raw: unknown): PythonWorkspaceState | undefined {
   if (
     !record(raw) ||
     raw.kind !== 'python-workspace-collection' ||
-    raw.version !== 1 ||
+    raw.version !== 2 ||
     typeof raw.activePath !== 'string' ||
     !Array.isArray(raw.drafts) ||
-    raw.drafts.length > 1000
+    raw.drafts.length > 1000 ||
+    !Array.isArray(raw.scratch) ||
+    raw.scratch.length > 1000
   )
     return
   const drafts: PythonWorkspaceDraft[] = []
@@ -77,7 +88,20 @@ function decodeState(raw: unknown): PythonWorkspaceState | undefined {
     paths.add(draft.path)
     drafts.push(draft)
   }
-  return { kind: raw.kind, version: raw.version, activePath: raw.activePath, drafts }
+  const scratch: PythonWorkspaceState['scratch'] = []
+  paths.clear()
+  for (const value of raw.scratch) {
+    if (
+      !record(value) ||
+      typeof value.path !== 'string' ||
+      !record(value.workspace) ||
+      paths.has(value.path)
+    )
+      return
+    paths.add(value.path)
+    scratch.push({ path: value.path, workspace: value.workspace })
+  }
+  return { kind: raw.kind, version: raw.version, activePath: raw.activePath, drafts, scratch }
 }
 
 export function createPythonWorkspaceDraft(
@@ -108,9 +132,21 @@ export function createPythonWorkspaceDraft(
   return draft
 }
 
+/** Capture both parts atomically at the live editor boundary. */
+export function capturePythonWorkspace(
+  project: PythonClassicProjectDocument,
+  path: string,
+  workspace: Record<string, unknown>,
+  rootIds: readonly string[],
+) {
+  const { program, scratch } = splitPythonWorkspace(workspace)
+  return { draft: createPythonWorkspaceDraft(project, path, program, rootIds), scratch }
+}
+
 /** Detached and globally bounded; Blockly still validates each workspace before recovery. */
 function readDrafts(project: PythonProjectDocument): {
   drafts: PythonWorkspaceDraft[]
+  scratch: PythonWorkspaceState['scratch']
   activePath?: string
 } {
   if (
@@ -118,16 +154,23 @@ function readDrafts(project: PythonProjectDocument): {
     !record(project.blocksState) ||
     project.blocksState.kind !== 'python-workspace-collection'
   )
-    return { drafts: [] }
+    return { drafts: [], scratch: [] }
   const state = decodeState(copyStudioProjectJson(project.blocksState, limits))
-  if (!state) return { drafts: [] }
+  if (!state) return { drafts: [], scratch: [] }
   const drafts = state.drafts.filter(
     (draft) => draft.path.endsWith('.py') && project.files[draft.path] === draft.baseSource,
   )
   return {
     drafts,
+    scratch: state.scratch.filter(
+      (entry) => entry.path.endsWith('.py') && project.files[entry.path] !== undefined,
+    ),
     activePath: state.activePath,
   }
+}
+
+export function readPythonScratchWorkspace(project: PythonProjectDocument, path: string) {
+  return readDrafts(project).scratch.find((entry) => entry.path === path)?.workspace
 }
 
 export function readPythonWorkspaceDraft(
@@ -144,18 +187,25 @@ export function pendingPythonWorkspaceDraft(project: PythonProjectDocument) {
 
 function pack(
   drafts: PythonWorkspaceDraft[],
+  scratch: PythonWorkspaceState['scratch'],
   activePath?: string,
   knownEmpty = false,
 ): PythonWorkspaceState | null {
-  if (!drafts.length) return knownEmpty ? emptyPythonWorkspaceState() : null
-  if (drafts.length > 1000) throw new Error('Há arquivos demais com blocos salvos neste projeto.')
-  const active = drafts.find((draft) => draft.path === activePath) ?? drafts[0]
+  if (!drafts.length && !scratch.length) return knownEmpty ? emptyPythonWorkspaceState() : null
+  if (drafts.length > 1000 || scratch.length > 1000)
+    throw new Error('Há arquivos demais com blocos salvos neste projeto.')
+  const active =
+    drafts.find((draft) => draft.path === activePath) ??
+    scratch.find((entry) => entry.path === activePath) ??
+    drafts[0] ??
+    scratch[0]
   if (!active) throw new Error('A coleção de blocos precisa de um arquivo ativo.')
   const state: PythonWorkspaceState = {
     kind: 'python-workspace-collection',
-    version: 1,
+    version: 2,
     activePath: active.path,
     drafts,
+    scratch,
   }
   // A longer filename can exceed the global recovery budget.
   const detached = decodeState(copyStudioProjectJson(state, limits))
@@ -163,17 +213,23 @@ function pack(
   return detached
 }
 
-/** Replace only one file's cache. Passing no draft discards only that file's cache. */
+/** Discarding a source cache preserves scratch. Only an explicit scratch snapshot replaces it. */
 export function updatePythonWorkspaceDraft(
   project: PythonClassicProjectDocument,
   path: string,
   draft?: PythonWorkspaceDraft,
+  scratchWorkspace?: Record<string, unknown> | null,
 ): PythonWorkspaceState | null {
   if (draft && draft.path !== path) throw new Error('O rascunho pertence a outro arquivo Python.')
   const state = readDrafts(project)
   const drafts = state.drafts.filter((entry) => entry.path !== path)
   if (draft) drafts.push(draft)
-  return pack(drafts, draft ? path : state.activePath, true)
+  const scratch =
+    scratchWorkspace === undefined
+      ? state.scratch
+      : state.scratch.filter((entry) => entry.path !== path)
+  if (scratchWorkspace) scratch.push({ path, workspace: scratchWorkspace })
+  return pack(drafts, scratch, draft ? path : state.activePath, true)
 }
 
 export function assertPythonVisualDraftSettled(project: PythonProjectDocument): void {
@@ -198,5 +254,14 @@ export function preservePythonWorkspaceDraft(
     const path = movedPath(draft.path)
     return files[path] === draft.baseSource && path.endsWith('.py') ? [{ ...draft, path }] : []
   })
-  return pack(drafts, state.activePath && movedPath(state.activePath), project.blocksState != null)
+  const scratch = state.scratch.flatMap((entry) => {
+    const path = movedPath(entry.path)
+    return files[path] !== undefined && path.endsWith('.py') ? [{ ...entry, path }] : []
+  })
+  return pack(
+    drafts,
+    scratch,
+    state.activePath && movedPath(state.activePath),
+    project.blocksState != null,
+  )
 }
