@@ -19,19 +19,21 @@ export const ILHA_AREAS: Retangulo[] = [
 /**
  * Os obstáculos sólidos da Ilha (o jogo marca o cenário e a pedra com "marcar … como sólido"), no
  * chão do jogo: os quatro blocos da pedra e os troncos dos dois coqueiros da praia tropical. São
- * os pedaços dos modelos do Blender (`ilha-obstaculos.test.ts` confere contra os arquivos).
+ * os pedaços dos modelos do Blender, com a posição e o tamanho didáticos usados no jogo
+ * (`ilha-obstaculos.test.ts` confere contra os arquivos e a configuração real do projeto).
  */
 export const ILHA_OBSTACULOS: Retangulo[] = [
-  { minX: -3, maxX: -0.3, minZ: -2.2, maxZ: 0.6 },
+  { minX: -3, maxX: -0.3, minZ: -2.1, maxZ: 0.6 },
   { minX: -1.4, maxX: -0.1, minZ: -0.4, maxZ: 0.9 },
-  { minX: -3.8, maxX: -2.7, minZ: -1.2, maxZ: -0.2 },
-  { minX: -4.3, maxX: -3.3, minZ: -1.1, maxZ: 0 },
+  { minX: -3.7, maxX: -2.7, minZ: -1.2, maxZ: -0.2 },
+  { minX: -4.2, maxX: -3.3, minZ: -1.1, maxZ: 0 },
   { minX: -7.1, maxX: -6.8, minZ: -4.4, maxZ: -4.1 },
   { minX: -6.7, maxX: -6.4, minZ: 4.4, maxZ: 4.6 },
 ]
 /**
- * A metade da pegada do personagem (x, z): o Jogo 3D usa 60% da caixa dele (0,5 por 0,6) para
- * bater nos sólidos, e o centro dele não chega mais perto que isso.
+ * Margem conservadora da metade da pegada (x, z). O Jogo 3D usa 60% da caixa para bater nos
+ * sólidos. O tamanho didático 1,6 é um pouco menor que o modelo original (1,66); conservamos
+ * a margem maior para o robô não planejar uma passagem rente demais às pedras.
  */
 const PERSONAGEM = { x: 0.3, z: 0.36 }
 /**

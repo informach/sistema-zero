@@ -4,13 +4,7 @@ import { generateProjectFiles } from '../../../packages/studio/src/generators/pr
 import { normalizeSZIR } from '../../../packages/studio/src/ir'
 import { gameThreeDManifest } from '../../../packages/studio/src/official-extensions/game-3d/manifest'
 import { parseJS } from '../../../packages/studio/src/parsers/js'
-import {
-  ILHA_ASSETS,
-  ILHA_MODELS,
-  ILHA_PADRAO,
-  type IlhaObjeto,
-  ilhaNome,
-} from './ilha-do-farol-assets'
+import { ILHA_ASSETS, ILHA_PADRAO, type IlhaObjeto, ilhaNome } from './ilha-do-farol-assets'
 import type { IlhaPeca } from './publicar-ilha-modelos'
 
 export const ILHA_CURSO = 'jornada-faisca-base-3d'
@@ -29,20 +23,30 @@ export const ILHA_PARTES = [
 ] as const
 export type IlhaParte = (typeof ILHA_PARTES)[number]
 /**
- * Põe o modelo onde o Blender o desenhou: o jogo centraliza a caixa do modelo na posição do
- * objeto, então a posição recebe o centro da caixa (`centered` = a posição já é o centro).
- * O tamanho é o lado maior da caixa, o mesmo em todas as variações de cada objeto.
+ * Valores didáticos dos blocos: inteiros ou uma casa decimal. O Estúdio posiciona o CENTRO
+ * da caixa e usa seu lado maior como tamanho. Os centros calculados das malhas do Blender
+ * continuam precisos na biblioteca, mas não viram números para a criança copiar.
+ * Todas as variações de cada objeto têm a mesma caixa. O personagem de tamanho 1,6 fica
+ * apoiado no chão com o centro na altura 0,8; a altura 2,7 apoia o farol no cais.
  */
+export const ILHA_PREPARO: Record<
+  IlhaObjeto,
+  { tamanho: number; posicao: [number, number, number] }
+> = {
+  cenario: { tamanho: 140, posicao: [0, 33.6, 0] },
+  farol: { tamanho: 5.3, posicao: [5.2, 2.7, 0.1] },
+  barco: { tamanho: 3.1, posicao: [13, 1.1, 4.5] },
+  pedra: { tamanho: 4.5, posicao: [-2, 1.2, -0.5] },
+  personagem: { tamanho: 1.6, posicao: [-6.5, 0.8, 0.8] },
+  chave: { tamanho: 1.2, posicao: [-2, 1, -3] },
+}
 const placed = (
   escolhas: IlhaEscolhas,
   name: IlhaObjeto,
-  position: [number, number, number],
-  centered = false,
+  position: [number, number, number] = ILHA_PREPARO[name].posicao,
 ) => {
-  const model = ILHA_MODELS[name],
-    p = position.map((v, i) => +(v + (centered ? 0 : model.center[i]!)).toFixed(4)),
-    asset = ilhaNome(escolhas[name] ?? ILHA_PADRAO[name])
-  return `const ${name}=SZGame3D.createModelFile(cena,${JSON.stringify(asset)},${model.size});\nSZGame3D.setPosition(${name},${p.join(',')});`
+  const asset = ilhaNome(escolhas[name] ?? ILHA_PADRAO[name])
+  return `const ${name}=SZGame3D.createModelFile(cena,${JSON.stringify(asset)},${ILHA_PREPARO[name].tamanho});\nSZGame3D.setPosition(${name},${position.join(',')});`
 }
 /** Os modelos que a criança escolhe na personalização (o resto fica o do começo do curso). */
 export type IlhaEscolhas = Partial<Record<IlhaObjeto, IlhaPeca>>
@@ -54,20 +58,20 @@ export const ILHA_ESCOLHAS_DO_VIDEO: IlhaEscolhas = {
   farol: 'farol-de-pedra',
   cenario: 'cenario-noite-na-ilha',
 }
-/** Onde o barco para quando o farol acende (o mesmo referencial do `placed`). */
-const chegada = [6.6, -0.1, 4.5].map((v, i) => +(v + ILHA_MODELS.barco.center[i]!).toFixed(4))
+/** O barco chega perto do cais mantendo a mesma altura e profundidade do começo. */
+const chegada = [6.6, ILHA_PREPARO.barco.posicao[1], ILHA_PREPARO.barco.posicao[2]]
 /** Every rule is represented by extension/programming blocks; no raw JS blocks or page markup. */
 export function ilhaSource(parte: IlhaParte, escolhas: IlhaEscolhas = {}): string {
   const n = ILHA_PARTES.indexOf(parte)
   return `
 const cena=SZGame3D.createFullscreenScene("#94d5f5");
 SZGame3D.frameScene(cena,24,7,14);
-${placed(escolhas, 'cenario', [0, 0, 0])}
-${placed(escolhas, 'farol', [5.2, 0, 0.1])}
-${placed(escolhas, 'barco', [13, -0.1, 4.5])}
-${placed(escolhas, 'pedra', [-2, 0, -1])}
-${placed(escolhas, 'personagem', [-6.5, 0.8, 0.75], true)}
-${placed(escolhas, 'chave', n >= 2 ? [-3, 1, -2] : [-2, 1, -3], true)}
+${placed(escolhas, 'cenario')}
+${placed(escolhas, 'farol')}
+${placed(escolhas, 'barco')}
+${placed(escolhas, 'pedra')}
+${placed(escolhas, 'personagem')}
+${placed(escolhas, 'chave', n >= 2 ? [-3, 1, -2] : undefined)}
 SZGame3D.walkArea(personagem,-11,1,-5,5);
 SZGame3D.walkArea(personagem,0.6,4.1,0.4,1.1);
 SZGame3D.walkArea(personagem,4,6.1,-0.5,1.7);

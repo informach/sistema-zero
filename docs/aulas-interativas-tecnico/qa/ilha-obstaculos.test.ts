@@ -14,22 +14,40 @@ import {
   ILHA_OBSTACULOS,
   recortarObstaculos,
 } from './ilha-do-farol-observacao'
+import { montarProjetoIlha } from './ilha-do-farol-projeto'
 
 const root = resolve(import.meta.dirname, '../../..')
 const modelos = JSON.parse(
   readFileSync(resolve(root, 'docs/design/ilha-do-farol-blender/modelos.json'), 'utf8'),
-) as Record<string, { sha: string }>
+) as Record<string, { sha: string; center: number[]; size: number }>
 const io = new NodeIO()
   .registerExtensions(ALL_EXTENSIONS)
   .setLogger(new Logger(Logger.Verbosity.SILENT))
 
-/** Os pedaços sólidos (nós com malha e sem `szSemCaixa`), no chão do jogo, deslocados de `onde`. */
-async function solidos(id: string, onde: [number, number]) {
+/** Lê os números realmente usados no projeto, inclusive seu tamanho didático. */
+function configuracao(objeto: string) {
+  const nodes: Record<string, any>[] = []
+  const visit = (v: unknown) => {
+    if (!v || typeof v !== 'object') return
+    nodes.push(v as Record<string, any>)
+    for (const child of Object.values(v)) visit(child)
+  }
+  visit(montarProjetoIlha('inicio').ir)
+  const created = nodes.find((n) => n.type === 'g3d:createModelFile' && n.varName === objeto)!
+  const placed = nodes.find((n) => n.type === 'g3d:setPosition' && n.objVar === objeto)!
+  return { size: created.size.value, x: placed.x.value, z: placed.z.value }
+}
+
+/** Os sólidos publicados, centralizados e escalados como no carregador real do Estúdio. */
+async function solidos(id: string, objeto: string) {
   const s = readFileSync(
     resolve(root, `packages/studio/src/core/course-models/m-${modelos[id]!.sha}.generated.ts`),
     'utf8',
   )
   const doc = await io.readBinary(Buffer.from(s.match(/base64,([A-Za-z0-9+/=]+)/)![1]!, 'base64'))
+  const config = configuracao(objeto)
+  const model = modelos[id]!
+  const scale = config.size / model.size
   return doc
     .getRoot()
     .listNodes()
@@ -39,20 +57,18 @@ async function solidos(id: string, onde: [number, number]) {
       // `+ 0` tira o -0 do arredondamento.
       const r = (v: number) => +v.toFixed(1) + 0
       return {
-        minX: r(min[0]! + onde[0]),
-        maxX: r(max[0]! + onde[0]),
-        minZ: r(min[2]! + onde[1]),
-        maxZ: r(max[2]! + onde[1]),
+        minX: r((min[0]! - model.center[0]!) * scale + config.x),
+        maxX: r((max[0]! - model.center[0]!) * scale + config.x),
+        minZ: r((min[2]! - model.center[2]!) * scale + config.z),
+        maxZ: r((max[2]! - model.center[2]!) * scale + config.z),
       }
     })
 }
 
 describe('os obstáculos da Ilha', () => {
   test('são os pedaços sólidos da pedra e dos coqueiros publicados', async () => {
-    // A pedra fica em (-2, -1) no jogo (o centro da caixa vai para lá, e a caixa do arquivo é a do
-    // Blender: o deslocamento é o mesmo). O cenário fica na origem.
-    const pedra = await solidos('pedras', [-2, -1])
-    const coqueiros = await solidos('cenario-praia-tropical', [0, 0])
+    const pedra = await solidos('pedras', 'pedra')
+    const coqueiros = await solidos('cenario-praia-tropical', 'cenario')
     expect(pedra).toHaveLength(4)
     expect(coqueiros).toHaveLength(2)
     expect([...pedra, ...coqueiros]).toEqual(ILHA_OBSTACULOS)
@@ -64,7 +80,7 @@ describe('os obstáculos da Ilha', () => {
     for (const o of ILHA_OBSTACULOS)
       expect(dentro((o.minX + o.maxX) / 2, (o.minZ + o.maxZ) / 2)).toBe(false)
     // O começo, a trilha na frente da pedra e a entrada do cais continuam livres.
-    expect(dentro(-6.5, 0.75)).toBe(true)
+    expect(dentro(-6.5, 0.8)).toBe(true)
     expect(dentro(-1, 1.6)).toBe(true)
     expect(dentro(0.6, 0.75)).toBe(true)
     // Atrás da pedra (o esconderijo do começo do curso) e no canto da chave da parte 2.

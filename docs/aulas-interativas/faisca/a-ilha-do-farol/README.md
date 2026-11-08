@@ -20,6 +20,32 @@ Cada aula tem manifesto, roteiro de produção, fala integral para ElevenLabs e 
 
 ## Produção e publicação
 
+### Números dos blocos — 08/11/2026
+
+Todos os projetos da Ilha usam **inteiros ou no máximo uma casa decimal** nos blocos,
+desde a entrada da primeira aula até o jogo final e as variações de aparência. Os tamanhos e
+posições são escolhas didáticas explícitas em `ilha-do-farol-projeto.ts`; não copiar para os
+blocos os centros precisos calculados pelo Blender. A biblioteca continua com sua precisão
+original. A posição da chave que a criança altera permanece inteira: de (-2; 1; -3) para
+(-3; 1; -2).
+
+| Objeto | Tamanho | Posição inicial (x; y; z) |
+| --- | --- | --- |
+| Cenário | 140 | 0; 33,6; 0 |
+| Farol | 5,3 | 5,2; 2,7; 0,1 |
+| Barco | 3,1 | 13; 1,1; 4,5 |
+| Pedra | 4,5 | -2; 1,2; -0,5 |
+| Personagem | 1,6 | -6,5; 0,8; 0,8 |
+| Chave | 1,2 | -2; 1; -3 |
+
+O barco chega a (6,6; 1,1; 4,5). As três áreas permitidas de caminhada já tinham no máximo
+uma casa decimal. Nas gravações e capturas, usar os exemplos regenerados, inclusive os blocos
+de preparação que aparecem ao fundo. A sequência das aulas e as instruções de movimento e de
+posição da chave continuam iguais. O esquema de personalização do PDF usa os mesmos tamanhos
+do projeto. Os sólidos usados pelo verificador também foram alinhados.
+
+### Publicação
+
 Implementação e autoria locais: experiências, quiz, objetivos, projetos progressivos, manifestos, roteiros, textos de voz e PDF. O jogo usa teclado (setas/WASD e R); as experiências também têm botões, sliders e campos numéricos. O navegador precisa oferecer WebGL.
 
 Ainda dependem de produção: geração e escuta das vozes, gravação dos vídeos, anexação do PDF no Admin e publicação. `plannedVideo` é um molde de produção, não um vídeo publicado. O manifesto já contém os passos como material de texto para consulta; o PDF é anexado na publicação. Não houve importação remota nem implantação nesta tarefa.
