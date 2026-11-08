@@ -131,7 +131,17 @@ export function PalcoDoAndar({
           />
         ))}
       </g>
-      <image href={farolSvgUrl('aventureiro')} x={w.x} y={y} width="64" height="64" />
+      <image
+        href={farolSvgUrl('aventureiro')}
+        x={w.x}
+        y={y}
+        width="64"
+        height="64"
+        // Os ganchos do e2e (o mesmo vocabulário dos palcos de antes).
+        data-walk-hero={Math.round(w.x)}
+        data-personagem={w.x >= L.palco.w ? 'fora' : w.x + 64 > L.palco.w ? 'parte' : 'dentro'}
+        data-x={w.x}
+      />
       {fora ? (
         <g>
           <line

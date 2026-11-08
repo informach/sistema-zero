@@ -1,5 +1,28 @@
 # CLAUDE.md — @sistemazero/core
 
+## O andar começa onde começa o jogo, e as falas das experiências novas (08/11/2026)
+
+Junto com a moldura nova das experiências livres (CLAUDE.md do member-shell):
+
+- **O começo do andar é por cenário.** `SceneStart.cenario` (copiado por `sceneStart` da atividade)
+  e `lighthouseWalkOrigin(start)`: x 21 no Farol (`LIGHTHOUSE_WALK.startFarol`, espelho de
+  `FAROL_LAYOUT.personagem.x` do Studio) e 208 nos outros (a Nave não mudou). `openScene` põe o
+  `walk.x` e o `trail` na origem, e `walk-speed` livre, `restart-walk` e a régua do
+  `stopped-after-release` (`quadroDoAndar(s, livre, origem)`) comparam com ela. O CASO continua sem
+  escolher a posição (`isSceneSetup`). ⚠️ Teste que monta `SceneStart` à mão para o Farol precisa
+  do `cenario: 'farol'`, senão abre em 208.
+- **Falas novas** em `discovery-guidance.ts`: curtas (no máximo 12 palavras nas experiências do
+  Cadê e do Farol) e com os controles novos; ids novos para a ideia e a ponte de cada experiência
+  (`slow-idea`, `slow-bridge`, `border-idea`, `memory-idea`, `door-bridge`, `touch-idea`,
+  `count-bridge`… com `-nave` onde a Nave fala diferente) e para os momentos que só a tela conhece
+  (`position-guess`, `-guess-up`, `-guess-down`, `-target`, `-target-done`, `slow-out`). A ponte
+  começa com "No seu jogo:", como a voz lê. `discoverySpeech(id, cenario?)` devolve uma fala pelo id
+  (com a variante `-nave` quando há). Todas entram nos slots de voz (`discovery:<id>`), então o
+  Admin as grava com a voz do Zappy.
+- Testes: `lighthouse-walk.test.ts` ("o começo do andar segue o cenário"), `livre-revisao.test.ts`
+  e os caminhos de `tests/fixtures/exploration-paths.ts` (mais segundos para sair da tela a partir
+  do x 21).
+
 ## Jornada do Criador: currículo compartilhado (25/10/2026)
 
 `journey/creator-curriculum.ts` contém o contrato puro usado pelas duas audiências. O campo

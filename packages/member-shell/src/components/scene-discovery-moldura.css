@@ -1549,11 +1549,57 @@
   }
 }
 
-/* As telas livres antigas: os controles de antes moram no painel embaixo da cena, como vieram. */
-.sz-discovery-deck.sz-discovery-deck-livre {
-  display: block;
-}
 /* A faixa de números de uma tela antiga, logo abaixo da linha das estrelas. */
 .sz-discovery-moldura .sz-discovery-simple-hud {
   margin-bottom: 10px;
+}
+
+/* ════════ celular estreito (e2e de 320 a 390 px): nada passa da borda do console ════════ */
+.sz-discovery-direita {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+  max-width: 100%;
+}
+.sz-discovery-ferramentas {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  min-width: 0;
+}
+.sz-discovery-velocidade {
+  max-width: 100%;
+}
+.sz-discovery-velocidade button {
+  flex: 1 1 auto;
+  min-width: 0;
+  justify-content: center;
+}
+@media (max-width: 26rem) {
+  .sz-discovery-velocidade button {
+    padding: 9px 10px;
+  }
+}
+/* O título e o selo do filme dividem a faixa de cima: numa coluna estreita, cada um com metade. */
+.sz-discovery-filme-titulo,
+.sz-discovery-filme-info {
+  max-width: calc(50% - 20px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+/* O filme é baixo: cada quadro com o desenho numa altura fixa, para a tela do jogo ficar grande. */
+.sz-discovery-filme .slow-tira {
+  margin-bottom: 0;
+}
+.sz-discovery-filme .slow-tira-quadro svg {
+  height: 56px;
+}
+/* Os módulos repartem a linha por igual (base 0) e só quebram abaixo de 12rem cada: com a base no
+   tamanho do conteúdo, os três da beirada caíam em duas linhas e a tela do jogo encolhia pela metade. */
+.sz-discovery-modulo {
+  flex: 1 1 0;
+  min-width: min(100%, 12rem);
+}
+.sz-discovery-modulo[data-largo="true"] {
+  flex-basis: 100%;
 }

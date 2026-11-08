@@ -34,3 +34,12 @@ Experiências atualizadas com as comparações disponíveis desde o início, tes
 Vídeos conceituais explicam o conceito e convidam à investigação, sem ditar cliques. A montagem no Estúdio continua completa. Fontes, roteiros, manifestos e PDF foram sincronizados. Produzir áudio/vídeo, importar os materiais e publicar continuam etapas de produção. Consulte [as diretrizes de autoria](../../../aulas-interativas-tecnico/DESCOBERTA-GUIADA.md).
 
 [Revisão da implementação, correções e evidências de validação](../../../aulas-interativas-tecnico/REVISAO-EXPLORACAO-2026-10-26.md).
+
+## Pendências de produção da moldura nova das experiências (08/11/2026)
+
+As experiências ganharam a moldura nova (cartões de pergunta, controles com a forma do que imitam, voz automática do Zappy, sons e a ideia no balão do Zappy). Para chegar à produção:
+
+1. **Ordem do deploy:** members antes de kids e community (o motor e o player mudaram juntos; ver `docs/aulas-interativas-legado/raio-x-implantacao.md`).
+2. **Reimportar os manifestos** deste curso no Admin. ⚠️ Reimportar recomeça o progresso em andamento nessas experiências.
+3. **Gerar de novo a voz do Zappy** ("Gerar a voz do Zappy" no Admin) e publicar: as falas das experiências mudaram, e reimportar apaga as `vozes` antigas.
+4. **Regravar o trecho do vídeo da aula 1** (`video-a1-toque`) que aponta o botão antigo "Ligar a reação ao toque": hoje a regra é a peça "Quando tocar → mostrar" que encaixa sobre o jardim (o roteiro já diz `[apontar "Regra do toque"]`).

@@ -223,7 +223,7 @@ export function Frame({
   kind: string
   /** A fala do Zappy agora (sem emoji: a voz lê a frase inteira). */
   text: string
-  /** Os controles das telas antigas: vão para o painel embaixo da cena. */
+  /** Os controles das telas antigas: ficam na coluna das ações, logo abaixo da fala. */
   children?: ReactNode
   after?: ReactNode
   /** As perguntas das telas antigas, na ordem das metas da atividade. */
@@ -410,11 +410,6 @@ export function Frame({
             </div>
           ) : null}
           {controles ? <div className="sz-discovery-deck">{controles}</div> : null}
-          {children ? (
-            <div className="sz-discovery-deck sz-discovery-deck-livre">
-              <ConsolePrancha>{children}</ConsolePrancha>
-            </div>
-          ) : null}
         </ConsoleVisual>
         <ConsoleActions>
           <div className={ideiaNoBalao ? 'sz-discovery-fala-ideia' : undefined}>
@@ -439,6 +434,9 @@ export function Frame({
               })}
             </ConsoleFala>
           </div>
+          {/* ⚠️ Os controles das telas antigas ficam na coluna das ações, como antes: embaixo da cena
+              eles empurravam o palco para fora da tela ampliada (e2e `scene-workspace`). */}
+          {children ? <ConsolePrancha>{children}</ConsolePrancha> : null}
           {lista.length ? (
             <div className="sz-discovery-secao">
               <p className="sz-discovery-rotulo">
