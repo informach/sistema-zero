@@ -204,7 +204,8 @@ describe('a voz do Zappy só lista as falas que o bloco pode tocar', () => {
         goals: ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       },
     })
-    expect(slots).toHaveLength(9)
+    // 9 falas da beirada + a ideia e a ponte do balão final (08/11/2026).
+    expect(slots).toHaveLength(11)
     expect(
       slots.every((slot) => slot.startsWith('discovery:border-') && slot.endsWith('-nave')),
     ).toBe(true)

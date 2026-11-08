@@ -90,6 +90,7 @@ import {
   lighthouseKeyNotCase,
   lighthouseWalkGone,
   lighthouseWalkMaxX,
+  lighthouseWalkOrigin,
   lighthouseWalkOutSeenX,
   newBridgeMatch,
   newSequenceMatch,
@@ -135,6 +136,11 @@ import {
  */
 export function openScene(start: SceneStart): SceneState {
   const base = initialScene(start)
+  // ⭐ No Farol o personagem parte de onde parte no jogo (08/11/2026). É o cenário que decide, nunca o caso.
+  if (start.scene === 'lighthouse-walk') {
+    const origem = lighthouseWalkOrigin(start)
+    base.walk = { ...base.walk, x: origem, trail: [origem] }
+  }
   if (start.setup?.freeExploration && start.scene === 'touch-response') base.match.gardenRound = 2
   // ⭐ Exploração livre do Construtor (02/11/2026): no caso do evento, só a ficha do evento é escolha
   // da criança; as outras abrem no lugar em que o jogo as usa (`prepararOnceLivre`).
@@ -879,7 +885,8 @@ export function stepScene(
       break
     case 'walk-frames':
       s.clock.carry = 0
-      for (let i = 0; i < action.count; i++) quadroDoAndar(s, start.setup?.freeExploration === true)
+      for (let i = 0; i < action.count; i++)
+        quadroDoAndar(s, start.setup?.freeExploration === true, lighthouseWalkOrigin(start))
       break
     case 'walk-order':
       s.walk.order = action.order
@@ -916,8 +923,8 @@ export function stepScene(
         s.walk = {
           ...s.walk,
           frame: 0,
-          x: LIGHTHOUSE_WALK.start,
-          trail: [LIGHTHOUSE_WALK.start],
+          x: lighthouseWalkOrigin(start),
+          trail: [lighthouseWalkOrigin(start)],
           reach: undefined,
           run: 0,
         }
@@ -936,13 +943,13 @@ export function stepScene(
       s.walk = {
         ...s.walk,
         frame: 0,
-        x: LIGHTHOUSE_WALK.start,
-        trail: [LIGHTHOUSE_WALK.start],
+        x: lighthouseWalkOrigin(start),
+        trail: [lighthouseWalkOrigin(start)],
         reach: undefined,
         idle: 0,
         run: 0,
       }
-      s.caption = `De volta ao começo: quadro 0, x ${LIGHTHOUSE_WALK.start}.`
+      s.caption = `De volta ao começo: quadro 0, x ${lighthouseWalkOrigin(start)}.`
       break
     case 'key-state':
       s.lighthouse.hasKey = action.hasKey
@@ -2654,7 +2661,7 @@ export function stepScene(
  * - `came-back-inside`: com o limite, o quadro anterior estava FORA da tela (a régua do
  *   `left-the-screen`) e este acabou na borda (o limite foi ligado com o personagem fora).
  */
-function quadroDoAndar(s: SceneState, livre = false): void {
+function quadroDoAndar(s: SceneState, livre = false, origem: number = LIGHTHOUSE_WALK.start): void {
   const walk = s.walk
   const antes = walk.x
   const limite = lighthouseWalkMaxX()
@@ -2672,13 +2679,7 @@ function quadroDoAndar(s: SceneState, livre = false): void {
   // ⚠️ Na velocidade de verdade (a câmera lenta, 01/11/2026) um quadro dura 33 ms: o passinho e a
   // parada são metas de quem os VIU devagar. Sem ritmo (Nave, limite) segue igual.
   const devagar = walk.pace !== 'real'
-  if (
-    devagar &&
-    !walk.arrow &&
-    walk.movement !== false &&
-    antes > LIGHTHOUSE_WALK.start &&
-    walk.x === antes
-  )
+  if (devagar && !walk.arrow && walk.movement !== false && antes > origem && walk.x === antes)
     observe(s, 'stopped-after-release', 'Soltar a tecla interrompeu os passos')
   if (!walk.arrow && walk.movement !== false && walk.x === antes)
     observe(s, 'still-without-arrow', 'Sem a seta, o sprite ficou parado')
@@ -2824,7 +2825,7 @@ function quadrosDoTempo(relogio: SceneClock, fps: number, segundos: number): num
 function umQuadro(s: SceneState, start: SceneStart, fps: number): void {
   const scene = start.scene
   if (scene === 'lighthouse-walk') {
-    quadroDoAndar(s, start.setup?.freeExploration === true)
+    quadroDoAndar(s, start.setup?.freeExploration === true, lighthouseWalkOrigin(start))
     return
   }
   if (scene === 'fixed-vs-read') {

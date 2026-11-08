@@ -410,7 +410,9 @@ export function sceneHintsFor(activity: SceneActivity): readonly string[] {
 }
 
 export {
+  type DiscoverySpeechId,
   discoveryGuidance,
+  discoverySpeech,
   discoverySpeechSteps,
   lighthouseWalkStrideCase,
 } from './discovery-guidance'

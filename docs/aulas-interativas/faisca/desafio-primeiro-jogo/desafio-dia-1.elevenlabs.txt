@@ -34,9 +34,9 @@
 
 [engaging, energetic, conversational voice] Em cada quadro, o jogo olha a seta. Se ela está apertada, o personagem dá um passinho para o lado da seta. E quando ela está solta? O que você acha? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, quando você clica em Câmera lenta, os quadros passam devagar, e cada quadro novo aparece nesta tira, um do lado do outro.
+[interested, animated voice] Olha aqui: nesta experiência, quando você escolhe Devagar, os quadros passam devagar, e cada quadro novo aparece neste filme, um do lado do outro.
 
-[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta apertada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
+[upbeat, encouraging voice] Agora é a sua vez de investigar: compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 
 [long pause]
 
@@ -98,7 +98,7 @@
 
 [engaging, energetic, conversational voice] O que você acha que acontece? Isso você vai testar na experiência.
 
-[interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
+[interested, animated voice] Olha aqui: nesta experiência, esta cerca liga e desliga o limite da tela, e esta faixa mostra o que ficou fora da janela.
 
 [upbeat, encouraging voice] Agora é a sua vez de investigar: compare o personagem na beirada com o limite desligado e com o limite ligado, inclusive com ele já fora da tela. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.
 

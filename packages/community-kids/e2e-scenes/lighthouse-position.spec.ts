@@ -1,81 +1,87 @@
 import { expect, type Page, test } from '@playwright/test'
 
+// A posição da chave na moldura nova (08/11/2026): os dois números com − e +, o palpite do y antes
+// do primeiro "y +", o teclado (setas, WASD, + e −) e o aviso na borda.
 const open = async (page: Page) => {
   await page.goto('/?course=farol&block=experiencia-posicao&width=680')
-  await expect(page.getByRole('textbox', { name: 'Digitar Horizontal x' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'x menos 60' })).toBeVisible()
 }
 
-test('teclado muda um eixo por vez, guarda as descobertas e Recomeçar restaura a posição', async ({
+test('os botões mudam um número por vez, o y pede o palpite e Recomeçar volta ao começo', async ({
   page,
 }, info) => {
   await open(page)
   const key = page.locator('[data-chave]')
-  const x = page.getByRole('textbox', { name: 'Digitar Horizontal x' })
-  const y = page.getByRole('textbox', { name: 'Digitar Vertical y' })
   await expect(key).toHaveAttribute('x', '211')
   await expect(key).toHaveAttribute('y', '53')
-  await x.fill('160')
-  await x.press('Enter')
-  await expect(key).toHaveAttribute('x', '160')
+  await page.getByRole('button', { name: 'x menos 60' }).click()
+  await expect(key).toHaveAttribute('x', '151')
   await expect(key).toHaveAttribute('y', '53')
-  await expect(y).toHaveValue('53')
-  await y.fill('250')
-  await y.press('Enter')
-  await expect(key).toHaveAttribute('x', '160')
-  await expect(key).toHaveAttribute('y', '250')
-  await expect(key).toHaveAttribute('width', '32')
-  await expect(key).toHaveAttribute('height', '32')
-  await expect(page.locator('[data-posicao-anterior]')).toHaveCount(1)
+  // O primeiro "y +" pergunta antes: sobe ou desce?
+  await page.getByRole('button', { name: 'y mais 40' }).click()
+  const palpite = page.getByRole('group', { name: 'Seu palpite' })
+  await expect(palpite).toBeVisible()
+  await expect(key).toHaveAttribute('y', '53')
+  await palpite.getByRole('button', { name: /sobe/ }).click()
+  await expect(key).toHaveAttribute('y', '93')
+  await expect(key).toHaveAttribute('x', '151')
+  await expect(page.getByText('Você achou que subia, mas desceu!').last()).toBeVisible()
   await page.screenshot({ path: info.outputPath('posicao-chave-desktop.png'), fullPage: true })
-  const restart = page.getByRole('button', { name: 'Recomeçar experiência', exact: true })
-  await expect(restart).toHaveCount(1)
-  await restart.click()
-  await expect(x).toHaveValue('211')
-  await expect(y).toHaveValue('53')
+  await page.getByRole('button', { name: 'Recomeçar experiência', exact: true }).click()
+  await page
+    .getByRole('group', { name: 'Apagar as descobertas?' })
+    .getByRole('button', { name: 'Sim' })
+    .click()
   await expect(key).toHaveAttribute('x', '211')
   await expect(key).toHaveAttribute('y', '53')
-  await expect(page.locator('[data-posicao-anterior]')).toHaveCount(0)
-  // A seta do deslizante também chega ao motor, com o gesto terminado no keyup.
-  await page.getByRole('slider', { name: 'Horizontal x' }).focus()
+})
+
+test('o teclado: setas e WASD movem, + e − mudam o número em destaque, e a borda avisa', async ({
+  page,
+}) => {
+  await open(page)
+  const key = page.locator('[data-chave]')
+  await page.locator('.sz-discovery-moldura').scrollIntoViewIfNeeded()
   await page.keyboard.press('ArrowRight')
-  await expect(key).toHaveAttribute('x', '212')
-  await expect(y).toHaveValue('53')
+  await expect(key).toHaveAttribute('x', '271')
+  await page.keyboard.press('KeyA')
+  await expect(key).toHaveAttribute('x', '211')
+  await page.keyboard.press('+')
+  await expect(key).toHaveAttribute('x', '271')
+  // O y começa em 53: subir duas vezes chega ao 0, e a terceira avisa a borda.
+  await page.keyboard.press('KeyW')
+  await page.keyboard.press('KeyW')
+  await expect(key).toHaveAttribute('y', '0')
+  await page.keyboard.press('KeyW')
+  await expect(page.getByRole('status').filter({ hasText: 'na borda da tela' })).toBeVisible()
+  await expect(key).toHaveAttribute('y', '0')
 })
 
 for (const width of [320, 390]) {
-  test(`a ${width}px os campos cabem e os botões movem a chave sem alterar o outro eixo`, async ({
+  test(`a ${width}px os números cabem e os botões movem a chave sem alterar o outro eixo`, async ({
     page,
   }, info) => {
     await page.setViewportSize({ width, height: 844 })
     await open(page)
-    await page.getByRole('button', { name: 'Diminuir Horizontal x em 60' }).click()
+    await page.getByRole('button', { name: 'x menos 60' }).click()
     await expect(page.locator('[data-chave]')).toHaveAttribute('x', '151')
     await expect(page.locator('[data-chave]')).toHaveAttribute('y', '53')
-    await page.getByRole('button', { name: 'Aumentar Vertical y em 40' }).click()
+    await page.getByRole('button', { name: 'y menos 40' }).click()
     await expect(page.locator('[data-chave]')).toHaveAttribute('x', '151')
-    await expect(page.locator('[data-chave]')).toHaveAttribute('y', '93')
+    await expect(page.locator('[data-chave]')).toHaveAttribute('y', '13')
     const measurement = await page.evaluate(() => {
       const container = document.querySelector('.sz-scene-console')?.getBoundingClientRect()
       if (!container) throw new Error('Console ausente')
-      const outside = [
-        ...document.querySelectorAll('.sz-scene-prancha button, .sz-scene-prancha input'),
-      ]
+      const outside = [...document.querySelectorAll('.sz-discovery-moldura button')]
+        .filter((element) => element.checkVisibility())
         .filter((element) => {
           const box = element.getBoundingClientRect()
           return box.left < container.left - 0.5 || box.right > container.right + 0.5
         })
         .map((element) => element.getAttribute('aria-label') ?? element.textContent)
-      const clippedLabels = [...document.querySelectorAll('.sz-scene-prancha label')]
-        .filter((element) => element.scrollWidth > element.clientWidth + 1)
-        .map((element) => element.textContent)
-      return {
-        outside,
-        clippedLabels,
-        page: document.documentElement.scrollWidth,
-        window: innerWidth,
-      }
+      return { outside, page: document.documentElement.scrollWidth, window: innerWidth }
     })
-    expect(measurement).toEqual({ outside: [], clippedLabels: [], page: width, window: width })
+    expect(measurement).toEqual({ outside: [], page: width, window: width })
     await page.screenshot({ path: info.outputPath(`posicao-chave-${width}.png`), fullPage: true })
   })
 }

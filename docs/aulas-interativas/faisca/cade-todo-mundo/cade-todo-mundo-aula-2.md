@@ -23,7 +23,7 @@ Reaproveitar o futebol. A professora explica a variável, a soma e a diferença 
 
 A experiência conserva o jardim, acrescenta o cartão de achados e a última operação antes → somar 1 → agora. Isso representa uma atualização, não vários valores guardados. O placar lê o único valor atual. O motor registra primeiro achado, outro achado, vazio, toque repetido e nova busca.
 
-Zappy descreve o último teste e sugere comparações ainda não observadas. É possível tocar no vazio, repetir um achado e recomeçar a busca a qualquer momento, inclusive antes de encontrar alguém. O botão sugerido usa a cor principal; os demais permanecem utilizáveis. Recomeçar a busca zera a contagem e conserva a regra e as descobertas. Desfazer restaura a cena e as descobertas daquele instante. Recomeçar experiência limpa o ensaio. Após concluir, mostrar o resumo e manter a exploração disponível.
+Zappy descreve o último teste e sugere comparações ainda não observadas. É possível tocar no vazio, repetir um achado e recomeçar a busca a qualquer momento, inclusive antes de encontrar alguém. O botão sugerido usa a cor principal; os demais permanecem utilizáveis. **Nova busca** (o nome desde 08/11/2026) zera a contagem e conserva a regra e as descobertas; a cada toque, embaixo do placar, aparece "+1" ou "continua N". Desfazer restaura a cena e as descobertas daquele instante. Recomeçar experiência limpa o ensaio. Após concluir, mostrar o resumo e manter a exploração disponível.
 
 ## Construção e objetivos
 

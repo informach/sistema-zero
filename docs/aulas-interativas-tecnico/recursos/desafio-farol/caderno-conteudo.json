@@ -41,17 +41,17 @@
       {
         "kind": "step",
         "title": "Compare com a seta apertada",
-        "text": "Clique em <b>Câmera lenta</b> e segure a seta. Repare no personagem, nas pegadas e na tira de quadros."
+        "text": "Escolha <b>Devagar</b> e segure a tecla de seta. Repare no personagem, nas pegadas e nos quadros do jogo."
       },
       {
         "kind": "step",
         "title": "Compare com a seta solta",
-        "text": "Solte a seta e deixe os quadros passarem. O que muda na tira?"
+        "text": "Solte a seta e deixe os quadros passarem. O que muda nos quadros do jogo?"
       },
       {
         "kind": "step",
-        "title": "Compare com a velocidade de verdade",
-        "text": "Clique em <b>Velocidade de verdade</b> e segure a seta. Compare com o que você viu em câmera lenta."
+        "title": "Compare com o Rápido",
+        "text": "Escolha <b>Rápido</b> e segure a tecla de seta. Compare com o que você viu no Devagar."
       },
       {
         "kind": "box",
@@ -125,17 +125,17 @@
       {
         "kind": "step",
         "title": "Sem o limite",
-        "text": "Com o limite desligado, clique em <b>Velocidade de verdade</b> e segure a seta até a beirada. Continue segurando e repare na faixa fora da tela."
+        "text": "Com a cerca desligada, escolha <b>Rápido</b> e segure a tecla de seta até a beirada. Continue segurando e repare na faixa fora da tela."
       },
       {
         "kind": "step",
         "title": "Ligue o limite com ele fora",
-        "text": "E se você ligar o limite com ele já fora da tela? Clique em <b>Ligar o limite da tela</b> e observe o próximo quadro."
+        "text": "E se você ligar o limite com ele já fora da tela? Ligue a <b>cerca</b> e observe o próximo quadro."
       },
       {
         "kind": "step",
         "title": "Na beirada com o limite",
-        "text": "Com o limite ligado, leve o personagem até a beirada. Lá, clique em <b>Câmera lenta</b>, segure a seta e observe a tira e a frase de cada quadro."
+        "text": "Com a cerca ligada, leve o personagem até a beirada. Lá, escolha <b>Devagar</b>, segure a tecla de seta e observe os quadros do jogo."
       },
       {
         "kind": "box",
@@ -184,7 +184,7 @@
       {
         "kind": "box",
         "title": "O que investigar",
-        "text": "Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Compare temChave com a <b>memória da chave</b> ligada e desligada.",
+        "text": "Investigue quando o jogo guarda que o personagem pegou a chave, e quando ele esquece. Ande até a chave e olhe o <b>caderninho do jogo</b>, com o lápis ligado e desligado.",
         "tone": "experience"
       },
       {
@@ -302,7 +302,7 @@
       {
         "kind": "box",
         "title": "O que investigar",
-        "text": "Investigue o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. Compare temChave e a resposta que a porta escolhe. Na experiência, você pode dar ou tirar a chave só para preparar o teste; no seu jogo, o personagem precisa pegar a chave.",
+        "text": "Investigue o que a porta faz quando o personagem chega sem a chave e quando chega com a chave. Compare o caderninho do jogo e a resposta da porta. Na experiência, o personagem anda até a chave para pegá-la e até a porta para testar, como no seu jogo.",
         "tone": "experience"
       },
       {
