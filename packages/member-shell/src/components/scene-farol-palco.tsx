@@ -35,15 +35,12 @@ export function PalcoDoAndar({
   const largura = L.palco.w + (fora ? FORA_DA_TELA : 0)
   const y = L.personagem.y
   const marcas: number[] = []
-  // Só as pegadas RECENTES, cada vez mais apagadas: o rastro todo virava uma corda no chão.
-  if (w.speed > 0)
-    for (
-      let x = LIGHTHOUSE_WALK.startFarol + w.speed;
-      x <= w.x && marcas.length < 400;
-      x += w.speed
-    )
-      marcas.push(x)
-  marcas.splice(0, Math.max(0, marcas.length - 12))
+  // Só as 12 pegadas RECENTES, cada vez mais apagadas: o rastro todo virava uma corda no chão.
+  if (w.speed > 0) {
+    const passos = Math.floor((w.x - LIGHTHOUSE_WALK.startFarol) / w.speed)
+    for (let i = Math.max(1, passos - 11); i <= passos; i++)
+      marcas.push(LIGHTHOUSE_WALK.startFarol + i * w.speed)
+  }
   const alcance = w.frame > 0 ? (w.reach?.at(-1) ?? w.x) : w.x
   const conferiu = fora && w.keepInside && alcance !== w.x
   return (

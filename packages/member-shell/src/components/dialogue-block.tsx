@@ -5,6 +5,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Square, Volume2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import { EVENTO_DO_SOM, sonsLigados } from '../lib/scene-sons'
 import type { DialogueBlock } from '../lib/types'
 import { useSceneVoice } from './use-scene-voice'
 import { useZappyFala, ZappyFalaProvider } from './zappy-fala-context'
@@ -42,6 +43,9 @@ export interface DialogueSpeech {
  * outro personagem falando no lugar dele. Na instrução da cena o botão é muleta de quem não lê e
  * qualquer voz serve; aqui ele é a voz do personagem.
  */
+/** Quanto a fala nova espera, parada, antes de a voz automática tocar. */
+const FALA_ASSENTA_MS = 700
+
 export function DialogueBlockView({
   content,
   mascot,
@@ -141,11 +145,28 @@ export function DialogueBlockView({
   const ultimaFalada = useRef(chaveDaFala)
   useEffect(() => {
     if (ultimaFalada.current === chaveDaFala) return
-    ultimaFalada.current = chaveDaFala
-    if (!falarSozinho || !temFala) return
-    voz.parar()
-    tocarAgora.current()
+    if (!falarSozinho || !temFala) {
+      ultimaFalada.current = chaveDaFala
+      return
+    }
+    // ⚠️ A fala precisa ASSENTAR antes de tocar: no andar do Farol ela troca a cada aperto e soltura
+    // da seta, e o Zappy era cortado e recomeçava várias vezes por segundo (full review 08/11/2026).
+    // Uma fala que volta a ser a última falada antes de assentar não toca de novo.
+    const t = setTimeout(() => {
+      ultimaFalada.current = chaveDaFala
+      voz.parar()
+      tocarAgora.current()
+    }, FALA_ASSENTA_MS)
+    return () => clearTimeout(t)
   }, [chaveDaFala, falarSozinho, temFala, voz.parar])
+  // Desligar o som da experiência cala também a fala que já está tocando (o MP3 seguia até o fim).
+  useEffect(() => {
+    const aoMudar = () => {
+      if (!sonsLigados()) parar()
+    }
+    window.addEventListener(EVENTO_DO_SOM, aoMudar)
+    return () => window.removeEventListener(EVENTO_DO_SOM, aoMudar)
+  }, [parar])
   const mascote = falaDaCena ? (
     mascot
   ) : (

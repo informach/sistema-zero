@@ -128,3 +128,25 @@ test('a fala do Zappy e o relógio da cena convivem; o vídeo ainda pausa os doi
     for (const t of tirar) t()
   }
 })
+
+test('a fala do Zappy não tira o foco do relógio da cena (o bipe da cena continua)', async () => {
+  const fala = Symbol('fala'),
+    relogio = Symbol('relogio'),
+    video = Symbol('video')
+  const tirar = [
+    registerLessonMedia(fala, () => {}, { tipo: 'fala' }),
+    registerLessonMedia(relogio, () => {}, { tipo: 'relogio' }),
+    registerLessonMedia(video, () => {}),
+  ]
+  try {
+    expect(await requestLessonMediaFocus(relogio)).toBe(true)
+    expect(await requestLessonMediaFocus(fala)).toBe(true)
+    expect(hasLessonMediaFocus(relogio)).toBe(true)
+    expect(hasLessonMediaFocus(fala)).toBe(true)
+    expect(await requestLessonMediaFocus(video)).toBe(true)
+    expect(hasLessonMediaFocus(relogio)).toBe(false)
+    expect(hasLessonMediaFocus(fala)).toBe(false)
+  } finally {
+    for (const t of tirar) t()
+  }
+})

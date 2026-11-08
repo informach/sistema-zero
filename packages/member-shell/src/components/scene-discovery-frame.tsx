@@ -125,7 +125,7 @@ export function useFotinhos({
   const { state } = ctx
   const atual = useRef(state)
   atual.current = state
-  const pendente = useRef<{ acao: SceneAction; antes: SceneState } | null>(null)
+  const pendente = useRef<{ acao: SceneAction; antes: SceneState; em: number } | null>(null)
   const [fotos, setFotos] = useState<FotoGuardada[]>([])
   const contador = useRef(0)
   const guardar = useCallback((foto: Foto, descoberta = false) => {
@@ -135,7 +135,7 @@ export function useFotinhos({
   }, [])
   const dispatch = useCallback(
     (acao: SceneAction) => {
-      pendente.current = { acao, antes: atual.current }
+      pendente.current = { acao, antes: atual.current, em: Date.now() }
       ctx.dispatch(acao)
     },
     [ctx],
@@ -144,6 +144,9 @@ export function useFotinhos({
     const p = pendente.current
     if (!p || p.antes === state) return
     pendente.current = null
+    // ⚠️ Um gesto que o motor recusou (o estado não mudou) não pode levar a fotinho da próxima
+    // mudança qualquer (um tique do relógio): passado um instante, ele não vale mais.
+    if (Date.now() - p.em > GESTO_VALE_MS) return
     const foto = fotoDe?.(p.antes, state, p.acao)
     if (foto) guardar(foto)
   }, [state, fotoDe, guardar])
@@ -170,6 +173,9 @@ export function useFotinhos({
   return { ...ctx, dispatch, fotos, limparFotos: () => setFotos([]) }
 }
 
+/** Quanto tempo o gesto espera a mudança de estado que ele causou (a fotinho dele). */
+const GESTO_VALE_MS = 400
+
 /** A descoberta NOVA (para o selo e o som): o id dela por 2,2 s; a primeira leitura não conta. */
 function useDescobertaNova(ids: readonly string[], discoveries: readonly string[]) {
   const chave = discoveries.filter((d) => ids.includes(d)).join('|')
@@ -181,7 +187,12 @@ function useDescobertaNova(ids: readonly string[], discoveries: readonly string[
     vistas.current = agora
     if (!antes) return
     const id = [...agora].find((d) => !antes.has(d))
-    if (!id) return
+    // Sem descoberta nova (o Recomeçar apagou as descobertas): o selo sai. A limpeza deste efeito
+    // já cancelou o relógio que o tiraria, e ele ficava no palco até a próxima descoberta.
+    if (!id) {
+      setNova(null)
+      return
+    }
     setNova(id)
     SONS.descoberta()
     const t = setTimeout(() => setNova(null), 2200)
@@ -601,7 +612,9 @@ export function alvoDeTexto(alvo: EventTarget | null) {
   return (
     typeof HTMLElement !== 'undefined' &&
     alvo instanceof HTMLElement &&
-    (alvo.isContentEditable || alvo.closest('input, textarea, select, [role="slider"]') !== null)
+    // O vídeo e o áudio da aula usam as setas para avançar: a tecla fica com eles (como antes).
+    (alvo.isContentEditable ||
+      alvo.closest('input, textarea, select, video, audio, [role="slider"]') !== null)
   )
 }
 /** A tecla casa pela seta (`key`) ou pela posição da letra (`code`, igual no ABNT e no inglês). */

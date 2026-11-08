@@ -48,13 +48,16 @@ test('o teclado: setas e WASD movem, + e − mudam o número em destaque, e a bo
   await expect(key).toHaveAttribute('x', '211')
   await page.keyboard.press('+')
   await expect(key).toHaveAttribute('x', '271')
-  // O y começa em 53: subir duas vezes chega ao 0, e a terceira avisa a borda.
+  // O y começa em 53: subir uma vez chega a 13, e a segunda (que passaria do 0) avisa a borda sem
+  // mexer: a chave fica na grade dos passos, e o alvo do desafio continua alcançável.
   await page.keyboard.press('KeyW')
+  await expect(key).toHaveAttribute('y', '13')
   await page.keyboard.press('KeyW')
-  await expect(key).toHaveAttribute('y', '0')
-  await page.keyboard.press('KeyW')
-  await expect(page.getByRole('status').filter({ hasText: 'na borda da tela' })).toBeVisible()
-  await expect(key).toHaveAttribute('y', '0')
+  await expect(page.getByRole('status').filter({ hasText: 'borda da tela' })).toBeVisible()
+  await expect(key).toHaveAttribute('y', '13')
+  // E o alvo (271, 253) se alcança só com os passos: x + 1 (271) e y + 6 (253).
+  await page.getByRole('button', { name: 'Começo' }).click()
+  await expect(key).toHaveAttribute('y', '53')
 })
 
 for (const width of [320, 390]) {

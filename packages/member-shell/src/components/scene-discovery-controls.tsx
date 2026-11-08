@@ -728,13 +728,15 @@ export function Position() {
       return
     }
     if (!comPalpite) setReagindo(false)
-    const novo = Math.max(0, Math.min(MAXIMO[e], k[e] + d * PASSO[e]))
-    if (novo === k[e]) {
-      // Na borda o número não passa do 0 nem do fim da tela: diz, em vez de não fazer nada.
+    const novo = k[e] + d * PASSO[e]
+    // ⚠️ O passo que passaria da borda NÃO é cortado no 0 nem no fim da tela: cortado, a chave
+    // saía da grade dos passos (60 e 40) e o alvo do desafio ficava impossível de alcançar.
+    // Na borda, o aviso diz por que o número não muda, em vez de não fazer nada.
+    if (novo < 0 || novo > MAXIMO[e]) {
       setBorda(
         d < 0
-          ? `O ${e} já está em 0, na borda da tela. Use o +.`
-          : `O ${e} já está no fim da tela. Use o −.`,
+          ? `O ${e} não fica menor que 0: é a borda da tela. Use o +.`
+          : `O ${e} já está perto do fim da tela. Use o −.`,
       )
       SONS.borda()
       return
