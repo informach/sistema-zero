@@ -48,16 +48,22 @@ export function ProWorkspaceLayout({
   const id = useId()
   const hasPreview = Boolean(preview)
   const sizes = useMemo(() => {
+    // As preferências guardam `[código, palco]` desde 11/2026; este grupo ainda tem os três
+    // painéis antigos e dá a coluna de arquivos os 22% de sempre.
+    const split =
+      preferences.sizes.length === 2
+        ? [22, (preferences.sizes[0] ?? 60) * 0.78, (preferences.sizes[1] ?? 40) * 0.78]
+        : preferences.sizes
     if (isNarrow)
       return narrowView === 'files'
         ? [100, 0, 0]
         : narrowView === 'game' && hasPreview
           ? [0, 0, 100]
           : [0, 100, 0]
-    if (tutorOpen) return preferences.layout === 'split' ? preferences.sizes : [0, 60, 40]
+    if (tutorOpen) return preferences.layout === 'split' ? split : [0, 60, 40]
     if (preferences.layout === 'game' && hasPreview) return [0, 0, 100]
     if (preferences.layout === 'code') return [0, 100, 0]
-    return hasPreview && showPreview ? preferences.sizes : [24, 76, 0]
+    return hasPreview && showPreview ? split : [24, 76, 0]
   }, [
     isNarrow,
     narrowView,

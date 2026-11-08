@@ -3,6 +3,7 @@ import type { ProjectTree } from '../../../core/proProject'
 import {
   closeWorkspaceFile,
   emptyWorkspace,
+  migrateWorkspaceSizes,
   openWorkspaceFile,
   parseWorkspace,
   pinWorkspaceFile,
@@ -31,10 +32,36 @@ describe('workspace Pro', () => {
   })
   it('rejects malformed preferences and removes stale paths', () => {
     const tree: ProjectTree = { 'a.ts': { kind: 'file', content: '' } }
-    expect(parseWorkspace({ ...emptyWorkspace(), sizes: [NaN, 40, 40] }, tree)).toBeNull()
+    expect(parseWorkspace({ ...emptyWorkspace(), sizes: [NaN, 40] }, tree)).toBeNull()
+    expect(parseWorkspace({ ...emptyWorkspace(), sizes: [60] }, tree)).toBeNull()
+    expect(parseWorkspace({ ...emptyWorkspace(), sizes: [5, 95] }, tree)).toBeNull()
     expect(
       parseWorkspace(openWorkspaceFile(emptyWorkspace(), 'deleted.ts'), tree)?.activeFile,
     ).toBe('')
+  })
+  it('migra os três tamanhos antigos para [código, palco] e completa o que faltar', () => {
+    const tree: ProjectTree = { 'a.ts': { kind: 'file', content: '' } }
+    // Preferências gravadas antes do redesenho de 11/2026: [arquivos, código, jogo], sem `panel`.
+    const { panel: _panel, ...legacy } = { ...emptyWorkspace(), sizes: [22, 43, 35] }
+    const parsed = parseWorkspace(legacy, tree)
+    expect(parsed?.sizes).toEqual([55.1, 44.9])
+    expect(parsed?.panel).toBe('files')
+    expect(parsed?.bottom).toBe('closed')
+    // A proporção extrema é presa ao que o grupo de painéis aceita (20 a 80).
+    expect(migrateWorkspaceSizes([10, 80, 10])).toEqual([80, 20])
+    expect(migrateWorkspaceSizes([10, 10, 80])).toEqual([20, 80])
+    expect(migrateWorkspaceSizes([60, 40])).toEqual([60, 40])
+    // O que já está no formato novo passa inteiro, inclusive a vista e a gaveta nova.
+    expect(
+      parseWorkspace(
+        { ...emptyWorkspace(), sizes: [30, 70], panel: 'guides', bottom: 'repl' },
+        tree,
+      ),
+    ).toMatchObject({ sizes: [30, 70], panel: 'guides', bottom: 'repl' })
+    expect(parseWorkspace({ ...emptyWorkspace(), panel: 'x', bottom: 'y' }, tree)).toMatchObject({
+      panel: 'files',
+      bottom: 'closed',
+    })
   })
   it('searches closed files literally, returns positions and bounds results', () => {
     const tree: ProjectTree = {

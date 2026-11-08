@@ -1,5 +1,11 @@
 import type { ProjectTree } from '../../../core/proProject'
 
+/** A vista do painel lateral do Pro (o trilho da esquerda escolhe; redesenho de 11/2026). */
+export type ProWorkspacePanel = 'files' | 'search' | 'materials' | 'guides'
+
+/** A gaveta de baixo do Pro: `repl` é o "Experimentar comandos" do Python (11/2026). */
+export type ProWorkspaceBottom = 'closed' | 'problems' | 'console' | 'terminal' | 'repl'
+
 /** Presentation only. Never serialized into the game document or its export. */
 export interface ProWorkspacePreferences {
   openFiles: string[]
@@ -7,9 +13,23 @@ export interface ProWorkspacePreferences {
   temporaryFile: string | null
   collapsed: string[]
   layout: 'split' | 'code' | 'game'
+  /**
+   * `[código, palco]`, em porcentagem (redesenho de 11/2026). Antes eram três números
+   * `[arquivos, código, jogo]`: o painel de arquivos saiu do grupo redimensionável (hoje é a
+   * coluna fixa ao lado do trilho), e `parseWorkspace` migra as preferências antigas.
+   */
   sizes: number[]
-  bottom: 'closed' | 'problems' | 'console' | 'terminal'
+  bottom: ProWorkspaceBottom
+  panel: ProWorkspacePanel
 }
+
+export const PRO_WORKSPACE_PANELS: readonly ProWorkspacePanel[] = [
+  'files',
+  'search',
+  'materials',
+  'guides',
+]
+const BOTTOMS: readonly ProWorkspaceBottom[] = ['closed', 'problems', 'console', 'terminal', 'repl']
 
 export function emptyWorkspace(): ProWorkspacePreferences {
   return {
@@ -18,8 +38,9 @@ export function emptyWorkspace(): ProWorkspacePreferences {
     temporaryFile: null,
     collapsed: [],
     layout: 'split',
-    sizes: [22, 43, 35],
+    sizes: [60, 40],
     bottom: 'closed',
+    panel: 'files',
   }
 }
 
@@ -127,9 +148,9 @@ export function parseWorkspace(value: unknown, tree: ProjectTree): ProWorkspaceP
     !['split', 'code', 'game'].includes(String(value.layout)) ||
     !('sizes' in value) ||
     !Array.isArray(value.sizes) ||
-    value.sizes.length !== 3 ||
+    (value.sizes.length !== 2 && value.sizes.length !== 3) ||
     !value.sizes.every(
-      (size) => typeof size === 'number' && Number.isFinite(size) && size >= 10 && size <= 80,
+      (size) => typeof size === 'number' && Number.isFinite(size) && size >= 10 && size <= 90,
     )
   )
     return null
@@ -143,14 +164,31 @@ export function parseWorkspace(value: unknown, tree: ProjectTree): ProWorkspaceP
         value.temporaryFile && openFiles.includes(value.temporaryFile) ? value.temporaryFile : null,
       collapsed: [...new Set(value.collapsed)],
       layout,
-      sizes: value.sizes,
+      sizes: migrateWorkspaceSizes(value.sizes as number[]),
       bottom:
-        'bottom' in value &&
-        (value.bottom === 'problems' || value.bottom === 'console' || value.bottom === 'terminal')
-          ? value.bottom
+        'bottom' in value && BOTTOMS.includes(value.bottom as ProWorkspaceBottom)
+          ? (value.bottom as ProWorkspaceBottom)
           : 'closed',
+      panel:
+        'panel' in value && PRO_WORKSPACE_PANELS.includes(value.panel as ProWorkspacePanel)
+          ? (value.panel as ProWorkspacePanel)
+          : 'files',
     },
     tree,
   )
   return state
+}
+
+/**
+ * Três tamanhos antigos `[arquivos, código, jogo]` viram `[código, palco]` com a MESMA proporção
+ * entre código e jogo (o painel de arquivos deixou de ser redimensionável), somando 100 e com cada
+ * um entre 20 e 80, que é o que o grupo de painéis aceita. Dois tamanhos passam como vieram.
+ */
+export function migrateWorkspaceSizes(sizes: readonly number[]): number[] {
+  if (sizes.length !== 3) return [...sizes]
+  const [, code = 60, game = 40] = sizes
+  const total = code + game
+  const codeShare = total > 0 ? (code / total) * 100 : 60
+  const clamped = Math.round(Math.min(80, Math.max(20, codeShare)) * 10) / 10
+  return [clamped, Math.round((100 - clamped) * 10) / 10]
 }

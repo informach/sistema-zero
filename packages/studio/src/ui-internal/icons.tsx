@@ -516,3 +516,260 @@ export function IconLaptop(p: IconProps): JSX.Element {
     </Base>
   )
 }
+
+/** Triângulo de tocar (Lucide "play", preenchido) — o Rodar do Pro. */
+export function IconPlay(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path
+        d="M7 4.5v15a1 1 0 0 0 1.5.86l12-7.5a1 1 0 0 0 0-1.72l-12-7.5A1 1 0 0 0 7 4.5z"
+        fill="currentColor"
+        stroke="none"
+      />
+    </Base>
+  )
+}
+
+/** Quadrado de parar (Lucide "square", preenchido) — o Parar do Pro. */
+export function IconStop(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="5" y="5" width="14" height="14" rx="2.5" fill="currentColor" stroke="none" />
+    </Base>
+  )
+}
+
+/** Livro aberto (Lucide "book") — os Guias do projeto Pro. */
+export function IconBook(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20" />
+    </Base>
+  )
+}
+
+/** Folha de arquivo (Lucide "file") — um arquivo do projeto sem tipo conhecido. */
+export function IconFile(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z" />
+      <path d="M14 2v4a2 2 0 0 0 2 2h4" />
+    </Base>
+  )
+}
+
+/** Paleta (Lucide "palette") — o arquivo de estilo (CSS). */
+export function IconPalette(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <circle cx="13.5" cy="6.5" r="0.5" fill="currentColor" />
+      <circle cx="17.5" cy="10.5" r="0.5" fill="currentColor" />
+      <circle cx="8.5" cy="7.5" r="0.5" fill="currentColor" />
+      <circle cx="6.5" cy="12.5" r="0.5" fill="currentColor" />
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.9 0 1.6-.7 1.6-1.7 0-.4-.2-.8-.4-1.1-.3-.3-.4-.7-.4-1.1a1.6 1.6 0 0 1 1.7-1.7h2c3 0 5.5-2.5 5.5-5.5C22 6 17.5 2 12 2z" />
+    </Base>
+  )
+}
+
+/** Janela de página (Lucide "app-window") — o arquivo HTML. */
+export function IconWindow(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M3 9h18" />
+    </Base>
+  )
+}
+
+/** Cadeado (Lucide "lock") — os arquivos de configuração do projeto. */
+export function IconLock(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="4" y="11" width="16" height="10" rx="2" />
+      <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+    </Base>
+  )
+}
+
+/** Varinha (Lucide "wand") — "Arrumar código". */
+export function IconWand(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72" />
+      <path d="m14 7 3 3" />
+    </Base>
+  )
+}
+
+/** Duas colunas (Lucide "columns-2") — "Lado a lado". */
+export function IconColumns(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="3" y="4" width="18" height="16" rx="2" />
+      <path d="M12 4v16" />
+    </Base>
+  )
+}
+
+/** Cantos abertos (Lucide "maximize") — tela cheia. */
+export function IconMaximize(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M8 3H5a2 2 0 0 0-2 2v3" />
+      <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
+      <path d="M3 16v3a2 2 0 0 0 2 2h3" />
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+    </Base>
+  )
+}
+
+/** Lista (Lucide "list") — o Mapa do arquivo. */
+export function IconList(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M3 6h.01M3 12h.01M3 18h.01M8 6h13M8 12h13M8 18h13" />
+    </Base>
+  )
+}
+
+/** Teclado (Lucide "keyboard") — Atalhos do teclado. */
+export function IconKeyboard(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="2" y="6" width="20" height="12" rx="2" />
+      <path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M7 14h10" />
+    </Base>
+  )
+}
+
+/** Lâmpada (Lucide "lightbulb") — a dica de um problema. */
+export function IconBulb(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+      <path d="M9 18h6" />
+      <path d="M10 22h4" />
+    </Base>
+  )
+}
+
+/** Alvo (Lucide "target") — "Onde isto é usado". */
+export function IconTarget(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <circle cx="12" cy="12" r="6" />
+      <circle cx="12" cy="12" r="2" />
+    </Base>
+  )
+}
+
+/** Seta para a direita (Lucide "arrow-right") — "Ir para a linha N". */
+export function IconArrowRight(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M5 12h14" />
+      <path d="m12 5 7 7-7 7" />
+    </Base>
+  )
+}
+
+/** Avião de papel (Lucide "send") — "Responder". */
+export function IconSend(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m22 2-7 20-4-9-9-4Z" />
+      <path d="M22 2 11 13" />
+    </Base>
+  )
+}
+
+/** Lixeira (Lucide "trash-2") — "Apagar…". */
+export function IconTrash(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M3 6h18" />
+      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" />
+      <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+    </Base>
+  )
+}
+
+/** Duas folhas (Lucide "copy") — "Copiar". */
+export function IconCopy(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <rect x="8" y="8" width="14" height="14" rx="2" />
+      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" />
+    </Base>
+  )
+}
+
+/** Seta para cima (Lucide "chevron-up"). */
+export function IconChevronUp(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m18 15-6-6-6 6" />
+    </Base>
+  )
+}
+
+/** Seta para a direita pequena (Lucide "chevron-right") — pasta fechada. */
+export function IconChevronRight(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m9 18 6-6-6-6" />
+    </Base>
+  )
+}
+
+/** Seta para a esquerda pequena (Lucide "chevron-left") — "Todos os guias". */
+export function IconChevronLeft(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m15 18-6-6 6-6" />
+    </Base>
+  )
+}
+
+/** Fechar (Lucide "x"). */
+export function IconX(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M18 6 6 18" />
+      <path d="m6 6 12 12" />
+    </Base>
+  )
+}
+
+/** Nota musical (Lucide "music") — os sons do projeto. */
+export function IconMusic(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="M9 18V5l12-2v13" />
+      <circle cx="6" cy="18" r="3" />
+      <circle cx="18" cy="16" r="3" />
+    </Base>
+  )
+}
+
+/** Informação (Lucide "info"). */
+export function IconInfo(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <circle cx="12" cy="12" r="10" />
+      <path d="M12 16v-4" />
+      <path d="M12 8h.01" />
+    </Base>
+  )
+}
+
+/** Pincel (Lucide "brush") — "Desenhar no Pinta". */
+export function IconBrush(p: IconProps): JSX.Element {
+  return (
+    <Base {...p}>
+      <path d="m9.06 11.9 8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08" />
+      <path d="M7.07 14.94c-1.66 0-3 1.35-3 3.02 0 1.33-2.5 1.52-2 2.02 1.08 1.1 2.49 2.02 4 2.02 2.2 0 4-1.8 4-4.04a3.01 3.01 0 0 0-3-3.02z" />
+    </Base>
+  )
+}
