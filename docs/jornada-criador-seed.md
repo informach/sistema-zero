@@ -7,6 +7,10 @@ O seed cria o planejamento no Admin e vincula as políticas aos UUIDs dos cursos
 aulas nem transforma exemplos de jogos em cursos gravados. A publicação do currículo e a
 publicação de cada curso são operações diferentes.
 
+No plano, `title` é o título editorial proposto e `currentTitle` é o nome efetivamente cadastrado (ou `null` para um curso novo). `action: reuse` preserva o cadastro inteiro: reaplicar o seed não renomeia nem reclassifica cursos existentes. Para uma correção editorial, conferir os dois nomes e a versão do cadastro, editar o curso pelo Admin ou pelo repositório canônico e verificar a leitura posterior. Rótulos da jornada exigem a publicação versionada correspondente; não substituir políticas inteiras pelo seed para renomear um curso. A limpeza dos nomes de 07/11/2026 foi aplicada separadamente nos bancos de staging e produção, para Kids e Adulto.
+
+Extras exclusivamente tridimensionais declaram `track: "3d"` no manifesto. Os demais mantêm a classificação anterior; não inferir a tag pelo nome, que não inclui a dimensão. A correção das tags dos extras existentes também usa o cadastro canônico, sem recriar cursos ou alterar requisitos.
+
 Cada público recebe sete pares 2D/3D, sete missões, 34 Poderes, 20 extras e seis Maestrias
 com três níveis, um núcleo e três oficinas por nível: 147 registros por público, 294 no total.
 No catálogo existente, os dez cursos conhecidos são reutilizados pelo slug exato e público.

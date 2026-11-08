@@ -279,6 +279,7 @@
         },
         {
           "title": "Minha primeira peça",
+          "track": "3d",
           "purpose": "Conhecer Molda, salvar um modelo e importá-lo em uma cena preparada.",
           "origin": "Molda + Meu Herói do Molda"
         }
@@ -413,11 +414,13 @@
       "extras": [
         {
           "title": "Reino Cogumelo",
+          "track": "3d",
           "purpose": "Outro gênero com pulo: aprender plataforma com percurso e chegada.",
           "origin": "Exemplo Jogo 3D"
         },
         {
           "title": "Meu Herói do Molda",
+          "track": "3d",
           "purpose": "Preparar modelo e animação para um corredor.",
           "origin": "Meu Herói do Molda · Jogo 3D"
         },
@@ -563,6 +566,7 @@
         },
         {
           "title": "Ilha dos Criadores",
+          "track": "3d",
           "purpose": "Continuar criando em blocos com Mundo 3D, veículos e clima.",
           "origin": "Mundo 3D · exemplo existente"
         },
@@ -711,6 +715,7 @@
         },
         {
           "title": "Labirinto dos Robôs em Python",
+          "track": "3d",
           "purpose": "Conhecer primeira pessoa; a câmera e os controles novos são ensinados no próprio extra.",
           "origin": "Raylib 3D"
         },
@@ -859,6 +864,7 @@
         },
         {
           "title": "Passeio",
+          "track": "3d",
           "purpose": "Explorar direção e câmera em terceira pessoa.",
           "origin": "Passeio 3D (na mão)"
         },
@@ -1001,6 +1007,7 @@
       "extras": [
         {
           "title": "Mundo de Blocos livre",
+          "track": "3d",
           "purpose": "Explorar construção voxel, primeira pessoa e terreno.",
           "origin": "Mundo de Blocos · expansão do gênero"
         },

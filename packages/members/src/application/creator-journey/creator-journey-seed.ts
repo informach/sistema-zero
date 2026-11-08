@@ -51,6 +51,7 @@ export interface CreatorEditorialSpec {
     }[]
     extras: {
       title: string
+      track?: '2d' | '3d'
       purpose: string
       origin: string
       authoredSource?: { courseSlug: string; directory: string; lessons: string[]; note: string }
@@ -78,6 +79,8 @@ export interface CreatorSeedCourse {
   key: string
   slug: string
   title: string
+  /** Editorial title above; the seed preserves this actual title for reused courses. */
+  currentTitle: string | null
   description: string
   audience: CourseAudience
   level: CourseLevel
@@ -168,6 +171,7 @@ export function buildCreatorJourneySeed(
           .replace(/\b3D\b/gi, '')
           .replace(/\s{2,}/g, ' ')
           .trim(),
+        currentTitle: existing?.title ?? null,
         audience,
         slug,
         id,
@@ -239,7 +243,7 @@ export function buildCreatorJourneySeed(
           key: `${stage.id}-extra-${extraIndex + 1}`,
           title: extra.title,
           level,
-          track: '2d',
+          track: extra.track ?? '2d',
           description: `${extra.purpose}\n\n${extra.origin}\n\nExtra opcional, sem requisito de promoção.`,
           outline: [`Explorar e aplicar — ${extra.purpose}`],
           existingSlug: EXISTING_EXTRAS[extra.title],

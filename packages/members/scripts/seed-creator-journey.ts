@@ -68,10 +68,11 @@ const report = (plan: ReturnType<typeof buildCreatorJourneySeed>) => ({
       .filter((course) => course.action === 'create')
       .reduce((sum, course) => sum + course.outline.length, 0),
   },
-  courses: plan.courses.map(({ id, slug, title, audience, action, outline }) => ({
+  courses: plan.courses.map(({ id, slug, title, currentTitle, audience, action, outline }) => ({
     id,
     slug,
     title,
+    currentTitle,
     audience,
     action,
     lessons: outline.length,
