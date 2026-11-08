@@ -110,6 +110,11 @@ export function VimeoPlayer({
       portrait: false,
       dnt: true,
       playsinline: true,
+      // Sem atalhos de teclado no player (08/11/2026, relato dela): com o foco no vídeo, o D
+      // abria o painel de diagnóstico do Vimeo. A criança joga com W/A/S/D na experiência ao
+      // lado e o foco fica no iframe depois do play. Os botões do player seguem funcionando,
+      // e o Tab continua chegando a eles.
+      keyboard: false,
       // ⚠️ NÃO ponha `min_quality` aqui. Piso de qualidade parece proteger a
       // criança de imagem ruim, mas faz o contrário do que o nome sugere: ele
       // PROÍBE o adaptativo de cair, e quem está no 4G congestionado da escola

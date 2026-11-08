@@ -48,7 +48,12 @@ import {
 import { LIVE_FOLLOW_SECTION_EVENT } from '../lib/live/journey'
 import { sessionFetch as fetch } from '../lib/session-fetch'
 import type { LessonBlockView, LessonDetailView, MaterialsBlock } from '../lib/types'
-import { isPlayableVideo, type LocalWatched, videoGateFor } from '../lib/video-gate'
+import {
+  isPlayableVideo,
+  type LocalWatched,
+  liveVideoPendingItems,
+  videoGateFor,
+} from '../lib/video-gate'
 import { MaterialsBookPreview } from './ebook/materials-book-preview'
 import { InteractiveLessonBlock } from './learning-activity'
 import { useLessonCopy } from './lesson-copy-context'
@@ -1155,7 +1160,14 @@ function LessonSectionsContent({
   const statusDaSecao =
     lesson.completed || (esperaAProfessoraAgora && secaoAtualPronta) ? null : (
       <LessonSectionStatus
-        items={secaoAtual?.pendingItems ?? []}
+        items={liveVideoPendingItems({
+          items: secaoAtual?.pendingItems ?? [],
+          videos: lesson.blocks.filter(
+            (b) => b.kind === 'video' && section.completion?.blockIds.includes(b.id) === true,
+          ),
+          learningProgress: player?.learningProgress ?? lesson.learningProgress,
+          localWatched,
+        })}
         completed={secaoAtual?.status === 'completed'}
         fallback={index === sections.length - 1 ? completionMessage : undefined}
         preview={preview}
