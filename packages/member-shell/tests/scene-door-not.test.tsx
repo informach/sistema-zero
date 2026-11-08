@@ -125,7 +125,8 @@ describe('a porta escolhe a tela pelo caso', () => {
       ...activity,
       setup: { freeExploration: true, goals: ['locked-without-key', 'opened-with-key'] },
     })
-    expect(farol).toContain('Testar a porta')
+    // ⭐ 08/11/2026: no Farol a porta pergunta quando o personagem chega nela (andar livre).
+    expect(farol).toContain('Jogar de novo')
     expect(farol).not.toContain('Pôr o não na pergunta')
   })
 })

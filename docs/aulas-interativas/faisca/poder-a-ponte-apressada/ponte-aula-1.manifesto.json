@@ -2666,9 +2666,7 @@
                 "label": "A ponte sobe na hora em que ele encosta."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Com 2 segundos, o relógio do \"depois de\" ainda não chegou a 4: ponteAberta continua verdadeiro e o Se da ponte deixa atravessar. O sino toca."
           },
           {
@@ -2689,9 +2687,7 @@
                 "label": "A ponte espera por ele para subir."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "No quarto segundo, o \"depois de\" rodou: a ponte subiu e ponteAberta voltou a falso. Quando ele encosta, o Se dá falso e o jogo segue o senão."
           },
           {
@@ -2711,9 +2707,7 @@
                 "label": "Começar ponteAberta como verdadeiro."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Quem sobe a ponte é o que está dentro do \"depois de\": tocar a subida e guardar ponteAberta = falso. Sem ele, ou com ele vazio, nada manda a ponte subir."
           },
           {
@@ -2733,9 +2727,7 @@
                 "label": "O \"depois de\" está no começo do jogo, fora do evento da alavanca."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "O relógio só começa quando o bloco roda. No começo do jogo ele roda uma vez só; dentro do evento da alavanca, roda a cada puxada."
           }
         ]
@@ -2760,9 +2752,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-3-2d",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -14168,20 +14158,13 @@
       "title": "A ponte do laguinho",
       "intent": "explanation",
       "objective": "A ponte do laguinho.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -14189,19 +14172,13 @@
       "title": "O seu Passo a passo do projeto",
       "intent": "material",
       "objective": "O seu Passo a passo do projeto.",
-      "blockKeys": [
-        "video-material",
-        "ponte-material",
-        "materiais"
-      ],
+      "blockKeys": ["video-material", "ponte-material", "materiais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-material"
-        ]
+        "blockIds": ["video-material"]
       }
     },
     {
@@ -14209,20 +14186,13 @@
       "title": "A ponte apressada",
       "intent": "exploration",
       "objective": "A ponte apressada.",
-      "blockKeys": [
-        "video-experiencia",
-        "ponte-experiencia",
-        "experiencia"
-      ],
+      "blockKeys": ["video-experiencia", "ponte-experiencia", "experiencia"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-experiencia",
-          "experiencia"
-        ]
+        "blockIds": ["video-experiencia", "experiencia"]
       }
     },
     {
@@ -14230,18 +14200,13 @@
       "title": "A alavanca baixa a ponte",
       "intent": "application",
       "objective": "A alavanca baixa a ponte.",
-      "blockKeys": [
-        "video-alavanca",
-        "ponte-alavanca"
-      ],
+      "blockKeys": ["video-alavanca", "ponte-alavanca"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-alavanca"
-        ],
+        "blockIds": ["video-alavanca"],
         "projectChecks": [
           {
             "id": "parada",
@@ -14275,10 +14240,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14315,18 +14277,13 @@
       "title": "A ponte sobe sozinha",
       "intent": "application",
       "objective": "A ponte sobe sozinha.",
-      "blockKeys": [
-        "video-sobe",
-        "ponte-sobe"
-      ],
+      "blockKeys": ["video-sobe", "ponte-sobe"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-sobe"
-        ],
+        "blockIds": ["video-sobe"],
         "projectChecks": [
           {
             "id": "aberta-antes",
@@ -14343,10 +14300,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14378,10 +14332,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14422,10 +14373,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14441,9 +14389,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 2000,
-                  "avoidPaths": [
-                    "ponte"
-                  ]
+                  "avoidPaths": ["ponte"]
                 },
                 {
                   "action": "wait",
@@ -14505,18 +14451,13 @@
       "title": "Atravesse a ponte",
       "intent": "application",
       "objective": "Atravesse a ponte.",
-      "blockKeys": [
-        "video-atravessar",
-        "ponte-atravessar"
-      ],
+      "blockKeys": ["video-atravessar", "ponte-atravessar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-atravessar"
-        ],
+        "blockIds": ["video-atravessar"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -14553,10 +14494,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "press",
@@ -14589,10 +14527,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14642,9 +14577,7 @@
                   "actorPath": "personagem",
                   "targetPath": "ponte",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "wait",
@@ -14684,10 +14617,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14737,10 +14667,7 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "alavanca",
-                    "ponte"
-                  ]
+                  "avoidPaths": ["alavanca", "ponte"]
                 },
                 {
                   "action": "approachSprite",
@@ -14771,18 +14698,13 @@
       "title": "Pense na ponte",
       "intent": "explanation",
       "objective": "Pense na ponte.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -14790,20 +14712,13 @@
       "title": "Envie o seu jogo com a ponte",
       "intent": "delivery",
       "objective": "Envie o seu jogo com a ponte.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "depois-dentro",
@@ -14840,10 +14755,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "press",
@@ -14876,10 +14788,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14929,9 +14838,7 @@
                   "actorPath": "personagem",
                   "targetPath": "ponte",
                   "timeoutMs": 3000,
-                  "avoidPaths": [
-                    "alavanca"
-                  ]
+                  "avoidPaths": ["alavanca"]
                 },
                 {
                   "action": "wait",
@@ -14971,10 +14878,7 @@
                   "actorPath": "personagem",
                   "targetPath": "alavanca",
                   "timeoutMs": 3500,
-                  "avoidPaths": [
-                    "ponte",
-                    "chave"
-                  ]
+                  "avoidPaths": ["ponte", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15024,10 +14928,7 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "alavanca",
-                    "ponte"
-                  ]
+                  "avoidPaths": ["alavanca", "ponte"]
                 },
                 {
                   "action": "approachSprite",

@@ -23,11 +23,11 @@
         "required": true,
         "title": "O que a porta precisa?",
         "semPerguntaFinal": true,
-        "instructions": "Compare a resposta da porta e temChave com o personagem sem a chave e com a chave. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
-          "Olhe temChave antes de testar a porta.",
-          "Compare a resposta da porta com temChave falso e com temChave verdadeiro.",
-          "Se o personagem estiver com a chave, clique em Tirar a chave do personagem. Clique em Testar a porta. Depois clique em Dar a chave ao personagem e em Testar a porta de novo."
+          "Olhe o caderninho antes de chegar à porta.",
+          "Compare a resposta da porta com NÃO e com SIM no caderninho.",
+          "Toque em Jogar de novo e ande direto até a porta. Toque em Jogar de novo, pegue a chave no chão e ande até a porta."
         ],
         "activity": {
           "type": "experimentation",
@@ -36,10 +36,10 @@
             "freeExploration": true,
             "goalCopy": {
               "locked-without-key": {
-                "pedido": "Sem a chave, clique em Testar a porta."
+                "pedido": "Sem pegar a chave, ande até a porta do farol."
               },
               "opened-with-key": {
-                "pedido": "Clique em Dar a chave ao personagem e em Testar a porta."
+                "pedido": "Pegue a chave no chão e ande até a porta do farol."
               }
             }
           },
@@ -114,7 +114,7 @@
         "required": true,
         "title": "Como escolher um lugar para a chave",
         "semPerguntaFinal": true,
-        "instructions": "Compare para onde a chave vai quando o x e o y aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Use o − e o + de cada número e compare para onde a chave vai. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [],
         "activity": {
           "type": "experimentation",

@@ -37,7 +37,7 @@ export function ZappyOuvirButton({
 }) {
   const voz = useSceneVoice()
   const owner = useRef(Symbol('zappy-ouvir'))
-  useEffect(() => registerLessonMedia(owner.current, voz.parar), [voz.parar])
+  useEffect(() => registerLessonMedia(owner.current, voz.parar, { tipo: 'fala' }), [voz.parar])
   const temArquivo =
     Boolean(audioUrl) || filaDeVoz(roteiros ?? textos.map((t) => roteiroDoZappy(t)), vozes) !== null
   if (!temArquivo && !voz.temVoz) return null

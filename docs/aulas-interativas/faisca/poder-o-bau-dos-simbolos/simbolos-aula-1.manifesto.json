@@ -2944,9 +2944,7 @@
                 "label": "A estrela acende e o baú abre."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A estrela pergunta se passo é igual a 2. Com o sol e a lua tocados, passo é 2: o Se escolhe o então, a estrela acende e o baú abre."
           },
           {
@@ -2967,9 +2965,7 @@
                 "label": "A estrela acende e espera a lua."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Com só o sol, passo é 1. A estrela pergunta passo = 2, a resposta é falso e o jogo segue o senão: passo volta a 0 e os acesos apagam."
           },
           {
@@ -2989,9 +2985,7 @@
                 "label": "Começar passo com 2."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Quem impede a estrela de abrir antes da hora é a pergunta passo = 2. Sem ela, ou com a abertura do baú fora do então, a estrela abre o baú em qualquer momento."
           },
           {
@@ -3011,9 +3005,7 @@
                 "label": "O aviso de erro está escrito errado."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "Se o senão não volta passo para 0, o jogo continua lembrando o passo de antes do erro. Aí a lua e a estrela acham que ainda é a vez delas."
           }
         ]
@@ -3038,9 +3030,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-4-2d",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -15293,20 +15283,13 @@
       "title": "Os símbolos do Farol",
       "intent": "explanation",
       "objective": "Os símbolos do Farol.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -15314,19 +15297,13 @@
       "title": "O seu Passo a passo do projeto",
       "intent": "material",
       "objective": "O seu Passo a passo do projeto.",
-      "blockKeys": [
-        "video-material",
-        "ponte-material",
-        "materiais"
-      ],
+      "blockKeys": ["video-material", "ponte-material", "materiais"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-material"
-        ]
+        "blockIds": ["video-material"]
       }
     },
     {
@@ -15334,20 +15311,13 @@
       "title": "A ordem dos símbolos",
       "intent": "exploration",
       "objective": "A ordem dos símbolos.",
-      "blockKeys": [
-        "video-experiencia",
-        "ponte-experiencia",
-        "experiencia"
-      ],
+      "blockKeys": ["video-experiencia", "ponte-experiencia", "experiencia"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-experiencia",
-          "experiencia"
-        ]
+        "blockIds": ["video-experiencia", "experiencia"]
       }
     },
     {
@@ -15355,18 +15325,13 @@
       "title": "O sol começa",
       "intent": "application",
       "objective": "O sol começa.",
-      "blockKeys": [
-        "video-sol",
-        "ponte-sol"
-      ],
+      "blockKeys": ["video-sol", "ponte-sol"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-sol"
-        ],
+        "blockIds": ["video-sol"],
         "projectChecks": [
           {
             "id": "parado",
@@ -15400,11 +15365,7 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15441,18 +15402,13 @@
       "title": "A lua pergunta a vez",
       "intent": "application",
       "objective": "A lua pergunta a vez.",
-      "blockKeys": [
-        "video-lua",
-        "ponte-lua"
-      ],
+      "blockKeys": ["video-lua", "ponte-lua"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-lua"
-        ],
+        "blockIds": ["video-lua"],
         "projectChecks": [
           {
             "id": "lua-depois",
@@ -15465,21 +15421,14 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15507,11 +15456,7 @@
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "sol",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15572,18 +15517,13 @@
       "title": "A estrela abre o baú",
       "intent": "application",
       "objective": "A estrela abre o baú.",
-      "blockKeys": [
-        "video-estrela",
-        "ponte-estrela"
-      ],
+      "blockKeys": ["video-estrela", "ponte-estrela"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-estrela"
-        ],
+        "blockIds": ["video-estrela"],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -15620,31 +15560,21 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "estrela",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15672,31 +15602,21 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "estrela",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15737,41 +15657,28 @@
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "sol",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "estrela",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15799,11 +15706,7 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15853,11 +15756,7 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "sol",
-                    "lua",
-                    "estrela"
-                  ]
+                  "avoidPaths": ["sol", "lua", "estrela"]
                 },
                 {
                   "action": "approachSprite",
@@ -15888,18 +15787,13 @@
       "title": "Pense na ordem",
       "intent": "explanation",
       "objective": "Pense na ordem.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -15907,20 +15801,13 @@
       "title": "Envie o seu jogo com o baú",
       "intent": "delivery",
       "objective": "Envie o seu jogo com o baú.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -15957,31 +15844,21 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "estrela",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -16009,31 +15886,21 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "estrela",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -16074,41 +15941,28 @@
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "sol",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "lua",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachSprite",
                   "actorPath": "personagem",
                   "targetPath": "estrela",
                   "timeoutMs": 1800,
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -16136,11 +15990,7 @@
                   "actorPath": "personagem",
                   "targetPath": "sol",
                   "timeoutMs": 2400,
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -16190,11 +16040,7 @@
                   "actorPath": "personagem",
                   "targetPath": "chave",
                   "timeoutMs": 2500,
-                  "avoidPaths": [
-                    "sol",
-                    "lua",
-                    "estrela"
-                  ]
+                  "avoidPaths": ["sol", "lua", "estrela"]
                 },
                 {
                   "action": "approachSprite",

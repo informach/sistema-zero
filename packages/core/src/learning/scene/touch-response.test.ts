@@ -1,4 +1,5 @@
 import { describe, expect, test } from 'bun:test'
+import { discoveryGuidance } from './discovery-guidance'
 import { openScene, stepScene } from './engine'
 import { evaluateExperimentation, sceneGoals } from './evaluate'
 import { isSceneActivity } from './index'
@@ -46,5 +47,36 @@ describe('touch-response', () => {
     const reinicio = stepScene(start, state, { type: 'reset' })
     expect(reinicio.match.screen).toBe('start')
     expect(reinicio.match.touch).toBe(false)
+  })
+})
+
+describe('touch-response livre: a fala pede o teste que falta, com a regra como está', () => {
+  // Full review de 08/11/2026: com a regra já tirada, o Zappy pedia "Agora tire a regra" ou testar
+  // a regra nas pedras, sem regra nenhuma encaixada.
+  const activity = {
+    type: 'experimentation' as const,
+    scene: 'touch-response' as const,
+    cenario: 'jardim' as const,
+    setup: { freeExploration: true, goals: ['no-response', 'responds', 'second-target'] },
+  }
+  const start = { scene: 'touch-response' as const, setup: activity.setup }
+  const fala = (acoes: Parameters<typeof stepScene>[2][]) =>
+    discoveryGuidance(
+      activity,
+      acoes.reduce((s, a) => stepScene(start, s, a), openScene(start)),
+    )?.id
+  const ENCAIXA = { type: 'connect', port: 'touch', enabled: true } as const
+  const TIRA = { type: 'connect', port: 'touch', enabled: false } as const
+  const ARBUSTO = { type: 'touch-hiding-place', id: 0 } as const
+
+  test('encaixou, achou e tirou a regra: pede o toque sem ela', () => {
+    expect(fala([ENCAIXA, ARBUSTO])).toBe('touch-with')
+    expect(fala([ENCAIXA, ARBUSTO, TIRA])).toBe('touch-without')
+  })
+
+  test('já testou sem e com a regra, e a regra está fora: pede para encaixar e tocar nas pedras', () => {
+    expect(fala([ARBUSTO, ENCAIXA, { type: 'restart-hiding-places' }, ARBUSTO, TIRA])).toBe(
+      'touch-stones',
+    )
   })
 })

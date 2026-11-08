@@ -1,5 +1,96 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## A moldura das experiências livres (08/11/2026)
+
+Uma criança testou as experiências do Cadê e do Farol e não entendeu o que fazer. A proposta
+aprovada no Canvas "Experiências do Cadê e do Farol" virou a moldura de TODAS as telas livres
+(`setup.freeExploration`, as ~60 telas que usam `Frame`). Regras pedagógicas em
+`docs/aulas-interativas-tecnico/DIRETRIZES-PEDAGOGICAS.md` e `DESCOBERTA-GUIADA.md`.
+
+- **`scene-discovery-frame.tsx` (`Frame`)**: a API de antes continua (`goals`, `completed`, `done`,
+  `reset`, `stage`, `hud`, `after`, `children`) e as telas novas passam `cartoes`, `fotos`, `ideia`,
+  `ponte`, `mostrarIdeia`, `pulso`, `noPalco`, `sobrePalco`, `abaixoDoPalco`, `controles`,
+  `ferramentas` e `raiz`. Anatomia: a linha de cima (placa "Sua vez"/"Você descobriu!", uma
+  estrela por descoberta, as ferramentas da tela, o som e o Recomeçar); o palco (selo "Você
+  descobriu!" com som a cada descoberta nova); o painel embaixo (os `Modulo` da tela); à direita, o balão
+  do Zappy, os cartões e "Seus testes". ⚠️ Os `children` das telas antigas ficam na coluna das
+  ações (`ConsolePrancha` logo abaixo da fala), como antes: embaixo da cena eles empurravam o palco
+  para fora da tela ampliada (e2e `scene-workspace` e `scene-expansion-width`).
+  - ⚠️ **Cartões só de leitura** (decisão dela): nada de botão nem cursor de mão; a criança explora
+    na ordem que quiser. Nas telas antigas o cartão feito diz só "Descobri!": o rótulo da meta no
+    catálogo fala de bloco ("Em Ao iniciar, …") e as telas livres falam só da ideia.
+  - **A ideia no balão**: com tudo descoberto, o balão do Zappy vira o cartão dourado ("A ideia que
+    você descobriu" + "No seu jogo: …"), e o "Ouvir" lê as duas frases. Sem `ideia`, vale a fala de
+    conclusão que a tela já tinha. `semNoSeuJogo` tira o prefixo da ponte do motor (a moldura o
+    escreve em negrito).
+  - **Recomeçar** é o botão redondo da linha de cima, com o nome "Recomeçar experiência" para o
+    leitor de tela; com alguma descoberta ele pede "Apagar as descobertas? Sim / Não".
+  - **Peças exportadas**: `Modulo`, `Filme`, `Redondo`, `TeclaDeSeta` (seta e WASD pela posição da
+    tecla, `code`), `Cruzeta`, `Interruptor`, `Velocidade` (Devagar/Rápido), `Caderninho`,
+    `BotaoGrande`, e os hooks `useFotinhos` (o `dispatch` com a fotinho de cada gesto e de cada
+    descoberta), `useAndarLivre` (4 direções no relógio do navegador) e `useNaTela` (a tecla só
+    vale com a experiência na tela, conferida pelo retângulo NA HORA da tecla).
+- **`DiscoveryContext.dialogue(text, opcoes?)`** (`FalaDaDescoberta`: `textos`, `pose`,
+  `falarSozinho`, `corpo`). Com opções, o `scene-activity` monta a `DialogueBlockView` direto, com o
+  Zappy animado quando o app tem `renderInstruction` (o `ZappyAnimated` do `lesson-ui`, o mesmo do
+  Kids e do adulto) e as vozes da atividade (MP3 só quando a frase é exatamente uma fala fixa). O
+  contexto ganhou `continuar` (só o "Continuar para a pergunta"): as telas novas não mostram o
+  Desfazer nem a pista.
+- ⭐ **Voz automática**: `DialogueBlockView` ganhou `falarSozinho`. Ligado, a fala toca sozinha
+  quando o TEXTO muda (a da abertura fica com o "Ouvir"). A moldura liga depois do primeiro gesto
+  da criança e com o som ligado. ⚠️⚠️ **Foco de mídia com tipos** (`lesson-media-focus.ts`,
+  `registerLessonMedia(owner, pause, { tipo })`, `midia` | `fala` | `relogio`): a fala e o relógio
+  de uma cena NÃO se pausam (a voz automática congelava os quadros do Farol a cada fala nova);
+  vídeo segue pausando tudo. A `DialogueBlockView` e o `ZappyOuvirButton` são `fala`; o
+  `useRitmoDosQuadros` e o dono da cena (`scene-activity`) são `relogio`.
+- **Full review de 08/11/2026 (o que ficou de regra):**
+  - o foco de mídia é de MAIS DE UM dono (`comFoco`): quem convive com quem pediu não é pausado e
+    continua com o foco (com um dono só, a fala tirava o foco do relógio sem pausá-lo e o bipe da
+    cena calava para sempre); pedido antigo do mesmo dono é invalidado por pedido;
+  - a voz automática espera a fala ASSENTAR (`FALA_ASSENTA_MS`, 700 ms) antes de tocar: no andar a
+    fala trocava a cada aperto da seta e o Zappy recomeçava várias vezes por segundo;
+  - desligar o som avisa pela janela (`EVENTO_DO_SOM`) e a `DialogueBlockView` para também o MP3;
+  - o `AudioContext` dos sons é retomado a cada som (no iOS ele nasce suspenso fora de um gesto);
+  - a seta e o WASD não pegam a tecla com o foco num `video` ou `audio` (`alvoDeTexto`);
+  - na posição, o passo que passaria da borda é RECUSADO com o aviso, nunca cortado no 0: cortado,
+    a chave saía da grade de 60 e 40 e o alvo (271, 253) ficava impossível;
+  - o selo "Você descobriu!" sai na hora quando o Recomeçar apaga as descobertas; o gesto recusado
+    não leva a fotinho da próxima mudança (`GESTO_VALE_MS`).
+- **Sons** (`lib/scene-sons.ts`): `SONS.descoberta|quadro|encaixe|aparece|nada|ponto|pegar|tranca|
+  abre|escreve|borda`, feitos na hora com WebAudio, sem arquivo. A preferência é por aparelho
+  (`sz:experiencia:som`, toda leitura em try/catch) e desliga também a voz automática.
+- **CSS**: `scene-discovery-moldura.css` (importado pelo `styles/scene.css`), classes
+  `sz-discovery-*`, tokens `--szd-*` lendo os `--sz-kids-*` com reserva. Respeita
+  `prefers-reduced-motion`; as dicas de teclado (`sz-discovery-so-teclado`) somem em tela de toque.
+  ⚠️ A linha de cima e a Velocidade quebram linha em celular estreito (o e2e de 320 px pegou os
+  botões passando da borda do console).
+- **As 7 telas do Cadê e do Farol**:
+  - `scene-discovery-garden.tsx`: o toque (a peça "Quando tocar → mostrar" encaixa num slot sobre
+    o jardim; "Esconder de novo") e os achados ("+1"/"continua N" sob o placar; "Nova busca");
+  - `scene-walk-camera-lenta.tsx` (`WalkEmCameraLenta`) e `scene-walk-beirada.tsx`
+    (`WalkNaBeirada`): `ControlesDoAndar` (tecla de seta → ou D, Velocidade), `FerramentasDoAndar`
+    (Pausar, Começo), o `Filme` com a `TiraDeQuadros` e, na beirada, o módulo "Limite da tela" (a
+    cerca). O palco do Farol é `PalcoDoAndar` (`scene-farol-palco.tsx`: a tela do jogo, o
+    personagem em x 21, pegadas recentes, a tela que pisca no Devagar, a faixa fora da tela, a
+    cerca e o 👀; ganchos `data-walk-hero`, `data-personagem`, `data-x`). ⚠️ A Nave segue com os
+    palcos dela (`PalcoEmCameraLenta` e `LighthouseWalkStage`). `useRitmoDosQuadros`,
+    `TiraDeQuadros`, `SeloDoQuadro`, `BotoesDoRitmo` e `SetaDeSegurar` continuam exportados (o
+    `scene-walk-passinho.tsx` usa os de antes);
+  - `scene-discovery-controls.tsx`: `Memory` e `Door` com `PalcoFarolLivre` (andar livre, a chave
+    pega no chão por proximidade, o caderninho, o balão da porta com a largura medida pelo texto)
+    e `Position` (− e +, réguas, aviso de borda, o palpite grande do y, teclado com setas, WASD, +,
+    −, X e Y, e o desafio do alvo depois das 4 descobertas). `proximoGestoDaMemoria` decide o que
+    pulsa na memória.
+  - As falas vêm do motor (`discoveryGuidance`, as que o Admin grava com voz); a ideia, a ponte e os
+    momentos que só a tela conhece (o palpite e o alvo da posição) vêm de `discoverySpeech(id,
+    cenario)` do core.
+- Testes: `tests/scene-discovery-moldura.test.tsx` (estrelas, cartões só de leitura, ideia no
+  balão, voz depois do gesto, telas antigas), os das telas (`scene-walk-camera-lenta`,
+  `scene-walk-beirada`, `scene-farol-ideia`, `scene-livre-nave-c`) e, no Kids, os e2e
+  `lighthouse-walk.spec.ts` e `lighthouse-position.spec.ts`. Ensaio visual fora do git:
+  `community-kids/tmp/experiencias-reais/` (`serve.ts` na porta 5223 e `percursos.mjs`, que percorre
+  as 7 até o fim, com o Node).
+
 ## Estúdio de desafio: portais no diálogo e coluna Missão (01/11/2026)
 
 Retorno de quem testou a sua ilha: no desafio, os campos dos blocos não aceitavam digitação, a

@@ -84,7 +84,7 @@ A revisão de 04/10 torna visíveis temChave, a pergunta e as duas respostas. O 
 - **Blocos:** `video-d3-condicao`, `ponte-d3-condicao`, `experiencia-porta`.
 - **Metas da experiência:** `locked-without-key`, `opened-with-key`.
 
-Preparar com ou sem chave em qualquer ordem. Dar/tirar a chave prepara a situação e limpa o destaque anterior; somente Testar a porta escolhe um ramo. Exibir a pergunta, as duas respostas (sim e não) e a resposta escolhida; o que cada resposta faz aparece depois do primeiro teste daquele caso. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
+Preparar com ou sem chave em qualquer ordem. Desde 08/11/2026 o personagem anda livre: pegar a chave é andar até ela, e chegar à porta é o teste (o balão da cena pergunta "Você tem a chave?" e responde "Sem a chave, não abro." ou "Tem a chave! Pode entrar."); **Jogar de novo** devolve a chave ao chão. Exibir a pergunta, as duas respostas (sim e não) e a resposta escolhida; o que cada resposta faz aparece depois do primeiro teste daquele caso. As duas descobertas exigem uma tentativa real. Continuar experimentando livremente depois de concluir.
 
 **Convite da experiência:** Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser.
 
@@ -155,7 +155,7 @@ Editar os quatro textos de aviso: inicial em Ao iniciar, coleta no encontro com 
 
 Apresentar x/y aqui, sem antecipá-los no movimento. Liberar ambos os eixos desde o início, com botões de 60 em 60 no x e de 40 em 40 no y, controles deslizantes e campos numéricos. Descobertas: esquerda, direita, cima e baixo, em qualquer ordem, sem coordenada obrigatória. Marcar lugar anterior e atual. O alvo é opcional. A experiência não altera o projeto do Estúdio.
 
-**Convite da experiência:** Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. Você escolhe a ordem dos testes. Se quiser um desafio, clique em Mostrar um alvo e leve a chave até ele.
+**Convite da experiência:** Mude um número de cada vez e observe para onde a chave vai quando ele aumenta e quando diminui. Faça isso com o x e com o y. Você escolhe a ordem dos testes. (Desde 08/11/2026, com as quatro descobertas aparece o **Desafio** com **Mostrar o alvo**; os números têm − e +, e no teclado as setas, WASD, + e −.)
 
 **Convite à investigação, 02/11/2026:** o vídeo usa a analogia do mapa do tesouro, diz qual número cuida de cada direção e deixa para a criança descobrir para que lado cada um leva a chave quando aumenta (a pergunta da Debinha vira teste). O Zappy explica depois de cada eixo, inclusive por que um y maior leva para baixo, e a retomada da parte 7 repete essa explicação. Sem pistas escritas: a missão restrita pede a meta que falta.
 
@@ -187,7 +187,7 @@ Retomar x/y da experiência. Em **Ao iniciar → Criar sprite chave**, editar so
 - **Situação:** cena existente, ampliada com informação, pergunta e respostas visíveis.
 - **Elenco/cenário:** farol, personagem e chave, com `cenario: farol`.
 - **Metas:** `locked-without-key` e `opened-with-key`.
-- **Instrução:** "Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser." (02/11/2026; os botões são **Dar a chave ao personagem** / **Tirar a chave do personagem** e **Testar a porta**, e a marca da tela é **✓ escolhido**).
+- **Instrução:** "Teste a mesma porta com o personagem sem a chave e com a chave. Em cada teste, observe temChave e a resposta que a porta escolhe. Você escolhe a ordem dos testes e pode repetir quando quiser." (02/11/2026). Desde 08/11/2026 a instrução é "Ande até a porta do farol sem a chave e com a chave, e compare a resposta da porta e o caderninho do jogo. Você escolhe a ordem e pode repetir quando quiser.", sem botões de dar a chave nem de testar a porta: o personagem anda livre e a porta pergunta quando ele chega.
 - **Observação:** trocar o estado da chave sozinho não conclui. Sem palpite obrigatório ou pergunta final redundante; semPerguntaFinal fica no bloco interativo.
 
 ## Vídeos

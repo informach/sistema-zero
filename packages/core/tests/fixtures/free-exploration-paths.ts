@@ -71,6 +71,10 @@ export const freeExplorationPaths: Partial<Record<SceneId, SceneAction[]>> = {
     { type: 'restart-walk' },
     { type: 'keep-on-screen', enabled: false },
     { type: 'hold-arrow', held: true },
+    // Seis segundos: no Farol ele parte de x 21 (o lugar do jogo, 08/11/2026).
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
+    { type: 'advance', seconds: 1 },
     { type: 'advance', seconds: 1 },
     { type: 'advance', seconds: 1 },
     { type: 'advance', seconds: 1 },

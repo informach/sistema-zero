@@ -661,3 +661,40 @@ describe('lighthouse-walk: o Zappy não conta o resultado antes do teste', () =>
     )
   })
 })
+
+describe('o começo do andar segue o cenário (08/11/2026)', () => {
+  const farol: SceneStart = {
+    scene: 'lighthouse-walk',
+    cenario: 'farol',
+    setup: { freeExploration: true, goals: ['moves-each-frame', 'stopped-after-release'] },
+  }
+  const nave: SceneStart = { ...farol, cenario: 'nave' }
+  const passo = (start: SceneStart, s: SceneState, a: SceneAction) => stepScene(start, s, a)
+
+  test('no Farol o personagem parte do lugar do jogo; na Nave e sem cenário, do meio da tela', () => {
+    expect(openScene(farol).walk.x).toBe(LIGHTHOUSE_WALK.startFarol)
+    expect(openScene(farol).walk.trail).toEqual([LIGHTHOUSE_WALK.startFarol])
+    expect(openScene(nave).walk.x).toBe(LIGHTHOUSE_WALK.start)
+    expect(openScene({ scene: 'lighthouse-walk' }).walk.x).toBe(LIGHTHOUSE_WALK.start)
+  })
+
+  test('voltar ao começo volta para a origem do cenário, e a legenda diz o número', () => {
+    let s = openScene(farol)
+    s = passo(farol, s, { type: 'hold-arrow', held: true })
+    s = passo(farol, s, { type: 'walk-frames', count: 1 })
+    expect(s.walk.x).toBeGreaterThan(LIGHTHOUSE_WALK.startFarol)
+    s = passo(farol, s, { type: 'restart-walk' })
+    expect(s.walk.x).toBe(LIGHTHOUSE_WALK.startFarol)
+    expect(s.caption).toContain(`x ${LIGHTHOUSE_WALK.startFarol}`)
+  })
+
+  test('no Farol, soltar a seta logo depois de andar já conta como "parado" (a régua é a origem)', () => {
+    let s = openScene(farol)
+    s = passo(farol, s, { type: 'hold-arrow', held: true })
+    s = passo(farol, s, { type: 'walk-frames', count: 1 })
+    s = passo(farol, s, { type: 'walk-frames', count: 1 })
+    s = passo(farol, s, { type: 'hold-arrow', held: false })
+    s = passo(farol, s, { type: 'walk-frames', count: 1 })
+    expect(s.evidence.discoveries).toContain('stopped-after-release')
+  })
+})

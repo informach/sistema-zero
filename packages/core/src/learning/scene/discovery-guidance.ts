@@ -8,6 +8,7 @@ import type { SceneActivity } from './index'
 import { ISLAND_SPEECH, islandGuidance } from './island-3d'
 import {
   lighthouseKeyNotCase,
+  lighthouseWalkGone,
   lighthouseWalkMaxX,
   lighthouseWalkOutSeenX,
   type SceneState,
@@ -24,60 +25,57 @@ const speech = {
   // blocos aparecem só na montagem do Estúdio; aqui não se fala de bloco, regra nem comando.
   // ⭐ Convite à investigação, como no Cadê (02/11/2026): antes do teste, a fala pergunta e diz o
   // que observar, sem contar o resultado; depois dele, explica.
-  'slow-start':
-    'Clique em Câmera lenta e segure a seta. Olhe a tira: o que muda de um quadro para o outro?',
-  'slow-walking':
-    'Um quadro novo, um passinho. E se você soltar a seta? Em câmera lenta, observe os próximos quadros na tira.',
-  'slow-released':
-    'Sem a seta, os quadros continuam passando, mas ele fica no lugar. E na velocidade de verdade, como fica? Clique em Velocidade de verdade e segure a seta.',
-  'slow-real': 'Continue segurando e compare com a câmera lenta: o que mudou?',
-  'slow-complete':
-    'Você viu os passinhos, a parada e a caminhada. Se quiser, tente chegar à chave em câmera lenta e conte os quadros.',
+  'slow-start': 'Faça o personagem andar. Segure a seta!',
+  'slow-walking': 'Um quadro, um passinho. E se soltar a seta?',
+  'slow-released': 'Os quadros passam e ele fica parado. E bem rápido?',
+  'slow-real': 'Continue segurando. Compare com o Devagar: o que mudou?',
+  'slow-out': 'Ele saiu da tela. Toque em Começo e teste de novo.',
+  'slow-out-nave': 'A nave saiu da tela. Toque em Começo e teste de novo.',
+  'slow-start-nave': 'Faça a nave andar. Segure a seta!',
+  // ⭐ A ideia e a ponte (08/11/2026): com tudo descoberto, o balão do Zappy vira o cartão da ideia, e o
+  // "Ouvir" lê as duas (a ponte começa por "No seu jogo:", exatamente como aparece no balão).
+  'slow-idea':
+    'O jogo desenha um quadro atrás do outro. Com a seta apertada, um passinho por quadro. Rápido, vira caminhada.',
+  'slow-bridge':
+    'No seu jogo: em cada quadro, o personagem dá um passinho se a seta estiver apertada.',
+  'slow-idea-nave':
+    'O jogo desenha um quadro atrás do outro. Com a seta apertada, a nave anda um pouco por quadro. Rápido, vira voo.',
+  'slow-bridge-nave': 'No seu jogo: em cada quadro, a nave anda se a seta estiver apertada.',
+  'slow-complete': 'Quadro a quadro, passinho a passinho. Rápido, vira caminhada!',
   // ⭐ "A beirada da tela" (Farol, Dia 1, parte 5, 01/11/2026): só a ideia, sem blocos nem ordem dos
   // blocos. A ordem aparece dentro de cada quadro: primeiro o passinho, depois a conferência.
   // ⚠️ Em câmera lenta, ir do meio da tela até a beirada leva uns 40 s: o caminho até lá é na
   // velocidade de verdade, e a câmera lenta só na beirada (o botão em destaque acompanha).
-  'border-start':
-    'O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela. Se preferir, ligue o limite primeiro e compare depois.',
-  'border-off':
-    'O limite está desligado. Clique em Velocidade de verdade e leve o personagem até a beirada. Continue segurando a seta e observe a faixa fora da tela.',
-  'border-out':
-    'Ele saiu da janela do jogo. E se você ligar o limite agora, com ele fora? Clique em Ligar o limite da tela e observe o próximo quadro.',
-  'border-on-out': 'O limite está ligado e ele ainda está fora. Deixe passar um quadro e observe.',
-  'border-back':
-    'Ele voltou para dentro: em todo quadro, o jogo confere a beirada. E se você segurar a seta junto à beirada? Clique em Câmera lenta e olhe cada quadro.',
-  'border-edge':
-    'O limite está ligado. Leve o personagem até a beirada e continue segurando a seta. Lá, clique em Câmera lenta e observe a tira e a frase de cada quadro.',
-  'border-edge-off':
-    'Ligue o limite da tela e leve o personagem até a beirada. Lá, clique em Câmera lenta, segure a seta e observe a tira e a frase de cada quadro.',
-  'border-hold':
-    'Em cada quadro, o passinho ia levar ele para fora, e depois o jogo confere a beirada e segura ele dentro. Quer comparar? Desligue o limite e deixe ele ir até a beirada.',
-  'border-complete':
-    'Você viu ele sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
+  'border-start': 'Até onde o personagem vai? Segure a seta.',
+  'border-off': 'O limite está desligado. Segure a seta até a beirada.',
+  'border-out': 'Ele passou da beirada! E se ligar o limite agora?',
+  'border-on-out': 'O limite está ligado. Olhe o próximo quadro.',
+  'border-back': 'Voltou! E segurando a seta na beirada, com o limite?',
+  'border-edge': 'Limite ligado. Vá até a beirada e escolha Devagar.',
+  'border-edge-off': 'Ligue o limite, vá até a beirada e escolha Devagar.',
+  'border-hold': 'A cada passinho, o jogo confere e segura. E sem o limite?',
+  'border-idea':
+    'Depois de cada passinho, o jogo confere a beirada. Sem limite, sai da tela; com o limite, volta para dentro.',
+  'border-bridge':
+    'No seu jogo: o limite segura o personagem dentro da tela, depois de cada passinho.',
+  'border-idea-nave':
+    'Depois de cada passinho, o jogo confere a beirada. Sem limite, a nave sai da tela; com o limite, volta para dentro.',
+  'border-bridge-nave':
+    'No seu jogo: o limite segura a nave dentro da tela, depois de cada passinho.',
+  'border-complete': 'Depois de cada passinho, o jogo confere a beirada.',
   // A Nave contra Asteroides (02/11/2026) usa as mesmas telas do andar com a nave: as falas sem
   // "personagem", "ele" nem a chave do Farol. A escolha acrescenta `-nave` à chave quando existe.
-  'slow-released-nave':
-    'Sem a seta, os quadros continuam passando, mas a nave fica no lugar. E na velocidade de verdade, como fica? Clique em Velocidade de verdade e segure a seta.',
-  'slow-complete-nave':
-    'Você viu os passinhos, a parada e o voo. Pode continuar comparando a câmera lenta com a velocidade de verdade.',
-  'border-start-nave':
-    'O limite está desligado. Clique em Velocidade de verdade e leve a nave até a beirada. Continue segurando a seta e observe a faixa fora da tela. Se preferir, ligue o limite primeiro e compare depois.',
-  'border-off-nave':
-    'O limite está desligado. Clique em Velocidade de verdade e leve a nave até a beirada. Continue segurando a seta e observe a faixa fora da tela.',
-  'border-out-nave':
-    'A nave saiu da janela do jogo. E se você ligar o limite agora, com a nave fora? Clique em Ligar o limite da tela e observe o próximo quadro.',
-  'border-on-out-nave':
-    'O limite está ligado e a nave ainda está fora. Deixe passar um quadro e observe.',
-  'border-back-nave':
-    'A nave voltou para dentro: em todo quadro, o jogo confere a beirada. E se você segurar a seta junto à beirada? Clique em Câmera lenta e olhe cada quadro.',
-  'border-edge-nave':
-    'O limite está ligado. Leve a nave até a beirada e continue segurando a seta. Lá, clique em Câmera lenta e observe a tira e a frase de cada quadro.',
-  'border-edge-off-nave':
-    'Ligue o limite da tela e leve a nave até a beirada. Lá, clique em Câmera lenta, segure a seta e observe a tira e a frase de cada quadro.',
-  'border-hold-nave':
-    'Em cada quadro, o passinho ia levar a nave para fora, e depois o jogo confere a beirada e segura a nave dentro. Quer comparar? Desligue o limite e deixe a nave ir até a beirada.',
-  'border-complete-nave':
-    'Você viu a nave sair, voltar e ficar na beirada. Pode continuar experimentando: ligue e desligue o limite quando quiser.',
+  'slow-released-nave': 'Os quadros passam e a nave fica parada. E bem rápido?',
+  'slow-complete-nave': 'Quadro a quadro, passinho a passinho. Rápido, vira voo!',
+  'border-start-nave': 'Até onde a nave vai? Segure a seta.',
+  'border-off-nave': 'O limite está desligado. Segure a seta até a beirada.',
+  'border-out-nave': 'A nave passou da beirada! E se ligar o limite agora?',
+  'border-on-out-nave': 'O limite está ligado. Olhe o próximo quadro.',
+  'border-back-nave': 'Voltou! E segurando a seta na beirada, com o limite?',
+  'border-edge-nave': 'Limite ligado. Leve a nave até a beirada e escolha Devagar.',
+  'border-edge-off-nave': 'Ligue o limite, leve a nave até a beirada e escolha Devagar.',
+  'border-hold-nave': 'A cada passinho, o jogo confere e segura a nave. E sem o limite?',
+  'border-complete-nave': 'Depois de cada passinho, o jogo confere a beirada.',
   // ⭐ "O tamanho do passinho" (Nave, Dia 1, 02/11/2026): só a ideia (o passinho de cada quadro pode
   // ser pequeno ou grande), sem bloco nem número de velocidade. Só existe na Nave, por isso as falas
   // já dizem "a nave". Antes do teste, a fala pergunta e diz o que comparar; o resultado vem depois.
@@ -118,32 +116,25 @@ const speech = {
   // ⭐ Dias 2 e 3 do Farol (02/11/2026): só a ideia (memória da chave, a pergunta da porta, os dois
   // números) e o convite à investigação do Cadê: antes do teste, a fala pergunta e diz o que
   // observar; o resultado só vem depois dele. Nada de regra, ação, bloco, então ou senão.
-  'memory-edited':
-    'Você mudou a memória da chave. temChave continua como estava, porque a mudança só vale para o próximo encontro. Recomece a partida para testar.',
-  'memory-first-saved':
-    'A memória da chave está ligada. Encoste na chave e observe três coisas: a chave, o aviso e temChave. Se preferir, desligue a memória primeiro e compare depois.',
-  'memory-first':
-    'A memória da chave está desligada. Encoste na chave e observe três coisas: a chave, o aviso e temChave. Se preferir, ligue a memória primeiro e compare depois.',
-  'memory-compare':
-    'Sem a memória, a chave saiu do chão e o aviso mudou, mas temChave continuou falso. E com a memória ligada, o que muda? Teste numa partida nova com a memória ligada e observe temChave.',
-  'memory-compare-off':
-    'Com a memória ligada, a chave saiu do chão, o aviso mudou e temChave virou verdadeiro. E com a memória desligada, o que muda? Teste numa partida nova com a memória desligada e observe temChave.',
-  'memory-away':
-    'Você comparou a memória ligada e desligada. E se o personagem se afastar depois de o jogo guardar a chave, temChave muda? Depois de pegar a chave com a memória ligada, clique em Afastar e observe.',
-  'memory-restart':
-    'Afastar não apagou temChave: o jogo continua lembrando, mesmo longe da chave. E numa partida nova, o que acontece com temChave? Depois de guardar a chave, clique em Recomeçar a partida e observe.',
-  'memory-complete':
-    'Você comparou os quatro casos. Só com a memória ligada temChave vira verdadeiro, e ele continua assim mesmo longe da chave. Numa partida nova, o jogo começa do zero, e temChave volta a falso. Pode continuar ligando e desligando a memória e testando de novo.',
-  'door-with':
-    'O personagem está com a chave. O que você acha que a porta vai fazer? Teste a porta e observe temChave e a resposta que ela escolhe.',
-  'door-without':
-    'O personagem está sem a chave. O que você acha que a porta vai fazer? Teste a porta e observe temChave e a resposta que ela escolhe.',
-  'door-compare-without':
-    'Com temChave verdadeiro, a resposta foi sim: a porta abriu e o farol acendeu. E sem a chave, o que a porta faz? Tire a chave do personagem e teste a mesma porta.',
-  'door-compare-with':
-    'Com temChave falso, a resposta foi não: a porta ficou fechada e avisou que falta a chave. E com a chave, o que a porta faz? Dê a chave ao personagem e teste a mesma porta.',
-  'door-complete':
-    'A pergunta foi a mesma nas duas vezes. O que mudou foi o valor de temChave, e por isso a porta escolheu outra resposta. Pode mudar a situação e testar quantas vezes quiser.',
+  'memory-edited': 'O lápis mudou. Jogue de novo e pegue a chave.',
+  'memory-first-saved': 'O lápis está ligado. Ande até a chave e olhe o caderninho.',
+  'memory-first': 'Ande até a chave e pegue. Depois, olhe o caderninho.',
+  'memory-compare': 'Pegou, mas o caderninho não mudou. E se o jogo anotar?',
+  'memory-compare-off': 'Anotado: SIM! E com o lápis desligado, o que acontece?',
+  'memory-away': 'Anotado: SIM! E se o personagem se afastar da chave?',
+  'memory-restart': 'Longe da chave, continua SIM. E numa partida nova?',
+  'memory-idea':
+    'Pegar a chave e o jogo anotar são coisas diferentes. O anotado fica até uma partida nova.',
+  'memory-bridge':
+    'No seu jogo: quando o personagem pegar a chave, o jogo vai anotar que ele tem a chave.',
+  'memory-complete': 'Pegar é uma coisa. Anotar é outra. Partida nova apaga.',
+  'door-with': 'Pegou a chave! Olhe o caderninho. E a porta agora?',
+  'door-without': 'A porta do farol faz uma pergunta. Ande até ela.',
+  'door-compare-without': 'Abriu! O caderninho dizia SIM. E sem a chave? Jogue de novo.',
+  'door-compare-with': 'Trancada. O caderninho dizia NÃO. Onde está a chave?',
+  'door-idea': 'A porta faz sempre a mesma pergunta e olha o caderninho do jogo para responder.',
+  'door-bridge': 'No seu jogo: a porta vai olhar se o personagem tem a chave antes de abrir.',
+  'door-complete': 'A pergunta é a mesma. O caderninho muda a resposta.',
   // ⭐ A pergunta com o não (Ilha do Farol, aula 3, parte 3, 02/11/2026): a mesma porta, e a pergunta
   // pode ser "a porta está trancada?" ou "a porta não está trancada?". Sem a chave a porta está
   // trancada. Só a ideia: nada de bloco, Se, então, senão nem variável. Antes do teste, a fala pergunta;
@@ -166,36 +157,43 @@ const speech = {
     'Com a chave, o não trocou a resposta: o que era não virou sim. E sem a chave, o que acontece com as duas perguntas? Clique em Tirar a chave do personagem e teste a porta com e sem o não.',
   'door-not-complete':
     'Nos dois casos, o não trocou a resposta: o que era sim virou não, e o que era não virou sim. Para a porta abrir só quando ela não está trancada, a pergunta precisa do não. Pode testar quantas vezes quiser.',
-  'position-start':
-    'Mude só o x, para mais ou para menos, e observe a chave. Para onde ela vai? O y também está livre: você escolhe o que explorar primeiro.',
-  'position-height':
-    'O x leva a chave para os lados: um x maior leva para a direita, e um menor, para a esquerda. E o y? Aumente e diminua o y e observe a chave.',
-  'position-width':
-    'O y leva a chave para cima e para baixo: um y maior leva para baixo, e um menor, para cima, porque na tela do jogo a contagem começa em zero lá em cima. E o x? Aumente e diminua o x e observe a chave.',
-  'position-complete':
-    'O x leva a chave para os lados, e o y, para cima e para baixo. Repare: um y maior leva a chave para baixo, porque na tela do jogo a contagem começa em zero lá em cima. Continue escolhendo lugares ou mostre um alvo e leve a chave até ele.',
-  'touch-first':
-    'Escolha um esconderijo e toque nele. A reação está desligada. Você também pode ligá-la primeiro e depois comparar.',
-  'touch-with-first':
-    'A reação está ligada. Escolha um esconderijo para testar. Quando quiser comparar, desligue a reação e toque em um esconderijo ainda visível.',
-  'touch-with':
-    'A reação está ligada. Toque em um esconderijo e veja qual deles fica invisível. Você pode escolher qualquer um.',
-  'touch-exhausted':
-    'Os dois personagens apareceram. Use Esconder de novo para preparar outro teste. Você pode mudar a ligação antes ou depois.',
-  'touch-complete':
-    'Você comparou os dois modos e os dois esconderijos. Pode esconder os personagens de novo e experimentar outras sequências.',
-  'count-start':
-    'Escolha onde tocar no jardim. Você pode procurar personagens, tocar no vazio e recomeçar quando quiser.',
-  'count-empty':
-    'Você tocou no vazio. Compare o valor guardado com o placar. Experimente outro lugar quando quiser.',
-  'count-repeat':
-    'Você repetiu o toque. Compare o valor guardado com o placar. Pode procurar outro personagem ou recomeçar.',
-  'count-add':
-    'Um novo personagem apareceu. Compare o valor anterior, a soma e o valor de agora. Você pode repetir o toque ou escolher outro lugar.',
-  'count-restart':
-    'A busca recomeçou com zero. As comparações já feitas continuam marcadas. Você pode experimentar outra sequência.',
-  'count-complete':
-    'Você comparou novos achados, vazio, repetição e reinício. Continue explorando na ordem que quiser.',
+  'position-start': 'Onde a chave vai ficar? Mude o x ou o y.',
+  'position-height': 'O x leva a chave para os lados. E o y?',
+  'position-width': 'O y leva a chave para cima e para baixo. E o x?',
+  // Os momentos que só a tela da posição conhece: o palpite do y e o desafio do alvo.
+  'position-guess': 'Antes de testar: se o y aumentar, a chave sobe ou desce?',
+  'position-guess-up': 'Você achou que subia, mas desceu! O y começa no alto.',
+  'position-guess-down': 'Isso, desceu! O y começa em 0 lá no alto.',
+  'position-target': 'Leve a chave até o alvo. Quais números ele tem?',
+  'position-target-done': 'Você levou a chave até o alvo!',
+  'position-idea':
+    'O x leva a chave para os lados e o y para cima e para baixo. O y começa em 0 no alto: um y maior desce.',
+  'position-bridge': 'No seu jogo: você vai escolher os dois números do lugar da chave.',
+  'position-complete': 'O x vai para os lados. O y maior desce.',
+  'touch-first': 'Tem alguém escondido no arbusto. Toque nele!',
+  'touch-with-first': 'A regra está encaixada. Toque no arbusto e olhe!',
+  'touch-with': 'Apareceu! E nas pedras, a regra funciona?',
+  'touch-exhausted': 'Todos apareceram. Toque em Esconder de novo e teste mais.',
+  'touch-nothing': 'Nada aconteceu. Encaixe a regra e toque de novo.',
+  'touch-remove': 'Agora tire a regra. O toque ainda mostra alguém?',
+  // Full review 08/11/2026: com a regra já fora, a fala pede o teste que falta SEM ela, ou que a
+  // regra volte para testar as pedras (antes pedia para tirar a regra que já tinha saído).
+  'touch-without': 'Sem a regra, toque num esconderijo. Aparece alguém?',
+  'touch-stones': 'Encaixe a regra de novo e toque nas pedras.',
+  'touch-idea':
+    'Tocar sozinho não faz nada. O jogo só responde quando uma regra liga o toque a uma ação.',
+  'touch-bridge':
+    'No seu jogo: cada esconderijo vai ter a regra que liga o toque a mostrar quem está lá.',
+  'touch-complete': 'Sem regra, nada. Com a regra, o toque mostra quem está lá.',
+  'count-start': 'O jogo conta quem você acha. Ache alguém!',
+  'count-empty': 'E se tocar na grama, onde não tem ninguém?',
+  'count-repeat': 'E se tocar de novo em quem já achou?',
+  'count-add': 'Olhe o número. E se achar outro?',
+  'count-restart': 'E se começar uma busca nova?',
+  'count-idea':
+    'O jogo guarda os achados. Achado novo soma 1; o resto não muda; busca nova volta a 0.',
+  'count-bridge': 'No seu jogo: um número vai guardar quantos personagens a pessoa já achou.',
+  'count-complete': 'Achado novo soma 1. Busca nova volta a zero.',
 } as const
 /**
  * O caso do tamanho do passinho (Nave, Dia 1, 02/11/2026): a exploração livre que cobra as metas da
@@ -238,6 +236,16 @@ export function portaDoNaoGuidance(
   )
   return testouAlguma ? 'door-not-try' : 'door-not-start'
 }
+/** Uma fala da descoberta pelo id (a tela pede as falas que só ela conhece: a ideia, o palpite, o alvo). */
+export type DiscoverySpeechId = keyof typeof speech
+export function discoverySpeech(id: DiscoverySpeechId, cenario?: string): string {
+  if (cenario === 'nave') {
+    const daNave = `${id}-nave`
+    if (daNave in speech) return speech[daNave as DiscoverySpeechId]
+  }
+  return speech[id]
+}
+
 export function discoverySpeechSteps(scene?: SceneId) {
   const livre = scene ? GUIAS_LIVRES[scene] : undefined
   if (livre) return Object.entries(livre.speech).map(([id, text]) => ({ id, text }))
@@ -332,15 +340,19 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
                   : 'stride-try-small'
                 : 'stride-start'
       } else if (activity.setup?.goals?.includes('walked-real-speed'))
-        id = !has('moves-each-frame')
-          ? 'slow-start'
-          : !has('stopped-after-release')
-            ? 'slow-walking'
-            : !has('walked-real-speed')
-              ? state.walk.pace === 'real' && state.walk.arrow
-                ? 'slow-real'
-                : 'slow-released'
-              : 'slow-complete'
+        id =
+          !(has('moves-each-frame') && has('stopped-after-release') && has('walked-real-speed')) &&
+          lighthouseWalkGone(state.walk)
+            ? 'slow-out'
+            : !has('moves-each-frame')
+              ? 'slow-start'
+              : !has('stopped-after-release')
+                ? 'slow-walking'
+                : !has('walked-real-speed')
+                  ? state.walk.pace === 'real' && state.walk.arrow
+                    ? 'slow-real'
+                    : 'slow-released'
+                  : 'slow-complete'
       else
         id = [
           'no-movement-command',
@@ -404,15 +416,24 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
             : 'position-start'
       break
     case 'touch-response':
+      // ⭐ 08/11/2026: cada fala pede o próximo teste, na ordem que a criança escolher.
       id = ['no-response', 'responds', 'second-target'].every(has)
         ? 'touch-complete'
         : state.match.gardenFound?.length === 2
           ? 'touch-exhausted'
           : !state.match.touch
-            ? 'touch-first'
-            : !has('no-response')
+            ? !has('no-response')
+              ? has('responds')
+                ? 'touch-without'
+                : 'touch-first'
+              : !has('responds')
+                ? 'touch-nothing'
+                : 'touch-stones'
+            : !has('responds')
               ? 'touch-with-first'
-              : 'touch-with'
+              : !has('second-target')
+                ? 'touch-with'
+                : 'touch-remove'
       break
     case 'timed-bridge':
       id = ponteGuidance(state, has)
@@ -427,17 +448,18 @@ export function discoveryGuidance(activity: SceneActivity, state: SceneState) {
       id = cabanaGuidance(state, has)
       break
     case 'found-counter':
-      id = ['first-find', 'second-find', 'no-find', 'repeat', 'back-to-zero'].every(has)
-        ? 'count-complete'
-        : state.match.counterUpdate?.kind === 'empty'
-          ? 'count-empty'
-          : state.match.counterUpdate?.kind === 'repeat'
-            ? 'count-repeat'
-            : state.match.counterUpdate?.kind === 'add'
-              ? 'count-add'
-              : state.match.counterUpdate?.kind === 'reset'
+      // ⭐ 08/11/2026: a fala pede o primeiro teste que falta (achar, outro, grama, repetir, recomeçar).
+      id = !has('first-find')
+        ? 'count-start'
+        : !has('second-find')
+          ? 'count-add'
+          : !has('no-find')
+            ? 'count-empty'
+            : !has('repeat')
+              ? 'count-repeat'
+              : !has('back-to-zero')
                 ? 'count-restart'
-                : 'count-start'
+                : 'count-complete'
       break
   }
   // A Nave usa as telas do andar com a nave (02/11/2026): a variante `-nave` da fala, quando existe.

@@ -113,10 +113,10 @@ describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
     expect(convite).toBeDefined()
     expect(problemasDoConvite({ ...convite!, naTela: '[apontar zappy]' })).toEqual([])
     for (const gesto of [
-      '[apontar "Ligar a memória da chave"]',
+      '[apontar "Lápis desligado"]',
       '[apontar zappy e tocar a chave]',
-      '[clicar "Ligar a memória da chave"]',
-      '[apontar zappy] [apontar "Ligar a memória da chave"]',
+      '[clicar "Lápis desligado"]',
+      '[apontar zappy] [apontar "Lápis desligado"]',
     ]) {
       expect(problemasDoConvite({ ...convite!, naTela: gesto }).join('; ')).toContain(
         'gesto dentro da experiência',

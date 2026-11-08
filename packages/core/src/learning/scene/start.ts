@@ -7,5 +7,10 @@ export function sceneStart(activity: SceneActivity): SceneStart {
     activity.type === 'experimentation' && activity.initialImpulse !== undefined
       ? { initialImpulse: activity.initialImpulse }
       : {}
-  return { scene: activity.scene, ...impulso, ...(activity.setup ? { setup: activity.setup } : {}) }
+  return {
+    scene: activity.scene,
+    ...impulso,
+    ...(activity.setup ? { setup: activity.setup } : {}),
+    ...(activity.cenario ? { cenario: activity.cenario } : {}),
+  }
 }

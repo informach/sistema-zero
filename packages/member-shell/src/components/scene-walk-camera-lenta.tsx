@@ -1,18 +1,43 @@
 'use client'
 
 import {
+  discoverySpeech,
   LIGHTHOUSE_WALK,
   lighthouseWalkGone,
   lighthouseWalkOutSeenX,
   sceneCenario,
 } from '@sistemazero/core/learning/scene'
 import { farolSvgUrl } from '@sistemazero/studio/arte'
-import { Footprints, Pause, Play, RotateCcw, Turtle } from 'lucide-react'
-import { type KeyboardEvent, type PointerEvent, useEffect, useId, useRef, useState } from 'react'
+import { Footprints, Pause, Play, RotateCcw, SkipBack, Turtle } from 'lucide-react'
+import {
+  type KeyboardEvent,
+  type PointerEvent,
+  type ReactNode,
+  type RefObject,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+} from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import { SONS } from '../lib/scene-sons'
 import { ALTURA_NA_CENA, ArteSvg, FundoDoCenario, larguraNaCena } from './scene-arte'
 import { SceneCanvas } from './scene-canvas'
-import { Frame, Note, SceneButton, useDiscovery } from './scene-discovery-frame'
+import {
+  type Cartao,
+  Filme,
+  type Foto,
+  Frame,
+  Modulo,
+  Redondo,
+  SceneButton,
+  semNoSeuJogo,
+  TeclaDeSeta,
+  useDiscovery,
+  useFotinhos,
+  Velocidade,
+} from './scene-discovery-frame'
+import { PalcoDoAndar } from './scene-farol-palco'
 import { limiarDoRelogio, useSceneClock } from './use-scene-clock'
 
 /**
@@ -181,7 +206,10 @@ export function useRitmoDosQuadros({
   const dono = useRef(Symbol('ritmo-dos-quadros'))
 
   // Outra mídia da aula (o vídeo da parte) pede a vez: os quadros param.
-  useEffect(() => registerLessonMedia(dono.current, () => setRodando(false)), [])
+  useEffect(
+    () => registerLessonMedia(dono.current, () => setRodando(false), { tipo: 'relogio' }),
+    [],
+  )
 
   const rodar = (novo: Ritmo, { reiniciar = reiniciarAoRodar } = {}) => {
     if (reiniciar) dispatch({ type: 'restart-walk' })
@@ -283,87 +311,199 @@ export function SeloDoQuadro({ ritmo }: { ritmo: Ritmo }) {
   )
 }
 
-export function WalkEmCameraLenta() {
-  const context = useDiscovery()
-  const { state, dispatch, activity } = context
+/* ════════════ A MOLDURA NOVA (08/11/2026): os controles com a forma do que imitam ════════════ */
+
+/** Um tique por quadro no Devagar: o quadro vira algo que se OUVE. Devolve se está no Devagar. */
+export function useTiqueDoQuadro(ritmo: ReturnType<typeof useRitmoDosQuadros>) {
+  const { state } = useDiscovery()
+  const quadro = state.walk.frame
+  const devagar = ritmo.rodando && ritmo.ritmo === 'lenta'
+  useEffect(() => {
+    if (devagar && quadro > 0) SONS.quadro()
+  }, [quadro, devagar])
+  return devagar
+}
+
+/** O selo do filme: o quadro de agora e a seta. */
+export function SeloSimples() {
+  const w = useDiscovery().state.walk
+  return (
+    <span className="sz-discovery-quadro">
+      Quadro <b>{w.frame}</b> · seta {w.arrow ? <b className="sim">apertada</b> : <b>solta</b>}
+    </span>
+  )
+}
+
+/** Pausar e voltar ao começo, na linha de cima da moldura. */
+export function FerramentasDoAndar({ ritmo }: { ritmo: ReturnType<typeof useRitmoDosQuadros> }) {
+  const { dispatch } = useDiscovery()
   const quem = useQuemAnda()
-  const w = state.walk
-  const seen = new Set(state.evidence.discoveries)
-  const completed = [
-    seen.has('moves-each-frame'),
-    seen.has('stopped-after-release'),
-    seen.has('walked-real-speed'),
-  ]
-  const goals = [
-    'Compare os quadros com a seta apertada.',
-    'Compare os quadros com a seta solta.',
-    'Compare a câmera lenta com a velocidade de verdade.',
-  ]
+  return (
+    <>
+      <Redondo rotulo="Pausar os quadros" texto="Pausar" onClick={ritmo.parar}>
+        <Pause size={16} />
+      </Redondo>
+      <Redondo
+        rotulo={`Levar ${quem.nome} de volta ao começo`}
+        texto="Começo"
+        onClick={() => {
+          ritmo.parar()
+          dispatch({ type: 'restart-walk' })
+        }}
+      >
+        <SkipBack size={16} />
+      </Redondo>
+    </>
+  )
+}
+
+/**
+ * O painel embaixo da cena: a tecla de seta (dedo, mouse, → ou D), a velocidade (Devagar / Rápido)
+ * e, na beirada, o módulo do limite (`extra`). Segurar a seta com os quadros parados põe os quadros
+ * para passar no ritmo escolhido.
+ */
+export function ControlesDoAndar({
+  ritmo,
+  escolha,
+  setEscolha,
+  raiz,
+  mao,
+  pedeVelocidade,
+  extra,
+}: {
+  ritmo: ReturnType<typeof useRitmoDosQuadros>
+  escolha: Ritmo
+  setEscolha: (v: Ritmo) => void
+  raiz: RefObject<HTMLDivElement | null>
+  mao: boolean
+  pedeVelocidade?: Ritmo | null
+  extra?: ReactNode
+}) {
+  const { state, dispatch } = useDiscovery()
+  const quem = useQuemAnda()
+  return (
+    <>
+      <Modulo
+        titulo="Andar"
+        icone="🎮"
+        dica={
+          <>
+            Segure a tecla.
+            <span className="sz-discovery-so-teclado"> No teclado: → ou D</span>
+          </>
+        }
+      >
+        <TeclaDeSeta
+          direcao="direita"
+          rotulo={`Seta para a direita: segure para ${quem.nome} andar`}
+          apertada={state.walk.arrow}
+          mao={mao}
+          raiz={raiz}
+          segurar={() => {
+            if (!ritmo.rodando) ritmo.rodar(escolha)
+            dispatch({ type: 'hold-arrow', held: true })
+          }}
+          soltar={() => dispatch({ type: 'hold-arrow', held: false })}
+        />
+      </Modulo>
+      {extra}
+      <Modulo titulo="Velocidade" icone="⏱️" dica="Devagar mostra cada quadro.">
+        <Velocidade
+          valor={escolha}
+          pulsar={pedeVelocidade}
+          onChange={(v) => {
+            setEscolha(v)
+            if (ritmo.rodando) ritmo.rodar(v, { reiniciar: false })
+          }}
+        />
+      </Modulo>
+    </>
+  )
+}
+
+const CARTOES_QUADROS: Cartao[] = [
+  {
+    id: 'moves-each-frame',
+    emoji: '👣',
+    pergunta: 'O que acontece em cada quadro com a seta apertada?',
+    descoberta: 'um quadro, um passinho.',
+  },
+  {
+    id: 'stopped-after-release',
+    emoji: '✋',
+    pergunta: 'E com a seta solta?',
+    descoberta: 'os quadros passam e fica tudo parado.',
+  },
+  {
+    id: 'walked-real-speed',
+    emoji: '🐇',
+    pergunta: 'E bem rápido?',
+    descoberta: 'os passinhos viram caminhada.',
+  },
+]
+const FOTOS_QUADROS: Record<string, Foto> = {
+  'moves-each-frame': { titulo: 'Devagar, seta apertada', texto: 'cada quadro, um passinho' },
+  'stopped-after-release': {
+    titulo: 'Devagar, seta solta',
+    texto: 'os quadros passam, fica parado',
+  },
+  'walked-real-speed': { titulo: 'Rápido, seta apertada', texto: 'os passinhos viraram caminhada' },
+}
+
+export function WalkEmCameraLenta() {
+  const p = useFotinhos({ fotoDaDescoberta: FOTOS_QUADROS })
+  const quem = useQuemAnda()
+  const w = p.state.walk
+  const f = (id: string) => p.state.evidence.discoveries.includes(id)
   const saiu = lighthouseWalkGone(w)
   // Saiu inteiro da tela, ou ficou parado muito tempo depois de já ter visto a parada: pausa.
-  const paradoDemais =
-    seen.has('stopped-after-release') && w.idle >= PARADO_ATE_PAUSAR[w.pace ?? 'lenta']
-  const ritmoDosQuadros = useRitmoDosQuadros({
-    pararQuando: saiu || paradoDemais,
-    reiniciarAoRodar: saiu,
-  })
-  const { rodando, ritmo, rodar, parar } = ritmoDosQuadros
-
-  // O desafio extra: o quadro em que ele chegou à chave pela PRIMEIRA vez, fixo até voltar ao início.
-  const [chegada, setChegada] = useState<number | null>(null)
-  const chegou = w.x + CAIXA / 2 >= CHAVE_X
-  useEffect(() => {
-    if (w.frame === 0) setChegada(null)
-    else if (chegou) setChegada((antes) => antes ?? w.frame)
-  }, [chegou, w.frame])
-
-  // A parada só se vê em câmera lenta: quem foi para a velocidade de verdade antes dela volta a ver
-  // Câmera lenta em destaque.
-  const pedeCameraLenta =
-    (!seen.has('moves-each-frame') || !seen.has('stopped-after-release')) &&
-    !(rodando && ritmo === 'lenta')
-  const pedeVelocidade =
-    seen.has('stopped-after-release') &&
-    !seen.has('walked-real-speed') &&
-    !(rodando && ritmo === 'real')
+  const paradoDemais = f('stopped-after-release') && w.idle >= PARADO_ATE_PAUSAR[w.pace ?? 'lenta']
+  const ritmo = useRitmoDosQuadros({ pararQuando: saiu || paradoDemais, reiniciarAoRodar: saiu })
+  const [escolha, setEscolha] = useState<Ritmo>('lenta')
+  const raiz = useRef<HTMLDivElement>(null)
+  const devagar = useTiqueDoQuadro(ritmo)
+  const cenario = p.activity.cenario
   return (
     <Frame
+      raiz={raiz}
       title="O jogo em câmera lenta"
       kind="quadro"
-      activity={activity}
-      state={state}
-      text={context.instruction}
-      goals={goals}
-      done={completed.filter(Boolean).length}
-      completed={completed}
+      activity={p.activity}
+      state={p.state}
+      text={p.instruction}
       reset={() => {
-        parar()
-        dispatch({ type: 'reset' })
+        ritmo.parar()
+        p.dispatch({ type: 'reset' })
       }}
-      hud={<SeloDoQuadro ritmo={ritmo} />}
-      stage={<PalcoEmCameraLenta />}
-      after={
-        saiu ? (
-          <Note label="Fora da tela" tone="gold">
-            {quem.Ele} saiu da tela. Clique em Voltar ao início.
-          </Note>
-        ) : chegada !== null && !quem.nave ? (
-          <Note label="Chegou à chave" tone="gold">
-            Ele chegou à chave em {chegada} quadros.
-          </Note>
-        ) : undefined
+      cartoes={CARTOES_QUADROS}
+      fotos={p.fotos}
+      ideia={discoverySpeech('slow-idea', cenario)}
+      ponte={semNoSeuJogo(discoverySpeech('slow-bridge', cenario))}
+      // ⚠️ A Nave segue com o palco dela (a janela que acompanha a nave no espaço).
+      stage={quem.nave ? <PalcoEmCameraLenta /> : <PalcoDoAndar piscar={devagar} />}
+      abaixoDoPalco={
+        <Filme info={<SeloSimples />}>
+          <TiraDeQuadros />
+        </Filme>
       }
-    >
-      <TiraDeQuadros />
-      <SetaDeSegurar
-        pedida={!pedeCameraLenta && !seen.has('moves-each-frame')}
-        aoSegurar={() => {
-          // Segurar com o jogo pausado põe os quadros para passar: a seta sozinha não anda sem eles.
-          if (!rodando) rodar(ritmo)
-        }}
-      />
-      <BotoesDoRitmo {...ritmoDosQuadros} pedeLenta={pedeCameraLenta} pedeReal={pedeVelocidade} />
-    </Frame>
+      ferramentas={<FerramentasDoAndar ritmo={ritmo} />}
+      controles={
+        <ControlesDoAndar
+          ritmo={ritmo}
+          escolha={escolha}
+          setEscolha={setEscolha}
+          raiz={raiz}
+          mao={w.frame === 0 && !f('moves-each-frame')}
+          pedeVelocidade={
+            f('stopped-after-release') && !f('walked-real-speed')
+              ? 'real'
+              : !f('stopped-after-release') && escolha === 'real'
+                ? 'lenta'
+                : null
+          }
+        />
+      }
+    />
   )
 }
 

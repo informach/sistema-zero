@@ -349,10 +349,12 @@ export const scenePaths: Record<SceneId, SceneAction[]> = {
     { type: 'walk-speed', speed: 1 },
     { type: 'advance', seconds: 1 / 30 },
     { type: 'walk-speed', speed: 3 },
-    ...tempo(3),
+    // ⚠️ Seis segundos: no Farol o personagem parte do lugar do jogo (x 21, 08/11/2026), e a borda fica
+    // a uns 4,4 s; partindo do meio (a Nave), o tempo a mais só o deixa mais tempo na beirada.
+    ...tempo(6),
     { type: 'keep-on-screen', enabled: true },
     { type: 'restart-walk' },
-    ...tempo(3),
+    ...tempo(6),
   ],
   // Lote 5 do Raio-X: a partida até a batida, a volta ao início com os cactos na pista, e o Reiniciar
   // que limpa a pista (o toque na tela faz as três coisas, conforme a tela e a escolha).

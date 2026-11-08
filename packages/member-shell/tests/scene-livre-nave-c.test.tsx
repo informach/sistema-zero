@@ -332,7 +332,8 @@ describe('lighthouse-walk: as telas do andar servem à Nave sem mudar o Farol', 
       cenario,
       setup: { freeExploration: true, goals },
     }
-    const start: SceneStart = { scene: 'lighthouse-walk', setup: activity.setup }
+    // O cenário vai junto: o começo do andar é por cenário (x 21 no Farol, 208 na Nave).
+    const start: SceneStart = { scene: 'lighthouse-walk', setup: activity.setup, cenario }
     const play = (actions: SceneAction[]) =>
       actions.reduce((s, a) => stepScene(start, s, a), openScene(start))
     return { activity, play }
@@ -360,9 +361,9 @@ describe('lighthouse-walk: as telas do andar servem à Nave sem mudar o Farol', 
     )
     expect(htmlFarol).toContain('data-mundo="farol"')
     expect(htmlFarol.match(/<image/g)?.length ?? 0).toBeGreaterThanOrEqual(4)
-    expect(texto(htmlFarol)).toContain(
-      'O personagem já deu 2 passinhos, e cada um deixou uma pegada.',
-    )
+    // ⭐ 08/11/2026: o Farol é a tela do jogo (a praia inteira), com uma pegada por passinho.
+    expect(htmlFarol).toContain('data-fundo="farol"')
+    expect(htmlFarol.match(/<ellipse/g)?.length).toBe(2)
   })
 
   test('câmera lenta: a mesma tela, sem cenário declarado, é a do Farol', () => {
@@ -383,16 +384,14 @@ describe('lighthouse-walk: as telas do andar servem à Nave sem mudar o Farol', 
     const fora = nave.play([SETA, ...longe])
     const html = tela(nave.activity, fora, <WalkNaBeirada />)
     expect(html).not.toContain('data-fundo="farol"')
-    expect(texto(html)).toContain('Leve a nave até a beirada com o limite desligado.')
-    expect(texto(html)).toContain('Ligue o limite com a nave fora da tela.')
-    expect(texto(html)).toContain('A nave saiu da janela do jogo.')
+    expect(texto(html)).toContain('Ligada, a cerca segura a nave dentro.')
+    expect(html).toContain('aria-label="Seta para a direita: segure para a nave andar"')
 
     const farol = andar('farol', BEIRADA)
     const htmlFarol = tela(farol.activity, farol.play([SETA, ...longe]), <WalkNaBeirada />)
     expect(htmlFarol).toContain('data-fundo="farol"')
-    expect(texto(htmlFarol)).toContain('Leve o personagem até a beirada com o limite desligado.')
-    expect(texto(htmlFarol)).toContain('Ligue o limite com o personagem fora da tela.')
-    expect(texto(htmlFarol)).toContain('Ele saiu da janela do jogo.')
+    expect(texto(htmlFarol)).toContain('Ligada, a cerca segura o personagem dentro.')
+    expect(texto(htmlFarol)).toContain('fora da tela')
   })
 
   test('as metas da câmera lenta e da beirada caem com a Nave como no Farol', () => {

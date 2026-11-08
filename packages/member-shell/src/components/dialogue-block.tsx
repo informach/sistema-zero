@@ -5,6 +5,7 @@ import { Button } from '@sistemazero/ui/button'
 import { Square, Volume2 } from 'lucide-react'
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { registerLessonMedia, requestLessonMediaFocus } from '../lib/lesson-media-focus'
+import { EVENTO_DO_SOM, sonsLigados } from '../lib/scene-sons'
 import type { DialogueBlock } from '../lib/types'
 import { useSceneVoice } from './use-scene-voice'
 import { useZappyFala, ZappyFalaProvider } from './zappy-fala-context'
@@ -42,11 +43,15 @@ export interface DialogueSpeech {
  * outro personagem falando no lugar dele. Na instrução da cena o botão é muleta de quem não lê e
  * qualquer voz serve; aqui ele é a voz do personagem.
  */
+/** Quanto a fala nova espera, parada, antes de a voz automática tocar. */
+const FALA_ASSENTA_MS = 700
+
 export function DialogueBlockView({
   content,
   mascot,
   speech,
   children,
+  falarSozinho = false,
 }: {
   content: DialogueBlock
   /** Figura de quem fala. Sem ela o balão vira um recado destacado. */
@@ -58,6 +63,12 @@ export function DialogueBlockView({
    * `content.text` continua sendo a legenda da narração.
    */
   children?: ReactNode
+  /**
+   * ⭐ A voz automática das experiências livres (08/11/2026): ligada, a fala toca sozinha cada vez que
+   * o TEXTO muda (a fala da abertura fica com o "Ouvir"). Quem liga é a moldura, depois do primeiro
+   * gesto da criança e com o som ligado. Pede o foco como `fala`: não pausa o relógio da cena.
+   */
+  falarSozinho?: boolean
 }) {
   const voz = useSceneVoice()
   /**
@@ -92,7 +103,7 @@ export function DialogueBlockView({
     setTocandoArquivo(false)
     voz.parar()
   }, [voz.parar])
-  useEffect(() => registerLessonMedia(owner.current, parar), [parar])
+  useEffect(() => registerLessonMedia(owner.current, parar, { tipo: 'fala' }), [parar])
   /**
    * ⭐ A BOCA do mascote segue o áudio (o slot é renderizado DENTRO do provider, então o Zappy
    * que o kids injeta enxerga isto). ⚠️ A dependência é `temFala`, e não `fila`: o `filaDeVoz`
@@ -109,6 +120,53 @@ export function DialogueBlockView({
     setTocandoArquivo(false)
     voz.falar(textos, vozes, roteiros)
   }, [roteiros, textos, voz, vozes])
+  // ⚠️⚠️ Sem `await` antes de tocar: o Safari do iOS só libera o áudio dentro do gesto, e esperar o
+  // pedido de foco (um Vimeo responde por mensagem) deixava o balão mudo. A parte síncrona do pedido
+  // já pausa as outras mídias antes de o som entrar.
+  const tocar = () => {
+    void requestLessonMediaFocus(owner.current)
+    if (speech?.audioUrl) {
+      arquivoFalhou.current = false
+      arquivoPedido.current = true
+      const arquivo = audio.current
+      if (!arquivo) {
+        cairParaFala()
+        return
+      }
+      arquivo.currentTime = 0
+      void arquivo.play().catch(cairParaFala)
+      return
+    }
+    voz.falar(textos, vozes, roteiros)
+  }
+  const tocarAgora = useRef(tocar)
+  tocarAgora.current = tocar
+  const chaveDaFala = textos.join(' | ')
+  const ultimaFalada = useRef(chaveDaFala)
+  useEffect(() => {
+    if (ultimaFalada.current === chaveDaFala) return
+    if (!falarSozinho || !temFala) {
+      ultimaFalada.current = chaveDaFala
+      return
+    }
+    // ⚠️ A fala precisa ASSENTAR antes de tocar: no andar do Farol ela troca a cada aperto e soltura
+    // da seta, e o Zappy era cortado e recomeçava várias vezes por segundo (full review 08/11/2026).
+    // Uma fala que volta a ser a última falada antes de assentar não toca de novo.
+    const t = setTimeout(() => {
+      ultimaFalada.current = chaveDaFala
+      voz.parar()
+      tocarAgora.current()
+    }, FALA_ASSENTA_MS)
+    return () => clearTimeout(t)
+  }, [chaveDaFala, falarSozinho, temFala, voz.parar])
+  // Desligar o som da experiência cala também a fala que já está tocando (o MP3 seguia até o fim).
+  useEffect(() => {
+    const aoMudar = () => {
+      if (!sonsLigados()) parar()
+    }
+    window.addEventListener(EVENTO_DO_SOM, aoMudar)
+    return () => window.removeEventListener(EVENTO_DO_SOM, aoMudar)
+  }, [parar])
   const mascote = falaDaCena ? (
     mascot
   ) : (
@@ -167,23 +225,7 @@ export function DialogueBlockView({
                 parar()
                 return
               }
-              // ⚠️⚠️ Sem `await` antes de tocar: o Safari do iOS só libera o áudio dentro do gesto,
-              // e esperar o pedido de foco (um Vimeo responde por mensagem) deixava o balão mudo.
-              // A parte síncrona do pedido já pausa as outras mídias antes de o som entrar.
-              void requestLessonMediaFocus(owner.current)
-              if (speech?.audioUrl) {
-                arquivoFalhou.current = false
-                arquivoPedido.current = true
-                const arquivo = audio.current
-                if (!arquivo) {
-                  cairParaFala()
-                  return
-                }
-                arquivo.currentTime = 0
-                void arquivo.play().catch(cairParaFala)
-                return
-              }
-              voz.falar(textos, vozes, roteiros)
+              tocar()
             }}
           >
             {falando ? <Square size={16} aria-hidden /> : <Volume2 size={16} aria-hidden />}

@@ -70,20 +70,30 @@ describe('Dia 2: a memória da chave', () => {
       const lido = texto(tela(activity, s, <Memory />))
       expect(lido).not.toMatch(SO_A_IDEIA)
     }
-    expect(texto(tela(activity, play([]), <Memory />))).toContain('Ligar a memória da chave')
+    // ⭐ 08/11/2026: a memória é o LÁPIS do caderninho do jogo, um interruptor.
+    expect(texto(tela(activity, play([]), <Memory />))).toContain('Lápis desligado')
     expect(
       texto(tela(activity, play([{ type: 'remember-collection', enabled: true }]), <Memory />)),
-    ).toContain('Desligar a memória da chave')
+    ).toContain('Lápis ligado')
   })
 
-  test('o que o encontro faz com o aviso e com temChave só aparece depois do teste', () => {
-    const antes = texto(
-      tela(activity, play([{ type: 'remember-collection', enabled: true }]), <Memory />),
+  test('o caderninho mostra o que o jogo anotou; temChave só aparece na montagem', () => {
+    const antes = texto(tela(activity, play([]), <Memory />))
+    expect(antes).toContain('Caderninho do jogo Tem a chave? NÃO')
+    expect(antes).not.toContain('temChave')
+    const anotou = texto(
+      tela(
+        activity,
+        play([{ type: 'remember-collection', enabled: true }, { type: 'collect-key' }]),
+        <Memory />,
+      ),
     )
-    expect(antes).not.toContain('O aviso muda')
-    expect(antes).not.toContain('O jogo guarda em temChave')
-    const semMemoria = texto(tela(activity, play([{ type: 'collect-key' }]), <Memory />))
-    expect(semMemoria).toContain('O aviso muda')
+    expect(anotou).toContain('Tem a chave? SIM')
+    expect(anotou).not.toContain('temChave')
+    // Sem o lápis, pegar a chave tira a chave do chão, mas o caderninho continua NÃO.
+    const semLapis = tela(activity, play([{ type: 'collect-key' }]), <Memory />)
+    expect(texto(semLapis)).toContain('Tem a chave? NÃO')
+    expect(semLapis).not.toContain('sz-discovery-chave-brilha')
   })
 
   test('o botão em destaque é o gesto que o Zappy pede', () => {
@@ -109,12 +119,16 @@ describe('Dia 2: a memória da chave', () => {
     }
   })
 
-  test('a lista diz o que comparar', () => {
-    const lido = texto(tela(activity, play([]), <Memory />))
-    expect(lido).toContain('Compare uma coleta com a memória desligada.')
-    expect(lido).toContain('Compare uma coleta com a memória ligada.')
-    expect(lido).toContain('Afaste o personagem depois de guardar e observe temChave.')
-    expect(lido).toContain('Comece uma partida nova depois de guardar e observe temChave.')
+  test('os cartões perguntam e o andar livre tem as quatro setas', () => {
+    const html = tela(activity, play([]), <Memory />)
+    const lido = texto(html)
+    expect(lido).toContain('Pegou a chave com o lápis desligado. O caderninho mudou?')
+    expect(lido).toContain('E com o jogo anotando?')
+    expect(lido).toContain('Se o personagem se afastar, continua anotado?')
+    expect(lido).toContain('E numa partida nova?')
+    for (const seta of ['cima', 'baixo', 'a esquerda', 'a direita'])
+      expect(html).toContain(`aria-label="Andar para ${seta}"`)
+    expect(lido).toContain('Jogar de novo')
   })
 })
 
@@ -123,50 +137,47 @@ describe('Dia 3: a pergunta da porta', () => {
   const testar: SceneAction = { type: 'try-lighthouse-door' }
   const dar: SceneAction = { type: 'key-state', hasKey: true }
 
-  test('sim e não, sem regra, então nem senão', () => {
+  test('sim e não, sem regra, então nem senão; sem botão de dar a chave', () => {
     for (const s of [play([]), play([testar]), play([testar, dar, testar])]) {
       const lido = texto(tela(activity, s, <Door />))
       expect(lido).not.toMatch(SO_A_IDEIA)
-      expect(lido).toContain('A pergunta da porta')
-      expect(lido).toContain('Teste a mesma porta com a chave.')
+      expect(lido).toContain('Sem a chave, o que a porta faz?')
+      expect(lido).toContain('E com a chave?')
+      expect(lido).not.toContain('Dar a chave')
     }
   })
 
-  test('o que cada resposta faz só aparece depois do teste daquele caso', () => {
+  test('a porta responde no balão da cena, e o caderninho diz o que ela olhou', () => {
     const antes = texto(tela(activity, play([]), <Door />))
-    expect(antes).not.toContain('Acender o farol')
-    expect(antes).not.toContain('Avisar: falta a chave')
-    expect(antes.match(/Teste para descobrir/g)?.length).toBe(2)
-
+    expect(antes).toContain('Tem a chave? NÃO')
+    expect(antes).not.toContain('Sem a chave, não abro.')
     const semChave = texto(tela(activity, play([testar]), <Door />))
-    expect(semChave).toContain('Avisar: falta a chave')
-    expect(semChave).not.toContain('Acender o farol')
-
-    // Testado o caso de agora, o destaque vai para o outro caso, mesmo preparando de novo.
-    for (const s of [play([testar]), play([testar, { type: 'key-state', hasKey: false }])]) {
-      const html = tela(activity, s, <Door />)
-      expect(html).toMatch(/data-tom="gesto"[^>]*>Dar a chave ao personagem/)
-      expect(html).not.toMatch(/data-tom="gesto"[^>]*>Testar a porta/)
-    }
-
-    const osDois = texto(tela(activity, play([testar, dar, testar]), <Door />))
-    expect(osDois).toContain('Avisar: falta a chave')
-    expect(osDois).toContain('Acender o farol')
+    expect(semChave).toContain('Sem a chave, não abro.')
+    const comChave = texto(tela(activity, play([dar, testar]), <Door />))
+    expect(comChave).toContain('Tem a chave! Pode entrar.')
+    expect(comChave).toContain('Tem a chave? SIM')
   })
 })
 
 describe('Dia 3: os dois números', () => {
   const { activity, play } = caso('lighthouse-position', ['x-minus', 'x-plus', 'y-minus', 'y-plus'])
 
-  test('a lista pede aumentar e diminuir cada número, sem dizer para onde a chave vai', () => {
-    const lido = texto(tela(activity, play([]), <Position />))
-    for (const meta of [
-      'Diminua o x e observe a chave.',
-      'Aumente o x e observe a chave.',
-      'Diminua o y e observe a chave.',
-      'Aumente o y e observe a chave.',
+  test('os cartões perguntam sem dizer para onde a chave vai; os números têm − e +', () => {
+    const html = tela(activity, play([]), <Position />)
+    const lido = texto(html)
+    for (const pergunta of [
+      'E se o x diminuir?',
+      'E se o x aumentar?',
+      'E se o y diminuir?',
+      'Se o y aumentar, a chave sobe ou desce?',
     ])
-      expect(lido).toContain(meta)
-    expect(lido).not.toMatch(/para a esquerda|para a direita|para cima|para baixo/i)
+      expect(lido).toContain(pergunta)
+    expect(lido).not.toMatch(/para a esquerda|para a direita|a chave sobe\.|desce!/i)
+    expect(html).toContain('aria-label="x menos 60"')
+    expect(html).toContain('aria-label="y mais 40"')
+    expect(lido).toContain('x cresce →')
+    expect(lido).toContain('y cresce ↓')
+    // O desafio do alvo só aparece com as quatro descobertas.
+    expect(lido).not.toContain('Mostrar o alvo')
   })
 })

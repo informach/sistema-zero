@@ -3,9 +3,7 @@
   "courseSlug": "desafio-primeiro-jogo",
   "lessonSlug": "dia-2",
   "title": "A chave muda o curso",
-  "retireBlockKeys": [
-    "video-d2-teste"
-  ],
+  "retireBlockKeys": ["video-d2-teste"],
   "blocks": [
     {
       "key": "video-d2-contexto",
@@ -26,11 +24,11 @@
         "required": true,
         "title": "O jogo guardou a chave?",
         "semPerguntaFinal": true,
-        "instructions": "Compare temChave com a memória da chave ligada e desligada. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Ande até a chave e olhe o caderninho do jogo, com o lápis ligado e desligado. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
-          "Olhe a chave, o aviso e temChave: são três coisas diferentes.",
-          "Compare temChave depois de pegar a chave com a memória desligada e depois de pegar a chave com a memória ligada.",
-          "Se a chave não estiver no chão, clique em Recomeçar a partida. Com a memória desligada, clique em Encostar na chave. Depois clique em Ligar a memória da chave, em Recomeçar a partida e em Encostar na chave. Por último, clique em Afastar e em Recomeçar a partida, observando temChave."
+          "Olhe a chave no chão e o caderninho do jogo: são coisas diferentes.",
+          "Compare o caderninho depois de pegar a chave com o lápis desligado e com o lápis ligado.",
+          "Com o lápis desligado, ande até a chave. Ligue o lápis, toque em Jogar de novo e pegue a chave. Ande para longe da chave e toque em Jogar de novo, olhando o caderninho."
         ],
         "activity": {
           "type": "experimentation",
@@ -40,16 +38,16 @@
             "freeExploration": true,
             "goalCopy": {
               "collected-without-memory": {
-                "pedido": "Com a memória da chave desligada, clique em Encostar na chave e observe temChave."
+                "pedido": "Com o lápis desligado, ande até a chave e olhe o caderninho."
               },
               "collected-with-memory": {
-                "pedido": "Clique em Ligar a memória da chave, recomece a partida e clique em Encostar na chave."
+                "pedido": "Ligue o lápis, toque em Jogar de novo e pegue a chave."
               },
               "remembered-after-leaving": {
-                "pedido": "Depois de o jogo guardar a chave, clique em Afastar e observe temChave."
+                "pedido": "Com SIM no caderninho, ande para longe da chave e olhe o caderninho."
               },
               "reset-after-remembering": {
-                "pedido": "Depois de o jogo guardar a chave, clique em Recomeçar a partida e observe temChave."
+                "pedido": "Com SIM no caderninho, toque em Jogar de novo e olhe o caderninho."
               }
             }
           }
@@ -99,9 +97,7 @@
         "purpose": "submission",
         "chain": "desafio-primeiro-jogo",
         "level": "iniciante-2d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_start",
@@ -7125,20 +7121,13 @@
       "title": "O jogo guardou a chave?",
       "intent": "exploration",
       "objective": "Distinguir retirada, aviso e memória; observar a informação ao afastar e ao recomeçar.",
-      "blockKeys": [
-        "video-d2-contexto",
-        "ponte-d2-contexto",
-        "experiencia-memoria"
-      ],
+      "blockKeys": ["video-d2-contexto", "ponte-d2-contexto", "experiencia-memoria"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-contexto",
-          "experiencia-memoria"
-        ]
+        "blockIds": ["video-d2-contexto", "experiencia-memoria"]
       }
     },
     {
@@ -7146,18 +7135,13 @@
       "title": "Recolha a chave",
       "intent": "application",
       "objective": "Programar o encontro entre personagem e chave e tirar a chave da partida.",
-      "blockKeys": [
-        "video-d2-recolher",
-        "ponte-d2-recolher"
-      ],
+      "blockKeys": ["video-d2-recolher", "ponte-d2-recolher"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-recolher"
-        ],
+        "blockIds": ["video-d2-recolher"],
         "projectChecks": [
           {
             "id": "direcional",
@@ -7241,18 +7225,13 @@
       "title": "Guarde que a chave foi encontrada",
       "intent": "application",
       "objective": "Criar temChave em falso e guardar verdadeiro no encontro com a chave.",
-      "blockKeys": [
-        "video-d2-guardar",
-        "ponte-d2-guardar"
-      ],
+      "blockKeys": ["video-d2-guardar", "ponte-d2-guardar"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-guardar"
-        ],
+        "blockIds": ["video-d2-guardar"],
         "projectChecks": [
           {
             "id": "memoria-em-execucao",
@@ -7462,20 +7441,13 @@
       "title": "Avise quem está jogando",
       "intent": "delivery",
       "objective": "Mostrar o aviso da coleta, testar a coleta inteira e enviar a atividade.",
-      "blockKeys": [
-        "video-d2-programar",
-        "ponte-d2-programar",
-        "projeto"
-      ],
+      "blockKeys": ["video-d2-programar", "ponte-d2-programar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-d2-programar",
-          "projeto"
-        ],
+        "blockIds": ["video-d2-programar", "projeto"],
         "projectChecks": [
           {
             "id": "memoria-em-execucao",

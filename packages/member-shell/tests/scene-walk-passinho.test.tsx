@@ -133,7 +133,7 @@ describe('a experiência do Dia 1 escolhe a tela pelo caso', () => {
         goals: ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       },
     })
-    expect(lenta).toContain('Câmera lenta')
+    expect(lenta).toContain('Devagar')
     expect(lenta).not.toContain('Passinho pequeno')
   })
 })

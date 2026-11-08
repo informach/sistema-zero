@@ -61,22 +61,29 @@ for (const block of ['experiencia-quadro', 'experiencia-limite']) {
     await expectLarguraToda(page)
     await page.getByRole('button', { name: 'Ampliar experiência' }).click()
     await expect(page.getByRole('dialog')).toBeVisible()
-    await expectLarguraToda(page)
+    // ⭐ Moldura nova (08/11/2026): ampliada, a tela do jogo divide a altura com o filme dos quadros
+    // e os controles, e encolhe para os três caberem juntos (a criança segura a tecla olhando a
+    // cena e o filme). Por isso aqui ela não ocupa a largura toda: fica inteira, legível, e a tecla
+    // de seta continua à vista.
+    await expect
+      .poll(() =>
+        page
+          .locator('.sz-scene-console-mundo .sz-scene-frame')
+          .evaluate((el) => Math.round(el.getBoundingClientRect().width)),
+      )
+      .toBeGreaterThanOrEqual(300)
+    await expect(
+      page.getByRole('button', { name: 'Seta para a direita: segure para o personagem andar' }),
+    ).toBeInViewport({ ratio: 1 })
 
     // O mesmo palco passa pelo celular e volta ao computador, sem reiniciar a experiência.
     await page.setViewportSize({ width: 390, height: 844 })
     await expectLarguraToda(page)
     if (block === 'experiencia-limite') {
-      await expect(page.locator('.sz-scene-frame > svg')).toHaveAttribute(
-        'viewBox',
-        '150 44 426 232',
-      )
-    }
-    await page.setViewportSize({ width: 1440, height: 1000 })
-    await expectLarguraToda(page)
-    if (block === 'experiencia-limite') {
+      // A tela do jogo inteira mais a faixa fora da tela (480 + 96), sem recorte.
       await expect(page.locator('.sz-scene-frame > svg')).toHaveAttribute('viewBox', '0 0 576 360')
     }
+    await page.setViewportSize({ width: 1440, height: 1000 })
     await page.getByRole('button', { name: 'Voltar à aula' }).click()
     await expectLarguraToda(page)
   })

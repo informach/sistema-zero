@@ -41,11 +41,11 @@ video-seta-e-velocidade-K1: Dedé substitui “E o que a nave faz num quadro em 
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-camera-lenta.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare os quadros com a seta segurada e com a seta solta, em câmera lenta e na velocidade de verdade. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare os quadros com a seta apertada e com a seta solta, no Devagar e no Rápido. Você escolhe a ordem e pode repetir quando quiser.
 
-**O que investigar (metas, em qualquer ordem):** Clique em Câmera lenta, segure a seta e observe a tira de quadros. Em câmera lenta, solte a seta e observe os próximos quadros. Depois da câmera lenta, clique em Velocidade de verdade, segure a seta por alguns segundos e compare.
+**O que investigar (metas, em qualquer ordem):** Escolha Devagar, segure a seta e olhe os quadros do jogo. Em Devagar, solte a seta e olhe os próximos quadros. Escolha Rápido, segure a seta por alguns segundos e compare.
 
-**Pistas, do aberto ao direto:** 1) Repare nas marcas e na tira de quadros enquanto você segura a seta. 2) Compare a tira com a seta solta e, depois, a câmera lenta com a velocidade de verdade. 3) Clique em Câmera lenta e segure a seta. Depois solte a seta e deixe passar alguns quadros. Por último, clique em Velocidade de verdade e segure a seta por alguns segundos. Sem palpite e sem pergunta final.
+**Pistas, do aberto ao direto:** 1) Repare nas marcas e nos quadros do jogo enquanto você segura a seta. 2) Compare os quadros com a seta solta e, em seguida, Devagar com Rápido. 3) Escolha Devagar e segure a seta. Solte a seta e deixe passar alguns quadros. Escolha Rápido e segure a seta por alguns segundos. Sem palpite e sem pergunta final.
 
 ### Seção 2. O tamanho do passinho
 
@@ -109,11 +109,11 @@ video-limite-da-tela-K1: Dedé substitui “E se o limite for ligado com a nave 
 
 **Experiência em exploração livre:** `lighthouse-walk` (`setup.freeExploration`), tela `packages/member-shell/src/components/scene-walk-beirada.tsx` e falas do Zappy em `packages/core/src/learning/scene/discovery-guidance.ts`. A experiência trabalha só a ideia, sem blocos, áreas do Estúdio nem código; os blocos ficam para a montagem.
 
-**Instrução:** Compare a nave na beirada com o limite desligado e com o limite ligado, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.
+**Instrução:** Compare a nave na beirada com a cerca desligada e com a cerca ligada, inclusive com ela já fora da tela. Você escolhe a ordem e pode repetir quando quiser.
 
-**O que investigar (metas, em qualquer ordem):** Com o limite desligado, clique em Velocidade de verdade, segure a seta até a beirada e observe a faixa fora da tela. Com a nave fora da tela, clique em Ligar o limite da tela e observe o próximo quadro. Com o limite ligado, leve a nave até a beirada, clique em Câmera lenta e observe a tira.
+**O que investigar (metas, em qualquer ordem):** Com a cerca desligada, escolha Rápido, segure a seta até a beirada e olhe a faixa fora da tela. Com a nave fora da tela, ligue a cerca e olhe o próximo quadro. Com a cerca ligada, leve a nave até a beirada, escolha Devagar e olhe os quadros.
 
-**Pistas, do aberto ao direto:** 1) Olhe a faixa fora da tela quando a nave chega na beirada. 2) E se o limite for ligado com a nave já fora da tela? Observe o próximo quadro. 3) Com o limite desligado, clique em Velocidade de verdade e segure a seta até a nave sair da tela. Depois clique em Ligar o limite da tela. Por último, clique em Câmera lenta e segure a seta na beirada. Sem palpite e sem pergunta final.
+**Pistas, do aberto ao direto:** 1) Olhe a faixa fora da tela quando a nave chega na beirada. 2) E se a cerca for ligada com a nave já fora da tela? Olhe o próximo quadro. 3) Com a cerca desligada, escolha Rápido e segure a seta até a nave sair da tela. Ligue a cerca. Escolha Devagar e segure a seta na beirada. Sem palpite e sem pergunta final.
 
 ### Seção 6. Mantenha a nave na tela
 

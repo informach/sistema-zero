@@ -14,7 +14,8 @@ const jogo = (page: Page) =>
   })
 const terminado = (page: Page) => page.getByRole('button', { name: 'Jogo terminado', exact: true })
 const andou = (page: Page) => page.locator('.sz-discovery-simple-hud .position-hud')
-const descobertas = (page: Page) => page.locator('.sz-discovery-count')
+// ⭐ 08/11/2026: a contagem da moldura nova é dita ao leitor de tela, junto das estrelas.
+const descobertas = (page: Page) => page.locator('.sz-discovery-contagem .sr-only')
 const expand = (page: Page) => page.getByRole('button', { name: 'Ampliar experiência' })
 const close = (page: Page) => page.getByRole('button', { name: 'Voltar à aula' })
 
@@ -101,11 +102,14 @@ async function expectLayout(page: Page, sideBySide: boolean) {
 
 async function fits(page: Page) {
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
-  // Os controles da tela livre cabem na coluna das ações, sem texto cortado.
+  // Os controles da tela livre cabem na coluna deles, sem texto cortado. ⭐ Desde 08/11/2026 o
+  // painel dos controles mora embaixo da cena (a coluna do mundo), na moldura nova.
   for (const button of await page.locator('.sz-scene-prancha button').all()) {
     expect(
       await button.evaluate((el) => {
-        const coluna = el.closest('.sz-scene-console-actions')?.getBoundingClientRect()
+        const coluna = el
+          .closest('.sz-scene-console-actions, .sz-scene-console-visual')
+          ?.getBoundingClientRect()
         const box = el.getBoundingClientRect()
         return (
           !!coluna &&

@@ -24,7 +24,7 @@ const activity: ExperimentationActivity = {
   cenario: 'farol',
   setup: { freeExploration: true, goals: [...METAS] },
 }
-const start: SceneStart = { scene: 'lighthouse-walk', setup: activity.setup }
+const start: SceneStart = { scene: 'lighthouse-walk', setup: activity.setup, cenario: 'farol' }
 const QUADRO: SceneAction = { type: 'advance', seconds: 1 / 30 }
 const SETA: SceneAction = { type: 'hold-arrow', held: true }
 const SOLTA: SceneAction = { type: 'hold-arrow', held: false }
@@ -53,18 +53,22 @@ const tela = (state: SceneState) =>
 /** O texto que a criança lê, sem as marcações. */
 const texto = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
 
-describe('a câmera lenta do Farol', () => {
-  test('abre pausada, com a câmera lenta em destaque e a seta solta', () => {
-    const html = tela(openScene(start))
-    expect(html).toMatch(/data-tom="gesto"[^>]*>.*Câmera lenta/)
+describe('a câmera lenta do Farol (moldura nova, 08/11/2026)', () => {
+  test('abre pausada: a tecla de seta, Devagar e Rápido, Pausar e Começo, e o personagem em x 21', () => {
+    const s = openScene(start)
+    expect(s.walk.x).toBe(21)
+    const html = tela(s)
     expect(texto(html)).toContain('Quadro 0')
-    expect(texto(html)).toContain('Seta apertada? ✗ não')
-    expect(texto(html)).toContain('Segure a seta ▶')
-    expect(texto(html)).toContain('Velocidade de verdade')
-    expect(texto(html)).toContain('Voltar ao início')
+    expect(texto(html)).toContain('seta solta')
+    expect(html).toContain('aria-label="Seta para a direita: segure para o personagem andar"')
+    expect(texto(html)).toContain('Devagar')
+    expect(texto(html)).toContain('Rápido')
+    expect(texto(html)).toContain('Pausar')
+    expect(texto(html)).toContain('Começo')
+    expect(texto(html)).toContain('Os quadros do jogo')
   })
 
-  test('⚠️⚠️ só a ideia: nenhum bloco, regra, comando, x nem velocidade na tela', () => {
+  test('⚠️⚠️ só a ideia: nenhum bloco, regra, comando nem número de velocidade na tela', () => {
     const estados = [openScene(start), play([SETA, QUADRO, QUADRO, SOLTA, QUADRO])]
     for (const s of estados) {
       const lido = texto(tela(s))
@@ -73,10 +77,10 @@ describe('a câmera lenta do Farol', () => {
     }
   })
 
-  test('cada passinho deixa uma pegada, e a tira diz quando ele andou e quando parou', () => {
+  test('cada passinho deixa uma pegada no chão, e a tira diz quando ele andou e quando parou', () => {
     const s = play([SETA, QUADRO, QUADRO, SOLTA, QUADRO])
     const html = tela(s)
-    expect(html).toContain('data-pegadas="2"')
+    expect(html.match(/<ellipse/g)?.length).toBe(2)
     expect(texto(html)).toContain('Quadro 3')
     expect(texto(html)).toContain('passinho')
     expect(texto(html)).toContain('parado')
@@ -85,24 +89,30 @@ describe('a câmera lenta do Farol', () => {
     expect(html.match(/data-current=/g)?.length).toBe(4)
   })
 
-  test('a seta segurada aparece no selo e no botão', () => {
-    const html = texto(tela(play([SETA, QUADRO])))
-    expect(html).toContain('Seta apertada? ✓ sim')
-    expect(html).toContain('Seta apertada ▶')
+  test('a seta segurada afunda a tecla e aparece no selo do filme', () => {
+    const html = tela(play([SETA, QUADRO]))
+    expect(texto(html)).toContain('seta apertada')
+    expect(html).toMatch(/aria-pressed="true"[^>]*data-mao/)
   })
 
-  test('as três descobertas dizem o que comparar, sem contar o resultado', () => {
+  test('os três cartões perguntam, sem contar o resultado antes do teste', () => {
     const html = texto(tela(openScene(start)))
-    expect(html).toContain('Compare os quadros com a seta apertada.')
-    expect(html).toContain('Compare os quadros com a seta solta.')
-    expect(html).toContain('Compare a câmera lenta com a velocidade de verdade.')
+    expect(html).toContain('O que acontece em cada quadro com a seta apertada?')
+    expect(html).toContain('E com a seta solta?')
+    expect(html).toContain('E bem rápido?')
     expect(html).toContain('0 de 3 descobertas')
-    expect(html).not.toMatch(/sair do lugar|parado|caminhada|um passinho em cada quadro/i)
+    expect(html).not.toMatch(/um quadro, um passinho|fica tudo parado|viram caminhada/i)
   })
 
-  test('fora da tela, o recado diz como voltar', () => {
-    const s = play([SETA, ...Array.from({ length: 100 }, () => QUADRO)])
-    expect(texto(tela(s))).toContain('Ele saiu da tela. Clique em Voltar ao início.')
+  test('com tudo descoberto, a ideia e o "No seu jogo" ficam no balão', () => {
+    const s = play([SETA, QUADRO])
+    const todas = {
+      ...s,
+      evidence: { ...s.evidence, discoveries: [...METAS] },
+    }
+    const lido = texto(tela(todas))
+    expect(lido).toContain('O jogo desenha um quadro atrás do outro.')
+    expect(lido).toContain('No seu jogo: em cada quadro')
   })
 })
 
@@ -127,7 +137,7 @@ describe('a experiência do Dia 1 escolhe a câmera lenta', () => {
       )
     }
     const quadro = render(activity)
-    expect(quadro).toContain('Câmera lenta')
+    expect(quadro).toContain('Devagar')
     expect(quadro).not.toContain('Adicionar bloco de mover')
     const limite = render({
       ...activity,
@@ -137,7 +147,7 @@ describe('a experiência do Dia 1 escolhe a câmera lenta', () => {
       },
     })
     expect(limite).toContain('Adicionar bloco de limite')
-    expect(limite).not.toContain('Câmera lenta')
+    expect(limite).not.toContain('Devagar')
     // O bloco ainda com o caso antigo (antes de reimportar) segue com a bancada antiga.
     const antigo = render({
       ...activity,
@@ -148,6 +158,6 @@ describe('a experiência do Dia 1 escolhe a câmera lenta', () => {
       },
     })
     expect(antigo).toContain('Adicionar bloco de mover')
-    expect(antigo).not.toContain('Câmera lenta')
+    expect(antigo).not.toContain('Devagar')
   })
 })

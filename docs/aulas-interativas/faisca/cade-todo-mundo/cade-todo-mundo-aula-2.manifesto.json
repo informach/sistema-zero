@@ -36,7 +36,7 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Quantos você já encontrou?",
-        "instructions": "Encontre um personagem. Olhe o valor guardado em achados e o placar.",
+        "instructions": "Encontre um personagem e olhe o número de achados. Compare com um toque na grama e em quem já apareceu.",
         "hints": [],
         "activity": {
           "type": "experimentation",
