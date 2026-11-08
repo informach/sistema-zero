@@ -14,6 +14,18 @@ de grupo, o placar e o baú com Se/senão e "maior ou igual"), um quiz de quatro
 A aula 2 é a transferência: o vídeo lembra a regra e a montagem completa da ilha fica no Passo a
 passo do projeto; três montagens, um quiz de duas perguntas e a entrega.
 
+## A experiência na moldura nova (08/11/2026)
+
+A experiência da aula 1 segue a proposta "Experiências do Faísca" (aprovada): passar numa moeda é pegar, sair de perto é se afastar e chegar ao baú é ele perguntar; o sumiço é um interruptor e o que o baú pergunta é uma peça que se troca ("Tem pelo menos 5 moedas?" ou "Tem exatamente 5 moedas?"); parado no baú, trocar a peça faz ele responder de novo na hora. Os botões de
+gesto de antes saíram, e os nomes das variáveis ficam para a montagem (o vídeo da experiência
+continua apresentando a variável, como na Chave do Farol). A instrução, as pistas, os pedidos de
+cada descoberta e o Passo a passo falam a língua dessa tela; as falas do Zappy vêm do motor
+(`guidance-*.ts` do core), com a ideia e o "No seu jogo" do fim.
+
+**Pendências de produção:** gerar de novo a voz do Zappy no Admin, reimportar a aula 1 (o progresso
+em andamento da experiência recomeça; a ordem de deploy é members antes de kids e community) e
+anexar o PDF novo do Passo a passo.
+
 ## Arquivos de produção
 
 - [Aula 1: Cada moeda conta (2D)](moedas-aula-1.md) · [manifesto](moedas-aula-1.manifesto.json) · [roteiro](moedas-aula-1.roteiro.md).

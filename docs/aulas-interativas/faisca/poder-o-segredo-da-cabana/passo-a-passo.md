@@ -4,17 +4,17 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 
 ## A experiência: a porta com duas peças
 
-**A ideia:** O jogo guarda em temChave e em temEmblema se o personagem já pegou cada peça, e a cabana faz uma pergunta quando ele encosta nela. Na experiência, você descobre quando a cabana abre e quando continua fechada.
+**A ideia:** O jogo anota num caderninho se o personagem já pegou cada peça (na montagem, as variáveis temChave e temEmblema), e a cabana faz uma pergunta quando ele chega nela. Na experiência, você descobre quando a cabana abre e quando continua fechada.
 
 **O que investigar:**
 
-- Encoste na cabana sem nenhuma peça e observe.
-- Encoste na cabana com uma peça só e observe.
-- Encoste na cabana com as duas peças e observe.
+- Vá até a cabana sem nenhuma peça e observe.
+- Vá até a cabana com uma peça só e observe.
+- Vá até a cabana com as duas peças e observe.
 - Compare começando pela chave e começando pelo emblema.
-- Faça a cabana pedir uma das peças e teste com uma peça só.
+- Troque o "e" pelo "ou" na pergunta da cabana e teste com uma peça só.
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe temChave, temEmblema, a porta e o aviso. O Zappy sugere o que observar.
+Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o caderninho do jogo, a porta e o aviso. O Zappy sugere o que observar.
 
 ## Aula 1 · Jogo 2D: Duas peças para abrir
 

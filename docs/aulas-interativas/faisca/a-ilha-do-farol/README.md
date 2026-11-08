@@ -46,7 +46,9 @@ do projeto. Os sólidos usados pelo verificador também foram alinhados.
 
 ### Publicação
 
-Implementação e autoria locais: experiências, quiz, objetivos, projetos progressivos, manifestos, roteiros, textos de voz e PDF. O jogo usa teclado (setas/WASD e R); as experiências também têm botões, sliders e campos numéricos. O navegador precisa oferecer WebGL.
+Implementação e autoria locais: experiências, quiz, objetivos, projetos progressivos, manifestos, roteiros, textos de voz e PDF. O jogo usa teclado (setas/WASD e R). As experiências seguem a moldura das telas livres desde 08/11/2026 (proposta "Experiências do Faísca", aprovada): a câmera é um controle com três lugares (Frente, Lado, Cima), cada número tem − e + na cor do eixo, o contato mostra o resultado do encontro na cena o tempo todo e o personagem anda com as setas (que seguem a câmera). A porta com o não (aula 3) acontece na ilha 3D do jogo do curso (cenário `ilha`), e não mais no mapa 2D da Chave do Farol. O navegador precisa oferecer WebGL.
+
+**Pendências de produção desta mudança (08/11/2026):** gerar de novo a voz do Zappy no Admin (as falas das experiências mudaram, com a ideia e o "No seu jogo" de cada uma), reimportar as três aulas (o progresso em andamento da experiência recomeça; a ordem de deploy é members antes de kids e community) e conferir se algum vídeo já gravado mostra a cena antiga da aula 3 (o mapa 2D com a tabela).
 
 Ainda dependem de produção: geração e escuta das vozes, gravação dos vídeos, anexação do PDF no Admin e publicação. `plannedVideo` é um molde de produção, não um vídeo publicado. O manifesto já contém os passos como material de texto para consulta; o PDF é anexado na publicação. Não houve importação remota nem implantação nesta tarefa.
 

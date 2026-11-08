@@ -131,6 +131,31 @@ describe('vídeo da experiência no molde do Cadê (02/11/2026)', () => {
     for (const e of todas) expect(problemasDoConvite(e), e.id).toEqual([])
   })
 
+  test('⭐ o convite de TODA experiência livre termina no mesmo fecho (08/11/2026)', () => {
+    // Decisão dela: o Dia 1 do Farol e o Cadê também. Só a instrução: os vídeos deles já foram
+    // gravados no molde anterior e não mudam.
+    const instrucoes = ['desafio-dia-1', 'cade-todo-mundo-aula-1', 'cade-todo-mundo-aula-2']
+      .flatMap((aula) => {
+        const m = JSON.parse(readFileSync(caminhoAula(`${aula}.manifesto.json`), 'utf8'))
+        if (!isLearningManifest(m)) throw new Error(aula)
+        return m.blocks.flatMap((b) =>
+          'content' in b &&
+          b.content.kind === 'interactive' &&
+          b.content.activity.type === 'experimentation' &&
+          b.content.activity.setup?.freeExploration
+            ? [{ id: `${aula}/${b.key}`, instrucao: b.content.instructions }]
+            : [],
+        )
+      })
+    // Dia 1: câmera lenta e beirada; Cadê: o toque e os achados.
+    expect(instrucoes).toHaveLength(4)
+    for (const { id, instrucao } of instrucoes) {
+      expect(instrucao, id).toEndWith('Você escolhe a ordem e pode repetir quando quiser.')
+      expect((instrucao.match(/[.!?](?:\s|$)/g) ?? []).length, id).toBeLessThanOrEqual(2)
+      expect(instrucao, id).not.toMatch(/\bDepois\b|\bPor (?:último|fim)\b|\bclique\b/i)
+    }
+  })
+
   test('reprova o tour pelos controles e a sequência de testes do formato antigo', () => {
     const antigo: Convite = {
       fala: '[confident, clear, unhurried voice] Nesta parte tem uma experiência com o personagem e a chave. Repare em três coisas nesse momento: a chave, o aviso e temChave. [interested, animated voice] Olha aqui: nesta experiência, este botão liga e desliga a memória da chave. E aqui você vê o que está guardado em temChave agora. [upbeat, encouraging voice] Agora é a sua vez de investigar! Faça o personagem pegar a chave com a memória ligada e depois com a memória desligada. Nas duas vezes, compare a chave, o aviso e temChave. Depois, teste mais duas coisas. Você escolhe por onde começar e pode repetir quantas vezes quiser. Quando terminar, clique em Próxima parte.',

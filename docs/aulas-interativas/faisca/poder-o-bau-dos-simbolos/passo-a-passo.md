@@ -4,18 +4,18 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 
 ## A experiência: a ordem dos símbolos
 
-**A ideia:** O jogo guarda em passo até onde a sequência chegou, e cada símbolo, quando é tocado, pergunta: é a minha vez? Na experiência, você descobre o que acontece com passo na ordem da placa, fora da vez e num baú que só conta.
+**A ideia:** O jogo anota num caderninho até onde a sequência chegou (na montagem, esse caderninho vira a variável passo), e cada símbolo, quando é tocado, pergunta: é a minha vez? Na experiência, você descobre o que acontece na ordem da placa, fora da vez e num baú que só conta.
 
 **O que investigar:**
 
-- Toque o sol e depois a lua e observe passo.
+- Ande até o sol e depois até a lua e olhe o caderninho do jogo.
 - Toque os três símbolos na ordem da placa e observe o baú.
-- Com o sol aceso, pule um símbolo e observe passo.
-- Comece pelo meio, sem nada aceso, e observe passo.
-- Depois de errar, tente a ordem da placa sem recomeçar a partida.
-- No baú que só conta, toque os símbolos fora da ordem e compare.
+- Com o sol aceso, pule a lua e olhe o caderninho.
+- Comece pela lua, sem nada aceso, e olhe o caderninho.
+- Depois de errar, siga a placa de novo sem jogar de novo.
+- Troque a peça para "só quantos foram tocados", toque fora da ordem e compare.
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada toque, observe passo, os símbolos acesos e o baú. Para comparar com o baú que só conta, veja antes o baú que confere a vez responder. O Zappy sugere o que observar.
+Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada toque, observe o caderninho do jogo, os símbolos acesos e o baú. Para comparar com o baú que só conta, veja antes o baú que confere a ordem responder. O Zappy sugere o que observar.
 
 ## Aula 1 · Jogo 2D: Na ordem certa
 

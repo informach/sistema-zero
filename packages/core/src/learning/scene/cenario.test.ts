@@ -11,11 +11,12 @@ import {
 } from './cenario'
 
 describe('o registro de cenários', () => {
-  test('os seis mundos que os cursos ensinam estão lá', () => {
+  test('os sete mundos que os cursos ensinam estão lá', () => {
     expect([...SCENE_CENARIO_IDS].sort()).toEqual([
       'corre-dino',
       'farol',
       'gorilas',
+      'ilha',
       'jardim',
       'meu-jeito',
       'nave',
@@ -148,5 +149,13 @@ describe('o registro de cenários', () => {
     expect(sceneCenario({ hero: { name: 'nave', gender: 'f' } }, 'lighthouse-key', 'nave')).toBe(
       'farol',
     )
+  })
+
+  test('⭐ a porta da Ilha do Farol declara a ilha 3D, o jogo do curso (08/11/2026)', () => {
+    expect(sceneCenario(undefined, 'lighthouse-key', 'ilha')).toBe('ilha')
+    // Só a porta: as outras cenas fixas do Farol continuam no mapa 2D.
+    expect(sceneCenario(undefined, 'collect-and-remember', 'ilha')).toBe('farol')
+    // As figuras continuam pertencendo ao Farol (ele vem primeiro no registro).
+    expect(CENARIO_DA_FIGURA['personagem-farol']).toBe('farol')
   })
 })

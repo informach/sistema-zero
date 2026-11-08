@@ -46,20 +46,28 @@
         "kind": "interactive",
         "title": "O que muda com o não?",
         "required": true,
-        "instructions": "Compare a resposta da porta com a pergunta sem o não e com o não, com a chave e sem a chave. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Leve o personagem até o farol com a chave e sem ela e compare a resposta da porta com o \"não\" e sem ele. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
-          "Antes de testar, repare se a porta está trancada e qual pergunta ela está fazendo.",
-          "Com a mesma chave, teste as duas perguntas e compare as respostas na tabela.",
-          "Clique em Testar a porta. Depois clique em Pôr o não na pergunta e em Testar a porta de novo. Por fim, clique em Dar a chave ao personagem e teste as duas perguntas outra vez."
+          "Antes de ir ao farol, repare se o personagem tem a chave e qual pergunta a porta faz.",
+          "Com a mesma chave, ouça a porta com as duas perguntas e compare as respostas.",
+          "Leve o personagem até o farol sem a chave. Encaixe o \"não\" na pergunta e ouça a resposta de novo. Então pegue a chave e compare as duas perguntas outra vez."
         ],
         "semPerguntaFinal": true,
         "activity": {
           "type": "experimentation",
           "scene": "lighthouse-key",
-          "cenario": "farol",
+          "cenario": "ilha",
           "setup": {
             "goals": ["not-flips-with-key", "not-flips-without-key"],
-            "freeExploration": true
+            "freeExploration": true,
+            "goalCopy": {
+              "not-flips-without-key": {
+                "pedido": "Sem a chave, ouça a porta com o \"não\" e sem ele."
+              },
+              "not-flips-with-key": {
+                "pedido": "Com a chave, ouça a porta com o \"não\" e sem ele."
+              }
+            }
           }
         }
       }

@@ -635,8 +635,9 @@ describe('o cenário das cenas dos cursos', () => {
     'jornada-faisca-poder-2': 'farol',
     'jornada-faisca-poder-3': 'farol',
     'jornada-faisca-poder-4': 'farol',
-    // A Ilha do Farol: a ilha 3D tem palco próprio; a porta do não (aula 3, 02/11/2026) é a do Farol.
-    'jornada-faisca-base-3d': 'farol',
+    // A Ilha do Farol: a ilha 3D tem palco próprio, e a porta do não (aula 3) acontece nela desde
+    // 08/11/2026: a cena é o jogo do curso (cenário `ilha`), não o mapa 2D do Farol.
+    'jornada-faisca-base-3d': 'ilha',
     'nave-contra-asteroides': 'nave',
     'o-jogo-do-meu-jeito': 'meu-jeito',
   }

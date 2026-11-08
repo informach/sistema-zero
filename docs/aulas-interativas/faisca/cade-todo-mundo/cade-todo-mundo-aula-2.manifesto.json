@@ -36,7 +36,7 @@
         "required": true,
         "semPerguntaFinal": true,
         "title": "Quantos você já encontrou?",
-        "instructions": "Encontre um personagem e olhe o número de achados. Compare com um toque na grama e em quem já apareceu.",
+        "instructions": "Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [],
         "activity": {
           "type": "experimentation",

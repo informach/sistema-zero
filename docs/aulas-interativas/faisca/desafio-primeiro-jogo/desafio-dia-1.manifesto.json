@@ -1727,7 +1727,7 @@
         "required": true,
         "title": "O jogo em câmera lenta",
         "semPerguntaFinal": true,
-        "instructions": "Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Repare nas pegadas e nos quadros do jogo enquanto a seta está apertada.",
           "Compare os quadros com a seta solta e, em seguida, Devagar com Rápido.",
@@ -1789,7 +1789,7 @@
         "required": true,
         "title": "A beirada da tela",
         "semPerguntaFinal": true,
-        "instructions": "Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.",
+        "instructions": "Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe a faixa fora da tela quando o personagem chega na beirada.",
           "E se a cerca for ligada com ele já fora da tela? Olhe o próximo quadro.",

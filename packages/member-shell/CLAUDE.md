@@ -1,5 +1,42 @@
 # CLAUDE.md — @sistemazero/member-shell
 
+## As telas livres do Faísca (08/11/2026)
+
+Proposta "Experiências do Faísca" (Canvas aprovado, v3): as oito experiências livres da Ilha do
+Farol e dos quatro Poderes passaram à moldura nova (seção abaixo). Regras pedagógicas em
+`docs/aulas-interativas-tecnico/DESCOBERTA-GUIADA.md` ("No Faísca").
+
+- **O personagem anda até as coisas.** Chegar perto (borda de subida, `useChegada`) é o gesto do
+  jogo; os botões de gesto ("Encostar…", "Pegar…", "Tocar…", "Esperar 1 segundo") saíram. O motor
+  NÃO ganhou ação: a tela traduz o lugar do personagem nas ações de sempre.
+- **`scene-faisca-livre.tsx`**: as peças comuns. `useMapaLivre` (o andar no mapa 2D do Farol, com
+  `LIMITES_DO_MAPA`), `ModuloAndar` (as setas), `Encaixe` (a peça que encaixa, como o "não"),
+  `Troca` (a peça que se troca tocando, com a frase da regra inteira), `CaderninhoDe`,
+  `PerguntaGrande`, `useOlhar`, `useRepetir` e `cartoesDaAtividade`. Classes `sz-discovery-livre-*`,
+  na seção "as telas livres do Faísca" do `scene-discovery-moldura.css`.
+- **Os Poderes** (`scene-poder-ponte|moedas|simbolos|cabana.tsx`, os nomes exportados de antes): os
+  palcos (`scene-timed-bridge`, `scene-coin-counter`, `scene-symbol-sequence`, `scene-two-pieces`)
+  ganharam a prop opcional `heroi`; sem ela, tudo como antes (bancadas, quizzes e o
+  `exploration-stage` usam o mesmo palco). Na ponte, o relógio do jogo anda sozinho e o da partida
+  começa no primeiro passo; a fala vem de `discoverySpeech(ponteGuidance(state, has, {rodando}))`,
+  porque só a tela sabe se o relógio corre. Nas moedas e na cabana, trocar a peça com o personagem
+  parado no baú ou na porta despacha `try-chest`/`try-cabin` de novo.
+- **A Ilha** (`scene-island-discovery.tsx`, `IslandDiscovery` e `passoDaSeta`): a câmera é um
+  controle de três lugares (Frente, Lado, Cima) e cada número tem − e + na cor do eixo. No contato,
+  `islandContact` alimenta o selo do encontro o tempo todo (o "Testar o encontro" saiu), trocar a
+  câmera também testa, e as setas seguem a câmera (`passoDaSeta`).
+- ⚠️⚠️ **A cena é o jogo do curso** (pedido dela): a porta com o não (aula 3) acontece na ILHA 3D
+  (`scene-door-not.tsx` → `scene-ilha-porta.tsx`, `IlhaDoJogo`), não no mapa 2D da Chave do Farol.
+  O palco carrega o GLB do jogo por `scene-ilha-glb.ts` (`carregarIlhaDoJogo`, também usado pelo
+  `IslandWorld`), usa as áreas de andar e os sólidos do jogo (`podeAndarNaIlha`), a câmera de cima e
+  de lado (`VISTA`, az −0,95) acompanhando o personagem, e gira as setas como o `controlWithKeys`
+  do runtime (`setasNaVista`). A porta obedece à resposta (`lighthouseDoorAnswer`) e o balão preso
+  ao farol diz SIM ou NÃO; parado no farol, encaixar o "não" pergunta de novo na hora. Expõe
+  `data-heroi` e `data-vista-az` para o e2e.
+- Testes: `scene-poder-ponte-moedas`, `scene-poder-simbolos-cabana`, `scene-door-not`,
+  `scene-ilha-ideia` e `scene-despacho`; e2e `community-kids/e2e-scenes/faisca-livres.spec.ts`
+  (uma descoberta por experiência pelo teclado e as oito em 390 px).
+
 ## A moldura das experiências livres (08/11/2026)
 
 Uma criança testou as experiências do Cadê e do Farol e não entendeu o que fazer. A proposta

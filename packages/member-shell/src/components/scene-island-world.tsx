@@ -2,6 +2,7 @@
 import { ISLAND_CONTACT, type IslandState } from '@sistemazero/core/learning/scene'
 import { useEffect, useRef, useState } from 'react'
 import type * as THREE from 'three'
+import { carregarIlhaDoJogo } from './scene-ilha-glb'
 
 const viewNames = { front: 'Vista de frente', side: 'Vista de lado', top: 'Vista de cima' }
 type ViewState = Pick<IslandState, 'mode' | 'view' | 'key' | 'hero' | 'bounds' | 'before'>
@@ -28,11 +29,9 @@ export function IslandWorld({
     let disposed = false,
       cleanup = () => {}
     async function mount() {
-      const [T, { GLTFLoader }, { ILHA_SCENE_GLB }] = await Promise.all([
-        import('three'),
-        import('three/addons/loaders/GLTFLoader.js'),
-        import('@sistemazero/studio/ilha-farol-scene'),
-      ])
+      // A cena do jogo, lida antes do renderizador: sem ele, nada foi para a placa de vídeo, e sair
+      // no meio não deixa nada para soltar.
+      const { T, gltf } = await carregarIlhaDoJogo()
       if (disposed || !host.current) return
       const world = new T.Scene(),
         camera = new T.PerspectiveCamera(48, 1, 0.1, 200)
@@ -73,28 +72,6 @@ export function IslandWorld({
         renderer.dispose()
         renderer.forceContextLoss()
         renderer.domElement.remove()
-      }
-      // As texturas de dentro do .glb (o céu em degradê): no Chrome o GLTFLoader as lê com
-      // fetch(blob:), que a CSP dos apps não libera em connect-src. Pela <img> (o caminho que
-      // ele usa no Safari) o img-src blob: deixa. O arquivo em si é decodificado aqui.
-      const loader = new GLTFLoader()
-      loader.register((parser) => {
-        const p = parser as unknown as {
-          textureLoader: THREE.Loader
-          options: { manager: THREE.LoadingManager }
-        }
-        p.textureLoader = new T.TextureLoader(p.options.manager)
-        return { name: 'sz_textures_by_img' }
-      })
-      const glb = Uint8Array.from(
-        atob(ILHA_SCENE_GLB.slice(ILHA_SCENE_GLB.indexOf(',') + 1)),
-        (c) => c.charCodeAt(0),
-      )
-      const gltf = await loader.parseAsync(glb.buffer, '')
-      if (disposed) {
-        release(gltf.scene)
-        for (const r of resources) r.dispose()
-        return
       }
       const scene = gltf.scene
       world.add(scene)

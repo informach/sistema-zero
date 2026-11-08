@@ -122,15 +122,14 @@ for (const [index, aula] of simbolosAulas.entries()) {
           required: true,
           title: 'A ordem dos símbolos',
           semPerguntaFinal: true,
-          // Só a ideia e o convite à investigação (02/11/2026): a pergunta "é a minha vez?" e passo,
-          // sem blocos. As pistas e o "Ainda falta" citam os botões desta tela (o catálogo cita
-          // "Na ordem" e "Só contando", da bancada antiga).
+          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até as
+          // pedras, chegar numa pedra é tocar o símbolo, e como o baú decide é uma peça que se troca.
           instructions:
-            'Compare o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe a ordem e pode repetir quando quiser.',
+            'Ande até as pedras e toque os símbolos, na ordem da placa e fora dela, e troque como o baú decide. Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
-            'Olhe o número passo depois de cada toque: ele muda? Para quanto?',
-            'Compare a ordem da placa com um símbolo fora da vez: o que acontece com passo e com os símbolos acesos?',
-            'Clique em Tocar o sol, Tocar a lua e Tocar a estrela. Clique em Recomeçar a partida, Tocar o sol, Tocar a estrela e Tocar a lua. Clique de novo em Tocar o sol, Tocar a lua e Tocar a estrela. Por último, clique em O baú só conta e em Tocar a estrela, Tocar a lua e Tocar o sol.',
+            'Olhe o caderninho depois de cada símbolo: em que passo da placa você está?',
+            'Compare a ordem da placa com um símbolo fora da vez: o que acontece com o passo e com os símbolos acesos?',
+            'Toque o sol, a lua e a estrela, nessa ordem. Jogue de novo, toque o sol e vá à estrela por cima da lua. Comece pela lua. Erre e siga a placa de novo. Troque a peça para "só quantos foram tocados" e toque fora da ordem.',
           ],
           activity: {
             type: 'experimentation',
@@ -140,29 +139,18 @@ for (const [index, aula] of simbolosAulas.entries()) {
               freeExploration: true,
               goalCopy: {
                 'step-moves': {
-                  pedido:
-                    'Com O baú confere a vez escolhido, clique em Tocar o sol e depois em Tocar a lua, observando passo.',
+                  pedido: 'Ande até o sol e depois até a lua, olhando o caderninho.',
                 },
-                'right-order': {
-                  pedido:
-                    'Com O baú confere a vez escolhido, clique em Tocar o sol, Tocar a lua e Tocar a estrela, nessa ordem.',
-                },
-                'out-of-turn': {
-                  pedido:
-                    'Com o sol aceso, clique em Tocar a estrela, pulando a lua, e observe passo.',
-                },
-                'middle-start': {
-                  pedido:
-                    'Numa partida sem nada aceso, clique em Tocar a lua antes do sol e observe passo.',
-                },
+                'right-order': { pedido: 'Toque o sol, a lua e a estrela, na ordem da placa.' },
+                'out-of-turn': { pedido: 'Com o sol aceso, vá à estrela pulando a lua.' },
+                'middle-start': { pedido: 'Jogue de novo e comece pela lua.' },
                 'restart-works': {
-                  pedido:
-                    'Erre a ordem e, sem clicar em Recomeçar a partida, clique em Tocar o sol, Tocar a lua e Tocar a estrela.',
+                  pedido: 'Erre a ordem e, sem jogar de novo, siga a placa até o fim.',
                 },
                 'count-vs-order': {
                   label: 'No baú que só conta, a ordem errada também abriu',
                   pedido:
-                    'Depois de ver o baú que confere a vez responder, clique em O baú só conta e em Tocar a estrela, Tocar a lua e Tocar o sol.',
+                    'Troque a peça para "só quantos foram tocados" e toque os símbolos fora da ordem.',
                 },
               },
             },

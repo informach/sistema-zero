@@ -117,15 +117,15 @@ for (const [index, aula] of ponteAulas.entries()) {
           required: true,
           title: 'A ponte apressada',
           semPerguntaFinal: true,
-          // Faísca, 02/11/2026: só a ideia (a alavanca, a ponte, ponteAberta e o relógio) e o convite
-          // à investigação. As pistas e os pedidos do modelo citam "Dentro da alavanca" e "No começo
-          // do jogo", da bancada antiga: aqui vão do aberto ao direto com os botões desta tela.
+          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): o personagem ANDA até a
+          // alavanca e até a ponte, o relógio do jogo anda sozinho e onde ele começa é uma peça que
+          // se troca. A instrução, as pistas e os pedidos falam a língua dessa tela.
           instructions:
-            'Compare o que acontece com a ponte enquanto o relógio conta, com o relógio começando na alavanca e junto com a partida. Você escolhe a ordem e pode repetir quando quiser.',
+            'Ande até a alavanca e até a ponte, olhe o relógio do jogo e troque onde ele começa. Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
-            'Olhe a ponte, ponteAberta e o relógio antes e após cada teste.',
-            'Compare ir até a ponte antes de puxar a alavanca, assim que puxar e quando o relógio já chegou a 4. Depois compare o relógio começando na alavanca e junto com a partida.',
-            'Clique em Encostar na ponte. Clique em Puxar a alavanca e em Encostar na ponte. Clique em Recomeçar a partida, em Puxar a alavanca e em Esperar 1 segundo quatro vezes; depois clique em Puxar a alavanca de novo. Por último, escolha Quando a partida começa, clique em Esperar 1 segundo quatro vezes, em Puxar a alavanca e em Esperar 1 segundo mais quatro vezes.',
+            'Olhe a ponte e o relógio do jogo antes e depois de cada teste.',
+            'Compare ir até a ponte antes de puxar a alavanca, logo depois de puxar e quando o relógio já chegou a 4. Compare também o relógio começando com a partida.',
+            'Ande até a ponte sem puxar a alavanca. Ande até a alavanca e corra até a ponte. Jogue de novo, puxe a alavanca e espere o relógio chegar a 4; saia e volte à alavanca. Troque a peça para "quando a partida começa", puxe a alavanca e espere.',
           ],
           activity: {
             type: 'experimentation',
@@ -135,25 +135,19 @@ for (const [index, aula] of ponteAulas.entries()) {
               freeExploration: true,
               // O "Ainda falta" e o relatório da equipe com os botões desta tela.
               goalCopy: {
-                'closed-start': {
-                  pedido: 'Antes de puxar a alavanca, clique em Encostar na ponte.',
-                },
-                'lever-opens': { pedido: 'Clique em Puxar a alavanca e observe ponteAberta.' },
+                'closed-start': { pedido: 'Ande até a ponte antes de puxar a alavanca.' },
+                'lever-opens': { pedido: 'Ande até a alavanca e olhe a ponte.' },
                 'in-time': {
-                  pedido:
-                    'Clique em Puxar a alavanca e em Encostar na ponte antes de o relógio chegar a 4.',
+                  pedido: 'Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.',
                 },
-                'rises-alone': {
-                  pedido:
-                    'Clique em Puxar a alavanca e em Esperar 1 segundo até o relógio chegar a 4.',
-                },
+                'rises-alone': { pedido: 'Puxe a alavanca e espere o relógio chegar a 4.' },
                 'pull-again': {
-                  pedido: 'Deixe a ponte subir sozinha e clique em Puxar a alavanca de novo.',
+                  pedido: 'Depois que a ponte subir sozinha, saia e volte à alavanca.',
                 },
                 'timer-place': {
                   label: 'Com o relógio começando junto com a partida, a ponte não subiu mais',
                   pedido:
-                    'Escolha Quando a partida começa, clique em Esperar 1 segundo quatro vezes, puxe a alavanca e espere mais quatro segundos.',
+                    'Troque a peça para "quando a partida começa", puxe a alavanca e espere 4 segundos.',
                 },
               },
             },

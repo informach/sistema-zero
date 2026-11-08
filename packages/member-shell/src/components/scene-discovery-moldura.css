@@ -1603,3 +1603,220 @@
 .sz-discovery-modulo[data-largo="true"] {
   flex-basis: 100%;
 }
+
+/* ════════ as telas livres do Faísca: Ilha do Farol e os quatro Poderes (08/11/2026) ════════ */
+/* A pergunta inteira com a peça no meio ("A porta [não] está trancada?", "Tem [pelo menos] 5
+   moedas?"). Dentro de um módulo, o título do módulo já diz o que é: o rótulo da peça não repete. */
+.sz-discovery-livre-encaixe .sz-discovery-encaixe-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.sz-discovery-modulo .sz-discovery-livre-encaixe {
+  width: 100%;
+  align-items: center;
+}
+.sz-discovery-modulo .sz-discovery-livre-encaixe .sz-discovery-encaixe-rotulo {
+  display: none;
+}
+.sz-discovery-livre-encaixe .sz-discovery-slot {
+  min-width: 3.2em;
+  justify-content: center;
+}
+.sz-discovery-livre-frase {
+  font:
+    800 0.95rem var(--font-baloo),
+    "Baloo 2",
+    sans-serif;
+  color: var(--szd-tinta, #18213a);
+}
+/* A peça que se troca: uma peça só na frase, com a setinha; tocar troca pela outra. */
+.sz-discovery-livre-troca {
+  cursor: pointer;
+  border-style: solid;
+  border-color: #2fbf71;
+  background: #f2fbf6;
+}
+.sz-discovery-livre-peca-trocavel {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 1 !important;
+  border: 2px solid var(--szd-acao) !important;
+  background: #eaf1ff;
+  color: #0a2a7a !important;
+  box-shadow: 0 3px 0 #0a2a7a33;
+  animation: sz-discovery-selo 0.3s ease;
+}
+.sz-discovery-livre-troca-seta {
+  font-size: 0.8em;
+  color: var(--szd-acao);
+}
+/* O caderninho com várias linhas; a resposta nunca quebra no meio ("3 de 3"). */
+.sz-discovery-livre-caderno {
+  gap: 2px;
+}
+.sz-discovery-livre-caderno-linha {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+.sz-discovery-livre-caderno-linha .sz-discovery-caderno-resposta {
+  white-space: nowrap;
+}
+/* O "+1" das moedas, sobre o placar do jogo (canto de cima). */
+.sz-discovery-livre-salto-moeda {
+  position: absolute;
+  top: 22%;
+  left: 6%;
+  z-index: 3;
+}
+/* O resultado do encontro no 3D, na cena o tempo todo (no canto, longe do selo "Você descobriu!"). */
+.sz-discovery-livre-encontro {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 3;
+  border-radius: 999px;
+  padding: 6px 16px;
+  font:
+    800 1.05rem var(--font-baloo),
+    "Baloo 2",
+    sans-serif;
+  background: #56607a;
+  color: #fff;
+  box-shadow: 0 4px 0 #2a3150;
+  animation: sz-discovery-selo 0.35s ease;
+}
+.sz-discovery-livre-encontro[data-encostou="true"] {
+  background: var(--szd-verde);
+  box-shadow: 0 4px 0 #075a3e;
+}
+/* Os três números do 3D, cada um com a cor do eixo do Estúdio 3D (x vermelho, y verde, z azul). */
+.sz-discovery-livre-eixos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.sz-discovery-livre-eixo {
+  border-color: var(--eixo);
+  box-shadow: inset 4px 0 0 var(--eixo);
+}
+.sz-discovery-livre-eixo .sz-discovery-eixo {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 2.2em;
+  color: var(--eixo);
+  font:
+    800 1.15rem var(--font-baloo),
+    "Baloo 2",
+    sans-serif;
+  line-height: 1;
+}
+.sz-discovery-livre-eixo .sz-discovery-eixo small {
+  font:
+    700 0.62rem var(--font-nunito),
+    "Nunito",
+    sans-serif;
+  color: #56607a;
+  white-space: nowrap;
+}
+/* O − da altura pulsa quando é a vez dele (o contato, depois de ver o espaço). */
+.sz-discovery-livre-eixo button[data-pulsar="true"] {
+  animation: sz-discovery-pulso 1.6s ease-in-out infinite;
+}
+/* A câmera do 3D: três lugares, na forma da velocidade. */
+.sz-discovery-livre-camera button {
+  white-space: nowrap;
+}
+.sz-discovery-livre-camera button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+/* A ilha do jogo em 3D (aula 3): o aviso do jogo no alto e o balão preso ao farol. */
+.sz-discovery-livre-ilha-aviso {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  translate: -50% 0;
+  z-index: 2;
+  max-width: calc(100% - 24px);
+  border-radius: 10px;
+  padding: 5px 12px;
+  background: rgb(10 30 45 / 0.78);
+  color: #fff;
+  font:
+    700 0.9rem var(--font-nunito),
+    "Nunito",
+    sans-serif;
+  text-align: center;
+  pointer-events: none;
+}
+.sz-discovery-livre-balao3d {
+  position: absolute;
+  z-index: 3;
+  translate: -50% calc(-100% - 12px);
+  max-width: 70%;
+  border: 3px solid #3e63dd;
+  border-radius: 14px;
+  padding: 6px 12px;
+  background: #fff;
+  color: #18213a;
+  font:
+    800 0.95rem var(--font-baloo),
+    "Baloo 2",
+    sans-serif;
+  text-align: center;
+  box-shadow: 0 4px 0 rgb(10 42 122 / 0.25);
+  pointer-events: none;
+  animation: sz-discovery-selo 0.3s ease;
+}
+.sz-discovery-livre-balao3d::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  translate: -50% 0;
+  border: 8px solid transparent;
+  border-top-color: inherit;
+  border-bottom: 0;
+}
+.sz-discovery-livre-balao3d[data-tom="sim"] {
+  border-color: #12a150;
+}
+.sz-discovery-livre-balao3d[data-tom="nao"] {
+  border-color: #e5484d;
+}
+/* A cena 3D mede a própria largura: na cena estreita (celular), o aviso do jogo e o balão
+   encolhem para não tapar a ilha. O selo do encontro mora no palco da moldura (fora da cena), então
+   segue a largura da tela e desce para não cobrir o nome da vista. */
+.sz-island-world {
+  container-type: inline-size;
+}
+@container (max-width: 420px) {
+  .sz-discovery-livre-ilha-aviso {
+    font-size: 0.74rem;
+    padding: 3px 8px;
+  }
+  .sz-discovery-livre-balao3d {
+    font-size: 0.8rem;
+  }
+}
+@media (max-width: 560px) {
+  .sz-discovery-livre-encontro {
+    top: 52px;
+    font-size: 0.9rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sz-discovery-livre-peca-trocavel,
+  .sz-discovery-livre-encontro,
+  .sz-discovery-livre-balao3d,
+  .sz-discovery-livre-eixo button[data-pulsar="true"] {
+    animation: none;
+  }
+}

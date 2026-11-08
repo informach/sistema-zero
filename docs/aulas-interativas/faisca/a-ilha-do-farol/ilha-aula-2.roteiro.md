@@ -109,7 +109,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 [confident, clear, unhurried voice] Agora abra Jogo 3D, depois Encostar e depois Encostar de novo. Pegue o bloco Quando personagem encostar em chave e solte nesse espaço.
 
-[engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o Testar o encontro da experiência, ele confere o lugar no chão e a altura.
+[engaging, energetic, conversational voice] É este bloco que percebe o encontro. Como o jogo na experiência do contato, ele confere o lugar no chão e a altura.
 
 [confident, clear, unhurried voice] Repare que ele já chega com personagem no primeiro nome e chave no segundo. Se aparecer outro nome, clique nele e escolha o certo.
 

@@ -4,47 +4,63 @@
     "experiencia": [
       {
         "id": "coin-start",
-        "text": "Observe o número moedas, no canto do jogo. Encoste numa moeda: o que muda? Depois encoste em outra moeda e compare."
+        "text": "Moedas no caminho! Pegue uma e olhe o número."
       },
       {
         "id": "coin-first",
-        "text": "Uma moeda somou 1 em moedas: o número de antes, mais 1, dá o número de agora. E com outra moeda, diferente, quanto o número muda? Encoste em outra moeda e observe moedas."
+        "text": "Somou! E outra moeda?"
       },
       {
         "id": "coin-away",
-        "text": "Cada moeda nova somou 1 em moedas. E se o personagem se afastar das moedas, o que acontece com o número? Clique em Afastar e observe moedas."
+        "text": "E longe das moedas, o número continua?"
       },
       {
         "id": "coin-back",
-        "text": "Longe das moedas, o número continuou guardado. E se o personagem voltar ao lugar de uma moeda que ele já pegou, o que acontece com moedas? Volte a uma moeda que você já pegou e observe o número."
+        "text": "Passe de novo onde já pegou uma moeda."
       },
       {
         "id": "coin-compare-off",
-        "text": "A moeda que sumiu não contou de novo: moedas continuou igual. E se a moeda não sumir ao ser pega? Clique em Desligar o sumiço da moeda. Depois pegue uma moeda, encoste em outra e volte à primeira, observando moedas."
+        "text": "E se a moeda não sumir? Desligue o sumiço."
       },
       {
-        "id": "coin-compare-on",
-        "text": "Sem sumir, a mesma moeda contou de novo: moedas subiu outra vez. E se a moeda sumir ao ser pega? Clique em Ligar o sumiço da moeda. Depois pegue uma moeda, encoste em outra e volte à primeira, observando moedas."
+        "id": "coin-compare-again",
+        "text": "Sem sumiço: passe de novo na mesma moeda."
       },
       {
         "id": "coin-chest",
-        "text": "Quando a moeda some, ela conta uma vez só. Agora o baú, que faz uma pergunta sobre moedas. O que ele faz quando o personagem chega com menos de 5? Com uma a quatro moedas, clique em Encostar no baú e observe o baú e o aviso."
+        "text": "Com menos de 5, o baú abre? Vá até ele."
+      },
+      {
+        "id": "coin-chest-restart",
+        "text": "Jogue de novo e leve menos de 5 ao baú."
       },
       {
         "id": "coin-rules",
-        "text": "Com menos de 5, o baú ficou fechado e avisou o que faltava. E com mais de 5 moedas, as duas perguntas do baú dão a mesma resposta? Junte mais de 5 moedas e clique em Encostar no baú com Pelo menos 5 e depois com Exatamente 5."
+        "text": "Junte mais de 5 moedas e teste as duas perguntas."
       },
       {
-        "id": "coin-rules-equals",
-        "text": "Com mais de 5 moedas e a pergunta Pelo menos 5, o baú abriu. E com Exatamente 5, o que acontece com as mesmas moedas? Escolha Exatamente 5 e clique em Encostar no baú de novo."
+        "id": "coin-rules-go",
+        "text": "Mais de 5 moedas! Vá até o baú."
       },
       {
-        "id": "coin-rules-atleast",
-        "text": "Com mais de 5 moedas e a pergunta Exatamente 5, o baú ficou fechado. E com Pelo menos 5, o que acontece com as mesmas moedas? Escolha Pelo menos 5 e clique em Encostar no baú de novo."
+        "id": "coin-rules-swap",
+        "text": "Troque a peça do baú e veja o que muda."
+      },
+      {
+        "id": "coin-free",
+        "text": "Pegue moedas e compare."
+      },
+      {
+        "id": "coin-idea",
+        "text": "O jogo guarda quantas moedas foram pegas: cada moeda soma 1. O baú olha esse número para decidir se abre."
+      },
+      {
+        "id": "coin-bridge",
+        "text": "No seu jogo: um número vai contar as moedas, e o baú vai abrir com pelo menos 5."
       },
       {
         "id": "coin-complete",
-        "text": "Você comparou todos os casos. Cada moeda nova soma 1 em moedas, e o número continua guardado longe delas. Quando a moeda some, ela conta uma vez só; sem sumir, ela conta de novo. Com mais de 5 moedas, Pelo menos 5 abre o baú, e Exatamente 5 não, porque mais de 5 não é exatamente 5. Pode continuar testando quando quiser."
+        "text": "Cada moeda soma 1. O baú confere o número."
       }
     ]
   }

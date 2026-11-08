@@ -9,6 +9,8 @@ import { Panel, PanelGroup, PanelResizeHandle } from 'react-resizable-panels'
 import naveDia1 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-1.manifesto.json'
 import naveDia5 from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-dia-5.manifesto.json'
 import navePrimeira from '../../../../docs/aulas-interativas/construtor/nave-contra-asteroides/nave-contra-asteroides-primeira-nave.manifesto.json'
+import ilha1 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-1.manifesto.json'
+import ilha2 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-2.manifesto.json'
 import ilha3 from '../../../../docs/aulas-interativas/faisca/a-ilha-do-farol/ilha-aula-3.manifesto.json'
 import farolDia1 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-1.manifesto.json'
 import farolDia2 from '../../../../docs/aulas-interativas/faisca/desafio-primeiro-jogo/desafio-dia-2.manifesto.json'
@@ -44,7 +46,8 @@ const PODERES: Record<string, BlocoDoManifesto[]> = {
   simbolos: simbolos.blocks as BlocoDoManifesto[],
   cabana: cabana.blocks as BlocoDoManifesto[],
 }
-// O Corre Dino inteiro (`?course=dino`) e a aula 3 da Ilha (`?course=ilha`), em exploração livre desde
+// O Corre Dino inteiro (`?course=dino`) e as três aulas da Ilha (`?course=ilha`, as quatro experiências
+// 3D desde 08/11/2026), em exploração livre desde
 // 02/11/2026; o Dia 5 da Nave entra depois dos outros (a meta do jogo), sem tomar chave de ninguém.
 const DINO = [
   dino01,
@@ -68,7 +71,7 @@ const blocks: BlocoDoManifesto[] =
     : curso === 'dino'
       ? DINO
       : curso === 'ilha'
-        ? (ilha3.blocks as BlocoDoManifesto[])
+        ? ([...ilha1.blocks, ...ilha2.blocks, ...ilha3.blocks] as BlocoDoManifesto[])
         : (PODERES[curso] ??
           ([...navePrimeira.blocks, ...naveDia1.blocks, ...naveDia5.blocks] as BlocoDoManifesto[]))
 const source = blocks.find(

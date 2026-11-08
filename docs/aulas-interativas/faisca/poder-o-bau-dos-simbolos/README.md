@@ -20,6 +20,18 @@ perguntas e a entrega.
 Nenhum bloco novo: a ordem usa uma variável de número e a comparação `=` de Programação
 (`sz_val_compare`, que já vem dentro do Se), iguais nos dois jogos. O baú é o das Moedas.
 
+## A experiência na moldura nova (08/11/2026)
+
+A experiência da aula 1 segue a proposta "Experiências do Faísca" (aprovada): o personagem anda até as pedras e chegar numa pedra é tocar o símbolo; como o baú decide é uma peça que se troca ("a ordem dos símbolos" ou "só quantos foram tocados"); o caderninho diz "Em que passo da placa?". Os botões de
+gesto de antes saíram, e os nomes das variáveis ficam para a montagem (o vídeo da experiência
+continua apresentando a variável, como na Chave do Farol). A instrução, as pistas, os pedidos de
+cada descoberta e o Passo a passo falam a língua dessa tela; as falas do Zappy vêm do motor
+(`guidance-*.ts` do core), com a ideia e o "No seu jogo" do fim.
+
+**Pendências de produção:** gerar de novo a voz do Zappy no Admin, reimportar a aula 1 (o progresso
+em andamento da experiência recomeça; a ordem de deploy é members antes de kids e community) e
+anexar o PDF novo do Passo a passo.
+
 ## Arquivos de produção
 
 - [Aula 1: Na ordem certa (2D)](simbolos-aula-1.md) · [manifesto](simbolos-aula-1.manifesto.json) · [roteiro](simbolos-aula-1.roteiro.md).

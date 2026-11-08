@@ -8,14 +8,14 @@ Poder do Faísca. Aqui está o que investigar na experiência e cada montagem da
 
 **O que investigar:**
 
-- Encoste em duas moedas diferentes e observe moedas.
-- Com o sumiço ligado, volte a uma moeda que já pegou e observe moedas.
-- Com o sumiço desligado, volte a uma moeda que já pegou e observe moedas.
-- Afaste o personagem das moedas e observe moedas.
-- Tente o baú com menos de 5 moedas.
-- Com mais de 5 moedas, compare as perguntas Pelo menos 5 e Exatamente 5.
+- Pegue duas moedas diferentes e olhe o número de moedas.
+- Com o sumiço ligado, passe de novo numa moeda que já pegou.
+- Com o sumiço desligado, passe de novo numa moeda que já pegou.
+- Afaste o personagem das moedas e olhe o número.
+- Leve ao baú menos de 5 moedas.
+- Com mais de 5 moedas no baú, troque "pelo menos 5" por "exatamente 5".
 
-Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o número moedas, as moedas do caminho e o baú. O Zappy sugere o que observar.
+Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe o número de moedas, as moedas do caminho e o baú. O Zappy sugere o que observar.
 
 ## Aula 1 · Jogo 2D: Cada moeda conta
 

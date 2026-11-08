@@ -55,10 +55,17 @@ function avisoDoJogo(c: SceneState['coins']) {
  * (como o "Mostrar placar Moedas:" do projeto). A soma de agora aparece ao lado do placar como
  * "antes → +1 → agora", e some quando a partida recomeça.
  */
-export function CoinCounterStage({ state }: { state: SceneState }) {
+export function CoinCounterStage({
+  state,
+  heroi,
+}: {
+  state: SceneState
+  /** O lugar do personagem no andar livre (a tela livre); sem ele, o lugar do motor, como antes. */
+  heroi?: { x: number; y: number; esquerda?: boolean }
+}) {
   const c = state.coins
   const hero = FAROL_LAYOUT.personagem
-  const lugar = lugarDoPersonagem(c.at)
+  const lugar = heroi ?? lugarDoPersonagem(c.at)
   const aviso = avisoDoJogo(c)
   const noCaminho = c.present.filter(Boolean).length
   return (
@@ -66,7 +73,7 @@ export function CoinCounterStage({ state }: { state: SceneState }) {
       view={FAROL_LAYOUT.palco}
       mundo="farol"
       titulo="O contador de moedas"
-      descricao={`${noCaminho} moedas no caminho. moedas guarda ${c.moedas}. O baú está ${c.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
+      descricao={`${noCaminho} moedas no caminho. O jogo guarda ${c.moedas} ${c.moedas === 1 ? 'moeda' : 'moedas'}. O baú está ${c.chest === 'open' ? 'aberto' : 'fechado'}. O aviso do jogo diz: ${aviso}`}
     >
       <image
         data-fundo="farol"
@@ -110,13 +117,15 @@ export function CoinCounterStage({ state }: { state: SceneState }) {
         height={BAU.w}
       />
       <g
-        className="sz-scene-anda"
+        className={heroi ? undefined : 'sz-scene-anda'}
         data-personagem={
           c.at === null ? 'afastado' : c.at === 'chest' ? 'bau' : `moeda-${c.at + 1}`
         }
         style={{ transform: `translate(${lugar.x}px, ${lugar.y}px)` }}
       >
-        <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        <g transform={heroi?.esquerda ? `translate(${hero.w} 0) scale(-1 1)` : undefined}>
+          <image href={farolSvgUrl('aventureiro')} width={hero.w} height={hero.h} />
+        </g>
       </g>
       <AvisoDoFarol texto={aviso} />
       <image href={farolSvgUrl('moeda')} x={10} y={42} width={22} height={22} />
