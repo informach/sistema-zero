@@ -4,59 +4,51 @@
     "experiencia": [
       {
         "id": "symbols-start",
-        "text": "Cada símbolo faz uma pergunta: é a minha vez? Toque o símbolo que a placa mostra primeiro e observe o número passo. O que acontece com ele?"
+        "text": "Ande até o sol, o primeiro da placa!"
       },
       {
         "id": "symbols-sun",
-        "text": "O sol acendeu, e passo agora vale 1. E se você tocar a lua agora, o que acontece com passo? Toque a lua e observe."
+        "text": "Aceso! E agora, a lua?"
       },
       {
-        "id": "symbols-sun-again",
-        "text": "O sol começou a sequência de novo: passo vale 1, mesmo com outro símbolo ainda aceso. E se você tocar a lua agora, o que acontece com passo? Toque a lua e observe."
+        "id": "symbols-follow",
+        "text": "Siga a placa até o fim: sol, lua, estrela."
       },
       {
-        "id": "symbols-moon",
-        "text": "Era a vez da lua: ela acendeu, e passo foi para 2. Falta a estrela. O que você acha que acontece com o baú? Toque a estrela e observe."
-      },
-      {
-        "id": "symbols-retry",
-        "text": "Não era a vez desse símbolo, e a tentativa recomeçou: passo está em 0 e nada ficou aceso. Tente de novo pelo símbolo que a placa mostra primeiro e observe passo a cada toque."
-      },
-      {
-        "id": "symbols-opened",
-        "text": "Na ordem da placa, passo foi de 0 para 1 e para 2, e a estrela abriu o baú. E se um símbolo vier fora da vez? Com o sol aceso, pule a lua e toque a estrela. Observe passo e os símbolos acesos."
+        "id": "symbols-skip",
+        "text": "E se pular a lua? Vá do sol à estrela por cima."
       },
       {
         "id": "symbols-middle",
-        "text": "Fora da vez, passo voltou para 0 e os símbolos apagaram: a tentativa recomeçou. E se a tentativa começar pelo meio, sem nada aceso? Toque a lua ou a estrela antes do sol e observe passo."
+        "text": "Jogue de novo e comece pela lua."
       },
       {
-        "id": "symbols-again",
-        "text": "Começando pelo meio, nada acendeu e passo continuou 0. E depois de errar, será que a ordem da placa ainda abre o baú? Sem recomeçar a partida, toque os símbolos na ordem da placa e observe."
+        "id": "symbols-retry",
+        "text": "Errou? Siga a placa de novo, sem recomeçar."
       },
       {
-        "id": "symbols-again-err",
-        "text": "Começando pelo meio, nada acendeu e passo continuou 0. E depois de errar, será que a ordem da placa ainda abre o baú? Erre a ordem primeiro e, sem recomeçar a partida, toque os símbolos na ordem da placa. Observe."
+        "id": "symbols-place",
+        "text": "E se o baú só contar? Troque a peça."
       },
       {
         "id": "symbols-count",
-        "text": "Depois de errar, a ordem da placa abriu o baú do mesmo jeito: cada tentativa recomeça pelo sol. Agora compare com outro baú, que só conta quantos símbolos foram tocados. Clique em O baú só conta e toque os símbolos fora da ordem da placa. O que você acha que acontece?"
-      },
-      {
-        "id": "symbols-count-early",
-        "text": "Este baú só conta quantos símbolos foram tocados. Para comparar, veja primeiro o outro baú responder: clique em O baú confere a vez, toque os símbolos e observe passo."
-      },
-      {
-        "id": "symbols-count-try",
-        "text": "Este baú só conta quantos símbolos foram tocados. E se os símbolos vierem fora da ordem da placa? O que você acha que acontece com o baú? Toque os símbolos fora da ordem e observe."
+        "text": "Só contando: toque fora da ordem e olhe o baú."
       },
       {
         "id": "symbols-count-back",
-        "text": "No baú que só conta, a ordem errada também abriu. E no baú que confere a vez, o que mais dá para comparar? Clique em O baú confere a vez e continue testando."
+        "text": "Troque de volta e compare as duas peças."
+      },
+      {
+        "id": "symbols-idea",
+        "text": "O jogo guarda um passo: até onde a sequência chegou. Cada símbolo pergunta se é a vez dele; fora da vez, o passo volta ao começo."
+      },
+      {
+        "id": "symbols-bridge",
+        "text": "No seu jogo: um número vai guardar o passo, e cada símbolo vai conferir se é a vez dele."
       },
       {
         "id": "symbols-complete",
-        "text": "Você comparou os casos. Na ordem da placa, passo anda de 0 para 1 e para 2, e a estrela abre o baú. Fora da vez, passo volta a 0 e tudo apaga. O baú que só conta abre em qualquer ordem: é passo que faz o jogo lembrar de quem é a vez. Pode continuar testando."
+        "text": "Na ordem, cada símbolo confere a vez. Só contando, não."
       }
     ]
   }

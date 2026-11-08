@@ -27,22 +27,22 @@ const verificar =
 /**
  * O que a experiência investiga (Faísca, 02/11/2026), no formato da Ponte: a lista de descobertas
  * da tela, o recado, o Passo a passo e o caderno dizem o que comparar, sem contar o resultado.
- * ⚠️ `goals` tem a mesma ordem e o mesmo texto de `SIMBOLOS_DESCOBERTAS` (member-shell,
- * `scene-poder-simbolos.tsx`).
+ * ⚠️ `goals` segue a ordem dos cartões da tela livre (member-shell, `scene-poder-simbolos.tsx`), na língua
+ * dela (08/11/2026): o personagem anda até as coisas, e as regras são peças que se trocam.
  */
 export const simbolosExperiencia = {
   title: 'A experiência: a ordem dos símbolos',
-  idea: 'O jogo guarda em passo até onde a sequência chegou, e cada símbolo, quando é tocado, pergunta: é a minha vez? Na experiência, você descobre o que acontece com passo na ordem da placa, fora da vez e num baú que só conta.',
+  idea: 'O jogo anota num caderninho até onde a sequência chegou (na montagem, esse caderninho vira a variável passo), e cada símbolo, quando é tocado, pergunta: é a minha vez? Na experiência, você descobre o que acontece na ordem da placa, fora da vez e num baú que só conta.',
   goals: [
-    'Toque o sol e depois a lua e observe passo.',
+    'Ande até o sol e depois até a lua e olhe o caderninho do jogo.',
     'Toque os três símbolos na ordem da placa e observe o baú.',
-    'Com o sol aceso, pule um símbolo e observe passo.',
-    'Comece pelo meio, sem nada aceso, e observe passo.',
-    'Depois de errar, tente a ordem da placa sem recomeçar a partida.',
-    'No baú que só conta, toque os símbolos fora da ordem e compare.',
+    'Com o sol aceso, pule a lua e olhe o caderninho.',
+    'Comece pela lua, sem nada aceso, e olhe o caderninho.',
+    'Depois de errar, siga a placa de novo sem jogar de novo.',
+    'Troque a peça para "só quantos foram tocados", toque fora da ordem e compare.',
   ],
   observe:
-    'Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada toque, observe passo, os símbolos acesos e o baú. Para comparar com o baú que só conta, veja antes o baú que confere a vez responder. O Zappy sugere o que observar.',
+    'Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada toque, observe o caderninho do jogo, os símbolos acesos e o baú. Para comparar com o baú que só conta, veja antes o baú que confere a ordem responder. O Zappy sugere o que observar.',
 }
 
 /**
@@ -102,9 +102,9 @@ export const simbolosAulas: {
         title: 'A ordem dos símbolos',
         kind: 'experience',
         screen:
-          'Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy girando os números de um cadeado de bicicleta, pensativo, sem mostrar o cadeado abrindo. No convite, ampliar a experiência e mostrar a cena parada: as três pedras, a placa, o baú, o número passo e a pergunta "É a minha vez?" com as duas respostas ainda em "?", sem apontar controles. Não tocar nenhum símbolo: o que passo faz a cada toque, o que acontece fora da vez e o que muda em cada jeito de o baú conferir é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então nem senão: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
+          'Vídeo conceitual. Meme ilustrado por 2 a 3 segundos: o Zappy girando os números de um cadeado de bicicleta, pensativo, sem mostrar o cadeado abrindo. No convite, ampliar a experiência e mostrar a cena parada: as três pedras, a placa, o baú e o caderninho do jogo em 0 de 3, sem apontar controles. Não tocar nenhum símbolo: o que passo faz a cada toque, o que acontece fora da vez e o que muda em cada jeito de o baú conferir é a descoberta da criança, e quem acompanha cada teste é o Zappy, dentro da experiência. Não falar de blocos, regra, Se, então nem senão: eles ficam para a montagem (decisão de 02/11/2026). O vídeo explica a ideia e convida, sem mostrar os controles nem a ordem dos testes (molde do Cadê, 02/11/2026).',
         ponte:
-          'Sua vez! Investigue o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
+          'Sua vez! Investigue o que acontece quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe a ordem dos testes, e o Zappy sugere o que observar. Quando terminar, clique em Próxima parte.',
         text: '[engaging, energetic, conversational voice] No seu jogo, o baú abre com uma senha de símbolos. Para conferir a senha, o jogo precisa lembrar até onde você chegou. Ele guarda isso numa variável: um lugar onde o jogo guarda uma informação para usar depois. [curious] Sabe o cadeado de bicicleta com números? A senha dele é uma sequência de números. [engaging, energetic, conversational voice] No seu jogo, os símbolos são os números da senha, e a placa mostra a sequência. A variável que lembra até onde você chegou se chama passo. [interested, animated voice] E cada símbolo, quando é tocado, faz uma pergunta: é a minha vez? [engaging, energetic, conversational voice] O baú pode conferir a senha de dois jeitos: só contando os símbolos tocados ou conferindo a vez de cada um. [curious] E o que acontece com passo quando um símbolo vem fora da vez? [engaging, energetic, conversational voice] O que você acha? Isso você vai testar na experiência. [upbeat, encouraging voice] Agora você vai investigar o que acontece com passo quando os símbolos vêm na ordem da placa e quando vêm fora da vez, em cada jeito de o baú conferir. Você escolhe por onde começar e pode repetir os testes. O Zappy ajuda a observar as diferenças. Quando terminar, clique em Próxima parte.',
       },
       {

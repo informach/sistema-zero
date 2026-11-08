@@ -264,7 +264,7 @@ const aula1 = {
         semPerguntaFinal: true,
         title: 'O toque faz o jogo responder',
         instructions:
-          'Toque nos esconderijos com a regra do toque encaixada e sem ela. Compare o que aparece e repita quando quiser.',
+          'Toque nos esconderijos com a regra do toque encaixada e sem ela e compare o que aparece. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',
@@ -344,7 +344,7 @@ const aula2 = {
         semPerguntaFinal: true,
         title: 'Quantos você já encontrou?',
         instructions:
-          'Encontre um personagem e olhe o número de achados. Compare com um toque na grama e em quem já apareceu.',
+          'Encontre um personagem, olhe o número de achados e compare com um toque na grama e em quem já apareceu. Você escolhe a ordem e pode repetir quando quiser.',
         hints: [],
         activity: {
           type: 'experimentation',

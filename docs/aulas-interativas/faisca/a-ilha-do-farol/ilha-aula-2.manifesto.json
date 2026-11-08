@@ -22,11 +22,11 @@
         "kind": "interactive",
         "title": "Para onde vai a chave?",
         "required": true,
-        "instructions": "Compare para onde a chave vai quando o x, o y e o z aumentam e quando diminuem. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Mude cada um dos três números da chave para mais e para menos e veja para onde ela vai. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Escolha um dos três números da chave e observe para onde ela vai.",
           "Mude um número de cada vez, para mais e para menos. Compare com a marca dourada do lugar inicial.",
-          "Na linha do X, clique no + e depois no −, observando a chave. Faça o mesmo nas linhas do Z e do Y. Para ver melhor, clique em Ver de lado ou em Ver de cima."
+          "No x, toque no + e no −, observando a chave. Faça o mesmo no z e no y. Para ver melhor, troque a câmera para Lado ou Cima."
         ],
         "semPerguntaFinal": true,
         "activity": {
@@ -34,7 +34,18 @@
           "scene": "island-3d",
           "setup": {
             "goals": ["axis-x", "axis-y", "axis-z"],
-            "freeExploration": true
+            "freeExploration": true,
+            "goalCopy": {
+              "axis-x": {
+                "pedido": "Mude o x para mais e para menos e observe a chave."
+              },
+              "axis-y": {
+                "pedido": "Mude o y para mais e para menos e observe a chave."
+              },
+              "axis-z": {
+                "pedido": "Mude o z para mais e para menos e observe a chave."
+              }
+            }
           }
         }
       }
@@ -69,11 +80,11 @@
         "kind": "interactive",
         "title": "Parece junto, mas está encostando?",
         "required": true,
-        "instructions": "Compare quando a chave e o personagem estão encostando de verdade e quando só parecem juntos na imagem. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "De cima, o personagem e a chave parecem juntos: olhe de outro lugar e descubra quando eles se encostam de verdade. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
-          "Antes de testar, pense: a chave e o personagem estão encostando?",
-          "Teste o encontro e compare a vista de cima com a vista de lado.",
-          "Clique em Testar o encontro e depois em Ver de lado. Na linha do Y, clique no − até a chave chegar perto do personagem e clique em Testar o encontro de novo. Se quiser, clique em Mostrar onde encosta."
+          "Antes de olhar de outro lugar, pense: a chave e o personagem estão encostando?",
+          "Olhe o resultado do encontro na cena e compare a câmera de cima com a de lado.",
+          "Na câmera, toque em Lado. Na altura da chave, toque no − até ela chegar perto do personagem e olhe o resultado do encontro. Se quiser, mostre as caixas do encontro."
         ],
         "semPerguntaFinal": true,
         "activity": {
@@ -81,7 +92,15 @@
           "scene": "island-3d",
           "setup": {
             "goals": ["contact-apart", "contact-touch"],
-            "freeExploration": true
+            "freeExploration": true,
+            "goalCopy": {
+              "contact-apart": {
+                "pedido": "Olhe de lado o personagem e a chave que de cima parecem juntos."
+              },
+              "contact-touch": {
+                "pedido": "Baixe a chave até ela encostar no personagem."
+              }
+            }
           }
         }
       }

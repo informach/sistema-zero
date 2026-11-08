@@ -330,7 +330,7 @@ const dia1 = {
     experienciaAndar(
       'experiencia-quadro',
       'O jogo em câmera lenta',
-      'Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+      'Segure a seta para o personagem andar e compare Devagar e Rápido, com a seta apertada e solta. Você escolhe a ordem e pode repetir quando quiser.',
       ['moves-each-frame', 'stopped-after-release', 'walked-real-speed'],
       {
         'moves-each-frame': {
@@ -367,7 +367,7 @@ const dia1 = {
     experienciaAndar(
       'experiencia-limite',
       'A beirada da tela',
-      'Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem dos testes e pode repetir quando quiser.',
+      'Leve o personagem até a beirada com a cerca desligada e com a cerca ligada, inclusive com ele já fora da tela. Você escolhe a ordem e pode repetir quando quiser.',
       ['left-the-screen', 'came-back-inside', 'stayed-inside'],
       {
         'left-the-screen': {

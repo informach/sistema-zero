@@ -37,17 +37,17 @@ const verificar =
  */
 export const ponteExperiencia = {
   title: 'A experiência: a ponte apressada',
-  idea: 'A ponte tem uma alavanca, e o jogo lembra em ponteAberta se ela está baixada, como quem anota num papelzinho. Um relógio conta 4 segundos. Na experiência, você descobre o que acontece com a ponte em cada momento.',
+  idea: 'A ponte tem uma alavanca, e o jogo anota num caderninho se ela está aberta (na montagem, esse caderninho vira a variável ponteAberta). Um relógio conta 4 segundos. Na experiência, você descobre o que acontece com a ponte em cada momento.',
   goals: [
-    'Vá até a ponte antes de puxar a alavanca e observe ponteAberta.',
-    'Puxe a alavanca e observe a ponte e ponteAberta.',
+    'Ande até a ponte antes de puxar a alavanca.',
+    'Ande até a alavanca e observe a ponte e o caderninho do jogo.',
     'Puxe a alavanca e chegue à ponte antes de o relógio chegar a 4.',
     'Puxe a alavanca, deixe o relógio chegar a 4 e observe a ponte.',
-    'Quando a ponte subir sozinha, puxe a alavanca de novo.',
-    'Compare o relógio começando na alavanca e junto com a partida.',
+    'Quando a ponte subir sozinha, saia e volte à alavanca.',
+    'Troque a peça do relógio para "quando a partida começa" e compare.',
   ],
   observe:
-    'Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e após cada teste, observe a ponte, ponteAberta e o relógio. O Zappy sugere o que observar.',
+    'Você escolhe a ordem dos testes e pode repetir quantas vezes quiser. Antes e depois de cada teste, observe a ponte, o caderninho do jogo e o relógio. O Zappy sugere o que observar.',
 }
 
 export const ponteAulas: {

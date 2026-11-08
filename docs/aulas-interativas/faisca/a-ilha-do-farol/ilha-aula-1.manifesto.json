@@ -1705,11 +1705,11 @@
         "kind": "interactive",
         "title": "O que aparece quando você muda de lugar?",
         "required": true,
-        "instructions": "Procure a chave olhando a ilha de lugares diferentes e compare o que muda na imagem e o que continua no mesmo lugar. Você escolhe a ordem e pode repetir quando quiser.",
+        "instructions": "Olhe a ilha de outro lugar, procure a chave e diga o que mudou quando ela apareceu. Você escolhe a ordem e pode repetir quando quiser.",
         "hints": [
           "Olhe a ilha de outro lugar e procure a chave.",
           "Compare duas vistas. Repare na pedra e na chave em cada uma delas.",
-          "Clique em Ver de lado e procure a chave. Depois clique em Ver de frente e compare. Por fim, responda à pergunta: quando a chave apareceu, o que mudou?"
+          "Na câmera, toque em Lado e procure a chave. Volte para Frente e compare. Então responda: quando a chave apareceu, o que mudou?"
         ],
         "semPerguntaFinal": true,
         "activity": {
@@ -1717,7 +1717,15 @@
           "scene": "island-3d",
           "setup": {
             "goals": ["other-view", "same-place"],
-            "freeExploration": true
+            "freeExploration": true,
+            "goalCopy": {
+              "other-view": {
+                "pedido": "Troque o lugar da câmera e procure a chave."
+              },
+              "same-place": {
+                "pedido": "Responda o que mudou quando a chave apareceu."
+              }
+            }
           }
         }
       }

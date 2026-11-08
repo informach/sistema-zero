@@ -122,15 +122,14 @@ for (const [index, aula] of cabanaAulas.entries()) {
           required: true,
           title: 'A porta com duas peças',
           semPerguntaFinal: true,
-          // Só a ideia e o convite à investigação (02/11/2026): a cabana pede as duas peças ou uma
-          // das peças, sem blocos. As pistas e o "Ainda falta" citam os botões desta tela (o
-          // catálogo cita "e" e "ou", da bancada antiga).
+          // ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): passar na chave ou no
+          // emblema é pegar, chegar à porta é a cabana perguntar, e o "e" se troca por "ou".
           instructions:
-            'Compare quando a cabana abre e quando continua fechada, com nenhuma, uma ou as duas peças, em cada jeito de perguntar. Você escolhe a ordem e pode repetir quando quiser.',
+            'Vá até a cabana sem nada, com uma peça ou com as duas e troque o "e" pelo "ou". Você escolhe a ordem e pode repetir quando quiser.',
           hints: [
-            'Olhe temChave e temEmblema antes de encostar na cabana: quantos estão em verdadeiro?',
-            'Compare a cabana sem nenhuma peça, com uma e com as duas. Depois recomece e pegue as peças na outra ordem.',
-            'Clique em Encostar na cabana. Clique em Pegar a chave e em Encostar na cabana. Clique em Pegar o emblema e em Encostar na cabana. Clique em Recomeçar a partida, Pegar o emblema, Pegar a chave e Encostar na cabana. Por fim, clique em A cabana pede uma das peças, Recomeçar a partida, Pegar a chave e Encostar na cabana.',
+            'Olhe o caderninho antes de ir à cabana: quais peças o personagem tem?',
+            'Compare a cabana sem nenhuma peça, com uma e com as duas. Jogue de novo e pegue as peças na outra ordem.',
+            'Vá até a cabana sem nada. Pegue a chave e volte. Pegue o emblema e volte. Jogue de novo, pegue o emblema e a chave e vá à cabana. Troque o "e" pelo "ou" e leve uma peça só.',
           ],
           activity: {
             type: 'experimentation',
@@ -139,22 +138,15 @@ for (const [index, aula] of cabanaAulas.entries()) {
             setup: {
               freeExploration: true,
               goalCopy: {
-                'none-closed': {
-                  pedido:
-                    'Com A cabana pede as duas peças escolhido, clique em Encostar na cabana antes de pegar qualquer peça.',
-                },
-                'one-closed': {
-                  pedido:
-                    'Com A cabana pede as duas peças escolhido, clique em Pegar a chave ou em Pegar o emblema e depois em Encostar na cabana.',
-                },
-                'both-open': {
-                  pedido:
-                    'Com A cabana pede as duas peças escolhido, pegue as duas peças e clique em Encostar na cabana.',
+                'none-closed': { pedido: 'Vá até a cabana antes de pegar qualquer peça.' },
+                'one-closed': { pedido: 'Pegue uma peça só e vá até a cabana.' },
+                'both-open': { pedido: 'Pegue as duas peças e vá até a cabana.' },
+                'any-order': {
+                  pedido: 'Jogue de novo e pegue as peças na outra ordem antes de ir à cabana.',
                 },
                 'and-vs-or': {
-                  label: 'Pedindo uma das peças, uma peça só já abriu',
-                  pedido:
-                    'Clique em A cabana pede uma das peças, pegue uma peça só e clique em Encostar na cabana.',
+                  label: 'Com "ou", uma peça só já abriu',
+                  pedido: 'Troque o "e" pelo "ou", pegue uma peça só e vá até a cabana.',
                 },
               },
             },

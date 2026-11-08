@@ -4,47 +4,75 @@
     "experiencia": [
       {
         "id": "bridge-start",
-        "text": "A ponte está levantada, e ponteAberta está falso. O que você acha que acontece se o personagem for até a ponte agora? Clique em Encostar na ponte e observe a ponte e o aviso. Se preferir, puxe a alavanca primeiro e compare depois."
+        "text": "A ponte leva ao sino. Ande até ela!"
       },
       {
         "id": "bridge-closed",
-        "text": "Com a ponte levantada e ponteAberta falso, o personagem não atravessou, e o aviso pediu para puxar a alavanca. E se você puxar a alavanca, o que muda? Clique em Puxar a alavanca e observe a ponte, ponteAberta e o relógio."
+        "text": "Levantada! Ande até a alavanca."
       },
       {
-        "id": "bridge-lowered",
-        "text": "A alavanca baixa a ponte, e ponteAberta vira verdadeiro. E a ponte fica baixada para sempre? Com a ponte baixada, clique em Esperar 1 segundo, um de cada vez, e observe a ponte e o relógio. Se preferir, vá até a ponte antes de o relógio chegar a 4."
+        "id": "bridge-hurry",
+        "text": "Baixou! Corra até a ponte antes do 4."
+      },
+      {
+        "id": "bridge-wait",
+        "text": "Baixou! Espere o relógio chegar a 4."
       },
       {
         "id": "bridge-rose",
-        "text": "No quarto segundo, a ponte subiu sozinha, e ponteAberta voltou a falso. Ninguém precisou puxar nada para ela subir. E se o personagem chegar antes do quarto segundo? Puxe a alavanca e clique em Encostar na ponte antes de o relógio chegar a 4."
-      },
-      {
-        "id": "bridge-crossed",
-        "text": "Com a ponte baixada e ponteAberta verdadeiro, o personagem atravessou e o sino tocou. E se ele demorar para ir até a ponte? Recomece a partida, puxe a alavanca e clique em Esperar 1 segundo até o relógio chegar a 4. Observe a ponte e ponteAberta."
-      },
-      {
-        "id": "bridge-again",
-        "text": "Você viu os dois casos: chegando a tempo, o personagem atravessa; atrasado, a ponte já subiu. E se você puxar a alavanca de novo, quando a ponte já subiu? Puxe de novo e observe a ponte e o relógio."
+        "text": "Subiu sozinha! Saia e volte à alavanca."
       },
       {
         "id": "bridge-place",
-        "text": "Puxar de novo baixou a ponte outra vez, e o relógio começou a contar de novo: ele começa a cada puxada. E se o relógio começasse junto com a partida, e não na alavanca? Escolha Quando a partida começa, deixe o relógio chegar a 4, puxe a alavanca e continue clicando em Esperar 1 segundo, observando a ponte e o relógio."
+        "text": "E se o relógio começar com a partida?"
+      },
+      {
+        "id": "bridge-free",
+        "text": "Ande, puxe e compare o relógio."
+      },
+      {
+        "id": "bridge-crossed",
+        "text": "O sino tocou! E se esperar o relógio chegar a 4?"
+      },
+      {
+        "id": "bridge-crossed-again",
+        "text": "O sino tocou! Toque em Jogar de novo e teste mais."
       },
       {
         "id": "bridge-clock-start",
-        "text": "Agora o relógio começa junto com a partida, e não na alavanca. O que você acha que muda? Deixe o relógio chegar a 4, puxe a alavanca e continue clicando em Esperar 1 segundo, observando a ponte e o relógio."
+        "text": "Agora o relógio conta desde o primeiro passo. Ande!"
+      },
+      {
+        "id": "bridge-clock-running",
+        "text": "O relógio já está contando! Vá até a alavanca."
+      },
+      {
+        "id": "bridge-clock-lowered",
+        "text": "Baixou! Olhe o relógio da partida."
+      },
+      {
+        "id": "bridge-clock-wait",
+        "text": "O relógio acabou. Espere: a ponte sobe?"
+      },
+      {
+        "id": "bridge-clock-again",
+        "text": "O relógio acabou. Saia e volte à alavanca."
       },
       {
         "id": "bridge-clock-back",
-        "text": "Com o relógio começando junto com a partida, ele contou uma vez só. Depois disso, a ponte baixou com a alavanca e ficou baixada. Para os outros testes, escolha de novo Quando puxa a alavanca."
+        "text": "Troque a peça de volta e compare os dois relógios."
       },
       {
-        "id": "bridge-closed-last",
-        "text": "Falta um teste: o que acontece se o personagem for até a ponte antes de alguém puxar a alavanca? Recomece a partida e clique em Encostar na ponte, sem puxar. Observe a ponte e o aviso."
+        "id": "bridge-idea",
+        "text": "A alavanca baixa a ponte e começa o relógio. Depois de 4 segundos, o jogo sobe a ponte sozinho. Se o relógio começa com a partida, ele conta uma vez só."
+      },
+      {
+        "id": "bridge-bridge",
+        "text": "No seu jogo: a alavanca vai baixar a ponte e, depois de 4 segundos, o jogo vai levantar a ponte de novo."
       },
       {
         "id": "bridge-complete",
-        "text": "Você comparou todos os casos. A alavanca baixa a ponte, e ponteAberta vira verdadeiro. Quatro segundos depois da puxada, a ponte sobe sozinha, e ponteAberta volta a falso. Por isso, só atravessa quem chega a tempo. Quando o relógio começa junto com a partida, ele conta uma vez só, e a ponte não sobe mais. Pode continuar testando quando quiser."
+        "text": "A alavanca baixa a ponte. Depois de 4, ela sobe."
       }
     ]
   }
