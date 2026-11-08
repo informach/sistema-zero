@@ -89,6 +89,20 @@ export const SCENE_CENARIOS = {
     fundoEscuro: false,
     figuras: { hero: 'personagem-farol', obstacle: 'chave-farol', scenery: 'farol' },
   },
+  /**
+   * ⭐ A Ilha do Farol, o jogo 3D do curso (08/11/2026). Pedido dela: "se é um jogo 3D em que a
+   * gente está trabalhando, a cena deveria ser 3D também do jogo em que a gente está trabalhando
+   * naquele curso". A experiência que declara `ilha` acontece na ilha em 3D (o palco do
+   * member-shell desenha o `.glb` do jogo); o fundo e as figuras abaixo são só a RESERVA de um palco
+   * 2D, os mesmos do Farol (o mesmo personagem, a mesma chave e o mesmo farol, em 2D). Vem DEPOIS do
+   * `farol` de propósito: o `CENARIO_DA_FIGURA` dá às figuras o primeiro cenário em que aparecem.
+   */
+  ilha: {
+    fundo: 'farol',
+    temChao: true,
+    fundoEscuro: false,
+    figuras: { hero: 'personagem-farol', obstacle: 'chave-farol', scenery: 'farol' },
+  },
 } as const satisfies Record<string, SceneCenario>
 
 export type SceneCenarioId = keyof typeof SCENE_CENARIOS

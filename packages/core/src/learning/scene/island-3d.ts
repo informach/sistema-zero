@@ -196,104 +196,79 @@ export function stepIsland(s: SceneState, action: IslandAction): SceneState {
   return s
 }
 /**
- * As falas do Zappy nas três experiências da Ilha (02/11/2026, convite à investigação do Cadê e do
- * Farol). ⚠️ ANTES do teste, a fala pede uma ação e diz o que observar, sem contar o resultado; DEPOIS,
- * explica. Na posição, `-plus`/`-minus` convidam a mexer num número e `-found` explica o que aquele
- * número faz só depois de a criança ter ido para mais e para menos nele.
+ * As falas do Zappy nas três experiências da Ilha.
+ *
+ * ⭐ 08/11/2026 (proposta "Experiências do Faísca", aprovada): falas curtas (no máximo 12
+ * palavras), uma coisa por vez, na língua da tela nova: a câmera é um controle com três lugares
+ * (Frente, Lado, Cima), cada número tem − e + com a cor do eixo do Estúdio 3D, e no contato o jogo
+ * confere o encontro o tempo todo (o resultado fica na cena). Antes do teste, a fala pede uma ação;
+ * o que cada número faz só aparece depois de a criança ir para os dois lados dele.
+ *
+ * ⚠️ As falas não usam "−" nem "+": a voz leria os sinais.
+ *
+ * `-idea` e `-bridge` de cada modo são a ideia e o "No seu jogo:" do cartão dourado do fim.
  */
 export const ISLAND_SPEECH = {
-  'island-view-start':
-    'A pedra esconde a chave deste lado. Olhe a ilha de outro lugar e procure a chave. O que você vê agora?',
-  'island-view-compare':
-    'Você olhou de outro lugar. Compare as vistas e responda: o que mudou quando a chave apareceu?',
-  'island-view-complete':
-    'Isso mesmo! A chave continuou atrás da mesma pedra. O que mudou foi o lugar de onde você olha: a câmera. Você pode continuar comparando as vistas.',
-  'island-position-start':
-    'A chave tem três números: x, y e z. Mude um de cada vez, para mais e para menos, e observe para onde a chave vai. Você escolhe por qual começar.',
-  'island-position-x-plus': 'Aumente o x e observe a chave. Para onde ela foi?',
-  'island-position-x-minus':
-    'Agora diminua o x e compare com o que aconteceu antes. A marca dourada guarda o lugar do começo.',
-  'island-position-z-plus': 'Aumente o z e observe a chave. Para onde ela foi?',
-  'island-position-z-minus':
-    'Agora diminua o z e compare os dois sentidos. Você pode repetir quando quiser.',
-  'island-position-y-plus':
-    'Aumente o y e observe a chave. Se ficar difícil de ver, troque a vista.',
-  'island-position-y-minus':
-    'Agora diminua o y e compare com o que aconteceu antes. Repare no pontilhado embaixo da chave.',
-  'island-position-x-found':
-    'Viu? O x leva a chave pelo chão, para um lado e para o outro, e a altura não muda. Agora investigue outro número.',
-  'island-position-z-found':
-    'Viu? O z também leva a chave pelo chão, mas na outra direção: para a frente e para trás. A altura não muda. Agora investigue outro número.',
-  'island-position-y-found':
-    'Viu? O y muda a altura: a chave sobe e desce, e o lugar no chão continua o mesmo. No jogo 2D, o y tinha outro papel. Agora investigue outro número.',
-  'island-position-complete':
-    'Você investigou os três números: o x e o z levam a chave pelo chão, e o y muda a altura. Continue explorando quando quiser.',
-  'island-contact-start':
-    'De cima, a chave parece estar em cima do personagem. Será que eles estão encostando? Teste o encontro e compare com o que você vê de lado.',
-  'island-contact-other':
-    'Eles não encostaram, mesmo parecendo juntos de cima. Olhando de lado, dá para ver o espaço entre a chave e o personagem. Mude um dos dois de lugar e teste de novo: dá para fazer os dois se encontrarem?',
-  'island-contact-touch-first':
-    'Desta vez eles encostaram. Agora mude a altura da chave ou o lugar no chão e teste de novo: quando eles ficam separados?',
-  'island-contact-complete':
-    'Você comparou os dois casos. A imagem pode enganar: para encostar, os dois precisam se encontrar no chão e também na altura. Continue testando quando quiser.',
+  'island-view-start': 'A chave está atrás da pedra. Mude a câmera!',
+  'island-view-compare': 'Apareceu! O que mudou: a câmera ou a chave?',
+  'island-view-wrong': 'Volte para a frente: a chave saiu do lugar?',
+  'island-view-idea':
+    'No 3D, a câmera é o lugar de onde a gente olha. Mudar a câmera muda a imagem, mas as coisas continuam no mesmo lugar.',
+  'island-view-bridge':
+    'No seu jogo: a câmera já está pronta; o que você vai mudar é o lugar das coisas.',
+  'island-view-complete': 'Mudou a câmera. A chave ficou no mesmo lugar.',
+  'island-position-start': 'A chave tem três números. Mude um para mais e para menos!',
+  'island-position-other-side': 'Agora o mesmo número para o outro lado.',
+  'island-position-next': 'E os outros números? Teste um de cada vez.',
+  'island-position-idea':
+    'No 3D, o lugar tem três números: x e z andam pelo chão, e o y é a altura.',
+  'island-position-bridge': 'No seu jogo: você vai escolher os três números do lugar das coisas.',
+  'island-position-complete': 'x e z andam no chão. O y é a altura.',
+  'island-contact-start': 'De cima, parece junto. Será que encostou? Olhe de lado!',
+  'island-contact-top': 'Não encostou! Olhe de lado: por quê?',
+  'island-contact-space': 'Tem um espaço! Baixe a chave até encostar.',
+  'island-contact-idea':
+    'A imagem pode enganar: de cima, parece junto. O jogo só conta o encontro quando os dois se tocam de verdade, inclusive na altura.',
+  'island-contact-bridge':
+    'No seu jogo: o encontro do personagem com a chave vai acontecer só quando eles encostarem.',
+  'island-contact-complete': 'Parecer junto não basta: precisa encostar.',
 } as const
 type IslandAxis = 'x' | 'y' | 'z'
-const AXIS_ORDER = ['x', 'z', 'y'] as const
+const AXES: readonly IslandAxis[] = ['x', 'y', 'z']
+
 /**
- * O número em que a criança está agora, pela última direção NOVA que ela testou: se ele já foi para
- * mais e para menos, `found` (é hora de explicar); se só para um lado, falta o outro. Sem direção
- * nenhuma dentro das metas, sugere o primeiro número ainda não investigado.
+ * Qual fala vale agora. As metas da atividade (`goals`) decidem o que conta como "tudo
+ * descoberto"; sem elas, valem as de fábrica de cada modo.
  */
-export function islandAxisFocus(s: SceneState, goals?: readonly string[]) {
-  const p = s.island3d!,
-    has = (id: string) => s.evidence.discoveries.includes(id),
-    inGoals = (a: IslandAxis) => !goals || goals.includes(`axis-${a}`)
-  const last = [...p.directions]
-    .reverse()
-    .map((d) => d[0] as IslandAxis)
-    .find(inGoals)
-  if (last && has(`axis-${last}`)) return { axis: last, step: 'found' as const }
-  if (last)
-    return {
-      axis: last,
-      step: p.directions.includes(`${last}+`) ? ('minus' as const) : ('plus' as const),
-    }
-  const next = AXIS_ORDER.find((a) => inGoals(a) && !has(`axis-${a}`))
-  return next ? { axis: next, step: 'plus' as const } : null
-}
-/** O próximo número a investigar, para o destaque do botão: o de agora ou o primeiro que falta. */
-export function islandNextAxis(s: SceneState, goals?: readonly string[]): IslandAxis | undefined {
-  const focus = islandAxisFocus(s, goals)
-  if (focus && focus.step !== 'found') return focus.axis
-  return AXIS_ORDER.find(
-    (a) => (!goals || goals.includes(`axis-${a}`)) && !s.evidence.discoveries.includes(`axis-${a}`),
-  )
-}
 export function islandGuidance(s: SceneState, goals?: readonly string[]) {
   const p = s.island3d!,
     has = (id: string) => s.evidence.discoveries.includes(id)
-  const done = goals
-    ? goals.every(has)
-    : p.mode === 'view'
-      ? has('same-place')
+  const deFabrica =
+    p.mode === 'view'
+      ? ['other-view', 'same-place']
       : p.mode === 'position'
-        ? ['x', 'y', 'z'].every((a) => has(`axis-${a}`))
-        : has('contact-apart') && has('contact-touch')
-  const focus = islandAxisFocus(s, goals)
+        ? ['axis-x', 'axis-y', 'axis-z']
+        : ['contact-apart', 'contact-touch']
+  const metas = goals?.length ? deFabrica.filter((g) => goals.includes(g)) : deFabrica
+  const done = (metas.length ? metas : deFabrica).every(has)
   const id: keyof typeof ISLAND_SPEECH = done
     ? `island-${p.mode}-complete`
     : p.mode === 'view'
-      ? has('other-view')
-        ? 'island-view-compare'
-        : 'island-view-start'
+      ? !has('other-view')
+        ? 'island-view-start'
+        : p.answer === 'key'
+          ? 'island-view-wrong'
+          : 'island-view-compare'
       : p.mode === 'position'
-        ? p.directions.length && focus
-          ? `island-position-${focus.axis}-${focus.step}`
-          : 'island-position-start'
-        : has('contact-apart')
-          ? 'island-contact-other'
-          : has('contact-touch')
-            ? 'island-contact-touch-first'
-            : 'island-contact-start'
+        ? p.directions.length === 0
+          ? 'island-position-start'
+          : AXES.some((a) => !has(`axis-${a}`) && p.directions.some((d) => d[0] === a))
+            ? 'island-position-other-side'
+            : 'island-position-next'
+        : !has('contact-apart')
+          ? 'island-contact-start'
+          : p.view === 'top'
+            ? 'island-contact-top'
+            : 'island-contact-space'
   return { id, text: ISLAND_SPEECH[id] }
 }

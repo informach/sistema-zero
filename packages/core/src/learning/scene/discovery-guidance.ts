@@ -135,28 +135,24 @@ const speech = {
   'door-idea': 'A porta faz sempre a mesma pergunta e olha o caderninho do jogo para responder.',
   'door-bridge': 'No seu jogo: a porta vai olhar se o personagem tem a chave antes de abrir.',
   'door-complete': 'A pergunta é a mesma. O caderninho muda a resposta.',
-  // ⭐ A pergunta com o não (Ilha do Farol, aula 3, parte 3, 02/11/2026): a mesma porta, e a pergunta
-  // pode ser "a porta está trancada?" ou "a porta não está trancada?". Sem a chave a porta está
-  // trancada. Só a ideia: nada de bloco, Se, então, senão nem variável. Antes do teste, a fala pergunta;
-  // a resposta de cada situação só vem depois de testada.
-  'door-not-start':
-    'Sem a chave, a porta está trancada. Com a chave, ela fica destrancada. A porta obedece à resposta da pergunta: com a resposta sim, ela abre; com a resposta não, ela fica fechada. Repare na pergunta que a porta faz agora. O que você acha que ela vai responder? Clique em Testar a porta e observe a resposta e a porta.',
-  'door-not-try':
-    'A situação mudou. O que você acha que a porta vai responder agora? Clique em Testar a porta e compare com o que você já viu.',
-  'door-not-plain-with':
-    'A pergunta era: a porta está trancada? Com a chave, ela não está. A resposta foi não, e a porta obedece ao não: ficou fechada, mesmo destrancada. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta.',
-  'door-not-plain-without':
-    'A pergunta era: a porta está trancada? Sem a chave, ela está. A resposta foi sim, e a porta obedece ao sim: abriu, mesmo trancada. É por isso que a pergunta precisa mudar. E com o não na pergunta, o que muda? Clique em Pôr o não na pergunta e depois em Testar a porta.',
-  'door-not-not-with':
-    'A pergunta era: a porta não está trancada? Com a chave, ela não está. A resposta foi sim, e a porta obedece ao sim: abriu. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta.',
-  'door-not-not-without':
-    'A pergunta era: a porta não está trancada? Sem a chave, ela está. A resposta foi não, e a porta obedece ao não: ficou fechada. E sem o não, o que muda? Clique em Tirar o não da pergunta e depois em Testar a porta.',
-  'door-not-other-with':
-    'Sem a chave, o não trocou a resposta: o que era sim virou não. E com a chave, o que acontece com as duas perguntas? Clique em Dar a chave ao personagem e teste a porta com e sem o não.',
-  'door-not-other-without':
-    'Com a chave, o não trocou a resposta: o que era não virou sim. E sem a chave, o que acontece com as duas perguntas? Clique em Tirar a chave do personagem e teste a porta com e sem o não.',
-  'door-not-complete':
-    'Nos dois casos, o não trocou a resposta: o que era sim virou não, e o que era não virou sim. Para a porta abrir só quando ela não está trancada, a pergunta precisa do não. Pode testar quantas vezes quiser.',
+  // ⭐ A pergunta com o não (Ilha do Farol, aula 3). 08/11/2026 (proposta "Experiências do Faísca",
+  // aprovada): a experiência acontece NA ILHA 3D do jogo do curso, o personagem anda até a chave e
+  // até o farol, e o "não" é uma peça que encaixa na pergunta "A porta ··· está trancada?". Sem a
+  // chave a porta está trancada, e a porta OBEDECE à resposta: sem o "não", ela abre sem a chave (a
+  // surpresa que mostra por que a pergunta precisa do "não"). Falas curtas, no máximo 12 palavras.
+  'door-not-start': 'A porta do farol faz uma pergunta. Ande até ela!',
+  'door-not-go': 'Ande até o farol e ouça a resposta.',
+  'door-not-opened': 'Abriu sem a chave! Encaixe o "não" e veja.',
+  'door-not-closed': 'Fechada com a chave! Encaixe o "não" e veja.',
+  'door-not-add': 'Encaixe o "não" ali embaixo e veja a resposta.',
+  'door-not-remove': 'Tire o "não" ali embaixo e veja a resposta.',
+  'door-not-with': 'E com a chave? Pegue a chave e compare.',
+  'door-not-without': 'E sem a chave? Toque em Jogar de novo.',
+  'door-not-idea':
+    'A porta obedece à resposta da pergunta. Pôr o "não" na pergunta troca a resposta: o que era sim vira não.',
+  'door-not-bridge':
+    'No seu jogo: a pergunta da porta do farol vai usar o "não" para trocar a resposta.',
+  'door-not-complete': 'O "não" troca a resposta: o sim vira não.',
   'position-start': 'Onde a chave vai ficar? Mude o x ou o y.',
   'position-height': 'O x leva a chave para os lados. E o y?',
   'position-width': 'O y leva a chave para cima e para baixo. E o x?',
@@ -212,9 +208,9 @@ export function lighthouseWalkStrideCase(
   )
 }
 /**
- * A fala da porta no caso do não (Ilha do Farol, aula 3, 02/11/2026). Testada a situação de agora, o
- * Zappy explica ESTA resposta e propõe a outra pergunta com a mesma chave; com as duas perguntas vistas
- * nessa chave, propõe a outra chave (se a atividade a cobra). A tela destaca o botão que a fala pede.
+ * A fala da porta no caso do não (Ilha do Farol, aula 3). Testada a pergunta de agora, o Zappy
+ * aponta o que a porta fez e pede a outra pergunta com a MESMA chave; com as duas vistas nessa
+ * chave, pede a outra chave (se a atividade a cobra).
  */
 export function portaDoNaoGuidance(
   activity: Pick<SceneActivity, 'setup'>,
@@ -226,15 +222,19 @@ export function portaDoNaoGuidance(
   const metas = activity.setup?.goals ?? []
   const falta = (k: string) => metas.includes(`not-flips-${k}`) && !has(`not-flips-${k}`)
   if (!falta('with-key') && !falta('without-key')) return 'door-not-complete'
-  // Esta chave já viu as duas perguntas: a outra chave. ⚠️ Pelo que ela VIU (`has`), não pelo que
-  // falta: numa atividade que só cobra a outra chave, esta nunca "falta" e a fala afirmaria a troca.
-  if (has(`not-flips-${chave}`)) return l.hasKey ? 'door-not-other-without' : 'door-not-other-with'
-  if (l.checkedKey != null)
-    return `door-not-${l.checkedNot ? 'not' : 'plain'}-${l.hasKey ? 'with' : 'without'}`
+  if (typeof l.checkedKey === 'boolean') {
+    // ⚠️ Pelo que esta chave VIU (`has`), não pelo que falta: numa atividade que só cobra a outra
+    // chave, esta nunca "falta" e a fala afirmaria a troca.
+    if (has(`not-flips-${chave}`)) return l.hasKey ? 'door-not-without' : 'door-not-with'
+    if (l.not === true) return 'door-not-remove'
+    if (l.door === 'open' && !l.hasKey) return 'door-not-opened'
+    if (l.door !== 'open' && l.hasKey) return 'door-not-closed'
+    return 'door-not-add'
+  }
   const testouAlguma = ['locked', 'not-locked'].some((q) =>
     ['with-key', 'without-key'].some((k) => has(`asked-${q}-${k}`)),
   )
-  return testouAlguma ? 'door-not-try' : 'door-not-start'
+  return testouAlguma ? 'door-not-go' : 'door-not-start'
 }
 /** Uma fala da descoberta pelo id (a tela pede as falas que só ela conhece: a ideia, o palpite, o alvo). */
 export type DiscoverySpeechId = keyof typeof speech

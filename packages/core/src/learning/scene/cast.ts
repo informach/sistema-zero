@@ -442,6 +442,8 @@ export function sceneCenario(
 ): SceneCenarioId {
   // A comparação de movimento conserva o Farol por padrão e também tem palco de nave.
   if (scene === 'lighthouse-walk' && declarado === 'nave') return 'nave'
+  // ⭐ A porta do farol também mora na Ilha do Farol 3D (aula 3, o caso do não, 08/11/2026).
+  if (scene === 'lighthouse-key' && declarado === 'ilha') return 'ilha'
   const fixo = SCENE_FIXED_CENARIOS[scene]
   if (fixo) return fixo
   if (declarado && isSceneCenario(declarado)) return declarado

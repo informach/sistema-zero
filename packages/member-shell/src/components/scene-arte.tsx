@@ -210,7 +210,8 @@ export function FundoDoCenario({
 }) {
   const id = useId().replace(/[^a-zA-Z0-9-]/g, '')
   const relogio = useRelogioDaArte()
-  if (cenario === 'farol')
+  // A Ilha do Farol (3D) usa a praia do Farol como reserva num palco 2D.
+  if (cenario === 'farol' || cenario === 'ilha')
     return (
       <g data-fundo="farol" transform={x === 0 && y === 0 ? undefined : `translate(${x} ${y})`}>
         <image

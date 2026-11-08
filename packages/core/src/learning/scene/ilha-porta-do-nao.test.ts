@@ -13,14 +13,16 @@ import { initialExperiment, packExperiment, readExperimentSession, stepExperimen
 import { isSceneState, LIGHTHOUSE_NOT_GOALS, lighthouseKeyNotCase, type SceneStart } from './state'
 
 /**
- * "A pergunta com o não" (A Ilha do Farol, aula 3, parte 3, 02/11/2026): a porta do Farol pergunta
- * "a porta está trancada?" ou "a porta não está trancada?". Sem a chave, ela está trancada; sim abre.
- * O modo liga pelas metas do caso (`lighthouseKeyNotCase`); a porta do Farol (Dias 2 e 3) fica igual.
+ * "A pergunta com o não" (A Ilha do Farol, aula 3): a porta do farol pergunta "a porta está
+ * trancada?" ou "a porta não está trancada?". Sem a chave, ela está trancada; sim abre. O modo liga
+ * pelas metas do caso (`lighthouseKeyNotCase`); a porta do Farol (Dias 2 e 3) fica igual. Desde
+ * 08/11/2026 a experiência acontece na ilha 3D do jogo do curso (cenário `ilha`), e o Zappy fala
+ * curto: depois de cada teste, ele aponta o que a porta fez e pede a outra pergunta.
  */
 export const BLOCO_DA_PORTA_DO_NAO: ExperimentationActivity = {
   type: 'experimentation',
   scene: 'lighthouse-key',
-  cenario: 'farol',
+  cenario: 'ilha',
   setup: { freeExploration: true, goals: [...LIGHTHOUSE_NOT_GOALS] },
 }
 const start: SceneStart = sceneStart(BLOCO_DA_PORTA_DO_NAO)
@@ -37,38 +39,27 @@ const falas = new Map(
     .map(({ id, text }) => [id, text] as const),
 )
 
-describe('a porta do não: o Zappy fala só da ideia', () => {
-  test('nove falas com o prefixo door-not-', () => {
-    expect(falas.size).toBe(9)
+describe('a porta do não: o Zappy fala curto, só da ideia', () => {
+  test('as falas do não têm a ideia e o "No seu jogo"', () => {
+    expect(falas.get('door-not-idea')).toContain('obedece à resposta')
+    expect(falas.get('door-not-bridge')).toStartWith('No seu jogo: ')
   })
   test.each([
     ...falas.keys(),
-  ])('%s não fala de bloco, Se, então, senão, variável nem temChave', (id) => {
-    expect(falas.get(id)).not.toMatch(
-      /\bbloco|\bregra|\bentão\b|\bsenão\b|\bSe\b|temChave|ganhou|variável|código|\baperte\b/,
+  ])('%s é curta e não fala de bloco, Se, então, senão, variável nem botão', (id) => {
+    const texto = falas.get(id) ?? ''
+    if (!/-(?:idea|bridge)$/.test(id)) expect(texto.split(/\s+/).length).toBeLessThanOrEqual(12)
+    expect(texto).not.toMatch(
+      /\bbloco|\bregra|\bentão\b|\bsenão\b|\bSe\b|temChave|ganhou|variável|código|[Cc]lique em|Testar a porta|Dar a chave/,
     )
   })
-  const ANTES: [string, RegExp][] = [
-    ['door-not-start', /resposta foi|abriu|ficou fechada|virou/i],
-    ['door-not-try', /resposta foi|abriu|ficou fechada|virou/i],
-    // Depois de um teste, a fala explica ESTA resposta e não conta a da outra pergunta.
-    ['door-not-plain-with', /abriu/],
-    ['door-not-plain-without', /ficou fechada/],
-    ['door-not-not-with', /ficou fechada/],
-    ['door-not-not-without', /abriu/],
-    // Uma chave vista: a fala resume ESTA chave e não conta a outra.
-    ['door-not-other-with', /abriu|fechada|não virou sim/],
-    ['door-not-other-without', /abriu|fechada|sim virou não/],
-  ]
-  test.each(ANTES)('%s não conta o resultado do próximo teste', (id, resultado) => {
-    expect(falas.get(id)).toBeString()
-    expect(falas.get(id)).not.toMatch(resultado)
+  test('antes de testar, a fala não conta a resposta', () => {
+    for (const id of ['door-not-start', 'door-not-go'])
+      expect(falas.get(id)).not.toMatch(/abriu|fechada|SIM|NÃO|troca/i)
   })
-  test('a abertura diz como a porta funciona, e a fala de depois diz que ela obedece à resposta', () => {
-    expect(falas.get('door-not-start')).toContain('com a resposta sim, ela abre')
-    expect(falas.get('door-not-plain-without')).toContain('obedece ao sim: abriu, mesmo trancada')
-    for (const id of ['door-not-plain-with', 'door-not-not-with', 'door-not-not-without'])
-      expect(falas.get(id)).toContain('a porta obedece ao')
+  test('a surpresa da pergunta sem o não: abre sem a chave e fica fechada com ela', () => {
+    expect(falas.get('door-not-opened')).toContain('Abriu sem a chave')
+    expect(falas.get('door-not-closed')).toContain('Fechada com a chave')
   })
 })
 
@@ -133,21 +124,20 @@ describe('a porta do não: o retrato guardado', () => {
 describe('a porta do não: a fala acompanha a ordem escolhida', () => {
   test('começando sem a chave e sem o não (a abertura)', () => {
     expect(fala([])).toBe('door-not-start')
-    expect(fala([TESTAR])).toBe('door-not-plain-without')
-    expect(fala([TESTAR, nao(true)])).toBe('door-not-try')
-    expect(fala([TESTAR, nao(true), TESTAR])).toBe('door-not-other-with')
-    expect(fala([TESTAR, nao(true), TESTAR, chave(true)])).toBe('door-not-try')
-    expect(fala([TESTAR, nao(true), TESTAR, chave(true), TESTAR])).toBe('door-not-not-with')
+    expect(fala([TESTAR])).toBe('door-not-opened')
+    expect(fala([TESTAR, nao(true)])).toBe('door-not-go')
+    expect(fala([TESTAR, nao(true), TESTAR])).toBe('door-not-with')
+    expect(fala([TESTAR, nao(true), TESTAR, chave(true)])).toBe('door-not-go')
+    expect(fala([TESTAR, nao(true), TESTAR, chave(true), TESTAR])).toBe('door-not-remove')
     expect(fala([TESTAR, nao(true), TESTAR, chave(true), TESTAR, nao(false), TESTAR])).toBe(
       'door-not-complete',
     )
   })
-  test('começando com a chave e com o não', () => {
+  test('começando com a chave', () => {
+    expect(fala([chave(true), TESTAR])).toBe('door-not-closed')
     expect(fala([chave(true), nao(true)])).toBe('door-not-start')
-    expect(fala([chave(true), nao(true), TESTAR])).toBe('door-not-not-with')
-    expect(fala([chave(true), nao(true), TESTAR, nao(false), TESTAR])).toBe(
-      'door-not-other-without',
-    )
+    expect(fala([chave(true), nao(true), TESTAR])).toBe('door-not-remove')
+    expect(fala([chave(true), nao(true), TESTAR, nao(false), TESTAR])).toBe('door-not-without')
   })
   test('uma meta só: a fala não cobra a chave que a atividade não pede', () => {
     const so = {
@@ -163,7 +153,7 @@ describe('a porta do não: a fala acompanha a ordem escolhida', () => {
       setup: { freeExploration: true, goals: ['not-flips-with-key'] },
     }
     const s = jogar([TESTAR], sceneStart(so))
-    expect(discoveryGuidance(so, s).id).not.toMatch(/^door-not-other/)
+    expect(discoveryGuidance(so, s).id).not.toMatch(/^door-not-with(?:out)?$/)
   })
 })
 
