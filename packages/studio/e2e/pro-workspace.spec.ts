@@ -31,6 +31,81 @@ test.afterAll(async () => {
     )
 })
 
+for (const tab of ['Arquivos', 'Saída']) {
+  test(`opens Zappy from the phone ${tab} tab`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 850 })
+    const address = server.httpServer.address()
+    if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+    await page.goto(`http://127.0.0.1:${address.port}`)
+    const tabs = page.getByRole('navigation', { name: 'Partes da tela' })
+    await tabs.getByRole('button', { name: tab, exact: true }).click()
+    await page.getByRole('button', { name: 'Abrir Zappy', exact: true }).click()
+    await expect(page.locator('#sz-zappy-panel')).toBeVisible()
+    await page.getByRole('button', { name: 'Fechar Zappy', exact: true }).first().click()
+    await tabs.getByRole('button', { name: tab, exact: true }).click()
+    await expect(tabs.getByRole('button', { name: tab, exact: true })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    )
+    await expect(page.locator('#sz-zappy-panel')).toBeHidden()
+  })
+}
+
+test('reveals the selected file from the game-only layout', async ({ page }) => {
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  await page.getByRole('button', { name: 'Só o jogo', exact: true }).click()
+  await page.getByRole('treeitem', { name: 'src/config.ts', exact: true }).click()
+  await expect(page.getByRole('region', { name: 'Código do projeto', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Lado a lado', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(page.locator('.monaco-editor').first()).toContainText('export const speed = 4')
+})
+
+test('keeps stage actions reachable at tablet width and after resizing the panels', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 720, height: 850 })
+  const address = server.httpServer.address()
+  if (!address || typeof address === 'string') throw new Error('Servidor indisponível')
+  await page.goto(`http://127.0.0.1:${address.port}`)
+  const header = page.locator('.sz-pro-stage__head')
+  await expect(header.getByRole('button', { name: 'Atualizar', exact: true })).toBeVisible()
+  const assertActionsReachable = async () => {
+    await expect
+      .poll(() =>
+        header.evaluate((head) => {
+          const bounds = head.getBoundingClientRect()
+          return [...head.querySelectorAll('button')].every((button) => {
+            const rect = button.getBoundingClientRect()
+            return (
+              rect.left >= bounds.left &&
+              rect.right <= bounds.right &&
+              document
+                .elementFromPoint(rect.x + rect.width / 2, rect.y + rect.height / 2)
+                ?.closest('button') === button
+            )
+          })
+        }),
+      )
+      .toBe(true)
+  }
+  await assertActionsReachable()
+  const divider = page.getByRole('separator', { name: 'Arrumação da tela' })
+  await divider.focus()
+  await page.keyboard.press('ArrowRight')
+  await page.keyboard.press('ArrowRight')
+  await expect(divider).toHaveAttribute('aria-valuenow', '80')
+  await assertActionsReachable()
+  const preview = page.frameLocator('iframe[title="Pré-visualização do projeto Pro"]')
+  const session = await preview.locator('#session').textContent()
+  await header.getByRole('button', { name: 'Atualizar', exact: true }).click()
+  await expect(preview.locator('#session')).not.toHaveText(session!)
+})
+
 test('loads symbols opened before the language module arrives', async ({ page }) => {
   const requested = Promise.withResolvers<void>()
   const resume = Promise.withResolvers<void>()

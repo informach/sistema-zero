@@ -25,7 +25,13 @@ describe('layout contínuo do Pro', () => {
     return <input aria-label={name} defaultValue={`${name} inicial`} />
   }
   let latest: ProWorkspacePreferences = emptyWorkspace()
-  function Workspace({ preview = true }: { preview?: boolean }) {
+  function Workspace({
+    preview = true,
+    codeRequest = 0,
+  }: {
+    preview?: boolean
+    codeRequest?: number
+  }) {
     const [preferences, change] = useState(emptyWorkspace)
     latest = preferences
     return (
@@ -45,14 +51,15 @@ describe('layout contínuo do Pro', () => {
         change={change}
         gameRequest={0}
         searchRequest={0}
+        codeRequest={codeRequest}
       />
     )
   }
   const stores = createStudioStores({ persistence: 'none' })
-  const content = (width: number) => (
+  const content = (width: number, codeRequest = 0) => (
     <StudioStoresContext.Provider value={stores}>
       <StudioLayoutProvider value={{ width, isNarrow: width < 1024, isCompact: width < 440 }}>
-        <Workspace />
+        <Workspace codeRequest={codeRequest} />
       </StudioLayoutProvider>
     </StudioStoresContext.Provider>
   )
@@ -185,5 +192,27 @@ describe('layout contínuo do Pro', () => {
     expect(latest.layout).toBe('split')
     view.unmount()
     expect(stores.proRun.getState().revealStage).toBeNull()
+  })
+
+  it('um pedido de código revela o editor sem remontá-lo nem desfazer uma escolha posterior', () => {
+    const view = render(content(1440))
+    const editor = view.getByLabelText('código')
+    fireEvent.change(editor, { target: { value: 'edição preservada' } })
+    fireEvent.click(view.getByRole('button', { name: 'Só o jogo' }))
+    expect(editor.closest('[hidden]')).not.toBeNull()
+    view.rerender(content(1440, 1))
+    expect(latest.layout).toBe('split')
+    expect(editor.closest('[hidden]')).toBeNull()
+    expect(view.getByLabelText('código')).toBe(editor)
+    expect((editor as HTMLInputElement).value).toBe('edição preservada')
+
+    fireEvent.click(view.getByRole('button', { name: 'Só o jogo' }))
+    expect(latest.layout).toBe('game')
+    view.rerender(content(1440, 2))
+    expect(latest.layout).toBe('split')
+    fireEvent.click(view.getByRole('button', { name: 'Só o código' }))
+    view.rerender(content(1440, 3))
+    expect(latest.layout).toBe('code')
+    view.unmount()
   })
 })
