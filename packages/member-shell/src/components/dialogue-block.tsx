@@ -92,7 +92,7 @@ export function DialogueBlockView({
     setTocandoArquivo(false)
     voz.parar()
   }, [voz.parar])
-  useEffect(() => registerLessonMedia(owner.current, parar), [parar])
+  useEffect(() => registerLessonMedia(owner.current, parar, { tipo: 'fala' }), [parar])
   /**
    * ⭐ A BOCA do mascote segue o áudio (o slot é renderizado DENTRO do provider, então o Zappy
    * que o kids injeta enxerga isto). ⚠️ A dependência é `temFala`, e não `fila`: o `filaDeVoz`

@@ -484,10 +484,15 @@ export function SceneActivityView({
     }
     update()
     media.addEventListener('change', update)
-    const unregister = registerLessonMedia(owner.current, () => {
-      setRunning(false)
-      return audio.current?.suspend()
-    })
+    // O relógio da cena convive com a fala do Zappy (`tipo: 'relogio'`, 08/11/2026).
+    const unregister = registerLessonMedia(
+      owner.current,
+      () => {
+        setRunning(false)
+        return audio.current?.suspend()
+      },
+      { tipo: 'relogio' },
+    )
     return () => {
       media.removeEventListener('change', update)
       unregister()

@@ -29,6 +29,7 @@ import {
   TIMED_BRIDGE,
 } from './actions'
 import { GESTOS_NO_PAPEL, MARCA_DO_PAPEL, MARCAS_NO_PAPEL, type MirrorAxis } from './atelie'
+import type { SceneCenarioId } from './cenario'
 import { type IslandState, initialIsland, isIslandState } from './island-3d'
 import {
   AIM_ORIGIN,
@@ -297,6 +298,12 @@ export const LIGHTHOUSE_WALK = {
    */
   start: 208,
   /**
+   * O começo no FAROL (08/11/2026): onde o personagem começa no JOGO do Farol (`FAROL_LAYOUT.personagem.x`,
+   * que o core não importa; o member-shell confere os dois). A experiência do andar mostra a tela do
+   * jogo como ela é, e o personagem parte do mesmo lugar. A Nave segue no meio da tela (`start`).
+   */
+  startFarol: 21,
+  /**
    * Quanto do personagem precisa passar da borda para "saiu da tela" valer: a METADE da caixa. ⚠️ O
    * desenho tem margem transparente (o corpo vai de 16 a 46 dos 64), e com 2 da caixa para fora nada
    * do desenho tinha saído.
@@ -319,6 +326,10 @@ export const LIGHTHOUSE_WALK = {
   /** O teto do x e do quadro no retrato (o Rodar para muito antes). */
   max: 1_000_000,
 } as const
+
+/** Onde o personagem começa a andar: no Farol, o lugar do jogo; nos outros cenários, o meio da tela. */
+export const lighthouseWalkOrigin = (start?: Pick<SceneStart, 'cenario'>): number =>
+  start?.cenario === 'farol' ? LIGHTHOUSE_WALK.startFarol : LIGHTHOUSE_WALK.start
 
 /** O maior x em que o personagem ainda cabe INTEIRO na tela: é onde o limite o prende. */
 export const lighthouseWalkMaxX = (): number => LIGHTHOUSE_WALK.screen - LIGHTHOUSE_WALK.hero
@@ -1640,6 +1651,12 @@ export interface SceneStart {
    * Toda abertura de sessão passa por lá; aqui fica o mundo de fábrica.
    */
   setup?: SceneSetup
+  /**
+   * O cenário declarado na atividade (`activity.cenario`). Só a `lighthouse-walk` o lê hoje: no Farol o
+   * personagem parte de onde parte no jogo (`lighthouseWalkOrigin`). ⚠️ Não é o caso: o caso continua
+   * sem escolher onde o personagem está (`isSceneSetupAction`).
+   */
+  cenario?: SceneCenarioId
 }
 
 /** O padrão dos grupos que a cena ganhou depois que já havia retrato guardado por aí. */

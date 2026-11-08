@@ -106,3 +106,25 @@ test('turning sound off cancels pending focus and a later play can acquire it ag
     removeVideo()
   }
 })
+
+test('a fala do Zappy e o relógio da cena convivem; o vídeo ainda pausa os dois (08/11/2026)', async () => {
+  const fala = Symbol('fala'),
+    relogio = Symbol('relogio'),
+    video = Symbol('video')
+  const pausas: string[] = []
+  const tirar = [
+    registerLessonMedia(fala, () => pausas.push('fala'), { tipo: 'fala' }),
+    registerLessonMedia(relogio, () => pausas.push('relogio'), { tipo: 'relogio' }),
+    registerLessonMedia(video, () => pausas.push('video')),
+  ]
+  try {
+    expect(await requestLessonMediaFocus(fala)).toBe(true)
+    expect(pausas).toEqual(['video'])
+    expect(await requestLessonMediaFocus(relogio)).toBe(true)
+    expect(pausas).toEqual(['video', 'video'])
+    expect(await requestLessonMediaFocus(video)).toBe(true)
+    expect(pausas.slice(2).sort()).toEqual(['fala', 'relogio'])
+  } finally {
+    for (const t of tirar) t()
+  }
+})

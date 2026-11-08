@@ -181,7 +181,10 @@ export function useRitmoDosQuadros({
   const dono = useRef(Symbol('ritmo-dos-quadros'))
 
   // Outra mídia da aula (o vídeo da parte) pede a vez: os quadros param.
-  useEffect(() => registerLessonMedia(dono.current, () => setRodando(false)), [])
+  useEffect(
+    () => registerLessonMedia(dono.current, () => setRodando(false), { tipo: 'relogio' }),
+    [],
+  )
 
   const rodar = (novo: Ritmo, { reiniciar = reiniciarAoRodar } = {}) => {
     if (reiniciar) dispatch({ type: 'restart-walk' })
