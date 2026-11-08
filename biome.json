@@ -13,7 +13,6 @@
       "!bun.lock",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
-      "!packages/studio/src/examples/python/pygameGames/*.drawings.generated.ts",
       "!packages/studio/src/examples/python/pygame/*/desenhos.pinta.json",
       "!packages/studio/playground/moldaDemoAssets.json",
       "!packages/studio-runtime/runtime/portable-path.generated.mjs",
