@@ -26,8 +26,8 @@ import {
   reconcileWorkspace,
   remapWorkspace,
 } from './workspace/model'
-import { ProBottomPanel } from './workspace/ProBottomPanel'
 import { ProCodeTools } from './workspace/ProCodeTools'
+import { ProDock } from './workspace/ProDock'
 import { ProEditorStrip, type ProEditorTools } from './workspace/ProEditorStrip'
 import { ProNavigator } from './workspace/ProNavigator'
 import { ProOperationReview } from './workspace/ProOperationReview'
@@ -490,8 +490,9 @@ export function ProWorkspace({
         searchRequest={searchRequest}
         codeRequest={codeRequest}
         dock={
-          <ProBottomPanel
+          <ProDock
             tree={tree}
+            python={python}
             diagnostics={diagnostics}
             analysis={analysis}
             investigate={

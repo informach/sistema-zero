@@ -101,14 +101,14 @@ describe('Terminal single-owner do FS clássico (#9)', () => {
 
   it('a segunda instância clássica recusa em vez de clobberar o FS da primeira', async () => {
     const a = render(<Terminal />)
-    fireEvent.click(a.getByText('Carregar terminal real'))
+    fireEvent.click(a.getByText('Abrir o terminal'))
     // Primeira instância vira dona e monta o FS (reset chamado 1x).
     await waitFor(() => expect(a.getByText('Travou? Reiniciar terminal')).toBeTruthy())
     expect(resetCalls).toBe(1)
 
     // Segunda instância clássica na MESMA aba: deve recusar.
     const b = render(<Terminal />)
-    fireEvent.click(b.getByText('Carregar terminal real'))
+    fireEvent.click(b.getByText('Abrir o terminal'))
     await waitFor(() => expect(b.getByText(/já está em uso em outra instância/i)).toBeTruthy())
     // Nenhum reset/mount adicional — o FS da primeira instância ficou intacto.
     expect(resetCalls).toBe(1)
@@ -122,7 +122,7 @@ describe('Terminal single-owner do FS clássico (#9)', () => {
 
   it('mostra a dica de Ctrl-C quando o terminal está pronto', async () => {
     const a = render(<Terminal />)
-    fireEvent.click(a.getByText('Carregar terminal real'))
+    fireEvent.click(a.getByText('Abrir o terminal'))
     await waitFor(() => expect(a.getByText('Travou? Reiniciar terminal')).toBeTruthy())
     expect(a.getByText(/interromper o programa/i)).toBeTruthy()
   })
@@ -143,7 +143,7 @@ describe('Terminal precheck de cross-origin isolation', () => {
   it('sem isolamento: mostra "indisponível" SEM bootar nem oferecer retry', async () => {
     canBoot = false
     const a = render(<Terminal />)
-    fireEvent.click(a.getByText('Carregar terminal real'))
+    fireEvent.click(a.getByText('Abrir o terminal'))
     await waitFor(() => expect(a.getByText(/não está disponível aqui ainda/i)).toBeTruthy())
     // Curto-circuitou ANTES do reset/mount do FS — nada foi tocado.
     expect(resetCalls).toBe(0)

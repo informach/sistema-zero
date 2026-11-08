@@ -9,6 +9,7 @@ import type { FitAddon } from '@xterm/addon-fit'
 import type { Terminal as XTerm } from '@xterm/xterm'
 import { useShallow } from 'zustand/react/shallow'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
+import { useT } from '../../studio/i18n'
 import {
   buildTerminalFileContents,
   buildTerminalFileTree,
@@ -73,6 +74,7 @@ interface TerminalRuntime {
 const EMPTY_EXTRA_FILES: ExtraFile[] = []
 
 export function Terminal(): JSX.Element {
+  const t = useT()
   const projectStore = useProjectStoreApi()
   const project = useProjectStore(
     useShallow(
@@ -391,18 +393,35 @@ export function Terminal(): JSX.Element {
       )}
 
       {status === 'idle' && (
+        // O cartão de apresentação (redesenho do Pro, 11/2026): o que o terminal é, o botão para
+        // abrir e "O que dá para fazer nele?" com três comandos. A explicação técnica fica dobrada.
         <TerminalOverlay>
-          <p className="max-w-md text-sz-fg-soft">
-            O terminal real usa <strong className="text-sz-fg">WebContainers</strong>: um runtime
-            Node.js isolado dentro do navegador.
-          </p>
-          <p className="max-w-md text-sz-fg-mute">
-            O ambiente é carregado sob demanda e exige isolamento COOP/COEP configurado no servidor
-            da IDE.
-          </p>
+          <p className="m-0 text-base font-black text-sz-fg">{t('terminal.intro.title')}</p>
+          <p className="m-0 max-w-md text-sz-fg-soft">{t('terminal.intro.body')}</p>
           <Button variant="primary" size="md" onClick={handleLoad}>
-            Carregar terminal real
+            {t('terminal.intro.open')}
           </Button>
+          <details className="w-full max-w-md text-left">
+            <summary className="cursor-pointer text-center font-bold text-sz-fg-soft">
+              {t('terminal.intro.what')}
+            </summary>
+            <ul className="mt-2 mb-0 list-none space-y-1 p-0">
+              <li>
+                <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">npm install nome</code>{' '}
+                {t('terminal.intro.install')}
+              </li>
+              <li>
+                <code className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">ls</code>{' '}
+                {t('terminal.intro.list')}
+              </li>
+              <li>
+                <kbd className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">Ctrl</kbd>+
+                <kbd className="rounded bg-sz-bg px-1.5 py-0.5 text-sz-fg">C</kbd>{' '}
+                {t('terminal.intro.stop')}
+              </li>
+            </ul>
+            <p className="mt-2 mb-0 text-sz-fg-mute">{t('terminal.intro.tech')}</p>
+          </details>
         </TerminalOverlay>
       )}
 

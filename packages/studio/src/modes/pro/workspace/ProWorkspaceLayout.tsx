@@ -294,6 +294,11 @@ export function ProWorkspaceLayout({
           onSelect={(next) => {
             setPhoneTab(next)
             if (next === 'game') setTutorOpen(false)
+            // A aba Saída é a gaveta inteira: se ela estava fechada, abre nos Problemas.
+            if (next === 'output')
+              change((previous) =>
+                previous.bottom === 'closed' ? { ...previous, bottom: 'problems' } : previous,
+              )
           }}
         />
       ) : null}

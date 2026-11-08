@@ -5,6 +5,7 @@ import { assertStudioRuntimeOperationAccess } from '../../runtime/registry'
 import { useLogsStore } from '../../state/logsStore'
 import { useProjectStore } from '../../state/projectStore'
 import { usePythonEditorConsole } from '../../state/studioStores'
+import { useT } from '../../studio/i18n'
 import { useStudioRuntimeEnvironment } from '../../studio/runtime-environment'
 
 const emptySubscribe = () => () => {}
@@ -12,6 +13,7 @@ const noSnapshot = () => null
 
 /** Commands run in the current CPython namespace; they never change saved source files. */
 export function PythonConsoleInput() {
+  const t = useT()
   const id = useId()
   const project = useProjectStore((state) => state.project)
   const author = useProjectStore((state) => state.editingAccess === 'author')
@@ -69,7 +71,7 @@ export function PythonConsoleInput() {
         submission.current === token &&
         !(error instanceof DOMException && error.name === 'AbortError')
       )
-        setIssue(error instanceof Error ? error.message : 'Não foi possível executar o comando.')
+        setIssue(error instanceof Error ? error.message : t('run.repl.failed'))
     } finally {
       if (submission.current === token) submission.current = null
     }
@@ -82,8 +84,8 @@ export function PythonConsoleInput() {
         void send()
       }}
     >
-      <label className="block text-xs text-sz-fg-soft" htmlFor={id}>
-        Comando Python
+      <label className="block text-xs font-bold text-sz-fg-soft" htmlFor={id}>
+        {t('run.repl.label')}
       </label>
       <div className="flex items-end gap-2">
         <textarea
@@ -104,16 +106,18 @@ export function PythonConsoleInput() {
             }
           }}
         />
-        <Button size="sm" type="submit" disabled={!ready || !source.trim()}>
-          Executar comando
+        <Button size="sm" variant="primary" type="submit" disabled={!ready || !source.trim()}>
+          {t('run.repl.test')}
         </Button>
       </div>
       <p className="m-0 text-xs text-sz-fg-mute">
         {!permitted
-          ? 'O console Python não está habilitado nesta tarefa.'
+          ? t('run.repl.disabled')
           : ready
-            ? 'Ctrl+Enter executa na sessão atual. Reiniciar o jogo limpa os valores do console.'
-            : 'Execute o projeto e espere o programa terminar para experimentar comandos Python.'}
+            ? t('run.repl.ready')
+            : view?.status === 'running' || view?.status === 'waiting-input'
+              ? t('run.repl.running')
+              : t('run.repl.waitProgram')}
       </p>
       {issue && (
         <p role="alert" className="m-0 text-xs text-sz-error">

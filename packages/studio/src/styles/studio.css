@@ -1485,6 +1485,39 @@
     font-size: 0.8125rem;
     font-weight: 700;
   }
+  /* A gaveta de baixo: o cartão com as abas e o corpo de 300px (no celular, a aba Saída inteira). */
+  .sz-pro-dock {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--color-sz-border);
+    background: var(--color-sz-panel);
+  }
+  .sz-pro-dock__body {
+    height: min(18.75rem, 40vh);
+    min-height: 0;
+    border-top: 1px solid var(--color-sz-border-soft);
+  }
+  [data-sz-pro-tier="phone"] .sz-pro-dock {
+    min-height: 0;
+    flex: 1 1 auto;
+  }
+  [data-sz-pro-tier="phone"] .sz-pro-dock__body {
+    height: auto;
+    flex: 1 1 auto;
+  }
+  [data-sz-pro-tier="phone"] .sz-pro-dock__toggle-label,
+  [data-sz-pro-tier="tablet"] .sz-pro-dock__toggle-label {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .sz-pro-badge--ok {
+    background: color-mix(in oklab, var(--color-sz-success) 18%, var(--color-sz-panel));
+    color: var(--color-sz-success);
+  }
   /* O título pequeno de uma seção do painel ("VOCÊ MEXE AQUI"). */
   .sz-pro-section-label {
     margin: 0.5rem 0.5rem 0.25rem;

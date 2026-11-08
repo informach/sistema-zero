@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'bun:test'
 import { studioTutorSourceHash } from '../../../studio/tutorSafety'
-import { currentProDiagnostics } from './ProBottomPanel'
+import { currentProDiagnostics } from './ProDock'
 
 describe('origem dos problemas Pro', () => {
   it('deduplicates the same diagnostic and rejects locations from another source revision', () => {
