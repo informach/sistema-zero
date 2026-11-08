@@ -163,6 +163,11 @@ export function buildCreatorJourneySeed(
       const id = existing?.id ?? stableId(`${audience}:${input.key}`)
       courses.push({
         ...input,
+        // A dimensão aparece na tag da trilha; o título cadastrado destaca o projeto.
+        title: input.title
+          .replace(/\b3D\b/gi, '')
+          .replace(/\s{2,}/g, ' ')
+          .trim(),
         audience,
         slug,
         id,
