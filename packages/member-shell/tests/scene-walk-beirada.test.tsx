@@ -24,7 +24,7 @@ const activity: ExperimentationActivity = {
   cenario: 'farol',
   setup: { freeExploration: true, goals: [...METAS] },
 }
-const start: SceneStart = { scene: 'lighthouse-walk', setup: activity.setup }
+const start: SceneStart = { scene: 'lighthouse-walk', setup: activity.setup, cenario: 'farol' }
 const QUADRO: SceneAction = { type: 'advance', seconds: 1 / 30 }
 const SETA: SceneAction = { type: 'hold-arrow', held: true }
 const LIMITE: SceneAction = { type: 'keep-on-screen', enabled: true }
@@ -52,29 +52,30 @@ const tela = (state: SceneState) =>
   )
 const texto = (html: string) => html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ')
 
-describe('a beirada da tela do Farol', () => {
-  test('abre com o limite desligado, a velocidade de verdade em destaque e a faixa fora da tela', () => {
+describe('a beirada da tela do Farol (moldura nova, 08/11/2026)', () => {
+  test('abre com a cerca desligada, o Rápido escolhido e a faixa fora da tela', () => {
     const html = tela(openScene(start))
-    expect(texto(html)).toContain('Ligar o limite da tela')
-    expect(texto(html)).toContain('O limite está desligado.')
-    expect(html).toMatch(/data-tom="gesto"[^>]*>.*Velocidade de verdade/)
-    expect(html).toContain('data-fora-da-tela')
+    expect(texto(html)).toContain('Limite da tela')
+    expect(texto(html)).toContain('Cerca desligada')
+    expect(html).toContain('role="switch" aria-checked="false"')
+    expect(html).toMatch(/aria-pressed="true"[^>]*>[^<]*<span aria-hidden="true">🐇/)
+    expect(texto(html)).toContain('fora da tela')
     expect(texto(html)).toContain('0 de 3 descobertas')
   })
 
-  test('as três descobertas dizem o que comparar, sem contar o resultado', () => {
+  test('os três cartões perguntam, sem contar o resultado antes do teste', () => {
     const lido = texto(tela(openScene(start)))
-    expect(lido).toContain('Leve o personagem até a beirada com o limite desligado.')
-    expect(lido).toContain('Ligue o limite com o personagem fora da tela.')
-    expect(lido).toContain('Segure a seta na beirada com o limite ligado.')
-    expect(lido).not.toMatch(/sair da tela|voltou|volta para dentro|segurou|fica dentro/i)
+    expect(lido).toContain('Sem o limite, até onde dá para andar?')
+    expect(lido).toContain('E se ligar o limite com quem saiu lá fora?')
+    expect(lido).toContain('Com o limite, o que acontece na beirada?')
+    expect(lido).not.toMatch(/sai da tela\.|puxa de volta|segura dentro/i)
   })
 
   test('⚠️⚠️ só a ideia: nenhum bloco, regra, comando, ordem dos blocos nem x', () => {
     const estados = [
       openScene(start),
-      play([SETA, ...quadros(100)]),
-      play([LIMITE, SETA, ...quadros(80)]),
+      play([SETA, ...quadros(300)]),
+      play([LIMITE, SETA, ...quadros(200)]),
     ]
     for (const s of estados) {
       const lido = texto(tela(s))
@@ -84,34 +85,23 @@ describe('a beirada da tela do Farol', () => {
     }
   })
 
-  test('na beirada com o limite, a tira e a frase mostram o passinho e depois a conferência', () => {
-    const html = tela(play([LIMITE, SETA, ...quadros(80)]))
+  test('na beirada com a cerca, a tira mostra que o jogo segurou e a cerca aparece', () => {
+    const html = tela(play([LIMITE, SETA, ...quadros(200)]))
     expect(texto(html)).toContain('✋ segurou')
     expect(texto(html)).not.toContain('voltou')
-    expect(texto(html)).toContain(
-      'Neste quadro: o passinho ia levar ele para fora; depois o jogo conferiu a beirada e segurou ele dentro.',
-    )
-    expect(texto(html)).toContain('Desligar o limite da tela')
-    expect(html).toContain('data-puxou="true"')
+    expect(texto(html)).toContain('Cerca ligada')
+    expect(html).toContain('👀')
   })
 
-  test('ligar o limite com ele fora: a tira diz que voltou, sem inventar um passinho', () => {
-    const fora = play([SETA, ...quadros(90), { type: 'hold-arrow', held: false }])
+  test('ligar a cerca com ele fora: a tira diz que voltou, sem inventar um passinho', () => {
+    const fora = play([SETA, ...quadros(250), { type: 'hold-arrow', held: false }])
     const voltou = [LIMITE, QUADRO].reduce((s, a) => stepScene(start, s, a), fora)
-    const lido = texto(tela(voltou))
-    expect(lido).toContain('↩ voltou')
-    expect(lido).toContain(
-      'Neste quadro: ele estava fora; o jogo conferiu a beirada e puxou de volta para dentro.',
-    )
-    expect(lido).not.toContain('passinho ia levar')
+    expect(texto(tela(voltou))).toContain('↩ voltou')
   })
 
-  test('fora da tela sem o limite, o recado oferece ligar o limite ou voltar', () => {
-    const html = tela(play([SETA, ...quadros(100)]))
-    expect(texto(html)).toContain(
-      'Ele saiu da janela do jogo. Ligue o limite da tela ou clique em Voltar ao início.',
-    )
-    expect(html).toMatch(/data-tom="gesto"[^>]*>Ligar o limite da tela/)
+  test('fora da tela sem o limite, a cerca pulsa', () => {
+    const html = tela(play([SETA, ...quadros(400)]))
+    expect(html).toMatch(/role="switch" aria-checked="false"[^>]*data-pulsar="true"/)
   })
 })
 
@@ -136,7 +126,7 @@ describe('a experiência do limite escolhe a beirada pela meta dela', () => {
   }
   test('caso novo abre a beirada; o caso antigo (antes de reimportar) segue com a bancada antiga', () => {
     const nova = render(activity)
-    expect(nova).toContain('Ligar o limite da tela')
+    expect(nova).toContain('Cerca desligada')
     expect(nova).not.toContain('Adicionar bloco de limite')
     const antiga = render({
       ...activity,
@@ -146,6 +136,6 @@ describe('a experiência do limite escolhe a beirada pela meta dela', () => {
       },
     })
     expect(antiga).toContain('Adicionar bloco de limite')
-    expect(antiga).not.toContain('Ligar o limite da tela')
+    expect(antiga).not.toContain('Cerca desligada')
   })
 })

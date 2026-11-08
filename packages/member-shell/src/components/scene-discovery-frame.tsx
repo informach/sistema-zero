@@ -100,6 +100,9 @@ export function Note({
   )
 }
 
+/** A ponte vem com "No seu jogo:" (é como a voz lê); a moldura escreve o prefixo em negrito. */
+export const semNoSeuJogo = (frase: string) => frase.replace(/^No seu jogo:\s*/, '')
+
 export type Cartao = { id: string; emoji: string; pergunta: string; descoberta: string }
 export type Foto = { titulo: string; texto: string }
 export type FotoGuardada = Foto & { n: number; descoberta?: boolean }

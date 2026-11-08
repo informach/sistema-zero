@@ -256,6 +256,9 @@ describe('a bancada tem um vocabulário só', () => {
      */
     for (const arquivo of BANCADAS) {
       expect(fonte(arquivo), arquivo).not.toContain('type="range"')
+      // ⭐ 08/11/2026: as telas livres do Farol (memória, porta e posição) moram na moldura nova,
+      // com controles na forma do que imitam (as setas, o caderninho, os números com − e +).
+      if (arquivo === 'scene-discovery-controls.tsx') continue
       expect(fonte(arquivo), arquivo).toContain('<Medida')
     }
   })
