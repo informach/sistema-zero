@@ -254,7 +254,7 @@ describe('session-owned Python audio', () => {
     expect((await f.play(17)).ok).toBe(false)
     instances[0]!.dispatchEvent(new Event('ended'))
     expect((await f.play(17)).ok).toBe(true)
-    expect(instances).toHaveLength(17)
+    expect(instances).toHaveLength(16)
     expect((await f.exchange({ version: 1, op: 'stop', id: null })).ok).toBe(true)
     expect(instances.every((audio) => audio.src === '')).toBe(true)
   })
@@ -341,8 +341,57 @@ describe('session-owned Python audio', () => {
       expect((await f.exchange({ version: 1, op: 'poll' })).ended).toBeUndefined()
     }
     audio.dispatchEvent(new Event('ended'))
-    expect(audio.src).toBe('')
+    expect(audio.paused).toBe(true)
     expect((await f.exchange({ version: 1, op: 'poll' })).ended).toEqual([1])
+  })
+
+  test('repeated effects reuse completed media, reset voice options and release the pool on dispose', async () => {
+    const f = await fixture()
+    await f.play(1)
+    const audio = instances[0]!
+    audio.currentTime = 0.4
+    audio.dispatchEvent(new Event('ended'))
+    expect(audio.currentTime).toBe(0)
+    expect(audio.loads).toBe(0)
+    f.mute(true)
+    expect(
+      await f.exchange({
+        version: 1,
+        op: 'play',
+        id: 2,
+        path: 'bgm.wav',
+        volume: 0.25,
+        loop: true,
+      }),
+    ).toMatchObject({ ok: true, ended: [1] })
+    expect(instances).toHaveLength(1)
+    expect(audio.plays).toBe(2)
+    expect(audio.volume).toBe(0.25)
+    expect(audio.loop).toBe(true)
+    expect(audio.muted).toBe(true)
+    audio.dispatchEvent(new Event('ended'))
+    expect((await f.exchange({ version: 1, op: 'poll' })).ended).toEqual([2])
+    f.service.dispose()
+    expect(audio.src).toBe('')
+    expect(audio.loads).toBe(1)
+  })
+
+  test('the completed-media pool is bounded across different resources', async () => {
+    const f = await fixture()
+    for (let id = 1; id <= 20; id++) {
+      await f.exchange({
+        version: 1,
+        op: 'play',
+        id,
+        tone: { hz: 200 + id, samples: 800 },
+        loop: false,
+        volume: 1,
+      })
+      instances.at(-1)!.dispatchEvent(new Event('ended'))
+    }
+    expect(instances.filter((audio) => audio.src !== '')).toHaveLength(16)
+    f.service.dispose()
+    expect(instances.every((audio) => audio.src === '' && audio.loads === 1)).toBe(true)
   })
 
   test('pause really pauses (the track keeps its place) and resume plays on', async () => {

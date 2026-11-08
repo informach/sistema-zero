@@ -21,7 +21,7 @@ interface Voice {
   audio?: HTMLAudioElement
   /** music.pause(): kept paused until resume, so the track does not end meanwhile. */
   paused?: boolean
-  release?(): void
+  release?(reuse?: boolean): void
 }
 
 /** Host-owned media. Requests never supply executable URLs, media bytes or DOM options. */
@@ -40,6 +40,15 @@ export function createPythonAudioService(options: {
   const resources = new Map<string, Promise<string>>()
   const urls = new Set<string>()
   const voices = new Map<number, Voice>()
+  // Repeated game effects reuse decoded media instead of tearing down the
+  // browser's media pipeline on every collected coin. Only naturally ended
+  // voices qualify; stopped, failed and cancelled voices are fully released.
+  const idleAudio = new Map<HTMLAudioElement, string>()
+  const releaseAudio = (audio: HTMLAudioElement) => {
+    audio.pause()
+    audio.removeAttribute('src')
+    audio.load()
+  }
   // Voices that ended by themselves or could not play, reported with the next replies so
   // Pygame Zero can run on_music_end and repeat Sound.play(loops=N).
   const ended: number[] = []
@@ -60,10 +69,10 @@ export function createPythonAudioService(options: {
   }
   currentMuted()
 
-  function stop(id: number, voice: Voice) {
+  function stop(id: number, voice: Voice, reuse = false) {
     if (voices.get(id) === voice) voices.delete(id)
     voice.cancelled.abort(new DOMException('Som encerrado.', 'AbortError'))
-    voice.release?.()
+    voice.release?.(reuse)
   }
   function dispose() {
     if (disposed) return
@@ -72,6 +81,8 @@ export function createPythonAudioService(options: {
     unsubscribeAudio = undefined
     lifetime.abort(new DOMException('Execução de áudio encerrada.', 'AbortError'))
     for (const [id, voice] of voices) stop(id, voice)
+    for (const audio of idleAudio.keys()) releaseAudio(audio)
+    idleAudio.clear()
     for (const url of urls) URL.revokeObjectURL(url)
     urls.clear()
     resources.clear()
@@ -167,7 +178,14 @@ export function createPythonAudioService(options: {
         voiceSignal,
       )
       voiceSignal.throwIfAborted()
-      const audio = new Audio()
+      let recycled: HTMLAudioElement | undefined
+      for (const [candidate, source] of idleAudio)
+        if (source === url) {
+          recycled = candidate
+          idleAudio.delete(candidate)
+          break
+        }
+      const audio = recycled ?? new Audio()
       voice.audio = audio
       audio.muted = currentMuted()
       voiceSignal.throwIfAborted()
@@ -188,7 +206,7 @@ export function createPythonAudioService(options: {
           audio.play().catch(failed)
           return
         }
-        stop(request.id, voice)
+        stop(request.id, voice, true)
         report(request.id)
       }
       function failed() {
@@ -207,16 +225,18 @@ export function createPythonAudioService(options: {
       audio.addEventListener('ended', finished)
       audio.addEventListener('error', failed, { once: true })
       let released = false
-      voice.release = () => {
+      voice.release = (reuse) => {
         if (released) return
         released = true
         audio.removeEventListener('ended', finished)
         audio.removeEventListener('error', failed)
-        audio.pause()
-        audio.removeAttribute('src')
-        audio.load()
+        if (reuse && started && !disposed && idleAudio.size < PYTHON_AUDIO_LIMITS.voices) {
+          audio.pause()
+          audio.currentTime = 0
+          idleAudio.set(audio, url)
+        } else releaseAudio(audio)
       }
-      audio.src = url
+      if (audio.src !== url) audio.src = url
       await awaitWithSignal(
         () => Promise.race([audio.play(), failure]),
         AbortSignal.any([voiceSignal, AbortSignal.timeout(5000)]),

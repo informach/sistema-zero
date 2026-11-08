@@ -1,6 +1,7 @@
 import * as Blockly from 'blockly/core'
 import type { PythonNode } from '../language/types'
 import type { PythonBlockCodec } from './contract'
+import { pythonProgramArea } from './programArea'
 import { type PythonVisualNode, pythonASTToVisual } from './projection'
 import type { PythonWorkspaceOrigins } from './provenance'
 import type { PythonProjectModules } from './scope'
@@ -11,6 +12,8 @@ export function orderPythonWorkspaceRoots(
   origins: PythonWorkspaceOrigins,
   previous: readonly string[],
 ): string[] {
+  const area = pythonProgramArea(workspace)
+  if (area) return [area.id]
   const roots = workspace.getTopBlocks(false)
   const order = new Map(
     [...new Set([...previous, ...roots.map((block) => block.id)])].map((id, index) => [id, index]),

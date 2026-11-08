@@ -18,6 +18,15 @@ import {
   pythonCategoryColour,
   pythonCategoryLabel,
 } from '../../python/blocks/paletteGroups'
+import {
+  ensurePythonProgramArea,
+  pythonProgramArea,
+  pythonScratchRoots,
+} from '../../python/blocks/programArea'
+import {
+  createPythonProgramNavigation,
+  type PythonProgramNavigationState,
+} from '../../python/blocks/programNavigation'
 import { type PythonBlockProjection, pythonASTToVisual } from '../../python/blocks/projection'
 import { pythonProjectModules } from '../../python/blocks/projectModules'
 import {
@@ -26,11 +35,17 @@ import {
 } from '../../python/blocks/provenance'
 import { attachPythonCallLabels } from '../../python/blocks/pythonCallLabels'
 import { pythonResolverOptionsOf } from '../../python/blocks/resolverOptions'
-import { preparePythonWorkspaceRestore } from '../../python/blocks/restoreWorkspace'
+import {
+  preparePythonScratchRestore,
+  preparePythonWorkspaceRestore,
+} from '../../python/blocks/restoreWorkspace'
 import type { PythonProjectModules } from '../../python/blocks/scope'
 import { type PythonPaletteSelection, searchPythonPalette } from '../../python/blocks/selection'
 import {
+  capturePythonWorkspace,
   type PythonWorkspaceDraft,
+  pendingPythonWorkspaceDraft,
+  readPythonScratchWorkspace,
   readPythonWorkspaceDraft,
   updatePythonWorkspaceDraft,
 } from '../../python/blocks/workspaceDraft'
@@ -38,7 +53,11 @@ import {
   orderPythonWorkspaceRoots,
   updatePythonWorkspacePresentation,
 } from '../../python/blocks/workspacePresentation'
-import { rebasePythonWorkspaceState, savePythonWorkspace } from '../../python/blocks/workspaceState'
+import {
+  rebasePythonWorkspaceState,
+  samePythonWorkspaceProgram,
+  savePythonWorkspace,
+} from '../../python/blocks/workspaceState'
 import { createPythonAnalysisController } from '../../python/language/controller'
 import type { PythonAnalysisSession } from '../../python/language/session'
 import type {
@@ -207,6 +226,10 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   const initialTheme = useRef(theme)
   initialTheme.current = theme
   const [query, setQuery] = useState('')
+  const [program, setProgram] = useState<PythonProgramNavigationState>({ entries: [], scratch: 0 })
+  const [definitionQuery, setDefinitionQuery] = useState('')
+  // Reflect the actual open scope, including navigation from Ponte, undo and tutor.
+  const activeDefinition = program.entries.filter((entry) => entry.expanded).at(-1)?.id ?? ''
   const [view, setView] = useState<View>({
     phase: 'loading',
     message: 'Preparando os blocos Python…',
@@ -224,6 +247,8 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     retry(): void
     selectCursor(cursor?: PythonBlocklyEditorProps['sourceCursor']): void
     focusTutor(target: TutorTarget): boolean
+    navigate(id?: string): Promise<void>
+    scratch(): void
   } | null>(null)
 
   useEffect(() => {
@@ -255,7 +280,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       horizontalLayout: true,
       toolboxPosition: 'start',
       sounds: false,
-      collapse: true,
+      collapse: false,
       // Execution is described by Python source, never by an invisible workspace flag.
       disable: false,
       theme: szThemeFor(initialTheme.current, element),
@@ -277,6 +302,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     let loadedSource: string | undefined
     let origins: PythonWorkspaceOrigins = new Map()
     let rootIds: string[] = []
+    const navigation = createPythonProgramNavigation(workspace, setProgram)
     let offer: PythonWorkspaceDraft | undefined
     let timer: ReturnType<typeof setTimeout> | undefined
     // `from settings import *` is understood from the project's own settings.py.
@@ -404,10 +430,15 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       const restored = draft
         ? preparePythonWorkspaceRestore(draft, document, props.codecs)
         : undefined
+      const restoreScratch = preparePythonScratchRestore(
+        readPythonScratchWorkspace(currentProject()!, props.path),
+        props.codecs,
+      )
       applying = true
       loadedSource = undefined
       Blockly.Events.disable()
       try {
+        navigation.restore()
         workspace.clear()
         if (restored) {
           Blockly.serialization.workspaces.load(restored.state, workspace)
@@ -427,6 +458,9 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
             props.codecs,
           )
         }
+        const hadProgramArea = !!pythonProgramArea(workspace)
+        rootIds = ensurePythonProgramArea(workspace, rootIds, props.path)
+        restoreScratch?.(workspace)
         forgetBlocklyHistory(workspace)
         updatePythonWorkspacePresentation(
           workspace,
@@ -436,8 +470,39 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           props.officialModules,
           projectModules,
         )
-        fingerprint = JSON.stringify(savePythonWorkspace(workspace, origins))
+        // Legacy caches have no area and often save every definition expanded.
+        // Give them the same compact initial view as a freshly projected file.
+        void navigation.initialize(!restored || !hadProgramArea)
+        const saved = savePythonWorkspace(workspace, origins)
+        fingerprint = JSON.stringify(saved)
         loadedSource = document.source
+        // Gallery examples start as Python files. Save their initial Program
+        // area as soon as projection succeeds, without requiring a user gesture.
+        // A recovery offer must remain pending until its source transaction.
+        const project = currentProject()
+        if (
+          (!restored || !hadProgramArea) &&
+          !draft?.pending &&
+          !observer &&
+          store.getState().editingAccess === 'author' &&
+          project?.files[props.path] === document.source
+        ) {
+          const { draft: initial, scratch } = capturePythonWorkspace(
+            project,
+            props.path,
+            saved,
+            rootIds,
+          )
+          initial.pending = false
+          const issue = store
+            .getState()
+            .applyPythonSourceFiles(
+              project,
+              project.files,
+              updatePythonWorkspaceDraft(project, props.path, initial, scratch),
+            )
+          if (issue) throw new Error(issue)
+        }
       } finally {
         Blockly.Events.enable()
         applying = false
@@ -530,6 +595,28 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
         const saved = savePythonWorkspace(workspace, origins)
         const nextFingerprint = JSON.stringify(saved)
         if (nextFingerprint === fingerprint) return
+        // Layout, collapsed definitions and scratch pieces do not change source.
+        // Persist them without parsing/projecting the entire file. Pending
+        // semantic edits must finish through the normal source transaction.
+        if (
+          !committing &&
+          !pendingPythonWorkspaceDraft(project) &&
+          fingerprint &&
+          samePythonWorkspaceProgram(JSON.parse(fingerprint), saved)
+        ) {
+          const { draft, scratch } = capturePythonWorkspace(project, props.path, saved, rootIds)
+          draft.pending = false
+          const issue = store
+            .getState()
+            .applyPythonSourceFiles(
+              project,
+              project.files,
+              updatePythonWorkspaceDraft(project, props.path, draft, scratch),
+            )
+          if (issue) throw new Error(issue)
+          fingerprint = nextFingerprint
+          return
+        }
         rootIds = orderPythonWorkspaceRoots(workspace, origins, rootIds)
         let projection: PythonBlockProjection | undefined, issue: unknown
         try {
@@ -683,13 +770,21 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
     })
     surface.current = {
       workspace,
+      async navigate(id) {
+        if (!parsed || loadedSource !== currentProject()?.files[props.path]) return
+        await navigation.reveal(id)
+        scheduleCommit()
+      },
+      scratch() {
+        const first = pythonScratchRoots(workspace)[0]
+        if (first) void navigation.reveal(first.id)
+      },
       focusTutor(target) {
         // Never select an instance projected from an older version of this file.
         if (!parsed || loadedSource !== currentProject()?.files[props.path]) return false
         const block = target.blockId ? workspace.getBlockById(target.blockId) : null
         if (block?.type === target.blockType) {
-          block.select()
-          workspace.centerOnBlock(block.id, false)
+          void navigation.reveal(block.id)
           const range = origins.get(block.id)?.range
           if (range) callbacks.current.onSelectRange?.(range)
           return true
@@ -719,8 +814,12 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           if (!best || length < best.length) best = { id, length }
         }
         if (best) {
-          workspace.highlightBlock(best.id)
-          workspace.centerOnBlock(best.id)
+          const selected = best.id
+          // Code selection only highlights. Selecting again would emit a block
+          // selection back to Monaco and create a feedback loop in Ponte.
+          void navigation.reveal(selected, false).then(() => {
+            if (!disposed) workspace.highlightBlock(selected)
+          })
         }
       },
       retry() {
@@ -732,7 +831,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           void refresh()
         }
       },
-      restore() {
+      async restore() {
         if (!offer || !parsed || observer) return
         const project = currentProject()
         if (store.getState().editingAccess !== 'author') return
@@ -759,7 +858,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
           report('recovery', failure(error))
         }
       },
-      discard() {
+      async discard() {
         const project = currentProject()
         if (
           !offer ||
@@ -826,6 +925,7 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
       workspace.removeChangeListener(changed)
       detachCallLabels()
       parser.dispose()
+      navigation.dispose()
       workspace.dispose()
       if (classicCapture.current === capture) classicCapture.current = null
       if (surface.current?.workspace === workspace) surface.current = null
@@ -876,6 +976,71 @@ export function PythonBlocklyEditor(props: PythonBlocklyEditorProps) {
   const locked = !['ready', 'saving'].includes(view.phase)
   return (
     <div className="flex h-full min-h-0 flex-col" data-sz-toolbox-layout="horizontal">
+      <fieldset
+        className="m-0 flex min-w-0 flex-wrap items-center gap-2 border-0 border-b border-sz-border bg-sz-panel px-3 py-2 text-sm"
+        aria-label="Áreas do arquivo Python"
+      >
+        <button
+          type="button"
+          disabled={locked}
+          className="rounded border border-sz-border px-2 py-1 font-semibold"
+          onClick={() => void surface.current?.navigate()}
+        >
+          Programa · {props.path}
+        </button>
+        <span className="text-sz-muted">De cima para baixo</span>
+        {program.entries.length > 0 && (
+          <>
+            <input
+              type="search"
+              disabled={locked}
+              aria-label="Buscar função ou classe"
+              placeholder="Buscar função ou classe"
+              value={definitionQuery}
+              onChange={(event) => setDefinitionQuery(event.target.value)}
+              className="min-w-0 max-w-48 rounded border border-sz-border bg-sz-panel px-2 py-1"
+            />
+            <select
+              disabled={locked}
+              aria-label="Função ou classe"
+              value={activeDefinition}
+              className="min-w-0 max-w-64 rounded border border-sz-border bg-sz-panel px-2 py-1"
+              onChange={(event) => void surface.current?.navigate(event.target.value || undefined)}
+            >
+              <option value="">Programa completo</option>
+              {program.entries
+                .filter(
+                  (entry) =>
+                    entry.id === activeDefinition ||
+                    entry.label.toLocaleLowerCase().includes(definitionQuery.toLocaleLowerCase()),
+                )
+                .map((entry) => (
+                  <option key={entry.id} value={entry.id}>
+                    {'↳ '.repeat(entry.depth)}
+                    {entry.label}
+                  </option>
+                ))}
+            </select>
+            <button
+              type="button"
+              disabled={locked}
+              className="rounded border border-sz-border px-2 py-1"
+              onClick={() => void surface.current?.navigate()}
+            >
+              Recolher funções
+            </button>
+          </>
+        )}
+        <button
+          type="button"
+          className="rounded border border-sz-border px-2 py-1"
+          disabled={locked || !program.scratch}
+          onClick={() => surface.current?.scratch()}
+        >
+          Rascunhos · {program.scratch}
+        </button>
+        <span className="text-sz-muted">Peças fora do Programa não executam.</span>
+      </fieldset>
       {!observer && (
         <label className="flex items-center gap-2 px-3 py-2 text-sm">
           Buscar blocos

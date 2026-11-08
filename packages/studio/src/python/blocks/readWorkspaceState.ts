@@ -3,6 +3,7 @@ import * as Blockly from 'blockly/core'
 import { registerPythonBlocks } from './blockly'
 import { PYTHON_PROGRAMMING_CODECS } from './catalog'
 import { type PythonBlockCodec, PYTHON_BLOCK_ROLES as roles } from './contract'
+import { PYTHON_PROGRAM, pythonProgramArea } from './programArea'
 
 const record = (value: unknown): value is Record<string, unknown> =>
   !!value && typeof value === 'object' && !Array.isArray(value)
@@ -26,6 +27,7 @@ export function readPythonWorkspaceState(
   )
     fail()
   const allowed = new Set([
+    PYTHON_PROGRAM,
     ...codecs.map((codec) => codec.id),
     ...roles.map((role) => `sz_py_source_${role}`),
   ])
@@ -148,6 +150,7 @@ export function readPythonWorkspaceState(
   const scratch = new Blockly.Workspace()
   try {
     Blockly.serialization.workspaces.load(state, scratch)
+    pythonProgramArea(scratch)
     if (scratch.getAllBlocks(false).length !== blockIds.size) fail()
     for (const [id, fields] of savedFields) {
       const block = scratch.getBlockById(id)

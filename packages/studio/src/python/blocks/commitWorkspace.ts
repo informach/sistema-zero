@@ -7,7 +7,7 @@ import type { PythonBlockCodec } from './contract'
 import type { PythonBlockProjection } from './projection'
 import { bindPythonVisualOrigins } from './provenance'
 import {
-  createPythonWorkspaceDraft,
+  capturePythonWorkspace,
   pendingPythonWorkspaceDraft,
   readPythonWorkspaceDraft,
   updatePythonWorkspaceDraft,
@@ -55,7 +55,7 @@ export function commitPythonWorkspaceGesture(options: {
   const expectedId = project.id
   const expectedExtensions = project.installedExtensions
   const codecs = [...options.codecs]
-  const draft = createPythonWorkspaceDraft(
+  const { draft, scratch } = capturePythonWorkspace(
     project,
     document.identity.path,
     options.workspace,
@@ -66,7 +66,7 @@ export function commitPythonWorkspaceGesture(options: {
     .applyPythonSourceFiles(
       project,
       project.files,
-      updatePythonWorkspaceDraft(project, draft.path, draft),
+      updatePythonWorkspaceDraft(project, draft.path, draft, scratch),
     )
   if (staged) throw new Error(staged)
   const persistedProject = store.getState().project
