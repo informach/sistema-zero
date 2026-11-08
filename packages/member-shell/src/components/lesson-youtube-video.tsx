@@ -101,7 +101,9 @@ export function LessonYoutubeVideo({ videoId }: { videoId: string }) {
         if (disposed) return
         // The SDK owns this iframe and may remove it on destroy; React owns only the host.
         const iframe = document.createElement('iframe')
-        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&playsinline=1&origin=${encodeURIComponent(window.location.origin)}`
+        // `disablekb=1`: as teclas da criança são do jogo ao lado, não do vídeo (o mesmo
+        // `keyboard: false` do Vimeo, 08/11/2026).
+        iframe.src = `https://www.youtube-nocookie.com/embed/${videoId}?enablejsapi=1&playsinline=1&disablekb=1&origin=${encodeURIComponent(window.location.origin)}`
         iframe.title = video.titulo
         iframe.allow =
           'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture'

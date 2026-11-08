@@ -1,0 +1,740 @@
+<title>Experiências do Cadê e do Farol</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700;800&family=Nunito:wght@400;600;700;800&display=swap">
+<style>
+/* Layout: documento de proposta em coluna de leitura; no meio, um "console" com abas, uma por
+   experiência, cada uma com o roteiro ao lado de um protótipo clicável na moldura escura de jogo. */
+:root{
+  --bg:#f4f6fb; --paper:#ffffff; --ink:#18213a; --muted:#56607a; --line:#d8deeb;
+  --navy:#0a2a7a; --blue:#1b5cf3; --blue-soft:#e6edff; --amber:#e8a317; --amber-soft:#fff3d6;
+  --green:#0b7a54; --green-soft:#e1f4ea; --red:#b23a3a; --red-soft:#fbe7e7;
+  --frame:#12204a;
+  --display:"Baloo 2","Trebuchet MS",system-ui,sans-serif;
+  --body:"Nunito","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1324; --paper:#151d33; --ink:#e8ecf7; --muted:#a3adc7; --line:#2b3654;
+  --navy:#9db6ff; --blue:#7ea2ff; --blue-soft:#1b2a52; --amber:#f2bb4a; --amber-soft:#3a2f14;
+  --green:#5fd29d; --green-soft:#123a2a; --red:#f08b8b; --red-soft:#3d1c1c; --frame:#060b1e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1324; --paper:#151d33; --ink:#e8ecf7; --muted:#a3adc7; --line:#2b3654;
+  --navy:#9db6ff; --blue:#7ea2ff; --blue-soft:#1b2a52; --amber:#f2bb4a; --amber-soft:#3a2f14;
+  --green:#5fd29d; --green-soft:#123a2a; --red:#f08b8b; --red-soft:#3d1c1c; --frame:#060b1e; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:32px 72px}
+.wrap{max-width:1120px;margin:0 auto;display:flex;flex-direction:column;gap:56px}
+h1,h2,h3{font-family:var(--display);line-height:1.15;text-wrap:balance;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800}
+h2{font-size:clamp(1.5rem,3.4vw,2rem);font-weight:700}
+h3{font-size:1.2rem;font-weight:700}
+p{margin:0}
+code{font-size:.86em;background:var(--blue-soft);padding:1px 6px;border-radius:6px}
+.read{max-width:70ch}
+.kicker{font:800 .78rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--blue)}
+section{display:flex;flex-direction:column;gap:20px}
+header.top{display:flex;flex-direction:column;gap:16px}
+.lede{font-size:1.15rem;color:var(--muted);max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 12px;font-weight:700;font-size:.85rem;background:var(--blue-soft);color:var(--navy)}
+.chip.amber{background:var(--amber-soft);color:var(--ink)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.quote{font-size:.92rem;color:var(--muted);border-left:3px solid var(--amber);padding-left:10px}
+.quote b{color:var(--ink)}
+.arc{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px;counter-reset:a}
+.arc .card{counter-increment:a}
+.arc .card h3::before{content:counter(a) ". ";color:var(--blue)}
+.keep{background:var(--green-soft);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.keep strong{color:var(--green)}
+
+/* abas */
+.tabs{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px}
+.tab{flex:0 0 auto;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:12px;padding:8px 14px;cursor:pointer;font:700 .92rem/1.2 var(--body);text-align:left}
+.tab small{display:block;font-weight:600;color:var(--muted);font-size:.75rem}
+.tab[aria-selected="true"]{background:var(--navy);color:#fff;border-color:var(--navy)}
+.tab[aria-selected="true"] small{color:#d7e0ff}
+.tab:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.exp{display:flex;flex-direction:column;gap:18px}
+.exp-head{display:flex;flex-direction:column;gap:6px}
+.idea{font-size:1.05rem}
+.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.9fr);gap:20px;align-items:start}
+@media (max-width:900px){.layout{grid-template-columns:minmax(0,1fr)}}
+.story{display:flex;flex-direction:column;gap:12px}
+.story ol{margin:0;padding-left:1.2em;display:flex;flex-direction:column;gap:8px}
+.story li::marker{font-family:var(--display);font-weight:800;color:var(--blue)}
+.story .tag{font-weight:800}
+.small{font-size:.86rem;color:var(--muted)}
+.was{background:var(--red-soft);border-radius:12px;padding:12px 14px;font-size:.9rem;display:flex;flex-direction:column;gap:4px}
+.was b{color:var(--red)}
+
+/* protótipo */
+.proto{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:14px;display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px}
+@media (max-width:640px){.proto{grid-template-columns:minmax(0,1fr)}}
+.pmain{display:flex;flex-direction:column;gap:10px;min-width:0}
+.stage{position:relative;border:6px solid var(--frame);border-radius:16px;aspect-ratio:4/3;overflow:hidden;background:#cfe9ff;user-select:none;-webkit-user-select:none;touch-action:none}
+.ctrls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.pside{display:flex;flex-direction:column;gap:10px;min-width:0}
+.zappy{display:grid;grid-template-columns:44px 1fr;gap:10px;align-items:start}
+.zface{width:44px;height:44px;border-radius:50%;background:var(--amber);display:grid;place-items:center;font:800 1.1rem var(--display);color:#1b1300}
+.zsay{background:var(--blue-soft);border-radius:14px;padding:10px 12px;font-weight:700;font-size:1rem;min-height:3.3em}
+.subhead{display:flex;justify-content:space-between;font-size:.8rem;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.qcards{display:flex;flex-direction:column;gap:6px}
+.qcard{display:grid;grid-template-columns:30px 1fr;gap:8px;align-items:center;border:2px dashed var(--line);border-radius:12px;padding:7px 9px;font:700 .88rem/1.3 var(--body)}
+.qcard .em{font-size:1.15rem;text-align:center}
+.qcard small{display:block;font-weight:600;color:var(--muted);font-size:.8rem}
+.qcard.done{border-style:solid;border-color:var(--green);background:var(--green-soft)}
+.qcard.done small{color:var(--green);font-weight:800}
+.flip{animation:flip .45s ease}
+@keyframes flip{0%{transform:rotateX(0)}50%{transform:rotateX(90deg)}100%{transform:rotateX(0)}}
+.diary{display:flex;flex-direction:column;gap:4px}
+.photos{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;min-height:58px}
+.photo{flex:0 0 auto;max-width:150px;border:1px solid var(--line);border-radius:10px;padding:5px 8px;font-size:.74rem;line-height:1.25;background:var(--bg)}
+.photo b{display:block;font-size:.95rem}
+.photo.new{animation:pop .35s ease}
+@keyframes pop{0%{transform:scale(.7);opacity:0}100%{transform:scale(1);opacity:1}}
+.empty{font-size:.8rem;color:var(--muted);align-self:center}
+.final{border:2px solid var(--green);background:var(--green-soft);border-radius:14px;padding:10px 12px;font-weight:800}
+.toast{position:absolute;left:50%;top:10px;translate:-50% 0;background:#0b7a54;color:#fff;border-radius:999px;padding:6px 16px;font:800 1rem var(--display);opacity:0;transition:opacity .2s;white-space:nowrap;z-index:5;pointer-events:none}
+.toast.show{opacity:1}
+.reset{align-self:flex-start;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:10px;padding:6px 12px;font:700 .85rem var(--body);cursor:pointer}
+
+/* controles com a forma do que imitam */
+.keycap{position:relative;display:grid;place-items:center;width:72px;height:64px;border-radius:12px;border:2px solid #b9c3d8;cursor:pointer;
+  background:linear-gradient(#ffffff,#e9edf6);color:#18213a;font:800 1.6rem var(--display);box-shadow:0 7px 0 #a9b3c8;translate:0 -4px;transition:translate .06s,box-shadow .06s}
+.keycap[aria-pressed="true"]{translate:0 2px;box-shadow:0 1px 0 #a9b3c8;background:linear-gradient(#fff3d6,#ffe39a);border-color:#e8a317}
+.keycap:focus-visible{outline:3px solid var(--blue);outline-offset:4px}
+.keycap .hand{position:absolute;bottom:-26px;right:-10px;font-size:1.5rem;pointer-events:none;animation:hold 1.8s ease-in-out infinite}
+@keyframes hold{0%,100%{transform:translateY(0)}30%,70%{transform:translateY(-12px)}}
+.keylabel{font-size:.78rem;color:var(--muted);font-weight:700;line-height:1.2}
+.seg{display:inline-flex;border:2px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;background:var(--paper);color:var(--ink);padding:8px 12px;font:800 .9rem var(--body);cursor:pointer;display:flex;gap:6px;align-items:center}
+.seg button[aria-pressed="true"]{background:var(--blue-soft);color:var(--navy)}
+.seg button:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+.switch{display:inline-flex;align-items:center;gap:8px;border:0;cursor:pointer;border-radius:999px;padding:8px 14px 8px 8px;background:rgba(10,18,48,.9);color:#f2f5ff;font:800 .92rem var(--body)}
+.switch:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.track{width:44px;height:26px;border-radius:999px;background:#8d96ab;position:relative;transition:background .2s;flex:0 0 auto}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:left .2s}
+.switch[aria-pressed="true"] .track{background:#2fbf71}
+.switch[aria-pressed="true"] .track::after{left:21px}
+.round{width:44px;height:44px;border-radius:50%;border:2px solid var(--line);cursor:pointer;background:var(--paper);color:var(--ink);font:800 1.1rem var(--body);display:grid;place-items:center}
+.round:focus-visible{outline:3px solid var(--blue);outline-offset:2px}
+.big{border:0;border-radius:14px;padding:10px 16px;font:800 1rem var(--body);cursor:pointer;background:var(--navy);color:#fff}
+.big:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,163,23,0)}50%{box-shadow:0 0 0 9px rgba(232,163,23,.55)}}
+.over{position:absolute;top:8px;left:8px;right:8px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;z-index:3}
+
+/* cenários */
+.garden{background:linear-gradient(#bfe3ff,#d9f0ff 60%,#6fb86a 60%,#5aa45a)}
+.spot{position:absolute;border:0;cursor:pointer;padding:0;display:grid;place-items:center;transition:transform .15s}
+.spot:hover{transform:scale(1.04)}
+.spot:focus-visible{outline:4px solid var(--amber);outline-offset:3px}
+.bush{background:radial-gradient(circle at 30% 35%,#4caf50,#2e7d32 70%);border-radius:50% 50% 42% 42%}
+.rock{background:radial-gradient(circle at 35% 30%,#b0b6c2,#7d8494 70%);border-radius:42% 46% 30% 30%}
+.flower{background:radial-gradient(circle at 50% 40%,#ffd1e8,#e75a9b 70%);border-radius:45%}
+.who{position:absolute;font-size:2.2rem;line-height:1;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;transform:translateY(8px)}
+.who.show{opacity:1;transform:translateY(-6px)}
+.ping{position:absolute;font-size:1.5rem;pointer-events:none;animation:ping .6s ease-out forwards}
+@keyframes ping{0%{opacity:1;transform:scale(.6)}100%{opacity:0;transform:scale(1.5)}}
+.rule-slot{position:absolute;left:50%;top:44px;translate:-50% 0;display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.85);border:2px dashed #6d7790;border-radius:14px;padding:6px 10px;font:800 .82rem var(--body);color:#18213a;z-index:2;cursor:pointer}
+.rule-slot.on{border:2px solid #2fbf71;background:#e1f4ea}
+.rule-slot:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.rule-card{background:#fff;border:2px solid #1b5cf3;border-radius:10px;padding:3px 8px;color:#0a2a7a}
+.rule-slot:not(.on) .rule-card{opacity:.35;border-style:dashed}
+.pot{position:absolute;right:6%;top:46px;width:23%;display:flex;flex-direction:column;align-items:center;gap:2px;z-index:2}
+.pot .jar{width:100%;aspect-ratio:1;border-radius:14px 14px 22px 22px;background:rgba(255,255,255,.7);border:3px solid #6d7790;display:flex;flex-wrap:wrap-reverse;align-content:flex-start;justify-content:center;gap:2px;padding:6px;font-size:1rem;overflow:hidden}
+.pot .lbl{font:800 .8rem var(--body);background:#fff;border-radius:8px;padding:0 8px;color:#18213a}
+.pot .num{font:800 1.6rem/1 var(--display);color:#0a2a7a;background:#fff;border-radius:10px;padding:2px 10px}
+.pot.shake{animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.grass-hit{position:absolute;left:0;right:0;bottom:0;height:40%;border:0;background:transparent;cursor:pointer}
+.grass-hit:focus-visible{outline:3px solid var(--amber);outline-offset:-6px}
+
+.farol{background:linear-gradient(#ffd9a8,#ffe9c9 58%,#d9b98a 58%,#c9a774)}
+.walker{position:absolute;bottom:30%;font-size:2.2rem;line-height:1;transition:left .12s linear;translate:-50% 0}
+.walker.fast{transition:left .05s linear}
+.keyobj{position:absolute;bottom:31%;font-size:1.6rem;translate:-50% 0;transition:opacity .2s}
+.lh{position:absolute;right:4%;bottom:42%;font-size:3rem}
+.strip{display:flex;gap:4px;overflow:hidden}
+.frame{flex:0 0 auto;width:46px;border:2px solid var(--line);border-radius:8px;padding:3px 0;text-align:center;font-size:.7rem;font-weight:800;background:var(--paper)}
+.frame .ft{display:block;font-size:1rem}
+.frame.on{border-color:var(--amber);background:var(--amber-soft)}
+.frame.cur{outline:3px solid var(--blue);outline-offset:1px}
+.frameinfo{display:flex;justify-content:space-between;font-size:.8rem;font-weight:800;color:var(--muted)}
+.screenwin{position:absolute;left:4%;top:16%;bottom:16%;width:70%;border:4px solid #0a2a7a;border-radius:8px;background:linear-gradient(#ffe9c9 62%,#c9a774 62%)}
+.outside{position:absolute;left:calc(4% + 70%);top:16%;bottom:16%;right:0;background:repeating-linear-gradient(45deg,rgba(10,18,48,.12) 0 8px,rgba(10,18,48,.04) 8px 16px)}
+.outside span{position:absolute;top:6px;left:8px;font:800 .72rem var(--body);color:#0a2a7a}
+.fence{position:absolute;top:16%;bottom:16%;left:calc(4% + 70% - 10px);width:12px;background:repeating-linear-gradient(#8a5a2b 0 10px,#c48a4a 10px 20px);border-radius:4px;opacity:0;transition:opacity .2s}
+.fence.on{opacity:1}
+.check{position:absolute;left:calc(4% + 70% - 30px);top:9%;font-size:1.3rem;opacity:0;transition:opacity .15s}
+.check.show{opacity:1}
+.walker.in-win{bottom:24%}
+.notebook{position:absolute;right:4%;top:44px;width:38%;background:#fffdf3;border:2px solid #c9b98a;border-radius:6px 12px 12px 6px;box-shadow:inset 6px 0 0 #e8a317;padding:8px 10px 8px 14px;font:700 .82rem/1.3 var(--body);color:#18213a;z-index:2;
+  background-image:repeating-linear-gradient(transparent 0 21px,#e6dcbf 21px 22px)}
+.notebook b{font:800 .78rem var(--body);letter-spacing:.05em;text-transform:uppercase;color:#7a5b10;display:block}
+.notebook .ans{font:800 1.3rem var(--display)}
+.notebook .ans.sim{color:#0b7a54}.notebook .ans.nao{color:#b23a3a}
+.notebook .pencil{position:absolute;right:-6px;top:-14px;font-size:1.4rem;opacity:.25;transition:opacity .2s,transform .2s}
+.notebook .pencil.on{opacity:1;transform:rotate(-20deg)}
+.notebook .tagcode{font:600 .68rem var(--body);color:#7d7360}
+.door{position:absolute;right:6%;bottom:30%;width:16%;aspect-ratio:.6;background:#8a5a2b;border:4px solid #5a3a1a;border-radius:40% 40% 4px 4px;display:grid;place-items:center;font-size:1.4rem;transition:background .3s}
+.door.open{background:#ffe39a}
+.door-ask{position:absolute;right:3%;bottom:68%;background:#fff;border:2px solid #18213a;border-radius:12px;padding:3px 10px;font:800 .8rem var(--body);color:#18213a}
+.hand-key{position:absolute;font-size:1.2rem;transition:opacity .2s}
+.giver{position:absolute;left:6%;top:46px;z-index:3}
+.grid-stage{background:#ffe9c9}
+.ruler-x{position:absolute;left:12%;right:4%;top:6%;height:18px;display:flex;justify-content:space-between;font:800 .68rem var(--body);color:#0a2a7a;border-bottom:2px solid #0a2a7a}
+.ruler-y{position:absolute;left:2%;top:12%;bottom:4%;width:30px;display:flex;flex-direction:column;justify-content:space-between;font:800 .68rem var(--body);color:#0a2a7a;border-right:2px solid #0a2a7a;text-align:right;padding-right:3px}
+.playfield{position:absolute;left:12%;right:4%;top:12%;bottom:4%;background:repeating-linear-gradient(90deg,rgba(10,42,122,.06) 0 1px,transparent 1px 12.5%),repeating-linear-gradient(rgba(10,42,122,.06) 0 1px,transparent 1px 12.5%)}
+.pkey{position:absolute;font-size:1.7rem;translate:-50% -50%;transition:left .35s,top .35s}
+.ghost{position:absolute;font-size:1.5rem;translate:-50% -50%;opacity:.25;filter:grayscale(1)}
+.coord{position:absolute;translate:-50% 0;margin-top:16px;font:800 .72rem var(--body);background:#fff;border-radius:6px;padding:0 6px;color:#0a2a7a;white-space:nowrap}
+.stepper{display:inline-flex;align-items:center;gap:6px;border:2px solid var(--line);border-radius:12px;padding:4px 6px}
+.stepper span{font:800 1rem var(--display);min-width:3.2em;text-align:center}
+.stepper b{font:800 .85rem var(--body);color:var(--muted)}
+.guess{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.guess button{border:2px solid var(--blue);background:var(--paper);color:var(--navy);border-radius:10px;padding:2px 10px;font:800 .8rem var(--body);cursor:pointer}
+@media (prefers-reduced-motion:reduce){.pulse,.flip,.photo.new,.keycap .hand,.pot.shake,.ping{animation:none}.walker,.pkey,.who{transition:none}}
+
+.tablewrap{overflow-x:auto;background:var(--paper);border:1px solid var(--line);border-radius:14px}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.92rem}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font:800 .75rem/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+tr:last-child td{border-bottom:0}
+.strike{text-decoration:line-through;color:var(--muted)}
+.decision{background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--amber);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:6px}
+.rec{color:var(--green);font-weight:800}
+ol.steps{margin:0;padding-left:1.3em;display:flex;flex-direction:column;gap:10px}
+ol.steps li::marker{font-family:var(--display);font-weight:800;color:var(--blue)}
+.note{font-size:.88rem;color:var(--muted)}
+</style>
+
+<div class="wrap">
+
+<header class="top">
+  <span class="kicker">Proposta · 08/11/2026 · versão 2</span>
+  <h1>Experiências do Cadê e do Farol</h1>
+  <p class="lede">As 7 experiências de <b>Cadê Todo Mundo?</b> e de <b>A Chave do Farol</b> reconstruídas do zero, pensando em uma criança de 7 anos que abre a tela pela primeira vez. Cada uma tem o roteiro e um protótipo para clicar.</p>
+  <div class="meta"><span class="chip">7 protótipos clicáveis</span><span class="chip">Clique ou teclado: os dois funcionam</span><span class="chip amber">Nada implementado ainda</span></div>
+</header>
+
+<section>
+  <span class="kicker">1 · O que está atrapalhando hoje</span>
+  <h2>A criança lê muito, não sabe por onde começar e não sente quando descobre</h2>
+  <div class="grid">
+    <div class="card"><h3>Leitura antes de mexer</h3><p>Na beirada do Farol são cerca de 100 palavras antes do primeiro gesto: instrução, uma fala de 44 palavras do Zappy e a lista de descobertas.</p></div>
+    <div class="card"><h3>Controles que não parecem o que são</h3><p>Andar é um botão retangular escrito <b>"Segure a seta ▶"</b>. Interruptores, velocidades e ações são todos botões de texto iguais.</p></div>
+    <div class="card"><h3>Comparar de memória</h3><p>Toda descoberta é uma comparação ("com a reação ligada e desligada"), mas a tela só mostra o agora. A criança precisa lembrar do teste anterior para comparar.</p></div>
+    <div class="card"><h3>Descoberta sem momento</h3><p>Nas 7 telas, descobrir muda só um número ("1 de 3 descobertas") e um ✓ na lista. Sem cartão, som ou palavra do Zappy que marque.</p></div>
+    <div class="card"><h3>Palavras de sistema</h3><p class="quote"><b>"temChave = verdadeiro"</b>, <b>"Coleta não guardada"</b>, <b>"Preparar outra tentativa"</b>, <b>"Velocidade de verdade"</b>.</p></div>
+    <div class="card"><h3>Liberdade sem porta</h3><p>"Você escolhe a ordem" sem nada que chame o primeiro toque. Para a criança, isso vira "não sei o que fazer".</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="kicker">2 · Como toda experiência passa a funcionar</span>
+  <h2>Cinco momentos, sempre na mesma ordem</h2>
+  <div class="arc">
+    <div class="card"><h3>Uma situação</h3><p>Uma frase do Zappy com um problema do jogo dela ("O coelho está escondido. O que faz ele aparecer?"). Uma coisa só pulsa na cena.</p></div>
+    <div class="card"><h3>Mexer na cena</h3><p>Os controles ficam no palco ou colados nele, com a forma do que imitam: tecla de teclado, interruptor, régua, caderninho. Clique, toque e teclado acionam o mesmo controle.</p></div>
+    <div class="card"><h3>Fotinhos dos testes</h3><p>Cada teste vira uma fotinho automática embaixo da cena ("Sem regra · toquei → nada"). Comparar passa a ser olhar duas fotinhos lado a lado, sem depender da memória.</p></div>
+    <div class="card"><h3>Descobri!</h3><p>As descobertas são cartões com uma pergunta, em qualquer ordem. Quando ela vê a diferença, o cartão vira, mostra o que ela viu, toca um som e o Zappy diz em uma frase.</p></div>
+    <div class="card"><h3>A ideia</h3><p>Com todos os cartões virados, aparece a ideia inteira em uma frase de criança. Ela segue para o vídeo e para a montagem.</p></div>
+  </div>
+  <div class="keep"><strong>O que continua igual</strong><p>Exploração livre, sem passo a passo e sem nomes de botões nos vídeos. Só a ideia, sem blocos nem código. As descobertas continuam conferidas pelo motor do servidor, que muda pouco: quase tudo é tela nova sobre as mesmas regras.</p></div>
+</section>
+
+<section>
+  <span class="kicker">3 · As 7 experiências</span>
+  <h2>Roteiro e protótipo de cada uma</h2>
+  <p class="read note">Os protótipos são rascunhos para sentir o ritmo, não a arte final. Use o mouse, o dedo ou as setas do teclado (← →) nas experiências do Farol. Não há áudio aqui; na plataforma, o Zappy falaria cada frase.</p>
+  <div class="tabs" role="tablist" aria-label="Experiências">
+    <button class="tab" role="tab" id="t-toque" aria-controls="p-toque" data-k="toque">O toque<small>Cadê · aula 1</small></button>
+    <button class="tab" role="tab" id="t-achados" aria-controls="p-achados" data-k="achados">Os achados<small>Cadê · aula 2</small></button>
+    <button class="tab" role="tab" id="t-quadros" aria-controls="p-quadros" data-k="quadros">Os quadros<small>Farol · dia 1</small></button>
+    <button class="tab" role="tab" id="t-beirada" aria-controls="p-beirada" data-k="beirada">A beirada<small>Farol · dia 1</small></button>
+    <button class="tab" role="tab" id="t-memoria" aria-controls="p-memoria" data-k="memoria">A memória<small>Farol · dia 2</small></button>
+    <button class="tab" role="tab" id="t-porta" aria-controls="p-porta" data-k="porta">A porta<small>Farol · dia 3</small></button>
+    <button class="tab" role="tab" id="t-posicao" aria-controls="p-posicao" data-k="posicao">A posição<small>Farol · dia 3</small></button>
+  </div>
+
+  <!-- 1 TOQUE -->
+  <div class="exp" role="tabpanel" id="p-toque" aria-labelledby="t-toque" hidden>
+    <div class="exp-head"><h3>O toque faz o jogo responder</h3><p class="idea"><b>A ideia:</b> tocar sozinho não faz nada. O jogo só responde quando existe uma regra ligando o toque a uma ação.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "Tem alguém escondido no arbusto. Toque nele!" O arbusto pulsa.</li>
+          <li><span class="tag">Primeiro toque:</span> nada acontece. Fotinho: "Sem regra · toquei → nada". O Zappy pergunta: "Por que nada aconteceu?"</li>
+          <li>No alto da cena há um <b>encaixe vazio</b> e, ao lado, uma regra para encaixar: "👆 Quando tocar → 👀 mostrar". A regra é uma peça que se encaixa, não um botão "Ligar a reação".</li>
+          <li>Com a regra encaixada, o toque mostra o coelho. Duas fotinhos lado a lado contam a diferença.</li>
+          <li>As pedras convidam: "E aqui?". A mesma regra vale para qualquer esconderijo tocado.</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>"Ligar a reação ao toque", "Esconder de novo" com nota de duas linhas e a lista "Compare um toque…".</span></div>
+        <p class="small">Motor: o mesmo (<code>touch-response</code>). A regra encaixada é o "ligar a reação".</p>
+      </div>
+      <div class="proto" data-proto="toque"></div>
+    </div>
+  </div>
+
+  <!-- 2 ACHADOS -->
+  <div class="exp" role="tabpanel" id="p-achados" aria-labelledby="t-achados" hidden>
+    <div class="exp-head"><h3>Um número acompanha a busca</h3><p class="idea"><b>A ideia:</b> o jogo guarda um número, os <i>achados</i>. Achar alguém novo soma 1; tocar no vazio ou em quem já foi achado não muda; uma busca nova volta a 0.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "O jogo tem um pote para guardar quantos você achou. Ache alguém!" Os esconderijos pulsam.</li>
+          <li>O número é um <b>pote com etiqueta "achados"</b> dentro da cena. Cada achado novo cai no pote como uma fichinha, e o número sobe na frente dela.</li>
+          <li>Tocar na grama balança o pote, e o número não muda. Tocar de novo em quem já foi achado faz o bichinho dizer "Já me achou!".</li>
+          <li><b>Nova busca</b> esvazia o pote na frente dela: o número volta a 0.</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>O mostrador separado da cena e as 5 frases "Observe o valor…".</span></div>
+        <p class="small">Motor: o mesmo (<code>found-counter</code>).</p>
+      </div>
+      <div class="proto" data-proto="achados"></div>
+    </div>
+  </div>
+
+  <!-- 3 QUADROS -->
+  <div class="exp" role="tabpanel" id="p-quadros" aria-labelledby="t-quadros" hidden>
+    <div class="exp-head"><h3>Como o personagem anda</h3><p class="idea"><b>A ideia:</b> o jogo desenha um quadro atrás do outro. Em cada quadro com a seta apertada, um passinho. Bem rápido, os passinhos viram caminhada.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "Leve a Debinha até a chave." Uma <b>tecla de seta igual à do teclado</b> pulsa, com uma mãozinha que segura.</li>
+          <li>Segurar a tecla na tela ou a seta → do teclado: a tecla desenhada afunda nos dois casos. Soltar: ela sobe.</li>
+          <li>A cena começa no <b>🐢 Devagar</b>. Embaixo, a tira de quadros acende um quadro por vez, mostrando 👣 quando a seta estava apertada naquele quadro.</li>
+          <li>Soltar a seta: os quadros continuam passando e ninguém anda. A tira mostra quadros vazios.</li>
+          <li><b>🐇 Rápido</b>: os mesmos passinhos viram caminhada. Fotinhos: "🐢 3 quadros → 3 passinhos" e "🐇 caminhou".</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>O botão "Segure a seta ▶", "Câmera lenta", "Velocidade de verdade" e a fala que dizia a sequência de cliques.</span></div>
+        <p class="small">Motor: o mesmo (<code>lighthouse-walk</code>). 🐢 e 🐇 são a câmera lenta e a velocidade de verdade.</p>
+      </div>
+      <div class="proto" data-proto="quadros"></div>
+    </div>
+  </div>
+
+  <!-- 4 BEIRADA -->
+  <div class="exp" role="tabpanel" id="p-beirada" aria-labelledby="t-beirada" hidden>
+    <div class="exp-head"><h3>A beirada da tela</h3><p class="idea"><b>A ideia:</b> depois de cada passinho, o jogo confere a beirada. Sem limite, o personagem sai da tela; com o limite, o jogo o puxa de volta.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "A Debinha está perto da beirada da janela do jogo. Até onde ela vai?" Ela já começa a três passinhos da beirada: nada de 40 segundos andando.</li>
+          <li>A janela do jogo é desenhada com moldura, e o lado de fora é uma faixa listrada escrita "fora da tela".</li>
+          <li>O limite é uma <b>cerca</b> que aparece e some na beirada com o interruptor "Limite".</li>
+          <li>Em cada quadro, depois do passinho, aparece um olhinho 👀 na beirada: é o jogo conferindo. Com a cerca, quem passou volta.</li>
+          <li>Ligar a cerca com ela lá fora: no quadro seguinte, ela é puxada para dentro.</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>A fala de 44 palavras, o botão "Ligar o limite da tela" longe da beirada e o caminho longo até lá.</span></div>
+        <p class="small">Motor: o mesmo. A posição inicial perto da beirada vem do caso (<code>setup</code>).</p>
+      </div>
+      <div class="proto" data-proto="beirada"></div>
+    </div>
+  </div>
+
+  <!-- 5 MEMÓRIA -->
+  <div class="exp" role="tabpanel" id="p-memoria" aria-labelledby="t-memoria" hidden>
+    <div class="exp-head"><h3>O jogo guardou a chave?</h3><p class="idea"><b>A ideia:</b> pegar a chave e o jogo <i>anotar</i> que pegou são coisas diferentes. O que está anotado continua quando ela se afasta e é apagado numa partida nova.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "Pegue a chave. Depois, olhe o caderninho do jogo." A chave brilha no chão.</li>
+          <li>O <b>caderninho do jogo</b> fica desenhado na cena: "Tem a chave? NÃO". É a memória, com cara de memória.</li>
+          <li>Ela anda com as teclas ← → (na tela ou no teclado) e pega a chave. A chave some do chão, mas o caderninho só escreve SIM se o <b>lápis</b> estiver ligado ("O jogo anota").</li>
+          <li>Andar para longe: o SIM continua. <b>Jogar de novo</b>: página nova, NÃO.</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>"temChave = verdadeiro", "Coleta não guardada", "Encostar na chave" e "Afastar" como botões.</span></div>
+        <p class="small">Motor: o mesmo (<code>collect-and-remember</code>). Andar até a chave é o "encostar"; andar para longe é o "afastar".</p>
+      </div>
+      <div class="proto" data-proto="memoria"></div>
+    </div>
+  </div>
+
+  <!-- 6 PORTA -->
+  <div class="exp" role="tabpanel" id="p-porta" aria-labelledby="t-porta" hidden>
+    <div class="exp-head"><h3>O que a porta precisa?</h3><p class="idea"><b>A ideia:</b> a porta faz sempre a mesma pergunta e olha o caderninho do jogo para responder.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "A porta do farol faz uma pergunta. Leve a Debinha até ela." A porta tem um balão fixo: "Tem a chave?".</li>
+          <li>O mesmo caderninho da memória está na cena. Ela pode <b>dar ou tirar a chave</b> tocando na mochila, e o caderninho acompanha.</li>
+          <li>Andar até a porta com → (tela ou teclado): a porta olha o caderninho 👀 e responde, abrindo ou ficando trancada 🔒.</li>
+          <li>Fotinhos: "Caderninho NÃO → trancada" e "Caderninho SIM → abriu". A pergunta foi a mesma nas duas.</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>"Testar a porta" e "Preparar outra tentativa" como botões de texto, e a nota explicando "situação de teste".</span></div>
+        <p class="small">Motor: o mesmo (<code>lighthouse-key</code>). Chegar à porta é o "testar a porta".</p>
+      </div>
+      <div class="proto" data-proto="porta"></div>
+    </div>
+  </div>
+
+  <!-- 7 POSIÇÃO -->
+  <div class="exp" role="tabpanel" id="p-posicao" aria-labelledby="t-posicao" hidden>
+    <div class="exp-head"><h3>Como escolher um lugar para a chave</h3><p class="idea"><b>A ideia:</b> o x leva a chave para os lados e o y para cima e para baixo. A contagem do y começa em 0 lá no alto, então um y maior desce.</p></div>
+    <div class="layout">
+      <div class="story">
+        <ol>
+          <li><span class="tag">Situação.</span> "Onde a chave vai ficar no seu jogo? Ela tem dois números."</li>
+          <li>As <b>réguas ficam nas bordas da tela do jogo</b>: o x em cima, de 0 a 448, e o y do lado, de 0 lá no alto até 328 embaixo. A chave mostra os dois números colados nela.</li>
+          <li>Os botões − e + mudam um número por vez, e um fantasma mostra de onde a chave saiu.</li>
+          <li>O y é a surpresa, então antes do primeiro teste do y o cartão pergunta: "Se o y aumentar, a chave sobe ou desce?". Ela escolhe e depois testa.</li>
+        </ol>
+        <div class="was"><b>Saiu</b><span>Os medidores "Horizontal x" e "Vertical y" longe da cena, e as pistas que citavam "Posição horizontal x".</span></div>
+        <p class="small">Motor: o mesmo (<code>lighthouse-position</code>). O palpite do y é a única pergunta antes do teste nas 7 experiências.</p>
+      </div>
+      <div class="proto" data-proto="posicao"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="kicker">4 · Pode corrigir já</span>
+  <h2>Achados que não dependem da proposta</h2>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Onde</th><th>O que está errado</th><th>Correção</th></tr></thead>
+    <tbody>
+      <tr><td>Cadê · toque</td><td>O pedido da meta <code>second-target</code> diz <span class="strike">"Clique em Testar com outro esconderijo"</span>; o botão da tela é "Esconder de novo".</td><td>Nome do botão de hoje (<code>catalog.ts:1311</code>).</td></tr>
+      <tr><td>Farol · posição</td><td>As pistas citam <span class="strike">"Posição horizontal x"</span> e <span class="strike">"Posição vertical y"</span>; a tela diz "Horizontal x" e "Vertical y".</td><td>Alinhar os rótulos (<code>catalog.ts:1800–1845</code>).</td></tr>
+      <tr><td>Farol · andar</td><td>A seta do teclado só funciona com o foco dentro da experiência. Se a criança clicou no vídeo antes, a seta não anda.</td><td>A seta vale enquanto a experiência está na tela, fora de campos de texto.</td></tr>
+      <tr><td>Telas livres</td><td>O botão "Continuar" aparece nas ferramentas, mas nestes cursos não há pergunta final para onde ir.</td><td>Esconder sem pergunta.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <span class="kicker">5 · Preciso da sua decisão</span>
+  <h2>Quatro escolhas antes de implementar</h2>
+  <div class="decision"><h3>Descobertas que faltam mostram a pergunta?</h3><p>Em 30/09 a decisão foi deixar a descoberta pendente neutra. Os cartões mostram uma pergunta que não entrega a resposta, e são eles que dão a porta de entrada.</p><p class="rec">Recomendo os cartões com pergunta.</p></div>
+  <div class="decision"><h3>A voz do Zappy toca sozinha?</h3><p>Depois do primeiro toque da criança na experiência, cada fala tocaria sem precisar de Ouvir, com um botão para silenciar que fica lembrado.</p><p class="rec">Recomendo tocar sozinha.</p></div>
+  <div class="decision"><h3>Som de descoberta?</h3><p>Um som curto, igual em todas as experiências, junto com a virada do cartão.</p><p class="rec">Recomendo sim.</p></div>
+  <div class="decision"><h3>O nome do código aparece no caderninho?</h3><p>A memória e a porta mostram "Tem a chave? SIM/NÃO". A montagem do Estúdio usa <code>temChave</code>. Dá para pôr <code>temChave</code> pequeno no rodapé do caderninho, como etiqueta, ou deixar o nome só para a montagem.</p><p class="rec">Recomendo deixar só para a montagem, seguindo a regra de a experiência trabalhar só a ideia.</p></div>
+</section>
+
+<section>
+  <span class="kicker">6 · Como seguir</span>
+  <h2>Ordem de trabalho e teste com a criança</h2>
+  <ol class="steps read">
+    <li><b>Correções rápidas</b> da seção 4.</li>
+    <li><b>Peças comuns</b>: moldura com cartões de pergunta, fotinhos dos testes, momento "Descobri!" e os controles com forma (tecla de teclado, interruptor, régua, caderninho). Ficam no componente que todas as experiências livres usam.</li>
+    <li><b>As 7 telas</b>, uma por vez, na ordem do curso: toque, achados, quadros, beirada, memória, porta, posição. Falas novas do Zappy com no máximo 12 palavras e a voz gerada de novo.</li>
+    <li><b>Teste com a mesma criança</b>, com um adulto só observando.</li>
+  </ol>
+  <div class="tablewrap"><table>
+    <thead><tr><th>O que observar no teste</th><th>Bom sinal</th></tr></thead>
+    <tbody>
+      <tr><td>Tempo até o primeiro gesto</td><td>Menos de 10 segundos, sem perguntar ao adulto</td></tr>
+      <tr><td>Se percebe cada descoberta</td><td>Reage na hora: fala, sorri, olha para o adulto</td></tr>
+      <tr><td>Se chega ao fim sozinha</td><td>Todos os cartões virados sem ajuda</td></tr>
+      <tr><td>Se conta o que descobriu</td><td>Diz a ideia com as palavras dela ("só aparece se tiver a regra")</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note read">Os vídeos de experiência não citam botões, então trocar a tela não deveria obrigar a gravar de novo. Antes de mudar, vale conferir os dois vídeos do Cadê já gravados.</p>
+</section>
+
+</div>
+
+<script>
+(function(){
+'use strict';
+var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+function h(tag,attrs,html){var e=document.createElement(tag);if(attrs)for(var k in attrs){if(k==='class')e.className=attrs[k];else e.setAttribute(k,attrs[k])}if(html!=null)e.innerHTML=html;return e}
+
+/* moldura comum: palco, controles, Zappy, cartões, fotinhos, ideia final */
+function shell(root,cfg){
+  root.innerHTML='';
+  var main=h('div',{class:'pmain'}),side=h('div',{class:'pside'});
+  var stage=h('div',{class:'stage '+(cfg.stageClass||'')});
+  var toast=h('div',{class:'toast',role:'status','aria-live':'polite'});stage.appendChild(toast);
+  var ctrls=h('div',{class:'ctrls'});
+  main.appendChild(stage);main.appendChild(ctrls);
+  var z=h('div',{class:'zappy'},'<span class="zface" aria-hidden="true">Z</span>');var say=h('p',{class:'zsay','aria-live':'polite'});z.appendChild(say);
+  var sub=h('div',{class:'subhead'},'<span>Suas descobertas</span><span class="cnt"></span>');
+  var cards=h('div',{class:'qcards'});
+  var diary=h('div',{class:'diary'},'<div class="subhead"><span>Fotinhos dos testes</span></div>');var photos=h('div',{class:'photos'});diary.appendChild(photos);
+  var fin=h('div',{class:'final'});fin.hidden=true;
+  var reset=h('button',{class:'reset',type:'button'},'Recomeçar o protótipo');
+  side.appendChild(z);side.appendChild(sub);side.appendChild(cards);side.appendChild(fin);side.appendChild(diary);side.appendChild(reset);
+  root.appendChild(main);root.appendChild(side);
+  var done={},cardEls={};
+  cfg.goals.forEach(function(g){
+    var c=h('div',{class:'qcard'},'<span class="em">'+g.em+'</span><span>'+g.q+'<small>Ainda não testado</small></span>');
+    cards.appendChild(c);cardEls[g.id]=c;
+  });
+  function count(){var n=cfg.goals.filter(function(g){return done[g.id]}).length;sub.querySelector('.cnt').textContent=n+' de '+cfg.goals.length;fin.hidden=n<cfg.goals.length;fin.textContent='A ideia: '+cfg.idea}
+  var t;
+  var api={stage:stage,ctrls:ctrls,
+    say:function(s){say.textContent=s},
+    toast:function(s){toast.textContent=s;toast.classList.add('show');clearTimeout(t);t=setTimeout(function(){toast.classList.remove('show')},1500)},
+    photo:function(title,txt){var p=h('div',{class:'photo new'},'<b>'+title+'</b>'+txt);var e=photos.querySelector('.empty');if(e)e.remove();photos.insertBefore(p,photos.firstChild);while(photos.children.length>6)photos.lastChild.remove()},
+    is:function(id){return !!done[id]},
+    discover:function(id,line){if(done[id])return false;done[id]=true;var g=cfg.goals.filter(function(x){return x.id===id})[0];var c=cardEls[id];c.classList.add('done');c.querySelector('small').textContent='Descobri: '+g.a;if(!reduce){c.classList.remove('flip');void c.offsetWidth;c.classList.add('flip')}api.toast('Você descobriu!');if(line)api.say(line);count();
+      if(cfg.goals.every(function(x){return done[x.id]}))setTimeout(function(){api.say(cfg.end)},1600);return true},
+    card:function(id){return cardEls[id]}
+  };
+  function start(){done={};cfg.goals.forEach(function(g){var c=cardEls[g.id];c.classList.remove('done');c.querySelector('small').textContent='Ainda não testado'});photos.innerHTML='<span class="empty">Cada teste aparece aqui.</span>';count();
+    Array.prototype.slice.call(stage.children).forEach(function(c){if(c!==toast)c.remove()});ctrls.innerHTML='';api.say(cfg.start);cfg.mount(api)}
+  reset.addEventListener('click',start);
+  start();
+  return api;
+}
+
+/* a tecla que imita a do teclado: dedo, mouse e a tecla de verdade afundam a mesma tecla */
+function keycap(label,aria,onDown,onUp,hint){
+  var wrap=h('div',{style:'display:flex;flex-direction:column;align-items:center;gap:8px'});
+  var b=h('button',{class:'keycap'+(hint?' pulse':''),type:'button','aria-label':aria,'aria-pressed':'false'},label+(hint?'<span class="hand" aria-hidden="true">👆</span>':''));
+  var held=false;
+  function down(){if(held)return;held=true;b.setAttribute('aria-pressed','true');var hd=b.querySelector('.hand');if(hd){hd.remove();b.classList.remove('pulse')}onDown()}
+  function up(){if(!held)return;held=false;b.setAttribute('aria-pressed','false');onUp&&onUp()}
+  b.addEventListener('pointerdown',function(e){e.preventDefault();try{b.setPointerCapture(e.pointerId)}catch(_){}down()});
+  b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('lostpointercapture',up);
+  b.addEventListener('contextmenu',function(e){e.preventDefault()});
+  b.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();if(!e.repeat)down()}});
+  b.addEventListener('keyup',function(e){if(e.key===' '||e.key==='Enter'){e.preventDefault();up()}});
+  wrap.appendChild(b);
+  return {el:wrap,down:down,up:up,isHeld:function(){return held}};
+}
+function sw(text,onChange,initial){
+  var b=h('button',{class:'switch',type:'button','aria-pressed':initial?'true':'false'},'<span class="track"></span><span class="sl"></span>');
+  var on=!!initial;function paint(){b.setAttribute('aria-pressed',on);b.querySelector('.sl').textContent=text(on)}
+  b.addEventListener('click',function(){on=!on;paint();onChange(on)});paint();
+  return {el:b,get:function(){return on},set:function(v){on=v;paint()}};
+}
+function speed(onChange){
+  var s=h('div',{class:'seg',role:'group','aria-label':'Velocidade'});
+  var a=h('button',{type:'button','aria-pressed':'true'},'🐢 Devagar'),b=h('button',{type:'button','aria-pressed':'false'},'🐇 Rápido');
+  s.appendChild(a);s.appendChild(b);var v='slow';
+  function set(x){v=x;a.setAttribute('aria-pressed',x==='slow');b.setAttribute('aria-pressed',x==='fast');onChange(x)}
+  a.addEventListener('click',function(){set('slow')});b.addEventListener('click',function(){set('fast')});
+  return {el:s,get:function(){return v},set:set};
+}
+function ping(stage,x,y){var p=h('span',{class:'ping'},'👆');p.style.left=x;p.style.top=y;stage.appendChild(p);setTimeout(function(){p.remove()},650)}
+
+/* teclado: a aba aberta recebe ← e → */
+var keyTargets={};var active=null;
+document.addEventListener('keydown',function(e){var k=keyTargets[active];if(!k)return;var t=e.target;if(t&&(t.closest&&t.closest('input,textarea,select')))return;
+  if(e.key==='ArrowRight'&&k.right){e.preventDefault();if(!e.repeat)k.right.down()}if(e.key==='ArrowLeft'&&k.left){e.preventDefault();if(!e.repeat)k.left.down()}});
+document.addEventListener('keyup',function(e){var k=keyTargets[active];if(!k)return;if(e.key==='ArrowRight'&&k.right)k.right.up();if(e.key==='ArrowLeft'&&k.left)k.left.up()});
+window.addEventListener('blur',function(){var k=keyTargets[active];if(!k)return;k.right&&k.right.up();k.left&&k.left.up()});
+
+/* relógio de quadros das experiências do Farol */
+function clock(onFrame){var id=null,ms=600;return{start:function(m){ms=m;this.stop();id=setInterval(onFrame,ms)},stop:function(){if(id)clearInterval(id);id=null},running:function(){return id!==null}}}
+
+var protos={};
+
+/* 1 · TOQUE */
+protos.toque=function(root){shell(root,{stageClass:'garden',
+  goals:[{id:'off',em:'🚫',q:'E se não tiver regra?',a:'sem regra, o toque não mostrou ninguém.'},{id:'on',em:'🧩',q:'E com a regra encaixada?',a:'com a regra, o toque mostrou o coelho.'},{id:'other',em:'🪨',q:'A regra vale nas pedras?',a:'a regra vale para qualquer esconderijo tocado.'}],
+  idea:'tocar sozinho não faz nada. O jogo só responde quando tem uma regra ligando o toque a uma ação.',
+  start:'Tem alguém escondido no arbusto. Toque nele!',end:'Você viu as três! Sem regra, nada. Com a regra, o toque mostra quem está escondido.',
+  mount:function(a){var rule=false,hid={b:true,r:true};
+    var slot=h('button',{class:'rule-slot',type:'button','aria-pressed':'false'},'<span>Regra do toque:</span><span class="rule-card">👆 Quando tocar → 👀 mostrar</span>');
+    var bush=h('button',{class:'spot bush pulse',type:'button','aria-label':'Arbusto',style:'left:10%;bottom:14%;width:36%;aspect-ratio:1.35'});
+    var rock=h('button',{class:'spot rock',type:'button','aria-label':'Pedras',style:'right:9%;bottom:16%;width:28%;aspect-ratio:1.5'});
+    var wb=h('span',{class:'who',style:'left:22%;bottom:44%'},'🐰'),wr=h('span',{class:'who',style:'right:17%;bottom:40%'},'🦔');
+    [slot,bush,rock,wb,wr].forEach(function(e){a.stage.appendChild(e)});
+    var hide=h('button',{class:'round',type:'button','aria-label':'Esconder todo mundo de novo',title:'Esconder de novo'},'↺');
+    a.ctrls.appendChild(h('span',{class:'keylabel'},'Toque na peça da regra para encaixar ou tirar.'));a.ctrls.appendChild(hide);
+    slot.addEventListener('click',function(){rule=!rule;slot.classList.toggle('on',rule);slot.setAttribute('aria-pressed',rule);a.say(rule?'Regra encaixada. Toque de novo e olhe.':'Sem regra agora. Toque e olhe.')});
+    hide.addEventListener('click',function(){hid={b:true,r:true};wb.classList.remove('show');wr.classList.remove('show');a.say('Todo mundo se escondeu de novo.')});
+    function tap(which){bush.classList.remove('pulse');ping(a.stage,which==='b'?'26%':'72%','62%');var nome=which==='b'?'arbusto':'pedras';
+      if(!rule){a.photo('Sem regra','toquei no '+nome+' → nada');if(!a.discover('off','Nada aconteceu. O que falta para ele aparecer?'))a.say('Sem regra, nada acontece.');if(a.is('off')&&!a.is('on'))slot.classList.add('pulse');return}
+      slot.classList.remove('pulse');(which==='b'?wb:wr).classList.add('show');hid[which]=false;
+      a.photo('Com regra','toquei no '+nome+' → '+(which==='b'?'🐰 apareceu':'🦔 apareceu'));
+      a.discover('on','Apareceu! A regra fez o toque mostrar quem estava lá.');
+      if(which==='r'&&a.is('on'))a.discover('other','A mesma regra funcionou nas pedras!');
+      else if(!a.is('other'))setTimeout(function(){a.say('E nas pedras, a regra funciona?')},1500)}
+    bush.addEventListener('click',function(){tap('b')});rock.addEventListener('click',function(){tap('r')});
+  }})};
+
+/* 2 · ACHADOS */
+protos.achados=function(root){shell(root,{stageClass:'garden',
+  goals:[{id:'first',em:'🐰',q:'O que muda quando você acha alguém?',a:'o pote ganhou 1.'},{id:'second',em:'🦔',q:'E quando acha outro?',a:'ganhou mais 1: o pote soma.'},{id:'empty',em:'🌱',q:'E se tocar na grama?',a:'nada achado, o número não muda.'},{id:'repeat',em:'🔁',q:'E tocar de novo em quem já achou?',a:'quem já foi achado não conta de novo.'},{id:'zero',em:'🧺',q:'E numa busca nova?',a:'o pote esvazia e volta a 0.'}],
+  idea:'o jogo guarda os achados. Achar alguém novo soma 1. Grama e repetição não mudam. Busca nova volta a 0.',
+  start:'O jogo tem um pote para contar quem você achou. Ache alguém!',end:'Você descobriu tudo sobre o pote dos achados!',
+  mount:function(a){var n=0,found={};
+    var grass=h('button',{class:'grass-hit',type:'button','aria-label':'Grama'});a.stage.appendChild(grass);
+    var spots=[['b','bush','Arbusto','left:6%;bottom:12%;width:28%;aspect-ratio:1.3','🐰','left:14%;bottom:38%'],['r','rock','Pedras','left:38%;bottom:14%;width:22%;aspect-ratio:1.5','🦔','left:43%;bottom:32%'],['f','flower','Flores','left:64%;bottom:12%;width:14%;aspect-ratio:1','🐞','left:67%;bottom:28%']];
+    var whos={};
+    spots.forEach(function(s){var b=h('button',{class:'spot '+s[1]+' pulse',type:'button','aria-label':s[2],style:s[3]});var w=h('span',{class:'who',style:s[5]},s[4]);whos[s[0]]={b:b,w:w,e:s[4]};a.stage.appendChild(b);a.stage.appendChild(w);
+      b.addEventListener('click',function(ev){ev.stopPropagation();spots.forEach(function(x){whos[x[0]].b.classList.remove('pulse')});
+        if(found[s[0]]){a.photo('De novo',s[4]+' "Já me achou!" → '+n);a.discover('repeat','Quem já foi achado não conta de novo.');a.say(s[4]+' diz: já me achou! O pote não mudou.');return}
+        found[s[0]]=true;w.classList.add('show');n++;paint(true);a.photo('Achei '+s[4],'achados: '+(n-1)+' → '+n);
+        if(n===1)a.discover('first','Achou! O pote ganhou 1.');else if(n===2)a.discover('second','Mais um! O pote soma de novo.');})});
+    var pot=h('div',{class:'pot'},'<span class="lbl">achados</span><div class="jar"></div><span class="num">0</span>');a.stage.appendChild(pot);
+    function paint(drop){pot.querySelector('.num').textContent=n;var j=pot.querySelector('.jar');j.innerHTML='';for(var i=0;i<n;i++)j.appendChild(h('span',null,'🟡'))}
+    grass.addEventListener('click',function(){ping(a.stage,'50%','80%');pot.classList.remove('shake');void pot.offsetWidth;pot.classList.add('shake');a.photo('Grama','ninguém aqui → '+n);
+      if(n>0)a.discover('empty','Na grama não tem ninguém. O pote ficou igual.');else a.say('Ninguém na grama. Ache alguém primeiro e depois tente de novo.')});
+    var nova=h('button',{class:'big',type:'button'},'🧺 Nova busca');a.ctrls.appendChild(nova);
+    nova.addEventListener('click',function(){var antes=n;found={};n=0;paint();Object.keys(whos).forEach(function(k){whos[k].w.classList.remove('show')});a.photo('Nova busca','achados: '+antes+' → 0');
+      if(antes>0)a.discover('zero','Busca nova: o pote esvaziou.');else a.say('O pote já estava vazio. Ache alguém e comece de novo.')});
+  }})};
+
+/* 3 · QUADROS */
+protos.quadros=function(root){var st;shell(root,{stageClass:'farol',
+  goals:[{id:'step',em:'👣',q:'O que acontece em cada quadro com a seta apertada?',a:'um quadro, um passinho.'},{id:'stop',em:'✋',q:'E com a seta solta?',a:'os quadros passam e ela fica parada.'},{id:'walk',em:'🐇',q:'E bem rápido?',a:'os passinhos viram caminhada.'}],
+  idea:'o jogo desenha um quadro atrás do outro. Com a seta apertada, cada quadro tem um passinho. Rápido, vira caminhada.',
+  start:'Leve a Debinha até a chave. Segure a seta!',end:'Um quadro, um passinho. Rápido, uma caminhada!',
+  mount:function(a){var x=8,frames=0,held=false,mode='slow',heldRun=0,relRun=0,movedSlow=false,fastHeld=0,stripData=[];
+    var walker=h('span',{class:'walker'},'🧒'),key=h('span',{class:'keyobj',style:'left:88%'},'🔑'),lh=h('span',{class:'lh'},'🗼');
+    a.stage.appendChild(lh);a.stage.appendChild(key);a.stage.appendChild(walker);
+    var info=h('div',{class:'frameinfo'},'<span class="fi">Quadro 0</span><span class="fs">🐢 um quadro a cada meio segundo</span>');
+    var strip=h('div',{class:'strip','aria-label':'Tira de quadros'});
+    var cap=keycap('▶','Seta para a direita',function(){held=true;a.stage.focus&&0},function(){held=false},true);
+    var sp=speed(function(v){mode=v;walker.classList.toggle('fast',v==='fast');info.querySelector('.fs').textContent=v==='slow'?'🐢 um quadro a cada meio segundo':'🐇 quinze quadros por segundo';c.start(v==='slow'?550:66);heldRun=0;relRun=0});
+    var back=h('button',{class:'round',type:'button','aria-label':'Voltar ao começo',title:'Voltar ao começo'},'⏮');
+    var lbl=h('span',{class:'keylabel'},'Segure a tecla<br>ou a seta → do teclado');
+    a.ctrls.appendChild(cap.el);a.ctrls.appendChild(lbl);a.ctrls.appendChild(sp.el);a.ctrls.appendChild(back);
+    a.stage.parentNode.insertBefore(info,a.ctrls);a.stage.parentNode.insertBefore(strip,a.ctrls);
+    keyTargets.quadros={right:cap};
+    function draw(){walker.style.left=x+'%';info.querySelector('.fi').textContent='Quadro '+frames}
+    function drawStrip(){strip.innerHTML='';stripData.slice(-9).forEach(function(f,i,arr){var el=h('div',{class:'frame'+(f.on?' on':'')+(i===arr.length-1?' cur':'')},'<span class="ft">'+(f.on?'👣':'·')+'</span>'+f.n);strip.appendChild(el)})}
+    var c=clock(function(){frames++;var on=held&&x<86;if(on)x=Math.min(86,x+(mode==='slow'?4:1.2));
+      if(mode==='slow'){stripData.push({n:frames,on:held});drawStrip();
+        if(held){heldRun++;relRun=0;if(heldRun>=3){movedSlow=true;if(a.discover('step','Viu? Cada quadro novo, um passinho.')){a.photo('🐢 seta apertada','3 quadros → 3 passinhos');setTimeout(function(){a.say('E se você soltar a seta?')},1600)}}}
+        else{heldRun=0;if(movedSlow){relRun++;if(relRun>=2&&a.discover('stop','Os quadros continuam, mas ela não anda.')){a.photo('🐢 seta solta','2 quadros → 0 passinhos');setTimeout(function(){a.say('E bem rápido, como fica? Escolha 🐇.')},1600)}}}}
+      else{if(held){fastHeld++;if(fastHeld>=20){if(a.is('step')){if(a.discover('walk','Rápido, os passinhos viraram caminhada!'))a.photo('🐇 seta apertada','caminhou')}else if(fastHeld===20)a.say('Rápido demais para ver os passinhos. Tente 🐢 primeiro.')}}else fastHeld=0}
+      if(x>=86&&held&&frames%6===0)a.say('Chegou na chave! Pode voltar ao começo e testar de novo.');
+      draw()});
+    c.start(550);
+    back.addEventListener('click',function(){x=8;draw()});
+    draw();st=c;
+    root._stop=function(){c.stop()};
+  }})};
+
+/* 4 · BEIRADA */
+protos.beirada=function(root){shell(root,{stageClass:'farol',
+  goals:[{id:'out',em:'🚪',q:'Sem a cerca, até onde ela vai?',a:'sem limite, ela saiu da tela.'},{id:'back',em:'🧲',q:'E se ligar a cerca com ela lá fora?',a:'no quadro seguinte, o jogo puxou de volta.'},{id:'stay',em:'🧱',q:'Com a cerca, o que acontece na beirada?',a:'a cada passinho, o jogo confere e segura dentro.'}],
+  idea:'depois de cada passinho, o jogo confere a beirada. Sem limite, sai da tela. Com o limite, volta para dentro.',
+  start:'A Debinha está perto da beirada. Até onde ela vai? Segure a seta.',end:'Você viu ela sair, voltar e ficar na beirada!',
+  mount:function(a){var EDGE=70,x=58,held=false,limit=false,mode='slow',edgeHolds=0,wasOutNoLimit=false;
+    a.stage.appendChild(h('div',{class:'screenwin'}));var out=h('div',{class:'outside'},'<span>fora da tela</span>');a.stage.appendChild(out);
+    var fence=h('div',{class:'fence'});a.stage.appendChild(fence);var eye=h('span',{class:'check'},'👀');a.stage.appendChild(eye);
+    var walker=h('span',{class:'walker in-win'},'🧒');a.stage.appendChild(walker);
+    var cap=keycap('▶','Seta para a direita',function(){held=true},function(){held=false},true);
+    var lim=sw(function(on){return 'Cerca: '+(on?'ligada':'desligada')},function(on){limit=on;fence.classList.toggle('on',on);
+      if(on&&x>EDGE){a.say('Cerca ligada com ela lá fora. Olhe o próximo quadro.');pendingBack=true}else a.say(on?'Cerca ligada. Leve ela até a beirada.':'Cerca desligada.')});
+    var sp=speed(function(v){mode=v;walker.classList.toggle('fast',v==='fast');c.start(v==='slow'?550:90)});
+    var back=h('button',{class:'round',type:'button','aria-label':'Voltar ao começo',title:'Voltar ao começo'},'⏮');
+    a.ctrls.appendChild(cap.el);a.ctrls.appendChild(h('span',{class:'keylabel'},'Segure a tecla<br>ou a seta →'));a.ctrls.appendChild(lim.el);a.ctrls.appendChild(sp.el);a.ctrls.appendChild(back);
+    keyTargets.beirada={right:cap};var pendingBack=false;
+    function draw(){walker.style.left=(4+x*0.96)+'%'}
+    var c=clock(function(){var stepped=false;if(held&&x<96){x=Math.min(96,x+(mode==='slow'?3:1.5));stepped=true}
+      if(stepped||pendingBack){eye.classList.add('show');setTimeout(function(){eye.classList.remove('show')},250)}
+      if(limit&&x>EDGE){var vinhaDeFora=pendingBack;x=EDGE;pendingBack=false;
+        if(vinhaDeFora){a.photo('Cerca ligada lá fora','próximo quadro → voltou');a.discover('back','O jogo conferiu e puxou ela de volta!')}
+        else if(held){edgeHolds++;if(edgeHolds>=3&&a.discover('stay','A cada passinho, o jogo confere e segura dentro.'))a.photo('Cerca na beirada','3 passinhos → ficou')}}
+      else if(!limit&&x>EDGE+4&&!wasOutNoLimit){wasOutNoLimit=true;a.photo('Sem cerca','andou → saiu da tela');a.discover('out','Ela saiu da janela do jogo!');setTimeout(function(){a.say('E se você ligar a cerca agora, com ela lá fora?')},1600)}
+      if(!held)edgeHolds=0;draw()});
+    c.start(550);back.addEventListener('click',function(){x=58;wasOutNoLimit=false;pendingBack=false;draw()});draw();
+    root._stop=function(){c.stop()};
+  }})};
+
+/* 5 · MEMÓRIA */
+protos.memoria=function(root){shell(root,{stageClass:'farol',
+  goals:[{id:'nomem',em:'📓',q:'Pegou a chave com o lápis desligado. O caderninho anotou?',a:'pegou, mas o jogo não anotou.'},{id:'mem',em:'✏️',q:'E com o jogo anotando?',a:'com o lápis ligado, o caderninho escreveu SIM.'},{id:'away',em:'🚶',q:'Se ela se afastar, continua anotado?',a:'o que está anotado continua.'},{id:'reset',em:'🔄',q:'E numa partida nova?',a:'página nova: volta a NÃO.'}],
+  idea:'pegar a chave e o jogo anotar são coisas diferentes. O que está anotado fica até uma partida nova.',
+  start:'Pegue a chave. Depois olhe o caderninho do jogo.',end:'Você descobriu como o jogo lembra da chave!',
+  mount:function(a){var x=10,KEY=52,has=false,taken=false,pencil=false,leftAfterYes=0,moveId=null;
+    var keyEl=h('span',{class:'keyobj pulse',style:'left:'+KEY+'%;border-radius:50%'},'🔑'),walker=h('span',{class:'walker'},'🧒');
+    var nb=h('div',{class:'notebook'},'<span class="pencil">✏️</span><b>Caderninho do jogo</b>Tem a chave?<div class="ans nao">NÃO</div>');
+    a.stage.appendChild(keyEl);a.stage.appendChild(walker);a.stage.appendChild(nb);
+    var bub=h('span',{class:'door-ask',style:'right:auto;bottom:62%;opacity:0;transition:opacity .2s'},'Pegou a chave!');a.stage.appendChild(bub);
+    var left=keycap('◀','Seta para a esquerda',function(){go(-1)},stop),right=keycap('▶','Seta para a direita',function(){go(1)},stop,true);
+    var pen=sw(function(on){return '✏️ O jogo anota: '+(on?'ligado':'desligado')},function(on){pencil=on;nb.querySelector('.pencil').classList.toggle('on',on);a.say(on?'Agora o jogo anota. Jogue de novo e pegue a chave.':'O jogo não anota mais.')});
+    var nova=h('button',{class:'big',type:'button'},'🔄 Jogar de novo');
+    a.ctrls.appendChild(left.el);a.ctrls.appendChild(right.el);a.ctrls.appendChild(pen.el);a.ctrls.appendChild(nova);
+    keyTargets.memoria={right:right,left:left};
+    function paintNb(){var an=nb.querySelector('.ans');an.textContent=has?'SIM':'NÃO';an.className='ans '+(has?'sim':'nao')}
+    function draw(){walker.style.left=x+'%';bub.style.left=(x-6)+'%'}
+    function step(d){x=Math.max(6,Math.min(80,x+d*4));draw();
+      if(!taken&&Math.abs(x-KEY)<4){taken=true;keyEl.style.opacity=0;bub.style.opacity=1;setTimeout(function(){bub.style.opacity=0},1300);
+        if(pencil){has=true;paintNb();a.photo('Lápis ligado','pegou → SIM');a.discover('mem','O jogo anotou: SIM!')||a.say('Pegou, e o jogo anotou SIM.');setTimeout(function(){if(!a.is('away'))a.say('Se ela se afastar, o SIM continua?')},1700)}
+        else{a.photo('Lápis desligado','pegou → NÃO');a.discover('nomem','A chave sumiu do chão, mas o caderninho ficou NÃO.')||a.say('Pegou, mas ninguém anotou.');setTimeout(function(){if(!a.is('mem'))a.say('E se o jogo anotar? Ligue o lápis e jogue de novo.')},1700)}}
+      if(has&&taken&&Math.abs(x-KEY)>=14){leftAfterYes++;if(leftAfterYes===1){a.photo('Longe da chave','SIM continua');a.discover('away','Longe da chave, o SIM continua anotado.')}}}
+    function go(d){stop();step(d);moveId=setInterval(function(){step(d)},180)}
+    function stop(){if(moveId)clearInterval(moveId);moveId=null}
+    nova.addEventListener('click',function(){var tinha=has;x=10;has=false;taken=false;leftAfterYes=0;keyEl.style.opacity=1;paintNb();draw();
+      a.photo('Partida nova',(tinha?'SIM':'NÃO')+' → NÃO');if(tinha)a.discover('reset','Partida nova, página nova: NÃO.');else a.say('Partida nova. O caderninho começa em NÃO.')});
+    draw();root._stop=stop;
+  }})};
+
+/* 6 · PORTA */
+protos.porta=function(root){shell(root,{stageClass:'farol',
+  goals:[{id:'locked',em:'🔒',q:'E sem a chave?',a:'caderninho NÃO, porta trancada.'},{id:'open',em:'🔑',q:'E com a chave?',a:'caderninho SIM, a mesma pergunta abriu a porta.'}],
+  idea:'a porta faz sempre a mesma pergunta e olha o caderninho do jogo para responder.',
+  start:'A porta do farol faz uma pergunta. Leve a Debinha até ela.',end:'A pergunta foi a mesma. O caderninho mudou a resposta!',
+  mount:function(a){var x=10,DOOR=74,has=false,tested=false,moveId=null;
+    var door=h('div',{class:'door'},'🔒'),ask=h('span',{class:'door-ask'},'Tem a chave?'),walker=h('span',{class:'walker'},'🧒');
+    var nb=h('div',{class:'notebook',style:'right:auto;left:4%;width:36%'},'<b>Caderninho do jogo</b>Tem a chave?<div class="ans nao">NÃO</div>');
+    a.stage.appendChild(door);a.stage.appendChild(ask);a.stage.appendChild(walker);a.stage.appendChild(nb);
+    var bag=h('button',{class:'big',type:'button'},'🎒 Dar a chave');
+    var right=keycap('▶','Seta para a direita',function(){go(1)},stop,true),left=keycap('◀','Seta para a esquerda',function(){go(-1)},stop);
+    a.ctrls.appendChild(left.el);a.ctrls.appendChild(right.el);a.ctrls.appendChild(bag);
+    keyTargets.porta={right:right,left:left};
+    function paint(){var an=nb.querySelector('.ans');an.textContent=has?'SIM':'NÃO';an.className='ans '+(has?'sim':'nao');bag.textContent=has?'🎒 Tirar a chave':'🎒 Dar a chave';walker.textContent=has?'🧒🔑':'🧒'}
+    function draw(){walker.style.left=x+'%'}
+    function step(d){x=Math.max(8,Math.min(DOOR-6,x+d*4));draw();
+      if(x>=DOOR-6&&!tested){tested=true;stop();ask.textContent='Tem a chave? 👀';
+        setTimeout(function(){if(has){door.classList.add('open');door.textContent='✨';a.photo('Caderninho SIM','porta → abriu');a.discover('open','O caderninho dizia SIM. A porta abriu!')||a.say('Abriu de novo.')}
+          else{door.classList.remove('open');door.textContent='🔒';a.photo('Caderninho NÃO','porta → trancada');a.discover('locked','O caderninho dizia NÃO. A porta ficou trancada.')||a.say('Trancada de novo.')}
+          ask.textContent='Tem a chave?';if(!(a.is('open')&&a.is('locked')))setTimeout(function(){a.say(has?'E sem a chave? Volte, tire a chave e teste.':'E com a chave? Volte, dê a chave e teste.')},1600)},500)}
+      if(x<DOOR-14&&tested){tested=false;door.classList.remove('open');door.textContent='🔒'}}
+    function go(d){stop();step(d);moveId=setInterval(function(){step(d)},160)}
+    function stop(){if(moveId)clearInterval(moveId);moveId=null}
+    bag.addEventListener('click',function(){has=!has;paint();a.say(has?'Ela tem a chave. O caderninho diz SIM.':'Sem a chave. O caderninho diz NÃO.')});
+    paint();draw();root._stop=stop;
+  }})};
+
+/* 7 · POSIÇÃO */
+protos.posicao=function(root){shell(root,{stageClass:'grid-stage',
+  goals:[{id:'xm',em:'⬅️',q:'E se o x diminuir?',a:'a chave foi para a esquerda.'},{id:'xp',em:'➡️',q:'E se o x aumentar?',a:'a chave foi para a direita.'},{id:'ym',em:'⬆️',q:'E se o y diminuir?',a:'a chave subiu.'},{id:'yp',em:'⬇️',q:'Se o y aumentar, a chave sobe ou desce?',a:'desceu! O y começa em 0 lá no alto.'}],
+  idea:'o x leva para os lados e o y para cima e para baixo. O y começa em 0 no alto, então um y maior desce.',
+  start:'Onde a chave vai ficar? Ela tem dois números: o x e o y.',end:'Você achou o caminho dos dois números!',
+  mount:function(a){var X=224,Y=160,W=448,H=328,guess=null;
+    a.stage.appendChild(h('div',{class:'ruler-x'},'<span>0</span><span>112</span><span>224</span><span>336</span><span>448</span>'));
+    a.stage.appendChild(h('div',{class:'ruler-y'},'<span>0</span><span>82</span><span>164</span><span>246</span><span>328</span>'));
+    var pf=h('div',{class:'playfield'});a.stage.appendChild(pf);
+    var ghost=h('span',{class:'ghost'},'🔑'),key=h('span',{class:'pkey'},'🔑'),co=h('span',{class:'coord'});pf.appendChild(ghost);pf.appendChild(key);pf.appendChild(co);ghost.hidden=true;
+    function pos(el,x,y){el.style.left=(x/W*100)+'%';el.style.top=(y/H*100)+'%'}
+    function paint(){pos(key,X,Y);pos(co,X,Y);co.textContent='x '+X+' · y '+Y;sx.querySelector('span').textContent=X;sy.querySelector('span').textContent=Y}
+    function stepper(name,minus,plus){var s=h('div',{class:'stepper'},'<b>'+name+'</b><button class="round" type="button" aria-label="'+name+' menos">−</button><span></span><button class="round" type="button" aria-label="'+name+' mais">+</button>');var bs=s.querySelectorAll('button');bs[0].addEventListener('click',minus);bs[1].addEventListener('click',plus);return s}
+    function move(axis,d){var ox=X,oy=Y;if(axis==='y'&&d>0&&!a.is('yp')&&guess===null){askGuess();return}
+      if(axis==='x')X=Math.max(0,Math.min(W,X+d*56));else Y=Math.max(0,Math.min(H,Y+d*41));
+      if(ox===X&&oy===Y){a.say('Chegou na borda da tela.');return}
+      ghost.hidden=false;pos(ghost,ox,oy);paint();
+      var lbl=axis+(d>0?' aumentou':' diminuiu');a.photo(lbl,axis+' '+(axis==='x'?ox:oy)+' → '+(axis==='x'?X:Y));
+      if(axis==='x'&&d<0)a.discover('xm','O x diminuiu e a chave foi para a esquerda.');
+      if(axis==='x'&&d>0)a.discover('xp','O x aumentou e a chave foi para a direita.');
+      if(axis==='y'&&d<0)a.discover('ym','O y diminuiu e a chave subiu.');
+      if(axis==='y'&&d>0){var surpresa=guess==='sobe';if(a.discover('yp',surpresa?'Você achou que subia, mas desceu! O y começa em 0 lá no alto.':'Você acertou: desceu! O y começa em 0 lá no alto.'))guess='feito'}}
+    function askGuess(){var c=a.card('yp');var g=h('div',{class:'guess'},'<button type="button">Acho que sobe ⬆️</button><button type="button">Acho que desce ⬇️</button>');
+      c.querySelector('span:last-child').appendChild(g);a.say('Antes de testar: se o y aumentar, a chave sobe ou desce?');
+      var bs=g.querySelectorAll('button');bs[0].addEventListener('click',function(){guess='sobe';g.remove();a.say('Você acha que sobe. Agora aperte y + e veja.')});
+      bs[1].addEventListener('click',function(){guess='desce';g.remove();a.say('Você acha que desce. Agora aperte y + e veja.')})}
+    var sx=stepper('x',function(){move('x',-1)},function(){move('x',1)}),sy=stepper('y',function(){move('y',-1)},function(){move('y',1)});
+    var back=h('button',{class:'round',type:'button','aria-label':'Voltar ao lugar do começo',title:'Voltar ao começo'},'⏮');
+    a.ctrls.appendChild(sx);a.ctrls.appendChild(sy);a.ctrls.appendChild(back);
+    back.addEventListener('click',function(){X=224;Y=160;ghost.hidden=true;paint()});
+    paint();
+  }})};
+
+/* abas */
+var mounted={};
+function show(k){if(!protos[k])k='toque';
+  document.querySelectorAll('.tab').forEach(function(t){t.setAttribute('aria-selected',t.dataset.k===k);t.tabIndex=t.dataset.k===k?0:-1});
+  document.querySelectorAll('[role=tabpanel]').forEach(function(p){p.hidden=p.id!=='p-'+k});
+  Object.keys(mounted).forEach(function(m){if(m!==k&&mounted[m]._stop)mounted[m]._stop()});
+  var root=document.querySelector('[data-proto="'+k+'"]');
+  if(!mounted[k]||!root.firstChild){protos[k](root);mounted[k]=root}else if(k==='quadros'||k==='beirada'){protos[k](root)}
+  active=k}
+document.querySelectorAll('.tab').forEach(function(t){t.addEventListener('click',function(){show(t.dataset.k);try{history.replaceState(null,'','#'+t.dataset.k)}catch(_){location.hash=t.dataset.k}})});
+document.querySelector('.tabs').addEventListener('keydown',function(e){if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft')return;var ts=Array.prototype.slice.call(document.querySelectorAll('.tab'));var i=ts.indexOf(document.activeElement);if(i<0)return;e.preventDefault();e.stopPropagation();var n=ts[(i+(e.key==='ArrowRight'?1:-1)+ts.length)%ts.length];n.focus();n.click()},true);
+window.addEventListener('hashchange',function(){show(location.hash.slice(1))});
+show(location.hash.slice(1));
+})();
+</script>
