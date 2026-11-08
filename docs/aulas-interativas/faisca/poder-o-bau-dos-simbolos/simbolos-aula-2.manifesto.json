@@ -2736,9 +2736,7 @@
                 "label": "Só a lua acende, porque ela foi tocada duas vezes."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "O erro só voltou passo para 0. Tocar o sol muda passo para 1, a lua para 2, e a estrela encontra passo = 2: o baú abre."
           },
           {
@@ -2758,9 +2756,7 @@
                 "label": "No então do Se passo = 2, no encontro com a estrela."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "O baú só pode abrir quando a estrela é tocada na vez dela. Por isso a animação abrir fica no então do Se passo = 2; no senão, ele abriria justo quando a ordem está errada."
           }
         ]
@@ -2785,9 +2781,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-4-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -12089,20 +12083,13 @@
       "title": "Os símbolos chegaram à ilha",
       "intent": "explanation",
       "objective": "Os símbolos chegaram à ilha.",
-      "blockKeys": [
-        "video-abertura",
-        "ponte-abertura",
-        "jogo-pronto"
-      ],
+      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-abertura",
-          "jogo-pronto"
-        ]
+        "blockIds": ["video-abertura", "jogo-pronto"]
       }
     },
     {
@@ -12110,18 +12097,13 @@
       "title": "O sol e a lua",
       "intent": "application",
       "objective": "O sol e a lua.",
-      "blockKeys": [
-        "video-lua",
-        "ponte-lua"
-      ],
+      "blockKeys": ["video-lua", "ponte-lua"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-lua"
-        ],
+        "blockIds": ["video-lua"],
         "projectChecks": [
           {
             "id": "lua-depois",
@@ -12256,11 +12238,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -12389,10 +12367,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -12542,11 +12517,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -12601,18 +12572,13 @@
       "title": "A estrela abre o baú da ilha",
       "intent": "application",
       "objective": "A estrela abre o baú da ilha.",
-      "blockKeys": [
-        "video-estrela",
-        "ponte-estrela"
-      ],
+      "blockKeys": ["video-estrela", "ponte-estrela"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-estrela"
-        ],
+        "blockIds": ["video-estrela"],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -12765,11 +12731,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -12898,10 +12860,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -13030,10 +12989,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -13183,11 +13139,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -13316,10 +13268,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -13448,10 +13397,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -13614,11 +13560,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -13747,10 +13689,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -13879,10 +13818,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -14011,10 +13947,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14164,11 +14097,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14215,18 +14144,13 @@
       "title": "Pense nos símbolos da ilha",
       "intent": "explanation",
       "objective": "Pense nos símbolos da ilha.",
-      "blockKeys": [
-        "ponte-revisao",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-revisao", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -14234,20 +14158,13 @@
       "title": "Envie a sua ilha com o baú",
       "intent": "delivery",
       "objective": "Envie a sua ilha com o baú.",
-      "blockKeys": [
-        "video-entrega",
-        "ponte-entrega",
-        "projeto"
-      ],
+      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-entrega",
-          "projeto"
-        ],
+        "blockIds": ["video-entrega", "projeto"],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -14400,11 +14317,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -14533,10 +14446,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -14665,10 +14575,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -14818,11 +14725,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -14951,10 +14854,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -15083,10 +14983,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15249,11 +15146,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -15382,10 +15275,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -15514,10 +15404,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["estrela", "chave"]
                 },
                 {
                   "action": "approachObject3d",
@@ -15646,10 +15533,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "sol",
-                    "chave"
-                  ]
+                  "avoidPaths": ["sol", "chave"]
                 },
                 {
                   "action": "wait",
@@ -15799,11 +15683,7 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": [
-                    "lua",
-                    "estrela",
-                    "chave"
-                  ]
+                  "avoidPaths": ["lua", "estrela", "chave"]
                 },
                 {
                   "action": "wait",

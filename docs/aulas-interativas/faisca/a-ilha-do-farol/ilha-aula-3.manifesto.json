@@ -58,10 +58,7 @@
           "scene": "lighthouse-key",
           "cenario": "farol",
           "setup": {
-            "goals": [
-              "not-flips-with-key",
-              "not-flips-without-key"
-            ],
+            "goals": ["not-flips-with-key", "not-flips-without-key"],
             "freeExploration": true
           }
         }
@@ -111,9 +108,7 @@
                 "label": "A pedra ficou invisível."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "A câmera mudou de lugar. A chave e a pedra continuaram nas mesmas posições. Um objeto pode esconder outro dependendo de onde você olha."
           },
           {
@@ -134,9 +129,7 @@
                 "label": "Vira zero."
               }
             ],
-            "correctChoiceIds": [
-              "a"
-            ],
+            "correctChoiceIds": ["a"],
             "explanation": "X e z indicam as duas direções do chão neste jogo. Y indica a altura. Mudar só x desloca a chave sem levantá-la."
           },
           {
@@ -157,9 +150,7 @@
                 "label": "Não. Precisamos conferir também a altura."
               }
             ],
-            "correctChoiceIds": [
-              "c"
-            ],
+            "correctChoiceIds": ["c"],
             "explanation": "A vista de cima esconde a distância na altura. De lado, vemos que a chave está alta demais. As áreas de contato não se encontram."
           },
           {
@@ -180,9 +171,7 @@
                 "label": "Só trocar a vista da câmera."
               }
             ],
-            "correctChoiceIds": [
-              "b"
-            ],
+            "correctChoiceIds": ["b"],
             "explanation": "Ver a chave não garante que o personagem consiga alcançá-la. Jogue até o novo lugar, confira a coleta e depois leve a chave ao farol."
           }
         ]
@@ -231,9 +220,7 @@
         "purpose": "submission",
         "chain": "jornada-faisca-base-3d",
         "level": "iniciante-3d",
-        "allowedModes": [
-          "blocks"
-        ],
+        "allowedModes": ["blocks"],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -11300,18 +11287,13 @@
       "title": "O farol precisa conferir a chave",
       "intent": "application",
       "objective": "O farol precisa conferir a chave.",
-      "blockKeys": [
-        "video-sem-chave",
-        "ponte-sem-chave"
-      ],
+      "blockKeys": ["video-sem-chave", "ponte-sem-chave"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-sem-chave"
-        ],
+        "blockIds": ["video-sem-chave"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -12109,9 +12091,7 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 }
               ],
               "checkpoints": [
@@ -12166,18 +12146,13 @@
       "title": "Acenda o farol com a chave",
       "intent": "application",
       "objective": "Acenda o farol com a chave.",
-      "blockKeys": [
-        "video-decisao",
-        "ponte-decisao"
-      ],
+      "blockKeys": ["video-decisao", "ponte-decisao"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-decisao"
-        ],
+        "blockIds": ["video-decisao"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -12808,9 +12783,7 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 }
               ],
               "checkpoints": [
@@ -13310,10 +13283,7 @@
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-pergunta-com-nao",
-          "experiencia-pergunta-com-nao"
-        ]
+        "blockIds": ["video-pergunta-com-nao", "experiencia-pergunta-com-nao"]
       }
     },
     {
@@ -13321,18 +13291,13 @@
       "title": "O farol acende uma vez só",
       "intent": "application",
       "objective": "O farol acende uma vez só.",
-      "blockKeys": [
-        "video-uma-vez",
-        "ponte-uma-vez"
-      ],
+      "blockKeys": ["video-uma-vez", "ponte-uma-vez"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-uma-vez"
-        ],
+        "blockIds": ["video-uma-vez"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -13983,9 +13948,7 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 }
               ],
               "checkpoints": [
@@ -14494,18 +14457,13 @@
       "title": "O que você descobriu no 3D",
       "intent": "explanation",
       "objective": "Conferir ponto de vista, posição, altura e escolha de teste.",
-      "blockKeys": [
-        "ponte-quiz",
-        "quiz"
-      ],
+      "blockKeys": ["ponte-quiz", "quiz"],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "quiz"
-        ]
+        "blockIds": ["quiz"]
       }
     },
     {
@@ -14513,18 +14471,13 @@
       "title": "Deixe o jogo com a sua cara",
       "intent": "application",
       "objective": "Deixe o jogo com a sua cara.",
-      "blockKeys": [
-        "video-aparencia",
-        "ponte-aparencia"
-      ],
+      "blockKeys": ["video-aparencia", "ponte-aparencia"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-aparencia"
-        ],
+        "blockIds": ["video-aparencia"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -15175,9 +15128,7 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 }
               ],
               "checkpoints": [
@@ -15735,20 +15686,13 @@
       "title": "Escolha seu esconderijo e teste de verdade",
       "intent": "delivery",
       "objective": "Escolha seu esconderijo e teste de verdade.",
-      "blockKeys": [
-        "video-personalizar",
-        "ponte-personalizar",
-        "projeto"
-      ],
+      "blockKeys": ["video-personalizar", "ponte-personalizar", "projeto"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-personalizar",
-          "projeto"
-        ],
+        "blockIds": ["video-personalizar", "projeto"],
         "projectChecks": [
           {
             "id": "movimento-no-quadro",
@@ -16399,9 +16343,7 @@
                     }
                   ],
                   "timeoutMs": 7500,
-                  "avoidPaths": [
-                    "chave"
-                  ]
+                  "avoidPaths": ["chave"]
                 }
               ],
               "checkpoints": [
@@ -16960,22 +16902,15 @@
       "title": "Sua ilha está pronta",
       "intent": "closing",
       "objective": "Sua ilha está pronta.",
-      "blockKeys": [
-        "video-fecho",
-        "ponte-fecho"
-      ],
+      "blockKeys": ["video-fecho", "ponte-fecho"],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": [
-          "video-fecho"
-        ]
+        "blockIds": ["video-fecho"]
       }
     }
   ],
-  "retireBlockKeys": [
-    "materiais"
-  ]
+  "retireBlockKeys": ["materiais"]
 }

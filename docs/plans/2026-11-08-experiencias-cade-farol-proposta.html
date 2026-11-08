@@ -253,13 +253,13 @@ ol.steps li::marker{font-family:var(--display);font-weight:800;color:var(--blue)
   <h2>Roteiro e protótipo de cada uma</h2>
   <p class="read note">Os protótipos são rascunhos para sentir o ritmo, não a arte final. Use o mouse, o dedo ou as setas do teclado (← →) nas experiências do Farol. Não há áudio aqui; na plataforma, o Zappy falaria cada frase.</p>
   <div class="tabs" role="tablist" aria-label="Experiências">
-    <button class="tab" role="tab" id="t-toque" aria-controls="p-toque" data-k="toque">O toque<small>Cadê · aula 1</small></button>
-    <button class="tab" role="tab" id="t-achados" aria-controls="p-achados" data-k="achados">Os achados<small>Cadê · aula 2</small></button>
-    <button class="tab" role="tab" id="t-quadros" aria-controls="p-quadros" data-k="quadros">Os quadros<small>Farol · dia 1</small></button>
-    <button class="tab" role="tab" id="t-beirada" aria-controls="p-beirada" data-k="beirada">A beirada<small>Farol · dia 1</small></button>
-    <button class="tab" role="tab" id="t-memoria" aria-controls="p-memoria" data-k="memoria">A memória<small>Farol · dia 2</small></button>
-    <button class="tab" role="tab" id="t-porta" aria-controls="p-porta" data-k="porta">A porta<small>Farol · dia 3</small></button>
-    <button class="tab" role="tab" id="t-posicao" aria-controls="p-posicao" data-k="posicao">A posição<small>Farol · dia 3</small></button>
+    <button type="button" class="tab" role="tab" id="t-toque" aria-controls="p-toque" data-k="toque">O toque<small>Cadê · aula 1</small></button>
+    <button type="button" class="tab" role="tab" id="t-achados" aria-controls="p-achados" data-k="achados">Os achados<small>Cadê · aula 2</small></button>
+    <button type="button" class="tab" role="tab" id="t-quadros" aria-controls="p-quadros" data-k="quadros">Os quadros<small>Farol · dia 1</small></button>
+    <button type="button" class="tab" role="tab" id="t-beirada" aria-controls="p-beirada" data-k="beirada">A beirada<small>Farol · dia 1</small></button>
+    <button type="button" class="tab" role="tab" id="t-memoria" aria-controls="p-memoria" data-k="memoria">A memória<small>Farol · dia 2</small></button>
+    <button type="button" class="tab" role="tab" id="t-porta" aria-controls="p-porta" data-k="porta">A porta<small>Farol · dia 3</small></button>
+    <button type="button" class="tab" role="tab" id="t-posicao" aria-controls="p-posicao" data-k="posicao">A posição<small>Farol · dia 3</small></button>
   </div>
 
   <!-- 1 TOQUE -->
@@ -566,7 +566,7 @@ protos.achados=function(root){shell(root,{stageClass:'garden',
         found[s[0]]=true;w.classList.add('show');n++;paint(true);a.photo('Achei '+s[4],'achados: '+(n-1)+' → '+n);
         if(n===1)a.discover('first','Achou! O pote ganhou 1.');else if(n===2)a.discover('second','Mais um! O pote soma de novo.');})});
     var pot=h('div',{class:'pot'},'<span class="lbl">achados</span><div class="jar"></div><span class="num">0</span>');a.stage.appendChild(pot);
-    function paint(drop){pot.querySelector('.num').textContent=n;var j=pot.querySelector('.jar');j.innerHTML='';for(var i=0;i<n;i++)j.appendChild(h('span',null,'🟡'))}
+    function paint(drop){pot.querySelector('.num').textContent=n;var j=pot.querySelector('.jar');j.innerHTML='';for(let i=0;i<n;i++)j.appendChild(h('span',null,'🟡'))}
     grass.addEventListener('click',function(){ping(a.stage,'50%','80%');pot.classList.remove('shake');void pot.offsetWidth;pot.classList.add('shake');a.photo('Grama','ninguém aqui → '+n);
       if(n>0)a.discover('empty','Na grama não tem ninguém. O pote ficou igual.');else a.say('Ninguém na grama. Ache alguém primeiro e depois tente de novo.')});
     var nova=h('button',{class:'big',type:'button'},'🧺 Nova busca');a.ctrls.appendChild(nova);
@@ -625,7 +625,7 @@ protos.beirada=function(root){shell(root,{stageClass:'farol',
     function draw(){walker.style.left=(4+x*0.96)+'%'}
     var c=clock(function(){var stepped=false;if(held&&x<96){x=Math.min(96,x+(mode==='slow'?3:1.5));stepped=true}
       if(stepped||pendingBack){eye.classList.add('show');setTimeout(function(){eye.classList.remove('show')},250)}
-      if(limit&&x>EDGE){var vinhaDeFora=pendingBack;x=EDGE;pendingBack=false;
+      if(limit&&x>EDGE){const vinhaDeFora=pendingBack;x=EDGE;pendingBack=false;
         if(vinhaDeFora){a.photo('Cerca ligada lá fora','próximo quadro → voltou');a.discover('back','O jogo conferiu e puxou ela de volta!')}
         else if(held){edgeHolds++;if(edgeHolds>=3&&a.discover('stay','A cada passinho, o jogo confere e segura dentro.'))a.photo('Cerca na beirada','3 passinhos → ficou')}}
       else if(!limit&&x>EDGE+4&&!wasOutNoLimit){wasOutNoLimit=true;a.photo('Sem cerca','andou → saiu da tela');a.discover('out','Ela saiu da janela do jogo!');setTimeout(function(){a.say('E se você ligar a cerca agora, com ela lá fora?')},1600)}
@@ -711,7 +711,7 @@ protos.posicao=function(root){shell(root,{stageClass:'grid-stage',
       if(axis==='x'&&d<0)a.discover('xm','O x diminuiu e a chave foi para a esquerda.');
       if(axis==='x'&&d>0)a.discover('xp','O x aumentou e a chave foi para a direita.');
       if(axis==='y'&&d<0)a.discover('ym','O y diminuiu e a chave subiu.');
-      if(axis==='y'&&d>0){var surpresa=guess==='sobe';if(a.discover('yp',surpresa?'Você achou que subia, mas desceu! O y começa em 0 lá no alto.':'Você acertou: desceu! O y começa em 0 lá no alto.'))guess='feito'}}
+      if(axis==='y'&&d>0){const surpresa=guess==='sobe';if(a.discover('yp',surpresa?'Você achou que subia, mas desceu! O y começa em 0 lá no alto.':'Você acertou: desceu! O y começa em 0 lá no alto.'))guess='feito'}}
     function askGuess(){var c=a.card('yp');var g=h('div',{class:'guess'},'<button type="button">Acho que sobe ⬆️</button><button type="button">Acho que desce ⬇️</button>');
       c.querySelector('span:last-child').appendChild(g);a.say('Antes de testar: se o y aumentar, a chave sobe ou desce?');
       var bs=g.querySelectorAll('button');bs[0].addEventListener('click',function(){guess='sobe';g.remove();a.say('Você acha que sobe. Agora aperte y + e veja.')});
