@@ -60,7 +60,6 @@ import {
 } from './imageProcessing'
 import { MoldaImportDialog } from './MoldaImportDialog'
 import { PintaImportDialog } from './PintaImportDialog'
-import { ProAssetPaths } from './ProAssetPaths'
 import { TeamImportDialog } from './TeamImportDialog'
 import { TileConfigDialog, type TileConfigDialogProps } from './TileConfigDialog'
 import { type AssetsTabItem, AssetsTabStrip } from './tabs/common'
@@ -975,7 +974,8 @@ export function AssetsPanel({
             </span>
           </div>
 
-          {isPro && <ProAssetPaths assets={assets} />}
+          {/* No Pro os caminhos para usar no código moram no painel Materiais do trilho
+              (redesenho de 11/2026): um lugar só, em vez desta cópia recolhida. */}
           {isPro && materialNotice && (
             <p role="status" className="text-sm">
               {materialNotice}

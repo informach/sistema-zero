@@ -37,9 +37,11 @@ it('ignores a late Python materialization after JS → Python → JS with the sa
   const queries: string[] = []
   const view = render(
     <StudioStoresContext.Provider value={stores}>
-      <ProAssetPaths assets={assets} expanded onFindUses={(query) => queries.push(query)} />
+      <ProAssetPaths assets={assets} onFindUses={(query) => queries.push(query)} />
     </StudioStoresContext.Provider>,
   )
+  await view.findByText('nave')
+  fireEvent.click(view.getByRole('button', { name: 'Ver nave' }))
   await view.findByText(jsPath)
   const entered = Promise.withResolvers<void>(),
     gate = Promise.withResolvers<void>()
@@ -63,11 +65,11 @@ it('ignores a late Python materialization after JS → Python → JS with the sa
     await view.findByText(jsPath)
     await act(async () => gate.resolve())
     expect(view.queryByText(pythonPath)).toBeNull()
-    fireEvent.click(view.getByRole('button', { name: 'Buscar caminho no código' }))
+    fireEvent.click(view.getByRole('button', { name: 'Procurar o caminho no código' }))
     expect(queries.at(-1)).toBe(jsPath)
     await act(async () => stores.project.setState({ project: python }))
     await view.findByText(pythonPath)
-    fireEvent.click(view.getByRole('button', { name: 'Buscar caminho no código' }))
+    fireEvent.click(view.getByRole('button', { name: 'Procurar o caminho no código' }))
     expect(queries.at(-1)).toBe(pythonPath)
     expect(view.queryByText(/public\//)).toBeNull()
   } finally {
@@ -89,16 +91,16 @@ it('filters canonical materials, opens only requested previews and sends literal
     },
   ]
   const queries: string[] = []
-  const view = render(
-    <ProAssetPaths assets={assets} expanded onFindUses={(query) => queries.push(query)} />,
-  )
+  const view = render(<ProAssetPaths assets={assets} onFindUses={(query) => queries.push(query)} />)
   await view.findByText('estrela')
+  // A miniatura é decorativa (alt vazio); a imagem com nome só no material escolhido.
   expect(view.queryByRole('img')).toBeNull()
   expect(view.queryByRole('button', { name: 'Copiar exemplo' })).toBeNull()
-  fireEvent.click(view.getByRole('button', { name: 'Prévia de estrela' }))
-  expect(view.getByRole('img').getAttribute('src')).toBe(assets[0]!.dataUrl)
-  fireEvent.click(view.getByRole('button', { name: 'Buscar caminho no código' }))
-  fireEvent.click(view.getByRole('button', { name: 'Buscar ID no código' }))
+  expect(view.getByRole('tab', { name: /Imagens/ }).textContent).toContain('1')
+  fireEvent.click(view.getByRole('button', { name: 'Ver estrela' }))
+  expect(view.getByRole('img', { name: 'estrela' }).getAttribute('src')).toBe(assets[0]!.dataUrl)
+  fireEvent.click(view.getByRole('button', { name: 'Procurar o caminho no código' }))
+  fireEvent.click(view.getByRole('button', { name: 'Procurar o ID no código' }))
   expect(queries[0]).toMatch(/^studio-assets\/[a-f0-9]+\.png$/)
   expect(queries[1]).toBe('star')
   fireEvent.change(view.getByRole('searchbox'), { target: { value: 'missing' } })
@@ -128,15 +130,15 @@ it('shows exactly the Python runtime paths, including a root GIF, and preserves 
         <ProAssetPaths
           assets={project.assets ?? []}
           path="src/main.py"
-          expanded
           onFindUses={(query) => queries.push(query)}
         />
       </StudioStoresContext.Provider>,
     )
     await view.findByText('nave')
+    fireEvent.click(view.getByRole('button', { name: 'Ver nave' }))
     expect(view.queryByRole('alert')).toBeNull()
     expect(view.queryByText(/public\//)).toBeNull()
-    fireEvent.click(view.getByRole('button', { name: 'Buscar caminho no código' }))
+    fireEvent.click(view.getByRole('button', { name: 'Procurar o caminho no código' }))
     const bundle = await buildPythonAssetBundle(project.assets)
     expect(queries).toEqual([bundle.manifest.assets[0]!.path])
     const entries = await editorAssetEntries(project.assets ?? [], 'python', {
@@ -151,7 +153,7 @@ it('shows exactly the Python runtime paths, including a root GIF, and preserves 
     expect(pythonProAssetExample(entries[0]!, 'main.js', installed)).toBeNull()
     await act(async () => stores.project.getState().setPythonFile('src/main.py', 'print(2)'))
     expect(view.queryByText('Lendo materiais…')).toBeNull()
-    expect(view.getByText('nave')).toBeDefined()
+    expect(view.getByRole('heading', { name: 'nave' })).toBeDefined()
     view.unmount()
   }
 })
@@ -168,4 +170,30 @@ it('refuses a material path colliding with a Python source rather than offering 
   await expect(
     editorAssetEntries([asset], 'python', { files: ['nave.gif'], directories: [] }),
   ).rejects.toThrow('colide')
+})
+
+it('Sons e 3D têm abas próprias com a contagem; a aba vazia oferece trazer', async () => {
+  const assets: ProjectAsset[] = [
+    {
+      id: 'star',
+      name: 'estrela',
+      kind: 'image',
+      source: 'upload',
+      dataUrl:
+        'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jZwoAAAAASUVORK5CYII=',
+    },
+  ]
+  const brought: string[] = []
+  const view = render(<ProAssetPaths assets={assets} onBring={(tab) => brought.push(tab)} />)
+  await view.findByText('estrela')
+  expect(view.getAllByRole('tab').map((tab) => tab.textContent)).toEqual([
+    'Imagens1',
+    'Sons0',
+    '3D0',
+  ])
+  fireEvent.click(view.getByRole('tab', { name: /Sons/ }))
+  expect(view.getByText('Este jogo ainda não tem sons.')).toBeTruthy()
+  fireEvent.click(view.getByRole('button', { name: 'Trazer do computador ou da biblioteca' }))
+  fireEvent.click(view.getByRole('button', { name: 'Trazer' }))
+  expect(brought).toEqual(['sounds', 'sounds'])
 })

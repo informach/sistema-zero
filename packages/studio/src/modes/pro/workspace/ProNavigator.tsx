@@ -1,12 +1,14 @@
 import { lazy, Suspense, useEffect, useId, useMemo, useRef, useState } from 'react'
+import { cn, IconArrowLeft, IconBook, IconFile } from '#ui'
 import { ProFileTree, type ProFileTreeProps } from '../../../components/code/ProFileTree'
+import { proFileBaseName, proFileKind } from '../../../components/code/proFileKinds'
 import type { ProExample } from '../../../core/proExamples'
 import { compatibleProGuides } from '../../../core/proLearningGuides'
 import type { ProjectTree } from '../../../core/proProject'
 import { useProjectStore } from '../../../state/projectStore'
 import { useUIStore } from '../../../state/uiStore'
 import { useT } from '../../../studio/i18n'
-import type { ProWorkspacePanel } from './model'
+import { PRO_WORKSPACE_PANELS, type ProWorkspacePanel } from './model'
 import { type ProSearchResult, searchProFiles } from './search'
 
 const ProAssetPaths = lazy(() =>
@@ -15,9 +17,20 @@ const ProAssetPaths = lazy(() =>
   })),
 )
 
-const control =
-  'min-h-9 rounded-md px-2 py-1.5 text-xs aria-pressed:bg-sz-accent/15 aria-pressed:text-sz-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-sz-accent hover:bg-sz-bg'
+const VIEW_LABEL: Record<ProWorkspacePanel, string> = {
+  files: 'pro.files',
+  search: 'pro.search',
+  materials: 'pro.materials',
+  guides: 'pro.guides',
+}
 
+/**
+ * O painel lateral do Pro (redesenho de 11/2026), com as quatro vistas que o trilho escolhe:
+ * Arquivos (`ProFileTree`), Procurar (dentro do código ou pelo nome, resultados agrupados por
+ * arquivo), Materiais (`ProAssetPaths`, o único lugar deles) e Guias (cartões; o guia aberto
+ * mostra "No código", o passo a passo, o que conferir e os limites, sem progresso inventado).
+ * No celular, onde não há trilho, o seletor das quatro vistas aparece no topo.
+ */
 export function ProNavigator({
   tree,
   searchRequest,
@@ -35,14 +48,14 @@ export function ProNavigator({
   onResult(result: ProSearchResult): void
   onInsert(example: ProExample): void
   onGuideReference?: (path: string, symbol: string) => Promise<void>
-  /** A vista escolhida no trilho (redesenho de 11/2026); sem ela, o painel guarda a própria. */
+  /** A vista escolhida no trilho; sem ela, o painel guarda a própria. */
   view?: ProWorkspacePanel
   onViewChange?: (view: ProWorkspacePanel) => void
   /** O seletor das quatro vistas no topo: só onde não há o trilho (o celular). */
   showViewSwitcher?: boolean
 }) {
   const t = useT()
-  const setShowAssets = useUIStore((state) => state.setShowAssets)
+  const openAssetsTab = useUIStore((state) => state.openAssetsTab)
   const [ownView, setOwnView] = useState<ProWorkspacePanel>('files')
   const view = controlledView ?? ownView
   const setView = (next: ProWorkspacePanel) => {
@@ -51,6 +64,7 @@ export function ProNavigator({
   }
   const [guideQuery, setGuideQuery] = useState('')
   const [guideNotice, setGuideNotice] = useState('')
+  const [openGuide, setOpenGuide] = useState<string | null>(null)
   const assets = useProjectStore((state) => state.project?.assets)
   const templateId = useProjectStore((state) => state.project?.proMeta?.templateId)
   const converted = useProjectStore((state) => Boolean(state.project?.proMeta?.origin))
@@ -58,10 +72,14 @@ export function ProNavigator({
   const hasConvertedModules =
     view === 'guides' && Object.keys(tree).some((path) => path.startsWith('src/converted/'))
   const guides = useMemo(
-    () => (view === 'guides' ? compatibleProGuides(templateId, tree, guideQuery) : []),
+    () =>
+      view === 'guides'
+        ? compatibleProGuides(templateId, tree, guideQuery).filter((guide) => guide.recipe)
+        : [],
     [view, templateId, tree, guideQuery],
   )
-  const [mode, setMode] = useState<'files' | 'content'>('files')
+  const guide = guides.find((item) => item.id === openGuide)
+  const [mode, setMode] = useState<'files' | 'content'>('content')
   const [query, setQuery] = useState('')
   const searchInput = useRef<HTMLInputElement>(null)
   const inputId = useId()
@@ -69,6 +87,15 @@ export function ProNavigator({
     () => (view === 'search' ? searchProFiles(tree, query, mode) : { items: [], truncated: false }),
     [view, tree, query, mode],
   )
+  const groups = useMemo(() => {
+    const map = new Map<string, ProSearchResult[]>()
+    for (const item of results.items) {
+      const list = map.get(item.path) ?? []
+      list.push(item)
+      map.set(item.path, list)
+    }
+    return [...map]
+  }, [results.items])
   const latestSetView = useRef(setView)
   latestSetView.current = setView
   useEffect(() => {
@@ -88,107 +115,70 @@ export function ProNavigator({
       <nav
         aria-label={t('pro.navigation')}
         hidden={!showViewSwitcher}
-        className="flex shrink-0 flex-wrap gap-1 border-b border-sz-border-soft p-2"
+        className="shrink-0 border-b border-sz-border-soft p-2"
       >
-        <button
-          type="button"
-          className={control}
-          aria-pressed={view === 'files'}
-          onClick={() => setView('files')}
-        >
-          {t('pro.files')}
-        </button>
-        <button
-          type="button"
-          className={control}
-          aria-pressed={view === 'search'}
-          onClick={() => setView('search')}
-        >
-          {t('pro.search')}
-        </button>
-        <button
-          type="button"
-          className={control}
-          aria-pressed={view === 'materials'}
-          onClick={() => setView('materials')}
-        >
-          {t('pro.materials')}
-        </button>
-        <button
-          type="button"
-          className={control}
-          aria-pressed={view === 'guides'}
-          onClick={() => setView('guides')}
-        >
-          {t('pro.guides')}
-        </button>
+        <div className="sz-pro-seg w-full">
+          {PRO_WORKSPACE_PANELS.map((item) => (
+            <button
+              key={item}
+              type="button"
+              className="sz-pro-seg-btn flex-1"
+              aria-pressed={view === item}
+              onClick={() => setView(item)}
+            >
+              {t(VIEW_LABEL[item])}
+            </button>
+          ))}
+        </div>
       </nav>
       {view === 'materials' && (
-        <section aria-label="Materiais no código" className="min-h-0 flex-1 overflow-auto p-2">
-          <button
-            type="button"
-            className={`${control} mb-2 w-full border border-sz-border`}
-            onClick={() => setShowAssets(true)}
-          >
-            {t('pro.materialsCommand')}
-          </button>
-          <p className="mb-2 text-xs">
-            {python
-              ? 'Importe imagens e sons pela biblioteca. Use os caminhos dos materiais no arquivo Python aberto.'
-              : 'Importe imagens, sons e modelos pela biblioteca. Depois confira um exemplo para o arquivo aberto.'}
-          </p>
-          <Suspense fallback={<p role="status">Carregando materiais…</p>}>
+        <section aria-label={t('pro.materials')} className="min-h-0 flex-1 overflow-auto p-3">
+          <Suspense fallback={<p role="status">{t('pro.materials.reading')}</p>}>
             <ProAssetPaths
               assets={assets ?? []}
               path={treeProps.activeFile}
               onInsert={onInsert}
+              onBring={(tab) => openAssetsTab(tab)}
               onFindUses={(text) => {
                 setQuery(text)
                 setMode('content')
                 setView('search')
               }}
-              expanded
             />
           </Suspense>
         </section>
       )}
       {view === 'guides' && (
-        <section aria-label={t('pro.guides')} className="min-h-0 flex-1 overflow-auto p-3 text-xs">
-          <label className="block">
-            {t('pro.searchGuides')}
-            <input
-              type="search"
-              value={guideQuery}
-              maxLength={160}
-              onChange={(event) => setGuideQuery(event.target.value)}
-              className="my-2 min-h-10 w-full rounded border border-sz-border bg-sz-bg px-2"
-            />
-          </label>
-          {!guides.length && <p role="status">{t('pro.noGuides')}</p>}
-          {guideNotice && <p role="status">{guideNotice}</p>}
-          {converted && (
-            <p className="my-2">
-              Este projeto veio dos blocos.{' '}
-              {python
-                ? 'Os arquivos Python mantêm o código da versão em blocos. '
-                : hasConvertedModules
-                  ? 'Os módulos convertidos estão em src/converted. '
-                  : 'A conversão mantém os scripts globais em public/. '}
-              A cópia original em blocos continua separada; editar código aqui não altera essa
-              cópia.
-            </p>
-          )}
-          {guides.map(
-            (guide) =>
-              guide.recipe && (
-                <details key={guide.id} className="mt-2">
-                  <summary className="cursor-pointer py-1">{guide.recipe.label}</summary>
-                  <p className="my-2">{guide.recipe.preconditions.join(' ')}</p>
-                  {guide.recipe.references.map((reference) => (
+        <section aria-label={t('pro.guides')} className="min-h-0 flex-1 overflow-auto p-3 text-sm">
+          {guide?.recipe ? (
+            <article className="flex flex-col gap-3">
+              <button
+                type="button"
+                className="sz-pro-btn sz-pro-btn--sm self-start"
+                onClick={() => {
+                  setOpenGuide(null)
+                  setGuideNotice('')
+                }}
+              >
+                <IconArrowLeft />
+                <span>{t('pro.guides.all')}</span>
+              </button>
+              <h2 className="m-0 text-lg font-black leading-tight">{guide.recipe.label}</h2>
+              {guide.recipe.preconditions.length ? (
+                <p className="m-0 text-sz-fg-soft">{guide.recipe.preconditions.join(' ')}</p>
+              ) : null}
+              <div className="flex flex-col gap-1">
+                <h3 className="sz-pro-section-label m-0">{t('pro.guides.inCode')}</h3>
+                {guide.recipe.references.map((reference) => {
+                  const kind = proFileKind(reference.path)
+                  return (
                     <button
                       type="button"
                       key={`${reference.path}:${reference.exportName}`}
-                      className={`${control} block break-all text-left`}
+                      className="sz-pro-row min-h-12"
+                      aria-label={t('pro.guides.openInCode', {
+                        target: `${reference.path} · ${reference.exportName}`,
+                      })}
                       onClick={() => {
                         setGuideNotice('')
                         if (!onGuideReference) treeProps.onSelectFile(reference.path)
@@ -203,21 +193,102 @@ export function ProNavigator({
                           )
                       }}
                     >
-                      {reference.path} · {reference.exportName}
+                      <span
+                        aria-hidden="true"
+                        className={cn('sz-pro-tile sz-pro-tile--sm', `sz-pro-tile--${kind.tone}`)}
+                      >
+                        {kind.short || <IconFile />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="sz-pro-row__name font-mono">{reference.exportName}</span>
+                        <span className="sz-pro-row__hint">{reference.path}</span>
+                      </span>
                     </button>
+                  )
+                })}
+                {guideNotice && <p role="status">{guideNotice}</p>}
+              </div>
+              <div>
+                <h3 className="sz-pro-section-label m-0">{t('pro.guides.steps')}</h3>
+                <ol className="sz-pro-guide-steps">
+                  {guide.recipe.steps.map((step) => (
+                    <li key={step}>{step}</li>
                   ))}
-                  <ol className="my-2 list-decimal space-y-2 pl-4">
-                    {guide.recipe.steps.map((step) => (
-                      <li key={step}>{step}</li>
+                </ol>
+              </div>
+              {guide.recipe.checks.length ? (
+                <div>
+                  <h3 className="sz-pro-section-label m-0">{t('pro.guides.checks')}</h3>
+                  <ul className="m-0 list-disc space-y-1 pl-5">
+                    {guide.recipe.checks.map((check) => (
+                      <li key={check}>{check}</li>
                     ))}
-                  </ol>
-                  <p>{guide.recipe.checks.join(' ')}</p>
-                  <p className="mt-2 text-sz-fg-mute">
-                    {guide.recipe.limits} Esta experiência não conclui objetivos da sua fase
-                    automaticamente.
-                  </p>
-                </details>
-              ),
+                  </ul>
+                </div>
+              ) : null}
+              <div className="rounded-xl bg-sz-panel-soft p-3 text-xs text-sz-fg-soft">
+                <strong className="block text-sz-fg">{t('pro.guides.limits')}</strong>
+                {guide.recipe.limits} {t('pro.guides.noProgress')}
+              </div>
+            </article>
+          ) : (
+            <div className="flex flex-col gap-3">
+              <h2 className="m-0 text-base font-black">{t('pro.guides')}</h2>
+              <label className="flex flex-col gap-1 text-xs font-bold text-sz-fg-soft">
+                {t('pro.searchGuides')}
+                <input
+                  type="search"
+                  value={guideQuery}
+                  maxLength={160}
+                  onChange={(event) => setGuideQuery(event.target.value)}
+                  className="min-h-10 rounded-xl border-2 border-sz-border bg-sz-bg px-3 font-normal text-sz-fg"
+                />
+              </label>
+              {converted && (
+                <p className="m-0 rounded-xl bg-sz-panel-soft p-3 text-xs">
+                  Este projeto veio dos blocos.{' '}
+                  {python
+                    ? 'Os arquivos Python mantêm o código da versão em blocos. '
+                    : hasConvertedModules
+                      ? 'Os módulos convertidos estão em src/converted. '
+                      : 'A conversão mantém os scripts globais em public/. '}
+                  A cópia original em blocos continua separada; editar código aqui não altera essa
+                  cópia.
+                </p>
+              )}
+              {!guides.length && <p role="status">{t('pro.noGuides')}</p>}
+              <ul className="m-0 flex list-none flex-col gap-2 p-0">
+                {guides.map((item) =>
+                  item.recipe ? (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        className="sz-pro-card sz-pro-hard flex w-full items-start gap-3 p-3 text-left"
+                        onClick={() => {
+                          setOpenGuide(item.id)
+                          setGuideNotice('')
+                        }}
+                      >
+                        <span aria-hidden="true" className="sz-pro-tile sz-pro-tile--py">
+                          <IconBook />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block font-black leading-tight">
+                            {item.recipe.label}
+                          </span>
+                          <span className="mt-1 block text-xs text-sz-fg-soft">
+                            {item.recipe.steps.length} passos ·{' '}
+                            {item.recipe.references
+                              .map((ref) => proFileBaseName(ref.path))
+                              .join(', ')}
+                          </span>
+                        </span>
+                      </button>
+                    </li>
+                  ) : null,
+                )}
+              </ul>
+            </div>
           )}
         </section>
       )}
@@ -227,8 +298,27 @@ export function ProNavigator({
         </div>
       </div>
       {view === 'search' && (
-        <section aria-label={t('pro.search')} className="flex min-h-0 flex-1 flex-col p-3">
-          <label htmlFor={inputId} className="mb-2 text-xs font-semibold">
+        <section aria-label={t('pro.search')} className="flex min-h-0 flex-1 flex-col gap-2 p-3">
+          <h2 className="m-0 text-base font-black">{t('pro.search')}</h2>
+          <div className="sz-pro-seg self-start">
+            <button
+              type="button"
+              className="sz-pro-seg-btn"
+              aria-pressed={mode === 'content'}
+              onClick={() => setMode('content')}
+            >
+              {t('pro.byContent')}
+            </button>
+            <button
+              type="button"
+              className="sz-pro-seg-btn"
+              aria-pressed={mode === 'files'}
+              onClick={() => setMode('files')}
+            >
+              {t('pro.byName')}
+            </button>
+          </div>
+          <label htmlFor={inputId} className="text-xs font-bold text-sz-fg-soft">
             {t(mode === 'files' ? 'pro.searchFiles' : 'pro.searchContent')}
           </label>
           <input
@@ -238,51 +328,79 @@ export function ProNavigator({
             maxLength={160}
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            className="min-h-10 w-full rounded-md border border-sz-border bg-sz-bg px-2 text-sm text-sz-fg"
+            className="min-h-10 w-full rounded-xl border-2 border-sz-border bg-sz-bg px-3 text-sm text-sz-fg"
           />
-          <div className="my-2 flex gap-1">
-            <button
-              type="button"
-              className={control}
-              aria-pressed={mode === 'files'}
-              onClick={() => setMode('files')}
-            >
-              {t('pro.byName')}
-            </button>
-            <button
-              type="button"
-              className={control}
-              aria-pressed={mode === 'content'}
-              onClick={() => setMode('content')}
-            >
-              {t('pro.byContent')}
-            </button>
-          </div>
-          <p role="status" className="mb-2 text-xs text-sz-fg-mute">
+          <p role="status" className="m-0 text-xs text-sz-fg-mute">
             {query.trim()
               ? t(results.truncated ? 'pro.searchLimited' : 'pro.searchCount', {
                   count: results.items.length,
                 })
               : t('pro.searchHint')}
           </p>
-          <ul className="min-h-0 space-y-1 overflow-auto">
-            {results.items.map((result) => (
-              <li key={`${result.path}:${result.line}`}>
-                <button
-                  type="button"
-                  className={`${control} w-full text-left`}
-                  onClick={() => onResult(result)}
-                >
-                  <span className="block break-all font-mono text-sz-fg">
-                    {result.path}
-                    {mode === 'content' ? `:${result.line}` : ''}
-                  </span>
-                  {mode === 'content' && (
-                    <span className="block break-all text-sz-fg-mute">{result.text}</span>
+          <ul
+            aria-label={t('pro.search.results')}
+            className="m-0 min-h-0 list-none space-y-3 overflow-auto p-0"
+          >
+            {groups.map(([path, items]) => {
+              const kind = proFileKind(path)
+              return (
+                <li key={path}>
+                  {mode === 'files' ? (
+                    <button
+                      type="button"
+                      className="sz-pro-row min-h-12"
+                      aria-label={path}
+                      onClick={() => items[0] && onResult(items[0])}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={cn('sz-pro-tile sz-pro-tile--sm', `sz-pro-tile--${kind.tone}`)}
+                      >
+                        {kind.short || <IconFile />}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="sz-pro-row__name">{proFileBaseName(path)}</span>
+                        <span className="sz-pro-row__hint">{path}</span>
+                      </span>
+                    </button>
+                  ) : (
+                    <>
+                      <p className="m-0 mb-1 flex items-center gap-2 text-xs font-black">
+                        <span
+                          aria-hidden="true"
+                          className={cn('sz-pro-tile sz-pro-tile--sm', `sz-pro-tile--${kind.tone}`)}
+                        >
+                          {kind.short || <IconFile />}
+                        </span>
+                        <span className="min-w-0 truncate" title={path}>
+                          {proFileBaseName(path)}
+                        </span>
+                        <span className="sz-pro-badge sz-pro-badge--quiet">{items.length}</span>
+                      </p>
+                      <ul className="m-0 list-none space-y-1 p-0">
+                        {items.map((result) => (
+                          <li key={`${result.path}:${result.line}`}>
+                            <button
+                              type="button"
+                              aria-label={`${result.path}:${result.line} ${result.text}`}
+                              className="w-full rounded-lg px-2 py-1.5 text-left hover:bg-sz-panel-soft"
+                              onClick={() => onResult(result)}
+                            >
+                              <span className="block text-xs font-bold text-sz-accent">
+                                {t('pro.search.line', { line: result.line })}
+                              </span>
+                              <span className="block break-all font-mono text-xs text-sz-fg-soft">
+                                {result.text}
+                              </span>
+                            </button>
+                          </li>
+                        ))}
+                      </ul>
+                    </>
                   )}
-                </button>
-              </li>
-            ))}
+                </li>
+              )
+            })}
           </ul>
         </section>
       )}

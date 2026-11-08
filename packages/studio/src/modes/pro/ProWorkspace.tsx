@@ -3,6 +3,7 @@ import type { ComponentType, JSX, ReactNode } from 'react'
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
 import type { ProjectTree } from '#core'
+import { isProConfigPath } from '../../components/code/proFileKinds'
 import { EditorSkeleton } from '../../components/layout/LoadingViews'
 import { useProTutorDock } from '../../components/layout/proTutorDock'
 import { isPythonProject } from '../../core/editableProject'
@@ -13,6 +14,7 @@ import { getMonacoModelPath } from '../../monaco/modelPaths'
 import type { ProAnalysisState, ProEditorDiagnostic } from '../../monaco/pro/session'
 import { useProjectStore, useProjectStoreApi } from '../../state/projectStore'
 import { useStudioConfig } from '../../studio/config'
+import { useT } from '../../studio/i18n'
 import { useProCandidatePreview } from '../../studio/pro-candidate-preview'
 import { useStudioTutor } from '../../studio/tutor'
 import { currentProDiagnostics } from './workspace/diagnostics'
@@ -50,6 +52,7 @@ export function ProWorkspace({
   preview: ReactNode
   examples?: (path: string) => ProExample[]
 }): JSX.Element {
+  const t = useT()
   const store = useProjectStoreApi()
   const { projectId, tree, templateId, entrypoint, python } = useProjectStore(
     useShallow((s) => ({
@@ -378,6 +381,12 @@ export function ProWorkspace({
           <button type="button" onClick={workspace.dismissError}>
             Fechar
           </button>
+        </p>
+      )}
+      {isProConfigPath(activeFile) && (
+        // A faixa amarela dos arquivos de configuração (redesenho de 11/2026).
+        <p role="note" className="sz-pro-config-banner">
+          {t('pro.files.configBanner')}
         </p>
       )}
       <div className="min-h-0 flex-1">

@@ -4,7 +4,15 @@ import { gzipSync } from 'node:zlib'
 import { build } from 'vite'
 
 /**
- * ⚠️ O teto CRU da lista inicial subiu de 350 000 para 360 000 em 25/10/2026.
+ * ⚠️ O teto CRU da lista inicial subiu de 360 000 para 380 000 em 08/11/2026.
+ *
+ * O redesenho do Studio Pro trouxe os textos dele (Rodar/Parar, o palco, a faixa do editor, os
+ * painéis Arquivos/Procurar/Materiais/Guias, a gaveta), e os dois dicionários moram aqui: a
+ * lista foi a 364 261 bytes crus. Nenhum módulo do Pro entrou nela (o chunk tem só `icons.tsx`
+ * e os dicionários além do que já tinha). O gzip, o guarda apertado, foi de 114 106 a 114 755
+ * de 120 000. A folga de ~4% cobre o resto do redesenho sem virar alarme a cada texto novo.
+ *
+ * (Histórico) O teto CRU da lista inicial subiu de 350 000 para 360 000 em 25/10/2026.
  *
  * Os dois dicionários de idioma (pt-BR e en) moram na lista inicial, e os textos novos do
  * "Trazer do Pinta" (folha com animações, peças e mapa com objetos, para o módulo `pinta` do
@@ -12,7 +20,7 @@ import { build } from 'vite'
  * exemplo ou do Pinta entrou nela (medido pela lista de módulos do chunk). O gzip, que é o
  * que viaja até a criança, está em 114 106 de 120 000 e continua sendo o guarda apertado.
  */
-const MAX_INITIAL_JS_BYTES = 360_000
+const MAX_INITIAL_JS_BYTES = 380_000
 const MAX_INITIAL_JS_GZIP_BYTES = 120_000
 const MAX_INITIAL_JS_FILES = 10
 const MAX_EDITOR_ROUTE_JS_BYTES = 5_000_000
