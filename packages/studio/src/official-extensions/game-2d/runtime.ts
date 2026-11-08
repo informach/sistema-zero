@@ -122,7 +122,7 @@ const gameTwoDEngineSource =
   `
 })();`
 
-export const gameTwoDRuntimeSource = buildProjectRunContextRuntime() + '\n' + gameTwoDEngineSource
+export const gameTwoDRuntimeSource = `${buildProjectRunContextRuntime()}\n${gameTwoDEngineSource}`
 
 // The serialized project context may contain a template literal after the host
 // build minifies it. Keep it intact and compact only the authored engine.

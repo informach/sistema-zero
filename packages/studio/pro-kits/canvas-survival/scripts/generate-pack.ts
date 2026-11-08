@@ -204,7 +204,7 @@ for (const role of ['player', 'seeker', 'drifter'] as const) {
 }
 await output(
   'manifest.json',
-  Buffer.from(JSON.stringify({ version: 1, frameSize: size, assets }, null, 2) + '\n'),
+  Buffer.from(`${JSON.stringify({ version: 1, frameSize: size, assets }, null, 2)}\n`),
 )
 console.log(
   `${check ? 'Verified' : 'Generated'} ${assets.length} original sprite sheets (${assets.reduce((total, asset) => total + asset.bytes, 0)} PNG bytes).`,

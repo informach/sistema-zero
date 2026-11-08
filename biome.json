@@ -13,6 +13,9 @@
       "!bun.lock",
       "!packages/studio/src/monaco/pro/defaultLibraries.json",
       "!packages/studio/src/arte/ilha-farol-scene.generated.ts",
+      "!packages/studio/src/examples/python/pygameGames/*.drawings.generated.ts",
+      "!packages/studio/src/examples/python/pygame/*/desenhos.pinta.json",
+      "!packages/studio/playground/moldaDemoAssets.json",
       "!packages/studio-runtime/runtime/portable-path.generated.mjs",
       "!packages/studio-runtime/runtime/python-playtest.generated.mjs",
       "!packages/studio-runtime/runtime/execution-observation.generated.mjs",
@@ -84,8 +87,14 @@
   },
   "overrides": [
     {
-      "includes": ["packages/studio/src/examples/python/pygame/*/desenhos.pinta.json"],
-      "formatter": { "enabled": false }
+      "includes": ["packages/studio/src/examples/python/pygameGames/*.generated.ts"],
+      "linter": {
+        "rules": {
+          "suspicious": {
+            "noTemplateCurlyInString": "off"
+          }
+        }
+      }
     },
     {
       "includes": ["docs/design/ilha-do-farol-molda/projetos/*.molda.json"],

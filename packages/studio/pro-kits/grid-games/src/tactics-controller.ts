@@ -50,7 +50,7 @@ export function createTacticsController(
     game.waitUnit()
   })
   add('Encerrar turno', 'end-turn', () => game.endTurn())
-  add('Recrutar · ' + config.recruitCost + ' moedas', 'recruit', () => {
+  add(`Recrutar · ${config.recruitCost} moedas`, 'recruit', () => {
     if (game.recruit()) ui.tone(520)
   })
   const updateControls = () => {
