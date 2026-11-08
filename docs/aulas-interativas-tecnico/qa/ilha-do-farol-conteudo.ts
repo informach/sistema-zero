@@ -73,7 +73,7 @@ export const ilhaAulas: { slug: string; title: string; trechos: IlhaTrecho[] }[]
         title: 'Faça o personagem andar',
         kind: 'build',
         screen:
-          'Projeto inicio. Começar pela retomada: clicar em Atualizar e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.',
+          'Projeto inicio da revisão de números simples: usar os exemplos atuais, com no máximo uma casa decimal também nos blocos de preparação. Começar pela retomada: clicar em Atualizar e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.',
         steps: [
           'Em Enquanto estiver rodando, deixe à vista o bloco A cada quadro da cena. Dentro dele, encontre Escrever na tela: o novo bloco vai logo antes dele.',
           'Abra Jogo 3D → Movimento → Andar com o teclado. Pegue Fazer personagem andar com as setas (ou WASD) e solte antes de Escrever na tela.',

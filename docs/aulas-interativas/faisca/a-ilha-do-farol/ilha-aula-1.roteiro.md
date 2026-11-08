@@ -68,7 +68,7 @@ Master integral da professora. Sem intervenções de personagens nesta versão. 
 
 **Clipe:** `video-movimento`
 
-**Na tela:** Projeto inicio. Começar pela retomada: clicar em Atualizar e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.
+**Na tela:** Projeto inicio da revisão de números simples: usar os exemplos atuais, com no máximo uma casa decimal também nos blocos de preparação. Começar pela retomada: clicar em Atualizar e segurar uma seta no jogo, com o personagem parado no Tá vendo?. Depois mostrar Enquanto estiver rodando e o bloco A cada quadro da cena. Encaixar Fazer personagem andar com as setas antes de Escrever na tela. Trocar a velocidade 3 por 4. Testar as quatro setas, a ponte e a beirada.
 
 **Fala para ElevenLabs:**
 

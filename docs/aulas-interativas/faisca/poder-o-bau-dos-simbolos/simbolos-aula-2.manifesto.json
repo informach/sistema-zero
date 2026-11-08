@@ -37,7 +37,7 @@
             "files": {
               "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O baú dos símbolos — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
               "style.css": "",
-              "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  let passo = 0;\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  SZGame3D.onTouch(personagem, sol, () => {\n    passo = 1;\n    SZGame3D.playAnimation(sol, \"acender\", \"uma-vez\");\n    aviso = \"O sol acendeu! Agora a lua.\";\n  });\n  SZGame3D.onTouch(personagem, lua, () => {\n    if (passo === 1) {\n      passo = 2;\n      SZGame3D.playAnimation(lua, \"acender\", \"uma-vez\");\n      aviso = \"A lua acendeu! Agora a estrela.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  SZGame3D.onTouch(personagem, estrela, () => {\n    if (passo === 2) {\n      SZGame3D.playAnimation(estrela, \"acender\", \"uma-vez\");\n      SZGame3D.playAnimation(bau, \"abrir\", \"uma-vez\");\n      aviso = \"Na ordem certa! O baú abriu.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+              "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.7, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.1, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5);\n  SZGame3D.setPosition(pedra, -2, 1.2, -0.5);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.6);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.8);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.2);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  let passo = 0;\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  SZGame3D.onTouch(personagem, sol, () => {\n    passo = 1;\n    SZGame3D.playAnimation(sol, \"acender\", \"uma-vez\");\n    aviso = \"O sol acendeu! Agora a lua.\";\n  });\n  SZGame3D.onTouch(personagem, lua, () => {\n    if (passo === 1) {\n      passo = 2;\n      SZGame3D.playAnimation(lua, \"acender\", \"uma-vez\");\n      aviso = \"A lua acendeu! Agora a estrela.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  SZGame3D.onTouch(personagem, estrela, () => {\n    if (passo === 2) {\n      SZGame3D.playAnimation(estrela, \"acender\", \"uma-vez\");\n      SZGame3D.playAnimation(bau, \"abrir\", \"uma-vez\");\n      aviso = \"Na ordem certa! O baú abriu.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.1, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
             },
             "extraFiles": [],
             "assets": [
@@ -375,7 +375,7 @@
                     },
                     "y": {
                       "type": "num",
-                      "value": 2.65
+                      "value": 2.7
                     },
                     "z": {
                       "type": "num",
@@ -401,7 +401,7 @@
                     },
                     "y": {
                       "type": "num",
-                      "value": 1.06
+                      "value": 1.1
                     },
                     "z": {
                       "type": "num",
@@ -415,7 +415,7 @@
                     "asset": "pedras",
                     "size": {
                       "type": "num",
-                      "value": 4.5298
+                      "value": 4.5
                     }
                   },
                   {
@@ -423,15 +423,15 @@
                     "objVar": "pedra",
                     "x": {
                       "type": "num",
-                      "value": -2.0258
+                      "value": -2
                     },
                     "y": {
                       "type": "num",
-                      "value": 1.1897
+                      "value": 1.2
                     },
                     "z": {
                       "type": "num",
-                      "value": -0.5081
+                      "value": -0.5
                     }
                   },
                   {
@@ -441,7 +441,7 @@
                     "asset": "aventureiro",
                     "size": {
                       "type": "num",
-                      "value": 1.66
+                      "value": 1.6
                     }
                   },
                   {
@@ -457,7 +457,7 @@
                     },
                     "z": {
                       "type": "num",
-                      "value": 0.75
+                      "value": 0.8
                     }
                   },
                   {
@@ -467,7 +467,7 @@
                     "asset": "chave-dourada",
                     "size": {
                       "type": "num",
-                      "value": 1.24
+                      "value": 1.2
                     }
                   },
                   {
@@ -1056,7 +1056,7 @@
                             },
                             "y": {
                               "type": "num",
-                              "value": 1.06
+                              "value": 1.1
                             },
                             "z": {
                               "type": "num",
@@ -1228,7 +1228,7 @@
                                                   "shadow": {
                                                     "type": "sz_val_number",
                                                     "fields": {
-                                                      "NUM": 2.65
+                                                      "NUM": 2.7
                                                     }
                                                   }
                                                 },
@@ -1278,7 +1278,7 @@
                                                           "shadow": {
                                                             "type": "sz_val_number",
                                                             "fields": {
-                                                              "NUM": 1.06
+                                                              "NUM": 1.1
                                                             }
                                                           }
                                                         },
@@ -1304,7 +1304,7 @@
                                                               "shadow": {
                                                                 "type": "sz_val_number",
                                                                 "fields": {
-                                                                  "NUM": 4.5298
+                                                                  "NUM": 4.5
                                                                 }
                                                               }
                                                             }
@@ -1320,7 +1320,7 @@
                                                                   "shadow": {
                                                                     "type": "sz_val_number",
                                                                     "fields": {
-                                                                      "NUM": -2.0258
+                                                                      "NUM": -2
                                                                     }
                                                                   }
                                                                 },
@@ -1328,7 +1328,7 @@
                                                                   "shadow": {
                                                                     "type": "sz_val_number",
                                                                     "fields": {
-                                                                      "NUM": 1.1897
+                                                                      "NUM": 1.2
                                                                     }
                                                                   }
                                                                 },
@@ -1336,7 +1336,7 @@
                                                                   "shadow": {
                                                                     "type": "sz_val_number",
                                                                     "fields": {
-                                                                      "NUM": -0.5081
+                                                                      "NUM": -0.5
                                                                     }
                                                                   }
                                                                 }
@@ -1354,7 +1354,7 @@
                                                                       "shadow": {
                                                                         "type": "sz_val_number",
                                                                         "fields": {
-                                                                          "NUM": 1.66
+                                                                          "NUM": 1.6
                                                                         }
                                                                       }
                                                                     }
@@ -1386,7 +1386,7 @@
                                                                           "shadow": {
                                                                             "type": "sz_val_number",
                                                                             "fields": {
-                                                                              "NUM": 0.75
+                                                                              "NUM": 0.8
                                                                             }
                                                                           }
                                                                         }
@@ -1404,7 +1404,7 @@
                                                                               "shadow": {
                                                                                 "type": "sz_val_number",
                                                                                 "fields": {
-                                                                                  "NUM": 1.24
+                                                                                  "NUM": 1.2
                                                                                 }
                                                                               }
                                                                             }
@@ -2590,7 +2590,7 @@
                                                   "shadow": {
                                                     "type": "sz_val_number",
                                                     "fields": {
-                                                      "NUM": 1.06
+                                                      "NUM": 1.1
                                                     }
                                                   }
                                                 },
@@ -2736,7 +2736,9 @@
                 "label": "Só a lua acende, porque ela foi tocada duas vezes."
               }
             ],
-            "correctChoiceIds": ["b"],
+            "correctChoiceIds": [
+              "b"
+            ],
             "explanation": "O erro só voltou passo para 0. Tocar o sol muda passo para 1, a lua para 2, e a estrela encontra passo = 2: o baú abre."
           },
           {
@@ -2756,7 +2758,9 @@
                 "label": "No então do Se passo = 2, no encontro com a estrela."
               }
             ],
-            "correctChoiceIds": ["c"],
+            "correctChoiceIds": [
+              "c"
+            ],
             "explanation": "O baú só pode abrir quando a estrela é tocada na vez dela. Por isso a animação abrir fica no então do Se passo = 2; no senão, ele abriria justo quando a ordem está errada."
           }
         ]
@@ -2781,7 +2785,9 @@
         "purpose": "submission",
         "chain": "jornada-faisca-poder-4-3d",
         "level": "iniciante-3d",
-        "allowedModes": ["blocks"],
+        "allowedModes": [
+          "blocks"
+        ],
         "allowLevelReveal": false,
         "allowBlocks": [
           "sz_frame_events",
@@ -2825,7 +2831,7 @@
           "files": {
             "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O baú dos símbolos — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
             "style.css": "",
-            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+            "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.7, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.1, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5);\n  SZGame3D.setPosition(pedra, -2, 1.2, -0.5);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.6);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.8);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.2);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.1, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
           },
           "extraFiles": [],
           "assets": [
@@ -3163,7 +3169,7 @@
                   },
                   "y": {
                     "type": "num",
-                    "value": 2.65
+                    "value": 2.7
                   },
                   "z": {
                     "type": "num",
@@ -3189,7 +3195,7 @@
                   },
                   "y": {
                     "type": "num",
-                    "value": 1.06
+                    "value": 1.1
                   },
                   "z": {
                     "type": "num",
@@ -3203,7 +3209,7 @@
                   "asset": "pedras",
                   "size": {
                     "type": "num",
-                    "value": 4.5298
+                    "value": 4.5
                   }
                 },
                 {
@@ -3211,15 +3217,15 @@
                   "objVar": "pedra",
                   "x": {
                     "type": "num",
-                    "value": -2.0258
+                    "value": -2
                   },
                   "y": {
                     "type": "num",
-                    "value": 1.1897
+                    "value": 1.2
                   },
                   "z": {
                     "type": "num",
-                    "value": -0.5081
+                    "value": -0.5
                   }
                 },
                 {
@@ -3229,7 +3235,7 @@
                   "asset": "aventureiro",
                   "size": {
                     "type": "num",
-                    "value": 1.66
+                    "value": 1.6
                   }
                 },
                 {
@@ -3245,7 +3251,7 @@
                   },
                   "z": {
                     "type": "num",
-                    "value": 0.75
+                    "value": 0.8
                   }
                 },
                 {
@@ -3255,7 +3261,7 @@
                   "asset": "chave-dourada",
                   "size": {
                     "type": "num",
-                    "value": 1.24
+                    "value": 1.2
                   }
                 },
                 {
@@ -3649,7 +3655,7 @@
                           },
                           "y": {
                             "type": "num",
-                            "value": 1.06
+                            "value": 1.1
                           },
                           "z": {
                             "type": "num",
@@ -3821,7 +3827,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_number",
                                                   "fields": {
-                                                    "NUM": 2.65
+                                                    "NUM": 2.7
                                                   }
                                                 }
                                               },
@@ -3871,7 +3877,7 @@
                                                         "shadow": {
                                                           "type": "sz_val_number",
                                                           "fields": {
-                                                            "NUM": 1.06
+                                                            "NUM": 1.1
                                                           }
                                                         }
                                                       },
@@ -3897,7 +3903,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 4.5298
+                                                                "NUM": 4.5
                                                               }
                                                             }
                                                           }
@@ -3913,7 +3919,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": -2.0258
+                                                                    "NUM": -2
                                                                   }
                                                                 }
                                                               },
@@ -3921,7 +3927,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 1.1897
+                                                                    "NUM": 1.2
                                                                   }
                                                                 }
                                                               },
@@ -3929,7 +3935,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": -0.5081
+                                                                    "NUM": -0.5
                                                                   }
                                                                 }
                                                               }
@@ -3947,7 +3953,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 1.66
+                                                                        "NUM": 1.6
                                                                       }
                                                                     }
                                                                   }
@@ -3979,7 +3985,7 @@
                                                                         "shadow": {
                                                                           "type": "sz_val_number",
                                                                           "fields": {
-                                                                            "NUM": 0.75
+                                                                            "NUM": 0.8
                                                                           }
                                                                         }
                                                                       }
@@ -3997,7 +4003,7 @@
                                                                             "shadow": {
                                                                               "type": "sz_val_number",
                                                                               "fields": {
-                                                                                "NUM": 1.24
+                                                                                "NUM": 1.2
                                                                               }
                                                                             }
                                                                           }
@@ -4818,7 +4824,7 @@
                                                 "shadow": {
                                                   "type": "sz_val_number",
                                                   "fields": {
-                                                    "NUM": 1.06
+                                                    "NUM": 1.1
                                                   }
                                                 }
                                               },
@@ -4913,7 +4919,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O baú dos símbolos — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.7, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.1, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5);\n  SZGame3D.setPosition(pedra, -2, 1.2, -0.5);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.6);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.8);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.2);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.1, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -5251,7 +5257,7 @@
                       },
                       "y": {
                         "type": "num",
-                        "value": 2.65
+                        "value": 2.7
                       },
                       "z": {
                         "type": "num",
@@ -5277,7 +5283,7 @@
                       },
                       "y": {
                         "type": "num",
-                        "value": 1.06
+                        "value": 1.1
                       },
                       "z": {
                         "type": "num",
@@ -5291,7 +5297,7 @@
                       "asset": "pedras",
                       "size": {
                         "type": "num",
-                        "value": 4.5298
+                        "value": 4.5
                       }
                     },
                     {
@@ -5299,15 +5305,15 @@
                       "objVar": "pedra",
                       "x": {
                         "type": "num",
-                        "value": -2.0258
+                        "value": -2
                       },
                       "y": {
                         "type": "num",
-                        "value": 1.1897
+                        "value": 1.2
                       },
                       "z": {
                         "type": "num",
-                        "value": -0.5081
+                        "value": -0.5
                       }
                     },
                     {
@@ -5317,7 +5323,7 @@
                       "asset": "aventureiro",
                       "size": {
                         "type": "num",
-                        "value": 1.66
+                        "value": 1.6
                       }
                     },
                     {
@@ -5333,7 +5339,7 @@
                       },
                       "z": {
                         "type": "num",
-                        "value": 0.75
+                        "value": 0.8
                       }
                     },
                     {
@@ -5343,7 +5349,7 @@
                       "asset": "chave-dourada",
                       "size": {
                         "type": "num",
-                        "value": 1.24
+                        "value": 1.2
                       }
                     },
                     {
@@ -5737,7 +5743,7 @@
                               },
                               "y": {
                                 "type": "num",
-                                "value": 1.06
+                                "value": 1.1
                               },
                               "z": {
                                 "type": "num",
@@ -5909,7 +5915,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 2.65
+                                                        "NUM": 2.7
                                                       }
                                                     }
                                                   },
@@ -5959,7 +5965,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 1.06
+                                                                "NUM": 1.1
                                                               }
                                                             }
                                                           },
@@ -5985,7 +5991,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 4.5298
+                                                                    "NUM": 4.5
                                                                   }
                                                                 }
                                                               }
@@ -6001,7 +6007,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": -2.0258
+                                                                        "NUM": -2
                                                                       }
                                                                     }
                                                                   },
@@ -6009,7 +6015,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 1.1897
+                                                                        "NUM": 1.2
                                                                       }
                                                                     }
                                                                   },
@@ -6017,7 +6023,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": -0.5081
+                                                                        "NUM": -0.5
                                                                       }
                                                                     }
                                                                   }
@@ -6035,7 +6041,7 @@
                                                                         "shadow": {
                                                                           "type": "sz_val_number",
                                                                           "fields": {
-                                                                            "NUM": 1.66
+                                                                            "NUM": 1.6
                                                                           }
                                                                         }
                                                                       }
@@ -6067,7 +6073,7 @@
                                                                             "shadow": {
                                                                               "type": "sz_val_number",
                                                                               "fields": {
-                                                                                "NUM": 0.75
+                                                                                "NUM": 0.8
                                                                               }
                                                                             }
                                                                           }
@@ -6085,7 +6091,7 @@
                                                                                 "shadow": {
                                                                                   "type": "sz_val_number",
                                                                                   "fields": {
-                                                                                    "NUM": 1.24
+                                                                                    "NUM": 1.2
                                                                                   }
                                                                                 }
                                                                               }
@@ -6906,7 +6912,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 1.06
+                                                        "NUM": 1.1
                                                       }
                                                     }
                                                   },
@@ -6998,7 +7004,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O baú dos símbolos — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  let passo = 0;\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  SZGame3D.onTouch(personagem, sol, () => {\n    passo = 1;\n    SZGame3D.playAnimation(sol, \"acender\", \"uma-vez\");\n    aviso = \"O sol acendeu! Agora a lua.\";\n  });\n  SZGame3D.onTouch(personagem, lua, () => {\n    if (passo === 1) {\n      passo = 2;\n      SZGame3D.playAnimation(lua, \"acender\", \"uma-vez\");\n      aviso = \"A lua acendeu! Agora a estrela.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.7, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.1, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5);\n  SZGame3D.setPosition(pedra, -2, 1.2, -0.5);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.6);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.8);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.2);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  let passo = 0;\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  SZGame3D.onTouch(personagem, sol, () => {\n    passo = 1;\n    SZGame3D.playAnimation(sol, \"acender\", \"uma-vez\");\n    aviso = \"O sol acendeu! Agora a lua.\";\n  });\n  SZGame3D.onTouch(personagem, lua, () => {\n    if (passo === 1) {\n      passo = 2;\n      SZGame3D.playAnimation(lua, \"acender\", \"uma-vez\");\n      aviso = \"A lua acendeu! Agora a estrela.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.1, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -7336,7 +7342,7 @@
                       },
                       "y": {
                         "type": "num",
-                        "value": 2.65
+                        "value": 2.7
                       },
                       "z": {
                         "type": "num",
@@ -7362,7 +7368,7 @@
                       },
                       "y": {
                         "type": "num",
-                        "value": 1.06
+                        "value": 1.1
                       },
                       "z": {
                         "type": "num",
@@ -7376,7 +7382,7 @@
                       "asset": "pedras",
                       "size": {
                         "type": "num",
-                        "value": 4.5298
+                        "value": 4.5
                       }
                     },
                     {
@@ -7384,15 +7390,15 @@
                       "objVar": "pedra",
                       "x": {
                         "type": "num",
-                        "value": -2.0258
+                        "value": -2
                       },
                       "y": {
                         "type": "num",
-                        "value": 1.1897
+                        "value": 1.2
                       },
                       "z": {
                         "type": "num",
-                        "value": -0.5081
+                        "value": -0.5
                       }
                     },
                     {
@@ -7402,7 +7408,7 @@
                       "asset": "aventureiro",
                       "size": {
                         "type": "num",
-                        "value": 1.66
+                        "value": 1.6
                       }
                     },
                     {
@@ -7418,7 +7424,7 @@
                       },
                       "z": {
                         "type": "num",
-                        "value": 0.75
+                        "value": 0.8
                       }
                     },
                     {
@@ -7428,7 +7434,7 @@
                       "asset": "chave-dourada",
                       "size": {
                         "type": "num",
-                        "value": 1.24
+                        "value": 1.2
                       }
                     },
                     {
@@ -7939,7 +7945,7 @@
                               },
                               "y": {
                                 "type": "num",
-                                "value": 1.06
+                                "value": 1.1
                               },
                               "z": {
                                 "type": "num",
@@ -8111,7 +8117,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 2.65
+                                                        "NUM": 2.7
                                                       }
                                                     }
                                                   },
@@ -8161,7 +8167,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 1.06
+                                                                "NUM": 1.1
                                                               }
                                                             }
                                                           },
@@ -8187,7 +8193,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 4.5298
+                                                                    "NUM": 4.5
                                                                   }
                                                                 }
                                                               }
@@ -8203,7 +8209,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": -2.0258
+                                                                        "NUM": -2
                                                                       }
                                                                     }
                                                                   },
@@ -8211,7 +8217,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 1.1897
+                                                                        "NUM": 1.2
                                                                       }
                                                                     }
                                                                   },
@@ -8219,7 +8225,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": -0.5081
+                                                                        "NUM": -0.5
                                                                       }
                                                                     }
                                                                   }
@@ -8237,7 +8243,7 @@
                                                                         "shadow": {
                                                                           "type": "sz_val_number",
                                                                           "fields": {
-                                                                            "NUM": 1.66
+                                                                            "NUM": 1.6
                                                                           }
                                                                         }
                                                                       }
@@ -8269,7 +8275,7 @@
                                                                             "shadow": {
                                                                               "type": "sz_val_number",
                                                                               "fields": {
-                                                                                "NUM": 0.75
+                                                                                "NUM": 0.8
                                                                               }
                                                                             }
                                                                           }
@@ -8287,7 +8293,7 @@
                                                                                 "shadow": {
                                                                                   "type": "sz_val_number",
                                                                                   "fields": {
-                                                                                    "NUM": 1.24
+                                                                                    "NUM": 1.2
                                                                                   }
                                                                                 }
                                                                               }
@@ -9332,7 +9338,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 1.06
+                                                        "NUM": 1.1
                                                       }
                                                     }
                                                   },
@@ -9424,7 +9430,7 @@
               "files": {
                 "index.html": "<!doctype html>\n<html lang=\"pt-BR\">\n  <head>\n    <meta charset=\"UTF-8\" />\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />\n    <title>O baú dos símbolos — 3D</title>\n    <link rel=\"stylesheet\" href=\"style.css\" />\n  </head>\n  <body>\n\n    <script src=\"script.js\"></script>\n  </body>\n</html>\n",
                 "style.css": "",
-                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.65, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.06, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5298);\n  SZGame3D.setPosition(pedra, -2.0258, 1.1897, -0.5081);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.66);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.75);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.24);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  let passo = 0;\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  SZGame3D.onTouch(personagem, sol, () => {\n    passo = 1;\n    SZGame3D.playAnimation(sol, \"acender\", \"uma-vez\");\n    aviso = \"O sol acendeu! Agora a lua.\";\n  });\n  SZGame3D.onTouch(personagem, lua, () => {\n    if (passo === 1) {\n      passo = 2;\n      SZGame3D.playAnimation(lua, \"acender\", \"uma-vez\");\n      aviso = \"A lua acendeu! Agora a estrela.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  SZGame3D.onTouch(personagem, estrela, () => {\n    if (passo === 2) {\n      SZGame3D.playAnimation(estrela, \"acender\", \"uma-vez\");\n      SZGame3D.playAnimation(bau, \"abrir\", \"uma-vez\");\n      aviso = \"Na ordem certa! O baú abriu.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.06, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
+                "script.js": "SZGame3D.runProject(function __szProjectRun() {\n  const __szProjectRunContext = window.__SZProjectLifecycle.begin(() => SZGame3D.restart());\n  // Ao iniciar\n  const cena = SZGame3D.createFullscreenScene(\"#94d5f5\");\n  SZGame3D.frameScene(cena, 24, 7, 14);\n  const cenario = SZGame3D.createModelFile(cena, \"praia-tropical\", 140);\n  SZGame3D.setPosition(cenario, 0, 33.6, 0);\n  const farol = SZGame3D.createModelFile(cena, \"farol-listrado\", 5.3);\n  SZGame3D.setPosition(farol, 5.2, 2.7, 0.1);\n  const barco = SZGame3D.createModelFile(cena, \"veleiro\", 3.1);\n  SZGame3D.setPosition(barco, 13, 1.1, 4.5);\n  const pedra = SZGame3D.createModelFile(cena, \"pedras\", 4.5);\n  SZGame3D.setPosition(pedra, -2, 1.2, -0.5);\n  const personagem = SZGame3D.createModelFile(cena, \"aventureiro\", 1.6);\n  SZGame3D.setPosition(personagem, -6.5, 0.8, 0.8);\n  const chave = SZGame3D.createModelFile(cena, \"chave-dourada\", 1.2);\n  SZGame3D.setPosition(chave, -3, 1, -2);\n  const placa = SZGame3D.createModelFile(cena, \"placa-da-ordem\", 1.5);\n  SZGame3D.setPosition(placa, -7.9, 0.73, 2.61);\n  const sol = SZGame3D.createModelFile(cena, \"pedra-sol\", 0.939);\n  SZGame3D.setPosition(sol, -6.405, 0.405, 2.54);\n  const lua = SZGame3D.createModelFile(cena, \"pedra-lua\", 0.964);\n  SZGame3D.setPosition(lua, -4.172, 0.415, 3.632);\n  const estrela = SZGame3D.createModelFile(cena, \"pedra-estrela\", 0.8767);\n  SZGame3D.setPosition(estrela, -2.028, 0.405, 2.581);\n  const bau = SZGame3D.createModelFile(cena, \"bau-do-tesouro\", 1.12);\n  SZGame3D.setPosition(bau, -0.6, 0.52, 2.5);\n  let passo = 0;\n  SZGame3D.walkArea(personagem, -11, 1, -5, 5);\n  SZGame3D.walkArea(personagem, 0.6, 4.1, 0.4, 1.1);\n  SZGame3D.walkArea(personagem, 4, 6.1, -0.5, 1.7);\n  SZGame3D.setSolid(cenario);\n  SZGame3D.setSolid(pedra);\n  SZGame3D.walkAnimations(personagem, \"parado\", \"andando\");\n  let ganhou = false;\n  let aviso = \"Toque os símbolos na ordem da placa para abrir o baú.\";\n  let temChave = false;\n  SZGame3D.hudText(\"bottom-center\", \"Setas ou WASD: andar. R: recomeçar.\");\n  // Quando acontecer\n  SZGame3D.onKey(\"KeyR\", () => {\n    SZGame3D.restart();\n  });\n  SZGame3D.onTouch(personagem, chave, () => {\n    SZGame3D.setVisible(chave, \"hide\");\n    temChave = true;\n    aviso = \"Você pegou a chave! Agora vá ao farol.\";\n  });\n  SZGame3D.onTouch(personagem, farol, () => {\n    if (!ganhou) {\n      if (temChave) {\n        SZGame3D.playAnimation(farol, \"acender\", \"uma-vez\");\n        ganhou = true;\n        aviso = \"Você acendeu o farol! O barco pode chegar.\";\n      } else {\n        aviso = \"Falta a chave. Procure na ilha antes de voltar.\";\n      }\n    }\n  });\n  SZGame3D.onTouch(personagem, sol, () => {\n    passo = 1;\n    SZGame3D.playAnimation(sol, \"acender\", \"uma-vez\");\n    aviso = \"O sol acendeu! Agora a lua.\";\n  });\n  SZGame3D.onTouch(personagem, lua, () => {\n    if (passo === 1) {\n      passo = 2;\n      SZGame3D.playAnimation(lua, \"acender\", \"uma-vez\");\n      aviso = \"A lua acendeu! Agora a estrela.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  SZGame3D.onTouch(personagem, estrela, () => {\n    if (passo === 2) {\n      SZGame3D.playAnimation(estrela, \"acender\", \"uma-vez\");\n      SZGame3D.playAnimation(bau, \"abrir\", \"uma-vez\");\n      aviso = \"Na ordem certa! O baú abriu.\";\n    } else {\n      passo = 0;\n      SZGame3D.playAnimation(sol, \"apagar\", \"uma-vez\");\n      SZGame3D.playAnimation(lua, \"apagar\", \"uma-vez\");\n      aviso = \"Fora da ordem. Comece de novo pelo sol.\";\n    }\n  });\n  // Enquanto estiver rodando\n  SZGame3D.animate(cena, () => {\n    SZGame3D.topDown(personagem, 4);\n    SZGame3D.hudText(\"top-center\", aviso);\n    if (ganhou) {\n      SZGame3D.moveTowards(barco, 6.6, 1.1, 4.5, 1.8);\n      if (SZGame3D.animationDone(farol)) {\n        SZGame3D.playAnimation(farol, \"aceso\", \"repetir\");\n      }\n    }\n  });\n});\n"
               },
               "extraFiles": [],
               "assets": [
@@ -9762,7 +9768,7 @@
                       },
                       "y": {
                         "type": "num",
-                        "value": 2.65
+                        "value": 2.7
                       },
                       "z": {
                         "type": "num",
@@ -9788,7 +9794,7 @@
                       },
                       "y": {
                         "type": "num",
-                        "value": 1.06
+                        "value": 1.1
                       },
                       "z": {
                         "type": "num",
@@ -9802,7 +9808,7 @@
                       "asset": "pedras",
                       "size": {
                         "type": "num",
-                        "value": 4.5298
+                        "value": 4.5
                       }
                     },
                     {
@@ -9810,15 +9816,15 @@
                       "objVar": "pedra",
                       "x": {
                         "type": "num",
-                        "value": -2.0258
+                        "value": -2
                       },
                       "y": {
                         "type": "num",
-                        "value": 1.1897
+                        "value": 1.2
                       },
                       "z": {
                         "type": "num",
-                        "value": -0.5081
+                        "value": -0.5
                       }
                     },
                     {
@@ -9828,7 +9834,7 @@
                       "asset": "aventureiro",
                       "size": {
                         "type": "num",
-                        "value": 1.66
+                        "value": 1.6
                       }
                     },
                     {
@@ -9844,7 +9850,7 @@
                       },
                       "z": {
                         "type": "num",
-                        "value": 0.75
+                        "value": 0.8
                       }
                     },
                     {
@@ -9854,7 +9860,7 @@
                       "asset": "chave-dourada",
                       "size": {
                         "type": "num",
-                        "value": 1.24
+                        "value": 1.2
                       }
                     },
                     {
@@ -10443,7 +10449,7 @@
                               },
                               "y": {
                                 "type": "num",
-                                "value": 1.06
+                                "value": 1.1
                               },
                               "z": {
                                 "type": "num",
@@ -10615,7 +10621,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 2.65
+                                                        "NUM": 2.7
                                                       }
                                                     }
                                                   },
@@ -10665,7 +10671,7 @@
                                                             "shadow": {
                                                               "type": "sz_val_number",
                                                               "fields": {
-                                                                "NUM": 1.06
+                                                                "NUM": 1.1
                                                               }
                                                             }
                                                           },
@@ -10691,7 +10697,7 @@
                                                                 "shadow": {
                                                                   "type": "sz_val_number",
                                                                   "fields": {
-                                                                    "NUM": 4.5298
+                                                                    "NUM": 4.5
                                                                   }
                                                                 }
                                                               }
@@ -10707,7 +10713,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": -2.0258
+                                                                        "NUM": -2
                                                                       }
                                                                     }
                                                                   },
@@ -10715,7 +10721,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": 1.1897
+                                                                        "NUM": 1.2
                                                                       }
                                                                     }
                                                                   },
@@ -10723,7 +10729,7 @@
                                                                     "shadow": {
                                                                       "type": "sz_val_number",
                                                                       "fields": {
-                                                                        "NUM": -0.5081
+                                                                        "NUM": -0.5
                                                                       }
                                                                     }
                                                                   }
@@ -10741,7 +10747,7 @@
                                                                         "shadow": {
                                                                           "type": "sz_val_number",
                                                                           "fields": {
-                                                                            "NUM": 1.66
+                                                                            "NUM": 1.6
                                                                           }
                                                                         }
                                                                       }
@@ -10773,7 +10779,7 @@
                                                                             "shadow": {
                                                                               "type": "sz_val_number",
                                                                               "fields": {
-                                                                                "NUM": 0.75
+                                                                                "NUM": 0.8
                                                                               }
                                                                             }
                                                                           }
@@ -10791,7 +10797,7 @@
                                                                                 "shadow": {
                                                                                   "type": "sz_val_number",
                                                                                   "fields": {
-                                                                                    "NUM": 1.24
+                                                                                    "NUM": 1.2
                                                                                   }
                                                                                 }
                                                                               }
@@ -11977,7 +11983,7 @@
                                                     "shadow": {
                                                       "type": "sz_val_number",
                                                       "fields": {
-                                                        "NUM": 1.06
+                                                        "NUM": 1.1
                                                       }
                                                     }
                                                   },
@@ -12083,13 +12089,20 @@
       "title": "Os símbolos chegaram à ilha",
       "intent": "explanation",
       "objective": "Os símbolos chegaram à ilha.",
-      "blockKeys": ["video-abertura", "ponte-abertura", "jogo-pronto"],
+      "blockKeys": [
+        "video-abertura",
+        "ponte-abertura",
+        "jogo-pronto"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-abertura", "jogo-pronto"]
+        "blockIds": [
+          "video-abertura",
+          "jogo-pronto"
+        ]
       }
     },
     {
@@ -12097,13 +12110,18 @@
       "title": "O sol e a lua",
       "intent": "application",
       "objective": "O sol e a lua.",
-      "blockKeys": ["video-lua", "ponte-lua"],
+      "blockKeys": [
+        "video-lua",
+        "ponte-lua"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-lua"],
+        "blockIds": [
+          "video-lua"
+        ],
         "projectChecks": [
           {
             "id": "lua-depois",
@@ -12125,7 +12143,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -12166,25 +12184,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -12211,7 +12229,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -12238,7 +12256,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -12254,7 +12276,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -12295,25 +12317,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -12340,7 +12362,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -12367,7 +12389,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -12404,7 +12429,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -12445,25 +12470,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -12490,7 +12515,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -12517,7 +12542,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "estrela", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -12572,13 +12601,18 @@
       "title": "A estrela abre o baú da ilha",
       "intent": "application",
       "objective": "A estrela abre o baú da ilha.",
-      "blockKeys": ["video-estrela", "ponte-estrela"],
+      "blockKeys": [
+        "video-estrela",
+        "ponte-estrela"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-estrela"],
+        "blockIds": [
+          "video-estrela"
+        ],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -12618,7 +12652,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -12659,25 +12693,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -12704,7 +12738,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -12731,7 +12765,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -12747,7 +12785,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -12788,25 +12826,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -12833,7 +12871,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -12860,7 +12898,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -12876,7 +12917,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -12917,25 +12958,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -12962,7 +13003,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -12989,7 +13030,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -13026,7 +13070,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13067,25 +13111,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13112,7 +13156,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13139,7 +13183,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -13155,7 +13203,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13196,25 +13244,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13241,7 +13289,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13268,7 +13316,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -13284,7 +13335,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13325,25 +13376,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13370,7 +13421,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13397,7 +13448,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -13447,7 +13501,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13488,25 +13542,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13533,7 +13587,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13560,7 +13614,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "estrela", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -13576,7 +13634,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13617,25 +13675,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13662,7 +13720,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13689,7 +13747,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -13705,7 +13766,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13746,25 +13807,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13791,7 +13852,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13818,7 +13879,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -13834,7 +13898,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -13875,25 +13939,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -13920,7 +13984,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -13947,7 +14011,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -13984,7 +14051,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14025,25 +14092,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14070,7 +14137,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14097,7 +14164,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -14144,13 +14215,18 @@
       "title": "Pense nos símbolos da ilha",
       "intent": "explanation",
       "objective": "Pense nos símbolos da ilha.",
-      "blockKeys": ["ponte-revisao", "quiz"],
+      "blockKeys": [
+        "ponte-revisao",
+        "quiz"
+      ],
       "workspaceKey": null,
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["quiz"]
+        "blockIds": [
+          "quiz"
+        ]
       }
     },
     {
@@ -14158,13 +14234,20 @@
       "title": "Envie a sua ilha com o baú",
       "intent": "delivery",
       "objective": "Envie a sua ilha com o baú.",
-      "blockKeys": ["video-entrega", "ponte-entrega", "projeto"],
+      "blockKeys": [
+        "video-entrega",
+        "ponte-entrega",
+        "projeto"
+      ],
       "workspaceKey": "projeto",
       "externalTool": null,
       "pendingMedia": [],
       "completion": {
         "version": 1,
-        "blockIds": ["video-entrega", "projeto"],
+        "blockIds": [
+          "video-entrega",
+          "projeto"
+        ],
         "projectChecks": [
           {
             "id": "se-na-estrela",
@@ -14204,7 +14287,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14245,25 +14328,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14290,7 +14373,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14317,7 +14400,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -14333,7 +14420,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14374,25 +14461,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14419,7 +14506,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14446,7 +14533,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -14462,7 +14552,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14503,25 +14593,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14548,7 +14638,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14575,7 +14665,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -14612,7 +14705,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14653,25 +14746,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14698,7 +14791,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14725,7 +14818,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -14741,7 +14838,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14782,25 +14879,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14827,7 +14924,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14854,7 +14951,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -14870,7 +14970,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -14911,25 +15011,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -14956,7 +15056,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -14983,7 +15083,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -15033,7 +15136,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -15074,25 +15177,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -15119,7 +15222,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -15146,7 +15249,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "estrela", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -15162,7 +15269,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -15203,25 +15310,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -15248,7 +15355,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -15275,7 +15382,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -15291,7 +15401,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -15332,25 +15442,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -15377,7 +15487,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -15404,7 +15514,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["estrela", "chave"]
+                  "avoidPaths": [
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "approachObject3d",
@@ -15420,7 +15533,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -15461,25 +15574,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -15506,7 +15619,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -15533,7 +15646,10 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["sol", "chave"]
+                  "avoidPaths": [
+                    "sol",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",
@@ -15570,7 +15686,7 @@
                     },
                     {
                       "minX": -6.1,
-                      "maxX": -4.6,
+                      "maxX": -4.5,
                       "minZ": -5,
                       "maxZ": 5
                     },
@@ -15611,25 +15727,25 @@
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": -5,
                       "maxZ": -1.46
                     },
                     {
-                      "minX": -4.6,
-                      "maxX": -4.1,
+                      "minX": -4.5,
+                      "maxX": -4,
                       "minZ": 0.36,
                       "maxZ": 5
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": -5,
                       "maxZ": -1.56
                     },
                     {
-                      "minX": -4.1,
+                      "minX": -4,
                       "maxX": -3.3,
                       "minZ": 0.36,
                       "maxZ": 5
@@ -15656,7 +15772,7 @@
                       "minX": -3.3,
                       "maxX": 0,
                       "minZ": -5,
-                      "maxZ": -2.56
+                      "maxZ": -2.46
                     },
                     {
                       "minX": -3.3,
@@ -15683,7 +15799,11 @@
                       "maxZ": 1.7
                     }
                   ],
-                  "avoidPaths": ["lua", "estrela", "chave"]
+                  "avoidPaths": [
+                    "lua",
+                    "estrela",
+                    "chave"
+                  ]
                 },
                 {
                   "action": "wait",

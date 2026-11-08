@@ -21,12 +21,86 @@ import { readGlbSummary } from '../../../packages/studio/src/core/glbSummary'
 import { isBlockTypeAllowed } from '../../../packages/studio/src/core/levels'
 import { sanitizeProjectAssets } from '../../../packages/studio/src/core/projectAssets'
 import { SZIRInputSchema } from '../../../packages/studio/src/ir/schema'
-import { ILHA_ASSETS, ILHA_MODELS } from './ilha-do-farol-assets'
+import { parseProjectFilesFromParts } from '../../../packages/studio/src/parsers/project'
+import {
+  ILHA_ASSETS,
+  ILHA_BARCOS,
+  ILHA_CENARIOS,
+  ILHA_CHAVES,
+  ILHA_FAROIS,
+  ILHA_MODELS,
+  ILHA_PERSONAGENS,
+} from './ilha-do-farol-assets'
 import { ilhaChecks } from './ilha-do-farol-criterios'
 import { ILHA_PARTES, montarProjetoIlha } from './ilha-do-farol-projeto'
 
 const dir = resolve(import.meta.dirname, '../../aulas-interativas/faisca/a-ilha-do-farol')
+
+/** Examina números ensinados, não coordenadas de layout do Blockly nem dados internos de GLB. */
+function numerosVisiveis(value: unknown): number[] {
+  if (!value || typeof value !== 'object') return []
+  const node = value as Record<string, unknown>
+  if (node.type === 'num' && typeof node.value === 'number') return [node.value]
+  if (node.type === 'sz_val_number') {
+    const fields = node.fields as { NUM: number }
+    return [Number(fields.NUM)]
+  }
+  return Object.values(node).flatMap(numerosVisiveis)
+}
+
+function conferirNumeros(project: {
+  ir?: unknown
+  blocksState?: unknown
+  files: Record<string, string>
+}) {
+  const parsed = parseProjectFilesFromParts({
+    html: [],
+    cssSource: project.files['style.css']!,
+    jsSource: project.files['script.js']!,
+  }).ir
+  for (const source of [project.ir, project.blocksState, parsed]) {
+    const numbers = numerosVisiveis(source)
+    expect(numbers.length).toBeGreaterThan(0)
+    expect(numbers.filter((n) => !Number.isFinite(n) || n !== Number(n.toFixed(1)))).toEqual([])
+  }
+}
+
 describe('A Ilha do Farol', () => {
+  test('os números dos blocos e do código têm no máximo uma casa decimal em cada etapa e modelo', () => {
+    for (const part of ILHA_PARTES) conferirNumeros(montarProjetoIlha(part))
+    for (const [objeto, modelos] of Object.entries({
+      personagem: ILHA_PERSONAGENS,
+      cenario: ILHA_CENARIOS,
+      barco: ILHA_BARCOS,
+      chave: ILHA_CHAVES,
+      farol: ILHA_FAROIS,
+    }))
+      for (const modelo of modelos)
+        conferirNumeros(montarProjetoIlha('personalizar', { [objeto]: modelo }))
+  })
+
+  test('o projeto portátil e os exemplos entregues nas três aulas também usam números simples', () => {
+    conferirNumeros(JSON.parse(readFileSync(resolve(dir, 'ilha-do-farol.szproject.json'), 'utf8')))
+    for (let i = 1; i <= 3; i++) {
+      const manifest = JSON.parse(
+        readFileSync(resolve(dir, `ilha-aula-${i}.manifesto.json`), 'utf8'),
+      )
+      let projects = 0
+      const visit = (value: unknown) => {
+        if (!value || typeof value !== 'object') return
+        const node = value as Record<string, unknown>
+        if (node.ir && node.blocksState && node.files) {
+          conferirNumeros(node as Parameters<typeof conferirNumeros>[0])
+          projects++
+          return
+        }
+        for (const child of Object.values(node)) visit(child)
+      }
+      visit(manifest)
+      expect(projects).toBeGreaterThan(0)
+    }
+  })
+
   test('três aulas válidas, sem certificado, com exemplos portáteis dentro do orçamento', () => {
     for (let i = 1; i <= 3; i++) {
       const m = JSON.parse(readFileSync(resolve(dir, `ilha-aula-${i}.manifesto.json`), 'utf8'))
