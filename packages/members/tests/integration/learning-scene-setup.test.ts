@@ -183,18 +183,23 @@ test.each([
   expect((await tentar(respostas)).passed).toBe(true)
 })
 
-test('Farol limite: the server replays the beirada da tela with the same evidence as the player', async () => {
+test.each([
+  { seconds: 3, passed: false },
+  { seconds: 6, passed: true },
+])('Farol limite: o servidor confere a beirada após $seconds segundos', async ({
+  seconds,
+  passed,
+}) => {
   const content = blocoDoManifesto('desafio-dia-1.manifesto.json', 'experiencia-limite')
   const { gravar, tentar } = preparar(content)
-  // A beirada (01/11/2026): sai sem o limite, liga o limite com ele fora e segura na beirada.
+  // O Farol começa em x 21, como o jogo. Três segundos ainda deixam o personagem dentro;
+  // seis permitem sair, voltar ao ligar o limite e segurar na beirada. A Nave começa no meio.
   const segundo = { type: 'advance', seconds: 1 }
   const quadro = { type: 'advance', seconds: 1 / 30 }
   const answers = await gravar([
     { type: 'walk-pace', pace: 'real' },
     { type: 'hold-arrow', held: true },
-    segundo,
-    segundo,
-    segundo,
+    ...Array.from({ length: seconds }, () => segundo),
     { type: 'keep-on-screen', enabled: true },
     { type: 'walk-pace', pace: 'lenta' },
     quadro,
@@ -202,10 +207,15 @@ test('Farol limite: the server replays the beirada da tela with the same evidenc
     quadro,
   ])
   const session = readExperimentSession('lighthouse-walk', answers.sceneCheckpoint)
-  expect(session?.state.evidence.discoveries).toEqual(
-    expect.arrayContaining(['left-the-screen', 'came-back-inside', 'stayed-inside']),
-  )
-  expect((await tentar(answers)).passed).toBe(true)
+  if (passed)
+    expect(session?.state.evidence.discoveries).toEqual(
+      expect.arrayContaining(['left-the-screen', 'came-back-inside', 'stayed-inside']),
+    )
+  else {
+    expect(session?.state.evidence.discoveries).not.toContain('left-the-screen')
+    expect(session?.state.evidence.discoveries).not.toContain('came-back-inside')
+  }
+  expect((await tentar(answers)).passed).toBe(passed)
 })
 
 test.each([
